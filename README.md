@@ -13,13 +13,20 @@ This README file supports two languages.
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
-[![Tech Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
+[![Tech Stack](https://img.shields.io/badge/stack-React%2019%20%7C%20TypeScript%20%7C%20Redux%20%7C%20Vite%207-3178C6?logo=react&logoColor=white)](https://react.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![Local AI](https://img.shields.io/badge/Local%20AI-On--Device%20ML-ff6f00?logo=tensorflow&logoColor=white)]()
+[![IndexedDB](https://img.shields.io/badge/IndexedDB-Dual%20Persistence-00897B?logo=indexeddb&logoColor=white)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-compliant-blue)]()
-[![Built with ❤ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Built with Gemini](https://img.shields.io/badge/Built%20with-Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Google AI Studio](https://img.shields.io/badge/Google%20AI%20Studio-Ready-34A853?logo=google&logoColor=white)](https://aistudio.google.com/)
+[![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Enabled-000000?logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
+[![Claude Sonnet 4](https://img.shields.io/badge/Claude-Sonnet%204-FF9900?logo=anthropic&logoColor=white)](https://www.anthropic.com/claude)
+[![OpenAI GPT-4o mini](https://img.shields.io/badge/OpenAI-GPT--4o%20mini-412991?logo=openai&logoColor=white)](https://openai.com/)
+[![xAI Grok 3](https://img.shields.io/badge/xAI-Grok%203-111111)](https://x.ai/)
+[![Codespaces / VS Code](https://img.shields.io/badge/Codespaces%20%2F%20VS%20Code-Ready-007ACC?logo=visualstudiocode&logoColor=white)](https://github.com/features/codespaces)
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
 
@@ -32,7 +39,7 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 ## Table of Contents
 
 - [⭐ Project Philosophy](#-project-philosophy)
-- [�🚀 Key Features](#-key-features)
+- [🚀 Key Features](#-key-features)
     - [1. The Grow Room (`Plants` View)](#1-the-grow-room-plants-view)
     - [2. The Strain Encyclopedia (`Strains` View)](#2-the-strain-encyclopedia-strains-view)
     - [3. The Workshop (`Equipment` View)](#3-the-workshop-equipment-view)
@@ -47,7 +54,7 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 - [🏁 Getting Started (User Guide)](#-getting-started-user-guide)
 - [🛠 Local Development (Developer Guide)](#-local-development-developer-guide)
 - [📦 Distribution Targets](#-distribution-targets)
-- [🔐 Gemini BYOK (Complete Guide)](#-gemini-byok-complete-guide)
+- [🔐 Gemini BYOK Setup](#-gemini-byok-setup)
 - [🚀 GitHub Pages Deployment](#-github-pages-deployment)
 - [🤔 Troubleshooting](#-troubleshooting)
 - [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
@@ -81,32 +88,32 @@ CannaGuide 2025 is built upon a set of core principles designed to deliver a bes
 
 Your command center for managing and simulating up to three simultaneous grows.
 
-- **Advanced Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)** with altitude-corrected saturation pressure (Buck equation), biomass-scaled resource consumption, and a structural growth model that visually represents your plant's progress. Runs in a dedicated **Web Worker** for zero UI jank.
+- **Advanced Simulation Engine**: VPD-based simulation with altitude correction, biomass-scaled consumption, and structural growth, all offloaded to a dedicated **Web Worker**.
 - **Simulation Profiles**: Choose between `Beginner`, `Intermediate`, and `Expert` simulation profiles in the settings to adjust complexity and reveal advanced physics parameters.
-- **Grow Stats Dashboard**: A real-time overview panel that tracks **yield forecasts** (based on biomass and quality factors), **daily energy costs** (electricity + nutrients), **cumulative tracked costs**, and an **upcoming events timeline** with harvest ETAs and pending tasks.
-- **Live VPD Gauge**: A visual gauge displaying the current Vapor Pressure Deficit with color-coded ideal ranges for each growth stage — Seedling (0.4–0.8 kPa), Vegetative (0.8–1.2 kPa), Flowering (1.2–1.6 kPa), Late Bloom (1.4–1.8 kPa). Supports configurable **leaf temperature offset** and **altitude correction**.
+- **Grow Stats Dashboard**: Real-time yield forecasts, daily energy costs, cumulative spend, and an upcoming events timeline.
+- **Live VPD Gauge**: Color-coded VPD ranges for each growth stage, with configurable leaf temperature offset and altitude correction.
 - **ESP32 Sensor Integration**: Connect your ESP32-based environmental sensors via **WebBluetooth** to feed live temperature and humidity data directly into the simulation. Reads GATT Environmental Sensing characteristics for lab-grade accuracy.
 - **AI-Powered Diagnostics**:
-    - **Photo Diagnosis**: Upload or capture a photo of your plant. EXIF/GPS metadata is automatically stripped before the image is sent to Gemini for an instant AI diagnosis, complete with immediate actions, long-term solutions, and preventative advice. Images are auto-compressed to optimize bandwidth.
-    - **Proactive Advisor**: Get data-driven advice from Gemini AI based on your plant's real-time vitals. All recommendations can be archived with full **CRUD** functionality. Archive is auto-capped at 50 entries per plant to keep storage lean.
-    - **Deep Dive Guides**: Generate comprehensive, AI-written deep-dive articles on specific topics (e.g., "terpene preservation", "defoliation timing") contextualized to your active plant's data.
-- **Comprehensive Logging**: Track every action — from watering and feeding to training, pest control, amendments, and photo documentation — in a detailed, filterable journal for each plant. The **RAG-powered grow log** enables the AI to search your entire journal history with token-based relevance ranking and recency boosting when generating advice.
-- **Grow Reminders (Push Notifications)**: Configure push notification reminders for critical events — VPD threshold alarms, watering schedules, and harvest windows. Uses the Periodic Background Sync API when available, with a built-in 4-hour cooldown and snooze tracking to prevent notification fatigue.
-- **Post-Harvest Simulation**: Manage the critical **Drying & Curing** phases with a dedicated interface that tracks humidity, burping schedules, terpene retention, chlorophyll degradation, and CBN conversion to achieve the perfect final product.
-- **What-If Experiments**: Run scenario-based comparisons (e.g., +2°C vs. -2°C, Topping vs. LST) on a clone of your plant to visualize the impact of different conditions over an accelerated simulation — without risking your real plants. View side-by-side results with difference summaries and interactive height/growth charts.
+    - **Photo Diagnosis**: Upload or capture a plant photo. EXIF/GPS metadata is stripped, the image is compressed, and Gemini returns an instant diagnosis with actions and prevention tips.
+    - **Proactive Advisor**: Get advice from Gemini based on live plant vitals. Recommendations are archived with full CRUD support and capped at 50 entries per plant.
+    - **Deep Dive Guides**: Generate contextual deep-dive articles on topics like terpene preservation or defoliation timing.
+- **Comprehensive Logging**: Maintain a detailed, filterable journal for every action. The **RAG-powered grow log** helps AI answer using relevant history with recency weighting.
+- **Grow Reminders (Push Notifications)**: Set reminders for VPD alarms, watering, and harvest windows. Periodic Background Sync is used when available, with cooldown and snooze tracking.
+- **Post-Harvest Simulation**: Track drying, curing, humidity, burping, terpene retention, chlorophyll degradation, and CBN conversion in one dedicated flow.
+- **What-If Experiments**: Compare scenarios like +2°C vs. -2°C or Topping vs. LST on a clone without risking the real plant.
 
 ### 2. The Strain Encyclopedia (`Strains` View)
 
 Your central knowledge hub, designed for deep exploration with **offline-first** access.
 
 - **Vast Library**: Access detailed information on **700+ cannabis strains** with intelligent **alias resolution** (~30 common name variations like "GSC" → "Girl Scout Cookies", "GG#4" → "Gorilla Glue" automatically mapped).
-- **Interactive Genealogy Tree**: Visualize the complete genetic lineage of any strain using a crash-proof, d3-powered tree with click-to-focus navigation. Use analysis tools to **highlight landraces**, trace Sativa/Indica parentage, **calculate the genetic influence** of top ancestors, and **discover known descendants**. The genealogy engine resolves aliases, handles landrace roots, and supports configurable depth collapsing for complex lineages.
+- **Interactive Genealogy Tree**: Explore a crash-proof, d3-powered lineage tree with alias resolution, landrace highlighting, ancestry tracing, and configurable depth collapsing.
 - **Entourage Effect Analysis**: Explore the science behind terpene-cannabinoid interactions with an evidence-based **terpene database** mapping pharmacological effects, cannabinoid receptor activity (CB1, CB2, TRPV1), and scientific citations.
 - **Chemotype Calculator**: Analyze any strain's cannabinoid and terpene profile to determine the **dominant chemotype**, profile classification, and tailored cultivation guidance.
-- **High-Performance Search & Filtering**: Instantly find strains with an IndexedDB-powered full-text search, alphabetical filtering, and an advanced multi-select filter drawer for THC/CBD range, flowering time, aroma, and more. Results are rendered in a **virtualized list** for smooth scrolling through hundreds of strains.
+- **High-Performance Search & Filtering**: Find strains fast with IndexedDB full-text search, alphabetical filters, multi-select criteria, and a virtualized result list.
 - **Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
-- **Community Strain Sharing**: Export your curated strain collections as **anonymous GitHub Gists** with one click, and import shared collections from any gist URL. All imports are validated with **Zod schemas** to prevent injection of unexpected data into your local state.
-- **AI Grow Tips**: Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals, complete with a **Gemini-generated artistic image**, then manage it in a dedicated "Tips" archive.
+- **Community Strain Sharing**: Export curated collections as anonymous GitHub Gists and import shared lists via gist URL, all validated with Zod schemas.
+- **AI Grow Tips**: Generate strain-specific cultivation advice with a Gemini image and manage it in a dedicated tips archive.
 - **Text-to-Speech**: Any AI-generated content can be read aloud using the **Speakable** component, with configurable voice selection, speech rate, and optional text highlighting.
 - **Flexible Data Export**: Export your selected or filtered strain lists in formats **PDF, TXT**.
 
@@ -114,7 +121,7 @@ Your central knowledge hub, designed for deep exploration with **offline-first**
 
 Your toolkit for planning and optimizing your grow setup.
 
-- **Advanced AI Setup Configurator**: A multi-step process where you define your **plant count, grow space, experience, budget, and priorities** to receive a complete, brand-specific equipment list generated by Gemini AI.
+- **Advanced AI Setup Configurator**: Define your grow space, experience, budget, and priorities to get a brand-specific equipment list from Gemini AI.
 - **Saved Setups**: Full **CRUD** functionality for your generated equipment lists. Edit, delete, and manage your setups for future use.
 - **Suite of Calculators**: Access a comprehensive set of precision tools:
     - Ventilation Calculator (m³/h)
@@ -129,9 +136,9 @@ Your toolkit for planning and optimizing your grow setup.
 
 Your complete resource for learning and problem-solving.
 
-- **Context-Aware AI Mentor**: Ask growing questions to the AI Mentor, which leverages your active plant's data and **RAG-powered journal search** for deeply tailored advice. All conversations are archived with full **CRUD** support. Mentor archive is auto-capped at 100 entries.
+- **Context-Aware AI Mentor**: Ask the AI Mentor for advice based on your active plant and RAG-powered journal history. Conversations are archived with full CRUD support and capped at 100 entries.
 - **Breeding Lab**: Cross your high-quality collected seeds to create entirely new, **permanent hybrid strains** with Punnett Square-based genetic modeling. New breeds are added to your personal library and can be used in future grows.
-- **Interactive Sandbox**: Run "what-if" scenarios, like comparing **Topping vs. LST** on a clone of your plant, to visualize the impact of different training techniques over an accelerated simulation without risking your real plants. View detailed comparison results with **d3-powered charts**.
+- **Interactive Sandbox**: Run what-if scenarios like Topping vs. LST on a clone to compare training effects with d3-powered charts.
 
 ### 5. The Help Desk (`Help` View)
 
@@ -150,20 +157,19 @@ A sophisticated hub to customize every aspect of your CannaGuide experience.
 - **Accessibility Suite**: Activate a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and various **Colorblind Modes** (Protanopia, Deuteranopia, Tritanopia).
 - **Voice & Speech**: Configure Text-to-Speech (TTS) voices and rates, and manage voice command settings.
 - **Simulation Tuning**: Adjust simulation parameters including **leaf temperature offset** and **altitude** for precision VPD calculations.
-- **Local AI Settings**: Trigger on-demand **model preloading** with a real-time progress bar. Toggle **Force WASM** backend for debugging WebGPU issues. Switch preferred text model between `Qwen2.5-1.5B` (balanced) and `Qwen3-0.5B` (lightweight). View live ONNX backend detection, WebLLM status, persistent storage grants, and preload timing benchmarks.
-- **One-Tap Cloud Sync**: Back up and restore your entire app state to an **anonymous GitHub Gist** — no account or sign-up required. Displays Gist ID, last-synced timestamp, and supports both push and pull operations. All synced data is validated with Zod schemas on import.
-- **Data Sovereignty**: Export your entire app state for **backup**, import it to **restore**, or perform granular resets like clearing AI archives or plant data. View a detailed breakdown of your **storage usage** with IndexedDB quota estimates. Configure **auto-backup** intervals (daily/weekly/off) and **persistence timing** (fast/balanced/battery-saver).
+- **Local AI Settings**: Preload models on demand, force WASM for debugging, switch between balanced and lightweight text models, and monitor backend/storage status.
+- **One-Tap Cloud Sync**: Back up and restore the app state to an anonymous GitHub Gist with Gist ID, sync timestamps, and Zod validation.
+- **Data Sovereignty**: Backup, restore, reset specific data, and review storage usage with configurable auto-backup and persistence timing.
 
 ### 7. Platform-Wide Features
 
-- **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker uses **Network-First** strategy for navigation and **Cache-First** for static assets, ensuring **100% offline functionality** including access to all data and AI archives.
+- **Full PWA & Offline Capability**: Install the app for a native-like experience with Network-First navigation, Cache-First assets, and full offline access to data and AI archives.
 - **Command Palette (`Cmd/Ctrl + K`)**: A power-user tool with **40+ commands** grouped by Navigation, Strains, Plants, and Settings for instant, click-free access across the entire application.
 - **Voice Control**: Navigate the app, search for strains, and perform actions using simple voice commands.
-- **Full Internationalization (i18n)**: Complete **English and German** translations with namespaced locale files (common, plants, knowledge, strains, equipment, settings, help, and more). All AI responses are automatically localized to the user's selected language.
+- **Full Internationalization (i18n)**: Complete EN/DE translations with the full namespaced locale set. AI responses are localized automatically.
 - **Safe Recovery**: Automatic detection and repair of corrupted application state. If IndexedDB hydration fails, the app gracefully falls back to a clean state rather than presenting a blank screen.
-- **One-Tap Cloud Sync**: Push your entire app state to an **anonymous GitHub Gist** with a single tap — no account, no sign-up. Pull from any Gist URL to restore on a different device. Synced payloads are versioned and validated with Zod schemas.
-- **Daily Strain Catalog Automation**: A GitHub Actions workflow (`strains-daily-update.yml`) runs at **04:20 UTC** every day to merge, deduplicate, and validate the 700+ strain catalog in strict mode, producing artifact reports and auto-creating PRs for new entries.
-- **Local AI Fallback**: When the cloud API is unreachable (offline, quota exceeded, key missing), the app activates a **three-layer local AI stack**: (1) WebLLM with Qwen2.5-1.5B on WebGPU-capable devices, (2) Transformers.js text generation and CLIP-ViT zero-shot vision with 33 cannabis-specific condition labels, (3) deterministic heuristic analysis. Inference results are cached (LRU, 64 entries) for instant repeat queries. See [docs/local-ai-developer-guide.md](docs/local-ai-developer-guide.md) and [docs/local-ai-troubleshooting.md](docs/local-ai-troubleshooting.md).
+- **Daily Strain Catalog Automation**: A daily GitHub Actions workflow merges, deduplicates, and validates the 700+ strain catalog, then opens PRs for new entries.
+- **Local AI Fallback**: When the cloud API is unavailable, the app falls back to a three-layer local AI stack with caching for repeat queries. See [docs/local-ai-developer-guide.md](docs/local-ai-developer-guide.md) and [docs/local-ai-troubleshooting.md](docs/local-ai-troubleshooting.md).
 
 ---
 
@@ -350,7 +356,7 @@ shouldRouteLocally() → isOffline() || localAiPreloadService.isReady()
 
 ### Preload & Progress UI
 
-Users can trigger on-demand model preloading from **Settings → Local AI**:
+Users can trigger on-demand model preloading from **Settings → General & UI**:
 
 - Real-time progress bar showing loaded/total models and current label (text-model → vision-model → web-llm).
 - Persistent status tracking via `localStorage` (state, timestamps, per-model readiness, persistent storage grant status).
@@ -419,7 +425,7 @@ CannaGuide supports **Bring Your Own Key (BYOK)** for multiple AI providers. All
 | **xAI (Grok)**              | `grok-3-mini-fast`, `grok-3`                                                      | `xai-...`    |
 | **Anthropic (Claude)**      | `claude-sonnet-4-20250514`                                                        | `sk-ant-...` |
 
-Configure your provider in **Settings → General & UI → AI Security**. The selected provider is used for all AI features: Mentor, Diagnostics, DeepDive, StrainTips, and Equipment Recommendations. Image generation is currently Gemini-exclusive.
+Configure your provider in **Settings → General & UI → AI Security (Multi-Model BYOK)**. The selected provider is used for all AI features: Mentor, Diagnostics, DeepDive, StrainTips, and Equipment Recommendations. Image generation is currently Gemini-exclusive.
 
 ---
 
@@ -469,7 +475,7 @@ This project is designed to run within Google's AI Studio, which handles the dev
     This will start the Vite development server, typically at `http://localhost:5173`.
 
 4.  **Set Gemini API key at runtime (BYOK):**
-    Open the app and go to **Settings → General & UI → AI Security (Gemini BYOK)**.
+    Open the app and go to **Settings → General & UI → AI Security (Multi-Model BYOK)**.
     Enter your Gemini key there. The key is stored only in local IndexedDB on your current device/browser profile.
 
 5.  **Quality checks:**
@@ -498,9 +504,9 @@ See full setup notes in `docs/distribution.md`.
 
 ---
 
-## 🔐 Gemini BYOK (Complete Guide)
+## 🔐 Gemini BYOK Setup
 
-This app follows a strict **Bring Your Own Key (BYOK)** model for Gemini:
+This section covers the Gemini BYOK setup for the default provider. For switching between supported providers, see the Multi-Provider AI overview above:
 
 1. **Get a Gemini API key in Google AI Studio**
     - Open: https://aistudio.google.com/app/apikey
@@ -509,7 +515,7 @@ This app follows a strict **Bring Your Own Key (BYOK)** model for Gemini:
     - Copy the generated key (starts with `AIza...`).
 
 2. **Set your key inside CannaGuide**
-    - Open **Settings → General & UI → AI Security (Gemini BYOK)**.
+    - Open **Settings → General & UI → AI Security (Multi-Model BYOK)**.
     - Paste your key and click **Save Key**.
     - Optionally click **Validate Key** to run a live connectivity/permissions check.
 
@@ -544,7 +550,7 @@ Important:
 
 ## 🤔 Troubleshooting
 
-- **AI Features Not Working**: Usually caused by a missing/invalid Gemini API key. Open `Settings → General & UI → AI Security (Gemini BYOK)`, set your key, and retry.
+- **AI Features Not Working**: Usually caused by a missing/invalid API key. Open `Settings → General & UI → AI Security (Multi-Model BYOK)`, set or validate your key, and retry.
 - **App Not Updating (PWA Caching)**: Deploy updates are usually detected automatically. If an update still seems delayed:
     1.  Bring the tab to foreground (focus/visibility triggers an update check).
     2.  Wait a few seconds for automatic activation and reload.
@@ -553,7 +559,7 @@ Important:
 - **Data Corruption**: If the application state becomes corrupted, you can perform a hard reset by navigating to `Settings > Data Management > Reset All App Data`. **Warning: This will delete all your local data.**
 - **Local AI Models Not Loading**: Ensure you have a stable connection for the initial model download. Check that browser storage is not full (Settings → Data Management → Storage Insights). If persistent storage is not granted, the browser may evict cached models. Try the "Preload Models" button again.
 - **WebLLM Unavailable**: WebLLM requires WebGPU support (modern Chrome/Edge). On unsupported browsers, CannaGuide automatically falls back to Transformers.js (WASM). This is expected behavior — not an error.
-- **Local AI Slow Performance**: Enable the **Force WASM** toggle in Settings → Local AI if you suspect WebGPU driver issues. Switch to the lightweight `Qwen3-0.5B` model for faster inference on low-end devices.
+- **Local AI Slow Performance**: Enable the **Force WASM** toggle in Settings → General & UI if you suspect WebGPU driver issues. Switch to the lightweight `Qwen3-0.5B` model for faster inference on low-end devices.
 - **Cloud Sync Issues**: Gist push/pull is anonymous and rate-limited by GitHub. If push fails, wait a moment and retry. Ensure the Gist URL/ID is correct when pulling. Synced data is validated — corrupted Gists will show an error message.
 
 ---
@@ -641,13 +647,20 @@ Please follow the existing code style and ensure your changes are well-documente
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
-[![Tech-Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
+[![Tech-Stack](https://img.shields.io/badge/stack-React%2019%20%7C%20TypeScript%20%7C%20Redux%20%7C%20Vite%207-3178C6?logo=react&logoColor=white)](https://react.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![Local AI](https://img.shields.io/badge/Local%20AI-On--Device%20ML-ff6f00?logo=tensorflow&logoColor=white)]()
+[![IndexedDB](https://img.shields.io/badge/IndexedDB-Dual%20Persistence-00897B?logo=indexeddb&logoColor=white)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-konform-blue)]()
-[![Built with ❤ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Built with Gemini](https://img.shields.io/badge/Built%20with-Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Google AI Studio](https://img.shields.io/badge/Google%20AI%20Studio-Ready-34A853?logo=google&logoColor=white)](https://aistudio.google.com/)
+[![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Enabled-000000?logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
+[![Claude Sonnet 4](https://img.shields.io/badge/Claude-Sonnet%204-FF9900?logo=anthropic&logoColor=white)](https://www.anthropic.com/claude)
+[![OpenAI GPT-4o mini](https://img.shields.io/badge/OpenAI-GPT--4o%20mini-412991?logo=openai&logoColor=white)](https://openai.com/)
+[![xAI Grok 3](https://img.shields.io/badge/xAI-Grok%203-111111)](https://x.ai/)
+[![Codespaces / VS Code](https://img.shields.io/badge/Codespaces%20%2F%20VS%20Code-Ready-007ACC?logo=visualstudiocode&logoColor=white)](https://github.com/features/codespaces)
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
 
@@ -675,7 +688,7 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 - [🏁 Erste Schritte (Benutzerhandbuch)](#-erste-schritte-benutzerhandbuch)
 - [🛠 Lokale Entwicklung (Entwicklerhandbuch)](#-lokale-entwicklung-entwicklerhandbuch)
 - [📦 Distributionsziele](#-distributionsziele)
-- [🔐 Gemini BYOK (Komplettleitfaden)](#-gemini-byok-komplettleitfaden)
+- [🔐 Gemini-BYOK-Einrichtung](#-gemini-byok-einrichtung)
 - [🚀 GitHub Pages Deployment](#-github-pages-deployment-1)
 - [🤔 Fehlerbehebung (Troubleshooting)](#-fehlerbehebung-troubleshooting)
 - [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source-1)
@@ -701,38 +714,38 @@ CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt
 
 ---
 
-## �🚀 Hauptfunktionen
+## 🚀 Hauptfunktionen
 
 ### 1. Der Grow Room (`Pflanzen`-Ansicht)
 
 Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Anbauprojekten.
 
-- **Hochentwickelte Simulations-Engine**: Erleben Sie eine Simulation, die auf **VPD (Dampfdruckdefizit)** mit höhenkorrigiertem Sättigungsdruck (Buck-Gleichung), biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert. Läuft in einem dedizierten **Web Worker** für null UI-Verzögerung.
+- **Hochentwickelte Simulations-Engine**: VPD-basierte Simulation mit Höhenkorrektur, biomasse-skaliertem Ressourcenverbrauch und strukturellem Wachstum im dedizierten **Web Worker**.
 - **Simulationsprofile**: Wählen Sie zwischen `Anfänger`, `Fortgeschritten` und `Experte`, um die Komplexität anzupassen.
-- **Anbau-Statistik-Dashboard**: Ein Echtzeit-Übersichtspanel, das **Ertragsprognosen** (basierend auf Biomasse und Qualitätsfaktoren), **tägliche Energiekosten** (Strom + Nährstoffe), **kumulative Gesamtkosten** und einen **Ereignis-Zeitplan** mit Ernte-ETAs und ausstehenden Aufgaben verfolgt.
-- **Live-VPD-Anzeige**: Eine visuelle Anzeige des aktuellen Dampfdruckdefizits mit farbcodierten Idealbereichen pro Wachstumsphase — Sämling (0,4–0,8 kPa), Vegetativ (0,8–1,2 kPa), Blüte (1,2–1,6 kPa), Spätblüte (1,4–1,8 kPa). Unterstützt konfigurierbaren **Blatttemperatur-Offset** und **Höhenkorrektur**.
+- **Anbau-Statistik-Dashboard**: Echtzeit-Ertragsprognosen, tägliche Energiekosten, kumulative Kosten und ein Ereignis-Zeitplan für Ernte und offene Aufgaben.
+- **Live-VPD-Anzeige**: Farbcodierte VPD-Bereiche für jede Wachstumsphase mit konfigurierbarem Blatttemperatur-Offset und Höhenkorrektur.
 - **ESP32-Sensor-Integration**: Verbinden Sie Ihre ESP32-basierten Umgebungssensoren über **WebBluetooth**, um Live-Temperatur- und Feuchtigkeitsdaten direkt in die Simulation einzuspeisen. Liest GATT Environmental Sensing Characteristics für laborgrade Genauigkeit.
 - **KI-gestützte Diagnose**:
-    - **Foto-Diagnose**: Laden Sie ein Foto hoch oder nehmen Sie eines auf. EXIF/GPS-Metadaten werden vor dem Senden an Gemini automatisch entfernt. Bilder werden automatisch komprimiert.
-    - **Proaktiver Berater**: Datengesteuerte Ratschläge basierend auf Echtzeit-Vitalwerten. Archiv ist auf 50 Einträge pro Pflanze automatisch begrenzt.
-    - **Deep-Dive-Leitfäden**: Umfassende, KI-generierte Tiefenanalysen zu spezifischen Themen, kontextualisiert mit den Daten Ihrer aktiven Pflanze.
-- **Umfassendes Protokoll**: Verfolgen Sie jede Aktion in einem detaillierten, filterbaren Journal. Die **RAG-gestützte Anbauprotokoll-Suche** ermöglicht der KI, Ihre gesamte Journal-Historie mit tokenbasierter Relevanz-Bewertung und Aktualitäts-Boosting zu durchsuchen.
-- **Grow-Erinnerungen (Push-Benachrichtigungen)**: Konfigurieren Sie Push-Benachrichtigungen für kritische Ereignisse — VPD-Schwellenwert-Alarme, Bewässerungspläne und Ernte-Fenster. Mit 4-Stunden-Abklingzeit und Snooze-Tracking.
-- **Nach-Ernte-Simulation**: Verwalten Sie die kritischen Phasen des **Trocknens & Fermentierens** mit Feuchtigkeits-, Terpenerhalt-, Chlorophyllabbau- und CBN-Konversionstracking.
-- **Was-wäre-wenn-Experimente**: Führen Sie szenariobasierte Vergleiche durch (z.B. +2°C vs. -2°C, Topping vs. LST) an einem Klon Ihrer Pflanze, um die Auswirkungen ohne Risiko zu visualisieren.
+    - **Foto-Diagnose**: Laden Sie ein Pflanzenfoto hoch oder nehmen Sie eines auf. EXIF/GPS wird entfernt, das Bild komprimiert, und Gemini liefert sofort Diagnose und Maßnahmen.
+    - **Proaktiver Berater**: Erhalten Sie Ratschläge auf Basis der Live-Vitalwerte. Empfehlungen werden mit vollständigem CRUD archiviert und auf 50 Einträge pro Pflanze begrenzt.
+    - **Deep-Dive-Leitfäden**: Erzeugen Sie kontextbezogene Tiefenanalysen zu Themen wie Terpenerhalt oder Entlaubungs-Timing.
+- **Umfassendes Protokoll**: Führen Sie ein detailliertes, filterbares Journal für jede Aktion. Die **RAG-gestützte Anbauprotokoll-Suche** nutzt relevante Historie mit Aktualitätsgewichtung.
+- **Grow-Erinnerungen (Push-Benachrichtigungen)**: Erinnerungen für VPD-Alarme, Bewässerung und Erntefenster. Periodic Background Sync wird wenn möglich genutzt, inklusive Abklingzeit und Snooze-Tracking.
+- **Nach-Ernte-Simulation**: Trocknen, Fermentieren, Feuchte, Burping, Terpenerhalt, Chlorophyllabbau und CBN-Konversion in einem eigenen Ablauf.
+- **Was-wäre-wenn-Experimente**: Vergleichen Sie Szenarien wie +2°C vs. -2°C oder Topping vs. LST auf einem Klon ohne Risiko fürs reale Projekt.
 
 ### 2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)
 
 Ihr zentraler Wissens-Hub mit **Offline-First**-Zugriff.
 
 - **Riesige Bibliothek**: Über **700+ Cannabissorten** mit intelligenter **Alias-Auflösung** (~30 gängige Namensvarianten wie „GSC" → „Girl Scout Cookies" werden automatisch zugeordnet).
-- **Interaktiver Stammbaum**: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte mit crash-sicherer, d3-gestützter Baumdarstellung und Klick-zum-Fokussieren-Navigation. Analysetools zum **Hervorheben von Landrassen**, Verfolgen von Sativa/Indica-Linien, **Berechnen des genetischen Einflusses** und **Entdecken bekannter Nachkommen**.
+- **Interaktiver Stammbaum**: Crash-sichere d3-Linienansicht mit Alias-Auflösung, Landrassen-Markierung, Abstammungsverfolgung und einstellbarer Tiefe.
 - **Entourage-Effekt-Analyse**: Erkunden Sie die Wissenschaft hinter Terpen-Cannabinoid-Interaktionen mit einer evidenzbasierten **Terpendatenbank**, die pharmakologische Effekte, Cannabinoidrezeptor-Aktivität (CB1, CB2, TRPV1) und wissenschaftliche Zitationen abbildet.
 - **Chemotyp-Rechner**: Analysieren Sie das Cannabinoid- und Terpenprofil jeder Sorte zur Bestimmung des **dominanten Chemotyps**, der Profilklassifikation und maßgeschneiderter Anbauberatung.
-- **Hochleistungs-Suche & -Filter**: IndexedDB-gestützte Volltextsuche, alphabetische Filterung und erweitertes Mehrfachauswahl-Filtermenü. Ergebnisse werden in einer **virtualisierten Liste** für flüssiges Scrollen gerendert.
+- **Hochleistungs-Suche & -Filter**: Schnelle IndexedDB-Volltextsuche mit alphabetischen Filtern, Mehrfachauswahl und virtueller Ergebnisliste.
 - **Persönliche Sortensammlung**: Volle **CRUD**-Funktionalität.
-- **Community-Sortenaustausch**: Exportieren Sie Ihre kuratierte Sortensammlung als **anonyme GitHub Gists** mit einem Klick und importieren Sie geteilte Sammlungen. Alle Importe werden mit **Zod-Schemas** validiert.
-- **KI-Anbau-Tipps**: Einzigartige, KI-gestützte Anbauratschläge mit einem **Gemini-generierten künstlerischen Bild**.
+- **Community-Sortenaustausch**: Exportieren Sie Sammlungen als anonyme GitHub Gists und importieren Sie geteilte Listen per Gist-URL, validiert mit Zod-Schemas.
+- **KI-Anbau-Tipps**: Sortenspezifische Anbauratschläge mit Gemini-Bild und eigenem Tipps-Archiv.
 - **Text-to-Speech**: Alle KI-generierten Inhalte können über die **Speakable**-Komponente vorgelesen werden.
 - **Flexible Datenexport**: PDF, TXT.
 
@@ -740,7 +753,7 @@ Ihr zentraler Wissens-Hub mit **Offline-First**-Zugriff.
 
 Ihr Werkzeugkasten für die Planung und Optimierung Ihres Anbau-Setups.
 
-- **Fortschrittlicher KI-Setup-Konfigurator**: Mehrstufiger Prozess für eine vollständige, markenspezifische Ausrüstungsliste von der Gemini-KI.
+- **Fortschrittlicher KI-Setup-Konfigurator**: Definieren Sie Anbauraum, Erfahrung, Budget und Prioritäten für eine markenspezifische Liste von Gemini.
 - **Gespeicherte Setups**: Volle **CRUD**-Funktionalität.
 - **Suite von Rechnern**: Lüftungsrechner (m³/h), Beleuchtungsrechner (PPFD/DLI & Wattzahl), Stromkostenrechner, Nährstoff-Mischrechner, EC/PPM-Umrechner, Ertragsschätzer.
 - **Kuratierte Shop-Listen**: Empfohlene Grow Shops und Saatgutanbieter für europäische und US/kanadische Märkte.
@@ -749,9 +762,9 @@ Ihr Werkzeugkasten für die Planung und Optimierung Ihres Anbau-Setups.
 
 Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 
-- **Kontextsensitiver KI-Mentor**: Stellen Sie dem KI-Mentor Anbaufragen, der Ihre Pflanzendaten und **RAG-gestützte Journal-Suche** für tiefgehend maßgeschneiderte Ratschläge nutzt. Das Mentor-Archiv ist auf 100 Einträge automatisch begrenzt.
+- **Kontextsensitiver KI-Mentor**: Fragen Sie den KI-Mentor auf Basis Ihrer Pflanze und der RAG-gestützten Journal-Historie. Gespräche werden mit vollem CRUD archiviert und auf 100 Einträge begrenzt.
 - **Zuchtlabor**: Kreuzen Sie Samen, um **permanente Hybridsorten** mit Punnett-Quadrat-basierter genetischer Modellierung zu erschaffen.
-- **Interaktive Sandbox**: Risikofreie „Was-wäre-wenn"-Szenarien mit detaillierten Vergleichsergebnissen und **d3-gestützten Diagrammen**.
+- **Interaktive Sandbox**: Was-wäre-wenn-Szenarien wie Topping vs. LST mit d3-Diagrammen vergleichen.
 
 ### 5. Das Hilfe-Center (`Hilfe`-Ansicht)
 
@@ -766,20 +779,19 @@ Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 - **Barrierefreiheit-Suite**: **Legastheniker-freundliche Schriftart**, **Modus mit reduzierter Bewegung**, **Farbfehlsichtigkeits-Modi** (Protanopie, Deuteranopie, Tritanopie).
 - **Sprache & Sprachausgabe**: TTS-Stimmen und -Raten, Sprachbefehl-Einstellungen.
 - **Simulationstuning**: **Blatttemperatur-Offset** und **Höhe** für Präzisions-VPD-Berechnungen.
-- **Lokale KI-Einstellungen**: Bedarfsgesteuertes **Modell-Preloading** mit Echtzeit-Fortschrittsbalken. **WASM-erzwingen**-Schalter zum Debuggen von WebGPU-Problemen. Wechsel des bevorzugten Textmodells zwischen `Qwen2.5-1.5B` (ausgewogen) und `Qwen3-0.5B` (leichtgewichtig). Live-Anzeige von ONNX-Backend-Erkennung, WebLLM-Status, Persistent-Storage-Grant und Preload-Timing-Benchmarks.
-- **Ein-Tipp Cloud-Sync**: Gesamten App-Zustand in einem **anonymen GitHub Gist** sichern und wiederherstellen — ohne Konto oder Registrierung. Zeigt Gist-ID, letzten Synchronisierungszeitpunkt und unterstützt Push- und Pull-Operationen. Alle synchronisierten Daten werden beim Import mit Zod-Schemas validiert.
-- **Datensouveränität**: Export/Import, granulare Resets, **Speichernutzungs-Übersicht** mit IndexedDB-Quota-Schätzungen. Konfigurierbare **Auto-Backup**-Intervalle (täglich/wöchentlich/aus) und **Persistenz-Timing** (schnell/ausgewogen/Energiesparer).
+- **Lokale KI-Einstellungen**: Modelle on demand vorladen, WASM zum Debuggen erzwingen, zwischen Textmodellen wechseln und Backend-/Speicherstatus überwachen.
+- **Ein-Tipp Cloud-Sync**: App-Zustand als anonymen GitHub Gist sichern und wiederherstellen, mit Gist-ID, Sync-Zeit und Zod-Validierung.
+- **Datensouveränität**: Backup, Restore, gezielte Resets und Speicherübersicht mit Auto-Backup- und Persistenz-Timing.
 
 ### 7. Plattformweite Funktionen
 
-- **Volle PWA- & Offline-Fähigkeit**: **Network-First** für Navigation, **Cache-First** für statische Assets, **100% Offline-Funktionalität**.
-- **Befehlspalette (`Cmd/Ctrl + K`)**: **40+ Befehle** gruppiert nach Navigation, Sorten, Pflanzen und Einstellungen.
+- **Volle PWA- & Offline-Fähigkeit**: Native-ähnliche Installation mit Network-First-Navigation, Cache-First-Assets und vollem Offline-Zugriff.
+- **Befehlspalette (`Cmd/Ctrl + K`)**: Über 40 Befehle für Navigation, Sorten, Pflanzen und Einstellungen.
 - **Sprachsteuerung**: Navigieren, suchen und Aktionen per Sprache ausführen.
-- **Volle Internationalisierung (i18n)**: Vollständige **Englisch und Deutsch** Übersetzungen mit namensraum-organisierten Locale-Dateien. Alle KI-Antworten werden automatisch in der gewählten Sprache lokalisiert.
+- **Volle Internationalisierung (i18n)**: Vollständige EN/DE-Übersetzungen mit dem kompletten Namespaceset. KI-Antworten werden automatisch lokalisiert.
 - **Safe Recovery**: Automatische Erkennung und Reparatur beschädigter Zustände. Graceful Fallback statt leerer Bildschirm.
-- **Ein-Tipp Cloud-Sync**: Gesamten App-Zustand in einem **anonymen GitHub Gist** mit einem Tipp sichern — kein Konto nötig. Per Gist-URL von einem anderen Gerät wiederherstellen. Synchronisierte Daten werden versioniert und mit Zod-Schemas validiert.
-- **Tägliche Sortenkatalog-Automatisierung**: Ein GitHub-Actions-Workflow (`strains-daily-update.yml`) läuft täglich um **04:20 UTC**, um den 700+-Sortenkatalog im Strict-Modus zusammenzuführen, zu deduplizieren und zu validieren — mit Artefakt-Reports und automatischen PRs für neue Einträge.
-- **Lokaler KI-Fallback**: Heuristische Pflanzenberatung bei unerreichbarer Gemini-API — Anleitung auch ohne Internet.
+- **Tägliche Sortenkatalog-Automatisierung**: Ein täglicher GitHub-Actions-Workflow führt den 700+-Katalog zusammen, dedupliziert ihn und öffnet PRs für neue Einträge.
+- **Lokaler KI-Fallback**: Bei nicht erreichbarer Cloud-API fällt die App auf einen dreistufigen lokalen KI-Stack mit Caching zurück.
 
 ---
 
@@ -792,7 +804,7 @@ CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack
 | Kategorie              | Technologie                                                                                                     | Zweck                                                                                                             |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | **Frontend**           | [React 19](https://react.dev/) mit [TypeScript](https://www.typescriptlang.org/)                                | Modernes, typsicheres und performantes Benutzerinterface.                                                         |
-| **Zustandsverwaltung** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                                  | Zentralisierte, vorhersagbare Zustandsverwaltung mit memoisiertten Selektoren.                                    |
+| **Zustandsverwaltung** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                                  | Zentralisierte, vorhersagbare Zustandsverwaltung mit memoisierten Selektoren.                                     |
 | **KI-Integration**     | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                                    | Treibt alle KI-Funktionen an: Diagnose, Beratung, Bilderzeugung und Deep Dives.                                   |
 | **Lokale KI**          | [@xenova/transformers](https://huggingface.co/docs/transformers.js) + [@mlc-ai/web-llm](https://webllm.mlc.ai/) | Dreistufiges On-Device-ML: WebLLM (Qwen2.5-1.5B, WebGPU), Transformers.js (Qwen Text + CLIP Vision), Heuristiken. |
 | **Asynchrone Op.**     | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                    | Verwaltet alle Gemini-API-Interaktionen mit automatischem Caching und Ladezuständen.                              |
@@ -804,7 +816,7 @@ CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack
 | **Styling**            | [Tailwind CSS](https://tailwindcss.com/)                                                                        | Utility-First-Ansatz mit Theme-CSS-Custom-Properties.                                                             |
 | **i18n**               | [i18next](https://www.i18next.com/) + [react-i18next](https://react.i18next.com/)                               | Namensraum-organisierte EN/DE-Übersetzungen mit `getT()` für Nicht-Komponenten-Kontexte.                          |
 | **IoT**                | [WebBluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)                          | ESP32 GATT Environmental Sensing für Live-Sensordaten.                                                            |
-| **Build**              | [Vite 7](https://vitejs.dev/) + [VitePWA](https://vite-pwa-org.netlify.app/)                                    | Blitzschnelles HMR, optimierte Produktionbuilds und SW-Injection.                                                 |
+| **Build**              | [Vite 7](https://vitejs.dev/) + [VitePWA](https://vite-pwa-org.netlify.app/)                                    | Blitzschnelles HMR, optimierte Produktionsbuilds und SW-Injection.                                                |
 | **Testing**            | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)                                           | Unit-/Integrationstests und E2E-Smoke-/Accessibility-Checks.                                                      |
 
 ### Duale IndexedDB-Architektur
@@ -947,7 +959,7 @@ shouldRouteLocally() → isOffline() || localAiPreloadService.isReady()
 
 ### Preload & Fortschritts-UI
 
-Nutzer können das bedarfsgesteuerte Modell-Preloading unter **Einstellungen → Lokale KI** auslösen:
+Nutzer können das bedarfsgesteuerte Modell-Preloading unter **Einstellungen → Allgemein & UI** auslösen:
 
 - Echtzeit-Fortschrittsbalken mit geladenen/gesamt Modellen und aktuellem Label (text-model → vision-model → web-llm).
 - Persistente Statusverfolgung via `localStorage` (State, Zeitstempel, Pro-Modell-Bereitschaft, Persistent-Storage-Grant-Status).
@@ -1066,7 +1078,7 @@ Dieses Projekt ist für die Ausführung im Google AI Studio konzipiert, das den 
     Dies startet den Vite-Entwicklungsserver, typischerweise unter `http://localhost:5173`.
 
 4.  **Gemini API-Key zur Laufzeit setzen (BYOK):**
-    Öffnen Sie die App und gehen Sie zu **Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK)**.
+    Öffnen Sie die App und gehen Sie zu **Einstellungen → Allgemein & UI → KI-Sicherheit (Multi-Model BYOK)**.
     Hinterlegen Sie dort Ihren Gemini-Key. Der Key wird nur lokal in IndexedDB auf diesem Gerät/Browserprofil gespeichert.
 
 5.  **Qualitätsprüfungen:**
@@ -1083,7 +1095,7 @@ Dieses Projekt ist für die Ausführung im Google AI Studio konzipiert, das den 
 
 ---
 
-## � Distributionsziele
+## 📦 Distributionsziele
 
 Distributionsstarter-Scaffolding ist für Desktop-/Mobil-Wrapper und Self-Hosting verfügbar:
 
@@ -1095,9 +1107,9 @@ Siehe vollständige Setup-Hinweise in `docs/distribution.md`.
 
 ---
 
-## �🔐 Gemini BYOK (Komplettleitfaden)
+## 🔐 Gemini-BYOK-Einrichtung
 
-Die App arbeitet mit einem klaren **Bring Your Own Key (BYOK)**-Modell für Gemini:
+Dieser Abschnitt beschreibt das Gemini-BYOK-Setup für den Standard-Anbieter. Zum Wechsel zwischen den unterstützten Anbietern siehe die Multi-Provider-KI-Übersicht weiter oben:
 
 1. **Gemini API-Key in Google AI Studio erstellen**
     - Öffnen Sie: https://aistudio.google.com/app/apikey
@@ -1106,7 +1118,7 @@ Die App arbeitet mit einem klaren **Bring Your Own Key (BYOK)**-Modell für Gemi
     - Kopieren Sie den erzeugten Key (beginnt mit `AIza...`).
 
 2. **Key in CannaGuide hinterlegen**
-    - Öffnen Sie **Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK)**.
+    - Öffnen Sie **Einstellungen → Allgemein & UI → KI-Sicherheit (Multi-Model BYOK)**.
     - Key einfügen und auf **Key speichern** klicken.
     - Optional **Key prüfen** nutzen, um Erreichbarkeit/Berechtigungen direkt zu testen.
 
@@ -1141,7 +1153,7 @@ Wichtig:
 
 ## 🤔 Fehlerbehebung (Troubleshooting)
 
-- **KI-Funktionen funktionieren nicht**: Meist fehlt ein gültiger Gemini-API-Key. Öffnen Sie `Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK)`, speichern Sie den Key und versuchen Sie es erneut. Prüfen Sie zusätzlich die Entwicklerkonsole auf `4xx`-Fehler.
+- **KI-Funktionen funktionieren nicht**: Meist fehlt ein gültiger API-Key. Öffnen Sie `Einstellungen → Allgemein & UI → KI-Sicherheit (Multi-Model BYOK)`, validieren oder speichern Sie den Key und versuchen Sie es erneut. Prüfen Sie zusätzlich die Entwicklerkonsole auf `4xx`-Fehler.
 - **App aktualisiert sich nicht (PWA-Caching)**: Deploy-Updates werden normalerweise automatisch erkannt. Falls ein Update verzögert wirkt:
     1.  Tab in den Vordergrund holen (Fokus/Sichtbarkeit triggert Update-Check).
     2.  Einige Sekunden auf automatische Aktivierung + Reload warten.
@@ -1150,7 +1162,7 @@ Wichtig:
 - **Datenprobleme**: Sollte der Zustand der Anwendung beschädigt werden, können Sie einen Hard-Reset durchführen, indem Sie zu `Einstellungen > Datenverwaltung > Alle App-Daten zurücksetzen` navigieren. **Achtung: Dies löscht alle Ihre lokalen Daten.**
 - **Lokale KI-Modelle laden nicht**: Stellen Sie eine stabile Verbindung für den ersten Modell-Download sicher. Prüfen Sie, ob der Browserspeicher nicht voll ist (Einstellungen → Datenverwaltung → Speicherübersicht). Falls Persistent Storage nicht gewährt ist, kann der Browser gecachte Modelle entfernen. Versuchen Sie erneut „Modelle laden".
 - **WebLLM nicht verfügbar**: WebLLM erfordert WebGPU-Unterstützung (modernes Chrome/Edge). Auf nicht unterstützten Browsern fällt CannaGuide automatisch auf Transformers.js (WASM) zurück. Dies ist erwartetes Verhalten — kein Fehler.
-- **Lokale KI langsam**: Aktivieren Sie den **WASM-erzwingen**-Schalter in Einstellungen → Lokale KI, wenn Sie WebGPU-Treiberprobleme vermuten. Wechseln Sie zum leichtgewichtigen `Qwen3-0.5B`-Modell für schnellere Inferenz auf schwachen Geräten.
+- **Lokale KI langsam**: Aktivieren Sie den **WASM-erzwingen**-Schalter in Einstellungen → Allgemein & UI, wenn Sie WebGPU-Treiberprobleme vermuten. Wechseln Sie zum leichtgewichtigen `Qwen3-0.5B`-Modell für schnellere Inferenz auf schwachen Geräten.
 - **Cloud-Sync-Probleme**: Gist-Push/Pull ist anonym und von GitHub ratenbegrenzt. Bei Push-Fehlern kurz warten und erneut versuchen. Stellen Sie sicher, dass die Gist-URL/ID beim Pull korrekt ist. Synchronisierte Daten werden validiert — beschädigte Gists zeigen eine Fehlermeldung.
 
 ---

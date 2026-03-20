@@ -352,7 +352,7 @@ const makeRecommendationItem = (
 })
 
 const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommendation => {
-    const normalized = prompt.toLowerCase()
+    const normalized = prompt.toLowerCase().slice(0, 2000)
     const isBudget = /budget|cheap|starter|entry|einsteiger|günstig|preiswert/.test(normalized)
     const isLarge = /4x4|5x5|groß|large|mehrere pflanzen|multiple plants/.test(normalized)
     const isSilent = /silent|quiet|leise/.test(normalized)

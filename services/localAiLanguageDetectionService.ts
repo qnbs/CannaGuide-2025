@@ -189,8 +189,11 @@ export const detectLanguageHeuristic = (text: string): LanguageDetectionResult =
     // Check for German-specific characters
     const germanCharScore = (sanitized.match(/[äöüß]/g)?.length ?? 0) * 3
 
-    // Word-based analysis
-    const words = sanitized.split(/\s+/).filter((w) => w.length > 1)
+    // Word-based analysis — limit to prevent DoS on large inputs
+    const words = sanitized
+        .slice(0, 5000)
+        .split(/\s+/)
+        .filter((w) => w.length > 1)
     let deScore = germanCharScore
     let enScore = 0
 

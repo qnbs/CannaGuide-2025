@@ -91,8 +91,11 @@ export const captureLocalAiError = (
             | 'summarization'
             | 'classification'
             | 'cache'
+            | 'cache-persist'
+            | 'batch'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
+        batchItem?: number
     },
 ): void => {
     Sentry.captureException(error, {
@@ -104,6 +107,7 @@ export const captureLocalAiError = (
         },
         extra: {
             retryAttempt: context.retryAttempt ?? 0,
+            ...(context.batchItem !== undefined && { batchItem: context.batchItem }),
         },
     })
 }

@@ -5,6 +5,8 @@
  * Falls back to the in-memory cache when IndexedDB is unavailable.
  */
 
+import { captureLocalAiError } from './sentryService'
+
 const DB_NAME = 'CannaGuideLocalAiCache'
 const DB_VERSION = 1
 const STORE_NAME = 'inferences'
@@ -162,7 +164,10 @@ export const setCachedInference = async (
             countReq.onerror = () => store.put(entry)
 
             tx.oncomplete = () => resolve()
-            tx.onerror = () => reject(tx.error)
+            tx.onerror = () => {
+                captureLocalAiError(tx.error, { stage: 'cache-persist' })
+                reject(tx.error)
+            }
         })
     } catch {
         // Silently ignore — fall back to in-memory cache

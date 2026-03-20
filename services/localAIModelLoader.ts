@@ -117,6 +117,11 @@ export const loadTransformersPipeline = async (
         }
     })()
 
+    // Evict oldest if cache exceeds a reasonable limit (prevent memory leak)
+    if (pipelineCache.size >= 12) {
+        const oldest = pipelineCache.keys().next().value
+        if (oldest) pipelineCache.delete(oldest)
+    }
     pipelineCache.set(cacheKey, promise)
     // Evict from cache on failure so retry is possible
     promise.catch(() => pipelineCache.delete(cacheKey))

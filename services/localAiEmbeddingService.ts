@@ -144,9 +144,16 @@ export const embedBatch = async (texts: string[]): Promise<Float32Array[]> => {
             }),
         )
         results.push(
-            ...batchResults.map((r) =>
-                r.status === 'fulfilled' ? r.value : new Float32Array(EMBEDDING_DIMENSION),
-            ),
+            ...batchResults.map((r, idx) => {
+                if (r.status === 'rejected') {
+                    captureLocalAiError(r.reason, {
+                        model: EMBEDDING_MODEL_ID,
+                        stage: 'batch',
+                        batchItem: i + idx,
+                    })
+                }
+                return r.status === 'fulfilled' ? r.value : new Float32Array(EMBEDDING_DIMENSION)
+            }),
         )
     }
     return results

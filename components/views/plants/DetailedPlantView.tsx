@@ -209,7 +209,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
         <div className="animate-fade-in space-y-6">
             {header}
 
-            <nav
+            <div
                 ref={tabListRef}
                 className="flex flex-wrap justify-center gap-2 sm:gap-3"
                 role="tablist"
@@ -217,6 +217,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
             >
                 {tabs.map((tab) => (
                     <button
+                        type="button"
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         tabIndex={activeTab === tab.id ? 0 : -1}
@@ -241,7 +242,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                         )}
                     </button>
                 ))}
-            </nav>
+            </div>
 
             <div
                 role="tabpanel"

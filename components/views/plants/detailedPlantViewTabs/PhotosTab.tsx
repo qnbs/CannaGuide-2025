@@ -49,17 +49,10 @@ const PhotoItem: React.FC<{
     if (!imageUrl) return null
 
     return (
-        <div
-            className="group relative cursor-pointer"
+        <button
+            type="button"
+            className="group relative cursor-pointer text-left w-full"
             onClick={() => onOpen(imageUrl, entry)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onOpen(imageUrl, entry)
-                }
-            }}
             aria-label={entry.notes}
         >
             <img
@@ -84,7 +77,7 @@ const PhotoItem: React.FC<{
                     {new Date(entry.createdAt).toLocaleDateString()}
                 </p>
             </div>
-        </div>
+        </button>
     )
 })
 
@@ -105,16 +98,16 @@ const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () =>
         return (
             <div
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in"
-                onClick={onClose}
                 role="dialog"
                 aria-modal="true"
                 aria-label={entry.notes}
+                onKeyDown={(e) => {
+                    if (e.key === 'Escape') onClose()
+                }}
             >
-                <div
-                    className="relative max-w-[90vw] max-h-[90vh]"
-                    onClick={(e) => e.stopPropagation()}
-                >
+                <div className="relative max-w-[90vw] max-h-[90vh]">
                     <button
+                        type="button"
                         className="absolute -top-3 -right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white ring-1 ring-white/20 hover:bg-slate-700 transition-colors"
                         onClick={onClose}
                         aria-label="Close"

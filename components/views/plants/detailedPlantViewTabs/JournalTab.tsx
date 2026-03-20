@@ -232,6 +232,7 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                     const count = entryCounts.get(opt.value) ?? 0
                     return (
                         <button
+                            type="button"
                             key={opt.value}
                             onClick={() => handleFilterChange(opt.value)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors ${

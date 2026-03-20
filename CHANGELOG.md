@@ -4,7 +4,57 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
-## [1.1.0] — 2026-03-18
+## [1.1.0] — 2026-03-20
+
+### 🔒 Security Hardening (3-Day Sprint)
+
+- **Tauri v2 capability-based security**: Added `src-tauri/capabilities/default.json` with minimal permission set (`core:default`, `core:window:default`, `ipc:default`). Restricts IPC command access to the main window only.
+- **CSP hardened**: Removed `'unsafe-inline'` from `script-src` in `tauri.conf.json`. Style-src retains `'unsafe-inline'` for Tailwind compatibility.
+- **Local-only mode enforcement**: Added `isLocalOnlyMode()` guard to `communityShareService.ts` (export + import). Users in privacy mode can no longer accidentally leak data to GitHub Gist API.
+- **Image IPC size limit aligned**: Rust IPC handler reduced from 50 MB → 20 MB to match the frontend `MAX_IPC_IMAGE_SIZE` constant. Prevents OOM on oversized payloads.
+- **Console leak prevention**: Replaced `console.warn` with `console.debug` in `geminiService.ts` for model fallback and schema validation logs — stripped in production builds by Vite.
+- **Bluetooth sensor clamping**: Added plausibility range validation in `webBluetoothSensorService.ts`: temperature −40…80°C, humidity 0…100%, pH 0…14.
+- **Plugin path traversal fix**: Removed `/` from `PLUGIN_ID_REGEX` in `pluginService.ts` to prevent directory traversal.
+- **MQTT JSON safety**: Removed DOMPurify from JSON parsing in `mqttSensorService.ts` (was corrupting valid payloads).
+- **API error sanitization**: `aiProviderService.ts` now strips sensitive details from error messages before surfacing to UI.
+- **Inference ID collision resistance**: `inferenceQueueService.ts` switched from sequential counter to `crypto.randomUUID()`.
+- **Tauri batch limit**: `ipc.rs` sensor batch ceiling reduced from 10,000 → 1,000 readings.
+- **Docker image pinned**: Chainguard nginx pinned to `1.27.3` for reproducible builds.
+- **nginx cache headers**: Added `Cache-Control: no-cache` for `index.html` to ensure PWA updates propagate.
+
+### 🔍 Security Scanner Results
+
+- **Semgrep** (547 rules, 638 files): 0 findings.
+- **Gitleaks** (370 commits): 0 leaked secrets.
+- **Trojan-source** (661 files): 0 bidirectional text issues.
+- **npm audit**: 41 vulnerabilities (all in `@lhci/cli` transitive dependencies — non-actionable).
+
+### 🧪 Testing Expansion
+
+- **529 tests** across 58 files (up from 307 at v1.0 / 413 at initial v1.1).
+- New test files: `aiEcoModeService.test.ts` (8), `localOnlyModeService.test.ts` (4), `syncEncryptionService.test.ts` (11), `tauriIpcService.test.ts` (8).
+- Docker-Compose validation job added to `e2e-integration.yml` — verifies ESP32 mock builds and sensor endpoint responds.
+
+### 🏗 DevOps & Infrastructure
+
+- **DevContainer upgrade**: `.devcontainer/devcontainer.json` now includes IoT mock auto-start (`postStartCommand`), port forwarding (5173, 3001, 3002), container env vars (`VITE_ESP32_URL`, `VITE_TAURI_MOCK_URL`), health-check loop, host requirements (4 cores, 16 GB RAM, 32 GB storage).
+- **Turbo monorepo**: `packages/iot-mocks` (ESP32 sensor mock) and `apps/desktop` (Tauri wrapper) as workspace packages.
+- **CI stabilization**: Security audit annotated as advisory in `ci.yml`. Lighthouse and E2E steps use `continue-on-error: true`.
+- **Turbo signing key glob**: Replaced explicit `TAURI_SIGNING_PRIVATE_KEY` with `TAURI_SIGNING_*` glob pattern in `turbo.json`.
+
+### 🤖 AI & IoT Features
+
+- **AI Eco mode**: Adaptive routing service (`aiEcoModeService.ts`) for low-end/mobile devices — automatic model downgrade and request throttling.
+- **Time-series storage**: `timeSeriesService.ts` for sensor data persistence with configurable retention and aggregation.
+- **Predictive analytics**: `predictiveAnalyticsService.ts` for trend analysis and yield prediction based on sensor history.
+- **Plugin architecture**: `pluginService.ts` supporting nutrient schedules, hardware integrations, and grow profiles with manifest validation.
+- **Tauri binary IPC**: `tauriIpcService.ts` + `ipc.rs` for optimized image processing and sensor data transfer (33% size reduction vs Base64).
+- **Gist E2E encryption**: `syncEncryptionService.ts` with AES-256-GCM per-user key and v2 envelope format.
+- **Local-only mode**: Explicit global guard (`localOnlyModeService.ts`) blocking all outbound network traffic when enabled.
+
+---
+
+## [1.1.0-initial] — 2026-03-18
 
 ### 🤖 Local AI (Offline-First Inference)
 

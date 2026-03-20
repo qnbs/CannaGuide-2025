@@ -569,6 +569,22 @@ Distribution starter scaffolding is available for desktop/mobile wrappers and se
 
 See full setup notes in `docs/distribution.md`.
 
+### Dev Container / GitHub Codespaces
+
+The repository ships a fully configured `.devcontainer/devcontainer.json` for one-click setup:
+
+1. **Open in Codespaces** — click "Code → Codespaces → New" on GitHub, or open the repo in VS Code with the Dev Containers extension.
+2. **Auto-provisioned**: Node.js 22, Playwright browsers, ESLint, Prettier, Tailwind, Copilot extensions are pre-installed.
+3. **IoT mocks auto-start**: ESP32 sensor mock (port 3001) and Tauri IPC mock (port 3002) start automatically on container boot with health-check.
+4. **Ports**: Vite dev server (5173), ESP32 mock (3001), Tauri mock (3002) are forwarded automatically.
+5. **Requirements**: 4 CPU cores, 16 GB RAM, 32 GB storage (met by all GitHub Codespaces 4-core+ machines).
+
+```bash
+# Verify IoT mocks are running:
+curl http://localhost:3001/health   # ESP32 mock
+curl http://localhost:3002/health   # Tauri IPC mock
+```
+
 ---
 
 ## 🔐 Gemini BYOK Setup
@@ -662,36 +678,36 @@ Please follow the existing code style and ensure your changes are well-documente
 
 > Full details with milestones, epics, and linked issues: [ROADMAP.md](ROADMAP.md)
 
-| Version  | Status      | Highlights                                                                                                                                                                                                                                                                                                                                                                                                     |
-| -------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Released | 700+ strains, VPD simulation, Multi-Provider AI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 tests, ESP32, Breeding Lab, EN/DE i18n                                                                                                                                                                                                                                                                  |
-| **v1.1** | ✅ Released | **Local AI Stack** (WebLLM + Transformers.js + CLIP vision, 33 labels), ONNX backend routing (WebGPU/WASM), inference caching (LRU-64), model preload UI with benchmarks, Sentry local-AI attribution, One-Tap Cloud Sync (Gist), Daily Strain Catalog Automation (04:20 UTC), Playwright Component Tests, Netlify PR Previews, PWA auto-update with changelog, Docker ESP32-Mock, CI/CD for Tauri + Capacitor |
-| **v1.2** | 🔄 Planned  | Additional languages (ES, FR, NL), Advanced nutrient scheduling with EC/pH automation, Community strain marketplace, Auto-generated grow reports (PDF)                                                                                                                                                                                                                                                         |
-| **v1.3** | 📋 Planned  | Integration with additional IoT sensors, Time-lapse photo journal, Strain comparison tool, Advanced analytics dashboard, Three.js 3D visualizations                                                                                                                                                                                                                                                            |
+| Version  | Status      | Highlights                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Released | 700+ strains, VPD simulation, Multi-Provider AI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, ESP32, Breeding Lab, EN/DE i18n                                                                                                                                                                                                                                                          |
+| **v1.1** | ✅ Released | **Local AI Stack** (WebLLM + Transformers.js + CLIP vision, 33 labels), ONNX backend routing (WebGPU/WASM), inference caching, Sentry attribution, Cloud Sync (Gist), 529 tests (58 files), Tauri v2 capability-based security, Docker-Compose IoT mocks, DevContainer with IoT auto-start, security hardening (semgrep + gitleaks clean), Netlify PR previews, CI/CD for Tauri + Capacitor |
+| **v1.2** | 🔄 Planned  | Additional languages (ES, FR, NL), Advanced nutrient scheduling with EC/pH automation, Community strain marketplace, Auto-generated grow reports (PDF)                                                                                                                                                                                                                                      |
+| **v1.3** | 📋 Planned  | Integration with additional IoT sensors, Time-lapse photo journal, Strain comparison tool, Advanced analytics dashboard, Three.js 3D visualizations                                                                                                                                                                                                                                         |
 
 ---
 
 ## 📊 Tools & Stack
 
-| Category           | Tool                                                           | Purpose                                                                     |
-| ------------------ | -------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **Error Tracking** | [Sentry](https://sentry.io)                                    | Runtime error monitoring, performance traces, session replay                |
-| **Local AI**       | [Transformers.js](https://huggingface.co/docs/transformers.js) | On-device text generation (Qwen2.5/Qwen3) and CLIP zero-shot vision         |
-| **Local AI**       | [WebLLM](https://webllm.mlc.ai/)                               | WebGPU-accelerated LLM inference (Qwen2.5-1.5B-Instruct)                    |
-| **Local AI**       | [ONNX Runtime Web](https://onnxruntime.ai/)                    | Cross-browser ML execution (WebGPU + WASM backends)                         |
-| **Cloud Sync**     | GitHub Gist API                                                | Anonymous one-tap full-state backup & restore                               |
-| **Testing**        | [Vitest](https://vitest.dev/)                                  | Unit & integration tests (307+)                                             |
-| **Testing**        | [Playwright](https://playwright.dev/)                          | E2E tests + Component tests                                                 |
-| **Testing**        | [Stryker](https://stryker-mutator.io/)                         | Mutation testing                                                            |
-| **Performance**    | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | Automated performance & a11y audits                                         |
-| **Security**       | Gitleaks, Semgrep, Trivy, npm audit                            | Multi-layer security scanning (on-demand via workflow_dispatch)             |
-| **Build**          | [Vite 7](https://vitejs.dev/)                                  | Lightning-fast HMR & optimized builds                                       |
-| **CI/CD**          | GitHub Actions (17 workflows)                                  | CI, deploy, benchmark, mutation testing, Tauri, Docker, daily strain update |
-| **Hosting**        | GitHub Pages + Netlify                                         | Production + PR preview deployments                                         |
-| **Desktop**        | [Tauri](https://tauri.app/)                                    | Native Windows/macOS/Linux apps                                             |
-| **Mobile**         | [Capacitor](https://capacitorjs.com/)                          | iOS & Android builds                                                        |
-| **Container**      | Docker + Chainguard nginx                                      | Hardened self-hosting                                                       |
-| **Code Quality**   | ESLint 9 + Biome + Prettier                                    | Linting, formatting, static analysis                                        |
+| Category           | Tool                                                           | Purpose                                                                                 |
+| ------------------ | -------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Error Tracking** | [Sentry](https://sentry.io)                                    | Runtime error monitoring, performance traces, session replay                            |
+| **Local AI**       | [Transformers.js](https://huggingface.co/docs/transformers.js) | On-device text generation (Qwen2.5/Qwen3) and CLIP zero-shot vision                     |
+| **Local AI**       | [WebLLM](https://webllm.mlc.ai/)                               | WebGPU-accelerated LLM inference (Qwen2.5-1.5B-Instruct)                                |
+| **Local AI**       | [ONNX Runtime Web](https://onnxruntime.ai/)                    | Cross-browser ML execution (WebGPU + WASM backends)                                     |
+| **Cloud Sync**     | GitHub Gist API                                                | Anonymous one-tap full-state backup & restore                                           |
+| **Testing**        | [Vitest](https://vitest.dev/)                                  | Unit & integration tests (529+ across 58 files)                                         |
+| **Testing**        | [Playwright](https://playwright.dev/)                          | E2E tests + Component tests                                                             |
+| **Testing**        | [Stryker](https://stryker-mutator.io/)                         | Mutation testing                                                                        |
+| **Performance**    | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | Automated performance & a11y audits                                                     |
+| **Security**       | Gitleaks, Semgrep, Trivy, npm audit                            | Multi-layer security scanning (on-demand via workflow_dispatch)                         |
+| **Build**          | [Vite 7](https://vitejs.dev/)                                  | Lightning-fast HMR & optimized builds                                                   |
+| **CI/CD**          | GitHub Actions (17 workflows)                                  | CI, deploy, E2E + IoT integration, mutation testing, Tauri, Docker, daily strain update |
+| **Hosting**        | GitHub Pages + Netlify                                         | Production + PR preview deployments                                                     |
+| **Desktop**        | [Tauri](https://tauri.app/)                                    | Native Windows/macOS/Linux apps                                                         |
+| **Mobile**         | [Capacitor](https://capacitorjs.com/)                          | iOS & Android builds                                                                    |
+| **Container**      | Docker + Chainguard nginx                                      | Hardened self-hosting                                                                   |
+| **Code Quality**   | ESLint 9 + Biome + Prettier                                    | Linting, formatting, static analysis                                                    |
 
 ---
 
@@ -712,8 +728,10 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Lizenz: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![E2E](https://github.com/qnbs/CannaGuide-2025/actions/workflows/e2e-integration.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/e2e-integration.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
+[![Tests](https://img.shields.io/badge/tests-529%20passed-brightgreen?logo=vitest&logoColor=white)]()
 [![Tech-Stack](https://img.shields.io/badge/stack-React%2019%20%7C%20TypeScript%20%7C%20Redux%20%7C%20Vite%207-3178C6?logo=react&logoColor=white)](https://react.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![Local AI](https://img.shields.io/badge/Local%20AI-On--Device%20ML-ff6f00?logo=tensorflow&logoColor=white)]()
@@ -1235,6 +1253,22 @@ Distributionsstarter-Scaffolding ist für Desktop-/Mobil-Wrapper und Self-Hostin
 
 Siehe vollständige Setup-Hinweise in `docs/distribution.md`.
 
+### Dev Container / GitHub Codespaces
+
+Das Repository enthält eine vollständig konfigurierte `.devcontainer/devcontainer.json` für One-Click-Setup:
+
+1. **In Codespaces öffnen** — auf GitHub „Code → Codespaces → New“ klicken oder im VS Code mit der Dev Containers Extension öffnen.
+2. **Auto-provisioniert**: Node.js 22, Playwright-Browser, ESLint, Prettier, Tailwind, Copilot-Extensions sind vorinstalliert.
+3. **IoT-Mocks starten automatisch**: ESP32-Sensor-Mock (Port 3001) und Tauri-IPC-Mock (Port 3002) starten beim Container-Boot mit Health-Check.
+4. **Ports**: Vite-Dev-Server (5173), ESP32-Mock (3001), Tauri-Mock (3002) werden automatisch weitergeleitet.
+5. **Anforderungen**: 4 CPU-Kerne, 16 GB RAM, 32 GB Speicher (erfüllt von allen GitHub Codespaces 4-Core+-Maschinen).
+
+```bash
+# IoT-Mocks überprüfen:
+curl http://localhost:3001/health   # ESP32-Mock
+curl http://localhost:3002/health   # Tauri-IPC-Mock
+```
+
 ---
 
 ## 🔐 Gemini-BYOK-Einrichtung
@@ -1328,12 +1362,12 @@ Bitte halten Sie sich an den bestehenden Codestil und stellen Sie sicher, dass I
 
 > Vollständige Details mit Meilensteinen, Epics und verlinkten Issues: [ROADMAP.md](ROADMAP.md)
 
-| Version  | Status            | Highlights                                                                                                                                                                                                                                                                                                                                                                                                              |
-| -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 Tests, ESP32, Zuchtlabor, EN/DE i18n                                                                                                                                                                                                                                                                              |
-| **v1.1** | ✅ Veröffentlicht | **Lokaler KI-Stack** (WebLLM + Transformers.js + CLIP-Vision, 33 Labels), ONNX-Backend-Routing (WebGPU/WASM), Inferenz-Caching (LRU-64), Modell-Preload-UI mit Benchmarks, Sentry lokale-KI-Attribution, Ein-Tipp Cloud-Sync (Gist), Tägliche Sortenkatalog-Automatisierung (04:20 UTC), Playwright Component-Tests, Netlify PR-Previews, PWA Auto-Update mit Changelog, Docker ESP32-Mock, CI/CD für Tauri + Capacitor |
-| **v1.2** | 🔄 Geplant        | Zusätzliche Sprachen (ES, FR, NL), Erweiterte Nährstoffplanung mit EC/pH-Automatisierung, Community-Sorten-Marktplatz, Auto-generierte Grow-Berichte (PDF)                                                                                                                                                                                                                                                              |
-| **v1.3** | 📋 Geplant        | Zusätzliche IoT-Sensoren, Zeitraffer-Foto-Journal, Sorten-Vergleichstool, Erweitertes Analyse-Dashboard, Three.js 3D-Visualisierungen                                                                                                                                                                                                                                                                                   |
+| Version  | Status            | Highlights                                                                                                                                                                                                                                                                                                                                                                               |
+| -------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, ESP32, Zuchtlabor, EN/DE i18n                                                                                                                                                                                                                                                          |
+| **v1.1** | ✅ Veröffentlicht | **Lokaler KI-Stack** (WebLLM + Transformers.js + CLIP-Vision, 33 Labels), ONNX-Backend-Routing (WebGPU/WASM), Inferenz-Caching, Sentry-Attribution, Cloud-Sync (Gist), 529 Tests (58 Dateien), Tauri v2 Capability-Sicherheit, Docker-Compose IoT-Mocks, DevContainer mit IoT-Autostart, Sicherheitshärtung (semgrep + gitleaks clean), Netlify PR-Previews, CI/CD für Tauri + Capacitor |
+| **v1.2** | 🔄 Geplant        | Zusätzliche Sprachen (ES, FR, NL), Erweiterte Nährstoffplanung mit EC/pH-Automatisierung, Community-Sorten-Marktplatz, Auto-generierte Grow-Berichte (PDF)                                                                                                                                                                                                                               |
+| **v1.3** | 📋 Geplant        | Zusätzliche IoT-Sensoren, Zeitraffer-Foto-Journal, Sorten-Vergleichstool, Erweitertes Analyse-Dashboard, Three.js 3D-Visualisierungen                                                                                                                                                                                                                                                    |
 
 ---
 

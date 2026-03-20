@@ -16,6 +16,7 @@ import {
     SandboxState,
     Language,
     Theme,
+    AiMode,
     StrainViewTab,
     Seed,
     SavedExperiment,
@@ -109,6 +110,10 @@ export const selectDiagnosticsPlantId = createSelector(
 export const selectSettings = createSelector(
     [selectSettingsState],
     (settingsState: SettingsState): AppSettings => settingsState.settings,
+)
+export const selectAiMode = createSelector(
+    [selectSettings],
+    (settings: AppSettings): AiMode => settings.aiMode ?? 'hybrid',
 )
 export const selectLanguage = createSelector(
     [selectSettings],

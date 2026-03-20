@@ -14,6 +14,7 @@ export const settingsView = {
         accessibility: 'Barrierefreiheit',
         lookAndFeel: 'Erscheinungsbild',
         interactivity: 'Interaktivität',
+        ai: 'KI-Konfiguration',
     },
     security: {
         title: 'KI-Sicherheit (Multi-Model BYOK)',
@@ -55,6 +56,28 @@ export const settingsView = {
         auditLog: 'Lokales KI-Auditprotokoll',
         auditLogEmpty: 'Bisher wurden keine KI-Anfragen protokolliert.',
         clearAuditLog: 'Auditprotokoll löschen',
+    },
+    aiMode: {
+        title: 'KI-Ausführungsmodus',
+        description:
+            'Wähle, wie die App KI-Anfragen verarbeitet. Cloud-Modus nutzt deinen API-Key für beste Qualität, Lokal-Modus führt alles auf deinem Gerät aus für maximalen Datenschutz, und Hybrid-Modus wählt automatisch die beste Option.',
+        label: 'KI-Modus',
+        cloud: 'Cloud',
+        cloudDesc:
+            'Alle KI-Anfragen werden an den Cloud-Anbieter gesendet (Gemini, OpenAI usw.). Beste Qualität, erfordert einen API-Key und Internetverbindung.',
+        local: 'Lokal',
+        localDesc:
+            'Alle KI-Berechnungen laufen auf deinem Gerät mit lokalen Modellen. Keine Daten verlassen das Gerät. Funktioniert komplett offline, sobald Modelle vorgeladen sind.',
+        hybrid: 'Hybrid (Smart)',
+        hybridDesc:
+            'Nutzt automatisch lokale Modelle, wenn sie vorgeladen sind, ansonsten wird die Cloud verwendet. Das Beste aus beiden Welten.',
+        activeIndicator: 'Aktiver Modus: {{mode}}',
+        localNotReady:
+            'Lokale KI-Modelle sind noch nicht vorgeladen. Lade sie unten vor für das beste lokale Erlebnis.',
+        localReady: 'Lokale KI-Modelle sind geladen und bereit für Inferenz.',
+        switchingToLocal: 'Wechsel zum Lokal-Modus — Modelle werden automatisch vorgeladen.',
+        imageGenCloudOnly:
+            'Hinweis: Bildgenerierung ist nur im Cloud- oder Hybrid-Modus verfügbar.',
     },
     offlineAi: {
         title: 'Lokaler KI-Offline-Cache',

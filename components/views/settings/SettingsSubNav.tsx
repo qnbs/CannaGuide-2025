@@ -1,37 +1,59 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 interface SettingsSubNavProps {
-    activeTab: string;
-    onTabChange: (tab: string) => void;
+    activeTab: string
+    onTabChange: (tab: string) => void
 }
 
 export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTabChange }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation()
 
-    const navItems: Array<{ id: string, label: string, icon: React.ReactNode }> = [
-        { id: 'general', icon: <PhosphorIcons.GearSix />, label: t('settingsView.categories.general') },
+    const navItems: Array<{ id: string; label: string; icon: React.ReactNode }> = [
+        {
+            id: 'general',
+            icon: <PhosphorIcons.GearSix />,
+            label: t('settingsView.categories.general'),
+        },
+        { id: 'ai', icon: <PhosphorIcons.Brain />, label: t('settingsView.categories.ai') },
         { id: 'tts', icon: <PhosphorIcons.SpeakerHigh />, label: t('settingsView.categories.tts') },
-        { id: 'strains', icon: <PhosphorIcons.Leafy />, label: t('settingsView.categories.strains') },
+        {
+            id: 'strains',
+            icon: <PhosphorIcons.Leafy />,
+            label: t('settingsView.categories.strains'),
+        },
         { id: 'plants', icon: <PhosphorIcons.Plant />, label: t('settingsView.categories.plants') },
-        { id: 'notifications', icon: <PhosphorIcons.Bell />, label: t('settingsView.categories.notifications') },
-        { id: 'defaults', icon: <PhosphorIcons.ListChecks />, label: t('settingsView.categories.defaults') },
-        { id: 'privacy', icon: <PhosphorIcons.ShieldCheck />, label: t('settingsView.categories.privacy') },
+        {
+            id: 'notifications',
+            icon: <PhosphorIcons.Bell />,
+            label: t('settingsView.categories.notifications'),
+        },
+        {
+            id: 'defaults',
+            icon: <PhosphorIcons.ListChecks />,
+            label: t('settingsView.categories.defaults'),
+        },
+        {
+            id: 'privacy',
+            icon: <PhosphorIcons.ShieldCheck />,
+            label: t('settingsView.categories.privacy'),
+        },
         { id: 'data', icon: <PhosphorIcons.Archive />, label: t('settingsView.categories.data') },
         { id: 'about', icon: <PhosphorIcons.Info />, label: t('settingsView.categories.about') },
-    ];
+    ]
 
     return (
         <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 xl:grid-cols-5">
-            {navItems.map(item => (
+            {navItems.map((item) => (
                 <button
                     key={item.id}
                     onClick={() => onTabChange(item.id)}
                     className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
-                        ${activeTab === item.id
-                            ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                        ${
+                            activeTab === item.id
+                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
+                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                         }`}
                 >
                     <div className="w-6 h-6">{item.icon}</div>
@@ -39,5 +61,5 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
                 </button>
             ))}
         </nav>
-    );
-};
+    )
+}

@@ -50,6 +50,7 @@ export const simulationProfilePresets: Record<
 export const defaultSettings: AppSettings = {
     version: 5,
     onboardingCompleted: false,
+    aiMode: 'hybrid',
 
     general: {
         language: 'en',

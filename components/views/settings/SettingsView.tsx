@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { Language, LightType, PotType, Theme, VentilationPower, View } from '@/types'
+import { Language, LightType, PotType, Theme, VentilationPower, View, AiMode } from '@/types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 import { setSetting } from '@/stores/slices/settingsSlice'
@@ -413,6 +413,111 @@ const GeminiSecurityCard: React.FC = () => {
     )
 }
 
+const AiModeCard: React.FC = () => {
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const settings = useAppSelector(selectSettings)
+    const currentMode: AiMode = settings.aiMode ?? 'hybrid'
+    const localStatus = localAiPreloadService.getStatus()
+    const isLocalReady = localStatus.state === 'ready'
+
+    const handleModeChange = (mode: string) => {
+        dispatch(setSetting({ path: 'aiMode', value: mode as AiMode }))
+    }
+
+    const modeOptions: Array<{
+        value: AiMode
+        label: string
+        desc: string
+        icon: React.ReactNode
+    }> = [
+        {
+            value: 'cloud',
+            label: t('settingsView.aiMode.cloud'),
+            desc: t('settingsView.aiMode.cloudDesc'),
+            icon: <PhosphorIcons.CloudArrowUp className="w-6 h-6" />,
+        },
+        {
+            value: 'local',
+            label: t('settingsView.aiMode.local'),
+            desc: t('settingsView.aiMode.localDesc'),
+            icon: <PhosphorIcons.Brain className="w-6 h-6" />,
+        },
+        {
+            value: 'hybrid',
+            label: t('settingsView.aiMode.hybrid'),
+            desc: t('settingsView.aiMode.hybridDesc'),
+            icon: <PhosphorIcons.Lightning className="w-6 h-6" />,
+        },
+    ]
+
+    return (
+        <Card>
+            <FormSection
+                title={t('settingsView.aiMode.title')}
+                icon={<PhosphorIcons.Brain />}
+                defaultOpen
+            >
+                <div className="sm:col-span-2 space-y-4">
+                    <p className="text-sm text-slate-400">{t('settingsView.aiMode.description')}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {modeOptions.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => handleModeChange(option.value)}
+                                className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all duration-200 text-left ${
+                                    currentMode === option.value
+                                        ? 'border-primary-500 bg-primary-500/10 ring-1 ring-primary-400 shadow-lg'
+                                        : 'border-slate-700 bg-slate-800/60 hover:border-slate-500 hover:bg-slate-800'
+                                }`}
+                            >
+                                <div
+                                    className={`${
+                                        currentMode === option.value
+                                            ? 'text-primary-400'
+                                            : 'text-slate-400'
+                                    }`}
+                                >
+                                    {option.icon}
+                                </div>
+                                <span
+                                    className={`text-sm font-bold ${
+                                        currentMode === option.value
+                                            ? 'text-primary-300'
+                                            : 'text-slate-200'
+                                    }`}
+                                >
+                                    {option.label}
+                                </span>
+                                <p className="text-xs text-slate-400 text-center">{option.desc}</p>
+                                {currentMode === option.value && (
+                                    <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-primary-400 animate-pulse" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                    {currentMode === 'local' && !isLocalReady && (
+                        <p className="text-sm text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md p-3">
+                            {t('settingsView.aiMode.localNotReady')}
+                        </p>
+                    )}
+                    {currentMode === 'local' && isLocalReady && (
+                        <p className="text-sm text-green-300 bg-green-500/10 border border-green-500/30 rounded-md p-3">
+                            {t('settingsView.aiMode.localReady')}
+                        </p>
+                    )}
+                    {currentMode === 'local' && (
+                        <p className="text-xs text-slate-500">
+                            {t('settingsView.aiMode.imageGenCloudOnly')}
+                        </p>
+                    )}
+                </div>
+            </FormSection>
+        </Card>
+    )
+}
+
 const LocalAiOfflineCard: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
@@ -609,6 +714,14 @@ const LocalAiOfflineCard: React.FC = () => {
     )
 }
 
+const AiSettingsTab: React.FC = () => (
+    <div className="space-y-6">
+        <AiModeCard />
+        <GeminiSecurityCard />
+        <LocalAiOfflineCard />
+    </div>
+)
+
 const GeneralSettingsTab: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
@@ -640,8 +753,6 @@ const GeneralSettingsTab: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <GeminiSecurityCard />
-            <LocalAiOfflineCard />
             <Card>
                 <FormSection
                     title={t('settingsView.categories.lookAndFeel')}
@@ -1455,6 +1566,7 @@ const SettingsViewComponent: React.FC = () => {
     const viewIcons = useMemo(
         () => ({
             general: <PhosphorIcons.GearSix className="w-16 h-16 mx-auto text-primary-400" />,
+            ai: <PhosphorIcons.Brain className="w-16 h-16 mx-auto text-violet-400" />,
             tts: <PhosphorIcons.SpeakerHigh className="w-16 h-16 mx-auto text-accent-400" />,
             strains: <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-green-400" />,
             plants: <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-green-400" />,
@@ -1470,6 +1582,7 @@ const SettingsViewComponent: React.FC = () => {
     const viewTitles = useMemo(
         () => ({
             general: t('settingsView.categories.general'),
+            ai: t('settingsView.categories.ai'),
             tts: t('settingsView.categories.tts'),
             strains: t('settingsView.categories.strains'),
             plants: t('settingsView.categories.plants'),
@@ -1486,6 +1599,8 @@ const SettingsViewComponent: React.FC = () => {
         switch (activeTab) {
             case 'general':
                 return <GeneralSettingsTab />
+            case 'ai':
+                return <AiSettingsTab />
             case 'tts':
                 return (
                     <Suspense

@@ -12,6 +12,7 @@ import {
     StructuredGrowTips,
     DeepDiveGuide,
     MentorMessage,
+    AiMode,
 } from '@/types'
 
 const getLocalAiService = async () => {
@@ -22,23 +23,44 @@ const getLocalAiService = async () => {
 /** True when the device is offline or has no usable network. */
 const isOffline = (): boolean => typeof navigator !== 'undefined' && navigator.onLine === false
 
+// ── Configurable AI mode ──────────────────────────────────
+let _aiMode: AiMode = 'hybrid'
+
+/** Called from the listener middleware whenever the setting changes. */
+export const setAiMode = (mode: AiMode): void => {
+    _aiMode = mode
+}
+
+/** Returns the current AI execution mode. */
+export const getAiMode = (): AiMode => _aiMode
+
 /**
  * Determines whether to use the local AI stack instead of the cloud API.
- * Uses local AI when: (a) device is offline, or (b) local models are pre-loaded and ready.
- * This lets the app serve instant local responses when models are warm.
+ *
+ * - **local**:  always route locally (device-only)
+ * - **cloud**:  only route locally when the device is offline
+ * - **hybrid**: route locally when offline OR when local models are pre-loaded
  */
-const shouldRouteLocally = (): boolean => isOffline() || localAiPreloadService.isReady()
+const shouldRouteLocally = (): boolean => {
+    if (_aiMode === 'local') return true
+    if (_aiMode === 'cloud') return isOffline()
+    // hybrid: original smart-routing logic
+    return isOffline() || localAiPreloadService.isReady()
+}
 
 /**
  * Wraps a cloud AI call with an automatic fallback to the local AI stack.
  * If the cloud call throws (network error, quota, invalid key, …) the
  * `localFallback` callback is invoked instead so the user always gets a
  * response.
+ *
+ * In **local** mode the cloud call is never attempted.
  */
 async function withLocalFallback<T>(
     cloudFn: () => Promise<T>,
     localFallback: () => T | Promise<T>,
 ): Promise<T> {
+    if (_aiMode === 'local') return localFallback()
     try {
         return await cloudFn()
     } catch {
@@ -102,7 +124,7 @@ export const aiService = {
         userNotes: string,
         lang: Language,
     ): Promise<PlantDiagnosisResponse> {
-        if (isOffline()) {
+        if (shouldRouteLocally()) {
             const local = await getLocalAiService()
             return local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
         }

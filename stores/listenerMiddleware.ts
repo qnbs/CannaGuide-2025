@@ -7,7 +7,7 @@ import {
 import type { RootState, AppDispatch } from './store'
 import { i18nInstance, getT, loadLocale } from '@/i18n'
 import { Language, Strain, View } from '@/types'
-import type { PlantProblem } from '@/types'
+import type { AiMode, PlantProblem } from '@/types'
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice'
 import {
     plantStateUpdated,
@@ -57,6 +57,23 @@ const getAiService = async () => {
     const module = await import('@/services/aiService')
     return module.aiService
 }
+
+const syncAiMode = async (mode: AiMode) => {
+    const { setAiMode } = await import('@/services/aiService')
+    setAiMode(mode)
+}
+
+/**
+ * Listener to synchronize the AI execution mode when the setting is updated.
+ */
+startAppListening({
+    actionCreator: setSetting,
+    effect: async (action) => {
+        if (action.payload.path === 'aiMode') {
+            await syncAiMode(action.payload.value as AiMode)
+        }
+    },
+})
 
 /**
  * Listener to automatically change the i18n language when the setting is updated.

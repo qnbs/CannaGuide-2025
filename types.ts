@@ -56,7 +56,7 @@ export type GrowGoal = 'medical' | 'recreational' | 'hobbyist'
  * - local:  Always use the on-device models – no cloud API calls
  * - hybrid: Smart routing – use local when models are pre-loaded, cloud otherwise
  */
-export type AiMode = 'cloud' | 'local' | 'hybrid'
+export type AiMode = 'cloud' | 'local' | 'hybrid' | 'eco'
 
 /** Scientifically recognised cannabis terpenes */
 export type TerpeneName =

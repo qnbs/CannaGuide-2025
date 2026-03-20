@@ -3,6 +3,7 @@ import { localAiPreloadService } from '@/services/localAiPreloadService'
 import { localAiFallbackService } from '@/services/localAiFallbackService'
 import { growLogRagService } from '@/services/growLogRagService'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { setEcoModeExplicit, registerModeAccessors } from '@/services/aiEcoModeService'
 import {
     Language,
     Plant,
@@ -40,9 +41,18 @@ const isOffline = (): boolean => typeof navigator !== 'undefined' && navigator.o
 // ── Configurable AI mode ──────────────────────────────────
 let _aiMode: AiMode = 'hybrid'
 
+// Register accessors so the eco module can read/write mode without circular deps
+registerModeAccessors(
+    () => _aiMode,
+    (mode: string) => {
+        _aiMode = mode as AiMode
+    },
+)
+
 /** Called from the listener middleware whenever the setting changes. */
 export const setAiMode = (mode: AiMode): void => {
     _aiMode = mode
+    setEcoModeExplicit(mode === 'eco')
 }
 
 /** Returns the current AI execution mode. */
@@ -53,16 +63,20 @@ export const getAiMode = (): AiMode => _aiMode
  *
  * - **localOnlyMode**: always route locally (privacy mode — no outbound traffic)
  * - **local**:  always route locally (device-only)
+ * - **eco**:    always route locally, but only 0.5B model + rule-based heuristics
  * - **cloud**:  only route locally when the device is offline
  * - **hybrid**: route locally when offline OR when local models are pre-loaded
  */
 const shouldRouteLocally = (): boolean => {
     if (isLocalOnlyMode()) return true
-    if (_aiMode === 'local') return true
+    if (_aiMode === 'local' || _aiMode === 'eco') return true
     if (_aiMode === 'cloud') return isOffline()
     // hybrid: original smart-routing logic
     return isOffline() || localAiPreloadService.isReady()
 }
+
+/** Re-export for convenience. */
+export { isEcoMode } from '@/services/aiEcoModeService'
 
 /**
  * Wraps a cloud AI call with an automatic fallback to the local AI stack.
@@ -76,7 +90,7 @@ async function withLocalFallback<T>(
     cloudFn: () => Promise<T>,
     localFallback: () => T | Promise<T>,
 ): Promise<T> {
-    if (_aiMode === 'local' || isLocalOnlyMode()) return localFallback()
+    if (_aiMode === 'local' || _aiMode === 'eco' || isLocalOnlyMode()) return localFallback()
     try {
         return await cloudFn()
     } catch (error) {

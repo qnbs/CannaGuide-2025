@@ -1,6 +1,7 @@
 import type { LocalAiPreloadReport } from './localAI'
 import { probeGpuVram, isVramInsufficient } from './localAiHealthService'
 import { setVramInsufficientOverride } from './localAIModelLoader'
+import { applyAdaptiveMode, isEcoMode } from './aiEcoModeService'
 
 export type LocalAiPreloadState = 'idle' | 'preloading' | 'ready' | 'partial' | 'error'
 
@@ -137,9 +138,10 @@ export const localAiPreloadService = {
     ): Promise<LocalAiPreloadStatus> {
         const startedAt = Date.now()
 
-        // Run VRAM probe and persistent storage request in parallel at preload start
+        // Run adaptive mode detection, VRAM probe, and persistent storage in parallel
         const [persisted] = await Promise.all([
             ensurePersistentStorage(),
+            applyAdaptiveMode(),
             probeGpuVram().then(() => {
                 // Apply VRAM-based WASM override to model loader
                 if (isVramInsufficient()) {
@@ -164,8 +166,15 @@ export const localAiPreloadService = {
         for (let attempt = 0; attempt <= PRELOAD_MAX_RETRIES; attempt++) {
             try {
                 const localAiService = await getLocalAiService()
-                const report = await localAiService.preloadOfflineAssets(false, onProgress)
-                const coreReady = report.textModelReady && report.visionModelReady
+                const ecoActive = isEcoMode()
+                const report = await localAiService.preloadOfflineAssets(
+                    false,
+                    onProgress,
+                    ecoActive,
+                )
+                const coreReady = ecoActive
+                    ? report.textModelReady
+                    : report.textModelReady && report.visionModelReady
                 const finalStatus: LocalAiPreloadStatus = {
                     state: coreReady ? 'ready' : 'partial',
                     lastAttemptAt: startedAt,

@@ -450,7 +450,29 @@ class LocalAiService implements BaseAIProvider {
     async preloadOfflineAssets(
         includeWebLlm = false,
         onProgress?: (loaded: number, total: number, label: string) => void,
+        ecoOnly = false,
     ): Promise<LocalAiPreloadReport> {
+        // ── Eco mode: only load the small 0.5B text model ──
+        if (ecoOnly) {
+            const totalSteps = 1
+            let loaded = 0
+            onProgress?.(loaded, totalSteps, 'text-model-eco')
+            const textResult = await Promise.allSettled([this.loadTextPipeline()]).then((r) => r[0])
+            onProgress?.(++loaded, totalSteps, 'text-model-eco')
+            return {
+                textModelReady: textResult.status === 'fulfilled',
+                visionModelReady: false,
+                webLlmReady: false,
+                embeddingModelReady: false,
+                sentimentModelReady: false,
+                summarizationModelReady: false,
+                zeroShotTextModelReady: false,
+                languageDetectionReady: false,
+                imageSimilarityReady: false,
+                errorCount: Number(textResult.status === 'rejected'),
+            }
+        }
+
         const hasEmbeddings = true // Always attempt embedding model
         const hasNlp = true // Always attempt NLP models
         const hasWebLlm = includeWebLlm && supportsWebGpu()

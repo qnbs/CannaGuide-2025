@@ -34,6 +34,7 @@ export const commandPalette = {
         aiModeCloud: 'AI Mode: Cloud',
         aiModeLocal: 'AI Mode: Local',
         aiModeHybrid: 'AI Mode: Hybrid',
+        aiModeEco: 'AI Mode: Eco (Battery Saver)',
         resetFilters: 'Reset All Filters',
         showFavorites: 'Show Favorites',
         exportData: 'Export Data',

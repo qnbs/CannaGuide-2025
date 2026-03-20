@@ -72,6 +72,11 @@ export const settingsView = {
         hybrid: 'Hybrid (Smart)',
         hybridDesc:
             'Nutzt automatisch lokale Modelle, wenn sie vorgeladen sind, ansonsten wird die Cloud verwendet. Das Beste aus beiden Welten.',
+        eco: 'Eco',
+        ecoDesc:
+            'Batterieschonender Modus für schwache oder mobile Geräte. Nutzt nur das kleine 0,5B-Textmodell und regelbasierte Heuristiken. Kein Cloud, keine schweren Modelle.',
+        ecoAutoDetected:
+            'Eco-Modus wurde automatisch aktiviert, weil dein Gerät wenig Speicher oder Akku hat.',
         activeIndicator: 'Aktiver Modus: {{mode}}',
         localNotReady:
             'Lokale KI-Modelle sind noch nicht vorgeladen. Lade sie unten vor für das beste lokale Erlebnis.',

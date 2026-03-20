@@ -569,6 +569,14 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 action: () => dispatch(setSetting({ path: 'aiMode', value: 'hybrid' })),
                 keywords: 'ai mode hybrid smart routing auto',
             },
+            {
+                id: 'ai_mode_eco',
+                title: t('commandPalette.commands.aiModeEco'),
+                group: 'AI',
+                icon: PhosphorIcons.Leafy,
+                action: () => dispatch(setSetting({ path: 'aiMode', value: 'eco' })),
+                keywords: 'ai mode eco battery saver low-end mobile power saving energy',
+            },
 
             // ── General ─────────────────────────────────────────────────
             {

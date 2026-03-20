@@ -35,6 +35,7 @@ export const commandPalette = {
         aiModeCloud: 'KI-Modus: Cloud',
         aiModeLocal: 'KI-Modus: Lokal',
         aiModeHybrid: 'KI-Modus: Hybrid',
+        aiModeEco: 'KI-Modus: Eco (Energiesparen)',
         resetFilters: 'Alle Filter zurücksetzen',
         showFavorites: 'Favoriten anzeigen',
         exportData: 'Daten exportieren',

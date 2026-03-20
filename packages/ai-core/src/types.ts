@@ -72,4 +72,4 @@ export type Recommendation = Record<RecommendationCategory, RecommendationItem> 
 export type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk'
 
 /** AI routing mode — cloud, local (on-device), or hybrid. */
-export type AiMode = 'cloud' | 'local' | 'hybrid'
+export type AiMode = 'cloud' | 'local' | 'hybrid' | 'eco'

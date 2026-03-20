@@ -412,6 +412,12 @@ const AiModeCard: React.FC = () => {
             desc: t('settingsView.aiMode.hybridDesc'),
             icon: <PhosphorIcons.Lightning className="w-6 h-6" />,
         },
+        {
+            value: 'eco',
+            label: t('settingsView.aiMode.eco'),
+            desc: t('settingsView.aiMode.ecoDesc'),
+            icon: <PhosphorIcons.Leafy className="w-6 h-6" />,
+        },
     ]
 
     return (
@@ -423,7 +429,7 @@ const AiModeCard: React.FC = () => {
             >
                 <div className="sm:col-span-2 space-y-4">
                     <p className="text-sm text-slate-400">{t('settingsView.aiMode.description')}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         {modeOptions.map((option) => (
                             <button
                                 key={option.value}
@@ -471,6 +477,16 @@ const AiModeCard: React.FC = () => {
                         </p>
                     )}
                     {currentMode === 'local' && (
+                        <p className="text-xs text-slate-500">
+                            {t('settingsView.aiMode.imageGenCloudOnly')}
+                        </p>
+                    )}
+                    {currentMode === 'eco' && (
+                        <p className="text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-md p-3">
+                            {t('settingsView.aiMode.ecoAutoDetected')}
+                        </p>
+                    )}
+                    {currentMode === 'eco' && (
                         <p className="text-xs text-slate-500">
                             {t('settingsView.aiMode.imageGenCloudOnly')}
                         </p>
@@ -1961,7 +1977,11 @@ const SEARCH_ENTRIES: Array<{
         keywords: ['local', 'offline', 'wasm', 'webgpu', 'model'],
         labelKey: 'settingsView.offlineAi.title',
     },
-    { tab: 'ai', keywords: ['cloud', 'hybrid', 'mode'], labelKey: 'settingsView.aiMode.title' },
+    {
+        tab: 'ai',
+        keywords: ['cloud', 'hybrid', 'eco', 'mode'],
+        labelKey: 'settingsView.aiMode.title',
+    },
     {
         tab: 'ai',
         keywords: ['telemetry', 'telemetrie', 'inference'],

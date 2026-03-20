@@ -1,0 +1,14 @@
+{
+    "name": "@cannaguide/desktop",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "npx tauri dev",
+        "build": "npx tauri build",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@tauri-apps/api": "^2.0.0"
+    }
+}

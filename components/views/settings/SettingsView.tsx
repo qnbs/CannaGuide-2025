@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState, lazy, Suspense } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Language, LightType, PotType, Theme, VentilationPower, View, AiMode } from '@/types'
@@ -11,15 +11,9 @@ import { SegmentedControl } from '@/components/common/SegmentedControl'
 import { RangeSlider } from '@/components/common/RangeSlider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
 import { Card } from '@/components/common/Card'
 import { SettingsSubNav } from './SettingsSubNav'
+import { SettingsRow, SettingsSelect } from './SettingsShared'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { apiKeyService } from '@/services/apiKeyService'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
@@ -27,6 +21,8 @@ import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { localAiPreloadService } from '../../../services/localAiPreloadService'
 import { detectOnnxBackend, setForceWasm } from '../../../services/localAIModelLoader'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { usePwaInstall } from '@/hooks/usePwaInstall'
+import { SearchBar } from '@/components/common/SearchBar'
 
 const AboutTab = lazy(() => import('./AboutTab'))
 const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
@@ -38,39 +34,6 @@ const timeOptions = [
     { value: '18', label: '18/6' },
     { value: '24', label: '24/0' },
 ]
-
-const SettingsRow: React.FC<{
-    label: string
-    description?: string
-    children: React.ReactNode
-}> = ({ label, description, children }) => (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4 border-b border-slate-700/50 pb-4 last:border-b-0 last:pb-0 last:mb-0">
-        <div className="min-w-0">
-            <h4 className="font-semibold text-slate-100">{label}</h4>
-            {description && <p className="text-sm text-slate-400">{description}</p>}
-        </div>
-        <div className="w-full flex-shrink-0 sm:w-auto sm:max-w-xs">{children}</div>
-    </div>
-)
-
-const SettingsSelect: React.FC<{
-    value: string
-    options: { value: string; label: string }[]
-    onChange: (value: string) => void
-}> = ({ value, options, onChange }) => (
-    <Select value={value} onValueChange={onChange}>
-        <SelectTrigger>
-            <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-            {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                </SelectItem>
-            ))}
-        </SelectContent>
-    </Select>
-)
 
 const GeminiSecurityCard: React.FC = () => {
     const { t } = useTranslation()
@@ -727,25 +690,21 @@ const LocalAiOfflineCard: React.FC = () => {
                             <label className="text-sm text-slate-200 block mb-1">
                                 {t('settingsView.offlineAi.preferredModel')}
                             </label>
-                            <Select
+                            <SettingsSelect
                                 value={localAiSettings.preferredTextModel}
-                                onValueChange={handleModelChange}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="auto">
-                                        {t('settingsView.offlineAi.modelAuto')}
-                                    </SelectItem>
-                                    <SelectItem value="qwen2.5">
-                                        {t('settingsView.offlineAi.modelQwen25')}
-                                    </SelectItem>
-                                    <SelectItem value="qwen3">
-                                        {t('settingsView.offlineAi.modelQwen3')}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                                onChange={handleModelChange}
+                                options={[
+                                    { value: 'auto', label: t('settingsView.offlineAi.modelAuto') },
+                                    {
+                                        value: 'qwen2.5',
+                                        label: t('settingsView.offlineAi.modelQwen25'),
+                                    },
+                                    {
+                                        value: 'qwen3',
+                                        label: t('settingsView.offlineAi.modelQwen3'),
+                                    },
+                                ]}
+                            />
                         </div>
                         <div className="text-xs text-slate-400">
                             {preloadDurationMs != null ? (
@@ -765,19 +724,283 @@ const LocalAiOfflineCard: React.FC = () => {
     )
 }
 
+const LocalAiFeaturesCard: React.FC = () => {
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const settings = useAppSelector(selectSettings)
+    const localAi = settings.localAi ?? {}
+    const [telemetry, setTelemetry] = useState<{
+        totalInferences: number
+        avgLatency: number
+        avgSpeed: number
+        cacheHitRate: number
+        successRate: number
+        peakSpeed: number
+    } | null>(null)
+    const [cacheCount, setCacheCount] = useState<number | null>(null)
+
+    useEffect(() => {
+        let cancelled = false
+        const loadTelemetry = async () => {
+            try {
+                const { getSnapshot } = await import('../../../services/localAiTelemetryService')
+                if (cancelled) return
+                const snap = getSnapshot()
+                setTelemetry({
+                    totalInferences: snap.totalInferences,
+                    avgLatency: snap.averageLatencyMs,
+                    avgSpeed: snap.averageTokensPerSecond,
+                    cacheHitRate: snap.cacheHitRate * 100,
+                    successRate: snap.successRate * 100,
+                    peakSpeed: snap.peakTokensPerSecond,
+                })
+            } catch {
+                // Non-critical
+            }
+        }
+        const loadCacheCount = async () => {
+            try {
+                const { getCacheSize } = await import('../../../services/localAiCacheService')
+                if (cancelled) return
+                setCacheCount(await getCacheSize())
+            } catch {
+                // Non-critical
+            }
+        }
+        void loadTelemetry()
+        void loadCacheCount()
+        return () => {
+            cancelled = true
+        }
+    }, [])
+
+    const handleToggle = (path: string, value: boolean) => {
+        dispatch(setSetting({ path: `localAi.${path}`, value }))
+    }
+
+    const handleClearCache = async () => {
+        try {
+            const { clearPersistentCache } = await import('../../../services/localAiCacheService')
+            await clearPersistentCache()
+            setCacheCount(0)
+        } catch {
+            // Non-critical
+        }
+    }
+
+    return (
+        <>
+            <Card>
+                <FormSection
+                    title={t('settingsView.offlineAi.modelStatusTitle')}
+                    icon={<PhosphorIcons.Lightning />}
+                    defaultOpen
+                >
+                    <div className="sm:col-span-2 space-y-4">
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.enableSemanticRag')}
+                            description={t('settingsView.offlineAi.enableSemanticRagHint')}
+                        >
+                            <Switch
+                                checked={localAi.enableSemanticRag ?? true}
+                                onChange={(val) => handleToggle('enableSemanticRag', val)}
+                            />
+                        </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.enableSentiment')}
+                            description={t('settingsView.offlineAi.enableSentimentHint')}
+                        >
+                            <Switch
+                                checked={localAi.enableSentimentAnalysis ?? true}
+                                onChange={(val) => handleToggle('enableSentimentAnalysis', val)}
+                            />
+                        </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.enableSummarization')}
+                            description={t('settingsView.offlineAi.enableSummarizationHint')}
+                        >
+                            <Switch
+                                checked={localAi.enableSummarization ?? true}
+                                onChange={(val) => handleToggle('enableSummarization', val)}
+                            />
+                        </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.enableQueryClassification')}
+                            description={t('settingsView.offlineAi.enableQueryClassificationHint')}
+                        >
+                            <Switch
+                                checked={localAi.enableQueryClassification ?? true}
+                                onChange={(val) => handleToggle('enableQueryClassification', val)}
+                            />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+
+            <Card>
+                <FormSection
+                    title={t('settingsView.offlineAi.enablePersistentCache')}
+                    icon={<PhosphorIcons.Database />}
+                >
+                    <div className="sm:col-span-2 space-y-4">
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.enablePersistentCache')}
+                            description={t('settingsView.offlineAi.enablePersistentCacheHint')}
+                        >
+                            <Switch
+                                checked={localAi.enablePersistentCache ?? true}
+                                onChange={(val) => handleToggle('enablePersistentCache', val)}
+                            />
+                        </SettingsRow>
+                        {cacheCount != null && (
+                            <div className="flex items-center justify-between text-sm bg-slate-800/50 rounded-lg p-3">
+                                <span className="text-slate-300">
+                                    {t('settingsView.offlineAi.persistentCacheSize', {
+                                        value: cacheCount,
+                                    })}
+                                </span>
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={handleClearCache}
+                                    disabled={cacheCount === 0}
+                                >
+                                    {t('settingsView.offlineAi.clearPersistentCache')}
+                                </Button>
+                            </div>
+                        )}
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.maxCacheSize')}
+                            description={t('settingsView.offlineAi.maxCacheSizeHint')}
+                        >
+                            <RangeSlider
+                                singleValue
+                                value={localAi.maxInferenceCacheSize ?? 256}
+                                onChange={(v) =>
+                                    dispatch(
+                                        setSetting({
+                                            path: 'localAi.maxInferenceCacheSize',
+                                            value: v,
+                                        }),
+                                    )
+                                }
+                                min={64}
+                                max={1024}
+                                step={64}
+                                label=""
+                                unit=""
+                            />
+                        </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.inferenceTimeout')}
+                            description={t('settingsView.offlineAi.inferenceTimeoutHint')}
+                        >
+                            <RangeSlider
+                                singleValue
+                                value={(localAi.inferenceTimeoutMs ?? 60000) / 1000}
+                                onChange={(v) =>
+                                    dispatch(
+                                        setSetting({
+                                            path: 'localAi.inferenceTimeoutMs',
+                                            value: v * 1000,
+                                        }),
+                                    )
+                                }
+                                min={10}
+                                max={180}
+                                step={5}
+                                label=""
+                                unit="s"
+                            />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+
+            <Card>
+                <FormSection
+                    title={t('settingsView.offlineAi.enableTelemetry')}
+                    icon={<PhosphorIcons.ChartLineUp />}
+                >
+                    <div className="sm:col-span-2 space-y-4">
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.enableTelemetry')}
+                            description={t('settingsView.offlineAi.enableTelemetryHint')}
+                        >
+                            <Switch
+                                checked={localAi.enableTelemetry ?? true}
+                                onChange={(val) => handleToggle('enableTelemetry', val)}
+                            />
+                        </SettingsRow>
+                        {telemetry && localAi.enableTelemetry !== false && (
+                            <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3 text-sm text-slate-300 space-y-1">
+                                <p>
+                                    {t('settingsView.offlineAi.telemetryInferences', {
+                                        value: telemetry.totalInferences,
+                                    })}
+                                </p>
+                                <p>
+                                    {t('settingsView.offlineAi.telemetryAvgLatency', {
+                                        value: telemetry.avgLatency.toFixed(0),
+                                    })}
+                                </p>
+                                <p>
+                                    {t('settingsView.offlineAi.telemetryAvgSpeed', {
+                                        value: telemetry.avgSpeed.toFixed(1),
+                                    })}
+                                </p>
+                                <p>
+                                    {t('settingsView.offlineAi.telemetryPeakSpeed', {
+                                        value: telemetry.peakSpeed.toFixed(1),
+                                    })}
+                                </p>
+                                <p>
+                                    {t('settingsView.offlineAi.telemetryCacheHitRate', {
+                                        value: telemetry.cacheHitRate.toFixed(1),
+                                    })}
+                                </p>
+                                <p>
+                                    {t('settingsView.offlineAi.telemetrySuccessRate', {
+                                        value: telemetry.successRate.toFixed(1),
+                                    })}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </FormSection>
+            </Card>
+        </>
+    )
+}
+LocalAiFeaturesCard.displayName = 'LocalAiFeaturesCard'
+
 const AiSettingsTab: React.FC = () => (
     <div className="space-y-6">
         <AiModeCard />
         <GeminiSecurityCard />
         <LocalAiOfflineCard />
+        <LocalAiFeaturesCard />
     </div>
 )
+
+const THEME_SWATCHES: Record<string, string[]> = {
+    midnight: ['#0f172a', '#3b82f6', '#60a5fa'],
+    forest: ['#14532d', '#22c55e', '#86efac'],
+    purpleHaze: ['#2e1065', '#a855f7', '#c084fc'],
+    desertSky: ['#431407', '#f97316', '#fdba74'],
+    roseQuartz: ['#4c0519', '#f43f5e', '#fda4af'],
+    rainbowKush: ['#1e1b4b', '#8b5cf6', '#f472b6'],
+    ogKushGreen: ['#052e16', '#16a34a', '#4ade80'],
+    runtzRainbow: ['#312e81', '#ec4899', '#a78bfa'],
+    lemonSkunk: ['#422006', '#eab308', '#fde047'],
+}
 
 const GeneralSettingsTab: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const settings = useAppSelector(selectSettings)
     const general = settings.general
+    const { deferredPrompt, isInstalled, handleInstallClick } = usePwaInstall()
 
     const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path: `general.${path}`, value }))
@@ -790,7 +1013,7 @@ const GeneralSettingsTab: React.FC = () => {
         { value: 'tritanopia', label: t('settingsView.general.colorblindModes.tritanopia') },
     ]
 
-    const themeOptions = [
+    const themeEntries = [
         'midnight',
         'forest',
         'purpleHaze',
@@ -800,10 +1023,33 @@ const GeneralSettingsTab: React.FC = () => {
         'ogKushGreen',
         'runtzRainbow',
         'lemonSkunk',
-    ].map((key) => ({ value: key, label: t(`settingsView.general.themes.${key}`) }))
+    ]
 
     return (
         <div className="space-y-6">
+            {/* PWA Install Card */}
+            {deferredPrompt && !isInstalled && (
+                <Card className="border border-primary-500/30 bg-primary-900/10">
+                    <div className="flex items-start gap-4">
+                        <div className="mt-1 rounded-full bg-primary-500/20 p-3">
+                            <PhosphorIcons.DownloadSimple className="h-6 w-6 text-primary-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-bold text-primary-300">
+                                {t('settingsView.general.installApp')}
+                            </h3>
+                            <p className="text-sm text-slate-300 mt-1">
+                                {t('settingsView.general.installAppDesc')}
+                            </p>
+                            <Button onClick={handleInstallClick} className="mt-3">
+                                <PhosphorIcons.DownloadSimple className="mr-2" />
+                                {t('settingsView.general.installApp')}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
             <Card>
                 <FormSection
                     title={t('settingsView.categories.lookAndFeel')}
@@ -824,11 +1070,46 @@ const GeneralSettingsTab: React.FC = () => {
                             />
                         </SettingsRow>
                         <SettingsRow label={t('settingsView.general.theme')}>
-                            <SettingsSelect
-                                value={general.theme}
-                                onChange={(value) => handleSetSetting('theme', value as Theme)}
-                                options={themeOptions}
-                            />
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-3 gap-2">
+                                    {themeEntries.map((key) => {
+                                        const swatches = THEME_SWATCHES[key]
+                                        const isActive = general.theme === key
+                                        return (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() =>
+                                                    handleSetSetting('theme', key as Theme)
+                                                }
+                                                className={`relative flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all duration-200 ${
+                                                    isActive
+                                                        ? 'border-primary-500 bg-primary-500/10 ring-1 ring-primary-400 scale-[1.03]'
+                                                        : 'border-slate-700 bg-slate-800/60 hover:border-slate-500'
+                                                }`}
+                                                aria-label={t(`settingsView.general.themes.${key}`)}
+                                                aria-pressed={isActive}
+                                            >
+                                                <div className="flex gap-0.5">
+                                                    {swatches.map((color) => (
+                                                        <div
+                                                            key={color}
+                                                            className="w-4 h-4 rounded-full border border-white/10"
+                                                            style={{ backgroundColor: color }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                <span className="text-[10px] font-medium text-slate-300 leading-tight text-center">
+                                                    {t(`settingsView.general.themes.${key}`)}
+                                                </span>
+                                                {isActive && (
+                                                    <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary-400 border border-slate-900" />
+                                                )}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
                         </SettingsRow>
                         <SettingsRow label={t('settingsView.general.fontSize')}>
                             <SegmentedControl
@@ -1610,22 +1891,149 @@ const PrivacySettingsTab: React.FC = () => {
     )
 }
 
+/** Quick-jump entries for the settings search bar. Each maps a search keyword to a tab + optional element ID. */
+const SEARCH_ENTRIES: Array<{
+    tab: string
+    keywords: string[]
+    labelKey: string
+    targetId?: string
+}> = [
+    {
+        tab: 'general',
+        keywords: ['language', 'sprache', 'lang'],
+        labelKey: 'settingsView.general.language',
+    },
+    {
+        tab: 'general',
+        keywords: ['theme', 'thema', 'color', 'farbe'],
+        labelKey: 'settingsView.general.theme',
+    },
+    {
+        tab: 'general',
+        keywords: ['font', 'schrift', 'size', 'groesse'],
+        labelKey: 'settingsView.general.fontSize',
+    },
+    {
+        tab: 'general',
+        keywords: ['dyslexia', 'legasthenie'],
+        labelKey: 'settingsView.general.dyslexiaFont',
+    },
+    {
+        tab: 'general',
+        keywords: ['motion', 'animation', 'bewegung'],
+        labelKey: 'settingsView.general.reducedMotion',
+    },
+    {
+        tab: 'general',
+        keywords: ['contrast', 'kontrast'],
+        labelKey: 'settingsView.general.highContrastMode',
+    },
+    {
+        tab: 'general',
+        keywords: ['colorblind', 'farbenblind'],
+        labelKey: 'settingsView.general.colorblindMode',
+    },
+    { tab: 'general', keywords: ['install', 'pwa'], labelKey: 'settingsView.general.installApp' },
+    {
+        tab: 'ai',
+        keywords: ['api', 'key', 'gemini', 'openai', 'provider'],
+        labelKey: 'settingsView.security.apiKey',
+    },
+    {
+        tab: 'ai',
+        keywords: ['local', 'offline', 'wasm', 'webgpu', 'model'],
+        labelKey: 'settingsView.offlineAi.title',
+    },
+    { tab: 'ai', keywords: ['cloud', 'hybrid', 'mode'], labelKey: 'settingsView.aiMode.title' },
+    {
+        tab: 'ai',
+        keywords: ['telemetry', 'telemetrie', 'inference'],
+        labelKey: 'settingsView.offlineAi.enableTelemetry',
+    },
+    {
+        tab: 'ai',
+        keywords: ['cache', 'rag', 'semantic'],
+        labelKey: 'settingsView.offlineAi.enableSemanticRag',
+    },
+    {
+        tab: 'tts',
+        keywords: ['voice', 'stimme', 'speech', 'sprache', 'tts'],
+        labelKey: 'settingsView.tts.ttsEnabled',
+    },
+    {
+        tab: 'tts',
+        keywords: ['hotword', 'command', 'microphone', 'mikrofon'],
+        labelKey: 'settingsView.tts.voiceControlInput',
+    },
+    {
+        tab: 'strains',
+        keywords: ['sort', 'column', 'spalte', 'genealogy', 'strain'],
+        labelKey: 'settingsView.strains.title',
+    },
+    {
+        tab: 'plants',
+        keywords: ['simulation', 'pest', 'nutrient', 'altitude', 'physics'],
+        labelKey: 'settingsView.plants.title',
+    },
+    {
+        tab: 'notifications',
+        keywords: ['notification', 'benachrichtigung', 'alert', 'quiet'],
+        labelKey: 'settingsView.notifications.title',
+    },
+    {
+        tab: 'defaults',
+        keywords: ['default', 'standard', 'grow', 'setup', 'journal'],
+        labelKey: 'settingsView.defaults.growSetup',
+    },
+    {
+        tab: 'privacy',
+        keywords: ['pin', 'privacy', 'datenschutz', 'security', 'sicherheit'],
+        labelKey: 'settingsView.privacy.title',
+    },
+    {
+        tab: 'data',
+        keywords: ['backup', 'export', 'import', 'reset', 'sync', 'storage', 'speicher'],
+        labelKey: 'settingsView.data.title',
+    },
+    {
+        tab: 'about',
+        keywords: ['about', 'version', 'info', 'readme', 'license'],
+        labelKey: 'settingsView.about.title',
+    },
+]
+
 const SettingsViewComponent: React.FC = () => {
     const { t } = useTranslation()
     const [activeTab, setActiveTab] = useState('plants')
+    const [searchQuery, setSearchQuery] = useState('')
+
+    const searchResults = useMemo(() => {
+        if (!searchQuery.trim()) return []
+        const q = searchQuery.toLowerCase()
+        return SEARCH_ENTRIES.filter(
+            (entry) =>
+                entry.keywords.some((kw) => kw.includes(q)) ||
+                t(entry.labelKey).toLowerCase().includes(q),
+        )
+    }, [searchQuery, t])
+
+    const handleSearchSelect = useCallback((tab: string) => {
+        setActiveTab(tab)
+        setSearchQuery('')
+    }, [])
 
     const viewIcons = useMemo(
         () => ({
-            general: <PhosphorIcons.GearSix className="w-16 h-16 mx-auto text-primary-400" />,
-            ai: <PhosphorIcons.Brain className="w-16 h-16 mx-auto text-violet-400" />,
-            tts: <PhosphorIcons.SpeakerHigh className="w-16 h-16 mx-auto text-accent-400" />,
-            strains: <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-green-400" />,
-            plants: <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-green-400" />,
-            notifications: <PhosphorIcons.Bell className="w-16 h-16 mx-auto text-amber-400" />,
-            defaults: <PhosphorIcons.ListChecks className="w-16 h-16 mx-auto text-cyan-400" />,
-            privacy: <PhosphorIcons.ShieldCheck className="w-16 h-16 mx-auto text-emerald-400" />,
-            data: <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-orange-400" />,
-            about: <PhosphorIcons.Info className="w-16 h-16 mx-auto text-cyan-400" />,
+            general: <PhosphorIcons.GearSix className="w-14 h-14 mx-auto text-primary-400" />,
+            ai: <PhosphorIcons.Brain className="w-14 h-14 mx-auto text-violet-400" />,
+            tts: <PhosphorIcons.SpeakerHigh className="w-14 h-14 mx-auto text-accent-400" />,
+            strains: <PhosphorIcons.Leafy className="w-14 h-14 mx-auto text-green-400" />,
+            plants: <PhosphorIcons.Plant className="w-14 h-14 mx-auto text-green-400" />,
+            notifications: <PhosphorIcons.Bell className="w-14 h-14 mx-auto text-amber-400" />,
+            defaults: <PhosphorIcons.ListChecks className="w-14 h-14 mx-auto text-cyan-400" />,
+            privacy: <PhosphorIcons.ShieldCheck className="w-14 h-14 mx-auto text-emerald-400" />,
+            data: <PhosphorIcons.Archive className="w-14 h-14 mx-auto text-orange-400" />,
+            about: <PhosphorIcons.Info className="w-14 h-14 mx-auto text-cyan-400" />,
         }),
         [],
     )
@@ -1715,19 +2123,56 @@ const SettingsViewComponent: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="text-center mb-6 animate-fade-in">
+            {/* Header with icon and title */}
+            <div className="text-center mb-4 animate-fade-in">
                 {viewIcons[activeTab as keyof typeof viewIcons]}
                 <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">
                     {viewTitles[activeTab as keyof typeof viewTitles]}
                 </h2>
             </div>
 
+            {/* Global Settings Search */}
+            <div className="relative">
+                <SearchBar
+                    placeholder={t('settingsView.searchPlaceholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onClear={() => setSearchQuery('')}
+                />
+                {searchResults.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-20 rounded-xl border border-slate-700 bg-slate-800 shadow-xl max-h-64 overflow-y-auto">
+                        {searchResults.map((result) => (
+                            <button
+                                key={`${result.tab}-${result.labelKey}`}
+                                type="button"
+                                onClick={() => handleSearchSelect(result.tab)}
+                                className="flex items-center gap-3 w-full px-4 py-2.5 text-left hover:bg-slate-700/60 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                            >
+                                <span className="text-xs font-semibold text-primary-400 uppercase min-w-[60px]">
+                                    {viewTitles[result.tab as keyof typeof viewTitles]}
+                                </span>
+                                <span className="text-sm text-slate-200">{t(result.labelKey)}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             <SettingsSubNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <section className="animate-fade-in">{renderContent()}</section>
+            {/* Tab Panel */}
+            <section
+                role="tabpanel"
+                id={`settings-panel-${activeTab}`}
+                aria-labelledby={`settings-tab-${activeTab}`}
+                className="animate-fade-in"
+            >
+                {renderContent()}
+            </section>
         </div>
     )
 }
 
 export const SettingsView = memo(SettingsViewComponent)
+SettingsView.displayName = 'SettingsView'
 export default SettingsView

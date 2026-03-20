@@ -6,12 +6,27 @@ export const helpView = {
         guides: 'Visuelle Anleitungen',
         lexicon: 'Lexikon',
         manual: 'Bedienungsanleitung',
+        faqDescription: 'Schnelle Antworten auf die häufigsten Fragen zur App und zum Anbau.',
+        guidesDescription:
+            'Schritt-für-Schritt visuelle Anleitungen für Trainingstechniken und App-Abläufe.',
+        lexiconDescription:
+            'Ein umfassendes Glossar zu Cannabinoiden, Terpenen, Flavonoiden und Anbaubegriffen.',
+        manualDescription:
+            'Das vollständige Benutzerhandbuch mit allen Funktionen der App im Detail.',
     },
+    itemCount: '{{count}} Einträge',
+    termCount: '{{count}} Begriffe',
+    sectionCount: '{{count}} Abschnitte',
+    guideCount: '{{count}} Anleitungen',
     faq: {
         title: 'Häufig gestellte Fragen',
         subtitle: 'Getrennt nach App-Bedienung, KI/Offline-Hilfe und Anbauthemen gegliedert.',
         searchPlaceholder: 'Fragen durchsuchen...',
         noResults: 'Keine Ergebnisse für "{{term}}" gefunden.',
+        expandAll: 'Alle aufklappen',
+        collapseAll: 'Alle zuklappen',
+        resultCount: '{{count}} Fragen gefunden',
+        resultCountFiltered: '{{count}} von {{total}} Fragen passen',
         groups: {
             localAi: 'Lokale KI, Sync & App-Wiederherstellung',
             grow: 'Anbau & Pflanzenpflege',
@@ -34,8 +49,11 @@ export const helpView = {
     },
     lexicon: {
         title: 'Grower-Lexikon',
+        subtitle:
+            'Entdecke die Wissenschaft hinter Cannabinoiden, Terpenen, Flavonoiden und essentiellen Anbaubegriffen.',
         searchPlaceholder: 'Begriffe durchsuchen...',
         noResults: 'Keine Begriffe für "{{term}}" gefunden.',
+        resultCount: '{{count}} von {{total}} Begriffen angezeigt',
         categories: {
             all: 'Alle',
             cannabinoid: 'Cannabinoide',
@@ -264,6 +282,7 @@ export const helpView = {
     },
     manual: {
         title: 'Benutzerhandbuch',
+        toc: 'Zum Abschnitt springen',
         introduction: {
             title: 'Einführung & Philosophie',
             content: `Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> 100%ige Funktionalität ohne Internetverbindung. Aktionen werden in eine Warteschlange gestellt und später synchronisiert. Ein dreistufiger lokaler KI-Stack stellt sicher, dass Diagnosen und Ratschläge auch ohne Netzwerk verfügbar bleiben.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker und ONNX-optimierter Inferenz mit LRU-Caching.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch vollständige Backup-, Wiederherstellungs- und verschlüsselte Ein-Tipp-Cloud-Synchronisation via GitHub Gist. Kein Server sieht jemals Ihre Daten.</li><li><strong>Multi-Provider-KI:</strong> Bringen Sie Ihren eigenen Schlüssel mit für Google Gemini, OpenAI, Anthropic oder xAI/Grok — oder nutzen Sie den lokalen KI-Stack ganz ohne API-Schlüssel.</li></ul>`,

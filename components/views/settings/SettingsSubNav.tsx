@@ -1,4 +1,5 @@
-import React from 'react'
+import type React from 'react'
+import { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
@@ -7,59 +8,104 @@ interface SettingsSubNavProps {
     onTabChange: (tab: string) => void
 }
 
+const navItemIds = [
+    'general',
+    'ai',
+    'tts',
+    'strains',
+    'plants',
+    'notifications',
+    'defaults',
+    'privacy',
+    'data',
+    'about',
+] as const
+
+const navIcons: Record<string, React.ReactNode> = {
+    general: <PhosphorIcons.GearSix />,
+    ai: <PhosphorIcons.Brain />,
+    tts: <PhosphorIcons.SpeakerHigh />,
+    strains: <PhosphorIcons.Leafy />,
+    plants: <PhosphorIcons.Plant />,
+    notifications: <PhosphorIcons.Bell />,
+    defaults: <PhosphorIcons.ListChecks />,
+    privacy: <PhosphorIcons.ShieldCheck />,
+    data: <PhosphorIcons.Archive />,
+    about: <PhosphorIcons.Info />,
+}
+
 export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTabChange }) => {
     const { t } = useTranslation()
+    const navRef = useRef<HTMLDivElement>(null)
 
-    const navItems: Array<{ id: string; label: string; icon: React.ReactNode }> = [
-        {
-            id: 'general',
-            icon: <PhosphorIcons.GearSix />,
-            label: t('settingsView.categories.general'),
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            const currentIndex = navItemIds.indexOf(activeTab as (typeof navItemIds)[number])
+            if (currentIndex === -1) return
+
+            let nextIndex = -1
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault()
+                nextIndex = (currentIndex + 1) % navItemIds.length
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault()
+                nextIndex = (currentIndex - 1 + navItemIds.length) % navItemIds.length
+            } else if (e.key === 'Home') {
+                e.preventDefault()
+                nextIndex = 0
+            } else if (e.key === 'End') {
+                e.preventDefault()
+                nextIndex = navItemIds.length - 1
+            }
+
+            if (nextIndex >= 0) {
+                const nextId = navItemIds[nextIndex]
+                onTabChange(nextId)
+                const btn = navRef.current?.querySelector<HTMLButtonElement>(
+                    `[data-tab="${nextId}"]`,
+                )
+                btn?.focus()
+            }
         },
-        { id: 'ai', icon: <PhosphorIcons.Brain />, label: t('settingsView.categories.ai') },
-        { id: 'tts', icon: <PhosphorIcons.SpeakerHigh />, label: t('settingsView.categories.tts') },
-        {
-            id: 'strains',
-            icon: <PhosphorIcons.Leafy />,
-            label: t('settingsView.categories.strains'),
-        },
-        { id: 'plants', icon: <PhosphorIcons.Plant />, label: t('settingsView.categories.plants') },
-        {
-            id: 'notifications',
-            icon: <PhosphorIcons.Bell />,
-            label: t('settingsView.categories.notifications'),
-        },
-        {
-            id: 'defaults',
-            icon: <PhosphorIcons.ListChecks />,
-            label: t('settingsView.categories.defaults'),
-        },
-        {
-            id: 'privacy',
-            icon: <PhosphorIcons.ShieldCheck />,
-            label: t('settingsView.categories.privacy'),
-        },
-        { id: 'data', icon: <PhosphorIcons.Archive />, label: t('settingsView.categories.data') },
-        { id: 'about', icon: <PhosphorIcons.Info />, label: t('settingsView.categories.about') },
-    ]
+        [activeTab, onTabChange],
+    )
 
     return (
-        <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 xl:grid-cols-5">
-            {navItems.map((item) => (
-                <button
-                    key={item.id}
-                    onClick={() => onTabChange(item.id)}
-                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
-                        ${
-                            activeTab === item.id
-                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
-                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                        }`}
-                >
-                    <div className="w-6 h-6">{item.icon}</div>
-                    <span className="text-xs font-semibold text-center">{item.label}</span>
-                </button>
-            ))}
-        </nav>
+        <div
+            ref={navRef}
+            role="tablist"
+            aria-label={t('settingsView.title')}
+            className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5"
+            onKeyDown={handleKeyDown}
+        >
+            {navItemIds.map((id) => {
+                const isActive = activeTab === id
+                return (
+                    <button
+                        type="button"
+                        key={id}
+                        role="tab"
+                        data-tab={id}
+                        id={`settings-tab-${id}`}
+                        aria-selected={isActive}
+                        aria-controls={`settings-panel-${id}`}
+                        tabIndex={isActive ? 0 : -1}
+                        onClick={() => onTabChange(id)}
+                        className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900
+                            ${
+                                isActive
+                                    ? 'bg-primary-600 text-white scale-[1.03] shadow-lg shadow-primary-600/20 ring-1 ring-primary-400/60'
+                                    : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white hover:scale-[1.01]'
+                            }`}
+                    >
+                        <div className="w-6 h-6">{navIcons[id]}</div>
+                        <span className="text-xs font-semibold text-center leading-tight">
+                            {t(`settingsView.categories.${id}`)}
+                        </span>
+                    </button>
+                )
+            })}
+        </div>
     )
 }
+SettingsSubNav.displayName = 'SettingsSubNav'

@@ -12,8 +12,48 @@ env:
     NODE_VERSION: '20'
 
 jobs:
+    # ─────────────────────────────────────────────────────────────────────
+    # Build frontend once, share across all Tauri matrix targets
+    # ─────────────────────────────────────────────────────────────────────
+    frontend:
+        name: 🌐 Build Frontend
+        runs-on: ubuntu-latest
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
+
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
+
+            - name: 📦 Install Node dependencies
+              run: npm ci --prefer-offline
+
+            - name: 💾 Restore Vite cache
+              uses: actions/cache@v4
+              with:
+                  path: node_modules/.vite
+                  key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
+                  restore-keys: vite-${{ runner.os }}-
+
+            - name: 🏗 Build frontend
+              run: npm run build
+
+            - name: 📤 Upload dist artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: dist/
+                  retention-days: 1
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Matrix builds — Rust only (frontend pre-built)
+    # ─────────────────────────────────────────────────────────────────────
     build-tauri:
         name: 🖥 ${{ matrix.target }}
+        needs: frontend
         strategy:
             fail-fast: false
             matrix:
@@ -50,6 +90,19 @@ jobs:
               uses: Swatinem/rust-cache@v2
               with:
                   workspaces: src-tauri
+                  shared-key: tauri-${{ matrix.target }}
+                  save-if: ${{ github.ref_type == 'tag' }}
+                  cache-targets: 'true'
+                  cache-all-crates: 'true'
+
+            - name: 💾 Cargo registry cache
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cargo/registry/index/
+                      ~/.cargo/registry/cache/
+                  key: cargo-registry-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+                  restore-keys: cargo-registry-${{ runner.os }}-
 
             - name: 🐧 Install Linux dependencies
               if: matrix.platform == 'ubuntu-22.04'
@@ -58,7 +111,13 @@ jobs:
                   sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
             - name: 📦 Install Node dependencies
-              run: npm ci
+              run: npm ci --prefer-offline
+
+            - name: 📥 Download pre-built frontend
+              uses: actions/download-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: dist/
 
             - name: 🖼 Generate Tauri icons (if missing)
               run: |
@@ -66,11 +125,9 @@ jobs:
                     echo "⚠ No icons found. Run 'npx tauri icon <source.png>' locally and commit the icons."
                     echo "Using placeholder for CI..."
                     mkdir -p src-tauri/icons
-                    # Create minimal 32x32 PNG placeholder via Node
                     node -e "
                       const fs = require('fs');
                       const { Buffer } = require('buffer');
-                      // Minimal valid 1x1 green PNG
                       const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
                       const sizes = ['32x32', '128x128', '128x128@2x'];
                       sizes.forEach(s => fs.writeFileSync('src-tauri/icons/' + s + '.png', png));
@@ -91,9 +148,11 @@ jobs:
                   releaseDraft: true
                   prerelease: false
                   args: ${{ matrix.args }}
+                  tauriScript: npx tauri
 
     build-capacitor:
         name: 📱 Capacitor bundle
+        needs: frontend
         runs-on: ubuntu-latest
         steps:
             - name: 📥 Checkout
@@ -106,10 +165,13 @@ jobs:
                   cache: npm
 
             - name: 📦 Install Node dependencies
-              run: npm ci
+              run: npm ci --prefer-offline
 
-            - name: 🏗 Build web bundle
-              run: npm run build
+            - name: 📥 Download pre-built frontend
+              uses: actions/download-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: dist/
 
             - name: 📦 Capacitor sync check
               run: |

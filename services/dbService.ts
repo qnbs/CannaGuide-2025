@@ -10,7 +10,7 @@
  * - Comprehensive type safety and JSDoc documentation.
  */
 
-import { StoredImageData, Strain, SimulationState, Plant, JournalEntry } from '@/types';
+import { StoredImageData, Strain, SimulationState, Plant, JournalEntry } from '@/types'
 import {
     DB_NAME,
     DB_VERSION,
@@ -23,43 +23,41 @@ import {
     STRAIN_INDEX_THC,
     STRAIN_INDEX_CBD,
     STRAIN_INDEX_FLOWERING,
-} from '@/constants';
-import { resizeImage } from '@/services/imageService';
-import { createStrainObject } from '@/services/strainFactory';
-
+} from '@/constants'
+import { resizeImage } from '@/services/imageService'
+import { createStrainObject } from '@/services/strainFactory'
 
 // --- TYPE DEFINITIONS ---
 
 /** Represents a key-value pair in the metadata store. */
 interface MetadataItem<T = unknown> {
-    key: string;
-    value: T;
+    key: string
+    value: T
 }
 
 /** Represents a snapshot of storage estimate data. */
 interface StorageEstimateSnapshot {
-    usage: number;
-    quota: number;
-    usageRatio: number;
+    usage: number
+    quota: number
+    usageRatio: number
 }
 
-type ArchivedJournalMap = Record<string, JournalEntry[]>;
+type ArchivedJournalMap = Record<string, JournalEntry[]>
 
-const ARCHIVED_LOGS_METADATA_KEY = 'archived_plant_logs_v1';
-const STORAGE_USAGE_WARNING_RATIO = 0.78;
-const STORAGE_USAGE_CRITICAL_RATIO = 0.9;
-const DEFAULT_JOURNAL_KEEP_PER_PLANT = 350;
-const WARNING_JOURNAL_KEEP_PER_PLANT = 220;
-const CRITICAL_JOURNAL_KEEP_PER_PLANT = 120;
-const MAX_ARCHIVED_LOGS_PER_PLANT = 1200;
-const IMAGE_PRUNE_BATCH_SIZE = 20;
-
+const ARCHIVED_LOGS_METADATA_KEY = 'archived_plant_logs_v1'
+const STORAGE_USAGE_WARNING_RATIO = 0.78
+const STORAGE_USAGE_CRITICAL_RATIO = 0.9
+const DEFAULT_JOURNAL_KEEP_PER_PLANT = 350
+const WARNING_JOURNAL_KEEP_PER_PLANT = 220
+const CRITICAL_JOURNAL_KEEP_PER_PLANT = 120
+const MAX_ARCHIVED_LOGS_PER_PLANT = 1200
+const IMAGE_PRUNE_BATCH_SIZE = 20
 
 // --- CONNECTION MANAGEMENT ---
 
-let db: IDBDatabase | null = null;
+let db: IDBDatabase | null = null
 // Promise lock – prevents concurrent openDB() calls from opening duplicate connections
-let dbPromise: Promise<IDBDatabase> | null = null;
+let dbPromise: Promise<IDBDatabase> | null = null
 
 /**
  * Opens and initializes the IndexedDB database.
@@ -68,79 +66,90 @@ let dbPromise: Promise<IDBDatabase> | null = null;
  * @returns {Promise<IDBDatabase>} A promise that resolves with the database connection.
  */
 const openDB = (): Promise<IDBDatabase> => {
-    if (db) return Promise.resolve(db);
-    if (dbPromise) return dbPromise;
+    if (db) return Promise.resolve(db)
+    if (dbPromise) return dbPromise
 
     dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
-
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        const request = indexedDB.open(DB_NAME, DB_VERSION)
 
         request.onupgradeneeded = (event) => {
-            const dbInstance = (event.target as IDBOpenDBRequest).result;
-            const transaction = (event.target as IDBOpenDBRequest).transaction;
+            const dbInstance = (event.target as IDBOpenDBRequest).result
+            const transaction = (event.target as IDBOpenDBRequest).transaction
 
             if (event.oldVersion < 1) {
                 if (!dbInstance.objectStoreNames.contains(STRAINS_STORE)) {
-                    dbInstance.createObjectStore(STRAINS_STORE, { keyPath: 'id' });
+                    dbInstance.createObjectStore(STRAINS_STORE, { keyPath: 'id' })
                 }
                 if (!dbInstance.objectStoreNames.contains(IMAGES_STORE)) {
-                    dbInstance.createObjectStore(IMAGES_STORE, { keyPath: 'id' });
+                    dbInstance.createObjectStore(IMAGES_STORE, { keyPath: 'id' })
                 }
                 if (!dbInstance.objectStoreNames.contains(METADATA_STORE)) {
-                    dbInstance.createObjectStore(METADATA_STORE, { keyPath: 'key' });
+                    dbInstance.createObjectStore(METADATA_STORE, { keyPath: 'key' })
                 }
             }
 
             if (event.oldVersion < 2) {
                 if (!dbInstance.objectStoreNames.contains(STRAIN_SEARCH_INDEX_STORE)) {
-                    dbInstance.createObjectStore(STRAIN_SEARCH_INDEX_STORE, { keyPath: 'word' });
+                    dbInstance.createObjectStore(STRAIN_SEARCH_INDEX_STORE, { keyPath: 'word' })
                 }
             }
 
             if (event.oldVersion < 3) {
-                 if (transaction) {
-                    const strainStore = transaction.objectStore(STRAINS_STORE);
+                if (transaction) {
+                    const strainStore = transaction.objectStore(STRAINS_STORE)
                     if (!strainStore.indexNames.contains(STRAIN_INDEX_TYPE)) {
-                        strainStore.createIndex(STRAIN_INDEX_TYPE, 'type', { unique: false });
+                        strainStore.createIndex(STRAIN_INDEX_TYPE, 'type', { unique: false })
                     }
                     if (!strainStore.indexNames.contains(STRAIN_INDEX_THC)) {
-                        strainStore.createIndex(STRAIN_INDEX_THC, 'thc', { unique: false });
+                        strainStore.createIndex(STRAIN_INDEX_THC, 'thc', { unique: false })
                     }
                     if (!strainStore.indexNames.contains(STRAIN_INDEX_CBD)) {
-                        strainStore.createIndex(STRAIN_INDEX_CBD, 'cbd', { unique: false });
+                        strainStore.createIndex(STRAIN_INDEX_CBD, 'cbd', { unique: false })
                     }
                     if (!strainStore.indexNames.contains(STRAIN_INDEX_FLOWERING)) {
-                        strainStore.createIndex(STRAIN_INDEX_FLOWERING, 'floweringTime', { unique: false });
+                        strainStore.createIndex(STRAIN_INDEX_FLOWERING, 'floweringTime', {
+                            unique: false,
+                        })
                     }
                 }
             }
 
             if (event.oldVersion < 4) {
-                 if (!dbInstance.objectStoreNames.contains(OFFLINE_ACTIONS_STORE)) {
+                if (!dbInstance.objectStoreNames.contains(OFFLINE_ACTIONS_STORE)) {
                     // This store will hold actions performed while offline.
                     // The auto-incrementing key is used by the service worker to delete synced actions.
-                    dbInstance.createObjectStore(OFFLINE_ACTIONS_STORE, { autoIncrement: true });
+                    dbInstance.createObjectStore(OFFLINE_ACTIONS_STORE, { autoIncrement: true })
                 }
             }
-        };
+        }
 
         request.onsuccess = (event) => {
-            db = (event.target as IDBOpenDBRequest).result;
+            db = (event.target as IDBOpenDBRequest).result
             // Handle connection loss (storage pressure, version upgrade from another tab)
-            db.onclose = () => { db = null; dbPromise = null; };
-            db.onversionchange = () => { db?.close(); db = null; dbPromise = null; };
-            resolve(db);
-        };
+            db.onclose = () => {
+                db = null
+                dbPromise = null
+            }
+            db.onversionchange = () => {
+                db?.close()
+                db = null
+                dbPromise = null
+            }
+            resolve(db)
+        }
 
         request.onerror = (event) => {
-            dbPromise = null;
-            console.error("[dbService] IndexedDB connection error:", (event.target as IDBOpenDBRequest).error);
-            reject((event.target as IDBOpenDBRequest).error);
-        };
-    });
+            dbPromise = null
+            console.error(
+                '[dbService] IndexedDB connection error:',
+                (event.target as IDBOpenDBRequest).error,
+            )
+            reject((event.target as IDBOpenDBRequest).error)
+        }
+    })
 
-    return dbPromise;
-};
+    return dbPromise
+}
 
 /**
  * A generic, promisified helper for executing a single request within a transaction.
@@ -154,29 +163,33 @@ const openDB = (): Promise<IDBDatabase> => {
  * @param {(store: IDBObjectStore) => IDBRequest<T>} action A callback that receives the store and should return an IDBRequest.
  * @returns {Promise<T>} A promise that resolves with the result of the request upon transaction completion.
  */
-const performTx = async <T>(storeName: string, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> => {
-    const conn = await openDB();
+const performTx = async <T>(
+    storeName: string,
+    mode: IDBTransactionMode,
+    action: (store: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> => {
+    const conn = await openDB()
     return new Promise((resolve, reject) => {
-        const transaction = conn.transaction(storeName, mode);
-        let requestResult: T;
+        const transaction = conn.transaction(storeName, mode)
+        let requestResult: T
 
         transaction.onerror = () => {
-            console.error(`[dbService] Transaction error on ${storeName}:`, transaction.error);
-            reject(transaction.error);
-        };
+            console.error(`[dbService] Transaction error on ${storeName}:`, transaction.error)
+            reject(transaction.error)
+        }
 
         transaction.oncomplete = () => {
-            resolve(requestResult);
-        };
+            resolve(requestResult)
+        }
 
-        const store = transaction.objectStore(storeName);
-        const request = action(store);
+        const store = transaction.objectStore(storeName)
+        const request = action(store)
 
         request.onsuccess = () => {
-            requestResult = request.result;
-        };
-    });
-};
+            requestResult = request.result
+        }
+    })
+}
 
 const getStorageEstimateSnapshot = async (): Promise<StorageEstimateSnapshot> => {
     if (typeof navigator === 'undefined' || !navigator.storage?.estimate) {
@@ -184,72 +197,142 @@ const getStorageEstimateSnapshot = async (): Promise<StorageEstimateSnapshot> =>
             usage: 0,
             quota: Number.MAX_SAFE_INTEGER,
             usageRatio: 0,
-        };
+        }
     }
 
     try {
-        const estimate = await navigator.storage.estimate();
-        const usage = estimate.usage ?? 0;
-        const quota = estimate.quota ?? Number.MAX_SAFE_INTEGER;
-        const usageRatio = quota > 0 ? usage / quota : 0;
-        return { usage, quota, usageRatio };
+        const estimate = await navigator.storage.estimate()
+        const usage = estimate.usage ?? 0
+        const quota = estimate.quota ?? Number.MAX_SAFE_INTEGER
+        const usageRatio = quota > 0 ? usage / quota : 0
+        return { usage, quota, usageRatio }
     } catch (error) {
-        console.warn('[dbService] navigator.storage.estimate() failed, using fallback values.', error);
+        console.warn(
+            '[dbService] navigator.storage.estimate() failed, using fallback values.',
+            error,
+        )
         return {
             usage: 0,
             quota: Number.MAX_SAFE_INTEGER,
             usageRatio: 0,
-        };
+        }
     }
-};
+}
 
 const compactArchivedEntry = (entry: JournalEntry): JournalEntry => {
     if (!entry.details) {
-        return entry;
+        return entry
     }
 
-    const details = { ...entry.details } as Record<string, unknown>;
-    delete details.imageUrl;
+    const details = { ...entry.details } as Record<string, unknown>
+    delete details.imageUrl
 
     return {
         ...entry,
         notes: typeof entry.notes === 'string' ? entry.notes.slice(0, 300) : entry.notes,
         details: details as JournalEntry['details'],
-    };
-};
+    }
+}
 
 const chooseJournalRetentionLimit = (usageRatio: number): number => {
     if (usageRatio >= STORAGE_USAGE_CRITICAL_RATIO) {
-        return CRITICAL_JOURNAL_KEEP_PER_PLANT;
+        return CRITICAL_JOURNAL_KEEP_PER_PLANT
     }
     if (usageRatio >= STORAGE_USAGE_WARNING_RATIO) {
-        return WARNING_JOURNAL_KEEP_PER_PLANT;
+        return WARNING_JOURNAL_KEEP_PER_PLANT
     }
-    return DEFAULT_JOURNAL_KEEP_PER_PLANT;
-};
+    return DEFAULT_JOURNAL_KEEP_PER_PLANT
+}
 
 const isQuotaExceededError = (error: unknown): boolean => {
     if (!(error instanceof DOMException)) {
-        return false;
+        return false
     }
-    return error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED';
-};
+    return error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+}
 
+const stripSimulationDerivedData = (simulationState: SimulationState): SimulationState => {
+    const { vpdProfiles: _vp, ...rest } = simulationState
+    return rest as SimulationState
+}
+
+const replaceStoreAtomically = async (
+    storeName: string,
+    clearErrorMessage: string,
+    populate: (store: IDBObjectStore, transaction: IDBTransaction) => void,
+): Promise<void> => {
+    const conn = await openDB()
+
+    return new Promise<void>((resolve, reject) => {
+        const transaction = conn.transaction(storeName, 'readwrite')
+        const store = transaction.objectStore(storeName)
+
+        transaction.oncomplete = () => resolve()
+        transaction.onerror = () => reject(transaction.error)
+
+        const clearRequest = store.clear()
+        clearRequest.onerror = () => {
+            console.error(clearErrorMessage, clearRequest.error)
+            transaction.abort()
+        }
+
+        clearRequest.onsuccess = () => {
+            populate(store, transaction)
+        }
+    })
+}
+
+const collectIdsForToken = (
+    store: IDBObjectStore,
+    token: string,
+    onComplete: (idsForToken: Set<string>) => void,
+): void => {
+    const range = IDBKeyRange.bound(token, token + '\uffff')
+    const request = store.openCursor(range)
+    const idsForToken = new Set<string>()
+
+    request.onsuccess = () => {
+        const cursor = request.result
+        if (cursor) {
+            ;(cursor.value.ids as string[]).forEach((id) => idsForToken.add(id))
+            cursor.continue()
+            return
+        }
+
+        onComplete(idsForToken)
+    }
+
+    request.onerror = () => {
+        console.error(`[dbService] Search index request failed for token: ${token}`)
+    }
+}
+
+const intersectResultSets = (resultSets: Set<string>[]): Set<string> => {
+    if (resultSets.length === 0) {
+        return new Set()
+    }
+
+    return resultSets.reduce((left, right) => new Set([...left].filter((id) => right.has(id))))
+}
 
 export const dbService = {
     async getStorageEstimate(): Promise<StorageEstimateSnapshot> {
-        return getStorageEstimateSnapshot();
+        return getStorageEstimateSnapshot()
     },
 
     // --- Metadata Store ---
     async getMetadata<T = unknown>(key: string): Promise<T | undefined> {
-        const result = await performTx<MetadataItem<T> | undefined>(METADATA_STORE, 'readonly', store => store.get(key));
-        return result?.value;
+        const result = await performTx<MetadataItem<T> | undefined>(
+            METADATA_STORE,
+            'readonly',
+            (store) => store.get(key),
+        )
+        return result?.value
     },
 
     async setMetadata<T>(key: string, value: T): Promise<void> {
-        const item: MetadataItem<T> = { key, value };
-        await performTx<IDBValidKey>(METADATA_STORE, 'readwrite', store => store.put(item));
+        const item: MetadataItem<T> = { key, value }
+        await performTx<IDBValidKey>(METADATA_STORE, 'readwrite', (store) => store.put(item))
     },
 
     // --- Strains Store ---
@@ -261,38 +344,24 @@ export const dbService = {
      * @returns {Promise<void>} A promise that resolves on successful completion or rejects on error.
      */
     async addStrains(strains: Strain[]): Promise<void> {
-        const conn = await openDB();
-        return new Promise<void>((resolve, reject) => {
-            const transaction = conn.transaction(STRAINS_STORE, 'readwrite');
-            const store = transaction.objectStore(STRAINS_STORE);
-
-            transaction.oncomplete = () => {
-                console.debug('[dbService] Atomically replaced all strains in IndexedDB.');
-                resolve();
-            };
-
-            transaction.onerror = () => {
-                console.error('[dbService] Failed to replace strains in atomic transaction:', transaction.error);
-                reject(transaction.error);
-            };
-
-            const clearRequest = store.clear();
-
-            clearRequest.onsuccess = () => {
-                strains.forEach(strain => {
-                    const putRequest = store.put(strain);
+        await replaceStoreAtomically(
+            STRAINS_STORE,
+            '[dbService] Failed to clear store during atomic transaction:',
+            (store, transaction) => {
+                strains.forEach((strain) => {
+                    const putRequest = store.put(strain)
                     putRequest.onerror = () => {
-                        console.error(`[dbService] Failed to add strain "${strain.name}" during bulk operation. Aborting transaction.`, putRequest.error);
-                        transaction.abort();
-                    };
-                });
-            }
+                        console.error(
+                            `[dbService] Failed to add strain "${strain.name}" during bulk operation. Aborting transaction.`,
+                            putRequest.error,
+                        )
+                        transaction.abort()
+                    }
+                })
+            },
+        )
 
-            clearRequest.onerror = () => {
-                 console.error('[dbService] Failed to clear store during atomic transaction:', clearRequest.error);
-                 transaction.abort();
-            }
-        });
+        console.debug('[dbService] Atomically replaced all strains in IndexedDB.')
     },
 
     /**
@@ -301,38 +370,40 @@ export const dbService = {
      * @returns {Promise<Strain[]>} A promise that resolves with an array of all strains.
      */
     async getAllStrains(): Promise<Strain[]> {
-        const conn = await openDB();
+        const conn = await openDB()
         return new Promise((resolve, reject) => {
-            const transaction = conn.transaction(STRAINS_STORE, 'readonly');
-            const store = transaction.objectStore(STRAINS_STORE);
-            const request = store.openCursor();
-            const results: Strain[] = [];
-            const seenIds = new Set<string>();
+            const transaction = conn.transaction(STRAINS_STORE, 'readonly')
+            const store = transaction.objectStore(STRAINS_STORE)
+            const request = store.openCursor()
+            const results: Strain[] = []
+            const seenIds = new Set<string>()
 
-            request.onerror = () => reject(request.error);
+            request.onerror = () => reject(request.error)
             request.onsuccess = () => {
-                const cursor = request.result;
+                const cursor = request.result
                 if (cursor) {
                     if (cursor.value && typeof cursor.value === 'object') {
-                        const normalized = createStrainObject(cursor.value as Partial<Strain>);
+                        const normalized = createStrainObject(cursor.value as Partial<Strain>)
                         if (!seenIds.has(normalized.id)) {
-                            seenIds.add(normalized.id);
-                            results.push(normalized);
+                            seenIds.add(normalized.id)
+                            results.push(normalized)
                         } else {
-                            console.warn(`[dbService] Skipping duplicate strain id "${normalized.id}" while reading IndexedDB.`);
+                            console.warn(
+                                `[dbService] Skipping duplicate strain id "${normalized.id}" while reading IndexedDB.`,
+                            )
                         }
                     }
-                    cursor.continue();
+                    cursor.continue()
                 } else {
                     // Cursor is exhausted, all data has been read.
-                    resolve(results);
+                    resolve(results)
                 }
-            };
-        });
+            }
+        })
     },
 
     async getStrainsCount(): Promise<number> {
-        return performTx<number>(STRAINS_STORE, 'readonly', store => store.count());
+        return performTx<number>(STRAINS_STORE, 'readonly', (store) => store.count())
     },
 
     /**
@@ -341,88 +412,102 @@ export const dbService = {
      * @param {IDBValidKey | IDBKeyRange} query The key or key range for the query.
      * @returns {Promise<Strain[]>} A promise that resolves with the matching strains.
      */
-    async queryStrainsByIndex(indexName: string, query: IDBValidKey | IDBKeyRange): Promise<Strain[]> {
-        const conn = await openDB();
+    async queryStrainsByIndex(
+        indexName: string,
+        query: IDBValidKey | IDBKeyRange,
+    ): Promise<Strain[]> {
+        const conn = await openDB()
         return new Promise((resolve, reject) => {
-            const transaction = conn.transaction(STRAINS_STORE, 'readonly');
-            const store = transaction.objectStore(STRAINS_STORE);
-            const index = store.index(indexName);
-            const request = index.getAll(query);
+            const transaction = conn.transaction(STRAINS_STORE, 'readonly')
+            const store = transaction.objectStore(STRAINS_STORE)
+            const index = store.index(indexName)
+            const request = index.getAll(query)
 
-            transaction.oncomplete = () => resolve(request.result || []);
-            transaction.onerror = () => reject(transaction.error);
-        });
+            transaction.oncomplete = () => resolve(request.result || [])
+            transaction.onerror = () => reject(transaction.error)
+        })
     },
 
     // --- Images Store ---
     async addImage(imageData: StoredImageData): Promise<void> {
-        const estimateBeforeWrite = await getStorageEstimateSnapshot();
+        const estimateBeforeWrite = await getStorageEstimateSnapshot()
         if (estimateBeforeWrite.usageRatio >= STORAGE_USAGE_WARNING_RATIO) {
-            await this.pruneOldImages(IMAGE_PRUNE_BATCH_SIZE);
+            await this.pruneOldImages(IMAGE_PRUNE_BATCH_SIZE)
         }
 
-        let normalizedImageData = imageData;
+        let normalizedImageData = imageData
         try {
-            const compressedData = await resizeImage(imageData.data);
+            const compressedData = await resizeImage(imageData.data)
             normalizedImageData = {
                 ...imageData,
                 data: compressedData,
-            };
+            }
         } catch (compressionError) {
-            console.warn('[dbService] Could not compress image before storing. Using original payload.', compressionError);
+            console.warn(
+                '[dbService] Could not compress image before storing. Using original payload.',
+                compressionError,
+            )
         }
 
         try {
-            await performTx<IDBValidKey>(IMAGES_STORE, 'readwrite', store => store.put(normalizedImageData));
+            await performTx<IDBValidKey>(IMAGES_STORE, 'readwrite', (store) =>
+                store.put(normalizedImageData),
+            )
         } catch (error) {
             if (!isQuotaExceededError(error)) {
-                throw error;
+                throw error
             }
 
-            console.warn('[dbService] Quota exceeded while storing image. Pruning old images and retrying once.');
-            await this.pruneOldImages(IMAGE_PRUNE_BATCH_SIZE * 2);
-            await performTx<IDBValidKey>(IMAGES_STORE, 'readwrite', store => store.put(normalizedImageData));
+            console.warn(
+                '[dbService] Quota exceeded while storing image. Pruning old images and retrying once.',
+            )
+            await this.pruneOldImages(IMAGE_PRUNE_BATCH_SIZE * 2)
+            await performTx<IDBValidKey>(IMAGES_STORE, 'readwrite', (store) =>
+                store.put(normalizedImageData),
+            )
         }
     },
 
     async pruneOldImages(maxToDelete = IMAGE_PRUNE_BATCH_SIZE): Promise<number> {
-        const conn = await openDB();
+        const conn = await openDB()
 
         const allImages = await new Promise<StoredImageData[]>((resolve, reject) => {
-            const tx = conn.transaction(IMAGES_STORE, 'readonly');
-            const req = tx.objectStore(IMAGES_STORE).getAll();
-            req.onsuccess = () => resolve(req.result);
-            tx.onerror = () => reject(tx.error);
-        });
+            const tx = conn.transaction(IMAGES_STORE, 'readonly')
+            const req = tx.objectStore(IMAGES_STORE).getAll()
+            req.onsuccess = () => resolve(req.result)
+            tx.onerror = () => reject(tx.error)
+        })
 
         if (allImages.length === 0) {
-            return 0;
+            return 0
         }
 
-        const sortedByAge = [...allImages].sort((a, b) => a.createdAt - b.createdAt);
-        const imagesToDelete = sortedByAge.slice(0, Math.min(maxToDelete, sortedByAge.length));
+        const sortedByAge = [...allImages].sort((a, b) => a.createdAt - b.createdAt)
+        const imagesToDelete = sortedByAge.slice(0, Math.min(maxToDelete, sortedByAge.length))
 
         await new Promise<void>((resolve, reject) => {
-            const transaction = conn.transaction(IMAGES_STORE, 'readwrite');
-            const store = transaction.objectStore(IMAGES_STORE);
+            const transaction = conn.transaction(IMAGES_STORE, 'readwrite')
+            const store = transaction.objectStore(IMAGES_STORE)
 
-            transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error);
+            transaction.oncomplete = () => resolve()
+            transaction.onerror = () => reject(transaction.error)
 
             imagesToDelete.forEach((image) => {
-                store.delete(image.id);
-            });
-        });
+                store.delete(image.id)
+            })
+        })
 
-        return imagesToDelete.length;
+        return imagesToDelete.length
     },
 
     async getImage(id: string): Promise<StoredImageData | undefined> {
-        return performTx<StoredImageData | undefined>(IMAGES_STORE, 'readonly', store => store.get(id));
+        return performTx<StoredImageData | undefined>(IMAGES_STORE, 'readonly', (store) =>
+            store.get(id),
+        )
     },
 
     async getAllImages(): Promise<StoredImageData[]> {
-        return performTx<StoredImageData[]>(IMAGES_STORE, 'readonly', store => store.getAll());
+        return performTx<StoredImageData[]>(IMAGES_STORE, 'readonly', (store) => store.getAll())
     },
 
     // --- Search Index Store ---
@@ -433,31 +518,22 @@ export const dbService = {
      * @returns {Promise<void>} A promise that resolves on completion.
      */
     async updateSearchIndex(index: Record<string, string[]>): Promise<void> {
-        const conn = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = conn.transaction(STRAIN_SEARCH_INDEX_STORE, 'readwrite');
-            const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
-
-            transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error);
-
-            const clearRequest = store.clear();
-
-            clearRequest.onerror = () => {
-                console.error('[dbService] Failed to clear search index:', clearRequest.error);
-                transaction.abort();
-            };
-
-            clearRequest.onsuccess = () => {
+        await replaceStoreAtomically(
+            STRAIN_SEARCH_INDEX_STORE,
+            '[dbService] Failed to clear search index:',
+            (store, transaction) => {
                 Object.entries(index).forEach(([word, ids]) => {
-                    const putRequest = store.put({ word, ids });
+                    const putRequest = store.put({ word, ids })
                     putRequest.onerror = () => {
-                        console.error(`[dbService] Failed to add index for word "${word}". Aborting.`, putRequest.error);
-                        transaction.abort();
-                    };
-                });
-            };
-        });
+                        console.error(
+                            `[dbService] Failed to add index for word "${word}". Aborting.`,
+                            putRequest.error,
+                        )
+                        transaction.abort()
+                    }
+                })
+            },
+        )
     },
 
     /**
@@ -468,47 +544,29 @@ export const dbService = {
      * @returns {Promise<Set<string>>} A promise resolving with a Set of matching strain IDs.
      */
     async searchIndex(tokens: string[]): Promise<Set<string>> {
-        if (tokens.length === 0) return new Set();
-        const conn = await openDB();
+        if (tokens.length === 0) return new Set()
+        const conn = await openDB()
 
         return new Promise((resolve, reject) => {
-            const transaction = conn.transaction(STRAIN_SEARCH_INDEX_STORE, 'readonly');
-            const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
-            const resultSets: Set<string>[] = [];
+            const transaction = conn.transaction(STRAIN_SEARCH_INDEX_STORE, 'readonly')
+            const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE)
+            const resultSets: Set<string>[] = []
 
-            transaction.onerror = () => reject(transaction.error);
+            transaction.onerror = () => reject(transaction.error)
 
             transaction.oncomplete = () => {
                 if (resultSets.length === 0 || resultSets.length < tokens.length) {
-                    return resolve(new Set());
+                    return resolve(new Set())
                 }
-                // Compute the intersection of all result sets.
-                const intersection = resultSets.reduce((a, b) => new Set([...a].filter(x => b.has(x))));
-                resolve(intersection);
-            };
+                resolve(intersectResultSets(resultSets))
+            }
 
-            tokens.forEach(token => {
-                // For each token, do a prefix search (e.g., "blue" matches "blueberry").
-                const range = IDBKeyRange.bound(token, token + '\uffff');
-                const request = store.openCursor(range);
-                const idsForToken = new Set<string>();
-
-                request.onsuccess = () => {
-                    const cursor = request.result;
-                    if (cursor) {
-                        (cursor.value.ids as string[]).forEach(id => idsForToken.add(id));
-                        cursor.continue();
-                    } else {
-                        // Cursor for this token is done.
-                        resultSets.push(idsForToken);
-                    }
-                };
-                request.onerror = () => {
-                     // If one request fails, we can still try to complete the transaction with the others
-                     console.error(`[dbService] Search index request failed for token: ${token}`);
-                }
-            });
-        });
+            tokens.forEach((token) => {
+                collectIdsForToken(store, token, (idsForToken) => {
+                    resultSets.push(idsForToken)
+                })
+            })
+        })
     },
 
     // --- Offline Action Queue ---
@@ -518,73 +576,76 @@ export const dbService = {
      * @returns {Promise<void>}
      */
     async addOfflineAction(action: unknown): Promise<void> {
-        await performTx<IDBValidKey>(OFFLINE_ACTIONS_STORE, 'readwrite', store => store.add(action));
+        await performTx<IDBValidKey>(OFFLINE_ACTIONS_STORE, 'readwrite', (store) =>
+            store.add(action),
+        )
     },
 
-    async optimizeSimulationForPersistence(simulationState: SimulationState): Promise<SimulationState> {
-        const estimate = await getStorageEstimateSnapshot();
-        const keepPerPlant = chooseJournalRetentionLimit(estimate.usageRatio);
+    async optimizeSimulationForPersistence(
+        simulationState: SimulationState,
+    ): Promise<SimulationState> {
+        const estimate = await getStorageEstimateSnapshot()
+        const keepPerPlant = chooseJournalRetentionLimit(estimate.usageRatio)
 
-        const entityIds = simulationState.plants.ids as string[];
-        const archivedByPlant: ArchivedJournalMap = {};
-        const nextEntities: Record<string, Plant> = {};
-        let hasChanges = false;
+        const entityIds = simulationState.plants.ids as string[]
+        const archivedByPlant: ArchivedJournalMap = {}
+        const nextEntities: Record<string, Plant> = {}
+        let hasChanges = false
 
         for (const plantId of entityIds) {
-            const plant = simulationState.plants.entities[plantId];
+            const plant = simulationState.plants.entities[plantId]
             if (!plant) {
-                continue;
+                continue
             }
 
             if (plant.journal.length <= keepPerPlant) {
-                nextEntities[plantId] = plant;
-                continue;
+                nextEntities[plantId] = plant
+                continue
             }
 
-            hasChanges = true;
-            const archiveCutoff = plant.journal.length - keepPerPlant;
-            const archivedEntries = plant.journal.slice(0, archiveCutoff).map(compactArchivedEntry);
-            const keptEntries = plant.journal.slice(-keepPerPlant);
+            hasChanges = true
+            const archiveCutoff = plant.journal.length - keepPerPlant
+            const archivedEntries = plant.journal.slice(0, archiveCutoff).map(compactArchivedEntry)
+            const keptEntries = plant.journal.slice(-keepPerPlant)
 
-            archivedByPlant[plantId] = archivedEntries;
+            archivedByPlant[plantId] = archivedEntries
             nextEntities[plantId] = {
                 ...plant,
                 journal: keptEntries,
-            };
+            }
         }
 
         if (Object.keys(archivedByPlant).length > 0) {
-            const existingArchive = (await this.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {};
-            const mergedArchive: ArchivedJournalMap = { ...existingArchive };
+            const existingArchive =
+                (await this.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {}
+            const mergedArchive: ArchivedJournalMap = { ...existingArchive }
 
             Object.entries(archivedByPlant).forEach(([plantId, entries]) => {
-                const current = mergedArchive[plantId] ?? [];
-                const combined = [...current, ...entries];
-                mergedArchive[plantId] = combined.slice(-MAX_ARCHIVED_LOGS_PER_PLANT);
-            });
+                const current = mergedArchive[plantId] ?? []
+                const combined = [...current, ...entries]
+                mergedArchive[plantId] = combined.slice(-MAX_ARCHIVED_LOGS_PER_PLANT)
+            })
 
-            await this.setMetadata(ARCHIVED_LOGS_METADATA_KEY, mergedArchive);
+            await this.setMetadata(ARCHIVED_LOGS_METADATA_KEY, mergedArchive)
         }
 
         if (!hasChanges) {
-            // Strip vpdProfiles — they are derived data, re-generated on demand
-            const { vpdProfiles: _vp, ...rest } = simulationState;
-            return rest as SimulationState;
+            return stripSimulationDerivedData(simulationState)
         }
 
-        // Strip vpdProfiles — they are derived data, re-generated on demand
-        const { vpdProfiles: _vp2, ...rest } = simulationState;
+        const rest = stripSimulationDerivedData(simulationState)
         return {
             ...rest,
             plants: {
                 ...simulationState.plants,
                 entities: nextEntities,
             },
-        } as SimulationState;
+        } as SimulationState
     },
 
     async getArchivedPlantLogs(plantId: string): Promise<JournalEntry[]> {
-        const archive = (await this.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {};
-        return archive[plantId] ?? [];
+        const archive =
+            (await this.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {}
+        return archive[plantId] ?? []
     },
-};
+}

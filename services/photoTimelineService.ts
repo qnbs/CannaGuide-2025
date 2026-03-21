@@ -48,15 +48,118 @@ const readUint16 = (view: DataView, offset: number, littleEndian: boolean): numb
 const readUint32 = (view: DataView, offset: number, littleEndian: boolean): number =>
     view.getUint32(offset, littleEndian)
 
+const EXIF_POINTER_TAG = 0x8769
+const EXIF_CANDIDATE_TAGS = [0x9003, 0x9004, 0x0132]
+
+const isJpegFile = (file: File): boolean =>
+    file.type.toLowerCase().includes('jpeg') || Boolean(file.name.toLowerCase().match(/\.(jpe?g)$/))
+
+const isJpegView = (view: DataView): boolean =>
+    view.byteLength >= 4 && view.getUint16(0, false) === 0xffd8
+
+const findExifIfdOffset = (
+    view: DataView,
+    tiffStart: number,
+    ifd0Offset: number,
+    littleEndian: boolean,
+): number => {
+    const ifd0Entries = readUint16(view, tiffStart + ifd0Offset, littleEndian)
+
+    for (let index = 0; index < ifd0Entries; index += 1) {
+        const entryOffset = tiffStart + ifd0Offset + 2 + index * 12
+        const tag = readUint16(view, entryOffset, littleEndian)
+        if (tag === EXIF_POINTER_TAG) {
+            return readUint32(view, entryOffset + 8, littleEndian)
+        }
+    }
+
+    return 0
+}
+
+const parseCandidateExifTag = (
+    view: DataView,
+    tiffStart: number,
+    exifIfdOffset: number,
+    exifEntries: number,
+    littleEndian: boolean,
+    candidateTag: number,
+): number | null => {
+    for (let index = 0; index < exifEntries; index += 1) {
+        const entryOffset = tiffStart + exifIfdOffset + 2 + index * 12
+        const tag = readUint16(view, entryOffset, littleEndian)
+        if (tag !== candidateTag) {
+            continue
+        }
+
+        const type = readUint16(view, entryOffset + 2, littleEndian)
+        const count = readUint32(view, entryOffset + 4, littleEndian)
+        if (type !== 2 || count === 0) {
+            continue
+        }
+
+        const valueOffset =
+            count <= 4
+                ? entryOffset + 8
+                : tiffStart + readUint32(view, entryOffset + 8, littleEndian)
+        const rawValue = readAscii(view, valueOffset, count)
+        const parsed = formatExifDateString(rawValue)
+        if (parsed) {
+            return parsed
+        }
+    }
+
+    return null
+}
+
+const parseExifTimestampFromApp1Segment = (
+    view: DataView,
+    segmentOffset: number,
+): number | null => {
+    const exifHeader = readAscii(view, segmentOffset + 4, 6)
+    if (exifHeader !== 'Exif\0\0') {
+        return null
+    }
+
+    const tiffStart = segmentOffset + 10
+    const byteOrder = readAscii(view, tiffStart, 2)
+    const littleEndian = byteOrder === 'II'
+    if (!littleEndian && byteOrder !== 'MM') {
+        return null
+    }
+
+    const ifd0Offset = readUint32(view, tiffStart + 4, littleEndian)
+    const exifIfdOffset = findExifIfdOffset(view, tiffStart, ifd0Offset, littleEndian)
+    if (!exifIfdOffset) {
+        return null
+    }
+
+    const exifEntries = readUint16(view, tiffStart + exifIfdOffset, littleEndian)
+    for (const candidateTag of EXIF_CANDIDATE_TAGS) {
+        const parsed = parseCandidateExifTag(
+            view,
+            tiffStart,
+            exifIfdOffset,
+            exifEntries,
+            littleEndian,
+            candidateTag,
+        )
+        if (parsed) {
+            return parsed
+        }
+    }
+
+    return null
+}
+
 const extractExifTimestampFromJpeg = async (file: File): Promise<number | null> => {
-    if (!file.type.toLowerCase().includes('jpeg') && !file.name.toLowerCase().match(/\.(jpe?g)$/)) {
+    if (!isJpegFile(file)) {
         return null
     }
 
     const buffer = await file.arrayBuffer()
     const view = new DataView(buffer)
 
-    if (view.byteLength < 4 || view.getUint16(0, false) !== 0xffd8) {
+    if (!isJpegView(view)) {
         return null
     }
 
@@ -70,62 +173,9 @@ const extractExifTimestampFromJpeg = async (file: File): Promise<number | null> 
         const marker = view.getUint8(offset + 1)
         const segmentLength = view.getUint16(offset + 2, false)
         if (marker === 0xe1) {
-            const exifHeader = readAscii(view, offset + 4, 6)
-            if (exifHeader !== 'Exif\0\0') {
-                return null
-            }
-
-            const tiffStart = offset + 10
-            const byteOrder = readAscii(view, tiffStart, 2)
-            const littleEndian = byteOrder === 'II'
-            if (!littleEndian && byteOrder !== 'MM') {
-                return null
-            }
-
-            const ifd0Offset = readUint32(view, tiffStart + 4, littleEndian)
-            const ifd0Entries = readUint16(view, tiffStart + ifd0Offset, littleEndian)
-
-            let exifIfdOffset = 0
-            for (let index = 0; index < ifd0Entries; index += 1) {
-                const entryOffset = tiffStart + ifd0Offset + 2 + index * 12
-                const tag = readUint16(view, entryOffset, littleEndian)
-                if (tag === 0x8769) {
-                    exifIfdOffset = readUint32(view, entryOffset + 8, littleEndian)
-                    break
-                }
-            }
-
-            if (!exifIfdOffset) {
-                return null
-            }
-
-            const exifEntries = readUint16(view, tiffStart + exifIfdOffset, littleEndian)
-            const candidateTags = [0x9003, 0x9004, 0x0132]
-
-            for (const candidateTag of candidateTags) {
-                for (let index = 0; index < exifEntries; index += 1) {
-                    const entryOffset = tiffStart + exifIfdOffset + 2 + index * 12
-                    const tag = readUint16(view, entryOffset, littleEndian)
-                    if (tag !== candidateTag) {
-                        continue
-                    }
-
-                    const type = readUint16(view, entryOffset + 2, littleEndian)
-                    const count = readUint32(view, entryOffset + 4, littleEndian)
-                    if (type !== 2 || count === 0) {
-                        continue
-                    }
-
-                    const valueOffset =
-                        count <= 4
-                            ? entryOffset + 8
-                            : tiffStart + readUint32(view, entryOffset + 8, littleEndian)
-                    const rawValue = readAscii(view, valueOffset, count)
-                    const parsed = formatExifDateString(rawValue)
-                    if (parsed) {
-                        return parsed
-                    }
-                }
+            const parsed = parseExifTimestampFromApp1Segment(view, offset)
+            if (parsed) {
+                return parsed
             }
         }
 

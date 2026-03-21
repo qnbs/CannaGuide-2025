@@ -2,7 +2,7 @@ name: Renovate
 
 # Runs on a weekly schedule and can be triggered manually.
 # Requires RENOVATE_TOKEN secret (GitHub PAT with repo scope).
-# Add token in Settings → Secrets → Actions.
+# Add token in Settings -> Secrets -> Actions.
 on:
     workflow_dispatch:
     schedule:
@@ -16,16 +16,18 @@ jobs:
     renovate:
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        if: ${{ secrets.RENOVATE_TOKEN != '' }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
             - name: Run Renovate
-              uses: renovatebot/github-action@v46.1.5
+              if: ${{ env.HAS_TOKEN == 'true' }}
+              uses: renovatebot/github-action@v44.2.6
               env:
                   RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
                   LOG_LEVEL: debug
               with:
                   configurationFile: .renovaterc.json
                   token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+            HAS_TOKEN: ${{ secrets.RENOVATE_TOKEN != '' }}

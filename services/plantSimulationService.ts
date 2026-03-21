@@ -789,6 +789,184 @@ class PlantSimulationService {
         return p
     }
 
+    private _isPostHarvestActionAllowed(
+        stage: PlantStage,
+        action: 'dry' | 'burp' | 'cure',
+    ): boolean {
+        return (
+            (action === 'dry' && (stage === PlantStage.Harvest || stage === PlantStage.Drying)) ||
+            ((action === 'burp' || action === 'cure') && stage === PlantStage.Curing)
+        )
+    }
+
+    private _getVentilationFactor(plant: Plant): number {
+        return plant.equipment.exhaustFan.power === 'high'
+            ? 1.15
+            : plant.equipment.exhaustFan.power === 'low'
+              ? 0.9
+              : 1
+    }
+
+    private _applyDryPostHarvestStep(
+        p: Plant,
+        harvestData: HarvestData,
+        profilePrecision: number,
+        ventilationFactor: number,
+        simulationSettings: SimulationSettings | undefined,
+        newJournalEntries: JournalEntry[],
+    ): void {
+        const roomTemp = p.environment.internalTemperature
+        const roomHumidity = p.environment.internalHumidity
+
+        if (p.stage === PlantStage.Harvest) {
+            p.stage = PlantStage.Drying
+        }
+
+        harvestData.currentDryDay += 1
+        const humidityPenalty = Math.abs(roomHumidity - 58) / 12
+        const tempPenalty = Math.abs(roomTemp - 19.5) / 8
+        const controlledDryingScore = this._clamp(
+            1.15 - humidityPenalty - tempPenalty + (ventilationFactor - 1) * 0.35,
+            0.45,
+            1.18,
+        )
+        const waterLossProgress = this._clamp(
+            0.08 + (62 - roomHumidity) * 0.002 + (roomTemp - 18) * 0.003,
+            0.04,
+            0.15,
+        )
+        const remainingWater = Math.max(0, 1 - harvestData.currentDryDay * waterLossProgress)
+        const targetWeight = harvestData.wetWeight * (0.22 + remainingWater * 0.78)
+        harvestData.dryWeight = Number(
+            Math.max(harvestData.wetWeight * 0.2, targetWeight).toFixed(1),
+        )
+        harvestData.jarHumidity = this._clamp(
+            harvestData.jarHumidity - 2.2 * controlledDryingScore + (roomHumidity - 58) * 0.12,
+            58,
+            72,
+        )
+        harvestData.chlorophyllPercent = this._clamp(
+            harvestData.chlorophyllPercent - 8.5 * controlledDryingScore * profilePrecision,
+            12,
+            100,
+        )
+        harvestData.terpeneRetentionPercent = this._clamp(
+            harvestData.terpeneRetentionPercent -
+                Math.max(0.4, (tempPenalty * 2.4 + humidityPenalty * 1.6) / profilePrecision),
+            45,
+            100,
+        )
+        harvestData.moldRiskPercent = this._clamp(
+            harvestData.moldRiskPercent +
+                Math.max(0, roomHumidity - 62) * 0.9 +
+                Math.max(0, roomTemp - 21) * 0.6 -
+                ventilationFactor * 2.4,
+            0,
+            100,
+        )
+        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)
+
+        if (
+            harvestData.currentDryDay >= PLANT_STAGE_DETAILS[PlantStage.Drying].duration ||
+            (harvestData.jarHumidity <= 62 && harvestData.currentDryDay >= 6)
+        ) {
+            p.stage = PlantStage.Curing
+            harvestData.jarHumidity = this._clamp(harvestData.jarHumidity + 1.6, 60, 64)
+        }
+
+        newJournalEntries.push({
+            id: '',
+            createdAt: 0,
+            type: JournalEntryType.PostHarvest,
+            notes: `Drying day ${harvestData.currentDryDay}: room ${roomTemp.toFixed(1)}°C / ${roomHumidity.toFixed(0)}% RH`,
+        })
+    }
+
+    private _applyBurpPostHarvestStep(
+        harvestData: HarvestData,
+        profilePrecision: number,
+        simulationSettings: SimulationSettings | undefined,
+        newJournalEntries: JournalEntry[],
+    ): void {
+        harvestData.lastBurpDay = harvestData.currentCureDay
+        harvestData.jarHumidity = this._clamp(harvestData.jarHumidity - 2.6, 56, 68)
+        harvestData.moldRiskPercent = this._clamp(
+            harvestData.moldRiskPercent - 6.5 * profilePrecision,
+            0,
+            100,
+        )
+        harvestData.terpeneRetentionPercent = this._clamp(
+            harvestData.terpeneRetentionPercent - 0.35,
+            40,
+            100,
+        )
+        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)
+        newJournalEntries.push({
+            id: '',
+            createdAt: 0,
+            type: JournalEntryType.PostHarvest,
+            notes: `Burped jars on cure day ${harvestData.currentCureDay}`,
+        })
+    }
+
+    private _applyCurePostHarvestStep(
+        p: Plant,
+        harvestData: HarvestData,
+        profilePrecision: number,
+        ventilationFactor: number,
+        simulationSettings: SimulationSettings | undefined,
+        newJournalEntries: JournalEntry[],
+    ): void {
+        const roomHumidity = p.environment.internalHumidity
+
+        harvestData.currentCureDay += 1
+        const burpDebt = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1)
+        const humidityDrift = (roomHumidity - 60) * 0.08 + burpDebt * 0.45
+        harvestData.jarHumidity = this._clamp(
+            harvestData.jarHumidity + humidityDrift - ventilationFactor * 0.35,
+            56,
+            70,
+        )
+        harvestData.chlorophyllPercent = this._clamp(
+            harvestData.chlorophyllPercent - 3.6 * profilePrecision,
+            2,
+            100,
+        )
+        harvestData.terpeneRetentionPercent = this._clamp(
+            harvestData.terpeneRetentionPercent -
+                Math.max(0.2, Math.abs(harvestData.jarHumidity - 61) * 0.32 + burpDebt * 0.18),
+            35,
+            100,
+        )
+        harvestData.moldRiskPercent = this._clamp(
+            harvestData.moldRiskPercent +
+                Math.max(0, harvestData.jarHumidity - 64) * 1.8 +
+                burpDebt * 1.4 -
+                ventilationFactor * 1.2,
+            0,
+            100,
+        )
+        harvestData.cannabinoidProfile.cbn = Number(
+            this._clamp(
+                harvestData.cannabinoidProfile.cbn + harvestData.cannabinoidProfile.thc * 0.0022,
+                0,
+                6,
+            ).toFixed(2),
+        )
+        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)
+
+        if (harvestData.currentCureDay >= PLANT_STAGE_DETAILS[PlantStage.Curing].duration) {
+            p.stage = PlantStage.Finished
+        }
+
+        newJournalEntries.push({
+            id: '',
+            createdAt: 0,
+            type: JournalEntryType.PostHarvest,
+            notes: `Curing day ${harvestData.currentCureDay}: jar ${harvestData.jarHumidity.toFixed(1)}% RH`,
+        })
+    }
+
     advancePostHarvestState(
         plant: Plant,
         action: 'dry' | 'burp' | 'cure',
@@ -801,169 +979,42 @@ class PlantSimulationService {
             return { updatedPlant: p, newJournalEntries }
         }
 
-        const actionAllowed =
-            (action === 'dry' &&
-                (p.stage === PlantStage.Harvest || p.stage === PlantStage.Drying)) ||
-            ((action === 'burp' || action === 'cure') && p.stage === PlantStage.Curing)
-
-        if (!actionAllowed) {
+        if (!this._isPostHarvestActionAllowed(p.stage, action)) {
             return { updatedPlant: p, newJournalEntries }
         }
 
         const profilePrecision = this._getProfileCurve(simulationSettings).postHarvestPrecision
-        const roomTemp = p.environment.internalTemperature
-        const roomHumidity = p.environment.internalHumidity
-        const ventilationFactor =
-            p.equipment.exhaustFan.power === 'high'
-                ? 1.15
-                : p.equipment.exhaustFan.power === 'low'
-                  ? 0.9
-                  : 1
+        const ventilationFactor = this._getVentilationFactor(p)
 
-        if (action === 'dry' && (p.stage === PlantStage.Harvest || p.stage === PlantStage.Drying)) {
-            if (p.stage === PlantStage.Harvest) {
-                p.stage = PlantStage.Drying
-            }
-
-            harvestData.currentDryDay += 1
-            const humidityPenalty = Math.abs(roomHumidity - 58) / 12
-            const tempPenalty = Math.abs(roomTemp - 19.5) / 8
-            const controlledDryingScore = this._clamp(
-                1.15 - humidityPenalty - tempPenalty + (ventilationFactor - 1) * 0.35,
-                0.45,
-                1.18,
-            )
-            const waterLossProgress = this._clamp(
-                0.08 + (62 - roomHumidity) * 0.002 + (roomTemp - 18) * 0.003,
-                0.04,
-                0.15,
-            )
-            const remainingWater = Math.max(0, 1 - harvestData.currentDryDay * waterLossProgress)
-            const targetWeight = harvestData.wetWeight * (0.22 + remainingWater * 0.78)
-            harvestData.dryWeight = Number(
-                Math.max(harvestData.wetWeight * 0.2, targetWeight).toFixed(1),
-            )
-            harvestData.jarHumidity = this._clamp(
-                harvestData.jarHumidity - 2.2 * controlledDryingScore + (roomHumidity - 58) * 0.12,
-                58,
-                72,
-            )
-            harvestData.chlorophyllPercent = this._clamp(
-                harvestData.chlorophyllPercent - 8.5 * controlledDryingScore * profilePrecision,
-                12,
-                100,
-            )
-            harvestData.terpeneRetentionPercent = this._clamp(
-                harvestData.terpeneRetentionPercent -
-                    Math.max(0.4, (tempPenalty * 2.4 + humidityPenalty * 1.6) / profilePrecision),
-                45,
-                100,
-            )
-            harvestData.moldRiskPercent = this._clamp(
-                harvestData.moldRiskPercent +
-                    Math.max(0, roomHumidity - 62) * 0.9 +
-                    Math.max(0, roomTemp - 21) * 0.6 -
-                    ventilationFactor * 2.4,
-                0,
-                100,
-            )
-            harvestData.finalQuality = this._computePostHarvestQuality(
+        if (action === 'dry') {
+            this._applyDryPostHarvestStep(
+                p,
                 harvestData,
+                profilePrecision,
+                ventilationFactor,
                 simulationSettings,
+                newJournalEntries,
             )
-
-            if (
-                harvestData.currentDryDay >= PLANT_STAGE_DETAILS[PlantStage.Drying].duration ||
-                (harvestData.jarHumidity <= 62 && harvestData.currentDryDay >= 6)
-            ) {
-                p.stage = PlantStage.Curing
-                harvestData.jarHumidity = this._clamp(harvestData.jarHumidity + 1.6, 60, 64)
-            }
-
-            newJournalEntries.push({
-                id: '',
-                createdAt: 0,
-                type: JournalEntryType.PostHarvest,
-                notes: `Drying day ${harvestData.currentDryDay}: room ${roomTemp.toFixed(1)}°C / ${roomHumidity.toFixed(0)}% RH`,
-            })
         }
 
         if (action === 'burp') {
-            harvestData.lastBurpDay = harvestData.currentCureDay
-            harvestData.jarHumidity = this._clamp(harvestData.jarHumidity - 2.6, 56, 68)
-            harvestData.moldRiskPercent = this._clamp(
-                harvestData.moldRiskPercent - 6.5 * profilePrecision,
-                0,
-                100,
-            )
-            harvestData.terpeneRetentionPercent = this._clamp(
-                harvestData.terpeneRetentionPercent - 0.35,
-                40,
-                100,
-            )
-            harvestData.finalQuality = this._computePostHarvestQuality(
+            this._applyBurpPostHarvestStep(
                 harvestData,
+                profilePrecision,
                 simulationSettings,
+                newJournalEntries,
             )
-            newJournalEntries.push({
-                id: '',
-                createdAt: 0,
-                type: JournalEntryType.PostHarvest,
-                notes: `Burped jars on cure day ${harvestData.currentCureDay}`,
-            })
         }
 
         if (action === 'cure') {
-            harvestData.currentCureDay += 1
-            const burpDebt = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1)
-            const humidityDrift = (roomHumidity - 60) * 0.08 + burpDebt * 0.45
-            harvestData.jarHumidity = this._clamp(
-                harvestData.jarHumidity + humidityDrift - ventilationFactor * 0.35,
-                56,
-                70,
-            )
-            harvestData.chlorophyllPercent = this._clamp(
-                harvestData.chlorophyllPercent - 3.6 * profilePrecision,
-                2,
-                100,
-            )
-            harvestData.terpeneRetentionPercent = this._clamp(
-                harvestData.terpeneRetentionPercent -
-                    Math.max(0.2, Math.abs(harvestData.jarHumidity - 61) * 0.32 + burpDebt * 0.18),
-                35,
-                100,
-            )
-            harvestData.moldRiskPercent = this._clamp(
-                harvestData.moldRiskPercent +
-                    Math.max(0, harvestData.jarHumidity - 64) * 1.8 +
-                    burpDebt * 1.4 -
-                    ventilationFactor * 1.2,
-                0,
-                100,
-            )
-            harvestData.cannabinoidProfile.cbn = Number(
-                this._clamp(
-                    harvestData.cannabinoidProfile.cbn +
-                        harvestData.cannabinoidProfile.thc * 0.0022,
-                    0,
-                    6,
-                ).toFixed(2),
-            )
-            harvestData.finalQuality = this._computePostHarvestQuality(
+            this._applyCurePostHarvestStep(
+                p,
                 harvestData,
+                profilePrecision,
+                ventilationFactor,
                 simulationSettings,
+                newJournalEntries,
             )
-
-            if (harvestData.currentCureDay >= PLANT_STAGE_DETAILS[PlantStage.Curing].duration) {
-                p.stage = PlantStage.Finished
-            }
-
-            newJournalEntries.push({
-                id: '',
-                createdAt: 0,
-                type: JournalEntryType.PostHarvest,
-                notes: `Curing day ${harvestData.currentCureDay}: jar ${harvestData.jarHumidity.toFixed(1)}% RH`,
-            })
         }
 
         harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)

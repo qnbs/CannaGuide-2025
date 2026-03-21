@@ -888,6 +888,177 @@ const getCompositionLayout = (
     }
 }
 
+interface StrainDataBarsResult {
+    bars: string[]
+    dataY: number
+}
+
+const buildStrainDataBars = (
+    strain: Strain,
+    palette: StylePalette,
+    lang: Language,
+): StrainDataBarsResult => {
+    const thcPct = (strain.thc / 35) * 100
+    const cbdPct = (strain.cbd / 25) * 100
+    const thcDisplay = strain.thcRange ?? `${strain.thc}%`
+    const cbdDisplay = strain.cbdRange ?? `${strain.cbd}%`
+    const diffVal = DIFFICULTY_VAL[strain.agronomic.difficulty] ?? 50
+    const yieldVal = YIELD_VAL[strain.agronomic.yield] ?? 50
+    const heightVal = HEIGHT_VAL[strain.agronomic.height] ?? 50
+    const diffLabel = isGerman(lang) ? 'Schwierigkeit' : 'Difficulty'
+    const yieldLabel = isGerman(lang) ? 'Ertrag' : 'Yield'
+    const heightLabel = isGerman(lang) ? 'Höhe' : 'Height'
+
+    let dataY = 820
+    const bars: string[] = []
+    bars.push(
+        svgDataBar(
+            86,
+            dataY,
+            'THC',
+            thcPct,
+            palette.accent,
+            palette.barBg,
+            palette.textDim,
+            thcDisplay,
+        ),
+    )
+    dataY += 36
+    bars.push(
+        svgDataBar(
+            86,
+            dataY,
+            'CBD',
+            cbdPct,
+            palette.accent2,
+            palette.barBg,
+            palette.textDim,
+            cbdDisplay,
+        ),
+    )
+    dataY += 36
+
+    if (strain.cbg != null) {
+        bars.push(
+            svgDataBar(
+                86,
+                dataY,
+                'CBG',
+                (strain.cbg / 5) * 100,
+                '#fbbf24',
+                palette.barBg,
+                palette.textDim,
+                `${strain.cbg}%`,
+            ),
+        )
+        dataY += 36
+    }
+
+    if (strain.thcv != null) {
+        bars.push(
+            svgDataBar(
+                86,
+                dataY,
+                'THCV',
+                (strain.thcv / 5) * 100,
+                '#2dd4bf',
+                palette.barBg,
+                palette.textDim,
+                `${strain.thcv}%`,
+            ),
+        )
+        dataY += 36
+    }
+
+    bars.push(
+        svgDataBar(
+            86,
+            dataY,
+            diffLabel,
+            diffVal,
+            '#f97316',
+            palette.barBg,
+            palette.textDim,
+            strain.agronomic.difficulty,
+        ),
+    )
+    dataY += 36
+
+    bars.push(
+        svgDataBar(
+            86,
+            dataY,
+            yieldLabel,
+            yieldVal,
+            '#22c55e',
+            palette.barBg,
+            palette.textDim,
+            strain.agronomic.yield,
+        ),
+    )
+    dataY += 36
+
+    bars.push(
+        svgDataBar(
+            86,
+            dataY,
+            heightLabel,
+            heightVal,
+            '#60a5fa',
+            palette.barBg,
+            palette.textDim,
+            strain.agronomic.height,
+        ),
+    )
+
+    return { bars, dataY: dataY + 44 }
+}
+
+const buildTerpenesBlock = (
+    terpenes: string[],
+    dataY: number,
+    palette: StylePalette,
+    lang: Language,
+): { block: string; nextY: number } => {
+    if (terpenes.length === 0) {
+        return { block: '', nextY: dataY }
+    }
+
+    const block = `<g transform="translate(86, ${dataY})">
+        <text x="0" y="0" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.6">${isGerman(lang) ? 'Terpene' : 'Terpenes'}</text>
+        ${svgTerpeneDots(0, 28, terpenes, palette.accent, palette.textDim)}
+    </g>`
+
+    return { block, nextY: dataY + 64 }
+}
+
+const buildAromasBlock = (
+    aromas: string,
+    dataY: number,
+    palette: StylePalette,
+    lang: Language,
+): { block: string; nextY: number } => {
+    if (aromas.length === 0) {
+        return { block: '', nextY: dataY }
+    }
+
+    const block = `<text x="86" y="${dataY}" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.55">${isGerman(lang) ? 'Aromen' : 'Aromas'}: ${aromas}</text>`
+    return { block, nextY: dataY + 30 }
+}
+
+const buildDynamicAccentBand = (
+    composition: string,
+    svgHeight: number,
+    palette: StylePalette,
+): string => {
+    if (composition.toLowerCase() !== 'dynamic') {
+        return ''
+    }
+
+    return `<rect x="0" y="0" width="5" height="${svgHeight}" fill="${palette.accent}" opacity="0.15"/>
+    <line x1="0" y1="0" x2="1200" y2="${svgHeight}" stroke="${palette.accent}" stroke-width="0.5" opacity="0.06"/>`
+}
+
 // ─── Main SVG Builder ───────────────────────────────────────────────────────
 
 const buildStrainImageSvg = (
@@ -907,20 +1078,6 @@ const buildStrainImageSvg = (
         ? 'SVG-Poster · Lokaler Fallback'
         : 'SVG poster · Local fallback'
 
-    // ─ Cannabinoid percentages (thc/35 as reference max, cbd/25, cbg/5, thcv/5)
-    const thcPct = (strain.thc / 35) * 100
-    const cbdPct = (strain.cbd / 25) * 100
-    const thcDisplay = strain.thcRange ?? `${strain.thc}%`
-    const cbdDisplay = strain.cbdRange ?? `${strain.cbd}%`
-
-    // ─ Agronomic values (correctly mapped to enum values)
-    const diffVal = DIFFICULTY_VAL[strain.agronomic.difficulty] ?? 50
-    const yieldVal = YIELD_VAL[strain.agronomic.yield] ?? 50
-    const heightVal = HEIGHT_VAL[strain.agronomic.height] ?? 50
-    const diffLabel = isGerman(lang) ? 'Schwierigkeit' : 'Difficulty'
-    const yieldLabel = isGerman(lang) ? 'Ertrag' : 'Yield'
-    const heightLabel = isGerman(lang) ? 'Höhe' : 'Height'
-
     // ─ Terpenes, aromas, metadata
     const terpenes = strain.dominantTerpenes ?? []
     const aromas = (strain.aromas ?? [])
@@ -933,109 +1090,18 @@ const buildStrainImageSvg = (
     const genetics = strain.genetics ? escapeXml(strain.genetics.slice(0, 55)) : ''
     const description = strain.description ? escapeXml(strain.description.slice(0, 100)) : ''
 
-    // ─ Build dynamic data bars
-    let dataY = 820
-    const bars: string[] = []
-    bars.push(svgDataBar(86, dataY, 'THC', thcPct, p.accent, p.barBg, p.textDim, thcDisplay))
-    dataY += 36
-    bars.push(svgDataBar(86, dataY, 'CBD', cbdPct, p.accent2, p.barBg, p.textDim, cbdDisplay))
-    dataY += 36
-    if (strain.cbg != null) {
-        bars.push(
-            svgDataBar(
-                86,
-                dataY,
-                'CBG',
-                (strain.cbg / 5) * 100,
-                '#fbbf24',
-                p.barBg,
-                p.textDim,
-                `${strain.cbg}%`,
-            ),
-        )
-        dataY += 36
-    }
-    if (strain.thcv != null) {
-        bars.push(
-            svgDataBar(
-                86,
-                dataY,
-                'THCV',
-                (strain.thcv / 5) * 100,
-                '#2dd4bf',
-                p.barBg,
-                p.textDim,
-                `${strain.thcv}%`,
-            ),
-        )
-        dataY += 36
-    }
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            diffLabel,
-            diffVal,
-            '#f97316',
-            p.barBg,
-            p.textDim,
-            strain.agronomic.difficulty,
-        ),
+    const { bars, dataY: afterBarsY } = buildStrainDataBars(strain, p, lang)
+    const { block: terpenesBlock, nextY: afterTerpenesY } = buildTerpenesBlock(
+        terpenes,
+        afterBarsY,
+        p,
+        lang,
     )
-    dataY += 36
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            yieldLabel,
-            yieldVal,
-            '#22c55e',
-            p.barBg,
-            p.textDim,
-            strain.agronomic.yield,
-        ),
-    )
-    dataY += 36
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            heightLabel,
-            heightVal,
-            '#60a5fa',
-            p.barBg,
-            p.textDim,
-            strain.agronomic.height,
-        ),
-    )
-    dataY += 44
-
-    // ─ Terpene section
-    let terpenesBlock = ''
-    if (terpenes.length > 0) {
-        terpenesBlock = `<g transform="translate(86, ${dataY})">
-        <text x="0" y="0" font-size="16" fill="${p.textDim}" font-family="'Inter',sans-serif" opacity="0.6">${isGerman(lang) ? 'Terpene' : 'Terpenes'}</text>
-        ${svgTerpeneDots(0, 28, terpenes, p.accent, p.textDim)}
-    </g>`
-        dataY += 64
-    }
-
-    // ─ Aromas section
-    let aromasBlock = ''
-    if (aromas.length > 0) {
-        aromasBlock = `<text x="86" y="${dataY}" font-size="16" fill="${p.textDim}" font-family="'Inter',sans-serif" opacity="0.55">${isGerman(lang) ? 'Aromen' : 'Aromas'}: ${aromas}</text>`
-        dataY += 30
-    }
+    const { block: aromasBlock, nextY: dataY } = buildAromasBlock(aromas, afterTerpenesY, p, lang)
 
     const footerY = Math.max(dataY + 40, 1180)
     const svgHeight = Math.max(1400, footerY + 120)
-
-    // ─ Dynamic composition accent
-    const accentBand =
-        criteria.composition.toLowerCase() === 'dynamic'
-            ? `<rect x="0" y="0" width="5" height="${svgHeight}" fill="${p.accent}" opacity="0.15"/>
-    <line x1="0" y1="0" x2="1200" y2="${svgHeight}" stroke="${p.accent}" stroke-width="0.5" opacity="0.06"/>`
-            : ''
+    const accentBand = buildDynamicAccentBand(criteria.composition, svgHeight, p)
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 ${svgHeight}" role="img" aria-label="${cleanName} — ${typeLabel} ${flowerTypeLabel} cannabis strain poster, ${escapeXml(style)} style, ${escapeXml(criteria.focus)} focus, ${escapeXml(criteria.mood)} mood">
     <defs>

@@ -1,15 +1,29 @@
-import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, JournalEntry, Task, JournalEntryType, VentilationPower, SimulationState, AppSettings } from '@/types';
-import { plantSimulationService, vpdService } from '@/services/plantSimulationService';
-import { RootState } from '../store';
-import { addNotification, cancelNewGrow, setActiveView } from './uiSlice';
-import { getT } from '@/i18n';
-import { GrowSetupSchema, WaterDataSchema, TrainingDataSchema, PestControlDataSchema, AmendmentDataSchema } from '@/types/schemas';
-import { View } from '@/types';
-import type { SimulationPoint } from '@/types/simulation.types';
+import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit'
+import {
+    Plant,
+    GrowSetup,
+    JournalEntry,
+    Task,
+    JournalEntryType,
+    VentilationPower,
+    SimulationState,
+    AppSettings,
+} from '@/types'
+import { plantSimulationService, vpdService } from '@/services/plantSimulationService'
+import { RootState } from '../store'
+import { addNotification, cancelNewGrow, setActiveView } from './uiSlice'
+import { getT } from '@/i18n'
+import {
+    GrowSetupSchema,
+    WaterDataSchema,
+    TrainingDataSchema,
+    PestControlDataSchema,
+    AmendmentDataSchema,
+} from '@/types/schemas'
+import { View } from '@/types'
+import type { SimulationPoint } from '@/types/simulation.types'
 
-
-export const plantsAdapter = createEntityAdapter<Plant>();
+export const plantsAdapter = createEntityAdapter<Plant>()
 
 const initialState: SimulationState = {
     plants: plantsAdapter.getInitialState(),
@@ -17,7 +31,7 @@ const initialState: SimulationState = {
     selectedPlantId: null,
     vpdProfiles: {},
     isCatchingUp: false,
-};
+}
 
 const isWithinQuietHours = (start: string, end: string, now = new Date()): boolean => {
     const [startHour = 0, startMinute = 0] = start.split(':').map(Number)
@@ -41,8 +55,17 @@ const isWithinQuietHours = (start: string, end: string, now = new Date()): boole
     return currentMinutes >= startMinutes || currentMinutes < endMinutes
 }
 
-const showBrowserNotification = async (title: string, body: string, tag: string, plantId: string) => {
-    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+const showBrowserNotification = async (
+    title: string,
+    body: string,
+    tag: string,
+    plantId: string,
+) => {
+    if (
+        typeof window === 'undefined' ||
+        !('Notification' in window) ||
+        Notification.permission !== 'granted'
+    ) {
         return
     }
 
@@ -66,124 +89,161 @@ const simulationSlice = createSlice({
     initialState,
     reducers: {
         setSimulationState: (state, action: PayloadAction<SimulationState>) => {
-            state.plants = action.payload.plants;
-            state.plantSlots = action.payload.plantSlots;
-            state.selectedPlantId = action.payload.selectedPlantId;
-            state.vpdProfiles = action.payload.vpdProfiles || {};
-            state.isCatchingUp = action.payload.isCatchingUp ?? false;
+            state.plants = action.payload.plants
+            state.plantSlots = action.payload.plantSlots
+            state.selectedPlantId = action.payload.selectedPlantId
+            state.vpdProfiles = action.payload.vpdProfiles || {}
+            state.isCatchingUp = action.payload.isCatchingUp ?? false
         },
-        addPlant: (state, action: PayloadAction<{ plant: Plant, slotIndex: number }>) => {
-            const { plant, slotIndex } = action.payload;
-            plantsAdapter.addOne(state.plants, plant);
-            state.plantSlots[slotIndex] = plant.id;
+        addPlant: (state, action: PayloadAction<{ plant: Plant; slotIndex: number }>) => {
+            const { plant, slotIndex } = action.payload
+            plantsAdapter.addOne(state.plants, plant)
+            state.plantSlots[slotIndex] = plant.id
         },
         updatePlant: (state, action: PayloadAction<{ id: string; changes: Partial<Plant> }>) => {
-            plantsAdapter.updateOne(state.plants, action.payload);
+            plantsAdapter.updateOne(state.plants, action.payload)
         },
-        plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] }>) => {
-            const { updatedPlant, newJournalEntries, newTasks } = action.payload;
-            const existingPlant = state.plants.entities[updatedPlant.id];
-            if (!existingPlant) return;
+        plantStateUpdated: (
+            state,
+            action: PayloadAction<{
+                updatedPlant: Plant
+                newJournalEntries: JournalEntry[]
+                newTasks: Task[]
+            }>,
+        ) => {
+            const { updatedPlant, newJournalEntries, newTasks } = action.payload
+            const existingPlant = state.plants.entities[updatedPlant.id]
+            if (!existingPlant) return
 
             // Give new journal entries unique IDs and current timestamps to ensure they are unique.
             const newJournalWithIds = newJournalEntries.map((entry, index) => ({
                 ...entry,
                 id: `journal-${updatedPlant.id}-${Date.now()}-${index}`,
                 createdAt: Date.now(),
-            }));
+            }))
 
             // Prevent duplicate tasks by checking titles of existing incomplete tasks.
-            const existingIncompleteTaskTitles = new Set(existingPlant.tasks.filter(t => !t.isCompleted).map(t => t.title));
-            const tasksToAdd = newTasks.filter(t => !existingIncompleteTaskTitles.has(t.title));
+            const existingIncompleteTaskTitles = new Set(
+                existingPlant.tasks.filter((t) => !t.isCompleted).map((t) => t.title),
+            )
+            const tasksToAdd = newTasks.filter((t) => !existingIncompleteTaskTitles.has(t.title))
 
             // Create a changes object that merges the worker's calculations with the latest journal/task state.
             const changes = {
                 ...updatedPlant,
                 journal: [...existingPlant.journal, ...newJournalWithIds],
                 tasks: [...existingPlant.tasks, ...tasksToAdd],
-            };
+            }
 
-            plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes });
+            plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes })
         },
         setSelectedPlantId: (state, action: PayloadAction<string | null>) => {
-            state.selectedPlantId = action.payload;
+            state.selectedPlantId = action.payload
         },
-        addJournalEntry: (state, action: PayloadAction<{ plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'> }>) => {
-            const { plantId, entry } = action.payload;
-            const plant = state.plants.entities[plantId];
+        addJournalEntry: (
+            state,
+            action: PayloadAction<{
+                plantId: string
+                entry: Omit<JournalEntry, 'id' | 'createdAt'>
+            }>,
+        ) => {
+            const { plantId, entry } = action.payload
+            const plant = state.plants.entities[plantId]
             if (plant) {
                 const newEntry: JournalEntry = {
                     ...entry,
                     id: `journal-${plantId}-${Date.now()}`,
                     createdAt: Date.now(),
-                };
-                plant.journal.push(newEntry);
+                }
+                plant.journal.push(newEntry)
             }
         },
-        completeTask: (state, action: PayloadAction<{ plantId: string, taskId: string }>) => {
-            const { plantId, taskId } = action.payload;
-            const plant = state.plants.entities[plantId];
+        completeTask: (state, action: PayloadAction<{ plantId: string; taskId: string }>) => {
+            const { plantId, taskId } = action.payload
+            const plant = state.plants.entities[plantId]
             if (plant) {
-                const task = plant.tasks.find(t => t.id === taskId);
+                const task = plant.tasks.find((t) => t.id === taskId)
                 if (task) {
-                    task.isCompleted = true;
-                    task.completedAt = Date.now();
+                    task.isCompleted = true
+                    task.completedAt = Date.now()
                 }
             }
         },
         // Equipment controls
         toggleLight: (state, action: PayloadAction<{ plantId: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.light.isOn = !plant.equipment.light.isOn;
+            const plant = state.plants.entities[action.payload.plantId]
+            if (plant) plant.equipment.light.isOn = !plant.equipment.light.isOn
         },
         toggleFan: (state, action: PayloadAction<{ plantId: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.exhaustFan.isOn = !plant.equipment.exhaustFan.isOn;
+            const plant = state.plants.entities[action.payload.plantId]
+            if (plant) plant.equipment.exhaustFan.isOn = !plant.equipment.exhaustFan.isOn
         },
-        setLightHours: (state, action: PayloadAction<{ plantId: string, hours: number }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.light.lightHours = action.payload.hours;
+        setLightHours: (state, action: PayloadAction<{ plantId: string; hours: number }>) => {
+            const plant = state.plants.entities[action.payload.plantId]
+            if (plant) plant.equipment.light.lightHours = action.payload.hours
         },
-        setLightWattage: (state, action: PayloadAction<{ plantId: string, wattage: number }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.light.wattage = action.payload.wattage;
+        setLightWattage: (state, action: PayloadAction<{ plantId: string; wattage: number }>) => {
+            const plant = state.plants.entities[action.payload.plantId]
+            if (plant) plant.equipment.light.wattage = action.payload.wattage
         },
         toggleCirculationFan: (state, action: PayloadAction<{ plantId: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.circulationFan.isOn = !plant.equipment.circulationFan.isOn;
+            const plant = state.plants.entities[action.payload.plantId]
+            if (plant) plant.equipment.circulationFan.isOn = !plant.equipment.circulationFan.isOn
         },
-        setVentilationPower: (state, action: PayloadAction<{ plantId: string, power: VentilationPower }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.exhaustFan.power = action.payload.power;
+        setVentilationPower: (
+            state,
+            action: PayloadAction<{ plantId: string; power: VentilationPower }>,
+        ) => {
+            const plant = state.plants.entities[action.payload.plantId]
+            if (plant) plant.equipment.exhaustFan.power = action.payload.power
         },
-        setGlobalEnvironment: (state, action: PayloadAction<{ temperature?: number; humidity?: number; ph?: number; simulationSettings?: AppSettings['simulation'] }>) => {
-            const { temperature, humidity, ph, simulationSettings } = action.payload;
-            state.plantSlots.forEach(plantId => {
+        setGlobalEnvironment: (
+            state,
+            action: PayloadAction<{
+                temperature?: number
+                humidity?: number
+                ph?: number
+                simulationSettings?: AppSettings['simulation']
+            }>,
+        ) => {
+            const { temperature, humidity, ph, simulationSettings } = action.payload
+            state.plantSlots.forEach((plantId) => {
                 if (plantId) {
-                    const plant = state.plants.entities[plantId];
+                    const plant = state.plants.entities[plantId]
                     if (plant) {
                         if (temperature !== undefined) {
-                            plant.environment.internalTemperature = temperature;
+                            plant.environment.internalTemperature = temperature
                         }
                         if (humidity !== undefined) {
-                            plant.environment.internalHumidity = humidity;
+                            plant.environment.internalHumidity = humidity
                         }
                         if (ph !== undefined) {
-                            plant.medium.ph = ph;
+                            plant.medium.ph = ph
                         }
-                        plant.environment = plantSimulationService.applyEnvironmentalCorrections(plant, simulationSettings).environment;
+                        plant.environment = plantSimulationService.applyEnvironmentalCorrections(
+                            plant,
+                            simulationSettings,
+                        ).environment
                     }
                 }
-            });
+            })
         },
-        processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'burp' | 'cure'; simulationSettings?: AppSettings['simulation'] }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
+        processPostHarvest: (
+            state,
+            action: PayloadAction<{
+                plantId: string
+                action: 'dry' | 'burp' | 'cure'
+                simulationSettings?: AppSettings['simulation']
+            }>,
+        ) => {
+            const plant = state.plants.entities[action.payload.plantId]
             if (plant) {
-                const { updatedPlant, newJournalEntries } = plantSimulationService.advancePostHarvestState(
-                    plant,
-                    action.payload.action,
-                    action.payload.simulationSettings,
-                )
+                const { updatedPlant, newJournalEntries } =
+                    plantSimulationService.advancePostHarvestState(
+                        plant,
+                        action.payload.action,
+                        action.payload.simulationSettings,
+                    )
 
                 const stampedEntries = newJournalEntries.map((entry, index) => ({
                     ...entry,
@@ -196,52 +256,60 @@ const simulationSlice = createSlice({
             }
         },
         resetPlants: (state) => {
-            plantsAdapter.removeAll(state.plants);
-            state.plantSlots = [null, null, null];
-            state.selectedPlantId = null;
-            state.vpdProfiles = {};
+            plantsAdapter.removeAll(state.plants)
+            state.plantSlots = [null, null, null]
+            state.selectedPlantId = null
+            state.vpdProfiles = {}
         },
-        setPlantVpdProfile: (state, action: PayloadAction<{ plantId: string; points: SimulationPoint[] }>) => {
-            state.vpdProfiles[action.payload.plantId] = action.payload.points;
+        setPlantVpdProfile: (
+            state,
+            action: PayloadAction<{ plantId: string; points: SimulationPoint[] }>,
+        ) => {
+            state.vpdProfiles[action.payload.plantId] = action.payload.points
         },
         setCatchUpState: (state, action: PayloadAction<boolean>) => {
-            state.isCatchingUp = action.payload;
+            state.isCatchingUp = action.payload
         },
-    }
-});
+    },
+})
 
 export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: RootState }>(
     'simulation/generatePlantVpdProfile',
     async (plantId, { getState, dispatch }) => {
-        const state = getState();
-        const plant = state.simulation.plants.entities[plantId];
-        if (!plant) return;
+        const state = getState()
+        const plant = state.simulation.plants.entities[plantId]
+        if (!plant) return
 
-        const input = vpdService.createInputFromPlant(plant, state.settings.settings.simulation);
-        const points = await vpdService.runDailyVPD(input);
-        dispatch(simulationSlice.actions.setPlantVpdProfile({ plantId, points }));
+        const input = vpdService.createInputFromPlant(plant, state.settings.settings.simulation)
+        const points = await vpdService.runDailyVPD(input)
+        dispatch(simulationSlice.actions.setPlantVpdProfile({ plantId, points }))
     },
-);
+)
 
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (_, { dispatch, getState }) => {
-        const { ui, simulation, settings } = getState();
-        const { strain, setup, slotIndex } = ui.newGrowFlow;
+        const { ui, simulation, settings } = getState()
+        const { strain, setup, slotIndex } = ui.newGrowFlow
 
-        let finalSlotIndex = slotIndex;
+        let finalSlotIndex = slotIndex
 
         // This logic remains as a safety net in case a flow is initiated without a slot pre-selected.
         if (finalSlotIndex === null || finalSlotIndex === undefined) {
-            finalSlotIndex = simulation.plantSlots.findIndex(slot => slot === null);
+            finalSlotIndex = simulation.plantSlots.findIndex((slot) => slot === null)
         }
 
         // Check if a slot was found (could be -1 if all are full).
         if (finalSlotIndex === -1) {
-            const t = getT();
-            dispatch(addNotification({ message: t('plantsView.notifications.allSlotsFull'), type: 'error' }));
-            dispatch(cancelNewGrow());
-            return;
+            const t = getT()
+            dispatch(
+                addNotification({
+                    message: t('plantsView.notifications.allSlotsFull'),
+                    type: 'error',
+                }),
+            )
+            dispatch(cancelNewGrow())
+            return
         }
 
         if (strain && setup) {
@@ -250,13 +318,18 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 ...setup,
             }
 
-            const validation = GrowSetupSchema.safeParse(mergedSetup);
+            const validation = GrowSetupSchema.safeParse(mergedSetup)
             if (!validation.success) {
-                const t = getT();
-                console.error("Grow setup validation failed:", validation.error);
-                dispatch(addNotification({ message: t('common.simulationErrors.invalidSetup'), type: 'error' }));
-                dispatch(cancelNewGrow());
-                return;
+                const t = getT()
+                console.error('Grow setup validation failed:', validation.error)
+                dispatch(
+                    addNotification({
+                        message: t('common.simulationErrors.invalidSetup'),
+                        type: 'error',
+                    }),
+                )
+                dispatch(cancelNewGrow())
+                return
             }
 
             const normalizedSetup: GrowSetup = {
@@ -270,52 +343,95 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 medium: validation.data.medium,
             }
 
-            const newPlant = plantSimulationService.createPlant(strain, normalizedSetup, `${strain.name} #${finalSlotIndex + 1}`);
-            dispatch(simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: finalSlotIndex }));
+            const newPlant = plantSimulationService.createPlant(
+                strain,
+                normalizedSetup,
+                `${strain.name} #${finalSlotIndex + 1}`,
+            )
+            dispatch(
+                simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: finalSlotIndex }),
+            )
 
-            const t = getT();
-            dispatch(addNotification({ message: t('plantsView.notifications.growStarted', { name: newPlant.name }), type: 'success' }));
+            const t = getT()
+            dispatch(
+                addNotification({
+                    message: t('plantsView.notifications.growStarted', { name: newPlant.name }),
+                    type: 'success',
+                }),
+            )
 
             // Navigate to plants view to show the new plant, regardless of where the flow started.
-            dispatch(setActiveView(View.Plants));
+            dispatch(setActiveView(View.Plants))
 
             // Clean up the flow state.
-            dispatch(cancelNewGrow());
+            dispatch(cancelNewGrow())
         } else {
-            console.error("startNewPlant called without complete strain or setup data.", { strain, setup, finalSlotIndex });
-            dispatch(cancelNewGrow());
+            console.error('startNewPlant called without complete strain or setup data.', {
+                strain,
+                setup,
+                finalSlotIndex,
+            })
+            dispatch(cancelNewGrow())
         }
-    }
-);
+    },
+)
 
 export const updatePlantToNow = createAsyncThunk<void, string, { state: RootState }>(
     'simulation/updatePlantToNow',
     async (plantId, { dispatch, getState }) => {
-        const state = getState();
-        const plant = state.simulation.plants.entities[plantId];
+        const state = getState()
+        const plant = state.simulation.plants.entities[plantId]
         if (plant) {
-            const actualElapsed = Date.now() - plant.lastUpdated;
+            const actualElapsed = Date.now() - plant.lastUpdated
             const settings = state.settings.settings
-            const deltaTime = actualElapsed;
-            if (actualElapsed > 1000 * 60) { // Only update if more than a minute has passed
+            const deltaTime = actualElapsed
+            if (actualElapsed > 1000 * 60) {
+                // Only update if more than a minute has passed
                 dispatch(simulationSlice.actions.setCatchUpState(true))
                 try {
-                    const result = await new Promise<{ updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] }>((resolve, reject) => {
+                    const result = await new Promise<{
+                        updatedPlant: Plant
+                        newJournalEntries: JournalEntry[]
+                        newTasks: Task[]
+                    }>((resolve, reject) => {
                         if (typeof Worker === 'undefined') {
-                            resolve(plantSimulationService.calculateStateForTimeDelta(plant, deltaTime, settings.simulation))
+                            resolve(
+                                plantSimulationService.calculateStateForTimeDelta(
+                                    plant,
+                                    deltaTime,
+                                    settings.simulation,
+                                ),
+                            )
                             return
                         }
 
-                        const worker = new Worker(new URL('../../simulation.worker.ts', import.meta.url), { type: 'module' });
+                        const worker = new Worker(
+                            new URL('../../simulation.worker.ts', import.meta.url),
+                            { type: 'module' },
+                        )
                         worker.onmessage = (e) => {
-                            worker.terminate();
-                            resolve(e.data as { updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] })
-                        };
+                            worker.terminate()
+                            if (e.data?.error) {
+                                reject(new Error(e.data.error))
+                                return
+                            }
+                            resolve(
+                                e.data as {
+                                    updatedPlant: Plant
+                                    newJournalEntries: JournalEntry[]
+                                    newTasks: Task[]
+                                },
+                            )
+                        }
                         worker.onerror = (e) => {
-                            worker.terminate();
+                            worker.terminate()
                             reject(new Error(e.message))
-                        };
-                        worker.postMessage({ plant, deltaTime, simulationSettings: settings.simulation });
+                        }
+                        worker.postMessage({
+                            plant,
+                            deltaTime,
+                            simulationSettings: settings.simulation,
+                        })
                     })
 
                     const filteredJournalEntries = result.newJournalEntries.filter((entry) => {
@@ -332,156 +448,259 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
 
                     const newProblemEntries = settings.simulation.autoJournaling.logProblems
                         ? result.updatedPlant.problems
-                            .filter((problem) => problem.status === 'active' && !plant.problems.some((existing) => existing.type === problem.type && existing.status === 'active'))
-                            .map((problem, index) => ({
-                                id: `journal-problem-${result.updatedPlant.id}-${problem.type}-${Date.now()}-${index}`,
-                                createdAt: Date.now(),
-                                type: JournalEntryType.System,
-                                notes: `Problem detected: ${problem.type}`,
-                            }))
+                              .filter(
+                                  (problem) =>
+                                      problem.status === 'active' &&
+                                      !plant.problems.some(
+                                          (existing) =>
+                                              existing.type === problem.type &&
+                                              existing.status === 'active',
+                                      ),
+                              )
+                              .map((problem, index) => ({
+                                  id: `journal-problem-${result.updatedPlant.id}-${problem.type}-${Date.now()}-${index}`,
+                                  createdAt: Date.now(),
+                                  type: JournalEntryType.System,
+                                  notes: `Problem detected: ${problem.type}`,
+                              }))
                         : []
 
-                    const filteredTasks = settings.plantsView.autoGenerateTasks ? result.newTasks : []
+                    const filteredTasks = settings.plantsView.autoGenerateTasks
+                        ? result.newTasks
+                        : []
                     const taskJournalEntries = settings.simulation.autoJournaling.logTasks
                         ? filteredTasks.map((task, index) => ({
-                            id: `journal-task-${result.updatedPlant.id}-${Date.now()}-${index}`,
-                            createdAt: Date.now(),
-                            type: JournalEntryType.System,
-                            notes: `Task generated: ${task.title}`,
-                        }))
+                              id: `journal-task-${result.updatedPlant.id}-${Date.now()}-${index}`,
+                              createdAt: Date.now(),
+                              type: JournalEntryType.System,
+                              notes: `Task generated: ${task.title}`,
+                          }))
                         : []
 
                     const quietHoursEnabled = settings.notifications.quietHours.enabled
-                    const notificationsMuted = quietHoursEnabled && isWithinQuietHours(settings.notifications.quietHours.start, settings.notifications.quietHours.end)
-                    const stageChangeEntry = filteredJournalEntries.find((entry) => entry.type === JournalEntryType.System && entry.notes.startsWith('Stage changed'))
+                    const notificationsMuted =
+                        quietHoursEnabled &&
+                        isWithinQuietHours(
+                            settings.notifications.quietHours.start,
+                            settings.notifications.quietHours.end,
+                        )
+                    const stageChangeEntry = filteredJournalEntries.find(
+                        (entry) =>
+                            entry.type === JournalEntryType.System &&
+                            entry.notes.startsWith('Stage changed'),
+                    )
 
                     if (settings.notifications.enabled && !notificationsMuted) {
                         if (settings.notifications.stageChange && stageChangeEntry) {
-                            void showBrowserNotification(result.updatedPlant.name, stageChangeEntry.notes, `stage-change-${result.updatedPlant.id}`, result.updatedPlant.id)
+                            void showBrowserNotification(
+                                result.updatedPlant.name,
+                                stageChangeEntry.notes,
+                                `stage-change-${result.updatedPlant.id}`,
+                                result.updatedPlant.id,
+                            )
                         }
 
-                        if (settings.notifications.problemDetected && newProblemEntries.length > 0 && newProblemEntries[0]) {
-                            void showBrowserNotification(result.updatedPlant.name, newProblemEntries[0].notes, `problem-${result.updatedPlant.id}`, result.updatedPlant.id)
+                        if (
+                            settings.notifications.problemDetected &&
+                            newProblemEntries.length > 0 &&
+                            newProblemEntries[0]
+                        ) {
+                            void showBrowserNotification(
+                                result.updatedPlant.name,
+                                newProblemEntries[0].notes,
+                                `problem-${result.updatedPlant.id}`,
+                                result.updatedPlant.id,
+                            )
                         }
 
-                        if (settings.notifications.newTask && filteredTasks.length > 0 && filteredTasks[0]) {
-                            void showBrowserNotification(result.updatedPlant.name, filteredTasks[0].title, `task-${result.updatedPlant.id}`, result.updatedPlant.id)
+                        if (
+                            settings.notifications.newTask &&
+                            filteredTasks.length > 0 &&
+                            filteredTasks[0]
+                        ) {
+                            void showBrowserNotification(
+                                result.updatedPlant.name,
+                                filteredTasks[0].title,
+                                `task-${result.updatedPlant.id}`,
+                                result.updatedPlant.id,
+                            )
                         }
                     }
 
-                    dispatch(simulationSlice.actions.plantStateUpdated({
-                        updatedPlant: result.updatedPlant,
-                        newJournalEntries: [...filteredJournalEntries, ...newProblemEntries, ...taskJournalEntries],
-                        newTasks: filteredTasks,
-                    }));
+                    dispatch(
+                        simulationSlice.actions.plantStateUpdated({
+                            updatedPlant: result.updatedPlant,
+                            newJournalEntries: [
+                                ...filteredJournalEntries,
+                                ...newProblemEntries,
+                                ...taskJournalEntries,
+                            ],
+                            newTasks: filteredTasks,
+                        }),
+                    )
                 } catch (error) {
-                    console.error('[SimWorker] Error during plant state update:', error);
+                    console.error('[SimWorker] Error during plant state update:', error)
                 } finally {
                     dispatch(simulationSlice.actions.setCatchUpState(false))
                 }
             }
         }
-    }
-);
+    },
+)
 
 export const initializeSimulation = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/initialize',
     async (_, { dispatch, getState }) => {
-        const { plants } = getState().simulation;
-        const plantIds = plants.ids as string[];
+        const { plants } = getState().simulation
+        const plantIds = plants.ids as string[]
         for (const id of plantIds) {
-            await dispatch(updatePlantToNow(id));
+            await dispatch(updatePlantToNow(id))
         }
-    }
-);
+    },
+)
 
 export const waterAllPlants = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/waterAll',
     (_, { dispatch, getState }) => {
-        const { plants } = getState().simulation;
-        const plantIds = plants.ids as string[];
-        plantIds.forEach(id => {
-            dispatch(applyWateringAction({ plantId: id, data: {}, notes: 'Watered all plants.'}));
-        });
-    }
-);
+        const { plants } = getState().simulation
+        const plantIds = plants.ids as string[]
+        plantIds.forEach((id) => {
+            dispatch(applyWateringAction({ plantId: id, data: {}, notes: 'Watered all plants.' }))
+        })
+    },
+)
 
 // --- RING 3 VALIDATING THUNKS ---
 
-export const applyWateringAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
-    'simulation/applyWatering',
-    ({ plantId, data, notes }, { dispatch, getState }) => {
-        const validation = WaterDataSchema.safeParse(data);
-        if (!validation.success) {
-            console.error("Watering action validation failed:", validation.error);
-            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Watering' }), type: 'error' }));
-            return;
-        }
-
-        const plant = getState().simulation.plants.entities[plantId];
-        if (plant) {
-            const updatedPlant = plantSimulationService.clonePlant(plant);
-            const waterCapacity = updatedPlant.equipment.potSize * 1000 * (updatedPlant.equipment.potType === 'Fabric' ? 0.28 : 0.35);
-            updatedPlant.medium.substrateWater = waterCapacity;
-            updatedPlant.medium.moisture = 100;
-            if (validation.data.ph) updatedPlant.medium.ph = validation.data.ph;
-            if (validation.data.ec) updatedPlant.medium.ec = validation.data.ec;
-
-            dispatch(simulationSlice.actions.updatePlant({ id: plantId, changes: updatedPlant }));
-            dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Watering, notes, details: validation.data } }));
-        }
+export const applyWateringAction = createAsyncThunk<
+    void,
+    { plantId: string; data: unknown; notes: string },
+    { state: RootState }
+>('simulation/applyWatering', ({ plantId, data, notes }, { dispatch, getState }) => {
+    const validation = WaterDataSchema.safeParse(data)
+    if (!validation.success) {
+        console.error('Watering action validation failed:', validation.error)
+        dispatch(
+            addNotification({
+                message: getT()('common.simulationErrors.invalidActionData', {
+                    action: 'Watering',
+                }),
+                type: 'error',
+            }),
+        )
+        return
     }
-);
 
-export const applyTrainingAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
-    'simulation/applyTraining',
-    ({ plantId, data, notes }, { dispatch, getState }) => {
-        const validation = TrainingDataSchema.safeParse(data);
-        if (!validation.success) {
-             console.error("Training action validation failed:", validation.error);
-             dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Training' }), type: 'error' }));
-            return;
-        }
+    const plant = getState().simulation.plants.entities[plantId]
+    if (plant) {
+        const updatedPlant = plantSimulationService.clonePlant(plant)
+        const waterCapacity =
+            updatedPlant.equipment.potSize *
+            1000 *
+            (updatedPlant.equipment.potType === 'Fabric' ? 0.28 : 0.35)
+        updatedPlant.medium.substrateWater = waterCapacity
+        updatedPlant.medium.moisture = 100
+        if (validation.data.ph) updatedPlant.medium.ph = validation.data.ph
+        if (validation.data.ec) updatedPlant.medium.ec = validation.data.ec
 
-        const plant = getState().simulation.plants.entities[plantId];
-        if (plant) {
-            let updatedPlant = plantSimulationService.clonePlant(plant);
-            if (validation.data.type === 'Topping') {
-                updatedPlant = plantSimulationService.topPlant(updatedPlant).updatedPlant;
-            } else if (validation.data.type === 'LST') {
-                updatedPlant = plantSimulationService.applyLst(updatedPlant).updatedPlant;
-            }
-            dispatch(simulationSlice.actions.updatePlant({ id: plantId, changes: updatedPlant }));
-            dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Training, notes, details: validation.data } }));
-        }
+        dispatch(simulationSlice.actions.updatePlant({ id: plantId, changes: updatedPlant }))
+        dispatch(
+            addJournalEntry({
+                plantId,
+                entry: { type: JournalEntryType.Watering, notes, details: validation.data },
+            }),
+        )
     }
-);
+})
 
-export const applyPestControlAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
-    'simulation/applyPestControl',
-    ({ plantId, data, notes }, { dispatch }) => {
-        const validation = PestControlDataSchema.safeParse(data);
-        if (!validation.success) {
-            console.error("Pest Control action validation failed:", validation.error);
-            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Pest Control' }), type: 'error' }));
-            return;
-        }
-        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.PestControl, notes, details: validation.data } }));
+export const applyTrainingAction = createAsyncThunk<
+    void,
+    { plantId: string; data: unknown; notes: string },
+    { state: RootState }
+>('simulation/applyTraining', ({ plantId, data, notes }, { dispatch, getState }) => {
+    const validation = TrainingDataSchema.safeParse(data)
+    if (!validation.success) {
+        console.error('Training action validation failed:', validation.error)
+        dispatch(
+            addNotification({
+                message: getT()('common.simulationErrors.invalidActionData', {
+                    action: 'Training',
+                }),
+                type: 'error',
+            }),
+        )
+        return
     }
-);
 
-export const applyAmendmentAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
-    'simulation/applyAmendment',
-    ({ plantId, data, notes }, { dispatch }) => {
-        const validation = AmendmentDataSchema.safeParse(data);
-         if (!validation.success) {
-            console.error("Amendment action validation failed:", validation.error);
-            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Amendment' }), type: 'error' }));
-            return;
+    const plant = getState().simulation.plants.entities[plantId]
+    if (plant) {
+        let updatedPlant = plantSimulationService.clonePlant(plant)
+        if (validation.data.type === 'Topping') {
+            updatedPlant = plantSimulationService.topPlant(updatedPlant).updatedPlant
+        } else if (validation.data.type === 'LST') {
+            updatedPlant = plantSimulationService.applyLst(updatedPlant).updatedPlant
         }
-        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Amendment, notes, details: validation.data } }));
+        dispatch(simulationSlice.actions.updatePlant({ id: plantId, changes: updatedPlant }))
+        dispatch(
+            addJournalEntry({
+                plantId,
+                entry: { type: JournalEntryType.Training, notes, details: validation.data },
+            }),
+        )
     }
-);
+})
+
+export const applyPestControlAction = createAsyncThunk<
+    void,
+    { plantId: string; data: unknown; notes: string },
+    { state: RootState }
+>('simulation/applyPestControl', ({ plantId, data, notes }, { dispatch }) => {
+    const validation = PestControlDataSchema.safeParse(data)
+    if (!validation.success) {
+        console.error('Pest Control action validation failed:', validation.error)
+        dispatch(
+            addNotification({
+                message: getT()('common.simulationErrors.invalidActionData', {
+                    action: 'Pest Control',
+                }),
+                type: 'error',
+            }),
+        )
+        return
+    }
+    dispatch(
+        addJournalEntry({
+            plantId,
+            entry: { type: JournalEntryType.PestControl, notes, details: validation.data },
+        }),
+    )
+})
+
+export const applyAmendmentAction = createAsyncThunk<
+    void,
+    { plantId: string; data: unknown; notes: string },
+    { state: RootState }
+>('simulation/applyAmendment', ({ plantId, data, notes }, { dispatch }) => {
+    const validation = AmendmentDataSchema.safeParse(data)
+    if (!validation.success) {
+        console.error('Amendment action validation failed:', validation.error)
+        dispatch(
+            addNotification({
+                message: getT()('common.simulationErrors.invalidActionData', {
+                    action: 'Amendment',
+                }),
+                type: 'error',
+            }),
+        )
+        return
+    }
+    dispatch(
+        addJournalEntry({
+            plantId,
+            entry: { type: JournalEntryType.Amendment, notes, details: validation.data },
+        }),
+    )
+})
 
 export const {
     setSimulationState,
@@ -502,6 +721,6 @@ export const {
     resetPlants,
     setPlantVpdProfile,
     setCatchUpState,
-} = simulationSlice.actions;
+} = simulationSlice.actions
 
-export default simulationSlice.reducer;
+export default simulationSlice.reducer

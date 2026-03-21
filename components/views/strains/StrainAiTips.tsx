@@ -161,6 +161,13 @@ interface StrainAiTipsProps {
     strain: Strain
 }
 
+const resolveApiErrorMessage = (error: unknown, fallback: string): string => {
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        return String((error as { message?: unknown }).message ?? fallback)
+    }
+    return fallback
+}
+
 export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
@@ -252,10 +259,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
         return t('strainsView.tips.form.generate')
     })()
 
-    const aiErrorMessage =
-        typeof error === 'object' && error !== null && 'message' in error
-            ? String((error as { message?: unknown }).message ?? t('ai.error.unknown'))
-            : t('ai.error.unknown')
+    const aiErrorMessage = resolveApiErrorMessage(error, t('ai.error.unknown'))
 
     return (
         <Card>

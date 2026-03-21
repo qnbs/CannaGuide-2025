@@ -44,6 +44,8 @@ StageLabel.displayName = 'StageLabel'
 const AlertBadge: React.FC<{ type: string }> = memo(({ type }) => {
     const isHigh = type.includes('high')
     const isEc = type.includes('ec')
+    const metricLabel = isEc ? 'EC' : 'pH'
+    const directionLabel = isHigh ? '↑' : '↓'
     return (
         <span
             className={cn(
@@ -51,7 +53,7 @@ const AlertBadge: React.FC<{ type: string }> = memo(({ type }) => {
                 isHigh ? 'bg-red-900/50 text-red-300' : 'bg-amber-900/50 text-amber-300',
             )}
         >
-            {isEc ? 'EC' : 'pH'} {isHigh ? '↑' : '↓'}
+            {metricLabel} {directionLabel}
         </span>
     )
 })

@@ -60,20 +60,46 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, a
                 }}
             />
 
-            {sortedExports.map(exp => (
-                <Card key={exp.id} className="!p-3">
-                    <div className="flex justify-between items-center">
-                        <div className="min-w-0">
-                            <h4 className="font-bold text-slate-100 truncate">{exp.name ?? 'Export'}</h4>
-                            <p className="text-xs text-slate-400">{new Date(exp.createdAt).toLocaleString()} &bull; {(exp.format ?? 'txt').toUpperCase()} &bull; {t('strainsView.exportsManager.strainCount', { count: Array.isArray(exp.strainIds) ? exp.strainIds.length : 0 })}</p>
+            {sortedExports.map(exp => {
+                const exportName = exp.name ?? 'Export'
+                const exportDate = new Date(exp.createdAt).toLocaleString()
+                const exportFormat = (exp.format ?? 'txt').toUpperCase()
+                const exportStrainCount = Array.isArray(exp.strainIds) ? exp.strainIds.length : 0
+
+                return (
+                    <Card key={exp.id} className="!p-3">
+                        <div className="flex justify-between items-center">
+                            <div className="min-w-0">
+                                <h4 className="font-bold text-slate-100 truncate">{exportName}</h4>
+                                <p className="text-xs text-slate-400">
+                                    {exportDate} &bull; {exportFormat} &bull;{' '}
+                                    {t('strainsView.exportsManager.strainCount', {
+                                        count: exportStrainCount,
+                                    })}
+                                </p>
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => handleDownload(exp)}
+                                    title={t('common.downloadAgain')}
+                                >
+                                    <PhosphorIcons.DownloadSimple />
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="danger"
+                                    onClick={() => setPendingDeleteId(exp.id)}
+                                    title={t('common.delete')}
+                                >
+                                    <PhosphorIcons.TrashSimple />
+                                </Button>
+                            </div>
                         </div>
-                        <div className="flex gap-2 flex-shrink-0">
-                            <Button size="sm" variant="secondary" onClick={() => handleDownload(exp)} title={t('common.downloadAgain')}><PhosphorIcons.DownloadSimple /></Button>
-                            <Button size="sm" variant="danger" onClick={() => setPendingDeleteId(exp.id)} title={t('common.delete')}><PhosphorIcons.TrashSimple /></Button>
-                        </div>
-                    </div>
-                </Card>
-            ))}
+                    </Card>
+                )
+            })}
         </div>
     );
 };

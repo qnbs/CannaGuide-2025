@@ -6,7 +6,14 @@
     "tsconfigFile": "tsconfig.json",
     "reporters": ["progress", "clear-text", "html"],
     "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
-    "mutate": ["services/**/*.ts", "hooks/**/*.ts", "stores/**/*.ts", "components/**/*.tsx"],
+    "mutate": [
+        "services/**/*.ts",
+        "hooks/**/*.ts",
+        "stores/**/*.ts",
+        "components/**/*.tsx",
+        "utils/**/*.ts",
+        "lib/**/*.ts"
+    ],
     "ignorePatterns": ["dist/**", "coverage/**", "node_modules/**", "test-results/**"],
     "vitest": {
         "configFile": "vite.config.ts"

@@ -4,6 +4,24 @@ let _sentry: SentryModule | null = null
 let _initPromise: Promise<void> | null = null
 let _sentryDisabledByLocalOnly = false
 
+type SentryFrameLike = { filename?: string }
+type SentryExceptionValueLike = { stacktrace?: { frames?: SentryFrameLike[] } }
+type SentryEventLike = { exception?: { values?: SentryExceptionValueLike[] } }
+
+const isExtensionFrame = (filename?: string): boolean =>
+    Boolean(filename?.includes('extensions/') || filename?.includes('chrome-extension'))
+
+const shouldDropSentryEvent = (event: SentryEventLike): boolean => {
+    const values = event.exception?.values
+    if (!values) {
+        return false
+    }
+
+    return values.some((value) =>
+        value.stacktrace?.frames?.some((frame) => isExtensionFrame(frame.filename)),
+    )
+}
+
 /**
  * Disables Sentry at runtime (used by Local-Only Mode).
  * After calling this, all Sentry proxy methods become no-ops.
@@ -55,15 +73,7 @@ export const initSentry = (): void => {
                 }),
             ],
             beforeSend(event) {
-                if (
-                    event.exception?.values?.some((v) =>
-                        v.stacktrace?.frames?.some(
-                            (f) =>
-                                f.filename?.includes('extensions/') ||
-                                f.filename?.includes('chrome-extension'),
-                        ),
-                    )
-                ) {
+                if (shouldDropSentryEvent(event)) {
                     return null
                 }
                 return event

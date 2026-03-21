@@ -83,6 +83,79 @@ let tsDb: IDBDatabase | null = null
 let tsDbPromise: Promise<IDBDatabase> | null = null
 let lastCompactionTs = 0
 
+const buildBucketKey = (deviceId: string, bucketStart: number): string =>
+    `${deviceId}::${bucketStart}`
+
+const parseBucketKey = (key: string): { deviceId: string; bucketStart: number } => {
+    const [deviceId = '', bucketRaw = '0'] = key.split('::')
+    return {
+        deviceId,
+        bucketStart: Number(bucketRaw),
+    }
+}
+
+const groupEntriesByBucket = (
+    entries: TimeSeriesEntry[],
+    bucketSize: number,
+): Map<string, TimeSeriesEntry[]> => {
+    const buckets = new Map<string, TimeSeriesEntry[]>()
+
+    for (const entry of entries) {
+        const bucketStart = Math.floor(entry.timestamp / bucketSize) * bucketSize
+        const key = buildBucketKey(entry.deviceId, bucketStart)
+        const existing = buckets.get(key)
+        if (existing) {
+            existing.push(entry)
+            continue
+        }
+        buckets.set(key, [entry])
+    }
+
+    return buckets
+}
+
+const buildAggregatedEntry = (
+    entries: TimeSeriesEntry[],
+    targetResolution: TimeSeriesResolution,
+    deviceId: string,
+    bucketStart: number,
+): Omit<TimeSeriesEntry, 'id'> => {
+    let sumTemp = 0
+    let sumHum = 0
+    let sumVpd = 0
+    let sumPh = 0
+    let vpdCount = 0
+    let phCount = 0
+    let totalSamples = 0
+
+    for (const entry of entries) {
+        const weight = entry.sampleCount
+        sumTemp += entry.temperatureC * weight
+        sumHum += entry.humidityPercent * weight
+        totalSamples += weight
+
+        if (entry.vpd != null) {
+            sumVpd += entry.vpd * weight
+            vpdCount += weight
+        }
+        if (entry.ph != null) {
+            sumPh += entry.ph * weight
+            phCount += weight
+        }
+    }
+
+    return {
+        deviceId,
+        timestamp: bucketStart,
+        resolution: targetResolution,
+        temperatureC: sumTemp / totalSamples,
+        humidityPercent: sumHum / totalSamples,
+        vpd: vpdCount > 0 ? sumVpd / vpdCount : null,
+        ph: phCount > 0 ? sumPh / phCount : null,
+        sampleCount: totalSamples,
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Database connection
 // ---------------------------------------------------------------------------
@@ -376,17 +449,7 @@ export const timeSeriesService = {
         if (eligible.length === 0) return 0
 
         // Phase 2: Group by (deviceId, bucket)
-        const buckets = new Map<string, TimeSeriesEntry[]>()
-        for (const entry of eligible) {
-            const bucketStart = Math.floor(entry.timestamp / bucketSize) * bucketSize
-            const key = `${entry.deviceId}::${bucketStart}`
-            const arr = buckets.get(key)
-            if (arr) {
-                arr.push(entry)
-            } else {
-                buckets.set(key, [entry])
-            }
-        }
+        const buckets = groupEntriesByBucket(eligible, bucketSize)
 
         // Phase 3: Write aggregated entries and delete originals in one transaction
         await new Promise<void>((resolve, reject) => {
@@ -396,43 +459,8 @@ export const timeSeriesService = {
             const store = tx.objectStore(TS_STORE)
 
             for (const [key, entries] of buckets) {
-                const parts = key.split('::')
-                const deviceId = parts[0] ?? ''
-                const bucketStart = Number(parts[1] ?? 0)
-
-                let sumTemp = 0,
-                    sumHum = 0,
-                    sumVpd = 0,
-                    sumPh = 0
-                let vpdCount = 0,
-                    phCount = 0,
-                    totalSamples = 0
-
-                for (const e of entries) {
-                    const w = e.sampleCount
-                    sumTemp += e.temperatureC * w
-                    sumHum += e.humidityPercent * w
-                    totalSamples += w
-                    if (e.vpd != null) {
-                        sumVpd += e.vpd * w
-                        vpdCount += w
-                    }
-                    if (e.ph != null) {
-                        sumPh += e.ph * w
-                        phCount += w
-                    }
-                }
-
-                store.add({
-                    deviceId,
-                    timestamp: bucketStart,
-                    resolution: targetResolution,
-                    temperatureC: sumTemp / totalSamples,
-                    humidityPercent: sumHum / totalSamples,
-                    vpd: vpdCount > 0 ? sumVpd / vpdCount : null,
-                    ph: phCount > 0 ? sumPh / phCount : null,
-                    sampleCount: totalSamples,
-                } satisfies Omit<TimeSeriesEntry, 'id'>)
+                const { deviceId, bucketStart } = parseBucketKey(key)
+                store.add(buildAggregatedEntry(entries, targetResolution, deviceId, bucketStart))
 
                 // Delete originals
                 for (const e of entries) {

@@ -499,152 +499,250 @@ class GeminiService implements BaseAIProvider {
         }
     }
 
-    async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
-        const t = getT()
-
-        // Alternate provider path: JSON mode text generation
-        if (this.isAlternateProvider()) {
-            try {
-                const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.equipmentSystemInstruction')}`
-                const jsonInstruction =
-                    'Respond ONLY with valid JSON matching this exact structure: { "tent": {"name":"...","price":0,"rationale":"..."}, "light": {"name":"...","price":0,"rationale":"...","watts":0}, "ventilation": {"name":"...","price":0,"rationale":"..."}, "circulationFan": {"name":"...","price":0,"rationale":"..."}, "pots": {"name":"...","price":0,"rationale":"..."}, "soil": {"name":"...","price":0,"rationale":"..."}, "nutrients": {"name":"...","price":0,"rationale":"..."}, "extra": {"name":"...","price":0,"rationale":"..."}, "proTip": "..." }'
-                const text = await this.generateViaAlternateProvider(
-                    'getEquipmentRecommendation',
-                    systemPrompt,
-                    `${createLocalizedPrompt(prompt, lang)}\n\n${jsonInstruction}`,
-                    true,
-                    MAX_OUTPUT_TOKENS_JSON,
-                )
-                return this.parseJsonFromText<Recommendation>(
-                    text,
-                    'ai.error.equipment',
-                    RecommendationSchema,
-                )
-            } catch (error) {
-                console.error('Alt-provider getEquipmentRecommendation Error:', error)
-                this.rethrowKnownError(error, 'ai.error.equipment')
-            }
+    private buildEquipmentRecommendationResponseSchema(): Record<string, unknown> {
+        return {
+            type: Type.OBJECT,
+            properties: {
+                tent: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                    },
+                    required: ['name', 'price', 'rationale'],
+                },
+                light: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                        watts: { type: Type.NUMBER },
+                    },
+                    required: ['name', 'price', 'rationale', 'watts'],
+                },
+                ventilation: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                    },
+                    required: ['name', 'price', 'rationale'],
+                },
+                circulationFan: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                    },
+                    required: ['name', 'price', 'rationale'],
+                },
+                pots: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                    },
+                    required: ['name', 'price', 'rationale'],
+                },
+                soil: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                    },
+                    required: ['name', 'price', 'rationale'],
+                },
+                nutrients: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                    },
+                    required: ['name', 'price', 'rationale'],
+                },
+                extra: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        price: { type: Type.NUMBER },
+                        rationale: { type: Type.STRING },
+                    },
+                    required: ['name', 'price', 'rationale'],
+                },
+                proTip: { type: Type.STRING },
+            },
+            required: [
+                'tent',
+                'light',
+                'ventilation',
+                'circulationFan',
+                'pots',
+                'soil',
+                'nutrients',
+                'extra',
+                'proTip',
+            ],
         }
+    }
 
-        try {
-            aiRateLimiter.acquireSlot('getEquipmentRecommendation')
-            const ai = await this.getAi()
-            const systemInstruction = t('ai.prompts.equipmentSystemInstruction')
-            const localizedSystemInstruction = createLocalizedPrompt(
-                `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
-                lang,
-            )
+    private async getEquipmentRecommendationFromAlternateProvider(
+        prompt: string,
+        lang: Language,
+    ): Promise<Recommendation> {
+        const t = getT()
+        const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.equipmentSystemInstruction')}`
+        const jsonInstruction =
+            'Respond ONLY with valid JSON matching this exact structure: { "tent": {"name":"...","price":0,"rationale":"..."}, "light": {"name":"...","price":0,"rationale":"...","watts":0}, "ventilation": {"name":"...","price":0,"rationale":"..."}, "circulationFan": {"name":"...","price":0,"rationale":"..."}, "pots": {"name":"...","price":0,"rationale":"..."}, "soil": {"name":"...","price":0,"rationale":"..."}, "nutrients": {"name":"...","price":0,"rationale":"..."}, "extra": {"name":"...","price":0,"rationale":"..."}, "proTip": "..." }'
 
-            const response = await this.generateWithFallback({
-                ai,
-                model: 'gemini-2.5-flash',
-                contents: truncatePromptForModel(
-                    `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
-                ),
-                config: {
-                    systemInstruction: localizedSystemInstruction,
-                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
-                    responseMimeType: 'application/json',
-                    responseSchema: {
+        const text = await this.generateViaAlternateProvider(
+            'getEquipmentRecommendation',
+            systemPrompt,
+            `${createLocalizedPrompt(prompt, lang)}\n\n${jsonInstruction}`,
+            true,
+            MAX_OUTPUT_TOKENS_JSON,
+        )
+
+        return this.parseJsonFromText<Recommendation>(
+            text,
+            'ai.error.equipment',
+            RecommendationSchema,
+        )
+    }
+
+    private async getEquipmentRecommendationFromGemini(
+        prompt: string,
+        lang: Language,
+    ): Promise<Recommendation> {
+        const t = getT()
+        aiRateLimiter.acquireSlot('getEquipmentRecommendation')
+        const ai = await this.getAi()
+        const systemInstruction = t('ai.prompts.equipmentSystemInstruction')
+        const localizedSystemInstruction = createLocalizedPrompt(
+            `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
+            lang,
+        )
+
+        const response = await this.generateWithFallback({
+            ai,
+            model: 'gemini-2.5-flash',
+            contents: truncatePromptForModel(
+                `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+            ),
+            config: {
+                systemInstruction: localizedSystemInstruction,
+                maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
+                responseMimeType: 'application/json',
+                responseSchema: this.buildEquipmentRecommendationResponseSchema(),
+            },
+        })
+
+        return this.parseJsonResponse<Recommendation>(
+            response,
+            'ai.error.equipment',
+            RecommendationSchema,
+        )
+    }
+
+    private buildMentorResponseSchema(): Record<string, unknown> {
+        return {
+            type: Type.OBJECT,
+            properties: {
+                title: { type: Type.STRING },
+                content: { type: Type.STRING },
+                uiHighlights: {
+                    type: Type.ARRAY,
+                    items: {
                         type: Type.OBJECT,
                         properties: {
-                            tent: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                },
-                                required: ['name', 'price', 'rationale'],
-                            },
-                            light: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                    watts: { type: Type.NUMBER },
-                                },
-                                required: ['name', 'price', 'rationale', 'watts'],
-                            },
-                            ventilation: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                },
-                                required: ['name', 'price', 'rationale'],
-                            },
-                            circulationFan: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                },
-                                required: ['name', 'price', 'rationale'],
-                            },
-                            pots: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                },
-                                required: ['name', 'price', 'rationale'],
-                            },
-                            soil: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                },
-                                required: ['name', 'price', 'rationale'],
-                            },
-                            nutrients: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                },
-                                required: ['name', 'price', 'rationale'],
-                            },
-                            extra: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    price: { type: Type.NUMBER },
-                                    rationale: { type: Type.STRING },
-                                },
-                                required: ['name', 'price', 'rationale'],
-                            },
-                            proTip: { type: Type.STRING },
+                            elementId: { type: Type.STRING },
+                            plantId: { type: Type.STRING },
                         },
-                        required: [
-                            'tent',
-                            'light',
-                            'ventilation',
-                            'circulationFan',
-                            'pots',
-                            'soil',
-                            'nutrients',
-                            'extra',
-                            'proTip',
-                        ],
+                        required: ['elementId'],
                     },
                 },
-            })
+            },
+            required: ['title', 'content'],
+        }
+    }
 
-            return this.parseJsonResponse<Recommendation>(
-                response,
-                'ai.error.equipment',
-                RecommendationSchema,
-            )
+    private async getMentorResponseFromAlternateProvider(
+        prompt: string,
+        lang: Language,
+    ): Promise<Omit<MentorMessage, 'role'>> {
+        const t = getT()
+        const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.mentor.systemInstruction')}`
+        const jsonInstruction =
+            'Respond ONLY with valid JSON matching: { "title": "...", "content": "...", "uiHighlights": [] }'
+        const text = await this.generateViaAlternateProvider(
+            'getMentorResponse',
+            systemPrompt,
+            `${createLocalizedPrompt(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`, lang)}\n\n${jsonInstruction}`,
+            true,
+            MAX_OUTPUT_TOKENS_JSON,
+        )
+
+        return this.parseJsonFromText<Omit<MentorMessage, 'role'>>(
+            text,
+            'ai.error.generic',
+            MentorMessageContentSchema,
+        )
+    }
+
+    private async getMentorResponseFromGemini(
+        prompt: string,
+        lang: Language,
+    ): Promise<Omit<MentorMessage, 'role'>> {
+        const t = getT()
+        aiRateLimiter.acquireSlot('getMentorResponse')
+        const ai = await this.getAi()
+        const systemInstruction = t('ai.prompts.mentor.systemInstruction')
+        const localizedSystemInstruction = createLocalizedPrompt(
+            `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
+            lang,
+        )
+        const localizedPrompt = createLocalizedPrompt(
+            `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+            lang,
+        )
+        const response = await this.generateWithFallback({
+            ai,
+            model: 'gemini-2.5-flash',
+            contents: truncatePromptForModel(localizedPrompt),
+            config: {
+                systemInstruction: localizedSystemInstruction,
+                maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
+                responseMimeType: 'application/json',
+                responseSchema: this.buildMentorResponseSchema(),
+            },
+        })
+
+        return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(
+            response,
+            'ai.error.generic',
+            MentorMessageContentSchema,
+        )
+    }
+
+    async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
+        try {
+            if (this.isAlternateProvider()) {
+                return await this.getEquipmentRecommendationFromAlternateProvider(prompt, lang)
+            }
+
+            return await this.getEquipmentRecommendationFromGemini(prompt, lang)
         } catch (error) {
+            const isAlternateProviderError = this.isAlternateProvider()
             console.error('Gemini getEquipmentRecommendation Error:', error)
+            if (isAlternateProviderError) {
+                console.error('Alt-provider getEquipmentRecommendation Error:', error)
+            }
             this.rethrowKnownError(error, 'ai.error.equipment')
         }
     }
@@ -799,71 +897,11 @@ PLANT CONTEXT:
         })
 
         try {
-            // Alternate provider path for mentor
             if (this.isAlternateProvider()) {
-                const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.mentor.systemInstruction')}`
-                const jsonInstruction =
-                    'Respond ONLY with valid JSON matching: { "title": "...", "content": "...", "uiHighlights": [] }'
-                const text = await this.generateViaAlternateProvider(
-                    'getMentorResponse',
-                    systemPrompt,
-                    `${createLocalizedPrompt(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`, lang)}\n\n${jsonInstruction}`,
-                    true,
-                    MAX_OUTPUT_TOKENS_JSON,
-                )
-                return this.parseJsonFromText<Omit<MentorMessage, 'role'>>(
-                    text,
-                    'ai.error.generic',
-                    MentorMessageContentSchema,
-                )
+                return await this.getMentorResponseFromAlternateProvider(prompt, lang)
             }
 
-            aiRateLimiter.acquireSlot('getMentorResponse')
-            const ai = await this.getAi()
-            const systemInstruction = t('ai.prompts.mentor.systemInstruction')
-            const localizedSystemInstruction = createLocalizedPrompt(
-                `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
-                lang,
-            )
-            const localizedPrompt = createLocalizedPrompt(
-                `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
-                lang,
-            )
-            const response = await this.generateWithFallback({
-                ai,
-                model: 'gemini-2.5-flash',
-                contents: truncatePromptForModel(localizedPrompt),
-                config: {
-                    systemInstruction: localizedSystemInstruction,
-                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
-                    responseMimeType: 'application/json',
-                    responseSchema: {
-                        type: Type.OBJECT,
-                        properties: {
-                            title: { type: Type.STRING },
-                            content: { type: Type.STRING },
-                            uiHighlights: {
-                                type: Type.ARRAY,
-                                items: {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        elementId: { type: Type.STRING },
-                                        plantId: { type: Type.STRING },
-                                    },
-                                    required: ['elementId'],
-                                },
-                            },
-                        },
-                        required: ['title', 'content'],
-                    },
-                },
-            })
-
-            return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(
-                response,
-                'ai.error.generic',
-                MentorMessageContentSchema,
-            )
+            return await this.getMentorResponseFromGemini(prompt, lang)
         } catch (error) {
             console.error('Gemini getMentorResponse Error:', error)
             if (this.shouldUseLocalFallback(error)) {

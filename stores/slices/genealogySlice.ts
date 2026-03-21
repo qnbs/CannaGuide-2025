@@ -41,6 +41,36 @@ const initialState: GenealogyState = initialGenealogyState
 // ---------------------------------------------------------------------------
 const VALID_STRAIN_TYPES = new Set<string>(Object.values(StrainType))
 
+const isFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && isFinite(value)
+
+const toZoomTransform = (raw: unknown): SerializableZoomTransform | null => {
+    if (!raw || typeof raw !== 'object') {
+        return null
+    }
+
+    const zt = raw as Record<string, unknown>
+    if (!isFiniteNumber(zt.k) || zt.k <= 0) {
+        return null
+    }
+    if (!isFiniteNumber(zt.x) || !isFiniteNumber(zt.y)) {
+        return null
+    }
+
+    return { k: zt.k, x: zt.x, y: zt.y }
+}
+
+const isValidCachedTreeRoot = (tree: unknown): boolean => {
+    if (!tree || typeof tree !== 'object') {
+        return false
+    }
+    const t = tree as Record<string, unknown>
+    if (typeof t.id !== 'string' || typeof t.name !== 'string') {
+        return false
+    }
+    return VALID_STRAIN_TYPES.has(t.type as string)
+}
+
 const sanitizeNode = (raw: unknown, depth = 0): GenealogyNode | null => {
     // Guard: max depth 25 prevents stack overflow on circular-looking data
     if (depth > 25 || !raw || typeof raw !== 'object') return null
@@ -96,8 +126,7 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
     // Extract preferences first so we can preserve them on version mismatch
     const layoutOrientation: GenealogyState['layoutOrientation'] =
         s.layoutOrientation === 'vertical' ? 'vertical' : 'horizontal'
-    const selectedStrainId =
-        typeof s.selectedStrainId === 'string' ? s.selectedStrainId : null
+    const selectedStrainId = typeof s.selectedStrainId === 'string' ? s.selectedStrainId : null
 
     // Version mismatch → wipe cache, preserve user prefs
     if (s._version !== GENEALOGY_STATE_VERSION) {
@@ -133,18 +162,7 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
     const status: GenealogyState['status'] =
         rawStatus === 'succeeded' || rawStatus === 'failed' ? rawStatus : 'idle'
 
-    // zoomTransform: validate all three numbers
-    let zoomTransform: SerializableZoomTransform | null = null
-    if (s.zoomTransform && typeof s.zoomTransform === 'object') {
-        const zt = s.zoomTransform as Record<string, unknown>
-        if (
-            typeof zt.k === 'number' && isFinite(zt.k) && zt.k > 0 &&
-            typeof zt.x === 'number' && isFinite(zt.x) &&
-            typeof zt.y === 'number' && isFinite(zt.y)
-        ) {
-            zoomTransform = { k: zt.k, x: zt.x, y: zt.y }
-        }
-    }
+    const zoomTransform = toZoomTransform(s.zoomTransform)
 
     return {
         _version: GENEALOGY_STATE_VERSION,
@@ -173,17 +191,18 @@ export const isGenealogyStateCorrupt = (state: unknown): boolean => {
     if (s.status === 'loading') return true
 
     // computedTrees must be a plain object (not null, not array)
-    if (s.computedTrees == null || typeof s.computedTrees !== 'object' || Array.isArray(s.computedTrees)) return true
+    if (
+        s.computedTrees == null ||
+        typeof s.computedTrees !== 'object' ||
+        Array.isArray(s.computedTrees)
+    )
+        return true
 
     // Spot-check: any cached tree root must have id+name+type
     const trees = s.computedTrees as Record<string, unknown>
-    for (const key of Object.keys(trees)) {
-        const tree = trees[key]
+    for (const tree of Object.values(trees)) {
         if (tree === null) continue // null = "strain not found" sentinel
-        if (!tree || typeof tree !== 'object') return true
-        const t = tree as Record<string, unknown>
-        if (typeof t.id !== 'string' || typeof t.name !== 'string') return true
-        if (!VALID_STRAIN_TYPES.has(t.type as string)) return true
+        if (!isValidCachedTreeRoot(tree)) return true
     }
 
     return false
@@ -251,9 +270,13 @@ const genealogySlice = createSlice({
             const { k, x, y } = action.payload
             // Reject NaN / Infinity values that would corrupt the persisted state
             if (
-                typeof k === 'number' && isFinite(k) && k > 0 &&
-                typeof x === 'number' && isFinite(x) &&
-                typeof y === 'number' && isFinite(y)
+                typeof k === 'number' &&
+                isFinite(k) &&
+                k > 0 &&
+                typeof x === 'number' &&
+                isFinite(x) &&
+                typeof y === 'number' &&
+                isFinite(y)
             ) {
                 state.zoomTransform = { k, x, y }
             }

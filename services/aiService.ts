@@ -102,6 +102,49 @@ async function withLocalFallback<T>(
     }
 }
 
+const buildMentorStreamPrompt = (
+    plant: Plant,
+    query: string,
+    lang: Language,
+    ragContext: string,
+): string => {
+    const isDE = lang === 'de'
+    const instruction = isDE
+        ? 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.'
+        : 'Answer as CannaGuide AI in English, structured, factual, and without HTML.'
+
+    return [
+        instruction,
+        `Plant: ${plant.name} | ${plant.strain.name} | stage=${plant.stage}`,
+        ragContext ? `Context: ${ragContext}` : '',
+        `Question: ${query}`,
+        'Return ONLY valid JSON with this exact shape:',
+        '{"title":"...","content":"...","uiHighlights":[]}',
+    ]
+        .filter(Boolean)
+        .join('\n\n')
+}
+
+const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMessage, 'role'> => {
+    try {
+        const parsed = JSON.parse(result) as {
+            title?: string
+            content?: string
+            uiHighlights?: string[]
+        }
+        if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
+            return parsed as Omit<MentorMessage, 'role'>
+        }
+    } catch {
+        // Not valid JSON — fall through to plain text response
+    }
+
+    return {
+        title: lang === 'de' ? 'KI-Mentor' : 'AI Mentor',
+        content: result,
+    }
+}
+
 export const aiService = {
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
         if (shouldRouteLocally()) {
@@ -240,41 +283,12 @@ export const aiService = {
             }
             const local = await getLocalAiService()
 
-            // Build the mentor prompt manually to use streaming
-            const isDE = lang === 'de'
-            const instruction = isDE
-                ? 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.'
-                : 'Answer as CannaGuide AI in English, structured, factual, and without HTML.'
-            const prompt = [
-                instruction,
-                `Plant: ${plant.name} | ${plant.strain.name} | stage=${plant.stage}`,
-                ragContext ? `Context: ${ragContext}` : '',
-                `Question: ${query}`,
-                'Return ONLY valid JSON with this exact shape:',
-                '{"title":"...","content":"...","uiHighlights":[]}',
-            ]
-                .filter(Boolean)
-                .join('\n\n')
+            const prompt = buildMentorStreamPrompt(plant, query, lang, ragContext)
 
             const result = await local.generateTextStream(prompt, onToken)
 
             if (result) {
-                try {
-                    const parsed = JSON.parse(result) as {
-                        title?: string
-                        content?: string
-                        uiHighlights?: string[]
-                    }
-                    if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
-                        return parsed as Omit<MentorMessage, 'role'>
-                    }
-                } catch {
-                    // Not valid JSON — return as plain content
-                }
-                return {
-                    title: isDE ? 'KI-Mentor' : 'AI Mentor',
-                    content: result,
-                }
+                return parseMentorStreamResult(result, lang)
             }
 
             return localAiFallbackService.getMentorResponse(plant, query, ragContext, lang)

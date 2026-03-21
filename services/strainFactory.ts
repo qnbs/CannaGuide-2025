@@ -1,73 +1,111 @@
-import { Strain, GeneticModifiers, StrainType } from '@/types';
+import { Strain, GeneticModifiers, StrainType } from '@/types'
+
+const inferFloweringType = (
+    typeDetailsText: string,
+    floweringTimeRangeText: string,
+): Strain['floweringType'] | undefined => {
+    const hasAutoMarker =
+        typeDetailsText.toLowerCase().includes('autoflower') ||
+        floweringTimeRangeText.toLowerCase().includes('lifecycle')
+    return hasAutoMarker ? 'Autoflower' : undefined
+}
+
+const ensureRequiredStrainFields = (
+    safeData: Partial<Strain>,
+    nameText: string,
+    normalizedType: StrainType | undefined,
+    fallbackId: string,
+): void => {
+    const missingRequired =
+        !safeData.id ||
+        !nameText ||
+        !normalizedType ||
+        safeData.thc === undefined ||
+        safeData.cbd === undefined ||
+        safeData.floweringTime === undefined
+
+    if (!missingRequired) {
+        return
+    }
+
+    console.warn(
+        `[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${nameText || 'Unknown'}. Applying safe defaults.`,
+    )
+
+    if (!safeData.id) safeData.id = fallbackId
+    if (!nameText) safeData.name = 'Unknown Strain'
+    if (!normalizedType) safeData.type = StrainType.Hybrid
+    if (safeData.thc === undefined) safeData.thc = 0
+    if (safeData.cbd === undefined) safeData.cbd = 0
+    if (safeData.floweringTime === undefined) safeData.floweringTime = 9
+}
 
 // This factory ensures that every strain object has a consistent shape and default values.
 export const createStrainObject = (data: Partial<Strain>): Strain => {
-  const safeText = (value: unknown): string => (typeof value === 'string' ? value : '');
-  const safeType = (value: unknown): StrainType | undefined => {
-      return value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid ? value : undefined;
-  };
-
-  const nameText = safeText(data.name);
-  const typeDetailsText = safeText(data.typeDetails);
-  const floweringTimeRangeText = safeText(data.floweringTimeRange);
-  const nameHash = nameText.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const fallbackId = typeof globalThis.crypto?.randomUUID === 'function'
-      ? globalThis.crypto.randomUUID()
-      : `unknown-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-
-  // Default genetic modifiers, derived deterministically from the strain name for consistency
-  const defaultGeneticModifiers: GeneticModifiers = {
-      pestResistance: 0.8 + ((nameHash % 40) / 100), // Range 0.8 to 1.2
-      nutrientUptakeRate: 0.8 + (((nameHash * 3) % 40) / 100), // Range 0.8 to 1.2
-      stressTolerance: 0.8 + (((nameHash * 7) % 40) / 100), // Range 0.8 to 1.2
-      rue: 1.4 + (((nameHash * 5) % 20) / 100), // Radiation Use Efficiency (g biomass per MJ of PAR), typical range 1.4-1.6
-      vpdTolerance: {
-          min: 0.7 + (((nameHash * 2) % 30) / 100), // e.g., 0.7-1.0 kPa
-          max: 1.3 + (((nameHash * 11) % 30) / 100)  // e.g., 1.3-1.6 kPa
-      },
-      transpirationFactor: 0.9 + (((nameHash * 13) % 20) / 100), // 0.9 to 1.1
-      stomataSensitivity: 0.9 + (((nameHash * 17) % 20) / 100), // Range 0.9 to 1.1
-  };
-
-  const defaults: Omit<Strain, 'id' | 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime'> = {
-    floweringType: 'Photoperiod',
-    agronomic: {
-      difficulty: 'Medium',
-      yield: 'Medium',
-      height: 'Medium',
-    },
-    geneticModifiers: defaultGeneticModifiers,
-  };
-
-    const normalizedType = safeType(data.type);
-
-    // Build safe overrides without mutating the input object
-    const safeData: Partial<Strain> = { ...data };
-    if (!safeData.id || !nameText || !normalizedType || safeData.thc === undefined || safeData.cbd === undefined || safeData.floweringTime === undefined) {
-      console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${nameText || 'Unknown'}. Applying safe defaults.`);
-      if (!safeData.id) safeData.id = fallbackId;
-      if (!nameText) safeData.name = 'Unknown Strain';
-      if (!normalizedType) safeData.type = StrainType.Hybrid;
-      if (safeData.thc === undefined) safeData.thc = 0;
-      if (safeData.cbd === undefined) safeData.cbd = 0;
-      if (safeData.floweringTime === undefined) safeData.floweringTime = 9;
-  }
-
-    if (!safeType(safeData.type)) {
-      safeData.type = StrainType.Hybrid;
+    const safeText = (value: unknown): string => (typeof value === 'string' ? value : '')
+    const safeType = (value: unknown): StrainType | undefined => {
+        return value === StrainType.Sativa ||
+            value === StrainType.Indica ||
+            value === StrainType.Hybrid
+            ? value
+            : undefined
     }
 
-  const merged = {
-      ...defaults,
-      ...safeData,
-      agronomic: { ...defaults.agronomic, ...(safeData.agronomic ?? {}) },
-      geneticModifiers: { ...defaults.geneticModifiers, ...(safeData.geneticModifiers ?? {}) },
-  } as Strain;
+    const nameText = safeText(data.name)
+    const typeDetailsText = safeText(data.typeDetails)
+    const floweringTimeRangeText = safeText(data.floweringTimeRange)
+    const nameHash = nameText.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    const fallbackId =
+        typeof globalThis.crypto?.randomUUID === 'function'
+            ? globalThis.crypto.randomUUID()
+            : `unknown-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 
-  // Infer floweringType if not explicitly provided
-  if (!safeData.floweringType && (typeDetailsText.toLowerCase().includes('autoflower') || floweringTimeRangeText.toLowerCase().includes('lifecycle'))) {
-    merged.floweringType = 'Autoflower';
-  }
+    // Default genetic modifiers, derived deterministically from the strain name for consistency
+    const defaultGeneticModifiers: GeneticModifiers = {
+        pestResistance: 0.8 + (nameHash % 40) / 100, // Range 0.8 to 1.2
+        nutrientUptakeRate: 0.8 + ((nameHash * 3) % 40) / 100, // Range 0.8 to 1.2
+        stressTolerance: 0.8 + ((nameHash * 7) % 40) / 100, // Range 0.8 to 1.2
+        rue: 1.4 + ((nameHash * 5) % 20) / 100, // Radiation Use Efficiency (g biomass per MJ of PAR), typical range 1.4-1.6
+        vpdTolerance: {
+            min: 0.7 + ((nameHash * 2) % 30) / 100, // e.g., 0.7-1.0 kPa
+            max: 1.3 + ((nameHash * 11) % 30) / 100, // e.g., 1.3-1.6 kPa
+        },
+        transpirationFactor: 0.9 + ((nameHash * 13) % 20) / 100, // 0.9 to 1.1
+        stomataSensitivity: 0.9 + ((nameHash * 17) % 20) / 100, // Range 0.9 to 1.1
+    }
 
-  return merged;
-};
+    const defaults: Omit<Strain, 'id' | 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime'> = {
+        floweringType: 'Photoperiod',
+        agronomic: {
+            difficulty: 'Medium',
+            yield: 'Medium',
+            height: 'Medium',
+        },
+        geneticModifiers: defaultGeneticModifiers,
+    }
+
+    const normalizedType = safeType(data.type)
+
+    // Build safe overrides without mutating the input object
+    const safeData: Partial<Strain> = { ...data }
+    ensureRequiredStrainFields(safeData, nameText, normalizedType, fallbackId)
+
+    if (!safeType(safeData.type)) {
+        safeData.type = StrainType.Hybrid
+    }
+
+    const merged = {
+        ...defaults,
+        ...safeData,
+        agronomic: { ...defaults.agronomic, ...(safeData.agronomic ?? {}) },
+        geneticModifiers: { ...defaults.geneticModifiers, ...(safeData.geneticModifiers ?? {}) },
+    } as Strain
+
+    // Infer floweringType if not explicitly provided
+    const inferredFloweringType = inferFloweringType(typeDetailsText, floweringTimeRangeText)
+    if (!safeData.floweringType && inferredFloweringType) {
+        merged.floweringType = inferredFloweringType
+    }
+
+    return merged
+}

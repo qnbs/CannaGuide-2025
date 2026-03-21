@@ -1,94 +1,153 @@
-import { FiltersState } from '@/stores/slices/filtersSlice';
-import { StrainType, DifficultyLevel, YieldLevel, HeightLevel, SortKey, SortDirection, AdvancedFilterState } from '@/types';
-import { INITIAL_ADVANCED_FILTERS } from '@/constants';
+import { FiltersState } from '@/stores/slices/filtersSlice'
+import {
+    StrainType,
+    DifficultyLevel,
+    YieldLevel,
+    HeightLevel,
+    SortKey,
+    SortDirection,
+    AdvancedFilterState,
+} from '@/types'
+import { INITIAL_ADVANCED_FILTERS } from '@/constants'
 
-const VALID_STRAIN_TYPES = new Set(Object.values(StrainType));
-const VALID_DIFFICULTIES = new Set<string>(['Easy', 'Medium', 'Hard']);
-const VALID_YIELDS = new Set<string>(['Low', 'Medium', 'High']);
-const VALID_HEIGHTS = new Set<string>(['Short', 'Medium', 'Tall']);
-const VALID_SORT_KEYS = new Set<string>(['name', 'type', 'thc', 'cbd', 'floweringTime', 'difficulty', 'yield', 'height']);
-const VALID_SORT_DIRS = new Set<string>(['asc', 'desc']);
+const VALID_STRAIN_TYPES = new Set(Object.values(StrainType))
+const VALID_DIFFICULTIES = new Set<string>(['Easy', 'Medium', 'Hard'])
+const VALID_YIELDS = new Set<string>(['Low', 'Medium', 'High'])
+const VALID_HEIGHTS = new Set<string>(['Short', 'Medium', 'Tall'])
+const VALID_SORT_KEYS = new Set<string>([
+    'name',
+    'type',
+    'thc',
+    'cbd',
+    'floweringTime',
+    'difficulty',
+    'yield',
+    'height',
+])
+const VALID_SORT_DIRS = new Set<string>(['asc', 'desc'])
 
-const parseArray = (val: string | null): string[] => val ? val.split(',') : [];
+const parseArray = (val: string | null): string[] => (val ? val.split(',') : [])
 const parseRange = (val: string | null): [number, number] | undefined => {
-    if (!val) return undefined;
-    const parts = val.split(',').map(Number);
+    if (!val) return undefined
+    const parts = val.split(',').map(Number)
     if (parts.length === 2 && !isNaN(parts[0]!) && !isNaN(parts[1]!)) {
-        return [parts[0]!, parts[1]!];
+        return [parts[0]!, parts[1]!]
     }
-    return undefined;
-};
+    return undefined
+}
+const hasNonDefaultRange = (range: [number, number], defaults: [number, number]): boolean =>
+    range[0] !== defaults[0] || range[1] !== defaults[1]
+
+const parseSort = (
+    rawSort: string | null,
+): { sortKey: SortKey; sortDirection: SortDirection } | null => {
+    if (!rawSort) return null
+    const [key, dir] = rawSort.split('-')
+    if (!key || !dir || !VALID_SORT_KEYS.has(key) || !VALID_SORT_DIRS.has(dir)) {
+        return null
+    }
+    return {
+        sortKey: key as SortKey,
+        sortDirection: dir as SortDirection,
+    }
+}
 
 export const urlService = {
     serializeFiltersToQueryString(filters: FiltersState): string {
-        const params = new URLSearchParams();
+        const params = new URLSearchParams()
 
-        if (filters.searchTerm) params.set('q', filters.searchTerm);
-        if (filters.letterFilter) params.set('l', filters.letterFilter);
-        if (filters.typeFilter.length > 0) params.set('t', filters.typeFilter.join(','));
-        if (filters.showFavoritesOnly) params.set('fav', '1');
+        if (filters.searchTerm) params.set('q', filters.searchTerm)
+        if (filters.letterFilter) params.set('l', filters.letterFilter)
+        if (filters.typeFilter.length > 0) params.set('t', filters.typeFilter.join(','))
+        if (filters.showFavoritesOnly) params.set('fav', '1')
 
         // Advanced Filters - only add if not default
-        if (filters.advancedFilters.thcRange[0] !== INITIAL_ADVANCED_FILTERS.thcRange[0] || filters.advancedFilters.thcRange[1] !== INITIAL_ADVANCED_FILTERS.thcRange[1]) {
-            params.set('thc', filters.advancedFilters.thcRange.join(','));
+        if (
+            hasNonDefaultRange(filters.advancedFilters.thcRange, INITIAL_ADVANCED_FILTERS.thcRange)
+        ) {
+            params.set('thc', filters.advancedFilters.thcRange.join(','))
         }
-        if (filters.advancedFilters.cbdRange[0] !== INITIAL_ADVANCED_FILTERS.cbdRange[0] || filters.advancedFilters.cbdRange[1] !== INITIAL_ADVANCED_FILTERS.cbdRange[1]) {
-            params.set('cbd', filters.advancedFilters.cbdRange.join(','));
+        if (
+            hasNonDefaultRange(filters.advancedFilters.cbdRange, INITIAL_ADVANCED_FILTERS.cbdRange)
+        ) {
+            params.set('cbd', filters.advancedFilters.cbdRange.join(','))
         }
-        if (filters.advancedFilters.floweringRange[0] !== INITIAL_ADVANCED_FILTERS.floweringRange[0] || filters.advancedFilters.floweringRange[1] !== INITIAL_ADVANCED_FILTERS.floweringRange[1]) {
-            params.set('fr', filters.advancedFilters.floweringRange.join(','));
+        if (
+            hasNonDefaultRange(
+                filters.advancedFilters.floweringRange,
+                INITIAL_ADVANCED_FILTERS.floweringRange,
+            )
+        ) {
+            params.set('fr', filters.advancedFilters.floweringRange.join(','))
         }
-        if (filters.advancedFilters.selectedDifficulties.length > 0) params.set('d', filters.advancedFilters.selectedDifficulties.join(','));
-        if (filters.advancedFilters.selectedYields.length > 0) params.set('y', filters.advancedFilters.selectedYields.join(','));
-        if (filters.advancedFilters.selectedHeights.length > 0) params.set('h', filters.advancedFilters.selectedHeights.join(','));
-        if (filters.advancedFilters.selectedAromas.length > 0) params.set('a', filters.advancedFilters.selectedAromas.join(','));
-        if (filters.advancedFilters.selectedTerpenes.length > 0) params.set('tp', filters.advancedFilters.selectedTerpenes.join(','));
+        if (filters.advancedFilters.selectedDifficulties.length > 0)
+            params.set('d', filters.advancedFilters.selectedDifficulties.join(','))
+        if (filters.advancedFilters.selectedYields.length > 0)
+            params.set('y', filters.advancedFilters.selectedYields.join(','))
+        if (filters.advancedFilters.selectedHeights.length > 0)
+            params.set('h', filters.advancedFilters.selectedHeights.join(','))
+        if (filters.advancedFilters.selectedAromas.length > 0)
+            params.set('a', filters.advancedFilters.selectedAromas.join(','))
+        if (filters.advancedFilters.selectedTerpenes.length > 0)
+            params.set('tp', filters.advancedFilters.selectedTerpenes.join(','))
 
         // Sort
         if (filters.sortKey !== 'name' || filters.sortDirection !== 'asc') {
-             params.set('s', `${filters.sortKey}-${filters.sortDirection}`);
+            params.set('s', `${filters.sortKey}-${filters.sortDirection}`)
         }
 
-        return params.toString();
+        return params.toString()
     },
 
     parseQueryStringToFilterState(queryString: string): Partial<FiltersState> {
-        const params = new URLSearchParams(queryString);
-        const parsedState: Partial<FiltersState> & { advancedFilters?: Partial<AdvancedFilterState> } = {};
+        const params = new URLSearchParams(queryString)
+        const parsedState: Partial<FiltersState> & {
+            advancedFilters?: Partial<AdvancedFilterState>
+        } = {}
 
-        if (params.has('q')) parsedState.searchTerm = params.get('q')!;
-        if (params.has('l')) parsedState.letterFilter = params.get('l')!;
-        if (params.has('t')) parsedState.typeFilter = parseArray(params.get('t')).filter(v => VALID_STRAIN_TYPES.has(v as StrainType)) as StrainType[];
-        if (params.get('fav') === '1') parsedState.showFavoritesOnly = true;
+        if (params.has('q')) parsedState.searchTerm = params.get('q')!
+        if (params.has('l')) parsedState.letterFilter = params.get('l')!
+        if (params.has('t'))
+            parsedState.typeFilter = parseArray(params.get('t')).filter((v) =>
+                VALID_STRAIN_TYPES.has(v as StrainType),
+            ) as StrainType[]
+        if (params.get('fav') === '1') parsedState.showFavoritesOnly = true
 
-        const advFilters: Partial<AdvancedFilterState> = {};
-        const thcRange = parseRange(params.get('thc'));
-        if (thcRange) advFilters.thcRange = thcRange;
+        const advFilters: Partial<AdvancedFilterState> = {}
+        const thcRange = parseRange(params.get('thc'))
+        if (thcRange) advFilters.thcRange = thcRange
 
-        const cbdRange = parseRange(params.get('cbd'));
-        if (cbdRange) advFilters.cbdRange = cbdRange;
+        const cbdRange = parseRange(params.get('cbd'))
+        if (cbdRange) advFilters.cbdRange = cbdRange
 
-        const frRange = parseRange(params.get('fr'));
-        if (frRange) advFilters.floweringRange = frRange;
+        const frRange = parseRange(params.get('fr'))
+        if (frRange) advFilters.floweringRange = frRange
 
-        if (params.has('d')) advFilters.selectedDifficulties = parseArray(params.get('d')).filter(v => VALID_DIFFICULTIES.has(v)) as DifficultyLevel[];
-          if (params.has('y')) advFilters.selectedYields = parseArray(params.get('y')).filter(v => VALID_YIELDS.has(v)) as YieldLevel[];
-          if (params.has('h')) advFilters.selectedHeights = parseArray(params.get('h')).filter(v => VALID_HEIGHTS.has(v)) as HeightLevel[];
-        if (params.has('a')) advFilters.selectedAromas = parseArray(params.get('a'));
-        if (params.has('tp')) advFilters.selectedTerpenes = parseArray(params.get('tp'));
+        if (params.has('d'))
+            advFilters.selectedDifficulties = parseArray(params.get('d')).filter((v) =>
+                VALID_DIFFICULTIES.has(v),
+            ) as DifficultyLevel[]
+        if (params.has('y'))
+            advFilters.selectedYields = parseArray(params.get('y')).filter((v) =>
+                VALID_YIELDS.has(v),
+            ) as YieldLevel[]
+        if (params.has('h'))
+            advFilters.selectedHeights = parseArray(params.get('h')).filter((v) =>
+                VALID_HEIGHTS.has(v),
+            ) as HeightLevel[]
+        if (params.has('a')) advFilters.selectedAromas = parseArray(params.get('a'))
+        if (params.has('tp')) advFilters.selectedTerpenes = parseArray(params.get('tp'))
 
         if (Object.keys(advFilters).length > 0) {
-            parsedState.advancedFilters = advFilters as AdvancedFilterState;
+            parsedState.advancedFilters = advFilters as AdvancedFilterState
         }
 
-        if (params.has('s')) {
-            const [key, dir] = params.get('s')!.split('-');
-              if (key && dir && VALID_SORT_KEYS.has(key) && VALID_SORT_DIRS.has(dir)) {
-                  parsedState.sortKey = key as SortKey;
-                  parsedState.sortDirection = dir as SortDirection;
-              }
-          }
+        const parsedSort = parseSort(params.get('s'))
+        if (parsedSort) {
+            parsedState.sortKey = parsedSort.sortKey
+            parsedState.sortDirection = parsedSort.sortDirection
+        }
 
-        return parsedState;
-    }
-};
+        return parsedState
+    },
+}

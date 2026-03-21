@@ -53,6 +53,28 @@ export interface WebLlmDiagnosticResult {
 const MIN_VRAM_FOR_WEBLLM_MB = 4096
 const ADAPTER_REQUEST_TIMEOUT_MS = 5000
 
+const resolveSecureContext = (): boolean =>
+    typeof globalThis !== 'undefined' && 'isSecureContext' in globalThis
+        ? globalThis.isSecureContext
+        : typeof location !== 'undefined' &&
+          (location.protocol === 'https:' || location.hostname === 'localhost')
+
+const buildProbeErrorResult = (
+    error: unknown,
+    details: WebLlmDiagnosticResult['details'],
+): WebLlmDiagnosticResult => {
+    captureLocalAiError(error, { stage: 'webllm-diagnostics' })
+    const isTimeout = error instanceof Error && error.message.includes('timeout')
+    return {
+        available: false,
+        reason: isTimeout ? 'adapter-request-timeout' : 'unknown-error',
+        message: isTimeout
+            ? 'GPU adapter request timed out. The graphics driver may be unresponsive.'
+            : `GPU probe failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+        details,
+    }
+}
+
 // ─── Core Diagnostic ─────────────────────────────────────────────────────────
 
 /**
@@ -86,11 +108,7 @@ export const diagnoseWebLlm = async (options?: {
     }
 
     // 2. Secure Context
-    const isSecure =
-        typeof globalThis !== 'undefined' && 'isSecureContext' in globalThis
-            ? globalThis.isSecureContext
-            : typeof location !== 'undefined' &&
-              (location.protocol === 'https:' || location.hostname === 'localhost')
+    const isSecure = resolveSecureContext()
     details.secureContext = isSecure
     if (!isSecure) {
         return {
@@ -156,16 +174,7 @@ export const diagnoseWebLlm = async (options?: {
             }
         }
     } catch (error) {
-        captureLocalAiError(error, { stage: 'webllm-diagnostics' })
-        const isTimeout = error instanceof Error && error.message.includes('timeout')
-        return {
-            available: false,
-            reason: isTimeout ? 'adapter-request-timeout' : 'unknown-error',
-            message: isTimeout
-                ? 'GPU adapter request timed out. The graphics driver may be unresponsive.'
-                : `GPU probe failed: ${error instanceof Error ? error.message : 'unknown error'}`,
-            details,
-        }
+        return buildProbeErrorResult(error, details)
     }
 
     // 6. Model profile check

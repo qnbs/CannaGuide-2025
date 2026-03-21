@@ -375,6 +375,66 @@ export const getModelRecommendation = (): ModelRecommendation => {
 
 // ─── Health Assessment ───────────────────────────────────────────────────────
 
+const addMemoryWarning = (warnings: string[], memory: MemoryInfo): void => {
+    if (!memory.pressureDetected) {
+        return
+    }
+    warnings.push(
+        `High memory usage detected (${memory.usagePercent?.toFixed(1) ?? '?'}%). Consider closing other tabs.`,
+    )
+}
+
+const addTelemetryWarnings = (warnings: string[], telemetry: TelemetrySnapshot | null): void => {
+    if (telemetry && telemetry.totalInferences > 5 && telemetry.successRate < 0.7) {
+        warnings.push(
+            `Low inference success rate (${(telemetry.successRate * 100).toFixed(0)}%). Model may be unstable.`,
+        )
+    }
+
+    if (telemetry && telemetry.averageLatencyMs > 30_000) {
+        warnings.push(
+            `High average inference latency (${(telemetry.averageLatencyMs / 1000).toFixed(1)}s). Consider switching to a lighter model.`,
+        )
+    }
+}
+
+const addModelReadinessWarnings = (
+    warnings: string[],
+    preloadStatus: LocalAiPreloadStatus,
+): void => {
+    if (preloadStatus.state === 'idle') {
+        return
+    }
+
+    if (!preloadStatus.textModelReady) {
+        warnings.push('Text model not loaded — text generation will use heuristic fallback.')
+    }
+    if (!preloadStatus.visionModelReady) {
+        warnings.push('Vision model not loaded — plant photo diagnosis will be limited.')
+    }
+}
+
+const deriveHealthStatus = (
+    warnings: string[],
+    preloadStatus: LocalAiPreloadStatus,
+    memory: MemoryInfo,
+    telemetry: TelemetrySnapshot | null,
+): HealthStatus => {
+    if (warnings.length === 0 && preloadStatus.state === 'ready') {
+        return 'healthy'
+    }
+
+    if (memory.pressureDetected || (telemetry && telemetry.successRate < 0.7)) {
+        return 'degraded'
+    }
+
+    if (preloadStatus.state === 'idle') {
+        return 'unknown'
+    }
+
+    return warnings.length > 0 ? 'degraded' : 'healthy'
+}
+
 /**
  * Assess the overall health of the local AI stack.
  */
@@ -391,50 +451,11 @@ const assessHealth = (
         return { status: 'critical', warnings }
     }
 
-    // Check memory pressure
-    if (memory.pressureDetected) {
-        warnings.push(
-            `High memory usage detected (${memory.usagePercent?.toFixed(1) ?? '?'}%). Consider closing other tabs.`,
-        )
-    }
+    addMemoryWarning(warnings, memory)
+    addTelemetryWarnings(warnings, telemetry)
+    addModelReadinessWarnings(warnings, preloadStatus)
 
-    // Check telemetry success rate
-    if (telemetry && telemetry.totalInferences > 5 && telemetry.successRate < 0.7) {
-        warnings.push(
-            `Low inference success rate (${(telemetry.successRate * 100).toFixed(0)}%). Model may be unstable.`,
-        )
-    }
-
-    // Check if core models are missing
-    if (preloadStatus.state !== 'idle') {
-        if (!preloadStatus.textModelReady) {
-            warnings.push('Text model not loaded — text generation will use heuristic fallback.')
-        }
-        if (!preloadStatus.visionModelReady) {
-            warnings.push('Vision model not loaded — plant photo diagnosis will be limited.')
-        }
-    }
-
-    // High latency warning
-    if (telemetry && telemetry.averageLatencyMs > 30_000) {
-        warnings.push(
-            `High average inference latency (${(telemetry.averageLatencyMs / 1000).toFixed(1)}s). Consider switching to a lighter model.`,
-        )
-    }
-
-    if (warnings.length === 0 && preloadStatus.state === 'ready') {
-        return { status: 'healthy', warnings }
-    }
-
-    if (memory.pressureDetected || (telemetry && telemetry.successRate < 0.7)) {
-        return { status: 'degraded', warnings }
-    }
-
-    if (preloadStatus.state === 'idle') {
-        return { status: 'unknown', warnings }
-    }
-
-    return { status: warnings.length > 0 ? 'degraded' : 'healthy', warnings }
+    return { status: deriveHealthStatus(warnings, preloadStatus, memory, telemetry), warnings }
 }
 
 // ─── Full Report ─────────────────────────────────────────────────────────────

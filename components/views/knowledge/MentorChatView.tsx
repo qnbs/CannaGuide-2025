@@ -12,10 +12,56 @@ import { selectLanguage } from '@/stores/selectors'
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import type { TFunction } from 'i18next'
 
 interface MentorChatViewProps {
     plant: Plant
     onClose: () => void
+}
+
+const removeEmptyModelPlaceholders = (messages: MentorMessage[]): MentorMessage[] =>
+    messages.filter((msg) => msg.role !== 'model' || msg.content !== '')
+
+const resolveMentorErrorMessage = (
+    fallbackError: unknown,
+    streamError: unknown,
+    t: TFunction,
+): string => {
+    if (typeof fallbackError === 'object' && fallbackError !== null && 'message' in fallbackError) {
+        return String((fallbackError as { message?: unknown }).message ?? t('ai.error.unknown'))
+    }
+
+    if (typeof streamError === 'object' && streamError !== null && 'message' in streamError) {
+        return String((streamError as { message?: unknown }).message ?? t('ai.error.unknown'))
+    }
+
+    return t('ai.error.unknown')
+}
+
+const scheduleStreamMessageUpdate = (
+    streamMsgId: string,
+    streamingTextRef: React.MutableRefObject<string>,
+    setHistory: React.Dispatch<React.SetStateAction<MentorMessage[]>>,
+    scrollToBottom: () => void,
+) => {
+    let rafPending = false
+
+    return (_token: string, accumulated: string) => {
+        streamingTextRef.current = accumulated
+        if (rafPending) {
+            return
+        }
+
+        rafPending = true
+        requestAnimationFrame(() => {
+            rafPending = false
+            const text = streamingTextRef.current
+            setHistory((prev) =>
+                prev.map((msg) => (msg.id === streamMsgId ? { ...msg, content: text } : msg)),
+            )
+            scrollToBottom()
+        })
+    }
 }
 
 const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
@@ -72,116 +118,79 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
     useEffect(scrollToBottom, [history])
 
     const handleSend = useCallback(async () => {
-        if (input.trim() && !isLoading) {
-            const userMessage: MentorMessage = {
-                id: `msg-user-${Date.now()}`,
-                role: 'user',
-                content: input.trim(),
-                title: '',
+        const trimmedInput = input.trim()
+        if (!trimmedInput || isLoading) {
+            return
+        }
+
+        const userMessage: MentorMessage = {
+            id: `msg-user-${Date.now()}`,
+            role: 'user',
+            content: trimmedInput,
+            title: '',
+        }
+        setHistory((prev) => [...prev, userMessage])
+        setInput('')
+
+        try {
+            // Try streaming first for typing effect
+            const { aiService } = await import('@/services/aiService')
+            setIsStreaming(true)
+            streamingTextRef.current = ''
+
+            const streamMsgId = `msg-stream-${Date.now()}`
+            setHistory((prev) => [
+                ...prev,
+                { id: streamMsgId, role: 'model', title: '', content: '' },
+            ])
+
+            const onToken = scheduleStreamMessageUpdate(
+                streamMsgId,
+                streamingTextRef,
+                setHistory,
+                scrollToBottom,
+            )
+
+            const response = await aiService.getMentorResponseStream(
+                plant,
+                trimmedInput,
+                lang,
+                onToken,
+            )
+            const modelMessage: MentorMessage = {
+                id: `msg-model-${Date.now()}`,
+                role: 'model',
+                ...response,
             }
-            setHistory((prev) => [...prev, userMessage])
-            const currentInput = input.trim()
-            setInput('')
-
+            setHistory((prev) => prev.map((msg) => (msg.id === streamMsgId ? modelMessage : msg)))
+            dispatch(addArchivedMentorResponse({ query: trimmedInput, ...response }))
+        } catch (streamError) {
             try {
-                // Try streaming first for typing effect
-                const { aiService } = await import('@/services/aiService')
-                setIsStreaming(true)
-                streamingTextRef.current = ''
-
-                // Add a placeholder streaming message
-                const streamMsgId = `msg-stream-${Date.now()}`
-                setHistory((prev) => [
-                    ...prev,
-                    { id: streamMsgId, role: 'model', title: '', content: '' },
-                ])
-
-                let rafPending = false
-                const response = await aiService.getMentorResponseStream(
+                const response = await getMentorResponse({
                     plant,
-                    currentInput,
+                    query: trimmedInput,
                     lang,
-                    (_token, accumulated) => {
-                        streamingTextRef.current = accumulated
-                        if (!rafPending) {
-                            rafPending = true
-                            requestAnimationFrame(() => {
-                                rafPending = false
-                                const text = streamingTextRef.current
-                                setHistory((prev) =>
-                                    prev.map((msg) =>
-                                        msg.id === streamMsgId ? { ...msg, content: text } : msg,
-                                    ),
-                                )
-                                scrollToBottom()
-                            })
-                        }
-                    },
-                )
+                }).unwrap()
 
-                // Replace streaming placeholder with final parsed response
                 const modelMessage: MentorMessage = {
                     id: `msg-model-${Date.now()}`,
                     role: 'model',
                     ...response,
                 }
-                setHistory((prev) =>
-                    prev.map((msg) => (msg.id === streamMsgId ? modelMessage : msg)),
-                )
-                dispatch(addArchivedMentorResponse({ query: currentInput, ...response }))
-            } catch (error) {
-                // Fall back to non-streaming mutation
-                try {
-                    const response = await getMentorResponse({
-                        plant,
-                        query: currentInput,
-                        lang,
-                    }).unwrap()
-                    const modelMessage: MentorMessage = {
-                        id: `msg-model-${Date.now()}`,
-                        role: 'model',
-                        ...response,
-                    }
-                    setHistory((prev) => {
-                        // Remove streaming placeholder if present
-                        const filtered = prev.filter(
-                            (msg) => msg.role !== 'model' || msg.content !== '',
-                        )
-                        return [...filtered, modelMessage]
-                    })
-                    dispatch(addArchivedMentorResponse({ query: currentInput, ...response }))
-                } catch (fallbackError) {
-                    const message =
-                        typeof fallbackError === 'object' &&
-                        fallbackError !== null &&
-                        'message' in fallbackError
-                            ? String(
-                                  (fallbackError as { message?: unknown }).message ??
-                                      t('ai.error.unknown'),
-                              )
-                            : typeof error === 'object' && error !== null && 'message' in error
-                              ? String(
-                                    (error as { message?: unknown }).message ??
-                                        t('ai.error.unknown'),
-                                )
-                              : t('ai.error.unknown')
-                    const errorMessage: MentorMessage = {
-                        id: `msg-error-${Date.now()}`,
-                        role: 'model',
-                        title: t('common.error'),
-                        content: message,
-                    }
-                    setHistory((prev) => {
-                        const filtered = prev.filter(
-                            (msg) => msg.role !== 'model' || msg.content !== '',
-                        )
-                        return [...filtered, errorMessage]
-                    })
+                setHistory((prev) => [...removeEmptyModelPlaceholders(prev), modelMessage])
+                dispatch(addArchivedMentorResponse({ query: trimmedInput, ...response }))
+            } catch (fallbackError) {
+                const errorMessage: MentorMessage = {
+                    id: `msg-error-${Date.now()}`,
+                    role: 'model',
+                    title: t('common.error'),
+                    content: resolveMentorErrorMessage(fallbackError, streamError, t),
                 }
-            } finally {
-                setIsStreaming(false)
-                streamingTextRef.current = ''
+                setHistory((prev) => [...removeEmptyModelPlaceholders(prev), errorMessage])
             }
+        } finally {
+            setIsStreaming(false)
+            streamingTextRef.current = ''
         }
     }, [input, isLoading, plant, lang, getMentorResponse, dispatch, t])
 

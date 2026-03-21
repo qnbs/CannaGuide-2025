@@ -73,7 +73,7 @@ if (import.meta.env.DEV && deduplicatedMap.size < combinedStrains.length) {
         idCounts.set(strain.id, (idCounts.get(strain.id) ?? 0) + 1)
     }
     const duplicateIds = [...idCounts.entries()].filter(([, count]) => count > 1).map(([id]) => id)
-    console.warn(
+    console.debug(
         `[Strains] ${duplicateCount} duplicate strain(s) detected and auto-deduplicated. IDs: ${duplicateIds.join(', ')}`,
     )
 }

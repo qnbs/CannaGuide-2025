@@ -33,7 +33,7 @@ const triggerSafeRecovery = async (reason: string, error?: unknown): Promise<boo
         }
 
         sessionStorage.setItem(SAFE_RECOVERY_ATTEMPT_KEY, '1')
-        console.warn(`[SafeRecovery] Triggered by: ${reason}`, error)
+        console.debug(`[SafeRecovery] Triggered by: ${reason}`, error)
         if (error instanceof Error) {
             Sentry.captureException(error, { tags: { recovery: reason } })
         }
@@ -61,7 +61,7 @@ const registerServiceWorker = () => {
             .then((registration) => {
                 console.debug('ServiceWorker registration successful:', registration)
                 void growReminderService.registerPeriodicSync(registration).catch((error) => {
-                    console.warn('[SW] Could not register periodic reminder sync:', error)
+                    console.debug('[SW] Could not register periodic reminder sync:', error)
                 })
 
                 // Only reload on SW update (not first install where controller is null)
@@ -105,7 +105,7 @@ const registerServiceWorker = () => {
 
                 const triggerUpdateCheck = () => {
                     registration.update().catch((error) => {
-                        console.warn('[SW] Update check failed:', error)
+                        console.debug('[SW] Update check failed:', error)
                     })
                 }
 

@@ -117,7 +117,7 @@ const sanitizeNode = (raw: unknown, depth = 0): GenealogyNode | null => {
 // ---------------------------------------------------------------------------
 export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
     if (!raw || typeof raw !== 'object') {
-        console.warn('[GenealogySlice] No genealogy state in storage – using initial state.')
+        console.debug('[GenealogySlice] No genealogy state in storage – using initial state.')
         return { ...initialGenealogyState }
     }
 
@@ -130,7 +130,7 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
 
     // Version mismatch → wipe cache, preserve user prefs
     if (s._version !== GENEALOGY_STATE_VERSION) {
-        console.warn(
+        console.debug(
             `[GenealogySlice] State version mismatch (stored: ${s._version}, expected: ${GENEALOGY_STATE_VERSION}) – wiping computedTrees cache.`,
         )
         return {

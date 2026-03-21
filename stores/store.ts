@@ -90,13 +90,13 @@ export const createAppStore = async (): Promise<AppStore> => {
             return undefined
         }
 
-        console.warn('[Store] Attempting recovery from pre-migration backup snapshot.')
+        console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
         const recoveredState = hydratePersistedState(backupString)
 
         try {
             await indexedDBStorage.setItem(REDUX_STATE_KEY, backupString)
         } catch (repairErr) {
-            console.warn('[Store] Could not repair primary snapshot from backup:', repairErr)
+            console.debug('[Store] Could not repair primary snapshot from backup:', repairErr)
         }
 
         return recoveredState
@@ -110,7 +110,7 @@ export const createAppStore = async (): Promise<AppStore> => {
             try {
                 await indexedDBStorage.setItem(REDUX_STATE_KEY + '-backup', persistedString)
             } catch (backupErr) {
-                console.warn('[Store] Could not save pre-migration backup:', backupErr)
+                console.debug('[Store] Could not save pre-migration backup:', backupErr)
             }
             preloadedState = hydratePersistedState(persistedString)
         }

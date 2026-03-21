@@ -211,7 +211,7 @@ const BreedingView: React.FC = () => {
             setTimeout(() => {
                 const crossResult = crossStrains(parentA, parentB)
                 setResult(crossResult)
-                setNewStrainName(crossResult?.name || '')
+                setNewStrainName(crossResult?.name ?? '')
                 setIsBreeding(false)
             }, 1500) // Simulate processing time for animation
         }
@@ -232,6 +232,13 @@ const BreedingView: React.FC = () => {
         setNewStrainName('')
         dispatch(clearBreedingSlots())
     }
+
+    const hasSelectedBothParents = parentA_id !== null && parentB_id !== null
+    const hasResult = result !== null
+    const canStartBreeding = hasSelectedBothParents && !hasResult && !isBreeding
+    const breedButtonLabel = isBreeding
+        ? t('ai.generating')
+        : t('knowledgeView.breeding.breedButton')
 
     return (
         <div className="space-y-6">
@@ -406,13 +413,9 @@ const BreedingView: React.FC = () => {
                             </div>
                         </div>
                     </Card>
-                    <Button
-                        onClick={handleBreed}
-                        disabled={!parentA_id || !parentB_id || !!result || isBreeding}
-                        className="w-full"
-                    >
+                    <Button onClick={handleBreed} disabled={!canStartBreeding} className="w-full">
                         <PhosphorIcons.TestTube className="w-5 h-5 mr-2" />
-                        {isBreeding ? t('ai.generating') : t('knowledgeView.breeding.breedButton')}
+                        {breedButtonLabel}
                     </Button>
                 </div>
             </div>

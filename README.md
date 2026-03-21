@@ -329,6 +329,19 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 | **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 529+ tests, Tauri v2, Docker IoT mocks, CodeQL, Trivy |
 | **v1.2** | 🔄 Planned  | Additional languages (ES, FR, NL), nutrient automation, community marketplace, PDF reports                                                                 |
 | **v1.3** | 📋 Planned  | Additional IoT sensors, timelapse journal, strain comparison, 3D visualizations                                                                            |
+| **v1.4** | 📋 Planned  | Strain-scale program (2,000+ mid-term), infinite discovery feed (news, HD galleries), expanded practical guides and extraction education                   |
+| **v1.5** | 📋 Planned  | Curated DE/EN video hub, scholarly lexicon expansion (endocannabinoid system, pharmacology, botany, genetics), source transparency layer                   |
+| **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                   |
+
+### Strategic Expansion Focus (2026-2028)
+
+- **Strain Library at Scale:** Expand from 700+ to 2,000+ curated strains mid-term, then to multi-ten-thousand catalog entries long-term with provenance, duplicate detection, and quality scoring.
+- **Infinite Discovery Surfaces:** Build an endless-scroll discovery page with category streams for cannabis news, official HD plant image collections, and educational media blocks.
+- **Knowledge System Upgrade:** Extend guides, manuals, and lexicon into a multimedia learning layer, including modern extraction topics (e.g., static hash workflows and process safety).
+- **Video Knowledge Curation:** Introduce a bilingual (EN/DE) curated video compilation page for high-signal grow/vlogger content with topic tagging and quality gates.
+- **Scholarly Lexicon Program:** Grow Help lexicon toward a comprehensive encyclopedia (cannabinoids, ECS, entourage, botany, biology, chemistry, genetics, pharmacology, medicine, evolution) with academically traceable references.
+- **AR/VR and Digital Twins:** Implement camera-assisted AR/VR plant overlays and progressively enrich simulation models into practical digital twins for user plants.
+- **Sandbox and BreedingLab Evolution:** Expand scenario depth, trait simulation, and what-if experimentation to support advanced planning, phenotype strategy, and reproducible breeding workflows.
 
 ---
 
@@ -658,6 +671,19 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 529+ Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Trivy |
 | **v1.2** | 🔄 Geplant        | Weitere Sprachen (ES, FR, NL), Nährstoff-Automatisierung, Community-Marktplatz, PDF-Berichte                                                                |
 | **v1.3** | 📋 Geplant        | Weitere IoT-Sensoren, Zeitraffer-Journal, Sorten-Vergleich, 3D-Visualisierungen                                                                             |
+| **v1.4** | 📋 Geplant        | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen        |
+| **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                 |
+| **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                 |
+
+### Strategische Ausbau-Schwerpunkte (2026-2028)
+
+- **Sortenbibliothek in großem Maßstab:** Ausbau von 700+ auf mittelfristig 2.000+ kuratierte Sorten und langfristig mehrere zehntausend Einträge mit Herkunft, Dubletten-Erkennung und Qualitäts-Scoring.
+- **Unendliche Discovery-Flächen:** Einführung einer Endlos-Scrolling-Seite mit Kategorien für Cannabis-News, offizielle HD-Pflanzenbild-Sammlungen und kuratierte Wissensströme.
+- **Wissenssystem-Upgrade:** Ausbau von Anleitungen, Handbüchern und Lexika zu einer multimedialen Lernschicht inklusive moderner Extraktionsverfahren (z. B. Static Hash und Prozesssicherheit).
+- **Video-Wissenskuratierung:** Aufbau einer zweisprachigen (DE/EN) Video-Kompilationsseite für hochwertige Grow-/Vlogger-Inhalte mit Themen-Tags und Qualitätskriterien.
+- **Scholarly-Lexikon-Programm:** Entwicklung des Hilfe-Lexikons zur umfassenden Enzyklopädie (Cannabinoide, ECS, Entourage, Botanik, Biologie, Chemie, Genetik, Pharmakologie, Medizin, Evolution) mit akademisch nachvollziehbaren Quellen.
+- **AR/VR und digitale Zwillinge:** Einführung kameragestützter AR/VR-Overlays und schrittweise Weiterentwicklung der Simulation zu praxisnahen digitalen Zwillingen der Nutzerpflanzen.
+- **What-if- und BreedingLab-Weiterentwicklung:** Mehr Szenariotiefe, Merkmals-Simulation und reproduzierbare Zucht-Workflows für strategische Planung und Phänotyp-Entscheidungen.
 
 ---
 

@@ -9,6 +9,27 @@ const excludedPrefixes = [
     '.lighthouseci/',
 ]
 
+const excludedExtensions = [
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.ico',
+    '.icns',
+    '.webp',
+    '.avif',
+    '.svg',
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.eot',
+    '.mp4',
+    '.webm',
+    '.zip',
+    '.tar',
+    '.gz',
+]
+
 const result = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
     encoding: 'utf8',
     maxBuffer: 1024 * 1024 * 32,
@@ -28,6 +49,7 @@ const files = (result.stdout ?? '')
     .split('\0')
     .filter(Boolean)
     .filter((file) => !excludedPrefixes.some((prefix) => file.startsWith(prefix)))
+    .filter((file) => !excludedExtensions.some((ext) => file.toLowerCase().endsWith(ext)))
 
 if (files.length === 0) {
     process.exit(0)

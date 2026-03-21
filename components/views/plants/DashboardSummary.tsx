@@ -97,6 +97,11 @@ const DashboardSummaryComponent: React.FC = () => {
         }
     }
 
+    const aiErrorMessage =
+        typeof aiError === 'object' && aiError !== null && 'message' in aiError
+            ? String((aiError as { message?: unknown }).message ?? t('ai.error.unknown'))
+            : t('ai.error.unknown')
+
     return (
         <Card className="overflow-hidden">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -171,14 +176,7 @@ const DashboardSummaryComponent: React.FC = () => {
                 {isAiLoading ? (
                     <AiLoadingIndicator loadingMessage={t('ai.generating')} />
                 ) : aiError ? (
-                    <div className="text-center text-sm text-red-400">
-                        {typeof aiError === 'object' && aiError !== null && 'message' in aiError
-                            ? String(
-                                  (aiError as { message?: unknown }).message ??
-                                      t('ai.error.unknown'),
-                              )
-                            : t('ai.error.unknown')}
-                    </div>
+                    <div className="text-center text-sm text-red-400">{aiErrorMessage}</div>
                 ) : aiStatus ? (
                     <Speakable elementId="garden-status-ai" className="animate-fade-in">
                         <div className="flex justify-between items-start">

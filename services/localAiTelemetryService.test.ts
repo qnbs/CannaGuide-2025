@@ -8,6 +8,7 @@ import {
     resetTelemetry,
     persistSnapshot,
     loadPersistedSnapshot,
+    checkPerformanceDegradation,
     type InferenceRecord,
 } from '@/services/localAiTelemetryService'
 
@@ -228,5 +229,100 @@ describe('localAiTelemetryService', () => {
         expect(snapshot.cacheHitRate).toBe(0)
         expect(snapshot.successRate).toBe(1)
         expect(snapshot.peakTokensPerSecond).toBe(0)
+    })
+
+    describe('checkPerformanceDegradation', () => {
+        const slowRecord = (backend: 'wasm' | 'webgpu' | 'webllm' = 'wasm'): void => {
+            recordInference({
+                model: 'test',
+                task: 'text-generation',
+                latencyMs: 5000,
+                tokensGenerated: 5,
+                tokensPerSecond: 1.0,
+                backend,
+                cached: false,
+                timestamp: Date.now(),
+                success: true,
+            })
+        }
+
+        const fastRecord = (backend: 'wasm' | 'webgpu' | 'webllm' = 'wasm'): void => {
+            recordInference({
+                model: 'test',
+                task: 'text-generation',
+                latencyMs: 100,
+                tokensGenerated: 50,
+                tokensPerSecond: 500,
+                backend,
+                cached: false,
+                timestamp: Date.now(),
+                success: true,
+            })
+        }
+
+        it('returns not-degraded when fewer than 3 records', () => {
+            slowRecord()
+            slowRecord()
+            const alert = checkPerformanceDegradation()
+            expect(alert.degraded).toBe(false)
+            expect(alert.recommendation).toBe('none')
+        })
+
+        it('detects degradation when tok/s below threshold', () => {
+            slowRecord()
+            slowRecord()
+            slowRecord()
+            const alert = checkPerformanceDegradation()
+            expect(alert.degraded).toBe(true)
+            expect(alert.recentTokensPerSecond).toBeLessThan(2)
+        })
+
+        it('recommends downgrade-model for WebLLM degradation', () => {
+            slowRecord('webllm')
+            slowRecord('webllm')
+            slowRecord('webllm')
+            const alert = checkPerformanceDegradation()
+            expect(alert.degraded).toBe(true)
+            expect(alert.recommendation).toBe('downgrade-model')
+        })
+
+        it('recommends close-tabs for non-WebLLM degradation', () => {
+            slowRecord('wasm')
+            slowRecord('wasm')
+            slowRecord('wasm')
+            const alert = checkPerformanceDegradation()
+            expect(alert.degraded).toBe(true)
+            expect(alert.recommendation).toBe('close-tabs')
+        })
+
+        it('returns not-degraded when tok/s is healthy', () => {
+            fastRecord()
+            fastRecord()
+            fastRecord()
+            const alert = checkPerformanceDegradation()
+            expect(alert.degraded).toBe(false)
+            expect(alert.recentTokensPerSecond).toBeGreaterThan(2)
+            expect(alert.recommendation).toBe('none')
+        })
+
+        it('ignores cached records for degradation check', () => {
+            slowRecord()
+            slowRecord()
+            slowRecord()
+            // Add cached record with high speed — should not affect the check
+            recordInference({
+                model: 'test',
+                task: 'text-generation',
+                latencyMs: 1,
+                tokensGenerated: 100,
+                tokensPerSecond: 10000,
+                backend: 'wasm',
+                cached: true,
+                timestamp: Date.now(),
+                success: true,
+            })
+            const alert = checkPerformanceDegradation()
+            expect(alert.degraded).toBe(true)
+        })
     })
 })

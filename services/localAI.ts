@@ -335,12 +335,9 @@ class LocalAiService implements BaseAIProvider {
     private async evictWebLlm(): Promise<void> {
         console.debug('[LocalAI] Evicting WebLLM engine to free VRAM')
         const engine = this.webLlmPromise ? await this.webLlmPromise : null
-        if (
-            engine &&
-            typeof (engine as unknown as { unload?: () => Promise<void> }).unload === 'function'
-        ) {
+        if (engine?.unload) {
             try {
-                await (engine as unknown as { unload: () => Promise<void> }).unload()
+                await engine.unload()
             } catch (error) {
                 captureLocalAiError(error, { stage: 'webllm-eviction' })
             }
@@ -501,6 +498,123 @@ class LocalAiService implements BaseAIProvider {
         }
 
         return null
+    }
+
+    /**
+     * Stream text generation via WebLLM (token-by-token).
+     * Falls back to batch `generateText` if WebLLM is unavailable.
+     * The onToken callback fires for each generated token chunk.
+     * Returns the full concatenated result.
+     */
+    async generateTextStream(
+        prompt: string,
+        onToken: (token: string, accumulated: string) => void,
+    ): Promise<string | null> {
+        // Check cache first
+        const cached = getCached(prompt)
+        if (cached) {
+            recordCacheHit()
+            onToken(cached, cached)
+            return cached
+        }
+
+        const persisted = await getCachedInference(prompt)
+        if (persisted) {
+            setCached(prompt, persisted)
+            recordCacheHit()
+            onToken(persisted, persisted)
+            return persisted
+        }
+
+        recordCacheMiss()
+
+        // Try WebLLM streaming
+        const webLlm = await this.loadWebLlmEngine()
+        if (webLlm) {
+            try {
+                const timer = createInferenceTimer()
+                const engine = webLlm as unknown as {
+                    chat: {
+                        completions: {
+                            create: (req: Record<string, unknown>) => Promise<
+                                AsyncIterable<{
+                                    choices?: Array<{ delta?: { content?: string } }>
+                                }>
+                            >
+                        }
+                    }
+                }
+
+                const stream = await withTimeout(
+                    engine.chat.completions.create({
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.5,
+                        max_gen_len: 512,
+                        stream: true,
+                        stream_options: { include_usage: true },
+                    }),
+                    INFERENCE_TIMEOUT_MS,
+                )
+
+                let accumulated = ''
+                let tokenCount = 0
+
+                for await (const chunk of stream) {
+                    const delta = chunk.choices?.[0]?.delta?.content
+                    if (typeof delta === 'string' && delta.length > 0) {
+                        accumulated += delta
+                        tokenCount++
+                        onToken(delta, accumulated)
+                    }
+                }
+
+                if (accumulated.trim().length > 0) {
+                    const activeWebLlmId = getWebLlmModelId() ?? 'webllm-unknown'
+                    timer.stop({
+                        model: activeWebLlmId,
+                        task: 'text-generation',
+                        backend: 'webllm',
+                        tokensGenerated: tokenCount,
+                    })
+                    setCached(prompt, accumulated)
+                    void setCachedInference(prompt, accumulated, {
+                        model: activeWebLlmId,
+                        task: 'text-generation',
+                    }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
+                    debouncedPersistSnapshot()
+                    return accumulated
+                }
+            } catch (error) {
+                captureLocalAiError(error, {
+                    model: getWebLlmModelId() ?? 'webllm-unknown',
+                    stage: 'webllm-streaming',
+                })
+                console.debug('[LocalAI] WebLLM streaming failed, falling back to batch mode.')
+            }
+        }
+
+        // Fall back to batch generateText
+        const result = await this.generateText(prompt)
+        if (result) {
+            onToken(result, result)
+        }
+        return result
+    }
+
+    /**
+     * Get detailed diagnostics about WebLLM availability.
+     * Delegates to the webLlmDiagnosticsService with current runtime state.
+     */
+    async getWebLlmDiagnostics(): Promise<
+        import('./webLlmDiagnosticsService').WebLlmDiagnosticResult
+    > {
+        const { diagnoseWebLlm } = await import('./webLlmDiagnosticsService')
+        const { getForceWasm } = await import('./localAIModelLoader')
+        const profile = getResolvedProfile()
+        return diagnoseWebLlm({
+            forceWasm: getForceWasm(),
+            modelProfileId: profile.webLlmModelId,
+        })
     }
 
     async preloadOfflineAssets(
@@ -1120,6 +1234,7 @@ interface LocalWebLlmEngine {
                 messages: Array<{ role: 'user'; content: string }>
                 temperature: number
                 max_gen_len: number
+                stream?: boolean
             }) => Promise<{
                 choices?: Array<{
                     message?: { content?: string }
@@ -1127,6 +1242,8 @@ interface LocalWebLlmEngine {
             }>
         }
     }
+    /** Unload model weights from VRAM. Safe to call multiple times. */
+    unload?: () => Promise<void>
 }
 
 export interface LocalAiPreloadReport {

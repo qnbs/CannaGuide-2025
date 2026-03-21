@@ -272,6 +272,51 @@ export const createInferenceTimer = (): {
     }
 }
 
+// ─── Performance Degradation Detection ───────────────────────────────────────
+
+/** Minimum tok/s before we consider it degraded (VRAM swapping to RAM). */
+const DEGRADED_TOKENS_PER_SECOND = 2.0
+
+/** Number of recent records to consider for degradation check. */
+const DEGRADATION_WINDOW = 3
+
+export interface PerformanceAlert {
+    /** Whether performance is degraded. */
+    degraded: boolean
+    /** Current average tok/s over the last N inferences. */
+    recentTokensPerSecond: number
+    /** Recommended action. */
+    recommendation: 'none' | 'downgrade-model' | 'close-tabs' | 'switch-wasm'
+}
+
+/**
+ * Check if recent inference performance indicates VRAM pressure.
+ * When tok/s drops below threshold, the browser is likely swapping
+ * VRAM to system RAM, causing severe degradation.
+ */
+export const checkPerformanceDegradation = (): PerformanceAlert => {
+    const recent = records
+        .filter((r) => r.success && !r.cached && r.tokensPerSecond > 0)
+        .slice(-DEGRADATION_WINDOW)
+
+    if (recent.length < DEGRADATION_WINDOW) {
+        return { degraded: false, recentTokensPerSecond: 0, recommendation: 'none' }
+    }
+
+    const avgTokPerSec = recent.reduce((sum, r) => sum + r.tokensPerSecond, 0) / recent.length
+
+    if (avgTokPerSec < DEGRADED_TOKENS_PER_SECOND) {
+        // Check if this is primarily a WebLLM issue (GPU swapping)
+        const webllmRecords = recent.filter((r) => r.backend === 'webllm')
+        const recommendation: PerformanceAlert['recommendation'] =
+            webllmRecords.length > 0 ? 'downgrade-model' : 'close-tabs'
+
+        return { degraded: true, recentTokensPerSecond: avgTokPerSec, recommendation }
+    }
+
+    return { degraded: false, recentTokensPerSecond: avgTokPerSec, recommendation: 'none' }
+}
+
 // ─── Reset (tests) ──────────────────────────────────────────────────────────
 
 export const resetTelemetry = (): void => {

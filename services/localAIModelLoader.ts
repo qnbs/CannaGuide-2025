@@ -22,6 +22,9 @@ export const setForceWasm = (force: boolean): void => {
     detectedBackend = null // reset so next call re-evaluates
 }
 
+/** Read the current forceWasm override state. */
+export const getForceWasm = (): boolean => forceWasmOverride
+
 /** Called by VRAM profiler when GPU memory is too low for safe WebGPU usage. */
 export const setVramInsufficientOverride = (insufficient: boolean): void => {
     vramInsufficientOverride = insufficient

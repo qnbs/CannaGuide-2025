@@ -32,6 +32,13 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = 
     </div>
 )
 
+const resolveApiErrorMessage = (error: unknown, fallback: string): string => {
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        return String((error as { message?: unknown }).message ?? fallback)
+    }
+    return fallback
+}
+
 const DashboardSummaryComponent: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
@@ -97,10 +104,7 @@ const DashboardSummaryComponent: React.FC = () => {
         }
     }
 
-    const aiErrorMessage =
-        typeof aiError === 'object' && aiError !== null && 'message' in aiError
-            ? String((aiError as { message?: unknown }).message ?? t('ai.error.unknown'))
-            : t('ai.error.unknown')
+    const aiErrorMessage = resolveApiErrorMessage(aiError, t('ai.error.unknown'))
 
     return (
         <Card className="overflow-hidden">

@@ -82,92 +82,105 @@ function analyzeEc(ec: number, stage: PlantStage, lang: Language): string | null
     return null
 }
 
+const analyzeTemperature = (temperature: number, lang: Language): string | null => {
+    if (temperature > 30) {
+        return isGerman(lang)
+            ? `Temperatur zu hoch (${temperature.toFixed(1)}°C). Unter 28°C halten.`
+            : `Temperature too high (${temperature.toFixed(1)}°C). Keep below 28°C.`
+    }
+
+    if (temperature < 18) {
+        return isGerman(lang)
+            ? `Temperatur zu niedrig (${temperature.toFixed(1)}°C). Über 20°C halten.`
+            : `Temperature too low (${temperature.toFixed(1)}°C). Keep above 20°C.`
+    }
+
+    return null
+}
+
+const analyzeMoisture = (moisture: number, lang: Language): string | null => {
+    if (moisture < 30) {
+        return isGerman(lang)
+            ? 'Substrat zu trocken. Bewässerung erhöhen.'
+            : 'Medium too dry. Increase watering.'
+    }
+
+    if (moisture > 80) {
+        return isGerman(lang)
+            ? 'Substrat zu feucht. Überwässerungsgefahr.'
+            : 'Medium too wet. Risk of overwatering.'
+    }
+
+    return null
+}
+
+const analyzeRootHealth = (health: number, lang: Language): string | null => {
+    if (health >= 60) {
+        return null
+    }
+
+    return isGerman(lang)
+        ? `Wurzelgesundheit niedrig (${health.toFixed(0)}%). Mykorrhiza und Drainage prüfen.`
+        : `Root health low (${health.toFixed(0)}%). Check mycorrhizae and drainage.`
+}
+
+const analyzeCo2 = (co2: number, lang: Language): string | null => {
+    if (co2 < 300) {
+        return isGerman(lang)
+            ? `CO₂ sehr niedrig (${co2} ppm). Frischluft oder CO₂-Ergänzung prüfen.`
+            : `CO₂ very low (${co2} ppm). Check ventilation or CO₂ supplementation.`
+    }
+
+    if (co2 > 1500) {
+        return isGerman(lang)
+            ? `CO₂ zu hoch (${co2} ppm). Auf unter 1500 ppm senken, um Pflanzenstress zu vermeiden.`
+            : `CO₂ too high (${co2} ppm). Reduce below 1500 ppm to avoid plant stress.`
+    }
+
+    return null
+}
+
+const analyzeLightHours = (
+    stage: PlantStage,
+    lightHours: number,
+    lang: Language,
+): string | null => {
+    if (stage === PlantStage.Flowering && lightHours > 14) {
+        return isGerman(lang)
+            ? `Lichtperiode zu lang für Blüte (${lightHours}h). 12/12 empfohlen.`
+            : `Light period too long for flowering (${lightHours}h). 12/12 recommended.`
+    }
+
+    if (stage === PlantStage.Vegetative && lightHours < 14) {
+        return isGerman(lang)
+            ? `Lichtperiode kurz für Vegetative (${lightHours}h). 18/6 empfohlen.`
+            : `Light period short for vegetative (${lightHours}h). 18/6 recommended.`
+    }
+
+    return null
+}
+
+const pushIfPresent = (issues: string[], issue: string | null): void => {
+    if (issue) {
+        issues.push(issue)
+    }
+}
+
+const defaultTopPriority = (lang: Language): string =>
+    isGerman(lang) ? 'Alle Parameter im Normalbereich.' : 'All parameters within normal range.'
+
 export function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
     const issues: string[] = []
-    const vpdIssue = analyzeVpd(plant.environment.vpd, plant.stage, lang)
-    if (vpdIssue) issues.push(vpdIssue)
-    const phIssue = analyzePh(plant.medium.ph, lang)
-    if (phIssue) issues.push(phIssue)
-    const ecIssue = analyzeEc(plant.medium.ec, plant.stage, lang)
-    if (ecIssue) issues.push(ecIssue)
+    pushIfPresent(issues, analyzeVpd(plant.environment.vpd, plant.stage, lang))
+    pushIfPresent(issues, analyzePh(plant.medium.ph, lang))
+    pushIfPresent(issues, analyzeEc(plant.medium.ec, plant.stage, lang))
+    pushIfPresent(issues, analyzeTemperature(plant.environment.internalTemperature, lang))
+    pushIfPresent(issues, analyzeMoisture(plant.medium.moisture, lang))
+    pushIfPresent(issues, analyzeRootHealth(plant.rootSystem.health, lang))
+    pushIfPresent(issues, analyzeCo2(plant.environment.co2Level, lang))
+    pushIfPresent(issues, analyzeLightHours(plant.stage, plant.equipment.light.lightHours, lang))
 
-    if (plant.environment.internalTemperature > 30) {
-        issues.push(
-            isGerman(lang)
-                ? `Temperatur zu hoch (${plant.environment.internalTemperature.toFixed(1)}°C). Unter 28°C halten.`
-                : `Temperature too high (${plant.environment.internalTemperature.toFixed(1)}°C). Keep below 28°C.`,
-        )
-    } else if (plant.environment.internalTemperature < 18) {
-        issues.push(
-            isGerman(lang)
-                ? `Temperatur zu niedrig (${plant.environment.internalTemperature.toFixed(1)}°C). Über 20°C halten.`
-                : `Temperature too low (${plant.environment.internalTemperature.toFixed(1)}°C). Keep above 20°C.`,
-        )
-    }
-
-    if (plant.medium.moisture < 30) {
-        issues.push(
-            isGerman(lang)
-                ? 'Substrat zu trocken. Bewässerung erhöhen.'
-                : 'Medium too dry. Increase watering.',
-        )
-    } else if (plant.medium.moisture > 80) {
-        issues.push(
-            isGerman(lang)
-                ? 'Substrat zu feucht. Überwässerungsgefahr.'
-                : 'Medium too wet. Risk of overwatering.',
-        )
-    }
-
-    if (plant.rootSystem.health < 60) {
-        issues.push(
-            isGerman(lang)
-                ? `Wurzelgesundheit niedrig (${plant.rootSystem.health.toFixed(0)}%). Mykorrhiza und Drainage prüfen.`
-                : `Root health low (${plant.rootSystem.health.toFixed(0)}%). Check mycorrhizae and drainage.`,
-        )
-    }
-
-    // CO2 analysis
-    const co2 = plant.environment.co2Level
-    if (co2 < 300) {
-        issues.push(
-            isGerman(lang)
-                ? `CO₂ sehr niedrig (${co2} ppm). Frischluft oder CO₂-Ergänzung prüfen.`
-                : `CO₂ very low (${co2} ppm). Check ventilation or CO₂ supplementation.`,
-        )
-    } else if (co2 > 1500) {
-        issues.push(
-            isGerman(lang)
-                ? `CO₂ zu hoch (${co2} ppm). Auf unter 1500 ppm senken, um Pflanzenstress zu vermeiden.`
-                : `CO₂ too high (${co2} ppm). Reduce below 1500 ppm to avoid plant stress.`,
-        )
-    }
-
-    // Light hours analysis
-    const lightHours = plant.equipment.light.lightHours
-    if (plant.stage === PlantStage.Flowering && lightHours > 14) {
-        issues.push(
-            isGerman(lang)
-                ? `Lichtperiode zu lang für Blüte (${lightHours}h). 12/12 empfohlen.`
-                : `Light period too long for flowering (${lightHours}h). 12/12 recommended.`,
-        )
-    } else if (plant.stage === PlantStage.Vegetative && lightHours < 14) {
-        issues.push(
-            isGerman(lang)
-                ? `Lichtperiode kurz für Vegetative (${lightHours}h). 18/6 empfohlen.`
-                : `Light period short for vegetative (${lightHours}h). 18/6 recommended.`,
-        )
-    }
-
-    const topPriority =
-        issues.length > 0
-            ? (issues[0] ??
-              (isGerman(lang)
-                  ? 'Alle Parameter im Normalbereich.'
-                  : 'All parameters within normal range.'))
-            : isGerman(lang)
-              ? 'Alle Parameter im Normalbereich.'
-              : 'All parameters within normal range.'
+    const topPriority = issues[0] ?? defaultTopPriority(lang)
 
     return { issues, topPriority }
 }
@@ -342,6 +355,93 @@ const makeRecommendationItem = (
     ...(typeof watts === 'number' ? { watts } : {}),
 })
 
+interface LocalizedItem {
+    en: { name: string; price: number }
+    de: { name: string; price: number }
+}
+
+const getTentConfig = (isLarge: boolean, isBudget: boolean): LocalizedItem => {
+    if (isLarge) {
+        return {
+            en: { name: '120x120x200 cm grow tent', price: isBudget ? 150 : 220 },
+            de: { name: '120x120x200 cm Grow-Zelt', price: isBudget ? 150 : 220 },
+        }
+    }
+
+    return {
+        en: { name: '100x100x200 cm grow tent', price: isBudget ? 110 : 180 },
+        de: { name: '100x100x200 cm Grow-Zelt', price: isBudget ? 110 : 180 },
+    }
+}
+
+const getVentilationName = (wantsSmellControl: boolean, isSilent: boolean): string => {
+    if (wantsSmellControl) {
+        return isSilent ? 'Silent inline fan with carbon filter' : 'Inline fan with carbon filter'
+    }
+
+    return isSilent ? 'Low-noise inline exhaust fan' : 'Inline exhaust fan'
+}
+
+const getVentilationRationale = (
+    wantsSmellControl: boolean,
+    isSilent: boolean,
+    lang: Language,
+): string => {
+    if (wantsSmellControl) {
+        return isGerman(lang)
+            ? 'Geruchsmanagement ist wichtig, daher mit Aktivkohlefilter planen.'
+            : 'Odor control matters here, so a carbon filter is included.'
+    }
+
+    if (isSilent) {
+        return isGerman(lang)
+            ? 'Leiser Luftaustausch reduziert Störungen im Alltag.'
+            : 'Low-noise extraction keeps the room manageable in daily use.'
+    }
+
+    return isGerman(lang)
+        ? 'Solider Luftaustausch hält Temperatur und Feuchte stabil.'
+        : 'Solid airflow keeps temperature and humidity stable.'
+}
+
+const getSoilName = (prefersCoco: boolean, prefersSoil: boolean, lang: Language): string => {
+    if (prefersCoco) {
+        return isGerman(lang) ? 'Coco-Blend Substrat' : 'Coco blend substrate'
+    }
+
+    if (prefersSoil) {
+        return isGerman(lang) ? 'Lebendige Blumenerde' : 'Living soil mix'
+    }
+
+    return isGerman(lang) ? 'Hochwertige Grow-Erde' : 'Quality grow soil'
+}
+
+const getNutrientName = (prefersCoco: boolean, isAuto: boolean, lang: Language): string => {
+    if (prefersCoco) {
+        return isGerman(lang) ? 'Coco-geeigneter Basisdünger' : 'Coco-friendly base nutrient kit'
+    }
+
+    if (isAuto) {
+        return isGerman(lang) ? 'Sanfte Blütedüngung für Autos' : 'Gentle bloom nutrients for autos'
+    }
+
+    return isGerman(lang) ? 'Ausgewogener Basisdünger' : 'Balanced base nutrient kit'
+}
+
+const getExtraName = (wantsSmellControl: boolean, isBudget: boolean, lang: Language): string => {
+    if (wantsSmellControl) {
+        return isGerman(lang) ? 'Aktivkohlefilter-Upgrade' : 'Carbon filter upgrade'
+    }
+
+    if (isBudget) {
+        return isGerman(lang)
+            ? 'Thermo-Hygrometer mit Min/Max'
+            : 'Thermo-hygrometer with min/max memory'
+    }
+
+    return isGerman(lang) ? 'pH- und EC-Messset' : 'pH and EC meter set'
+}
+
 const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommendation => {
     const normalized = prompt.toLowerCase().slice(0, 2000)
     const isBudget = /budget|cheap|starter|entry|einsteiger|günstig|preiswert/.test(normalized)
@@ -352,76 +452,18 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
     const prefersCoco = /coco|kokos/.test(normalized)
     const isAuto = /autoflower|autoflowering|autoflowern?/.test(normalized)
 
-    const tent = isLarge
-        ? {
-              en: { name: '120x120x200 cm grow tent', price: isBudget ? 150 : 220 },
-              de: { name: '120x120x200 cm Grow-Zelt', price: isBudget ? 150 : 220 },
-          }
-        : {
-              en: { name: '100x100x200 cm grow tent', price: isBudget ? 110 : 180 },
-              de: { name: '100x100x200 cm Grow-Zelt', price: isBudget ? 110 : 180 },
-          }
+    const tent = getTentConfig(isLarge, isBudget)
 
     const lightWatts = isLarge ? (isBudget ? 320 : 450) : isBudget ? 200 : 300
     const lightName = isBudget
         ? `${lightWatts}W full-spectrum LED`
         : `${lightWatts}W dimmable full-spectrum LED`
 
-    const ventilationName = wantsSmellControl
-        ? isSilent
-            ? 'Silent inline fan with carbon filter'
-            : 'Inline fan with carbon filter'
-        : isSilent
-          ? 'Low-noise inline exhaust fan'
-          : 'Inline exhaust fan'
-
-    const ventilationRationale = wantsSmellControl
-        ? isGerman(lang)
-            ? 'Geruchsmanagement ist wichtig, daher mit Aktivkohlefilter planen.'
-            : 'Odor control matters here, so a carbon filter is included.'
-        : isSilent
-          ? isGerman(lang)
-              ? 'Leiser Luftaustausch reduziert Störungen im Alltag.'
-              : 'Low-noise extraction keeps the room manageable in daily use.'
-          : isGerman(lang)
-            ? 'Solider Luftaustausch hält Temperatur und Feuchte stabil.'
-            : 'Solid airflow keeps temperature and humidity stable.'
-
-    const soilName = prefersCoco
-        ? isGerman(lang)
-            ? 'Coco-Blend Substrat'
-            : 'Coco blend substrate'
-        : prefersSoil
-          ? isGerman(lang)
-              ? 'Lebendige Blumenerde'
-              : 'Living soil mix'
-          : isGerman(lang)
-            ? 'Hochwertige Grow-Erde'
-            : 'Quality grow soil'
-
-    const nutrientName = prefersCoco
-        ? isGerman(lang)
-            ? 'Coco-geeigneter Basisdünger'
-            : 'Coco-friendly base nutrient kit'
-        : isAuto
-          ? isGerman(lang)
-              ? 'Sanfte Blütedüngung für Autos'
-              : 'Gentle bloom nutrients for autos'
-          : isGerman(lang)
-            ? 'Ausgewogener Basisdünger'
-            : 'Balanced base nutrient kit'
-
-    const extraName = wantsSmellControl
-        ? isGerman(lang)
-            ? 'Aktivkohlefilter-Upgrade'
-            : 'Carbon filter upgrade'
-        : isBudget
-          ? isGerman(lang)
-              ? 'Thermo-Hygrometer mit Min/Max'
-              : 'Thermo-hygrometer with min/max memory'
-          : isGerman(lang)
-            ? 'pH- und EC-Messset'
-            : 'pH and EC meter set'
+    const ventilationName = getVentilationName(wantsSmellControl, isSilent)
+    const ventilationRationale = getVentilationRationale(wantsSmellControl, isSilent, lang)
+    const soilName = getSoilName(prefersCoco, prefersSoil, lang)
+    const nutrientName = getNutrientName(prefersCoco, isAuto, lang)
+    const extraName = getExtraName(wantsSmellControl, isBudget, lang)
 
     const proTip = isGerman(lang)
         ? 'Erst Klima und Licht stabilisieren, dann erst Dünger und Training schrittweise anpassen.'

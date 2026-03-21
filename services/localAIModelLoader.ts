@@ -76,6 +76,70 @@ const releaseLoadSlot = (): void => {
     }
 }
 
+const shouldRetryWithWasm = (error: unknown, mergedOptions: Record<string, unknown>): boolean =>
+    mergedOptions.device === 'webgpu' &&
+    error instanceof Error &&
+    /webgpu|context|gpu/i.test(error.message)
+
+const buildPipelineOptions = (
+    modelId: string,
+    backend: OnnxBackend,
+    options: Record<string, unknown>,
+): Record<string, unknown> => {
+    const mergedOptions: Record<string, unknown> = { ...options }
+
+    // Prefer WebGPU device when available; Transformers.js falls back to WASM automatically
+    if (backend === 'webgpu' && !mergedOptions.device) {
+        mergedOptions.device = 'webgpu'
+    }
+
+    // Add progress callback for download tracking
+    if (!mergedOptions.progress_callback) {
+        mergedOptions.progress_callback = (progress: {
+            status: string
+            file?: string
+            progress?: number
+        }) => {
+            if (progress.status === 'progress' && typeof progress.progress === 'number') {
+                console.debug(
+                    `[LocalAI] ${modelId}: ${progress.file ?? 'model'} ${progress.progress.toFixed(0)}%`,
+                )
+            }
+        }
+    }
+
+    return mergedOptions
+}
+
+const executePipelineLoad = async (
+    pipeline: TransformersModule['pipeline'],
+    task: string,
+    modelId: string,
+    mergedOptions: Record<string, unknown>,
+): Promise<LocalAiPipeline> => {
+    try {
+        return await (pipeline(
+            task as never,
+            modelId,
+            mergedOptions as never,
+        ) as Promise<LocalAiPipeline>)
+    } catch (pipelineError) {
+        // If WebGPU context creation failed, retry with WASM backend
+        if (shouldRetryWithWasm(pipelineError, mergedOptions)) {
+            console.debug(`[LocalAI] WebGPU pipeline failed for ${modelId}, retrying with WASM.`)
+            forceWasmOverride = true
+            detectedBackend = null
+            mergedOptions.device = undefined
+            return await (pipeline(
+                task as never,
+                modelId,
+                mergedOptions as never,
+            ) as Promise<LocalAiPipeline>)
+        }
+        throw pipelineError
+    }
+}
+
 /** Count of currently loaded pipeline instances. */
 export const getLoadedPipelineCount = (): number => pipelineCache.size
 
@@ -118,52 +182,8 @@ export const loadTransformersPipeline = async (
         try {
             const { pipeline } = await getTransformersModule()
             const backend = detectOnnxBackend()
-            const mergedOptions: Record<string, unknown> = { ...options }
-            // Prefer WebGPU device when available; Transformers.js falls back to WASM automatically
-            if (backend === 'webgpu' && !mergedOptions.device) {
-                mergedOptions.device = 'webgpu'
-            }
-            // Add progress callback for download tracking
-            if (!mergedOptions.progress_callback) {
-                mergedOptions.progress_callback = (progress: {
-                    status: string
-                    file?: string
-                    progress?: number
-                }) => {
-                    if (progress.status === 'progress' && typeof progress.progress === 'number') {
-                        console.debug(
-                            `[LocalAI] ${modelId}: ${progress.file ?? 'model'} ${progress.progress.toFixed(0)}%`,
-                        )
-                    }
-                }
-            }
-            try {
-                return await (pipeline(
-                    task as never,
-                    modelId,
-                    mergedOptions as never,
-                ) as Promise<LocalAiPipeline>)
-            } catch (pipelineError) {
-                // If WebGPU context creation failed, retry with WASM backend
-                if (
-                    mergedOptions.device === 'webgpu' &&
-                    pipelineError instanceof Error &&
-                    /webgpu|context|gpu/i.test(pipelineError.message)
-                ) {
-                    console.debug(
-                        `[LocalAI] WebGPU pipeline failed for ${modelId}, retrying with WASM.`,
-                    )
-                    forceWasmOverride = true
-                    detectedBackend = null
-                    mergedOptions.device = undefined
-                    return await (pipeline(
-                        task as never,
-                        modelId,
-                        mergedOptions as never,
-                    ) as Promise<LocalAiPipeline>)
-                }
-                throw pipelineError
-            }
+            const mergedOptions = buildPipelineOptions(modelId, backend, options)
+            return executePipelineLoad(pipeline, task, modelId, mergedOptions)
         } finally {
             releaseLoadSlot()
         }

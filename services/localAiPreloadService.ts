@@ -108,6 +108,7 @@ const formatReportDetails = (report: LocalAiPreloadReport): string => {
         `zeroShot=${report.zeroShotTextModelReady ? 'ready' : 'missing'}`,
         `langDetect=${report.languageDetectionReady ? 'ready' : 'missing'}`,
         `imgSimilarity=${report.imageSimilarityReady ? 'ready' : 'missing'}`,
+        `imageGen=${report.imageGenerationReady ? 'ready' : 'unavailable'}`,
     ]
 
     if (report.errorCount > 0) {

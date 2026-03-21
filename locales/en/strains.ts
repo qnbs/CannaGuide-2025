@@ -226,6 +226,7 @@ export const strainsView = {
         images: {
             noImagesTitle: 'No Images Yet',
             noImagesSubtitle: 'Generate AI tips with images to populate this gallery.',
+            generatedImageTitle: 'AI Generated — {{name}}',
         },
         notes: {
             saveSuccess: 'Note saved!',
@@ -394,6 +395,24 @@ export const strainsView = {
         treeTruncated: 'Showing {{shown}} of {{total}} nodes',
         errorCalculatingTree: 'Error calculating the genealogy tree',
         errorInitZoom: 'Error initializing zoom controls',
+    },
+    imageGen: {
+        title: 'AI Image Generation',
+        description:
+            'Generate unique strain visualizations using on-device AI (SD-Turbo). Requires WebGPU.',
+        settings: 'Image Settings',
+        generate: 'Generate Image',
+        regenerate: 'Regenerate',
+        generating: 'Generating…',
+        error: 'Image generation failed. Please try again.',
+        altText: 'AI-generated image of {{name}}',
+        phases: {
+            loading: 'Loading model',
+            encoding: 'Encoding prompt',
+            denoising: 'Generating image',
+            decoding: 'Decoding pixels',
+            complete: 'Complete',
+        },
     },
     quickFilters: 'Quick Filters',
     landraceStrain: 'Landrace Strain',

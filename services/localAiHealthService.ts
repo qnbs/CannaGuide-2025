@@ -69,6 +69,8 @@ export interface ModelRecommendation {
     textModel: 'qwen2.5' | 'qwen3' | 'auto'
     /** Whether WebLLM should be enabled. */
     enableWebLlm: boolean
+    /** Whether on-device image generation (SD-Turbo) is feasible. */
+    enableImageGen: boolean
     /** Recommended ONNX backend. */
     preferredBackend: OnnxBackend
     /** Reason for the recommendation. */
@@ -300,6 +302,7 @@ export const getModelRecommendation = (): ModelRecommendation => {
         return {
             textModel: 'qwen3',
             enableWebLlm: false,
+            enableImageGen: false,
             preferredBackend: 'wasm',
             reason: 'Memory pressure detected — using lightweight model and WASM backend.',
             quantLevel: 'q4',
@@ -313,6 +316,7 @@ export const getModelRecommendation = (): ModelRecommendation => {
         return {
             textModel: 'qwen3',
             enableWebLlm: false,
+            enableImageGen: false,
             preferredBackend: 'wasm',
             reason: `Low VRAM detected (${vram.vramMB}MB < ${MIN_VRAM_FOR_WEBGPU_MB}MB) — forcing quantized model and WASM backend to prevent GPU crash.`,
             quantLevel: profile.quantLevel,
@@ -326,6 +330,7 @@ export const getModelRecommendation = (): ModelRecommendation => {
             return {
                 textModel: profile.sizeTier === '1.5B' ? 'qwen2.5' : 'qwen3',
                 enableWebLlm: profile.webLlmModelId !== null,
+                enableImageGen: backend === 'webgpu',
                 preferredBackend: backend,
                 reason: `High-end device — ${profile.reason}`,
                 quantLevel: profile.quantLevel,
@@ -336,6 +341,7 @@ export const getModelRecommendation = (): ModelRecommendation => {
             return {
                 textModel: profile.sizeTier === '1.5B' ? 'auto' : 'qwen3',
                 enableWebLlm: profile.webLlmModelId !== null,
+                enableImageGen: backend === 'webgpu',
                 preferredBackend: backend,
                 reason: `Mid-range device — ${profile.reason}`,
                 quantLevel: profile.quantLevel,
@@ -346,6 +352,7 @@ export const getModelRecommendation = (): ModelRecommendation => {
             return {
                 textModel: 'qwen3',
                 enableWebLlm: false,
+                enableImageGen: false,
                 preferredBackend: 'wasm',
                 reason: `Low-end device — ${profile.reason}`,
                 quantLevel: profile.quantLevel,
@@ -356,6 +363,7 @@ export const getModelRecommendation = (): ModelRecommendation => {
             return {
                 textModel: 'auto',
                 enableWebLlm: false,
+                enableImageGen: false,
                 preferredBackend: backend,
                 reason: `Device class unknown — ${profile.reason}`,
                 quantLevel: profile.quantLevel,

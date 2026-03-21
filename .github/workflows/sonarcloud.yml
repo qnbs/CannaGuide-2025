@@ -1,0 +1,47 @@
+name: SonarCloud
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: '20'
+
+jobs:
+    sonarcloud:
+        name: 🔍 SonarCloud Analysis
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
+
+            - name: 📦 Install dependencies
+              run: npm ci --prefer-offline
+
+            - name: 🧪 Run tests with coverage
+              run: npm test -- --run --coverage --reporter=verbose
+              continue-on-error: true
+
+            - name: 🔍 SonarCloud Scan
+              if: ${{ env.HAS_TOKEN == 'true' }}
+              uses: SonarSource/sonarqube-scan-action@v5
+              env:
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        env:
+            HAS_TOKEN: ${{ secrets.SONAR_TOKEN != '' }}

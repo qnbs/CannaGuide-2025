@@ -1,23 +1,119 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": ["config:recommended", ":dependencyDashboard", ":enableVulnerabilityAlerts"],
+    "extends": [
+        "config:recommended",
+        ":dependencyDashboard",
+        ":enableVulnerabilityAlerts",
+        ":automergeMinor",
+        ":automergePatch"
+    ],
     "dependencyDashboard": true,
     "dependencyDashboardTitle": "Renovate Dependency Dashboard",
-    "labels": ["dependencies", "security"],
+    "labels": ["dependencies"],
     "rangeStrategy": "bump",
     "separateMinorPatch": true,
     "separateMultipleMajor": true,
     "timezone": "UTC",
+    "automerge": false,
     "packageRules": [
         {
+            "description": "AI & ML packages (grouped, manual merge)",
+            "matchPackagePatterns": [
+                "^@xenova/",
+                "^@huggingface/",
+                "^@mlc-ai/",
+                "^@tensorflow/",
+                "^onnxruntime",
+                "^@google/generative-ai",
+                "^openai",
+                "^@anthropic-ai/"
+            ],
+            "groupName": "ai-and-ml",
+            "labels": ["dependencies", "ai"],
+            "automerge": false,
+            "prPriority": 5
+        },
+        {
+            "description": "Testing tools (grouped)",
+            "matchPackagePatterns": [
+                "^vitest",
+                "^@vitest/",
+                "^playwright",
+                "^@playwright/",
+                "^@stryker-mutator/"
+            ],
+            "groupName": "testing",
+            "labels": ["dependencies", "tests"],
+            "prPriority": 3
+        },
+        {
+            "description": "UI & styling (grouped)",
+            "matchPackagePatterns": [
+                "^@radix-ui/",
+                "^tailwindcss",
+                "^@tailwindcss/",
+                "^postcss",
+                "^autoprefixer"
+            ],
+            "groupName": "ui-and-styling",
+            "labels": ["dependencies", "ui"],
+            "prPriority": 2
+        },
+        {
+            "description": "Security patches (high priority, auto-merge)",
             "matchDatasources": ["npm"],
             "matchUpdateTypes": ["patch"],
-            "groupName": "security-and-patch-updates",
+            "matchPackagePatterns": ["^@sentry/", "^dompurify"],
+            "groupName": "security-patches",
+            "labels": ["dependencies", "security"],
+            "automerge": true,
             "prPriority": 10
         },
         {
-            "matchDepTypes": ["dependencies", "devDependencies"],
-            "groupName": "runtime-and-dev-deps"
+            "description": "Linting & formatting (grouped, auto-merge patches)",
+            "matchPackagePatterns": [
+                "^eslint",
+                "^@eslint/",
+                "^prettier",
+                "^@biomejs/",
+                "^typescript-eslint"
+            ],
+            "groupName": "linting",
+            "labels": ["dependencies"],
+            "automerge": true,
+            "matchUpdateTypes": ["patch", "minor"],
+            "prPriority": 1
+        },
+        {
+            "description": "Build tools (grouped)",
+            "matchPackagePatterns": ["^vite", "^@vitejs/", "^rollup", "^esbuild"],
+            "groupName": "build-tools",
+            "labels": ["dependencies"],
+            "prPriority": 2
+        },
+        {
+            "description": "GitHub Actions (auto-merge minor/patch)",
+            "matchManagers": ["github-actions"],
+            "groupName": "github-actions",
+            "labels": ["dependencies", "ci"],
+            "automerge": true,
+            "matchUpdateTypes": ["minor", "patch"],
+            "prPriority": 4
+        },
+        {
+            "description": "Tauri & desktop (grouped, manual merge)",
+            "matchPackagePatterns": ["^@tauri-apps/", "^tauri-"],
+            "groupName": "tauri-desktop",
+            "labels": ["dependencies", "tauri"],
+            "automerge": false,
+            "prPriority": 3
+        },
+        {
+            "description": "i18n packages",
+            "matchPackagePatterns": ["^i18next", "^react-i18next"],
+            "groupName": "i18n",
+            "labels": ["dependencies", "i18n"],
+            "prPriority": 2
         }
     ]
 }

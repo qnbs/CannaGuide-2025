@@ -406,6 +406,8 @@ export const strainsView = {
         generating: 'Generating…',
         error: 'Image generation failed. Please try again.',
         altText: 'AI-generated image of {{name}}',
+        gpuBusy:
+            'The GPU is currently in use by the AI chatbot. It will be paused automatically when you generate an image.',
         phases: {
             loading: 'Loading model',
             encoding: 'Encoding prompt',

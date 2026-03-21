@@ -35,6 +35,7 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
     const [generatedImage, setGeneratedImage] = useState<string | null>(null)
     const [isCapable, setIsCapable] = useState<boolean | null>(null)
     const [capabilityReason, setCapabilityReason] = useState('')
+    const [gpuBusy, setGpuBusy] = useState(false)
 
     const [imageStyle, setImageStyle] = useState('random')
     const [imageCriteria, setImageCriteria] = useState({
@@ -46,12 +47,17 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
     // Check device capability on mount
     useEffect(() => {
         let cancelled = false
-        import('@/services/imageGenerationService')
-            .then(({ checkImageGenCapability }) => {
+        Promise.all([
+            import('@/services/imageGenerationService'),
+            import('@/services/gpuResourceManager'),
+        ])
+            .then(([{ checkImageGenCapability }, { getGpuLockState }]) => {
                 if (cancelled) return
                 const cap = checkImageGenCapability()
                 setIsCapable(cap.supported)
                 setCapabilityReason(cap.reason)
+                const lock = getGpuLockState()
+                setGpuBusy(lock.locked && lock.holder !== 'image-gen')
             })
             .catch(() => {
                 if (!cancelled) {
@@ -140,6 +146,13 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
             ) : (
                 <>
                     <p className="text-sm text-slate-400 mb-4">{t('imageGen.description')}</p>
+
+                    {gpuBusy && !isGenerating && (
+                        <div className="text-sm text-amber-300 bg-amber-900/20 rounded-lg px-3 py-2 mb-4 flex items-center gap-2">
+                            <PhosphorIcons.Warning className="w-4 h-4 flex-shrink-0" />
+                            <span>{t('strainsView.imageGen.gpuBusy')}</span>
+                        </div>
+                    )}
 
                     <details className="group bg-slate-800/30 rounded-lg p-3 mb-4">
                         <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center gap-2">

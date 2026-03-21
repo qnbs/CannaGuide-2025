@@ -413,6 +413,8 @@ export const strainsView = {
         generating: 'Generiere…',
         error: 'Bildgenerierung fehlgeschlagen. Bitte erneut versuchen.',
         altText: 'KI-generiertes Bild von {{name}}',
+        gpuBusy:
+            'Die GPU wird gerade vom KI-Chatbot genutzt. Er wird automatisch pausiert, wenn du ein Bild generierst.',
         phases: {
             loading: 'Modell laden',
             encoding: 'Prompt kodieren',

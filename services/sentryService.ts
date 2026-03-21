@@ -127,6 +127,9 @@ export const captureLocalAiError = (
             | 'image-cache-read'
             | 'image-cache-write'
             | 'image-cache-clear'
+            | 'gpu-mutex-eviction'
+            | 'gpu-mutex-rehydrate'
+            | 'webllm-eviction'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
         batchItem?: number

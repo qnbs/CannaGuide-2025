@@ -60,7 +60,7 @@ jobs:
 
             - name: 🔍 Lint changed files
               env:
-                  LINT_BASE_REF: HEAD~1
+                  LINT_BASE_REF: ${{ github.event_name == 'push' && format('origin/{0}~1', github.ref_name) || '' }}
               run: |
                   echo "::group::lint:changed"
                   npm run lint:changed

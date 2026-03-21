@@ -16,12 +16,12 @@ jobs:
     renovate:
         runs-on: ubuntu-latest
         timeout-minutes: 30
+        if: ${{ secrets.RENOVATE_TOKEN != '' }}
         steps:
             - name: Run Renovate
               uses: renovatebot/github-action@v40.1.4
               env:
                   RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
-              if: env.RENOVATE_TOKEN != ''
               with:
                   configurationFile: .renovaterc.json
                   token: ${{ secrets.RENOVATE_TOKEN }}

@@ -12,7 +12,7 @@
   to = "/index.html"
   status = 200
 
-# Security headers
+# Security headers — keep in sync with securityHeaders.ts (single source of truth)
 [[headers]]
   for = "/*"
   [headers.values]

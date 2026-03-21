@@ -5,11 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import viteImagemin from 'vite-plugin-imagemin'
 import path from 'path'
 import type { PluginOption } from 'vite'
-
-const CSP =
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://huggingfaceusercontent.com; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
-const PERMISSIONS =
-    'accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()'
+import { CSP, PERMISSIONS_POLICY } from './securityHeaders'
 
 // Tauri v2 sets TAURI_ENV_PLATFORM during builds; Docker sets BUILD_BASE_PATH=/
 const base = process.env.TAURI_ENV_PLATFORM
@@ -61,10 +57,10 @@ export default defineConfig({
             : []),
     ],
     server: {
-        headers: { 'Content-Security-Policy': CSP, 'Permissions-Policy': PERMISSIONS },
+        headers: { 'Content-Security-Policy': CSP, 'Permissions-Policy': PERMISSIONS_POLICY },
     },
     preview: {
-        headers: { 'Content-Security-Policy': CSP, 'Permissions-Policy': PERMISSIONS },
+        headers: { 'Content-Security-Policy': CSP, 'Permissions-Policy': PERMISSIONS_POLICY },
     },
 
     // ── ESBuild Transform ───────────────────────────────────────────────

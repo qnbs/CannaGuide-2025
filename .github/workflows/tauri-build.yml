@@ -31,13 +31,6 @@ jobs:
             - name: 📦 Install Node dependencies
               run: npm ci --prefer-offline
 
-            - name: 💾 Restore Vite cache
-              uses: actions/cache@v4
-              with:
-                  path: node_modules/.vite
-                  key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
-                  restore-keys: vite-${{ runner.os }}-
-
             - name: 🏗 Build frontend
               run: npm run build
 
@@ -95,16 +88,7 @@ jobs:
                   cache-targets: 'true'
                   cache-all-crates: 'true'
 
-            - name: 💾 Cargo registry cache
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.cargo/registry/index/
-                      ~/.cargo/registry/cache/
-                  key: cargo-registry-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
-                  restore-keys: cargo-registry-${{ runner.os }}-
-
-            - name: 🐧 Install Linux dependencies
+            - name: Install Linux dependencies
               if: matrix.platform == 'ubuntu-22.04'
               run: |
                   sudo apt-get update

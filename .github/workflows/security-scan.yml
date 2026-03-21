@@ -8,6 +8,9 @@ on:
 permissions:
     contents: read
 
+env:
+    NODE_VERSION: '20'
+
 jobs:
     scan:
         name: Glassworm Security Sweep
@@ -22,7 +25,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
             - name: Setup Python
@@ -37,7 +40,7 @@ jobs:
 
             - name: Install local toolchain
               run: |
-                  npm ci
+                  npm ci --prefer-offline
                   python -m pip install --upgrade pip
                   python -m pip install --break-system-packages pre-commit semgrep
                   go install github.com/zricethezav/gitleaks/v8@latest

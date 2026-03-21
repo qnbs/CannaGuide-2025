@@ -54,16 +54,6 @@ jobs:
                   npm ci --prefer-offline
                   echo "::endgroup::"
 
-            - name: 💾 Restore Vite build cache
-              uses: actions/cache@v4
-              with:
-                  path: node_modules/.vite
-                  key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
-                  restore-keys: |
-                      vite-${{ runner.os }}-
-
-            # ── Vite build cache (node_modules/.vite) ──────────────────────────
-            # Key includes vite config + tsconfig so cache is invalidated on config changes.
             # ── Quality gates ───────────────────────────────────────────────────
             - name: 🔒 Security audit
               run: npm audit --audit-level=critical --omit=dev

@@ -29,16 +29,8 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
-            - name: Restore Vite cache
-              uses: actions/cache@v4
-              with:
-                  path: node_modules/.vite
-                  key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
-                  restore-keys: |
-                      vite-${{ runner.os }}-
-
             - name: Install dependencies
-              run: npm ci
+              run: npm ci --prefer-offline
 
             - name: depcheck
               run: npm run depcheck

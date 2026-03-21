@@ -76,7 +76,13 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
         return (
             <div className="space-y-3">
                 <div className="h-64 w-full rounded-lg bg-slate-900/60 p-2">
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                    <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                        minWidth={0}
+                        minHeight={0}
+                        debounce={50}
+                    >
                         <LineChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 6 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" />
                             <ReferenceArea

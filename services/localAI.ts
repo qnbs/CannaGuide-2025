@@ -482,6 +482,7 @@ class LocalAiService implements BaseAIProvider {
                 zeroShotTextModelReady: false,
                 languageDetectionReady: false,
                 imageSimilarityReady: false,
+                imageGenerationReady: false,
                 errorCount: Number(textResult.status === 'rejected'),
             }
         }
@@ -558,6 +559,15 @@ class LocalAiService implements BaseAIProvider {
             onProgress?.(++loaded, totalSteps, 'web-llm')
         }
 
+        // Image generation capability check (no model preload — SD-Turbo is loaded on-demand)
+        let imageGenReady = false
+        try {
+            const { checkImageGenCapability } = await import('./imageGenerationService')
+            imageGenReady = checkImageGenCapability().supported
+        } catch {
+            // Non-critical
+        }
+
         return {
             textModelReady: textResult.status === 'fulfilled',
             visionModelReady: visionResult.status === 'fulfilled',
@@ -568,6 +578,7 @@ class LocalAiService implements BaseAIProvider {
             zeroShotTextModelReady: nlpStatus.zeroShotReady,
             languageDetectionReady: langDetectReady,
             imageSimilarityReady: imgSimilarityReady,
+            imageGenerationReady: imageGenReady,
             // Only count core model failures (text + vision) and explicitly attempted optional models
             errorCount:
                 Number(textResult.status === 'rejected') +
@@ -855,6 +866,25 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
         criteria: { focus: string; composition: string; mood: string },
         lang: Language = 'en',
     ): Promise<string> {
+        // Attempt client-side SD-Turbo diffusion, fall back to SVG heuristic
+        try {
+            const { checkImageGenCapability, generateStrainImageLocal } =
+                await import('./imageGenerationService')
+            const capability = checkImageGenCapability()
+            if (capability.supported) {
+                const result = await generateStrainImageLocal({
+                    id: `strain-${strain.id}-${Date.now()}`,
+                    strain,
+                    style,
+                    criteria,
+                    lang: lang === 'de' ? 'de' : 'en',
+                })
+                return result.dataUrl
+            }
+        } catch (error) {
+            captureLocalAiError(error, { model: 'sd-turbo', stage: 'image-generation-local' })
+            console.debug('[LocalAI] SD-Turbo image generation failed, falling back to SVG.')
+        }
         return localAiFallbackService.generateStrainImage(strain, style, criteria, lang)
     }
 
@@ -1061,6 +1091,7 @@ export interface LocalAiPreloadReport {
     zeroShotTextModelReady: boolean
     languageDetectionReady: boolean
     imageSimilarityReady: boolean
+    imageGenerationReady: boolean
     errorCount: number
 }
 

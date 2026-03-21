@@ -122,6 +122,11 @@ export const captureLocalAiError = (
             | 'batch'
             | 'similarity-candidate'
             | 'growth-extraction'
+            | 'image-generation'
+            | 'image-generation-local'
+            | 'image-cache-read'
+            | 'image-cache-write'
+            | 'image-cache-clear'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
         batchItem?: number

@@ -1,11 +1,13 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import type { Strain, SavedStrainTip } from '@/types'
-import { useAppSelector } from '@/stores/store'
+import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { selectSavedStrainTips } from '@/stores/selectors'
 import { Card } from '@/components/common/Card'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
+import { StrainImageGenerator } from './StrainImageGenerator'
+import { addStrainTip } from '@/stores/slices/savedItemsSlice'
 
 interface StrainImageGalleryTabProps {
     strain: Strain
@@ -13,9 +15,31 @@ interface StrainImageGalleryTabProps {
 
 export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ strain }) => {
     const { t } = useTranslation()
+    const dispatch = useAppDispatch()
     const rawSavedTips = useAppSelector(selectSavedStrainTips)
     const savedTips = useMemo(() => rawSavedTips ?? [], [rawSavedTips])
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
+
+    const handleImageGenerated = useCallback(
+        (dataUrl: string) => {
+            dispatch(
+                addStrainTip({
+                    strain,
+                    tip: {
+                        nutrientTip: '',
+                        trainingTip: '',
+                        environmentalTip: '',
+                        proTip: '',
+                    },
+                    title: t('strainsView.strainDetail.images.generatedImageTitle', {
+                        name: strain.name,
+                    }),
+                    imageUrl: dataUrl,
+                }),
+            )
+        },
+        [dispatch, strain, t],
+    )
 
     const images = useMemo(
         () =>
@@ -35,18 +59,24 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
 
     if (images.length === 0) {
         return (
-            <Card className="text-center py-10 text-slate-500">
-                <PhosphorIcons.Camera className="w-12 h-12 mx-auto text-slate-400 mb-4" />
-                <h3 className="font-semibold">
-                    {t('strainsView.strainDetail.images.noImagesTitle')}
-                </h3>
-                <p className="text-sm">{t('strainsView.strainDetail.images.noImagesSubtitle')}</p>
-            </Card>
+            <>
+                <StrainImageGenerator strain={strain} onImageGenerated={handleImageGenerated} />
+                <Card className="text-center py-10 text-slate-500">
+                    <PhosphorIcons.Camera className="w-12 h-12 mx-auto text-slate-400 mb-4" />
+                    <h3 className="font-semibold">
+                        {t('strainsView.strainDetail.images.noImagesTitle')}
+                    </h3>
+                    <p className="text-sm">
+                        {t('strainsView.strainDetail.images.noImagesSubtitle')}
+                    </p>
+                </Card>
+            </>
         )
     }
 
     return (
         <>
+            <StrainImageGenerator strain={strain} onImageGenerated={handleImageGenerated} />
             {selectedImage && (
                 <div
                     className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"

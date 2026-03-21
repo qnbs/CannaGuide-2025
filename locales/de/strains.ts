@@ -231,6 +231,7 @@ export const strainsView = {
         images: {
             noImagesTitle: 'Noch keine Bilder',
             noImagesSubtitle: 'Generiere KI-Tipps mit Bildern, um diese Galerie zu füllen.',
+            generatedImageTitle: 'KI-generiert — {{name}}',
         },
         notes: {
             saveSuccess: 'Notiz gespeichert!',
@@ -401,6 +402,24 @@ export const strainsView = {
         errorLoadingTree: 'Fehler beim Laden des Stammbaums',
         errorCalculatingTree: 'Fehler bei der Stammbaum-Berechnung',
         errorInitZoom: 'Fehler beim Initialisieren der Zoom-Steuerung',
+    },
+    imageGen: {
+        title: 'KI-Bildgenerierung',
+        description:
+            'Erzeuge einzigartige Strain-Visualisierungen mit On-Device-KI (SD-Turbo). Erfordert WebGPU.',
+        settings: 'Bild-Einstellungen',
+        generate: 'Bild generieren',
+        regenerate: 'Neu generieren',
+        generating: 'Generiere…',
+        error: 'Bildgenerierung fehlgeschlagen. Bitte erneut versuchen.',
+        altText: 'KI-generiertes Bild von {{name}}',
+        phases: {
+            loading: 'Modell laden',
+            encoding: 'Prompt kodieren',
+            denoising: 'Bild erzeugen',
+            decoding: 'Pixel dekodieren',
+            complete: 'Fertig',
+        },
     },
     quickFilters: 'Schnellfilter',
     landraceStrain: 'Landsorte',

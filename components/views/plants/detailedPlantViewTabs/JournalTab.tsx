@@ -19,77 +19,135 @@ interface JournalTabProps {
     journal: JournalEntry[]
 }
 
+const appendBaseFeedDetails = (
+    detailsArray: string[],
+    details: { amountMl?: number; ph?: number; ec?: number },
+    t: (key: string) => string,
+): void => {
+    if (details.amountMl)
+        detailsArray.push(`${t('plantsView.journal.details.amount')}: ${details.amountMl}ml`)
+    if (details.ph) detailsArray.push(`pH: ${details.ph.toFixed(2)}`)
+    if (details.ec) detailsArray.push(`EC: ${details.ec.toFixed(2)}`)
+}
+
+const renderWateringDetails = (
+    entry: JournalEntry,
+    detailsArray: string[],
+    t: (key: string) => string,
+): void => {
+    const d = entry.details as WateringDetails
+    appendBaseFeedDetails(detailsArray, d, t)
+}
+
+const renderFeedingDetails = (
+    entry: JournalEntry,
+    detailsArray: string[],
+    t: (key: string) => string,
+): void => {
+    const d = entry.details as FeedingDetails
+    appendBaseFeedDetails(detailsArray, d, t)
+    if (d.npk) detailsArray.push(`NPK: ${d.npk.n}-${d.npk.p}-${d.npk.k}`)
+}
+
+const renderTrainingDetails = (
+    entry: JournalEntry,
+    detailsArray: string[],
+    t: (key: string) => string,
+): void => {
+    const d = entry.details as TrainingDetails
+    if (!d.type) return
+    detailsArray.push(
+        `${t('plantsView.journal.details.type')}: ${t(`plantsView.actionModals.trainingTypes.${d.type}`)}`,
+    )
+}
+
+const renderObservationDetails = (
+    entry: JournalEntry,
+    detailsArray: string[],
+    t: (key: string) => string,
+): void => {
+    const d = entry.details as ObservationDetails
+    if (d.diagnosis)
+        detailsArray.push(`${t('plantsView.journal.details.diagnosis')}: ${d.diagnosis}`)
+}
+
+const renderPhotoDetails = (
+    entry: JournalEntry,
+    detailsArray: string[],
+    t: (key: string) => string,
+): void => {
+    const d = entry.details as PhotoDetails
+    if (d.photoCategory)
+        detailsArray.push(
+            `${t('plantsView.journal.details.category')}: ${t(`plantsView.actionModals.photo.categories.${d.photoCategory}`)}`,
+        )
+    if (d.timelineLabel)
+        detailsArray.push(`${t('plantsView.journal.details.timeline')}: ${d.timelineLabel}`)
+}
+
+const renderPestControlDetails = (
+    entry: JournalEntry,
+    detailsArray: string[],
+    t: (key: string) => string,
+): void => {
+    const d = entry.details as PestControlDetails
+    if (d.method) detailsArray.push(`${t('plantsView.journal.details.method')}: ${d.method}`)
+    if (d.product) detailsArray.push(`${t('plantsView.journal.details.product')}: ${d.product}`)
+}
+
+const renderAmendmentDetails = (
+    entry: JournalEntry,
+    detailsArray: string[],
+    t: (key: string) => string,
+): void => {
+    const d = entry.details as AmendmentDetails
+    if (!d.type) return
+    detailsArray.push(
+        `${t('plantsView.journal.details.type')}: ${t(`plantsView.actionModals.amendmentTypes.${d.type}`)}`,
+    )
+}
+
+const renderGenericDetails = (entry: JournalEntry, detailsArray: string[]): void => {
+    if (typeof entry.details !== 'object' || entry.details === null) {
+        return
+    }
+
+    Object.entries(entry.details).forEach(([key, value]) => {
+        if (value && !['imageUrl', 'imageId', 'from', 'to'].includes(key)) {
+            detailsArray.push(`${key}: ${value}`)
+        }
+    })
+}
+
 const renderDetails = (entry: JournalEntry, t: (key: string) => string): string => {
     if (!entry.details) return ''
 
     const detailsArray: string[] = []
 
     switch (entry.type) {
-        case JournalEntryType.Watering: {
-            const d = entry.details as WateringDetails
-            if (d.amountMl)
-                detailsArray.push(`${t('plantsView.journal.details.amount')}: ${d.amountMl}ml`)
-            if (d.ph) detailsArray.push(`pH: ${d.ph.toFixed(2)}`)
-            if (d.ec) detailsArray.push(`EC: ${d.ec.toFixed(2)}`)
+        case JournalEntryType.Watering:
+            renderWateringDetails(entry, detailsArray, t)
             break
-        }
-        case JournalEntryType.Feeding: {
-            const d = entry.details as FeedingDetails
-            if (d.amountMl)
-                detailsArray.push(`${t('plantsView.journal.details.amount')}: ${d.amountMl}ml`)
-            if (d.ph) detailsArray.push(`pH: ${d.ph.toFixed(2)}`)
-            if (d.ec) detailsArray.push(`EC: ${d.ec.toFixed(2)}`)
-            if (d.npk) detailsArray.push(`NPK: ${d.npk.n}-${d.npk.p}-${d.npk.k}`)
+        case JournalEntryType.Feeding:
+            renderFeedingDetails(entry, detailsArray, t)
             break
-        }
-        case JournalEntryType.Training: {
-            const d = entry.details as TrainingDetails
-            if (d.type)
-                detailsArray.push(
-                    `${t('plantsView.journal.details.type')}: ${t(`plantsView.actionModals.trainingTypes.${d.type}`)}`,
-                )
+        case JournalEntryType.Training:
+            renderTrainingDetails(entry, detailsArray, t)
             break
-        }
-        case JournalEntryType.Observation: {
-            const d = entry.details as ObservationDetails
-            if (d.diagnosis)
-                detailsArray.push(`${t('plantsView.journal.details.diagnosis')}: ${d.diagnosis}`)
+        case JournalEntryType.Observation:
+            renderObservationDetails(entry, detailsArray, t)
             break
-        }
-        case JournalEntryType.Photo: {
-            const d = entry.details as PhotoDetails
-            if (d.photoCategory)
-                detailsArray.push(
-                    `${t('plantsView.journal.details.category')}: ${t(`plantsView.actionModals.photo.categories.${d.photoCategory}`)}`,
-                )
-            if (d.timelineLabel)
-                detailsArray.push(`${t('plantsView.journal.details.timeline')}: ${d.timelineLabel}`)
+        case JournalEntryType.Photo:
+            renderPhotoDetails(entry, detailsArray, t)
             break
-        }
-        case JournalEntryType.PestControl: {
-            const d = entry.details as PestControlDetails
-            if (d.method)
-                detailsArray.push(`${t('plantsView.journal.details.method')}: ${d.method}`)
-            if (d.product)
-                detailsArray.push(`${t('plantsView.journal.details.product')}: ${d.product}`)
+        case JournalEntryType.PestControl:
+            renderPestControlDetails(entry, detailsArray, t)
             break
-        }
-        case JournalEntryType.Amendment: {
-            const d = entry.details as AmendmentDetails
-            if (d.type)
-                detailsArray.push(
-                    `${t('plantsView.journal.details.type')}: ${t(`plantsView.actionModals.amendmentTypes.${d.type}`)}`,
-                )
+        case JournalEntryType.Amendment:
+            renderAmendmentDetails(entry, detailsArray, t)
             break
-        }
         default:
-            if (typeof entry.details === 'object' && entry.details !== null) {
-                Object.entries(entry.details).forEach(([key, value]) => {
-                    if (value && !['imageUrl', 'imageId', 'from', 'to'].includes(key)) {
-                        detailsArray.push(`${key}: ${value}`)
-                    }
-                })
-            }
+            renderGenericDetails(entry, detailsArray)
     }
     return detailsArray.join(' · ')
 }
@@ -272,42 +330,49 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                                 <span className="text-xs text-slate-500">{entries.length}</span>
                             </div>
                             <ul className="space-y-3">
-                                {entries.map((entry) => (
-                                    <li
-                                        key={entry.id}
-                                        className="flex items-start gap-4 p-3 bg-slate-800 rounded-lg ring-1 ring-inset ring-white/10 hover:ring-white/20 transition-colors"
-                                    >
-                                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-700 rounded-full text-primary-400">
-                                            {journalTypeIcons[entry.type]}
-                                        </div>
-                                        <div className="flex-grow min-w-0">
-                                            <p className="font-semibold text-slate-100">
-                                                {String(
-                                                    t(entry.notes, {
-                                                        ...entry.details,
-                                                        from: t(
-                                                            `plantStages.${(entry.details as SystemDetails)?.from}`,
-                                                        ),
-                                                        to: t(
-                                                            `plantStages.${(entry.details as SystemDetails)?.to}`,
-                                                        ),
-                                                    }),
-                                                )}
-                                            </p>
-                                            {renderDetails(entry, t) && (
-                                                <p className="text-xs text-slate-400 mt-0.5">
-                                                    {renderDetails(entry, t)}
-                                                </p>
-                                            )}
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                {new Date(entry.createdAt).toLocaleTimeString(
-                                                    undefined,
-                                                    { hour: '2-digit', minute: '2-digit' },
-                                                )}
-                                            </p>
-                                        </div>
-                                    </li>
-                                ))}
+                                {entries.map((entry) =>
+                                    (() => {
+                                        const detailsText = renderDetails(entry, t)
+                                        return (
+                                            <li
+                                                key={entry.id}
+                                                className="flex items-start gap-4 p-3 bg-slate-800 rounded-lg ring-1 ring-inset ring-white/10 hover:ring-white/20 transition-colors"
+                                            >
+                                                <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-700 rounded-full text-primary-400">
+                                                    {journalTypeIcons[entry.type]}
+                                                </div>
+                                                <div className="flex-grow min-w-0">
+                                                    <p className="font-semibold text-slate-100">
+                                                        {String(
+                                                            t(entry.notes, {
+                                                                ...entry.details,
+                                                                from: t(
+                                                                    `plantStages.${(entry.details as SystemDetails)?.from}`,
+                                                                ),
+                                                                to: t(
+                                                                    `plantStages.${(entry.details as SystemDetails)?.to}`,
+                                                                ),
+                                                            }),
+                                                        )}
+                                                    </p>
+                                                    {detailsText && (
+                                                        <p className="text-xs text-slate-400 mt-0.5">
+                                                            {detailsText}
+                                                        </p>
+                                                    )}
+                                                    <p className="text-xs text-slate-500 mt-1">
+                                                        {new Date(
+                                                            entry.createdAt,
+                                                        ).toLocaleTimeString(undefined, {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                        })}
+                                                    </p>
+                                                </div>
+                                            </li>
+                                        )
+                                    })(),
+                                )}
                             </ul>
                         </div>
                     ))}

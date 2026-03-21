@@ -15,6 +15,97 @@ interface PostHarvestTabProps {
 
 type WarningTone = 'good' | 'warn' | 'critical'
 
+type ProcessWarning = {
+    title: string
+    value: string
+    description: string
+    tone: WarningTone
+}
+
+const calculateBurpDebtDays = (currentCureDay: number, lastBurpDay: number): number =>
+    Math.max(0, currentCureDay - lastBurpDay - 1)
+
+const getPostHarvestRecommendations = (
+    plant: Plant,
+    harvestData: NonNullable<Plant['harvestData']>,
+    burpDebtDays: number,
+    t: (key: string) => string,
+): string[] =>
+    [
+        plant.stage === PlantStage.Drying && harvestData.jarHumidity > 64
+            ? t('plantsView.postHarvest.recommendations.lowerHumidity')
+            : null,
+        plant.stage === PlantStage.Drying && harvestData.moldRiskPercent > 28
+            ? t('plantsView.postHarvest.recommendations.increaseAirflow')
+            : null,
+        plant.stage === PlantStage.Curing && burpDebtDays > 0
+            ? t('plantsView.postHarvest.recommendations.burpNow')
+            : null,
+        plant.stage === PlantStage.Curing && Math.abs(harvestData.jarHumidity - 61) > 2
+            ? t('plantsView.postHarvest.recommendations.stabilizeJarRh')
+            : null,
+        harvestData.finalQuality > 85
+            ? t('plantsView.postHarvest.recommendations.holdSteady')
+            : null,
+    ].filter(Boolean) as string[]
+
+const getJarHumidityTone = (stage: PlantStage, jarHumidity: number): WarningTone => {
+    if (stage === PlantStage.Curing) {
+        if (Math.abs(jarHumidity - 61) > 4) return 'critical'
+        if (Math.abs(jarHumidity - 61) > 2) return 'warn'
+        return 'good'
+    }
+
+    if (jarHumidity > 66) return 'critical'
+    if (jarHumidity > 63) return 'warn'
+    return 'good'
+}
+
+const buildProcessWarnings = (
+    plant: Plant,
+    harvestData: NonNullable<Plant['harvestData']>,
+    burpDebtDays: number,
+    t: (key: string) => string,
+): ProcessWarning[] => [
+    {
+        title: t('plantsView.postHarvest.thresholds.jarHumidity'),
+        value: `${harvestData.jarHumidity.toFixed(1)}%`,
+        description:
+            plant.stage === PlantStage.Curing
+                ? t('plantsView.postHarvest.thresholds.jarHumidityCureHint')
+                : t('plantsView.postHarvest.thresholds.jarHumidityDryHint'),
+        tone: getJarHumidityTone(plant.stage, harvestData.jarHumidity),
+    },
+    {
+        title: t('plantsView.postHarvest.thresholds.moldRisk'),
+        value: `${harvestData.moldRiskPercent.toFixed(0)}%`,
+        description: t('plantsView.postHarvest.thresholds.moldRiskHint'),
+        tone:
+            harvestData.moldRiskPercent > 35
+                ? 'critical'
+                : harvestData.moldRiskPercent > 20
+                  ? 'warn'
+                  : 'good',
+    },
+    {
+        title: t('plantsView.postHarvest.thresholds.burpDebt'),
+        value: `${burpDebtDays}`,
+        description: t('plantsView.postHarvest.thresholds.burpDebtHint'),
+        tone: burpDebtDays > 1 ? 'critical' : burpDebtDays > 0 ? 'warn' : 'good',
+    },
+    {
+        title: t('plantsView.postHarvest.thresholds.terpeneRetention'),
+        value: `${harvestData.terpeneRetentionPercent.toFixed(0)}%`,
+        description: t('plantsView.postHarvest.thresholds.terpeneRetentionHint'),
+        tone:
+            harvestData.terpeneRetentionPercent < 65
+                ? 'critical'
+                : harvestData.terpeneRetentionPercent < 80
+                  ? 'warn'
+                  : 'good',
+    },
+]
+
 const ProgressBar: React.FC<{ label: string; progress: number; color?: string }> = ({
     label,
     progress,
@@ -116,86 +207,20 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
         (harvestData.currentDryDay / PLANT_STAGE_DETAILS[PlantStage.Drying].duration) * 100
     const curingProgress =
         (harvestData.currentCureDay / PLANT_STAGE_DETAILS[PlantStage.Curing].duration) * 100
-    const burpDebtDays = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1)
+    const burpDebtDays = calculateBurpDebtDays(harvestData.currentCureDay, harvestData.lastBurpDay)
     const postHarvestEvents = plant.journal
         .filter((entry) => entry.type === JournalEntryType.PostHarvest)
         .slice()
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, 8)
 
-    const postHarvestRecommendations = [
-        plant.stage === PlantStage.Drying && harvestData.jarHumidity > 64
-            ? t('plantsView.postHarvest.recommendations.lowerHumidity')
-            : null,
-        plant.stage === PlantStage.Drying && harvestData.moldRiskPercent > 28
-            ? t('plantsView.postHarvest.recommendations.increaseAirflow')
-            : null,
-        plant.stage === PlantStage.Curing && burpDebtDays > 0
-            ? t('plantsView.postHarvest.recommendations.burpNow')
-            : null,
-        plant.stage === PlantStage.Curing && Math.abs(harvestData.jarHumidity - 61) > 2
-            ? t('plantsView.postHarvest.recommendations.stabilizeJarRh')
-            : null,
-        harvestData.finalQuality > 85
-            ? t('plantsView.postHarvest.recommendations.holdSteady')
-            : null,
-    ].filter(Boolean) as string[]
-
-    const processWarnings: Array<{
-        title: string
-        value: string
-        description: string
-        tone: WarningTone
-    }> = [
-        {
-            title: t('plantsView.postHarvest.thresholds.jarHumidity'),
-            value: `${harvestData.jarHumidity.toFixed(1)}%`,
-            description:
-                plant.stage === PlantStage.Curing
-                    ? t('plantsView.postHarvest.thresholds.jarHumidityCureHint')
-                    : t('plantsView.postHarvest.thresholds.jarHumidityDryHint'),
-            tone:
-                plant.stage === PlantStage.Curing
-                    ? Math.abs(harvestData.jarHumidity - 61) > 4
-                        ? 'critical'
-                        : Math.abs(harvestData.jarHumidity - 61) > 2
-                          ? 'warn'
-                          : 'good'
-                    : harvestData.jarHumidity > 66
-                      ? 'critical'
-                      : harvestData.jarHumidity > 63
-                        ? 'warn'
-                        : 'good',
-        },
-        {
-            title: t('plantsView.postHarvest.thresholds.moldRisk'),
-            value: `${harvestData.moldRiskPercent.toFixed(0)}%`,
-            description: t('plantsView.postHarvest.thresholds.moldRiskHint'),
-            tone:
-                harvestData.moldRiskPercent > 35
-                    ? 'critical'
-                    : harvestData.moldRiskPercent > 20
-                      ? 'warn'
-                      : 'good',
-        },
-        {
-            title: t('plantsView.postHarvest.thresholds.burpDebt'),
-            value: `${burpDebtDays}`,
-            description: t('plantsView.postHarvest.thresholds.burpDebtHint'),
-            tone: burpDebtDays > 1 ? 'critical' : burpDebtDays > 0 ? 'warn' : 'good',
-        },
-        {
-            title: t('plantsView.postHarvest.thresholds.terpeneRetention'),
-            value: `${harvestData.terpeneRetentionPercent.toFixed(0)}%`,
-            description: t('plantsView.postHarvest.thresholds.terpeneRetentionHint'),
-            tone:
-                harvestData.terpeneRetentionPercent < 65
-                    ? 'critical'
-                    : harvestData.terpeneRetentionPercent < 80
-                      ? 'warn'
-                      : 'good',
-        },
-    ]
+    const postHarvestRecommendations = getPostHarvestRecommendations(
+        plant,
+        harvestData,
+        burpDebtDays,
+        t,
+    )
+    const processWarnings = buildProcessWarnings(plant, harvestData, burpDebtDays, t)
 
     const topTerpenes = Object.entries(harvestData.terpeneProfile || {})
         .sort(([, a], [, b]) => (b as number) - (a as number))

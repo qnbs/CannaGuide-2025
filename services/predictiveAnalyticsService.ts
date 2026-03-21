@@ -77,6 +77,143 @@ const DEFAULT_IDEAL_RANGE: [number, number, number, number, number, number] = [
 
 const MS_PER_DAY = 86_400_000
 
+const getIdealRange = (stage: PlantStage): [number, number, number, number, number, number] =>
+    STAGE_IDEAL_RANGES[stage] ?? DEFAULT_IDEAL_RANGE
+
+const buildTemperatureAlert = (
+    avgTemperature: number,
+    idealMin: number,
+    idealMax: number,
+): EnvironmentAlert | null => {
+    if (avgTemperature >= idealMin && avgTemperature <= idealMax) {
+        return null
+    }
+
+    const severity =
+        Math.abs(avgTemperature - (avgTemperature < idealMin ? idealMin : idealMax)) > 5
+            ? 'high'
+            : 'moderate'
+
+    return {
+        type: 'temperature',
+        severity,
+        message: `Average temperature ${avgTemperature.toFixed(1)}°C is outside ideal range`,
+        currentValue: avgTemperature,
+        idealRange: [idealMin, idealMax],
+    }
+}
+
+const buildHumidityAlert = (
+    avgHumidity: number,
+    idealMin: number,
+    idealMax: number,
+): EnvironmentAlert | null => {
+    if (avgHumidity >= idealMin && avgHumidity <= idealMax) {
+        return null
+    }
+
+    const severity =
+        Math.abs(avgHumidity - (avgHumidity < idealMin ? idealMin : idealMax)) > 15
+            ? 'high'
+            : 'moderate'
+
+    return {
+        type: 'humidity',
+        severity,
+        message: `Average humidity ${avgHumidity.toFixed(1)}% is outside ideal range`,
+        currentValue: avgHumidity,
+        idealRange: [idealMin, idealMax],
+    }
+}
+
+const buildVpdAlert = (
+    avgVpd: number | null,
+    idealMin: number,
+    idealMax: number,
+): EnvironmentAlert | null => {
+    if (avgVpd == null || (avgVpd >= idealMin && avgVpd <= idealMax)) {
+        return null
+    }
+
+    const severity =
+        Math.abs(avgVpd - (avgVpd < idealMin ? idealMin : idealMax)) > 0.5 ? 'high' : 'moderate'
+
+    return {
+        type: 'vpd',
+        severity,
+        message: `Average VPD ${avgVpd.toFixed(2)} kPa is outside ideal range`,
+        currentValue: avgVpd,
+        idealRange: [idealMin, idealMax],
+    }
+}
+
+const buildPhAlert = (avgPh: number | null): EnvironmentAlert | null => {
+    if (avgPh == null || (avgPh >= 5.8 && avgPh <= 6.5)) {
+        return null
+    }
+
+    return {
+        type: 'ph',
+        severity: avgPh < 5.2 || avgPh > 7.0 ? 'high' : 'moderate',
+        message: `Average pH ${avgPh.toFixed(1)} is outside ideal range`,
+        currentValue: avgPh,
+        idealRange: [5.8, 6.5],
+    }
+}
+
+const getVpdPenalty = (
+    avgVpd: number | null,
+    ideal: [number, number, number, number, number, number],
+): number => {
+    if (avgVpd == null) {
+        return 0
+    }
+
+    const vpdMid = (ideal[4] + ideal[5]) / 2
+    const vpdDev = Math.abs(avgVpd - vpdMid)
+    if (vpdDev <= 0.3) {
+        return 0
+    }
+
+    return Math.min(vpdDev * 12, 20)
+}
+
+const getTemperaturePenalty = (
+    avgTemperature: number,
+    ideal: [number, number, number, number, number, number],
+): number => {
+    const tempMid = (ideal[0] + ideal[1]) / 2
+    const tempDev = Math.abs(avgTemperature - tempMid)
+    if (tempDev <= 3) {
+        return 0
+    }
+    return Math.min(tempDev * 3, 18)
+}
+
+const getHumidityPenalty = (maxHumidity: number): number => {
+    if (maxHumidity <= 80) {
+        return 0
+    }
+    return Math.min((maxHumidity - 80) * 2, 15)
+}
+
+const getAlertPenalty = (alerts: EnvironmentAlert[]): number =>
+    alerts.filter((alert) => alert.severity === 'high').length * 5
+
+const describeYieldImpact = (impactPercent: number): string => {
+    if (impactPercent >= -5) {
+        return 'Environmental conditions are optimal. Minimal yield impact expected.'
+    }
+    if (impactPercent >= -15) {
+        return 'Minor environmental deviations may slightly reduce yield potential.'
+    }
+    if (impactPercent >= -30) {
+        return 'Significant environmental stress detected. Yield may be noticeably reduced.'
+    }
+
+    return 'Severe environmental conditions are likely causing substantial yield loss. Immediate correction recommended.'
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -199,68 +336,21 @@ export const predictiveAnalyticsService = {
     checkEnvironment(stats: AggregatedStats, plant: Plant): EnvironmentAlert[] {
         if (stats.sampleCount === 0) return []
 
-        const ideal = STAGE_IDEAL_RANGES[plant.stage] ?? DEFAULT_IDEAL_RANGE
+        const ideal = getIdealRange(plant.stage)
         const [tempMin, tempMax, humMin, humMax, vpdMin, vpdMax] = ideal
         const alerts: EnvironmentAlert[] = []
 
-        // Temperature
-        if (stats.avgTemperature < tempMin || stats.avgTemperature > tempMax) {
-            const severity =
-                Math.abs(
-                    stats.avgTemperature - (stats.avgTemperature < tempMin ? tempMin : tempMax),
-                ) > 5
-                    ? 'high'
-                    : 'moderate'
-            alerts.push({
-                type: 'temperature',
-                severity,
-                message: `Average temperature ${stats.avgTemperature.toFixed(1)}°C is outside ideal range`,
-                currentValue: stats.avgTemperature,
-                idealRange: [tempMin, tempMax],
-            })
-        }
+        const temperatureAlert = buildTemperatureAlert(stats.avgTemperature, tempMin, tempMax)
+        if (temperatureAlert) alerts.push(temperatureAlert)
 
-        // Humidity
-        if (stats.avgHumidity < humMin || stats.avgHumidity > humMax) {
-            const severity =
-                Math.abs(stats.avgHumidity - (stats.avgHumidity < humMin ? humMin : humMax)) > 15
-                    ? 'high'
-                    : 'moderate'
-            alerts.push({
-                type: 'humidity',
-                severity,
-                message: `Average humidity ${stats.avgHumidity.toFixed(1)}% is outside ideal range`,
-                currentValue: stats.avgHumidity,
-                idealRange: [humMin, humMax],
-            })
-        }
+        const humidityAlert = buildHumidityAlert(stats.avgHumidity, humMin, humMax)
+        if (humidityAlert) alerts.push(humidityAlert)
 
-        // VPD
-        if (stats.avgVpd != null && (stats.avgVpd < vpdMin || stats.avgVpd > vpdMax)) {
-            const severity =
-                Math.abs(stats.avgVpd - (stats.avgVpd < vpdMin ? vpdMin : vpdMax)) > 0.5
-                    ? 'high'
-                    : 'moderate'
-            alerts.push({
-                type: 'vpd',
-                severity,
-                message: `Average VPD ${stats.avgVpd.toFixed(2)} kPa is outside ideal range`,
-                currentValue: stats.avgVpd,
-                idealRange: [vpdMin, vpdMax],
-            })
-        }
+        const vpdAlert = buildVpdAlert(stats.avgVpd, vpdMin, vpdMax)
+        if (vpdAlert) alerts.push(vpdAlert)
 
-        // pH
-        if (stats.avgPh != null && (stats.avgPh < 5.8 || stats.avgPh > 6.5)) {
-            const severity = stats.avgPh < 5.2 || stats.avgPh > 7.0 ? 'high' : 'moderate'
-            alerts.push({
-                type: 'ph',
-                severity,
-                message: `Average pH ${stats.avgPh.toFixed(1)} is outside ideal range`,
-                currentValue: stats.avgPh,
-                idealRange: [5.8, 6.5],
-            })
-        }
+        const phAlert = buildPhAlert(stats.avgPh)
+        if (phAlert) alerts.push(phAlert)
 
         return alerts
     },
@@ -283,60 +373,34 @@ export const predictiveAnalyticsService = {
 
         let totalPenalty = 0
         const factors: string[] = []
+        const ideal = getIdealRange(plant.stage)
 
-        // VPD penalty
-        if (stats.avgVpd != null) {
-            const ideal = STAGE_IDEAL_RANGES[plant.stage] ?? DEFAULT_IDEAL_RANGE
-            const vpdMid = (ideal[4] + ideal[5]) / 2
-            const vpdDev = Math.abs(stats.avgVpd - vpdMid)
-            if (vpdDev > 0.3) {
-                const penalty = Math.min(vpdDev * 12, 20)
-                totalPenalty += penalty
-                factors.push(`VPD deviation: -${penalty.toFixed(0)}%`)
-            }
+        const vpdPenalty = getVpdPenalty(stats.avgVpd, ideal)
+        if (vpdPenalty > 0) {
+            totalPenalty += vpdPenalty
+            factors.push(`VPD deviation: -${vpdPenalty.toFixed(0)}%`)
         }
 
-        // Temperature stress penalty
-        const ideal = STAGE_IDEAL_RANGES[plant.stage] ?? DEFAULT_IDEAL_RANGE
-        const tempMid = (ideal[0] + ideal[1]) / 2
-        const tempDev = Math.abs(stats.avgTemperature - tempMid)
-        if (tempDev > 3) {
-            const penalty = Math.min(tempDev * 3, 18)
-            totalPenalty += penalty
-            factors.push(`Temperature stress: -${penalty.toFixed(0)}%`)
+        const temperaturePenalty = getTemperaturePenalty(stats.avgTemperature, ideal)
+        if (temperaturePenalty > 0) {
+            totalPenalty += temperaturePenalty
+            factors.push(`Temperature stress: -${temperaturePenalty.toFixed(0)}%`)
         }
 
-        // Humidity extremes penalty
-        if (stats.maxHumidity > 80) {
-            const penalty = Math.min((stats.maxHumidity - 80) * 2, 15)
-            totalPenalty += penalty
-            factors.push(`High humidity exposure: -${penalty.toFixed(0)}%`)
+        const humidityPenalty = getHumidityPenalty(stats.maxHumidity)
+        if (humidityPenalty > 0) {
+            totalPenalty += humidityPenalty
+            factors.push(`High humidity exposure: -${humidityPenalty.toFixed(0)}%`)
         }
 
-        // Alert-based penalty
-        const highAlerts = alerts.filter((a) => a.severity === 'high').length
-        if (highAlerts > 0) {
-            const penalty = highAlerts * 5
-            totalPenalty += penalty
-            factors.push(`${highAlerts} high-severity alert(s): -${penalty}%`)
+        const alertPenalty = getAlertPenalty(alerts)
+        if (alertPenalty > 0) {
+            totalPenalty += alertPenalty
+            factors.push(`${alertPenalty / 5} high-severity alert(s): -${alertPenalty}%`)
         }
 
         const impactPercent = -Math.min(totalPenalty, 60)
-
-        let description: string
-        if (impactPercent >= -5) {
-            description = 'Environmental conditions are optimal. Minimal yield impact expected.'
-        } else if (impactPercent >= -15) {
-            description = 'Minor environmental deviations may slightly reduce yield potential.'
-        } else if (impactPercent >= -30) {
-            description =
-                'Significant environmental stress detected. Yield may be noticeably reduced.'
-        } else {
-            description =
-                'Severe environmental conditions are likely causing substantial yield loss. Immediate correction recommended.'
-        }
-
-        return { impactPercent, description, factors }
+        return { impactPercent, description: describeYieldImpact(impactPercent), factors }
     },
 
     // -----------------------------------------------------------------------

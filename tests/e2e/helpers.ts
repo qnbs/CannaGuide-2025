@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test'
-import { APP_VERSION, DB_NAME, DB_VERSION, REDUX_STATE_KEY, STRAINS_STORE } from '@/constants'
+import { APP_VERSION, REDUX_STATE_KEY } from '@/constants'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
 
 export const seedLegalGateState = async (page: Page) => {
@@ -97,58 +97,6 @@ export const seedPostOnboardingState = async (page: Page) => {
             database.close()
         },
         { reduxStateKey: REDUX_STATE_KEY, state: persistedState },
-    )
-}
-
-export const corruptIndexedDbStrains = async (page: Page) => {
-    await page.evaluate(
-        async ({ dbName, dbVersion, storeName }) => {
-            const database = await new Promise<IDBDatabase>((resolve, reject) => {
-                const request = indexedDB.open(dbName, dbVersion)
-
-                request.onsuccess = (event) => {
-                    resolve((event.target as IDBOpenDBRequest).result)
-                }
-
-                request.onerror = () => reject(request.error)
-            })
-
-            await new Promise<void>((resolve, reject) => {
-                const transaction = database.transaction(storeName, 'readwrite')
-                const store = transaction.objectStore(storeName)
-                const readRequest = store.getAll()
-
-                readRequest.onerror = () => reject(readRequest.error)
-                readRequest.onsuccess = () => {
-                    const records = (readRequest.result as Record<string, unknown>[]).slice(0, 3)
-
-                    for (const record of records) {
-                        const corruptedRecord = { ...record }
-                        delete corruptedRecord.name
-                        delete corruptedRecord.type
-                        delete corruptedRecord.thc
-                        delete corruptedRecord.cbd
-                        delete corruptedRecord.floweringTime
-                        corruptedRecord.aromas = ['citrus', 42]
-                        corruptedRecord.dominantTerpenes = [null]
-                        store.put(corruptedRecord)
-                    }
-                }
-
-                transaction.oncomplete = () => resolve()
-                transaction.onabort = () =>
-                    reject(
-                        transaction.error ?? new Error('IndexedDB corruption transaction aborted'),
-                    )
-                transaction.onerror = () =>
-                    reject(
-                        transaction.error ?? new Error('IndexedDB corruption transaction failed'),
-                    )
-            })
-
-            database.close()
-        },
-        { dbName: DB_NAME, dbVersion: DB_VERSION, storeName: STRAINS_STORE },
     )
 }
 

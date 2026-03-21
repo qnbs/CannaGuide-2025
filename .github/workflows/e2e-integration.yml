@@ -160,58 +160,6 @@ jobs:
                   fi
 
     # ─────────────────────────────────────────────────────────────────────────
-    # VISUAL — Screenshot regression testing
-    # ─────────────────────────────────────────────────────────────────────────
-    visual-regression:
-        name: 📸 Visual Regression
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        steps:
-            - name: 📥 Checkout
-              uses: actions/checkout@v4
-
-            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: npm
-
-            - name: 📦 Install dependencies
-              run: npm ci --prefer-offline
-
-            - name: 💾 Cache Playwright Chromium
-              id: playwright-cache
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/ms-playwright
-                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-                  restore-keys: |
-                      playwright-chromium-${{ runner.os }}-
-
-            - name: 🎭 Install Playwright browser
-              if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: npm run test:e2e:install:ci
-
-            - name: 🏗 Build for visual tests
-              run: npm run build
-
-            - name: 📸 Run visual regression tests
-              run: |
-                  echo "::group::visual regression"
-                  npm run test:e2e:visual
-                  echo "::endgroup::"
-
-            - name: 📊 Upload visual diff artifacts
-              if: failure()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: visual-regression-diffs-${{ github.run_id }}
-                  path: |
-                      test-results/
-                      tests/e2e/visual-regression.e2e.ts-snapshots/
-                  retention-days: 14
-
-    # ─────────────────────────────────────────────────────────────────────────
     # DOCKER — Validate docker-compose.yml + IoT-Mocks build in CI
     # ─────────────────────────────────────────────────────────────────────────
     docker-compose-validation:

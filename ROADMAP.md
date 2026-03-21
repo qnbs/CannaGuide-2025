@@ -74,6 +74,12 @@ Released: **2026-Q1**
 | Time-series storage + predictive analytics                | AI            | ✅     | —     |
 | Plugin architecture for nutrient/hardware/grow profiles   | Architecture  | ✅     | —     |
 | Bluetooth sensor value clamping (plausibility checks)     | IoT           | ✅     | —     |
+| Client-side image generation (SD-Turbo + ONNX)            | AI            | ✅     | —     |
+| GPU resource mutex (WebLLM ↔ image gen)                   | Architecture  | ✅     | —     |
+| WebLLM diagnostics cascade (6-step availability check)    | AI            | ✅     | —     |
+| Token streaming for Mentor chat (typing effect)           | AI            | ✅     | —     |
+| Performance degradation detection (tok/s monitoring)      | AI            | ✅     | —     |
+| 574 tests across 62 files (Vitest)                        | Testing       | ✅     | —     |
 
 ---
 

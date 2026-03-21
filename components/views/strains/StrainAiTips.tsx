@@ -246,6 +246,17 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
         setSavedTipStrainId(strain.id)
     }
 
+    const aiTipsButtonLabel = (() => {
+        if (isLoading) return loadingMessage
+        if (hasGeneratedOnce) return t('common.regenerate')
+        return t('strainsView.tips.form.generate')
+    })()
+
+    const aiErrorMessage =
+        typeof error === 'object' && error !== null && 'message' in error
+            ? String((error as { message?: unknown }).message ?? t('ai.error.unknown'))
+            : t('ai.error.unknown')
+
     return (
         <Card>
             <h3 className="text-lg font-bold text-primary-400 flex items-center gap-2 mb-2">
@@ -298,11 +309,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                     />
                 </div>
                 <Button size="sm" onClick={handleGetAiTips} disabled={isLoading} className="w-full">
-                    {isLoading
-                        ? loadingMessage
-                        : hasGeneratedOnce
-                          ? t('common.regenerate')
-                          : t('strainsView.tips.form.generate')}
+                    {aiTipsButtonLabel}
                 </Button>
 
                 <ImageGenerationControls
@@ -314,13 +321,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
 
                 {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                 {Boolean(error) && !isLoading && (
-                    <div className="text-center text-sm text-red-400">
-                        {typeof error === 'object' && error !== null && 'message' in error
-                            ? String(
-                                  (error as { message?: unknown }).message ?? t('ai.error.unknown'),
-                              )
-                            : t('ai.error.unknown')}
-                    </div>
+                    <div className="text-center text-sm text-red-400">{aiErrorMessage}</div>
                 )}
 
                 {isImageLoading ? (

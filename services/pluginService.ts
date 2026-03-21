@@ -159,7 +159,7 @@ const persistPlugins = (): void => {
         const serializable = Array.from(plugins.values())
         localStorage.setItem(PLUGINS_STORAGE_KEY, JSON.stringify(serializable))
     } catch {
-        console.warn('[pluginService] Failed to persist plugins')
+        console.debug('[pluginService] Failed to persist plugins')
     }
 }
 
@@ -174,7 +174,7 @@ const loadPlugins = (): void => {
             }
         }
     } catch {
-        console.warn('[pluginService] Failed to load persisted plugins')
+        console.debug('[pluginService] Failed to load persisted plugins')
     }
     initialized = true
 }

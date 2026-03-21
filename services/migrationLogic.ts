@@ -493,7 +493,7 @@ const ensureGenealogyShape = (state: PersistedState): void => {
 
     // Version mismatch → wipe cache, preserve user preferences
     if (g._version !== GENEALOGY_STATE_VERSION) {
-        console.warn(
+        console.debug(
             `[MigrationLogic] Genealogy state version mismatch (stored: ${g._version}, expected: ${GENEALOGY_STATE_VERSION}) – wiping computedTrees.`,
         )
         const layout = g.layoutOrientation === 'vertical' ? 'vertical' : 'horizontal'
@@ -524,7 +524,7 @@ const ensureGenealogyShape = (state: PersistedState): void => {
             if (trees[id] !== null && !sanitizeGenealogyNodeMigration(trees[id], 0)) {
                 // Un-salvageable node – drop so it's re-fetched on demand
                 delete trees[id]
-                console.warn(`[MigrationLogic] Dropped corrupt genealogy cache entry: ${id}`)
+                console.debug(`[MigrationLogic] Dropped corrupt genealogy cache entry: ${id}`)
             }
         }
     }
@@ -710,7 +710,7 @@ export const mergeStrainCatalogForUpdate = (
     })
 
     if (duplicateIds.length > 0) {
-        console.warn(
+        console.debug(
             '[MigrationLogic] Duplicate bundled strain ids detected:',
             duplicateIds.slice(0, 10),
         )
@@ -829,7 +829,7 @@ const validateSliceVersions = (state: PersistedState): VersionedSliceName[] => {
         const persistedVersion = persistedVersions[name]
 
         if (persistedVersion !== undefined && persistedVersion !== expectedVersion) {
-            console.warn(
+            console.debug(
                 `[MigrationLogic] Slice "${name}" version mismatch (stored: ${persistedVersion}, expected: ${expectedVersion}) – resetting to initial state.`,
             )
             // Delete the stale slice data so Redux will use its initialState

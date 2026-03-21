@@ -28,7 +28,7 @@ const ensureRequiredStrainFields = (
         return
     }
 
-    console.warn(
+    console.debug(
         `[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${nameText || 'Unknown'}. Applying safe defaults.`,
     )
 

@@ -121,7 +121,7 @@ class MqttSensorService {
 
         this.connectTimeoutHandle = setTimeout(() => {
             if (this.connectionState === 'connecting') {
-                console.warn('[MQTT] Connection timeout after', CONNECT_TIMEOUT_MS, 'ms')
+                console.debug('[MQTT] Connection timeout after', CONNECT_TIMEOUT_MS, 'ms')
                 this.setConnectionState('error')
                 if (this.client) {
                     this.client.end(true)
@@ -158,7 +158,7 @@ class MqttSensorService {
                 clearTimeout(this.connectTimeoutHandle)
                 this.connectTimeoutHandle = null
             }
-            console.warn('[MQTT] Connection error:', error.message)
+            console.debug('[MQTT] Connection error:', error.message)
             this.setConnectionState('error')
         })
 
@@ -230,7 +230,7 @@ class MqttSensorService {
 
         this.client.subscribe(topics, { qos: 1 }, (error) => {
             if (error) {
-                console.warn('[MQTT] Subscribe error:', error.message)
+                console.debug('[MQTT] Subscribe error:', error.message)
             }
         })
     }
@@ -303,7 +303,7 @@ class MqttSensorService {
 
     private parsePayload(payload: Buffer): Record<string, unknown> | null {
         if (payload.length > MAX_PAYLOAD_SIZE) {
-            console.warn('[MQTT] Payload exceeds maximum allowed size, discarding.')
+            console.debug('[MQTT] Payload exceeds maximum allowed size, discarding.')
             return null
         }
         try {
@@ -313,12 +313,12 @@ class MqttSensorService {
             // downstream via clampSensorValue().
             const parsed = JSON.parse(raw) as Record<string, unknown>
             if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-                console.warn('[MQTT] Payload is not a JSON object, discarding.')
+                console.debug('[MQTT] Payload is not a JSON object, discarding.')
                 return null
             }
             return parsed
         } catch (error) {
-            console.warn(
+            console.debug(
                 '[MQTT] Failed to parse JSON payload:',
                 error instanceof Error ? error.message : 'Unknown error',
             )
@@ -336,7 +336,7 @@ class MqttSensorService {
             try {
                 callback(reading)
             } catch (e) {
-                console.warn('[MQTT] Sensor callback error:', e)
+                console.debug('[MQTT] Sensor callback error:', e)
             }
         }
     }
@@ -351,7 +351,7 @@ class MqttSensorService {
             try {
                 callback(state)
             } catch (e) {
-                console.warn('[MQTT] State callback error:', e)
+                console.debug('[MQTT] State callback error:', e)
             }
         }
     }

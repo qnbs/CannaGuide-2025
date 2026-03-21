@@ -216,7 +216,7 @@ const getStorageEstimateSnapshot = async (): Promise<StorageEstimateSnapshot> =>
         const usageRatio = quota > 0 ? usage / quota : 0
         return { usage, quota, usageRatio }
     } catch (error) {
-        console.warn(
+        console.debug(
             '[dbService] navigator.storage.estimate() failed, using fallback values.',
             error,
         )
@@ -397,7 +397,7 @@ export const dbService = {
                             seenIds.add(normalized.id)
                             results.push(normalized)
                         } else {
-                            console.warn(
+                            console.debug(
                                 `[dbService] Skipping duplicate strain id "${normalized.id}" while reading IndexedDB.`,
                             )
                         }
@@ -452,7 +452,7 @@ export const dbService = {
                 data: compressedData,
             }
         } catch (compressionError) {
-            console.warn(
+            console.debug(
                 '[dbService] Could not compress image before storing. Using original payload.',
                 compressionError,
             )
@@ -467,7 +467,7 @@ export const dbService = {
                 throw error
             }
 
-            console.warn(
+            console.debug(
                 '[dbService] Quota exceeded while storing image. Pruning old images and retrying once.',
             )
             await this.pruneOldImages(IMAGE_PRUNE_BATCH_SIZE * 2)

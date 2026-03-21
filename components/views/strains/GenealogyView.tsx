@@ -438,6 +438,26 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         [allStrains, onNodeClick],
     )
 
+    const getLayoutPosition = useCallback(
+        (x: number | undefined, y: number | undefined): { x: number; y: number } => {
+            if (layoutOrientation === 'horizontal') {
+                return { x: y ?? 0, y: x ?? 0 }
+            }
+            return { x: x ?? 0, y: y ?? 0 }
+        },
+        [layoutOrientation],
+    )
+
+    const getInitialZoomOffset = useCallback(
+        (width: number, height: number): [number, number] => {
+            if (layoutOrientation === 'horizontal') {
+                return [width * 0.1, height / 2]
+            }
+            return [width / 2, height * 0.1]
+        },
+        [layoutOrientation],
+    )
+
     const handleNodeFocus = useCallback(
         (nodeData: GenealogyNode) => {
             if (!svgRef.current || !zoomRef.current) return
@@ -445,9 +465,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 const target = layoutNodes?.find((n) => n?.data?.id === nodeData?.id)
                 if (!target) return
                 const { width, height } = svgRef.current.getBoundingClientRect()
-                const isHorizontal = layoutOrientation === 'horizontal'
-                const nodeX = isHorizontal ? (target?.y ?? 0) : (target?.x ?? 0)
-                const nodeY = isHorizontal ? (target?.x ?? 0) : (target?.y ?? 0)
+                const { x: nodeX, y: nodeY } = getLayoutPosition(target?.x, target?.y)
                 if (!isFinite(nodeX) || !isFinite(nodeY)) return
                 const currentK = d3.zoomTransform(svgRef.current).k
                 const scale = Math.max(isFinite(currentK) ? currentK : 1, 0.8)
@@ -462,7 +480,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 console.error('[GenealogyView] handleNodeFocus error:', err)
             }
         },
-        [layoutNodes, layoutOrientation],
+        [getLayoutPosition, layoutNodes],
     )
 
     const handleToggle = useCallback(
@@ -583,10 +601,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             const savedTransform = zoomTransformRef.current
             if (savedTransform === null) {
                 const { width, height } = svgEl.getBoundingClientRect()
-                const [ix, iy] =
-                    layoutOrientation === 'horizontal'
-                        ? [width * 0.1, height / 2]
-                        : [width / 2, height * 0.1]
+                const [ix, iy] = getInitialZoomOffset(width, height)
                 svg.transition()
                     .duration(750)
                     .call(zoomBehavior.transform, d3.zoomIdentity.translate(ix, iy))
@@ -604,10 +619,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 )
             } else {
                 const { width, height } = svgEl.getBoundingClientRect()
-                const [ix, iy] =
-                    layoutOrientation === 'horizontal'
-                        ? [width * 0.1, height / 2]
-                        : [width / 2, height * 0.1]
+                const [ix, iy] = getInitialZoomOffset(width, height)
                 svg.transition()
                     .duration(750)
                     .call(zoomBehavior.transform, d3.zoomIdentity.translate(ix, iy))
@@ -628,10 +640,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                         if (!svgEl || !zoomRef.current || zoomTransformRef.current !== null) return
                         const { width, height } = svgEl.getBoundingClientRect()
                         if (width === 0 || height === 0) return
-                        const [ix, iy] =
-                            layoutOrientation === 'horizontal'
-                                ? [width * 0.1, height / 2]
-                                : [width / 2, height * 0.1]
+                        const [ix, iy] = getInitialZoomOffset(width, height)
                         d3.select(svgEl)
                             .transition()
                             .duration(300)
@@ -659,16 +668,13 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             }
             zoomRef.current = null
         }
-    }, [dispatch, tree, layoutOrientation, t])
+    }, [dispatch, getInitialZoomOffset, tree, t])
 
     const handleResetZoom = useCallback(() => {
         if (!svgRef.current || !zoomRef.current) return
         try {
             const { width, height } = svgRef.current.getBoundingClientRect()
-            const [ix, iy] =
-                layoutOrientation === 'horizontal'
-                    ? [width * 0.1, height / 2]
-                    : [width / 2, height * 0.1]
+            const [ix, iy] = getInitialZoomOffset(width, height)
             d3.select(svgRef.current)
                 .transition()
                 .duration(750)
@@ -676,7 +682,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         } catch (err) {
             console.error('[GenealogyView] handleResetZoom error:', err)
         }
-    }, [layoutOrientation])
+    }, [getInitialZoomOffset])
 
     // ── Sichere Render-Helfer ────────────────────────────────────────
     const MAX_RENDERED_NODES = 500
@@ -749,9 +755,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             return visibleNodes.map((node, idx) => {
                 try {
                     if (!node?.data) return null
-                    const isHorizontal = layoutOrientation === 'horizontal'
-                    const x = isHorizontal ? (node?.y ?? 0) : (node?.x ?? 0)
-                    const y = isHorizontal ? (node?.x ?? 0) : (node?.y ?? 0)
+                    const { x, y } = getLayoutPosition(node?.x, node?.y)
                     if (!isFinite(x) || !isFinite(y)) return null
                     const matches = nodeMatchesHighlight(node.data)
                     const isDimmed = highlightMode !== 'none' && !matches

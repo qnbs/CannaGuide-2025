@@ -27,6 +27,7 @@ concurrency:
 # ---------------------------------------------------------------------------
 env:
     NODE_VERSION: '20'
+    PAGES_URL: https://qnbs.github.io/CannaGuide-2025/
 
 jobs:
     # ─────────────────────────────────────────────────────────────────────────
@@ -94,7 +95,7 @@ jobs:
               uses: actions/configure-pages@v5
 
             - name: 📤 Upload Pages artifact
-              uses: actions/upload-pages-artifact@v3
+              uses: actions/upload-pages-artifact@v4
               with:
                   path: ./dist
 
@@ -160,7 +161,7 @@ jobs:
 
             - name: 🧪 Run E2E tests on deployed URL
               env:
-                  DEPLOY_BASE_URL: https://qnbs.github.io/CannaGuide-2025/
+                  DEPLOY_BASE_URL: ${{ env.PAGES_URL }}
               run: |
                   echo "::group::playwright e2e"
                   npm run test:e2e:deploy
@@ -198,7 +199,7 @@ jobs:
             - name: 🔆 Lighthouse CI (live URL)
               run: |
                   npx @lhci/cli autorun \
-                    --collect.url=https://qnbs.github.io/CannaGuide-2025/ \
+                    --collect.url=${{ env.PAGES_URL }} \
                     --collect.numberOfRuns=3 \
                     --upload.target=temporary-public-storage
 

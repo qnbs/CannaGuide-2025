@@ -1,5 +1,10 @@
 documentation:
     - README.md
+    - CHANGELOG.md
+    - CONTRIBUTING.md
+    - CODE_OF_CONDUCT.md
+    - SECURITY.md
+    - ROADMAP.md
     - docs/**
 
 security:
@@ -9,8 +14,82 @@ security:
           - package-lock.json
           - .pre-commit-config.yaml
           - .renovaterc.json
+          - services/cryptoService.ts
+          - securityHeaders.ts
 
 tests:
     - tests/**
     - '**/*.test.ts'
     - '**/*.test.tsx'
+    - vitest.setup.ts
+    - playwright.config.ts
+    - playwright-ct.config.ts
+    - stryker.config.json
+
+ai:
+    - services/ai*.ts
+    - services/gemini*.ts
+    - services/localAi*.ts
+    - services/localAI*.ts
+    - services/growLogRagService.ts
+    - workers/inference.worker.ts
+    - packages/ai-core/**
+
+ui:
+    - components/**
+    - styles.css
+    - tailwind.config.cjs
+
+plants:
+    - stores/slices/plantSlice*
+    - components/views/PlantView*
+    - data/strains*
+    - data/strains/**
+
+i18n:
+    - locales/**
+    - i18n.ts
+
+hooks:
+    - hooks/**
+
+services:
+    - services/**
+
+types:
+    - types.ts
+    - types/**
+
+workers:
+    - workers/**
+    - simulation.worker.ts
+
+tauri:
+    - src-tauri/**
+    - apps/desktop/**
+
+docker:
+    - Dockerfile
+    - Dockerfile.dev
+    - docker-compose.yml
+    - docker/**
+
+iot:
+    - packages/iot-mocks/**
+    - services/iotService*
+    - hooks/useSensorData.ts
+
+pwa:
+    - sw.js
+    - public/sw.js
+    - public/manifest.json
+
+ci:
+    - .github/workflows/**
+
+config:
+    - vite.config.ts
+    - tsconfig.json
+    - eslint.config.js
+    - biome.json
+    - postcss.config.cjs

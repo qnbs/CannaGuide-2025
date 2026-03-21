@@ -1118,6 +1118,43 @@ PLANT CONTEXT:
         return `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
     }
 
+    private buildLocalizedEducationalPrompt(prompt: string, lang: Language): string {
+        return createLocalizedPrompt(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`, lang)
+    }
+
+    private buildMentorPrompt(
+        plant: Plant,
+        query: string,
+        t: ReturnType<typeof getT>,
+    ): { prompt: string; ragContext: string } {
+        const plantContext = this.buildPlantJournalContext(plant, t)
+        const ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+        const sanitizedQuery = sanitizeForPrompt(query, 600)
+
+        const prompt = t('ai.prompts.mentor.main', {
+            context: `${plantContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}`,
+            query: sanitizedQuery,
+        })
+
+        return { prompt, ragContext }
+    }
+
+    private buildStrainTipsLocalizedPrompt(
+        strain: Strain,
+        context: { focus: string; stage: string; experienceLevel: string },
+        lang: Language,
+        t: ReturnType<typeof getT>,
+    ): string {
+        const prompt = t('ai.prompts.strainTips', {
+            strain: JSON.stringify(strain),
+            focus: context.focus,
+            stage: context.stage,
+            experienceLevel: context.experienceLevel,
+        })
+
+        return this.buildLocalizedEducationalPrompt(prompt, lang)
+    }
+
     private async getPlantNarrativeWithFallback(
         plant: Plant,
         lang: Language,
@@ -1213,10 +1250,7 @@ PLANT CONTEXT:
             { "title": "...", "content": "...", "confidence": 0.0, "immediateActions": "...", "longTermSolution": "...", "prevention": "...", "diagnosis": "..." }
         `
 
-        const localizedPrompt = createLocalizedPrompt(
-            `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
-            lang,
-        )
+        const localizedPrompt = this.buildLocalizedEducationalPrompt(prompt, lang)
 
         try {
             return await this.diagnosePlantViaGemini(base64Image, mimeType, localizedPrompt)
@@ -1258,13 +1292,7 @@ PLANT CONTEXT:
         lang: Language,
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
-        const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
-        const ragContext = growLogRagService.retrieveRelevantContext([plant], query)
-        const sanitizedQuery = sanitizeForPrompt(query, 600)
-        const prompt = t('ai.prompts.mentor.main', {
-            context: `${plantContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}`,
-            query: sanitizedQuery,
-        })
+        const { prompt, ragContext } = this.buildMentorPrompt(plant, query, t)
 
         try {
             if (this.isAlternateProvider()) {
@@ -1288,16 +1316,7 @@ PLANT CONTEXT:
         lang: Language,
     ): Promise<StructuredGrowTips> {
         const t = getT()
-        const prompt = t('ai.prompts.strainTips', {
-            strain: JSON.stringify(strain),
-            focus: context.focus,
-            stage: context.stage,
-            experienceLevel: context.experienceLevel,
-        })
-        const localizedPrompt = createLocalizedPrompt(
-            `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
-            lang,
-        )
+        const localizedPrompt = this.buildStrainTipsLocalizedPrompt(strain, context, lang, t)
         try {
             if (this.isAlternateProvider()) {
                 return await this.getStrainTipsFromAlternateProvider(localizedPrompt, lang)

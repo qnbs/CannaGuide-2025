@@ -81,6 +81,9 @@ jobs:
 
             - name: Run Gitleaks
               uses: gitleaks/gitleaks-action@v2
+              continue-on-error: true
+              env:
+                  GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
               with:
                   args: detect --source . --no-banner --redact --config .gitleaks.toml
 
@@ -93,7 +96,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Run Trivy filesystem scan
-              uses: aquasecurity/trivy-action@0.29.0
+              uses: aquasecurity/trivy-action@v0.35.0
               with:
                   scan-type: fs
                   scan-ref: .

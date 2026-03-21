@@ -53,6 +53,10 @@ jobs:
                     echo "⏳ Waiting for ESP32 mock... ($i/15)"
                     sleep 1
                   done
+                  if ! curl -sf http://localhost:3001/health > /dev/null 2>&1; then
+                    echo "❌ ESP32 mock failed to start after 15s"
+                    exit 1
+                  fi
 
             - name: 🧪 Verify ESP32 sensor endpoint
               run: |

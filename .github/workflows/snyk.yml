@@ -1,0 +1,57 @@
+name: Snyk Security
+
+# Runs on PRs (advisory) and weekly for continuous monitoring.
+# Requires SNYK_TOKEN secret from Snyk App integration.
+on:
+    pull_request:
+        branches: [main]
+    schedule:
+        - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    security-events: write
+
+env:
+    NODE_VERSION: '20'
+
+jobs:
+    snyk:
+        name: 🛡 Snyk Security Scan
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
+
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
+
+            - name: 📦 Install dependencies
+              run: npm ci --prefer-offline
+
+            - name: 🛡 Snyk Open Source scan
+              if: ${{ env.HAS_TOKEN == 'true' }}
+              uses: snyk/actions/node@master
+              continue-on-error: true
+              env:
+                  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+              with:
+                  args: --severity-threshold=high --sarif-file-output=snyk-results.sarif
+
+            - name: 📤 Upload Snyk SARIF
+              if: ${{ env.HAS_TOKEN == 'true' && always() }}
+              uses: github/codeql-action/upload-sarif@v4
+              with:
+                  sarif_file: snyk-results.sarif
+
+            - name: ⚠ Skip notice
+              if: ${{ env.HAS_TOKEN != 'true' }}
+              run: echo "⚠ SNYK_TOKEN not configured – skipping Snyk scan. Install the Snyk GitHub App or add the token as a repository secret."
+
+        env:
+            HAS_TOKEN: ${{ secrets.SNYK_TOKEN != '' }}

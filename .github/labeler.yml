@@ -14,6 +14,8 @@ security:
           - package-lock.json
           - .pre-commit-config.yaml
           - .renovaterc.json
+          - .gitguardian.yml
+          - sonar-project.properties
           - services/cryptoService.ts
           - securityHeaders.ts
 

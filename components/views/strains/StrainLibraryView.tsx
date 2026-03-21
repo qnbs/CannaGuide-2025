@@ -1,54 +1,122 @@
-import React, { memo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Strain, SortKey, SortDirection, StrainType, StrainViewTab } from '@/types';
-import { StrainToolbar } from './StrainToolbar';
-import { StrainList } from './StrainList';
-import { StrainGrid } from './StrainGrid';
-import { Card } from '@/components/common/Card';
-import { Button } from '@/components/ui/button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { BulkActionsBar } from './BulkActionsBar';
-import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import React, { memo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Strain, SortKey, SortDirection, StrainType, StrainViewTab } from '@/types'
+import { StrainToolbar } from './StrainToolbar'
+import { StrainList } from './StrainList'
+import { StrainGrid } from './StrainGrid'
+import { Card } from '@/components/common/Card'
+import { Button } from '@/components/ui/button'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { BulkActionsBar } from './BulkActionsBar'
+import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 
 interface StrainLibraryViewProps {
-    strains: Strain[];
-    totalStrainCount: number;
-    viewMode: 'list' | 'grid';
-    isSearching: boolean;
-    searchTerm: string;
-    onSearchTermChange: (term: string) => void;
-    sort: { key: SortKey; direction: SortDirection };
-    handleSort: (key: SortKey) => void;
-    letterFilter: string | null;
-    handleSetLetterFilter: (letter: string | null) => void;
-    typeFilter: StrainType[];
-    onToggleTypeFilter: (type: StrainType) => void;
-    onOpenDrawer: () => void;
-    activeFilterCount: number;
-    selectedIds: Set<string>;
-    onToggleSelection: (id: string) => void;
-    onSelect: (strain: Strain) => void;
-    favoriteIds: Set<string>;
-    onToggleFavorite: (id: string) => void;
-    isUserStrain: (id: string) => boolean;
-    onDeleteUserStrain: (id: string) => void;
-    onClearSelection: () => void;
-    onAddToFavorites: () => void;
-    onRemoveFromFavorites: () => void;
-    onDelete?: () => void;
-    strainsViewTab: StrainViewTab;
+    strains: Strain[]
+    totalStrainCount: number
+    viewMode: 'list' | 'grid'
+    isSearching: boolean
+    searchTerm: string
+    onSearchTermChange: (term: string) => void
+    sort: { key: SortKey; direction: SortDirection }
+    handleSort: (key: SortKey) => void
+    letterFilter: string | null
+    handleSetLetterFilter: (letter: string | null) => void
+    typeFilter: StrainType[]
+    onToggleTypeFilter: (type: StrainType) => void
+    onOpenDrawer: () => void
+    activeFilterCount: number
+    selectedIds: Set<string>
+    onToggleSelection: (id: string) => void
+    onSelect: (strain: Strain) => void
+    favoriteIds: Set<string>
+    onToggleFavorite: (id: string) => void
+    isUserStrain: (id: string) => boolean
+    onDeleteUserStrain: (id: string) => void
+    onClearSelection: () => void
+    onAddToFavorites: () => void
+    onRemoveFromFavorites: () => void
+    onDelete?: () => void
+    strainsViewTab: StrainViewTab
 }
 
 export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) => {
     const {
-        strains, totalStrainCount, viewMode, isSearching, searchTerm,
-        onSearchTermChange, sort, handleSort, letterFilter, handleSetLetterFilter, typeFilter, onToggleTypeFilter,
-        onOpenDrawer, activeFilterCount, selectedIds, onToggleSelection, onSelect,
-        favoriteIds, onToggleFavorite, isUserStrain, onDeleteUserStrain, onClearSelection,
-        onAddToFavorites, onRemoveFromFavorites, onDelete, strainsViewTab: _strainsViewTab
-    } = props;
+        strains,
+        totalStrainCount,
+        viewMode,
+        isSearching,
+        searchTerm,
+        onSearchTermChange,
+        sort,
+        handleSort,
+        letterFilter,
+        handleSetLetterFilter,
+        typeFilter,
+        onToggleTypeFilter,
+        onOpenDrawer,
+        activeFilterCount,
+        selectedIds,
+        onToggleSelection,
+        onSelect,
+        favoriteIds,
+        onToggleFavorite,
+        isUserStrain,
+        onDeleteUserStrain,
+        onClearSelection,
+        onAddToFavorites,
+        onRemoveFromFavorites,
+        onDelete,
+        strainsViewTab: _strainsViewTab,
+    } = props
 
-    const { t } = useTranslation();
+    const { t } = useTranslation()
+    const isListView = viewMode === 'list'
+    const hasNoResults = totalStrainCount === 0
+    const shouldShowSelectionActions = selectedIds.size > 0
+
+    const clearSearchButton = searchTerm ? (
+        <Button size="sm" variant="secondary" onClick={() => onSearchTermChange('')}>
+            {t('common.clear')}
+        </Button>
+    ) : null
+
+    const strainsContent = isListView ? (
+        <StrainList
+            strains={strains}
+            selectedIds={selectedIds}
+            onToggleSelection={onToggleSelection}
+            onSelect={onSelect}
+            isUserStrain={isUserStrain}
+            onDelete={onDeleteUserStrain}
+            favorites={favoriteIds}
+            onToggleFavorite={onToggleFavorite}
+        />
+    ) : (
+        <StrainGrid
+            strains={strains}
+            selectedIds={selectedIds}
+            onToggleSelection={onToggleSelection}
+            onSelect={onSelect}
+            isUserStrain={isUserStrain}
+            favorites={favoriteIds}
+            onToggleFavorite={onToggleFavorite}
+        />
+    )
+
+    const mainContent = isSearching ? (
+        <SkeletonLoader variant={viewMode} count={10} />
+    ) : hasNoResults ? (
+        <Card className="text-center py-10 text-slate-500">
+            <PhosphorIcons.MagnifyingGlass className="w-14 h-14 mx-auto text-slate-400 mb-3" />
+            <h3 className="font-semibold text-slate-300">
+                {t('strainsView.emptyStates.noResults.title')}
+            </h3>
+            <p className="text-sm mb-4">{t('strainsView.emptyStates.noResults.text')}</p>
+            {clearSearchButton}
+        </Card>
+    ) : (
+        strainsContent
+    )
 
     return (
         <>
@@ -68,49 +136,9 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
                 />
             </div>
 
-            <div className="mt-6">
-                {isSearching ? (
-                    <SkeletonLoader variant={viewMode} count={10} />
-                ) : totalStrainCount === 0 ? (
-                    <Card className="text-center py-10 text-slate-500">
-                        <PhosphorIcons.MagnifyingGlass className="w-14 h-14 mx-auto text-slate-400 mb-3" />
-                        <h3 className="font-semibold text-slate-300">{t('strainsView.emptyStates.noResults.title')}</h3>
-                        <p className="text-sm mb-4">{t('strainsView.emptyStates.noResults.text')}</p>
-                        {searchTerm && (
-                            <Button size="sm" variant="secondary" onClick={() => onSearchTermChange('')}>
-                                {t('common.clear')}
-                            </Button>
-                        )}
-                    </Card>
-                ) : (
-                    <>
-                        {viewMode === 'list' ? (
-                            <StrainList
-                                strains={strains}
-                                selectedIds={selectedIds}
-                                onToggleSelection={onToggleSelection}
-                                onSelect={onSelect}
-                                isUserStrain={isUserStrain}
-                                onDelete={onDeleteUserStrain}
-                                favorites={favoriteIds}
-                                onToggleFavorite={onToggleFavorite}
-                            />
-                        ) : (
-                            <StrainGrid
-                                strains={strains}
-                                selectedIds={selectedIds}
-                                onToggleSelection={onToggleSelection}
-                                onSelect={onSelect}
-                                isUserStrain={isUserStrain}
-                                favorites={favoriteIds}
-                                onToggleFavorite={onToggleFavorite}
-                            />
-                        )}
-                    </>
-                )}
-            </div>
+            <div className="mt-6">{mainContent}</div>
 
-            {selectedIds.size > 0 && (
+            {shouldShowSelectionActions && (
                 <BulkActionsBar
                     selectedCount={selectedIds.size}
                     onClearSelection={onClearSelection}
@@ -120,9 +148,9 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
                 />
             )}
         </>
-    );
-});
+    )
+})
 
-StrainLibraryView.displayName = 'StrainLibraryView';
+StrainLibraryView.displayName = 'StrainLibraryView'
 
-export default StrainLibraryView;
+export default StrainLibraryView

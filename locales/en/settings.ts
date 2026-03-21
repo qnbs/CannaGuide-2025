@@ -179,6 +179,27 @@ export const settingsView = {
         // Image Similarity
         imgSimilarityReady: 'Image similarity (CLIP features) is ready.',
         imgSimilarityMissing: 'Image similarity model not loaded.',
+        // Performance Alerts
+        perfDegradedWarning:
+            'Local AI is running slowly ({{tokPerSec}} tok/s). Consider closing other tabs or switching to a lighter model.',
+        perfDegradedDowngrade:
+            'Inference speed has dropped. Switching to a lighter model is recommended.',
+        perfDegradedCloseTabs:
+            'Inference speed has dropped. Closing unused tabs may free GPU memory.',
+    },
+    localAiDiag: {
+        reasons: {
+            active: 'WebLLM is active and running on GPU.',
+            'insecure-context': 'WebGPU requires a secure context (HTTPS or localhost).',
+            'no-webgpu-api': 'This browser does not support WebGPU.',
+            'no-gpu-adapter': 'No compatible GPU adapter was found.',
+            'vram-insufficient': 'Not enough GPU memory (VRAM) for the selected model.',
+            'no-model-profile': 'No model profile matches the current device capabilities.',
+            'force-wasm-override': 'WebGPU disabled — Force WASM is enabled in settings.',
+            'browser-unsupported': 'Your browser does not support the required WebGPU features.',
+            'adapter-request-timeout': 'GPU adapter request timed out after 5 seconds.',
+            'unknown-error': 'An unexpected error occurred during WebGPU initialization.',
+        },
     },
     general: {
         title: 'General Settings',

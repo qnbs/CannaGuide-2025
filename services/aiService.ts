@@ -221,6 +221,69 @@ export const aiService = {
         )
     },
 
+    /**
+     * Streaming mentor response — yields tokens as they arrive.
+     * Only streams via local AI (WebLLM). Cloud providers fall back to batch.
+     */
+    async getMentorResponseStream(
+        plant: Plant,
+        query: string,
+        lang: Language,
+        onToken: (token: string, accumulated: string) => void,
+    ): Promise<Omit<MentorMessage, 'role'>> {
+        if (shouldRouteLocally()) {
+            let ragContext = ''
+            try {
+                ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
+            } catch {
+                ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+            }
+            const local = await getLocalAiService()
+
+            // Build the mentor prompt manually to use streaming
+            const isDE = lang === 'de'
+            const instruction = isDE
+                ? 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.'
+                : 'Answer as CannaGuide AI in English, structured, factual, and without HTML.'
+            const prompt = [
+                instruction,
+                `Plant: ${plant.name} | ${plant.strain.name} | stage=${plant.stage}`,
+                ragContext ? `Context: ${ragContext}` : '',
+                `Question: ${query}`,
+                'Return ONLY valid JSON with this exact shape:',
+                '{"title":"...","content":"...","uiHighlights":[]}',
+            ]
+                .filter(Boolean)
+                .join('\n\n')
+
+            const result = await local.generateTextStream(prompt, onToken)
+
+            if (result) {
+                try {
+                    const parsed = JSON.parse(result) as {
+                        title?: string
+                        content?: string
+                        uiHighlights?: string[]
+                    }
+                    if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
+                        return parsed as Omit<MentorMessage, 'role'>
+                    }
+                } catch {
+                    // Not valid JSON — return as plain content
+                }
+                return {
+                    title: isDE ? 'KI-Mentor' : 'AI Mentor',
+                    content: result,
+                }
+            }
+
+            return localAiFallbackService.getMentorResponse(plant, query, ragContext, lang)
+        }
+
+        // Non-local: standard batch response
+        return this.getMentorResponse(plant, query, lang)
+    },
+
     async getStrainTips(
         strain: Strain,
         context: { focus: string; stage: string; experienceLevel: string },

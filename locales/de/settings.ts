@@ -185,6 +185,30 @@ export const settingsView = {
         // Image Similarity
         imgSimilarityReady: 'Bildähnlichkeit (CLIP-Features) ist bereit.',
         imgSimilarityMissing: 'Bildähnlichkeits-Modell nicht geladen.',
+        // Performance Alerts
+        perfDegradedWarning:
+            'Lokale KI läuft langsam ({{tokPerSec}} tok/s). Schließe andere Tabs oder wechsle zu einem leichteren Modell.',
+        perfDegradedDowngrade:
+            'Die Inferenzgeschwindigkeit ist gesunken. Ein Wechsel zu einem leichteren Modell wird empfohlen.',
+        perfDegradedCloseTabs:
+            'Die Inferenzgeschwindigkeit ist gesunken. Das Schließen ungenutzter Tabs kann GPU-Speicher freigeben.',
+    },
+    localAiDiag: {
+        reasons: {
+            active: 'WebLLM ist aktiv und läuft auf der GPU.',
+            'insecure-context': 'WebGPU benötigt einen sicheren Kontext (HTTPS oder localhost).',
+            'no-webgpu-api': 'Dieser Browser unterstützt kein WebGPU.',
+            'no-gpu-adapter': 'Kein kompatibler GPU-Adapter gefunden.',
+            'vram-insufficient': 'Nicht genügend GPU-Speicher (VRAM) für das gewählte Modell.',
+            'no-model-profile': 'Kein Modellprofil passt zu den aktuellen Geräteeigenschaften.',
+            'force-wasm-override':
+                'WebGPU deaktiviert — WASM-Erzwingung ist in den Einstellungen aktiviert.',
+            'browser-unsupported':
+                'Dein Browser unterstützt die erforderlichen WebGPU-Funktionen nicht.',
+            'adapter-request-timeout': 'GPU-Adapter-Anfrage nach 5 Sekunden abgelaufen.',
+            'unknown-error':
+                'Ein unerwarteter Fehler bei der WebGPU-Initialisierung ist aufgetreten.',
+        },
     },
     general: {
         title: 'Allgemeine Einstellungen',

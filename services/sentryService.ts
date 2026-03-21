@@ -130,6 +130,8 @@ export const captureLocalAiError = (
             | 'gpu-mutex-eviction'
             | 'gpu-mutex-rehydrate'
             | 'webllm-eviction'
+            | 'webllm-diagnostics'
+            | 'webllm-streaming'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
         batchItem?: number

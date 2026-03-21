@@ -49,7 +49,10 @@ const GeminiSecurityCard: React.FC = () => {
     const providers = useMemo(() => aiProviderService.getAllProviders(), [])
     const todayUsage = aiRateLimiter.getTodayUsage()
     const recentAuditEntries = useMemo(() => {
-        void auditLogRevision // revision counter — triggers re-computation
+        const revision = auditLogRevision
+        if (revision < 0) {
+            return []
+        }
         return aiRateLimiter.getAuditLog().slice(0, 5)
     }, [auditLogRevision])
     const keyMetadata =

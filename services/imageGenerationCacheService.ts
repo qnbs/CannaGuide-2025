@@ -59,8 +59,8 @@ const hashKey = (prompt: string): string => {
     let fnv = 0x811c9dc5
     for (let i = 0; i < prompt.length; i++) {
         const c = prompt.charCodeAt(i)
-        djb2 = ((djb2 << 5) + djb2 + c) | 0
-        fnv = ((fnv ^ c) * 0x01000193) | 0
+        djb2 = Math.trunc((djb2 << 5) + djb2 + c)
+        fnv = Math.trunc((fnv ^ c) * 0x01000193)
     }
     return `img_${djb2}_${fnv}_${prompt.length}`
 }

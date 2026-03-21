@@ -58,11 +58,11 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
                 {/* Rating bar */}
                 <div className="flex items-center gap-3 mb-5 p-3 rounded-lg bg-slate-800/50">
                     <div className="flex items-center gap-0.5">
-                        {[...Array(5)].map((_, i) => (
+                        {[1, 2, 3, 4, 5].map((starNumber) => (
                             <PhosphorIcons.Star
-                                key={i}
-                                weight={i < Math.round(shop.rating) ? 'fill' : 'regular'}
-                                className={`w-5 h-5 ${i < Math.round(shop.rating) ? 'text-amber-400' : 'text-slate-600'}`}
+                                key={`rating-star-${starNumber}`}
+                                weight={starNumber <= Math.round(shop.rating) ? 'fill' : 'regular'}
+                                className={`w-5 h-5 ${starNumber <= Math.round(shop.rating) ? 'text-amber-400' : 'text-slate-600'}`}
                             />
                         ))}
                     </div>
@@ -81,8 +81,8 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
                             {t('equipmentView.growShops.strengths')}
                         </h4>
                         <ul className="space-y-1.5 text-sm text-slate-300">
-                            {shop.strengths.map((s: string, i: number) => (
-                                <li key={i} className="flex items-start gap-2">
+                            {shop.strengths.map((s: string) => (
+                                <li key={s} className="flex items-start gap-2">
                                     <PhosphorIcons.CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                                     {s}
                                 </li>
@@ -167,9 +167,9 @@ const ShopCard: React.FC<{ shop: Shop; onSelect: () => void }> = memo(({ shop, o
                     </div>
                     {/* Strength preview — first 2 items */}
                     <div className="flex flex-wrap gap-1.5">
-                        {shop.strengths.slice(0, 2).map((s: string, i: number) => (
+                        {shop.strengths.slice(0, 2).map((s: string) => (
                             <span
-                                key={i}
+                                key={`preview-${s}`}
                                 className="inline-flex items-center gap-1 text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded-full"
                             >
                                 <PhosphorIcons.CheckCircle className="w-3 h-3 text-emerald-500/60" />
@@ -226,9 +226,9 @@ export const GrowShopsView: React.FC = () => {
 
         if (!Array.isArray(shopKeys)) return []
 
-        let shops = shopKeys.map((key) => ({ ...allShops[key], key })).filter(
-            (shop): shop is Shop & { key: string } => !!shop.name
-        )
+        let shops = shopKeys
+            .map((key) => ({ ...allShops[key], key }))
+            .filter((shop): shop is Shop & { key: string } => !!shop.name)
 
         // Search filter
         if (searchQuery.trim()) {

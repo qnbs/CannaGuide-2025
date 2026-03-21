@@ -32,11 +32,11 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
             className="flex gap-0.5 items-center"
             title={t(`strainsView.difficulty.${difficulty.toLowerCase()}`)}
         >
-            {[...Array(3)].map((_, i) => (
+            {[1, 2, 3].map((marker) => (
                 <PhosphorIcons.Cannabis
-                    key={i}
+                    key={`difficulty-marker-${marker}`}
                     weight="fill"
-                    className={`w-4 h-4 ${i < level ? color : 'text-slate-600'}`}
+                    className={`w-4 h-4 ${marker <= level ? color : 'text-slate-600'}`}
                 />
             ))}
         </div>

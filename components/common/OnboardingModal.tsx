@@ -55,7 +55,10 @@ function ChoiceCard({
                 <span className="text-xs text-slate-400">{desc}</span>
             </span>
             {selected && (
-                <PhosphorIcons.CheckCircle weight="fill" className="ml-auto shrink-0 w-5 h-5 text-primary-400" />
+                <PhosphorIcons.CheckCircle
+                    weight="fill"
+                    className="ml-auto shrink-0 w-5 h-5 text-primary-400"
+                />
             )}
         </button>
     )
@@ -70,6 +73,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const [growGoal, setGrowGoal] = useState<GrowGoal>('recreational')
     const [spaceSize, setSpaceSize] = useState<SpaceSize>('medium')
     const [budget, setBudget] = useState<Budget>('mid')
+    const stepIndicators = useMemo(
+        () => Array.from({ length: TOTAL_STEPS }, (_, idx) => idx + 1),
+        [],
+    )
 
     const featureSteps = useMemo(
         () => [
@@ -111,20 +118,52 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const handleBack = () => dispatch(setOnboardingStep(step - 1))
 
     const handleFinish = () => {
+        const aiTipsExperienceByLevel: Record<
+            ExperienceLevel,
+            'beginner' | 'intermediate' | 'advanced'
+        > = {
+            beginner: 'beginner',
+            intermediate: 'intermediate',
+            expert: 'advanced',
+        }
+
         // Apply wizard choices to settings
         dispatch(setSetting({ path: 'simulation.simulationProfile', value: experience }))
-        dispatch(setSetting({ path: 'strainsView.aiTipsDefaultExperience', value: experience === 'beginner' ? 'beginner' : experience === 'intermediate' ? 'intermediate' : 'advanced' }))
+        dispatch(
+            setSetting({
+                path: 'strainsView.aiTipsDefaultExperience',
+                value: aiTipsExperienceByLevel[experience],
+            }),
+        )
         // Persist goal + space info for future AI personalisation
-        try { localStorage.setItem('cg.onboarding.growGoal', growGoal) } catch { /* ignore */ }
-        try { localStorage.setItem('cg.onboarding.spaceSize', spaceSize) } catch { /* ignore */ }
-        try { localStorage.setItem('cg.onboarding.budget', budget) } catch { /* ignore */ }
+        try {
+            localStorage.setItem('cg.onboarding.growGoal', growGoal)
+        } catch {
+            /* ignore */
+        }
+        try {
+            localStorage.setItem('cg.onboarding.spaceSize', spaceSize)
+        } catch {
+            /* ignore */
+        }
+        try {
+            localStorage.setItem('cg.onboarding.budget', budget)
+        } catch {
+            /* ignore */
+        }
         onClose()
     }
 
     // ---- Step 0: Language picker ----
     if (step === 0) {
         return (
-            <Modal isOpen={true} onClose={() => {}} showCloseButton={false} title={t('onboarding.languageTitle')} description={t('onboarding.languageSubtitle')}>
+            <Modal
+                isOpen={true}
+                onClose={() => {}}
+                showCloseButton={false}
+                title={t('onboarding.languageTitle')}
+                description={t('onboarding.languageSubtitle')}
+            >
                 <div className="text-center p-2">
                     <div className="flex items-center justify-center gap-3 mb-6">
                         <CannabisLeafIcon className="w-10 h-10" />
@@ -171,11 +210,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                     {t('common.back')}
                 </Button>
                 <div className="flex items-center gap-2">
-                    {[...Array(TOTAL_STEPS)].map((_, i) => (
+                    {stepIndicators.map((stepNumber) => (
                         <div
-                            key={i}
+                            key={stepNumber}
                             className={`rounded-full transition-all duration-300 ${
-                                i === step - 1
+                                stepNumber === step
                                     ? 'w-2.5 h-2.5 bg-primary-400'
                                     : 'w-2 h-2 bg-slate-600'
                             }`}
@@ -215,10 +254,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
         ]
         const footer = (
             <div className="w-full flex justify-between items-center">
-                <Button variant="secondary" onClick={handleBack}>{t('common.back')}</Button>
+                <Button variant="secondary" onClick={handleBack}>
+                    {t('common.back')}
+                </Button>
                 <div className="flex items-center gap-1.5">
-                    {[...Array(TOTAL_STEPS)].map((_, i) => (
-                        <div key={i} className={`rounded-full transition-all duration-300 ${i === step - 1 ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`} />
+                    {stepIndicators.map((stepNumber) => (
+                        <div
+                            key={stepNumber}
+                            className={`rounded-full transition-all duration-300 ${stepNumber === step ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`}
+                        />
                     ))}
                 </div>
                 <Button onClick={handleNext}>{t('common.next')}</Button>
@@ -228,8 +272,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
             <Modal isOpen={true} onClose={() => {}} footer={footer} showCloseButton={false}>
                 <div className="p-2 space-y-4">
                     <div className="text-center">
-                        <h3 className="text-2xl font-bold font-display text-slate-100">{t('onboarding.wizard.stepExperience.title')}</h3>
-                        <p className="text-sm text-slate-400 mt-1">{t('onboarding.wizard.stepExperience.text')}</p>
+                        <h3 className="text-2xl font-bold font-display text-slate-100">
+                            {t('onboarding.wizard.stepExperience.title')}
+                        </h3>
+                        <p className="text-sm text-slate-400 mt-1">
+                            {t('onboarding.wizard.stepExperience.text')}
+                        </p>
                     </div>
                     <div className="space-y-2">
                         {expOptions.map((opt) => (
@@ -257,10 +305,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
         ]
         const footer = (
             <div className="w-full flex justify-between items-center">
-                <Button variant="secondary" onClick={handleBack}>{t('common.back')}</Button>
+                <Button variant="secondary" onClick={handleBack}>
+                    {t('common.back')}
+                </Button>
                 <div className="flex items-center gap-1.5">
-                    {[...Array(TOTAL_STEPS)].map((_, i) => (
-                        <div key={i} className={`rounded-full transition-all duration-300 ${i === step - 1 ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`} />
+                    {stepIndicators.map((stepNumber) => (
+                        <div
+                            key={stepNumber}
+                            className={`rounded-full transition-all duration-300 ${stepNumber === step ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`}
+                        />
                     ))}
                 </div>
                 <Button onClick={handleNext}>{t('common.next')}</Button>
@@ -270,8 +323,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
             <Modal isOpen={true} onClose={() => {}} footer={footer} showCloseButton={false}>
                 <div className="p-2 space-y-4">
                     <div className="text-center">
-                        <h3 className="text-2xl font-bold font-display text-slate-100">{t('onboarding.wizard.stepGoal.title')}</h3>
-                        <p className="text-sm text-slate-400 mt-1">{t('onboarding.wizard.stepGoal.text')}</p>
+                        <h3 className="text-2xl font-bold font-display text-slate-100">
+                            {t('onboarding.wizard.stepGoal.title')}
+                        </h3>
+                        <p className="text-sm text-slate-400 mt-1">
+                            {t('onboarding.wizard.stepGoal.text')}
+                        </p>
                     </div>
                     <div className="space-y-2">
                         {goalOptions.map((opt) => (
@@ -303,21 +360,32 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     ]
     const footer = (
         <div className="w-full flex justify-between items-center">
-            <Button variant="secondary" onClick={handleBack}>{t('common.back')}</Button>
+            <Button variant="secondary" onClick={handleBack}>
+                {t('common.back')}
+            </Button>
             <div className="flex items-center gap-1.5">
-                {[...Array(TOTAL_STEPS)].map((_, i) => (
-                    <div key={i} className={`rounded-full transition-all duration-300 ${i === step - 1 ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`} />
+                {stepIndicators.map((stepNumber) => (
+                    <div
+                        key={stepNumber}
+                        className={`rounded-full transition-all duration-300 ${stepNumber === step ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`}
+                    />
                 ))}
             </div>
-            <Button onClick={handleFinish} glow={true}>{t('onboarding.wizard.finish')}</Button>
+            <Button onClick={handleFinish} glow={true}>
+                {t('onboarding.wizard.finish')}
+            </Button>
         </div>
     )
     return (
         <Modal isOpen={true} onClose={() => {}} footer={footer} showCloseButton={false}>
             <div className="p-2 space-y-4">
                 <div className="text-center">
-                    <h3 className="text-2xl font-bold font-display text-slate-100">{t('onboarding.wizard.stepSetup.title')}</h3>
-                    <p className="text-sm text-slate-400 mt-1">{t('onboarding.wizard.stepSetup.text')}</p>
+                    <h3 className="text-2xl font-bold font-display text-slate-100">
+                        {t('onboarding.wizard.stepSetup.title')}
+                    </h3>
+                    <p className="text-sm text-slate-400 mt-1">
+                        {t('onboarding.wizard.stepSetup.text')}
+                    </p>
                 </div>
                 <div className="space-y-2">
                     {spaceOptions.map((opt) => (
@@ -332,7 +400,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                     ))}
                 </div>
                 <div>
-                    <p className="text-sm font-semibold text-slate-300 mb-2">{t('onboarding.wizard.stepSetup.budgetLabel')}</p>
+                    <p className="text-sm font-semibold text-slate-300 mb-2">
+                        {t('onboarding.wizard.stepSetup.budgetLabel')}
+                    </p>
                     <div className="flex gap-2">
                         {budgetOptions.map((opt) => (
                             <button

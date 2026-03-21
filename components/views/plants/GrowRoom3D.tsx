@@ -669,7 +669,6 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                         ref={canvasRef}
                         className="w-full h-auto block"
                         style={{ imageRendering: 'auto', aspectRatio: '16 / 10' }}
-                        role="img"
                         aria-label={t('plantsView.growRoom3d.canvasAriaLabel', {
                             count: activePlants.length,
                         })}
@@ -740,33 +739,32 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
             </div>
 
             {/* Legend */}
-            <div
+            <ul
                 className="mt-2 flex flex-wrap gap-3 text-[0.65rem] text-slate-500"
-                role="list"
                 aria-label={t('plantsView.growRoom3d.legendAriaLabel')}
             >
-                <span className="flex items-center gap-1" role="listitem">
+                <li className="flex items-center gap-1">
                     <span
                         className="h-2 w-2 rounded-full bg-green-500 inline-block"
                         aria-hidden="true"
                     />
                     {t('plantsView.growRoom3d.legendOptimal')} (0.8–1.2)
-                </span>
-                <span className="flex items-center gap-1" role="listitem">
+                </li>
+                <li className="flex items-center gap-1">
                     <span
                         className="h-2 w-2 rounded-full bg-yellow-500 inline-block"
                         aria-hidden="true"
                     />
                     {t('plantsView.growRoom3d.legendCaution')}
-                </span>
-                <span className="flex items-center gap-1" role="listitem">
+                </li>
+                <li className="flex items-center gap-1">
                     <span
                         className="h-2 w-2 rounded-full bg-red-500 inline-block"
                         aria-hidden="true"
                     />
                     {t('plantsView.growRoom3d.legendDanger')}
-                </span>
-            </div>
+                </li>
+            </ul>
         </Card>
     )
 }

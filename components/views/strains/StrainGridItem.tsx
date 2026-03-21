@@ -1,33 +1,33 @@
-import React, { memo } from 'react';
-import { Strain, StrainType } from '@/types';
-import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/common/Card';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
-import { Button } from '@/components/ui/button';
+import React, { memo } from 'react'
+import { Strain, StrainType } from '@/types'
+import { useTranslation } from 'react-i18next'
+import { Card } from '@/components/common/Card'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
+import { Button } from '@/components/ui/button'
 
 interface StrainGridItemProps {
-    strain: Strain;
-    onSelect: (strain: Strain) => void;
-    isSelected: boolean;
-    onToggleSelection: (id: string) => void;
-    isUserStrain: boolean;
-    index: number;
-    isFavorite: boolean;
-    onToggleFavorite: (id: string) => void;
+    strain: Strain
+    onSelect: (strain: Strain) => void
+    isSelected: boolean
+    onToggleSelection: (id: string) => void
+    isUserStrain: boolean
+    index: number
+    isFavorite: boolean
+    onToggleFavorite: (id: string) => void
 }
 
 const typeIcons: Record<StrainType, React.ReactNode> = {
     [StrainType.Sativa]: <SativaIcon />,
     [StrainType.Indica]: <IndicaIcon />,
     [StrainType.Hybrid]: <HybridIcon />,
-};
+}
 
 const typeClasses: Record<StrainType, string> = {
     [StrainType.Sativa]: 'text-accent-400',
     [StrainType.Indica]: 'text-secondary-400',
     [StrainType.Hybrid]: 'text-primary-400',
-};
+}
 
 const getSafeStrainType = (type: string | undefined): StrainType => {
     if (type === StrainType.Sativa || type === StrainType.Indica || type === StrainType.Hybrid) {
@@ -37,67 +37,112 @@ const getSafeStrainType = (type: string | undefined): StrainType => {
     return StrainType.Hybrid
 }
 
+const StrainGridItem: React.FC<StrainGridItemProps> = memo(
+    ({
+        strain,
+        onSelect,
+        isSelected,
+        onToggleSelection,
+        isUserStrain,
+        index,
+        isFavorite,
+        onToggleFavorite,
+    }) => {
+        const { t } = useTranslation()
 
-const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, index, isFavorite, onToggleFavorite }) => {
-    const { t } = useTranslation();
+        const handleActionClick = (e: React.MouseEvent, action: () => void) => {
+            e.stopPropagation()
+            action()
+        }
 
-    const handleActionClick = (e: React.MouseEvent, action: () => void) => {
-        e.stopPropagation();
-        action();
-    };
+        const safeType = getSafeStrainType(strain.type)
+        const safeName =
+            typeof strain.name === 'string' && strain.name.trim() !== ''
+                ? strain.name
+                : t('strainsView.unknownStrain')
+        const safeThc =
+            typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
+        const safeFloweringTime =
+            typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
+                ? strain.floweringTime
+                : 0
 
-    const safeType = getSafeStrainType(strain.type)
-    const safeName = typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : t('strainsView.unknownStrain')
-    const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
-    const safeFloweringTime = typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime) ? strain.floweringTime : 0
-
-    return (
-        <Card
-            className={`flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`}
-            onClick={() => onSelect(strain)}
-            style={{ animationDelay: `${index * 20}ms` }}
-        >
-            <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
-                 <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => onToggleSelection(strain.id)}
-                    className="custom-checkbox"
-                          aria-label={t('strainsView.accessibility.selectStrain', { name: safeName })}
+        return (
+            <Card
+                className={`flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`}
+                style={{ animationDelay: `${index * 20}ms` }}
+            >
+                <button
+                    type="button"
+                    onClick={() => onSelect(strain)}
+                    className="absolute inset-0 z-10 rounded-[1.35rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    aria-label={safeName}
+                    aria-pressed={isSelected}
                 />
-            </div>
 
-            {isUserStrain && <span className="absolute top-2 left-2" title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400" /></span>}
+                <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => onToggleSelection(strain.id)}
+                        className="custom-checkbox"
+                        aria-label={t('strainsView.accessibility.selectStrain', { name: safeName })}
+                    />
+                </div>
 
-            <div className={`mx-auto mb-2 w-12 h-12 ${typeClasses[safeType]}`}>
-                {typeIcons[safeType]}
-            </div>
+                {isUserStrain && (
+                    <span
+                        className="absolute top-2 left-2 z-20"
+                        title={t('strainsView.tabs.myStrains')}
+                    >
+                        <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400" />
+                    </span>
+                )}
 
-            <h3 className="font-bold text-slate-100 truncate">{safeName}</h3>
-            <p className="text-xs text-slate-400 mb-2">{safeType}</p>
+                <div className={`mx-auto mb-2 w-12 h-12 ${typeClasses[safeType]}`}>
+                    {typeIcons[safeType]}
+                </div>
 
-            <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono">
-                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">{safeThc.toFixed(1)}%</div>
-                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1"><PhosphorIcons.ArrowClockwise className="w-3 h-3" />{strain.floweringTimeRange || safeFloweringTime} w</div>
-            </div>
+                <h3 className="font-bold text-slate-100 truncate">{safeName}</h3>
+                <p className="text-xs text-slate-400 mb-2">{safeType}</p>
 
-            <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-10">
-                 <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
-                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => onToggleFavorite(strain.id))}
-                    aria-label={isFavorite
-                        ? t('strainsView.accessibility.removeFromFavorites', { name: safeName })
-                        : t('strainsView.accessibility.addToFavorites', { name: safeName })}
-                 >
-                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
-                </Button>
-            </div>
-        </Card>
-    );
-});
+                <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono">
+                    <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">
+                        {safeThc.toFixed(1)}%
+                    </div>
+                    <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">
+                        <PhosphorIcons.ArrowClockwise className="w-3 h-3" />
+                        {strain.floweringTimeRange || safeFloweringTime} w
+                    </div>
+                </div>
 
-StrainGridItem.displayName = 'StrainGridItem';
+                <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-20">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                            handleActionClick(e, () => onToggleFavorite(strain.id))
+                        }
+                        aria-label={
+                            isFavorite
+                                ? t('strainsView.accessibility.removeFromFavorites', {
+                                      name: safeName,
+                                  })
+                                : t('strainsView.accessibility.addToFavorites', { name: safeName })
+                        }
+                    >
+                        <PhosphorIcons.Heart
+                            weight={isFavorite ? 'fill' : 'regular'}
+                            className="w-4 h-4"
+                        />
+                    </Button>
+                </div>
+            </Card>
+        )
+    },
+)
 
-export default StrainGridItem;
+StrainGridItem.displayName = 'StrainGridItem'
+
+export default StrainGridItem

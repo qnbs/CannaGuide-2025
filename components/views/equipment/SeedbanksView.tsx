@@ -124,11 +124,9 @@ const SeedbankProfileComponent: React.FC<{
                                         {bank.policies.payment.title}
                                     </h6>
                                     <ul className="list-disc pl-5 space-y-0.5">
-                                        {bank.policies.payment.methods?.map(
-                                            (m: string, i: number) => (
-                                                <li key={i}>{m}</li>
-                                            ),
-                                        )}
+                                        {bank.policies.payment.methods?.map((m: string) => (
+                                            <li key={m}>{m}</li>
+                                        ))}
                                     </ul>
                                 </div>
                             )}
@@ -138,11 +136,9 @@ const SeedbankProfileComponent: React.FC<{
                                         {bank.policies.shipping.title}
                                     </h6>
                                     <ul className="list-disc pl-5 space-y-0.5">
-                                        {bank.policies.shipping.points?.map(
-                                            (p: string, i: number) => (
-                                                <li key={i}>{p}</li>
-                                            ),
-                                        )}
+                                        {bank.policies.shipping.points?.map((p: string) => (
+                                            <li key={p}>{p}</li>
+                                        ))}
                                     </ul>
                                 </div>
                             )}
@@ -190,8 +186,8 @@ const SeedbankProfileComponent: React.FC<{
                         icon={<PhosphorIcons.Sparkle className="w-4 h-4" />}
                     >
                         <ul className="list-disc pl-5 space-y-0.5">
-                            {bank.offers.points?.map((p: string, i: number) => (
-                                <li key={i}>{p}</li>
+                            {bank.offers.points?.map((p: string) => (
+                                <li key={p}>{p}</li>
                             ))}
                         </ul>
                         {bank.offers.conclusion && (
@@ -334,9 +330,9 @@ const SeedbanksView: React.FC = () => {
                         <p className="leading-relaxed">{conclusions.content}</p>
                         {conclusions.categories &&
                             Object.values(conclusions.categories).map(
-                                (cat: ConclusionsCategory, i: number) => (
+                                (cat: ConclusionsCategory) => (
                                     <div
-                                        key={i}
+                                        key={cat.title}
                                         className="p-3 bg-slate-800/50 rounded-lg ring-1 ring-inset ring-white/5"
                                     >
                                         <h4 className="font-bold text-slate-100 flex items-center gap-2">

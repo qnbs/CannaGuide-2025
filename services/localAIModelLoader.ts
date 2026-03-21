@@ -387,7 +387,12 @@ const buildProfile = (
         webLlmModelId = quantLevel === 'q4f16' ? WEBLLM_MODELS[sizeTier] : WEBLLM_MODELS['0.5B']
     }
 
-    const estimatedSavingsPercent = sizeTier === '0.5B' ? 70 : quantLevel === 'q4f16' ? 40 : 0
+    let estimatedSavingsPercent = 0
+    if (sizeTier === '0.5B') {
+        estimatedSavingsPercent = 70
+    } else if (quantLevel === 'q4f16') {
+        estimatedSavingsPercent = 40
+    }
 
     return {
         quantLevel,

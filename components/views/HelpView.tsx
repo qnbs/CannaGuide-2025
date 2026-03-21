@@ -366,9 +366,8 @@ const LexiconSection: React.FC = memo(() => {
 
             {/* Alphabet quick-jump */}
             {availableLetters.length > 1 && (
-                <div
+                <nav
                     className="flex flex-wrap gap-1 mb-4"
-                    role="navigation"
                     aria-label={t('common.accessibility.alphabetNavigation')}
                 >
                     {availableLetters.map((letter) => (
@@ -381,7 +380,7 @@ const LexiconSection: React.FC = memo(() => {
                             {letter}
                         </button>
                     ))}
-                </div>
+                </nav>
             )}
 
             {/* Grouped results by letter */}

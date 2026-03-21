@@ -4,9 +4,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { consentService } from '@/services/consentService'
 
 export const useGdprConsent = () => {
-    const [hasConsent, setHasConsent] = useState(
-        () => consentService.hasConsent(),
-    )
+    const [hasConsent, setHasConsent] = useState(() => consentService.hasConsent())
 
     const accept = useCallback(() => {
         consentService.grantConsent()
@@ -25,22 +23,22 @@ export const ConsentBanner: React.FC<ConsentBannerProps> = ({ onAccept, onShowPr
     const { t } = useTranslation()
 
     return (
-        <div
+        <dialog
+            open
             className="fixed inset-0 z-[9998] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-            role="dialog"
-            aria-modal="true"
             aria-labelledby="consent-title"
         >
             <div className="max-w-lg w-full rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-2xl space-y-4">
                 <div className="flex items-start gap-3">
-                    <PhosphorIcons.ShieldCheck weight="fill" className="w-6 h-6 text-primary-400 mt-0.5 shrink-0" />
+                    <PhosphorIcons.ShieldCheck
+                        weight="fill"
+                        className="w-6 h-6 text-primary-400 mt-0.5 shrink-0"
+                    />
                     <h2 id="consent-title" className="text-lg font-bold text-slate-100">
                         {t('legal.consent.title')}
                     </h2>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed">
-                    {t('legal.consent.body')}
-                </p>
+                <p className="text-sm text-slate-300 leading-relaxed">{t('legal.consent.body')}</p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                         onClick={onAccept}
@@ -56,6 +54,6 @@ export const ConsentBanner: React.FC<ConsentBannerProps> = ({ onAccept, onShowPr
                     </button>
                 </div>
             </div>
-        </div>
+        </dialog>
     )
 }

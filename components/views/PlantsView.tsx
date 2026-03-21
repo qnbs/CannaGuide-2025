@@ -116,8 +116,8 @@ PlantSlotWrapper.displayName = 'PlantSlotWrapper'
 
 const PlantSlotsSkeleton: React.FC = memo(() => (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {[...Array(3)].map((_, i) => (
-            <Card key={i} className="flex flex-col h-full animate-pulse">
+        {[1, 2, 3].map((slot) => (
+            <Card key={`plant-skeleton-${slot}`} className="flex flex-col h-full animate-pulse">
                 <div className="flex justify-between items-start">
                     <div className="space-y-2">
                         <div className="h-4 w-24 bg-slate-700 rounded"></div>

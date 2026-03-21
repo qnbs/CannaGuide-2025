@@ -10,14 +10,14 @@ type RangeSliderProps = {
     color?: 'primary' | 'green' | 'blue'
 } & (
     | {
-        singleValue?: false | undefined;
-        value: [number, number];
-        onChange: (newValue: [number, number]) => void
+          singleValue?: false
+          value: [number, number]
+          onChange: (newValue: [number, number]) => void
       }
     | {
-        singleValue: true;
-        value: number;
-        onChange: (newValue: number) => void
+          singleValue: true
+          value: number
+          onChange: (newValue: number) => void
       }
 )
 
@@ -30,14 +30,26 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     const [maxZIndex, setMaxZIndex] = useState(1)
 
     const colorMap = {
-        primary: { active: 'rgb(var(--color-primary-400))', inactive: 'rgb(var(--color-primary-500))', bg: 'bg-primary-500' },
-        green: { active: 'rgb(var(--color-secondary-300))', inactive: 'rgb(var(--color-secondary-400))', bg: 'bg-secondary-500' },
-        blue: { active: 'rgb(var(--color-info))', inactive: 'rgb(var(--color-info))', bg: 'bg-info' },
+        primary: {
+            active: 'rgb(var(--color-primary-400))',
+            inactive: 'rgb(var(--color-primary-500))',
+            bg: 'bg-primary-500',
+        },
+        green: {
+            active: 'rgb(var(--color-secondary-300))',
+            inactive: 'rgb(var(--color-secondary-400))',
+            bg: 'bg-secondary-500',
+        },
+        blue: {
+            active: 'rgb(var(--color-info))',
+            inactive: 'rgb(var(--color-info))',
+            bg: 'bg-info',
+        },
     }
     const { active, inactive, bg } = colorMap[color] || colorMap.primary
 
     const rangeValue = useMemo(
-        () => isSingleValue ? ([min, max] as [number, number]) : props.value,
+        () => (isSingleValue ? ([min, max] as [number, number]) : props.value),
         [isSingleValue, min, max, props.value],
     )
 
@@ -68,22 +80,22 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
         const { value, onChange } = props
 
         const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            onChange(Number(e.target.value));
+            onChange(Number(e.target.value))
         }
 
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const numValue = e.target.value === '' ? min : Number(e.target.value);
-            if (!isNaN(numValue)) {
-                onChange(numValue);
+            const numValue = e.target.value === '' ? min : Number(e.target.value)
+            if (!Number.isNaN(numValue)) {
+                onChange(numValue)
             }
         }
 
         const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            let numValue = Number(e.target.value);
-            if (isNaN(numValue)) numValue = min;
-            if (numValue < min) numValue = min;
-            if (numValue > max) numValue = max;
-            onChange(numValue);
+            let numValue = Number(e.target.value)
+            if (Number.isNaN(numValue)) numValue = min
+            if (numValue < min) numValue = min
+            if (numValue > max) numValue = max
+            onChange(numValue)
         }
 
         const pos = max > min ? ((value - min) / (max - min)) * 100 : 0
@@ -94,7 +106,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                     <label htmlFor={rangeId} className="text-sm font-semibold text-slate-300">
                         {label}
                     </label>
-                     <div className="relative">
+                    <div className="relative">
                         <input
                             type="number"
                             value={String(value)} // Use string to allow temporary empty state while typing
@@ -105,7 +117,9 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             step={step}
                             className="w-24 text-right bg-slate-900/50 px-2 py-0.5 rounded-md ring-1 ring-inset ring-slate-700/50 font-mono text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">{unit}</span>
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">
+                            {unit}
+                        </span>
                     </div>
                 </div>
                 <div className="relative h-4 flex items-center">
@@ -123,7 +137,12 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             value={value}
                             onChange={handleSliderChange}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                            style={{ '--thumb-color': active, '--thumb-scale': 1.1 } as React.CSSProperties}
+                            style={
+                                {
+                                    '--thumb-color': active,
+                                    '--thumb-scale': 1.1,
+                                } as React.CSSProperties
+                            }
                             aria-label={label}
                         />
                     </div>
@@ -152,7 +171,10 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
         return (
             <div>
                 <div className="flex justify-between items-center mb-2">
-                    <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-300">
+                    <label
+                        htmlFor={`${rangeId}-min`}
+                        className="text-sm font-semibold text-slate-300"
+                    >
                         {label}
                     </label>
                     <span className="text-sm font-mono bg-slate-900/50 px-2 py-0.5 rounded-md ring-1 ring-inset ring-slate-700/50">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
@@ -175,7 +197,13 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             onMouseDown={handleMinInteraction}
                             onTouchStart={handleMinInteraction}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                            style={{ zIndex: minZIndex, '--thumb-color': minIsActive ? active : inactive, '--thumb-scale': minIsActive ? 1.2 : 1 } as React.CSSProperties}
+                            style={
+                                {
+                                    zIndex: minZIndex,
+                                    '--thumb-color': minIsActive ? active : inactive,
+                                    '--thumb-scale': minIsActive ? 1.2 : 1,
+                                } as React.CSSProperties
+                            }
                             aria-label={`${label} minimum`}
                         />
                         <input
@@ -190,7 +218,13 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             onMouseDown={handleMaxInteraction}
                             onTouchStart={handleMaxInteraction}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                            style={{ zIndex: maxZIndex, '--thumb-color': maxIsActive ? active : inactive, '--thumb-scale': maxIsActive ? 1.2 : 1 } as React.CSSProperties}
+                            style={
+                                {
+                                    zIndex: maxZIndex,
+                                    '--thumb-color': maxIsActive ? active : inactive,
+                                    '--thumb-scale': maxIsActive ? 1.2 : 1,
+                                } as React.CSSProperties
+                            }
                             aria-label={`${label} maximum`}
                         />
                     </div>

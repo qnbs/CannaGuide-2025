@@ -1,95 +1,117 @@
-import React, { useMemo, memo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { calculateVPD, altitudeCorrectionFactor } from '@/lib/vpd/calculator';
+import React, { useMemo, memo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { calculateVPD, altitudeCorrectionFactor } from '@/lib/vpd/calculator'
 
 interface VPDGaugeProps {
-  temperature: number; // air temperature in Celsius
-  humidity: number; // in %
-  leafTempOffset?: number; // offset from air temp (usually negative, e.g. -2)
-  altitudeM?: number; // elevation above sea level in metres
+    temperature: number // air temperature in Celsius
+    humidity: number // in %
+    leafTempOffset?: number // offset from air temp (usually negative, e.g. -2)
+    altitudeM?: number // elevation above sea level in metres
 }
 
-export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, leafTempOffset = 0, altitudeM = 0 }) => {
-    const { t } = useTranslation();
-    const leafTemp = temperature + leafTempOffset;
+export const VPDGauge: React.FC<VPDGaugeProps> = memo(
+    ({ temperature, humidity, leafTempOffset = 0, altitudeM = 0 }) => {
+        const { t } = useTranslation()
+        const leafTemp = temperature + leafTempOffset
 
-    const vpd = useMemo(() => {
-        return calculateVPD(temperature, humidity, leafTempOffset, altitudeM);
-    }, [temperature, humidity, leafTempOffset, altitudeM]);
+        const vpd = useMemo(() => {
+            return calculateVPD(temperature, humidity, leafTempOffset, altitudeM)
+        }, [temperature, humidity, leafTempOffset, altitudeM])
 
-    // Define ideal ranges for different stages (in kPa)
-    const idealRanges = {
-        seedling: { min: 0.4, max: 0.8, color: 'text-primary-400' },
-        vegetative: { min: 0.8, max: 1.2, color: 'text-accent-400' },
-        flowering: { min: 1.2, max: 1.6, color: 'text-secondary-400' },
-        late_flower: { min: 1.4, max: 1.8, color: 'text-orange-400' }
-    };
+        // Define ideal ranges for different stages (in kPa)
+        const idealRanges = {
+            seedling: { min: 0.4, max: 0.8, color: 'text-primary-400' },
+            vegetative: { min: 0.8, max: 1.2, color: 'text-accent-400' },
+            flowering: { min: 1.2, max: 1.6, color: 'text-secondary-400' },
+            late_flower: { min: 1.4, max: 1.8, color: 'text-orange-400' },
+        }
 
-    let status = t('plantsView.vpd.outsideIdealRange');
-    let statusColor = 'text-slate-400';
+        let status = t('plantsView.vpd.outsideIdealRange')
+        let statusColor = 'text-slate-400'
 
-    if (vpd >= idealRanges.seedling.min && vpd < idealRanges.seedling.max) {
-        status = t('plantStages.SEEDLING');
-        statusColor = idealRanges.seedling.color;
-    } else if (vpd >= idealRanges.vegetative.min && vpd < idealRanges.vegetative.max) {
-        status = t('plantStages.VEGETATIVE');
-        statusColor = idealRanges.vegetative.color;
-    } else if (vpd >= idealRanges.flowering.min && vpd < idealRanges.flowering.max) {
-        status = t('plantStages.FLOWERING');
-        statusColor = idealRanges.flowering.color;
-    }
+        if (vpd >= idealRanges.seedling.min && vpd < idealRanges.seedling.max) {
+            status = t('plantStages.SEEDLING')
+            statusColor = idealRanges.seedling.color
+        } else if (vpd >= idealRanges.vegetative.min && vpd < idealRanges.vegetative.max) {
+            status = t('plantStages.VEGETATIVE')
+            statusColor = idealRanges.vegetative.color
+        } else if (vpd >= idealRanges.flowering.min && vpd < idealRanges.flowering.max) {
+            status = t('plantStages.FLOWERING')
+            statusColor = idealRanges.flowering.color
+        }
 
-    const radius = 40;
-    const circumference = 2 * Math.PI * radius;
-    // Map VPD from 0-2 kPa to the circle circumference
-    const strokeDashoffset = circumference - (Math.min(vpd, 2) / 2) * circumference;
+        const radius = 40
+        const circumference = 2 * Math.PI * radius
+        // Map VPD from 0-2 kPa to the circle circumference
+        const strokeDashoffset = circumference - (Math.min(vpd, 2) / 2) * circumference
 
-    try {
-    return (
-        <div
-            className="flex flex-col items-center justify-center"
-            role="img"
-            aria-label={t('plantsView.vpd.gaugeLabel', { vpd: vpd.toFixed(2), status, leafTemp: leafTemp.toFixed(1) })}
-        >
-            <div className="relative w-24 h-24 sm:w-28 sm:h-28">
-                <svg className="w-full h-full transform -rotate-90" aria-hidden="true">
-                    <circle className="text-slate-700" strokeWidth="8" stroke="currentColor" fill="transparent" r={radius} cx="56" cy="56" />
-                    <circle
-                        className={`transition-all duration-500 ${statusColor}`}
-                        strokeWidth="8"
-                        strokeDasharray={circumference}
-                        style={{ strokeDashoffset }}
-                        strokeLinecap="round"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r={radius}
-                        cx="56"
-                        cy="56"
-                    />
-                </svg>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                    <p className="text-xl sm:text-2xl font-bold">{vpd.toFixed(2)}</p>
-                    <p className="text-xs text-slate-400 -mt-1">kPa</p>
-                    {leafTempOffset !== 0 && (
-                        <p className="text-[10px] text-slate-500 mt-0.5" title={`${t('plantsView.vpd.leafTemp')}: ${leafTemp.toFixed(1)}°C`}>
-                            🍃 {leafTemp.toFixed(1)}°
-                        </p>
-                    )}
-                    {altitudeM > 0 && (
-                        <p
-                            className="text-[10px] text-slate-500 mt-0.5"
-                            title={`${t('plantsView.vpd.altitudeCorrection')} ×${altitudeCorrectionFactor(altitudeM).toFixed(2)} @ ${altitudeM} m`}
-                        >
-                            ⛰ {altitudeM} m
-                        </p>
-                    )}
+        try {
+            return (
+                <figure
+                    className="flex flex-col items-center justify-center"
+                    aria-label={t('plantsView.vpd.gaugeLabel', {
+                        vpd: vpd.toFixed(2),
+                        status,
+                        leafTemp: leafTemp.toFixed(1),
+                    })}
+                >
+                    <div className="relative w-24 h-24 sm:w-28 sm:h-28">
+                        <svg className="w-full h-full transform -rotate-90" aria-hidden="true">
+                            <circle
+                                className="text-slate-700"
+                                strokeWidth="8"
+                                stroke="currentColor"
+                                fill="transparent"
+                                r={radius}
+                                cx="56"
+                                cy="56"
+                            />
+                            <circle
+                                className={`transition-all duration-500 ${statusColor}`}
+                                strokeWidth="8"
+                                strokeDasharray={circumference}
+                                style={{ strokeDashoffset }}
+                                strokeLinecap="round"
+                                stroke="currentColor"
+                                fill="transparent"
+                                r={radius}
+                                cx="56"
+                                cy="56"
+                            />
+                        </svg>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                            <p className="text-xl sm:text-2xl font-bold">{vpd.toFixed(2)}</p>
+                            <p className="text-xs text-slate-400 -mt-1">kPa</p>
+                            {leafTempOffset !== 0 && (
+                                <p
+                                    className="text-[10px] text-slate-500 mt-0.5"
+                                    title={`${t('plantsView.vpd.leafTemp')}: ${leafTemp.toFixed(1)}°C`}
+                                >
+                                    🍃 {leafTemp.toFixed(1)}°
+                                </p>
+                            )}
+                            {altitudeM > 0 && (
+                                <p
+                                    className="text-[10px] text-slate-500 mt-0.5"
+                                    title={`${t('plantsView.vpd.altitudeCorrection')} ×${altitudeCorrectionFactor(altitudeM).toFixed(2)} @ ${altitudeM} m`}
+                                >
+                                    ⛰ {altitudeM} m
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <p className={`text-xs sm:text-sm font-semibold mt-2 ${statusColor}`}>
+                        {status}
+                    </p>
+                </figure>
+            )
+        } catch {
+            return (
+                <div className="text-red-400 text-sm p-4 text-center">
+                    {t('plantsView.vpd.gaugeError')}
                 </div>
-            </div>
-            <p className={`text-xs sm:text-sm font-semibold mt-2 ${statusColor}`}>{status}</p>
-        </div>
-    );
-    } catch {
-        return <div className="text-red-400 text-sm p-4 text-center">{t('plantsView.vpd.gaugeError')}</div>;
-    }
-});
-VPDGauge.displayName = 'VPDGauge';
+            )
+        }
+    },
+)
+VPDGauge.displayName = 'VPDGauge'

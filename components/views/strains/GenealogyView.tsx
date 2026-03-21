@@ -339,7 +339,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     useEffect(() => {
         try {
             if (isGenealogyStateCorrupt(genealogyState)) {
-                console.warn(
+                console.debug(
                     '[GenealogyView] Corrupt persisted state detected on mount – resetting.',
                 )
                 dispatch(resetGenealogy())
@@ -1008,9 +1008,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             <svg
                                 ref={svgRef}
                                 className="w-full h-full cursor-move"
-                                role="img"
                                 aria-label={t('common.accessibility.genealogyTree')}
                             >
+                                <title>{t('common.accessibility.genealogyTree')}</title>
                                 <g className="genealogy-content">
                                     {renderLinks()}
                                     {renderNodes()}

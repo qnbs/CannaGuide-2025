@@ -57,6 +57,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     }
 
     const pageNumbers = buildPageNumbers(currentPage, totalPages)
+    let ellipsisCounter = 0
 
     return (
         <nav
@@ -71,9 +72,12 @@ export const Pagination: React.FC<PaginationProps> = ({
             >
                 <PhosphorIcons.ArrowLeft className="w-4 h-4" />
             </button>
-            {pageNumbers.map((num, index) =>
+            {pageNumbers.map((num) =>
                 typeof num === 'string' ? (
-                    <span key={`ellipsis-${index}`} className="px-2 py-1 text-slate-400">
+                    <span
+                        key={`ellipsis-${++ellipsisCounter}`}
+                        className="px-2 py-1 text-slate-400"
+                    >
                         ...
                     </span>
                 ) : (

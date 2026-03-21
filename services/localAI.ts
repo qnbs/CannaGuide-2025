@@ -116,6 +116,29 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
         )
     })
 
+type GeneratedTextOutput = { generated_text?: string }
+
+const extractGeneratedText = (value: unknown): string | undefined => {
+    if (Array.isArray(value)) {
+        const first = value[0] as GeneratedTextOutput | undefined
+        return first?.generated_text
+    }
+
+    return (value as GeneratedTextOutput | undefined)?.generated_text
+}
+
+const calculatePreloadTotalSteps = (
+    hasEmbeddings: boolean,
+    hasNlp: boolean,
+    hasWebLlm: boolean,
+): number => {
+    let total = 4 // text + vision + langDetect + imgSimilarity
+    if (hasEmbeddings) total += 1
+    if (hasNlp) total += 3
+    if (hasWebLlm) total += 1
+    return total
+}
+
 const ZERO_SHOT_LABELS = [
     'healthy plant',
     'nitrogen deficiency',
@@ -234,7 +257,7 @@ class LocalAiService implements BaseAIProvider {
             this.textPipelinePromise = loadTransformersPipeline('text-generation', primaryId, {
                 quantized: profile.useQuantized,
             }).catch(async (primaryError: unknown) => {
-                console.warn(
+                console.debug(
                     '[LocalAI] Primary text model failed, retrying with alternate model.',
                     primaryError,
                 )
@@ -307,7 +330,7 @@ class LocalAiService implements BaseAIProvider {
                             await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)))
                             continue
                         }
-                        console.warn(
+                        console.debug(
                             '[LocalAI] WebLLM unavailable after retries, falling back to Transformers.js.',
                             error,
                         )
@@ -396,7 +419,7 @@ class LocalAiService implements BaseAIProvider {
                         return content
                     }
                 } catch (error) {
-                    console.warn(
+                    console.debug(
                         `[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`,
                         error,
                     )
@@ -435,11 +458,7 @@ class LocalAiService implements BaseAIProvider {
                             }),
                             INFERENCE_TIMEOUT_MS,
                         )
-                        generated = Array.isArray(workerResult)
-                            ? (workerResult[0] as { generated_text?: string } | undefined)
-                                  ?.generated_text
-                            : (workerResult as { generated_text?: string } | undefined)
-                                  ?.generated_text
+                        generated = extractGeneratedText(workerResult)
                     } catch (workerError) {
                         console.debug(
                             '[LocalAI] Worker inference failed, falling back to main thread.',
@@ -460,9 +479,7 @@ class LocalAiService implements BaseAIProvider {
                         }),
                         INFERENCE_TIMEOUT_MS,
                     )
-                    generated = Array.isArray(output)
-                        ? (output[0] as { generated_text?: string } | undefined)?.generated_text
-                        : (output as { generated_text?: string } | undefined)?.generated_text
+                    generated = extractGeneratedText(output)
                 }
                 if (typeof generated === 'string' && generated.trim().length > 0) {
                     const currentBackend = detectOnnxBackend()
@@ -481,7 +498,7 @@ class LocalAiService implements BaseAIProvider {
                     return generated
                 }
             } catch (error) {
-                console.warn(
+                console.debug(
                     `[LocalAI] Transformers.js text generation failed (attempt ${attempt + 1}).`,
                     error,
                 )
@@ -648,7 +665,7 @@ class LocalAiService implements BaseAIProvider {
         const hasNlp = true // Always attempt NLP models
         const hasWebLlm = includeWebLlm && supportsWebGpu()
         // Base: text + vision + embedding + 3 NLP + langDetect + imgSimilarity + (optional WebLLM)
-        const totalSteps = 2 + (hasEmbeddings ? 1 : 0) + (hasNlp ? 3 : 0) + 2 + (hasWebLlm ? 1 : 0)
+        const totalSteps = calculatePreloadTotalSteps(hasEmbeddings, hasNlp, hasWebLlm)
         let loaded = 0
 
         onProgress?.(loaded, totalSteps, 'text-model')
@@ -751,7 +768,7 @@ class LocalAiService implements BaseAIProvider {
         try {
             // Guard against oversized images that could cause OOM
             if (base64Image.length > 5_000_000) {
-                console.warn('[LocalAI] Image too large for local processing, skipping.')
+                console.debug('[LocalAI] Image too large for local processing, skipping.')
                 return []
             }
             const classifier = await this.loadVisionPipeline()
@@ -764,7 +781,7 @@ class LocalAiService implements BaseAIProvider {
             )
             return Array.isArray(result) ? result : []
         } catch (error) {
-            console.warn('[LocalAI] Vision classification failed.', error)
+            console.debug('[LocalAI] Vision classification failed.', error)
             captureLocalAiError(error, { model: VISION_MODEL_ID, stage: 'vision' })
             return []
         }

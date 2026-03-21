@@ -21,22 +21,33 @@ export const Input: React.FC<
     React.InputHTMLAttributes<HTMLInputElement> & { label: string; unit?: string; tooltip?: string }
 > = ({ label, unit, tooltip, ...props }) => {
     const id = useId()
+    const tooltipId = useId()
     return (
         <div>
-            <label
-                htmlFor={id}
-                className="block text-sm font-semibold text-slate-300 mb-1 flex items-center gap-1"
-            >
-                {label}
+            <div className="mb-1 flex items-center gap-1">
+                <label htmlFor={id} className="block text-sm font-semibold text-slate-300">
+                    {label}
+                </label>
                 {tooltip && (
-                    <span className="group/tooltip relative" tabIndex={0} role="tooltip">
-                        <PhosphorIcons.Question className="w-4 h-4 text-slate-400" />
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 text-slate-200 text-xs rounded-md shadow-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-opacity pointer-events-none z-10">
+                    <span className="group/tooltip relative">
+                        <button
+                            type="button"
+                            className="rounded text-slate-400 hover:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                            aria-label={label}
+                            aria-describedby={tooltipId}
+                        >
+                            <PhosphorIcons.Question className="w-4 h-4" />
+                        </button>
+                        <span
+                            id={tooltipId}
+                            role="tooltip"
+                            className="absolute bottom-full left-1/2 z-10 mb-2 w-48 -translate-x-1/2 rounded-md bg-slate-900 p-2 text-xs text-slate-200 opacity-0 shadow-lg transition-opacity pointer-events-none group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100"
+                        >
                             {tooltip}
                         </span>
                     </span>
                 )}
-            </label>
+            </div>
             <div className="relative">
                 <PrimitiveInput id={id} {...props} />
                 {unit && (

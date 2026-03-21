@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react'
+import React, { memo } from 'react'
 import { type GenealogyNode, StrainType } from '@/types'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -66,24 +66,11 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
             if (!isPlaceholder) onNodeClick(data)
         }
 
-        const handleKeyDown = useCallback(
-            (e: React.KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    if (!isPlaceholder) onNodeFocus(data)
-                }
-            },
-            [data, isPlaceholder, onNodeFocus],
-        )
-
         try {
             return (
                 <div
-                    className={`genealogy-node-container ${isPlaceholder ? 'placeholder' : ''}`}
-                    onClick={handleFocusClick}
-                    onKeyDown={handleKeyDown}
+                    className={`relative genealogy-node-container ${isPlaceholder ? 'placeholder' : ''}`}
                     role="treeitem"
-                    tabIndex={0}
                     aria-label={t('common.accessibility.genealogyTreeNode', {
                         name: safeName,
                         type: safeType,
@@ -91,10 +78,23 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
                     })}
                     aria-expanded={isExpandable || isCollapsible ? isCollapsible : undefined}
                 >
-                    {/* Left accent stripe – color coded by strain type */}
-                    <div className={`genealogy-node-accent ${accent}`} />
+                    {!isPlaceholder && (
+                        <button
+                            type="button"
+                            onClick={handleFocusClick}
+                            className="absolute inset-0 z-10 rounded-[inherit] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                            aria-label={t('common.accessibility.genealogyTreeNode', {
+                                name: safeName,
+                                type: safeType,
+                                thc: safeThc.toFixed(1),
+                            })}
+                        />
+                    )}
 
-                    <div className="genealogy-node-body">
+                    {/* Left accent stripe – color coded by strain type */}
+                    <div className={`relative z-20 genealogy-node-accent ${accent}`} />
+
+                    <div className="relative z-20 genealogy-node-body">
                         {/* Row 1: Type icon + Strain name + Info button */}
                         <div className="flex items-center gap-1.5">
                             <div className={`w-4 h-4 flex-shrink-0 ${color}`}>{icon}</div>
@@ -157,7 +157,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
                     {(isExpandable || isCollapsible) && (
                         <button
                             type="button"
-                            className="genealogy-node-expand-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                            className="relative z-30 genealogy-node-expand-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                             onClick={(e) => {
                                 e.stopPropagation()
                                 onToggle(data.id)

@@ -164,8 +164,12 @@ export const buildImagePrompt = (
             ? (styles[Math.floor(Math.random() * styles.length)] ?? 'botanical')
             : style
 
-    const strainType =
-        strain.type === 'Sativa' ? 'sativa' : strain.type === 'Indica' ? 'indica' : 'hybrid'
+    let strainType: 'sativa' | 'indica' | 'hybrid' = 'hybrid'
+    if (strain.type === 'Sativa') {
+        strainType = 'sativa'
+    } else if (strain.type === 'Indica') {
+        strainType = 'indica'
+    }
     const aromaHints = strain.aromas?.slice(0, 3).join(', ') ?? ''
     const terpeneHints = strain.dominantTerpenes?.slice(0, 2).join(', ') ?? ''
 

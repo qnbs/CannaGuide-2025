@@ -135,8 +135,9 @@ const buildVpdAlert = (
         return null
     }
 
-    const severity =
-        Math.abs(avgVpd - (avgVpd < idealMin ? idealMin : idealMax)) > 0.5 ? 'high' : 'moderate'
+    const targetBoundary = avgVpd < idealMin ? idealMin : idealMax
+    const deviation = Math.abs(avgVpd - targetBoundary)
+    const severity = deviation > 0.5 ? 'high' : 'moderate'
 
     return {
         type: 'vpd',

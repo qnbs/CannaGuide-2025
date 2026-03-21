@@ -30,7 +30,7 @@ const parseArray = (val: string | null): string[] => (val ? val.split(',') : [])
 const parseRange = (val: string | null): [number, number] | undefined => {
     if (!val) return undefined
     const parts = val.split(',').map(Number)
-    if (parts.length === 2 && !isNaN(parts[0]!) && !isNaN(parts[1]!)) {
+    if (parts.length === 2 && !Number.isNaN(parts[0]!) && !Number.isNaN(parts[1]!)) {
         return [parts[0]!, parts[1]!]
     }
     return undefined

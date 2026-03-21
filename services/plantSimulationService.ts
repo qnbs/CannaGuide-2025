@@ -1438,6 +1438,144 @@ class PlantSimulationService {
         return p
     }
 
+    private _shouldEvaluateStageProgression(stage: PlantStage, currentStageIndex: number): boolean {
+        return (
+            currentStageIndex < STAGES_ORDER.length - 1 &&
+            ![
+                PlantStage.Harvest,
+                PlantStage.Drying,
+                PlantStage.Curing,
+                PlantStage.Finished,
+            ].includes(stage)
+        )
+    }
+
+    private _applyStageProgression(p: Plant): void {
+        const currentStageIndex = STAGES_ORDER.indexOf(p.stage)
+        if (!this._shouldEvaluateStageProgression(p.stage, currentStageIndex)) {
+            return
+        }
+
+        let cumulativeDuration = 0
+        for (let i = 0; i <= currentStageIndex; i++) {
+            cumulativeDuration += PLANT_STAGE_DETAILS[STAGES_ORDER[i]!]!.duration
+        }
+
+        const nextStage = STAGES_ORDER[currentStageIndex + 1]!
+        const isPhotoperiodBlockedFlowerTransition =
+            nextStage === PlantStage.Flowering &&
+            p.strain.floweringType === 'Photoperiod' &&
+            p.equipment.light.lightHours > 12
+
+        if (!isPhotoperiodBlockedFlowerTransition && p.age >= cumulativeDuration) {
+            p.stage = nextStage
+        }
+    }
+
+    private _createStageChangeEntry(from: PlantStage, to: PlantStage): JournalEntry {
+        return {
+            id: '',
+            createdAt: 0,
+            type: JournalEntryType.System,
+            notes: `Stage changed from ${from} to ${to}`,
+            details: { from, to },
+        }
+    }
+
+    private _createWaterTaskIfNeeded(p: Plant): Task | null {
+        const hasWaterTask = p.tasks.some((task) => task.title === 'Task: Water Plant')
+        if (p.medium.moisture >= 30 || hasWaterTask) {
+            return null
+        }
+
+        return {
+            id: `task-water-${p.id}`,
+            title: 'Task: Water Plant',
+            description: `${p.name} is thirsty!`,
+            isCompleted: false,
+            createdAt: Date.now(),
+            priority: 'high',
+        }
+    }
+
+    private _hasActiveProblem(p: Plant, type: ProblemType): boolean {
+        return p.problems.some((problem) => problem.type === type && problem.status === 'active')
+    }
+
+    private _tryAddPestProblem(p: Plant, pestPressureMultiplier: number): void {
+        if (p.stressCounters.vpd <= 3 || this._hasActiveProblem(p, ProblemType.PestInfestation)) {
+            return
+        }
+
+        const vpdStressChance =
+            ((p.stressCounters.vpd - 3) * 0.05 * pestPressureMultiplier) /
+            this._getModifiers(p).pestResistance
+        if (Math.random() < vpdStressChance) {
+            p.problems.push({
+                type: ProblemType.PestInfestation,
+                severity: 1,
+                onsetDay: p.age,
+                status: 'active',
+            })
+            p.stressCounters.vpd = 0
+        }
+    }
+
+    private _tryAddNutrientProblem(p: Plant, nutrientStressMultiplier: number): void {
+        if (
+            (p.stressCounters.ph <= 3 && p.stressCounters.ec <= 3) ||
+            this._hasActiveProblem(p, ProblemType.NutrientDeficiency)
+        ) {
+            return
+        }
+
+        const nutrientStressChance =
+            ((p.stressCounters.ph + p.stressCounters.ec - 3) * 0.04 * nutrientStressMultiplier) /
+            this._getModifiers(p).stressTolerance
+
+        if (Math.random() < nutrientStressChance) {
+            p.problems.push({
+                type: ProblemType.NutrientDeficiency,
+                severity: 1,
+                onsetDay: p.age,
+                status: 'active',
+            })
+            p.stressCounters.ph = 0
+            p.stressCounters.ec = 0
+        }
+    }
+
+    private _tryAddMoistureProblem(p: Plant): void {
+        if (
+            p.stressCounters.moisture > 2 &&
+            !this._hasActiveProblem(p, ProblemType.Underwatering) &&
+            p.medium.moisture < 20
+        ) {
+            p.problems.push({
+                type: ProblemType.Underwatering,
+                severity: 1,
+                onsetDay: p.age,
+                status: 'active',
+            })
+            p.stressCounters.moisture = 0
+            return
+        }
+
+        if (
+            p.stressCounters.moisture > 4 &&
+            !this._hasActiveProblem(p, ProblemType.Overwatering) &&
+            p.medium.moisture > 95
+        ) {
+            p.problems.push({
+                type: ProblemType.Overwatering,
+                severity: 1,
+                onsetDay: p.age,
+                status: 'active',
+            })
+            p.stressCounters.moisture = 0
+        }
+    }
+
     private _checkForEvents(
         plant: Plant,
         simulationSettings?: SimulationSettings,
@@ -1449,131 +1587,23 @@ class PlantSimulationService {
         const pestPressureMultiplier = this._getPestPressureMultiplier(simulationSettings)
         const nutrientStressMultiplier = this._getNutrientStressMultiplier(simulationSettings)
 
-        // --- Stage Progression Logic ---
-        const currentStageIndex = STAGES_ORDER.indexOf(p.stage)
-        if (
-            currentStageIndex < STAGES_ORDER.length - 1 &&
-            ![
-                PlantStage.Harvest,
-                PlantStage.Drying,
-                PlantStage.Curing,
-                PlantStage.Finished,
-            ].includes(p.stage)
-        ) {
-            let cumulativeDuration = 0
-            for (let i = 0; i <= currentStageIndex; i++) {
-                cumulativeDuration += PLANT_STAGE_DETAILS[STAGES_ORDER[i]!]!.duration
-            }
-
-            let shouldAdvance = p.age >= cumulativeDuration
-            const nextStage = STAGES_ORDER[currentStageIndex + 1]!
-
-            if (
-                nextStage === PlantStage.Flowering &&
-                p.strain.floweringType === 'Photoperiod' &&
-                p.equipment.light.lightHours > 12
-            ) {
-                shouldAdvance = false
-            }
-
-            if (shouldAdvance) {
-                p.stage = nextStage
-            }
-        }
+        this._applyStageProgression(p)
 
         if (p.stage !== originalStage) {
             if (p.stage === PlantStage.Harvest && !p.harvestData) {
                 p.harvestData = this._createInitialHarvestData(p)
             }
-            journalEntries.push({
-                id: '',
-                createdAt: 0,
-                type: JournalEntryType.System,
-                notes: `Stage changed from ${originalStage} to ${p.stage}`,
-                details: { from: originalStage, to: p.stage },
-            })
+            journalEntries.push(this._createStageChangeEntry(originalStage, p.stage))
         }
 
-        // --- Task Generation Logic ---
-        if (p.medium.moisture < 30 && !p.tasks.some((t) => t.title === 'Task: Water Plant')) {
-            newTasks.push({
-                id: `task-water-${p.id}`,
-                title: 'Task: Water Plant',
-                description: `${p.name} is thirsty!`,
-                isCompleted: false,
-                createdAt: Date.now(),
-                priority: 'high',
-            })
+        const waterTask = this._createWaterTaskIfNeeded(p)
+        if (waterTask) {
+            newTasks.push(waterTask)
         }
 
-        // --- Probabilistic Problem Generation ---
-        const hasProblem = (type: ProblemType) =>
-            p.problems.some((prob) => prob.type === type && prob.status === 'active')
-
-        // High VPD (too dry) -> Pest Risk
-        if (p.stressCounters.vpd > 3 && !hasProblem(ProblemType.PestInfestation)) {
-            const vpdStressChance =
-                ((p.stressCounters.vpd - 3) * 0.05 * pestPressureMultiplier) /
-                this._getModifiers(p).pestResistance
-            if (Math.random() < vpdStressChance) {
-                p.problems.push({
-                    type: ProblemType.PestInfestation,
-                    severity: 1,
-                    onsetDay: p.age,
-                    status: 'active',
-                })
-                p.stressCounters.vpd = 0 // Reset counter after problem triggers
-            }
-        }
-
-        // Nutrient/pH/EC Stress -> Nutrient Deficiency Risk
-        if (
-            (p.stressCounters.ph > 3 || p.stressCounters.ec > 3) &&
-            !hasProblem(ProblemType.NutrientDeficiency)
-        ) {
-            const nutrientStressChance =
-                ((p.stressCounters.ph + p.stressCounters.ec - 3) *
-                    0.04 *
-                    nutrientStressMultiplier) /
-                this._getModifiers(p).stressTolerance
-            if (Math.random() < nutrientStressChance) {
-                p.problems.push({
-                    type: ProblemType.NutrientDeficiency,
-                    severity: 1,
-                    onsetDay: p.age,
-                    status: 'active',
-                })
-                p.stressCounters.ph = 0
-                p.stressCounters.ec = 0
-            }
-        }
-
-        // Moisture Stress -> Under/Overwatering
-        if (
-            p.stressCounters.moisture > 2 &&
-            !hasProblem(ProblemType.Underwatering) &&
-            p.medium.moisture < 20
-        ) {
-            p.problems.push({
-                type: ProblemType.Underwatering,
-                severity: 1,
-                onsetDay: p.age,
-                status: 'active',
-            })
-            p.stressCounters.moisture = 0
-        } else if (
-            p.stressCounters.moisture > 4 &&
-            !hasProblem(ProblemType.Overwatering) &&
-            p.medium.moisture > 95
-        ) {
-            p.problems.push({
-                type: ProblemType.Overwatering,
-                severity: 1,
-                onsetDay: p.age,
-                status: 'active',
-            })
-            p.stressCounters.moisture = 0
-        }
+        this._tryAddPestProblem(p, pestPressureMultiplier)
+        this._tryAddNutrientProblem(p, nutrientStressMultiplier)
+        this._tryAddMoistureProblem(p)
 
         return { plant: p, journalEntries, tasks: newTasks }
     }

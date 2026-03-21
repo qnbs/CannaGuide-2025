@@ -91,6 +91,9 @@
         "*.{json,yml,yaml,md}": [
             "anti-trojan-source",
             "prettier --write"
+        ],
+        "*.{html,css,toml,sh,rs}": [
+            "anti-trojan-source"
         ]
     },
     "dependencies": {

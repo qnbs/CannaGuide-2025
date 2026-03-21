@@ -7,9 +7,12 @@ const excludedPrefixes = [
     'artifacts/',
     'test-results/',
     '.lighthouseci/',
+    '.stryker-tmp/',
+    '.git/',
 ]
 
 const excludedExtensions = [
+    // Images
     '.png',
     '.jpg',
     '.jpeg',
@@ -19,16 +22,44 @@ const excludedExtensions = [
     '.webp',
     '.avif',
     '.svg',
+    // Fonts
     '.woff',
     '.woff2',
     '.ttf',
     '.eot',
+    // Media
     '.mp4',
     '.webm',
+    '.mp3',
+    '.ogg',
+    // Archives
     '.zip',
     '.tar',
     '.gz',
+    '.br',
+    '.zst',
+    // Build artifacts / generated
+    '.map',
+    '.snap',
+    '.tsbuildinfo',
+    '.lock',
+    // Binary / ML models
+    '.wasm',
+    '.onnx',
+    '.bin',
+    '.dat',
+    '.pb',
+    '.tflite',
+    // Misc binary
+    '.pdf',
+    '.exe',
+    '.dll',
+    '.so',
+    '.dylib',
 ]
+
+/** Batch size to avoid OS arg-length limits (ARG_MAX) */
+const BATCH_SIZE = 200
 
 const result = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
     encoding: 'utf8',
@@ -52,11 +83,22 @@ const files = (result.stdout ?? '')
     .filter((file) => !excludedExtensions.some((ext) => file.toLowerCase().endsWith(ext)))
 
 if (files.length === 0) {
+    console.error('trojan-source: no files to scan')
     process.exit(0)
 }
 
-const scan = spawnSync('npx', ['--no-install', 'anti-trojan-source', ...files], {
-    stdio: 'inherit',
-})
+console.error(`trojan-source: scanning ${files.length} files in batches of ${BATCH_SIZE}…`)
 
-process.exit(scan.status ?? 1)
+let failed = false
+
+for (let i = 0; i < files.length; i += BATCH_SIZE) {
+    const batch = files.slice(i, i + BATCH_SIZE)
+    const scan = spawnSync('npx', ['--no-install', 'anti-trojan-source', ...batch], {
+        stdio: 'inherit',
+    })
+    if (scan.status !== 0) {
+        failed = true
+    }
+}
+
+process.exit(failed ? 1 : 0)

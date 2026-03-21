@@ -18,4 +18,4 @@ repos:
             name: anti-trojan-source
             entry: npx --no-install anti-trojan-source --files
             language: system
-            files: '\.(js|jsx|ts|tsx|mjs|cjs|json|ya?ml|md)$'
+            files: '\.(js|jsx|ts|tsx|mjs|cjs|json|ya?ml|md|html|css|toml|sh|rs|sql)$'

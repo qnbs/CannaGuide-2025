@@ -62,6 +62,12 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
     ]
 
     const currentSortLabel = sortOptions.find((opt) => opt.value === sort.key)?.label
+    const advancedFiltersLabel =
+        activeFilterCount > 0
+            ? `${t('strainsView.advancedFilters')} (${activeFilterCount})`
+            : t('strainsView.advancedFilters')
+    const nextViewMode = viewMode === 'list' ? 'grid' : 'list'
+    const ViewModeIcon = viewMode === 'list' ? PhosphorIcons.GridFour : PhosphorIcons.ListBullets
 
     return (
         <div className="space-y-4">
@@ -95,7 +101,6 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                     <PhosphorIcons.DownloadSimple className="w-5 h-5" />
                 </Button>
 
-
                 <div ref={sortRef} className="relative hidden sm:block">
                     <Button
                         onClick={handleToggleSort}
@@ -118,30 +123,33 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                             aria-label={t('strainsView.sortBy')}
                             className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-20 p-1 animate-slide-down-fade-in"
                         >
-                            {sortOptions.map((opt) => (
-                                <button
-                                    key={opt.value}
-                                    role="option"
-                                    aria-selected={sort.key === opt.value}
-                                    onClick={() => {
-                                        handleSort(opt.value)
-                                        setIsSortOpen(false)
-                                    }}
-                                    className={`w-full text-left px-3 py-1.5 text-sm rounded-md flex justify-between items-center ${
-                                        sort.key === opt.value
-                                            ? 'bg-primary-500/20 text-primary-300'
-                                            : 'text-slate-200 hover:bg-slate-700'
-                                    }`}
-                                >
-                                    {opt.label}
-                                    {sort.key === opt.value &&
-                                        (sort.direction === 'asc' ? (
-                                            <PhosphorIcons.ArrowUp className="w-4 h-4" />
-                                        ) : (
-                                            <PhosphorIcons.ArrowDown className="w-4 h-4" />
-                                        ))}
-                                </button>
-                            ))}
+                            {sortOptions.map((opt) => {
+                                const isSelected = sort.key === opt.value
+                                const sortOptionClass = isSelected
+                                    ? 'bg-primary-500/20 text-primary-300'
+                                    : 'text-slate-200 hover:bg-slate-700'
+
+                                return (
+                                    <button
+                                        key={opt.value}
+                                        role="option"
+                                        aria-selected={isSelected}
+                                        onClick={() => {
+                                            handleSort(opt.value)
+                                            setIsSortOpen(false)
+                                        }}
+                                        className={`w-full text-left px-3 py-1.5 text-sm rounded-md flex justify-between items-center ${sortOptionClass}`}
+                                    >
+                                        {opt.label}
+                                        {isSelected &&
+                                            (sort.direction === 'asc' ? (
+                                                <PhosphorIcons.ArrowUp className="w-4 h-4" />
+                                            ) : (
+                                                <PhosphorIcons.ArrowDown className="w-4 h-4" />
+                                            ))}
+                                    </button>
+                                )
+                            })}
                         </div>
                     )}
                 </div>
@@ -150,7 +158,7 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                     onClick={onOpenDrawer}
                     variant="secondary"
                     className="relative !p-2.5"
-                    aria-label={activeFilterCount > 0 ? `${t('strainsView.advancedFilters')} (${activeFilterCount})` : t('strainsView.advancedFilters')}
+                    aria-label={advancedFiltersLabel}
                     title={t('strainsView.advancedFilters')}
                 >
                     <PhosphorIcons.FunnelSimple className="w-5 h-5" />
@@ -161,19 +169,13 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                     )}
                 </Button>
                 <Button
-                    onClick={() =>
-                        dispatch(setStrainsViewMode(viewMode === 'list' ? 'grid' : 'list'))
-                    }
+                    onClick={() => dispatch(setStrainsViewMode(nextViewMode))}
                     variant="secondary"
                     className="!p-2.5"
                     aria-label={t('strainsView.toggleView')}
                     title={t('strainsView.toggleView')}
                 >
-                    {viewMode === 'list' ? (
-                        <PhosphorIcons.GridFour className="w-5 h-5" />
-                    ) : (
-                        <PhosphorIcons.ListBullets className="w-5 h-5" />
-                    )}
+                    <ViewModeIcon className="w-5 h-5" />
                 </Button>
             </div>
 

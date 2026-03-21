@@ -52,6 +52,16 @@ const setCachedEmbedding = (key: string, vec: Float32Array): void => {
     embeddingCache.set(key, vec)
 }
 
+const buildChunkEmbeddingKey = (chunk: LogChunk): string => `${chunk.plantId}:${chunk.createdAt}`
+
+const calculateRecencyScore = (createdAt: number): number =>
+    Math.max(0, 1 - (Date.now() - createdAt) / (1000 * 60 * 60 * 24 * 30))
+
+const formatContextLine = (chunk: LogChunk, score?: number): string => {
+    const scoreSuffix = score != null ? ` [${(score * 100).toFixed(0)}%]` : ''
+    return `- ${chunk.plantName} @ ${new Date(chunk.createdAt).toLocaleString()}${scoreSuffix}: ${chunk.text.slice(0, 240)}`
+}
+
 class GrowLogRagService {
     private buildChunks(plants: Plant[]): LogChunk[] {
         const allChunks = plants.flatMap((plant) =>
@@ -83,10 +93,7 @@ class GrowLogRagService {
             .map((chunk) => ({ chunk, score: scoreChunk(chunk, tokens) }))
             .sort((a, b) => b.score - a.score)
             .slice(0, limit)
-            .map(
-                ({ chunk }) =>
-                    `- ${chunk.plantName} @ ${new Date(chunk.createdAt).toLocaleString()}: ${chunk.text.slice(0, 240)}`,
-            )
+            .map(({ chunk }) => formatContextLine(chunk))
         return ranked.join('\n')
     }
 
@@ -108,7 +115,7 @@ class GrowLogRagService {
             const uncachedTexts: string[] = []
             const allVecs: Array<Float32Array | null> = chunkTexts.map((text, i) => {
                 const chunk = chunks[i]!
-                const key = `${chunk.plantId}:${chunk.createdAt}`
+                const key = buildChunkEmbeddingKey(chunk)
                 const cached = getCachedEmbedding(key)
                 if (cached) return cached
                 uncachedIndices.push(i)
@@ -122,7 +129,7 @@ class GrowLogRagService {
                     const idx = uncachedIndices[j]!
                     allVecs[idx] = computed[j] ?? null
                     const chunk = chunks[idx]!
-                    const key = `${chunk.plantId}:${chunk.createdAt}`
+                    const key = buildChunkEmbeddingKey(chunk)
                     const emb = computed[j]
                     if (emb) setCachedEmbedding(key, emb)
                 }
@@ -132,19 +139,15 @@ class GrowLogRagService {
             const scored = chunks
                 .map((chunk, i) => {
                     const vec = allVecs[i]
-                    const semantic = vec ? cosineSimilarity(queryVec, vec as unknown as Float32Array) : 0
-                    const recency = Math.max(
-                        0,
-                        1 - (Date.now() - chunk.createdAt) / (1000 * 60 * 60 * 24 * 30),
-                    )
+                    const semantic = vec
+                        ? cosineSimilarity(queryVec, vec as unknown as Float32Array)
+                        : 0
+                    const recency = calculateRecencyScore(chunk.createdAt)
                     return { chunk, score: semantic * (1 - ageWeight) + recency * ageWeight }
                 })
                 .sort((a, b) => b.score - a.score)
                 .slice(0, limit)
-                .map(
-                    ({ chunk, score }) =>
-                        `- ${chunk.plantName} @ ${new Date(chunk.createdAt).toLocaleString()} [${(score * 100).toFixed(0)}%]: ${chunk.text.slice(0, 240)}`,
-                )
+                .map(({ chunk, score }) => formatContextLine(chunk, score))
 
             return scored.join('\n')
         } catch {

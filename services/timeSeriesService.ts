@@ -222,6 +222,125 @@ const calculateVpd = (tempC: number, humidityPercent: number): number => {
     return Math.max(0, svp * (1 - humidityPercent / 100))
 }
 
+const buildRawEntry = (deviceId: string, reading: SensorReading): Omit<TimeSeriesEntry, 'id'> => ({
+    deviceId,
+    timestamp: reading.receivedAt,
+    resolution: 'raw',
+    temperatureC: reading.temperatureC,
+    humidityPercent: reading.humidityPercent,
+    vpd: calculateVpd(reading.temperatureC, reading.humidityPercent),
+    ph: reading.ph ?? null,
+    sampleCount: 1,
+})
+
+interface StatsAccumulator {
+    sumTemp: number
+    sumHum: number
+    sumVpd: number
+    sumPh: number
+    minTemp: number
+    maxTemp: number
+    minHum: number
+    maxHum: number
+    vpdCount: number
+    phCount: number
+    totalSamples: number
+}
+
+const createStatsAccumulator = (): StatsAccumulator => ({
+    sumTemp: 0,
+    sumHum: 0,
+    sumVpd: 0,
+    sumPh: 0,
+    minTemp: Infinity,
+    maxTemp: -Infinity,
+    minHum: Infinity,
+    maxHum: -Infinity,
+    vpdCount: 0,
+    phCount: 0,
+    totalSamples: 0,
+})
+
+const updateStatsAccumulator = (acc: StatsAccumulator, entry: TimeSeriesEntry): void => {
+    const weight = entry.sampleCount
+    acc.sumTemp += entry.temperatureC * weight
+    acc.sumHum += entry.humidityPercent * weight
+    acc.minTemp = Math.min(acc.minTemp, entry.temperatureC)
+    acc.maxTemp = Math.max(acc.maxTemp, entry.temperatureC)
+    acc.minHum = Math.min(acc.minHum, entry.humidityPercent)
+    acc.maxHum = Math.max(acc.maxHum, entry.humidityPercent)
+    acc.totalSamples += weight
+
+    if (entry.vpd != null) {
+        acc.sumVpd += entry.vpd * weight
+        acc.vpdCount += weight
+    }
+
+    if (entry.ph != null) {
+        acc.sumPh += entry.ph * weight
+        acc.phCount += weight
+    }
+}
+
+const buildAggregatedStats = (acc: StatsAccumulator): AggregatedStats => ({
+    avgTemperature: acc.sumTemp / acc.totalSamples,
+    avgHumidity: acc.sumHum / acc.totalSamples,
+    avgVpd: acc.vpdCount > 0 ? acc.sumVpd / acc.vpdCount : null,
+    avgPh: acc.phCount > 0 ? acc.sumPh / acc.phCount : null,
+    minTemperature: acc.minTemp,
+    maxTemperature: acc.maxTemp,
+    minHumidity: acc.minHum,
+    maxHumidity: acc.maxHum,
+    sampleCount: acc.totalSamples,
+})
+
+const readEligibleEntries = async (
+    db: IDBDatabase,
+    sourceResolution: TimeSeriesResolution,
+    olderThan: number,
+): Promise<TimeSeriesEntry[]> =>
+    new Promise<TimeSeriesEntry[]>((resolve, reject) => {
+        const tx = db.transaction(TS_STORE, 'readonly')
+        tx.onerror = () => reject(tx.error)
+
+        const index = tx.objectStore(TS_STORE).index('by_resolution_time')
+        const range = IDBKeyRange.bound([sourceResolution, 0], [sourceResolution, olderThan])
+        const results: TimeSeriesEntry[] = []
+
+        const req = index.openCursor(range)
+        req.onsuccess = (event) => {
+            const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>).result
+            if (!cursor) {
+                resolve(results)
+                return
+            }
+            results.push(cursor.value as TimeSeriesEntry)
+            cursor.continue()
+        }
+    })
+
+const writeAggregatesAndDeleteOriginals = async (
+    db: IDBDatabase,
+    buckets: Map<string, TimeSeriesEntry[]>,
+    targetResolution: TimeSeriesResolution,
+): Promise<void> => {
+    await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(TS_STORE, 'readwrite')
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
+        const store = tx.objectStore(TS_STORE)
+
+        for (const [key, entries] of buckets) {
+            const { deviceId, bucketStart } = parseBucketKey(key)
+            store.add(buildAggregatedEntry(entries, targetResolution, deviceId, bucketStart))
+
+            for (const entry of entries) {
+                if (entry.id != null) store.delete(entry.id)
+            }
+        }
+    })
+}
+
 // ---------------------------------------------------------------------------
 // Core write
 // ---------------------------------------------------------------------------
@@ -232,16 +351,7 @@ export const timeSeriesService = {
      * Triggers background compaction when the cooldown has elapsed.
      */
     async recordReading(deviceId: string, reading: SensorReading): Promise<void> {
-        const entry: Omit<TimeSeriesEntry, 'id'> = {
-            deviceId,
-            timestamp: reading.receivedAt,
-            resolution: 'raw',
-            temperatureC: reading.temperatureC,
-            humidityPercent: reading.humidityPercent,
-            vpd: calculateVpd(reading.temperatureC, reading.humidityPercent),
-            ph: reading.ph ?? null,
-            sampleCount: 1,
-        }
+        const entry = buildRawEntry(deviceId, reading)
 
         const db = await openTsDb()
         await new Promise<void>((resolve, reject) => {
@@ -255,7 +365,7 @@ export const timeSeriesService = {
         if (now - lastCompactionTs > COMPACTION_COOLDOWN_MS) {
             lastCompactionTs = now
             this.runCompaction().catch((err) =>
-                console.warn('[timeSeriesService] Compaction failed:', err),
+                console.debug('[timeSeriesService] Compaction failed:', err),
             )
         }
     },
@@ -274,16 +384,7 @@ export const timeSeriesService = {
             const store = tx.objectStore(TS_STORE)
 
             for (const reading of readings) {
-                store.add({
-                    deviceId,
-                    timestamp: reading.receivedAt,
-                    resolution: 'raw',
-                    temperatureC: reading.temperatureC,
-                    humidityPercent: reading.humidityPercent,
-                    vpd: calculateVpd(reading.temperatureC, reading.humidityPercent),
-                    ph: reading.ph ?? null,
-                    sampleCount: 1,
-                } satisfies Omit<TimeSeriesEntry, 'id'>)
+                store.add(buildRawEntry(deviceId, reading) satisfies Omit<TimeSeriesEntry, 'id'>)
             }
         })
     },
@@ -351,49 +452,13 @@ export const timeSeriesService = {
             }
         }
 
-        let sumTemp = 0,
-            sumHum = 0,
-            sumVpd = 0,
-            sumPh = 0
-        let minTemp = Infinity,
-            maxTemp = -Infinity
-        let minHum = Infinity,
-            maxHum = -Infinity
-        let vpdCount = 0,
-            phCount = 0,
-            totalSamples = 0
+        const acc = createStatsAccumulator()
 
         for (const e of entries) {
-            const w = e.sampleCount
-            sumTemp += e.temperatureC * w
-            sumHum += e.humidityPercent * w
-            minTemp = Math.min(minTemp, e.temperatureC)
-            maxTemp = Math.max(maxTemp, e.temperatureC)
-            minHum = Math.min(minHum, e.humidityPercent)
-            maxHum = Math.max(maxHum, e.humidityPercent)
-            totalSamples += w
-
-            if (e.vpd != null) {
-                sumVpd += e.vpd * w
-                vpdCount += w
-            }
-            if (e.ph != null) {
-                sumPh += e.ph * w
-                phCount += w
-            }
+            updateStatsAccumulator(acc, e)
         }
 
-        return {
-            avgTemperature: sumTemp / totalSamples,
-            avgHumidity: sumHum / totalSamples,
-            avgVpd: vpdCount > 0 ? sumVpd / vpdCount : null,
-            avgPh: phCount > 0 ? sumPh / phCount : null,
-            minTemperature: minTemp,
-            maxTemperature: maxTemp,
-            minHumidity: minHum,
-            maxHumidity: maxHum,
-            sampleCount: totalSamples,
-        }
+        return buildAggregatedStats(acc)
     },
 
     // -----------------------------------------------------------------------
@@ -424,50 +489,11 @@ export const timeSeriesService = {
         targetResolution: TimeSeriesResolution,
     ): Promise<number> {
         const db = await openTsDb()
-
-        // Phase 1: Read all eligible entries
-        const eligible = await new Promise<TimeSeriesEntry[]>((resolve, reject) => {
-            const tx = db.transaction(TS_STORE, 'readonly')
-            tx.onerror = () => reject(tx.error)
-
-            const index = tx.objectStore(TS_STORE).index('by_resolution_time')
-            const range = IDBKeyRange.bound([sourceResolution, 0], [sourceResolution, olderThan])
-            const results: TimeSeriesEntry[] = []
-
-            const req = index.openCursor(range)
-            req.onsuccess = (event) => {
-                const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>).result
-                if (!cursor) {
-                    resolve(results)
-                    return
-                }
-                results.push(cursor.value as TimeSeriesEntry)
-                cursor.continue()
-            }
-        })
+        const eligible = await readEligibleEntries(db, sourceResolution, olderThan)
 
         if (eligible.length === 0) return 0
-
-        // Phase 2: Group by (deviceId, bucket)
         const buckets = groupEntriesByBucket(eligible, bucketSize)
-
-        // Phase 3: Write aggregated entries and delete originals in one transaction
-        await new Promise<void>((resolve, reject) => {
-            const tx = db.transaction(TS_STORE, 'readwrite')
-            tx.oncomplete = () => resolve()
-            tx.onerror = () => reject(tx.error)
-            const store = tx.objectStore(TS_STORE)
-
-            for (const [key, entries] of buckets) {
-                const { deviceId, bucketStart } = parseBucketKey(key)
-                store.add(buildAggregatedEntry(entries, targetResolution, deviceId, bucketStart))
-
-                // Delete originals
-                for (const e of entries) {
-                    if (e.id != null) store.delete(e.id)
-                }
-            }
-        })
+        await writeAggregatesAndDeleteOriginals(db, buckets, targetResolution)
 
         return eligible.length
     },

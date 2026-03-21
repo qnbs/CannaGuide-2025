@@ -59,6 +59,60 @@ let db: IDBDatabase | null = null
 // Promise lock – prevents concurrent openDB() calls from opening duplicate connections
 let dbPromise: Promise<IDBDatabase> | null = null
 
+const ensureObjectStore = (dbInstance: IDBDatabase, storeName: string, keyPath: string): void => {
+    if (!dbInstance.objectStoreNames.contains(storeName)) {
+        dbInstance.createObjectStore(storeName, { keyPath })
+    }
+}
+
+const ensureOfflineActionsStore = (dbInstance: IDBDatabase): void => {
+    if (!dbInstance.objectStoreNames.contains(OFFLINE_ACTIONS_STORE)) {
+        dbInstance.createObjectStore(OFFLINE_ACTIONS_STORE, { autoIncrement: true })
+    }
+}
+
+const ensureStrainIndexes = (transaction: IDBTransaction | null): void => {
+    if (!transaction) return
+
+    const strainStore = transaction.objectStore(STRAINS_STORE)
+    if (!strainStore.indexNames.contains(STRAIN_INDEX_TYPE)) {
+        strainStore.createIndex(STRAIN_INDEX_TYPE, 'type', { unique: false })
+    }
+    if (!strainStore.indexNames.contains(STRAIN_INDEX_THC)) {
+        strainStore.createIndex(STRAIN_INDEX_THC, 'thc', { unique: false })
+    }
+    if (!strainStore.indexNames.contains(STRAIN_INDEX_CBD)) {
+        strainStore.createIndex(STRAIN_INDEX_CBD, 'cbd', { unique: false })
+    }
+    if (!strainStore.indexNames.contains(STRAIN_INDEX_FLOWERING)) {
+        strainStore.createIndex(STRAIN_INDEX_FLOWERING, 'floweringTime', { unique: false })
+    }
+}
+
+const runMigrations = (
+    dbInstance: IDBDatabase,
+    transaction: IDBTransaction | null,
+    oldVersion: number,
+): void => {
+    if (oldVersion < 1) {
+        ensureObjectStore(dbInstance, STRAINS_STORE, 'id')
+        ensureObjectStore(dbInstance, IMAGES_STORE, 'id')
+        ensureObjectStore(dbInstance, METADATA_STORE, 'key')
+    }
+
+    if (oldVersion < 2) {
+        ensureObjectStore(dbInstance, STRAIN_SEARCH_INDEX_STORE, 'word')
+    }
+
+    if (oldVersion < 3) {
+        ensureStrainIndexes(transaction)
+    }
+
+    if (oldVersion < 4) {
+        ensureOfflineActionsStore(dbInstance)
+    }
+}
+
 /**
  * Opens and initializes the IndexedDB database.
  * Uses a promise lock so concurrent callers share a single connection attempt.
@@ -75,52 +129,7 @@ const openDB = (): Promise<IDBDatabase> => {
         request.onupgradeneeded = (event) => {
             const dbInstance = (event.target as IDBOpenDBRequest).result
             const transaction = (event.target as IDBOpenDBRequest).transaction
-
-            if (event.oldVersion < 1) {
-                if (!dbInstance.objectStoreNames.contains(STRAINS_STORE)) {
-                    dbInstance.createObjectStore(STRAINS_STORE, { keyPath: 'id' })
-                }
-                if (!dbInstance.objectStoreNames.contains(IMAGES_STORE)) {
-                    dbInstance.createObjectStore(IMAGES_STORE, { keyPath: 'id' })
-                }
-                if (!dbInstance.objectStoreNames.contains(METADATA_STORE)) {
-                    dbInstance.createObjectStore(METADATA_STORE, { keyPath: 'key' })
-                }
-            }
-
-            if (event.oldVersion < 2) {
-                if (!dbInstance.objectStoreNames.contains(STRAIN_SEARCH_INDEX_STORE)) {
-                    dbInstance.createObjectStore(STRAIN_SEARCH_INDEX_STORE, { keyPath: 'word' })
-                }
-            }
-
-            if (event.oldVersion < 3) {
-                if (transaction) {
-                    const strainStore = transaction.objectStore(STRAINS_STORE)
-                    if (!strainStore.indexNames.contains(STRAIN_INDEX_TYPE)) {
-                        strainStore.createIndex(STRAIN_INDEX_TYPE, 'type', { unique: false })
-                    }
-                    if (!strainStore.indexNames.contains(STRAIN_INDEX_THC)) {
-                        strainStore.createIndex(STRAIN_INDEX_THC, 'thc', { unique: false })
-                    }
-                    if (!strainStore.indexNames.contains(STRAIN_INDEX_CBD)) {
-                        strainStore.createIndex(STRAIN_INDEX_CBD, 'cbd', { unique: false })
-                    }
-                    if (!strainStore.indexNames.contains(STRAIN_INDEX_FLOWERING)) {
-                        strainStore.createIndex(STRAIN_INDEX_FLOWERING, 'floweringTime', {
-                            unique: false,
-                        })
-                    }
-                }
-            }
-
-            if (event.oldVersion < 4) {
-                if (!dbInstance.objectStoreNames.contains(OFFLINE_ACTIONS_STORE)) {
-                    // This store will hold actions performed while offline.
-                    // The auto-incrementing key is used by the service worker to delete synced actions.
-                    dbInstance.createObjectStore(OFFLINE_ACTIONS_STORE, { autoIncrement: true })
-                }
-            }
+            runMigrations(dbInstance, transaction, event.oldVersion)
         }
 
         request.onsuccess = (event) => {

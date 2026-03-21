@@ -12,7 +12,9 @@
 | **v1.1** | 2026-Q1    | ✅ Released    | DevOps & Quality — Error tracking, testing, deployment      |
 | **v1.2** | 2026-Q2    | 🔄 In Progress | Community & Automation — Languages, scheduling, marketplace |
 | **v1.3** | 2026-Q3    | 📋 Planned     | Analytics & Visualization — IoT, 3D, dashboards             |
-| **v2.0** | 2026-Q4    | 📋 Planned     | Platform — Mobile-native, real-time collaboration           |
+| **v1.4** | 2026-Q4    | 📋 Planned     | Discovery & Knowledge Scale — Feeds, media, expanded corpus |
+| **v1.5** | 2027-Q1    | 📋 Planned     | Scholarly Expansion — Encyclopedia, curation, source graph  |
+| **v2.0** | 2027-Q2    | 📋 Planned     | Digital Twin Platform — AR/VR overlays + advanced sandbox   |
 
 ---
 
@@ -118,7 +120,7 @@ Target: **2026-Q3**
 
 ## v2.0 — Platform 📋
 
-Target: **2026-Q4**
+Target: **2027-Q2**
 
 | Feature                                         | Category      | Priority | Issue |
 | ----------------------------------------------- | ------------- | -------- | ----- |
@@ -129,6 +131,107 @@ Target: **2026-Q4**
 | Grow community forums & profiles                | Community     | Medium   | —     |
 | Voice assistant deep integration                | UX            | Low      | —     |
 | AR plant overlay (WebXR)                        | Visualization | Low      | —     |
+
+---
+
+## v1.4 — Discovery & Knowledge Scale 📋
+
+Target: **2026-Q4**
+
+| Feature                                                             | Category   | Priority | Issue |
+| ------------------------------------------------------------------- | ---------- | -------- | ----- |
+| Strain database growth program (700+ → 2,000+ curated entries)      | Strains    | High     | —     |
+| Strain ingestion pipeline with dedupe/provenance/quality scoring    | Data       | High     | —     |
+| Infinite discovery feed (news, HD galleries, educational snippets)  | UX         | High     | —     |
+| Content taxonomy and moderation rules for feed categories           | Governance | High     | —     |
+| Practical extraction knowledge pack (static hash, workflow safety)  | Knowledge  | High     | —     |
+| Guide visualizations (step cards, diagrams, process timelines)      | UX         | Medium   | —     |
+| Seedbank and grower official media showcase (rights-aware sourcing) | Content    | Medium   | —     |
+
+### v1.4 Exit Criteria
+
+- Strain library reaches at least **2,000** validated entries.
+- Feed supports infinite-scroll with offline cache windows and category filters.
+- New extraction guides ship with source attribution and bilingual EN/DE coverage.
+
+---
+
+## v1.5 — Scholarly Knowledge & Media Curation 📋
+
+Target: **2027-Q1**
+
+| Feature                                                                             | Category     | Priority | Issue |
+| ----------------------------------------------------------------------------------- | ------------ | -------- | ----- |
+| Scholarly lexicon expansion into encyclopedia-grade knowledge graph                 | Knowledge    | High     | —     |
+| Domain coverage: cannabinoids, ECS, entourage, botany, biology, chemistry, genetics | Knowledge    | High     | —     |
+| Domain coverage: pharmacology, medicine, evolution, cultivar history                | Knowledge    | High     | —     |
+| Citation layer with evidence quality tags and source metadata                       | Research     | High     | —     |
+| Curated DE/EN video hub for growers, educators, and vloggers                        | Media        | High     | —     |
+| Ranking model for educational signal quality (novice/intermediate/advanced)         | AI/Knowledge | Medium   | —     |
+| Community recommendation loop for article/video quality feedback                    | Community    | Medium   | —     |
+
+### v1.5 Exit Criteria
+
+- Lexicon reaches encyclopedia baseline with transparent citation metadata.
+- Video hub supports language filter (DE/EN), topic tags, and quality labels.
+- Evidence pages provide reference list, confidence level, and last-review date.
+
+---
+
+## Strategic Program Tracks (Cross-Version)
+
+### 1) Strain Scale Program (2026-2028)
+
+- **Mid-term target:** 2,000+ curated strains.
+- **Long-term target:** several ten-thousand catalog entries.
+- **System requirements:** automated duplicate detection, alias normalization, provenance tracking, incremental QA checks.
+- **KPI examples:** unique validated strains, duplicate ratio, metadata completeness, search relevance quality.
+
+### 2) Infinite Discovery Program
+
+- Build a continuous feed architecture with category channels:
+    - Cannabis news
+    - Official HD plant images (seedbanks/growers)
+    - Educational micro-guides and lexicon snippets
+    - Research highlights
+- **Engineering focus:** indexed pagination, client caching strategy, source freshness scoring, offline fallback cards.
+
+### 3) Knowledge, Guides, and Extraction Education
+
+- Expand practical guides, lexica, and manuals with visual explainers.
+- Include modern extraction domains (e.g., static hash) with safety and process context.
+- Build progressive learning paths (starter → advanced), with bilingual EN/DE delivery.
+
+### 4) Scholarly Lexicon & Encyclopedia Program
+
+- Establish a scholarly editorial model for scientific cannabis topics.
+- Add source graph metadata for traceability and periodic reviews.
+- Introduce confidence scoring and update cadence to keep references current.
+
+### 5) AR/VR Overlay + Digital Twin Program
+
+- AR-assisted plant overlay for user captures and growth stage comparison.
+- Extend simulation into digital twin profiles for user-specific plants.
+- Add calibration loops for environment, phenotype, and intervention responses.
+
+### 6) What-if Sandbox & BreedingLab Evolution
+
+- Expand scenario planner depth (environment, stress, nutrition, timeline pivots).
+- Add breeding strategy workbench: phenotype goals, trait weighting, repeatability scores.
+- Integrate outcome explainability with confidence and model provenance.
+
+---
+
+## Program Governance & Delivery Model
+
+| Area                | Delivery Principle                                                                |
+| ------------------- | --------------------------------------------------------------------------------- |
+| Product Scope       | Phase-by-phase, measurable increments with hard exit criteria                     |
+| Data Quality        | Source provenance, dedupe checks, confidence levels, reproducible transformations |
+| Safety & Compliance | Age-gate/legal alignment, content moderation standards, external link safeguards  |
+| Performance         | Offline-first preserved for all critical surfaces                                 |
+| Localization        | EN/DE parity first, additional languages in staged rollouts                       |
+| Quality Gates       | Typecheck + lint + test coverage + release notes before each milestone            |
 
 ---
 

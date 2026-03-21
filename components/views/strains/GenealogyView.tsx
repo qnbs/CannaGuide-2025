@@ -168,6 +168,32 @@ const AnalysisPanel = React.memo<{
         onHighlightModeChange(highlightMode === mode ? 'none' : mode)
     }
 
+    const highlightOptions: Array<{
+        mode: Exclude<HighlightMode, 'none'>
+        activeClass: string
+        Icon: React.ComponentType<{ className?: string }>
+        label: string
+    }> = [
+        {
+            mode: 'landraces',
+            activeClass: 'bg-green-900/50 text-green-300 ring-1 ring-green-500/40',
+            Icon: PhosphorIcons.Leafy,
+            label: t('strainsView.genealogyView.highlightLandraces'),
+        },
+        {
+            mode: 'sativa',
+            activeClass: 'bg-amber-900/50 text-amber-300 ring-1 ring-amber-500/40',
+            Icon: PhosphorIcons.Sun,
+            label: t('strainsView.genealogyView.traceSativa'),
+        },
+        {
+            mode: 'indica',
+            activeClass: 'bg-indigo-900/50 text-indigo-300 ring-1 ring-indigo-500/40',
+            Icon: PhosphorIcons.Star,
+            label: t('strainsView.genealogyView.traceIndica'),
+        },
+    ]
+
     return (
         <div className="space-y-4">
             {/* Analysis Tools */}
@@ -176,30 +202,24 @@ const AnalysisPanel = React.memo<{
                     {t('strainsView.genealogyView.analysisTools')}
                 </h4>
                 <div className="space-y-1.5">
-                    <button
-                        type="button"
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${highlightMode === 'landraces' ? 'bg-green-900/50 text-green-300 ring-1 ring-green-500/40' : 'text-slate-300 hover:bg-slate-700/50'}`}
-                        onClick={() => toggleMode('landraces')}
-                    >
-                        <PhosphorIcons.Leafy className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-                        {t('strainsView.genealogyView.highlightLandraces')}
-                    </button>
-                    <button
-                        type="button"
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${highlightMode === 'sativa' ? 'bg-amber-900/50 text-amber-300 ring-1 ring-amber-500/40' : 'text-slate-300 hover:bg-slate-700/50'}`}
-                        onClick={() => toggleMode('sativa')}
-                    >
-                        <PhosphorIcons.Sun className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-                        {t('strainsView.genealogyView.traceSativa')}
-                    </button>
-                    <button
-                        type="button"
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${highlightMode === 'indica' ? 'bg-indigo-900/50 text-indigo-300 ring-1 ring-indigo-500/40' : 'text-slate-300 hover:bg-slate-700/50'}`}
-                        onClick={() => toggleMode('indica')}
-                    >
-                        <PhosphorIcons.Star className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-                        {t('strainsView.genealogyView.traceIndica')}
-                    </button>
+                    {highlightOptions.map(({ mode, activeClass, Icon, label }) => {
+                        const isActive = highlightMode === mode
+                        const buttonClass = isActive
+                            ? activeClass
+                            : 'text-slate-300 hover:bg-slate-700/50'
+
+                        return (
+                            <button
+                                key={mode}
+                                type="button"
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${buttonClass}`}
+                                onClick={() => toggleMode(mode)}
+                            >
+                                <Icon className="w-4 h-4 inline-block mr-2 -mt-0.5" />
+                                {label}
+                            </button>
+                        )
+                    })}
                     {highlightMode !== 'none' && (
                         <button
                             type="button"

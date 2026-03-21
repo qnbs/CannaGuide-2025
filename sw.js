@@ -16,7 +16,7 @@ const MANIFEST_HASH =
         : 'dev'
 const CACHE_NAME = `cannaguide-${MANIFEST_HASH}-pwa-cache`
 const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`
-const API_HOSTNAME = 'googleapis.com' // Gemini API hostname
+const API_HOSTNAMES = ['generativelanguage.googleapis.com', 'googleapis.com']
 
 const APP_SHELL_URLS = ['./', './index.html', './manifest.json', './icon.svg', './favicon.ico']
 
@@ -152,7 +152,7 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
-    if (url.hostname.includes(API_HOSTNAME)) {
+    if (API_HOSTNAMES.some((h) => url.hostname === h || url.hostname.endsWith('.' + h))) {
         return
     }
 

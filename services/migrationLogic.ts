@@ -566,6 +566,7 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
 
     function merge(target: Record<string, unknown>, source: Record<string, unknown>) {
         for (const key of Object.keys(source)) {
+            if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
             const sourceValue = source[key]
             if (isObject(sourceValue)) {
                 if (!target[key] || !isObject(target[key])) {

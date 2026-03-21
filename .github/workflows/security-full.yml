@@ -10,6 +10,9 @@ permissions:
     contents: read
     security-events: write
 
+env:
+    NODE_VERSION: '20'
+
 jobs:
     codeql:
         name: CodeQL
@@ -27,11 +30,11 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
             - name: Install dependencies
-              run: npm ci
+              run: npm ci --prefer-offline
 
             - name: Build for CodeQL analysis
               continue-on-error: true
@@ -51,11 +54,11 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
             - name: Install dependencies
-              run: npm ci
+              run: npm ci --prefer-offline
 
             - name: Audit npm dependencies
               run: npm audit --audit-level=high
@@ -122,11 +125,11 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
             - name: Install dependencies
-              run: npm ci
+              run: npm ci --prefer-offline
 
             - name: Scan for bidi controls
               run: npm run security:trojan-source

@@ -6,17 +6,53 @@ updates:
           interval: weekly
       open-pull-requests-limit: 10
       groups:
-          ai-and-testing:
+          ai-and-ml:
+              patterns:
+                  - '@google/genai'
+                  - '@mlc-ai/*'
+                  - '@xenova/*'
+                  - '@tensorflow/*'
+                  - 'onnxruntime-web'
+          testing:
               patterns:
                   - '@vitest/*'
                   - '@playwright/*'
                   - 'vitest'
-                  - 'playwright'
-          ui-and-security:
+                  - '@stryker-mutator/*'
+                  - '@testing-library/*'
+                  - 'fake-indexeddb'
+                  - 'msw'
+          ui-and-styling:
               patterns:
                   - '@radix-ui/*'
+                  - 'tailwind*'
+                  - 'class-variance-authority'
+                  - 'clsx'
+                  - 'recharts'
+          security:
+              patterns:
                   - 'dompurify'
-                  - 'jspdf*'
+                  - '@sentry/*'
+                  - '@aikidosec/*'
+                  - 'snyk'
+                  - '@socketsecurity/*'
+          build-tools:
+              patterns:
+                  - 'vite'
+                  - 'vite-plugin-*'
+                  - '@vitejs/*'
+                  - 'turbo'
+                  - 'rollup-plugin-*'
+                  - 'postcss'
+                  - 'autoprefixer'
+          linting:
+              patterns:
+                  - 'eslint'
+                  - 'eslint-*'
+                  - '@eslint/*'
+                  - '@typescript-eslint/*'
+                  - '@biomejs/*'
+                  - 'prettier'
     - package-ecosystem: github-actions
       directory: '/'
       schedule:

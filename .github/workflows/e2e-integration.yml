@@ -1,4 +1,4 @@
-name: 🧪 E2E & Integration Tests
+name: 🌡 IoT Integration Tests
 
 on:
     push:
@@ -15,54 +15,9 @@ env:
 
 jobs:
     # ─────────────────────────────────────────────────────────────────────────
-    # E2E — WebGPU mocks, IoT simulation, core user flows
+    # NOTE: E2E tests removed — they run in ci.yml (quality → e2e job).
+    # This workflow focuses on IoT integration and Docker Compose validation.
     # ─────────────────────────────────────────────────────────────────────────
-    e2e:
-        name: 🎭 E2E Tests
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        steps:
-            - name: 📥 Checkout
-              uses: actions/checkout@v4
-
-            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: npm
-
-            - name: 📦 Install dependencies
-              run: npm ci --prefer-offline
-
-            - name: 💾 Cache Playwright Chromium
-              id: playwright-cache
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/ms-playwright
-                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-                  restore-keys: |
-                      playwright-chromium-${{ runner.os }}-
-
-            - name: 🎭 Install Playwright browser
-              if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: npm run test:e2e:install:ci
-
-            - name: 🏗 Build for E2E
-              run: npm run build
-
-            - name: 🧪 Run E2E tests (core + WebGPU + IoT)
-              run: |
-                  echo "::group::playwright e2e"
-                  npm run test:e2e
-                  echo "::endgroup::"
-
-            - name: 📊 Upload Playwright traces on failure
-              if: failure()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: e2e-traces-${{ github.run_id }}
-                  path: test-results/
-                  retention-days: 7
 
     # ─────────────────────────────────────────────────────────────────────────
     # IOT — ESP32 Mock Docker integration
@@ -158,47 +113,3 @@ jobs:
                   if [ -n "$ESP32_MOCK_PID" ]; then
                     kill "$ESP32_MOCK_PID" 2>/dev/null || true
                   fi
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # DOCKER — Validate docker-compose.yml + IoT-Mocks build in CI
-    # ─────────────────────────────────────────────────────────────────────────
-    docker-compose-validation:
-        name: 🐳 Docker Compose Validation
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        steps:
-            - name: 📥 Checkout
-              uses: actions/checkout@v4
-
-            - name: 🔍 Validate docker-compose.yml syntax
-              run: docker compose config --quiet
-
-            - name: 🏗 Build ESP32 Mock image
-              run: docker compose build esp32-mock
-
-            - name: 🌡 Start ESP32 Mock container
-              run: |
-                  docker compose up -d esp32-mock
-                  echo "⏳ Waiting for ESP32 mock container..."
-                  for i in $(seq 1 20); do
-                    if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
-                      echo "✅ ESP32 mock container healthy"
-                      break
-                    fi
-                    sleep 1
-                  done
-
-            - name: 🧪 Verify containerized sensor endpoint
-              run: |
-                  RESPONSE=$(curl -sf http://localhost:3001/sensor)
-                  echo "Sensor response: $RESPONSE"
-                  echo "$RESPONSE" | node -e "
-                    const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-                    if (typeof d.temperature !== 'number') process.exit(1);
-                    if (typeof d.humidity !== 'number') process.exit(1);
-                    console.log('✅ Containerized sensor OK:', d.temperature + '°C');
-                  "
-
-            - name: 🧹 Cleanup
-              if: always()
-              run: docker compose down --timeout 5

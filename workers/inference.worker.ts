@@ -68,7 +68,16 @@ const loadPipeline = async (
 }
 
 self.onmessage = async (e: MessageEvent<InferenceWorkerRequest>) => {
-    const { id, task, modelId, input, pipelineOptions, inferenceOptions } = e.data
+    const data = e.data
+    if (!data?.id || !data?.task || !data?.modelId) {
+        const response: InferenceWorkerResponse = {
+            id: data?.id ?? 'unknown',
+            error: 'Invalid inference request: id, task, and modelId are required',
+        }
+        self.postMessage(response)
+        return
+    }
+    const { id, task, modelId, input, pipelineOptions, inferenceOptions } = data
     try {
         const pipe = await loadPipeline(task, modelId, pipelineOptions ?? { quantized: true })
         const result = await pipe(input, inferenceOptions)

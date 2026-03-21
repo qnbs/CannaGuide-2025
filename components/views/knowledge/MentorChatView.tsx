@@ -22,18 +22,23 @@ interface MentorChatViewProps {
 const removeEmptyModelPlaceholders = (messages: MentorMessage[]): MentorMessage[] =>
     messages.filter((msg) => msg.role !== 'model' || msg.content !== '')
 
+const resolveApiErrorMessage = (error: unknown, fallback: string): string | null => {
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        return String((error as { message?: unknown }).message ?? fallback)
+    }
+    return null
+}
+
 const resolveMentorErrorMessage = (
     fallbackError: unknown,
     streamError: unknown,
     t: TFunction,
 ): string => {
-    if (typeof fallbackError === 'object' && fallbackError !== null && 'message' in fallbackError) {
-        return String((fallbackError as { message?: unknown }).message ?? t('ai.error.unknown'))
-    }
+    const fallbackMessage = resolveApiErrorMessage(fallbackError, t('ai.error.unknown'))
+    if (fallbackMessage) return fallbackMessage
 
-    if (typeof streamError === 'object' && streamError !== null && 'message' in streamError) {
-        return String((streamError as { message?: unknown }).message ?? t('ai.error.unknown'))
-    }
+    const streamMessage = resolveApiErrorMessage(streamError, t('ai.error.unknown'))
+    if (streamMessage) return streamMessage
 
     return t('ai.error.unknown')
 }

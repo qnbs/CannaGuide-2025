@@ -97,7 +97,8 @@ const areNotificationsMuted = (settings: AppSettings): boolean => {
 
 const findStageChangeEntry = (entries: JournalEntry[]): JournalEntry | undefined =>
     entries.find(
-        (entry) => entry.type === JournalEntryType.System && entry.notes.startsWith('Stage changed'),
+        (entry) =>
+            entry.type === JournalEntryType.System && entry.notes.startsWith('Stage changed'),
     )
 
 const notifyPlantEvents = async (
@@ -121,7 +122,11 @@ const notifyPlantEvents = async (
         )
     }
 
-    if (settings.notifications.problemDetected && newProblemEntries.length > 0 && newProblemEntries[0]) {
+    if (
+        settings.notifications.problemDetected &&
+        newProblemEntries.length > 0 &&
+        newProblemEntries[0]
+    ) {
         await showBrowserNotification(
             plant.name,
             newProblemEntries[0].notes,
@@ -131,7 +136,12 @@ const notifyPlantEvents = async (
     }
 
     if (settings.notifications.newTask && filteredTasks.length > 0 && filteredTasks[0]) {
-        await showBrowserNotification(plant.name, filteredTasks[0].title, `task-${plant.id}`, plant.id)
+        await showBrowserNotification(
+            plant.name,
+            filteredTasks[0].title,
+            `task-${plant.id}`,
+            plant.id,
+        )
     }
 }
 

@@ -252,6 +252,23 @@ const getLocalAiService = async () => {
 
 type LocalAiService = Awaited<ReturnType<typeof getLocalAiService>>
 
+type NutrientRecommendationInput = {
+    medium: string
+    stage: string
+    currentEc: number
+    currentPh: number
+    optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
+    readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
+    plant?: {
+        name: string
+        strain: { name: string }
+        stage: string
+        age: number
+        health: number
+        medium: { ph: number; ec: number }
+    }
+}
+
 class GeminiService implements BaseAIProvider {
     readonly id = 'gemini' as const
 
@@ -1076,8 +1093,54 @@ PLANT CONTEXT:
         return `Plant: ${context.plant.name} (${context.plant.strain.name}), Stage: ${context.plant.stage}, Age: ${context.plant.age}d, Health: ${context.plant.health.toFixed(0)}%, Live pH: ${context.plant.medium.ph.toFixed(2)}, Live EC: ${context.plant.medium.ec.toFixed(2)}`
     }
 
+    private buildNutrientPlannerPrompt(
+        context: NutrientRecommendationInput,
+        t: ReturnType<typeof getT>,
+    ): string {
+        const readingsSummary = this.buildNutrientReadingsSummary(context.readings)
+        const plantInfo = this.buildNutrientPlantInfo(context)
+
+        return `${t('ai.prompts.nutrientPlanner', {
+            medium: context.medium,
+            stage: context.stage,
+            currentEc: context.currentEc.toFixed(2),
+            currentPh: context.currentPh.toFixed(2),
+            ecMin: context.optimalRange.ecMin.toFixed(2),
+            ecMax: context.optimalRange.ecMax.toFixed(2),
+            phMin: context.optimalRange.phMin.toFixed(2),
+            phMax: context.optimalRange.phMax.toFixed(2),
+            readings: readingsSummary,
+            plant: plantInfo,
+        })}`
+    }
+
     private buildPlantJournalContext(plant: Plant, t: ReturnType<typeof getT>): string {
         return `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
+    }
+
+    private async getPlantNarrativeWithFallback(
+        plant: Plant,
+        lang: Language,
+        endpoint: 'getPlantAdvice' | 'getProactiveDiagnosis',
+        promptBuilderKey: 'ai.prompts.advisor' | 'ai.prompts.proactiveDiagnosis',
+        titleKey: 'ai.advisor' | 'ai.proactiveDiagnosis',
+        fallbackGetter: (
+            localAiService: LocalAiService,
+            p: Plant,
+            l: Language,
+        ) => Promise<AIResponse>,
+    ): Promise<AIResponse> {
+        const t = getT()
+        const plantContext = this.buildPlantJournalContext(plant, t)
+        const prompt = t(promptBuilderKey, { plant: plantContext })
+
+        return this.runWithLocalFallback<AIResponse>(
+            async () => {
+                const responseText = await this.generateText(prompt, lang, endpoint)
+                return { title: t(titleKey), content: responseText }
+            },
+            async (localAiService) => fallbackGetter(localAiService, plant, lang),
+        )
     }
 
     private async runWithLocalFallback<T>(
@@ -1168,34 +1231,24 @@ PLANT CONTEXT:
     }
 
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
-        const t = getT()
-        const plantContext = this.buildPlantJournalContext(plant, t)
-        const prompt = t('ai.prompts.advisor', { plant: plantContext })
-
-        return this.runWithLocalFallback<AIResponse>(
-            async () => {
-                const responseText = await this.generateText(prompt, lang, 'getPlantAdvice')
-                return { title: t('ai.advisor'), content: responseText }
-            },
-            async (localAiService) => {
-                return localAiService.getPlantAdvice(plant, lang)
-            },
+        return this.getPlantNarrativeWithFallback(
+            plant,
+            lang,
+            'getPlantAdvice',
+            'ai.prompts.advisor',
+            'ai.advisor',
+            (localAiService, p, language) => localAiService.getPlantAdvice(p, language),
         )
     }
 
     async getProactiveDiagnosis(plant: Plant, lang: Language): Promise<AIResponse> {
-        const t = getT()
-        const plantContext = this.buildPlantJournalContext(plant, t)
-        const prompt = t('ai.prompts.proactiveDiagnosis', { plant: plantContext })
-
-        return this.runWithLocalFallback<AIResponse>(
-            async () => {
-                const responseText = await this.generateText(prompt, lang, 'getProactiveDiagnosis')
-                return { title: t('ai.proactiveDiagnosis'), content: responseText }
-            },
-            async (localAiService) => {
-                return localAiService.getProactiveDiagnosis(plant, lang)
-            },
+        return this.getPlantNarrativeWithFallback(
+            plant,
+            lang,
+            'getProactiveDiagnosis',
+            'ai.prompts.proactiveDiagnosis',
+            'ai.proactiveDiagnosis',
+            (localAiService, p, language) => localAiService.getProactiveDiagnosis(p, language),
         )
     }
 
@@ -1372,40 +1425,11 @@ PLANT CONTEXT:
     }
 
     async getNutrientRecommendation(
-        context: {
-            medium: string
-            stage: string
-            currentEc: number
-            currentPh: number
-            optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
-            readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
-            plant?: {
-                name: string
-                strain: { name: string }
-                stage: string
-                age: number
-                health: number
-                medium: { ph: number; ec: number }
-            }
-        },
+        context: NutrientRecommendationInput,
         lang: Language,
     ): Promise<string> {
         const t = getT()
-        const readingsSummary = this.buildNutrientReadingsSummary(context.readings)
-        const plantInfo = this.buildNutrientPlantInfo(context)
-
-        const prompt = `${t('ai.prompts.nutrientPlanner', {
-            medium: context.medium,
-            stage: context.stage,
-            currentEc: context.currentEc.toFixed(2),
-            currentPh: context.currentPh.toFixed(2),
-            ecMin: context.optimalRange.ecMin.toFixed(2),
-            ecMax: context.optimalRange.ecMax.toFixed(2),
-            phMin: context.optimalRange.phMin.toFixed(2),
-            phMax: context.optimalRange.phMax.toFixed(2),
-            readings: readingsSummary,
-            plant: plantInfo,
-        })}`
+        const prompt = this.buildNutrientPlannerPrompt(context, t)
 
         return this.generateText(prompt, lang, 'getNutrientRecommendation')
     }

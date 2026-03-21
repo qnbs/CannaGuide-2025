@@ -24,6 +24,13 @@ interface SetupConfiguratorProps {
     onSaveSetup: (setupData: Omit<SavedSetup, 'id' | 'createdAt' | 'name'>) => void
 }
 
+const resolveErrorMessage = (error: unknown, fallback: string): string => {
+    if (error && typeof error === 'object' && 'message' in error) {
+        return String((error as { message?: unknown }).message ?? fallback)
+    }
+    return fallback
+}
+
 const Stepper: React.FC<{ currentStep: number; steps: string[] }> = ({ currentStep, steps }) => (
     <div className="flex items-center justify-center mb-4 sm:mb-6">
         {steps.map((step, index) => (
@@ -302,10 +309,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
 
     if (isLoading) return <AiLoadingIndicator loadingMessage={loadingMessage} />
 
-    const setupErrorMessage =
-        error && typeof error === 'object' && 'message' in error
-            ? String((error as { message?: unknown }).message ?? t('ai.error.unknown'))
-            : t('ai.error.unknown')
+    const setupErrorMessage = resolveErrorMessage(error, t('ai.error.unknown'))
 
     if (error)
         return (

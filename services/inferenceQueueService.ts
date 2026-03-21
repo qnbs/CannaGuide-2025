@@ -57,6 +57,7 @@ const pendingCallbacks = new Map<
 const queue: QueuedTask[] = []
 let activeCount = 0
 const MAX_CONCURRENT = 1
+let isProcessing = false
 
 // ─── Worker Lifecycle ────────────────────────────────────────────────────────
 
@@ -75,7 +76,7 @@ const getWorker = (): Worker | null => {
             if (!pending) return
             clearTimeout(pending.timer)
             pendingCallbacks.delete(id)
-            activeCount--
+            activeCount = Math.max(0, activeCount - 1)
             if (error) {
                 pending.reject(new Error(error))
             } else {
@@ -110,43 +111,52 @@ const getWorker = (): Worker | null => {
 // ─── Queue Processing ────────────────────────────────────────────────────────
 
 const processQueue = (): void => {
-    // Prune stale tasks that have waited too long in the queue
-    const now = Date.now()
-    for (let i = queue.length - 1; i >= 0; i--) {
-        const item = queue[i]
-        if (item && now - item.enqueuedAt > STALE_THRESHOLD_MS) {
-            queue.splice(i, 1)
-            item.reject(new Error('Inference task expired in queue'))
-        }
-    }
-
-    while (activeCount < MAX_CONCURRENT && queue.length > 0) {
-        const task = queue.shift()
-        if (!task) break
-
-        const w = getWorker()
-        if (!w) {
-            task.reject(new Error('Inference worker unavailable'))
-            continue
-        }
-
-        activeCount++
-        const timer = setTimeout(() => {
-            const pending = pendingCallbacks.get(task.request.id)
-            if (pending) {
-                pendingCallbacks.delete(task.request.id)
-                activeCount--
-                pending.reject(new Error('Inference task timed out'))
-                processQueue()
+    // Re-entrancy guard: prevent concurrent queue processing that could
+    // double-schedule tasks (e.g. when onmessage triggers processQueue
+    // while a previous processQueue call is still in its while-loop).
+    if (isProcessing) return
+    isProcessing = true
+    try {
+        // Prune stale tasks that have waited too long in the queue
+        const now = Date.now()
+        for (let i = queue.length - 1; i >= 0; i--) {
+            const item = queue[i]
+            if (item && now - item.enqueuedAt > STALE_THRESHOLD_MS) {
+                queue.splice(i, 1)
+                item.reject(new Error('Inference task expired in queue'))
             }
-        }, task.timeoutMs)
+        }
 
-        pendingCallbacks.set(task.request.id, {
-            resolve: task.resolve,
-            reject: task.reject,
-            timer,
-        })
-        w.postMessage(task.request)
+        while (activeCount < MAX_CONCURRENT && queue.length > 0) {
+            const task = queue.shift()
+            if (!task) break
+
+            const w = getWorker()
+            if (!w) {
+                task.reject(new Error('Inference worker unavailable'))
+                continue
+            }
+
+            activeCount++
+            const timer = setTimeout(() => {
+                const pending = pendingCallbacks.get(task.request.id)
+                if (pending) {
+                    pendingCallbacks.delete(task.request.id)
+                    activeCount = Math.max(0, activeCount - 1)
+                    pending.reject(new Error('Inference task timed out'))
+                    processQueue()
+                }
+            }, task.timeoutMs)
+
+            pendingCallbacks.set(task.request.id, {
+                resolve: task.resolve,
+                reject: task.reject,
+                timer,
+            })
+            w.postMessage(task.request)
+        }
+    } finally {
+        isProcessing = false
     }
 }
 
@@ -216,6 +226,7 @@ export const terminateInferenceWorker = (): void => {
         worker = null
     }
     workerFailed = false
+    isProcessing = false
     for (const [, pending] of pendingCallbacks) {
         clearTimeout(pending.timer)
         pending.reject(new Error('Inference worker terminated'))

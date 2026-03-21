@@ -1,12 +1,20 @@
 {
     "$schema": "https://schema.tauri.app/config/2",
     "identifier": "default",
-    "description": "Default capability set for the CannaGuide main window. Grants minimal IPC permissions.",
+    "description": "Default capability set for the CannaGuide main window. Grants minimal IPC permissions. All custom commands (process_image_binary, read_sensor_binary, get_system_info) are local-only — no outbound network access from Rust IPC. Remote origins are explicitly denied.",
+    "local": true,
     "windows": ["main"],
+    "remote": {
+        "urls": []
+    },
     "permissions": [
         "core:default",
         {
             "identifier": "core:window:default",
+            "allow": [{ "window": "main" }]
+        },
+        {
+            "identifier": "core:event:default",
             "allow": [{ "window": "main" }]
         }
     ]

@@ -151,7 +151,7 @@ describe('localAIModelLoader', () => {
             const profile = resolveModelProfile(null)
             expect(profile.sizeTier).toBe('0.5B')
             expect(profile.quantLevel).toBe('q4')
-            expect(profile.transformersModelId).toBe('Xenova/Qwen3-0.5B')
+            expect(profile.transformersModelId).toBe('Xenova/Qwen2.5-0.5B-Instruct')
             expect(profile.useQuantized).toBe(true)
             expect(profile.estimatedSavingsPercent).toBe(70)
         })
@@ -258,9 +258,9 @@ describe('localAIModelLoader', () => {
     // ─── Model ID correctness ──────────────────────────────────────────
 
     describe('model IDs', () => {
-        it('0.5B tier uses Qwen3-0.5B for Transformers.js', () => {
+        it('0.5B tier uses Qwen2.5-0.5B-Instruct for Transformers.js', () => {
             const profile = resolveModelProfile(null)
-            expect(profile.transformersModelId).toBe('Xenova/Qwen3-0.5B')
+            expect(profile.transformersModelId).toBe('Xenova/Qwen2.5-0.5B-Instruct')
         })
 
         it('1.5B tier uses Qwen2.5-1.5B-Instruct for Transformers.js', () => {

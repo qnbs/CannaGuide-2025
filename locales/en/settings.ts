@@ -110,7 +110,7 @@ export const settingsView = {
         preferredModel: 'Preferred Text Model',
         modelAuto: 'Auto (Qwen2.5-1.5B)',
         modelQwen25: 'Qwen2.5-1.5B (Balanced)',
-        modelQwen3: 'Qwen3-0.5B (Lightweight)',
+        modelQwen3: 'Qwen2.5-0.5B (Lightweight)',
         benchPreloadTime: 'Last preload: {{value}} s',
         benchInferenceSpeed: 'Inference speed: {{value}} tok/s',
         benchNotAvailable: 'Run a preload to see performance data.',

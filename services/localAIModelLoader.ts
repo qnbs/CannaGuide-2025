@@ -88,6 +88,10 @@ export const getTransformersModule = async (): Promise<TransformersModule> => {
             if (mod.env?.backends?.onnx?.wasm) {
                 mod.env.backends.onnx.wasm.proxy = true
             }
+            // Disable local model path to prevent 404 noise on static hosting (e.g. GitHub Pages)
+            if (mod.env) {
+                mod.env.allowLocalModels = false
+            }
             console.debug(`[LocalAI] Transformers.js loaded, preferred backend: ${backend}`)
             return mod
         })()
@@ -130,11 +134,33 @@ export const loadTransformersPipeline = async (
                     }
                 }
             }
-            return pipeline(
-                task as never,
-                modelId,
-                mergedOptions as never,
-            ) as Promise<LocalAiPipeline>
+            try {
+                return await (pipeline(
+                    task as never,
+                    modelId,
+                    mergedOptions as never,
+                ) as Promise<LocalAiPipeline>)
+            } catch (pipelineError) {
+                // If WebGPU context creation failed, retry with WASM backend
+                if (
+                    mergedOptions.device === 'webgpu' &&
+                    pipelineError instanceof Error &&
+                    /webgpu|context|gpu/i.test(pipelineError.message)
+                ) {
+                    console.debug(
+                        `[LocalAI] WebGPU pipeline failed for ${modelId}, retrying with WASM.`,
+                    )
+                    forceWasmOverride = true
+                    detectedBackend = null
+                    mergedOptions.device = undefined
+                    return await (pipeline(
+                        task as never,
+                        modelId,
+                        mergedOptions as never,
+                    ) as Promise<LocalAiPipeline>)
+                }
+                throw pipelineError
+            }
         } finally {
             releaseLoadSlot()
         }
@@ -210,7 +236,7 @@ export interface ModelProfile {
 /** Transformers.js model IDs by size tier. */
 const TRANSFORMERS_MODELS: Record<ModelSizeTier, string> = {
     '1.5B': 'Xenova/Qwen2.5-1.5B-Instruct',
-    '0.5B': 'Xenova/Qwen3-0.5B',
+    '0.5B': 'Xenova/Qwen2.5-0.5B-Instruct',
 }
 
 /** WebLLM model IDs by size tier (q4f16 quantization). */

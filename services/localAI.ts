@@ -43,7 +43,7 @@ import { z } from 'zod'
 
 const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
 /** Fallback text model ID (always the lightweight 0.5B). */
-const ALT_TEXT_MODEL_ID = 'Xenova/Qwen3-0.5B'
+const ALT_TEXT_MODEL_ID = 'Xenova/Qwen2.5-0.5B-Instruct'
 
 /** Resolve the active WebLLM model ID via the progressive quantization profile. */
 const getWebLlmModelId = (): string | null => getResolvedProfile().webLlmModelId

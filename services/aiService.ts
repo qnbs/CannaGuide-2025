@@ -19,6 +19,23 @@ import {
 
 const DYNAMIC_IMPORT_TIMEOUT_MS = 15_000
 
+type NutrientRecommendationInput = {
+    medium: string
+    stage: string
+    currentEc: number
+    currentPh: number
+    optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
+    readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
+    plant?: {
+        name: string
+        strain: { name: string }
+        stage: string
+        age: number
+        health: number
+        medium: { ph: number; ec: number }
+    }
+}
+
 const getGeminiService = async () => {
     const { geminiService } = await import('@/services/geminiService')
     return geminiService
@@ -94,12 +111,39 @@ async function withLocalFallback<T>(
     try {
         return await cloudFn()
     } catch (error) {
-        console.warn(
+        console.debug(
             '[AI] Cloud call failed, falling back to local AI:',
             error instanceof Error ? error.message : error,
         )
         return localFallback()
     }
+}
+
+const resolveRagContext = async (plants: Plant[], query: string): Promise<string> => {
+    try {
+        return await growLogRagService.retrieveSemanticContext(plants, query)
+    } catch {
+        return growLogRagService.retrieveRelevantContext(plants, query)
+    }
+}
+
+const runRouted = async <T>(
+    localCall: () => Promise<T>,
+    cloudCall: () => Promise<T>,
+    fallbackCall: () => Promise<T> | T,
+): Promise<T> => {
+    if (shouldRouteLocally()) {
+        return localCall()
+    }
+
+    return withLocalFallback(cloudCall, fallbackCall)
+}
+
+const withLocalService = async <T>(
+    fn: (local: Awaited<ReturnType<typeof getLocalAiService>>) => Promise<T>,
+): Promise<T> => {
+    const local = await getLocalAiService()
+    return fn(local)
 }
 
 const buildMentorStreamPrompt = (
@@ -147,50 +191,21 @@ const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMes
 
 export const aiService = {
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.getEquipmentRecommendation(prompt, lang)
-        }
-
-        return withLocalFallback(
+        return runRouted(
+            () => withLocalService((local) => local.getEquipmentRecommendation(prompt, lang)),
             async () => (await getGeminiService()).getEquipmentRecommendation(prompt, lang),
-            async () => {
-                const local = await getLocalAiService()
-                return local.getEquipmentRecommendation(prompt, lang)
-            },
+            () => withLocalService((local) => local.getEquipmentRecommendation(prompt, lang)),
         )
     },
 
     async getNutrientRecommendation(
-        context: {
-            medium: string
-            stage: string
-            currentEc: number
-            currentPh: number
-            optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
-            readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
-            plant?: {
-                name: string
-                strain: { name: string }
-                stage: string
-                age: number
-                health: number
-                medium: { ph: number; ec: number }
-            }
-        },
+        context: NutrientRecommendationInput,
         lang: Language,
     ): Promise<string> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.getNutrientRecommendation(context, lang)
-        }
-
-        return withLocalFallback(
+        return runRouted(
+            () => withLocalService((local) => local.getNutrientRecommendation(context, lang)),
             async () => (await getGeminiService()).getNutrientRecommendation(context, lang),
-            async () => {
-                const local = await getLocalAiService()
-                return local.getNutrientRecommendation(context, lang)
-            },
+            () => withLocalService((local) => local.getNutrientRecommendation(context, lang)),
         )
     },
 
@@ -201,11 +216,11 @@ export const aiService = {
         userNotes: string,
         lang: Language,
     ): Promise<PlantDiagnosisResponse> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
-        }
-        return withLocalFallback(
+        return runRouted(
+            () =>
+                withLocalService((local) =>
+                    local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang),
+                ),
             async () =>
                 (await getGeminiService()).diagnosePlant(
                     base64Image,
@@ -214,30 +229,24 @@ export const aiService = {
                     userNotes,
                     lang,
                 ),
-            async () => {
-                const local = await getLocalAiService()
-                return local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
-            },
+            () =>
+                withLocalService((local) =>
+                    local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang),
+                ),
         )
     },
 
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.getPlantAdvice(plant, lang)
-        }
-        return withLocalFallback(
+        return runRouted(
+            () => withLocalService((local) => local.getPlantAdvice(plant, lang)),
             async () => (await getGeminiService()).getPlantAdvice(plant, lang),
             () => localAiFallbackService.getPlantAdvice(plant, lang),
         )
     },
 
     async getProactiveDiagnosis(plant: Plant, lang: Language): Promise<AIResponse> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.getProactiveDiagnosis(plant, lang)
-        }
-        return withLocalFallback(
+        return runRouted(
+            () => withLocalService((local) => local.getProactiveDiagnosis(plant, lang)),
             async () => (await getGeminiService()).getProactiveDiagnosis(plant, lang),
             () => localAiFallbackService.getPlantAdvice(plant, lang),
         )
@@ -248,17 +257,13 @@ export const aiService = {
         query: string,
         lang: Language,
     ): Promise<Omit<MentorMessage, 'role'>> {
-        if (shouldRouteLocally()) {
-            let ragContext = ''
-            try {
-                ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
-            } catch {
-                ragContext = growLogRagService.retrieveRelevantContext([plant], query)
-            }
-            const local = await getLocalAiService()
-            return local.getMentorResponse(plant, query, lang, ragContext)
-        }
-        return withLocalFallback(
+        return runRouted(
+            async () => {
+                const ragContext = await resolveRagContext([plant], query)
+                return withLocalService((local) =>
+                    local.getMentorResponse(plant, query, lang, ragContext),
+                )
+            },
             async () => (await getGeminiService()).getMentorResponse(plant, query, lang),
             () => localAiFallbackService.getMentorResponse(plant, query, '', lang),
         )
@@ -275,12 +280,7 @@ export const aiService = {
         onToken: (token: string, accumulated: string) => void,
     ): Promise<Omit<MentorMessage, 'role'>> {
         if (shouldRouteLocally()) {
-            let ragContext = ''
-            try {
-                ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
-            } catch {
-                ragContext = growLogRagService.retrieveRelevantContext([plant], query)
-            }
+            const ragContext = await resolveRagContext([plant], query)
             const local = await getLocalAiService()
 
             const prompt = buildMentorStreamPrompt(plant, query, lang, ragContext)
@@ -303,11 +303,8 @@ export const aiService = {
         context: { focus: string; stage: string; experienceLevel: string },
         lang: Language,
     ): Promise<StructuredGrowTips> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.getStrainTips(strain, context, lang)
-        }
-        return withLocalFallback(
+        return runRouted(
+            () => withLocalService((local) => local.getStrainTips(strain, context, lang)),
             async () => (await getGeminiService()).getStrainTips(strain, context, lang),
             () => localAiFallbackService.getStrainTips(strain, lang),
         )
@@ -319,57 +316,43 @@ export const aiService = {
         criteria: { focus: string; composition: string; mood: string },
         lang: Language,
     ): Promise<string> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.generateStrainImage(strain, style, criteria, lang)
-        }
-
-        return withLocalFallback(
+        return runRouted(
+            () =>
+                withLocalService((local) =>
+                    local.generateStrainImage(strain, style, criteria, lang),
+                ),
             async () => (await getGeminiService()).generateStrainImage(strain, style, criteria),
-            async () => {
-                const local = await getLocalAiService()
-                return local.generateStrainImage(strain, style, criteria, lang)
-            },
+            () =>
+                withLocalService((local) =>
+                    local.generateStrainImage(strain, style, criteria, lang),
+                ),
         )
     },
 
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.generateDeepDive(topic, plant, lang)
-        }
-        return withLocalFallback(
+        return runRouted(
+            () => withLocalService((local) => local.generateDeepDive(topic, plant, lang)),
             async () => (await getGeminiService()).generateDeepDive(topic, plant, lang),
-            async () => {
-                const local = await getLocalAiService()
-                return local.generateDeepDive(topic, plant, lang)
-            },
+            () => withLocalService((local) => local.generateDeepDive(topic, plant, lang)),
         )
     },
 
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
-        if (shouldRouteLocally()) {
-            const local = await getLocalAiService()
-            return local.getGardenStatusSummary(plants, lang)
-        }
-        return withLocalFallback(
+        return runRouted(
+            () => withLocalService((local) => local.getGardenStatusSummary(plants, lang)),
             async () => (await getGeminiService()).getGardenStatusSummary(plants, lang),
             () => localAiFallbackService.getGardenStatusSummary(plants, lang),
         )
     },
 
     async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
-        if (shouldRouteLocally()) {
-            let ragContext = ''
-            try {
-                ragContext = await growLogRagService.retrieveSemanticContext(plants, query)
-            } catch {
-                ragContext = growLogRagService.retrieveRelevantContext(plants, query)
-            }
-            const local = await getLocalAiService()
-            return local.getGrowLogRagAnswer(plants, query, lang, ragContext)
-        }
-        return withLocalFallback(
+        return runRouted(
+            async () => {
+                const ragContext = await resolveRagContext(plants, query)
+                return withLocalService((local) =>
+                    local.getGrowLogRagAnswer(plants, query, lang, ragContext),
+                )
+            },
             async () => (await getGeminiService()).getGrowLogRagAnswer(plants, query, lang),
             () => localAiFallbackService.getGrowLogRagAnswer(query, '', lang),
         )

@@ -23,6 +23,7 @@ export interface LocalAiPreloadStatus {
 }
 
 const LOCAL_AI_PRELOAD_STATUS_KEY = 'cg.localai.preload_status'
+const PRELOAD_MAX_RETRIES = 2
 
 const DEFAULT_STATUS: LocalAiPreloadStatus = {
     state: 'idle',
@@ -123,6 +124,39 @@ const getLocalAiService = async () => {
     return module.localAiService
 }
 
+const waitForRetryBackoff = async (attempt: number): Promise<void> => {
+    const jitter = Math.random() * 500
+    await new Promise((resolve) => setTimeout(resolve, 1500 * (attempt + 1) + jitter))
+}
+
+const buildFinalPreloadStatus = (
+    startedAt: number,
+    persistentStorageGranted: boolean | null,
+    report: LocalAiPreloadReport,
+    ecoActive: boolean,
+): LocalAiPreloadStatus => {
+    const coreReady = ecoActive
+        ? report.textModelReady
+        : report.textModelReady && report.visionModelReady
+
+    return {
+        state: coreReady ? 'ready' : 'partial',
+        lastAttemptAt: startedAt,
+        readyAt: coreReady ? Date.now() : null,
+        persistentStorageGranted,
+        textModelReady: report.textModelReady,
+        visionModelReady: report.visionModelReady,
+        webLlmReady: report.webLlmReady,
+        embeddingModelReady: report.embeddingModelReady,
+        sentimentModelReady: report.sentimentModelReady,
+        summarizationModelReady: report.summarizationModelReady,
+        zeroShotTextModelReady: report.zeroShotTextModelReady,
+        languageDetectionReady: report.languageDetectionReady,
+        imageSimilarityReady: report.imageSimilarityReady,
+        details: formatReportDetails(report),
+    }
+}
+
 export const localAiPreloadService = {
     getStatus(): LocalAiPreloadStatus {
         return readStatus()
@@ -160,8 +194,6 @@ export const localAiPreloadService = {
             persistentStorageGranted: persisted,
             details: 'warming-runtime',
         })
-
-        const PRELOAD_MAX_RETRIES = 2
         let lastError: unknown = null
 
         for (let attempt = 0; attempt <= PRELOAD_MAX_RETRIES; attempt++) {
@@ -173,33 +205,12 @@ export const localAiPreloadService = {
                     onProgress,
                     ecoActive,
                 )
-                const coreReady = ecoActive
-                    ? report.textModelReady
-                    : report.textModelReady && report.visionModelReady
-                const finalStatus: LocalAiPreloadStatus = {
-                    state: coreReady ? 'ready' : 'partial',
-                    lastAttemptAt: startedAt,
-                    readyAt: coreReady ? Date.now() : null,
-                    persistentStorageGranted: persisted,
-                    textModelReady: report.textModelReady,
-                    visionModelReady: report.visionModelReady,
-                    webLlmReady: report.webLlmReady,
-                    embeddingModelReady: report.embeddingModelReady,
-                    sentimentModelReady: report.sentimentModelReady,
-                    summarizationModelReady: report.summarizationModelReady,
-                    zeroShotTextModelReady: report.zeroShotTextModelReady,
-                    languageDetectionReady: report.languageDetectionReady,
-                    imageSimilarityReady: report.imageSimilarityReady,
-                    details: formatReportDetails(report),
-                }
-
-                return writeStatus(finalStatus)
+                return writeStatus(buildFinalPreloadStatus(startedAt, persisted, report, ecoActive))
             } catch (error) {
                 lastError = error
                 if (attempt < PRELOAD_MAX_RETRIES) {
                     writeStatus({ ...inProgress, details: `retry-${attempt + 1}` })
-                    const jitter = Math.random() * 500
-                    await new Promise((r) => setTimeout(r, 1500 * (attempt + 1) + jitter))
+                    await waitForRetryBackoff(attempt)
                 }
             }
         }

@@ -245,6 +245,16 @@ interface OpenAiChatResponse {
     }>
 }
 
+const OPENAI_COMPAT_BASE_URLS: Partial<Record<AiProvider, string>> = {
+    openai: 'https://api.openai.com/v1',
+    xai: 'https://api.x.ai/v1',
+}
+
+const buildProviderMessages = (systemPrompt: string, userPrompt: string): OpenAiMessage[] => [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt },
+]
+
 async function callOpenAiCompatible(
     baseUrl: string,
     apiKey: string,
@@ -343,36 +353,23 @@ async function generateTextWithProvider(
     const config = PROVIDER_CONFIGS[provider]
     const model = jsonMode ? config.models.json : config.models.text
 
-    switch (provider) {
-        case 'openai':
-            return callOpenAiCompatible(
-                'https://api.openai.com/v1',
-                apiKey,
-                model,
-                [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt },
-                ],
-                jsonMode,
-                maxTokens,
-            )
-        case 'xai':
-            return callOpenAiCompatible(
-                'https://api.x.ai/v1',
-                apiKey,
-                model,
-                [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt },
-                ],
-                jsonMode,
-                maxTokens,
-            )
-        case 'anthropic':
-            return callAnthropic(apiKey, model, systemPrompt, userPrompt, maxTokens)
-        default:
-            throw new Error('ai.error.generic')
+    if (provider === 'anthropic') {
+        return callAnthropic(apiKey, model, systemPrompt, userPrompt, maxTokens)
     }
+
+    const baseUrl = OPENAI_COMPAT_BASE_URLS[provider]
+    if (!baseUrl) {
+        throw new Error('ai.error.generic')
+    }
+
+    return callOpenAiCompatible(
+        baseUrl,
+        apiKey,
+        model,
+        buildProviderMessages(systemPrompt, userPrompt),
+        jsonMode,
+        maxTokens,
+    )
 }
 
 // ---------------------------------------------------------------------------

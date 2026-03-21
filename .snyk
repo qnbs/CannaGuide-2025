@@ -1,0 +1,12 @@
+# Snyk policy file
+# https://docs.snyk.io/scan-using-snyk/policies/the-.snyk-file
+version: v1.25.0
+
+# npm workspaces: sub-packages are resolved via root package-lock.json
+# No separate lockfiles needed for apps/* and packages/*
+exclude:
+    global:
+        - apps/desktop/package.json
+        - packages/ai-core/package.json
+        - packages/iot-mocks/package.json
+        - packages/ui/package.json

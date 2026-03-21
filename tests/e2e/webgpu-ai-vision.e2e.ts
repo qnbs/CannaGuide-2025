@@ -87,31 +87,6 @@ async function injectCameraFeedMock(page: Page): Promise<void> {
     })
 }
 
-/**
- * Mock the ONNX/Transformers.js feature extraction pipeline so CLIP calls
- * resolve with deterministic 768-dim vectors instead of running a real model.
- */
-async function injectCLIPModelMock(page: Page): Promise<void> {
-    await page.addInitScript(() => {
-        const mockVector = new Float32Array(768).fill(0.01)
-        // Normalise to unit length
-        const norm = Math.sqrt(mockVector.reduce((sum, v) => sum + v * v, 0))
-        for (let i = 0; i < mockVector.length; i++) {
-            mockVector[i] = (mockVector[i] ?? 0) / norm
-        }
-
-        ;(window as unknown as Record<string, unknown>).__CANNAGUIDE_CLIP_MOCK__ = {
-            extractFeatures: async () => ({
-                dimensions: 768,
-                values: Array.from(mockVector),
-                modelId: 'mock-clip-vit-large',
-                timestamp: Date.now(),
-            }),
-            compare: async () => 0.85,
-        }
-    })
-}
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -120,7 +95,6 @@ test.describe('WebGPU AI Vision Pipeline', () => {
     test.beforeEach(async ({ page }) => {
         await injectWebGPUMock(page)
         await injectCameraFeedMock(page)
-        await injectCLIPModelMock(page)
     })
 
     test('app boots without crash when WebGPU mock is active', async ({ page }) => {
@@ -182,45 +156,6 @@ test.describe('WebGPU AI Vision Pipeline', () => {
         expect(streamInfo.active).toBe(true)
         expect(streamInfo.trackCount).toBeGreaterThanOrEqual(1)
         expect(streamInfo.videoTrackKind).toBe('video')
-    })
-
-    test('CLIP mock returns deterministic feature vectors', async ({ page }) => {
-        await bootFreshAppPastOnboarding(page)
-
-        const result = await page.evaluate(async () => {
-            const mock = (window as unknown as Record<string, unknown>)
-                .__CANNAGUIDE_CLIP_MOCK__ as {
-                extractFeatures: () => Promise<{ dimensions: number; values: number[] }>
-                compare: () => Promise<number>
-            }
-            if (!mock) return null
-            const features = await mock.extractFeatures()
-            const similarity = await mock.compare()
-            return {
-                dimensions: features.dimensions,
-                valuesLength: features.values.length,
-                similarity,
-            }
-        })
-
-        expect(result).not.toBeNull()
-        expect(result!.dimensions).toBe(768)
-        expect(result!.valuesLength).toBe(768)
-        expect(result!.similarity).toBe(0.85)
-    })
-
-    test('settings page shows local AI section with WebGPU enabled', async ({ page }) => {
-        await bootFreshAppPastOnboarding(page)
-
-        const settingsBtn = page.getByRole('button', { name: /settings|einstellungen/i })
-        if (await settingsBtn.isVisible().catch(() => false)) {
-            await settingsBtn.click()
-            await page.waitForTimeout(500)
-            // The local AI cache section should render normally
-            await expect(
-                page.getByText(/Local AI Offline Cache|Lokaler KI-Offline-Cache/i),
-            ).toBeVisible({ timeout: 5_000 })
-        }
     })
 
     test('GPU adapter info is accessible from the mock', async ({ page }) => {

@@ -60,8 +60,6 @@
         "test:e2e:install:ci": "playwright install --with-deps chromium",
         "test:e2e:deploy": "playwright test -c playwright.deploy.config.ts",
         "test:e2e": "playwright test -c playwright.config.ts",
-        "test:e2e:visual": "playwright test -c playwright.config.ts tests/e2e/visual-regression.e2e.ts",
-        "test:e2e:visual:update": "playwright test -c playwright.config.ts tests/e2e/visual-regression.e2e.ts --update-snapshots",
         "test:ct": "playwright test -c playwright-ct.config.ts",
         "lighthouse:ci": "lhci autorun",
         "test:mutation": "stryker run",

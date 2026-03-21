@@ -85,7 +85,7 @@ const getWorker = (): Worker | null => {
             processQueue()
         }
         worker.onerror = (event) => {
-            console.warn('[InferenceQueue] Worker error:', event.message)
+            console.debug('[InferenceQueue] Worker error:', event.message)
             // Reject all pending tasks
             for (const [id, pending] of pendingCallbacks) {
                 clearTimeout(pending.timer)

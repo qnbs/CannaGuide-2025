@@ -59,12 +59,15 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(
                             cumulativeDuration += stageInfo.duration
                             const isCompleted = currentAge > cumulativeDuration
                             const isCurrent = currentStage === stage
+                            const opacityClass =
+                                isCompleted || isCurrent ? 'opacity-100' : 'opacity-30'
+                            const currentRingClass = isCurrent ? 'ring-1 ring-white/40' : ''
 
                             return (
                                 <div
                                     key={stage}
                                     style={{ width: `${width}%` }}
-                                    className={`relative transition-all duration-300 ${stageColors[stage]} ${isCompleted || isCurrent ? 'opacity-100' : 'opacity-30'} ${isCurrent ? 'ring-1 ring-white/40' : ''}`}
+                                    className={`relative transition-all duration-300 ${stageColors[stage]} ${opacityClass} ${currentRingClass}`}
                                     title={`${t(`plantStages.${stage}`)} (~${stageInfo.duration} ${t('common.units.days')})`}
                                 >
                                     {/* Show duration label on wider segments */}
@@ -90,13 +93,15 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-300">
                     {relevantStages.map((stage) => {
                         const isCurrent = currentStage === stage
+                        const currentTextClass = isCurrent ? 'text-white font-semibold' : ''
+                        const dotRingClass = isCurrent ? 'ring-1 ring-white/50' : ''
                         return (
                             <span
                                 key={stage}
-                                className={`flex items-center gap-1.5 ${isCurrent ? 'text-white font-semibold' : ''}`}
+                                className={`flex items-center gap-1.5 ${currentTextClass}`}
                             >
                                 <div
-                                    className={`w-2 h-2 rounded-full ${stageColors[stage]} ${isCurrent ? 'ring-1 ring-white/50' : ''}`}
+                                    className={`w-2 h-2 rounded-full ${stageColors[stage]} ${dotRingClass}`}
                                 ></div>
                                 {t(`plantStages.${stage}`)}
                             </span>

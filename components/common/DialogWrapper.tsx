@@ -120,7 +120,6 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
                             transform: isDrawer && dragY > 0 ? `translateY(${dragY}px)` : undefined,
                             transition: dragY > 0 ? 'none' : 'transform 160ms ease-out',
                         }}
-                        aria-describedby={description ? undefined : undefined}
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}

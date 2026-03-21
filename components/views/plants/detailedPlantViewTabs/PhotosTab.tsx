@@ -99,10 +99,9 @@ const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () =>
         }, [onClose])
 
         return (
-            <div
+            <dialog
+                open
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in"
-                role="dialog"
-                aria-modal="true"
                 aria-label={entry.notes}
                 onKeyDown={(e) => {
                     if (e.key === 'Escape') onClose()
@@ -134,7 +133,7 @@ const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () =>
                         </p>
                     </div>
                 </div>
-            </div>
+            </dialog>
         )
     },
 )

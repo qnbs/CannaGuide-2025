@@ -146,6 +146,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
     const commandCount = allCommands.length
     const matchCount = displayedCommands.filter((c) => !c.isHeader).length
+    const shouldShowMatchCount = deferredQuery.trim().length > 0
+    const shouldShowSearchSpinner = !shouldShowMatchCount && isSearching
 
     return (
         <Cmdk.Dialog
@@ -191,11 +193,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 />
                 {/* Result count badge */}
                 <div className="pointer-events-none absolute right-7 top-1/2 -translate-y-1/2">
-                    {deferredQuery.trim() ? (
+                    {shouldShowMatchCount ? (
                         <span className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] font-medium tabular-nums text-slate-500">
                             {matchCount}/{commandCount}
                         </span>
-                    ) : isSearching ? (
+                    ) : shouldShowSearchSpinner ? (
                         <span className="h-3 w-3 animate-spin rounded-full border-2 border-primary-400 border-t-transparent" />
                     ) : null}
                 </div>

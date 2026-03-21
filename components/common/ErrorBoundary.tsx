@@ -58,7 +58,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         }
     }
 
-    private requestSafeRecovery = () => {
+    private readonly requestSafeRecovery = () => {
         try {
             window.dispatchEvent(new Event('cannaguide-safe-recovery-request'))
         } catch {

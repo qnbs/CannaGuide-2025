@@ -1876,7 +1876,12 @@ class VPDSimulationService {
             for (let day = 0; day < runDays; day += 1) {
                 const vpd = calculateVpdValue(env)
                 const status = getVPDStatus(vpd, 1.2)
-                const stressDelta = status === 'optimal' ? -1.2 : status === 'danger' ? 4.5 : 2.2
+                let stressDelta = 2.2
+                if (status === 'optimal') {
+                    stressDelta = -1.2
+                } else if (status === 'danger') {
+                    stressDelta = 4.5
+                }
                 projectedPlant = {
                     ...projectedPlant,
                     ageDays: projectedPlant.ageDays + 1,

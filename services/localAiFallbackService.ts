@@ -454,13 +454,24 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
 
     const tent = getTentConfig(isLarge, isBudget)
 
-    const lightWatts = isLarge ? (isBudget ? 320 : 450) : isBudget ? 200 : 300
+    let lightWatts = 300
+    if (isLarge) {
+        lightWatts = isBudget ? 320 : 450
+    } else if (isBudget) {
+        lightWatts = 200
+    }
     const lightName = isBudget
         ? `${lightWatts}W full-spectrum LED`
         : `${lightWatts}W dimmable full-spectrum LED`
 
     const ventilationName = getVentilationName(wantsSmellControl, isSilent)
     const ventilationRationale = getVentilationRationale(wantsSmellControl, isSilent, lang)
+    let ventilationPrice = 190
+    if (wantsSmellControl) {
+        ventilationPrice = isBudget ? 170 : 260
+    } else if (isBudget) {
+        ventilationPrice = 120
+    }
     const soilName = getSoilName(prefersCoco, prefersSoil, lang)
     const nutrientName = getNutrientName(prefersCoco, isAuto, lang)
     const extraName = getExtraName(wantsSmellControl, isBudget, lang)
@@ -489,7 +500,7 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
         ),
         ventilation: makeRecommendationItem(
             ventilationName,
-            wantsSmellControl ? (isBudget ? 170 : 260) : isBudget ? 120 : 190,
+            ventilationPrice,
             ventilationRationale,
         ),
         circulationFan: makeRecommendationItem(
@@ -1112,7 +1123,12 @@ const buildStrainImageSvg = (
     const p = buildStylePalette(style)
     const { centerX: cx, centerY: cy, decorScale } = getCompositionLayout(criteria.composition)
     const cleanName = escapeXml(strain.name.slice(0, 42))
-    const nameFontSize = cleanName.length > 28 ? 48 : cleanName.length > 20 ? 56 : 68
+    let nameFontSize = 68
+    if (cleanName.length > 28) {
+        nameFontSize = 48
+    } else if (cleanName.length > 20) {
+        nameFontSize = 56
+    }
     const typeLabel = escapeXml(strain.type)
     const flowerTypeLabel = escapeXml(strain.floweringType)
     const title = isGerman(lang) ? 'LOKALE STRAIN-VORSCHAU' : 'LOCAL STRAIN PREVIEW'
@@ -1144,6 +1160,16 @@ const buildStrainImageSvg = (
     const footerY = Math.max(dataY + 40, 1180)
     const svgHeight = Math.max(1400, footerY + 120)
     const accentBand = buildDynamicAccentBand(criteria.composition, svgHeight, p)
+    const hasDescription = description.length > 0
+    const hasLongDescription =
+        typeof strain.description === 'string' && strain.description.length > 100
+    const descriptionLine = hasDescription
+        ? `<text x="86" y="${footerY + 32}" font-size="16" opacity="0.45">${description}${hasLongDescription ? '\u2026' : ''}</text>`
+        : ''
+    const metadataMainY = footerY + (hasDescription ? 60 : 34)
+    const metadataSubY = footerY + (hasDescription ? 88 : 62)
+    const signatureDotsY = footerY + (hasDescription ? 75 : 50)
+    const geneticsSuffix = genetics.length > 0 ? ` \u00b7 ${genetics}` : ''
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 ${svgHeight}" role="img" aria-label="${cleanName} — ${typeLabel} ${flowerTypeLabel} cannabis strain poster, ${escapeXml(style)} style, ${escapeXml(criteria.focus)} focus, ${escapeXml(criteria.mood)} mood">
     <defs>
@@ -1228,21 +1254,21 @@ const buildStrainImageSvg = (
     <!-- Strain name -->
     <g fill="${p.text}" font-family="'Inter',sans-serif">
         <text x="86" y="${footerY}" font-size="${nameFontSize}" font-weight="700">${cleanName}</text>
-        ${description ? `<text x="86" y="${footerY + 32}" font-size="16" opacity="0.45">${description}${strain.description && strain.description.length > 100 ? '\u2026' : ''}</text>` : ''}
+        ${descriptionLine}
     </g>
 
     <!-- Metadata -->
     <g fill="${p.textDim}" font-family="'Inter',sans-serif" opacity="0.55">
-        <text x="86" y="${footerY + (description ? 60 : 34)}" font-size="20">${floweringText}${genetics ? ` \u00b7 ${genetics}` : ''}</text>
-        <text x="86" y="${footerY + (description ? 88 : 62)}" font-size="16" opacity="0.7">${escapeXml(criteria.focus)} \u00b7 ${escapeXml(criteria.composition)} \u00b7 ${escapeXml(criteria.mood)}</text>
+        <text x="86" y="${metadataMainY}" font-size="20">${floweringText}${geneticsSuffix}</text>
+        <text x="86" y="${metadataSubY}" font-size="16" opacity="0.7">${escapeXml(criteria.focus)} \u00b7 ${escapeXml(criteria.composition)} \u00b7 ${escapeXml(criteria.mood)}</text>
     </g>
 
     <!-- Signature dots -->
     <g fill="${p.accent}" opacity="0.6">
-        <circle cx="1060" cy="${footerY + (description ? 75 : 50)}" r="4"/>
-        <circle cx="1080" cy="${footerY + (description ? 75 : 50)}" r="4"/>
-        <circle cx="1100" cy="${footerY + (description ? 75 : 50)}" r="4"/>
-        <circle cx="1120" cy="${footerY + (description ? 75 : 50)}" r="3" fill="${p.accent2}"/>
+        <circle cx="1060" cy="${signatureDotsY}" r="4"/>
+        <circle cx="1080" cy="${signatureDotsY}" r="4"/>
+        <circle cx="1100" cy="${signatureDotsY}" r="4"/>
+        <circle cx="1120" cy="${signatureDotsY}" r="3" fill="${p.accent2}"/>
     </g>
 </svg>`
 }
@@ -1347,7 +1373,12 @@ class LocalAiFallbackService {
     }
 
     getStrainTips(strain: Strain, lang: Language): StructuredGrowTips {
-        const thcLevel = strain.thc > 25 ? 'high' : strain.thc > 15 ? 'medium' : 'low'
+        let thcLevel: 'high' | 'medium' | 'low' = 'low'
+        if (strain.thc > 25) {
+            thcLevel = 'high'
+        } else if (strain.thc > 15) {
+            thcLevel = 'medium'
+        }
 
         if (isGerman(lang)) {
             return {

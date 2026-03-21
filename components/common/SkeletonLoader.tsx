@@ -55,11 +55,15 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     containerClassName,
     variant = 'default',
 }) => {
+    const listSkeletonIds = Array.from({ length: count }, (_, idx) => `list-skeleton-${idx}`)
+    const gridSkeletonIds = Array.from({ length: count }, (_, idx) => `grid-skeleton-${idx}`)
+    const defaultSkeletonIds = Array.from({ length: count }, (_, idx) => `skeleton-${idx}`)
+
     if (variant === 'list') {
         return (
             <div className={containerClassName || 'space-y-2'}>
-                {Array.from({ length: count }).map((_, i) => (
-                    <ListSkeleton key={i} />
+                {listSkeletonIds.map((id) => (
+                    <ListSkeleton key={id} />
                 ))}
             </div>
         )
@@ -73,15 +77,15 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                     'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'
                 }
             >
-                {Array.from({ length: count }).map((_, i) => (
-                    <GridSkeleton key={i} />
+                {gridSkeletonIds.map((id) => (
+                    <GridSkeleton key={id} />
                 ))}
             </div>
         )
     }
 
-    const skeletons = Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={`${className} animate-pulse`}></div>
+    const skeletons = defaultSkeletonIds.map((id) => (
+        <div key={id} className={`${className} animate-pulse`}></div>
     ))
 
     if (count === 1) {

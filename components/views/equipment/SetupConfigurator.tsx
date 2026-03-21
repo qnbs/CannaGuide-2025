@@ -27,11 +27,13 @@ interface SetupConfiguratorProps {
 const Stepper: React.FC<{ currentStep: number; steps: string[] }> = ({ currentStep, steps }) => (
     <div className="flex items-center justify-center mb-4 sm:mb-6">
         {steps.map((step, index) => (
-            <React.Fragment key={index}>
+            <React.Fragment key={step}>
                 <div className="flex flex-col items-center">
                     <div
                         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors ${
-                            index + 1 <= currentStep ? 'bg-primary-500 text-white' : 'bg-slate-700 text-slate-400'
+                            index + 1 <= currentStep
+                                ? 'bg-primary-500 text-white'
+                                : 'bg-slate-700 text-slate-400'
                         }`}
                     >
                         {index + 1}
@@ -99,8 +101,10 @@ const SetupResultDisplayComponent: React.FC<{
             </h2>
             <p className="text-slate-300 mb-4 text-sm">
                 {t('equipmentView.configurator.resultsSubtitleAdvanced', {
-                    plantCount: parseInt(sourceDetails.plantCount, 10),
-                    experience: t(`strainsView.tips.form.experienceOptions.${sourceDetails.experience}`),
+                    plantCount: Number.parseInt(sourceDetails.plantCount, 10),
+                    experience: t(
+                        `strainsView.tips.form.experienceOptions.${sourceDetails.experience}`,
+                    ),
                     budget: sourceDetails.budget,
                     priorities: prioritiesText,
                 })}
@@ -116,17 +120,26 @@ const SetupResultDisplayComponent: React.FC<{
                         <div key={key} className="p-3 bg-slate-800/50 rounded-lg">
                             <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-1">
                                 <div>
-                                    <h4 className="font-semibold text-slate-100">{categoryLabel}</h4>
+                                    <h4 className="font-semibold text-slate-100">
+                                        {categoryLabel}
+                                    </h4>
                                     <p className="text-sm text-primary-300">
                                         {item.name} {item.watts && `(${item.watts}W)`}
                                     </p>
                                 </div>
                                 <p className="text-sm font-mono font-semibold text-slate-200 flex-shrink-0">
-                                    {price !== null ? `${price.toFixed(2)} ${t('common.units.currency_eur')}` : t('equipmentView.configurator.noPriceAvailable')}
+                                    {price !== null
+                                        ? `${price.toFixed(2)} ${t('common.units.currency_eur')}`
+                                        : t('equipmentView.configurator.noPriceAvailable')}
                                 </p>
                             </div>
                             <p className="text-xs text-slate-400 mt-1 italic">
-                                &quot;{typeof item.rationale === 'string' && item.rationale.trim().length > 0 ? item.rationale : t('equipmentView.configurator.noRationaleAvailable')}&quot;
+                                &quot;
+                                {typeof item.rationale === 'string' &&
+                                item.rationale.trim().length > 0
+                                    ? item.rationale
+                                    : t('equipmentView.configurator.noRationaleAvailable')}
+                                &quot;
                             </p>
                         </div>
                     )
@@ -194,7 +207,15 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             growSpace,
             floweringTypePreference,
         }),
-        [plantCount, experience, budget, priorities, customNotes, growSpace, floweringTypePreference],
+        [
+            plantCount,
+            experience,
+            budget,
+            priorities,
+            customNotes,
+            growSpace,
+            floweringTypePreference,
+        ],
     )
 
     useEffect(() => {
@@ -224,7 +245,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             .join(', ')
 
         const prompt = t('ai.prompts.equipmentRequestAdvanced', {
-            plantCount: parseInt(plantCount, 10),
+            plantCount: Number.parseInt(plantCount, 10),
             growSpaceWidth: growSpace.width,
             growSpaceDepth: growSpace.depth,
             experienceLevel: t(`strainsView.tips.form.experienceOptions.${experience}`),
@@ -239,9 +260,10 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
 
     const handleSaveSetup = () => {
         if (!recommendation) return
-        const totalCost = (
-            Object.values(recommendation) as (RecommendationItem | string)[]
-        ).reduce((sum, item) => (typeof item === 'object' && item.price ? sum + item.price : sum), 0)
+        const totalCost = (Object.values(recommendation) as (RecommendationItem | string)[]).reduce(
+            (sum, item) => (typeof item === 'object' && item.price ? sum + item.price : sum),
+            0,
+        )
 
         onSaveSetup({ recommendation, totalCost, sourceDetails })
     }
@@ -290,9 +312,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             <div className="text-center p-8">
                 <PhosphorIcons.XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                 <p className="text-red-400">{t('equipmentView.configurator.error')}</p>
-                <p className="text-sm text-slate-400 mb-4">
-                    {setupErrorMessage}
-                </p>
+                <p className="text-sm text-slate-400 mb-4">{setupErrorMessage}</p>
                 <Button onClick={handleGenerate}>{t('equipmentView.configurator.tryAgain')}</Button>
             </div>
         )
@@ -326,14 +346,21 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                             value={[plantCount]}
                             onToggle={(v) => setPlantCount(v as PlantCount)}
                             options={[
-                                { value: '1', label: t('equipmentView.configurator.plantCount_one') },
+                                {
+                                    value: '1',
+                                    label: t('equipmentView.configurator.plantCount_one'),
+                                },
                                 {
                                     value: '2',
-                                    label: t('equipmentView.configurator.plantCount_other', { count: 2 }),
+                                    label: t('equipmentView.configurator.plantCount_other', {
+                                        count: 2,
+                                    }),
                                 },
                                 {
                                     value: '3',
-                                    label: t('equipmentView.configurator.plantCount_other', { count: 3 }),
+                                    label: t('equipmentView.configurator.plantCount_other', {
+                                        count: 3,
+                                    }),
                                 },
                             ]}
                         />
@@ -343,7 +370,9 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                             value={[experience]}
                             onToggle={(v) => setExperience(v as ExperienceLevel)}
                             options={Object.keys(
-                                t('strainsView.tips.form.experienceOptions', { returnObjects: true }),
+                                t('strainsView.tips.form.experienceOptions', {
+                                    returnObjects: true,
+                                }),
                             ).map((k) => ({
                                 value: k as ExperienceLevel,
                                 label: t(`strainsView.tips.form.experienceOptions.${k}`),
@@ -359,7 +388,10 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                             type="number"
                             value={growSpace.width}
                             onChange={(e) =>
-                                setGrowSpace((s) => ({ ...s, width: parseInt(e.target.value, 10) || 0 }))
+                                setGrowSpace((s) => ({
+                                    ...s,
+                                    width: Number.parseInt(e.target.value, 10) || 0,
+                                }))
                             }
                         />
                         <Input
@@ -367,16 +399,29 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                             type="number"
                             value={growSpace.depth}
                             onChange={(e) =>
-                                setGrowSpace((s) => ({ ...s, depth: parseInt(e.target.value, 10) || 0 }))
+                                setGrowSpace((s) => ({
+                                    ...s,
+                                    depth: Number.parseInt(e.target.value, 10) || 0,
+                                }))
                             }
                         />
                     </FormSection>
-                    <FormSection title={t('equipmentView.configurator.floweringTypeTitle')} defaultOpen>
+                    <FormSection
+                        title={t('equipmentView.configurator.floweringTypeTitle')}
+                        defaultOpen
+                    >
                         <SegmentedControl
                             value={[floweringTypePreference]}
-                            onToggle={(v) => setFloweringTypePreference(v as 'any' | 'autoflower' | 'photoperiod')}
+                            onToggle={(v) =>
+                                setFloweringTypePreference(
+                                    v as 'any' | 'autoflower' | 'photoperiod',
+                                )
+                            }
                             options={[
-                                { value: 'any', label: t('equipmentView.configurator.floweringTypeAny') },
+                                {
+                                    value: 'any',
+                                    label: t('equipmentView.configurator.floweringTypeAny'),
+                                },
                                 {
                                     value: 'autoflower',
                                     label: t('equipmentView.configurator.floweringTypeAutoflower'),
@@ -419,7 +464,9 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                                 value={priorities}
                                 onToggle={handlePriorityToggle}
                                 options={Object.keys(
-                                    t('equipmentView.configurator.priorities', { returnObjects: true }),
+                                    t('equipmentView.configurator.priorities', {
+                                        returnObjects: true,
+                                    }),
                                 ).map((k) => ({
                                     value: k as GrowPriority,
                                     label: t(`equipmentView.configurator.priorities.${k}`),

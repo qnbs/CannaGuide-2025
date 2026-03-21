@@ -44,7 +44,11 @@ ${response.longTermSolution}
 ${response.prevention}
         `
 
-        const journalDetails: { diagnosis: string; imageId?: string; photoCategory: PhotoCategory } = {
+        const journalDetails: {
+            diagnosis: string
+            imageId?: string
+            photoCategory: PhotoCategory
+        } = {
             diagnosis: content,
             photoCategory: PhotoCategory.ProblemArea,
         }
@@ -172,7 +176,9 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
     const cameraButtonRef = useRef<HTMLButtonElement>(null)
     const [userNotes, setUserNotes] = useState('')
     const [loadingMessage, setLoadingMessage] = useState('')
-    const [consentGiven, setConsentGiven] = useState(() => localStorage.getItem(IMAGE_CONSENT_KEY) === '1')
+    const [consentGiven, setConsentGiven] = useState(
+        () => localStorage.getItem(IMAGE_CONSENT_KEY) === '1',
+    )
 
     const step = useMemo(() => {
         if (isLoading || response || error) return 'result'
@@ -313,12 +319,19 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                             {!consentGiven ? (
                                 <div className="rounded-xl border border-amber-500/40 bg-amber-900/20 p-4 space-y-3">
                                     <div className="flex items-start gap-3">
-                                        <PhosphorIcons.WarningCircle weight="fill" className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                                        <PhosphorIcons.WarningCircle
+                                            weight="fill"
+                                            className="w-5 h-5 text-amber-400 mt-0.5 shrink-0"
+                                        />
                                         <p className="text-sm text-amber-200">
                                             {t('legal.imageConsent.banner')}
                                         </p>
                                     </div>
-                                    <Button onClick={handleAcceptConsent} variant="secondary" className="w-full min-h-11">
+                                    <Button
+                                        onClick={handleAcceptConsent}
+                                        variant="secondary"
+                                        className="w-full min-h-11"
+                                    >
                                         <PhosphorIcons.CheckCircle className="w-5 h-5 mr-2" />
                                         {t('legal.imageConsent.accept')}
                                     </Button>
@@ -337,7 +350,8 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     </button>
                                 </div>
                             )}
-                            <div
+                            <button
+                                type="button"
                                 onDragEnter={consentGiven ? handleDragIn : undefined}
                                 onDragLeave={consentGiven ? handleDragOut : undefined}
                                 onDragOver={consentGiven ? handleDrag : undefined}
@@ -347,24 +361,18 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                         ? 'border-primary-500 bg-primary-900/20'
                                         : 'border-slate-600 hover:border-slate-500'
                                 }`}
-                                onClick={() => consentGiven && document.getElementById('ai-diag-image-upload')?.click()
+                                onClick={() =>
+                                    consentGiven &&
+                                    document.getElementById('ai-diag-image-upload')?.click()
                                 }
-                                onKeyDown={(e) => {
-                                    if ((e.key === 'Enter' || e.key === ' ') && consentGiven) {
-                                        e.preventDefault()
-                                        document.getElementById('ai-diag-image-upload')?.click()
-                                    }
-                                }}
-                                role="button"
-                                tabIndex={consentGiven ? 0 : -1}
+                                disabled={!consentGiven}
                                 aria-label={t('plantsView.actionModals.photo.selectImage')}
-                                aria-disabled={!consentGiven}
                             >
                                 <PhosphorIcons.UploadSimple className="w-12 h-12 mx-auto text-slate-400 mb-2" />
                                 <p className="font-semibold text-slate-300">
                                     {t('plantsView.aiDiagnostics.dragDrop')}
                                 </p>
-                            </div>
+                            </button>
                             <input
                                 id="ai-diag-image-upload"
                                 type="file"
@@ -436,7 +444,10 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                         <div>
                             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                             {Boolean(error) && (
-                                <div className="text-red-400 p-4 bg-red-900/20 rounded-lg" role="alert">
+                                <div
+                                    className="text-red-400 p-4 bg-red-900/20 rounded-lg"
+                                    role="alert"
+                                >
                                     {errorMessage}
                                 </div>
                             )}
@@ -447,8 +458,12 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     image={image}
                                 />
                             )}
-                            <p className="text-xs text-slate-500 italic mt-4 text-center">{t('ai.disclaimer')}</p>
-                            <p className="text-xs text-red-400/80 italic mt-1 text-center">{t('legal.medicalDisclaimer')}</p>
+                            <p className="text-xs text-slate-500 italic mt-4 text-center">
+                                {t('ai.disclaimer')}
+                            </p>
+                            <p className="text-xs text-red-400/80 italic mt-1 text-center">
+                                {t('legal.medicalDisclaimer')}
+                            </p>
                         </div>
                     )}
                 </div>

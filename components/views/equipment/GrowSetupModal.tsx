@@ -29,10 +29,13 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
     const { t } = useTranslation()
     const settings = useAppSelector(selectSettings)
 
-    const initialSetup = useMemo<GrowSetup>(() => ({
-        ...settings.defaults.growSetup,
-        lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,
-    }), [settings.defaults.growSetup, strain.floweringType])
+    const initialSetup = useMemo<GrowSetup>(
+        () => ({
+            ...settings.defaults.growSetup,
+            lightHours: 18,
+        }),
+        [settings.defaults.growSetup, strain.floweringType],
+    )
 
     const [setup, setSetup] = useState<GrowSetup>(initialSetup)
 
@@ -89,7 +92,9 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                         />
                         <InfoRow
                             label={t('strainsView.table.difficulty')}
-                            value={t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)}
+                            value={t(
+                                `strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`,
+                            )}
                         />
                     </div>
                 </Card>
@@ -102,7 +107,9 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                     <div className="sm:col-span-2">
                         <SegmentedControl
                             value={[setup.lightType || 'LED']}
-                            onToggle={(val) => setSetup((s) => ({ ...s, lightType: val as LightType }))}
+                            onToggle={(val) =>
+                                setSetup((s) => ({ ...s, lightType: val as LightType }))
+                            }
                             options={[
                                 { value: 'LED', label: t('plantsView.setupModal.lightTypes.led') },
                                 { value: 'HPS', label: t('plantsView.setupModal.lightTypes.hps') },

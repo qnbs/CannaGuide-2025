@@ -42,26 +42,18 @@ export const AgeGateModal: React.FC<AgeGateModalProps> = ({ onVerified }) => {
     }
 
     return (
-        <div
+        <dialog
+            open
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgb(var(--color-bg-primary))] p-6"
-            role="dialog"
-            aria-modal="true"
             aria-labelledby="age-gate-title"
         >
             <div className="max-w-lg w-full text-center space-y-6">
                 <CannabisLeafIcon className="w-20 h-20 text-primary-500 mx-auto" />
-                <h1
-                    id="age-gate-title"
-                    className="text-2xl font-bold font-display text-slate-100"
-                >
+                <h1 id="age-gate-title" className="text-2xl font-bold font-display text-slate-100">
                     {t('legal.ageGate.title')}
                 </h1>
-                <p className="text-slate-400 text-sm">
-                    {t('legal.ageGate.subtitle')}
-                </p>
-                <p className="text-slate-300 text-sm leading-relaxed">
-                    {t('legal.ageGate.body')}
-                </p>
+                <p className="text-slate-400 text-sm">{t('legal.ageGate.subtitle')}</p>
+                <p className="text-slate-300 text-sm leading-relaxed">{t('legal.ageGate.body')}</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                     <button
                         onClick={onVerified}
@@ -77,6 +69,6 @@ export const AgeGateModal: React.FC<AgeGateModalProps> = ({ onVerified }) => {
                     </button>
                 </div>
             </div>
-        </div>
+        </dialog>
     )
 }

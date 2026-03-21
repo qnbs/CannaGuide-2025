@@ -17,38 +17,35 @@ export function SegmentedControl<T extends string>({
     buttonClassName = '',
     'aria-label': ariaLabel,
 }: SegmentedControlProps<T>) {
-    const groupRef = useRef<HTMLDivElement>(null)
+    const groupRef = useRef<HTMLFieldSetElement>(null)
 
-    const handleKeyDown = useCallback(
-        (e: React.KeyboardEvent) => {
-            const buttons = Array.from(
-                groupRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? [],
-            )
-            const currentIndex = buttons.indexOf(e.target as HTMLButtonElement)
-            if (currentIndex < 0) return
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        const buttons = Array.from(
+            groupRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+        )
+        const currentIndex = buttons.indexOf(e.target as HTMLButtonElement)
+        if (currentIndex < 0) return
 
-            let nextIndex = -1
-            if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % buttons.length
-            else if (e.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
-            else if (e.key === 'Home') nextIndex = 0
-            else if (e.key === 'End') nextIndex = buttons.length - 1
+        let nextIndex = -1
+        if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % buttons.length
+        else if (e.key === 'ArrowLeft')
+            nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+        else if (e.key === 'Home') nextIndex = 0
+        else if (e.key === 'End') nextIndex = buttons.length - 1
 
-            if (nextIndex >= 0) {
-                e.preventDefault()
-                buttons[nextIndex]?.focus()
-            }
-        },
-        [],
-    )
+        if (nextIndex >= 0) {
+            e.preventDefault()
+            buttons[nextIndex]?.focus()
+        }
+    }, [])
 
     return (
-        <div
+        <fieldset
             ref={groupRef}
             className={`flex flex-wrap items-center gap-2 ${className}`}
-            role="group"
-            aria-label={ariaLabel}
             onKeyDown={handleKeyDown}
         >
+            {ariaLabel && <legend className="sr-only">{ariaLabel}</legend>}
             {options.map((option) => {
                 const isActive = value.includes(option.value)
                 return (
@@ -68,6 +65,6 @@ export function SegmentedControl<T extends string>({
                     </button>
                 )
             })}
-        </div>
+        </fieldset>
     )
 }

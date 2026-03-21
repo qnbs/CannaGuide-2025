@@ -124,8 +124,10 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
         const typed = output as { label?: string; score?: number }
         const label = (typed.label ?? 'POSITIVE') as 'POSITIVE' | 'NEGATIVE'
         const score = typeof typed.score === 'number' ? typed.score : 0.5
-        const normalized: SentimentResult['normalized'] =
-            score < 0.6 ? 'neutral' : label === 'POSITIVE' ? 'positive' : 'negative'
+        let normalized: SentimentResult['normalized'] = 'neutral'
+        if (score >= 0.6) {
+            normalized = label === 'POSITIVE' ? 'positive' : 'negative'
+        }
         return { label, score, normalized }
     } catch (error) {
         captureLocalAiError(error, { model: SENTIMENT_MODEL_ID, stage: 'inference' })
@@ -301,8 +303,12 @@ export const analyzeJournalSentimentTrend = async (
     const olderAvg = olderSentiments.reduce((sum, s) => sum + s.score, 0) / olderSentiments.length
 
     const delta = recentAvg - olderAvg
-    const overall: JournalSentimentTrend['overall'] =
-        delta > 0.1 ? 'improving' : delta < -0.1 ? 'declining' : 'stable'
+    let overall: JournalSentimentTrend['overall'] = 'stable'
+    if (delta > 0.1) {
+        overall = 'improving'
+    } else if (delta < -0.1) {
+        overall = 'declining'
+    }
 
     return { overall, recentAverage: recentAvg, entryCount: entries.length }
 }

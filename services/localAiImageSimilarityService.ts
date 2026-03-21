@@ -271,8 +271,12 @@ export const analyzeGrowthProgression = async (
     const secondHalf = changes.slice(mid).reduce((s, c) => s + c, 0) / (changes.length - mid)
     const diff = secondHalf - firstHalf
 
-    const trend: GrowthProgressionResult['trend'] =
-        diff > 0.05 ? 'accelerating' : diff < -0.05 ? 'decelerating' : 'stable'
+    let trend: GrowthProgressionResult['trend'] = 'stable'
+    if (diff > 0.05) {
+        trend = 'accelerating'
+    } else if (diff < -0.05) {
+        trend = 'decelerating'
+    }
 
     return { averageChange, changes, trend }
 }

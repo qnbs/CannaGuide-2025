@@ -1,46 +1,56 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Modal } from '@/components/common/Modal';
-import { Button } from '@/components/common/Button';
-import { useTranslation } from 'react-i18next';
-import { SavedSetup } from '@/types';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/common/Card';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import React, { useEffect, useMemo, useState } from 'react'
+import { Modal } from '@/components/common/Modal'
+import { Button } from '@/components/common/Button'
+import { useTranslation } from 'react-i18next'
+import { SavedSetup } from '@/types'
+import { Input } from '@/components/ui/input'
+import { Card } from '@/components/common/Card'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 interface SaveSetupModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (name: string) => void;
-    setupToSave: Omit<SavedSetup, 'id' | 'createdAt' | 'name'>;
+    isOpen: boolean
+    onClose: () => void
+    onSave: (name: string) => void
+    setupToSave: Omit<SavedSetup, 'id' | 'createdAt' | 'name'>
 }
 
-export const SaveSetupModal: React.FC<SaveSetupModalProps> = ({ isOpen, onClose, onSave, setupToSave }) => {
-    const { t } = useTranslation();
-    const { plantCount, experience, budget } = setupToSave.sourceDetails;
+export const SaveSetupModal: React.FC<SaveSetupModalProps> = ({
+    isOpen,
+    onClose,
+    onSave,
+    setupToSave,
+}) => {
+    const { t } = useTranslation()
+    const { plantCount, experience, budget } = setupToSave.sourceDetails
     const suggestedName = useMemo(
-        () => `${t('equipmentView.configurator.plantCount', { count: parseInt(plantCount, 10) })} - ${t(`strainsView.tips.form.experienceOptions.${experience}`)} - ${budget}€`,
+        () =>
+            `${t('equipmentView.configurator.plantCount', { count: Number.parseInt(plantCount, 10) })} - ${t(`strainsView.tips.form.experienceOptions.${experience}`)} - ${budget}€`,
         [budget, experience, plantCount, t],
-    );
-    const [name, setName] = useState(suggestedName);
+    )
+    const [name, setName] = useState(suggestedName)
 
     useEffect(() => {
         if (isOpen) {
-            setName(suggestedName);
+            setName(suggestedName)
         }
-    }, [isOpen, suggestedName]);
+    }, [isOpen, suggestedName])
 
     const handleSave = () => {
         if (name.trim()) {
-            onSave(name.trim());
+            onSave(name.trim())
         }
-    };
+    }
 
     const footer = (
         <>
-            <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-            <Button onClick={handleSave} disabled={!name.trim()} glow={true}>{t('common.save')}</Button>
+            <Button variant="secondary" onClick={onClose}>
+                {t('common.cancel')}
+            </Button>
+            <Button onClick={handleSave} disabled={!name.trim()} glow={true}>
+                {t('common.save')}
+            </Button>
         </>
-    );
+    )
 
     return (
         <Modal
@@ -58,7 +68,9 @@ export const SaveSetupModal: React.FC<SaveSetupModalProps> = ({ isOpen, onClose,
                             {t('equipmentView.configurator.saveSetup')}
                         </div>
                     </div>
-                    <p className="mt-3 text-sm leading-6 text-slate-300">{t('equipmentView.configurator.setupNamePrompt')}</p>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">
+                        {t('equipmentView.configurator.setupNamePrompt')}
+                    </p>
                 </Card>
                 <Input
                     type="text"
@@ -69,5 +81,5 @@ export const SaveSetupModal: React.FC<SaveSetupModalProps> = ({ isOpen, onClose,
                 />
             </div>
         </Modal>
-    );
-};
+    )
+}

@@ -60,14 +60,11 @@ export const VitalBar: React.FC<VitalBarProps> = memo(
                         className="absolute top-0 h-full bg-emerald-500/15 rounded-full"
                         style={{ left: `${zoneLeft}%`, width: `${zoneWidth}%` }}
                     />
-                    <div
-                        role="progressbar"
+                    <progress
+                        value={Math.round(percentage)}
+                        max={100}
                         aria-label={label}
-                        aria-valuenow={Math.round(percentage)}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        className={`h-2.5 rounded-full transition-all duration-300 ${barColor}`}
-                        style={{ width: `${percentage}%` }}
+                        className={`h-2.5 w-full appearance-none rounded-full bg-transparent [&::-moz-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full ${barColor}`}
                     />
                 </div>
                 <p className={`text-xs font-mono ${isIdeal ? 'text-slate-400' : 'text-amber-400'}`}>

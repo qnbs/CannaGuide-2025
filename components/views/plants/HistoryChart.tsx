@@ -257,9 +257,9 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
                         ref={svgRef}
                         viewBox={`0 0 ${width} ${height}`}
                         className="w-full h-full"
-                        role="img"
                         aria-label={t('common.accessibility.plantHistoryChart')}
                     >
+                        <title>{t('common.accessibility.plantHistoryChart')}</title>
                         <defs>
                             <linearGradient id="heightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                                 <stop

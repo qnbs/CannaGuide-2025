@@ -61,6 +61,24 @@ const getJarHumidityTone = (stage: PlantStage, jarHumidity: number): WarningTone
     return 'good'
 }
 
+const getMoldRiskTone = (moldRiskPercent: number): WarningTone => {
+    if (moldRiskPercent > 35) return 'critical'
+    if (moldRiskPercent > 20) return 'warn'
+    return 'good'
+}
+
+const getBurpDebtTone = (burpDebtDays: number): WarningTone => {
+    if (burpDebtDays > 1) return 'critical'
+    if (burpDebtDays > 0) return 'warn'
+    return 'good'
+}
+
+const getTerpeneRetentionTone = (terpeneRetentionPercent: number): WarningTone => {
+    if (terpeneRetentionPercent < 65) return 'critical'
+    if (terpeneRetentionPercent < 80) return 'warn'
+    return 'good'
+}
+
 const buildProcessWarnings = (
     plant: Plant,
     harvestData: NonNullable<Plant['harvestData']>,
@@ -80,29 +98,19 @@ const buildProcessWarnings = (
         title: t('plantsView.postHarvest.thresholds.moldRisk'),
         value: `${harvestData.moldRiskPercent.toFixed(0)}%`,
         description: t('plantsView.postHarvest.thresholds.moldRiskHint'),
-        tone:
-            harvestData.moldRiskPercent > 35
-                ? 'critical'
-                : harvestData.moldRiskPercent > 20
-                  ? 'warn'
-                  : 'good',
+        tone: getMoldRiskTone(harvestData.moldRiskPercent),
     },
     {
         title: t('plantsView.postHarvest.thresholds.burpDebt'),
         value: `${burpDebtDays}`,
         description: t('plantsView.postHarvest.thresholds.burpDebtHint'),
-        tone: burpDebtDays > 1 ? 'critical' : burpDebtDays > 0 ? 'warn' : 'good',
+        tone: getBurpDebtTone(burpDebtDays),
     },
     {
         title: t('plantsView.postHarvest.thresholds.terpeneRetention'),
         value: `${harvestData.terpeneRetentionPercent.toFixed(0)}%`,
         description: t('plantsView.postHarvest.thresholds.terpeneRetentionHint'),
-        tone:
-            harvestData.terpeneRetentionPercent < 65
-                ? 'critical'
-                : harvestData.terpeneRetentionPercent < 80
-                  ? 'warn'
-                  : 'good',
+        tone: getTerpeneRetentionTone(harvestData.terpeneRetentionPercent),
     },
 ]
 
@@ -173,11 +181,13 @@ const BurpCalendar: React.FC<{ currentDay: number; lastBurpDay: number }> = ({
                 {days.map((day) => {
                     const isBurped = day <= lastBurpDay
                     const isCurrent = day === currentDay
+                    const ringClass = isCurrent ? 'ring-2 ring-primary-400' : ''
+                    const stateClass = isBurped ? 'bg-green-500 text-white' : 'bg-slate-700'
                     return (
                         <div
                             key={day}
                             title={`Day ${day}`}
-                            className={`w-6 h-6 rounded-sm flex items-center justify-center text-xs font-bold ${isCurrent ? 'ring-2 ring-primary-400' : ''} ${isBurped ? 'bg-green-500 text-white' : 'bg-slate-700'}`}
+                            className={`w-6 h-6 rounded-sm flex items-center justify-center text-xs font-bold ${ringClass} ${stateClass}`}
                         >
                             {day}
                         </div>

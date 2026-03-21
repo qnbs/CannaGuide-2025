@@ -39,6 +39,12 @@ import {
     debouncedPersistSnapshot,
 } from './localAiTelemetryService'
 import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
+import {
+    setEvictWebLlmHook,
+    setRehydrateWebLlmHook,
+    acquireGpu,
+    releaseGpu,
+} from './gpuResourceManager'
 import { z } from 'zod'
 
 const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
@@ -274,7 +280,15 @@ class LocalAiService implements BaseAIProvider {
             return null
         }
         if (!this.webLlmPromise) {
+            // Register hooks so the GPU mutex can evict/rehydrate WebLLM
+            setEvictWebLlmHook(() => this.evictWebLlm())
+            setRehydrateWebLlmHook(() => {
+                // Mark WebLLM as evicted so next chat request re-initializes lazily
+                this._webLlmEvicted = true
+            })
+
             this.webLlmPromise = (async () => {
+                await acquireGpu('webllm')
                 const PRELOAD_RETRIES = 2
                 for (let attempt = 0; attempt <= PRELOAD_RETRIES; attempt++) {
                     try {
@@ -297,6 +311,7 @@ class LocalAiService implements BaseAIProvider {
                             '[LocalAI] WebLLM unavailable after retries, falling back to Transformers.js.',
                             error,
                         )
+                        releaseGpu('webllm')
                         this.webLlmPromise = null
                         return null
                     }
@@ -305,6 +320,34 @@ class LocalAiService implements BaseAIProvider {
             })()
         }
         return this.webLlmPromise
+    }
+
+    /** Whether WebLLM was evicted by the GPU mutex for image generation. */
+    get webLlmEvicted(): boolean {
+        return this._webLlmEvicted
+    }
+    private _webLlmEvicted = false
+
+    /**
+     * Evict the WebLLM engine to free VRAM for image generation.
+     * Called by the GPU resource manager's eviction hook.
+     */
+    private async evictWebLlm(): Promise<void> {
+        console.debug('[LocalAI] Evicting WebLLM engine to free VRAM')
+        const engine = this.webLlmPromise ? await this.webLlmPromise : null
+        if (
+            engine &&
+            typeof (engine as unknown as { unload?: () => Promise<void> }).unload === 'function'
+        ) {
+            try {
+                await (engine as unknown as { unload: () => Promise<void> }).unload()
+            } catch (error) {
+                captureLocalAiError(error, { stage: 'webllm-eviction' })
+            }
+        }
+        this.webLlmPromise = null
+        this._webLlmEvicted = true
+        releaseGpu('webllm')
     }
 
     private async generateText(prompt: string): Promise<string | null> {
@@ -866,12 +909,13 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
         criteria: { focus: string; composition: string; mood: string },
         lang: Language = 'en',
     ): Promise<string> {
-        // Attempt client-side SD-Turbo diffusion, fall back to SVG heuristic
+        // Attempt client-side SD-Turbo diffusion with GPU mutex, fall back to SVG heuristic
         try {
             const { checkImageGenCapability, generateStrainImageLocal } =
                 await import('./imageGenerationService')
             const capability = checkImageGenCapability()
             if (capability.supported) {
+                // GPU mutex is acquired/released inside generateStrainImageLocal
                 const result = await generateStrainImageLocal({
                     id: `strain-${strain.id}-${Date.now()}`,
                     strain,
@@ -1057,9 +1101,13 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
 
     /** Release all loaded model pipelines and WebLLM engine to free GPU/WASM memory. */
     dispose(): void {
+        if (this.webLlmPromise) {
+            releaseGpu('webllm')
+        }
         this.textPipelinePromise = null
         this.visionPipelinePromise = null
         this.webLlmPromise = null
+        this._webLlmEvicted = false
         clearPipelineCache()
         clearInferenceCache()
     }

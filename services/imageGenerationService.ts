@@ -18,8 +18,14 @@ import type { Strain } from '@/types'
 import type { ImageStyle } from '@/types/aiProvider'
 import { captureLocalAiError } from './sentryService'
 import { detectOnnxBackend } from './localAIModelLoader'
-import { classifyDevice, type DeviceClass } from './localAiHealthService'
+import {
+    classifyDevice,
+    type DeviceClass,
+    isVramInsufficient,
+    getCachedVramInfo,
+} from './localAiHealthService'
 import { getCachedGeneratedImage, setCachedGeneratedImage } from './imageGenerationCacheService'
+import { acquireGpu, releaseGpu, getGpuLockState } from './gpuResourceManager'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -215,6 +221,18 @@ export const checkImageGenCapability = (): ImageGenCapability => {
         }
     }
 
+    // Check VRAM threshold (4 GB minimum for SD-Turbo)
+    if (isVramInsufficient()) {
+        const vram = getCachedVramInfo()
+        return {
+            supported: false,
+            reason: `Insufficient VRAM (${vram?.vramMB ?? '?'}MB). At least 4096MB required for image generation.`,
+            backend,
+            deviceClass,
+            estimatedLatencyMs: -1,
+        }
+    }
+
     const estimatedLatencyMs = deviceClass === 'high-end' ? 2_000 : 8_000
 
     return {
@@ -297,6 +315,15 @@ export const generateStrainImageLocal = async (
         throw new Error('Image generation already in progress. Please wait for the current task.')
     }
 
+    // Check if GPU is already locked by another consumer
+    const lockState = getGpuLockState()
+    if (lockState.locked && lockState.holder !== 'image-gen') {
+        onProgress?.({ phase: 'loading', percent: 0, elapsedMs: 0 })
+    }
+
+    // Acquire exclusive GPU access (may evict WebLLM)
+    await acquireGpu('image-gen')
+
     activeCount++
     const startTime = performance.now()
 
@@ -339,6 +366,7 @@ export const generateStrainImageLocal = async (
         throw error
     } finally {
         activeCount--
+        releaseGpu('image-gen')
     }
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, type MutableRefObject } from 'react'
 
 interface UseVirtualizerOptions {
     count: number
@@ -11,6 +11,33 @@ interface VirtualItem {
     index: number
     offsetTop: number
     height: number
+}
+
+const updateMeasuredSize = (
+    index: number,
+    element: HTMLElement,
+    measuredSizes: MutableRefObject<Map<number, number>>,
+    onChanged: () => void,
+): void => {
+    const nextSize = Math.max(1, Math.round(element.getBoundingClientRect().height))
+    const previousSize = measuredSizes.current.get(index)
+    if (previousSize === nextSize) return
+    measuredSizes.current.set(index, nextSize)
+    onChanged()
+}
+
+const attachElementObserver = (
+    index: number,
+    element: HTMLElement,
+    observers: MutableRefObject<Map<number, ResizeObserver>>,
+    measuredSizes: MutableRefObject<Map<number, number>>,
+    onChanged: () => void,
+): void => {
+    const observer = new ResizeObserver(() => {
+        updateMeasuredSize(index, element, measuredSizes, onChanged)
+    })
+    observer.observe(element)
+    observers.current.set(index, observer)
 }
 
 export const useVirtualizer = ({
@@ -83,21 +110,12 @@ export const useVirtualizer = ({
                 return
             }
 
-            const applyMeasurement = () => {
-                const nextSize = Math.max(1, Math.round(element.getBoundingClientRect().height))
-                const previousSize = measuredSizesRef.current.get(index)
-                if (previousSize === nextSize) return
-                measuredSizesRef.current.set(index, nextSize)
+            const notifySizeChange = () => {
                 setMeasureVersion((version) => version + 1)
             }
 
-            applyMeasurement()
-
-            const observer = new ResizeObserver(() => {
-                applyMeasurement()
-            })
-            observer.observe(element)
-            observersRef.current.set(index, observer)
+            updateMeasuredSize(index, element, measuredSizesRef, notifySizeChange)
+            attachElementObserver(index, element, observersRef, measuredSizesRef, notifySizeChange)
         }
 
         refCallbacksRef.current.set(index, refCallback)

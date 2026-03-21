@@ -84,6 +84,57 @@ const showBrowserNotification = async (
     new Notification(title, { body, tag })
 }
 
+const areNotificationsMuted = (settings: AppSettings): boolean => {
+    const quietHoursEnabled = settings.notifications.quietHours.enabled
+    return (
+        quietHoursEnabled &&
+        isWithinQuietHours(
+            settings.notifications.quietHours.start,
+            settings.notifications.quietHours.end,
+        )
+    )
+}
+
+const findStageChangeEntry = (entries: JournalEntry[]): JournalEntry | undefined =>
+    entries.find(
+        (entry) => entry.type === JournalEntryType.System && entry.notes.startsWith('Stage changed'),
+    )
+
+const notifyPlantEvents = async (
+    settings: AppSettings,
+    plant: Plant,
+    filteredJournalEntries: JournalEntry[],
+    newProblemEntries: JournalEntry[],
+    filteredTasks: Task[],
+): Promise<void> => {
+    if (!settings.notifications.enabled || areNotificationsMuted(settings)) {
+        return
+    }
+
+    const stageChangeEntry = findStageChangeEntry(filteredJournalEntries)
+    if (settings.notifications.stageChange && stageChangeEntry) {
+        await showBrowserNotification(
+            plant.name,
+            stageChangeEntry.notes,
+            `stage-change-${plant.id}`,
+            plant.id,
+        )
+    }
+
+    if (settings.notifications.problemDetected && newProblemEntries.length > 0 && newProblemEntries[0]) {
+        await showBrowserNotification(
+            plant.name,
+            newProblemEntries[0].notes,
+            `problem-${plant.id}`,
+            plant.id,
+        )
+    }
+
+    if (settings.notifications.newTask && filteredTasks.length > 0 && filteredTasks[0]) {
+        await showBrowserNotification(plant.name, filteredTasks[0].title, `task-${plant.id}`, plant.id)
+    }
+}
+
 const simulationSlice = createSlice({
     name: 'simulation',
     initialState,
@@ -477,55 +528,13 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                           }))
                         : []
 
-                    const quietHoursEnabled = settings.notifications.quietHours.enabled
-                    const notificationsMuted =
-                        quietHoursEnabled &&
-                        isWithinQuietHours(
-                            settings.notifications.quietHours.start,
-                            settings.notifications.quietHours.end,
-                        )
-                    const stageChangeEntry = filteredJournalEntries.find(
-                        (entry) =>
-                            entry.type === JournalEntryType.System &&
-                            entry.notes.startsWith('Stage changed'),
+                    await notifyPlantEvents(
+                        settings,
+                        result.updatedPlant,
+                        filteredJournalEntries,
+                        newProblemEntries,
+                        filteredTasks,
                     )
-
-                    if (settings.notifications.enabled && !notificationsMuted) {
-                        if (settings.notifications.stageChange && stageChangeEntry) {
-                            void showBrowserNotification(
-                                result.updatedPlant.name,
-                                stageChangeEntry.notes,
-                                `stage-change-${result.updatedPlant.id}`,
-                                result.updatedPlant.id,
-                            )
-                        }
-
-                        if (
-                            settings.notifications.problemDetected &&
-                            newProblemEntries.length > 0 &&
-                            newProblemEntries[0]
-                        ) {
-                            void showBrowserNotification(
-                                result.updatedPlant.name,
-                                newProblemEntries[0].notes,
-                                `problem-${result.updatedPlant.id}`,
-                                result.updatedPlant.id,
-                            )
-                        }
-
-                        if (
-                            settings.notifications.newTask &&
-                            filteredTasks.length > 0 &&
-                            filteredTasks[0]
-                        ) {
-                            void showBrowserNotification(
-                                result.updatedPlant.name,
-                                filteredTasks[0].title,
-                                `task-${result.updatedPlant.id}`,
-                                result.updatedPlant.id,
-                            )
-                        }
-                    }
 
                     dispatch(
                         simulationSlice.actions.plantStateUpdated({

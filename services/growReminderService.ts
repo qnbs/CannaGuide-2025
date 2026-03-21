@@ -101,6 +101,65 @@ const getDaysToHarvest = (plant: Plant): number => {
     return Math.max(0, Math.round(totalDaysToHarvest - plant.age))
 }
 
+const getRelevantReminders = (reminders: GrowReminder[], targetPlantId?: string): GrowReminder[] =>
+    targetPlantId ? reminders.filter((reminder) => reminder.plantId === targetPlantId) : reminders
+
+const getEnabledBatchReminders = (
+    batch: GrowReminderBatch,
+    settings?: AppSettings,
+): GrowReminder[] => batch.reminders.filter((reminder) => isReminderEnabled(reminder, settings))
+
+const isBatchCoolingDown = (
+    batchId: string,
+    snoozedMap: Record<string, number>,
+    now: number,
+): boolean => {
+    const lastNotified = snoozedMap[batchId] || 0
+    return now - lastNotified < REMINDER_COOLDOWN_MS
+}
+
+const composeBatchMessage = (
+    batch: GrowReminderBatch,
+    reminders: GrowReminder[],
+): { title: string; body: string } | null => {
+    const primaryReminder = reminders[0]
+    if (!primaryReminder) {
+        return null
+    }
+
+    if (reminders.length === 1) {
+        return {
+            title: primaryReminder.title,
+            body: primaryReminder.body,
+        }
+    }
+
+    return {
+        title: `${reminders.length} reminders for ${batch.plantName}`,
+        body: reminders.map((reminder) => reminder.title).join(' · '),
+    }
+}
+
+const notifyReminderBatch = async (
+    batch: GrowReminderBatch,
+    reminders: GrowReminder[],
+    message: { title: string; body: string },
+): Promise<void> => {
+    const registration = await navigator.serviceWorker.getRegistration().catch(() => undefined)
+    if (registration) {
+        await registration.showNotification(message.title, {
+            body: message.body,
+            icon: registration.scope + 'icon.svg',
+            badge: registration.scope + 'icon.svg',
+            tag: `grow-reminder-batch-${batch.id}`,
+            data: { reminderIds: reminders.map((reminder) => reminder.id), plantId: batch.plantId },
+        })
+        return
+    }
+
+    new Notification(message.title, { body: message.body })
+}
+
 class GrowReminderService {
     public buildReminders(plants: Plant[]): GrowReminder[] {
         const now = Date.now()
@@ -139,7 +198,10 @@ class GrowReminderService {
                 })
             }
 
-            if (stageVitals?.ph && (plant.medium.ph < stageVitals.ph.min || plant.medium.ph > stageVitals.ph.max)) {
+            if (
+                stageVitals?.ph &&
+                (plant.medium.ph < stageVitals.ph.min || plant.medium.ph > stageVitals.ph.max)
+            ) {
                 reminders.push({
                     id: `${plant.id}-ph`,
                     plantId: plant.id,
@@ -182,34 +244,41 @@ class GrowReminderService {
             batches.set(reminder.plantId, existing)
         }
 
-        return Array.from(batches.entries()).map(([plantId, plantReminders]) => {
-            const sortedReminders = [...plantReminders].sort((left, right) => {
-                const severityRank = { critical: 0, warning: 1, info: 2 }
-                const severityDelta = severityRank[left.severity] - severityRank[right.severity]
-                if (severityDelta !== 0) return severityDelta
-                return left.dueAt - right.dueAt
+        return Array.from(batches.entries())
+            .map(([plantId, plantReminders]) => {
+                const sortedReminders = [...plantReminders].sort((left, right) => {
+                    const severityRank = { critical: 0, warning: 1, info: 2 }
+                    const severityDelta = severityRank[left.severity] - severityRank[right.severity]
+                    if (severityDelta !== 0) return severityDelta
+                    return left.dueAt - right.dueAt
+                })
+
+                const plantName = sortedReminders[0]?.plantName || 'Plant'
+                const topSeverity = sortedReminders.reduce<'info' | 'warning' | 'critical'>(
+                    (highest, reminder) => {
+                        const severityRank = { critical: 0, warning: 1, info: 2 }
+                        return severityRank[reminder.severity] < severityRank[highest]
+                            ? reminder.severity
+                            : highest
+                    },
+                    'info',
+                )
+
+                return {
+                    id: plantId,
+                    plantId,
+                    plantName,
+                    reminders: sortedReminders,
+                    title:
+                        sortedReminders.length === 1
+                            ? (sortedReminders[0]?.title ?? '')
+                            : `${sortedReminders.length} reminders for ${plantName}`,
+                    body: sortedReminders.map((reminder) => reminder.title).join(' · '),
+                    severity: topSeverity,
+                    dueAt: Math.min(...sortedReminders.map((reminder) => reminder.dueAt)),
+                }
             })
-
-            const plantName = sortedReminders[0]?.plantName || 'Plant'
-            const topSeverity = sortedReminders.reduce<'info' | 'warning' | 'critical'>((highest, reminder) => {
-                const severityRank = { critical: 0, warning: 1, info: 2 }
-                return severityRank[reminder.severity] < severityRank[highest] ? reminder.severity : highest
-            }, 'info')
-
-            return {
-                id: plantId,
-                plantId,
-                plantName,
-                reminders: sortedReminders,
-                title:
-                    sortedReminders.length === 1
-                        ? (sortedReminders[0]?.title ?? '')
-                        : `${sortedReminders.length} reminders for ${plantName}`,
-                body: sortedReminders.map((reminder) => reminder.title).join(' · '),
-                severity: topSeverity,
-                dueAt: Math.min(...sortedReminders.map((reminder) => reminder.dueAt)),
-            }
-        }).sort((left, right) => left.dueAt - right.dueAt)
+            .sort((left, right) => left.dueAt - right.dueAt)
     }
 
     public async requestPermission(): Promise<NotificationPermission> {
@@ -226,12 +295,17 @@ class GrowReminderService {
 
     public async registerPeriodicSync(swRegistration?: ServiceWorkerRegistration): Promise<void> {
         const registration =
-            swRegistration || (await navigator.serviceWorker.getRegistration().catch(() => undefined))
+            swRegistration ||
+            (await navigator.serviceWorker.getRegistration().catch(() => undefined))
         if (!registration) return
 
-        const periodicSync = (registration as ServiceWorkerRegistration & {
-            periodicSync?: { register: (tag: string, options: { minInterval: number }) => Promise<void> }
-        }).periodicSync
+        const periodicSync = (
+            registration as ServiceWorkerRegistration & {
+                periodicSync?: {
+                    register: (tag: string, options: { minInterval: number }) => Promise<void>
+                }
+            }
+        ).periodicSync
 
         if (periodicSync) {
             await periodicSync.register('grow-reminders', { minInterval: 6 * 60 * 60 * 1000 })
@@ -239,7 +313,11 @@ class GrowReminderService {
         }
 
         if ('sync' in registration) {
-            await (registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register('grow-reminders-sync')
+            await (
+                registration as ServiceWorkerRegistration & {
+                    sync: { register: (tag: string) => Promise<void> }
+                }
+            ).sync.register('grow-reminders-sync')
         }
     }
 
@@ -274,44 +352,42 @@ class GrowReminderService {
         return url.toString()
     }
 
-    public async notifyDueReminders(reminders: GrowReminder[], settings?: AppSettings, targetPlantId?: string): Promise<void> {
+    public async notifyDueReminders(
+        reminders: GrowReminder[],
+        settings?: AppSettings,
+        targetPlantId?: string,
+    ): Promise<void> {
         if (Notification.permission !== 'granted') return
-        if (settings?.notifications.quietHours.enabled && isWithinQuietHours(settings.notifications.quietHours.start, settings.notifications.quietHours.end)) {
+        if (
+            settings?.notifications.quietHours.enabled &&
+            isWithinQuietHours(
+                settings.notifications.quietHours.start,
+                settings.notifications.quietHours.end,
+            )
+        ) {
             return
         }
 
         const now = Date.now()
         const snoozedMap = readSnoozedMap()
-        const batches = this.buildReminderBatches(targetPlantId ? reminders.filter((reminder) => reminder.plantId === targetPlantId) : reminders)
+        const batches = this.buildReminderBatches(getRelevantReminders(reminders, targetPlantId))
 
         for (const batch of batches) {
-            const batchReminders = batch.reminders.filter((reminder) => isReminderEnabled(reminder, settings))
+            const batchReminders = getEnabledBatchReminders(batch, settings)
             if (batchReminders.length === 0) {
                 continue
             }
 
-            const lastNotified = snoozedMap[batch.id] || 0
-            if (now - lastNotified < REMINDER_COOLDOWN_MS) {
+            if (isBatchCoolingDown(batch.id, snoozedMap, now)) {
                 continue
             }
 
-            const primaryReminder = batchReminders[0]
-            if (!primaryReminder) continue
-            const title = batchReminders.length === 1 ? primaryReminder.title : `${batchReminders.length} reminders for ${batch.plantName}`
-            const body = batchReminders.length === 1 ? primaryReminder.body : batchReminders.map((reminder) => reminder.title).join(' · ')
-
-            const registration = await navigator.serviceWorker.getRegistration().catch(() => undefined)
-            if (registration) {
-                await registration.showNotification(title, {
-                    body,
-                    icon: registration.scope + 'icon.svg',
-                    badge: registration.scope + 'icon.svg',
-                    tag: `grow-reminder-batch-${batch.id}`,
-                    data: { reminderIds: batchReminders.map((reminder) => reminder.id), plantId: batch.plantId },
-                })
-            } else {
-                new Notification(title, { body })
+            const message = composeBatchMessage(batch, batchReminders)
+            if (!message) {
+                continue
             }
+
+            await notifyReminderBatch(batch, batchReminders, message)
 
             snoozedMap[batch.id] = now
         }

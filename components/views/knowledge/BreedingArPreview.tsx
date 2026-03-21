@@ -57,6 +57,44 @@ const createPlant = (
     return group
 }
 
+const disposeSceneResources = (scene: THREE.Scene): void => {
+    scene.traverse((obj: THREE.Object3D) => {
+        if (!(obj instanceof THREE.Mesh)) {
+            return
+        }
+
+        obj.geometry.dispose()
+        if (Array.isArray(obj.material)) {
+            obj.material.forEach((material: THREE.Material) => material.dispose())
+            return
+        }
+        obj.material.dispose()
+    })
+}
+
+const appendArButton = (
+    renderer: THREE.WebGLRenderer,
+    root: HTMLDivElement | null,
+): HTMLButtonElement | null => {
+    if (!(typeof navigator !== 'undefined' && 'xr' in navigator)) {
+        return null
+    }
+
+    const button = ARButton.createButton(renderer, {
+        requiredFeatures: ['hit-test'],
+        optionalFeatures: ['dom-overlay'],
+        domOverlay: { root: root ?? undefined },
+    })
+
+    if (!button) {
+        return null
+    }
+
+    button.className = `${button.className} mt-3 w-full`
+    root?.appendChild(button)
+    return button
+}
+
 const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
     label,
     vigor,
@@ -198,19 +236,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
         canvas.addEventListener('webglcontextlost', handleContextLost)
         canvas.addEventListener('webglcontextrestored', handleContextRestored)
 
-        let arButton: HTMLButtonElement | null = null
-        if ('xr' in navigator) {
-            const created = ARButton.createButton(renderer, {
-                requiredFeatures: ['hit-test'],
-                optionalFeatures: ['dom-overlay'],
-                domOverlay: { root: containerRef.current ?? undefined },
-            })
-            if (created) {
-                created.className = `${created.className} mt-3 w-full`
-                containerRef.current?.appendChild(created)
-                arButton = created
-            }
-        }
+        const arButton = appendArButton(renderer, containerRef.current)
 
         return () => {
             cancelled = true
@@ -222,16 +248,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
             if (arButton?.parentElement) {
                 arButton.parentElement.removeChild(arButton)
             }
-            scene.traverse((obj: THREE.Mesh) => {
-                if (obj instanceof THREE.Mesh) {
-                    obj.geometry.dispose()
-                    if (Array.isArray(obj.material)) {
-                        obj.material.forEach((m: THREE.MeshStandardMaterial) => m.dispose())
-                    } else {
-                        obj.material.dispose()
-                    }
-                }
-            })
+            disposeSceneResources(scene)
             renderer.dispose()
         }
     }, [

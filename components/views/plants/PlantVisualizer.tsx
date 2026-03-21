@@ -17,6 +17,19 @@ const mapRange = (
     return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
 }
 
+const getStageScale = (stage: PlantStage): { scale: number; yOffset: number } => {
+    switch (stage) {
+        case PlantStage.Seed:
+            return { scale: 0.2, yOffset: 18 }
+        case PlantStage.Germination:
+            return { scale: 0.3, yOffset: 16 }
+        case PlantStage.Seedling:
+            return { scale: 0.5, yOffset: 12 }
+        default:
+            return { scale: 1, yOffset: 0 }
+    }
+}
+
 const Leaf: React.FC<{
     y: number
     size: number
@@ -66,6 +79,93 @@ const Bud: React.FC<{ cx: number; cy: number; size: number; color: string }> = (
     </g>
 )
 
+const DryingOrCuringVisual: React.FC<{
+    stage: PlantStage
+    className?: string
+    stemColor: string
+    leafColor: string
+}> = ({ stage, className, stemColor, leafColor }) => {
+    if (stage === PlantStage.Drying) {
+        return (
+            <div className={`group ${className}`}>
+                <svg
+                    viewBox="0 0 24 24"
+                    className="w-full h-full group-hover:scale-105 transition-transform duration-300 ease-in-out"
+                >
+                    <g transform="translate(12, 2) rotate(180)">
+                        <path
+                            d="M12 22 V 10"
+                            stroke={stemColor}
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                        />
+                        <Bud cx={12} cy={12} size={3} color={leafColor} />
+                        <Bud cx={11} cy={15} size={2.5} color={leafColor} />
+                        <Bud cx={13} cy={15} size={2.5} color={leafColor} />
+                    </g>
+                    <line x1="4" y1="2" x2="20" y2="2" stroke="grey" strokeWidth="1" />
+                </svg>
+            </div>
+        )
+    }
+
+    return (
+        <div className={`group ${className}`}>
+            <svg
+                viewBox="0 0 24 24"
+                className="w-full h-full group-hover:scale-105 transition-transform duration-300 ease-in-out"
+            >
+                <path
+                    d="M6 22 L 6 9 Q 6 5, 12 5 Q 18 5, 18 9 L 18 22 Z"
+                    stroke="rgba(255,255,255,0.2)"
+                    fill="rgba(255,255,255,0.1)"
+                    strokeWidth="1"
+                />
+                <rect x="5" y="3" width="14" height="3" rx="1" fill="grey" />
+                <Bud cx={10} cy={18} size={1.5} color={leafColor} />
+                <Bud cx={14} cy={19} size={1.2} color={leafColor} />
+                <Bud cx={12} cy={14} size={1.8} color={leafColor} />
+                <Bud cx={15} cy={15} size={1.4} color={leafColor} />
+            </svg>
+        </div>
+    )
+}
+
+const buildBuds = (
+    showBuds: boolean,
+    isTopped: boolean,
+    numNodes: number,
+    stemHeight: number,
+    topOffset: number,
+    budSize: number,
+    budColor: string,
+): React.ReactNode[] => {
+    const buds: React.ReactNode[] = []
+    if (!showBuds) {
+        return buds
+    }
+
+    if (isTopped) {
+        buds.push(
+            <Bud key="bt1" cx={10} cy={22 - stemHeight} size={budSize * 1.2} color={budColor} />,
+            <Bud key="bt2" cx={14} cy={22 - stemHeight} size={budSize * 1.2} color={budColor} />,
+        )
+    } else {
+        buds.push(
+            <Bud key="bt" cx={12} cy={22 - stemHeight} size={budSize * 1.5} color={budColor} />,
+        )
+    }
+
+    for (let i = 1; i <= numNodes; i++) {
+        const y = 22 - (i / numNodes) * stemHeight * topOffset
+        buds.push(
+            <Bud key={`bl-${i}`} cx={12} cy={y} size={budSize * (i / numNodes)} color={budColor} />,
+        )
+    }
+
+    return buds
+}
+
 export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, className }) => {
     const { stage, height, stressLevel, structuralModel, isTopped, biomass } = plant
     const healthFactor = (100 - stressLevel) / 100
@@ -80,66 +180,18 @@ export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, cl
         ? `rgba(130, 110, 70, ${healthFactor})`
         : `rgba(var(--color-primary-500), ${mapRange(healthFactor, 0, 1, 0.5, 1)})`
 
-    let scale = 1
-    let yOffset = 0
-    if (stage === PlantStage.Seed) {
-        scale = 0.2
-        yOffset = 18
-    } else if (stage === PlantStage.Germination) {
-        scale = 0.3
-        yOffset = 16
-    } else if (stage === PlantStage.Seedling) {
-        scale = 0.5
-        yOffset = 12
-    }
+    const { scale, yOffset } = getStageScale(stage)
 
     // Drying/Curing Visuals
     if (isDryingOrCuring) {
-        if (stage === PlantStage.Drying) {
-            return (
-                <div className={`group ${className}`}>
-                    <svg
-                        viewBox="0 0 24 24"
-                        className="w-full h-full group-hover:scale-105 transition-transform duration-300 ease-in-out"
-                    >
-                        <g transform="translate(12, 2) rotate(180)">
-                            <path
-                                d="M12 22 V 10"
-                                stroke={stemColor}
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                            />
-                            <Bud cx={12} cy={12} size={3} color={leafColor} />
-                            <Bud cx={11} cy={15} size={2.5} color={leafColor} />
-                            <Bud cx={13} cy={15} size={2.5} color={leafColor} />
-                        </g>
-                        <line x1="4" y1="2" x2="20" y2="2" stroke="grey" strokeWidth="1" />
-                    </svg>
-                </div>
-            )
-        } else {
-            // Curing / Finished
-            return (
-                <div className={`group ${className}`}>
-                    <svg
-                        viewBox="0 0 24 24"
-                        className="w-full h-full group-hover:scale-105 transition-transform duration-300 ease-in-out"
-                    >
-                        <path
-                            d="M6 22 L 6 9 Q 6 5, 12 5 Q 18 5, 18 9 L 18 22 Z"
-                            stroke="rgba(255,255,255,0.2)"
-                            fill="rgba(255,255,255,0.1)"
-                            strokeWidth="1"
-                        />
-                        <rect x="5" y="3" width="14" height="3" rx="1" fill="grey" />
-                        <Bud cx={10} cy={18} size={1.5} color={leafColor} />
-                        <Bud cx={14} cy={19} size={1.2} color={leafColor} />
-                        <Bud cx={12} cy={14} size={1.8} color={leafColor} />
-                        <Bud cx={15} cy={15} size={1.4} color={leafColor} />
-                    </svg>
-                </div>
-            )
-        }
+        return (
+            <DryingOrCuringVisual
+                stage={stage}
+                className={className}
+                stemColor={stemColor}
+                leafColor={leafColor}
+            />
+        )
     }
 
     const stemBaseHeight = 20
@@ -183,45 +235,7 @@ export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, cl
     const showBuds = [PlantStage.Flowering, PlantStage.Harvest].includes(stage)
     const budColor = `rgba(var(--color-secondary-500), ${stage === PlantStage.Harvest ? 1 : 0.8})`
     const budSize = mapRange(biomass.flowers, 0, 100, 0.5, 3)
-    const buds = []
-    if (showBuds) {
-        if (isTopped) {
-            buds.push(
-                <Bud
-                    key="bt1"
-                    cx={10}
-                    cy={22 - stemHeight}
-                    size={budSize * 1.2}
-                    color={budColor}
-                />,
-            )
-            buds.push(
-                <Bud
-                    key="bt2"
-                    cx={14}
-                    cy={22 - stemHeight}
-                    size={budSize * 1.2}
-                    color={budColor}
-                />,
-            )
-        } else {
-            buds.push(
-                <Bud key="bt" cx={12} cy={22 - stemHeight} size={budSize * 1.5} color={budColor} />,
-            )
-        }
-        for (let i = 1; i <= numNodes; i++) {
-            const y = 22 - (i / numNodes) * stemHeight * topOffset
-            buds.push(
-                <Bud
-                    key={`bl-${i}`}
-                    cx={12}
-                    cy={y}
-                    size={budSize * (i / numNodes)}
-                    color={budColor}
-                />,
-            )
-        }
-    }
+    const buds = buildBuds(showBuds, isTopped, numNodes, stemHeight, topOffset, budSize, budColor)
 
     if (stage === PlantStage.Seed || stage === PlantStage.Germination) {
         return (

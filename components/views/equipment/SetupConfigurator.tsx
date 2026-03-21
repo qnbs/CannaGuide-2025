@@ -33,37 +33,40 @@ const resolveErrorMessage = (error: unknown, fallback: string): string => {
 
 const Stepper: React.FC<{ currentStep: number; steps: string[] }> = ({ currentStep, steps }) => (
     <div className="flex items-center justify-center mb-4 sm:mb-6">
-        {steps.map((step, index) => (
-            <React.Fragment key={step}>
-                <div className="flex flex-col items-center">
-                    <div
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors ${
-                            index + 1 <= currentStep
-                                ? 'bg-primary-500 text-white'
-                                : 'bg-slate-700 text-slate-400'
-                        }`}
-                    >
-                        {index + 1}
+        {steps.map((step, index) => {
+            const stepNumber = index + 1
+            const isCurrentOrPast = stepNumber <= currentStep
+            const isConnectorActive = stepNumber < currentStep
+            const stepCircleClass = isCurrentOrPast
+                ? 'bg-primary-500 text-white'
+                : 'bg-slate-700 text-slate-400'
+            const stepLabelClass = isCurrentOrPast
+                ? 'text-primary-300 font-semibold'
+                : 'text-slate-400'
+            const connectorClass = isConnectorActive ? 'bg-primary-500' : 'bg-slate-700'
+
+            return (
+                <React.Fragment key={step}>
+                    <div className="flex flex-col items-center">
+                        <div
+                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors ${stepCircleClass}`}
+                        >
+                            {stepNumber}
+                        </div>
+                        <span
+                            className={`text-[11px] sm:text-xs mt-1 transition-colors ${stepLabelClass}`}
+                        >
+                            {step}
+                        </span>
                     </div>
-                    <span
-                        className={`text-[11px] sm:text-xs mt-1 transition-colors ${
-                            index + 1 <= currentStep
-                                ? 'text-primary-300 font-semibold'
-                                : 'text-slate-400'
-                        }`}
-                    >
-                        {step}
-                    </span>
-                </div>
-                {index < steps.length - 1 && (
-                    <div
-                        className={`flex-1 h-0.5 mx-2 transition-colors ${
-                            index + 1 < currentStep ? 'bg-primary-500' : 'bg-slate-700'
-                        }`}
-                    ></div>
-                )}
-            </React.Fragment>
-        ))}
+                    {index < steps.length - 1 && (
+                        <div
+                            className={`flex-1 h-0.5 mx-2 transition-colors ${connectorClass}`}
+                        ></div>
+                    )}
+                </React.Fragment>
+            )
+        })}
     </div>
 )
 

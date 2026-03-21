@@ -29,39 +29,42 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 
 1. **Fork** the repository on GitHub.
 2. **Clone** your fork locally:
-   ```bash
-   git clone https://github.com/<your-username>/CannaGuide-2025.git
-   cd CannaGuide-2025
-   ```
+    ```bash
+    git clone https://github.com/<your-username>/CannaGuide-2025.git
+    cd CannaGuide-2025
+    ```
 3. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 4. **Start the development server**:
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm run dev
+    ```
 
 ---
 
 ## Development Setup
 
 ### Prerequisites
+
 - **Node.js** ≥ 20
 - **npm** ≥ 10
 
 ### Tech Stack
-| Category | Technology |
-|:--|:--|
-| Frontend | React 19 + TypeScript |
-| State | Redux Toolkit + RTK Query |
-| AI | Google Gemini API (`@google/genai`) |
-| Build | Vite 7 + vite-plugin-pwa |
-| Styling | Tailwind CSS |
-| Testing | Vitest + Playwright |
-| i18n | i18next + react-i18next |
+
+| Category | Technology                          |
+| :------- | :---------------------------------- |
+| Frontend | React 19 + TypeScript               |
+| State    | Redux Toolkit + RTK Query           |
+| AI       | Google Gemini API (`@google/genai`) |
+| Build    | Vite 7 + vite-plugin-pwa            |
+| Styling  | Tailwind CSS                        |
+| Testing  | Vitest + Playwright                 |
+| i18n     | i18next + react-i18next             |
 
 ### Environment
+
 No environment variables are required for local development. AI features require a Gemini API key configured in **Settings → General & UI → AI Security** within the running app.
 
 ---
@@ -89,22 +92,25 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 ### Types
-| Type | Description |
-|:--|:--|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation only |
+
+| Type       | Description                                             |
+| :--------- | :------------------------------------------------------ |
+| `feat`     | New feature                                             |
+| `fix`      | Bug fix                                                 |
+| `docs`     | Documentation only                                      |
 | `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `test` | Adding or updating tests |
-| `perf` | Performance improvement |
-| `chore` | Build process, tooling, or dependency updates |
-| `a11y` | Accessibility improvements |
-| `i18n` | Internationalization changes |
+| `test`     | Adding or updating tests                                |
+| `perf`     | Performance improvement                                 |
+| `chore`    | Build process, tooling, or dependency updates           |
+| `a11y`     | Accessibility improvements                              |
+| `i18n`     | Internationalization changes                            |
 
 ### Scopes
+
 Common scopes: `ai`, `plants`, `strains`, `equipment`, `knowledge`, `settings`, `help`, `genealogy`, `pwa`, `ci`, `security`, `ui`.
 
 ### Examples
+
 ```
 feat(strains): add THC/CBD ratio filter
 fix(plants): prevent VPD gauge overflow on mobile
@@ -132,6 +138,7 @@ npx tsc --noEmit
 ```
 
 ### Rules
+
 - All `dangerouslySetInnerHTML` content **must** be sanitized with DOMPurify.
 - All external links **must** use `rel="noopener noreferrer"`.
 - All AI API calls **must** go through `geminiService.ts` (or the provider abstraction).
@@ -155,6 +162,7 @@ npm run build && npx playwright test
 ```
 
 ### Guidelines
+
 - New features **must** include tests.
 - Bug fixes **should** include a regression test.
 - Test files live next to their source: `MyComponent.test.tsx` or in `tests/`.
@@ -168,23 +176,27 @@ npm run build && npx playwright test
 All user-facing strings must be localized. We support **English (EN)** and **German (DE)**.
 
 ### Adding translations
+
 1. Add your key to the appropriate namespace in `locales/en/<namespace>.ts`.
 2. Add the German translation in `locales/de/<namespace>.ts`.
 3. Use the key in your component:
-   ```tsx
-   const { t } = useTranslation('plants');
-   return <p>{t('myNewKey')}</p>;
-   ```
+    ```tsx
+    const { t } = useTranslation('plants')
+    return <p>{t('myNewKey')}</p>
+    ```
 
 ### Namespaces
+
 `common`, `plants`, `knowledge`, `strains`, `equipment`, `settings`, `help`, `commandPalette`, `onboarding`, `seedbanks`, `strainsData`, `legal`.
 
 ### Non-component contexts
+
 Use `getT()` from `i18n.ts` for services and middleware:
+
 ```ts
-import { getT } from '../i18n';
-const t = getT();
-console.warn(t('common:error.generic'));
+import { getT } from '../i18n'
+const t = getT()
+console.debug(t('common:error.generic'))
 ```
 
 ---
@@ -194,15 +206,16 @@ console.warn(t('common:error.generic'));
 1. **Open an issue first** to discuss significant changes.
 2. Ensure your branch is **up to date** with `main`.
 3. Run the full check suite:
-   ```bash
-   npx tsc --noEmit && npm run lint && npm test
-   ```
+    ```bash
+    npx tsc --noEmit && npm run lint && npm test
+    ```
 4. Write a **clear PR description** explaining what changed and why.
 5. Link the related issue (e.g., `Closes #42`).
 6. Wait for CI checks to pass.
 7. A maintainer will review your PR. Be open to feedback!
 
 ### PR Checklist
+
 - [ ] TypeScript compiles with 0 errors (`npx tsc --noEmit`)
 - [ ] ESLint passes with 0 warnings (`npm run lint`)
 - [ ] All existing tests pass (`npm test`)
@@ -227,19 +240,19 @@ Use the [GitHub Issues](https://github.com/qnbs/CannaGuide-2025/issues) tab. We 
 
 ### Issue Labels
 
-| Label | Description |
-|-------|-------------|
-| `bug` | Something isn't working |
-| `enhancement` | New feature or request |
-| `security` | Security vulnerability |
-| `documentation` | Documentation improvements |
-| `a11y` | Accessibility improvements |
-| `i18n` | Translation & localization |
-| `good first issue` | Good for newcomers |
-| `help wanted` | Extra attention needed |
-| `performance` | Performance improvements |
-| `ai` | AI/Gemini integration |
-| `pwa` | PWA & offline behavior |
+| Label              | Description                |
+| ------------------ | -------------------------- |
+| `bug`              | Something isn't working    |
+| `enhancement`      | New feature or request     |
+| `security`         | Security vulnerability     |
+| `documentation`    | Documentation improvements |
+| `a11y`             | Accessibility improvements |
+| `i18n`             | Translation & localization |
+| `good first issue` | Good for newcomers         |
+| `help wanted`      | Extra attention needed     |
+| `performance`      | Performance improvements   |
+| `ai`               | AI/Gemini integration      |
+| `pwa`              | PWA & offline behavior     |
 
 ---
 
@@ -261,9 +274,9 @@ When proposing significant changes, please follow these guidelines:
 2. Update `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/).
 3. Create a tag: `git tag v1.x.0 && git push --tags`.
 4. GitHub Actions automatically:
-   - Deploys to GitHub Pages and Netlify.
-   - Builds Tauri desktop apps (Windows/macOS/Linux).
-   - Builds Docker images.
+    - Deploys to GitHub Pages and Netlify.
+    - Builds Tauri desktop apps (Windows/macOS/Linux).
+    - Builds Docker images.
 5. Create a GitHub Release with the CHANGELOG excerpt.
 
 ---

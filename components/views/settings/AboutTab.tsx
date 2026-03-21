@@ -234,25 +234,30 @@ const ReadmeProjectContent = memo(() => {
 const AboutTab: React.FC = () => {
     const { t } = useTranslation()
     const [activeSubTab, setActiveSubTab] = useState('about')
+    const subTabBaseClass = 'flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors'
+    const activeSubTabClass = 'bg-slate-700 text-primary-300'
+    const inactiveSubTabClass = 'text-slate-300 hover:bg-slate-700/50'
+    const aboutTabClass = `${subTabBaseClass} ${
+        activeSubTab === 'about' ? activeSubTabClass : inactiveSubTabClass
+    }`
+    const projectInfoTabClass = `${subTabBaseClass} ${
+        activeSubTab === 'readme' ? activeSubTabClass : inactiveSubTabClass
+    }`
+    const activeSubTabContent =
+        activeSubTab === 'about' ? <AboutAppContent /> : <ReadmeProjectContent />
 
     return (
         <div className="space-y-6">
             <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1">
-                <button
-                    onClick={() => setActiveSubTab('about')}
-                    className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${activeSubTab === 'about' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}
-                >
+                <button onClick={() => setActiveSubTab('about')} className={aboutTabClass}>
                     {t('settingsView.about.title')}
                 </button>
-                <button
-                    onClick={() => setActiveSubTab('readme')}
-                    className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${activeSubTab === 'readme' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}
-                >
+                <button onClick={() => setActiveSubTab('readme')} className={projectInfoTabClass}>
                     {t('settingsView.about.projectInfo')}
                 </button>
             </div>
 
-            {activeSubTab === 'about' ? <AboutAppContent /> : <ReadmeProjectContent />}
+            {activeSubTabContent}
         </div>
     )
 }

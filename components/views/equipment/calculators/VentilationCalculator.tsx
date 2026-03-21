@@ -10,6 +10,8 @@ export const VentilationCalculator: React.FC = memo(() => {
     const [dimensions, setDimensions] = useState({ width: 80, depth: 80, height: 180 })
     const [wattage, setWattage] = useState(150)
     const [hasFilter, setHasFilter] = useState(true)
+    const filterEnabledVariant = hasFilter ? 'primary' : 'secondary'
+    const filterDisabledVariant = hasFilter ? 'secondary' : 'primary'
 
     const result = useMemo(() => {
         const volume =
@@ -95,14 +97,14 @@ export const VentilationCalculator: React.FC = memo(() => {
                 <div className="flex gap-2">
                     <Button
                         onClick={() => setHasFilter(true)}
-                        variant={hasFilter ? 'primary' : 'secondary'}
+                        variant={filterEnabledVariant}
                         className="flex-1"
                     >
                         {t('equipmentView.calculators.yes')}
                     </Button>
                     <Button
                         onClick={() => setHasFilter(false)}
-                        variant={!hasFilter ? 'primary' : 'secondary'}
+                        variant={filterDisabledVariant}
                         className="flex-1"
                     >
                         {t('equipmentView.calculators.no')}

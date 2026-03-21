@@ -275,7 +275,7 @@ const LexiconSection: React.FC = memo(() => {
             const first = item.term.charAt(0).toUpperCase()
             letters.add(first)
         }
-        return Array.from(letters).sort()
+        return Array.from(letters).sort((a, b) => a.localeCompare(b))
     }, [filteredLexicon])
 
     const scrollToLetter = useCallback((letter: string) => {
@@ -388,7 +388,7 @@ const LexiconSection: React.FC = memo(() => {
             {filteredLexicon.length > 0 ? (
                 <div className="space-y-6">
                     {Object.keys(groupedByLetter)
-                        .sort()
+                        .sort((a, b) => a.localeCompare(b))
                         .map((letter) => (
                             <section key={letter}>
                                 <div

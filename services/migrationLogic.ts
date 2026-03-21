@@ -36,15 +36,19 @@ export const createSnapshotDiff = (before: unknown, after: unknown): SnapshotDif
     const afterKeys = new Set(Object.keys(after))
 
     return {
-        added: [...afterKeys].filter((key) => !beforeKeys.has(key)).sort(),
-        removed: [...beforeKeys].filter((key) => !afterKeys.has(key)).sort(),
+        added: [...afterKeys]
+            .filter((key) => !beforeKeys.has(key))
+            .sort((a, b) => a.localeCompare(b)),
+        removed: [...beforeKeys]
+            .filter((key) => !afterKeys.has(key))
+            .sort((a, b) => a.localeCompare(b)),
         changed: [...beforeKeys]
             .filter(
                 (key) =>
                     afterKeys.has(key) &&
                     JSON.stringify(before[key]) !== JSON.stringify(after[key]),
             )
-            .sort(),
+            .sort((a, b) => a.localeCompare(b)),
     }
 }
 

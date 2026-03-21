@@ -100,7 +100,7 @@ self.addEventListener('install', (event) => {
     self.skipWaiting()
     event.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
-            console.log('[SW] Pre-caching App Shell')
+            console.debug('[SW] Pre-caching App Shell')
 
             const results = await Promise.allSettled(
                 urlsToCache.map(async (url) => {
@@ -117,7 +117,7 @@ self.addEventListener('install', (event) => {
                 }))
 
             if (failedUrls.length > 0) {
-                console.warn('[SW] App shell caching completed with failures:', failedUrls)
+                console.debug('[SW] App shell caching completed with failures:', failedUrls)
             }
         }),
     )
@@ -131,14 +131,14 @@ self.addEventListener('activate', (event) => {
                 return Promise.all(
                     cacheNames.map((cacheName) => {
                         if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME) {
-                            console.log('[SW] Deleting old cache:', cacheName)
+                            console.debug('[SW] Deleting old cache:', cacheName)
                             return caches.delete(cacheName)
                         }
                     }),
                 )
             })
             .then(() => {
-                console.log('[SW] New service worker activated, claiming clients.')
+                console.debug('[SW] New service worker activated, claiming clients.')
                 return self.clients.claim()
             }),
     )
@@ -175,7 +175,7 @@ self.addEventListener('fetch', (event) => {
                     }
                     return networkResponse
                 } catch (error) {
-                    console.error('[SW] Image fetch failed:', error)
+                    console.debug('[SW] Image fetch failed:', error)
                     return new Response('', { status: 408 })
                 }
             }),
@@ -221,7 +221,7 @@ self.addEventListener('fetch', (event) => {
                     return networkResponse
                 })
                 .catch((error) => {
-                    console.error('[SW] Fetch failed:', error)
+                    console.debug('[SW] Fetch failed:', error)
                     return cachedResponse || new Response('Network error', { status: 408 })
                 })
 
@@ -405,15 +405,15 @@ async function notifyDueReminders() {
  * server to POST to. Adding a real server endpoint here is left as a future extension.
  */
 async function syncData() {
-    console.log('[SW] Attempting to sync data...')
+    console.debug('[SW] Attempting to sync data...')
     try {
         const queuedActions = await getQueuedActions()
         if (!queuedActions || queuedActions.length === 0) {
-            console.log('[SW] No actions to sync.')
+            console.debug('[SW] No actions to sync.')
             return
         }
 
-        console.log(`[SW] Found ${queuedActions.length} action(s) to sync.`)
+        console.debug(`[SW] Found ${queuedActions.length} action(s) to sync.`)
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
 
         for (const action of queuedActions) {
@@ -424,9 +424,9 @@ async function syncData() {
             }
             await deleteQueuedAction(id)
         }
-        console.log('[SW] All queued actions dispatched to clients.')
+        console.debug('[SW] All queued actions dispatched to clients.')
     } catch (error) {
-        console.error('[SW] Sync failed, will retry later.', error)
+        console.debug('[SW] Sync failed, will retry later.', error)
         throw error
     }
 }
@@ -434,20 +434,20 @@ async function syncData() {
 // Background Sync event listener
 self.addEventListener('sync', (event) => {
     if (event.tag === 'data-sync') {
-        console.log('[SW] Sync event received for "data-sync"')
+        console.debug('[SW] Sync event received for "data-sync"')
         event.waitUntil(syncData())
         return
     }
 
     if (event.tag === 'grow-reminders-sync') {
-        console.log('[SW] Sync event received for "grow-reminders-sync"')
+        console.debug('[SW] Sync event received for "grow-reminders-sync"')
         event.waitUntil(notifyDueReminders())
     }
 })
 
 self.addEventListener('periodicsync', (event) => {
     if (event.tag === 'grow-reminders') {
-        console.log('[SW] Periodic sync event for grow reminders')
+        console.debug('[SW] Periodic sync event for grow reminders')
         event.waitUntil(notifyDueReminders())
     }
 })

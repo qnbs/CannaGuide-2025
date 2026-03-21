@@ -108,6 +108,15 @@ jobs:
             - name: Trojan-source scan
               run: npm run security:trojan-source
 
+            - name: Trivy filesystem scan
+              uses: aquasecurity/trivy-action@0.28.0
+              with:
+                  scan-type: fs
+                  scan-ref: .
+                  severity: CRITICAL,HIGH
+                  exit-code: '1'
+                  ignore-unfixed: true
+
     # ─────────────────────────────────────────────────────────────────────
     # E2E — Playwright (reuses build artifact from quality)
     # ─────────────────────────────────────────────────────────────────────

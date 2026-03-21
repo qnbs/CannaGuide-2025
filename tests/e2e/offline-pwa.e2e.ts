@@ -1,10 +1,16 @@
 import { test, expect } from '@playwright/test'
-import { bootFreshAppWithLegalGates, closeOnboardingIfVisible } from './helpers'
+import {
+    bootFreshAppPastOnboarding,
+    bootFreshAppWithLegalGates,
+    closeOnboardingIfVisible,
+    expectShellVisible,
+} from './helpers'
 
 test.describe('Offline & PWA', () => {
     test('app renders after going offline', async ({ page, context }) => {
-        await bootFreshAppWithLegalGates(page)
-        await closeOnboardingIfVisible(page)
+        // Use past-onboarding boot so the app shell renders reliably
+        await bootFreshAppPastOnboarding(page)
+        await expectShellVisible(page)
 
         // Verify initial load
         await expect(page.locator('#root')).toBeVisible()
@@ -22,7 +28,10 @@ test.describe('Offline & PWA', () => {
         await expect
             .poll(
                 async () => {
-                    const rootVisible = await page.locator('#root').isVisible().catch(() => false)
+                    const rootVisible = await page
+                        .locator('#root')
+                        .isVisible()
+                        .catch(() => false)
                     const fallbackVisible = await offlineHeading.isVisible().catch(() => false)
                     return rootVisible || fallbackVisible
                 },

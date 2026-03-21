@@ -590,13 +590,27 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 svg.transition()
                     .duration(750)
                     .call(zoomBehavior.transform, d3.zoomIdentity.translate(ix, iy))
-            } else {
+            } else if (
+                isFinite(savedTransform.k) &&
+                isFinite(savedTransform.x) &&
+                isFinite(savedTransform.y) &&
+                savedTransform.k > 0
+            ) {
                 svg.call(
                     zoomBehavior.transform,
                     d3.zoomIdentity
                         .translate(savedTransform.x, savedTransform.y)
                         .scale(savedTransform.k),
                 )
+            } else {
+                const { width, height } = svgEl.getBoundingClientRect()
+                const [ix, iy] =
+                    layoutOrientation === 'horizontal'
+                        ? [width * 0.1, height / 2]
+                        : [width / 2, height * 0.1]
+                svg.transition()
+                    .duration(750)
+                    .call(zoomBehavior.transform, d3.zoomIdentity.translate(ix, iy))
             }
         } catch (err) {
             console.error('[GenealogyView] d3 zoom setup error:', err)

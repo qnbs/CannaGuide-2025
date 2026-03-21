@@ -1,5 +1,7 @@
 import React, { useDeferredValue, useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { Command as Cmdk } from 'cmdk'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { Command } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -155,6 +157,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
             className="fixed left-1/2 top-[max(0.5rem,env(safe-area-inset-top))] bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[101] h-[calc(100dvh-max(1rem,env(safe-area-inset-top)+env(safe-area-inset-bottom)))] w-[calc(100%-1rem)] -translate-x-1/2 overflow-hidden rounded-xl border border-white/20 bg-[rgba(var(--color-bg-component),0.96)] shadow-2xl backdrop-blur-xl sm:top-[12vh] sm:bottom-auto sm:h-auto sm:w-[calc(100%-2rem)] sm:max-w-2xl sm:rounded-xl"
             overlayClassName="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md"
         >
+            <VisuallyHidden>
+                <DialogPrimitive.Title>{t('commandPalette.title')}</DialogPrimitive.Title>
+            </VisuallyHidden>
             {/* ── Header ──────────────────────────────────────────── */}
             <div className="relative flex items-center justify-between border-b border-white/10 px-4 py-3">
                 <button

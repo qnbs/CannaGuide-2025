@@ -32,7 +32,7 @@ export const SettingsSelect: React.FC<{
     onChange: (value: string) => void
     disabled?: boolean
 }> = ({ value, options, onChange, disabled }) => (
-    <Select value={value} onValueChange={onChange} disabled={disabled}>
+    <Select value={value ?? ''} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger>
             <SelectValue />
         </SelectTrigger>

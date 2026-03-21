@@ -189,29 +189,31 @@ export const closeOnboardingIfVisible = async (page: Page) => {
         return
     }
 
+    // Select language (step 0 → 1) — do NOT return, continue through wizard
     const englishButton = onboardingDialog.getByRole('button', { name: /^English$/i })
     if (await englishButton.isVisible().catch(() => false)) {
         await englishButton.click()
-        await page.waitForTimeout(250)
-        return
+        await page.waitForTimeout(500)
+    } else {
+        const germanButton = onboardingDialog.getByRole('button', { name: /^Deutsch$/i })
+        if (await germanButton.isVisible().catch(() => false)) {
+            await germanButton.click()
+            await page.waitForTimeout(500)
+        }
     }
 
-    const germanButton = onboardingDialog.getByRole('button', { name: /^Deutsch$/i })
-    if (await germanButton.isVisible().catch(() => false)) {
-        await germanButton.click()
-        await page.waitForTimeout(250)
-        return
-    }
-
+    // Click through remaining wizard steps (up to 10)
     for (let step = 0; step < 10; step += 1) {
-        const isVisible = await onboardingDialog.isVisible().catch(() => false)
-        if (!isVisible) {
+        const stillVisible = await onboardingDialog.isVisible().catch(() => false)
+        if (!stillVisible) {
             break
         }
 
         const actionButton = onboardingDialog.locator('button').last()
-        await actionButton.click()
-        await page.waitForTimeout(250)
+        if (await actionButton.isVisible().catch(() => false)) {
+            await actionButton.click()
+        }
+        await page.waitForTimeout(500)
     }
 }
 

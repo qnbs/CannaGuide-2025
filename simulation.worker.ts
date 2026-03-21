@@ -5,12 +5,34 @@
 import { Plant, AppSettings } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
 
-self.onmessage = (e: MessageEvent<{ plant: Plant; deltaTime: number; simulationSettings?: AppSettings['simulation'] }>) => {
-    const { plant, deltaTime, simulationSettings } = e.data
-    if (plant && deltaTime > 0) {
-        // Run the simulation logic from the shared service
-        const result = plantSimulationService.calculateStateForTimeDelta(plant, deltaTime, simulationSettings)
-        // Post the results back to the main thread
+export interface SimulationWorkerInput {
+    plant: Plant
+    deltaTime: number
+    simulationSettings?: AppSettings['simulation']
+}
+
+export interface SimulationWorkerError {
+    error: string
+}
+
+self.onmessage = (e: MessageEvent<SimulationWorkerInput>) => {
+    try {
+        const data = e.data
+        if (!data?.plant || typeof data.deltaTime !== 'number' || data.deltaTime <= 0) {
+            self.postMessage({
+                error: 'Invalid input: plant is required and deltaTime must be > 0',
+            } satisfies SimulationWorkerError)
+            return
+        }
+        const { plant, deltaTime, simulationSettings } = data
+        const result = plantSimulationService.calculateStateForTimeDelta(
+            plant,
+            deltaTime,
+            simulationSettings,
+        )
         self.postMessage(result)
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown simulation error'
+        self.postMessage({ error: message } satisfies SimulationWorkerError)
     }
 }

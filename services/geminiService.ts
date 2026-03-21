@@ -747,6 +747,203 @@ class GeminiService implements BaseAIProvider {
         }
     }
 
+    private buildDiagnosePlantProblemsSummary(plant: Plant, t: ReturnType<typeof getT>): string {
+        if (plant.problems.length === 0) {
+            return t('common.none')
+        }
+
+        return plant.problems
+            .map((problem) => {
+                const problemKey = problem.type
+                    .toLowerCase()
+                    .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
+                return t(`problemMessages.${problemKey}.message`)
+            })
+            .join(', ')
+    }
+
+    private buildDiagnosePlantContext(
+        plant: Plant,
+        userNotes: string,
+        t: ReturnType<typeof getT>,
+    ): string {
+        const problems = this.buildDiagnosePlantProblemsSummary(plant, t)
+
+        return `
+PLANT CONTEXT:
+- Strain: ${plant.strain.name} (${plant.strain.type})
+- Age: ${plant.age} days (Stage: ${t(`plantStages.${plant.stage}`)})
+- Active Issues: ${problems}
+- Medium Vitals: pH ${plant.medium.ph.toFixed(2)}, EC ${plant.medium.ec.toFixed(2)}
+- Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(1)}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
+- USER NOTES: "${sanitizeForPrompt(userNotes || 'None provided', 400)}"
+        `.trim()
+    }
+
+    private buildDiagnosePlantResponseSchema(): Record<string, unknown> {
+        return {
+            type: Type.OBJECT,
+            properties: {
+                title: { type: Type.STRING },
+                content: { type: Type.STRING },
+                confidence: { type: Type.NUMBER },
+                immediateActions: { type: Type.STRING },
+                longTermSolution: { type: Type.STRING },
+                prevention: { type: Type.STRING },
+                diagnosis: { type: Type.STRING },
+            },
+            required: [
+                'title',
+                'content',
+                'confidence',
+                'immediateActions',
+                'longTermSolution',
+                'prevention',
+                'diagnosis',
+            ],
+        }
+    }
+
+    private async diagnosePlantViaGemini(
+        base64Image: string,
+        mimeType: string,
+        localizedPrompt: string,
+    ): Promise<PlantDiagnosisResponse> {
+        aiRateLimiter.acquireSlot('diagnosePlant')
+        const ai = await this.getAi()
+        const imagePart = { inlineData: { data: base64Image, mimeType } }
+        const textPart = { text: localizedPrompt }
+
+        const response = await this.generateWithFallback({
+            ai,
+            model: 'gemini-2.5-flash',
+            contents: { parts: [imagePart, textPart] },
+            config: {
+                maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
+                responseMimeType: 'application/json',
+                responseSchema: this.buildDiagnosePlantResponseSchema(),
+            },
+        })
+
+        return this.parseJsonResponse<PlantDiagnosisResponse>(
+            response,
+            'ai.error.diagnostics',
+            PlantDiagnosisResponseSchema,
+        )
+    }
+
+    private buildStrainTipsResponseSchema(): Record<string, unknown> {
+        return {
+            type: Type.OBJECT,
+            properties: {
+                nutrientTip: { type: Type.STRING },
+                trainingTip: { type: Type.STRING },
+                environmentalTip: { type: Type.STRING },
+                proTip: { type: Type.STRING },
+            },
+            required: ['nutrientTip', 'trainingTip', 'environmentalTip', 'proTip'],
+        }
+    }
+
+    private async getStrainTipsFromAlternateProvider(
+        localizedPrompt: string,
+        lang: Language,
+    ): Promise<StructuredGrowTips> {
+        const jsonInstruction =
+            'Respond ONLY with valid JSON matching: { "nutrientTip": "...", "trainingTip": "...", "environmentalTip": "...", "proTip": "..." }'
+        const text = await this.generateViaAlternateProvider(
+            'getStrainTips',
+            getEducationalUseOnlyInstruction(lang),
+            `${localizedPrompt}\n\n${jsonInstruction}`,
+            true,
+            MAX_OUTPUT_TOKENS_JSON,
+        )
+        return this.parseJsonFromText<StructuredGrowTips>(
+            text,
+            'ai.error.tips',
+            StructuredGrowTipsSchema,
+        )
+    }
+
+    private async getStrainTipsFromGemini(localizedPrompt: string): Promise<StructuredGrowTips> {
+        aiRateLimiter.acquireSlot('getStrainTips')
+        const ai = await this.getAi()
+        const response = await this.generateWithFallback({
+            ai,
+            model: 'gemini-2.5-flash',
+            contents: truncatePromptForModel(localizedPrompt),
+            config: {
+                maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
+                responseMimeType: 'application/json',
+                responseSchema: this.buildStrainTipsResponseSchema(),
+            },
+        })
+
+        return this.parseJsonResponse<StructuredGrowTips>(
+            response,
+            'ai.error.tips',
+            StructuredGrowTipsSchema,
+        )
+    }
+
+    private buildDeepDiveResponseSchema(): Record<string, unknown> {
+        return {
+            type: Type.OBJECT,
+            properties: {
+                introduction: { type: Type.STRING },
+                stepByStep: { type: Type.ARRAY, items: { type: Type.STRING } },
+                prosAndCons: {
+                    type: Type.OBJECT,
+                    properties: {
+                        pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        cons: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    },
+                    required: ['pros', 'cons'],
+                },
+                proTip: { type: Type.STRING },
+            },
+            required: ['introduction', 'stepByStep', 'prosAndCons', 'proTip'],
+        }
+    }
+
+    private async generateDeepDiveFromAlternateProvider(
+        localizedPrompt: string,
+        lang: Language,
+    ): Promise<DeepDiveGuide> {
+        const jsonInstruction =
+            'Respond ONLY with valid JSON matching: { "introduction": "...", "stepByStep": ["..."], "prosAndCons": { "pros": ["..."], "cons": ["..."] }, "proTip": "..." }'
+        const text = await this.generateViaAlternateProvider(
+            'generateDeepDive',
+            getEducationalUseOnlyInstruction(lang),
+            `${localizedPrompt}\n\n${jsonInstruction}`,
+            true,
+            MAX_OUTPUT_TOKENS_JSON,
+        )
+        return this.parseJsonFromText<DeepDiveGuide>(text, 'ai.error.deepDive', DeepDiveGuideSchema)
+    }
+
+    private async generateDeepDiveFromGemini(localizedPrompt: string): Promise<DeepDiveGuide> {
+        aiRateLimiter.acquireSlot('generateDeepDive')
+        const ai = await this.getAi()
+        const response = await this.generateWithFallback({
+            ai,
+            model: 'gemini-2.5-pro',
+            fallbackModel: 'gemini-2.5-flash',
+            contents: truncatePromptForModel(localizedPrompt),
+            config: {
+                maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
+                responseMimeType: 'application/json',
+                responseSchema: this.buildDeepDiveResponseSchema(),
+            },
+        })
+
+        return this.parseJsonResponse<DeepDiveGuide>(
+            response,
+            'ai.error.deepDive',
+            DeepDiveGuideSchema,
+        )
+    }
+
     async diagnosePlant(
         base64Image: string,
         mimeType: string,
@@ -760,29 +957,7 @@ class GeminiService implements BaseAIProvider {
         }
 
         const t = getT()
-        const problems =
-            plant.problems.length > 0
-                ? plant.problems
-                      .map((p) => {
-                          const problemKey = p.type
-                              .toLowerCase()
-                              .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
-                          return t(`problemMessages.${problemKey}.message`)
-                      })
-                      .join(', ')
-                : t('common.none')
-
-        const contextString = `
-PLANT CONTEXT:
-- Strain: ${plant.strain.name} (${plant.strain.type})
-- Age: ${plant.age} days (Stage: ${t(`plantStages.${plant.stage}`)})
-- Active Issues: ${problems}
-- Medium Vitals: pH ${plant.medium.ph.toFixed(2)}, EC ${plant.medium.ec.toFixed(2)}
-- Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(
-            1,
-        )}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
-- USER NOTES: "${sanitizeForPrompt(userNotes || 'None provided', 400)}"
-        `.trim()
+        const contextString = this.buildDiagnosePlantContext(plant, userNotes, t)
 
         const prompt = `
             Analyze the following image of a cannabis plant.
@@ -799,47 +974,7 @@ PLANT CONTEXT:
         )
 
         try {
-            aiRateLimiter.acquireSlot('diagnosePlant')
-            const ai = await this.getAi()
-            const imagePart = { inlineData: { data: base64Image, mimeType } }
-            const textPart = { text: localizedPrompt }
-
-            const response = await this.generateWithFallback({
-                ai,
-                model: 'gemini-2.5-flash',
-                contents: { parts: [imagePart, textPart] },
-                config: {
-                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
-                    responseMimeType: 'application/json',
-                    responseSchema: {
-                        type: Type.OBJECT,
-                        properties: {
-                            title: { type: Type.STRING },
-                            content: { type: Type.STRING },
-                            confidence: { type: Type.NUMBER },
-                            immediateActions: { type: Type.STRING },
-                            longTermSolution: { type: Type.STRING },
-                            prevention: { type: Type.STRING },
-                            diagnosis: { type: Type.STRING },
-                        },
-                        required: [
-                            'title',
-                            'content',
-                            'confidence',
-                            'immediateActions',
-                            'longTermSolution',
-                            'prevention',
-                            'diagnosis',
-                        ],
-                    },
-                },
-            })
-
-            return this.parseJsonResponse<PlantDiagnosisResponse>(
-                response,
-                'ai.error.diagnostics',
-                PlantDiagnosisResponseSchema,
-            )
+            return await this.diagnosePlantViaGemini(base64Image, mimeType, localizedPrompt)
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error)
             if (this.shouldUseLocalFallback(error)) {
@@ -929,51 +1064,11 @@ PLANT CONTEXT:
             lang,
         )
         try {
-            // Alternate provider path for strain tips
             if (this.isAlternateProvider()) {
-                const jsonInstruction =
-                    'Respond ONLY with valid JSON matching: { "nutrientTip": "...", "trainingTip": "...", "environmentalTip": "...", "proTip": "..." }'
-                const text = await this.generateViaAlternateProvider(
-                    'getStrainTips',
-                    getEducationalUseOnlyInstruction(lang),
-                    `${localizedPrompt}\n\n${jsonInstruction}`,
-                    true,
-                    MAX_OUTPUT_TOKENS_JSON,
-                )
-                return this.parseJsonFromText<StructuredGrowTips>(
-                    text,
-                    'ai.error.tips',
-                    StructuredGrowTipsSchema,
-                )
+                return await this.getStrainTipsFromAlternateProvider(localizedPrompt, lang)
             }
 
-            aiRateLimiter.acquireSlot('getStrainTips')
-            const ai = await this.getAi()
-            const response = await this.generateWithFallback({
-                ai,
-                model: 'gemini-2.5-flash',
-                contents: truncatePromptForModel(localizedPrompt),
-                config: {
-                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
-                    responseMimeType: 'application/json',
-                    responseSchema: {
-                        type: Type.OBJECT,
-                        properties: {
-                            nutrientTip: { type: Type.STRING },
-                            trainingTip: { type: Type.STRING },
-                            environmentalTip: { type: Type.STRING },
-                            proTip: { type: Type.STRING },
-                        },
-                        required: ['nutrientTip', 'trainingTip', 'environmentalTip', 'proTip'],
-                    },
-                },
-            })
-
-            return this.parseJsonResponse<StructuredGrowTips>(
-                response,
-                'ai.error.tips',
-                StructuredGrowTipsSchema,
-            )
+            return await this.getStrainTipsFromGemini(localizedPrompt)
         } catch (e) {
             console.error('Gemini getStrainTips Error:', e)
             if (this.shouldUseLocalFallback(e)) {
@@ -1084,59 +1179,11 @@ PLANT CONTEXT:
             lang,
         )
         try {
-            // Alternate provider path for deep dive
             if (this.isAlternateProvider()) {
-                const jsonInstruction =
-                    'Respond ONLY with valid JSON matching: { "introduction": "...", "stepByStep": ["..."], "prosAndCons": { "pros": ["..."], "cons": ["..."] }, "proTip": "..." }'
-                const text = await this.generateViaAlternateProvider(
-                    'generateDeepDive',
-                    getEducationalUseOnlyInstruction(lang),
-                    `${localizedPrompt}\n\n${jsonInstruction}`,
-                    true,
-                    MAX_OUTPUT_TOKENS_JSON,
-                )
-                return this.parseJsonFromText<DeepDiveGuide>(
-                    text,
-                    'ai.error.deepDive',
-                    DeepDiveGuideSchema,
-                )
+                return await this.generateDeepDiveFromAlternateProvider(localizedPrompt, lang)
             }
 
-            aiRateLimiter.acquireSlot('generateDeepDive')
-            const ai = await this.getAi()
-            const response = await this.generateWithFallback({
-                ai,
-                model: 'gemini-2.5-pro',
-                fallbackModel: 'gemini-2.5-flash',
-                contents: truncatePromptForModel(localizedPrompt),
-                config: {
-                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
-                    responseMimeType: 'application/json',
-                    responseSchema: {
-                        type: Type.OBJECT,
-                        properties: {
-                            introduction: { type: Type.STRING },
-                            stepByStep: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            prosAndCons: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                    cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                },
-                                required: ['pros', 'cons'],
-                            },
-                            proTip: { type: Type.STRING },
-                        },
-                        required: ['introduction', 'stepByStep', 'prosAndCons', 'proTip'],
-                    },
-                },
-            })
-
-            return this.parseJsonResponse<DeepDiveGuide>(
-                response,
-                'ai.error.deepDive',
-                DeepDiveGuideSchema,
-            )
+            return await this.generateDeepDiveFromGemini(localizedPrompt)
         } catch (e) {
             console.error('Gemini generateDeepDive Error:', e)
             if (this.shouldUseLocalFallback(e)) {

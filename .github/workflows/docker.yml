@@ -65,7 +65,7 @@ jobs:
               run: docker build -t cannaguide-scan .
 
             - name: 🛡 Trivy image scan
-              uses: aquasecurity/trivy-action@0.28.0
+              uses: aquasecurity/trivy-action@0.35.0
               with:
                   image-ref: cannaguide-scan
                   format: table

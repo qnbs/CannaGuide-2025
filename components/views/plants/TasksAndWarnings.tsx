@@ -28,6 +28,8 @@ const severityConfig: Record<string, { border: string; bg: string; icon: React.R
     },
 }
 
+const defaultSeverityStyle = { border: '', bg: '', icon: null as React.ReactNode }
+
 const getSeverityFromProblem = (problem: PlantProblem): string => {
     if (problem.severity >= 7) return 'critical'
     if (problem.severity >= 4) return 'warning'
@@ -37,6 +39,31 @@ const getSeverityFromProblem = (problem: PlantProblem): string => {
 export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(
     ({ tasks, problems, onNavigateToPlant }) => {
         const { t } = useTranslation()
+        const isPlantNavigationEnabled = typeof onNavigateToPlant === 'function'
+        const interactiveRowClass = isPlantNavigationEnabled
+            ? 'cursor-pointer hover:bg-white/5 transition-colors'
+            : ''
+
+        const getInteractionProps = (plantId: string) => {
+            if (!onNavigateToPlant) {
+                return {
+                    onClick: undefined,
+                    onKeyDown: undefined,
+                    role: undefined,
+                    tabIndex: undefined,
+                }
+            }
+
+            return {
+                onClick: () => onNavigateToPlant(plantId),
+                onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+                    if (e.key === 'Enter') onNavigateToPlant(plantId)
+                },
+                role: 'button' as const,
+                tabIndex: 0,
+            }
+        }
+
         const priorityClasses: Record<TaskPriority, string> = {
             high: 'border-red-500/50 bg-red-500/10',
             medium: 'border-amber-500/50 bg-amber-500/10',
@@ -77,40 +104,32 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(
                     </h3>
                     {sortedTasks.length > 0 ? (
                         <div className="space-y-2">
-                            {sortedTasks.map((task) => (
-                                <div
-                                    key={`${task.plantId}-${task.id}`}
-                                    className={`p-2.5 border-l-4 ${priorityClasses[task.priority]} rounded-r-md flex items-center justify-between ${onNavigateToPlant ? 'cursor-pointer hover:bg-white/5 transition-colors' : ''}`}
-                                    onClick={
-                                        onNavigateToPlant
-                                            ? () => onNavigateToPlant(task.plantId)
-                                            : undefined
-                                    }
-                                    onKeyDown={
-                                        onNavigateToPlant
-                                            ? (e) => {
-                                                  if (e.key === 'Enter')
-                                                      onNavigateToPlant(task.plantId)
-                                              }
-                                            : undefined
-                                    }
-                                    role={onNavigateToPlant ? 'button' : undefined}
-                                    tabIndex={onNavigateToPlant ? 0 : undefined}
-                                >
-                                    <div>
-                                        <p className="font-bold text-sm text-slate-100">
-                                            {t(task.title)}
-                                        </p>
-                                        <p className="text-xs text-slate-400">{task.plantName}</p>
-                                    </div>
+                            {sortedTasks.map((task) => {
+                                const interactionProps = getInteractionProps(task.plantId)
+
+                                return (
                                     <div
-                                        className={`w-5 h-5 flex-shrink-0 ${priorityIcons[task.priority].color}`}
-                                        title={`${t('plantsView.tasks.priority')}: ${priorityLabels[task.priority]}`}
+                                        key={`${task.plantId}-${task.id}`}
+                                        className={`p-2.5 border-l-4 ${priorityClasses[task.priority]} rounded-r-md flex items-center justify-between ${interactiveRowClass}`}
+                                        {...interactionProps}
                                     >
-                                        {priorityIcons[task.priority].icon}
+                                        <div>
+                                            <p className="font-bold text-sm text-slate-100">
+                                                {t(task.title)}
+                                            </p>
+                                            <p className="text-xs text-slate-400">
+                                                {task.plantName}
+                                            </p>
+                                        </div>
+                                        <div
+                                            className={`w-5 h-5 flex-shrink-0 ${priorityIcons[task.priority].color}`}
+                                            title={`${t('plantsView.tasks.priority')}: ${priorityLabels[task.priority]}`}
+                                        >
+                                            {priorityIcons[task.priority].icon}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     ) : (
                         <div className="text-center py-4">
@@ -133,29 +152,17 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(
                         <div className="space-y-2">
                             {sortedProblems.map((problem, index) => {
                                 const severity = getSeverityFromProblem(problem)
-                                const config = severityConfig[severity] ?? severityConfig.info ?? { border: '', bg: '', icon: null }
+                                const config = severityConfig[severity] ?? defaultSeverityStyle
                                 const problemKey = problem.type
                                     .toLowerCase()
                                     .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
+                                const interactionProps = getInteractionProps(problem.plantId)
+
                                 return (
                                     <div
                                         key={`${problem.plantId}-${index}`}
-                                        className={`p-2.5 border-l-4 ${config.border} ${config.bg} rounded-r-md flex items-center justify-between ${onNavigateToPlant ? 'cursor-pointer hover:bg-white/5 transition-colors' : ''}`}
-                                        onClick={
-                                            onNavigateToPlant
-                                                ? () => onNavigateToPlant(problem.plantId)
-                                                : undefined
-                                        }
-                                        onKeyDown={
-                                            onNavigateToPlant
-                                                ? (e) => {
-                                                      if (e.key === 'Enter')
-                                                          onNavigateToPlant(problem.plantId)
-                                                  }
-                                                : undefined
-                                        }
-                                        role={onNavigateToPlant ? 'button' : undefined}
-                                        tabIndex={onNavigateToPlant ? 0 : undefined}
+                                        className={`p-2.5 border-l-4 ${config.border} ${config.bg} rounded-r-md flex items-center justify-between ${interactiveRowClass}`}
+                                        {...interactionProps}
                                     >
                                         <div>
                                             <p className="font-bold text-sm text-slate-100">

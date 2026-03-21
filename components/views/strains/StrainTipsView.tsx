@@ -240,6 +240,118 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
         setIsExportModalOpen(false)
     }
 
+    const groupedSortButtonClass = `!p-1.5 !rounded-md ${
+        sortMode === 'grouped' ? '!bg-slate-700 !text-primary-300' : ''
+    }`
+    const dateSortButtonClass = `!p-1.5 !rounded-md ${
+        sortMode === 'date' ? '!bg-slate-700 !text-primary-300' : ''
+    }`
+
+    const hasNoSavedTips = savedTips.length === 0
+    const hasNoFilteredTips = filteredTips.length === 0
+
+    const tipsContent = hasNoSavedTips ? (
+        <Card className="text-center py-10 text-slate-500">
+            <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
+            <h3 className="font-semibold">{t('strainsView.tips.noTips.title')}</h3>
+            <p className="text-sm">{t('strainsView.tips.noTips.subtitle')}</p>
+        </Card>
+    ) : hasNoFilteredTips ? (
+        <Card className="text-center py-10 text-slate-500">
+            <p>{t('strainsView.tips.noResults', { term: searchTerm })}</p>
+        </Card>
+    ) : (
+        <div className="space-y-3">
+            <div className="px-3 flex items-center gap-3">
+                <input
+                    type="checkbox"
+                    checked={selectedIds.size === allVisibleIds.length && allVisibleIds.length > 0}
+                    onChange={handleToggleAll}
+                    className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"
+                />
+                <label className="text-sm text-slate-400">
+                    {t('strainsView.selectedCount_other', { count: selectedIds.size })}
+                </label>
+            </div>
+            {sortMode === 'grouped'
+                ? (sortedAndGrouped as [string, SavedStrainTip[]][]).map(([strainName, tips]) => {
+                      const strain = allStrains.find((s) => s.id === tips[0]?.strainId) ?? null
+                      const startGrowingTitle = !hasAvailableSlots
+                          ? t('plantsView.notifications.allSlotsFull')
+                          : t('strainsView.startGrowing')
+
+                      return (
+                          <details
+                              key={strainName}
+                              open={true}
+                              className="group ring-1 ring-inset ring-white/20 rounded-lg overflow-hidden"
+                          >
+                              <summary className="list-none">
+                                  <div className="flex justify-between items-center p-3 rounded-t-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer">
+                                      <h4 className="font-bold text-slate-100">
+                                          {strainName} ({tips.length})
+                                      </h4>
+                                      <div className="flex items-center gap-2">
+                                          {strain && (
+                                              <div title={startGrowingTitle}>
+                                                  <Button
+                                                      size="sm"
+                                                      variant="secondary"
+                                                      className="!p-1.5"
+                                                      onClick={(
+                                                          e: React.MouseEvent<HTMLButtonElement>,
+                                                      ) => {
+                                                          e.stopPropagation()
+                                                          dispatch(
+                                                              initiateGrowFromStrainList(strain),
+                                                          )
+                                                      }}
+                                                      disabled={!hasAvailableSlots}
+                                                  >
+                                                      <PhosphorIcons.Plant className="w-4 h-4" />
+                                                  </Button>
+                                              </div>
+                                          )}
+                                          <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
+                                      </div>
+                                  </div>
+                              </summary>
+                              <div className="p-3 space-y-3 bg-slate-800/40">
+                                  {tips.map((tip) => (
+                                      <Card
+                                          key={tip.id}
+                                          className="bg-slate-800/50 p-3 overflow-hidden"
+                                      >
+                                          <TipItem
+                                              tip={tip}
+                                              onEdit={setEditingTip}
+                                              onDelete={deleteTip}
+                                              onSelect={handleToggleSelection}
+                                              isSelected={selectedIds.has(tip.id)}
+                                          />
+                                      </Card>
+                                  ))}
+                              </div>
+                          </details>
+                      )
+                  })
+                : (sortedAndGrouped as SavedStrainTip[]).map((tip) => (
+                      <Card
+                          key={tip.id}
+                          className="bg-slate-800 p-3 ring-1 ring-inset ring-white/20"
+                      >
+                          <TipItem
+                              tip={tip}
+                              onEdit={setEditingTip}
+                              onDelete={deleteTip}
+                              onSelect={handleToggleSelection}
+                              isSelected={selectedIds.has(tip.id)}
+                          />
+                      </Card>
+                  ))}
+        </div>
+    )
+
     return (
         <div className="mt-4">
             {editingTip && (
@@ -299,7 +411,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                         <Button
                             variant="ghost"
                             onClick={() => setSortMode('grouped')}
-                            className={`!p-1.5 !rounded-md ${sortMode === 'grouped' ? '!bg-slate-700 !text-primary-300' : ''}`}
+                            className={groupedSortButtonClass}
                             aria-label={t('strainsView.tips.sortOptions.grouped')}
                             title={t('strainsView.tips.sortOptions.grouped')}
                         >
@@ -308,7 +420,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                         <Button
                             variant="ghost"
                             onClick={() => setSortMode('date')}
-                            className={`!p-1.5 !rounded-md ${sortMode === 'date' ? '!bg-slate-700 !text-primary-300' : ''}`}
+                            className={dateSortButtonClass}
                             aria-label={t('strainsView.tips.sortOptions.date')}
                             title={t('strainsView.tips.sortOptions.date')}
                         >
@@ -317,121 +429,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                     </div>
                 </div>
             </div>
-            {savedTips.length === 0 ? (
-                <Card className="text-center py-10 text-slate-500">
-                    <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                    <h3 className="font-semibold">{t('strainsView.tips.noTips.title')}</h3>
-                    <p className="text-sm">{t('strainsView.tips.noTips.subtitle')}</p>
-                </Card>
-            ) : filteredTips.length === 0 ? (
-                <Card className="text-center py-10 text-slate-500">
-                    <p>{t('strainsView.tips.noResults', { term: searchTerm })}</p>
-                </Card>
-            ) : (
-                <div className="space-y-3">
-                    <div className="px-3 flex items-center gap-3">
-                        <input
-                            type="checkbox"
-                            checked={
-                                selectedIds.size === allVisibleIds.length &&
-                                allVisibleIds.length > 0
-                            }
-                            onChange={handleToggleAll}
-                            className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"
-                        />
-                        <label className="text-sm text-slate-400">
-                            {t('strainsView.selectedCount_other', { count: selectedIds.size })}
-                        </label>
-                    </div>
-                    {sortMode === 'grouped'
-                        ? (sortedAndGrouped as [string, SavedStrainTip[]][]).map(
-                              ([strainName, tips]) => {
-                                  const strain =
-                                      allStrains.find((s) => s.id === tips[0]?.strainId) ?? null
-                                  return (
-                                      <details
-                                          key={strainName}
-                                          open={true}
-                                          className="group ring-1 ring-inset ring-white/20 rounded-lg overflow-hidden"
-                                      >
-                                          <summary className="list-none">
-                                              <div className="flex justify-between items-center p-3 rounded-t-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer">
-                                                  <h4 className="font-bold text-slate-100">
-                                                      {strainName} ({tips.length})
-                                                  </h4>
-                                                  <div className="flex items-center gap-2">
-                                                      {strain && (
-                                                          <div
-                                                              title={
-                                                                  !hasAvailableSlots
-                                                                      ? t(
-                                                                            'plantsView.notifications.allSlotsFull',
-                                                                        )
-                                                                      : t(
-                                                                            'strainsView.startGrowing',
-                                                                        )
-                                                              }
-                                                          >
-                                                              <Button
-                                                                  size="sm"
-                                                                  variant="secondary"
-                                                                  className="!p-1.5"
-                                                                  onClick={(
-                                                                      e: React.MouseEvent<HTMLButtonElement>,
-                                                                  ) => {
-                                                                      e.stopPropagation()
-                                                                      dispatch(
-                                                                          initiateGrowFromStrainList(
-                                                                              strain,
-                                                                          ),
-                                                                      )
-                                                                  }}
-                                                                  disabled={!hasAvailableSlots}
-                                                              >
-                                                                  <PhosphorIcons.Plant className="w-4 h-4" />
-                                                              </Button>
-                                                          </div>
-                                                      )}
-                                                      <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
-                                                  </div>
-                                              </div>
-                                          </summary>
-                                          <div className="p-3 space-y-3 bg-slate-800/40">
-                                              {tips.map((tip) => (
-                                                  <Card
-                                                      key={tip.id}
-                                                      className="bg-slate-800/50 p-3 overflow-hidden"
-                                                  >
-                                                      <TipItem
-                                                          tip={tip}
-                                                          onEdit={setEditingTip}
-                                                          onDelete={deleteTip}
-                                                          onSelect={handleToggleSelection}
-                                                          isSelected={selectedIds.has(tip.id)}
-                                                      />
-                                                  </Card>
-                                              ))}
-                                          </div>
-                                      </details>
-                                  )
-                              },
-                          )
-                        : (sortedAndGrouped as SavedStrainTip[]).map((tip) => (
-                              <Card
-                                  key={tip.id}
-                                  className="bg-slate-800 p-3 ring-1 ring-inset ring-white/20"
-                              >
-                                  <TipItem
-                                      tip={tip}
-                                      onEdit={setEditingTip}
-                                      onDelete={deleteTip}
-                                      onSelect={handleToggleSelection}
-                                      isSelected={selectedIds.has(tip.id)}
-                                  />
-                              </Card>
-                          ))}
-                </div>
-            )}
+            {tipsContent}
         </div>
     )
 }

@@ -94,6 +94,12 @@ const FAQSection: React.FC = memo(() => {
     }, [allExpanded])
 
     const isFiltered = searchTerm.length > 0
+    const toggleAllIcon = allExpanded ? (
+        <PhosphorIcons.ArrowUp className="w-4 h-4 mr-1.5" />
+    ) : (
+        <PhosphorIcons.ArrowDown className="w-4 h-4 mr-1.5" />
+    )
+    const toggleAllLabel = allExpanded ? t('helpView.faq.collapseAll') : t('helpView.faq.expandAll')
 
     return (
         <Card>
@@ -107,17 +113,8 @@ const FAQSection: React.FC = memo(() => {
                     onClick={toggleAll}
                     className="self-start sm:self-auto"
                 >
-                    {allExpanded ? (
-                        <>
-                            <PhosphorIcons.ArrowUp className="w-4 h-4 mr-1.5" />
-                            {t('helpView.faq.collapseAll')}
-                        </>
-                    ) : (
-                        <>
-                            <PhosphorIcons.ArrowDown className="w-4 h-4 mr-1.5" />
-                            {t('helpView.faq.expandAll')}
-                        </>
-                    )}
+                    {toggleAllIcon}
+                    {toggleAllLabel}
                 </Button>
             </div>
             <p className="text-sm text-slate-400 mb-4">{t('helpView.faq.subtitle')}</p>
@@ -329,6 +326,13 @@ const LexiconSection: React.FC = memo(() => {
                     const count = categoryCounts[cat] ?? 0
                     const isActive = activeCategory === cat
                     const colors = cat !== 'All' ? CATEGORY_COLORS[cat] : undefined
+                    const categoryButtonClass = isActive
+                        ? `bg-primary-600 text-white shadow-lg ring-1 ring-primary-400 ${colors?.bg ?? ''}`
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white ring-1 ring-inset ring-slate-700/50'
+                    const countPillClass = isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-700 text-slate-400'
+
                     return (
                         <button
                             key={cat}
@@ -336,17 +340,12 @@ const LexiconSection: React.FC = memo(() => {
                             role="tab"
                             aria-selected={isActive}
                             onClick={() => setActiveCategory(cat)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200
-                                ${
-                                    isActive
-                                        ? `bg-primary-600 text-white shadow-lg ring-1 ring-primary-400 ${colors?.bg ?? ''}`
-                                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white ring-1 ring-inset ring-slate-700/50'
-                                }`}
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${categoryButtonClass}`}
                         >
                             {categoryIcons[cat]}
                             {t(`helpView.lexicon.categories.${cat.toLowerCase()}`)}
                             <span
-                                className={`text-xs tabular-nums rounded-full px-1.5 py-px ${isActive ? 'bg-white/20 text-white' : 'bg-slate-700 text-slate-400'}`}
+                                className={`text-xs tabular-nums rounded-full px-1.5 py-px ${countPillClass}`}
                             >
                                 {count}
                             </span>

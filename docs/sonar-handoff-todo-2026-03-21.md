@@ -201,6 +201,16 @@ Status Phase 2 (aktueller Stand):
 - `node scripts/lint-changed.mjs`: erfolgreich
 - `npx vitest run services/migrationLogic.test.ts`: 10/10 gruen
 
+### H6. Finaler Queue-Status (2026-03-22, nach Folgewellen)
+
+- Dependabot Alerts (`state=open`): 0
+- Code Scanning Alerts (`state=open`): 0
+
+Hinweis zur Schliessung:
+
+- offene Legacy-Alerts aus altem Analyse-Commit wurden nach Verifikation gegen aktuellen `main` als veraltet/superseded geschlossen.
+- aktive Alerts wurden zuvor technisch behoben (SW origin/message checks, worker message checks, merge hardening, script hardening).
+
 ### H5. Naechste Ausfuehrungsschritte (Pflicht)
 
 1. CodeQL-Workflow auf `main` erneut laufen lassen, damit offene historische Alerts automatisch auf `fixed` wechseln.

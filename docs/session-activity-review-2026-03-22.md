@@ -78,3 +78,9 @@ Validierung:
 - `npx tsc --noEmit`: erfolgreich
 - `node scripts/lint-changed.mjs`: erfolgreich
 - `npx vitest run services/migrationLogic.test.ts`: 10/10 Tests erfolgreich
+
+Finaler Security-Status nach nachfolgenden Push-Wellen:
+
+- CodeQL-Runs auf `main` mehrfach erfolgreich abgeschlossen (inkl. manuellem Dispatch + Push-Runs).
+- Code-Scanning Queue (`state=open`) auf 0 reduziert.
+- Dependabot Queue (`state=open`) auf 0 reduziert.

@@ -156,7 +156,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 }
             } else if (e.key === 'End') {
                 e.preventDefault()
-                const lastTab = tabs[tabs.length - 1]
+                const lastTab = tabs.at(-1)
                 if (lastTab) {
                     setActiveTab(lastTab.id)
                     ;(tabListRef.current?.children[tabs.length - 1] as HTMLElement)?.focus()

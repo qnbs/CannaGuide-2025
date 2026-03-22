@@ -86,7 +86,7 @@ const VoiceSettingsTab: React.FC = () => {
         utterance.pitch = settings.tts.pitch
         utterance.volume = settings.tts.volume
 
-        const synth = window.speechSynthesis
+        const synth = globalThis.speechSynthesis
         synth.cancel()
         synth.speak(utterance)
     }

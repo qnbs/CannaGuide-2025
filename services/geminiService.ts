@@ -37,7 +37,7 @@ const formatPlantContextForPrompt = (
                   .map((p) => {
                       const problemKey = p.type
                           .toLowerCase()
-                          .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
+                          .replaceAll(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
                       return t(`problemMessages.${problemKey}.message`)
                   })
                   .join(', ')
@@ -781,7 +781,7 @@ class GeminiService implements BaseAIProvider {
             .map((problem) => {
                 const problemKey = problem.type
                     .toLowerCase()
-                    .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
+                    .replaceAll(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
                 return t(`problemMessages.${problemKey}.message`)
             })
             .join(', ')

@@ -113,7 +113,7 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
                                         >
                                             <Icon className="w-5 h-5 text-slate-300" />
                                             <span className="text-[10px] text-slate-400 capitalize">
-                                                {pm.replace(/_/g, ' ')}
+                                                {pm.replaceAll('_', ' ')}
                                             </span>
                                         </div>
                                     ) : null

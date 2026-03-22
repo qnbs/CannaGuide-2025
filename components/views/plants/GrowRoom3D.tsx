@@ -1,3 +1,4 @@
+const browserWindow = globalThis.window
 import React, { memo, useEffect, useRef, useMemo, useState, useCallback } from 'react'
 import * as THREE from 'three'
 import { useTranslation } from 'react-i18next'
@@ -396,7 +397,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
             return
         }
         renderer.setSize(containerWidth, containerHeight, false)
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO))
+        renderer.setPixelRatio(Math.min(browserWindow?.devicePixelRatio ?? 1, MAX_PIXEL_RATIO))
         renderer.toneMapping = THREE.ACESFilmicToneMapping
         renderer.toneMappingExposure = 1.1
         rendererRef.current = renderer
@@ -461,7 +462,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         const handleContextLost = (e: Event): void => {
             e.preventDefault()
             cancelledRef.current = true
-            window.cancelAnimationFrame(frameRef.current)
+            browserWindow?.cancelAnimationFrame(frameRef.current)
             animatingRef.current = false
             setWebglError(t('plantsView.growRoom3d.contextLost'))
         }
@@ -508,7 +509,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                     renderer.render(scene, camera)
                 }
 
-                frameRef.current = window.requestAnimationFrame(animate)
+                frameRef.current = browserWindow?.requestAnimationFrame(animate) ?? 0
             }
             animate()
         }
@@ -527,7 +528,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         return () => {
             cancelledRef.current = true
             animatingRef.current = false
-            window.cancelAnimationFrame(frameRef.current)
+            browserWindow?.cancelAnimationFrame(frameRef.current)
             document.removeEventListener('visibilitychange', handleVisibility)
             canvas.removeEventListener('webglcontextlost', handleContextLost)
             canvas.removeEventListener('webglcontextrestored', handleContextRestored)

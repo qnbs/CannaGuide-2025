@@ -122,7 +122,7 @@ const CloudSyncPanel: React.FC = () => {
                     message: String(t('settingsView.data.sync.pullSuccess')),
                 }),
             )
-            setTimeout(() => window.location.reload(), 1000)
+            setTimeout(() => globalThis.location.reload(), 1000)
         } catch (error) {
             console.error('[CloudSync] Pull failed:', error)
             dispatch(

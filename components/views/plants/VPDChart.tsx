@@ -66,7 +66,7 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
         }
     }, [input, profileFromStore])
 
-    const latest = data[data.length - 1]
+    const latest = data.at(-1)
 
     if (error) {
         return <div className="text-red-400 text-sm p-4 text-center">{t('common.error')}</div>

@@ -72,7 +72,7 @@ const PinLockScreen: React.FC<{
                     maxLength={4}
                     value={pin}
                     onChange={(event) => {
-                        setPin(event.target.value.replace(/\D/g, '').slice(0, 4))
+                        setPin(event.target.value.replaceAll(/\D/g, '').slice(0, 4))
                         if (hasError) {
                             setHasError(false)
                         }
@@ -116,6 +116,7 @@ const EquipmentView = lazy(() =>
 const KnowledgeView = lazy(() => import('@/components/views/KnowledgeView'))
 const SettingsView = lazy(() => import('@/components/views/settings/SettingsView'))
 const HelpView = lazy(() => import('@/components/views/HelpView'))
+const browserWindow = globalThis.window
 
 // --- Lazy Loaded Modals (not needed on initial render) ---
 const GrowSetupModal = lazy(() =>
@@ -214,11 +215,11 @@ export const App: React.FC = () => {
             }
         }
 
-        window.addEventListener('pagehide', handleExitPrivacy)
+        browserWindow?.addEventListener('pagehide', handleExitPrivacy)
         document.addEventListener('visibilitychange', handleExitPrivacy)
 
         return () => {
-            window.removeEventListener('pagehide', handleExitPrivacy)
+            browserWindow?.removeEventListener('pagehide', handleExitPrivacy)
             document.removeEventListener('visibilitychange', handleExitPrivacy)
         }
     }, [settings.privacy.clearAiHistoryOnExit])
@@ -245,7 +246,7 @@ export const App: React.FC = () => {
         navigator.serviceWorker.addEventListener(
             'controllerchange',
             () => {
-                window.location.reload()
+                browserWindow?.location.reload()
             },
             { once: true },
         )
@@ -260,15 +261,15 @@ export const App: React.FC = () => {
             if (registration?.waiting) {
                 waitingWorkerRef.current = registration.waiting
                 setShowUpdateBanner(true)
-                window.setTimeout(() => {
+                globalThis.setTimeout(() => {
                     handleUpdate()
                 }, 1200)
             }
         }
 
-        window.addEventListener('swUpdate', handleSwUpdate)
+        browserWindow?.addEventListener('swUpdate', handleSwUpdate)
 
-        return () => window.removeEventListener('swUpdate', handleSwUpdate)
+        return () => browserWindow?.removeEventListener('swUpdate', handleSwUpdate)
     }, [handleUpdate])
 
     useEffect(() => {

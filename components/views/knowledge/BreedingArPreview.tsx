@@ -95,6 +95,8 @@ const appendArButton = (
     return button
 }
 
+const browserWindow = globalThis.window
+
 const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
     label,
     vigor,
@@ -205,7 +207,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
             preview.rotation.y += 0.008
             preview.rotation.x = Math.sin(performance.now() * 0.0008) * 0.03
             renderer.render(scene, camera)
-            frameHandle = window.requestAnimationFrame(animate)
+            frameHandle = browserWindow?.requestAnimationFrame(animate) ?? 0
         }
 
         const startAnimation = (): void => {
@@ -226,7 +228,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
         const handleContextLost = (e: Event): void => {
             e.preventDefault()
             cancelled = true
-            window.cancelAnimationFrame(frameHandle)
+            browserWindow?.cancelAnimationFrame(frameHandle)
             animating = false
         }
         const handleContextRestored = (): void => {
@@ -241,7 +243,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
         return () => {
             cancelled = true
             animating = false
-            window.cancelAnimationFrame(frameHandle)
+            browserWindow?.cancelAnimationFrame(frameHandle)
             document.removeEventListener('visibilitychange', handleVisibility)
             canvas.removeEventListener('webglcontextlost', handleContextLost)
             canvas.removeEventListener('webglcontextrestored', handleContextRestored)

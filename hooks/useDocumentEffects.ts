@@ -10,7 +10,7 @@ import { AppSettings, View } from '@/types'
  */
 export const useDocumentEffects = (settings: AppSettings, activeView?: View) => {
     useEffect(() => {
-        const root = window.document.documentElement
+        const root = globalThis.document.documentElement
         const { general, tts } = settings
 
         // --- Define ALL classes that this hook is responsible for managing. ---
@@ -64,7 +64,7 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
         root.style.fontSize = rootFontSizeBySetting[general.fontSize]
         root.lang = general.language
 
-        const themeMeta = document.querySelector(
+        const themeMeta = globalThis.document.querySelector(
             'meta[name="theme-color"]',
         ) as HTMLMetaElement | null
         // Per-theme base colours (match --color-bg-primary from styles.css)
@@ -87,9 +87,11 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
             [View.Settings]: '#0f172a',
             [View.Help]: '#1f1722',
         }
-        const resolvedThemeColor = activeView
-            ? (viewThemeMap[activeView] ?? themeColorMap[general.theme] ?? '#0F172A')
-            : (themeColorMap[general.theme] ?? '#0F172A')
+        const fallbackThemeColor = themeColorMap[general.theme] ?? '#0F172A'
+        const resolvedThemeColor =
+            activeView !== undefined
+                ? (viewThemeMap[activeView] ?? fallbackThemeColor)
+                : fallbackThemeColor
         if (themeMeta) {
             themeMeta.content = resolvedThemeColor
         }

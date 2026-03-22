@@ -186,14 +186,12 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
     }, [errors, dispatch])
 
     const parsedAromas = useMemo(
-        () =>
-            parseCommaSeparatedTokens(values.aromasString),
+        () => parseCommaSeparatedTokens(values.aromasString),
         [values.aromasString],
     )
 
     const parsedTerpenes = useMemo(
-        () =>
-            parseCommaSeparatedTokens(values.terpenesString),
+        () => parseCommaSeparatedTokens(values.terpenesString),
         [values.terpenesString],
     )
     const previewType = getSafeStrainType(values.type)

@@ -1457,13 +1457,15 @@ class PlantSimulationService {
             const newTerpenes = p.biomass.flowers * (productionFactor * 0.2)
             const terpeneCount = p.strain.dominantTerpenes.length
             const blockedTerpeneKeys = new Set(['__proto__', 'constructor', 'prototype'])
+            const nextTerpeneProfile = new Map<string, number>(Object.entries(p.terpeneProfile))
             p.strain.dominantTerpenes.forEach((terpName) => {
                 if (blockedTerpeneKeys.has(terpName)) {
                     return
                 }
-                p.terpeneProfile[terpName] =
-                    (p.terpeneProfile[terpName] || 0) + newTerpenes / terpeneCount
+                const currentTerpeneAmount = nextTerpeneProfile.get(terpName) ?? 0
+                nextTerpeneProfile.set(terpName, currentTerpeneAmount + newTerpenes / terpeneCount)
             })
+            p.terpeneProfile = Object.fromEntries(nextTerpeneProfile)
         }
 
         return p

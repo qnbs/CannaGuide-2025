@@ -157,6 +157,10 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
+    if (url.origin !== self.location.origin) {
+        return
+    }
+
     const isImageRequest =
         request.destination === 'image' ||
         IMAGE_EXTENSIONS.some((extension) => url.pathname.toLowerCase().endsWith(extension))

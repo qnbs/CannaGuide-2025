@@ -42,6 +42,17 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
 ## B. Neu aufgenommener Rest-Backlog aus letzter Nutzerliste
 
+Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erledigte Punkte):
+
+- `services/ttsService.ts`: private synth Feld/Initialisierung gegen aktuelle Sonar-Regeln pruefen
+- `services/growReminderService.ts`: NaN-Initialwerte und Guard-Pfad konsolidieren
+- `services/plantSimulationService.ts`: verbleibende Lesbarkeits-/Komplexitaets-Smells in langen Number.isFinite-Bloecken clustern
+- `components/views/settings/DataManagementTab.tsx`: `parsed &&`-Muster auf optional chaining/nullish-safe Guards normalisieren
+- `components/views/strains/StrainGridItem.tsx`: A11y-Interaktionsrolle gegen aktuelle Sonar-Regelstand pruefen (role/tabindex/click)
+- `components/views/strains/StrainListItem.tsx`: A11y-Interaktionsrolle gegen aktuelle Sonar-Regelstand pruefen (role/tabindex/click)
+- `stores/slices/genealogySlice.ts`: `isFinite`-Altstellen auf `Number.isFinite` vereinheitlichen
+- `stores/slices/settingsSlice.ts`: DOM-Cleanup auf moderne API (`remove`) vereinheitlichen
+
 1. Common / Accessibility / Lesbarkeit
 
 - components/views/equipment/SeedbanksView.tsx: Restpruefung nach Teilfix

@@ -208,7 +208,7 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
 
         // Cleanup
         setTimeout(() => {
-            document.body.removeChild(a)
+            a.remove()
             URL.revokeObjectURL(url)
         }, 100)
     },
@@ -268,11 +268,11 @@ const settingsSlice = createSlice({
                 unknown
             >
             for (let i = 0; i < keys.length - 1; i++) {
-                const k = keys[i];
+                const k = keys[i]
                 if (!k || !Object.prototype.hasOwnProperty.call(current, k)) return
                 current = current[k] as Record<string, unknown>
             }
-            const lastKey = keys[keys.length - 1];
+            const lastKey = keys[keys.length - 1]
             if (lastKey) current[lastKey] = value
         },
         toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
@@ -285,7 +285,7 @@ const settingsSlice = createSlice({
                 unknown
             >
             for (let i = 0; i < keys.length - 1; i++) {
-                const k = keys[i];
+                const k = keys[i]
                 if (!k || !Object.prototype.hasOwnProperty.call(current, k)) return
                 current = current[k] as Record<string, unknown>
             }

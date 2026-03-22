@@ -305,9 +305,14 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const genealogyState = useAppSelector(selectGenealogyState)
+    const hasLoggedMountStateRef = useRef(false)
 
     // ── Debug: State beim Mount loggen ────────────────────────────────
     useEffect(() => {
+        if (hasLoggedMountStateRef.current) {
+            return
+        }
+
         try {
             console.debug(
                 '[GenealogyView] mount – genealogyState:',
@@ -316,8 +321,8 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         } catch {
             console.debug('[GenealogyView] mount – genealogyState could not be serialized')
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+        hasLoggedMountStateRef.current = true
+    }, [genealogyState])
 
     // ── Defensive Destructuring ──────────────────────────────────────
     const computedTrees = useMemo(
@@ -362,6 +367,10 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
 
     // ── Mount-Check: korrupten persisted State zurücksetzen ──────────
     useEffect(() => {
+        if (wasReset) {
+            return
+        }
+
         try {
             if (isGenealogyStateCorrupt(genealogyState)) {
                 console.debug(
@@ -379,8 +388,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             }
             setWasReset(true)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dispatch])
+    }, [dispatch, genealogyState, wasReset])
 
     // ── Tree aus computedTrees ableiten (sicher) ─────────────────────
     const tree = useMemo(() => {

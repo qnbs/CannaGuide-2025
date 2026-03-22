@@ -125,6 +125,12 @@ export const SimulationDebugTab: React.FC<SimulationDebugTabProps> = memo(({ pla
                                 factor.context,
                             ),
                         }
+                    default:
+                        return {
+                            ...factor,
+                            label: factor.id,
+                            reason: '',
+                        }
                 }
             }),
         [diagnostics.dominantFactors, t],

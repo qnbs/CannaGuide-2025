@@ -90,3 +90,35 @@ Neue Automatisierung (heute ergaenzt):
 - `.github/workflows/security-alerts-handoff.yml` erstellt (daily + manual dispatch).
 - `scripts/security/update-alerts-report.mjs` erstellt (GitHub API Aggregation fuer Dependabot + Code Scanning + CodeQL Run-Status).
 - `docs/security-alerts-status.md` als handoff-faehiger Snapshot eingefuehrt.
+
+## Delta: Reliability- und Testabdeckung (Fortsetzung)
+
+In der Fortsetzung wurden gezielt Service-Reliability und Regressionstests ausgebaut:
+
+- `services/cryptoService.ts`
+    - WebCrypto BufferSource-Typisierung gehaertet (ArrayBuffer-Normalisierung vor `importKey`/`decrypt`).
+- `services/dbService.ts`
+    - Suchindex-Cursor-IDs robust validiert (nur string-IDs werden uebernommen).
+    - Entity-ID-Cast in Persistenzpfad durch Type-Guard ersetzt.
+    - Query-Fallback auf nullish-sichere Rueckgabe (`??`) vereinheitlicht.
+
+Neue Testdateien:
+
+- `services/cryptoService.test.ts`
+    - encrypt/decrypt Roundtrip
+    - Fallback fuer unverschluesselten/ungueltigen Payload
+    - ensureEncrypted-Migrationsflag
+    - Legacy-key Migration + Cleanup
+- `services/dbService.test.ts`
+    - Prefix-AND-Suche, malformed Search-Index-IDs, unknown index
+    - Cursor-Error-Fallback in `searchIndex`
+    - optimizeSimulationForPersistence Archivierungsverhalten
+    - getArchivedPlantLogs unknown plant
+    - addImage Warnschwelle->Pruning + Compression-Fallback
+
+Validierung (Fortsetzung):
+
+- `npx tsc --noEmit`: erfolgreich
+- `node scripts/lint-changed.mjs`: erfolgreich
+- `npx vitest run services/dbService.test.ts services/cryptoService.test.ts --run`: 13/13 gruen
+- `npx vitest run components/views/plants --run`: 5/5 gruen

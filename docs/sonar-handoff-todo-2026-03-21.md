@@ -6,6 +6,7 @@ Seit dem letzten Zwischenstand wurden zusaetzlich abgeschlossen:
 
 - `components/views/strains/StrainListItem.tsx` (Interaktionshaertung)
 - `components/views/strains/StrainGridItem.tsx` (Interaktionshaertung)
+- `.husky/pre-push`, `scripts/prettier-check-changed.mjs`, `package.json` (zus. Push-Gates: lint-changed, typecheck, test:changed, prettier:check:changed)
 - `styles.css` (Checkbox-Checkmark-Rendering-Fix)
 - `components/common/DataExportModal.tsx` (zusaetzlicher Confirm-Schritt fuer Export)
 - `components/views/strains/ExportsManagerView.tsx` (Confirm vor Download)
@@ -48,10 +49,10 @@ Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erled
 - `services/growReminderService.ts`: NaN-Initialwerte und Guard-Pfad konsolidieren
 - `services/plantSimulationService.ts`: verbleibende Lesbarkeits-/Komplexitaets-Smells in langen Number.isFinite-Bloecken clustern
 - `components/views/settings/DataManagementTab.tsx`: `parsed &&`-Muster auf optional chaining/nullish-safe Guards normalisieren
-- `components/views/strains/StrainGridItem.tsx`: A11y-Interaktionsrolle gegen aktuelle Sonar-Regelstand pruefen (role/tabindex/click)
-- `components/views/strains/StrainListItem.tsx`: A11y-Interaktionsrolle gegen aktuelle Sonar-Regelstand pruefen (role/tabindex/click)
-- `stores/slices/genealogySlice.ts`: `isFinite`-Altstellen auf `Number.isFinite` vereinheitlichen
-- `stores/slices/settingsSlice.ts`: DOM-Cleanup auf moderne API (`remove`) vereinheitlichen
+- `components/views/strains/StrainGridItem.tsx`: erledigt (native overlay button statt role/tabindex div)
+- `components/views/strains/StrainListItem.tsx`: erledigt (native overlay button statt role/tabindex div)
+- `stores/slices/genealogySlice.ts`: erledigt (`Number.isFinite` vereinheitlicht)
+- `stores/slices/settingsSlice.ts`: erledigt (DOM-Cleanup via `remove`)
 
 1. Common / Accessibility / Lesbarkeit
 

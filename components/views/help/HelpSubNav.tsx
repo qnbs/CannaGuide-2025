@@ -75,7 +75,6 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
         <nav
             ref={navRef}
             className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
-            role="tablist"
             aria-label={t('common.accessibility.helpNavigation')}
         >
             {navItems.map((item) => {
@@ -83,9 +82,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
                 return (
                     <button
                         type="button"
-                        role="tab"
                         key={item.id}
-                        tabIndex={isActive ? 0 : -1}
                         onClick={() => onTabChange(item.id)}
                         onKeyDown={handleKeyDown}
                         className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900
@@ -95,8 +92,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
                                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white ring-1 ring-inset ring-slate-700/50'
                             }`}
                         aria-label={item.label}
-                        aria-selected={isActive}
-                        aria-controls={`help-panel-${item.id}`}
+                        aria-pressed={isActive}
                     >
                         <div className="w-6 h-6">{item.icon}</div>
                         <span className="text-xs font-semibold text-center leading-tight">

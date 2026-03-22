@@ -1,119 +1,90 @@
-# Sonar Handoff TODO (naechste Session)
+# Sonar Handoff TODO (Update 2026-03-22)
 
-Basis: Sonar-Liste aus der letzten Anfrage (100 von 291 Issues angezeigt).
-Prioritaet: zuerst hohe Wirkung mit geringem Risiko, danach breite Bereinigung nach Clustern.
+Basis: neue Sonar-Liste aus dem letzten Nutzerblock (100 von 172 angezeigt).
+Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
-## A. Sofort-Start (Top-Block aus letzter Anfrage)
+## A. In dieser Runde bereits erledigt (aus TODO entfernt)
 
-1. components/common/AgeGateModal.tsx
+- components/common/Card.tsx
+- components/common/CommandPalette.tsx
+- components/common/SegmentedControl.tsx
+- components/common/Tabs.tsx
+- components/views/PlantsView.tsx (Ternary/Key-Refactor gestartet)
+- components/views/equipment/SaveSetupModal.tsx
+- components/views/equipment/SeedbanksView.tsx
+- components/views/equipment/SetupConfigurator.tsx
+- components/views/help/HelpSubNav.tsx
+- components/views/knowledge/BreedingArPreview.tsx
+- components/views/knowledge/GuideView.tsx (Teilfix)
+- components/views/knowledge/MentorArchiveTab.tsx
+- components/views/plants/AiDiagnosticsModal.tsx
+- components/views/plants/App.tsx
+- components/views/settings/DataManagementTab.tsx
+- hooks/useStorageEstimate.ts
 
-- role="dialog" durch natives dialog-Element ersetzen.
-- Fokus-/Close-Verhalten pruefen (Esc/Backdrop nur falls gewuenscht).
+## B. Neu aufgenommener Rest-Backlog aus letzter Nutzerliste
 
-2. components/common/ConsentBanner.tsx
+1. Common / Accessibility / Lesbarkeit
 
-- role="dialog" durch natives dialog-Element ersetzen.
+- components/views/equipment/SeedbanksView.tsx: Restpruefung nach Teilfix
+- components/views/settings/SettingsSubNav.tsx: tablist muss focusable sein
+- components/views/strains/StrainToolbar.tsx: listbox/option auf native select/option umstellen
 
-3. components/common/Card.tsx
+2. Plants-Views Cluster
 
-- Non-native Interaktion auf native button/link umstellen oder vollstaendig a11y-konform machen.
-- role="button" entfernen zugunsten nativer Elemente.
-- tabIndex nur auf interaktiven Elementen.
+- components/views/plants/DashboardSummary.tsx: nested ternary (2x)
+- components/views/plants/HistoryChart.tsx: Array includes -> Set.has
+- components/views/plants/PlantLifecycleTimeline.tsx: nested template literal
+- components/views/plants/PlantSlot.tsx: nested template literal
+- components/views/plants/SensorIntegrationPanel.tsx: nested ternary
+- components/views/plants/detailedPlantViewTabs/JournalTab.tsx: nested template literal (3x)
+- components/views/plants/detailedPlantViewTabs/PhotosTab.tsx: non-interactive listener
+- components/views/plants/detailedPlantViewTabs/SimulationDebugTab.tsx: nested ternary (4x)
 
-4. components/common/CommandPalette.tsx
+3. Knowledge / Help Cluster
 
-- Nested ternary (L198) in klare Zwischenausdruecke aufloesen.
+- components/views/knowledge/GuideView.tsx: optional chaining/nested template literal Reststellen
+- components/views/knowledge/MentorView.tsx: Set.has + nested template literal
+- components/views/knowledge/BreedingArPreview.tsx: Restcheck
 
-5. components/common/DialogWrapper.tsx
+4. Strains Cluster (groesserer Block)
 
-- Bugfix: Bedingung liefert in true/false denselben Wert (L123).
+- components/views/strains/AddStrainModal.tsx: Regex-Komplexitaet reduzieren
+- components/views/strains/BreedingLab.tsx: nested ternary
+- components/views/strains/GenealogyView.tsx: isFinite -> Number.isFinite (mehrfach) + suspicious branch
+- components/views/strains/InlineStrainSelector.tsx: nested ternary
+- components/views/strains/StrainImageGalleryTab.tsx: A11y interactive/non-interactive
+- components/views/strains/StrainImageGenerator.tsx: nested ternary
+- components/views/strains/StrainLibraryView.tsx: nested ternary
+- components/views/strains/StrainTipsView.tsx: reduce-assignment extrahieren, sort separieren/toSorted, nested ternary
+- components/views/strains/StrainTreeNode.tsx: treeitem aria-selected Pflichtattribut
+- components/views/strains/StrainsView.tsx: nested ternary (2x)
 
-6. components/common/ErrorBoundary.tsx
+5. Hooks / Services Cluster
 
-- requestSafeRecovery als readonly markieren.
+- hooks/useDocumentEffects.ts: nested ternary
+- hooks/useFocusTrap.ts: else-if Normalisierung
+- services/chemotypeService.ts: sort in separate statement/toSorted
+- services/cryptoService.ts: Promise rejection reason als Error + optional chaining
+- services/dbService.ts: Promise rejection reason als Error (mehrfach) + reduce initial value
+- services/entourageService.ts: nested ternary
+- services/exportService.ts: removeChild -> remove + nested template literals (groesserer Block)
 
-7. components/common/OnboardingModal.tsx
+## C. Nächste Welle (konkret)
 
-- Nested ternary aufloesen.
-- Alle index-keys ersetzen (L176, L221, L263, L309).
-
-8. components/common/Pagination.tsx
-
-- index-key ersetzen (L76).
-
-9. components/common/RangeSlider.tsx
-
-- Redundantes undefined/? im Typ entfernen (L13).
-- isNaN durch Number.isNaN ersetzen (L76, L83).
-
-10. components/common/SegmentedControl.tsx
-
-- Non-interactive Event-Listener entfernen oder auf native interaktive Elemente migrieren.
-- role="group" durch fieldset/details/optgroup/address-konforme Struktur ersetzen.
-
-## B. Danach in Clustern abarbeiten
-
-1. Accessibility-Rollen auf native HTML umstellen
-
-- role="navigation" -> nav (z. B. components/views/HelpView.tsx)
-- role="img" -> img mit alt (mehrfach in help/plants views)
-- role="progressbar" -> progress (components/views/plants/VitalBar.tsx)
-- role="list"/"listitem" -> ul/ol + li (GrowRoom3D etc.)
-- role="button"-Smells in plants/tasks und diagnostics modals
-
-2. Array-index-as-key global reduzieren
-
-- Haeufig in common/components/views/equipment/plants/deepDive
-- Vorgehen: stabile IDs aus Datenobjekten nutzen, sonst deterministischen String-Key bilden.
-
-3. Lesbarkeit/Intentionality
-
-- Nested ternary in mehrere Statements aufteilen
-- Nested template literals in benannte Teilstrings aufteilen
-- Else-if Normalisierungen (if als einzige else-Anweisung)
-
-4. Konvention/ES2015
-
-- parseInt -> Number.parseInt
-- isNaN -> Number.isNaN
-- Optional Chaining statt manueller null/undefined Checks
-- includes-Checks mit Set.has bei passenden Stellen
-
-5. Reliability/Bug-Smells
-
-- Gleiches Ergebnis in true/false-Bedingungen (GrowSetupModal/DialogWrapper)
-- Promise-Reject-Reason als Error (LogActionModal)
-
-## C. Empfohlene Abarbeitungsreihenfolge (Wellen)
-
-1. Welle 1
-
-- Alle common/\* Punkte aus Abschnitt A komplett
-
-2. Welle 2
-
-- Accessibility-Rollen in Help/Plants/equipment views
-
-3. Welle 3
-
-- index-key Cluster (beginnend mit stark gerenderten Listen)
-
-4. Welle 4
-
-- Nested ternary/template literal + Konventionssmells
+1. GenealogyView-Konventionsblock komplett (Number.isFinite + duplicate branch)
+2. DashboardSummary/HistoryChart/SensorIntegrationPanel/SimulationDebugTab (schnelle UI-smells)
+3. dbService/cryptoService (Reliability)
+4. exportService und AddStrainModal als eigene fokussierte Wellen
 
 ## D. Validierung je Welle
 
-Nach jeder Welle ausfuehren:
-
 - npx tsc --noEmit
 - node scripts/lint-changed.mjs
-- optional gezielter Testlauf fuer betroffene Views
+- Diagnostics-Check der geaenderten Dateien
 
 ## E. Abschlusskriterien
 
-Eine Welle gilt als abgeschlossen, wenn:
-
-- Alle in der Welle geplanten Sonar-Hinweise behoben sind
-- Typecheck/Lint gruen sind
-- Keine regressiven A11y-Interaktionen auffallen (Keyboard/Fokus)
+- Sonar-Issues der jeweiligen Welle auf erledigt gesetzt
+- keine neuen Type- oder Lint-Fehler
+- keine regressiven Keyboard-/Fokusprobleme in UI-A11y-Fixes

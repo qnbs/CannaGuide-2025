@@ -40,11 +40,7 @@ export function SegmentedControl<T extends string>({
     }, [])
 
     return (
-        <fieldset
-            ref={groupRef}
-            className={`flex flex-wrap items-center gap-2 ${className}`}
-            onKeyDown={handleKeyDown}
-        >
+        <fieldset ref={groupRef} className={`flex flex-wrap items-center gap-2 ${className}`}>
             {ariaLabel && <legend className="sr-only">{ariaLabel}</legend>}
             {options.map((option) => {
                 const isActive = value.includes(option.value)
@@ -53,6 +49,7 @@ export function SegmentedControl<T extends string>({
                         key={option.value}
                         type="button"
                         onClick={() => onToggle(option.value)}
+                        onKeyDown={handleKeyDown}
                         className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-lg transition-all whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
                             isActive
                                 ? 'bg-primary-500 text-white shadow-md shadow-primary-500/20 ring-1 ring-inset ring-white/50'

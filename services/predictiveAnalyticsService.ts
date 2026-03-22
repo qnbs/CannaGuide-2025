@@ -201,6 +201,20 @@ const getHumidityPenalty = (maxHumidity: number): number => {
 const getAlertPenalty = (alerts: EnvironmentAlert[]): number =>
     alerts.filter((alert) => alert.severity === 'high').length * 5
 
+const addPenaltyFactor = (
+    currentPenalty: number,
+    factors: string[],
+    penalty: number,
+    message: string,
+): number => {
+    if (penalty <= 0) {
+        return currentPenalty
+    }
+
+    factors.push(message)
+    return currentPenalty + penalty
+}
+
 const describeYieldImpact = (impactPercent: number): string => {
     if (impactPercent >= -5) {
         return 'Environmental conditions are optimal. Minimal yield impact expected.'
@@ -377,28 +391,36 @@ export const predictiveAnalyticsService = {
         const ideal = getIdealRange(plant.stage)
 
         const vpdPenalty = getVpdPenalty(stats.avgVpd, ideal)
-        if (vpdPenalty > 0) {
-            totalPenalty += vpdPenalty
-            factors.push(`VPD deviation: -${vpdPenalty.toFixed(0)}%`)
-        }
+        totalPenalty = addPenaltyFactor(
+            totalPenalty,
+            factors,
+            vpdPenalty,
+            `VPD deviation: -${vpdPenalty.toFixed(0)}%`,
+        )
 
         const temperaturePenalty = getTemperaturePenalty(stats.avgTemperature, ideal)
-        if (temperaturePenalty > 0) {
-            totalPenalty += temperaturePenalty
-            factors.push(`Temperature stress: -${temperaturePenalty.toFixed(0)}%`)
-        }
+        totalPenalty = addPenaltyFactor(
+            totalPenalty,
+            factors,
+            temperaturePenalty,
+            `Temperature stress: -${temperaturePenalty.toFixed(0)}%`,
+        )
 
         const humidityPenalty = getHumidityPenalty(stats.maxHumidity)
-        if (humidityPenalty > 0) {
-            totalPenalty += humidityPenalty
-            factors.push(`High humidity exposure: -${humidityPenalty.toFixed(0)}%`)
-        }
+        totalPenalty = addPenaltyFactor(
+            totalPenalty,
+            factors,
+            humidityPenalty,
+            `High humidity exposure: -${humidityPenalty.toFixed(0)}%`,
+        )
 
         const alertPenalty = getAlertPenalty(alerts)
-        if (alertPenalty > 0) {
-            totalPenalty += alertPenalty
-            factors.push(`${alertPenalty / 5} high-severity alert(s): -${alertPenalty}%`)
-        }
+        totalPenalty = addPenaltyFactor(
+            totalPenalty,
+            factors,
+            alertPenalty,
+            `${alertPenalty / 5} high-severity alert(s): -${alertPenalty}%`,
+        )
 
         const impactPercent = -Math.min(totalPenalty, 60)
         return { impactPercent, description: describeYieldImpact(impactPercent), factors }

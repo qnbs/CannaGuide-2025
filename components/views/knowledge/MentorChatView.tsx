@@ -43,6 +43,20 @@ const resolveMentorErrorMessage = (
     return t('ai.error.unknown')
 }
 
+const replaceMessageContent = (
+    messages: MentorMessage[],
+    messageId: string,
+    content: string,
+): MentorMessage[] => messages.map((msg) => (msg.id === messageId ? { ...msg, content } : msg))
+
+const enqueueMeasureVersionUpdate = (
+    setHistory: React.Dispatch<React.SetStateAction<MentorMessage[]>>,
+    streamMsgId: string,
+    text: string,
+) => {
+    setHistory((prev) => replaceMessageContent(prev, streamMsgId, text))
+}
+
 const scheduleStreamMessageUpdate = (
     streamMsgId: string,
     streamingTextRef: React.MutableRefObject<string>,
@@ -61,9 +75,7 @@ const scheduleStreamMessageUpdate = (
         requestAnimationFrame(() => {
             rafPending = false
             const text = streamingTextRef.current
-            setHistory((prev) =>
-                prev.map((msg) => (msg.id === streamMsgId ? { ...msg, content: text } : msg)),
-            )
+            enqueueMeasureVersionUpdate(setHistory, streamMsgId, text)
             scrollToBottom()
         })
     }

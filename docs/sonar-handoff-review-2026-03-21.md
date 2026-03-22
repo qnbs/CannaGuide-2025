@@ -1,74 +1,60 @@
-# Sonar Handoff Review (2026-03-21)
+# Sonar Handoff Review (Update 2026-03-22)
 
-Stand dieser Uebergabe: Commit f43a63e auf main.
+## Ziel
 
-## Ziel der Session
+Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 
-SonarCloud High/Major Issues in Wellen reduzieren, inklusive Validierung nach jeder Welle. In der Session wurden mehrere Refactor-Wellen umgesetzt und gepusht.
+- komplexe Service-Refactors (Cognitive Complexity / Nesting)
+- UI/A11y-Majors mit geringem Regressionsrisiko
+- schnelle Konventionssmells (optional chaining, Number.parseFloat)
 
-## In dieser Session abgeschlossene Wellen
+## In dieser Runde erledigt
 
-1. Commit cf3d32d
+1. Komplexitaet/Nesting (Critical-Block aus vorheriger Runde)
 
-- refactor(services): reduce complexity in AI routing and persistence
-- Betroffene Dateien:
-    - services/aiService.ts
-    - services/growLogRagService.ts
-    - services/timeSeriesService.ts
-    - services/aiProviderService.ts
-    - services/localAiPreloadService.ts
-    - services/dbService.ts
+- components/views/knowledge/MentorChatView.tsx
+- hooks/useVirtualizer.ts
+- services/localAI.ts
+- services/localAiFallbackService.ts
+- services/migrationLogic.ts
+- services/plantSimulationService.ts
+- services/predictiveAnalyticsService.ts
+- stores/slices/genealogySlice.ts
 
-2. Commit 5acc7fb
+2. Naechster UI/A11y/Maintainability-Block (Major/Minor)
 
-- refactor(services): split local AI fallback and loader complexity
-- Betroffene Dateien:
-    - services/localAiFallbackService.ts
-    - services/localAIModelLoader.ts
+- components/common/Card.tsx
+- components/common/CommandPalette.tsx
+- components/common/SegmentedControl.tsx
+- components/common/Tabs.tsx
+- components/views/PlantsView.tsx
+- components/views/equipment/SaveSetupModal.tsx
+- components/views/equipment/SeedbanksView.tsx
+- components/views/equipment/SetupConfigurator.tsx
+- components/views/help/HelpSubNav.tsx
+- components/views/knowledge/BreedingArPreview.tsx
+- components/views/knowledge/GuideView.tsx
+- components/views/knowledge/MentorArchiveTab.tsx
+- components/views/plants/AiDiagnosticsModal.tsx
+- components/views/plants/App.tsx
+- components/views/settings/DataManagementTab.tsx
+- hooks/useStorageEstimate.ts
 
-3. Commit f43a63e
+## Validierung
 
-- refactor(services): simplify genealogy traversal helpers
-- Betroffene Dateien:
-    - services/geneticsService.ts
+- npx tsc --noEmit: erfolgreich
+- Diagnostics-Check auf allen geaenderten Dateien: keine neuen Fehler
 
-## Qualitaetsstatus waehrend der Session
+## Ergebnisbild
 
-Jede Welle wurde lokal geprueft mit:
+- Kritische Komplexitaets-Hotspots aus dem letzten Block stark reduziert.
+- Erste groessere UI/A11y-Welle gestartet und mehrere Major-Smells entfernt.
+- Sonar-Backlog ist weiterhin umfangreich; aktuelle Restpunkte sind im aktualisierten TODO dokumentiert.
 
-- npx tsc --noEmit
-- node scripts/lint-changed.mjs
-- IDE/Diagnostics-Check der geaenderten Dateien
+## Naechster sinnvoller Einstieg
 
-Keine neuen Type- oder Lint-Fehler in den jeweils geaenderten Dateien.
+- den verbleibenden Block aus docs/sonar-handoff-todo-2026-03-21.md in Clustern weiter abarbeiten:
 
-## Bezug zur letzten Sonar-Anfrage (lange Liste)
-
-Die in der letzten Anfrage gelisteten Punkte wurden nur teilweise abgearbeitet. Fokus lag in dieser Session vorrangig auf Service-Komplexitaet, danach Start der UI/A11y-Welle.
-
-Bereits angegangen aus dem Sonar-Kontext:
-
-- Komplexitaet/Lesbarkeit in mehreren Service-Dateien stark reduziert.
-
-Noch offen aus der letzten Anfrage:
-
-- Viele Accessibility-Themen in components/common und components/views
-- Mehrere nested ternary / nested template literal Smells
-- Viele Array-index-as-key Vorkommen
-- Konventionssmells (Number.parseInt, Number.isNaN, Optional Chaining)
-- Einzelne Reliability-Bugs (gleiches true/false Ergebnis, Promise-Reject-Reason)
-
-## Was in dieser Session bewusst NICHT abgeschlossen wurde
-
-Die naechste UI/A11y-Welle wurde begonnen (Scouting), aber nicht mehr umgesetzt, da die Session auf Wunsch mit Handoff beendet wird.
-Konkret angelesen, aber nicht gepatcht:
-
-- components/common/AgeGateModal.tsx
-- components/common/ConsentBanner.tsx
-
-## Empfehlung fuer den Einstieg in die naechste Session
-
-Mit den Common-Komponenten aus der letzten Sonar-Liste starten (kleine, risikoarme A11y-Fixes zuerst), danach systematisch die groesseren View-Dateien.
-Details siehe zweite Uebergabedatei:
-
-- docs/sonar-handoff-todo-2026-03-21.md
+1. restliche A11y-Rollen/Interaktionen in components/views/strains und settings
+2. nested ternary/template literal Cluster in plants/strains/services
+3. dbService/exportService/cryptoService Reliability-Smells

@@ -246,6 +246,120 @@ const summarizeTrend = (context: NutrientRecommendationContext, lang: Language):
     return changes.length > 0 ? changes.join(' ') : null
 }
 
+const resolveNutrientPlantLabel = (
+    context: NutrientRecommendationContext,
+    lang: Language,
+): string => {
+    if (context.plant) {
+        return `${context.plant.name} (${context.plant.strain.name})`
+    }
+
+    return isGerman(lang) ? 'ohne ausgewählte Pflanze' : 'without a selected plant'
+}
+
+const appendEcRecommendationLine = (
+    lines: string[],
+    context: NutrientRecommendationContext,
+    lang: Language,
+    withinEc: boolean,
+): void => {
+    if (withinEc) {
+        lines.push(
+            isGerman(lang)
+                ? 'EC liegt im Sollbereich. Die Fütterung kann stabil bleiben.'
+                : 'EC is within target. Keep the feed strength steady for now.',
+        )
+        return
+    }
+
+    if (context.currentEc < context.optimalRange.ecMin) {
+        const stepLabel = context.medium.toLowerCase().includes('hydro')
+            ? isGerman(lang)
+                ? 'kleinen'
+                : 'small'
+            : isGerman(lang)
+              ? 'moderaten'
+              : 'moderate'
+
+        lines.push(
+            isGerman(lang)
+                ? `EC ist zu niedrig. Die nächste Gabe leicht anheben und in ${stepLabel} Schritten auf ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)} bringen.`
+                : `EC is too low. Increase the next feed slightly and move back toward ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)} in ${stepLabel} steps.`,
+        )
+        return
+    }
+
+    lines.push(
+        isGerman(lang)
+            ? 'EC ist zu hoch. Die Mischung etwas verdünnen oder eine Bewässerung mit klarem Wasser einplanen.'
+            : 'EC is too high. Dilute the mix a bit or plan a plain-water irrigation.',
+    )
+}
+
+const appendPhRecommendationLine = (
+    lines: string[],
+    context: NutrientRecommendationContext,
+    lang: Language,
+    withinPh: boolean,
+): void => {
+    if (withinPh) {
+        lines.push(isGerman(lang) ? 'pH liegt im Zielbereich.' : 'pH is within the target range.')
+        return
+    }
+
+    if (context.currentPh < context.optimalRange.phMin) {
+        lines.push(
+            isGerman(lang)
+                ? `pH ist zu niedrig. Leicht anheben, damit die Wurzelzone wieder in den Bereich ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)} kommt.`
+                : `pH is too low. Raise it gently so the root zone moves back into ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)}.`,
+        )
+        return
+    }
+
+    lines.push(
+        isGerman(lang)
+            ? 'pH ist zu hoch. Sanft senken, damit Nährstoffe wieder sauber verfügbar werden.'
+            : 'pH is too high. Lower it gently so nutrients become available again.',
+    )
+}
+
+const appendLatestReadingLine = (
+    lines: string[],
+    context: NutrientRecommendationContext,
+    lang: Language,
+): void => {
+    if (context.readings.length === 0) {
+        return
+    }
+
+    const latest = [...context.readings].sort((left, right) => right.timestamp - left.timestamp)[0]
+    if (!latest) {
+        return
+    }
+
+    lines.push(
+        isGerman(lang)
+            ? `Letzte Messung (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`
+            : `Latest reading (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`,
+    )
+}
+
+const appendPlantStatusLine = (
+    lines: string[],
+    context: NutrientRecommendationContext,
+    lang: Language,
+): void => {
+    if (!context.plant) {
+        return
+    }
+
+    lines.push(
+        isGerman(lang)
+            ? `Pflanze: ${context.plant.name}, ${context.plant.stage}, ${context.plant.age} Tage, Gesundheit ${context.plant.health.toFixed(0)}%.`
+            : `Plant: ${context.plant.name}, ${context.plant.stage}, ${context.plant.age} days old, health ${context.plant.health.toFixed(0)}%.`,
+    )
+}
+
 const buildNutrientRecommendation = (
     context: NutrientRecommendationContext,
     lang: Language,
@@ -256,11 +370,7 @@ const buildNutrientRecommendation = (
     const withinPh =
         context.currentPh >= context.optimalRange.phMin &&
         context.currentPh <= context.optimalRange.phMax
-    const plantLabel = context.plant
-        ? `${context.plant.name} (${context.plant.strain.name})`
-        : isGerman(lang)
-          ? 'ohne ausgewählte Pflanze'
-          : 'without a selected plant'
+    const plantLabel = resolveNutrientPlantLabel(context, lang)
 
     const lines: string[] = [
         isGerman(lang)
@@ -271,67 +381,17 @@ const buildNutrientRecommendation = (
             : `Current values: EC ${context.currentEc.toFixed(2)} against target ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)}, pH ${context.currentPh.toFixed(2)} against target ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)}.`,
     ]
 
-    if (withinEc) {
-        lines.push(
-            isGerman(lang)
-                ? 'EC liegt im Sollbereich. Die Fütterung kann stabil bleiben.'
-                : 'EC is within target. Keep the feed strength steady for now.',
-        )
-    } else if (context.currentEc < context.optimalRange.ecMin) {
-        lines.push(
-            isGerman(lang)
-                ? `EC ist zu niedrig. Die nächste Gabe leicht anheben und in ${context.medium.toLowerCase().includes('hydro') ? 'kleinen' : 'moderaten'} Schritten auf ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)} bringen.`
-                : `EC is too low. Increase the next feed slightly and move back toward ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)} in ${context.medium.toLowerCase().includes('hydro') ? 'small' : 'moderate'} steps.`,
-        )
-    } else {
-        lines.push(
-            isGerman(lang)
-                ? 'EC ist zu hoch. Die Mischung etwas verdünnen oder eine Bewässerung mit klarem Wasser einplanen.'
-                : 'EC is too high. Dilute the mix a bit or plan a plain-water irrigation.',
-        )
-    }
+    appendEcRecommendationLine(lines, context, lang, withinEc)
 
-    if (withinPh) {
-        lines.push(isGerman(lang) ? 'pH liegt im Zielbereich.' : 'pH is within the target range.')
-    } else if (context.currentPh < context.optimalRange.phMin) {
-        lines.push(
-            isGerman(lang)
-                ? `pH ist zu niedrig. Leicht anheben, damit die Wurzelzone wieder in den Bereich ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)} kommt.`
-                : `pH is too low. Raise it gently so the root zone moves back into ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)}.`,
-        )
-    } else {
-        lines.push(
-            isGerman(lang)
-                ? 'pH ist zu hoch. Sanft senken, damit Nährstoffe wieder sauber verfügbar werden.'
-                : 'pH is too high. Lower it gently so nutrients become available again.',
-        )
-    }
+    appendPhRecommendationLine(lines, context, lang, withinPh)
 
     const trend = summarizeTrend(context, lang)
     if (trend) {
         lines.push(trend)
     }
 
-    if (context.readings.length > 0) {
-        const latest = [...context.readings].sort(
-            (left, right) => right.timestamp - left.timestamp,
-        )[0]
-        if (latest) {
-            lines.push(
-                isGerman(lang)
-                    ? `Letzte Messung (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`
-                    : `Latest reading (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`,
-            )
-        }
-    }
-
-    if (context.plant) {
-        lines.push(
-            isGerman(lang)
-                ? `Pflanze: ${context.plant.name}, ${context.plant.stage}, ${context.plant.age} Tage, Gesundheit ${context.plant.health.toFixed(0)}%.`
-                : `Plant: ${context.plant.name}, ${context.plant.stage}, ${context.plant.age} days old, health ${context.plant.health.toFixed(0)}%.`,
-        )
-    }
+    appendLatestReadingLine(lines, context, lang)
+    appendPlantStatusLine(lines, context, lang)
 
     lines.push(mediumAdvice(context.medium, lang))
     lines.push(
@@ -442,39 +502,70 @@ const getExtraName = (wantsSmellControl: boolean, isBudget: boolean, lang: Langu
     return isGerman(lang) ? 'pH- und EC-Messset' : 'pH and EC meter set'
 }
 
-const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommendation => {
+interface EquipmentPromptFlags {
+    isBudget: boolean
+    isLarge: boolean
+    isSilent: boolean
+    wantsSmellControl: boolean
+    prefersSoil: boolean
+    prefersCoco: boolean
+    isAuto: boolean
+}
+
+const parseEquipmentPromptFlags = (prompt: string): EquipmentPromptFlags => {
     const normalized = prompt.toLowerCase().slice(0, 2000)
-    const isBudget = /budget|cheap|starter|entry|einsteiger|günstig|preiswert/.test(normalized)
-    const isLarge = /4x4|5x5|groß|large|mehrere pflanzen|multiple plants/.test(normalized)
-    const isSilent = /silent|quiet|leise/.test(normalized)
-    const wantsSmellControl = /smell|odor|geruch|filter|carbon/.test(normalized)
-    const prefersSoil = /soil|erde|living soil|organic/.test(normalized)
-    const prefersCoco = /coco|kokos/.test(normalized)
-    const isAuto = /autoflower|autoflowering|autoflowern?/.test(normalized)
 
-    const tent = getTentConfig(isLarge, isBudget)
-
-    let lightWatts = 300
-    if (isLarge) {
-        lightWatts = isBudget ? 320 : 450
-    } else if (isBudget) {
-        lightWatts = 200
+    return {
+        isBudget: /budget|cheap|starter|entry|einsteiger|günstig|preiswert/.test(normalized),
+        isLarge: /4x4|5x5|groß|large|mehrere pflanzen|multiple plants/.test(normalized),
+        isSilent: /silent|quiet|leise/.test(normalized),
+        wantsSmellControl: /smell|odor|geruch|filter|carbon/.test(normalized),
+        prefersSoil: /soil|erde|living soil|organic/.test(normalized),
+        prefersCoco: /coco|kokos/.test(normalized),
+        isAuto: /autoflower|autoflowering|autoflowern?/.test(normalized),
     }
-    const lightName = isBudget
-        ? `${lightWatts}W full-spectrum LED`
-        : `${lightWatts}W dimmable full-spectrum LED`
+}
 
-    const ventilationName = getVentilationName(wantsSmellControl, isSilent)
-    const ventilationRationale = getVentilationRationale(wantsSmellControl, isSilent, lang)
-    let ventilationPrice = 190
-    if (wantsSmellControl) {
-        ventilationPrice = isBudget ? 170 : 260
-    } else if (isBudget) {
-        ventilationPrice = 120
+const resolveLightSetup = (flags: EquipmentPromptFlags): { watts: number; name: string } => {
+    let watts = 300
+    if (flags.isLarge) {
+        watts = flags.isBudget ? 320 : 450
+    } else if (flags.isBudget) {
+        watts = 200
     }
-    const soilName = getSoilName(prefersCoco, prefersSoil, lang)
-    const nutrientName = getNutrientName(prefersCoco, isAuto, lang)
-    const extraName = getExtraName(wantsSmellControl, isBudget, lang)
+
+    return {
+        watts,
+        name: flags.isBudget
+            ? `${watts}W full-spectrum LED`
+            : `${watts}W dimmable full-spectrum LED`,
+    }
+}
+
+const resolveVentilationPrice = (flags: EquipmentPromptFlags): number => {
+    if (flags.wantsSmellControl) {
+        return flags.isBudget ? 170 : 260
+    }
+
+    return flags.isBudget ? 120 : 190
+}
+
+const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommendation => {
+    const flags = parseEquipmentPromptFlags(prompt)
+
+    const tent = getTentConfig(flags.isLarge, flags.isBudget)
+    const lightSetup = resolveLightSetup(flags)
+
+    const ventilationName = getVentilationName(flags.wantsSmellControl, flags.isSilent)
+    const ventilationRationale = getVentilationRationale(
+        flags.wantsSmellControl,
+        flags.isSilent,
+        lang,
+    )
+    const ventilationPrice = resolveVentilationPrice(flags)
+    const soilName = getSoilName(flags.prefersCoco, flags.prefersSoil, lang)
+    const nutrientName = getNutrientName(flags.prefersCoco, flags.isAuto, lang)
+    const extraName = getExtraName(flags.wantsSmellControl, flags.isBudget, lang)
 
     const proTip = isGerman(lang)
         ? 'Erst Klima und Licht stabilisieren, dann erst Dünger und Training schrittweise anpassen.'
@@ -491,12 +582,12 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
                 : 'This tent size gives enough room for climate control, lighting, and maintenance.',
         ),
         light: makeRecommendationItem(
-            lightName,
-            isBudget ? 180 : 320,
+            lightSetup.name,
+            flags.isBudget ? 180 : 320,
             isGerman(lang)
                 ? 'Vollspektrum-LED ist effizient, dimmbar und für die meisten Setups flexibel.'
                 : 'A full-spectrum LED is efficient, dimmable, and flexible for most grows.',
-            lightWatts,
+            lightSetup.watts,
         ),
         ventilation: makeRecommendationItem(
             ventilationName,
@@ -505,22 +596,22 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
         ),
         circulationFan: makeRecommendationItem(
             isGerman(lang) ? 'Clip-Ventilator' : 'Clip-on circulation fan',
-            isBudget ? 25 : 45,
+            flags.isBudget ? 25 : 45,
             isGerman(lang)
                 ? 'Ein kleiner Umluftventilator verhindert stehende Luft und stärkt die Stängel.'
                 : 'A small circulation fan prevents stale pockets and strengthens stems.',
         ),
         pots: makeRecommendationItem(
             isGerman(lang) ? 'Stofftöpfe 11 L' : '11 L fabric pots',
-            isBudget ? 30 : 45,
+            flags.isBudget ? 30 : 45,
             isGerman(lang)
                 ? 'Stofftöpfe verbessern die Belüftung im Wurzelraum und reduzieren Überwässerungsrisiken.'
                 : 'Fabric pots improve root-zone aeration and reduce overwatering risk.',
         ),
         soil: makeRecommendationItem(
             soilName,
-            isBudget ? 35 : 55,
-            prefersCoco
+            flags.isBudget ? 35 : 55,
+            flags.prefersCoco
                 ? isGerman(lang)
                     ? 'Coco ist schnell reagierend und eignet sich gut für präzise Fütterung.'
                     : 'Coco responds quickly and suits precise feeding.'
@@ -530,14 +621,14 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
         ),
         nutrients: makeRecommendationItem(
             nutrientName,
-            isBudget ? 35 : 70,
+            flags.isBudget ? 35 : 70,
             isGerman(lang)
                 ? 'Beginne mit einem soliden Basisdünger und erhöhe nur nach messbaren Reaktionen.'
                 : 'Start with a solid base nutrient kit and increase only after measurable response.',
         ),
         extra: makeRecommendationItem(
             extraName,
-            isBudget ? 35 : 85,
+            flags.isBudget ? 35 : 85,
             isGerman(lang)
                 ? 'Kleine Mess- und Kontrollwerkzeuge liefern den größten Nutzen pro investiertem Euro.'
                 : 'Small measurement and control tools deliver the best return per dollar spent.',

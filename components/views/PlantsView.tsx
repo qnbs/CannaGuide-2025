@@ -167,6 +167,40 @@ export const PlantsView: React.FC = () => {
         [dispatch, newGrowFlow.status],
     )
 
+    const renderSlotCard = (slot: (typeof slotsWithData)[number], slotIndex: number) => {
+        if (newGrowFlow.status === 'selectingStrain' && newGrowFlow.slotIndex === slotIndex) {
+            return (
+                <InlineStrainSelector
+                    key={`selector-slot-${slotIndex}`}
+                    onClose={() => dispatch(cancelNewGrow())}
+                    onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}
+                />
+            )
+        }
+
+        if (slot.plant) {
+            return <PlantSlotWrapper key={slot.plant.id} plant={slot.plant} />
+        }
+
+        if (slot.isArchivedHidden && slot.archivedPlantId) {
+            return (
+                <HiddenArchivedSlot
+                    key={`archived-${slot.archivedPlantId}`}
+                    plantId={slot.archivedPlantId}
+                />
+            )
+        }
+
+        const emptySlotKey = `empty-slot-${slotIndex}`
+        return (
+            <EmptyPlantSlot
+                key={emptySlotKey}
+                index={slotIndex}
+                onSlotClick={handleEmptySlotClick}
+            />
+        )
+    }
+
     return (
         <>
             {/* Detail View - Rendered on top when active */}
@@ -265,39 +299,9 @@ export const PlantsView: React.FC = () => {
                                 <PlantSlotsSkeleton />
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {slotsWithData.map((slot, index) => {
-                                        if (
-                                            newGrowFlow.status === 'selectingStrain' &&
-                                            newGrowFlow.slotIndex === index
-                                        ) {
-                                            return (
-                                                <InlineStrainSelector
-                                                    key={`selector-${index}`}
-                                                    onClose={() => dispatch(cancelNewGrow())}
-                                                    onSelectStrain={(strain) =>
-                                                        dispatch(selectStrainForGrow(strain))
-                                                    }
-                                                />
-                                            )
-                                        }
-                                        return slot.plant ? (
-                                            <PlantSlotWrapper
-                                                key={slot.plant.id}
-                                                plant={slot.plant}
-                                            />
-                                        ) : slot.isArchivedHidden && slot.archivedPlantId ? (
-                                            <HiddenArchivedSlot
-                                                key={`archived-${slot.archivedPlantId}`}
-                                                plantId={slot.archivedPlantId}
-                                            />
-                                        ) : (
-                                            <EmptyPlantSlot
-                                                key={`empty-${index}`}
-                                                index={index}
-                                                onSlotClick={handleEmptySlotClick}
-                                            />
-                                        )
-                                    })}
+                                    {slotsWithData.map((slot, index) =>
+                                        renderSlotCard(slot, index),
+                                    )}
                                 </div>
                             )}
                         </div>

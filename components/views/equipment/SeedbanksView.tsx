@@ -53,7 +53,7 @@ const SeedbankProfileComponent: React.FC<{
     const { t } = useTranslation()
     const bank = t(`equipmentView.seedbanks.${bankKey}`, { returnObjects: true }) as BankData
 
-    if (!bank || !bank.title) return null
+    if (!bank?.title) return null
 
     const strainCount = bank.availability?.strains?.length ?? 0
     const displayTitle = stripNumericPrefix(bank.title)

@@ -14,7 +14,7 @@ export const Card = memo(
             const isInteractive = !!onClick
             const internalRef = useRef<HTMLDivElement | null>(null)
 
-            const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+            const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
                 if (!internalRef.current) return
                 const rect = internalRef.current.getBoundingClientRect()
                 const x = e.clientX - rect.left
@@ -36,13 +36,13 @@ export const Card = memo(
                     className={`glass-pane rounded-[1.35rem] p-4 sm:p-5 ${
                         isInteractive ? 'card-interactive card-interactive-glow' : ''
                     } ${className}`}
-                    onMouseMove={isInteractive ? handleMouseMove : undefined}
                     {...props}
                 >
                     {isInteractive ? (
                         <button
                             type="button"
                             onClick={onClick}
+                            onMouseMove={handleMouseMove}
                             className="w-full rounded-[inherit] bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         >
                             {children}

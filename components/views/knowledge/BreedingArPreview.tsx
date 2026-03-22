@@ -246,7 +246,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
             canvas.removeEventListener('webglcontextlost', handleContextLost)
             canvas.removeEventListener('webglcontextrestored', handleContextRestored)
             if (arButton?.parentElement) {
-                arButton.parentElement.removeChild(arButton)
+                arButton.remove()
             }
             disposeSceneResources(scene)
             renderer.dispose()

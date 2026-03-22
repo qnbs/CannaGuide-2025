@@ -253,8 +253,9 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             e.preventDefault()
             e.stopPropagation()
             setIsDragging(false)
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                handleFile(e.dataTransfer.files[0])
+            const droppedFile = e.dataTransfer.files?.[0]
+            if (droppedFile) {
+                handleFile(droppedFile)
             }
         },
         [handleFile],

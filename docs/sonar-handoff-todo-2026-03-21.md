@@ -13,6 +13,7 @@ Seit dem letzten Zwischenstand wurden zusaetzlich abgeschlossen:
 - `components/views/settings/DataManagementTab.tsx` (Confirm vor Full-Backup-Export)
 - `locales/en/common.ts`, `locales/de/common.ts` (downloadConfirm)
 - `.devcontainer/devcontainer.json` (`rg`-Installation beim Container-Setup)
+- `scripts/check-commit-identity.mjs`, `package.json` (praeventiver Committer-/Signing-Gate im pre-push Stack)
 
 Abschluss-Commits:
 
@@ -49,6 +50,7 @@ Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erled
 - `services/growReminderService.ts`: erledigt (Zeitparser ohne NaN-Defaults, stricte Guard-Validierung)
 - `services/plantSimulationService.ts`: verbleibende Lesbarkeits-/Komplexitaets-Smells in langen Number.isFinite-Bloecken clustern
   Statusupdate: nullish-Fallbacks (`||` -> `??`) in Stress-Countern, Substrat-RH-Zweig und Projection-State vereinheitlicht.
+  Statusupdate 2: zentrale finite-Helper eingefuehrt und in Environment/Medium/NutrientPool/RootSystem-Normalizern angewendet.
 - `components/views/settings/DataManagementTab.tsx`: erledigt (parsed-Guard nullish-safe/typed normalisiert)
 - `components/views/strains/StrainGridItem.tsx`: erledigt (native overlay button statt role/tabindex div)
 - `components/views/strains/StrainListItem.tsx`: erledigt (native overlay button statt role/tabindex div)

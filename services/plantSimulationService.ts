@@ -250,6 +250,22 @@ class PlantSimulationService {
         return Math.min(max, Math.max(min, value))
     }
 
+    private _isFiniteNumber(value: unknown): value is number {
+        return typeof value === 'number' && Number.isFinite(value)
+    }
+
+    private _finiteOr(value: unknown, fallback: number): number {
+        return this._isFiniteNumber(value) ? value : fallback
+    }
+
+    private _finiteOrMin(value: unknown, fallback: number, min: number): number {
+        return Math.max(min, this._finiteOr(value, fallback))
+    }
+
+    private _finiteOrClamped(value: unknown, fallback: number, min: number, max: number): number {
+        return this._clamp(this._finiteOr(value, fallback), min, max)
+    }
+
     private _normalizeModifiers(modifiers?: Partial<GeneticModifiers> | null): GeneticModifiers {
         const merged = {
             ...DEFAULT_GENETIC_MODIFIERS,
@@ -440,63 +456,36 @@ class PlantSimulationService {
 
     private _normalizeEnvironment(plant: Plant): Plant['environment'] {
         return {
-            internalTemperature: Number.isFinite(plant.environment?.internalTemperature)
-                ? plant.environment.internalTemperature
-                : 24,
-            internalHumidity: this._clamp(
-                Number.isFinite(plant.environment?.internalHumidity)
-                    ? plant.environment.internalHumidity
-                    : 65,
+            internalTemperature: this._finiteOr(plant.environment?.internalTemperature, 24),
+            internalHumidity: this._finiteOrClamped(
+                plant.environment?.internalHumidity,
+                65,
                 0,
                 100,
             ),
-            vpd: Number.isFinite(plant.environment?.vpd) ? plant.environment.vpd : 0,
-            co2Level: this._clamp(
-                Number.isFinite(plant.environment?.co2Level) ? plant.environment.co2Level : 400,
-                200,
-                1500,
-            ),
+            vpd: this._finiteOr(plant.environment?.vpd, 0),
+            co2Level: this._finiteOrClamped(plant.environment?.co2Level, 400, 200, 1500),
         }
     }
 
     private _normalizeMedium(plant: Plant, waterCapacity: number): Plant['medium'] {
         return {
-            ph: Number.isFinite(plant.medium?.ph) ? plant.medium.ph : 6.5,
-            ec: Math.max(0, Number.isFinite(plant.medium?.ec) ? plant.medium.ec : 0.8),
-            moisture: this._clamp(
-                Number.isFinite(plant.medium?.moisture) ? plant.medium.moisture : 100,
-                0,
-                100,
-            ),
-            microbeHealth: this._clamp(
-                Number.isFinite(plant.medium?.microbeHealth) ? plant.medium.microbeHealth : 80,
-                0,
-                100,
-            ),
-            substrateWater: Math.max(
-                0,
-                Number.isFinite(plant.medium?.substrateWater)
-                    ? plant.medium.substrateWater
-                    : waterCapacity,
-            ),
+            ph: this._finiteOr(plant.medium?.ph, 6.5),
+            ec: this._finiteOrMin(plant.medium?.ec, 0.8, 0),
+            moisture: this._finiteOrClamped(plant.medium?.moisture, 100, 0, 100),
+            microbeHealth: this._finiteOrClamped(plant.medium?.microbeHealth, 80, 0, 100),
+            substrateWater: this._finiteOrMin(plant.medium?.substrateWater, waterCapacity, 0),
             nutrientConcentration: {
-                nitrogen: Math.max(
+                nitrogen: this._finiteOrMin(plant.medium?.nutrientConcentration?.nitrogen, 100, 0),
+                phosphorus: this._finiteOrMin(
+                    plant.medium?.nutrientConcentration?.phosphorus,
+                    100,
                     0,
-                    Number.isFinite(plant.medium?.nutrientConcentration?.nitrogen)
-                        ? plant.medium.nutrientConcentration.nitrogen
-                        : 100,
                 ),
-                phosphorus: Math.max(
+                potassium: this._finiteOrMin(
+                    plant.medium?.nutrientConcentration?.potassium,
+                    100,
                     0,
-                    Number.isFinite(plant.medium?.nutrientConcentration?.phosphorus)
-                        ? plant.medium.nutrientConcentration.phosphorus
-                        : 100,
-                ),
-                potassium: Math.max(
-                    0,
-                    Number.isFinite(plant.medium?.nutrientConcentration?.potassium)
-                        ? plant.medium.nutrientConcentration.potassium
-                        : 100,
                 ),
             },
         }
@@ -504,32 +493,16 @@ class PlantSimulationService {
 
     private _normalizeNutrientPool(plant: Plant): Plant['nutrientPool'] {
         return {
-            nitrogen: Math.max(
-                0,
-                Number.isFinite(plant.nutrientPool?.nitrogen) ? plant.nutrientPool.nitrogen : 5,
-            ),
-            phosphorus: Math.max(
-                0,
-                Number.isFinite(plant.nutrientPool?.phosphorus) ? plant.nutrientPool.phosphorus : 5,
-            ),
-            potassium: Math.max(
-                0,
-                Number.isFinite(plant.nutrientPool?.potassium) ? plant.nutrientPool.potassium : 5,
-            ),
+            nitrogen: this._finiteOrMin(plant.nutrientPool?.nitrogen, 5, 0),
+            phosphorus: this._finiteOrMin(plant.nutrientPool?.phosphorus, 5, 0),
+            potassium: this._finiteOrMin(plant.nutrientPool?.potassium, 5, 0),
         }
     }
 
     private _normalizeRootSystem(plant: Plant): Plant['rootSystem'] {
         return {
-            health: this._clamp(
-                Number.isFinite(plant.rootSystem?.health) ? plant.rootSystem.health : 100,
-                0,
-                100,
-            ),
-            rootMass: Math.max(
-                0.01,
-                Number.isFinite(plant.rootSystem?.rootMass) ? plant.rootSystem.rootMass : 0.01,
-            ),
+            health: this._finiteOrClamped(plant.rootSystem?.health, 100, 0, 100),
+            rootMass: this._finiteOrMin(plant.rootSystem?.rootMass, 0.01, 0.01),
         }
     }
 

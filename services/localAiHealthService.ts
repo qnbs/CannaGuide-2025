@@ -185,11 +185,11 @@ export const probeGpuVram = async (): Promise<VramInfo> => {
         const vramMB = maxBufferBytes > 0 ? Math.round(maxBufferBytes / (1024 * 1024)) : null
         const adapterDescription =
             (adapter as unknown as { info?: { description?: string } }).info?.description ?? null
+        const vramLabel = vramMB ?? 'unknown'
+        const adapterLabel = adapterDescription ?? 'unknown'
 
         cachedVramInfo = { vramMB, probed: true, adapterDescription }
-        console.debug(
-            `[LocalAI] GPU probe: VRAM ≈ ${vramMB ?? 'unknown'}MB, adapter: ${adapterDescription ?? 'unknown'}`,
-        )
+        console.debug(`[LocalAI] GPU probe: VRAM ≈ ${vramLabel}MB, adapter: ${adapterLabel}`)
         return cachedVramInfo
     } catch {
         cachedVramInfo = { vramMB: null, probed: true, adapterDescription: null }

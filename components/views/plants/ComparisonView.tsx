@@ -187,6 +187,8 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
     const diffHeight = experiment.modifiedFinalState.height - experiment.originalFinalState.height
     const diffBiomass =
         experiment.modifiedFinalState.biomass.total - experiment.originalFinalState.biomass.total
+    const diffHeightClass = diffHeight >= 0 ? 'text-green-400' : 'text-red-400'
+    const diffBiomassClass = diffBiomass >= 0 ? 'text-green-400' : 'text-red-400'
 
     try {
         return (
@@ -236,9 +238,7 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
                             <p className="text-sm text-slate-400">
                                 {t('plantsView.comparison.heightDifference')}
                             </p>
-                            <p
-                                className={`text-2xl font-bold ${diffHeight >= 0 ? 'text-green-400' : 'text-red-400'}`}
-                            >
+                            <p className={`text-2xl font-bold ${diffHeightClass}`}>
                                 {diffHeight >= 0 ? '+' : ''}
                                 {diffHeight.toFixed(1)} cm
                             </p>
@@ -247,9 +247,7 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
                             <p className="text-sm text-slate-400">
                                 {t('plantsView.comparison.biomassDifference')}
                             </p>
-                            <p
-                                className={`text-2xl font-bold ${diffBiomass >= 0 ? 'text-green-400' : 'text-red-400'}`}
-                            >
+                            <p className={`text-2xl font-bold ${diffBiomassClass}`}>
                                 {diffBiomass >= 0 ? '+' : ''}
                                 {diffBiomass.toFixed(1)} g
                             </p>

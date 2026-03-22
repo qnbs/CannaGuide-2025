@@ -262,6 +262,8 @@ export const GrowShopsView: React.FC = () => {
         () => setSortMode((prev) => (prev === 'rating' ? 'name' : 'rating')),
         [],
     )
+    const getRegionTabClassName = (isActive: boolean): string =>
+        `flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm font-semibold rounded-md transition-colors ${isActive ? 'bg-slate-700 text-primary-300 shadow-sm' : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'}`
 
     return (
         <div className="pb-[calc(7rem+env(safe-area-inset-bottom))] scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-0 sm:scroll-pb-0">
@@ -280,7 +282,7 @@ export const GrowShopsView: React.FC = () => {
                     role="tab"
                     aria-selected={region === 'europe'}
                     onClick={() => setRegion('europe')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm font-semibold rounded-md transition-colors ${region === 'europe' ? 'bg-slate-700 text-primary-300 shadow-sm' : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'}`}
+                    className={getRegionTabClassName(region === 'europe')}
                 >
                     <PhosphorIcons.Globe className="w-4 h-4" />
                     {t('equipmentView.growShops.region.europe')}
@@ -290,7 +292,7 @@ export const GrowShopsView: React.FC = () => {
                     role="tab"
                     aria-selected={region === 'us'}
                     onClick={() => setRegion('us')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm font-semibold rounded-md transition-colors ${region === 'us' ? 'bg-slate-700 text-primary-300 shadow-sm' : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'}`}
+                    className={getRegionTabClassName(region === 'us')}
                 >
                     <PhosphorIcons.Globe className="w-4 h-4" />
                     {t('equipmentView.growShops.region.usa')}

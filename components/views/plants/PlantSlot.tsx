@@ -40,7 +40,8 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     const healthIndicator = getHealthIndicator(plant.health)
     const stageLabel = t(`plantStages.${plant.stage}`)
     const plantAriaLabel = `${plant.name} - ${stageLabel}`
-    const healthDotClassName = `w-2.5 h-2.5 rounded-full ${healthIndicator.color} ${healthIndicator.pulse ? 'animate-pulse' : ''}`
+    const healthPulseClass = healthIndicator.pulse ? 'animate-pulse' : ''
+    const healthDotClassName = `w-2.5 h-2.5 rounded-full ${healthIndicator.color} ${healthPulseClass}`
 
     if (!stageDetails) return null
 
@@ -62,9 +63,7 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
                         title={`${t('plantsView.summary.gardenHealth')}: ${Math.round(plant.health)}%`}
                     />
                     <div className="text-right bg-slate-800/80 px-2 py-0.5 rounded-full text-xs">
-                        <p className="font-semibold text-slate-200">
-                            {stageLabel}
-                        </p>
+                        <p className="font-semibold text-slate-200">{stageLabel}</p>
                         {!isPostHarvest && (
                             <p className="text-slate-300">
                                 {t('plantsView.plantCard.day')} {plant.age}

@@ -77,6 +77,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
         () => Array.from({ length: TOTAL_STEPS }, (_, idx) => idx + 1),
         [],
     )
+    const getStepIndicatorClassName = (stepNumber: number): string =>
+        `rounded-full transition-all duration-300 ${stepNumber === step ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`
 
     const featureSteps = useMemo(
         () => [
@@ -211,14 +213,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                 </Button>
                 <div className="flex items-center gap-2">
                     {stepIndicators.map((stepNumber) => (
-                        <div
-                            key={stepNumber}
-                            className={`rounded-full transition-all duration-300 ${
-                                stepNumber === step
-                                    ? 'w-2.5 h-2.5 bg-primary-400'
-                                    : 'w-2 h-2 bg-slate-600'
-                            }`}
-                        />
+                        <div key={stepNumber} className={getStepIndicatorClassName(stepNumber)} />
                     ))}
                 </div>
                 <Button onClick={handleNext} glow={isLastFeatureStep}>
@@ -259,10 +254,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                 </Button>
                 <div className="flex items-center gap-1.5">
                     {stepIndicators.map((stepNumber) => (
-                        <div
-                            key={stepNumber}
-                            className={`rounded-full transition-all duration-300 ${stepNumber === step ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`}
-                        />
+                        <div key={stepNumber} className={getStepIndicatorClassName(stepNumber)} />
                     ))}
                 </div>
                 <Button onClick={handleNext}>{t('common.next')}</Button>
@@ -310,10 +302,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                 </Button>
                 <div className="flex items-center gap-1.5">
                     {stepIndicators.map((stepNumber) => (
-                        <div
-                            key={stepNumber}
-                            className={`rounded-full transition-all duration-300 ${stepNumber === step ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`}
-                        />
+                        <div key={stepNumber} className={getStepIndicatorClassName(stepNumber)} />
                     ))}
                 </div>
                 <Button onClick={handleNext}>{t('common.next')}</Button>
@@ -365,10 +354,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
             </Button>
             <div className="flex items-center gap-1.5">
                 {stepIndicators.map((stepNumber) => (
-                    <div
-                        key={stepNumber}
-                        className={`rounded-full transition-all duration-300 ${stepNumber === step ? 'w-2.5 h-2.5 bg-primary-400' : 'w-2 h-2 bg-slate-600'}`}
-                    />
+                    <div key={stepNumber} className={getStepIndicatorClassName(stepNumber)} />
                 ))}
             </div>
             <Button onClick={handleFinish} glow={true}>

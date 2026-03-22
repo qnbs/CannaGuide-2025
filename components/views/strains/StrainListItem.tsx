@@ -77,12 +77,11 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
         const handleSelect = useCallback(() => {
             onSelect(strain)
         }, [onSelect, strain])
+        const cardClassName = `relative bg-slate-800/60 rounded-lg transition-all duration-200 ring-1 ring-inset ring-white/20 ${isSelected ? 'bg-primary-900/30 ring-2 !ring-primary-500' : 'hover:bg-slate-700/50'}`
+        const favoriteButtonClassName = `!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`
 
         return (
-            <div
-                style={style}
-                className={`relative bg-slate-800/60 rounded-lg transition-all duration-200 ring-1 ring-inset ring-white/20 ${isSelected ? 'bg-primary-900/30 ring-2 !ring-primary-500' : 'hover:bg-slate-700/50'}`}
-            >
+            <div style={style} className={cardClassName}>
                 <button
                     type="button"
                     onClick={handleSelect}
@@ -165,7 +164,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                         <Button
                             variant="ghost"
                             size="sm"
-                            className={`!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`}
+                            className={favoriteButtonClassName}
                             onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
                                 handleActionClick(e, () => onToggleFavorite(strain.id))
                             }

@@ -138,6 +138,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({
             )}
         </div>
     )
+    const videoVisibilityClass = capturedImage ? 'hidden' : 'block'
 
     return (
         <Modal
@@ -157,7 +158,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({
                         ref={videoRef}
                         autoPlay
                         playsInline
-                        className={`w-full h-auto max-h-[60dvh] object-contain rounded-md ${capturedImage ? 'hidden' : 'block'}`}
+                        className={`w-full h-auto max-h-[60dvh] object-contain rounded-md ${videoVisibilityClass}`}
                     ></video>
                     <canvas ref={canvasRef} className="hidden"></canvas>
                     {capturedImage && (

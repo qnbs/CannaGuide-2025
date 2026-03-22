@@ -22,10 +22,13 @@ const SeedCard: React.FC<{
 }> = ({ seed, onClick, isSelected, strain }) => {
     const { t } = useTranslation()
     const TypeInfo = strain ? strainTypeInfo[strain.type] : null
+    const selectedStateClass = isSelected
+        ? 'bg-primary-900/50 ring-2 ring-primary-500'
+        : 'bg-slate-800 hover:bg-slate-700/50'
     return (
         <button
             onClick={onClick}
-            className={`w-full min-h-12 text-left p-3 rounded-lg transition-all ring-1 ring-inset ring-white/20 flex items-center gap-3 ${isSelected ? 'bg-primary-900/50 ring-2 ring-primary-500' : 'bg-slate-800 hover:bg-slate-700/50'}`}
+            className={`w-full min-h-12 text-left p-3 rounded-lg transition-all ring-1 ring-inset ring-white/20 flex items-center gap-3 ${selectedStateClass}`}
         >
             {TypeInfo && (
                 <div className={`w-6 h-6 flex-shrink-0 ${TypeInfo.color}`}>{TypeInfo.icon}</div>

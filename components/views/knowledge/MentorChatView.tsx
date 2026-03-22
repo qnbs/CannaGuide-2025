@@ -99,9 +99,10 @@ const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
     const wrappedContent = (
         <Speakable elementId={`mentor-${message.id || Date.now()}`}>{content}</Speakable>
     )
+    const rowAlignmentClass = isUser ? 'justify-end' : ''
 
     return (
-        <div className={`flex items-start gap-3 ${isUser ? 'justify-end' : ''}`}>
+        <div className={`flex items-start gap-3 ${rowAlignmentClass}`}>
             {!isUser && (
                 <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0">
                     <PhosphorIcons.Brain className="w-5 h-5 text-primary-300" />

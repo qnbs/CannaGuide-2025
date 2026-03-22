@@ -1175,8 +1175,10 @@ const buildTerpenesBlock = (
         return { block: '', nextY: dataY }
     }
 
+    const terpeneLabel = isGerman(lang) ? 'Terpene' : 'Terpenes'
+
     const block = `<g transform="translate(86, ${dataY})">
-        <text x="0" y="0" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.6">${isGerman(lang) ? 'Terpene' : 'Terpenes'}</text>
+        <text x="0" y="0" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.6">${terpeneLabel}</text>
         ${svgTerpeneDots(0, 28, terpenes, palette.accent, palette.textDim)}
     </g>`
 
@@ -1193,7 +1195,9 @@ const buildAromasBlock = (
         return { block: '', nextY: dataY }
     }
 
-    const block = `<text x="86" y="${dataY}" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.55">${isGerman(lang) ? 'Aromen' : 'Aromas'}: ${aromas}</text>`
+    const aromasLabel = isGerman(lang) ? 'Aromen' : 'Aromas'
+
+    const block = `<text x="86" y="${dataY}" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.55">${aromasLabel}: ${aromas}</text>`
     return { block, nextY: dataY + 30 }
 }
 
@@ -1261,8 +1265,9 @@ const buildStrainImageSvg = (
     const hasDescription = description.length > 0
     const hasLongDescription =
         typeof strain.description === 'string' && strain.description.length > 100
+    const descriptionSuffix = hasLongDescription ? '\u2026' : ''
     const descriptionLine = hasDescription
-        ? `<text x="86" y="${footerY + 32}" font-size="16" opacity="0.45">${description}${hasLongDescription ? '\u2026' : ''}</text>`
+        ? `<text x="86" y="${footerY + 32}" font-size="16" opacity="0.45">${description}${descriptionSuffix}</text>`
         : ''
     const metadataMainY = footerY + (hasDescription ? 60 : 34)
     const metadataSubY = footerY + (hasDescription ? 88 : 62)
@@ -1432,12 +1437,9 @@ class LocalAiFallbackService {
     getGardenStatusSummary(plants: Plant[], lang: Language): AIResponse {
         const plantDetails = plants.map((p) => {
             const diag = diagnosePlant(p, lang)
+            const issuesLabel = isGerman(lang) ? 'Problem(e)' : 'issue(s)'
             const status =
-                diag.issues.length === 0
-                    ? isGerman(lang)
-                        ? '✅ OK'
-                        : '✅ OK'
-                    : `⚠ ${diag.issues.length} ${isGerman(lang) ? 'Problem(e)' : 'issue(s)'}`
+                diag.issues.length === 0 ? '✅ OK' : `⚠ ${diag.issues.length} ${issuesLabel}`
             return `${p.name}: ${status} — ${formatPlantLine(p)}`
         })
 

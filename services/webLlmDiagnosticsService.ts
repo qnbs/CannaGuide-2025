@@ -65,12 +65,13 @@ const buildProbeErrorResult = (
 ): WebLlmDiagnosticResult => {
     captureLocalAiError(error, { stage: 'webllm-diagnostics' })
     const isTimeout = error instanceof Error && error.message.includes('timeout')
+    const unknownErrorMessage = error instanceof Error ? error.message : 'unknown error'
     return {
         available: false,
         reason: isTimeout ? 'adapter-request-timeout' : 'unknown-error',
         message: isTimeout
             ? 'GPU adapter request timed out. The graphics driver may be unresponsive.'
-            : `GPU probe failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+            : `GPU probe failed: ${unknownErrorMessage}`,
         details,
     }
 }

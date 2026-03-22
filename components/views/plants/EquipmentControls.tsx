@@ -57,6 +57,8 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant
         medium: '2s',
         high: '1s',
     }
+    const getDisabledControlClassName = (isEnabled: boolean, spacingClass: string): string =>
+        `${spacingClass} transition-opacity duration-300 ${isEnabled ? '' : 'opacity-50 pointer-events-none'}`
 
     return (
         <Card className="h-full">
@@ -85,9 +87,7 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant
                         />
                     </div>
 
-                    <div
-                        className={`space-y-4 transition-opacity duration-300 ${!light.isOn ? 'opacity-50 pointer-events-none' : ''}`}
-                    >
+                    <div className={getDisabledControlClassName(light.isOn, 'space-y-4')}>
                         <RangeSlider
                             label={t('plantsView.setupModal.wattage')}
                             min={50}
@@ -144,9 +144,7 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant
                         />
                     </div>
 
-                    <div
-                        className={`space-y-3 transition-opacity duration-300 ${!exhaustFan.isOn ? 'opacity-50 pointer-events-none' : ''}`}
-                    >
+                    <div className={getDisabledControlClassName(exhaustFan.isOn, 'space-y-3')}>
                         <label className="block text-sm font-semibold text-slate-300">
                             {t('plantsView.detailedView.controls.fanSpeed')}
                         </label>

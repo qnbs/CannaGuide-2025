@@ -232,6 +232,8 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
         const handlePointerLeave = () => {
             setHoveredData(null)
         }
+        const getViewToggleClassName = (isActive: boolean): string =>
+            `px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${isActive ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`
 
         try {
             return (
@@ -239,7 +241,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
                     <div className="flex justify-center gap-1 mb-2">
                         <button
                             onClick={() => setView('growth')}
-                            className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}
+                            className={getViewToggleClassName(view === 'growth')}
                             aria-label={t('common.accessibility.showGrowthMetrics')}
                             aria-pressed={view === 'growth'}
                         >
@@ -247,7 +249,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
                         </button>
                         <button
                             onClick={() => setView('substrate')}
-                            className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}
+                            className={getViewToggleClassName(view === 'substrate')}
                             aria-label={t('common.accessibility.showSubstrateMetrics')}
                             aria-pressed={view === 'substrate'}
                         >

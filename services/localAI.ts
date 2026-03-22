@@ -177,6 +177,8 @@ const ZERO_SHOT_LABELS = [
 
 const isGerman = (lang: Language) => lang === 'de'
 
+const localized = (lang: Language, de: string, en: string): string => (isGerman(lang) ? de : en)
+
 const sanitizeText = (value: string): string =>
     DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim()
 
@@ -1011,8 +1013,13 @@ class LocalAiService implements BaseAIProvider {
 
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
         const sanitizedPrompt = sanitizeText(prompt)
+        const instruction = localized(
+            lang,
+            'Erstelle eine strukturierte Ausrüstungsempfehlung auf Deutsch.',
+            'Create a structured equipment recommendation in English.',
+        )
         const generated = await this.generateText(
-            `${isGerman(lang) ? 'Erstelle eine strukturierte Ausrüstungsempfehlung auf Deutsch.' : 'Create a structured equipment recommendation in English.'}
+            `${instruction}
 Prompt: ${sanitizedPrompt}
 Return ONLY valid JSON with this exact shape: {"tent":{"name":"...","price":0,"rationale":"..."},"light":{"name":"...","price":0,"rationale":"...","watts":0},"ventilation":{"name":"...","price":0,"rationale":"..."},"circulationFan":{"name":"...","price":0,"rationale":"..."},"pots":{"name":"...","price":0,"rationale":"..."},"soil":{"name":"...","price":0,"rationale":"..."},"nutrients":{"name":"...","price":0,"rationale":"..."},"extra":{"name":"...","price":0,"rationale":"..."},"proTip":"..."}`,
         )
@@ -1048,8 +1055,13 @@ Return ONLY valid JSON with this exact shape: {"tent":{"name":"...","price":0,"r
         },
         lang: Language,
     ): Promise<string> {
+        const instruction = localized(
+            lang,
+            'Erstelle eine kompakte Nährstoff-Empfehlung auf Deutsch.',
+            'Create a compact nutrient recommendation in English.',
+        )
         const generated = await this.generateText(
-            `${isGerman(lang) ? 'Erstelle eine kompakte Nährstoff-Empfehlung auf Deutsch.' : 'Create a compact nutrient recommendation in English.'}
+            `${instruction}
 Context: ${sanitizeText(JSON.stringify(context))}
 Return a concise plain-text answer with practical next steps, EC/pH guidance, and one medium-specific note. Do not use HTML.`,
         )
@@ -1131,9 +1143,12 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
     }
 
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
-        const generated = await this.generateText(
-            `${isGerman(lang) ? 'Fasse die Pflanzenlage knapp auf Deutsch zusammen.' : 'Summarize the plant status succinctly in English.'}\n${summarizePlant(plant)}`,
+        const instruction = localized(
+            lang,
+            'Fasse die Pflanzenlage knapp auf Deutsch zusammen.',
+            'Summarize the plant status succinctly in English.',
         )
+        const generated = await this.generateText(`${instruction}\n${summarizePlant(plant)}`)
         if (!generated) {
             return localAiFallbackService.getPlantAdvice(plant, lang)
         }
@@ -1155,9 +1170,12 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
 
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
         const summary = plants.map((plant) => summarizePlant(plant)).join('\n')
-        const generated = await this.generateText(
-            `${isGerman(lang) ? 'Erstelle eine kurze Zusammenfassung für den gesamten Garten.' : 'Create a short summary for the full grow.'}\n${summary}`,
+        const instruction = localized(
+            lang,
+            'Erstelle eine kurze Zusammenfassung für den gesamten Garten.',
+            'Create a short summary for the full grow.',
         )
+        const generated = await this.generateText(`${instruction}\n${summary}`)
         if (!generated) {
             return localAiFallbackService.getGardenStatusSummary(plants, lang)
         }
@@ -1172,8 +1190,13 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
         context: { focus: string; stage: string; experienceLevel: string },
         lang: Language,
     ): Promise<StructuredGrowTips> {
+        const instruction = localized(
+            lang,
+            'Gib kompakte Anbautipps auf Deutsch.',
+            'Give concise grow tips in English.',
+        )
         const generated = await this.generateText(
-            `${isGerman(lang) ? 'Gib kompakte Anbautipps auf Deutsch.' : 'Give concise grow tips in English.'}\nStrain: ${JSON.stringify(strain)}\nContext: ${JSON.stringify(context)}`,
+            `${instruction}\nStrain: ${JSON.stringify(strain)}\nContext: ${JSON.stringify(context)}`,
         )
         if (!generated) {
             return localAiFallbackService.getStrainTips(strain, lang)
@@ -1192,8 +1215,13 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
         ragContext?: string,
     ): Promise<AIResponse> {
         const plantSummary = ragContext || plants.map((plant) => summarizePlant(plant)).join('\n')
+        const instruction = localized(
+            lang,
+            'Beantworte die Frage anhand des Grow-Log-Kontexts.',
+            'Answer the question using the grow-log context.',
+        )
         const generated = await this.generateText(
-            `${isGerman(lang) ? 'Beantworte die Frage anhand des Grow-Log-Kontexts.' : 'Answer the question using the grow-log context.'}\nQuestion: ${sanitizeText(query)}\nContext:\n${plantSummary}`,
+            `${instruction}\nQuestion: ${sanitizeText(query)}\nContext:\n${plantSummary}`,
         )
         if (!generated) {
             return localAiFallbackService.getGrowLogRagAnswer(query, plantSummary, lang)
@@ -1205,8 +1233,13 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
     }
 
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
+        const instruction = localized(
+            lang,
+            'Erstelle eine tiefe Analyse auf Deutsch.',
+            'Create a deep dive guide in English.',
+        )
         const generated = await this.generateText(
-            `${isGerman(lang) ? 'Erstelle eine tiefe Analyse auf Deutsch.' : 'Create a deep dive guide in English.'}\nTopic: ${sanitizeText(topic)}\nPlant: ${summarizePlant(plant)}\nReturn JSON with keys introduction, stepByStep, prosAndCons, proTip.`,
+            `${instruction}\nTopic: ${sanitizeText(topic)}\nPlant: ${summarizePlant(plant)}\nReturn JSON with keys introduction, stepByStep, prosAndCons, proTip.`,
         )
         if (!generated) {
             return {

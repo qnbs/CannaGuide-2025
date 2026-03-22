@@ -1,0 +1,47 @@
+# Session Activity TODO (Next Iteration Anchor, 2026-03-22)
+
+## Zielbild
+
+Die naechsten Sitzungen sollen den Sonar-Restbacklog in stabilen, testbaren Clustern abbauen, ohne UI-Regressionsrisiko in Strains/Plants/Settings.
+
+## Priorisierte Arbeitscluster
+
+1. GenealogyView Sonar-Fixes
+
+- offene readability/a11y/maintainability-smells identifizieren und beheben
+- Interaktionspfade (node focus/select/toggle) mit Regressionstests absichern
+
+1. Plants UI-Smells Cluster
+
+- detail tabs (interaction/readability) weiter bereinigen
+- potentielle keyboard/focus regressions aktiv gegenpruefen
+
+1. db/crypto Reliability Cluster
+
+- error-normalization und recovery guards konsolidieren
+- stringification-/fallback-smells (unknown errors) auf sichere Pattern bringen
+
+1. Weitere Sonar-Restcluster
+
+- verbleibende Issues nur nach aktuellem Sonar-Run priorisieren
+- low-risk Konventionswellen (nur wenn ohne Risiko) gesammelt abarbeiten
+
+## Qualitaets-Gates pro Welle (verbindlich)
+
+- `node scripts/lint-changed.mjs`
+- `npx tsc --noEmit`
+- `npx prettier --check <geaenderte Dateien>`
+- fokussierte Vitest-Suites fuer betroffene Views/Flows
+
+## Liefer- und Dokumentationsregeln
+
+- in groesseren Batches arbeiten, dann commit+push
+- Sonar-Handoff-Review/TODO nur bei echten Meilenstein-Batches aktualisieren
+- bei UI-Interaktionsaenderungen immer mindestens einen zielgerichteten Regressionstest ergaenzen
+
+## Definition of Done pro Cluster
+
+- Sonar-Befunde des Clusters geschlossen oder klar als Restpunkt dokumentiert
+- keine neuen Type-/Lint-/Formatfehler
+- relevante Regressionstests gruen
+- Doku-Deltas im Handoff nachvollziehbar

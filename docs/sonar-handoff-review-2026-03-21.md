@@ -1,4 +1,50 @@
-# Sonar Handoff Review (Update 2026-03-22)
+# Sonar Handoff Review (Update 2026-03-22, Session Close)
+
+## Session-Close Delta (neu)
+
+Abschluss dieser Iteration erfolgte in zwei aufeinanderfolgenden Pushes auf `main`:
+
+- `11e85bd` refactor(ui): continue sonar portability and readability cleanup wave
+- `83b2d25` fix(strains): harden navigation and add export confirmations
+
+Inhaltlich wurden im Abschlussblock folgende Punkte umgesetzt und validiert:
+
+1. Strains-Navigation/Interaktion gehaertet
+
+- `components/views/strains/StrainListItem.tsx`
+- `components/views/strains/StrainGridItem.tsx`
+- Fokus: robuster Kartenklick + Keyboard-Ausloesung, Event-Isolation fuer Checkbox/Controls.
+
+1. Checkbox-Rendering-Bug repariert
+
+- `styles.css`
+- Ursache: falsches CSS-Escaping (`\\2714`) fuehrte zur sichtbaren Literal-Ausgabe.
+- Fix: korrektes Checkmark-Content-Escape (`\2714`).
+
+1. Dateioperationen mit Confirm-Flow modernisiert
+
+- `components/common/DataExportModal.tsx`
+- `components/views/strains/ExportsManagerView.tsx`
+- `components/views/settings/DataManagementTab.tsx`
+- Ergebnis: Export/Download-Operationen laufen nicht mehr direkt los, sondern ueber explizite bestaetigte Dialoge.
+
+1. i18n-Ergaenzung fuer Dateioperations-Confirm
+
+- `locales/en/common.ts`
+- `locales/de/common.ts`
+- Neuer Key: `common.downloadConfirm`.
+
+1. Devcontainer-Tooling verbessert
+
+- `.devcontainer/devcontainer.json`
+- `ripgrep` (`rg`) wird nun im `postCreateCommand` installiert, damit Such-/Audit-Wellen reproduzierbar schneller laufen.
+
+## Validierung des Session-Abschlussblocks
+
+- `node scripts/lint-changed.mjs`: erfolgreich
+- `npx tsc --noEmit`: erfolgreich
+- `npx prettier --check` auf geaenderten Dateien: erfolgreich
+- `npx vitest run` (Strains-Items + Settings smoke): 13/13 Tests erfolgreich
 
 ## Ziel
 

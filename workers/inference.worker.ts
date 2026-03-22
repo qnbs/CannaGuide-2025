@@ -67,7 +67,15 @@ const loadPipeline = async (
     return promise
 }
 
+const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
+    return !event.origin || event.origin === self.location.origin
+}
+
 self.onmessage = async (e: MessageEvent<InferenceWorkerRequest>) => {
+    if (!isTrustedWorkerMessage(e)) {
+        return
+    }
+
     const data = e.data
     if (!data?.id || !data?.task || !data?.modelId) {
         const response: InferenceWorkerResponse = {

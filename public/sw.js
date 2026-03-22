@@ -271,6 +271,20 @@ self.addEventListener('fetch', (event) => {
 })
 
 self.addEventListener('message', (event) => {
+    const sourceClient = event.source
+    if (!sourceClient || typeof sourceClient.url !== 'string') {
+        return
+    }
+
+    try {
+        const sourceOrigin = new URL(sourceClient.url).origin
+        if (sourceOrigin !== self.location.origin) {
+            return
+        }
+    } catch {
+        return
+    }
+
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting()
     }
@@ -341,7 +355,7 @@ function deleteQueuedAction(id) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
             const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
-            const request = store.delete(id)
+            store.delete(id)
             transaction.oncomplete = () => resolve()
             transaction.onerror = () => reject(transaction.error)
         })

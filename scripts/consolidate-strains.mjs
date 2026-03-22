@@ -147,14 +147,26 @@ for (const [letter, items] of Object.entries(buckets)) {
     const targetFile = letter === 'numeric' ? 'numeric.ts' : `${letter}.ts`
     const targetPath = path.join(STRAINS_DIR, targetFile)
 
-    if (!fs.existsSync(targetPath)) {
+    let content = ''
+    try {
+        content = fs.readFileSync(targetPath, 'utf-8')
+    } catch (error) {
+        const fileReadError = error
+        if (
+            !(fileReadError instanceof Error) ||
+            !('code' in fileReadError) ||
+            fileReadError.code !== 'ENOENT'
+        ) {
+            throw error
+        }
+
         console.log(`  [WARN] Target file ${targetFile} does not exist, creating it.`)
         const varName = letter === 'numeric' ? 'strainsNumeric' : `strains${letter.toUpperCase()}`
         const newContent = `import { Strain, StrainType } from '@/types';\nimport { createStrainObject } from '@/services/strainFactory';\n\nexport const ${varName}: Strain[] = [\n];\n`
         fs.writeFileSync(targetPath, newContent, 'utf-8')
+        content = newContent
     }
 
-    let content = fs.readFileSync(targetPath, 'utf-8')
     const existingIds = extractExistingIds(content)
 
     const newBlocks = []
@@ -199,8 +211,22 @@ console.log(`\n[OK] Merged: ${mergedCount}, Skipped duplicates: ${skipCount}\n`)
 // 5. Delete temp files
 console.log('[DEL]  Deleting temp files...')
 for (const tempFile of tempFiles) {
-    fs.unlinkSync(path.join(STRAINS_DIR, tempFile))
-    console.log(`  [DEL]  Deleted ${tempFile}`)
+    const tempFilePath = path.join(STRAINS_DIR, tempFile)
+    try {
+        fs.unlinkSync(tempFilePath)
+        console.log(`  [DEL]  Deleted ${tempFile}`)
+    } catch (error) {
+        const unlinkError = error
+        if (
+            unlinkError instanceof Error &&
+            'code' in unlinkError &&
+            unlinkError.code === 'ENOENT'
+        ) {
+            console.log(`  [SKIP] Temp file already removed: ${tempFile}`)
+            continue
+        }
+        throw error
+    }
 }
 
 // 6. Rewrite index.ts with clean imports

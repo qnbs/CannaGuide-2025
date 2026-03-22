@@ -184,7 +184,7 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
 
     // Group entries by date (newest first)
     const groupedEntries = useMemo(() => {
-        const reversed = [...filteredJournal].reverse()
+        const reversed = filteredJournal.toReversed()
         const groups = new Map<string, JournalEntry[]>()
         for (const entry of reversed) {
             const key = getDateGroupKey(entry.createdAt)
@@ -338,49 +338,48 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                                 <span className="text-xs text-slate-500">{entries.length}</span>
                             </div>
                             <ul className="space-y-3">
-                                {entries.map((entry) =>
-                                    (() => {
-                                        const detailsText = renderDetails(entry, t)
-                                        return (
-                                            <li
-                                                key={entry.id}
-                                                className="flex items-start gap-4 p-3 bg-slate-800 rounded-lg ring-1 ring-inset ring-white/10 hover:ring-white/20 transition-colors"
-                                            >
-                                                <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-700 rounded-full text-primary-400">
-                                                    {journalTypeIcons[entry.type]}
-                                                </div>
-                                                <div className="flex-grow min-w-0">
-                                                    <p className="font-semibold text-slate-100">
-                                                        {String(
-                                                            t(entry.notes, {
-                                                                ...entry.details,
-                                                                from: t(
-                                                                    `plantStages.${(entry.details as SystemDetails)?.from}`,
-                                                                ),
-                                                                to: t(
-                                                                    `plantStages.${(entry.details as SystemDetails)?.to}`,
-                                                                ),
-                                                            }),
-                                                        )}
-                                                    </p>
-                                                    {detailsText && (
-                                                        <p className="text-xs text-slate-400 mt-0.5">
-                                                            {detailsText}
-                                                        </p>
+                                {entries.map((entry) => {
+                                    const detailsText = renderDetails(entry, t)
+                                    return (
+                                        <li
+                                            key={entry.id}
+                                            className="flex items-start gap-4 p-3 bg-slate-800 rounded-lg ring-1 ring-inset ring-white/10 hover:ring-white/20 transition-colors"
+                                        >
+                                            <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-700 rounded-full text-primary-400">
+                                                {journalTypeIcons[entry.type]}
+                                            </div>
+                                            <div className="flex-grow min-w-0">
+                                                <p className="font-semibold text-slate-100">
+                                                    {String(
+                                                        t(entry.notes, {
+                                                            ...entry.details,
+                                                            from: t(
+                                                                `plantStages.${(entry.details as SystemDetails)?.from}`,
+                                                            ),
+                                                            to: t(
+                                                                `plantStages.${(entry.details as SystemDetails)?.to}`,
+                                                            ),
+                                                        }),
                                                     )}
-                                                    <p className="text-xs text-slate-500 mt-1">
-                                                        {new Date(
-                                                            entry.createdAt,
-                                                        ).toLocaleTimeString(undefined, {
+                                                </p>
+                                                {detailsText && (
+                                                    <p className="text-xs text-slate-400 mt-0.5">
+                                                        {detailsText}
+                                                    </p>
+                                                )}
+                                                <p className="text-xs text-slate-500 mt-1">
+                                                    {new Date(entry.createdAt).toLocaleTimeString(
+                                                        undefined,
+                                                        {
                                                             hour: '2-digit',
                                                             minute: '2-digit',
-                                                        })}
-                                                    </p>
-                                                </div>
-                                            </li>
-                                        )
-                                    })(),
-                                )}
+                                                        },
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </li>
+                                    )
+                                })}
                             </ul>
                         </div>
                     ))}

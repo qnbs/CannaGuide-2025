@@ -46,7 +46,13 @@ export const MentorView: React.FC = () => {
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null)
 
     useEffect(() => {
-        if (activePlants.length > 0 && (!selectedPlantId || !activePlants.some((p) => p.id === selectedPlantId))) {
+        const hasPlants = activePlants.length > 0
+        const hasSelectedPlant = Boolean(selectedPlantId)
+        const selectedPlantExists = hasSelectedPlant
+            ? activePlants.some((p) => p.id === selectedPlantId)
+            : false
+
+        if (hasPlants && (!hasSelectedPlant || !selectedPlantExists)) {
             setSelectedPlantId(activePlants[0]?.id ?? null)
         } else if (activePlants.length === 0) {
             setSelectedPlantId(null)

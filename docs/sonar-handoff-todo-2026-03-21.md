@@ -73,7 +73,7 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
 ## C. Nächste Welle (konkret)
 
-1. JournalTab Reststellen (remaining nested-template-literal Hinweise) und MentorView nested-template-literal
+1. JournalTab Reststellen (remaining nested-template-literal Hinweise) und MentorView nested-template-literal: teilweise erledigt (Maintainability/Lesbarkeit bereinigt, Rest nur nach neuem Sonar-Run validieren)
 1. Strains-Cluster Rest: aktuell kein konkreter offener Punkt aus den priorisierten Dateien
 1. services/exportService nested-template-literal Block komplettieren: erledigt
 1. SeedbanksView Restpruefung und GuideView Reststellen: erledigt

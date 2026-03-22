@@ -702,7 +702,7 @@ class PlantSimulationService {
         }
 
         const potAdjustment = plant.equipment.potType === 'Fabric' ? -1 : 0
-        return byMediumType[plant.mediumType || 'Soil'] + potAdjustment
+        return byMediumType[plant.mediumType ?? 'Soil'] + potAdjustment
     }
 
     private _getCorrectedRh(plant: Plant): number {
@@ -1482,21 +1482,21 @@ class PlantSimulationService {
         // VPD Stress
         if (p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max) {
             stress += 10 * environmentalStressMultiplier
-            p.stressCounters.vpd = (p.stressCounters.vpd || 0) + 1
+            p.stressCounters.vpd = (p.stressCounters.vpd ?? 0) + 1
         } else {
             p.stressCounters.vpd = 0
         }
         // pH Stress
         if (p.medium.ph < ideal.ph.min || p.medium.ph > ideal.ph.max) {
             stress += 15 * nutrientStressMultiplier
-            p.stressCounters.ph = (p.stressCounters.ph || 0) + 1
+            p.stressCounters.ph = (p.stressCounters.ph ?? 0) + 1
         } else {
             p.stressCounters.ph = 0
         }
         // EC Stress
         if (p.medium.ec < ideal.ec.min || p.medium.ec > ideal.ec.max) {
             stress += 10 * nutrientStressMultiplier
-            p.stressCounters.ec = (p.stressCounters.ec || 0) + 1
+            p.stressCounters.ec = (p.stressCounters.ec ?? 0) + 1
         } else {
             p.stressCounters.ec = 0
         }
@@ -1504,11 +1504,11 @@ class PlantSimulationService {
         if (p.medium.moisture < 20) {
             // Underwatering
             stress += 20
-            p.stressCounters.moisture = (p.stressCounters.moisture || 0) + 1
+            p.stressCounters.moisture = (p.stressCounters.moisture ?? 0) + 1
         } else if (p.medium.moisture > 98) {
             // Overwatering
             stress += 5
-            p.stressCounters.moisture = (p.stressCounters.moisture || 0) + 1
+            p.stressCounters.moisture = (p.stressCounters.moisture ?? 0) + 1
         } else {
             p.stressCounters.moisture = 0
         }
@@ -1822,9 +1822,9 @@ class VPDSimulationService {
             growthStage: stageToGrowthStage(plant.stage),
             biomass: plant.biomass.total,
             health: plant.health,
-            projectedYield: plant.harvestData?.dryWeight || 0,
+            projectedYield: plant.harvestData?.dryWeight ?? 0,
             stressLevel: plant.stressLevel,
-            vpdHistory: (plant.history || []).map((entry) => ({
+            vpdHistory: (plant.history ?? []).map((entry) => ({
                 date: new Date(plant.createdAt + entry.day * 86400000).toISOString(),
                 vpd: Number(plant.environment.vpd.toFixed(3)),
                 status: 'optimal' as const,

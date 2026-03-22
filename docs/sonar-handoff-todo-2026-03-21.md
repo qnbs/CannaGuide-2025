@@ -81,8 +81,8 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
 1. Hooks / Services Cluster
 
-- hooks/useDocumentEffects.ts: nested ternary
-- hooks/useFocusTrap.ts: else-if Normalisierung
+- hooks/useDocumentEffects.ts: erledigt (nested ternary entkoppelt)
+- hooks/useFocusTrap.ts: erledigt (else-if Normalisierung)
 - services/chemotypeService.ts: erledigt (toSorted)
 - services/cryptoService.ts: erledigt (Error-Objekte bei rejection)
 - services/dbService.ts: erledigt (Error-Objekte + reduce initial value)

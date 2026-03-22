@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 
-const token = process.env.GITHUB_TOKEN
+const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN
 const repositoryFromEnv = process.env.GITHUB_REPOSITORY ?? ''
 const [ownerFromRepo, nameFromRepo] = repositoryFromEnv.split('/')
 const owner = process.env.REPO_OWNER ?? ownerFromRepo ?? 'qnbs'
@@ -8,7 +8,7 @@ const repo = process.env.REPO_NAME ?? nameFromRepo ?? 'CannaGuide-2025'
 const branch = process.env.REPO_BRANCH ?? 'main'
 
 if (!token) {
-    throw new Error('GITHUB_TOKEN is required to query alert APIs.')
+    throw new Error('GITHUB_TOKEN or GH_TOKEN is required to query alert APIs.')
 }
 
 const apiBase = 'https://api.github.com'

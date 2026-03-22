@@ -5,6 +5,10 @@ on:
     schedule:
         - cron: '17 6 * * *'
 
+concurrency:
+    group: security-alerts-${{ github.ref }}
+    cancel-in-progress: true
+
 permissions:
     contents: write
     security-events: read
@@ -22,6 +26,8 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Setup Node ${{ env.NODE_VERSION }}
               uses: actions/setup-node@v4
@@ -52,3 +58,6 @@ jobs:
                   delete-branch: true
                   add-paths: |
                       docs/security-alerts-status.md
+                  labels: |
+                      security
+                      automation

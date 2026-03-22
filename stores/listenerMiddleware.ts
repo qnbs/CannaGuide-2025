@@ -145,12 +145,12 @@ startAppListening({
 let audioCtx: AudioContext | null = null
 const playConfirmationSound = () => {
     if (!audioCtx) {
-        audioCtx = new (
+        const AudioContextCtor =
             window.AudioContext ||
             (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-        )()
+        if (!AudioContextCtor) return
+        audioCtx = new AudioContextCtor()
     }
-    if (!audioCtx) return
 
     const oscillator = audioCtx.createOscillator()
     const gainNode = audioCtx.createGain()

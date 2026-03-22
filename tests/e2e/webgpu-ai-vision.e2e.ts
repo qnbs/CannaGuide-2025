@@ -62,12 +62,7 @@ async function injectCameraFeedMock(page: Page): Promise<void> {
         )
         if (navigator.mediaDevices) {
             navigator.mediaDevices.getUserMedia = async (constraints) => {
-                if (
-                    constraints &&
-                    typeof constraints === 'object' &&
-                    constraints !== null &&
-                    'video' in constraints
-                ) {
+                if (constraints && typeof constraints === 'object' && 'video' in constraints) {
                     const canvas = document.createElement('canvas')
                     canvas.width = 640
                     canvas.height = 480

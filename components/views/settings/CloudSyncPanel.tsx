@@ -47,7 +47,6 @@ const CloudSyncPanel: React.FC = () => {
     }
     const browserWindow = typeof window === 'undefined' ? null : window
 
-
     const handleCopyEncryptionKey = async (): Promise<void> => {
         if (!cloudSync.encryptionKeyBase64) return
         await navigator.clipboard.writeText(cloudSync.encryptionKeyBase64)

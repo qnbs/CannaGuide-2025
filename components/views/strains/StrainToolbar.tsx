@@ -1,4 +1,4 @@
-import React, { useState, memo, useCallback } from 'react'
+import React, { memo } from 'react'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
@@ -7,7 +7,6 @@ import { openAddModal, openExportModal } from '@/stores/slices/uiSlice'
 import { StrainType, SortKey, SortDirection } from '@/types'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
-import { useOutsideClick } from '@/hooks/useOutsideClick'
 import { AlphabeticalFilter } from '@/components/views/strains/AlphabeticalFilter'
 import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice'
 
@@ -41,10 +40,6 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
         letterFilter,
         handleSetLetterFilter,
     } = props
-
-    const [isSortOpen, setIsSortOpen] = useState(false)
-    const sortRef = useOutsideClick<HTMLDivElement>(() => setIsSortOpen(false))
-    const handleToggleSort = useCallback(() => setIsSortOpen((prev) => !prev), [])
 
     const typeOptions = [
         { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
@@ -101,57 +96,36 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                     <PhosphorIcons.DownloadSimple className="w-5 h-5" />
                 </Button>
 
-                <div ref={sortRef} className="relative hidden sm:block">
-                    <Button
-                        onClick={handleToggleSort}
-                        variant="secondary"
-                        className="!px-3 !py-2.5"
+                <div className="hidden sm:flex items-center gap-2">
+                    <label className="sr-only" htmlFor="strain-sort-select">
+                        {t('strainsView.sortBy')}
+                    </label>
+                    <select
+                        id="strain-sort-select"
+                        value={sort.key}
+                        onChange={(e) => handleSort(e.target.value as SortKey)}
                         aria-label={`${t('strainsView.sortBy')}: ${currentSortLabel}`}
-                        aria-haspopup="listbox"
-                        aria-expanded={isSortOpen}
+                        className="h-10 rounded-md border border-slate-700 bg-slate-800 px-3 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-400"
                     >
-                        <span className="text-sm">{currentSortLabel}</span>
+                        {sortOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
+                    <Button
+                        onClick={() => handleSort(sort.key)}
+                        variant="secondary"
+                        className="!p-2.5"
+                        aria-label={t('strainsView.sortBy')}
+                        title={t('strainsView.sortBy')}
+                    >
                         {sort.direction === 'asc' ? (
-                            <PhosphorIcons.ArrowUp className="w-4 h-4 ml-2" />
+                            <PhosphorIcons.ArrowUp className="w-4 h-4" />
                         ) : (
-                            <PhosphorIcons.ArrowDown className="w-4 h-4 ml-2" />
+                            <PhosphorIcons.ArrowDown className="w-4 h-4" />
                         )}
                     </Button>
-                    {isSortOpen && (
-                        <div
-                            role="listbox"
-                            aria-label={t('strainsView.sortBy')}
-                            className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-20 p-1 animate-slide-down-fade-in"
-                        >
-                            {sortOptions.map((opt) => {
-                                const isSelected = sort.key === opt.value
-                                const sortOptionClass = isSelected
-                                    ? 'bg-primary-500/20 text-primary-300'
-                                    : 'text-slate-200 hover:bg-slate-700'
-
-                                return (
-                                    <button
-                                        key={opt.value}
-                                        role="option"
-                                        aria-selected={isSelected}
-                                        onClick={() => {
-                                            handleSort(opt.value)
-                                            setIsSortOpen(false)
-                                        }}
-                                        className={`w-full text-left px-3 py-1.5 text-sm rounded-md flex justify-between items-center ${sortOptionClass}`}
-                                    >
-                                        {opt.label}
-                                        {isSelected &&
-                                            (sort.direction === 'asc' ? (
-                                                <PhosphorIcons.ArrowUp className="w-4 h-4" />
-                                            ) : (
-                                                <PhosphorIcons.ArrowDown className="w-4 h-4" />
-                                            ))}
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    )}
                 </div>
 
                 <Button

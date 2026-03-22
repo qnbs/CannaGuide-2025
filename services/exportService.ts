@@ -43,7 +43,7 @@ class ExportService {
         a.click()
 
         setTimeout(() => {
-            document.body.removeChild(a)
+            a.remove()
             URL.revokeObjectURL(url)
         }, 100)
     }
@@ -215,31 +215,56 @@ class ExportService {
         content += `${t('common.generated')}: ${new Date().toLocaleString()}\n\n`
 
         strains.forEach((s) => {
+            const typeDetailsLabel = t(`strainsData.${s.id}.typeDetails`, {
+                defaultValue: s.typeDetails || s.type,
+            })
+            const geneticsLabel = t(`strainsData.${s.id}.genetics`, {
+                defaultValue: s.genetics ?? 'N/A',
+            })
+            const difficultyLabel = t(
+                `strainsView.difficulty.${s.agronomic.difficulty.toLowerCase()}`,
+            )
+            const yieldIndoorLabel = t(`strainsData.${s.id}.yieldDetails.indoor`, {
+                defaultValue: s.agronomic.yieldDetails?.indoor ?? 'N/A',
+            })
+            const yieldOutdoorLabel = t(`strainsData.${s.id}.yieldDetails.outdoor`, {
+                defaultValue: s.agronomic.yieldDetails?.outdoor ?? 'N/A',
+            })
+            const heightIndoorLabel = t(`strainsData.${s.id}.heightDetails.indoor`, {
+                defaultValue: s.agronomic.heightDetails?.indoor ?? 'N/A',
+            })
+            const heightOutdoorLabel = t(`strainsData.${s.id}.heightDetails.outdoor`, {
+                defaultValue: s.agronomic.heightDetails?.outdoor ?? 'N/A',
+            })
+            const descriptionLabel = t(`strainsData.${s.id}.description`, {
+                defaultValue: s.description ?? 'N/A',
+            })
+
             content += `========================================\n`
             content += `${s.name.toUpperCase()}\n`
             content += `========================================\n\n`
 
-            content += `${t('common.type')}: ${t(`strainsData.${s.id}.typeDetails`, { defaultValue: s.typeDetails || s.type })}\n`
-            content += `${t('common.genetics')}: ${t(`strainsData.${s.id}.genetics`, { defaultValue: s.genetics || 'N/A' })}\n\n`
+            content += `${t('common.type')}: ${typeDetailsLabel}\n`
+            content += `${t('common.genetics')}: ${geneticsLabel}\n\n`
 
             content += `--- ${t('strainsView.strainDetail.cannabinoidProfile')} ---\n`
             content += `${t('strainsView.table.thc')}: ${s.thcRange || `${s.thc}%`}\n`
             content += `${t('strainsView.table.cbd')}: ${s.cbdRange || `${s.cbd}%`}\n\n`
 
             content += `--- ${t('strainsView.strainModal.agronomicData')} ---\n`
-            content += `${t('strainsView.table.difficulty')}: ${t(`strainsView.difficulty.${s.agronomic.difficulty.toLowerCase()}`)}\n`
+            content += `${t('strainsView.table.difficulty')}: ${difficultyLabel}\n`
             content += `${t('strainsView.table.flowering')}: ${s.floweringTimeRange || s.floweringTime} ${t('common.units.weeks')}\n`
-            content += `${t('strainsView.strainModal.yieldIndoor')}: ${t(`strainsData.${s.id}.yieldDetails.indoor`, { defaultValue: s.agronomic.yieldDetails?.indoor || 'N/A' })}\n`
-            content += `${t('strainsView.strainModal.yieldOutdoor')}: ${t(`strainsData.${s.id}.yieldDetails.outdoor`, { defaultValue: s.agronomic.yieldDetails?.outdoor || 'N/A' })}\n`
-            content += `${t('strainsView.strainModal.heightIndoor')}: ${t(`strainsData.${s.id}.heightDetails.indoor`, { defaultValue: s.agronomic.heightDetails?.indoor || 'N/A' })}\n`
-            content += `${t('strainsView.strainModal.heightOutdoor')}: ${t(`strainsData.${s.id}.heightDetails.outdoor`, { defaultValue: s.agronomic.heightDetails?.outdoor || 'N/A' })}\n\n`
+            content += `${t('strainsView.strainModal.yieldIndoor')}: ${yieldIndoorLabel}\n`
+            content += `${t('strainsView.strainModal.yieldOutdoor')}: ${yieldOutdoorLabel}\n`
+            content += `${t('strainsView.strainModal.heightIndoor')}: ${heightIndoorLabel}\n`
+            content += `${t('strainsView.strainModal.heightOutdoor')}: ${heightOutdoorLabel}\n\n`
 
             content += `--- ${t('strainsView.strainDetail.aromaProfile')} ---\n`
             content += `${t('strainsView.strainModal.aromas')}: ${(s.aromas || []).map((a) => t(`common.aromas.${a}`, { defaultValue: a })).join(', ')}\n`
             content += `${t('strainsView.strainModal.dominantTerpenes')}: ${(s.dominantTerpenes || []).map((terp) => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', ')}\n\n`
 
             content += `--- ${t('common.description')} ---\n`
-            content += `${t(`strainsData.${s.id}.description`, { defaultValue: s.description || 'N/A' })}\n\n\n`
+            content += `${descriptionLabel}\n\n\n`
         })
         this.generateTxt(content, `${fileName}.txt`)
     }
@@ -324,6 +349,12 @@ class ExportService {
 
             // Source details
             if (setup.sourceDetails) {
+                const prioritiesLabel = setup.sourceDetails.priorities
+                    .map((p) => t(`equipmentView.configurator.priorities.${p}`))
+                    .join(', ')
+                const resolvedPrioritiesLabel =
+                    prioritiesLabel.length > 0 ? prioritiesLabel : t('common.none')
+                const resolvedCustomNotes = setup.sourceDetails.customNotes ?? t('common.none')
                 doc.setFontSize(14)
                 doc.setFont('helvetica', 'bold')
                 doc.setTextColor(40, 50, 70)
@@ -347,13 +378,11 @@ class ExportService {
                     ],
                     [
                         t('equipmentView.savedSetups.pdfReport.priorities'),
-                        setup.sourceDetails.priorities
-                            .map((p) => t(`equipmentView.configurator.priorities.${p}`))
-                            .join(', ') || t('common.none'),
+                        resolvedPrioritiesLabel,
                     ],
                     [
                         t('equipmentView.savedSetups.pdfReport.customNotes'),
-                        setup.sourceDetails.customNotes || t('common.none'),
+                        resolvedCustomNotes,
                     ],
                 ]
                 ;(doc as JsPDFWithAutoTable).autoTable({
@@ -471,12 +500,21 @@ class ExportService {
             content += `(${t('common.generated')}: ${new Date(setup.createdAt).toLocaleString()})\n\n`
 
             if (setup.sourceDetails) {
+                const experienceLabel = t(
+                    `strainsView.tips.form.experienceOptions.${setup.sourceDetails.experience}`,
+                )
+                const prioritiesLabel = setup.sourceDetails.priorities
+                    .map((p) => t(`equipmentView.configurator.priorities.${p}`))
+                    .join(', ')
+                const resolvedPrioritiesLabel =
+                    prioritiesLabel.length > 0 ? prioritiesLabel : t('common.none')
+                const resolvedCustomNotes = setup.sourceDetails.customNotes ?? t('common.none')
                 content += `--- ${t('equipmentView.savedSetups.pdfReport.sourceDetails')} ---\n`
                 content += `${t('equipmentView.savedSetups.pdfReport.plantCount')}: ${setup.sourceDetails.plantCount}\n`
-                content += `${t('equipmentView.savedSetups.pdfReport.experience')}: ${t(`strainsView.tips.form.experienceOptions.${setup.sourceDetails.experience}`)}\n`
+                content += `${t('equipmentView.savedSetups.pdfReport.experience')}: ${experienceLabel}\n`
                 content += `${t('equipmentView.savedSetups.pdfReport.budget')}: ${setup.sourceDetails.budget} ${t('common.units.currency_eur')}\n`
-                content += `${t('equipmentView.savedSetups.pdfReport.priorities')}: ${setup.sourceDetails.priorities.map((p) => t(`equipmentView.configurator.priorities.${p}`)).join(', ') || t('common.none')}\n`
-                content += `${t('equipmentView.savedSetups.pdfReport.customNotes')}: ${setup.sourceDetails.customNotes || t('common.none')}\n\n`
+                content += `${t('equipmentView.savedSetups.pdfReport.priorities')}: ${resolvedPrioritiesLabel}\n`
+                content += `${t('equipmentView.savedSetups.pdfReport.customNotes')}: ${resolvedCustomNotes}\n\n`
             }
 
             if (setup.recommendation) {
@@ -496,7 +534,8 @@ class ExportService {
                         | RecommendationItem
                         | string
                     if (typeof item === 'object' && item.name) {
-                        content += `${t(`equipmentView.configurator.categories.${key}`)}: ${item.name} (${item.price.toFixed(2)} ${t('common.units.currency_eur')})\n`
+                        const categoryLabel = t(`equipmentView.configurator.categories.${key}`)
+                        content += `${categoryLabel}: ${item.name} (${item.price.toFixed(2)} ${t('common.units.currency_eur')})\n`
                         content += `  - Rationale: ${item.rationale}\n`
                     }
                 })
@@ -565,8 +604,8 @@ class ExportService {
 
         y = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 8
 
-        const journalRows = [...plant.journal]
-            .reverse()
+        const journalRows = plant.journal
+            .toReversed()
             .slice(0, 30)
             .map((entry) => [
                 new Date(entry.createdAt).toLocaleDateString(),

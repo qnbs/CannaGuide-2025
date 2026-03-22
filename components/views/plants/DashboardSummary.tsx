@@ -106,6 +106,53 @@ const DashboardSummaryComponent: React.FC = () => {
 
     const aiErrorMessage = resolveApiErrorMessage(aiError, t('ai.error.unknown'))
 
+    const renderAiStatusSection = () => {
+        if (isAiLoading) {
+            return <AiLoadingIndicator loadingMessage={t('ai.generating')} />
+        }
+
+        if (aiError) {
+            return <div className="text-center text-sm text-red-400">{aiErrorMessage}</div>
+        }
+
+        if (aiStatus) {
+            return (
+                <Speakable elementId="garden-status-ai" className="animate-fade-in">
+                    <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-lg text-primary-300 flex items-center gap-2">
+                            <PhosphorIcons.Sparkle /> {aiStatus.title}
+                        </h4>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            className="!p-1"
+                            onClick={() => resetAiStatus()}
+                        >
+                            <PhosphorIcons.X />
+                        </Button>
+                    </div>
+                    <SafeHtml
+                        className="prose prose-sm dark:prose-invert max-w-none"
+                        html={aiStatus.content}
+                    />
+                </Speakable>
+            )
+        }
+
+        return (
+            <Button
+                onClick={handleGetAiStatus}
+                variant="secondary"
+                size="sm"
+                disabled={!hasActiveGrows}
+                className="w-full"
+            >
+                <PhosphorIcons.Sparkle className="w-4 h-4 mr-2" />{' '}
+                {t('plantsView.gardenVitals.getAiStatus')}
+            </Button>
+        )
+    }
+
     return (
         <Card className="overflow-hidden">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -177,42 +224,7 @@ const DashboardSummaryComponent: React.FC = () => {
 
             {/* AI Status Section */}
             <div className="stat-tile space-y-3 p-3">
-                {isAiLoading ? (
-                    <AiLoadingIndicator loadingMessage={t('ai.generating')} />
-                ) : aiError ? (
-                    <div className="text-center text-sm text-red-400">{aiErrorMessage}</div>
-                ) : aiStatus ? (
-                    <Speakable elementId="garden-status-ai" className="animate-fade-in">
-                        <div className="flex justify-between items-start">
-                            <h4 className="font-bold text-lg text-primary-300 flex items-center gap-2">
-                                <PhosphorIcons.Sparkle /> {aiStatus.title}
-                            </h4>
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                className="!p-1"
-                                onClick={() => resetAiStatus()}
-                            >
-                                <PhosphorIcons.X />
-                            </Button>
-                        </div>
-                        <SafeHtml
-                            className="prose prose-sm dark:prose-invert max-w-none"
-                            html={aiStatus.content}
-                        />
-                    </Speakable>
-                ) : (
-                    <Button
-                        onClick={handleGetAiStatus}
-                        variant="secondary"
-                        size="sm"
-                        disabled={!hasActiveGrows}
-                        className="w-full"
-                    >
-                        <PhosphorIcons.Sparkle className="w-4 h-4 mr-2" />{' '}
-                        {t('plantsView.gardenVitals.getAiStatus')}
-                    </Button>
-                )}
+                {renderAiStatusSection()}
             </div>
 
             <div className="mt-4 border-t border-white/8 pt-4">

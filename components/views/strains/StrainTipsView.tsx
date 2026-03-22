@@ -167,21 +167,29 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
 
     const sortedAndGrouped = useMemo(() => {
         if (sortMode === 'date') {
-            return [...filteredTips].sort((a, b) => b.createdAt - a.createdAt)
+            return filteredTips.toSorted((a, b) => b.createdAt - a.createdAt)
         }
 
         const grouped: Record<string, SavedStrainTip[]> = filteredTips.reduce(
             (acc, tip) => {
                 const safeStrainName = getSafeText(tip.strainName, 'Unknown Strain')
-                ;(acc[safeStrainName] = acc[safeStrainName] || []).push(tip)
+                if (!acc[safeStrainName]) {
+                    acc[safeStrainName] = []
+                }
+                acc[safeStrainName].push(tip)
                 return acc
             },
             {} as Record<string, SavedStrainTip[]>,
         )
 
-        Object.values(grouped).forEach((tips) => tips.sort((a, b) => b.createdAt - a.createdAt))
-
-        return Object.entries(grouped).sort((a, b) => compareText(a[0], b[0]))
+        return Object.entries(grouped)
+            .map(([strainName, tips]) =>
+                [strainName, tips.toSorted((a, b) => b.createdAt - a.createdAt)] as [
+                    string,
+                    SavedStrainTip[],
+                ],
+            )
+            .toSorted((a, b) => compareText(a[0], b[0]))
     }, [filteredTips, sortMode])
 
     const allVisibleIds = useMemo(() => {

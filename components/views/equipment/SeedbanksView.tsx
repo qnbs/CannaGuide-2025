@@ -233,7 +233,7 @@ const SeedbanksView: React.FC = () => {
         () =>
             Object.entries(allBanksData)
                 .filter(([key, value]) => key !== 'conclusions' && typeof value === 'object')
-                .sort(([, leftValue], [, rightValue]) => {
+                .toSorted(([, leftValue], [, rightValue]) => {
                     const leftTitle = (leftValue as BankData).title ?? ''
                     const rightTitle = (rightValue as BankData).title ?? ''
                     const leftNumber = Number(

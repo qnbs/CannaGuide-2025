@@ -39,18 +39,14 @@ export const useFocusTrap = (isOpen: boolean) => {
                 const lastElement = focusableContent[focusableContent.length - 1]
                 const activeElement = document.activeElement
 
-                if (e.shiftKey) {
+                if (e.shiftKey && activeElement === firstElement) {
                     // Shift + Tab
-                    if (activeElement === firstElement) {
-                        lastElement?.focus()
-                        e.preventDefault()
-                    }
-                } else {
+                    lastElement?.focus()
+                    e.preventDefault()
+                } else if (!e.shiftKey && activeElement === lastElement) {
                     // Tab
-                    if (activeElement === lastElement) {
-                        firstElement?.focus()
-                        e.preventDefault()
-                    }
+                    firstElement?.focus()
+                    e.preventDefault()
                 }
             }
 

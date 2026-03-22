@@ -17,6 +17,7 @@ const eventTypes: JournalEntryType[] = [
     JournalEntryType.Feeding,
     JournalEntryType.Training,
 ]
+const eventTypeSet = new Set<JournalEntryType>(eventTypes)
 const eventIcons: Record<JournalEntryType, React.ReactNode> = {
     [JournalEntryType.Watering]: <PhosphorIcons.Drop />,
     [JournalEntryType.Feeding]: <PhosphorIcons.TestTube />,
@@ -197,7 +198,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
         )
 
         const eventEntries = useMemo(
-            () => journal.filter((e) => eventTypes.includes(e.type)),
+            () => journal.filter((e) => eventTypeSet.has(e.type)),
             [journal],
         )
 

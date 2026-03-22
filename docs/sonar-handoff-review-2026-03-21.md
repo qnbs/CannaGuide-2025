@@ -21,7 +21,7 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 - services/predictiveAnalyticsService.ts
 - stores/slices/genealogySlice.ts
 
-2. Naechster UI/A11y/Maintainability-Block (Major/Minor)
+1. Naechster UI/A11y/Maintainability-Block (Major/Minor)
 
 - components/common/Card.tsx
 - components/common/CommandPalette.tsx
@@ -40,9 +40,61 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 - components/views/settings/DataManagementTab.tsx
 - hooks/useStorageEstimate.ts
 
+1. Fortsetzung nach Absturz (zusatzliche Sonar-Welle)
+
+- components/views/plants/DashboardSummary.tsx (nested ternary -> explizites Render-Branching)
+- components/views/plants/PlantLifecycleTimeline.tsx (nested template literal entkoppelt)
+- components/views/plants/PlantSlot.tsx (nested template literal entkoppelt)
+- components/views/plants/detailedPlantViewTabs/JournalTab.tsx (nested ternary in className entkoppelt)
+- components/views/plants/detailedPlantViewTabs/PhotosTab.tsx (redundanter keydown-listener entfernt)
+- components/views/knowledge/MentorView.tsx (includes -> Set.has bei activeProblems)
+- components/views/strains/AddStrainModal.tsx (Regex-Komplexitaet reduziert)
+- components/views/strains/StrainTreeNode.tsx (treeitem: aria-selected gesetzt)
+- services/exportService.ts (removeChild -> remove)
+
+1. Strains- und Services-Fortsetzung (naechste TODO-Welle)
+
+- components/views/strains/BreedingLab.tsx (nested ternary/class branching entkoppelt)
+- components/views/strains/InlineStrainSelector.tsx (ternary class extraction)
+- components/views/strains/StrainImageGenerator.tsx (nested ternary button rendering entkoppelt)
+- components/views/strains/StrainsView.tsx (nested ternary in export source + onDelete branching entkoppelt)
+- services/chemotypeService.ts (toSorted + klarere profile label branching)
+- services/entourageService.ts (nested ternary bei THC/CBD ratio entkoppelt)
+
+1. Zusatzwelle auf Restkonventionen
+
+- components/views/strains/StrainTipsView.tsx (reduce-assignment bereinigt, sort -> toSorted)
+- components/views/strains/StrainLibraryView.tsx (nested ternary im Main-Content-Rendering entkoppelt)
+
+1. A11y-Restpunkt Strains
+
+- components/views/strains/StrainImageGalleryTab.tsx (non-interactive click listener entfernt; semantische button/dialog-Interaktion)
+
+1. Restpruefung Strains/Seedbanks/Guide
+
+- components/views/strains/StrainsView.tsx (sort -> toSorted bei Aromas/Terpenes)
+- components/views/equipment/SeedbanksView.tsx (sort -> toSorted)
+- components/views/knowledge/GuideView.tsx (sort -> toSorted, Phases-Sortierung nicht-mutierend)
+
+1. exportService Restwelle
+
+- services/exportService.ts (|| -> ?? bei Defaultwerten, explizite Fallback-Variablen fuer priorities/customNotes, reverse -> toReversed)
+
+1. Zusatzwelle Sort/Konventionen
+
+- components/views/strains/BreedingLab.tsx (sort -> toSorted)
+- components/views/strains/InlineStrainSelector.tsx (sort -> toSorted)
+- components/views/strains/StrainImageGalleryTab.tsx (sort -> toSorted)
+- components/views/strains/ExportsManagerView.tsx (sort -> toSorted)
+- components/views/equipment/SavedSetupsView.tsx (sort -> toSorted)
+- services/dbService.ts (sort -> toSorted in pruneOldImages)
+- services/localAiImageSimilarityService.ts (sort -> toSorted)
+- services/entourageService.ts (sort -> toSorted + summary branching entkoppelt)
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich
+- node scripts/lint-changed.mjs: erfolgreich
 - Diagnostics-Check auf allen geaenderten Dateien: keine neuen Fehler
 
 ## Ergebnisbild

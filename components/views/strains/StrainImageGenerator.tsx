@@ -131,6 +131,35 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
     // Don't render if capability check hasn't completed yet
     if (isCapable === null) return null
 
+    const renderGenerateButtonContent = (): React.ReactNode => {
+        if (isGenerating) {
+            return (
+                <span className="flex items-center gap-2">
+                    <PhosphorIcons.ArrowClockwise className="w-4 h-4 animate-spin" />
+                    {progress
+                        ? `${t(PHASE_LABELS[progress.phase])} (${progress.percent}%)`
+                        : t('strainsView.imageGen.generating')}
+                </span>
+            )
+        }
+
+        if (generatedImage) {
+            return (
+                <>
+                    <PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" />
+                    {t('strainsView.imageGen.regenerate')}
+                </>
+            )
+        }
+
+        return (
+            <>
+                <PhosphorIcons.Sparkle className="w-4 h-4 mr-1.5" />
+                {t('strainsView.imageGen.generate')}
+            </>
+        )
+    }
+
     return (
         <Card className="mb-6">
             <h3 className="text-lg font-bold text-primary-400 flex items-center gap-2 mb-3">
@@ -219,24 +248,7 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
                         disabled={isGenerating}
                         className="w-full mb-4"
                     >
-                        {isGenerating ? (
-                            <span className="flex items-center gap-2">
-                                <PhosphorIcons.ArrowClockwise className="w-4 h-4 animate-spin" />
-                                {progress
-                                    ? `${t(PHASE_LABELS[progress.phase])} (${progress.percent}%)`
-                                    : t('strainsView.imageGen.generating')}
-                            </span>
-                        ) : generatedImage ? (
-                            <>
-                                <PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" />
-                                {t('strainsView.imageGen.regenerate')}
-                            </>
-                        ) : (
-                            <>
-                                <PhosphorIcons.Sparkle className="w-4 h-4 mr-1.5" />
-                                {t('strainsView.imageGen.generate')}
-                            </>
-                        )}
+                        {renderGenerateButtonContent()}
                     </Button>
 
                     {isGenerating && progress && (

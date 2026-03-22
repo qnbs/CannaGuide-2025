@@ -53,7 +53,7 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
                 .filter((image): image is { url: string; createdAt: number; title: string } =>
                     Boolean(image.url),
                 )
-                .sort((a, b) => b.createdAt - a.createdAt),
+                .toSorted((a, b) => b.createdAt - a.createdAt),
         [savedTips, strain.id],
     )
 
@@ -80,26 +80,34 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
             {selectedImage && (
                 <div
                     className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"
-                    onClick={() => setSelectedImage(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={t('strainsView.fullScreenImage')}
                 >
+                    <button
+                        type="button"
+                        className="absolute inset-0"
+                        aria-label={t('common.close')}
+                        onClick={() => setSelectedImage(null)}
+                    />
                     <img
                         src={selectedImage}
                         alt={t('strainsView.fullScreenImage')}
-                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        className="relative z-10 max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         loading="eager"
                         decoding="async"
-                        onClick={(e) => e.stopPropagation()}
                     />
                 </div>
             )}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {images.map((image) => (
-                    <Card
-                        key={`${image.url}-${image.createdAt}`}
-                        className="p-0 overflow-hidden cursor-pointer group"
-                        onClick={() => setSelectedImage(image.url)}
-                    >
-                        <div className="relative">
+                    <Card key={`${image.url}-${image.createdAt}`} className="p-0 overflow-hidden">
+                        <button
+                            type="button"
+                            className="relative w-full cursor-pointer text-left group"
+                            onClick={() => setSelectedImage(image.url)}
+                            aria-label={`${image.title} - ${t('strainsView.fullScreenImage')}`}
+                        >
                             <img
                                 src={image.url}
                                 alt={image.title}
@@ -114,7 +122,7 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
                                     {new Date(image.createdAt).toLocaleDateString()}
                                 </p>
                             </div>
-                        </div>
+                        </button>
                     </Card>
                 ))}
             </div>

@@ -115,6 +115,12 @@ const SensorIntegrationPanelComponent: React.FC = () => {
 
     const mqttConnected = mqttState === 'connected'
     const mqttBusy = mqttState === 'connecting'
+    let mqttToggleLabel = t('plantsView.sensor.mqttConnect')
+    if (mqttBusy) {
+        mqttToggleLabel = t('plantsView.sensor.connecting')
+    } else if (mqttConnected) {
+        mqttToggleLabel = t('plantsView.sensor.mqttDisconnect')
+    }
 
     return (
         <Card>
@@ -174,11 +180,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                     </label>
                     <Button onClick={handleMqttToggle} className="w-full" disabled={mqttBusy}>
                         <PhosphorIcons.WifiHigh className="w-5 h-5 mr-2" />
-                        {mqttBusy
-                            ? t('plantsView.sensor.connecting')
-                            : mqttConnected
-                              ? t('plantsView.sensor.mqttDisconnect')
-                              : t('plantsView.sensor.mqttConnect')}
+                        {mqttToggleLabel}
                     </Button>
                     {mqttConnected && (
                         <p className="text-xs text-green-400">{t('plantsView.sensor.mqttLive')}</p>

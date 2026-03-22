@@ -59,6 +59,9 @@ let db: IDBDatabase | null = null
 // Promise lock – prevents concurrent openDB() calls from opening duplicate connections
 let dbPromise: Promise<IDBDatabase> | null = null
 
+const toIndexedDbError = (error: DOMException | null, fallbackMessage: string): Error =>
+    error ?? new Error(fallbackMessage)
+
 const ensureObjectStore = (dbInstance: IDBDatabase, storeName: string, keyPath: string): void => {
     if (!dbInstance.objectStoreNames.contains(storeName)) {
         dbInstance.createObjectStore(storeName, { keyPath })
@@ -149,11 +152,9 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onerror = (event) => {
             dbPromise = null
-            console.error(
-                '[dbService] IndexedDB connection error:',
-                (event.target as IDBOpenDBRequest).error,
-            )
-            reject((event.target as IDBOpenDBRequest).error)
+            const idbError = (event.target as IDBOpenDBRequest).error
+            console.error('[dbService] IndexedDB connection error:', idbError)
+            reject(toIndexedDbError(idbError, '[dbService] Failed to open IndexedDB connection.'))
         }
     })
 
@@ -184,7 +185,12 @@ const performTx = async <T>(
 
         transaction.onerror = () => {
             console.error(`[dbService] Transaction error on ${storeName}:`, transaction.error)
-            reject(transaction.error)
+            reject(
+                toIndexedDbError(
+                    transaction.error,
+                    `[dbService] Transaction failed on store "${storeName}".`,
+                ),
+            )
         }
 
         transaction.oncomplete = () => {
@@ -277,7 +283,13 @@ const replaceStoreAtomically = async (
         const store = transaction.objectStore(storeName)
 
         transaction.oncomplete = () => resolve()
-        transaction.onerror = () => reject(transaction.error)
+        transaction.onerror = () =>
+            reject(
+                toIndexedDbError(
+                    transaction.error,
+                    `[dbService] Atomic replace failed on store "${storeName}".`,
+                ),
+            )
 
         const clearRequest = store.clear()
         clearRequest.onerror = () => {
@@ -321,7 +333,11 @@ const intersectResultSets = (resultSets: Set<string>[]): Set<string> => {
         return new Set()
     }
 
-    return resultSets.reduce((left, right) => new Set([...left].filter((id) => right.has(id))))
+    const [firstSet, ...otherSets] = resultSets
+    return otherSets.reduce(
+        (left, right) => new Set([...left].filter((id) => right.has(id))),
+        new Set(firstSet),
+    )
 }
 
 export const dbService = {
@@ -387,7 +403,10 @@ export const dbService = {
             const results: Strain[] = []
             const seenIds = new Set<string>()
 
-            request.onerror = () => reject(request.error)
+            request.onerror = () =>
+                reject(
+                    toIndexedDbError(request.error, '[dbService] Failed to read strains cursor.'),
+                )
             request.onsuccess = () => {
                 const cursor = request.result
                 if (cursor) {
@@ -433,7 +452,13 @@ export const dbService = {
             const request = index.getAll(query)
 
             transaction.oncomplete = () => resolve(request.result || [])
-            transaction.onerror = () => reject(transaction.error)
+            transaction.onerror = () =>
+                reject(
+                    toIndexedDbError(
+                        transaction.error,
+                        `[dbService] IndexedDB query failed for index "${indexName}".`,
+                    ),
+                )
         })
     },
 
@@ -484,14 +509,15 @@ export const dbService = {
             const tx = conn.transaction(IMAGES_STORE, 'readonly')
             const req = tx.objectStore(IMAGES_STORE).getAll()
             req.onsuccess = () => resolve(req.result)
-            tx.onerror = () => reject(tx.error)
+            tx.onerror = () =>
+                reject(toIndexedDbError(tx.error, '[dbService] Failed to load images for pruning.'))
         })
 
         if (allImages.length === 0) {
             return 0
         }
 
-        const sortedByAge = [...allImages].sort((a, b) => a.createdAt - b.createdAt)
+        const sortedByAge = allImages.toSorted((a, b) => a.createdAt - b.createdAt)
         const imagesToDelete = sortedByAge.slice(0, Math.min(maxToDelete, sortedByAge.length))
 
         await new Promise<void>((resolve, reject) => {
@@ -499,7 +525,13 @@ export const dbService = {
             const store = transaction.objectStore(IMAGES_STORE)
 
             transaction.oncomplete = () => resolve()
-            transaction.onerror = () => reject(transaction.error)
+            transaction.onerror = () =>
+                reject(
+                    toIndexedDbError(
+                        transaction.error,
+                        '[dbService] Failed to delete old images during prune operation.',
+                    ),
+                )
 
             imagesToDelete.forEach((image) => {
                 store.delete(image.id)
@@ -561,7 +593,13 @@ export const dbService = {
             const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE)
             const resultSets: Set<string>[] = []
 
-            transaction.onerror = () => reject(transaction.error)
+            transaction.onerror = () =>
+                reject(
+                    toIndexedDbError(
+                        transaction.error,
+                        '[dbService] Search index transaction failed.',
+                    ),
+                )
 
             transaction.oncomplete = () => {
                 if (resultSets.length === 0 || resultSets.length < tokens.length) {

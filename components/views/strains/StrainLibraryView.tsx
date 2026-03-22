@@ -103,20 +103,21 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
         />
     )
 
-    const mainContent = isSearching ? (
-        <SkeletonLoader variant={viewMode} count={10} />
-    ) : hasNoResults ? (
-        <Card className="text-center py-10 text-slate-500">
-            <PhosphorIcons.MagnifyingGlass className="w-14 h-14 mx-auto text-slate-400 mb-3" />
-            <h3 className="font-semibold text-slate-300">
-                {t('strainsView.emptyStates.noResults.title')}
-            </h3>
-            <p className="text-sm mb-4">{t('strainsView.emptyStates.noResults.text')}</p>
-            {clearSearchButton}
-        </Card>
-    ) : (
-        strainsContent
-    )
+    let mainContent = strainsContent
+    if (isSearching) {
+        mainContent = <SkeletonLoader variant={viewMode} count={10} />
+    } else if (hasNoResults) {
+        mainContent = (
+            <Card className="text-center py-10 text-slate-500">
+                <PhosphorIcons.MagnifyingGlass className="w-14 h-14 mx-auto text-slate-400 mb-3" />
+                <h3 className="font-semibold text-slate-300">
+                    {t('strainsView.emptyStates.noResults.title')}
+                </h3>
+                <p className="text-sm mb-4">{t('strainsView.emptyStates.noResults.text')}</p>
+                {clearSearchButton}
+            </Card>
+        )
+    }
 
     return (
         <>

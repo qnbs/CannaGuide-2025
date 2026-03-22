@@ -52,25 +52,47 @@ const hasUnsafeCommitterOverride =
     authorEmail === 'noreply@github.com'
 
 if (hasUnsafeCommitterOverride) {
-    issues.push('unsafe author/committer override detected (GitHub/noreply)')
+    if (enforceIdentity) {
+        issues.push('unsafe author/committer override detected (GitHub/noreply)')
+    } else {
+        warnings.push('unsafe author/committer override detected (GitHub/noreply)')
+    }
 }
 
 if (committerName && userName && committerName !== userName) {
-    issues.push(`GIT_COMMITTER_NAME differs from git user.name (${committerName} != ${userName})`)
+    const message = `GIT_COMMITTER_NAME differs from git user.name (${committerName} != ${userName})`
+    if (enforceIdentity) {
+        issues.push(message)
+    } else {
+        warnings.push(message)
+    }
 }
 
 if (committerEmail && userEmail && committerEmail !== userEmail) {
-    issues.push(
-        `GIT_COMMITTER_EMAIL differs from git user.email (${committerEmail} != ${userEmail})`,
-    )
+    const message = `GIT_COMMITTER_EMAIL differs from git user.email (${committerEmail} != ${userEmail})`
+    if (enforceIdentity) {
+        issues.push(message)
+    } else {
+        warnings.push(message)
+    }
 }
 
 if (authorName && userName && authorName !== userName) {
-    issues.push(`GIT_AUTHOR_NAME differs from git user.name (${authorName} != ${userName})`)
+    const message = `GIT_AUTHOR_NAME differs from git user.name (${authorName} != ${userName})`
+    if (enforceIdentity) {
+        issues.push(message)
+    } else {
+        warnings.push(message)
+    }
 }
 
 if (authorEmail && userEmail && authorEmail !== userEmail) {
-    issues.push(`GIT_AUTHOR_EMAIL differs from git user.email (${authorEmail} != ${userEmail})`)
+    const message = `GIT_AUTHOR_EMAIL differs from git user.email (${authorEmail} != ${userEmail})`
+    if (enforceIdentity) {
+        issues.push(message)
+    } else {
+        warnings.push(message)
+    }
 }
 
 if (issues.length > 0) {

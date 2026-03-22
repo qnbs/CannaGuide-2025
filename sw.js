@@ -148,7 +148,8 @@ self.addEventListener('fetch', (event) => {
     const { request } = event
     const url = new URL(request.url)
 
-    if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    const isHttpRequest = url.protocol === 'http:' || url.protocol === 'https:'
+    if (request.method !== 'GET' || !isHttpRequest) {
         return
     }
 

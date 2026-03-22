@@ -2,7 +2,6 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
-import viteImagemin from 'vite-plugin-imagemin'
 import path from 'path'
 import type { PluginOption } from 'vite'
 import { CSP, PERMISSIONS_POLICY } from './securityHeaders'
@@ -24,11 +23,6 @@ export default defineConfig({
             babel: {
                 plugins: ['babel-plugin-react-compiler'],
             },
-        }),
-        viteImagemin({
-            verbose: false,
-            webp: { quality: 82 },
-            mozjpeg: { quality: 82 },
         }),
         VitePWA({
             strategies: 'injectManifest',

@@ -627,24 +627,25 @@ const ensureGenealogyShape = (state: PersistedState): void => {
 }
 
 const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
+    const blockedMergeKeys = new Set(['__proto__', 'constructor', 'prototype'])
     const isObject = (item: unknown): item is Record<string, unknown> => {
         return !!item && typeof item === 'object' && !Array.isArray(item)
     }
+    const isSafeMergeKey = (key: string): boolean => {
+        return !blockedMergeKeys.has(key)
+    }
 
-    const output = JSON.parse(JSON.stringify(defaultSettings)) // Deep clone defaults
+    const output = structuredClone(defaultSettings) as unknown as Record<string, unknown>
 
     function merge(target: Record<string, unknown>, source: Record<string, unknown>) {
-        for (const key of Object.keys(source)) {
-            if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
-            const sourceValue = source[key]
+        for (const [key, sourceValue] of Object.entries(source)) {
+            if (!isSafeMergeKey(key)) continue
             if (isObject(sourceValue)) {
-                if (!target[key] || !isObject(target[key])) {
-                    target[key] = {}
+                const currentTargetValue = target[key]
+                if (!isObject(currentTargetValue)) {
+                    target[key] = Object.create(null)
                 }
-                merge(
-                    target[key] as Record<string, unknown>,
-                    sourceValue as Record<string, unknown>,
-                )
+                merge(target[key] as Record<string, unknown>, sourceValue)
             } else if (sourceValue !== undefined) {
                 target[key] = sourceValue
             }
@@ -664,7 +665,7 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
         delete simulationSettings.speedMultiplier
     }
 
-    return output
+    return output as unknown as AppSettings
 }
 
 /**

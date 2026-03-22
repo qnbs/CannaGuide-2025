@@ -59,8 +59,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     const [query, setQuery] = useState('')
     const deferredQuery = useDeferredValue(query)
     const inputRef = useRef<HTMLInputElement | null>(null)
-    const shouldAutoFocusInput =
-        typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
+    const browserWindow = typeof globalThis.window !== 'undefined' ? globalThis.window : null
+    const shouldAutoFocusInput = browserWindow?.matchMedia('(pointer: fine)').matches ?? false
     const { allCommands } = useCommandPalette()
 
     // Track stale deferred value for loading indicator
@@ -70,7 +70,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         if (isOpen) {
             setQuery('')
             if (shouldAutoFocusInput) {
-                window.requestAnimationFrame(() => {
+                globalThis.requestAnimationFrame(() => {
                     inputRef.current?.focus()
                 })
             }

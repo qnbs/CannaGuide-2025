@@ -21,7 +21,7 @@ const ErrorFallback: React.FC<{ onSafeRecovery: () => void }> = ({ onSafeRecover
                 {t('common.errorBoundary.title')}
             </h1>
             <p className="text-slate-400 mb-6 max-w-sm">{t('common.errorBoundary.description')}</p>
-            <Button variant="danger" onClick={() => window.location.reload()}>
+            <Button variant="danger" onClick={() => globalThis.location.reload()}>
                 {t('common.errorBoundary.reload')}
             </Button>
             <Button variant="secondary" onClick={onSafeRecovery} className="mt-2">
@@ -48,7 +48,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         console.error('Uncaught error:', error, errorInfo)
         Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } })
         try {
-            window.dispatchEvent(
+            globalThis.dispatchEvent(
                 new CustomEvent('cannaguide-runtime-error', {
                     detail: { message: error.message },
                 }),
@@ -60,7 +60,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
     private readonly requestSafeRecovery = () => {
         try {
-            window.dispatchEvent(new Event('cannaguide-safe-recovery-request'))
+            globalThis.dispatchEvent(new Event('cannaguide-safe-recovery-request'))
         } catch {
             // no-op in non-browser contexts
         }

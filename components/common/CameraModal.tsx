@@ -11,6 +11,9 @@ interface CameraModalProps {
     triggerRef?: React.RefObject<HTMLButtonElement | null>
 }
 
+const CAMERA_FALLBACK_VTT =
+    'data:text/vtt;charset=utf-8,WEBVTT\n\n00:00:00.000 --> 00:10:00.000\nCamera preview\n'
+
 export const CameraModal: React.FC<CameraModalProps> = ({
     isOpen,
     onClose,
@@ -159,7 +162,14 @@ export const CameraModal: React.FC<CameraModalProps> = ({
                         autoPlay
                         playsInline
                         className={`w-full h-auto max-h-[60dvh] object-contain rounded-md ${videoVisibilityClass}`}
-                    ></video>
+                    >
+                        <track
+                            kind="captions"
+                            srcLang="en"
+                            label="Captions"
+                            src={CAMERA_FALLBACK_VTT}
+                        />
+                    </video>
                     <canvas ref={canvasRef} className="hidden"></canvas>
                     {capturedImage && (
                         <img

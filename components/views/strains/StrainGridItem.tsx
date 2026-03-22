@@ -79,7 +79,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                     aria-pressed={isSelected}
                 />
 
-                <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20 pointer-events-auto">
                     <input
                         type="checkbox"
                         checked={isSelected}
@@ -98,14 +98,18 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                     </span>
                 )}
 
-                <div className={`mx-auto mb-2 w-12 h-12 ${typeClasses[safeType]}`}>
+                <div
+                    className={`mx-auto mb-2 w-12 h-12 pointer-events-none ${typeClasses[safeType]}`}
+                >
                     {typeIcons[safeType]}
                 </div>
 
-                <h3 className="font-bold text-slate-100 truncate">{safeName}</h3>
-                <p className="text-xs text-slate-400 mb-2">{safeType}</p>
+                <h3 className="font-bold text-slate-100 truncate pointer-events-none">
+                    {safeName}
+                </h3>
+                <p className="text-xs text-slate-400 mb-2 pointer-events-none">{safeType}</p>
 
-                <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono">
+                <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono pointer-events-none">
                     <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">
                         {safeThc.toFixed(1)}%
                     </div>
@@ -115,7 +119,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                     </div>
                 </div>
 
-                <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-20">
+                <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-20 pointer-events-auto">
                     <Button
                         variant="ghost"
                         size="sm"

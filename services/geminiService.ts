@@ -1197,10 +1197,14 @@ PLANT CONTEXT:
 
     private buildGardenPlantSummaries(plants: Plant[], t: ReturnType<typeof getT>): string {
         return plants
-            .map(
-                (plant) =>
-                    `- ${plant.name} (${t('plantsView.plantCard.day')} ${plant.age}, ${t(`plantStages.${plant.stage}`)}): Health ${plant.health.toFixed(0)}%, Stress ${plant.stressLevel.toFixed(0)}%. Problems: ${plant.problems.length > 0 ? plant.problems.map((problem) => problem.type).join(', ') : 'None'}`,
-            )
+            .map((plant) => {
+                const problemsSummary =
+                    plant.problems.length > 0
+                        ? plant.problems.map((problem) => problem.type).join(', ')
+                        : 'None'
+
+                return `- ${plant.name} (${t('plantsView.plantCard.day')} ${plant.age}, ${t(`plantStages.${plant.stage}`)}): Health ${plant.health.toFixed(0)}%, Stress ${plant.stressLevel.toFixed(0)}%. Problems: ${problemsSummary}`
+            })
             .join('\n')
     }
 

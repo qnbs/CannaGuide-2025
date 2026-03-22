@@ -7,7 +7,6 @@ import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTyp
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors'
 import { toggleFavorite } from '@/stores/slices/favoritesSlice'
-// FIX: Switched to using the exported `initiateGrowFromStrainList` thunk as suggested by the error.
 import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice'
 import { updateNote, undoNoteChange, redoNoteChange } from '@/stores/slices/notesSlice'
 import { StrainAiTips } from './StrainAiTips'

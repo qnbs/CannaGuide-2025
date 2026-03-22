@@ -343,7 +343,6 @@ export const App: React.FC = () => {
                     aria-label={t('common.accessibility.mainContent')}
                     className="relative flex-grow min-h-0 overflow-y-auto px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2 scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-8 sm:pt-3 sm:scroll-pb-8 lg:px-8"
                 >
-                    {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}
                     <ErrorBoundary>
                         <div className="mx-auto w-full max-w-7xl">
                             <Suspense fallback={<SkeletonLoader count={5} />}>

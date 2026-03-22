@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useAppSelector } from '@/stores/store';
+import { useMemo } from 'react'
+import { useAppSelector } from '@/stores/store'
 import {
     selectActivePlants,
     selectGardenHealthMetrics,
@@ -9,74 +9,78 @@ import {
     selectHasAvailableSlots,
     selectPlantSlots,
     selectSettings,
-} from '@/stores/selectors';
-import { PlantStage } from '@/types';
+} from '@/stores/selectors'
+import { PlantStage } from '@/types'
 
 const HIDDEN_ARCHIVED_STAGES = new Set<PlantStage>([
     PlantStage.Harvest,
     PlantStage.Drying,
     PlantStage.Curing,
     PlantStage.Finished,
-]);
+])
 
 /**
  * Custom hook to get the list of currently active plants from the simulation state.
  * @returns An array of active Plant objects.
  */
-export const useActivePlants = () => useAppSelector(selectActivePlants);
+export const useActivePlants = () => useAppSelector(selectActivePlants)
 
 /**
  * Custom hook for garden health metrics only.
  * @returns An object with garden health metrics.
  */
-export const useGardenHealthMetrics = () => useAppSelector(selectGardenHealthMetrics);
+export const useGardenHealthMetrics = () => useAppSelector(selectGardenHealthMetrics)
 
 /**
  * Custom hook that provides a comprehensive summary of the garden's status.
  * @returns An object containing health metrics, open tasks, and active problems.
  */
 export const useGardenSummary = () => {
-    const healthMetrics = useAppSelector(selectGardenHealthMetrics);
-    const tasks = useAppSelector(selectOpenTasksSummary);
-    const problems = useAppSelector(selectActiveProblemsSummary);
-    return { ...healthMetrics, tasks, problems };
-};
+    const healthMetrics = useAppSelector(selectGardenHealthMetrics)
+    const tasks = useAppSelector(selectOpenTasksSummary)
+    const problems = useAppSelector(selectActiveProblemsSummary)
+    return { ...healthMetrics, tasks, problems }
+}
 
 /**
  * Custom hook to retrieve the state of plant slots and their content.
  * @returns An object with an array of plant data for each slot (or null if empty) and a boolean indicating if slots are available.
  */
 export const usePlantSlotsData = () => {
-    const slots = useAppSelector(selectPlantSlots);
-    const plantEntities = useAppSelector(state => state.simulation.plants.entities);
-    const hasAvailable = useAppSelector(selectHasAvailableSlots);
-    const settings = useAppSelector(selectSettings);
+    const slots = useAppSelector(selectPlantSlots)
+    const plantEntities = useAppSelector((state) => state.simulation.plants.entities)
+    const hasAvailable = useAppSelector(selectHasAvailableSlots)
+    const settings = useAppSelector(selectSettings)
 
     const slotsWithData = useMemo(
-        () => slots.map((id) => {
-            const plant = id ? plantEntities[id] || null : null;
-            if (!plant) {
-                return { plant: null, isArchivedHidden: false };
-            }
+        () =>
+            slots.map((id) => {
+                const plant = id ? plantEntities[id] || null : null
+                if (!plant) {
+                    return { plant: null, isArchivedHidden: false }
+                }
 
-            const isArchivedHidden = !settings.plantsView.showArchived && HIDDEN_ARCHIVED_STAGES.has(plant.stage);
-            return { plant: isArchivedHidden ? null : plant, isArchivedHidden, archivedPlantId: isArchivedHidden ? plant.id : undefined };
-        }),
+                const isArchivedHidden =
+                    !settings.plantsView.showArchived && HIDDEN_ARCHIVED_STAGES.has(plant.stage)
+                const visiblePlant = isArchivedHidden ? null : plant
+                const archivedPlantId = isArchivedHidden ? plant.id : undefined
+                return { plant: visiblePlant, isArchivedHidden, archivedPlantId }
+            }),
         [plantEntities, settings.plantsView.showArchived, slots],
-    );
+    )
 
-    return { slotsWithData, hasAvailable };
-};
+    return { slotsWithData, hasAvailable }
+}
 
 /**
  * Custom hook to get the currently selected plant object based on the global selectedPlantId.
  * @returns The selected Plant object or null if none is selected.
  */
 export const useSelectedPlant = () => {
-    const selectedId = useAppSelector(selectSelectedPlantId);
-    const plants = useAppSelector(state => state.simulation.plants.entities);
-    return useMemo(() => selectedId ? plants[selectedId] || null : null, [selectedId, plants]);
-};
+    const selectedId = useAppSelector(selectSelectedPlantId)
+    const plants = useAppSelector((state) => state.simulation.plants.entities)
+    return useMemo(() => (selectedId ? plants[selectedId] || null : null), [selectedId, plants])
+}
 
 /**
  * Custom hook to retrieve a specific plant by its ID.
@@ -84,13 +88,13 @@ export const useSelectedPlant = () => {
  * @returns The Plant object or null if not found.
  */
 export const usePlantById = (plantId: string | null) => {
-    const plants = useAppSelector(state => state.simulation.plants.entities);
-    return useMemo(() => plantId ? plants[plantId] || null : null, [plantId, plants]);
-};
-
+    const plants = useAppSelector((state) => state.simulation.plants.entities)
+    return useMemo(() => (plantId ? plants[plantId] || null : null), [plantId, plants])
+}
 
 /**
  * Custom hook to check if the simulation is currently in a "catch-up" state.
  * @returns A boolean indicating the catch-up status.
  */
-export const useIsSimulationCatchingUp = () => useAppSelector(state => state.simulation.isCatchingUp);
+export const useIsSimulationCatchingUp = () =>
+    useAppSelector((state) => state.simulation.isCatchingUp)

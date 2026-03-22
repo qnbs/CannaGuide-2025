@@ -93,9 +93,11 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
                     )}
 
                     {/* Left accent stripe – color coded by strain type */}
-                    <div className={`relative z-20 genealogy-node-accent ${accent}`} />
+                    <div
+                        className={`relative z-20 pointer-events-none genealogy-node-accent ${accent}`}
+                    />
 
-                    <div className="relative z-20 genealogy-node-body">
+                    <div className="relative z-20 pointer-events-none genealogy-node-body">
                         {/* Row 1: Type icon + Strain name + Info button */}
                         <div className="flex items-center gap-1.5">
                             <div className={`w-4 h-4 flex-shrink-0 ${color}`}>{icon}</div>
@@ -108,7 +110,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
                             {!isPlaceholder && (
                                 <button
                                     type="button"
-                                    className="flex-shrink-0 p-0.5 rounded text-slate-500 hover:text-primary-300 hover:bg-slate-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                                    className="flex-shrink-0 p-0.5 rounded text-slate-500 hover:text-primary-300 hover:bg-slate-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 pointer-events-auto"
                                     onClick={handleDetailClick}
                                     aria-label={
                                         t('common.accessibility.openStrainDetails') +

@@ -25,14 +25,17 @@ const mediumTypes: Record<Plant['mediumType'], number[]> = {
 
 const strainTypeOrder = ['Indica', 'Sativa', 'Hybrid', 'Ruderalis'] as const
 
-const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value))
+const clamp = (value: number, min: number, max: number): number =>
+    Math.min(max, Math.max(min, value))
 
 const stageToIndex = (stage: PlantStage): number => Math.max(0, stageOrder.indexOf(stage))
 
 const normalize = (value: number, scale: number): number => clamp(value / scale, 0, 2)
 
 const getStrainTypeOneHot = (type: string | undefined): number[] => {
-    const index = strainTypeOrder.findIndex((candidate) => candidate.toLowerCase() === (type ?? '').toLowerCase())
+    const index = strainTypeOrder.findIndex(
+        (candidate) => candidate.toLowerCase() === (type ?? '').toLowerCase(),
+    )
     return strainTypeOrder.map((_value, candidateIndex) => (candidateIndex === index ? 1 : 0))
 }
 
@@ -106,7 +109,10 @@ const collectTrainingSamples = (plants: Plant[]): Array<{ features: number[]; ta
                 normalize(plant.strain?.thc ?? 0, 35),
                 normalize(plant.strain?.cbd ?? 0, 35),
                 normalize(plant.strain?.floweringTime ?? 0, 20),
-                normalize(plant.problems.filter((problem) => problem.status === 'active').length, 12),
+                normalize(
+                    plant.problems.filter((problem) => problem.status === 'active').length,
+                    12,
+                ),
             ],
             target,
         }))
@@ -142,7 +148,9 @@ const calculateFeatureStats = (samples: Array<{ features: number[]; target: numb
         })
     })
 
-    const stdDevs = variances.map((value) => Math.max(Math.sqrt((value ?? 0) / samples.length), 0.05))
+    const stdDevs = variances.map((value) =>
+        Math.max(Math.sqrt((value ?? 0) / samples.length), 0.05),
+    )
 
     return { means, stdDevs }
 }
@@ -152,29 +160,47 @@ const normalizeVector = (features: number[], means: number[], stdDevs: number[])
 
 const loadTensorflow = async (): Promise<TfModule> => import('@tensorflow/tfjs')
 
-export const predictYield = async (historicalPlants: Plant[], activePlants: Plant[]): Promise<YieldPredictionResult> => {
-    const heuristicYield = activePlants.reduce((sum, plant) => sum + estimateHeuristicYield(plant), 0)
+export const predictYield = async (
+    historicalPlants: Plant[],
+    activePlants: Plant[],
+): Promise<YieldPredictionResult> => {
+    const heuristicYield = activePlants.reduce(
+        (sum, plant) => sum + estimateHeuristicYield(plant),
+        0,
+    )
     const trainingSamples = collectTrainingSamples(historicalPlants)
 
     if (trainingSamples.length < MIN_TRAINING_SAMPLES || activePlants.length === 0) {
         return {
             predictedDryWeight: heuristicYield,
             heuristicDryWeight: heuristicYield,
-            confidence: trainingSamples.length === 0 ? 0.2 : clamp(0.25 + trainingSamples.length / 60, 0.25, 0.55),
+            confidence:
+                trainingSamples.length === 0
+                    ? 0.2
+                    : clamp(0.25 + trainingSamples.length / 60, 0.25, 0.55),
             sampleCount: trainingSamples.length,
             usedTensorflowModel: false,
-            explanation: trainingSamples.length === 0
-                ? 'No historical harvest data available yet. Using heuristic projection.'
-                : 'Not enough historical samples for a stable TensorFlow.js model. Using heuristic projection.',
+            explanation:
+                trainingSamples.length === 0
+                    ? 'No historical harvest data available yet. Using heuristic projection.'
+                    : 'Not enough historical samples for a stable TensorFlow.js model. Using heuristic projection.',
         }
     }
 
     const tf = await loadTensorflow()
     const { means, stdDevs } = calculateFeatureStats(trainingSamples)
-    const normalizedTraining = trainingSamples.map((sample) => normalizeVector(sample.features, means, stdDevs))
+    const normalizedTraining = trainingSamples.map((sample) =>
+        normalizeVector(sample.features, means, stdDevs),
+    )
     const model = tf.sequential()
 
-    model.add(tf.layers.dense({ inputShape: [normalizedTraining[0]!.length], units: 16, activation: 'relu' }))
+    model.add(
+        tf.layers.dense({
+            inputShape: [normalizedTraining[0]!.length],
+            units: 16,
+            activation: 'relu',
+        }),
+    )
     model.add(tf.layers.dense({ units: 8, activation: 'relu' }))
     model.add(tf.layers.dense({ units: 1 }))
 
@@ -190,12 +216,16 @@ export const predictYield = async (historicalPlants: Plant[], activePlants: Plan
         verbose: 0,
     })
 
-    const latestLoss = Array.isArray(history.history.loss) ? Number(history.history.loss.at(-1) ?? 0) : Number(history.history.loss ?? 0)
+    const lossHistory = history.history.loss
+    const latestLossValue = Array.isArray(lossHistory) ? lossHistory.at(-1) : lossHistory
+    const latestLoss = Number(latestLossValue ?? 0)
 
     const activePredictions = activePlants.map((plant) => {
         const features = normalizeVector(buildFeatureVector(plant), means, stdDevs)
         const prediction = tf.tidy(() => {
-            const result = model.predict(tf.tensor2d([features])) as import('@tensorflow/tfjs').Tensor
+            const result = model.predict(
+                tf.tensor2d([features]),
+            ) as import('@tensorflow/tfjs').Tensor
             return (result.dataSync()[0] ?? 0) * TARGET_SCALE
         })
 
@@ -207,9 +237,13 @@ export const predictYield = async (historicalPlants: Plant[], activePlants: Plan
     model.dispose()
 
     const predictedDryWeight = activePredictions.reduce((sum, value) => sum + value, 0)
-    const normalizedLoss = clamp(latestLoss * TARGET_SCALE * TARGET_SCALE / 2500, 0, 1)
+    const normalizedLoss = clamp((latestLoss * TARGET_SCALE * TARGET_SCALE) / 2500, 0, 1)
     const sampleConfidence = clamp(trainingSamples.length / 30, 0, 1)
-    const confidence = clamp(0.35 + sampleConfidence * 0.45 + (1 - normalizedLoss) * 0.2, 0.35, 0.95)
+    const confidence = clamp(
+        0.35 + sampleConfidence * 0.45 + (1 - normalizedLoss) * 0.2,
+        0.35,
+        0.95,
+    )
 
     return {
         predictedDryWeight,

@@ -834,8 +834,9 @@ const svgTerpeneDots = (
         .map((t, i) => {
             const color = TERPENE_COLORS[t.toLowerCase()] ?? accent
             const cx = x + i * 50
+            const terpeneLabel = t.length > 6 ? `${t.slice(0, 5)}.` : t
             return `<circle cx="${cx + 8}" cy="${y}" r="10" fill="${color}" opacity="0.9"/>
-        <text x="${cx + 8}" y="${y + 23}" font-size="10" fill="${textColor}" font-family="'Inter',sans-serif" text-anchor="middle" opacity="0.55">${escapeXml(t.length > 6 ? t.slice(0, 5) + '.' : t)}</text>`
+        <text x="${cx + 8}" y="${y + 23}" font-size="10" fill="${textColor}" font-family="'Inter',sans-serif" text-anchor="middle" opacity="0.55">${escapeXml(terpeneLabel)}</text>`
         })
         .join('\n    ')
 }
@@ -879,10 +880,10 @@ const buildStyleTexture = (
         case 'psychedelic':
             return `<g opacity="0.07" fill="none" stroke-width="1.2">
             ${[100, 170, 240, 310, 380]
-                .map(
-                    (r, i) =>
-                        `<circle cx="600" cy="500" r="${r}" stroke="${i % 2 === 0 ? palette.accent : palette.accent2}" stroke-dasharray="${3 + i * 2} ${5 + i * 2}"/>`,
-                )
+                .map((r, i) => {
+                    const strokeColor = i % 2 === 0 ? palette.accent : palette.accent2
+                    return `<circle cx="600" cy="500" r="${r}" stroke="${strokeColor}" stroke-dasharray="${3 + i * 2} ${5 + i * 2}"/>`
+                })
                 .join('\n            ')}
         </g>`
         case 'macro': {

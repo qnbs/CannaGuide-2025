@@ -20,6 +20,14 @@ interface AddStrainModalProps {
     strainToEdit: Strain | null
 }
 
+const getSafeStrainType = (value: unknown): StrainType => {
+    if (value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid) {
+        return value
+    }
+
+    return StrainType.Hybrid
+}
+
 const strainToFormValues = (strain: Partial<Strain>) => ({
     name: strain.name || '',
     type: strain.type || 'Hybrid',
@@ -117,12 +125,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         const parseStringToArray = (str: string = '') =>
             str ? str.split(/\s*,\s*/).filter(Boolean) : []
         const safeName = typeof values.name === 'string' ? values.name : ''
-        const safeType =
-            values.type === StrainType.Sativa ||
-            values.type === StrainType.Indica ||
-            values.type === StrainType.Hybrid
-                ? values.type
-                : StrainType.Hybrid
+        const safeType = getSafeStrainType(values.type)
 
         const partialStrainData: Partial<Strain> = {
             id: isEditMode
@@ -195,6 +198,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                 .filter(Boolean),
         [values.terpenesString],
     )
+    const previewType = getSafeStrainType(values.type)
+    const previewTypeTranslationKey = `strainsView.${previewType.toLowerCase()}`
 
     const typeOptions = useMemo(
         () => [
@@ -273,10 +278,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                         {values.name.trim() || '–'}
                                     </p>
                                     <p className="mt-1 text-sm text-slate-300">
-                                        {t(
-                                            `strainsView.${(values.type === StrainType.Sativa || values.type === StrainType.Indica || values.type === StrainType.Hybrid ? values.type : StrainType.Hybrid).toLowerCase()}`,
-                                        )}{' '}
-                                        ·{' '}
+                                        {t(previewTypeTranslationKey)} ·{' '}
                                         {values.isAutoflower
                                             ? t('strainsView.addStrainModal.autoflower')
                                             : t('strainsView.addStrainModal.photoperiod')}

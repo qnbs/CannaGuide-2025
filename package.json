@@ -74,6 +74,7 @@
         "security:snyk": "snyk test --all-projects --severity-threshold=high",
         "security:trivy": "trivy fs --scanners secret,misconfig,vuln --severity HIGH,CRITICAL --skip-dirs node_modules,dist,coverage,artifacts,test-results,.lighthouseci .",
         "security:scorecard": "scorecard --local . --file-mode git --format json --output scorecard.json --show-details",
+        "security:alerts:report": "node ./scripts/security/update-alerts-report.mjs",
         "security:scan": "npm run security:prettier && npm run security:trojan-source && npm run security:eslint && npm run security:pre-commit && npm run security:secrets && npm run security:semgrep && npm run security:socket && npm run security:snyk && npm run security:trivy && npm run security:scorecard",
         "docker:build": "docker build -t cannaguide-2025:local .",
         "docker:run": "docker run --rm -p 8080:8080 cannaguide-2025:local",

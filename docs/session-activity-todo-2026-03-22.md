@@ -28,9 +28,15 @@ Die naechsten Sitzungen sollen den Sonar-Restbacklog in stabilen, testbaren Clus
 
 1. Security-Warteschlange (Dependabot + CodeQL)
 
-- Dependabot-Block aus Alertliste in geordneten Teilmengen abarbeiten (RCE/high zuerst)
-- CodeQL-Duplikate fuer SW/migrationLogic gegen aktuellen Commit neu validieren
-- generated-artifact Alerts (dist/assets) nur nach frisch gelaufener CodeQL-Pipeline bewerten
+- abgeschlossen: offene Dependabot-Alerts = 0
+- abgeschlossen: offene Code-Scanning-Alerts = 0
+- fortlaufend: taeglichen Snapshot in `docs/security-alerts-status.md` ueberwachen
+
+1. Security-Automation Betrieb
+
+- Workflow-Lauf `security-alerts-handoff.yml` regelmaessig pruefen (Run-Status + Commit-Output)
+- bei Alert-Anstieg sofort neue Remediation-Welle starten und im Handoff dokumentieren
+- manuelle Trigger als Release-Gate vor groesseren Merge-Wellen nutzen
 
 ## Qualitaets-Gates pro Welle (verbindlich)
 

@@ -83,6 +83,7 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 1. Sonar neu laufen lassen und verbleibende Issues gegen den aktuellen Branchstand neu clustern
 1. Danach nur noch echte Rest-Issues in neuen, kleinen Wellen abarbeiten
 1. Optional: weitere repo-weite sort->toSorted Reststellen in nicht-priorisierten Views/Services sammeln und als Low-Risk-Konventionswelle schließen (aktuell erledigt: kein verbleibender sort()-Treffer in components/views, services, hooks)
+1. Optional: globale isFinite-Aufrufe bereinigen (aktuell erledigt: kein verbleibender Treffer in components/views, services, hooks)
 
 ## D. Validierung je Welle
 

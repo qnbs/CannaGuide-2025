@@ -59,3 +59,22 @@ Diese Sitzung fokussierte auf Sonar-Fortsetzung, Regressionsbehebung in Strains,
 - Start mit aktualisiertem Sonar-TODO (`docs/sonar-handoff-todo-2026-03-21.md`).
 - Priorisiert: GenealogyView -> Plants UI cluster -> db/crypto reliability.
 - Gate pro Iteration beibehalten: lint-changed + tsc + passende Tests + prettier-check.
+
+## Security-Remediation Delta (Dependabot + CodeQL)
+
+In dieser Fortsetzungsrunde wurde die vom Nutzer gelistete Security-Warteschlange direkt adressiert.
+
+Umgesetzte Kernmassnahmen:
+
+- `sw.js` und `public/sw.js`: permissive `startsWith('http')` Pruefung durch explizite Protokoll-Allowlist (`http:`/`https:`) ersetzt.
+- `services/migrationLogic.ts`: `deepMergeSettings` rekursiver Merge gegen Prototype-Pollution gehaertet.
+- `vite.config.ts` + `package.json`: `vite-plugin-imagemin` entfernt, um die alte got/esbuild/fast-xml-parser-Transitivkette aus dem Build zu nehmen.
+- `package.json`: Security-Overrides hinzugefuegt (`serialize-javascript=7.0.4`, `tmp=0.2.5`).
+- `.github/workflows/codeql.yml`: `paths-ignore` auf rekursive Excludes gehaertet (`dist/**`, `node_modules/**`, `coverage/**`, `test-results/**`, `.stryker-tmp/**`).
+
+Validierung:
+
+- `npm audit --json`: 0 vulnerabilities
+- `npx tsc --noEmit`: erfolgreich
+- `node scripts/lint-changed.mjs`: erfolgreich
+- `npx vitest run services/migrationLogic.test.ts`: 10/10 Tests erfolgreich

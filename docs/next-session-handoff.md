@@ -9,6 +9,8 @@ Fuer die aktuelle Fortsetzungsbasis nach den Sonar-/Strains-/Export-Wellen siehe
 - `docs/sonar-handoff-review-2026-03-21.md` (aktualisiert, Session-Close Delta)
 - `docs/sonar-handoff-todo-2026-03-21.md` (aktualisiert, Restfokus)
 
+Security-Fortsetzung (Dependabot + CodeQL Queue) ist in den beiden TODO/Review-Dateien jetzt explizit als eigener Cluster dokumentiert.
+
 > **Last updated:** 2026-03-21 — Commit `c1a3b5f` on `main`
 > **Author:** Copilot session (Phase 4 complete)
 > **Test baseline:** 574 tests / 62 files / 0 failures

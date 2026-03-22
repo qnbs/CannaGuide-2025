@@ -167,3 +167,42 @@ Status Phase 2 (aktueller Stand):
 - Sonar-Issues der jeweiligen Welle auf erledigt gesetzt
 - keine neuen Type- oder Lint-Fehler
 - keine regressiven Keyboard-/Fokusprobleme in UI-A11y-Fixes
+
+## H. Security Alert Queue (Dependabot + CodeQL, Stand 2026-03-22)
+
+### H1. Dependabot-Queue (vom Nutzerblock uebernommen)
+
+- #9 Serialize JavaScript is Vulnerable to RCE via RegExp.flags and Date.prototype.toISOString() (high)
+- #11 fast-xml-parser numeric entity expansion bypass (high)
+- #4 Got allows a redirect to a UNIX socket (moderate)
+- #13 fast-xml-parser entity expansion limits bypass via falsy evaluation (moderate)
+- #7 esbuild dev server request exposure (moderate)
+- #8 tmp symlink temp file write (low)
+
+### H2. CodeQL-Queue (vom Nutzerblock uebernommen)
+
+- #146/#145 Incomplete URL substring sanitization in sw.js/public/sw.js
+- #13/#12 Incomplete URL substring sanitization in sw.js/public/sw.js (aeltere Duplikate)
+- #6 Prototype-polluting function in services/migrationLogic.ts
+- #144/#143/#142/#141/#140 Insecure randomness in dist/assets/\* (generated output)
+
+### H3. Umsetzungsstatus dieser Sitzung
+
+- Erledigt: `sw.js` und `public/sw.js` auf strikte Protokoll-Allowlist (`http:`/`https:`) umgestellt.
+- Erledigt: `services/migrationLogic.ts` (`deepMergeSettings`) mit geharteter Key-Filterung fuer `__proto__`/`constructor`/`prototype` + sicherem Rekursionspfad aktualisiert.
+- Erledigt: verwundbare Build-Transitivkette entfernt durch Ausbau von `vite-plugin-imagemin` aus `vite.config.ts` und `package.json`.
+- Erledigt: Security-Overrides gesetzt (`serialize-javascript=7.0.4`, `tmp=0.2.5`) und Lockfile neu aufgeloest.
+- Erledigt: CodeQL workflow `paths-ignore` auf rekursive Muster gehaertet (`dist/**`, `node_modules/**`, `coverage/**`, `test-results/**`, `.stryker-tmp/**`).
+
+### H4. Verifikation dieser Sitzung
+
+- `npm audit --json`: 0 vulnerabilities
+- `npx tsc --noEmit`: erfolgreich
+- `node scripts/lint-changed.mjs`: erfolgreich
+- `npx vitest run services/migrationLogic.test.ts`: 10/10 gruen
+
+### H5. Naechste Ausfuehrungsschritte (Pflicht)
+
+1. CodeQL-Workflow auf `main` erneut laufen lassen, damit offene historische Alerts automatisch auf `fixed` wechseln.
+1. Dependabot-Alert-Ansicht auf neue Baseline synchronisieren (Lockfile ist bereits bereinigt).
+1. Falls Restalerts verbleiben: einzelne Alert-ID gegen aktuellen Commit hash neu triagieren und nur noch echte Treffer in Cluster aufnehmen.

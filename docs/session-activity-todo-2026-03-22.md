@@ -26,6 +26,12 @@ Die naechsten Sitzungen sollen den Sonar-Restbacklog in stabilen, testbaren Clus
 - verbleibende Issues nur nach aktuellem Sonar-Run priorisieren
 - low-risk Konventionswellen (nur wenn ohne Risiko) gesammelt abarbeiten
 
+1. Security-Warteschlange (Dependabot + CodeQL)
+
+- Dependabot-Block aus Alertliste in geordneten Teilmengen abarbeiten (RCE/high zuerst)
+- CodeQL-Duplikate fuer SW/migrationLogic gegen aktuellen Commit neu validieren
+- generated-artifact Alerts (dist/assets) nur nach frisch gelaufener CodeQL-Pipeline bewerten
+
 ## Qualitaets-Gates pro Welle (verbindlich)
 
 - `node scripts/lint-changed.mjs`
@@ -45,3 +51,11 @@ Die naechsten Sitzungen sollen den Sonar-Restbacklog in stabilen, testbaren Clus
 - keine neuen Type-/Lint-/Formatfehler
 - relevante Regressionstests gruen
 - Doku-Deltas im Handoff nachvollziehbar
+
+## Security-Delta (umgesetzt 2026-03-22)
+
+- `sw.js` + `public/sw.js`: URL-Protokollpruefung auf strikte Allowlist (`http:`/`https:`) gehaertet.
+- `services/migrationLogic.ts`: `deepMergeSettings` gegen Prototype-Pollution gehaertet.
+- `vite-plugin-imagemin` entfernt (vulnerable Transitivkette eliminiert).
+- `package.json` Overrides gesetzt: `serialize-javascript=7.0.4`, `tmp=0.2.5`.
+- `npm audit --json` aktuell: 0 vulnerabilities.

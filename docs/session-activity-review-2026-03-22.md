@@ -122,3 +122,35 @@ Validierung (Fortsetzung):
 - `node scripts/lint-changed.mjs`: erfolgreich
 - `npx vitest run services/dbService.test.ts services/cryptoService.test.ts --run`: 13/13 gruen
 - `npx vitest run components/views/plants --run`: 5/5 gruen
+
+## Delta: Grosser Service-Testbatch (Fortsetzung nach Verbindungsabbruch)
+
+In einem zusammenhaengenden Durchlauf wurde die Service-Testabdeckung deutlich erweitert:
+
+- `services/aiLoadingMessages.test.ts` neu
+- `services/consentService.test.ts` neu
+- `services/ttsService.test.ts` neu
+- `services/syncService.test.ts` neu
+- `services/communityShareService.test.ts` neu
+- `services/imageService.test.ts` neu
+- `services/sentryService.test.ts` neu
+
+Abgedeckte Kernthemen:
+
+- i18n-loading message mapping (object/array/scalar)
+- GDPR consent cookie/localStorage migration und revoke-cleanup
+- TTS support/voice selection/callback/fallback controls
+- gist sync push/pull inkl. local-only block und encrypted payload flow
+- anonymous community share import/export inkl. URL/payload/local-only guards
+- image validation/mime detection
+- sentry proxy no-op safety + local-ai capture path
+
+Validierung (aktuelle Welle):
+
+- `npx tsc --noEmit`: erfolgreich
+- `npx vitest run` (10 Service-Testdateien): 49/49 gruene Tests
+- `npx vitest run components/views/plants --run`: 5/5 gruen
+
+Hinweis:
+
+- in `dbService.test.ts` sind erwartete console-Ausgaben fuer absichtlich provozierte Fehlerpfade sichtbar (kein Regressionssignal).

@@ -80,3 +80,24 @@ Aktueller Fokus (naechste Welle):
 
 1. Weitere Service-Reliability-Cluster ausserhalb `dbService` priorisieren (insb. klar reproduzierbare Fallback-/Error-Pfade).
 1. Sonar-Restscan gegen aktuellen Stand erneut clustern (nach den neuen Tests).
+
+## Delta-Update: Grosser Service-Testdurchlauf (heute)
+
+Abgeschlossen:
+
+- 7 weitere Service-Testdateien neu erstellt:
+    - `aiLoadingMessages.test.ts`
+    - `consentService.test.ts`
+    - `ttsService.test.ts`
+    - `syncService.test.ts`
+    - `communityShareService.test.ts`
+    - `imageService.test.ts`
+    - `sentryService.test.ts`
+- gemeinsamer Integrationslauf mit bereits vorhandenen neuen Service-Tests erfolgreich:
+    - 10 Service-Testdateien / 49 Tests gruen
+    - plus Plants-Regression 5/5 gruen
+
+Neuer naechster Fokus:
+
+1. verbleibende service-cluster ohne Tests (`aiProviderService`, `aiService`, `exportService`, `strainService`, `commandService`) nach Risiko in kleine Wellen aufteilen
+1. nur low-risk, mockbare Pfade zuerst (no network side effects ohne explizite Mocks)

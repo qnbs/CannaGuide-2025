@@ -15,6 +15,19 @@ Automatisierte Alert-Basis liegt in:
 
 - `docs/security-alerts-status.md`
 
+## Fresh Delta (2026-03-22, Late Session)
+
+- `main` enthaelt jetzt zusaetzlich den Commit `16da345` (db/crypto reliability coverage wave).
+- Nach Verbindungsabbruch wurde ein grosser Testnachzug fuer weitere Services in einem Batch umgesetzt
+  (`aiLoadingMessages`, `consentService`, `ttsService`, `syncService`, `communityShareService`,
+  `imageService`, `sentryService`).
+- Sammelvalidierung: 10 Service-Testdateien / 49 Tests gruen + Plants-Regression 5/5 gruen.
+
+Naechster Einstiegspunkt:
+
+1. verbleibende ungetestete Service-Cluster priorisieren (`aiProviderService`, `aiService`, `exportService`, `strainService`, `commandService`).
+2. nur low-risk, mockbare Pfade zuerst; dann Sonar-Restscan neu clustern.
+
 Workflow fuer automatische Aktualisierung:
 
 - `.github/workflows/security-alerts-handoff.yml` (daily + manual)

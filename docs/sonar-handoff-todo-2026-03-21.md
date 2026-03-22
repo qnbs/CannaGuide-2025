@@ -129,6 +129,15 @@ Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erled
     - `dbService.ts` unsafe casts in Search-/Entity-Pfaden reduziert.
     - neue Testdateien `services/cryptoService.test.ts` und `services/dbService.test.ts` mit Error-/Fallback-Pfaden hinzugefuegt.
     - zusaetzliche Abdeckung fuer `searchIndex` Cursor-Error, `addImage` Warnschwelle/Compression-Fallback, `optimizeSimulationForPersistence` Archivierung, `getArchivedPlantLogs` unknown plant.
+      Statusupdate 4: service-cluster ausserhalb db/crypto weiter abgesichert (low-risk tests):
+    - `services/aiLoadingMessages.test.ts`
+    - `services/consentService.test.ts`
+    - `services/ttsService.test.ts`
+    - `services/syncService.test.ts`
+    - `services/communityShareService.test.ts`
+    - `services/imageService.test.ts`
+    - `services/sentryService.test.ts`
+      Verifikation: 10 Service-Testdateien in Sammellauf, 49/49 Tests gruen.
 1. Vor jedem Push verbindlich: `npx prettier --check` auf dem geaenderten Stapel, plus `node scripts/lint-changed.mjs` und `npx tsc --noEmit`.
 
 ## G. Strategischer Plan fuer neue Sonar-Liste (432 Issues, Stand 2026-03-22)

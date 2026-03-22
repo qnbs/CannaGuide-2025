@@ -47,7 +47,8 @@ export const LexiconCard: React.FC<{ entry: LexiconEntry }> = memo(({ entry }) =
             ? details
             : undefined
 
-    const style = CATEGORY_STYLE[entry.category] ?? CATEGORY_STYLE.General ?? { border: '', pill: '', icon: null }
+    const style = CATEGORY_STYLE[entry.category] ??
+        CATEGORY_STYLE.General ?? { border: '', pill: '', icon: null }
 
     return (
         <Card
@@ -76,7 +77,7 @@ export const LexiconCard: React.FC<{ entry: LexiconEntry }> = memo(({ entry }) =
                             <p key={key}>
                                 <strong className="text-slate-300">
                                     {key
-                                        .replace(/([A-Z])/g, ' $1')
+                                        .replaceAll(/([A-Z])/g, ' $1')
                                         .replace(/^./, (str) => str.toUpperCase())}
                                     :
                                 </strong>{' '}

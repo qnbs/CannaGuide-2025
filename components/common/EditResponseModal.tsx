@@ -45,10 +45,54 @@ const EditResponseModalComponent = <T extends EditableResponse>({
         }
     }
 
-    const applyFormat = (command: string) => {
-        document.execCommand(command, false)
+    const applyFormat = (command: 'bold' | 'italic' | 'insertUnorderedList') => {
+        const selection = globalThis.getSelection?.()
+        if (!selection || selection.rangeCount === 0) {
+            contentRef.current?.focus()
+            return
+        }
+
+        const range = selection.getRangeAt(0)
+        const container = contentRef.current
+        if (!container || !container.contains(range.commonAncestorContainer)) {
+            container?.focus()
+            return
+        }
+
+        if (range.collapsed) {
+            container.focus()
+            return
+        }
+
+        const selectedText = range.toString()
+        if (!selectedText.trim()) {
+            container.focus()
+            return
+        }
+
+        const wrapper =
+            command === 'bold'
+                ? document.createElement('strong')
+                : command === 'italic'
+                  ? document.createElement('em')
+                  : null
+
+        if (wrapper) {
+            wrapper.textContent = selectedText
+            range.deleteContents()
+            range.insertNode(wrapper)
+        } else {
+            const list = document.createElement('ul')
+            const item = document.createElement('li')
+            item.textContent = selectedText
+            list.appendChild(item)
+            range.deleteContents()
+            range.insertNode(list)
+        }
+
+        selection.removeAllRanges()
         handleContentChange()
-        contentRef.current?.focus()
+        container.focus()
     }
 
     const footer = (
@@ -56,7 +100,9 @@ const EditResponseModalComponent = <T extends EditableResponse>({
             <Button variant="secondary" onClick={onClose}>
                 {t('common.cancel')}
             </Button>
-            <Button onClick={handleSave} glow={true}>{t('common.save')}</Button>
+            <Button onClick={handleSave} glow={true}>
+                {t('common.save')}
+            </Button>
         </>
     )
 

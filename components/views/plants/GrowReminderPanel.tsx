@@ -8,17 +8,19 @@ import { selectActivePlants, selectSettings } from '@/stores/selectors'
 import { growReminderService } from '@/services/growReminderService'
 import { QRCodeSVG } from 'qrcode.react'
 
+const browserWindow = globalThis.window
+
 const GrowReminderPanelComponent: React.FC = () => {
     const { t } = useTranslation()
     const activePlants = useAppSelector(selectActivePlants)
     const settings = useAppSelector(selectSettings)
     const [permission, setPermission] = useState<NotificationPermission>(() =>
-        'Notification' in window ? Notification.permission : 'denied',
+        'Notification' in globalThis ? Notification.permission : 'denied',
     )
     const [isEnabling, setIsEnabling] = useState(false)
     const [batchTriggerPlantId, setBatchTriggerPlantId] = useState<string | null>(() => {
-        if (typeof window === 'undefined') return null
-        return new URLSearchParams(window.location.search).get('reminderBatch')
+        if (!browserWindow) return null
+        return new URLSearchParams(browserWindow.location.search).get('reminderBatch')
     })
 
     const reminders = useMemo(
@@ -33,9 +35,15 @@ const GrowReminderPanelComponent: React.FC = () => {
         void growReminderService.notifyDueReminders(reminders, settings, batchTriggerPlantId)
         void growReminderService.triggerWorkerReminderCheck()
 
-        const url = new URL(window.location.href)
+        const currentUrl = browserWindow?.location.href
+        if (!currentUrl) {
+            setBatchTriggerPlantId(null)
+            return
+        }
+
+        const url = new URL(currentUrl)
         url.searchParams.delete('reminderBatch')
-        window.history.replaceState({}, document.title, url.toString())
+        browserWindow.history.replaceState({}, document.title, url.toString())
         setBatchTriggerPlantId(null)
     }, [batchTriggerPlantId, permission, reminders, settings])
 
@@ -162,7 +170,7 @@ const GrowReminderPanelComponent: React.FC = () => {
                                                 value={triggerUrl}
                                                 size={96}
                                                 level="M"
-                                                includeMargin
+                                                marginSize={4}
                                             />
                                         </div>
                                         <div className="min-w-0 flex-1">

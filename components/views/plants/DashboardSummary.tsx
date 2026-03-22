@@ -34,7 +34,8 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = 
 
 const resolveApiErrorMessage = (error: unknown, fallback: string): string => {
     if (typeof error === 'object' && error !== null && 'message' in error) {
-        return String((error as { message?: unknown }).message ?? fallback)
+        const message = (error as { message?: unknown }).message
+        return typeof message === 'string' ? message : fallback
     }
     return fallback
 }
@@ -59,11 +60,15 @@ const DashboardSummaryComponent: React.FC = () => {
     const [wateringState, setWateringState] = useState<'idle' | 'pending' | 'success'>('idle')
 
     useEffect(() => {
-        let timer: number
+        let timer: ReturnType<typeof setTimeout> | undefined
         if (wateringState === 'success') {
-            timer = window.setTimeout(() => setWateringState('idle'), 2000)
+            timer = globalThis.setTimeout(() => setWateringState('idle'), 2000)
         }
-        return () => clearTimeout(timer)
+        return () => {
+            if (timer !== undefined) {
+                clearTimeout(timer)
+            }
+        }
     }, [wateringState])
 
     const handleWaterAll = () => {

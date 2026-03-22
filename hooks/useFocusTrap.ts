@@ -8,54 +8,54 @@ export const useFocusTrap = (isOpen: boolean) => {
     const previouslyFocusedElement = useRef<HTMLElement | null>(null)
 
     useEffect(() => {
-        if (isOpen && containerRef.current) {
-            previouslyFocusedElement.current = document.activeElement as HTMLElement
+        if (!isOpen || !containerRef.current) return
 
-            const focusableElements = Array.from(
+        previouslyFocusedElement.current = document.activeElement as HTMLElement
+
+        const focusableElements = Array.from(
+            containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS),
+        ) as HTMLElement[]
+
+        if (focusableElements.length > 0) {
+            // Delay focus to allow for modal transitions
+            setTimeout(() => {
+                const firstElement = focusableElements[0]
+                firstElement?.focus()
+            }, 100)
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== 'Tab' || !containerRef.current) return
+
+            const focusableContent = Array.from(
                 containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS),
             ) as HTMLElement[]
 
-            if (focusableElements.length > 0) {
-                // Delay focus to allow for modal transitions
-                setTimeout(() => {
-                    const firstElement = focusableElements[0]
-                    firstElement?.focus()
-                }, 100)
+            if (focusableContent.length === 0) {
+                e.preventDefault()
+                return
             }
 
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key !== 'Tab' || !containerRef.current) return
+            const firstElement = focusableContent[0]
+            const lastElement = focusableContent.at(-1)
+            const activeElement = document.activeElement
 
-                const focusableContent = Array.from(
-                    containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS),
-                ) as HTMLElement[]
-
-                if (focusableContent.length === 0) {
-                    e.preventDefault()
-                    return
-                }
-
-                const firstElement = focusableContent[0]
-                const lastElement = focusableContent[focusableContent.length - 1]
-                const activeElement = document.activeElement
-
-                if (e.shiftKey && activeElement === firstElement) {
-                    // Shift + Tab
-                    lastElement?.focus()
-                    e.preventDefault()
-                } else if (!e.shiftKey && activeElement === lastElement) {
-                    // Tab
-                    firstElement?.focus()
-                    e.preventDefault()
-                }
+            if (e.shiftKey && activeElement === firstElement) {
+                // Shift + Tab
+                lastElement?.focus()
+                e.preventDefault()
+            } else if (!e.shiftKey && activeElement === lastElement) {
+                // Tab
+                firstElement?.focus()
+                e.preventDefault()
             }
+        }
 
-            document.addEventListener('keydown', handleKeyDown)
+        document.addEventListener('keydown', handleKeyDown)
 
-            return () => {
-                document.removeEventListener('keydown', handleKeyDown)
-                previouslyFocusedElement.current?.focus()
-            }
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown)
+            previouslyFocusedElement.current?.focus()
         }
     }, [isOpen])
 

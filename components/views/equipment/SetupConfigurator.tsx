@@ -26,7 +26,8 @@ interface SetupConfiguratorProps {
 
 const resolveErrorMessage = (error: unknown, fallback: string): string => {
     if (error && typeof error === 'object' && 'message' in error) {
-        return String((error as { message?: unknown }).message ?? fallback)
+        const message = (error as { message?: unknown }).message
+        return typeof message === 'string' ? message : fallback
     }
     return fallback
 }

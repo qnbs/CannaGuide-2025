@@ -155,7 +155,7 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(
                                 const config = severityConfig[severity] ?? defaultSeverityStyle
                                 const problemKey = problem.type
                                     .toLowerCase()
-                                    .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
+                                    .replaceAll(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
                                 const interactionProps = getInteractionProps(problem.plantId)
 
                                 return (

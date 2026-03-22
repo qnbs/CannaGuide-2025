@@ -44,6 +44,7 @@ const Section = memo<{ title: string; icon?: React.ReactNode; children: React.Re
 Section.displayName = 'Section'
 
 const stripNumericPrefix = (value: string): string => value.replace(/^\d+\.\s*/, '')
+const leadingNumberPattern = /^\d+/
 
 const SeedbankProfileComponent: React.FC<{
     bankKey: string
@@ -237,10 +238,10 @@ const SeedbanksView: React.FC = () => {
                     const leftTitle = (leftValue as BankData).title ?? ''
                     const rightTitle = (rightValue as BankData).title ?? ''
                     const leftNumber = Number(
-                        leftTitle.match(/^\d+/)?.[0] ?? Number.POSITIVE_INFINITY,
+                        leadingNumberPattern.exec(leftTitle)?.[0] ?? Number.POSITIVE_INFINITY,
                     )
                     const rightNumber = Number(
-                        rightTitle.match(/^\d+/)?.[0] ?? Number.POSITIVE_INFINITY,
+                        leadingNumberPattern.exec(rightTitle)?.[0] ?? Number.POSITIVE_INFINITY,
                     )
                     if (leftNumber !== rightNumber) return leftNumber - rightNumber
                     return leftTitle.localeCompare(rightTitle)

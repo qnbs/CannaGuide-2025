@@ -180,7 +180,7 @@ const DataManagementTab: React.FC = () => {
                     message: String(t('settingsView.data.importSuccess')),
                 }),
             )
-            setTimeout(() => window.location.reload(), 1000)
+            setTimeout(() => globalThis.location.reload(), 1000)
         }
     }
 

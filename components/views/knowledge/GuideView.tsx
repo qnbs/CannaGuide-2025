@@ -65,23 +65,34 @@ const GuideViewComponent: React.FC = () => {
             fix: 'Troubleshooting',
             concept: 'Core Concepts',
         }
+        const articleIdPrefixPattern = /^(phase|fix|concept)/
+        const phaseNumberPattern = /\d+/
 
         knowledgeBase.forEach((article) => {
-            const match = article.id.match(/^(phase|fix|concept)/)
-            if (match && match[1]) {
-                const groupKey = groupNameMapping[match[1]]
-                if (groupKey) {
-                    groups[groupKey]?.articles.push(article)
-                }
+            const groupMatch = articleIdPrefixPattern.exec(article.id)
+            const groupToken = groupMatch?.[1]
+            if (!groupToken) {
+                return
             }
+
+            const groupKey = groupNameMapping[groupToken]
+            if (!groupKey) {
+                return
+            }
+            const group = groups[groupKey]
+            if (!group) {
+                return
+            }
+
+            group.articles.push(article)
         })
 
         // Sort articles within the 'Phases' group numerically by their title for correct order
         groups['Phases']!.articles = groups['Phases']!.articles.toSorted((a, b) => {
             const aTitle = t(a.titleKey)
             const bTitle = t(b.titleKey)
-            const aNum = Number.parseInt(aTitle.match(/\d+/)?.[0] || '0')
-            const bNum = Number.parseInt(bTitle.match(/\d+/)?.[0] || '0')
+            const aNum = Number.parseInt(phaseNumberPattern.exec(aTitle)?.[0] ?? '0')
+            const bNum = Number.parseInt(phaseNumberPattern.exec(bTitle)?.[0] ?? '0')
             return aNum - bNum
         })
 

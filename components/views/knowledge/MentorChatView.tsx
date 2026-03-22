@@ -24,7 +24,8 @@ const removeEmptyModelPlaceholders = (messages: MentorMessage[]): MentorMessage[
 
 const resolveApiErrorMessage = (error: unknown, fallback: string): string | null => {
     if (typeof error === 'object' && error !== null && 'message' in error) {
-        return String((error as { message?: unknown }).message ?? fallback)
+        const message = (error as { message?: unknown }).message
+        return typeof message === 'string' ? message : fallback
     }
     return null
 }

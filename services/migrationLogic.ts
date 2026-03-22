@@ -346,7 +346,7 @@ const sanitizeGenealogyNodeMigration = (raw: unknown, depth = 0): boolean => {
     if (typeof n.name !== 'string' || !n.name) return false
     // Coerce type to a valid StrainType in-place
     if (!VALID_STRAIN_TYPES.has(n.type as string)) n.type = StrainType.Hybrid
-    if (typeof n.thc !== 'number' || !isFinite(n.thc as number)) n.thc = 0
+    if (typeof n.thc !== 'number' || !Number.isFinite(n.thc as number)) n.thc = 0
     if (typeof n.isLandrace !== 'boolean') n.isLandrace = false
     // Recurse into children / _children
     for (const key of ['children', '_children'] as const) {
@@ -551,12 +551,12 @@ const sanitizeGenealogyZoomTransform = (g: Record<string, unknown>): void => {
         const zt = g.zoomTransform as Record<string, unknown>
         const isInvalid =
             typeof zt.k !== 'number' ||
-            !isFinite(zt.k) ||
+            !Number.isFinite(zt.k) ||
             (zt.k as number) <= 0 ||
             typeof zt.x !== 'number' ||
-            !isFinite(zt.x) ||
+            !Number.isFinite(zt.x) ||
             typeof zt.y !== 'number' ||
-            !isFinite(zt.y)
+            !Number.isFinite(zt.y)
         if (isInvalid) {
             g.zoomTransform = null
         }

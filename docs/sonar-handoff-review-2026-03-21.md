@@ -126,6 +126,10 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 - components/views/knowledge/MentorView.tsx (komplexe useEffect-Bedingung in klar benannte Teilbedingungen entkoppelt)
 - components/views/plants/detailedPlantViewTabs/JournalTab.tsx (reverse -> toReversed, IIFE im map-Rendering entfernt)
 
+1. Restcluster Numeric-Safety
+
+- services/migrationLogic.ts (globale isFinite-Aufrufe auf Number.isFinite umgestellt)
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich

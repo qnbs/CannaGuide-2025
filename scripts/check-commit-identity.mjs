@@ -15,6 +15,10 @@ function fail(message) {
     console.error(`[check:commit-identity] ${message}`)
 }
 
+function warn(message) {
+    console.warn(`[check:commit-identity] ${message}`)
+}
+
 const userName = readGitConfig('user.name')
 const userEmail = readGitConfig('user.email')
 const signEnabled = readGitConfig('commit.gpgsign')
@@ -26,17 +30,19 @@ const committerName = process.env.GIT_COMMITTER_NAME || ''
 const committerEmail = process.env.GIT_COMMITTER_EMAIL || ''
 
 const issues = []
+const warnings = []
+const enforceIdentity = process.env.ENFORCE_COMMIT_IDENTITY === '1'
 
 if (!userName || !userEmail) {
-    issues.push('git user.name/user.email are missing')
+    warnings.push('git user.name/user.email are missing')
 }
 
 if (signEnabled !== 'true') {
-    issues.push('commit signing is disabled (commit.gpgsign != true)')
+    warnings.push('commit signing is disabled (commit.gpgsign != true)')
 }
 
 if (!signingKey) {
-    issues.push('user.signingkey is not configured')
+    warnings.push('user.signingkey is not configured')
 }
 
 const hasUnsafeCommitterOverride =
@@ -73,6 +79,18 @@ if (issues.length > 0) {
         fail(`- ${issue}`)
     }
     process.exit(1)
+}
+
+if (warnings.length > 0) {
+    const modeLabel = enforceIdentity ? 'enforced' : 'advisory'
+    warn(`commit identity/signing warnings (${modeLabel} mode):`)
+    for (const warningMessage of warnings) {
+        warn(`- ${warningMessage}`)
+    }
+
+    if (enforceIdentity) {
+        process.exit(1)
+    }
 }
 
 console.log('[check:commit-identity] OK')

@@ -244,11 +244,23 @@ const createAtmosphereParticles = (vpd: number): THREE.Points => {
     const count = Math.min(Math.round(30 + vpd * 40), MAX_PARTICLES)
     const geometry = new THREE.BufferGeometry()
     const positions = new Float32Array(count * 3)
+    const randomBuffer = new Uint32Array(Math.max(1, count * 3))
+    const cryptoApi = globalThis.crypto
+
+    if (cryptoApi?.getRandomValues) {
+        cryptoApi.getRandomValues(randomBuffer)
+    }
+
+    const randomUnit = (index: number): number => {
+        if (!cryptoApi?.getRandomValues) return 0.5
+        return (randomBuffer[index] ?? 0) / 0x1_0000_0000
+    }
 
     for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * ROOM_WIDTH * 0.8
-        positions[i * 3 + 1] = Math.random() * ROOM_HEIGHT * 0.6 + 0.3
-        positions[i * 3 + 2] = (Math.random() - 0.5) * ROOM_DEPTH * 0.8
+        const baseIndex = i * 3
+        positions[baseIndex] = (randomUnit(baseIndex) - 0.5) * ROOM_WIDTH * 0.8
+        positions[baseIndex + 1] = randomUnit(baseIndex + 1) * ROOM_HEIGHT * 0.6 + 0.3
+        positions[baseIndex + 2] = (randomUnit(baseIndex + 2) - 0.5) * ROOM_DEPTH * 0.8
     }
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))

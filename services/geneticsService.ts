@@ -12,16 +12,44 @@ const collapseNodes = (node: GenealogyNode, depth: number, maxDepth: number) => 
     }
 }
 
+const stripParentheticalSuffix = (input: string): string => {
+    const start = input.indexOf('(')
+    return start === -1 ? input : input.slice(0, start)
+}
+
+const splitCrossGenetics = (genetics: string): string[] => {
+    const tokens = genetics.split(' ')
+    const parents: string[] = []
+    let currentParts: string[] = []
+
+    for (const rawToken of tokens) {
+        const token = rawToken.trim()
+        if (!token) continue
+
+        if (token.toLowerCase() === 'x') {
+            if (currentParts.length > 0) {
+                parents.push(currentParts.join(' '))
+                currentParts = []
+            }
+            continue
+        }
+
+        currentParts.push(token)
+    }
+
+    if (currentParts.length > 0) {
+        parents.push(currentParts.join(' '))
+    }
+
+    return parents
+}
+
 const cleanedCanonicalName = (canonicalName: string): string =>
-    canonicalName
-        .toLowerCase()
-        .replace(/\s*\(.*\)/, '')
-        .trim()
+    stripParentheticalSuffix(canonicalName).toLowerCase().trim()
 
 const parseParentNames = (genetics: string): string[] =>
-    genetics
-        .split(/\s+x\s+/i)
-        .map((p) => p.replace(/[()]/g, '').trim())
+    splitCrossGenetics(genetics)
+        .map((p) => p.replaceAll('(', '').replaceAll(')', '').trim())
         .filter(
             (p) =>
                 p.length > 0 &&

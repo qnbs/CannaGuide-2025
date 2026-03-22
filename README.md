@@ -1,6 +1,8 @@
+# 🌿 CannaGuide 2025
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
-# 🌿 CannaGuide 2025
+<!-- markdownlint-disable MD060 -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
@@ -10,9 +12,9 @@
 [![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
 [![Dependabot Alerts](https://img.shields.io/github/dependabot-alerts/qnbs/CannaGuide-2025)](https://github.com/qnbs/CannaGuide-2025/security/dependabot)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/CannaGuide-2025/badge)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
-[![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
-[![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
-[![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
+[![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
+[![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)](https://qnbs.github.io/CannaGuide-2025/)
+[![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
 
@@ -54,7 +56,7 @@ CannaGuide 2025 is a production-grade PWA that operates entirely client-side. Al
 
 Three-tier client-side architecture with offline-first design:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  Presentation Layer                                     │
 │  React 19 · Radix UI · Tailwind CSS · 9 Themes         │
@@ -246,7 +248,7 @@ npm run security:scan    # Full security scan
 
 ### Project Structure
 
-```
+```text
 ├── components/          React components (common/, icons/, navigation/, ui/, views/)
 ├── stores/              Redux: 17 slices, selectors, middleware
 ├── services/            51 service modules (AI, simulation, DB, crypto, IoT)
@@ -357,7 +359,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-# 🌿 CannaGuide 2025 (Deutsch)
+## 🌿 CannaGuide 2025 (Deutsch)
 
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/Release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
@@ -386,9 +388,9 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 - [Internationalisierung](#internationalisierung)
 - [Entwicklung](#entwicklung)
 - [CI/CD-Pipeline](#cicd-pipeline)
-- [Distribution](#distribution-1)
+- [Distribution](#distribution-de)
 - [Mitwirken](#mitwirken)
-- [Roadmap](#roadmap-1)
+- [Roadmap](#roadmap-de)
 - [Haftungsausschluss](#haftungsausschluss)
 
 ---
@@ -405,7 +407,7 @@ CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arb
 
 Dreischichtige clientseitige Architektur mit Offline-First-Design:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  Präsentationsschicht                                   │
 │  React 19 · Radix UI · Tailwind CSS · 9 Themes         │
@@ -516,7 +518,7 @@ Vollständig offline Inferenz mit 3-Schicht-Fallback: WebLLM → Transformers.js
 | `localAiTelemetryService.ts`         | Inferenz-Latenz/Erfolgs-Tracking                        |
 | `localAiCacheService.ts`             | IndexedDB-Inferenz-Cache (256 Einträge, 7d TTL)         |
 
-### Prompt Engineering & RAG
+### Prompt Engineering & RAG (DE)
 
 - `createLocalizedPrompt`: Auto-Prepend sprachspezifischer Anweisungen
 - `sanitizeForPrompt`: 30+ Regex-Patterns blocken Injection (SQL, XSS, Command, Jailbreak)
@@ -597,7 +599,7 @@ npm run security:scan    # Vollständiger Sicherheits-Scan
 
 ### Projektstruktur
 
-```
+```text
 ├── components/          React-Komponenten (common/, icons/, navigation/, ui/, views/)
 ├── stores/              Redux: 17 Slices, Selektoren, Middleware
 ├── services/            51 Service-Module (KI, Simulation, DB, Krypto, IoT)
@@ -646,7 +648,7 @@ npm run security:scan    # Vollständiger Sicherheits-Scan
 
 ---
 
-## Distribution
+## Distribution (DE)
 
 | Ziel                | Methode               | Trigger            |
 | ------------------- | --------------------- | ------------------ |
@@ -668,7 +670,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 
 ---
 
-## Roadmap
+## Roadmap (DE)
 
 > Vollständige Details: [ROADMAP.md](ROADMAP.md)
 
@@ -697,3 +699,5 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 ## Haftungsausschluss
 
 > Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz. Diese App bietet keine Rechts- oder Medizinberatung.
+
+<!-- markdownlint-enable MD060 -->

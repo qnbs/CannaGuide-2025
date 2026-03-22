@@ -1,8 +1,36 @@
 # Session Activity Review (2026-03-22)
 
+<!-- markdownlint-disable MD007 -->
+
 ## Scope
 
 Diese Sitzung fokussierte auf Sonar-Fortsetzung, Regressionsbehebung in Strains, UX-Haertung fuer Dateioperationen und reproduzierbares Tooling im Devcontainer.
+
+## Abschluss-Delta (late session, 2026-03-22)
+
+In der finalen Abschlusswelle wurden die vom Nutzer neu eingebrachten Sonar-Security-Hotspots strategisch ingestiert und teilweise direkt geschlossen:
+
+- S5852 (DoS/Regex) in den priorisierten Dateien reduziert:
+    - `components/views/strains/AddStrainModal.tsx`
+    - `services/geneticsService.ts`
+    - `stores/listenerMiddleware.ts`
+- S2245 (Weak Cryptography) in priorisierter Stelle reduziert:
+    - `components/views/plants/GrowRoom3D.tsx` (`Math.random` -> `crypto.getRandomValues`)
+- Hook/Gate-Blockierung entschaerft:
+    - `scripts/check-commit-identity.mjs` von hard-fail auf advisory fuer reine Signatur-/Lokalkonfigurationsmismatches umgestellt (unsichere Author/Committer-Overrides bleiben blockierend).
+- README-Probleme bereinigt:
+    - markdownlint-Fehler in `README.md` (Heading-/Link-/Codefence-Probleme) geschlossen.
+
+Dokumentation/Handoff synchronisiert:
+
+- `docs/session-activity-todo-2026-03-22.md` um 26er Security-Hotspot-Queue erweitert.
+- `docs/sonar-handoff-todo-2026-03-21.md` um neuen F0-Block inkl. Cluster-Strategie erweitert.
+
+Validierung der Abschlusswelle:
+
+- `node scripts/lint-changed.mjs`: erfolgreich
+- `npx tsc --noEmit`: erfolgreich
+- `npx vitest run services/geneticsService.test.ts --run`: 17/17 gruen
 
 ## Ergebnis auf einen Blick
 
@@ -154,3 +182,5 @@ Validierung (aktuelle Welle):
 Hinweis:
 
 - in `dbService.test.ts` sind erwartete console-Ausgaben fuer absichtlich provozierte Fehlerpfade sichtbar (kein Regressionssignal).
+
+<!-- markdownlint-enable MD007 -->

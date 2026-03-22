@@ -56,6 +56,12 @@ const defaultStrainValues = strainToFormValues({
     agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
 })
 
+const parseCommaSeparatedTokens = (value: string): string[] =>
+    value
+        .split(',')
+        .map((token) => token.trim())
+        .filter(Boolean)
+
 const ErrorText: React.FC<{ message?: string }> = ({ message }) => {
     if (!message) return null
     return <p className="mt-1 text-xs font-medium text-rose-300">{message}</p>
@@ -122,8 +128,6 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
     }
 
     const onSubmit = (values: ReturnType<typeof strainToFormValues>) => {
-        const parseStringToArray = (str: string = '') =>
-            str ? str.split(/\s*,\s*/).filter(Boolean) : []
         const safeName = typeof values.name === 'string' ? values.name : ''
         const safeType = getSafeStrainType(values.type)
 
@@ -143,8 +147,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
             floweringTime: Number(values.floweringTime),
             floweringTimeRange: values.floweringTimeRange,
             description: values.description,
-            aromas: parseStringToArray(values.aromasString),
-            dominantTerpenes: parseStringToArray(values.terpenesString),
+            aromas: parseCommaSeparatedTokens(values.aromasString),
+            dominantTerpenes: parseCommaSeparatedTokens(values.terpenesString),
             agronomic: {
                 difficulty: values.difficulty as DifficultyLevel,
                 yield: values.yield as YieldLevel,
@@ -183,19 +187,13 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
 
     const parsedAromas = useMemo(
         () =>
-            values.aromasString
-                .split(/\s*,\s*/)
-                .map((item) => item.trim())
-                .filter(Boolean),
+            parseCommaSeparatedTokens(values.aromasString),
         [values.aromasString],
     )
 
     const parsedTerpenes = useMemo(
         () =>
-            values.terpenesString
-                .split(/\s*,\s*/)
-                .map((item) => item.trim())
-                .filter(Boolean),
+            parseCommaSeparatedTokens(values.terpenesString),
         [values.terpenesString],
     )
     const previewType = getSafeStrainType(values.type)

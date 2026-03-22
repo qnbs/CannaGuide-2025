@@ -1,8 +1,45 @@
 # Session Activity TODO (Next Iteration Anchor, 2026-03-22)
 
+<!-- markdownlint-disable MD007 -->
+
 ## Zielbild
 
 Die naechsten Sitzungen sollen den Sonar-Restbacklog in stabilen, testbaren Clustern abbauen, ohne UI-Regressionsrisiko in Strains/Plants/Settings.
+
+## Neuer Security-Hotspot-Block (ingestiert 2026-03-22)
+
+Aus dem aktuellen Sonar-Hinweisblock wurden 26 Hotspots als Arbeitswarteschlange uebernommen:
+
+- DoS / Regex (S5852): 7
+- Weak Cryptography / PRNG (S2245): 19
+
+Sofort umgesetzt in dieser Welle:
+
+- `components/views/strains/AddStrainModal.tsx`: CSV-Parsing ohne regex-basierten Split.
+- `services/geneticsService.ts`: parenthetical/cross parsing auf deterministische String-Operationen umgestellt.
+- `stores/listenerMiddleware.ts`: Assistant-Intent-Erkennung ohne komplexes Regex-Matching.
+- `components/views/plants/GrowRoom3D.tsx`: Partikel-Randomisierung via `crypto.getRandomValues` statt `Math.random`.
+
+Offene Resttriage (strategisch):
+
+1. S2245-Queue in drei Risikoklassen splitten:
+    - UI-only Zufall (optisch, nicht sicherheitsrelevant) -> dokumentierte Review/Accept-Entscheidung.
+    - ID-/Token-nahe Nutzung -> auf `crypto.getRandomValues`/`crypto.randomUUID` migrieren.
+    - Simulationszufall -> deterministische PRNG-Strategie mit Seed (falls reproduzierbar erforderlich).
+1. S5852-Queue als Parser-Migration clustern:
+    - regex-Splits auf lineare Tokenizer umstellen.
+    - unbounded `.*`/nested quantifiers entfernen.
+1. Fuer jede Stelle: Review-Urteil + Fix/Accept im Handoff dokumentieren, damit Sonar-Hotspots nachvollziehbar geschlossen werden.
+
+## Sitzungsabschluss-Vorbereitung
+
+Vor finalem Session-Close zwingend:
+
+1. `node scripts/lint-changed.mjs`
+1. `npx tsc --noEmit`
+1. fokussierte Vitest-Laeufe fuer geaenderte Cluster
+1. Handoff-Dokumente (`session-activity-review`, `session-activity-todo`, `sonar-handoff-todo`, `next-session-handoff`) auf finalen Stand bringen
+1. Sammel-Commit + Push
 
 ## Priorisierte Arbeitscluster
 
@@ -101,3 +138,5 @@ Neuer naechster Fokus:
 
 1. verbleibende service-cluster ohne Tests (`aiProviderService`, `aiService`, `exportService`, `strainService`, `commandService`) nach Risiko in kleine Wellen aufteilen
 1. nur low-risk, mockbare Pfade zuerst (no network side effects ohne explizite Mocks)
+
+<!-- markdownlint-enable MD007 -->

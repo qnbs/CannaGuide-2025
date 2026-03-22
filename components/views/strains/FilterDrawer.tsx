@@ -65,6 +65,12 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
         setTempFilterState({ [key]: newArray });
     };
 
+    const getSegmentButtonClass = (isSelected: boolean): string =>
+        `flex-1 px-2 py-1 text-sm rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${isSelected ? 'bg-slate-700 text-primary-300 ring-1 ring-inset ring-white/50' : 'text-slate-300 hover:bg-slate-700/50'}`;
+
+    const getChipButtonClass = (isSelected: boolean): string =>
+        `px-2 py-1 text-xs rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${isSelected ? 'bg-primary-600 text-white ring-1 ring-white/50' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`;
+
     const isCannabinoidFilterActive = thcRange[0] > 0 || thcRange[1] < 35 || cbdRange[0] > 0 || cbdRange[1] < 20;
     const isGrowDataFilterActive = floweringRange[0] > 4 || floweringRange[1] < 20 || tempFilterState.selectedDifficulties.length > 0 || tempFilterState.selectedYields.length > 0 || tempFilterState.selectedHeights.length > 0;
     const isAromaFilterActive = tempFilterState.selectedAromas.length > 0;
@@ -105,7 +111,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                             <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.difficulty')}</h4>
                             <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
                                 {(['Easy', 'Medium', 'Hard'] as DifficultyLevel[]).map(d => (
-                                    <button key={d} onClick={() => handleToggleArray('selectedDifficulties', d)} aria-pressed={tempFilterState.selectedDifficulties.includes(d)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${tempFilterState.selectedDifficulties.includes(d) ? 'bg-slate-700 text-primary-300 ring-1 ring-inset ring-white/50' : 'text-slate-300 hover:bg-slate-700/50'}`}>
+                                    <button key={d} onClick={() => handleToggleArray('selectedDifficulties', d)} aria-pressed={tempFilterState.selectedDifficulties.includes(d)} className={getSegmentButtonClass(tempFilterState.selectedDifficulties.includes(d))}>
                                         {difficultyLabels[d]}
                                     </button>
                                 ))}
@@ -115,7 +121,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                             <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.yield')}</h4>
                             <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
                                 {(['Low', 'Medium', 'High'] as YieldLevel[]).map(y => (
-                                    <button key={y} onClick={() => handleToggleArray('selectedYields', y)} aria-pressed={tempFilterState.selectedYields.includes(y)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${tempFilterState.selectedYields.includes(y) ? 'bg-slate-700 text-primary-300 ring-1 ring-inset ring-white/50' : 'text-slate-300 hover:bg-slate-700/50'}`}>
+                                    <button key={y} onClick={() => handleToggleArray('selectedYields', y)} aria-pressed={tempFilterState.selectedYields.includes(y)} className={getSegmentButtonClass(tempFilterState.selectedYields.includes(y))}>
                                         {yieldLabels[y]}
                                     </button>
                                 ))}
@@ -125,7 +131,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                             <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.height')}</h4>
                             <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
                                 {(['Short', 'Medium', 'Tall'] as HeightLevel[]).map(h => (
-                                    <button key={h} onClick={() => handleToggleArray('selectedHeights', h)} aria-pressed={tempFilterState.selectedHeights.includes(h)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${tempFilterState.selectedHeights.includes(h) ? 'bg-slate-700 text-primary-300 ring-1 ring-inset ring-white/50' : 'text-slate-300 hover:bg-slate-700/50'}`}>
+                                    <button key={h} onClick={() => handleToggleArray('selectedHeights', h)} aria-pressed={tempFilterState.selectedHeights.includes(h)} className={getSegmentButtonClass(tempFilterState.selectedHeights.includes(h))}>
                                         {heightLabels[h]}
                                     </button>
                                 ))}
@@ -137,7 +143,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                 <FilterSection title={t('strainsView.filters.aromas')} isActive={isAromaFilterActive}>
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                         {allAromas.map(aroma => (
-                            <button key={aroma} onClick={() => handleToggleArray('selectedAromas', aroma)} aria-pressed={tempFilterState.selectedAromas.includes(aroma)} className={`px-2 py-1 text-xs rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${tempFilterState.selectedAromas.includes(aroma) ? 'bg-primary-600 text-white ring-1 ring-white/50' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
+                            <button key={aroma} onClick={() => handleToggleArray('selectedAromas', aroma)} aria-pressed={tempFilterState.selectedAromas.includes(aroma)} className={getChipButtonClass(tempFilterState.selectedAromas.includes(aroma))}>
                                 {t(`common.aromas.${aroma}`, { defaultValue: aroma })}
                             </button>
                         ))}
@@ -147,7 +153,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                  <FilterSection title={t('strainsView.filters.terpenes')} isActive={isTerpeneFilterActive}>
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                         {allTerpenes.map(terpene => (
-                            <button key={terpene} onClick={() => handleToggleArray('selectedTerpenes', terpene)} aria-pressed={tempFilterState.selectedTerpenes.includes(terpene)} className={`px-2 py-1 text-xs rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${tempFilterState.selectedTerpenes.includes(terpene) ? 'bg-primary-600 text-white ring-1 ring-white/50' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
+                            <button key={terpene} onClick={() => handleToggleArray('selectedTerpenes', terpene)} aria-pressed={tempFilterState.selectedTerpenes.includes(terpene)} className={getChipButtonClass(tempFilterState.selectedTerpenes.includes(terpene))}>
                                 {t(`common.terpenes.${terpene}`, { defaultValue: terpene })}
                             </button>
                         ))}

@@ -127,8 +127,8 @@ Status Phase 1 (aktueller Stand):
     - `ElementRef` -> `ComponentRef` in `components/ui/dialog.tsx` und `components/ui/select.tsx`
     - redundante Assertions in `components/common/RangeSlider.tsx`, `components/common/SearchBar.tsx`, `components/views/plants/detailedPlantViewTabs/PostHarvestTab.tsx`
 - offen naechst:
-    - `globalThis`-Reststellen in `App.tsx`, `GrowReminderPanel.tsx`, `CloudSyncPanel.tsx`, `BreedingArPreview.tsx`, `GrowRoom3D.tsx`
-    - `document.execCommand`-Ablösung in `components/common/EditResponseModal.tsx`
+    - erledigt: `App.tsx`, `GrowReminderPanel.tsx`, `CloudSyncPanel.tsx`, `BreedingArPreview.tsx`, `GrowRoom3D.tsx`
+    - `document.execCommand`-Ablösung in `components/common/EditResponseModal.tsx` ist im aktuellen Code nicht mehr vorhanden
 
 1. Phase 2: Accessibility- und Reliability-Majors zuerst
 

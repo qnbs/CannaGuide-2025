@@ -42,7 +42,7 @@ const initialState: GenealogyState = initialGenealogyState
 const VALID_STRAIN_TYPES = new Set<string>(Object.values(StrainType))
 
 const isFiniteNumber = (value: unknown): value is number =>
-    typeof value === 'number' && isFinite(value)
+    typeof value === 'number' && Number.isFinite(value)
 
 const toZoomTransform = (raw: unknown): SerializableZoomTransform | null => {
     if (!raw || typeof raw !== 'object') {
@@ -92,7 +92,7 @@ const sanitizeNode = (raw: unknown, depth = 0): GenealogyNode | null => {
     const type: StrainType = VALID_STRAIN_TYPES.has(n.type as string)
         ? (n.type as StrainType)
         : StrainType.Hybrid
-    const thc = typeof n.thc === 'number' && isFinite(n.thc) ? n.thc : 0
+    const thc = typeof n.thc === 'number' && Number.isFinite(n.thc) ? n.thc : 0
     const isLandrace = typeof n.isLandrace === 'boolean' ? n.isLandrace : false
 
     const node: GenealogyNode = { id: n.id, name: n.name, type, thc, isLandrace }
@@ -294,12 +294,12 @@ const genealogySlice = createSlice({
             // Reject NaN / Infinity values that would corrupt the persisted state
             if (
                 typeof k === 'number' &&
-                isFinite(k) &&
+                Number.isFinite(k) &&
                 k > 0 &&
                 typeof x === 'number' &&
-                isFinite(x) &&
+                Number.isFinite(x) &&
                 typeof y === 'number' &&
-                isFinite(y)
+                Number.isFinite(y)
             ) {
                 state.zoomTransform = { k, x, y }
             }

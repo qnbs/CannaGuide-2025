@@ -325,6 +325,7 @@ const collectIdsForToken = (
 
     request.onerror = () => {
         console.error(`[dbService] Search index request failed for token: ${token}`)
+        onComplete(new Set())
     }
 }
 
@@ -448,8 +449,22 @@ export const dbService = {
         return new Promise((resolve, reject) => {
             const transaction = conn.transaction(STRAINS_STORE, 'readonly')
             const store = transaction.objectStore(STRAINS_STORE)
+
+            if (!store.indexNames.contains(indexName)) {
+                resolve([])
+                return
+            }
+
             const index = store.index(indexName)
             const request = index.getAll(query)
+
+            request.onerror = () =>
+                reject(
+                    toIndexedDbError(
+                        request.error,
+                        `[dbService] IndexedDB query request failed for index "${indexName}".`,
+                    ),
+                )
 
             transaction.oncomplete = () => resolve(request.result || [])
             transaction.onerror = () =>

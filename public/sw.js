@@ -16,7 +16,7 @@ const MANIFEST_HASH =
         : 'dev'
 const CACHE_NAME = `cannaguide-${MANIFEST_HASH}-pwa-cache`
 const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`
-const API_HOSTNAMES = ['generativelanguage.googleapis.com', 'googleapis.com']
+const API_HOSTNAMES = new Set(['generativelanguage.googleapis.com', 'googleapis.com'])
 
 const APP_SHELL_URLS = ['./', './index.html', './manifest.json', './icon.svg', './favicon.ico']
 
@@ -153,7 +153,7 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
-    if (API_HOSTNAMES.some((h) => url.hostname === h || url.hostname.endsWith('.' + h))) {
+    if (API_HOSTNAMES.has(url.hostname)) {
         return
     }
 
@@ -275,6 +275,10 @@ self.addEventListener('fetch', (event) => {
 })
 
 self.addEventListener('message', (event) => {
+    if (event.origin && event.origin !== self.location.origin) {
+        return
+    }
+
     const sourceClient = event.source
     if (!sourceClient || typeof sourceClient.url !== 'string') {
         return

@@ -770,7 +770,7 @@ body {
     border-color: rgb(var(--color-primary-400));
 }
 .custom-checkbox::after {
-    content: '\\2714';
+    content: '\2714';
     font-size: 0.8rem;
     color: white;
     opacity: 0;

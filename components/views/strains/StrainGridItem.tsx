@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useCallback } from 'react'
 import { Strain, StrainType } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
@@ -66,14 +66,25 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
             typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
                 ? strain.floweringTime
                 : 0
+        const handleSelect = useCallback(() => {
+            onSelect(strain)
+        }, [onSelect, strain])
+        const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleSelect()
+            }
+        }
         const cardClassName = `flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`
         const favoriteButtonClassName = `!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`
 
         return (
             <Card className={cardClassName} style={{ animationDelay: `${index * 20}ms` }}>
-                <button
-                    type="button"
-                    onClick={() => onSelect(strain)}
+                <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleSelect}
+                    onKeyDown={handleCardKeyDown}
                     className="absolute inset-0 z-10 rounded-[1.35rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                     aria-label={safeName}
                     aria-pressed={isSelected}
@@ -84,6 +95,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => onToggleSelection(strain.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
                         className="custom-checkbox"
                         aria-label={t('strainsView.accessibility.selectStrain', { name: safeName })}
                     />

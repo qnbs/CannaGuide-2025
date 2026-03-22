@@ -76,29 +76,34 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
         const handleSelect = useCallback(() => {
             onSelect(strain)
         }, [onSelect, strain])
+        const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleSelect()
+            }
+        }
         const cardClassName = `relative bg-slate-800/60 rounded-lg transition-all duration-200 ring-1 ring-inset ring-white/20 ${isSelected ? 'bg-primary-900/30 ring-2 !ring-primary-500' : 'hover:bg-slate-700/50'}`
         const favoriteButtonClassName = `!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`
 
         return (
             <div style={style} className={cardClassName}>
-                <button
-                    type="button"
+                <div
+                    role="button"
+                    tabIndex={0}
                     onClick={handleSelect}
-                    className="absolute inset-0 z-10 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    onKeyDown={handleCardKeyDown}
+                    className="relative z-20 p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                     aria-label={safeName}
                     aria-pressed={isSelected}
-                />
-                <div
-                    className="relative z-20 p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4"
-                    onClick={handleSelect}
                 >
                     {/* Checkbox */}
-                    <div>
+                    <div className="pointer-events-auto">
                         <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => onToggleSelection(strain.id)}
                             onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
                             className="custom-checkbox flex-shrink-0"
                             aria-label={t('strainsView.accessibility.selectStrain', {
                                 name: safeName,

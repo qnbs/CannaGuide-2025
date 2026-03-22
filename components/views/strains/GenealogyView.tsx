@@ -25,6 +25,12 @@ import { Modal } from '@/components/common/Modal'
 import { StrainCompactItem } from './StrainCompactItem'
 import { GENEALOGY_NODE_SIZE } from '@/constants'
 import { compareText } from './compareText'
+import {
+    getNextLayoutOrientation,
+    getNodeGroupClass,
+    toSelectedStrainId,
+    type HighlightMode,
+} from './genealogyViewUtils'
 
 interface GenealogyLayoutNode {
     data: GenealogyNode
@@ -116,7 +122,6 @@ GenealogyLink.displayName = 'GenealogyLink'
 // ---------------------------------------------------------------------------
 // AnalysisPanel – genetische Beiträge, Lineage-Filter + Nachfahren-Button.
 // ---------------------------------------------------------------------------
-type HighlightMode = 'none' | 'landraces' | 'sativa' | 'indica'
 
 const AnalysisPanel = React.memo<{
     tree: GenealogyNode | null
@@ -519,20 +524,30 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     const handleSelectChange = useCallback(
         (e: { target: { value: string | number } }) => {
             try {
-                const selectedValue = e?.target?.value
-                dispatch(
-                    setSelectedGenealogyStrain(
-                        selectedValue != null && String(selectedValue).length > 0
-                            ? String(selectedValue)
-                            : null,
-                    ),
-                )
+                const selectedValue = toSelectedStrainId(e?.target?.value)
+                dispatch(setSelectedGenealogyStrain(selectedValue))
             } catch (err) {
                 console.error('[GenealogyView] handleSelectChange error:', err)
             }
         },
         [dispatch],
     )
+
+    const handleToggleLayout = useCallback(() => {
+        try {
+            dispatch(setGenealogyLayout(getNextLayoutOrientation(layoutOrientation)))
+        } catch (err) {
+            console.error('[GenealogyView] layout toggle error:', err)
+        }
+    }, [dispatch, layoutOrientation])
+
+    const handleResetGenealogyCache = useCallback(() => {
+        try {
+            dispatch(resetGenealogyCache())
+        } catch (err) {
+            console.error('[GenealogyView] resetGenealogyCache error:', err)
+        }
+    }, [dispatch])
 
     const handleShowDescendants = useCallback(() => {
         if (!selectedStrainId) return
@@ -783,18 +798,11 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     const { x, y } = getLayoutPosition(node?.x, node?.y)
                     if (!Number.isFinite(x) || !Number.isFinite(y)) return null
                     const matches = nodeMatchesHighlight(node.data)
-                    const isDimmed = highlightMode !== 'none' && !matches
                     return (
                         <g
                             key={`node-${node?.data?.id ?? 'unknown'}-${node?.depth ?? 0}-${idx}`}
                             transform={`translate(${x}, ${y})`}
-                            className={
-                                isDimmed
-                                    ? 'genealogy-node-dimmed'
-                                    : highlightMode !== 'none' && matches
-                                      ? 'genealogy-node-highlighted'
-                                      : ''
-                            }
+                            className={getNodeGroupClass(highlightMode, matches)}
                             style={{ transition: 'transform 0.4s ease-in-out, opacity 0.3s ease' }}
                         >
                             <foreignObject
@@ -944,22 +952,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             <PhosphorIcons.ArrowClockwise />{' '}
                             {t('strainsView.genealogyView.resetView')}
                         </Button>
-                        <Button
-                            variant="secondary"
-                            onClick={() => {
-                                try {
-                                    dispatch(
-                                        setGenealogyLayout(
-                                            layoutOrientation === 'horizontal'
-                                                ? 'vertical'
-                                                : 'horizontal',
-                                        ),
-                                    )
-                                } catch (err) {
-                                    console.error('[GenealogyView] layout toggle error:', err)
-                                }
-                            }}
-                        >
+                        <Button variant="secondary" onClick={handleToggleLayout}>
                             <PhosphorIcons.TreeStructure />{' '}
                             {t('strainsView.genealogyView.toggleLayout')}
                         </Button>
@@ -967,13 +960,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             variant="danger"
                             size="sm"
                             title={t('strainsView.genealogyView.resetCache')}
-                            onClick={() => {
-                                try {
-                                    dispatch(resetGenealogyCache())
-                                } catch (err) {
-                                    console.error('[GenealogyView] resetGenealogyCache error:', err)
-                                }
-                            }}
+                            onClick={handleResetGenealogyCache}
                         >
                             <PhosphorIcons.TrashSimple />
                         </Button>

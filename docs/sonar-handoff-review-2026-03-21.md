@@ -134,6 +134,11 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 
 - services/localAiFallbackService.ts (verschachtelte Ternary-Templates in summarizeTrend entkoppelt, Mentor-HTML-Issue-Block vorab aufgebaut)
 
+1. Restcluster Template/Ternary-Entkopplung II
+
+- services/localAI.ts (Fallback-Score und Notes-Content aus verschachtelten Ternaries in Zwischenvariablen entkoppelt)
+- components/views/strains/FilterDrawer.tsx (wiederholte ternary-basierte Klassenlogik in Helper-Funktionen zentralisiert)
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich

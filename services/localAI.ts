@@ -964,7 +964,8 @@ class LocalAiService implements BaseAIProvider {
             .filter((value): value is string => Boolean(value))
 
         const mergedIssues = [...rankedIssues, ...heuristic.issues]
-        const topScore = labels[0]?.score ?? (mergedIssues.length > 0 ? 0.75 : 0.95)
+        const fallbackScore = mergedIssues.length > 0 ? 0.75 : 0.95
+        const topScore = labels[0]?.score ?? fallbackScore
 
         return {
             title: isGerman(lang)
@@ -996,12 +997,15 @@ class LocalAiService implements BaseAIProvider {
             return fallbackDiagnosis(plant, lang)
         }
 
+        const notesLabel = isGerman(lang) ? 'Notizen:' : 'Notes:'
+        const contentWithNotes =
+            notes.length > 0
+                ? `${modelDiagnosis.content}\n\n${notesLabel} ${notes}`
+                : modelDiagnosis.content
+
         return {
             ...modelDiagnosis,
-            content:
-                notes.length > 0
-                    ? `${modelDiagnosis.content}\n\n${isGerman(lang) ? 'Notizen:' : 'Notes:'} ${notes}`
-                    : modelDiagnosis.content,
+            content: contentWithNotes,
         }
     }
 

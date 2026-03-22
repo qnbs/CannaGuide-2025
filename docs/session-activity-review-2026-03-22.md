@@ -84,3 +84,9 @@ Finaler Security-Status nach nachfolgenden Push-Wellen:
 - CodeQL-Runs auf `main` mehrfach erfolgreich abgeschlossen (inkl. manuellem Dispatch + Push-Runs).
 - Code-Scanning Queue (`state=open`) auf 0 reduziert.
 - Dependabot Queue (`state=open`) auf 0 reduziert.
+
+Neue Automatisierung (heute ergaenzt):
+
+- `.github/workflows/security-alerts-handoff.yml` erstellt (daily + manual dispatch).
+- `scripts/security/update-alerts-report.mjs` erstellt (GitHub API Aggregation fuer Dependabot + Code Scanning + CodeQL Run-Status).
+- `docs/security-alerts-status.md` als handoff-faehiger Snapshot eingefuehrt.

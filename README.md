@@ -7,6 +7,9 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
+[![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
+[![Dependabot Alerts](https://img.shields.io/github/dependabot-alerts/qnbs/CannaGuide-2025)](https://github.com/qnbs/CannaGuide-2025/security/dependabot)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/CannaGuide-2025/badge)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
@@ -43,7 +46,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with an 11-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 700+ strains · 529+ tests · 51 services · 17 Redux slices · 16 custom hooks · 13 i18n namespaces · 9 themes · 16 CI workflows
+**Key numbers:** 700+ strains · 529+ tests · 51 services · 17 Redux slices · 16 custom hooks · 13 i18n namespaces · 9 themes · 18 CI workflows
 
 ---
 
@@ -261,7 +264,7 @@ npm run security:scan    # Full security scan
 ├── packages/            Monorepo packages (ai-core, iot-mocks, ui)
 ├── scripts/             Build/lint/security scripts
 ├── docker/              nginx config, ESP32-mock, Tauri-mock
-└── .github/             16 CI/CD workflows, issue templates
+└── .github/             18 CI/CD workflows, issue templates
 ```
 
 ---
@@ -283,17 +286,18 @@ npm run security:scan    # Full security scan
 
 ### Additional Workflows
 
-| Workflow             | Trigger          | Purpose                               |
-| -------------------- | ---------------- | ------------------------------------- |
-| CodeQL               | push, PR, weekly | SAST analysis (JavaScript/TypeScript) |
-| Deploy               | push to main     | GitHub Pages deployment + Lighthouse  |
-| E2E & Integration    | push, PR         | Standalone E2E suite                  |
-| Tauri Build          | release tags     | Cross-platform desktop builds         |
-| Capacitor Build      | release tags     | iOS/Android builds                    |
-| Docker               | release tags     | Container image                       |
-| Mutation Tests       | push to main     | Stryker mutation testing              |
-| Strains Daily Update | cron             | Automated strain data refresh         |
-| Renovate             | bot              | Dependency updates                    |
+| Workflow                | Trigger          | Purpose                                             |
+| ----------------------- | ---------------- | --------------------------------------------------- |
+| CodeQL                  | push, PR, weekly | SAST analysis (JavaScript/TypeScript)               |
+| Security Alerts Handoff | daily, manual    | Auto-report open Dependabot + CodeQL alerts to docs |
+| Deploy                  | push to main     | GitHub Pages deployment + Lighthouse                |
+| E2E & Integration       | push, PR         | Standalone E2E suite                                |
+| Tauri Build             | release tags     | Cross-platform desktop builds                       |
+| Capacitor Build         | release tags     | iOS/Android builds                                  |
+| Docker                  | release tags     | Container image                                     |
+| Mutation Tests          | push to main     | Stryker mutation testing                            |
+| Strains Daily Update    | cron             | Automated strain data refresh                       |
+| Renovate                | bot              | Dependency updates                                  |
 
 ---
 
@@ -360,6 +364,9 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
+[![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
+[![Dependabot Alerts](https://img.shields.io/github/dependabot-alerts/qnbs/CannaGuide-2025)](https://github.com/qnbs/CannaGuide-2025/security/dependabot)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/CannaGuide-2025/badge)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Doku:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
 
@@ -390,7 +397,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 11-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 700+ Sorten · 529+ Tests · 51 Services · 17 Redux Slices · 16 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 16 CI-Workflows
+**Kennzahlen:** 700+ Sorten · 529+ Tests · 51 Services · 17 Redux Slices · 16 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 18 CI-Workflows
 
 ---
 

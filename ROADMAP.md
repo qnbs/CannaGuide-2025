@@ -180,6 +180,35 @@ Target: **2027-Q1**
 
 ## Strategic Program Tracks (Cross-Version)
 
+## Delivery Separation Model (App Tech vs. Content)
+
+To keep roadmap execution scalable, CannaGuide now separates delivery into two explicit tracks plus one overlap track.
+
+| Track                         | Scope                                                                      | Primary Outputs                                                       | Main Owners                      | Success Metrics                                                    |
+| ----------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------ |
+| App Technology & Architecture | Runtime, performance, security, CI/CD, storage, workers, platform wrappers | Architecture changes, reliability upgrades, automation, tests         | Engineering                      | Build stability, defect rate, performance budgets, release cadence |
+| Content & Knowledge Program   | Strains, guides, lexicon, media curation, educational quality              | Curated datasets, bilingual content, provenance metadata              | Domain/content curation          | Content coverage, freshness, source quality, user findability      |
+| Overlap: Feature Delivery     | Features requiring both code and curated domain knowledge                  | End-to-end feature increments with tech + content acceptance criteria | Product + engineering + curation | User outcomes, adoption, quality gates passed                      |
+
+### Technology-Architecture Delivery Rules
+
+- Every architecture item ships with measurable non-functional targets (latency, memory, bundle, or reliability).
+- Security-impacting changes must include scanner coverage and rollback strategy.
+- CI/CD, workflows, and developer tooling are treated as product-critical and versioned with release notes.
+
+### Content-Program Delivery Rules
+
+- Every content wave includes source provenance, confidence notes, and bilingual parity targets.
+- Data growth programs require quality gates (dedupe, taxonomy fit, validation sample checks).
+- Educational expansions must include structure templates for consistency across EN/DE.
+
+### Overlap Execution Rules
+
+- Feature work with content coupling uses a two-lane definition of done:
+    - technical readiness (tests, performance, security)
+    - content readiness (coverage, quality, provenance)
+- Examples: strain marketplace, discovery feed, extraction guide expansions, scholarly lexicon views.
+
 ### 1) Strain Scale Program (2026-2028)
 
 - **Mid-term target:** 2,000+ curated strains.

@@ -44,7 +44,10 @@ export const useFocusTrap = (isOpen: boolean) => {
                 // Shift + Tab
                 lastElement?.focus()
                 e.preventDefault()
-            } else if (!e.shiftKey && activeElement === lastElement) {
+                return
+            }
+
+            if (!e.shiftKey && activeElement === lastElement) {
                 // Tab
                 firstElement?.focus()
                 e.preventDefault()

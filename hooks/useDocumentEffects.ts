@@ -88,10 +88,10 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
             [View.Help]: '#1f1722',
         }
         const fallbackThemeColor = themeColorMap[general.theme] ?? '#0F172A'
-        const resolvedThemeColor =
-            activeView !== undefined
-                ? (viewThemeMap[activeView] ?? fallbackThemeColor)
-                : fallbackThemeColor
+        let resolvedThemeColor = fallbackThemeColor
+        if (activeView !== undefined) {
+            resolvedThemeColor = viewThemeMap[activeView] ?? fallbackThemeColor
+        }
         if (themeMeta) {
             themeMeta.content = resolvedThemeColor
         }

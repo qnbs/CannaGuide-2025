@@ -46,9 +46,9 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erledigte Punkte):
 
 - `services/ttsService.ts`: private synth Feld/Initialisierung gegen aktuelle Sonar-Regeln pruefen
-- `services/growReminderService.ts`: NaN-Initialwerte und Guard-Pfad konsolidieren
+- `services/growReminderService.ts`: erledigt (Zeitparser ohne NaN-Defaults, stricte Guard-Validierung)
 - `services/plantSimulationService.ts`: verbleibende Lesbarkeits-/Komplexitaets-Smells in langen Number.isFinite-Bloecken clustern
-- `components/views/settings/DataManagementTab.tsx`: `parsed &&`-Muster auf optional chaining/nullish-safe Guards normalisieren
+- `components/views/settings/DataManagementTab.tsx`: erledigt (parsed-Guard nullish-safe/typed normalisiert)
 - `components/views/strains/StrainGridItem.tsx`: erledigt (native overlay button statt role/tabindex div)
 - `components/views/strains/StrainListItem.tsx`: erledigt (native overlay button statt role/tabindex div)
 - `stores/slices/genealogySlice.ts`: erledigt (`Number.isFinite` vereinheitlicht)

@@ -148,8 +148,12 @@ const DataManagementTab: React.FC = () => {
                 const content = event.target?.result
                 if (typeof content === 'string') {
                     try {
-                        const parsed = JSON.parse(content)
-                        if (parsed && typeof parsed.version === 'number') {
+                        const parsed: unknown = JSON.parse(content)
+                        if (
+                            typeof parsed === 'object' &&
+                            parsed !== null &&
+                            typeof (parsed as { version?: unknown }).version === 'number'
+                        ) {
                             setFileToImport(content)
                             setIsImportConfirmOpen(true)
                         } else {

@@ -69,22 +69,14 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
         const handleSelect = useCallback(() => {
             onSelect(strain)
         }, [onSelect, strain])
-        const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                handleSelect()
-            }
-        }
         const cardClassName = `flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`
         const favoriteButtonClassName = `!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`
 
         return (
             <Card className={cardClassName} style={{ animationDelay: `${index * 20}ms` }}>
-                <div
-                    role="button"
-                    tabIndex={0}
+                <button
+                    type="button"
                     onClick={handleSelect}
-                    onKeyDown={handleCardKeyDown}
                     className="absolute inset-0 z-10 rounded-[1.35rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                     aria-label={safeName}
                     aria-pressed={isSelected}

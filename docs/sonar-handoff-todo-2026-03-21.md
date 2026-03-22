@@ -45,7 +45,7 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
 Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erledigte Punkte):
 
-- `services/ttsService.ts`: private synth Feld/Initialisierung gegen aktuelle Sonar-Regeln pruefen
+- `services/ttsService.ts`: erledigt (readonly synth Initialisierung direkt am Feld, Konstruktor vereinfacht)
 - `services/growReminderService.ts`: erledigt (Zeitparser ohne NaN-Defaults, stricte Guard-Validierung)
 - `services/plantSimulationService.ts`: verbleibende Lesbarkeits-/Komplexitaets-Smells in langen Number.isFinite-Bloecken clustern
 - `components/views/settings/DataManagementTab.tsx`: erledigt (parsed-Guard nullish-safe/typed normalisiert)

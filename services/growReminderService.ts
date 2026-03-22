@@ -48,8 +48,13 @@ const writeSnoozedMap = (map: Record<string, number>) => {
 
 const isWithinQuietHours = (start: string, end: string, now = new Date()): boolean => {
     const toMinutes = (value: string) => {
-        const [hours = NaN, minutes = NaN] = value.split(':').map(Number)
+        const [rawHours, rawMinutes] = value.split(':')
+        if (rawHours === undefined || rawMinutes === undefined) return null
+
+        const hours = Number(rawHours)
+        const minutes = Number(rawMinutes)
         if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null
         return hours * 60 + minutes
     }
 

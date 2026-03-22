@@ -22,6 +22,13 @@ interface OverviewTabProps {
     plant: Plant
 }
 
+interface QuickVital {
+    label: string
+    value: string
+    icon: React.ReactNode
+    tone: 'good' | 'warn' | 'critical'
+}
+
 const VitalStat: React.FC<{
     label: string
     value: string
@@ -110,7 +117,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = memo(({ plant }) => {
         [plant.stage],
     )
 
-    const quickVitals = useMemo(
+    const quickVitals = useMemo<QuickVital[]>(
         () => [
             {
                 label: t('plantsView.vitals.ph'),
@@ -171,7 +178,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = memo(({ plant }) => {
                                     label={vital.label}
                                     value={vital.value}
                                     icon={vital.icon}
-                                    tone={vital.tone as 'good' | 'warn' | 'critical'}
+                                    tone={vital.tone}
                                 />
                             ))}
                         </div>

@@ -24,10 +24,10 @@ const appendBaseFeedDetails = (
     details: { amountMl?: number; ph?: number; ec?: number },
     t: (key: string) => string,
 ): void => {
-    if (details.amountMl)
+    if (details.amountMl != null)
         detailsArray.push(`${t('plantsView.journal.details.amount')}: ${details.amountMl}ml`)
-    if (details.ph) detailsArray.push(`pH: ${details.ph.toFixed(2)}`)
-    if (details.ec) detailsArray.push(`EC: ${details.ec.toFixed(2)}`)
+    if (details.ph != null) detailsArray.push(`pH: ${details.ph.toFixed(2)}`)
+    if (details.ec != null) detailsArray.push(`EC: ${details.ec.toFixed(2)}`)
 }
 
 const renderWateringDetails = (
@@ -57,9 +57,7 @@ const renderTrainingDetails = (
     const d = entry.details as TrainingDetails
     if (!d.type) return
     const translatedType = t(`plantsView.actionModals.trainingTypes.${d.type}`)
-    detailsArray.push(
-        `${t('plantsView.journal.details.type')}: ${translatedType}`,
-    )
+    detailsArray.push(`${t('plantsView.journal.details.type')}: ${translatedType}`)
 }
 
 const renderObservationDetails = (
@@ -80,9 +78,7 @@ const renderPhotoDetails = (
     const d = entry.details as PhotoDetails
     if (d.photoCategory) {
         const translatedCategory = t(`plantsView.actionModals.photo.categories.${d.photoCategory}`)
-        detailsArray.push(
-            `${t('plantsView.journal.details.category')}: ${translatedCategory}`,
-        )
+        detailsArray.push(`${t('plantsView.journal.details.category')}: ${translatedCategory}`)
     }
     if (d.timelineLabel)
         detailsArray.push(`${t('plantsView.journal.details.timeline')}: ${d.timelineLabel}`)
@@ -106,9 +102,7 @@ const renderAmendmentDetails = (
     const d = entry.details as AmendmentDetails
     if (!d.type) return
     const translatedType = t(`plantsView.actionModals.amendmentTypes.${d.type}`)
-    detailsArray.push(
-        `${t('plantsView.journal.details.type')}: ${translatedType}`,
-    )
+    detailsArray.push(`${t('plantsView.journal.details.type')}: ${translatedType}`)
 }
 
 const renderGenericDetails = (entry: JournalEntry, detailsArray: string[]): void => {
@@ -117,7 +111,7 @@ const renderGenericDetails = (entry: JournalEntry, detailsArray: string[]): void
     }
 
     Object.entries(entry.details).forEach(([key, value]) => {
-        if (value && !['imageUrl', 'imageId', 'from', 'to'].includes(key)) {
+        if (value != null && value !== '' && !['imageUrl', 'imageId', 'from', 'to'].includes(key)) {
             detailsArray.push(`${key}: ${value}`)
         }
     })
@@ -316,9 +310,7 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                             <span className="w-4 h-4">{opt.icon}</span>
                             <span>{opt.label}</span>
                             {count > 0 && (
-                                <span className={getFilterCountClassName(isSelected)}>
-                                    {count}
-                                </span>
+                                <span className={getFilterCountClassName(isSelected)}>{count}</span>
                             )}
                         </button>
                     )

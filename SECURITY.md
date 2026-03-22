@@ -22,3 +22,4 @@ We will review reports as quickly as possible and coordinate remediation before 
 - The generated handoff artifact is `docs/security-alerts-status.md`.
 - If report content changes, the workflow opens or updates an automation PR instead of pushing directly to `main`.
 - For local refresh, run `npm run security:alerts:report` with a token that can read security events.
+- No dedicated PAT is required for the workflow: repository `GITHUB_TOKEN` is sufficient.

@@ -9,6 +9,7 @@ permissions:
     contents: write
     security-events: read
     actions: read
+    pull-requests: write
 
 env:
     NODE_VERSION: '20'
@@ -35,14 +36,19 @@ jobs:
                   REPO_BRANCH: main
               run: node ./scripts/security/update-alerts-report.mjs
 
-            - name: Commit report when changed
-              run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  if git diff --quiet -- docs/security-alerts-status.md; then
-                    echo "No report changes detected"
-                    exit 0
-                  fi
-                  git add docs/security-alerts-status.md
-                  git commit -m "docs(security): refresh automated alerts report"
-                  git push
+            - name: Create update PR when report changed
+              uses: peter-evans/create-pull-request@v7
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  commit-message: 'docs(security): refresh automated alerts report'
+                  title: 'docs(security): refresh automated alerts report'
+                  body: |
+                      Automated refresh of `docs/security-alerts-status.md`.
+
+                      Source:
+                      - `.github/workflows/security-alerts-handoff.yml`
+                      - `scripts/security/update-alerts-report.mjs`
+                  branch: automation/security-alerts-handoff
+                  delete-branch: true
+                  add-paths: |
+                      docs/security-alerts-status.md

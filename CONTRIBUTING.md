@@ -173,7 +173,7 @@ npm run build && npx playwright test
 
 - Run `npm run security:alerts:report` before larger remediation waves.
 - Use `docs/security-alerts-status.md` as session handoff baseline.
-- For CI automation, trigger `.github/workflows/security-alerts-handoff.yml` manually or rely on the daily schedule.
+- For CI automation, trigger `.github/workflows/security-alerts-handoff.yml` manually or rely on the daily schedule (opens/updates an automation PR when report content changes).
 
 ---
 

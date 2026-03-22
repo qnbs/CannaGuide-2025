@@ -1,5 +1,23 @@
 # Sonar Handoff TODO (Update 2026-03-22)
 
+## Session-Close Update (neu)
+
+Seit dem letzten Zwischenstand wurden zusaetzlich abgeschlossen:
+
+- `components/views/strains/StrainListItem.tsx` (Interaktionshaertung)
+- `components/views/strains/StrainGridItem.tsx` (Interaktionshaertung)
+- `styles.css` (Checkbox-Checkmark-Rendering-Fix)
+- `components/common/DataExportModal.tsx` (zusaetzlicher Confirm-Schritt fuer Export)
+- `components/views/strains/ExportsManagerView.tsx` (Confirm vor Download)
+- `components/views/settings/DataManagementTab.tsx` (Confirm vor Full-Backup-Export)
+- `locales/en/common.ts`, `locales/de/common.ts` (downloadConfirm)
+- `.devcontainer/devcontainer.json` (`rg`-Installation beim Container-Setup)
+
+Abschluss-Commits:
+
+- `11e85bd`
+- `83b2d25`
+
 Basis: neue Sonar-Liste aus dem letzten Nutzerblock (100 von 172 angezeigt).
 Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
@@ -83,12 +101,11 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
 ## F. Aktueller Restfokus
 
-1. Sonar neu laufen lassen und verbleibende Issues gegen den aktuellen Branchstand neu clustern
-1. Danach nur noch echte Rest-Issues in neuen, kleinen Wellen abarbeiten
-1. Optional: weitere repo-weite sort->toSorted Reststellen in nicht-priorisierten Views/Services sammeln und als Low-Risk-Konventionswelle schließen (aktuell erledigt: kein verbleibender sort()-Treffer in components/views, services, hooks)
-1. Optional: globale isFinite-Aufrufe bereinigen (aktuell erledigt: kein verbleibender Treffer in components/views, services, hooks)
-1. Echte Restpunkte nun auf Template-/Ternary-Komplexität fokussieren (aktuelle Teilwellen: localAiFallback + localAI + FilterDrawer + Grossbatch-UI/Service-Entkopplung)
-1. Vor jedem Push verbindlich: `npx prettier --check` auf dem geänderten Stapel, damit Badge-/CI-Schwankungen durch unformatierte Dateien ausgeschlossen werden.
+1. Sonar neu laufen lassen und verbleibende Issues gegen den aktuellen Branchstand neu clustern.
+1. GenealogyView-Cluster als naechsten Entry-Point abarbeiten (Smells + ggf. Tests).
+1. Plants UI-Smells Cluster fortsetzen (insb. interaction/readability in detail tabs).
+1. db/crypto reliability smells fortsetzen (error-normalization, recovery guards).
+1. Vor jedem Push verbindlich: `npx prettier --check` auf dem geaenderten Stapel, plus `node scripts/lint-changed.mjs` und `npx tsc --noEmit`.
 
 ## G. Strategischer Plan fuer neue Sonar-Liste (432 Issues, Stand 2026-03-22)
 

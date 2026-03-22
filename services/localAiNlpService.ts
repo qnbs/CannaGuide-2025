@@ -287,7 +287,7 @@ export const analyzeJournalSentimentTrend = async (
         return { overall: 'stable', recentAverage: 0.5, entryCount: 0 }
     }
 
-    const sorted = [...entries].sort((a, b) => b.createdAt - a.createdAt)
+    const sorted = entries.toSorted((a, b) => b.createdAt - a.createdAt)
     const recentSlice = sorted.slice(0, Math.min(5, sorted.length))
     const olderSlice = sorted.slice(5, Math.min(10, sorted.length))
 

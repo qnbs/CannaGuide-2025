@@ -173,7 +173,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
         }
 
         // Prioritize user strains and favorites
-        strainsToShow.sort((a, b) => {
+        strainsToShow = strainsToShow.toSorted((a, b) => {
             const aIsUser = userStrains.some((s) => s.id === a.id)
             const bIsUser = userStrains.some((s) => s.id === b.id)
             const aIsFav = favorites.has(a.id)

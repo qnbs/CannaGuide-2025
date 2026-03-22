@@ -243,9 +243,9 @@ export const GrowShopsView: React.FC = () => {
 
         // Sort
         if (sortMode === 'rating') {
-            shops.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+            shops = shops.toSorted((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
         } else {
-            shops.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+            shops = shops.toSorted((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
         }
 
         return shops

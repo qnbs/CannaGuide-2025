@@ -43,7 +43,7 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
         () => ({
             openTasks: tasks
                 .filter((task) => !task.isCompleted)
-                .sort((a, b) => {
+                .toSorted((a, b) => {
                     const priorityOrder: Record<TaskPriority, number> = {
                         high: 0,
                         medium: 1,
@@ -54,7 +54,7 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                 }),
             completedTasks: tasks
                 .filter((task) => task.isCompleted)
-                .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0)),
+                .toSorted((a, b) => (b.completedAt || 0) - (a.completedAt || 0)),
         }),
         [tasks],
     )

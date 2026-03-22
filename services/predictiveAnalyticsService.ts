@@ -440,7 +440,7 @@ export const predictiveAnalyticsService = {
     ): number {
         if (entries.length < 2) return 0
 
-        const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp)
+        const sorted = entries.toSorted((a, b) => a.timestamp - b.timestamp)
         let windowCount = 0
         let windowStart: number | null = null
 

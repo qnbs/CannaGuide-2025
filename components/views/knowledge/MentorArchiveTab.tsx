@@ -39,7 +39,7 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(
         )
 
         const sortedArchive = useMemo(
-            () => [...normalizedArchiveResponses].sort((a, b) => b.createdAt - a.createdAt),
+            () => normalizedArchiveResponses.toSorted((a, b) => b.createdAt - a.createdAt),
             [normalizedArchiveResponses],
         )
 

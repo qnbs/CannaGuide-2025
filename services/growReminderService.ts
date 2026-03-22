@@ -246,7 +246,7 @@ class GrowReminderService {
 
         return Array.from(batches.entries())
             .map(([plantId, plantReminders]) => {
-                const sortedReminders = [...plantReminders].sort((left, right) => {
+                const sortedReminders = plantReminders.toSorted((left, right) => {
                     const severityRank = { critical: 0, warning: 1, info: 2 }
                     const severityDelta = severityRank[left.severity] - severityRank[right.severity]
                     if (severityDelta !== 0) return severityDelta
@@ -278,7 +278,7 @@ class GrowReminderService {
                     dueAt: Math.min(...sortedReminders.map((reminder) => reminder.dueAt)),
                 }
             })
-            .sort((left, right) => left.dueAt - right.dueAt)
+            .toSorted((left, right) => left.dueAt - right.dueAt)
     }
 
     public async requestPermission(): Promise<NotificationPermission> {

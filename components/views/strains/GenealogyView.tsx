@@ -570,7 +570,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     const sortedStrains = useMemo(() => {
         try {
             if (!Array.isArray(allStrains)) return []
-            return [...allStrains].sort((a, b) => compareText(a?.name, b?.name))
+            return allStrains.toSorted((a, b) => compareText(a?.name, b?.name))
         } catch {
             return []
         }

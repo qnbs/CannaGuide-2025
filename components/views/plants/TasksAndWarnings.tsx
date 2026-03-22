@@ -82,11 +82,11 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(
 
         const sortedTasks = useMemo(() => {
             const order: Record<TaskPriority, number> = { high: 0, medium: 1, low: 2 }
-            return [...tasks].sort((a, b) => order[a.priority] - order[b.priority])
+            return tasks.toSorted((a, b) => order[a.priority] - order[b.priority])
         }, [tasks])
 
         const sortedProblems = useMemo(
-            () => [...problems].sort((a, b) => b.severity - a.severity),
+            () => problems.toSorted((a, b) => b.severity - a.severity),
             [problems],
         )
 

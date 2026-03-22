@@ -153,7 +153,7 @@ class GeneticsService {
         traverse(tree, 1.0)
         return Object.entries(contributions)
             .map(([name, contribution]) => ({ name, contribution: contribution * 100 }))
-            .sort((a, b) => b.contribution - a.contribution)
+            .toSorted((a, b) => b.contribution - a.contribution)
     }
 
     public findDescendants(

@@ -38,17 +38,17 @@ export const createSnapshotDiff = (before: unknown, after: unknown): SnapshotDif
     return {
         added: [...afterKeys]
             .filter((key) => !beforeKeys.has(key))
-            .sort((a, b) => a.localeCompare(b)),
+            .toSorted((a, b) => a.localeCompare(b)),
         removed: [...beforeKeys]
             .filter((key) => !afterKeys.has(key))
-            .sort((a, b) => a.localeCompare(b)),
+            .toSorted((a, b) => a.localeCompare(b)),
         changed: [...beforeKeys]
             .filter(
                 (key) =>
                     afterKeys.has(key) &&
                     JSON.stringify(before[key]) !== JSON.stringify(after[key]),
             )
-            .sort((a, b) => a.localeCompare(b)),
+            .toSorted((a, b) => a.localeCompare(b)),
     }
 }
 

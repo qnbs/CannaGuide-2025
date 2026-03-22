@@ -29,7 +29,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                 ...advice,
                 plantName: plantMap.get(advice.plantId) || t('plantsView.archivedPlant'),
             }))
-            .sort((a, b) => b.createdAt - a.createdAt)
+            .toSorted((a, b) => b.createdAt - a.createdAt)
     }, [archive, activePlants, t])
 
     const filteredAdvice = useMemo(() => {

@@ -64,7 +64,7 @@ const formatContextLine = (chunk: LogChunk, score?: number): string => {
 
 class GrowLogRagService {
     private buildChunks(plants: Plant[]): LogChunk[] {
-        const allChunks = plants.flatMap((plant) =>
+        let allChunks = plants.flatMap((plant) =>
             plant.journal.map((entry: JournalEntry) => {
                 const rawText = `${entry.type} ${entry.notes} ${(entry.details && JSON.stringify(entry.details)) || ''}`
                 return {
@@ -77,7 +77,7 @@ class GrowLogRagService {
         )
         // Cap to most recent chunks to prevent OOM on large journals
         if (allChunks.length > MAX_CHUNKS) {
-            allChunks.sort((a, b) => b.createdAt - a.createdAt)
+            allChunks = allChunks.toSorted((a, b) => b.createdAt - a.createdAt)
             return allChunks.slice(0, MAX_CHUNKS)
         }
         return allChunks
@@ -91,7 +91,7 @@ class GrowLogRagService {
         const tokens = tokenize(query)
         const ranked = chunks
             .map((chunk) => ({ chunk, score: scoreChunk(chunk, tokens) }))
-            .sort((a, b) => b.score - a.score)
+            .toSorted((a, b) => b.score - a.score)
             .slice(0, limit)
             .map(({ chunk }) => formatContextLine(chunk))
         return ranked.join('\n')
@@ -145,7 +145,7 @@ class GrowLogRagService {
                     const recency = calculateRecencyScore(chunk.createdAt)
                     return { chunk, score: semantic * (1 - ageWeight) + recency * ageWeight }
                 })
-                .sort((a, b) => b.score - a.score)
+                .toSorted((a, b) => b.score - a.score)
                 .slice(0, limit)
                 .map(({ chunk, score }) => formatContextLine(chunk, score))
 

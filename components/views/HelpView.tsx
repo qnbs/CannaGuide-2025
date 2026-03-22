@@ -237,7 +237,7 @@ const LexiconSection: React.FC = memo(() => {
                     const definition = t(`helpView.lexicon.${categoryKey}.${item.key}.definition`)
                     return { ...item, term, definition }
                 })
-                .sort((a, b) => a.term.localeCompare(b.term)),
+                .toSorted((a, b) => a.term.localeCompare(b.term)),
         [t],
     )
 
@@ -272,7 +272,7 @@ const LexiconSection: React.FC = memo(() => {
             const first = item.term.charAt(0).toUpperCase()
             letters.add(first)
         }
-        return Array.from(letters).sort((a, b) => a.localeCompare(b))
+        return Array.from(letters).toSorted((a, b) => a.localeCompare(b))
     }, [filteredLexicon])
 
     const scrollToLetter = useCallback((letter: string) => {
@@ -386,7 +386,7 @@ const LexiconSection: React.FC = memo(() => {
             {filteredLexicon.length > 0 ? (
                 <div className="space-y-6">
                     {Object.keys(groupedByLetter)
-                        .sort((a, b) => a.localeCompare(b))
+                        .toSorted((a, b) => a.localeCompare(b))
                         .map((letter) => (
                             <section key={letter}>
                                 <div

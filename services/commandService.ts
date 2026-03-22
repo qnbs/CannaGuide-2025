@@ -34,8 +34,10 @@ export const recordCommandUsage = (commandId: string): void => {
             recent.push({ id: commandId, ts: Date.now(), count: 1 })
         }
         // Keep sorted by timestamp desc, cap at MAX_RECENT
-        recent.sort((a, b) => b.ts - a.ts)
-        localStorage.setItem(RECENT_COMMANDS_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)))
+        localStorage.setItem(
+            RECENT_COMMANDS_KEY,
+            JSON.stringify(recent.toSorted((a, b) => b.ts - a.ts).slice(0, MAX_RECENT)),
+        )
     } catch {
         // localStorage may be unavailable
     }
@@ -70,7 +72,7 @@ export const groupAndSortCommands = (commands: Command[]): Command[] => {
         grouped[command.group]!.push(command)
     }
 
-    const sortedGroups = Object.keys(grouped).sort((a, b) => {
+    const sortedGroups = Object.keys(grouped).toSorted((a, b) => {
         const indexA = GROUP_ORDER.indexOf(a)
         const indexB = GROUP_ORDER.indexOf(b)
         if (indexA === -1 && indexB === -1) return a.localeCompare(b)
@@ -91,7 +93,7 @@ export const groupAndSortCommands = (commands: Command[]): Command[] => {
         })
         // Sort by priority (descending) then title (ascending)
         result.push(
-            ...(grouped[group] ?? []).sort((a, b) => {
+            ...(grouped[group] ?? []).toSorted((a, b) => {
                 const pa = a.priority ?? 0
                 const pb = b.priority ?? 0
                 if (pa !== pb) return pb - pa
@@ -184,6 +186,6 @@ export const searchAndRankCommands = (commands: Command[], query: string): Comma
     const scored = commands
         .map((cmd) => ({ cmd, score: scoreCommand(cmd, query, recent) }))
         .filter(({ score }) => score > 0)
-        .sort((a, b) => b.score - a.score)
+        .toSorted((a, b) => b.score - a.score)
     return scored.map(({ cmd }) => cmd)
 }

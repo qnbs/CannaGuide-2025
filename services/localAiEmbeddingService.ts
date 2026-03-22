@@ -172,7 +172,7 @@ export const semanticRank = async (
     const [queryVec, candidateVecs] = await Promise.all([embedText(query), embedBatch(candidates)])
     const scored = candidateVecs
         .map((vec, index) => ({ index, score: cosineSimilarity(queryVec, vec) }))
-        .sort((a, b) => b.score - a.score)
+        .toSorted((a, b) => b.score - a.score)
         .slice(0, topK)
     return scored
 }

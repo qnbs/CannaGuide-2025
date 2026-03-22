@@ -91,6 +91,36 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 - services/localAiImageSimilarityService.ts (sort -> toSorted)
 - services/entourageService.ts (sort -> toSorted + summary branching entkoppelt)
 
+1. Zusatzwelle Sort/Konventionen II (post-push Restscan)
+
+- components/views/plants/TasksAndWarnings.tsx (sort -> toSorted)
+- components/views/plants/detailedPlantViewTabs/AiTab.tsx (sort -> toSorted)
+- components/views/plants/GlobalAdvisorArchiveView.tsx (sort -> toSorted)
+- components/views/knowledge/MentorArchiveTab.tsx (sort -> toSorted)
+- components/views/HelpView.tsx (sort -> toSorted in Lexikon-Sortierungen)
+- services/localAiNlpService.ts (sort -> toSorted in journal sentiment trend)
+- services/commandService.ts (sort -> toSorted in recency/group/ranking)
+
+1. Zusatzwelle Sort/Konventionen III
+
+- components/views/equipment/GrowShopsView.tsx (sort -> toSorted)
+- components/views/strains/GenealogyView.tsx (sort -> toSorted)
+- components/views/plants/detailedPlantViewTabs/TasksTab.tsx (sort -> toSorted)
+- components/views/plants/detailedPlantViewTabs/PostHarvestTab.tsx (sort -> toSorted)
+- hooks/useStrainFilters.ts (in-place sort -> toSorted assignment)
+
+1. Zusatzwelle Sort/Konventionen IV
+
+- components/views/plants/InlineStrainSelector.tsx (sort -> toSorted)
+- services/growLogRagService.ts (sort -> toSorted)
+- services/geneticsService.ts (sort -> toSorted)
+- services/growReminderService.ts (sort -> toSorted)
+- services/strainService.ts (sort -> toSorted)
+- services/localAiEmbeddingService.ts (sort -> toSorted)
+- services/localAiFallbackService.ts (sort -> toSorted)
+- services/migrationLogic.ts (sort -> toSorted)
+- services/predictiveAnalyticsService.ts (sort -> toSorted)
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich
@@ -101,6 +131,7 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 
 - Kritische Komplexitaets-Hotspots aus dem letzten Block stark reduziert.
 - Erste groessere UI/A11y-Welle gestartet und mehrere Major-Smells entfernt.
+- Repo-weite sort()-Treffer in components/views, services und hooks wurden im aktuellen Stand vollstaendig aufgeloest.
 - Sonar-Backlog ist weiterhin umfangreich; aktuelle Restpunkte sind im aktualisierten TODO dokumentiert.
 
 ## Naechster sinnvoller Einstieg

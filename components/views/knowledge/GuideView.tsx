@@ -163,7 +163,6 @@ const GuideViewComponent: React.FC = () => {
                 {groupedArticles.map(([groupKey, groupData]) => {
                     const { icon, color, accentColor } = getGroupInfo(groupKey)
                     return (
-                        // FIX: Changed ref callback to an expression that returns void to match expected type.
                         <section
                             key={groupKey}
                             id={groupKey}

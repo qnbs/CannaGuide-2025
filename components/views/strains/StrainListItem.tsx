@@ -5,7 +5,6 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { Button } from '@/components/common/Button'
 import { useAppDispatch } from '@/stores/store'
-// FIX: Switched to using the exported `initiateGrowFromStrainList` thunk as suggested by the error.
 import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice'
 
 interface StrainListItemProps {
@@ -89,13 +88,17 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                     aria-label={safeName}
                     aria-pressed={isSelected}
                 />
-                <div className="relative z-20 p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4">
+                <div
+                    className="relative z-20 p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4"
+                    onClick={handleSelect}
+                >
                     {/* Checkbox */}
                     <div>
                         <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => onToggleSelection(strain.id)}
+                            onClick={(e) => e.stopPropagation()}
                             className="custom-checkbox flex-shrink-0"
                             aria-label={t('strainsView.accessibility.selectStrain', {
                                 name: safeName,
@@ -146,7 +149,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1.5 ml-auto">
+                    <div className="flex items-center gap-1.5 ml-auto pointer-events-auto">
                         <Button
                             variant="ghost"
                             size="sm"

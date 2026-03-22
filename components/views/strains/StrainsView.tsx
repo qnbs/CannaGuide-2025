@@ -541,12 +541,11 @@ export const StrainsView: React.FC = () => {
         switch (strainsViewTab) {
             case StrainViewTab.All:
             case StrainViewTab.MyStrains:
-            case StrainViewTab.Favorites:
-                {
-                    let bulkDeleteHandler: (() => void) | undefined
-                    if (strainsViewTab === StrainViewTab.MyStrains) {
-                        bulkDeleteHandler = handleBulkDelete
-                    }
+            case StrainViewTab.Favorites: {
+                let bulkDeleteHandler: (() => void) | undefined
+                if (strainsViewTab === StrainViewTab.MyStrains) {
+                    bulkDeleteHandler = handleBulkDelete
+                }
                 return (
                     <ErrorBoundary>
                         <Suspense
@@ -583,7 +582,7 @@ export const StrainsView: React.FC = () => {
                         </Suspense>
                     </ErrorBoundary>
                 )
-                }
+            }
             case StrainViewTab.Tips:
                 return (
                     <ErrorBoundary>
@@ -689,7 +688,6 @@ export const StrainsView: React.FC = () => {
                 showFavorites={showFavoritesOnly}
                 onToggleFavorites={(val) => setShowFavoritesOnly(val)}
                 typeFilter={typeFilter}
-                // FIX: Pass the correct function prop. The hook provides `handleToggleTypeFilter`, not `onToggleTypeFilter`.
                 onToggleTypeFilter={handleToggleTypeFilter}
                 isAnyFilterActive={isAnyFilterActive}
             />

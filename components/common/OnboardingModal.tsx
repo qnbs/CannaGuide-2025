@@ -31,13 +31,13 @@ function ChoiceCard({
     label,
     desc,
     icon,
-}: {
+}: Readonly<{
     selected: boolean
     onClick: () => void
     label: string
     desc: string
     icon: React.ReactNode
-}) {
+}>) {
     return (
         <button
             type="button"
@@ -64,7 +64,7 @@ function ChoiceCard({
     )
 }
 
-export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => {
+export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onClose }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const step = useAppSelector(selectOnboardingStep)

@@ -65,7 +65,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
         <nav
             ref={navRef}
             className={`glass-pane relative flex items-center gap-1 overflow-x-auto rounded-[1.25rem] p-1.5 no-scrollbar ${className}`}
-            onKeyDown={handleKeyDown}
+            role="tablist"
             aria-label="Tabs"
         >
             {tabs.map((tab) => (
@@ -73,12 +73,14 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                     key={tab.id}
                     data-tab-id={tab.id}
                     onClick={() => setActiveTab(tab.id)}
+                    onKeyDown={handleKeyDown}
                     className={`relative z-10 flex min-h-11 flex-shrink-0 items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                         activeTab === tab.id
                             ? 'text-slate-50'
                             : 'text-slate-400 hover:text-slate-100'
                     }`}
-                    aria-pressed={activeTab === tab.id}
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
                     title={tab.label}
                 >
                     {tab.icon && <div className="w-5 h-5">{tab.icon}</div>}

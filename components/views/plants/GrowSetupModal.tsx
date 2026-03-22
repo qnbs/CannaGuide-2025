@@ -4,7 +4,6 @@ import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
 import { Strain, GrowSetup, LightType, VentilationPower, PotType } from '@/types'
 import { useAppSelector } from '@/stores/store'
-// FIX: Removed incorrect imports and will use the onConfirm prop as intended by App.tsx
 import { selectSettings } from '@/stores/selectors'
 import { Card } from '@/components/common/Card'
 import { FormSection } from '@/components/ui/form'
@@ -56,8 +55,6 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
     })
 
     const handleConfirm = () => {
-        // FIX: Use the onConfirm prop passed from App.tsx instead of direct dispatch.
-        // This makes the component more reusable and aligns with the existing app flow.
         onConfirm(setup)
     }
 

@@ -78,6 +78,11 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     // --- SINGLE VALUE MODE ---
     if (isSingleValue) {
         const { value, onChange } = props
+        const singleThumbStyle: React.CSSProperties &
+            Record<'--thumb-color' | '--thumb-scale', string | number> = {
+            '--thumb-color': active,
+            '--thumb-scale': 1.1,
+        }
 
         const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             onChange(Number(e.target.value))
@@ -137,12 +142,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             value={value}
                             onChange={handleSliderChange}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                            style={
-                                {
-                                    '--thumb-color': active,
-                                    '--thumb-scale': 1.1,
-                                } as React.CSSProperties
-                            }
+                            style={singleThumbStyle}
                             aria-label={label}
                         />
                     </div>
@@ -152,7 +152,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     }
     // --- RANGE MODE ---
     else {
-        const value = props.value as [number, number]
+        const value = props.value
 
         const handleMinInteraction = () => {
             setMinZIndex(2)
@@ -167,6 +167,18 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
         const maxPos = ((value[1] - min) / (max - min)) * 100
         const minIsActive = minZIndex > maxZIndex
         const maxIsActive = maxZIndex > minZIndex
+        const minThumbStyle: React.CSSProperties &
+            Record<'--thumb-color' | '--thumb-scale', string | number> = {
+            zIndex: minZIndex,
+            '--thumb-color': minIsActive ? active : inactive,
+            '--thumb-scale': minIsActive ? 1.2 : 1,
+        }
+        const maxThumbStyle: React.CSSProperties &
+            Record<'--thumb-color' | '--thumb-scale', string | number> = {
+            zIndex: maxZIndex,
+            '--thumb-color': maxIsActive ? active : inactive,
+            '--thumb-scale': maxIsActive ? 1.2 : 1,
+        }
 
         return (
             <div>
@@ -197,13 +209,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             onMouseDown={handleMinInteraction}
                             onTouchStart={handleMinInteraction}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                            style={
-                                {
-                                    zIndex: minZIndex,
-                                    '--thumb-color': minIsActive ? active : inactive,
-                                    '--thumb-scale': minIsActive ? 1.2 : 1,
-                                } as React.CSSProperties
-                            }
+                            style={minThumbStyle}
                             aria-label={`${label} minimum`}
                         />
                         <input
@@ -218,13 +224,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             onMouseDown={handleMaxInteraction}
                             onTouchStart={handleMaxInteraction}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                            style={
-                                {
-                                    zIndex: maxZIndex,
-                                    '--thumb-color': maxIsActive ? active : inactive,
-                                    '--thumb-scale': maxIsActive ? 1.2 : 1,
-                                } as React.CSSProperties
-                            }
+                            style={maxThumbStyle}
                             aria-label={`${label} maximum`}
                         />
                     </div>

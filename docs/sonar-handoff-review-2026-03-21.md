@@ -179,6 +179,62 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 - Verifikation: `npx prettier --check` auf allen geaenderten Dateien jetzt ohne Befund.
 - Schlussfolgerung: Das Problem war nicht anhaltend am Deploy-Workflow selbst festzumachen; ein realer Teil des Risikos lag in noch nicht fertig formatierten Datei-Aenderungen vor dem finalen Sammel-Check.
 
+1. Regression-Fix: Strains-Detailoeffnung nach Sonar-Refactor
+
+- Ursache: In der Sortenliste/-grid blockierte die Content-Layer den Vollflaechen-Select-Button, wodurch Klicks auf Karteninhalt nicht mehr zur Detailansicht fuehrten.
+- Fixes:
+    - components/views/strains/StrainListItem.tsx (robuster Content-Click + stopPropagation auf Checkbox)
+    - components/views/strains/StrainGridItem.tsx (Pointer-Event-Schichtung fuer Content vs. Controls)
+    - components/views/strains/StrainTreeNode.tsx (gleiches Layering-Risiko praeventiv gehaertet)
+- Zus. Maintainability im gleichen Block:
+    - components/views/strains/AddStrainModal.tsx (komplexen Type-Preview-Ausdruck in `getSafeStrainType` + lokale Konstanten entkoppelt)
+    - components/views/strains/StrainsView.tsx / StrainListItem.tsx (veraltete FIX-Kommentare entfernt)
+- Regressionstest-Abdeckung erhoeht:
+    - components/views/strains/StrainListItem.test.tsx (Kartenklick oeffnet Detail; Checkbox-Klick oeffnet nicht)
+    - components/views/strains/StrainGridItem.test.tsx (gleiches Verhalten fuer Grid)
+
+1. Zusatzwelle Regression-Absicherung + Maintainability-Hygiene
+
+- Breiter View-Regressionstest nach den Strains-Fixes:
+    - `npm test -- components/views/plants components/views/settings components/views/strains --run` erfolgreich
+- Kein weiterer Overlay-Click-Defekt im Plants/Settings-Scan gefunden.
+- Veraltete `FIX:`-Kommentare aus produktivem Code entfernt (ohne Verhaltensaenderung):
+    - components/views/strains/StrainDetailView.tsx
+    - components/views/plants/DashboardSummary.tsx
+    - components/views/plants/App.tsx
+    - components/views/plants/GrowSetupModal.tsx
+    - components/views/PlantsView.tsx
+    - components/views/knowledge/GuideView.tsx
+
+1. Zusatzwelle Hook/Service-Komplexitaet (Low-Risk)
+
+- hooks/useSimulationBridge.ts
+    - ternary-lastige Slot-Return-Struktur in benannte Zwischenvariablen (`visiblePlant`, `archivedPlantId`) entkoppelt.
+- services/localAiFallbackService.ts
+    - terpene-label ternary im SVG-Text in `terpeneLabel` ausgelagert.
+    - psychedelic-circle stroke-Farbe aus inline ternary in `strokeColor` entkoppelt.
+- services/geminiService.ts
+    - Problemzusammenfassung in Garden-Plant-Summary aus inline ternary in `problemsSummary` ausgelagert.
+
+1. Zusatzwelle PostHarvest + Common/UI-Sonar-Quickwins
+
+- components/views/plants/detailedPlantViewTabs/PostHarvestTab.tsx
+    - unnötige Casts entfernt (`filter(Boolean) as string[]`, Terpene-`as number`), über Type-Guards ersetzt.
+    - `processPostHarvest`-Dispatches in zentralem Handler entkoppelt.
+- components/common/CameraModal.tsx
+    - Videoelement um Caption-Track ergänzt (A11y-Sonar).
+- components/common/Tabs.tsx
+    - Keyboard-Listener von non-interactive Container auf Buttons verlagert.
+    - Tab-Semantik (`role=tablist`, `role=tab`, `aria-selected`) konsistent gemacht.
+- components/common/RangeSlider.tsx
+    - unnötige Style-Assertions entfernt; CSS-Var-Styles typisiert.
+- components/common/SearchBar.tsx
+    - unnötige Placeholder-Assertion in Aria-Label-Auflösung entfernt.
+- components/ui/dialog.tsx
+    - deprecated `React.ElementRef` auf `React.ComponentRef` migriert.
+- components/ui/select.tsx
+    - deprecated `React.ElementRef` auf `React.ComponentRef` migriert.
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich

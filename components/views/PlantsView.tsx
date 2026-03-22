@@ -33,7 +33,6 @@ const GrowRoom3D = lazy(() =>
 )
 
 import { useAppDispatch, useAppSelector } from '@/stores/store'
-// FIX: Removed unused `selectIsExpertMode` which was causing an import error.
 import { selectNewGrowFlow } from '@/stores/selectors'
 import {
     startGrowInSlot,

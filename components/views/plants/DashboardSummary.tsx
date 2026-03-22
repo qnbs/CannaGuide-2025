@@ -179,7 +179,6 @@ const DashboardSummaryComponent: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {/* FIX: Add avgTemp and avgHumidity stats and adjust grid layout to display all vital metrics. */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                 <Stat
                     icon={<PhosphorIcons.Heart weight="fill" className="text-rose-400" />}
@@ -223,9 +222,7 @@ const DashboardSummaryComponent: React.FC = () => {
             </div>
 
             {/* AI Status Section */}
-            <div className="stat-tile space-y-3 p-3">
-                {renderAiStatusSection()}
-            </div>
+            <div className="stat-tile space-y-3 p-3">{renderAiStatusSection()}</div>
 
             <div className="mt-4 border-t border-white/8 pt-4">
                 <details className="group mt-4">

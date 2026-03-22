@@ -22,6 +22,12 @@ type ProcessWarning = {
     tone: WarningTone
 }
 
+const isStringValue = (value: string | null): value is string => value !== null
+const isNumericEntry = (entry: [string, unknown]): entry is [string, number] => {
+    const [, value] = entry
+    return typeof value === 'number' && Number.isFinite(value)
+}
+
 const calculateBurpDebtDays = (currentCureDay: number, lastBurpDay: number): number =>
     Math.max(0, currentCureDay - lastBurpDay - 1)
 
@@ -47,7 +53,7 @@ const getPostHarvestRecommendations = (
         harvestData.finalQuality > 85
             ? t('plantsView.postHarvest.recommendations.holdSteady')
             : null,
-    ].filter(Boolean) as string[]
+    ].filter(isStringValue)
 
 const getJarHumidityTone = (stage: PlantStage, jarHumidity: number): WarningTone => {
     if (stage === PlantStage.Curing) {
@@ -128,7 +134,7 @@ const ProgressBar: React.FC<{ label: string; progress: number; color?: string }>
             <div
                 className={`${color} h-2.5 rounded-full transition-all duration-300`}
                 style={{ width: `${progress}%` }}
-            ></div>
+            />
         </div>
     </div>
 )
@@ -232,9 +238,19 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
     const processWarnings = buildProcessWarnings(plant, harvestData, burpDebtDays, t)
     const getStagePanelClassName = (isActiveStage: boolean): string =>
         `p-4 rounded-lg space-y-4 ${isActiveStage ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`
+    const handleProcessPostHarvest = (action: 'dry' | 'burp' | 'cure'): void => {
+        dispatch(
+            processPostHarvest({
+                plantId: plant.id,
+                action,
+                simulationSettings: settings.simulation,
+            }),
+        )
+    }
 
-    const topTerpenes = Object.entries(harvestData.terpeneProfile || {})
-        .toSorted(([, a], [, b]) => (b as number) - (a as number))
+    const topTerpenes = Object.entries(harvestData.terpeneProfile ?? {})
+        .filter(isNumericEntry)
+        .toSorted(([, a], [, b]) => b - a)
         .slice(0, 3)
 
     return (
@@ -288,15 +304,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                             <Button
                                 size="sm"
                                 className="w-full"
-                                onClick={() =>
-                                    dispatch(
-                                        processPostHarvest({
-                                            plantId: plant.id,
-                                            action: 'dry',
-                                            simulationSettings: settings.simulation,
-                                        }),
-                                    )
-                                }
+                                onClick={() => handleProcessPostHarvest('dry')}
                                 disabled={
                                     ![PlantStage.Harvest, PlantStage.Drying].includes(plant.stage)
                                 }
@@ -329,15 +337,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                                     size="sm"
                                     variant="secondary"
                                     className="flex-1"
-                                    onClick={() =>
-                                        dispatch(
-                                            processPostHarvest({
-                                                plantId: plant.id,
-                                                action: 'burp',
-                                                simulationSettings: settings.simulation,
-                                            }),
-                                        )
-                                    }
+                                    onClick={() => handleProcessPostHarvest('burp')}
                                     disabled={plant.stage !== PlantStage.Curing}
                                 >
                                     <PhosphorIcons.Fan className="w-4 h-4 mr-1" />{' '}
@@ -346,15 +346,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                                 <Button
                                     size="sm"
                                     className="flex-1"
-                                    onClick={() =>
-                                        dispatch(
-                                            processPostHarvest({
-                                                plantId: plant.id,
-                                                action: 'cure',
-                                                simulationSettings: settings.simulation,
-                                            }),
-                                        )
-                                    }
+                                    onClick={() => handleProcessPostHarvest('cure')}
                                     disabled={plant.stage !== PlantStage.Curing}
                                 >
                                     {t('plantsView.postHarvest.simulateNextDay')}
@@ -489,7 +481,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                         <div className="text-sm font-bold text-purple-400">
                             {topTerpenes.map(([name, val]) => (
                                 <div key={name}>
-                                    {name}: {(val as number).toFixed(2)}%
+                                    {name}: {val.toFixed(2)}%
                                 </div>
                             ))}
                         </div>

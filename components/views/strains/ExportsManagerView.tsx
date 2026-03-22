@@ -21,6 +21,9 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({
 }) => {
     const { t } = useTranslation()
     const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null)
+    const [pendingDownloadExport, setPendingDownloadExport] = React.useState<SavedExport | null>(
+        null,
+    )
 
     const handleDownload = async (exp: SavedExport) => {
         const { exportService } = await import('@/services/exportService')
@@ -66,6 +69,25 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({
                     setPendingDeleteId(null)
                 }}
             />
+            <ConfirmDialog
+                open={pendingDownloadExport !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPendingDownloadExport(null)
+                }}
+                title={t('common.confirm')}
+                description={t('common.downloadConfirm', {
+                    name: pendingDownloadExport?.name ?? 'Export',
+                })}
+                confirmLabel={t('common.downloadAgain')}
+                cancelLabel={t('common.cancel')}
+                confirmVariant="secondary"
+                onConfirm={() => {
+                    if (pendingDownloadExport) {
+                        void handleDownload(pendingDownloadExport)
+                    }
+                    setPendingDownloadExport(null)
+                }}
+            />
 
             {sortedExports.map((exp) => {
                 const exportName = exp.name ?? 'Export'
@@ -89,7 +111,7 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({
                                 <Button
                                     size="sm"
                                     variant="secondary"
-                                    onClick={() => handleDownload(exp)}
+                                    onClick={() => setPendingDownloadExport(exp)}
                                     title={t('common.downloadAgain')}
                                 >
                                     <PhosphorIcons.DownloadSimple />

@@ -125,6 +125,7 @@ const DataManagementTab: React.FC = () => {
     const simulationState = useAppSelector(selectSimulation)
     const settings = useAppSelector(selectSettings)
     const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false)
+    const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
     const [fileToImport, setFileToImport] = useState<string | null>(null)
     const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
     const [isCleanupRunning, setIsCleanupRunning] = useState(false)
@@ -234,6 +235,19 @@ const DataManagementTab: React.FC = () => {
                 onConfirm={() => {
                     dispatch(clearArchives())
                     setIsClearArchivesConfirmOpen(false)
+                }}
+            />
+            <ConfirmDialog
+                open={isExportConfirmOpen}
+                onOpenChange={setIsExportConfirmOpen}
+                title={t('common.confirm')}
+                description={t('common.exportConfirm')}
+                confirmLabel={t('settingsView.data.exportAll')}
+                cancelLabel={t('common.cancel')}
+                confirmVariant="secondary"
+                onConfirm={() => {
+                    dispatch(exportAllData())
+                    setIsExportConfirmOpen(false)
                 }}
             />
 
@@ -373,7 +387,7 @@ const DataManagementTab: React.FC = () => {
                     <div className="sm:col-span-2 space-y-4">
                         <div className="flex flex-col sm:flex-row gap-2">
                             <Button
-                                onClick={() => dispatch(exportAllData())}
+                                onClick={() => setIsExportConfirmOpen(true)}
                                 className="flex-1 justify-center"
                             >
                                 <PhosphorIcons.DownloadSimple className="mr-2" />

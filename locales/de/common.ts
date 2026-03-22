@@ -22,6 +22,7 @@ export const common = {
     regenerate: 'Neu generieren',
     confirm: 'Bestätigen',
     exportConfirm: 'Möchten Sie diese Daten wirklich exportieren?',
+    downloadConfirm: 'Möchten Sie "{{name}}" jetzt herunterladen?',
     deleteConfirm: 'Möchtest du dieses Element wirklich löschen?',
     deleteResponse: 'Antwort löschen',
     removeImage: 'Bild entfernen',

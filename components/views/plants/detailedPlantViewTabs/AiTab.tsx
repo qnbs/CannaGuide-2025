@@ -111,7 +111,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
         }
     }
 
-    const sortedArchive = [...archive].sort((a, b) => b.createdAt - a.createdAt)
+    const sortedArchive = archive.toSorted((a, b) => b.createdAt - a.createdAt)
 
     return (
         <div className="space-y-6">

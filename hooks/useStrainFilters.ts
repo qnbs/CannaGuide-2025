@@ -192,7 +192,7 @@ export const useStrainFilters = (
             (selectedTerpenesSet.size === 0 || getSafeStringArray(s.dominantTerpenes).some(t => selectedTerpenesSet.has(t)))
         );
 
-        strains.sort((a, b) => {
+        strains = strains.toSorted((a, b) => {
             if (safeSettings.prioritizeUserStrains) {
                 const aIsPriority = userStrainIds.has(a.id) || favorites.has(a.id);
                 const bIsPriority = userStrainIds.has(b.id) || favorites.has(b.id);

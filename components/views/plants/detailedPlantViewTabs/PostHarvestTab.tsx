@@ -220,8 +220,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
     const burpDebtDays = calculateBurpDebtDays(harvestData.currentCureDay, harvestData.lastBurpDay)
     const postHarvestEvents = plant.journal
         .filter((entry) => entry.type === JournalEntryType.PostHarvest)
-        .slice()
-        .sort((a, b) => b.createdAt - a.createdAt)
+        .toSorted((a, b) => b.createdAt - a.createdAt)
         .slice(0, 8)
 
     const postHarvestRecommendations = getPostHarvestRecommendations(
@@ -233,7 +232,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
     const processWarnings = buildProcessWarnings(plant, harvestData, burpDebtDays, t)
 
     const topTerpenes = Object.entries(harvestData.terpeneProfile || {})
-        .sort(([, a], [, b]) => (b as number) - (a as number))
+        .toSorted(([, a], [, b]) => (b as number) - (a as number))
         .slice(0, 3)
 
     return (

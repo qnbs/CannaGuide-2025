@@ -218,7 +218,7 @@ const summarizeTrend = (context: NutrientRecommendationContext, lang: Language):
         return null
     }
 
-    const orderedReadings = [...context.readings].sort(
+    const orderedReadings = context.readings.toSorted(
         (left, right) => left.timestamp - right.timestamp,
     )
     const firstReading = orderedReadings[0]
@@ -332,7 +332,7 @@ const appendLatestReadingLine = (
         return
     }
 
-    const latest = [...context.readings].sort((left, right) => right.timestamp - left.timestamp)[0]
+    const latest = context.readings.toSorted((left, right) => right.timestamp - left.timestamp)[0]
     if (!latest) {
         return
     }

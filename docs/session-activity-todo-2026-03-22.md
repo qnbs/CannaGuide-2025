@@ -65,3 +65,18 @@ Die naechsten Sitzungen sollen den Sonar-Restbacklog in stabilen, testbaren Clus
 - `vite-plugin-imagemin` entfernt (vulnerable Transitivkette eliminiert).
 - `package.json` Overrides gesetzt: `serialize-javascript=7.0.4`, `tmp=0.2.5`.
 - `npm audit --json` aktuell: 0 vulnerabilities.
+
+## Delta-Update: Service-Reliability/Testausbau (heute fortgesetzt)
+
+Abgeschlossen:
+
+- `services/cryptoService.test.ts` neu erstellt und stabil im Gate verankert.
+- `services/dbService.test.ts` neu erstellt und in mehreren Wellen erweitert.
+- Error-/Guard-Pfade fuer `dbService.searchIndex`, `optimizeSimulationForPersistence`, `getArchivedPlantLogs`, `addImage` (Warnschwelle/Compression-Fallback) abgedeckt.
+- `services/cryptoService.ts` BufferSource-Typisierung gehaertet.
+- `services/dbService.ts` unsafe casts in Search-/Entity-Pfaden reduziert.
+
+Aktueller Fokus (naechste Welle):
+
+1. Weitere Service-Reliability-Cluster ausserhalb `dbService` priorisieren (insb. klar reproduzierbare Fallback-/Error-Pfade).
+1. Sonar-Restscan gegen aktuellen Stand erneut clustern (nach den neuen Tests).

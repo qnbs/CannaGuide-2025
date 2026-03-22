@@ -124,6 +124,11 @@ Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erled
 1. db/crypto reliability smells fortsetzen (error-normalization, recovery guards).
    Statusupdate: `cryptoService.ts` Decrypt-/Legacy-Migration gegen malformed payloads gehaertet; `growLogRagService.ts` nullish-sicheres Details-Stringifying umgesetzt.
    Statusupdate 2: `dbService.ts` Query/Search-Guards gehaertet (fehlender Index -> leeres Ergebnis statt Throw, token-scan Fehler liefert deterministisches leeres Set).
+   Statusupdate 3: weitere Reliability-Haertung + Testabdeckung abgeschlossen:
+    - `cryptoService.ts` BufferSource-Typisierung fuer WebCrypto gehaertet.
+    - `dbService.ts` unsafe casts in Search-/Entity-Pfaden reduziert.
+    - neue Testdateien `services/cryptoService.test.ts` und `services/dbService.test.ts` mit Error-/Fallback-Pfaden hinzugefuegt.
+    - zusaetzliche Abdeckung fuer `searchIndex` Cursor-Error, `addImage` Warnschwelle/Compression-Fallback, `optimizeSimulationForPersistence` Archivierung, `getArchivedPlantLogs` unknown plant.
 1. Vor jedem Push verbindlich: `npx prettier --check` auf dem geaenderten Stapel, plus `node scripts/lint-changed.mjs` und `npx tsc --noEmit`.
 
 ## G. Strategischer Plan fuer neue Sonar-Liste (432 Issues, Stand 2026-03-22)

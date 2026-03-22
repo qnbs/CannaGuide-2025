@@ -315,7 +315,14 @@ const collectIdsForToken = (
     request.onsuccess = () => {
         const cursor = request.result
         if (cursor) {
-            ;(cursor.value.ids as string[]).forEach((id) => idsForToken.add(id))
+            const value = cursor.value as { ids?: unknown }
+            if (Array.isArray(value.ids)) {
+                value.ids.forEach((id) => {
+                    if (typeof id === 'string') {
+                        idsForToken.add(id)
+                    }
+                })
+            }
             cursor.continue()
             return
         }
@@ -466,7 +473,7 @@ export const dbService = {
                     ),
                 )
 
-            transaction.oncomplete = () => resolve(request.result || [])
+            transaction.oncomplete = () => resolve(request.result ?? [])
             transaction.onerror = () =>
                 reject(
                     toIndexedDbError(
@@ -649,7 +656,9 @@ export const dbService = {
         const estimate = await getStorageEstimateSnapshot()
         const keepPerPlant = chooseJournalRetentionLimit(estimate.usageRatio)
 
-        const entityIds = simulationState.plants.ids as string[]
+        const entityIds = simulationState.plants.ids.filter(
+            (id): id is string => typeof id === 'string',
+        )
         const archivedByPlant: ArchivedJournalMap = {}
         const nextEntities: Record<string, Plant> = {}
         let hasChanges = false

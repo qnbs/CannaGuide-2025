@@ -36,6 +36,16 @@ const getTaskAge = (createdAt: number): string => {
     return `${days}d`
 }
 
+const getTranslatedText = (translatedValue: string, fallbackValue: string): string => {
+    return translatedValue.length > 0 ? translatedValue : fallbackValue
+}
+
+const priorityOrder: Record<TaskPriority, number> = {
+    high: 0,
+    medium: 1,
+    low: 2,
+}
+
 export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }) => {
     const { t } = useTranslation()
 
@@ -44,17 +54,12 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
             openTasks: tasks
                 .filter((task) => !task.isCompleted)
                 .toSorted((a, b) => {
-                    const priorityOrder: Record<TaskPriority, number> = {
-                        high: 0,
-                        medium: 1,
-                        low: 2,
-                    }
                     const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority]
                     return priorityDiff !== 0 ? priorityDiff : a.createdAt - b.createdAt
                 }),
             completedTasks: tasks
                 .filter((task) => task.isCompleted)
-                .toSorted((a, b) => (b.completedAt || 0) - (a.completedAt || 0)),
+                .toSorted((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0)),
         }),
         [tasks],
     )
@@ -76,6 +81,11 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                         openTasks.map((task) => {
                             const config = priorityConfig[task.priority]
                             const age = getTaskAge(task.createdAt)
+                            const taskTitle = getTranslatedText(t(task.title), task.title)
+                            const taskDescription = getTranslatedText(
+                                t(task.description),
+                                task.description,
+                            )
                             return (
                                 <li
                                     key={task.id}
@@ -88,12 +98,8 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                                         {config.icon}
                                     </div>
                                     <div className="flex-grow min-w-0">
-                                        <p className="font-semibold text-slate-100">
-                                            {t(task.title) || task.title}
-                                        </p>
-                                        <p className="text-sm text-slate-300">
-                                            {t(task.description) || task.description}
-                                        </p>
+                                        <p className="font-semibold text-slate-100">{taskTitle}</p>
+                                        <p className="text-sm text-slate-300">{taskDescription}</p>
                                         <p className="text-xs text-slate-500 mt-1">
                                             {age}{' '}
                                             {t('plantsView.tasks.ago', { defaultValue: 'ago' })}
@@ -124,26 +130,29 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                 </div>
                 <ul className="space-y-3">
                     {completedTasks.length > 0 ? (
-                        completedTasks.map((task) => (
-                            <li
-                                key={task.id}
-                                className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/60 opacity-60 ring-1 ring-inset ring-white/10"
-                            >
-                                <PhosphorIcons.CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                <div className="flex-grow min-w-0">
-                                    <p className="font-semibold line-through text-slate-400">
-                                        {t(task.title) || task.title}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                        {t('plantsView.detailedView.tasksCompleted', {
-                                            date: new Date(
-                                                task.completedAt ?? Date.now(),
-                                            ).toLocaleString(),
-                                        })}
-                                    </p>
-                                </div>
-                            </li>
-                        ))
+                        completedTasks.map((task) => {
+                            const taskTitle = getTranslatedText(t(task.title), task.title)
+                            return (
+                                <li
+                                    key={task.id}
+                                    className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/60 opacity-60 ring-1 ring-inset ring-white/10"
+                                >
+                                    <PhosphorIcons.CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                    <div className="flex-grow min-w-0">
+                                        <p className="font-semibold line-through text-slate-400">
+                                            {taskTitle}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {t('plantsView.detailedView.tasksCompleted', {
+                                                date: new Date(
+                                                    task.completedAt ?? Date.now(),
+                                                ).toLocaleString(),
+                                            })}
+                                        </p>
+                                    </div>
+                                </li>
+                            )
+                        })
                     ) : (
                         <p className="text-center text-slate-500 py-4">
                             {t('plantsView.detailedView.tasksNoEntries')}

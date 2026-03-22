@@ -9,10 +9,7 @@ import { EditResponseModal } from '@/components/common/EditResponseModal'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectArchivedAdvisorResponsesForPlant, selectLanguage } from '@/stores/selectors'
-import {
-    useGetPlantAdviceMutation,
-    useGetProactiveDiagnosisMutation,
-} from '@/stores/api'
+import { useGetPlantAdviceMutation, useGetProactiveDiagnosisMutation } from '@/stores/api'
 import {
     addArchivedAdvisorResponse,
     updateArchivedAdvisorResponse,
@@ -26,12 +23,16 @@ interface AiTabProps {
     plant: Plant
 }
 
+type LoadingUseCase = 'advisor' | 'proactiveDiagnosis'
+
 const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const lang = useAppSelector(selectLanguage)
 
-    const archive = useAppSelector((state) => selectArchivedAdvisorResponsesForPlant(state, plant.id))
+    const archive = useAppSelector((state) =>
+        selectArchivedAdvisorResponsesForPlant(state, plant.id),
+    )
     const [getPlantAdvice, advisorState] = useGetPlantAdviceMutation()
     const [getProactiveDiagnosis, diagnosisState] = useGetProactiveDiagnosisMutation()
 
@@ -55,31 +56,37 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     )
 
     useEffect(() => {
-        if (advisorState.isLoading) {
-            const messages = getDynamicLoadingMessages({
-                useCase: 'advisor',
-                data: { plantName: plant.name },
-            })
-            let messageIndex = 0
-            const intervalId = setInterval(() => {
-                setLoadingMessage(messages[messageIndex % messages.length] ?? '')
-                messageIndex++
-            }, 2000)
-            return () => clearInterval(intervalId)
+        const useCase: LoadingUseCase | null = advisorState.isLoading
+            ? 'advisor'
+            : diagnosisState.isLoading
+              ? 'proactiveDiagnosis'
+              : null
+
+        if (!useCase) {
+            setLoadingMessage('')
+            return
         }
-        if (diagnosisState.isLoading) {
-            const messages = getDynamicLoadingMessages({
-                useCase: 'proactiveDiagnosis',
-                data: { plantName: plant.name },
-            })
-            let messageIndex = 0
-            const intervalId = setInterval(() => {
-                setLoadingMessage(messages[messageIndex % messages.length] ?? '')
-                messageIndex++
-            }, 2000)
-            return () => clearInterval(intervalId)
+
+        const messages = getDynamicLoadingMessages({
+            useCase,
+            data: { plantName: plant.name },
+        })
+
+        if (messages.length === 0) {
+            setLoadingMessage('')
+            return
         }
-    }, [advisorState.isLoading, diagnosisState.isLoading, plant.name, t])
+
+        let messageIndex = 0
+        setLoadingMessage(messages[0] ?? '')
+
+        const intervalId = setInterval(() => {
+            messageIndex = (messageIndex + 1) % messages.length
+            setLoadingMessage(messages[messageIndex] ?? '')
+        }, 2000)
+
+        return () => clearInterval(intervalId)
+    }, [advisorState.isLoading, diagnosisState.isLoading, plant.name])
 
     const handleGetAdvice = () => {
         setIsCurrentResponseSaved(false)
@@ -93,7 +100,13 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
 
     const handleSaveResponse = () => {
         if (advisorState.data) {
-            dispatch(addArchivedAdvisorResponse({ plant, response: advisorState.data, query: plantQueryData }))
+            dispatch(
+                addArchivedAdvisorResponse({
+                    plant,
+                    response: advisorState.data,
+                    query: plantQueryData,
+                }),
+            )
             setIsCurrentResponseSaved(true)
         }
     }
@@ -143,7 +156,9 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                     onClose={() => setEditingResponse(null)}
                     onSave={(updated) => {
                         if (editingResponse) {
-                            dispatch(updateArchivedAdvisorResponse({ ...editingResponse, ...updated }))
+                            dispatch(
+                                updateArchivedAdvisorResponse({ ...editingResponse, ...updated }),
+                            )
                         }
                         setEditingResponse(null)
                     }}
@@ -158,12 +173,20 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                     {t('plantsView.aiAdvisor.proactiveDiagnosisDescription')}
                 </p>
                 <div className="p-3 bg-slate-800/50 rounded-lg">
-                    <Button onClick={handleGetDiagnosis} disabled={diagnosisState.isLoading} className="w-full">
-                        {diagnosisState.isLoading ? loadingMessage : t('plantsView.aiAdvisor.runDiagnosis')}
+                    <Button
+                        onClick={handleGetDiagnosis}
+                        disabled={diagnosisState.isLoading}
+                        className="w-full"
+                    >
+                        {diagnosisState.isLoading
+                            ? loadingMessage
+                            : t('plantsView.aiAdvisor.runDiagnosis')}
                     </Button>
 
                     <div className="mt-4">
-                        {diagnosisState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
+                        {diagnosisState.isLoading && (
+                            <AiLoadingIndicator loadingMessage={loadingMessage} />
+                        )}
                         {diagnosisState.data && !diagnosisState.isLoading && (
                             <Card className="bg-slate-900/70 animate-fade-in">
                                 <Speakable elementId={`proactive-diag-content-${plant.id}`}>
@@ -205,18 +228,28 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-2 flex items-center gap-2">
                     <PhosphorIcons.Brain className="w-6 h-6" /> {t('ai.advisor')}
                 </h3>
-                <p className="text-sm text-slate-400 mb-4">{t('plantsView.aiAdvisor.description')}</p>
-                 <div className="p-3 bg-slate-800/50 rounded-lg">
-                    <Button onClick={handleGetAdvice} disabled={advisorState.isLoading} className="w-full">
+                <p className="text-sm text-slate-400 mb-4">
+                    {t('plantsView.aiAdvisor.description')}
+                </p>
+                <div className="p-3 bg-slate-800/50 rounded-lg">
+                    <Button
+                        onClick={handleGetAdvice}
+                        disabled={advisorState.isLoading}
+                        className="w-full"
+                    >
                         {advisorState.isLoading ? loadingMessage : t('ai.getAdvice')}
                     </Button>
 
                     <div className="mt-4">
-                        {advisorState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
+                        {advisorState.isLoading && (
+                            <AiLoadingIndicator loadingMessage={loadingMessage} />
+                        )}
                         {advisorState.data && !advisorState.isLoading && (
                             <Card className="bg-slate-900/70 animate-fade-in">
                                 <Speakable elementId={`advisor-content-${plant.id}`}>
-                                    <h4 className="font-bold text-primary-300">{advisorState.data.title}</h4>
+                                    <h4 className="font-bold text-primary-300">
+                                        {advisorState.data.title}
+                                    </h4>
                                     <SafeHtml
                                         className="prose prose-sm dark:prose-invert max-w-none"
                                         html={advisorState.data.content}
@@ -256,7 +289,8 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
 
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2 mb-3">
-                    <PhosphorIcons.Archive className="w-6 h-6" /> {t('plantsView.aiAdvisor.archiveTitle')}
+                    <PhosphorIcons.Archive className="w-6 h-6" />{' '}
+                    {t('plantsView.aiAdvisor.archiveTitle')}
                 </h3>
                 <div className="p-3 bg-slate-800/50 rounded-lg">
                     <div className="space-y-4">
@@ -268,7 +302,9 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                         {t(`plantStages.${res.plantStage}`)}
                                     </p>
                                     <Speakable elementId={`advisor-archive-${res.id}`}>
-                                        <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
+                                        <h4 className="font-bold text-primary-300 mt-1">
+                                            {res.title}
+                                        </h4>
                                         <SafeHtml
                                             className="prose prose-sm dark:prose-invert max-w-none"
                                             html={res.content}

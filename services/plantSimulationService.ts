@@ -1456,7 +1456,11 @@ class PlantSimulationService {
         if (p.strain.dominantTerpenes && p.strain.dominantTerpenes.length > 0) {
             const newTerpenes = p.biomass.flowers * (productionFactor * 0.2)
             const terpeneCount = p.strain.dominantTerpenes.length
+            const blockedTerpeneKeys = new Set(['__proto__', 'constructor', 'prototype'])
             p.strain.dominantTerpenes.forEach((terpName) => {
+                if (blockedTerpeneKeys.has(terpName)) {
+                    return
+                }
                 p.terpeneProfile[terpName] =
                     (p.terpeneProfile[terpName] || 0) + newTerpenes / terpeneCount
             })

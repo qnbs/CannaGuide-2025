@@ -21,30 +21,40 @@ type GenealogyWorkerMessage =
     | { type: 'LAYOUT'; tree: GenealogyNode; orientation: 'horizontal' | 'vertical' }
     | { type: 'CONTRIBUTIONS'; tree: GenealogyNode | null }
     | {
-        type: 'OFFSPRING_PROFILE'
-        parentA: Strain
-        parentB: Strain
-        phenotypes: {
-            parentA: { vigor: number; resin: number; aroma: number; resistance: number }
-            parentB: { vigor: number; resin: number; aroma: number; resistance: number }
-        }
-    }
+          type: 'OFFSPRING_PROFILE'
+          parentA: Strain
+          parentB: Strain
+          phenotypes: {
+              parentA: { vigor: number; resin: number; aroma: number; resistance: number }
+              parentB: { vigor: number; resin: number; aroma: number; resistance: number }
+          }
+      }
+
+const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
+    return !event.origin || event.origin === self.location.origin
+}
 
 self.onmessage = (event: MessageEvent<GenealogyWorkerMessage>) => {
+    if (!isTrustedWorkerMessage(event)) {
+        return
+    }
+
     try {
         if (event.data.type === 'LAYOUT') {
             const root = d3.hierarchy(event.data.tree, (node) => node?.children)
-            const treeLayout = d3.tree<GenealogyNode>().nodeSize(
-                event.data.orientation === 'horizontal'
-                    ? [
-                        GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y,
-                        GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x,
-                    ]
-                    : [
-                        GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x,
-                        GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y,
-                    ],
-            )
+            const treeLayout = d3
+                .tree<GenealogyNode>()
+                .nodeSize(
+                    event.data.orientation === 'horizontal'
+                        ? [
+                              GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y,
+                              GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x,
+                          ]
+                        : [
+                              GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x,
+                              GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y,
+                          ],
+                )
 
             treeLayout(root)
 
@@ -59,8 +69,10 @@ self.onmessage = (event: MessageEvent<GenealogyWorkerMessage>) => {
             }))
 
             const links: GenealogyLayoutLink[] = root.links().map((link) => ({
-                sourceIndex: indexByNode.get(link.source as d3.HierarchyPointNode<GenealogyNode>) ?? 0,
-                targetIndex: indexByNode.get(link.target as d3.HierarchyPointNode<GenealogyNode>) ?? 0,
+                sourceIndex:
+                    indexByNode.get(link.source as d3.HierarchyPointNode<GenealogyNode>) ?? 0,
+                targetIndex:
+                    indexByNode.get(link.target as d3.HierarchyPointNode<GenealogyNode>) ?? 0,
             }))
 
             self.postMessage({ type: 'LAYOUT_RESULT', nodes, links })
@@ -68,7 +80,9 @@ self.onmessage = (event: MessageEvent<GenealogyWorkerMessage>) => {
         }
 
         if (event.data.type === 'CONTRIBUTIONS') {
-            const contributions = event.data.tree ? geneticsService.calculateGeneticContribution(event.data.tree) : []
+            const contributions = event.data.tree
+                ? geneticsService.calculateGeneticContribution(event.data.tree)
+                : []
             self.postMessage({ type: 'CONTRIBUTIONS_RESULT', contributions })
             return
         }

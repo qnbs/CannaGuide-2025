@@ -108,7 +108,15 @@ const sendProgress = (
     self.postMessage(response)
 }
 
+const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
+    return !event.origin || event.origin === self.location.origin
+}
+
 self.onmessage = async (e: MessageEvent<ImageGenWorkerRequest>) => {
+    if (!isTrustedWorkerMessage(e)) {
+        return
+    }
+
     const data = e.data
     if (!data?.id || !data?.prompt || !data?.modelId) {
         const response: ImageGenWorkerResponse = {

@@ -640,10 +640,12 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
     function merge(target: Record<string, unknown>, source: Record<string, unknown>) {
         for (const [key, sourceValue] of Object.entries(source)) {
             if (!isSafeMergeKey(key)) continue
+            if (!Object.prototype.hasOwnProperty.call(target, key)) continue
+
             if (isObject(sourceValue)) {
                 const currentTargetValue = target[key]
                 if (!isObject(currentTargetValue)) {
-                    target[key] = Object.create(null)
+                    continue
                 }
                 merge(target[key] as Record<string, unknown>, sourceValue)
             } else if (sourceValue !== undefined) {

@@ -15,7 +15,15 @@ export interface SimulationWorkerError {
     error: string
 }
 
+const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
+    return !event.origin || event.origin === self.location.origin
+}
+
 self.onmessage = (e: MessageEvent<SimulationWorkerInput>) => {
+    if (!isTrustedWorkerMessage(e)) {
+        return
+    }
+
     try {
         const data = e.data
         if (!data?.plant || typeof data.deltaTime !== 'number' || data.deltaTime <= 0) {

@@ -138,11 +138,12 @@ class GeneticsService {
 
     public calculateGeneticContribution(tree: GenealogyNode | null): GeneticContribution[] {
         if (!tree) return []
-        const contributions: { [name: string]: number } = {}
+        const contributions = new Map<string, number>()
         function traverse(node: GenealogyNode, contribution: number) {
             const children = node.children || node._children
             if (!children || children.length === 0) {
-                contributions[node.name] = (contributions[node.name] || 0) + contribution
+                const previousContribution = contributions.get(node.name) ?? 0
+                contributions.set(node.name, previousContribution + contribution)
                 return
             }
             const childContribution = contribution / children.length
@@ -151,7 +152,7 @@ class GeneticsService {
             }
         }
         traverse(tree, 1.0)
-        return Object.entries(contributions)
+        return Array.from(contributions.entries())
             .map(([name, contribution]) => ({ name, contribution: contribution * 100 }))
             .toSorted((a, b) => b.contribution - a.contribution)
     }

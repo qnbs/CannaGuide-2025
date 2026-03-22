@@ -1,9 +1,12 @@
-
 import { Plant, Scenario, ScenarioAction, PlantHistoryEntry, AppSettings } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import { SIM_SECONDS_PER_DAY } from '@/constants'
 
-const applyAction = (plant: Plant, action: ScenarioAction, simulationSettings?: AppSettings['simulation']): Plant => {
+const applyAction = (
+    plant: Plant,
+    action: ScenarioAction,
+    simulationSettings?: AppSettings['simulation'],
+): Plant => {
     switch (action) {
         case 'TOP':
             return plantSimulationService.topPlant(plant).updatedPlant
@@ -25,7 +28,21 @@ const applyAction = (plant: Plant, action: ScenarioAction, simulationSettings?: 
     }
 }
 
-self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario; simulationSettings?: AppSettings['simulation'] }>) => {
+const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
+    return !event.origin || event.origin === self.location.origin
+}
+
+self.onmessage = (
+    e: MessageEvent<{
+        basePlant: Plant
+        scenario: Scenario
+        simulationSettings?: AppSettings['simulation']
+    }>,
+) => {
+    if (!isTrustedWorkerMessage(e)) {
+        return
+    }
+
     let plantA = plantSimulationService.clonePlant(e.data.basePlant)
     let plantB = plantSimulationService.clonePlant(e.data.basePlant)
     const { scenario, simulationSettings } = e.data
@@ -46,24 +63,32 @@ self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario; simula
         plantA = plantSimulationService.applyEnvironmentalCorrections(plantA, simulationSettings)
         plantB = plantSimulationService.applyEnvironmentalCorrections(plantB, simulationSettings)
 
-        const resultA = plantSimulationService.calculateStateForTimeDelta(plantA, oneDayInMillis, simulationSettings)
+        const resultA = plantSimulationService.calculateStateForTimeDelta(
+            plantA,
+            oneDayInMillis,
+            simulationSettings,
+        )
         plantA = resultA.updatedPlant
         historyA.push({
             day: plantA.age,
             height: plantA.height,
             health: plantA.health,
             stressLevel: plantA.stressLevel,
-            medium: plantA.medium
+            medium: plantA.medium,
         })
 
-        const resultB = plantSimulationService.calculateStateForTimeDelta(plantB, oneDayInMillis, simulationSettings)
+        const resultB = plantSimulationService.calculateStateForTimeDelta(
+            plantB,
+            oneDayInMillis,
+            simulationSettings,
+        )
         plantB = resultB.updatedPlant
         historyB.push({
             day: plantB.age,
             height: plantB.height,
             health: plantB.health,
             stressLevel: plantB.stressLevel,
-            medium: plantB.medium
+            medium: plantB.medium,
         })
     }
 

@@ -27,55 +27,62 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 1. Common / Accessibility / Lesbarkeit
 
 - components/views/equipment/SeedbanksView.tsx: Restpruefung nach Teilfix
-- components/views/settings/SettingsSubNav.tsx: tablist muss focusable sein
-- components/views/strains/StrainToolbar.tsx: listbox/option auf native select/option umstellen
+- components/views/settings/SettingsSubNav.tsx: erledigt (tabIndex auf tablist)
+- components/views/strains/StrainToolbar.tsx: erledigt (native select/option)
 
-2. Plants-Views Cluster
+1. Plants-Views Cluster
 
-- components/views/plants/DashboardSummary.tsx: nested ternary (2x)
-- components/views/plants/HistoryChart.tsx: Array includes -> Set.has
-- components/views/plants/PlantLifecycleTimeline.tsx: nested template literal
-- components/views/plants/PlantSlot.tsx: nested template literal
-- components/views/plants/SensorIntegrationPanel.tsx: nested ternary
-- components/views/plants/detailedPlantViewTabs/JournalTab.tsx: nested template literal (3x)
-- components/views/plants/detailedPlantViewTabs/PhotosTab.tsx: non-interactive listener
-- components/views/plants/detailedPlantViewTabs/SimulationDebugTab.tsx: nested ternary (4x)
+- components/views/plants/DashboardSummary.tsx: erledigt
+- components/views/plants/HistoryChart.tsx: erledigt (Set.has)
+- components/views/plants/PlantLifecycleTimeline.tsx: erledigt
+- components/views/plants/PlantSlot.tsx: erledigt
+- components/views/plants/SensorIntegrationPanel.tsx: erledigt
+- components/views/plants/detailedPlantViewTabs/JournalTab.tsx: teilweise erledigt (Filter-Classname-Block)
+- components/views/plants/detailedPlantViewTabs/PhotosTab.tsx: erledigt
+- components/views/plants/detailedPlantViewTabs/SimulationDebugTab.tsx: erledigt
 
-3. Knowledge / Help Cluster
+1. Knowledge / Help Cluster
 
 - components/views/knowledge/GuideView.tsx: optional chaining/nested template literal Reststellen
-- components/views/knowledge/MentorView.tsx: Set.has + nested template literal
+- components/views/knowledge/MentorView.tsx: teilweise erledigt (Set.has umgesetzt)
 - components/views/knowledge/BreedingArPreview.tsx: Restcheck
 
-4. Strains Cluster (groesserer Block)
+1. Strains Cluster (groesserer Block)
 
-- components/views/strains/AddStrainModal.tsx: Regex-Komplexitaet reduzieren
-- components/views/strains/BreedingLab.tsx: nested ternary
-- components/views/strains/GenealogyView.tsx: isFinite -> Number.isFinite (mehrfach) + suspicious branch
-- components/views/strains/InlineStrainSelector.tsx: nested ternary
-- components/views/strains/StrainImageGalleryTab.tsx: A11y interactive/non-interactive
-- components/views/strains/StrainImageGenerator.tsx: nested ternary
-- components/views/strains/StrainLibraryView.tsx: nested ternary
-- components/views/strains/StrainTipsView.tsx: reduce-assignment extrahieren, sort separieren/toSorted, nested ternary
-- components/views/strains/StrainTreeNode.tsx: treeitem aria-selected Pflichtattribut
+- components/views/strains/AddStrainModal.tsx: erledigt (Regex entkoppelt)
+- components/views/strains/BreedingLab.tsx: erledigt (nested ternary/class branching)
+- components/views/strains/GenealogyView.tsx: erledigt (Number.isFinite + branch guard)
+- components/views/strains/InlineStrainSelector.tsx: erledigt (ternary class extraction)
+- components/views/strains/StrainImageGalleryTab.tsx: erledigt (A11y interactive/non-interactive)
+- components/views/strains/StrainImageGenerator.tsx: erledigt (button branching)
+- components/views/strains/StrainLibraryView.tsx: erledigt (main content branching)
+- components/views/strains/StrainTipsView.tsx: erledigt (reduce-assignment + toSorted)
+- components/views/strains/StrainTreeNode.tsx: erledigt (aria-selected)
 - components/views/strains/StrainsView.tsx: nested ternary (2x)
+- components/views/strains/StrainsView.tsx: erledigt (export source + onDelete branching)
 
-5. Hooks / Services Cluster
+1. Hooks / Services Cluster
 
 - hooks/useDocumentEffects.ts: nested ternary
 - hooks/useFocusTrap.ts: else-if Normalisierung
-- services/chemotypeService.ts: sort in separate statement/toSorted
-- services/cryptoService.ts: Promise rejection reason als Error + optional chaining
-- services/dbService.ts: Promise rejection reason als Error (mehrfach) + reduce initial value
-- services/entourageService.ts: nested ternary
-- services/exportService.ts: removeChild -> remove + nested template literals (groesserer Block)
+- services/chemotypeService.ts: erledigt (toSorted)
+- services/cryptoService.ts: erledigt (Error-Objekte bei rejection)
+- services/dbService.ts: erledigt (Error-Objekte + reduce initial value)
+- services/entourageService.ts: erledigt (THC/CBD ratio branching)
+- services/exportService.ts: teilweise erledigt (removeChild -> remove), nested template literals offen
 
 ## C. Nächste Welle (konkret)
 
-1. GenealogyView-Konventionsblock komplett (Number.isFinite + duplicate branch)
-2. DashboardSummary/HistoryChart/SensorIntegrationPanel/SimulationDebugTab (schnelle UI-smells)
-3. dbService/cryptoService (Reliability)
-4. exportService und AddStrainModal als eigene fokussierte Wellen
+1. JournalTab Reststellen (remaining nested-template-literal Hinweise) und MentorView nested-template-literal
+1. Strains-Cluster Rest: aktuell kein konkreter offener Punkt aus den priorisierten Dateien
+1. services/exportService nested-template-literal Block komplettieren: erledigt
+1. SeedbanksView Restpruefung und GuideView Reststellen: erledigt
+
+## F. Aktueller Restfokus
+
+1. Sonar neu laufen lassen und verbleibende Issues gegen den aktuellen Branchstand neu clustern
+1. Danach nur noch echte Rest-Issues in neuen, kleinen Wellen abarbeiten
+1. Optional: weitere repo-weite sort->toSorted Reststellen in nicht-priorisierten Views/Services sammeln und als Low-Risk-Konventionswelle schließen
 
 ## D. Validierung je Welle
 

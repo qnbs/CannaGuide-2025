@@ -14,6 +14,9 @@ const SECURE_KEY_ID = 'api-key-encryption'
 let secureDb: IDBDatabase | null = null
 let secureDbPromise: Promise<IDBDatabase> | null = null
 
+const toIndexedDbError = (error: DOMException | null, fallbackMessage: string): Error =>
+    error ?? new Error(fallbackMessage)
+
 const bytesToBase64 = (bytes: Uint8Array): string => btoa(String.fromCharCode(...bytes))
 
 const base64ToBytes = (value: string): Uint8Array => {
@@ -70,7 +73,9 @@ function openSecureDb(): Promise<IDBDatabase> {
 
         request.onerror = () => {
             secureDbPromise = null
-            reject(request.error)
+            reject(
+                toIndexedDbError(request.error, '[cryptoService] Failed to open secure database.'),
+            )
         }
     })
 
@@ -80,7 +85,8 @@ function openSecureDb(): Promise<IDBDatabase> {
 function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
         request.onsuccess = () => resolve(request.result)
-        request.onerror = () => reject(request.error)
+        request.onerror = () =>
+            reject(toIndexedDbError(request.error, '[cryptoService] IndexedDB request failed.'))
     })
 }
 

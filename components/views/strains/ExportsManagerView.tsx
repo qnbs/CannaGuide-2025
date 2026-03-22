@@ -46,7 +46,7 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({
         )
     }
 
-    const sortedExports = [...savedExports].sort((a, b) => b.createdAt - a.createdAt)
+    const sortedExports = savedExports.toSorted((a, b) => b.createdAt - a.createdAt)
 
     return (
         <div className="space-y-3">

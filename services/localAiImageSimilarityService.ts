@@ -222,7 +222,7 @@ export const findSimilarImages = async (
         }
     }
 
-    return results.sort((a, b) => b.score - a.score).slice(0, topK)
+    return results.toSorted((a, b) => b.score - a.score).slice(0, topK)
 }
 
 /**
@@ -237,7 +237,7 @@ export const analyzeGrowthProgression = async (
     }
 
     // Sort by timestamp
-    const sorted = [...photos].sort((a, b) => a.timestamp - b.timestamp)
+    const sorted = photos.toSorted((a, b) => a.timestamp - b.timestamp)
 
     // Extract features for all photos
     const features: Float32Array[] = []

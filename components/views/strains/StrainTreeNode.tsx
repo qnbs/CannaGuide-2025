@@ -71,6 +71,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
                 <div
                     className={`relative genealogy-node-container ${isPlaceholder ? 'placeholder' : ''}`}
                     role="treeitem"
+                    aria-selected={false}
                     aria-label={t('common.accessibility.genealogyTreeNode', {
                         name: safeName,
                         type: safeType,

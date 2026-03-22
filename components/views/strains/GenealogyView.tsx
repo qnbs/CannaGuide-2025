@@ -486,9 +486,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 if (!target) return
                 const { width, height } = svgRef.current.getBoundingClientRect()
                 const { x: nodeX, y: nodeY } = getLayoutPosition(target?.x, target?.y)
-                if (!isFinite(nodeX) || !isFinite(nodeY)) return
+                if (!Number.isFinite(nodeX) || !Number.isFinite(nodeY)) return
                 const currentK = d3.zoomTransform(svgRef.current).k
-                const scale = Math.max(isFinite(currentK) ? currentK : 1, 0.8)
+                const scale = Math.max(Number.isFinite(currentK) ? currentK : 1, 0.8)
                 const tx = width / 2 - nodeX * scale
                 const ty = height / 2 - nodeY * scale
                 d3.select(svgRef.current)
@@ -519,8 +519,13 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     const handleSelectChange = useCallback(
         (e: { target: { value: string | number } }) => {
             try {
+                const selectedValue = e?.target?.value
                 dispatch(
-                    setSelectedGenealogyStrain(e?.target?.value ? String(e.target.value) : null),
+                    setSelectedGenealogyStrain(
+                        selectedValue != null && String(selectedValue).length > 0
+                            ? String(selectedValue)
+                            : null,
+                    ),
                 )
             } catch (err) {
                 console.error('[GenealogyView] handleSelectChange error:', err)
@@ -601,11 +606,11 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             if (
                                 tr &&
                                 typeof tr.k === 'number' &&
-                                isFinite(tr.k) &&
+                                Number.isFinite(tr.k) &&
                                 typeof tr.x === 'number' &&
-                                isFinite(tr.x) &&
+                                Number.isFinite(tr.x) &&
                                 typeof tr.y === 'number' &&
-                                isFinite(tr.y)
+                                Number.isFinite(tr.y)
                             ) {
                                 dispatch(setGenealogyZoom({ k: tr.k, x: tr.x, y: tr.y }))
                             }
@@ -626,9 +631,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     .duration(750)
                     .call(zoomBehavior.transform, d3.zoomIdentity.translate(ix, iy))
             } else if (
-                isFinite(savedTransform.k) &&
-                isFinite(savedTransform.x) &&
-                isFinite(savedTransform.y) &&
+                Number.isFinite(savedTransform.k) &&
+                Number.isFinite(savedTransform.x) &&
+                Number.isFinite(savedTransform.y) &&
                 savedTransform.k > 0
             ) {
                 svg.call(
@@ -776,7 +781,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 try {
                     if (!node?.data) return null
                     const { x, y } = getLayoutPosition(node?.x, node?.y)
-                    if (!isFinite(x) || !isFinite(y)) return null
+                    if (!Number.isFinite(x) || !Number.isFinite(y)) return null
                     const matches = nodeMatchesHighlight(node.data)
                     const isDimmed = highlightMode !== 'none' && !matches
                     return (

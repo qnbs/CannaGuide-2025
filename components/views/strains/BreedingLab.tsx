@@ -256,7 +256,9 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
 
     const sortedStrains = useMemo(
         () =>
-            [...allStrains.filter((strain): strain is Strain => Boolean(strain))].sort((a, b) =>
+            allStrains
+                .filter((strain): strain is Strain => Boolean(strain))
+                .toSorted((a, b) =>
                 compareText(a.name, b.name),
             ),
         [allStrains],
@@ -328,7 +330,10 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
     const handleNextGen = useCallback(() => {
         setGeneration((prev) => {
             const idx = GENERATIONS.indexOf(prev)
-            return idx < GENERATIONS.length - 1 ? (GENERATIONS[idx + 1] ?? prev) : prev
+            if (idx < GENERATIONS.length - 1) {
+                return GENERATIONS[idx + 1] ?? prev
+            }
+            return prev
         })
     }, [])
 
@@ -436,23 +441,24 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                                 const currentIdx = GENERATIONS.indexOf(generation)
                                 const isActive = gen === generation
                                 const isPast = i < currentIdx
+                                let generationBadgeClassName =
+                                    'px-3 py-1 rounded-full text-xs font-bold transition-colors '
+                                if (isActive) {
+                                    generationBadgeClassName +=
+                                        'bg-primary-600 text-white ring-2 ring-primary-400'
+                                } else if (isPast) {
+                                    generationBadgeClassName += 'bg-slate-600 text-slate-300'
+                                } else {
+                                    generationBadgeClassName += 'bg-slate-800 text-slate-500'
+                                }
+                                const arrowClassName = `w-3 h-3 ${isPast ? 'text-slate-400' : 'text-slate-600'}`
                                 return (
                                     <React.Fragment key={gen}>
-                                        <span
-                                            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
-                                                isActive
-                                                    ? 'bg-primary-600 text-white ring-2 ring-primary-400'
-                                                    : isPast
-                                                      ? 'bg-slate-600 text-slate-300'
-                                                      : 'bg-slate-800 text-slate-500'
-                                            }`}
-                                        >
+                                        <span className={generationBadgeClassName}>
                                             {gen}
                                         </span>
                                         {i < GENERATIONS.length - 1 && (
-                                            <PhosphorIcons.ArrowRight
-                                                className={`w-3 h-3 ${isPast ? 'text-slate-400' : 'text-slate-600'}`}
-                                            />
+                                            <PhosphorIcons.ArrowRight className={arrowClassName} />
                                         )}
                                     </React.Fragment>
                                 )

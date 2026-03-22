@@ -102,6 +102,20 @@ const getRangeValue = (
 
 const getSafeAgronomic = (strain: Strain) => strain.agronomic ?? DEFAULT_AGRONOMIC
 
+const getExportSourceTranslationKey = (source: 'selected' | 'all', count: number): string => {
+    if (source === 'selected') {
+        if (count === 1) {
+            return 'strainsView.exportModal.sources.selected_one'
+        }
+        return 'strainsView.exportModal.sources.selected_other'
+    }
+
+    if (count === 1) {
+        return 'strainsView.exportModal.sources.all_one'
+    }
+    return 'strainsView.exportModal.sources.all_other'
+}
+
 export const StrainsView: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
@@ -225,13 +239,13 @@ export const StrainsView: React.FC = () => {
             })
 
         return {
-            allAromas: Array.from(aromaSet).sort((a, b) =>
+            allAromas: Array.from(aromaSet).toSorted((a, b) =>
                 compareText(
                     t(`common.aromas.${a}`, { defaultValue: a }),
                     t(`common.aromas.${b}`, { defaultValue: b }),
                 ),
             ),
-            allTerpenes: Array.from(terpeneSet).sort((a, b) =>
+            allTerpenes: Array.from(terpeneSet).toSorted((a, b) =>
                 compareText(
                     t(`common.terpenes.${a}`, { defaultValue: a }),
                     t(`common.terpenes.${b}`, { defaultValue: b }),
@@ -455,10 +469,10 @@ export const StrainsView: React.FC = () => {
     const handleExport = useCallback(
         (format: SimpleExportFormat) => {
             const source = selectedIdsSet.size > 0 ? 'selected' : 'all'
-            const dataToExport =
-                source === 'selected'
-                    ? allStrains.filter((strain) => selectedIdsSet.has(strain.id))
-                    : filteredStrains
+            let dataToExport: Strain[] = filteredStrains
+            if (source === 'selected') {
+                dataToExport = allStrains.filter((strain) => selectedIdsSet.has(strain.id))
+            }
 
             if (dataToExport.length === 0) {
                 dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }))
@@ -466,16 +480,8 @@ export const StrainsView: React.FC = () => {
                 return
             }
 
-            const sourceDescription = t(
-                source === 'selected'
-                    ? dataToExport.length === 1
-                        ? 'strainsView.exportModal.sources.selected_one'
-                        : 'strainsView.exportModal.sources.selected_other'
-                    : dataToExport.length === 1
-                      ? 'strainsView.exportModal.sources.all_one'
-                      : 'strainsView.exportModal.sources.all_other',
-                { count: dataToExport.length },
-            )
+            const sourceTranslationKey = getExportSourceTranslationKey(source, dataToExport.length)
+            const sourceDescription = t(sourceTranslationKey, { count: dataToExport.length })
 
             const fileName = `CannaGuide_Strains_${new Date().toISOString().slice(0, 10)}`
 
@@ -536,6 +542,11 @@ export const StrainsView: React.FC = () => {
             case StrainViewTab.All:
             case StrainViewTab.MyStrains:
             case StrainViewTab.Favorites:
+                {
+                    let bulkDeleteHandler: (() => void) | undefined
+                    if (strainsViewTab === StrainViewTab.MyStrains) {
+                        bulkDeleteHandler = handleBulkDelete
+                    }
                 return (
                     <ErrorBoundary>
                         <Suspense
@@ -566,16 +577,13 @@ export const StrainsView: React.FC = () => {
                                 onClearSelection={handleClearSelection}
                                 onAddToFavorites={handleAddSelectedToFavorites}
                                 onRemoveFromFavorites={handleRemoveSelectedFromFavorites}
-                                onDelete={
-                                    strainsViewTab === StrainViewTab.MyStrains
-                                        ? handleBulkDelete
-                                        : undefined
-                                }
+                                onDelete={bulkDeleteHandler}
                                 strainsViewTab={strainsViewTab}
                             />
                         </Suspense>
                     </ErrorBoundary>
                 )
+                }
             case StrainViewTab.Tips:
                 return (
                     <ErrorBoundary>

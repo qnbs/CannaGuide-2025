@@ -103,9 +103,6 @@ const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () =>
                 open
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in"
                 aria-label={entry.notes}
-                onKeyDown={(e) => {
-                    if (e.key === 'Escape') onClose()
-                }}
             >
                 <div className="relative max-w-[90vw] max-h-[90vh]">
                     <button

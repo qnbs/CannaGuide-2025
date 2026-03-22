@@ -37,13 +37,16 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
             className="flex gap-0.5 items-center"
             title={t(`strainsView.difficulty.${safeDifficulty.toLowerCase()}`)}
         >
-            {[1, 2, 3].map((marker) => (
-                <PhosphorIcons.Cannabis
-                    key={`difficulty-marker-${marker}`}
-                    weight="fill"
-                    className={`w-4 h-4 ${marker <= level ? color : 'text-slate-600'}`}
-                />
-            ))}
+            {[1, 2, 3].map((marker) => {
+                const markerColorClassName = marker <= level ? color : 'text-slate-600'
+                return (
+                    <PhosphorIcons.Cannabis
+                        key={`difficulty-marker-${marker}`}
+                        weight="fill"
+                        className={`w-4 h-4 ${markerColorClassName}`}
+                    />
+                )
+            })}
         </div>
     )
 }
@@ -203,19 +206,19 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
         }
 
         // Prioritize user strains and favorites
-        strainsToShow.sort((a, b) => {
-            const aIsUser = userStrains.some((s) => s.id === a.id)
-            const bIsUser = userStrains.some((s) => s.id === b.id)
-            const aIsFav = favorites.has(a.id)
-            const bIsFav = favorites.has(b.id)
-            if (aIsUser && !bIsUser) return -1
-            if (!aIsUser && bIsUser) return 1
-            if (aIsFav && !bIsFav) return -1
-            if (!aIsFav && bIsFav) return 1
-            return compareText(a.name, b.name)
-        })
-
-        return strainsToShow.slice(0, 100) // Limit results for performance
+        return strainsToShow
+            .toSorted((a, b) => {
+                const aIsUser = userStrains.some((s) => s.id === a.id)
+                const bIsUser = userStrains.some((s) => s.id === b.id)
+                const aIsFav = favorites.has(a.id)
+                const bIsFav = favorites.has(b.id)
+                if (aIsUser && !bIsUser) return -1
+                if (!aIsUser && bIsUser) return 1
+                if (aIsFav && !bIsFav) return -1
+                if (!aIsFav && bIsFav) return 1
+                return compareText(a.name, b.name)
+            })
+            .slice(0, 100) // Limit results for performance
     }, [searchTerm, allStrains, userStrains, favorites])
 
     return (

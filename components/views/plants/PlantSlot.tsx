@@ -38,13 +38,16 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     )
     const openTasks = useMemo(() => plant.tasks.filter((t) => !t.isCompleted), [plant.tasks])
     const healthIndicator = getHealthIndicator(plant.health)
+    const stageLabel = t(`plantStages.${plant.stage}`)
+    const plantAriaLabel = `${plant.name} - ${stageLabel}`
+    const healthDotClassName = `w-2.5 h-2.5 rounded-full ${healthIndicator.color} ${healthIndicator.pulse ? 'animate-pulse' : ''}`
 
     if (!stageDetails) return null
 
     return (
         <Card
             onClick={onInspect}
-            aria-label={`${plant.name} – ${t(`plantStages.${plant.stage}`)}`}
+            aria-label={plantAriaLabel}
             className="flex flex-col h-full cursor-pointer card-interactive p-3 group"
         >
             <div className="flex justify-between items-start">
@@ -55,12 +58,12 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
                 <div className="flex items-center gap-2 flex-shrink-0">
                     {/* Health dot indicator */}
                     <div
-                        className={`w-2.5 h-2.5 rounded-full ${healthIndicator.color} ${healthIndicator.pulse ? 'animate-pulse' : ''}`}
+                        className={healthDotClassName}
                         title={`${t('plantsView.summary.gardenHealth')}: ${Math.round(plant.health)}%`}
                     />
                     <div className="text-right bg-slate-800/80 px-2 py-0.5 rounded-full text-xs">
                         <p className="font-semibold text-slate-200">
-                            {t(`plantStages.${plant.stage}`)}
+                            {stageLabel}
                         </p>
                         {!isPostHarvest && (
                             <p className="text-slate-300">

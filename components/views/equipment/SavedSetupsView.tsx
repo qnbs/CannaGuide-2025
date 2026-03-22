@@ -33,7 +33,7 @@ const SavedSetupsViewComponent: React.FC<SavedSetupsViewProps> = ({ savedSetups,
         setIsExportModalOpen(false);
     };
 
-    const sortedSetups = [...savedSetups].sort((a, b) => b.createdAt - a.createdAt);
+    const sortedSetups = savedSetups.toSorted((a, b) => b.createdAt - a.createdAt);
 
     if (sortedSetups.length === 0) {
         return (

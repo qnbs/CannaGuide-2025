@@ -360,15 +360,18 @@ const buildSummary = (
         .slice(0, 3)
         .map((effect) => effect.tag)
         .join(', ')
+    const dominantTerpeneSummary = dominantTerpene
+        ? `Dominant terpene: ${dominantTerpene.name} - ${dominantTerpene.description} `
+        : ''
+    const leadSynergySummary =
+        synergies.length > 0 && synergies[0]
+            ? `Key synergy: ${synergies[0].terpene}×${synergies[0].cannabinoid} - ${synergies[0].effect}.`
+            : ''
     return (
         `THC:CBD ratio ${thcCbdRatio}. ` +
-        (dominantTerpene
-            ? `Dominant terpene: ${dominantTerpene.name} - ${dominantTerpene.description} `
-            : '') +
+        dominantTerpeneSummary +
         `Top predicted effects: ${topEffectNames}. ` +
-        (synergies.length > 0 && synergies[0]
-            ? `Key synergy: ${synergies[0].terpene}×${synergies[0].cannabinoid} - ${synergies[0].effect}.`
-            : '')
+        leadSynergySummary
     )
 }
 
@@ -383,18 +386,18 @@ class EntourageService {
 
         // --- Sort effects ----------------------------------------------------
         const sortedEffects = (Object.entries(effectScores) as [EffectTag, number][])
-            .sort((a, b) => b[1] - a[1])
+            .toSorted((a, b) => b[1] - a[1])
             .slice(0, 6)
             .map(([tag, score]) => ({ tag, score }))
 
         // --- Profile label ---------------------------------------------------
         const top = sortedEffects[0]?.tag
-        const thcCbdRatio =
-            cbd > 0.1
-                ? `${(thc / cbd).toFixed(1)}:1`
-                : thc > 5
-                  ? '∞:1 (CBD trace)'
-                  : 'CBD:THC dominant'
+        let thcCbdRatio = 'CBD:THC dominant'
+        if (cbd > 0.1) {
+            thcCbdRatio = `${(thc / cbd).toFixed(1)}:1`
+        } else if (thc > 5) {
+            thcCbdRatio = '∞:1 (CBD trace)'
+        }
         const profileLabel = getProfileLabel(effectScores, top)
         const summary = buildSummary(thcCbdRatio, dominantTerpene, sortedEffects, synergies)
 

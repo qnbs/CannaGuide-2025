@@ -27,8 +27,12 @@ const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
                 isRelevant = false
         }
         if (isRelevant && triggers.activeProblems) {
-            const activeProblemTypes = plant.problems.filter((p) => p.status === 'active').map((p) => p.type)
-            if (!triggers.activeProblems.some((p) => activeProblemTypes.includes(p)))
+            const activeProblemTypes = new Set(
+                plant.problems
+                    .filter((problem) => problem.status === 'active')
+                    .map((problem) => problem.type),
+            )
+            if (!triggers.activeProblems.some((problemType) => activeProblemTypes.has(problemType)))
                 isRelevant = false
         }
         return isRelevant
@@ -76,11 +80,16 @@ export const MentorView: React.FC = () => {
                         <Select
                             label={t('knowledgeView.hub.selectPlant')}
                             value={selectedPlantId || ''}
-                            onChange={(e: { target: { value: string | number } }) => setSelectedPlantId(e.target.value as string)}
-                            options={activePlants.map((p) => ({
-                                value: p.id,
-                                label: `${p.name} (${t(`plantStages.${p.stage}`)})`,
-                            }))}
+                            onChange={(e: { target: { value: string | number } }) =>
+                                setSelectedPlantId(e.target.value as string)
+                            }
+                            options={activePlants.map((p) => {
+                                const stageLabel = t(`plantStages.${p.stage}`)
+                                return {
+                                    value: p.id,
+                                    label: `${p.name} (${stageLabel})`,
+                                }
+                            })}
                         />
                         <Button
                             onClick={() => dispatch(setActiveMentorPlantId(selectedPlantId))}

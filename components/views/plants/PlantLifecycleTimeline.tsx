@@ -36,6 +36,7 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(
 
         const progressPercentage = Math.min(100, (currentAge / totalDuration) * 100)
         const daysRemaining = Math.max(0, totalDuration - currentAge)
+        const daysUnitLabel = t('common.units.days')
 
         let cumulativeDuration = 0
 
@@ -62,13 +63,16 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(
                             const opacityClass =
                                 isCompleted || isCurrent ? 'opacity-100' : 'opacity-30'
                             const currentRingClass = isCurrent ? 'ring-1 ring-white/40' : ''
+                            const stageClassName = `relative transition-all duration-300 ${stageColors[stage]} ${opacityClass} ${currentRingClass}`
+                            const stageLabel = t(`plantStages.${stage}`)
+                            const stageTitle = `${stageLabel} (~${stageInfo.duration} ${daysUnitLabel})`
 
                             return (
                                 <div
                                     key={stage}
                                     style={{ width: `${width}%` }}
-                                    className={`relative transition-all duration-300 ${stageColors[stage]} ${opacityClass} ${currentRingClass}`}
-                                    title={`${t(`plantStages.${stage}`)} (~${stageInfo.duration} ${t('common.units.days')})`}
+                                    className={stageClassName}
+                                    title={stageTitle}
                                 >
                                     {/* Show duration label on wider segments */}
                                     {width > 12 && (

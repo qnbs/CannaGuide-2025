@@ -102,11 +102,13 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         if (Number.isNaN(floweringTime) || floweringTime < 4 || floweringTime > 20)
             errors.floweringTime = t('strainsView.addStrainModal.validation.floweringTime')
 
-        const rangeRegex =
-            /^(?:[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?)$|^(?:\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?)$/
-        if (values.thcRange && !rangeRegex.test(values.thcRange))
+        const singleValueRangeRegex = /^[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?$/
+        const spanRangeRegex = /^\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?$/
+        const isValidRange = (range: string): boolean =>
+            singleValueRangeRegex.test(range) || spanRangeRegex.test(range)
+        if (values.thcRange && !isValidRange(values.thcRange))
             errors.thcRange = t('strainsView.addStrainModal.validation.thcRange')
-        if (values.cbdRange && !rangeRegex.test(values.cbdRange))
+        if (values.cbdRange && !isValidRange(values.cbdRange))
             errors.cbdRange = t('strainsView.addStrainModal.validation.cbdRange')
         return errors
     }

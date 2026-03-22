@@ -56,8 +56,9 @@ const renderTrainingDetails = (
 ): void => {
     const d = entry.details as TrainingDetails
     if (!d.type) return
+    const translatedType = t(`plantsView.actionModals.trainingTypes.${d.type}`)
     detailsArray.push(
-        `${t('plantsView.journal.details.type')}: ${t(`plantsView.actionModals.trainingTypes.${d.type}`)}`,
+        `${t('plantsView.journal.details.type')}: ${translatedType}`,
     )
 }
 
@@ -77,10 +78,12 @@ const renderPhotoDetails = (
     t: (key: string) => string,
 ): void => {
     const d = entry.details as PhotoDetails
-    if (d.photoCategory)
+    if (d.photoCategory) {
+        const translatedCategory = t(`plantsView.actionModals.photo.categories.${d.photoCategory}`)
         detailsArray.push(
-            `${t('plantsView.journal.details.category')}: ${t(`plantsView.actionModals.photo.categories.${d.photoCategory}`)}`,
+            `${t('plantsView.journal.details.category')}: ${translatedCategory}`,
         )
+    }
     if (d.timelineLabel)
         detailsArray.push(`${t('plantsView.journal.details.timeline')}: ${d.timelineLabel}`)
 }
@@ -102,8 +105,9 @@ const renderAmendmentDetails = (
 ): void => {
     const d = entry.details as AmendmentDetails
     if (!d.type) return
+    const translatedType = t(`plantsView.actionModals.amendmentTypes.${d.type}`)
     detailsArray.push(
-        `${t('plantsView.journal.details.type')}: ${t(`plantsView.actionModals.amendmentTypes.${d.type}`)}`,
+        `${t('plantsView.journal.details.type')}: ${translatedType}`,
     )
 }
 
@@ -276,6 +280,19 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
         [],
     )
 
+    const getFilterButtonClassName = (isSelected: boolean): string => {
+        const stateClassName = isSelected
+            ? 'bg-primary-600 text-white font-semibold'
+            : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+        return `flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors ${stateClassName} ring-1 ring-inset ring-white/20`
+    }
+
+    const getFilterCountClassName = (isSelected: boolean): string => {
+        return isSelected
+            ? 'text-[10px] rounded-full px-1.5 py-0.5 bg-white/20 text-white'
+            : 'text-[10px] rounded-full px-1.5 py-0.5 bg-slate-700 text-slate-400'
+    }
+
     return (
         <Card>
             {/* Filter bar with entry counts */}
@@ -288,27 +305,18 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
             <div className="flex flex-wrap gap-2 mb-4">
                 {journalFilterOptions.map((opt) => {
                     const count = entryCounts.get(opt.value) ?? 0
+                    const isSelected = journalFilter === opt.value
                     return (
                         <button
                             type="button"
                             key={opt.value}
                             onClick={() => handleFilterChange(opt.value)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors ${
-                                journalFilter === opt.value
-                                    ? 'bg-primary-600 text-white font-semibold'
-                                    : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
-                            } ring-1 ring-inset ring-white/20`}
+                            className={getFilterButtonClassName(isSelected)}
                         >
                             <span className="w-4 h-4">{opt.icon}</span>
                             <span>{opt.label}</span>
                             {count > 0 && (
-                                <span
-                                    className={`text-[10px] rounded-full px-1.5 py-0.5 ${
-                                        journalFilter === opt.value
-                                            ? 'bg-white/20 text-white'
-                                            : 'bg-slate-700 text-slate-400'
-                                    }`}
-                                >
+                                <span className={getFilterCountClassName(isSelected)}>
                                     {count}
                                 </span>
                             )}

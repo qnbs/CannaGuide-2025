@@ -22,7 +22,7 @@ export interface ChemotypeResult {
 }
 
 const dominantKey = (entries: Array<[string, number]>) =>
-    entries.sort((a, b) => b[1] - a[1])[0]?.[0] || 'n/a'
+    entries.toSorted((a, b) => b[1] - a[1])[0]?.[0] || 'n/a'
 
 class ChemotypeService {
     public calculate(input: ChemotypeInput): ChemotypeResult {
@@ -44,10 +44,15 @@ class ChemotypeService {
         const dominantTerpene = dominantKey(terpenes)
 
         let profileLabel = t('equipmentView.calculators.chemotype.profiles.balanced')
-        if (input.thc >= 18 && input.cbd < 1) profileLabel = t('equipmentView.calculators.chemotype.profiles.thcForward')
-        if (input.cbd >= 8 && input.thc <= 12) profileLabel = t('equipmentView.calculators.chemotype.profiles.cbdForward')
-        if (input.myrcene >= 0.6) profileLabel = t('equipmentView.calculators.chemotype.profiles.relaxing')
-        if (input.limonene >= 0.5 && input.pinene >= 0.3) profileLabel = t('equipmentView.calculators.chemotype.profiles.uplifting')
+        if (input.limonene >= 0.5 && input.pinene >= 0.3) {
+            profileLabel = t('equipmentView.calculators.chemotype.profiles.uplifting')
+        } else if (input.myrcene >= 0.6) {
+            profileLabel = t('equipmentView.calculators.chemotype.profiles.relaxing')
+        } else if (input.cbd >= 8 && input.thc <= 12) {
+            profileLabel = t('equipmentView.calculators.chemotype.profiles.cbdForward')
+        } else if (input.thc >= 18 && input.cbd < 1) {
+            profileLabel = t('equipmentView.calculators.chemotype.profiles.thcForward')
+        }
 
         const guidance = [
             t('equipmentView.calculators.chemotype.guidance.dominantCannabinoid', { name: dominantCannabinoid }),

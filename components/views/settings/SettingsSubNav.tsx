@@ -75,6 +75,7 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
             ref={navRef}
             role="tablist"
             aria-label={t('settingsView.title')}
+            tabIndex={0}
             className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5"
             onKeyDown={handleKeyDown}
         >

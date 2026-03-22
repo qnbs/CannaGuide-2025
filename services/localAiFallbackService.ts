@@ -226,20 +226,27 @@ const summarizeTrend = (context: NutrientRecommendationContext, lang: Language):
     if (!firstReading || !lastReading) return null
     const ecDelta = lastReading.ec - firstReading.ec
     const phDelta = lastReading.ph - firstReading.ph
+    const german = isGerman(lang)
 
     const changes: string[] = []
     if (Math.abs(ecDelta) >= 0.15) {
+        const ecDirectionDe = ecDelta > 0 ? 'steigt' : 'fällt'
+        const ecDirectionEn = ecDelta > 0 ? 'risen' : 'fallen'
+        const ecDeltaLabel = Math.abs(ecDelta).toFixed(2)
         changes.push(
-            isGerman(lang)
-                ? `EC ${ecDelta > 0 ? 'steigt' : 'fällt'} über die letzten Messungen um ${Math.abs(ecDelta).toFixed(2)}.`
-                : `EC has ${ecDelta > 0 ? 'risen' : 'fallen'} by ${Math.abs(ecDelta).toFixed(2)} across the recent readings.`,
+            german
+                ? `EC ${ecDirectionDe} über die letzten Messungen um ${ecDeltaLabel}.`
+                : `EC has ${ecDirectionEn} by ${ecDeltaLabel} across the recent readings.`,
         )
     }
     if (Math.abs(phDelta) >= 0.15) {
+        const phDirectionDe = phDelta > 0 ? 'steigt' : 'fällt'
+        const phDirectionEn = phDelta > 0 ? 'risen' : 'fallen'
+        const phDeltaLabel = Math.abs(phDelta).toFixed(2)
         changes.push(
-            isGerman(lang)
-                ? `pH ${phDelta > 0 ? 'steigt' : 'fällt'} über die letzten Messungen um ${Math.abs(phDelta).toFixed(2)}.`
-                : `pH has ${phDelta > 0 ? 'risen' : 'fallen'} by ${Math.abs(phDelta).toFixed(2)} across the recent readings.`,
+            german
+                ? `pH ${phDirectionDe} über die letzten Messungen um ${phDeltaLabel}.`
+                : `pH has ${phDirectionEn} by ${phDeltaLabel} across the recent readings.`,
         )
     }
 
@@ -1378,17 +1385,25 @@ class LocalAiFallbackService {
         const diagnosis = diagnosePlant(plant, lang)
         const safeQuery = safe(query)
         const safeRag = safe(ragContext)
+        const issueListHtml = diagnosis.issues.map((issue) => `<li>${safe(issue)}</li>`).join('')
+        const hasIssues = diagnosis.issues.length > 0
+        const issuesSectionDe = hasIssues
+            ? `<p><strong>Erkannte Probleme:</strong></p><ul>${issueListHtml}</ul>`
+            : '<p>Alle Werte im Normalbereich.</p>'
+        const issuesSectionEn = hasIssues
+            ? `<p><strong>Detected issues:</strong></p><ul>${issueListHtml}</ul>`
+            : '<p>All parameters within normal range.</p>'
 
         if (isGerman(lang)) {
             return {
                 title: `Lokaler Mentor: ${safe(plant.name)}`,
-                content: `<p><strong>Hinweis:</strong> KI-API nicht verfügbar. Antwort basiert auf lokaler Analyse.</p><p><strong>Frage:</strong> ${safeQuery}</p><p><strong>Pflanze:</strong> ${safe(formatPlantLine(plant))}</p>${diagnosis.issues.length > 0 ? `<p><strong>Erkannte Probleme:</strong></p><ul>${diagnosis.issues.map((i) => `<li>${safe(i)}</li>`).join('')}</ul>` : '<p>Alle Werte im Normalbereich.</p>'}<p><strong>Relevante Logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Empfehlung:</strong> ${safe(diagnosis.topPriority)}</p>`,
+                content: `<p><strong>Hinweis:</strong> KI-API nicht verfügbar. Antwort basiert auf lokaler Analyse.</p><p><strong>Frage:</strong> ${safeQuery}</p><p><strong>Pflanze:</strong> ${safe(formatPlantLine(plant))}</p>${issuesSectionDe}<p><strong>Relevante Logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Empfehlung:</strong> ${safe(diagnosis.topPriority)}</p>`,
             }
         }
 
         return {
             title: `Local Mentor: ${safe(plant.name)}`,
-            content: `<p><strong>Note:</strong> AI API unavailable. This answer uses local heuristic analysis.</p><p><strong>Question:</strong> ${safeQuery}</p><p><strong>Plant:</strong> ${safe(formatPlantLine(plant))}</p>${diagnosis.issues.length > 0 ? `<p><strong>Detected issues:</strong></p><ul>${diagnosis.issues.map((i) => `<li>${safe(i)}</li>`).join('')}</ul>` : '<p>All parameters within normal range.</p>'}<p><strong>Relevant logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Recommendation:</strong> ${safe(diagnosis.topPriority)}</p>`,
+            content: `<p><strong>Note:</strong> AI API unavailable. This answer uses local heuristic analysis.</p><p><strong>Question:</strong> ${safeQuery}</p><p><strong>Plant:</strong> ${safe(formatPlantLine(plant))}</p>${issuesSectionEn}<p><strong>Relevant logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Recommendation:</strong> ${safe(diagnosis.topPriority)}</p>`,
         }
     }
 

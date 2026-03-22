@@ -130,6 +130,10 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 
 - services/migrationLogic.ts (globale isFinite-Aufrufe auf Number.isFinite umgestellt)
 
+1. Restcluster Template/Ternary-Entkopplung
+
+- services/localAiFallbackService.ts (verschachtelte Ternary-Templates in summarizeTrend entkoppelt, Mentor-HTML-Issue-Block vorab aufgebaut)
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich

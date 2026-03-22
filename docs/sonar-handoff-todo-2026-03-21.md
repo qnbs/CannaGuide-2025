@@ -48,6 +48,7 @@ Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erled
 - `services/ttsService.ts`: erledigt (readonly synth Initialisierung direkt am Feld, Konstruktor vereinfacht)
 - `services/growReminderService.ts`: erledigt (Zeitparser ohne NaN-Defaults, stricte Guard-Validierung)
 - `services/plantSimulationService.ts`: verbleibende Lesbarkeits-/Komplexitaets-Smells in langen Number.isFinite-Bloecken clustern
+  Statusupdate: nullish-Fallbacks (`||` -> `??`) in Stress-Countern, Substrat-RH-Zweig und Projection-State vereinheitlicht.
 - `components/views/settings/DataManagementTab.tsx`: erledigt (parsed-Guard nullish-safe/typed normalisiert)
 - `components/views/strains/StrainGridItem.tsx`: erledigt (native overlay button statt role/tabindex div)
 - `components/views/strains/StrainListItem.tsx`: erledigt (native overlay button statt role/tabindex div)

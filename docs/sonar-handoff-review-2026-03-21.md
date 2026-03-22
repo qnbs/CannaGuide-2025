@@ -121,6 +121,11 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 - services/migrationLogic.ts (sort -> toSorted)
 - services/predictiveAnalyticsService.ts (sort -> toSorted)
 
+1. Restcluster Lesbarkeit/Maintainability
+
+- components/views/knowledge/MentorView.tsx (komplexe useEffect-Bedingung in klar benannte Teilbedingungen entkoppelt)
+- components/views/plants/detailedPlantViewTabs/JournalTab.tsx (reverse -> toReversed, IIFE im map-Rendering entfernt)
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich

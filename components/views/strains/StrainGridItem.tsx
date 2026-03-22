@@ -66,12 +66,11 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
             typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
                 ? strain.floweringTime
                 : 0
+        const cardClassName = `flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`
+        const favoriteButtonClassName = `!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`
 
         return (
-            <Card
-                className={`flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`}
-                style={{ animationDelay: `${index * 20}ms` }}
-            >
+            <Card className={cardClassName} style={{ animationDelay: `${index * 20}ms` }}>
                 <button
                     type="button"
                     onClick={() => onSelect(strain)}
@@ -120,7 +119,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                     <Button
                         variant="ghost"
                         size="sm"
-                        className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
+                        className={favoriteButtonClassName}
                         onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
                             handleActionClick(e, () => onToggleFavorite(strain.id))
                         }

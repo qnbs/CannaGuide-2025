@@ -121,6 +121,8 @@ const SensorIntegrationPanelComponent: React.FC = () => {
     } else if (mqttConnected) {
         mqttToggleLabel = t('plantsView.sensor.mqttDisconnect')
     }
+    const getModeButtonClassName = (isSelected: boolean): string =>
+        `flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${isSelected ? 'bg-primary-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`
 
     return (
         <Card>
@@ -134,7 +136,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                 <button
                     type="button"
                     aria-pressed={mode === 'ble'}
-                    className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${mode === 'ble' ? 'bg-primary-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                    className={getModeButtonClassName(mode === 'ble')}
                     onClick={() => setMode('ble')}
                 >
                     <PhosphorIcons.Bluetooth className="w-4 h-4 inline mr-1" />
@@ -143,7 +145,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                 <button
                     type="button"
                     aria-pressed={mode === 'mqtt'}
-                    className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${mode === 'mqtt' ? 'bg-primary-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                    className={getModeButtonClassName(mode === 'mqtt')}
                     onClick={() => setMode('mqtt')}
                 >
                     <PhosphorIcons.WifiHigh className="w-4 h-4 inline mr-1" />

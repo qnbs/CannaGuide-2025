@@ -99,17 +99,22 @@ export const ensurePersistentStorage = async (): Promise<boolean | null> => {
 }
 
 const formatReportDetails = (report: LocalAiPreloadReport): string => {
+    const formatReadiness = (
+        ready: boolean,
+        unavailableLabel: 'missing' | 'skipped' | 'unavailable' = 'missing',
+    ): string => (ready ? 'ready' : unavailableLabel)
+
     const segments = [
-        `text=${report.textModelReady ? 'ready' : 'missing'}`,
-        `vision=${report.visionModelReady ? 'ready' : 'missing'}`,
-        `webLlm=${report.webLlmReady ? 'ready' : 'skipped'}`,
-        `embedding=${report.embeddingModelReady ? 'ready' : 'missing'}`,
-        `sentiment=${report.sentimentModelReady ? 'ready' : 'missing'}`,
-        `summarization=${report.summarizationModelReady ? 'ready' : 'missing'}`,
-        `zeroShot=${report.zeroShotTextModelReady ? 'ready' : 'missing'}`,
-        `langDetect=${report.languageDetectionReady ? 'ready' : 'missing'}`,
-        `imgSimilarity=${report.imageSimilarityReady ? 'ready' : 'missing'}`,
-        `imageGen=${report.imageGenerationReady ? 'ready' : 'unavailable'}`,
+        `text=${formatReadiness(report.textModelReady)}`,
+        `vision=${formatReadiness(report.visionModelReady)}`,
+        `webLlm=${formatReadiness(report.webLlmReady, 'skipped')}`,
+        `embedding=${formatReadiness(report.embeddingModelReady)}`,
+        `sentiment=${formatReadiness(report.sentimentModelReady)}`,
+        `summarization=${formatReadiness(report.summarizationModelReady)}`,
+        `zeroShot=${formatReadiness(report.zeroShotTextModelReady)}`,
+        `langDetect=${formatReadiness(report.languageDetectionReady)}`,
+        `imgSimilarity=${formatReadiness(report.imageSimilarityReady)}`,
+        `imageGen=${formatReadiness(report.imageGenerationReady, 'unavailable')}`,
     ]
 
     if (report.errorCount > 0) {

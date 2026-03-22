@@ -230,6 +230,8 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
         t,
     )
     const processWarnings = buildProcessWarnings(plant, harvestData, burpDebtDays, t)
+    const getStagePanelClassName = (isActiveStage: boolean): string =>
+        `p-4 rounded-lg space-y-4 ${isActiveStage ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`
 
     const topTerpenes = Object.entries(harvestData.terpeneProfile || {})
         .toSorted(([, a], [, b]) => (b as number) - (a as number))
@@ -256,9 +258,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div
-                            className={`p-4 rounded-lg space-y-4 ${plant.stage === PlantStage.Drying ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`}
-                        >
+                        <div className={getStagePanelClassName(plant.stage === PlantStage.Drying)}>
                             <h4 className="font-bold text-lg text-slate-100">
                                 {t('plantsView.postHarvest.drying')}
                             </h4>
@@ -305,9 +305,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                             </Button>
                         </div>
 
-                        <div
-                            className={`p-4 rounded-lg space-y-4 ${plant.stage === PlantStage.Curing ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`}
-                        >
+                        <div className={getStagePanelClassName(plant.stage === PlantStage.Curing)}>
                             <h4 className="font-bold text-lg text-slate-100">
                                 {t('plantsView.postHarvest.curing')}
                             </h4>

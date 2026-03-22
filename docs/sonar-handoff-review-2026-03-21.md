@@ -139,6 +139,46 @@ Sonar-Issues weiterhin in Wellen abbauen, mit Fokus auf:
 - services/localAI.ts (Fallback-Score und Notes-Content aus verschachtelten Ternaries in Zwischenvariablen entkoppelt)
 - components/views/strains/FilterDrawer.tsx (wiederholte ternary-basierte Klassenlogik in Helper-Funktionen zentralisiert)
 
+1. Grossbatch Maintainability/UI-Konsolidierung (ohne Zwischen-Push)
+
+- services/localAI.ts (sprachabhaengige Prompt-Strings in Helper `localized()` entkoppelt)
+- services/localAiFallbackService.ts (weitere ternary/template Vereinfachungen in SVG- und Garden-Status-Bloecken)
+- services/localAiHealthService.ts (GPU-Log-Labels vorab aufgeloest)
+- services/localAiPreloadService.ts (Readiness-Formatter fuer Detailzeilen eingefuehrt)
+- services/mqttSensorService.ts (Fehler-Reason in serialisierungspfad entkoppelt)
+- services/webLlmDiagnosticsService.ts (Probe-Fehlermeldung entkoppelt)
+- components/common/CameraModal.tsx (Video-Visibility-Klasse vorab berechnet)
+- components/common/OnboardingModal.tsx (Step-Indicator-Klassen zentralisiert)
+- components/common/SearchBar.tsx (Clear-Button/Input-Klasse entkoppelt)
+- components/views/KnowledgeView.tsx (Pending-Opacity-Klasse entkoppelt)
+- components/views/equipment/EquipmentView.tsx (Pending-Opacity-Klasse entkoppelt)
+- components/views/equipment/GrowShopsView.tsx (Region-Tab-Klassenhelper)
+- components/views/help/HelpSubNav.tsx (Count-Badge-Klasse entkoppelt)
+- components/views/knowledge/BreedingView.tsx (selected-state Klasse entkoppelt)
+- components/views/knowledge/MentorChatView.tsx (Row-Alignment-Klasse entkoppelt)
+- components/views/plants/BreedingView.tsx (selected-state Klasse entkoppelt)
+- components/views/plants/ComparisonView.tsx (Diff-Farbklassen entkoppelt)
+- components/views/plants/EquipmentControls.tsx (Disabled-Control-Klassenhelper)
+- components/views/plants/HistoryChart.tsx (View-Toggle-Klassenhelper)
+- components/views/plants/InlineStrainSelector.tsx (Difficulty-Marker-Klassen entkoppelt)
+- components/views/plants/PlantSlot.tsx (Pulse-Klasse entkoppelt)
+- components/views/plants/SensorIntegrationPanel.tsx (Mode-Button-Klassenhelper)
+- components/views/plants/VitalBar.tsx (Icon-/Value-Farbklassen entkoppelt)
+- components/views/plants/detailedPlantViewTabs/PostHarvestTab.tsx (Stage-Panel-Klassenhelper)
+- components/views/strains/BreedingLab.tsx (Generation-Arrow-Klassenhelper)
+- components/views/strains/StrainGrid.tsx (Pending-Opacity-Klasse entkoppelt)
+- components/views/strains/StrainGridItem.tsx (Card-/Favorite-Klassen entkoppelt)
+- components/views/strains/StrainList.tsx (Pending-Opacity-Klasse entkoppelt)
+- components/views/strains/StrainListHeader.tsx (Sort-Button-Klassen lesbarer)
+- components/views/strains/StrainListItem.tsx (Card-/Favorite-Klassen entkoppelt)
+
+1. CI-/Badge-Befund
+
+- Die README-Deploy-Badge zeigte zwischenzeitlich "failing"; im aktuellen Zustand wieder "passing".
+- In der grossen lokalen Batch-Pruefung wurden Prettier-Verstoesse in mehreren geaenderten Dateien gefunden und vollstaendig bereinigt.
+- Verifikation: `npx prettier --check` auf allen geaenderten Dateien jetzt ohne Befund.
+- Schlussfolgerung: Das Problem war nicht anhaltend am Deploy-Workflow selbst festzumachen; ein realer Teil des Risikos lag in noch nicht fertig formatierten Datei-Aenderungen vor dem finalen Sammel-Check.
+
 ## Validierung
 
 - npx tsc --noEmit: erfolgreich

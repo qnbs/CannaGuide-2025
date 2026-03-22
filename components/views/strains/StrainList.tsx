@@ -34,6 +34,7 @@ const StrainListComponent: React.FC<StrainListProps> = ({
     }, [])
 
     const getScrollElement = useCallback(() => scrollElementRef.current, [])
+    const contentOpacityClass = isPending ? 'opacity-50' : 'opacity-100'
 
     const rowVirtualizer = useVirtualizer({
         count: strains.length,
@@ -44,7 +45,7 @@ const StrainListComponent: React.FC<StrainListProps> = ({
 
     return (
         <div
-            className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
+            className={`transition-opacity duration-300 ${contentOpacityClass}`}
             style={{
                 height: `${rowVirtualizer.totalSize + MOBILE_BOTTOM_NAV_SAFE_OFFSET}px`,
                 width: '100%',

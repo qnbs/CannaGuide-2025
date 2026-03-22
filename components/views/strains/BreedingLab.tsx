@@ -258,9 +258,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
         () =>
             allStrains
                 .filter((strain): strain is Strain => Boolean(strain))
-                .toSorted((a, b) =>
-                compareText(a.name, b.name),
-            ),
+                .toSorted((a, b) => compareText(a.name, b.name)),
         [allStrains],
     )
 
@@ -441,6 +439,8 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                                 const currentIdx = GENERATIONS.indexOf(generation)
                                 const isActive = gen === generation
                                 const isPast = i < currentIdx
+                                const getArrowClassName = (isCompleted: boolean): string =>
+                                    `w-3 h-3 ${isCompleted ? 'text-slate-400' : 'text-slate-600'}`
                                 let generationBadgeClassName =
                                     'px-3 py-1 rounded-full text-xs font-bold transition-colors '
                                 if (isActive) {
@@ -451,14 +451,13 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                                 } else {
                                     generationBadgeClassName += 'bg-slate-800 text-slate-500'
                                 }
-                                const arrowClassName = `w-3 h-3 ${isPast ? 'text-slate-400' : 'text-slate-600'}`
                                 return (
                                     <React.Fragment key={gen}>
-                                        <span className={generationBadgeClassName}>
-                                            {gen}
-                                        </span>
+                                        <span className={generationBadgeClassName}>{gen}</span>
                                         {i < GENERATIONS.length - 1 && (
-                                            <PhosphorIcons.ArrowRight className={arrowClassName} />
+                                            <PhosphorIcons.ArrowRight
+                                                className={getArrowClassName(isPast)}
+                                            />
                                         )}
                                     </React.Fragment>
                                 )

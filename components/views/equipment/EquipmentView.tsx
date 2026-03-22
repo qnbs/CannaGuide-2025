@@ -28,6 +28,7 @@ export const EquipmentView: React.FC = () => {
     const activeTab = useAppSelector(selectEquipmentViewTab)
     const savedSetups = useAppSelector(selectSavedSetups)
     const [isPending, startTransition] = useTransition()
+    const contentOpacityClass = isPending ? 'opacity-50' : 'opacity-100'
 
     const viewIcons = useMemo(
         () => ({
@@ -105,9 +106,7 @@ export const EquipmentView: React.FC = () => {
 
             <EquipmentSubNav activeTab={activeTab} onTabChange={handleSetTab} />
 
-            <section
-                className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
-            >
+            <section className={`transition-opacity duration-300 ${contentOpacityClass}`}>
                 <Card>
                     <Suspense fallback={<SkeletonLoader count={5} />}>{renderContent()}</Suspense>
                 </Card>

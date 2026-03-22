@@ -34,6 +34,8 @@ export const VitalBar: React.FC<VitalBarProps> = memo(
         const isIdeal = value >= min && value <= max
         const isHighlighted = highlightedElement === highlightId
         const barColor = getBarColor(value, min, max)
+        const iconColorClassName = isIdeal ? 'text-primary-400' : 'text-amber-400'
+        const valueColorClassName = isIdeal ? 'text-slate-400' : 'text-amber-400'
 
         // Ideal zone indicator positions
         const zoneLeft = ((min - displayMin) / (displayMax - displayMin)) * 100
@@ -46,11 +48,7 @@ export const VitalBar: React.FC<VitalBarProps> = memo(
             >
                 <div className="flex items-center justify-center gap-2">
                     {icon && (
-                        <div
-                            className={`w-4 h-4 flex-shrink-0 ${isIdeal ? 'text-primary-400' : 'text-amber-400'}`}
-                        >
-                            {icon}
-                        </div>
+                        <div className={`w-4 h-4 flex-shrink-0 ${iconColorClassName}`}>{icon}</div>
                     )}
                     <p className="text-sm font-semibold text-slate-300">{label}</p>
                 </div>
@@ -67,7 +65,7 @@ export const VitalBar: React.FC<VitalBarProps> = memo(
                         className={`h-2.5 w-full appearance-none rounded-full bg-transparent [&::-moz-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full ${barColor}`}
                     />
                 </div>
-                <p className={`text-xs font-mono ${isIdeal ? 'text-slate-400' : 'text-amber-400'}`}>
+                <p className={`text-xs font-mono ${valueColorClassName}`}>
                     {value.toFixed(1)}
                     {unit}
                 </p>

@@ -79,6 +79,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
         >
             {navItems.map((item) => {
                 const isActive = activeTab === item.id
+                const countBadgeClassName = `text-[10px] tabular-nums font-medium rounded-full px-1.5 py-px ${isActive ? 'bg-white/20 text-white/80' : 'bg-slate-700/80 text-slate-500'}`
                 return (
                     <button
                         type="button"
@@ -98,11 +99,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
                         <span className="text-xs font-semibold text-center leading-tight">
                             {item.label}
                         </span>
-                        <span
-                            className={`text-[10px] tabular-nums font-medium rounded-full px-1.5 py-px ${isActive ? 'bg-white/20 text-white/80' : 'bg-slate-700/80 text-slate-500'}`}
-                        >
-                            {item.count}
-                        </span>
+                        <span className={countBadgeClassName}>{item.count}</span>
                         {/* Active indicator bar */}
                         {isActive && (
                             <span className="absolute -bottom-0.5 left-1/4 right-1/4 h-0.5 rounded-full bg-white/60" />

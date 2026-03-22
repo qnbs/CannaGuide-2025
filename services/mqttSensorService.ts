@@ -208,9 +208,8 @@ class MqttSensorService {
         try {
             jsonString = JSON.stringify(payload)
         } catch (error) {
-            throw new Error(
-                `Failed to serialize payload: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            )
+            const reason = error instanceof Error ? error.message : 'Unknown error'
+            throw new Error(`Failed to serialize payload: ${reason}`)
         }
 
         const topic = `${this.config.topicPrefix}/${this.config.deviceId}/${subtopic}`

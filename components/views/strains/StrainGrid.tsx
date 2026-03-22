@@ -51,6 +51,7 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({
     }, [])
 
     const getScrollElement = useCallback(() => scrollElementRef.current, [])
+    const contentOpacityClass = isPending ? 'opacity-50' : 'opacity-100'
 
     const rowCount = useMemo(() => Math.ceil(strains.length / columns), [strains.length, columns])
 
@@ -63,7 +64,7 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({
 
     return (
         <div
-            className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
+            className={`transition-opacity duration-300 ${contentOpacityClass}`}
             style={{
                 height: `${rowVirtualizer.totalSize + MOBILE_BOTTOM_NAV_SAFE_OFFSET}px`,
                 position: 'relative',

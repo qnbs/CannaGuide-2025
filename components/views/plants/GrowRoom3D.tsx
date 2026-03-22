@@ -1,4 +1,4 @@
-const browserWindow = globalThis.window
+const browserWindow = typeof window === 'undefined' ? null : window
 import React, { memo, useEffect, useRef, useMemo, useState, useCallback } from 'react'
 import * as THREE from 'three'
 import { useTranslation } from 'react-i18next'

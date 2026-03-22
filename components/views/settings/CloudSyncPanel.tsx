@@ -45,6 +45,8 @@ const CloudSyncPanel: React.FC = () => {
             }),
         )
     }
+    const browserWindow = typeof window === 'undefined' ? null : window
+
 
     const handleCopyEncryptionKey = async (): Promise<void> => {
         if (!cloudSync.encryptionKeyBase64) return
@@ -122,7 +124,9 @@ const CloudSyncPanel: React.FC = () => {
                     message: String(t('settingsView.data.sync.pullSuccess')),
                 }),
             )
-            setTimeout(() => globalThis.location.reload(), 1000)
+            if (browserWindow) {
+                setTimeout(() => browserWindow.location.reload(), 1000)
+            }
         } catch (error) {
             console.error('[CloudSync] Pull failed:', error)
             dispatch(
@@ -148,7 +152,6 @@ const CloudSyncPanel: React.FC = () => {
                 open={isPullConfirmOpen}
                 onOpenChange={setIsPullConfirmOpen}
                 title={String(t('settingsView.data.sync.confirmPullTitle'))}
-                description={String(t('settingsView.data.sync.confirmPull'))}
                 confirmLabel={String(t('settingsView.data.sync.pullButton'))}
                 cancelLabel={String(t('common.cancel'))}
                 onConfirm={handlePullConfirm}

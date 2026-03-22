@@ -8,7 +8,7 @@ import { selectActivePlants, selectSettings } from '@/stores/selectors'
 import { growReminderService } from '@/services/growReminderService'
 import { QRCodeSVG } from 'qrcode.react'
 
-const browserWindow = globalThis.window
+const browserWindow = typeof window === 'undefined' ? null : window
 
 const GrowReminderPanelComponent: React.FC = () => {
     const { t } = useTranslation()

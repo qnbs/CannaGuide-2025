@@ -116,7 +116,7 @@ const EquipmentView = lazy(() =>
 const KnowledgeView = lazy(() => import('@/components/views/KnowledgeView'))
 const SettingsView = lazy(() => import('@/components/views/settings/SettingsView'))
 const HelpView = lazy(() => import('@/components/views/HelpView'))
-const browserWindow = globalThis.window
+const browserWindow = typeof window === 'undefined' ? null : window
 
 // --- Lazy Loaded Modals (not needed on initial render) ---
 const GrowSetupModal = lazy(() =>

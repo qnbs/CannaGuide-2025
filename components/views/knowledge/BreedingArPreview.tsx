@@ -95,7 +95,7 @@ const appendArButton = (
     return button
 }
 
-const browserWindow = globalThis.window
+const browserWindow = typeof window === 'undefined' ? null : window
 
 const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
     label,

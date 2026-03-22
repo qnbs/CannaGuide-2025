@@ -167,6 +167,25 @@ const playConfirmationSound = () => {
     oscillator.stop(audioCtx.currentTime + 0.3)
 }
 
+const ASSISTANT_PREFIXES = [
+    'gemini',
+    'ask gemini',
+    'assistant',
+    'ki',
+    'frage ki',
+    'frage den mentor',
+] as const
+
+const parseAssistantQuery = (transcript: string): string | null => {
+    for (const prefix of ASSISTANT_PREFIXES) {
+        if (!transcript.startsWith(prefix)) continue
+        const rawQuery = transcript.slice(prefix.length).trim()
+        return rawQuery.length > 0 ? rawQuery : null
+    }
+
+    return null
+}
+
 /**
  * Listener to process recognized voice commands.
  */
@@ -177,11 +196,8 @@ startAppListening({
         const t = getT()
         const state = getState()
 
-        const assistantMatch = transcript.match(
-            /^(?:gemini|ask gemini|assistant|ki|frage ki|frage den mentor)\s+(.+)$/i,
-        )
-        if (assistantMatch?.[1]) {
-            const query = assistantMatch[1].trim()
+        const query = parseAssistantQuery(transcript)
+        if (query) {
             const selectedPlantId =
                 state.simulation.selectedPlantId ??
                 state.simulation.plantSlots.find((slot) => slot !== null) ??

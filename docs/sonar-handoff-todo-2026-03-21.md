@@ -1,5 +1,7 @@
 # Sonar Handoff TODO (Update 2026-03-22)
 
+<!-- markdownlint-disable MD007 -->
+
 ## Session-Close Update (neu)
 
 Seit dem letzten Zwischenstand wurden zusaetzlich abgeschlossen:
@@ -115,6 +117,35 @@ Ergaenzung 2026-03-22 (neu ingestierter Workspace-Scan, dedupliziert gegen erled
 1. SeedbanksView Restpruefung und GuideView Reststellen: erledigt
 
 ## F. Aktueller Restfokus
+
+### F0. Neu ingestierter Security-Hotspot-Block (26 To-Review)
+
+Quelle: aktueller Sonar-Hinweisblock des Nutzers (Review priority: Medium).
+
+- S5852 DoS (regex runtime/backtracking): 7 Hotspots
+- S2245 Weak Cryptography (PRNG): 19 Hotspots
+
+Status dieser Sitzung (bereits umgesetzt):
+
+- `components/views/strains/AddStrainModal.tsx` -> regex-Split entfernt (lineares CSV-Parsing).
+- `services/geneticsService.ts` -> regex-basierte Parent-/Canonical-Parser durch String-Parsing ersetzt.
+- `stores/listenerMiddleware.ts` -> Assistant-Regex durch prefixbasiertes Parsing ersetzt.
+- `components/views/plants/GrowRoom3D.tsx` -> `Math.random` im Partikel-Setup durch WebCrypto ersetzt.
+
+Reststrategie fuer verbleibende Hotspots:
+
+1. S2245-Clusterung nach Sicherheitskontext:
+
+- sicherheitsrelevant (IDs/Secrets/Token): sofort auf `crypto.randomUUID`/`crypto.getRandomValues` migrieren.
+- nicht sicherheitsrelevant (reine UI-/Animationszufaelle): Review-Dokumentation + ggf. akzeptieren.
+- Simulationszufall: ggf. seeded PRNG fuer Reproduzierbarkeit statt ad-hoc Random.
+
+1. S5852-Clusterung nach Regex-Typ:
+
+- regex-Splits ersetzen (delimiter-parser ohne backtracking).
+- greedy/unbounded patterns (`.*`) in bounded oder indexbasierte Operationen ueberfuehren.
+
+1. Abschluss je Hotspot: Sonar-Reviewentscheid (Fix/Accept) + kurze Begruendung im Handoff.
 
 1. Sonar neu laufen lassen und verbleibende Issues gegen den aktuellen Branchstand neu clustern.
 1. GenealogyView-Cluster als naechsten Entry-Point abarbeiten (Smells + ggf. Tests).
@@ -249,3 +280,5 @@ Hinweis zur Schliessung:
 1. CodeQL-Workflow auf `main` erneut laufen lassen, damit offene historische Alerts automatisch auf `fixed` wechseln.
 1. Dependabot-Alert-Ansicht auf neue Baseline synchronisieren (Lockfile ist bereits bereinigt).
 1. Falls Restalerts verbleiben: einzelne Alert-ID gegen aktuellen Commit hash neu triagieren und nur noch echte Treffer in Cluster aufnehmen.
+
+<!-- markdownlint-enable MD007 -->

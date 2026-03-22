@@ -60,7 +60,9 @@ const PinLockScreen: React.FC<{
             <div className="glass-pane w-full max-w-md rounded-2xl p-6 space-y-5">
                 <div className="text-center space-y-2">
                     <PhosphorIcons.ShieldCheck className="mx-auto h-14 w-14 text-primary-400" />
-                    <h2 className="text-2xl font-bold font-display text-slate-100">{t('settingsView.privacy.unlockTitle')}</h2>
+                    <h2 className="text-2xl font-bold font-display text-slate-100">
+                        {t('settingsView.privacy.unlockTitle')}
+                    </h2>
                     <p className="text-sm text-slate-400">{t('settingsView.privacy.unlockDesc')}</p>
                 </div>
                 <Input
@@ -84,7 +86,9 @@ const PinLockScreen: React.FC<{
                     className="text-center text-xl tracking-[0.4em]"
                     aria-label={t('settingsView.privacy.requirePin')}
                 />
-                {hasError && <p className="text-sm text-red-300">{t('settingsView.privacy.unlockFailed')}</p>}
+                {hasError && (
+                    <p className="text-sm text-red-300">{t('settingsView.privacy.unlockFailed')}</p>
+                )}
                 <Button onClick={handleUnlock} className="w-full justify-center" glow>
                     {t('settingsView.privacy.unlockButton')}
                 </Button>
@@ -114,12 +118,32 @@ const SettingsView = lazy(() => import('@/components/views/settings/SettingsView
 const HelpView = lazy(() => import('@/components/views/HelpView'))
 
 // --- Lazy Loaded Modals (not needed on initial render) ---
-const GrowSetupModal = lazy(() => import('@/components/views/plants/GrowSetupModal').then(m => ({ default: m.GrowSetupModal })))
-const GrowConfirmationModal = lazy(() => import('@/components/views/plants/GrowConfirmationModal').then(m => ({ default: m.GrowConfirmationModal })))
-const LogActionModalContainer = lazy(() => import('@/components/views/plants/LogActionModalContainer').then(m => ({ default: m.LogActionModalContainer })))
-const DeepDiveModalContainer = lazy(() => import('@/hooks/DeepDiveModalContainer').then(m => ({ default: m.DeepDiveModalContainer })))
-const AiDiagnosticsModalContainer = lazy(() => import('@/components/views/plants/AiDiagnosticsModalContainer').then(m => ({ default: m.AiDiagnosticsModalContainer })))
-const SaveSetupModalContainer = lazy(() => import('@/components/views/equipment/SaveSetupModalContainer').then(m => ({ default: m.SaveSetupModalContainer })))
+const GrowSetupModal = lazy(() =>
+    import('@/components/views/plants/GrowSetupModal').then((m) => ({ default: m.GrowSetupModal })),
+)
+const GrowConfirmationModal = lazy(() =>
+    import('@/components/views/plants/GrowConfirmationModal').then((m) => ({
+        default: m.GrowConfirmationModal,
+    })),
+)
+const LogActionModalContainer = lazy(() =>
+    import('@/components/views/plants/LogActionModalContainer').then((m) => ({
+        default: m.LogActionModalContainer,
+    })),
+)
+const DeepDiveModalContainer = lazy(() =>
+    import('@/hooks/DeepDiveModalContainer').then((m) => ({ default: m.DeepDiveModalContainer })),
+)
+const AiDiagnosticsModalContainer = lazy(() =>
+    import('@/components/views/plants/AiDiagnosticsModalContainer').then((m) => ({
+        default: m.AiDiagnosticsModalContainer,
+    })),
+)
+const SaveSetupModalContainer = lazy(() =>
+    import('@/components/views/equipment/SaveSetupModalContainer').then((m) => ({
+        default: m.SaveSetupModalContainer,
+    })),
+)
 
 const LoadingGate: React.FC = () => {
     const { t } = useTranslation()
@@ -130,7 +154,9 @@ const LoadingGate: React.FC = () => {
             aria-live="polite"
         >
             <CannabisLeafIcon className="w-24 h-24 text-primary-500 animate-pulse" />
-            <p className="mt-4 text-lg font-semibold text-slate-400">{t('common.preparingGuide')}</p>
+            <p className="mt-4 text-lg font-semibold text-slate-400">
+                {t('common.preparingGuide')}
+            </p>
         </div>
     )
 }
@@ -155,7 +181,7 @@ export const App: React.FC = () => {
     const settings = useAppSelector(selectSettings)
     const isAppReady = useAppSelector(selectIsAppReady)
     const onboardingStep = useAppSelector(selectOnboardingStep)
-    const newGrowFlow = useAppSelector(selectNewGrowFlow);
+    const newGrowFlow = useAppSelector(selectNewGrowFlow)
     const [isPinUnlocked, setIsPinUnlocked] = useState(
         () => !settings.privacy.requirePinOnLaunch || !settings.privacy.pin,
     )
@@ -230,20 +256,20 @@ export const App: React.FC = () => {
 
     useEffect(() => {
         const handleSwUpdate = (event: Event) => {
-            const registration = (event as CustomEvent).detail;
-            if (registration && registration.waiting) {
-                waitingWorkerRef.current = registration.waiting;
-                setShowUpdateBanner(true);
+            const registration = (event as CustomEvent).detail
+            if (registration?.waiting) {
+                waitingWorkerRef.current = registration.waiting
+                setShowUpdateBanner(true)
                 window.setTimeout(() => {
                     handleUpdate()
                 }, 1200)
             }
-        };
+        }
 
-        window.addEventListener('swUpdate', handleSwUpdate);
+        window.addEventListener('swUpdate', handleSwUpdate)
 
-        return () => window.removeEventListener('swUpdate', handleSwUpdate);
-    }, [handleUpdate]);
+        return () => window.removeEventListener('swUpdate', handleSwUpdate)
+    }, [handleUpdate])
 
     useEffect(() => {
         if (isOffline) {
@@ -289,7 +315,11 @@ export const App: React.FC = () => {
     }
 
     if (!settings.onboardingCompleted && onboardingStep < 8) {
-        return <OnboardingModal onClose={() => dispatch(setSetting({ path: 'onboardingCompleted', value: true }))} />
+        return (
+            <OnboardingModal
+                onClose={() => dispatch(setSetting({ path: 'onboardingCompleted', value: true }))}
+            />
+        )
     }
 
     return (
@@ -297,10 +327,7 @@ export const App: React.FC = () => {
             <div className="app-shell__orb app-shell__orb--primary" aria-hidden="true" />
             <div className="app-shell__orb app-shell__orb--accent" aria-hidden="true" />
             <div className="app-shell__orb app-shell__orb--secondary" aria-hidden="true" />
-            <a
-                href="#main-content"
-                className="skip-link"
-            >
+            <a href="#main-content" className="skip-link">
                 {t('common.accessibility.skipToMain')}
             </a>
             <SideNav />
@@ -319,7 +346,9 @@ export const App: React.FC = () => {
                     {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}
                     <ErrorBoundary>
                         <div className="mx-auto w-full max-w-7xl">
-                            <Suspense fallback={<SkeletonLoader count={5} />}>{renderContent()}</Suspense>
+                            <Suspense fallback={<SkeletonLoader count={5} />}>
+                                {renderContent()}
+                            </Suspense>
                         </div>
                     </ErrorBoundary>
                 </main>
@@ -330,8 +359,12 @@ export const App: React.FC = () => {
             {showUpdateBanner && (
                 <div className="fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-4 left-1/2 -translate-x-1/2 z-[250] w-full max-w-md animate-slide-in-up">
                     <div className="glass-pane p-3 rounded-lg flex items-center justify-between gap-4 mx-4">
-                        <p className="text-sm font-semibold text-slate-200">{t('common.pwa.updateAvailable')}</p>
-                        <Button size="sm" onClick={handleUpdate} glow>{t('common.pwa.update')}</Button>
+                        <p className="text-sm font-semibold text-slate-200">
+                            {t('common.pwa.updateAvailable')}
+                        </p>
+                        <Button size="sm" onClick={handleUpdate} glow>
+                            {t('common.pwa.update')}
+                        </Button>
                     </div>
                 </div>
             )}
@@ -343,15 +376,17 @@ export const App: React.FC = () => {
             />
             {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
                 <Suspense fallback={null}>
-                <GrowSetupModal
-                    strain={newGrowFlow.strain}
-                    onClose={() => dispatch(cancelNewGrow())}
-                    onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
-                />
+                    <GrowSetupModal
+                        strain={newGrowFlow.strain}
+                        onClose={() => dispatch(cancelNewGrow())}
+                        onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
+                    />
                 </Suspense>
             )}
             {newGrowFlow.status === 'confirming' && (
-                <Suspense fallback={null}><GrowConfirmationModal /></Suspense>
+                <Suspense fallback={null}>
+                    <GrowConfirmationModal />
+                </Suspense>
             )}
             <Suspense fallback={null}>
                 <LogActionModalContainer />
@@ -360,7 +395,10 @@ export const App: React.FC = () => {
                 <SaveSetupModalContainer />
             </Suspense>
             {showGeoLegal && <GeoLegalBanner onDismiss={dismissGeoLegal} />}
-            <PrivacyPolicyModal isOpen={showPrivacyPolicy} onClose={() => setShowPrivacyPolicy(false)} />
+            <PrivacyPolicyModal
+                isOpen={showPrivacyPolicy}
+                onClose={() => setShowPrivacyPolicy(false)}
+            />
         </div>
     )
 }

@@ -40,6 +40,36 @@ const attachElementObserver = (
     observers.current.set(index, observer)
 }
 
+const bumpMeasureVersion = (
+    setMeasureVersion: (updater: (previous: number) => number) => void,
+): (() => void) => {
+    return () => {
+        setMeasureVersion((version) => version + 1)
+    }
+}
+
+const createMeasureRefCallback = (
+    index: number,
+    observers: MutableRefObject<Map<number, ResizeObserver>>,
+    measuredSizes: MutableRefObject<Map<number, number>>,
+    notifySizeChange: () => void,
+): ((element: HTMLElement | null) => void) => {
+    return (element: HTMLElement | null) => {
+        const existingObserver = observers.current.get(index)
+        if (existingObserver) {
+            existingObserver.disconnect()
+            observers.current.delete(index)
+        }
+
+        if (!element) {
+            return
+        }
+
+        updateMeasuredSize(index, element, measuredSizes, notifySizeChange)
+        attachElementObserver(index, element, observers, measuredSizes, notifySizeChange)
+    }
+}
+
 export const useVirtualizer = ({
     count,
     getScrollElement,
@@ -99,24 +129,13 @@ export const useVirtualizer = ({
             return cachedRef
         }
 
-        const refCallback = (element: HTMLElement | null) => {
-            const existingObserver = observersRef.current.get(index)
-            if (existingObserver) {
-                existingObserver.disconnect()
-                observersRef.current.delete(index)
-            }
-
-            if (!element) {
-                return
-            }
-
-            const notifySizeChange = () => {
-                setMeasureVersion((version) => version + 1)
-            }
-
-            updateMeasuredSize(index, element, measuredSizesRef, notifySizeChange)
-            attachElementObserver(index, element, observersRef, measuredSizesRef, notifySizeChange)
-        }
+        const notifySizeChange = bumpMeasureVersion(setMeasureVersion)
+        const refCallback = createMeasureRefCallback(
+            index,
+            observersRef,
+            measuredSizesRef,
+            notifySizeChange,
+        )
 
         refCallbacksRef.current.set(index, refCallback)
         return refCallback

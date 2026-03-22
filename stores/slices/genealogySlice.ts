@@ -71,6 +71,16 @@ const isValidCachedTreeRoot = (tree: unknown): boolean => {
     return VALID_STRAIN_TYPES.has(t.type as string)
 }
 
+const sanitizeGenealogyChildren = (raw: unknown, depth: number): GenealogyNode[] => {
+    if (!Array.isArray(raw) || raw.length === 0) {
+        return []
+    }
+
+    return raw
+        .map((child: unknown) => sanitizeNode(child, depth + 1))
+        .filter((child): child is GenealogyNode => child !== null)
+}
+
 const sanitizeNode = (raw: unknown, depth = 0): GenealogyNode | null => {
     // Guard: max depth 25 prevents stack overflow on circular-looking data
     if (depth > 25 || !raw || typeof raw !== 'object') return null
@@ -89,22 +99,52 @@ const sanitizeNode = (raw: unknown, depth = 0): GenealogyNode | null => {
 
     if (n.isPlaceholder === true) node.isPlaceholder = true
 
-    if (Array.isArray(n.children) && n.children.length > 0) {
-        const children = n.children
-            .map((c: unknown) => sanitizeNode(c, depth + 1))
-            .filter((c): c is GenealogyNode => c !== null)
-        if (children.length > 0) node.children = children
+    const children = sanitizeGenealogyChildren(n.children, depth)
+    if (children.length > 0) {
+        node.children = children
     }
 
-    if (Array.isArray(n._children) && n._children.length > 0) {
-        const collapsed = n._children
-            .map((c: unknown) => sanitizeNode(c, depth + 1))
-            .filter((c): c is GenealogyNode => c !== null)
-        if (collapsed.length > 0) node._children = collapsed
+    const collapsed = sanitizeGenealogyChildren(n._children, depth)
+    if (collapsed.length > 0) {
+        node._children = collapsed
     }
 
     return node
 }
+
+const resolveLayoutOrientation = (value: unknown): GenealogyState['layoutOrientation'] =>
+    value === 'vertical' ? 'vertical' : 'horizontal'
+
+const resolveSelectedStrainId = (value: unknown): string | null =>
+    typeof value === 'string' ? value : null
+
+const sanitizeComputedTrees = (rawTrees: unknown): GenealogyState['computedTrees'] => {
+    const computedTrees: GenealogyState['computedTrees'] = {}
+    if (!rawTrees || typeof rawTrees !== 'object' || Array.isArray(rawTrees)) {
+        return computedTrees
+    }
+
+    for (const [id, tree] of Object.entries(rawTrees as Record<string, unknown>)) {
+        if (typeof id !== 'string') {
+            continue
+        }
+
+        if (tree === null) {
+            computedTrees[id] = null
+            continue
+        }
+
+        const sanitized = sanitizeNode(tree)
+        if (sanitized !== null) {
+            computedTrees[id] = sanitized
+        }
+    }
+
+    return computedTrees
+}
+
+const sanitizeGenealogyStatus = (rawStatus: unknown): GenealogyState['status'] =>
+    rawStatus === 'succeeded' || rawStatus === 'failed' ? rawStatus : 'idle'
 
 // ---------------------------------------------------------------------------
 // sanitizeGenealogyState
@@ -124,9 +164,8 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
     const s = raw as Record<string, unknown>
 
     // Extract preferences first so we can preserve them on version mismatch
-    const layoutOrientation: GenealogyState['layoutOrientation'] =
-        s.layoutOrientation === 'vertical' ? 'vertical' : 'horizontal'
-    const selectedStrainId = typeof s.selectedStrainId === 'string' ? s.selectedStrainId : null
+    const layoutOrientation = resolveLayoutOrientation(s.layoutOrientation)
+    const selectedStrainId = resolveSelectedStrainId(s.selectedStrainId)
 
     // Version mismatch → wipe cache, preserve user prefs
     if (s._version !== GENEALOGY_STATE_VERSION) {
@@ -141,26 +180,10 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
     }
 
     // Validate and sanitize computedTrees (pure cache – corrupt entries are dropped)
-    const computedTrees: GenealogyState['computedTrees'] = {}
-    const rawTrees = s.computedTrees
-    if (rawTrees && typeof rawTrees === 'object' && !Array.isArray(rawTrees)) {
-        for (const [id, tree] of Object.entries(rawTrees as Record<string, unknown>)) {
-            if (typeof id !== 'string') continue
-            if (tree === null) {
-                // null = "fetched, strain not found" – preserve so we don't re-fetch
-                computedTrees[id] = null
-            } else {
-                const sanitized = sanitizeNode(tree)
-                // Corrupt entry is silently dropped → re-fetched on demand
-                if (sanitized !== null) computedTrees[id] = sanitized
-            }
-        }
-    }
+    const computedTrees = sanitizeComputedTrees(s.computedTrees)
 
     // status: NEVER rehydrate 'loading' (marks an interrupted fetch)
-    const rawStatus = s.status
-    const status: GenealogyState['status'] =
-        rawStatus === 'succeeded' || rawStatus === 'failed' ? rawStatus : 'idle'
+    const status = sanitizeGenealogyStatus(s.status)
 
     const zoomTransform = toZoomTransform(s.zoomTransform)
 

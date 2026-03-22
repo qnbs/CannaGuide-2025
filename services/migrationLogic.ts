@@ -52,12 +52,9 @@ export const createSnapshotDiff = (before: unknown, after: unknown): SnapshotDif
     }
 }
 
-const ensureSimulationShape = (state: PersistedState): void => {
-    if (!state.simulation) {
-        return
-    }
+type LegacyPlant = Record<string, unknown>
 
-    const sim = state.simulation as unknown as Record<string, unknown>
+const ensureSimulationRootShape = (sim: Record<string, unknown>): void => {
     if (!Array.isArray(sim.plantSlots)) {
         sim.plantSlots = [null, null, null]
     }
@@ -70,197 +67,259 @@ const ensureSimulationShape = (state: PersistedState): void => {
     if (!sim.vpdProfiles || typeof sim.vpdProfiles !== 'object') {
         sim.vpdProfiles = {}
     }
+}
+
+const resolvePostHarvestStage = (
+    plant: LegacyPlant,
+): { stage: PlantStage; isPostHarvest: boolean } => {
+    const stage = typeof plant.stage === 'string' ? (plant.stage as PlantStage) : PlantStage.Seed
+    const isPostHarvest = [
+        PlantStage.Harvest,
+        PlantStage.Drying,
+        PlantStage.Curing,
+        PlantStage.Finished,
+    ].includes(stage)
+
+    return { stage, isPostHarvest }
+}
+
+const ensureLegacyPlantTimestamps = (plant: LegacyPlant): void => {
+    if (typeof plant.mediumType !== 'string') {
+        plant.mediumType = 'Soil'
+    }
+    if (typeof plant.createdAt !== 'number') {
+        plant.createdAt = typeof plant.lastUpdated === 'number' ? plant.lastUpdated : Date.now()
+    }
+    if (typeof plant.lastUpdated !== 'number') {
+        plant.lastUpdated = typeof plant.createdAt === 'number' ? plant.createdAt : Date.now()
+    }
+}
+
+const ensureLegacyHarvestData = (plant: LegacyPlant): void => {
+    if (typeof plant.harvestData === 'undefined') {
+        plant.harvestData = null
+        return
+    }
+
+    if (!plant.harvestData || typeof plant.harvestData !== 'object') {
+        return
+    }
+
+    const harvestData = plant.harvestData as Record<string, unknown>
+    const terpeneProfile =
+        plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
+            ? (plant.terpeneProfile as Record<string, unknown>)
+            : {}
+    const { stage, isPostHarvest } = resolvePostHarvestStage(plant)
+
+    if (typeof harvestData.wetWeight !== 'number') harvestData.wetWeight = 0
+    if (typeof harvestData.dryWeight !== 'number') harvestData.dryWeight = 0
+    if (typeof harvestData.currentDryDay !== 'number') {
+        harvestData.currentDryDay = stage === PlantStage.Drying ? 1 : 0
+    }
+    if (typeof harvestData.currentCureDay !== 'number') {
+        harvestData.currentCureDay =
+            stage === PlantStage.Curing || stage === PlantStage.Finished ? 1 : 0
+    }
+    if (typeof harvestData.lastBurpDay !== 'number') harvestData.lastBurpDay = 0
+    if (typeof harvestData.jarHumidity !== 'number') {
+        harvestData.jarHumidity =
+            stage === PlantStage.Curing || stage === PlantStage.Finished ? 62 : 68
+    }
+    if (typeof harvestData.chlorophyllPercent !== 'number') {
+        harvestData.chlorophyllPercent = isPostHarvest ? 100 : 0
+    }
+    if (typeof harvestData.terpeneRetentionPercent !== 'number') {
+        harvestData.terpeneRetentionPercent = isPostHarvest ? 100 : 0
+    }
+    if (typeof harvestData.moldRiskPercent !== 'number') harvestData.moldRiskPercent = 0
+    if (typeof harvestData.finalQuality !== 'number') harvestData.finalQuality = 0
+
+    if (!harvestData.cannabinoidProfile || typeof harvestData.cannabinoidProfile !== 'object') {
+        harvestData.cannabinoidProfile = { thc: 0, cbn: 0 }
+    } else {
+        const cannabinoidProfile = harvestData.cannabinoidProfile as Record<string, unknown>
+        if (typeof cannabinoidProfile.thc !== 'number') cannabinoidProfile.thc = 0
+        if (typeof cannabinoidProfile.cbn !== 'number') cannabinoidProfile.cbn = 0
+    }
+
+    if (!harvestData.terpeneProfile || typeof harvestData.terpeneProfile !== 'object') {
+        harvestData.terpeneProfile = { ...terpeneProfile }
+    }
+}
+
+const ensureLegacyEnvironment = (plant: LegacyPlant): void => {
+    if (!plant.environment || typeof plant.environment !== 'object') {
+        plant.environment = {
+            internalTemperature: 24,
+            internalHumidity: 65,
+            vpd: 0,
+            co2Level: 400,
+        }
+        return
+    }
+
+    const environment = plant.environment as Record<string, unknown>
+    if (typeof environment.internalTemperature !== 'number') environment.internalTemperature = 24
+    if (typeof environment.internalHumidity !== 'number') environment.internalHumidity = 65
+    if (typeof environment.vpd !== 'number') environment.vpd = 0
+    if (typeof environment.co2Level !== 'number') environment.co2Level = 400
+}
+
+const ensureLegacyRootSystem = (plant: LegacyPlant): void => {
+    if (!plant.rootSystem || typeof plant.rootSystem !== 'object') {
+        plant.rootSystem = { health: 100, rootMass: 0.01 }
+        return
+    }
+
+    const rootSystem = plant.rootSystem as Record<string, unknown>
+    if (typeof rootSystem.health !== 'number') rootSystem.health = 100
+    if (typeof rootSystem.rootMass !== 'number') rootSystem.rootMass = 0.01
+}
+
+const ensureLegacyStressCounters = (plant: LegacyPlant): void => {
+    if (!plant.stressCounters || typeof plant.stressCounters !== 'object') {
+        plant.stressCounters = { vpd: 0, ph: 0, ec: 0, moisture: 0 }
+        return
+    }
+
+    const stressCounters = plant.stressCounters as Record<string, unknown>
+    if (typeof stressCounters.vpd !== 'number') stressCounters.vpd = 0
+    if (typeof stressCounters.ph !== 'number') stressCounters.ph = 0
+    if (typeof stressCounters.ec !== 'number') stressCounters.ec = 0
+    if (typeof stressCounters.moisture !== 'number') stressCounters.moisture = 0
+}
+
+const ensureLegacyCannabinoidProfile = (plant: LegacyPlant): void => {
+    if (!plant.cannabinoidProfile || typeof plant.cannabinoidProfile !== 'object') {
+        plant.cannabinoidProfile = { thc: 0, cbd: 0, cbn: 0 }
+        return
+    }
+
+    const cannabinoidProfile = plant.cannabinoidProfile as Record<string, unknown>
+    if (typeof cannabinoidProfile.thc !== 'number') cannabinoidProfile.thc = 0
+    if (typeof cannabinoidProfile.cbd !== 'number') cannabinoidProfile.cbd = 0
+    if (typeof cannabinoidProfile.cbn !== 'number') cannabinoidProfile.cbn = 0
+}
+
+const ensureLegacyStructuralModel = (plant: LegacyPlant): void => {
+    if (!plant.structuralModel || typeof plant.structuralModel !== 'object') {
+        plant.structuralModel = { branches: 1, nodes: 1 }
+        return
+    }
+
+    const structuralModel = plant.structuralModel as Record<string, unknown>
+    if (typeof structuralModel.branches !== 'number') structuralModel.branches = 1
+    if (typeof structuralModel.nodes !== 'number') structuralModel.nodes = 1
+}
+
+const ensureLegacyMedium = (plant: LegacyPlant): void => {
+    if (!plant.medium || typeof plant.medium !== 'object') {
+        plant.medium = {
+            ph: 6.5,
+            ec: 0.8,
+            moisture: 80,
+            microbeHealth: 80,
+            substrateWater: 0,
+            nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 },
+        }
+        return
+    }
+
+    const medium = plant.medium as Record<string, unknown>
+    if (typeof medium.ph !== 'number') medium.ph = 6.5
+    if (typeof medium.ec !== 'number') medium.ec = 0.8
+    if (typeof medium.moisture !== 'number') medium.moisture = 80
+    if (typeof medium.microbeHealth !== 'number') medium.microbeHealth = 80
+    if (typeof medium.substrateWater !== 'number') medium.substrateWater = 0
+    if (!medium.nutrientConcentration || typeof medium.nutrientConcentration !== 'object') {
+        medium.nutrientConcentration = {
+            nitrogen: 100,
+            phosphorus: 100,
+            potassium: 100,
+        }
+        return
+    }
+
+    const nutrientConcentration = medium.nutrientConcentration as Record<string, unknown>
+    if (typeof nutrientConcentration.nitrogen !== 'number') nutrientConcentration.nitrogen = 100
+    if (typeof nutrientConcentration.phosphorus !== 'number') {
+        nutrientConcentration.phosphorus = 100
+    }
+    if (typeof nutrientConcentration.potassium !== 'number') nutrientConcentration.potassium = 100
+}
+
+const ensureLegacyNutrientPool = (plant: LegacyPlant): void => {
+    if (!plant.nutrientPool || typeof plant.nutrientPool !== 'object') {
+        plant.nutrientPool = { nitrogen: 5, phosphorus: 5, potassium: 5 }
+        return
+    }
+
+    const nutrientPool = plant.nutrientPool as Record<string, unknown>
+    if (typeof nutrientPool.nitrogen !== 'number') nutrientPool.nitrogen = 5
+    if (typeof nutrientPool.phosphorus !== 'number') nutrientPool.phosphorus = 5
+    if (typeof nutrientPool.potassium !== 'number') nutrientPool.potassium = 5
+}
+
+const ensureLegacySimulationClock = (plant: LegacyPlant): void => {
+    if (!plant.simulationClock || typeof plant.simulationClock !== 'object') {
+        plant.simulationClock = { accumulatedDayMs: 0 }
+        return
+    }
+
+    const simulationClock = plant.simulationClock as Record<string, unknown>
+    if (typeof simulationClock.accumulatedDayMs !== 'number') simulationClock.accumulatedDayMs = 0
+}
+
+const ensureLegacyHistory = (plant: LegacyPlant): void => {
+    if (!Array.isArray(plant.history)) {
+        plant.history = []
+    }
+}
+
+const ensureLegacyPhenotypeModifiers = (plant: LegacyPlant): void => {
+    const legacyStrain = plant.strain as Record<string, unknown> | undefined
+    if (!plant.phenotypeModifiers && legacyStrain?.geneticModifiers) {
+        plant.phenotypeModifiers = { ...(legacyStrain.geneticModifiers as object) }
+    }
+}
+
+const patchLegacyPlantShape = (plant: LegacyPlant): void => {
+    ensureLegacyPlantTimestamps(plant)
+    ensureLegacyHarvestData(plant)
+    ensureLegacyEnvironment(plant)
+    ensureLegacyRootSystem(plant)
+    ensureLegacyStressCounters(plant)
+    ensureLegacyCannabinoidProfile(plant)
+    if (!plant.terpeneProfile || typeof plant.terpeneProfile !== 'object') {
+        plant.terpeneProfile = {}
+    }
+    ensureLegacyStructuralModel(plant)
+    ensureLegacyMedium(plant)
+    ensureLegacyNutrientPool(plant)
+    ensureLegacySimulationClock(plant)
+    ensureLegacyHistory(plant)
+    ensureLegacyPhenotypeModifiers(plant)
+}
+
+const ensureSimulationShape = (state: PersistedState): void => {
+    if (!state.simulation) {
+        return
+    }
+
+    const sim = state.simulation as unknown as Record<string, unknown>
+    ensureSimulationRootShape(sim)
 
     // Patch any persisted plant objects that are missing fields introduced after
     // the initial simulation build. This prevents the engine from crashing on
     // old localStorage data after an update.
-    type LegacyPlant = Record<string, unknown>
     const entities = (sim.plants as Record<string, unknown>)?.entities
     if (entities && typeof entities === 'object') {
         for (const id in entities as Record<string, unknown>) {
             const plant = (entities as Record<string, LegacyPlant | undefined>)[id]
             if (!plant) continue
 
-            if (typeof plant.mediumType !== 'string') {
-                plant.mediumType = 'Soil'
-            }
-            if (typeof plant.createdAt !== 'number') {
-                plant.createdAt =
-                    typeof plant.lastUpdated === 'number' ? plant.lastUpdated : Date.now()
-            }
-            if (typeof plant.lastUpdated !== 'number') {
-                plant.lastUpdated =
-                    typeof plant.createdAt === 'number' ? plant.createdAt : Date.now()
-            }
-            if (typeof plant.harvestData === 'undefined') {
-                plant.harvestData = null
-            } else if (plant.harvestData && typeof plant.harvestData === 'object') {
-                const harvestData = plant.harvestData as Record<string, unknown>
-                const terpeneProfile =
-                    plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
-                        ? (plant.terpeneProfile as Record<string, unknown>)
-                        : {}
-                const plantStage =
-                    typeof plant.stage === 'string' ? (plant.stage as PlantStage) : PlantStage.Seed
-                const isPostHarvestStage = [
-                    PlantStage.Harvest,
-                    PlantStage.Drying,
-                    PlantStage.Curing,
-                    PlantStage.Finished,
-                ].includes(plantStage)
-
-                if (typeof harvestData.wetWeight !== 'number') harvestData.wetWeight = 0
-                if (typeof harvestData.dryWeight !== 'number') harvestData.dryWeight = 0
-                if (typeof harvestData.currentDryDay !== 'number')
-                    harvestData.currentDryDay = plantStage === PlantStage.Drying ? 1 : 0
-                if (typeof harvestData.currentCureDay !== 'number')
-                    harvestData.currentCureDay =
-                        plantStage === PlantStage.Curing || plantStage === PlantStage.Finished
-                            ? 1
-                            : 0
-                if (typeof harvestData.lastBurpDay !== 'number') harvestData.lastBurpDay = 0
-                if (typeof harvestData.jarHumidity !== 'number')
-                    harvestData.jarHumidity =
-                        plantStage === PlantStage.Curing || plantStage === PlantStage.Finished
-                            ? 62
-                            : 68
-                if (typeof harvestData.chlorophyllPercent !== 'number')
-                    harvestData.chlorophyllPercent = isPostHarvestStage ? 100 : 0
-                if (typeof harvestData.terpeneRetentionPercent !== 'number')
-                    harvestData.terpeneRetentionPercent = isPostHarvestStage ? 100 : 0
-                if (typeof harvestData.moldRiskPercent !== 'number') harvestData.moldRiskPercent = 0
-                if (typeof harvestData.finalQuality !== 'number') harvestData.finalQuality = 0
-                if (
-                    !harvestData.cannabinoidProfile ||
-                    typeof harvestData.cannabinoidProfile !== 'object'
-                ) {
-                    harvestData.cannabinoidProfile = { thc: 0, cbn: 0 }
-                } else {
-                    const cannabinoidProfile = harvestData.cannabinoidProfile as Record<
-                        string,
-                        unknown
-                    >
-                    if (typeof cannabinoidProfile.thc !== 'number') cannabinoidProfile.thc = 0
-                    if (typeof cannabinoidProfile.cbn !== 'number') cannabinoidProfile.cbn = 0
-                }
-                if (!harvestData.terpeneProfile || typeof harvestData.terpeneProfile !== 'object') {
-                    harvestData.terpeneProfile = { ...terpeneProfile }
-                }
-            }
-
-            if (!plant.environment || typeof plant.environment !== 'object') {
-                plant.environment = {
-                    internalTemperature: 24,
-                    internalHumidity: 65,
-                    vpd: 0,
-                    co2Level: 400,
-                }
-            } else {
-                const environment = plant.environment as Record<string, unknown>
-                if (typeof environment.internalTemperature !== 'number')
-                    environment.internalTemperature = 24
-                if (typeof environment.internalHumidity !== 'number')
-                    environment.internalHumidity = 65
-                if (typeof environment.vpd !== 'number') environment.vpd = 0
-                if (typeof environment.co2Level !== 'number') environment.co2Level = 400
-            }
-
-            if (!plant.rootSystem || typeof plant.rootSystem !== 'object') {
-                plant.rootSystem = { health: 100, rootMass: 0.01 }
-            } else {
-                const rootSystem = plant.rootSystem as Record<string, unknown>
-                if (typeof rootSystem.health !== 'number') rootSystem.health = 100
-                if (typeof rootSystem.rootMass !== 'number') rootSystem.rootMass = 0.01
-            }
-            if (!plant.stressCounters || typeof plant.stressCounters !== 'object') {
-                plant.stressCounters = { vpd: 0, ph: 0, ec: 0, moisture: 0 }
-            } else {
-                const stressCounters = plant.stressCounters as Record<string, unknown>
-                if (typeof stressCounters.vpd !== 'number') stressCounters.vpd = 0
-                if (typeof stressCounters.ph !== 'number') stressCounters.ph = 0
-                if (typeof stressCounters.ec !== 'number') stressCounters.ec = 0
-                if (typeof stressCounters.moisture !== 'number') stressCounters.moisture = 0
-            }
-            if (!plant.cannabinoidProfile || typeof plant.cannabinoidProfile !== 'object') {
-                plant.cannabinoidProfile = { thc: 0, cbd: 0, cbn: 0 }
-            } else {
-                const cannabinoidProfile = plant.cannabinoidProfile as Record<string, unknown>
-                if (typeof cannabinoidProfile.thc !== 'number') cannabinoidProfile.thc = 0
-                if (typeof cannabinoidProfile.cbd !== 'number') cannabinoidProfile.cbd = 0
-                if (typeof cannabinoidProfile.cbn !== 'number') cannabinoidProfile.cbn = 0
-            }
-            if (!plant.terpeneProfile || typeof plant.terpeneProfile !== 'object') {
-                plant.terpeneProfile = {}
-            }
-            if (!plant.structuralModel || typeof plant.structuralModel !== 'object') {
-                plant.structuralModel = { branches: 1, nodes: 1 }
-            } else {
-                const structuralModel = plant.structuralModel as Record<string, unknown>
-                if (typeof structuralModel.branches !== 'number') structuralModel.branches = 1
-                if (typeof structuralModel.nodes !== 'number') structuralModel.nodes = 1
-            }
-            if (!plant.medium || typeof plant.medium !== 'object') {
-                plant.medium = {
-                    ph: 6.5,
-                    ec: 0.8,
-                    moisture: 80,
-                    microbeHealth: 80,
-                    substrateWater: 0,
-                    nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 },
-                }
-            } else {
-                const medium = plant.medium as Record<string, unknown>
-                if (typeof medium.ph !== 'number') medium.ph = 6.5
-                if (typeof medium.ec !== 'number') medium.ec = 0.8
-                if (typeof medium.moisture !== 'number') medium.moisture = 80
-                if (typeof medium.microbeHealth !== 'number') medium.microbeHealth = 80
-                if (typeof medium.substrateWater !== 'number') medium.substrateWater = 0
-                if (
-                    !medium.nutrientConcentration ||
-                    typeof medium.nutrientConcentration !== 'object'
-                ) {
-                    medium.nutrientConcentration = {
-                        nitrogen: 100,
-                        phosphorus: 100,
-                        potassium: 100,
-                    }
-                } else {
-                    const nutrientConcentration = medium.nutrientConcentration as Record<
-                        string,
-                        unknown
-                    >
-                    if (typeof nutrientConcentration.nitrogen !== 'number')
-                        nutrientConcentration.nitrogen = 100
-                    if (typeof nutrientConcentration.phosphorus !== 'number')
-                        nutrientConcentration.phosphorus = 100
-                    if (typeof nutrientConcentration.potassium !== 'number')
-                        nutrientConcentration.potassium = 100
-                }
-            }
-            if (!plant.nutrientPool || typeof plant.nutrientPool !== 'object') {
-                plant.nutrientPool = { nitrogen: 5, phosphorus: 5, potassium: 5 }
-            } else {
-                const nutrientPool = plant.nutrientPool as Record<string, unknown>
-                if (typeof nutrientPool.nitrogen !== 'number') nutrientPool.nitrogen = 5
-                if (typeof nutrientPool.phosphorus !== 'number') nutrientPool.phosphorus = 5
-                if (typeof nutrientPool.potassium !== 'number') nutrientPool.potassium = 5
-            }
-            if (!plant.simulationClock || typeof plant.simulationClock !== 'object') {
-                plant.simulationClock = { accumulatedDayMs: 0 }
-            } else {
-                const simulationClock = plant.simulationClock as Record<string, unknown>
-                if (typeof simulationClock.accumulatedDayMs !== 'number')
-                    simulationClock.accumulatedDayMs = 0
-            }
-            if (!Array.isArray(plant.history)) {
-                plant.history = []
-            }
-            // phenotypeModifiers is optional – fill it from strain defaults so the
-            // engine can use per-plant modifiers without crashing on old saves.
-            const legacyStrain = plant.strain as Record<string, unknown> | undefined
-            if (!plant.phenotypeModifiers && legacyStrain?.geneticModifiers) {
-                plant.phenotypeModifiers = { ...(legacyStrain.geneticModifiers as object) }
-            }
+            patchLegacyPlantShape(plant)
         }
     }
 }
@@ -475,17 +534,74 @@ const ensureStrainsViewShape = (state: PersistedState): void => {
     }
 }
 
+const createGenealogyMigrationState = (
+    layoutOrientation: 'horizontal' | 'vertical' = 'horizontal',
+    selectedStrainId: string | null = null,
+): Record<string, unknown> => ({
+    _version: GENEALOGY_STATE_VERSION,
+    computedTrees: {},
+    status: 'idle',
+    selectedStrainId,
+    zoomTransform: null,
+    layoutOrientation,
+})
+
+const sanitizeGenealogyZoomTransform = (g: Record<string, unknown>): void => {
+    if (g.zoomTransform && typeof g.zoomTransform === 'object') {
+        const zt = g.zoomTransform as Record<string, unknown>
+        const isInvalid =
+            typeof zt.k !== 'number' ||
+            !isFinite(zt.k) ||
+            (zt.k as number) <= 0 ||
+            typeof zt.x !== 'number' ||
+            !isFinite(zt.x) ||
+            typeof zt.y !== 'number' ||
+            !isFinite(zt.y)
+        if (isInvalid) {
+            g.zoomTransform = null
+        }
+        return
+    }
+
+    g.zoomTransform = null
+}
+
+const sanitizeGenealogyComputedTrees = (g: Record<string, unknown>): void => {
+    if (!g.computedTrees || typeof g.computedTrees !== 'object' || Array.isArray(g.computedTrees)) {
+        g.computedTrees = {}
+        return
+    }
+
+    const trees = g.computedTrees as Record<string, unknown>
+    for (const id of Object.keys(trees)) {
+        if (trees[id] !== null && !sanitizeGenealogyNodeMigration(trees[id], 0)) {
+            delete trees[id]
+            console.debug(`[MigrationLogic] Dropped corrupt genealogy cache entry: ${id}`)
+        }
+    }
+}
+
+const sanitizeGenealogyMetadata = (g: Record<string, unknown>): void => {
+    const rawStatus = g.status as string
+    if (rawStatus !== 'succeeded' && rawStatus !== 'failed') {
+        g.status = 'idle'
+    }
+
+    if (g.layoutOrientation !== 'horizontal' && g.layoutOrientation !== 'vertical') {
+        g.layoutOrientation = 'horizontal'
+    }
+
+    if (typeof g.selectedStrainId !== 'string' && g.selectedStrainId !== null) {
+        g.selectedStrainId = null
+    }
+
+    g._version = GENEALOGY_STATE_VERSION
+}
+
 const ensureGenealogyShape = (state: PersistedState): void => {
     if (!state.genealogy || typeof state.genealogy !== 'object') {
         // No genealogy key → supply clean initial state
-        ;(state as Record<string, unknown>).genealogy = {
-            _version: GENEALOGY_STATE_VERSION,
-            computedTrees: {},
-            status: 'idle',
-            selectedStrainId: null,
-            zoomTransform: null,
-            layoutOrientation: 'horizontal',
-        }
+        ;(state as Record<string, unknown>).genealogy = createGenealogyMigrationState()
         return
     }
 
@@ -498,67 +614,16 @@ const ensureGenealogyShape = (state: PersistedState): void => {
         )
         const layout = g.layoutOrientation === 'vertical' ? 'vertical' : 'horizontal'
         const selectedId = typeof g.selectedStrainId === 'string' ? g.selectedStrainId : null
-        ;(state as Record<string, unknown>).genealogy = {
-            _version: GENEALOGY_STATE_VERSION,
-            computedTrees: {},
-            status: 'idle',
-            selectedStrainId: selectedId,
-            zoomTransform: null,
-            layoutOrientation: layout,
-        }
+        ;(state as Record<string, unknown>).genealogy = createGenealogyMigrationState(
+            layout,
+            selectedId,
+        )
         return
     }
 
-    // status: never keep 'loading' across a restart
-    const rawStatus = g.status as string
-    if (rawStatus !== 'succeeded' && rawStatus !== 'failed') {
-        g.status = 'idle'
-    }
-
-    // computedTrees: validate + repair each cached node tree in-place
-    if (!g.computedTrees || typeof g.computedTrees !== 'object' || Array.isArray(g.computedTrees)) {
-        g.computedTrees = {}
-    } else {
-        const trees = g.computedTrees as Record<string, unknown>
-        for (const id of Object.keys(trees)) {
-            if (trees[id] !== null && !sanitizeGenealogyNodeMigration(trees[id], 0)) {
-                // Un-salvageable node – drop so it's re-fetched on demand
-                delete trees[id]
-                console.debug(`[MigrationLogic] Dropped corrupt genealogy cache entry: ${id}`)
-            }
-        }
-    }
-
-    // zoomTransform: validate or null-out
-    if (g.zoomTransform && typeof g.zoomTransform === 'object') {
-        const zt = g.zoomTransform as Record<string, unknown>
-        if (
-            typeof zt.k !== 'number' ||
-            !isFinite(zt.k) ||
-            (zt.k as number) <= 0 ||
-            typeof zt.x !== 'number' ||
-            !isFinite(zt.x) ||
-            typeof zt.y !== 'number' ||
-            !isFinite(zt.y)
-        ) {
-            g.zoomTransform = null
-        }
-    } else {
-        g.zoomTransform = null
-    }
-
-    // layoutOrientation
-    if (g.layoutOrientation !== 'horizontal' && g.layoutOrientation !== 'vertical') {
-        g.layoutOrientation = 'horizontal'
-    }
-
-    // selectedStrainId
-    if (typeof g.selectedStrainId !== 'string' && g.selectedStrainId !== null) {
-        g.selectedStrainId = null
-    }
-
-    // Stamp current version
-    g._version = GENEALOGY_STATE_VERSION
+    sanitizeGenealogyComputedTrees(g)
+    sanitizeGenealogyZoomTransform(g)
+    sanitizeGenealogyMetadata(g)
 }
 
 const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {

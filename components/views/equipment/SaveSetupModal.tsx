@@ -22,10 +22,13 @@ export const SaveSetupModal: React.FC<SaveSetupModalProps> = ({
 }) => {
     const { t } = useTranslation()
     const { plantCount, experience, budget } = setupToSave.sourceDetails
+    const plantCountLabel = t('equipmentView.configurator.plantCount', {
+        count: Number.parseInt(plantCount, 10),
+    })
+    const experienceLabel = t(`strainsView.tips.form.experienceOptions.${experience}`)
     const suggestedName = useMemo(
-        () =>
-            `${t('equipmentView.configurator.plantCount', { count: Number.parseInt(plantCount, 10) })} - ${t(`strainsView.tips.form.experienceOptions.${experience}`)} - ${budget}€`,
-        [budget, experience, plantCount, t],
+        () => `${plantCountLabel} - ${experienceLabel} - ${budget}€`,
+        [budget, experienceLabel, plantCountLabel],
     )
     const [name, setName] = useState(suggestedName)
 

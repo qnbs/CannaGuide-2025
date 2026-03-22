@@ -438,6 +438,199 @@ class PlantSimulationService {
         )
     }
 
+    private _normalizeEnvironment(plant: Plant): Plant['environment'] {
+        return {
+            internalTemperature: Number.isFinite(plant.environment?.internalTemperature)
+                ? plant.environment.internalTemperature
+                : 24,
+            internalHumidity: this._clamp(
+                Number.isFinite(plant.environment?.internalHumidity)
+                    ? plant.environment.internalHumidity
+                    : 65,
+                0,
+                100,
+            ),
+            vpd: Number.isFinite(plant.environment?.vpd) ? plant.environment.vpd : 0,
+            co2Level: this._clamp(
+                Number.isFinite(plant.environment?.co2Level) ? plant.environment.co2Level : 400,
+                200,
+                1500,
+            ),
+        }
+    }
+
+    private _normalizeMedium(plant: Plant, waterCapacity: number): Plant['medium'] {
+        return {
+            ph: Number.isFinite(plant.medium?.ph) ? plant.medium.ph : 6.5,
+            ec: Math.max(0, Number.isFinite(plant.medium?.ec) ? plant.medium.ec : 0.8),
+            moisture: this._clamp(
+                Number.isFinite(plant.medium?.moisture) ? plant.medium.moisture : 100,
+                0,
+                100,
+            ),
+            microbeHealth: this._clamp(
+                Number.isFinite(plant.medium?.microbeHealth) ? plant.medium.microbeHealth : 80,
+                0,
+                100,
+            ),
+            substrateWater: Math.max(
+                0,
+                Number.isFinite(plant.medium?.substrateWater)
+                    ? plant.medium.substrateWater
+                    : waterCapacity,
+            ),
+            nutrientConcentration: {
+                nitrogen: Math.max(
+                    0,
+                    Number.isFinite(plant.medium?.nutrientConcentration?.nitrogen)
+                        ? plant.medium.nutrientConcentration.nitrogen
+                        : 100,
+                ),
+                phosphorus: Math.max(
+                    0,
+                    Number.isFinite(plant.medium?.nutrientConcentration?.phosphorus)
+                        ? plant.medium.nutrientConcentration.phosphorus
+                        : 100,
+                ),
+                potassium: Math.max(
+                    0,
+                    Number.isFinite(plant.medium?.nutrientConcentration?.potassium)
+                        ? plant.medium.nutrientConcentration.potassium
+                        : 100,
+                ),
+            },
+        }
+    }
+
+    private _normalizeNutrientPool(plant: Plant): Plant['nutrientPool'] {
+        return {
+            nitrogen: Math.max(
+                0,
+                Number.isFinite(plant.nutrientPool?.nitrogen) ? plant.nutrientPool.nitrogen : 5,
+            ),
+            phosphorus: Math.max(
+                0,
+                Number.isFinite(plant.nutrientPool?.phosphorus) ? plant.nutrientPool.phosphorus : 5,
+            ),
+            potassium: Math.max(
+                0,
+                Number.isFinite(plant.nutrientPool?.potassium) ? plant.nutrientPool.potassium : 5,
+            ),
+        }
+    }
+
+    private _normalizeRootSystem(plant: Plant): Plant['rootSystem'] {
+        return {
+            health: this._clamp(
+                Number.isFinite(plant.rootSystem?.health) ? plant.rootSystem.health : 100,
+                0,
+                100,
+            ),
+            rootMass: Math.max(
+                0.01,
+                Number.isFinite(plant.rootSystem?.rootMass) ? plant.rootSystem.rootMass : 0.01,
+            ),
+        }
+    }
+
+    private _normalizeEquipment(plant: Plant): Plant['equipment'] {
+        return {
+            light: {
+                type: plant.equipment?.light?.type ?? 'LED',
+                wattage: Math.max(
+                    10,
+                    Number.isFinite(plant.equipment?.light?.wattage)
+                        ? plant.equipment.light.wattage
+                        : 300,
+                ),
+                isOn: Boolean(plant.equipment?.light?.isOn ?? true),
+                lightHours: this._clamp(
+                    Number.isFinite(plant.equipment?.light?.lightHours)
+                        ? plant.equipment.light.lightHours
+                        : 18,
+                    0,
+                    24,
+                ),
+            },
+            exhaustFan: {
+                power: plant.equipment?.exhaustFan?.power ?? 'medium',
+                isOn: Boolean(plant.equipment?.exhaustFan?.isOn ?? true),
+            },
+            circulationFan: {
+                isOn: Boolean(plant.equipment?.circulationFan?.isOn ?? true),
+            },
+            potSize: Math.max(
+                1,
+                Number.isFinite(plant.equipment?.potSize) ? plant.equipment.potSize : 11,
+            ),
+            potType: plant.equipment?.potType ?? 'Fabric',
+        }
+    }
+
+    private _normalizeStructuralModel(plant: Plant): Plant['structuralModel'] {
+        return {
+            branches: Math.max(
+                1,
+                Number.isFinite(plant.structuralModel?.branches)
+                    ? plant.structuralModel.branches
+                    : 1,
+            ),
+            nodes: Math.max(
+                1,
+                Number.isFinite(plant.structuralModel?.nodes) ? plant.structuralModel.nodes : 1,
+            ),
+        }
+    }
+
+    private _normalizeCannabinoidProfile(plant: Plant): Plant['cannabinoidProfile'] {
+        return {
+            thc: Math.max(
+                0,
+                Number.isFinite(plant.cannabinoidProfile?.thc) ? plant.cannabinoidProfile.thc : 0,
+            ),
+            cbd: Math.max(
+                0,
+                Number.isFinite(plant.cannabinoidProfile?.cbd) ? plant.cannabinoidProfile.cbd : 0,
+            ),
+            cbn: Math.max(
+                0,
+                Number.isFinite(plant.cannabinoidProfile?.cbn) ? plant.cannabinoidProfile.cbn : 0,
+            ),
+        }
+    }
+
+    private _normalizeStressCounters(plant: Plant): Plant['stressCounters'] {
+        return {
+            vpd: Math.max(
+                0,
+                Number.isFinite(plant.stressCounters?.vpd) ? plant.stressCounters.vpd : 0,
+            ),
+            ph: Math.max(
+                0,
+                Number.isFinite(plant.stressCounters?.ph) ? plant.stressCounters.ph : 0,
+            ),
+            ec: Math.max(
+                0,
+                Number.isFinite(plant.stressCounters?.ec) ? plant.stressCounters.ec : 0,
+            ),
+            moisture: Math.max(
+                0,
+                Number.isFinite(plant.stressCounters?.moisture) ? plant.stressCounters.moisture : 0,
+            ),
+        }
+    }
+
+    private _normalizeSimulationClock(plant: Plant): Plant['simulationClock'] {
+        return {
+            accumulatedDayMs: Math.max(
+                0,
+                Number.isFinite(plant.simulationClock?.accumulatedDayMs)
+                    ? plant.simulationClock.accumulatedDayMs
+                    : 0,
+            ),
+        }
+    }
+
     private _normalizePlant(plant: Plant): Plant {
         const waterCapacity = Math.max(
             1,
@@ -470,198 +663,29 @@ class PlantSimulationService {
                 flowers: Number.isFinite(plant.biomass?.flowers) ? plant.biomass.flowers : 0,
             },
             leafAreaIndex: Number.isFinite(plant.leafAreaIndex) ? plant.leafAreaIndex : 0.01,
-            environment: {
-                internalTemperature: Number.isFinite(plant.environment?.internalTemperature)
-                    ? plant.environment.internalTemperature
-                    : 24,
-                internalHumidity: this._clamp(
-                    Number.isFinite(plant.environment?.internalHumidity)
-                        ? plant.environment.internalHumidity
-                        : 65,
-                    0,
-                    100,
-                ),
-                vpd: Number.isFinite(plant.environment?.vpd) ? plant.environment.vpd : 0,
-                co2Level: this._clamp(
-                    Number.isFinite(plant.environment?.co2Level) ? plant.environment.co2Level : 400,
-                    200,
-                    1500,
-                ),
-            },
-            medium: {
-                ph: Number.isFinite(plant.medium?.ph) ? plant.medium.ph : 6.5,
-                ec: Math.max(0, Number.isFinite(plant.medium?.ec) ? plant.medium.ec : 0.8),
-                moisture: this._clamp(
-                    Number.isFinite(plant.medium?.moisture) ? plant.medium.moisture : 100,
-                    0,
-                    100,
-                ),
-                microbeHealth: this._clamp(
-                    Number.isFinite(plant.medium?.microbeHealth) ? plant.medium.microbeHealth : 80,
-                    0,
-                    100,
-                ),
-                substrateWater: Math.max(
-                    0,
-                    Number.isFinite(plant.medium?.substrateWater)
-                        ? plant.medium.substrateWater
-                        : waterCapacity,
-                ),
-                nutrientConcentration: {
-                    nitrogen: Math.max(
-                        0,
-                        Number.isFinite(plant.medium?.nutrientConcentration?.nitrogen)
-                            ? plant.medium.nutrientConcentration.nitrogen
-                            : 100,
-                    ),
-                    phosphorus: Math.max(
-                        0,
-                        Number.isFinite(plant.medium?.nutrientConcentration?.phosphorus)
-                            ? plant.medium.nutrientConcentration.phosphorus
-                            : 100,
-                    ),
-                    potassium: Math.max(
-                        0,
-                        Number.isFinite(plant.medium?.nutrientConcentration?.potassium)
-                            ? plant.medium.nutrientConcentration.potassium
-                            : 100,
-                    ),
-                },
-            },
-            nutrientPool: {
-                nitrogen: Math.max(
-                    0,
-                    Number.isFinite(plant.nutrientPool?.nitrogen) ? plant.nutrientPool.nitrogen : 5,
-                ),
-                phosphorus: Math.max(
-                    0,
-                    Number.isFinite(plant.nutrientPool?.phosphorus)
-                        ? plant.nutrientPool.phosphorus
-                        : 5,
-                ),
-                potassium: Math.max(
-                    0,
-                    Number.isFinite(plant.nutrientPool?.potassium)
-                        ? plant.nutrientPool.potassium
-                        : 5,
-                ),
-            },
-            rootSystem: {
-                health: this._clamp(
-                    Number.isFinite(plant.rootSystem?.health) ? plant.rootSystem.health : 100,
-                    0,
-                    100,
-                ),
-                rootMass: Math.max(
-                    0.01,
-                    Number.isFinite(plant.rootSystem?.rootMass) ? plant.rootSystem.rootMass : 0.01,
-                ),
-            },
-            equipment: {
-                light: {
-                    type: plant.equipment?.light?.type ?? 'LED',
-                    wattage: Math.max(
-                        10,
-                        Number.isFinite(plant.equipment?.light?.wattage)
-                            ? plant.equipment.light.wattage
-                            : 300,
-                    ),
-                    isOn: Boolean(plant.equipment?.light?.isOn ?? true),
-                    lightHours: this._clamp(
-                        Number.isFinite(plant.equipment?.light?.lightHours)
-                            ? plant.equipment.light.lightHours
-                            : 18,
-                        0,
-                        24,
-                    ),
-                },
-                exhaustFan: {
-                    power: plant.equipment?.exhaustFan?.power ?? 'medium',
-                    isOn: Boolean(plant.equipment?.exhaustFan?.isOn ?? true),
-                },
-                circulationFan: {
-                    isOn: Boolean(plant.equipment?.circulationFan?.isOn ?? true),
-                },
-                potSize: Math.max(
-                    1,
-                    Number.isFinite(plant.equipment?.potSize) ? plant.equipment.potSize : 11,
-                ),
-                potType: plant.equipment?.potType ?? 'Fabric',
-            },
+            environment: this._normalizeEnvironment(plant),
+            medium: this._normalizeMedium(plant, waterCapacity),
+            nutrientPool: this._normalizeNutrientPool(plant),
+            rootSystem: this._normalizeRootSystem(plant),
+            equipment: this._normalizeEquipment(plant),
             problems: Array.isArray(plant.problems) ? plant.problems : [],
             journal: Array.isArray(plant.journal) ? plant.journal : [],
             tasks: Array.isArray(plant.tasks) ? plant.tasks : [],
             harvestData: plant.harvestData ?? null,
-            structuralModel: {
-                branches: Math.max(
-                    1,
-                    Number.isFinite(plant.structuralModel?.branches)
-                        ? plant.structuralModel.branches
-                        : 1,
-                ),
-                nodes: Math.max(
-                    1,
-                    Number.isFinite(plant.structuralModel?.nodes) ? plant.structuralModel.nodes : 1,
-                ),
-            },
+            structuralModel: this._normalizeStructuralModel(plant),
             phenotypeModifiers,
             strain: {
                 ...plant.strain,
                 geneticModifiers: strainModifiers,
             },
             history: Array.isArray(plant.history) ? plant.history : [],
-            cannabinoidProfile: {
-                thc: Math.max(
-                    0,
-                    Number.isFinite(plant.cannabinoidProfile?.thc)
-                        ? plant.cannabinoidProfile.thc
-                        : 0,
-                ),
-                cbd: Math.max(
-                    0,
-                    Number.isFinite(plant.cannabinoidProfile?.cbd)
-                        ? plant.cannabinoidProfile.cbd
-                        : 0,
-                ),
-                cbn: Math.max(
-                    0,
-                    Number.isFinite(plant.cannabinoidProfile?.cbn)
-                        ? plant.cannabinoidProfile.cbn
-                        : 0,
-                ),
-            },
+            cannabinoidProfile: this._normalizeCannabinoidProfile(plant),
             terpeneProfile:
                 plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
                     ? plant.terpeneProfile
                     : {},
-            stressCounters: {
-                vpd: Math.max(
-                    0,
-                    Number.isFinite(plant.stressCounters?.vpd) ? plant.stressCounters.vpd : 0,
-                ),
-                ph: Math.max(
-                    0,
-                    Number.isFinite(plant.stressCounters?.ph) ? plant.stressCounters.ph : 0,
-                ),
-                ec: Math.max(
-                    0,
-                    Number.isFinite(plant.stressCounters?.ec) ? plant.stressCounters.ec : 0,
-                ),
-                moisture: Math.max(
-                    0,
-                    Number.isFinite(plant.stressCounters?.moisture)
-                        ? plant.stressCounters.moisture
-                        : 0,
-                ),
-            },
-            simulationClock: {
-                accumulatedDayMs: Math.max(
-                    0,
-                    Number.isFinite(plant.simulationClock?.accumulatedDayMs)
-                        ? plant.simulationClock.accumulatedDayMs
-                        : 0,
-                ),
-            },
+            stressCounters: this._normalizeStressCounters(plant),
+            simulationClock: this._normalizeSimulationClock(plant),
         }
     }
 

@@ -370,6 +370,138 @@ class LocalAiService implements BaseAIProvider {
         releaseGpu('webllm')
     }
 
+    private persistGeneratedText(prompt: string, content: string, model: string): void {
+        setCached(prompt, content)
+        void setCachedInference(prompt, content, {
+            model,
+            task: 'text-generation',
+        }).catch((error) => captureLocalAiError(error, { stage: 'cache-persist' }))
+        debouncedPersistSnapshot()
+    }
+
+    private async tryGenerateWithWebLlm(prompt: string, attempt: number): Promise<string | null> {
+        const webLlm = await this.loadWebLlmEngine()
+        if (!webLlm) {
+            return null
+        }
+
+        try {
+            const timer = createInferenceTimer()
+            const response = await withTimeout(
+                webLlm.chat.completions.create({
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.5,
+                    max_gen_len: 512,
+                }),
+                INFERENCE_TIMEOUT_MS,
+            )
+            const content = response?.choices?.[0]?.message?.content
+            if (typeof content !== 'string' || content.trim().length === 0) {
+                return null
+            }
+
+            const activeWebLlmId = getWebLlmModelId() ?? 'webllm-unknown'
+            timer.stop({
+                model: activeWebLlmId,
+                task: 'text-generation',
+                backend: 'webllm',
+                tokensGenerated: Math.ceil(content.length / 4),
+            })
+            this.persistGeneratedText(prompt, content, activeWebLlmId)
+            return content
+        } catch (error) {
+            console.debug(
+                `[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`,
+                error,
+            )
+            captureLocalAiError(error, {
+                model: getWebLlmModelId() ?? 'webllm-unknown',
+                stage: 'inference',
+                retryAttempt: attempt,
+            })
+            return null
+        }
+    }
+
+    private async tryGenerateWithTransformers(
+        prompt: string,
+        attempt: number,
+    ): Promise<string | null> {
+        const activeProfile = getResolvedProfile()
+        const activeTextId = activeProfile.transformersModelId
+
+        try {
+            const timer = createInferenceTimer()
+            let generated: string | undefined
+
+            if (isWorkerAvailable()) {
+                try {
+                    const workerResult = await withTimeout(
+                        enqueueInference({
+                            task: 'text-generation',
+                            modelId: activeTextId,
+                            input: prompt,
+                            pipelineOptions: { quantized: activeProfile.useQuantized },
+                            inferenceOptions: {
+                                max_new_tokens: 512,
+                                do_sample: true,
+                                temperature: 0.6,
+                                return_full_text: false,
+                            },
+                            priority: 'normal',
+                            timeoutMs: INFERENCE_TIMEOUT_MS,
+                        }),
+                        INFERENCE_TIMEOUT_MS,
+                    )
+                    generated = extractGeneratedText(workerResult)
+                } catch (workerError) {
+                    console.debug(
+                        '[LocalAI] Worker inference failed, falling back to main thread.',
+                        workerError,
+                    )
+                }
+            }
+
+            if (!generated) {
+                const generator = await this.loadTextPipeline()
+                const output = await withTimeout(
+                    generator(prompt, {
+                        max_new_tokens: 512,
+                        do_sample: true,
+                        temperature: 0.6,
+                        return_full_text: false,
+                    }),
+                    INFERENCE_TIMEOUT_MS,
+                )
+                generated = extractGeneratedText(output)
+            }
+
+            if (typeof generated !== 'string' || generated.trim().length === 0) {
+                return null
+            }
+
+            timer.stop({
+                model: activeTextId,
+                task: 'text-generation',
+                backend: detectOnnxBackend(),
+                tokensGenerated: Math.ceil(generated.length / 4),
+            })
+            this.persistGeneratedText(prompt, generated, activeTextId)
+            return generated
+        } catch (error) {
+            console.debug(
+                `[LocalAI] Transformers.js text generation failed (attempt ${attempt + 1}).`,
+                error,
+            )
+            captureLocalAiError(error, {
+                model: activeTextId,
+                stage: 'inference',
+                retryAttempt: attempt,
+            })
+            return null
+        }
+    }
+
     private async generateText(prompt: string): Promise<string | null> {
         // Check in-memory inference cache first
         const cached = getCached(prompt)
@@ -389,128 +521,19 @@ class LocalAiService implements BaseAIProvider {
         recordCacheMiss()
 
         for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-            const webLlm = await this.loadWebLlmEngine()
-            if (webLlm) {
-                try {
-                    const timer = createInferenceTimer()
-                    const response = await withTimeout(
-                        webLlm.chat.completions.create({
-                            messages: [{ role: 'user', content: prompt }],
-                            temperature: 0.5,
-                            max_gen_len: 512,
-                        }),
-                        INFERENCE_TIMEOUT_MS,
-                    )
-                    const content = response?.choices?.[0]?.message?.content
-                    if (typeof content === 'string' && content.trim().length > 0) {
-                        const activeWebLlmId = getWebLlmModelId() ?? 'webllm-unknown'
-                        timer.stop({
-                            model: activeWebLlmId,
-                            task: 'text-generation',
-                            backend: 'webllm',
-                            tokensGenerated: Math.ceil(content.length / 4),
-                        })
-                        setCached(prompt, content)
-                        void setCachedInference(prompt, content, {
-                            model: activeWebLlmId,
-                            task: 'text-generation',
-                        }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
-                        debouncedPersistSnapshot()
-                        return content
-                    }
-                } catch (error) {
-                    console.debug(
-                        `[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`,
-                        error,
-                    )
-                    captureLocalAiError(error, {
-                        model: getWebLlmModelId() ?? 'webllm-unknown',
-                        stage: 'inference',
-                        retryAttempt: attempt,
-                    })
-                }
+            const webLlmResult = await this.tryGenerateWithWebLlm(prompt, attempt)
+            if (webLlmResult) {
+                return webLlmResult
             }
 
-            const activeProfile = getResolvedProfile()
-            const activeTextId = activeProfile.transformersModelId
-            try {
-                const timer = createInferenceTimer()
+            const transformersResult = await this.tryGenerateWithTransformers(prompt, attempt)
+            if (transformersResult) {
+                return transformersResult
+            }
 
-                let generated: string | undefined
-
-                // Prefer off-main-thread inference via Web Worker
-                if (isWorkerAvailable()) {
-                    try {
-                        const workerResult = await withTimeout(
-                            enqueueInference({
-                                task: 'text-generation',
-                                modelId: activeTextId,
-                                input: prompt,
-                                pipelineOptions: { quantized: activeProfile.useQuantized },
-                                inferenceOptions: {
-                                    max_new_tokens: 512,
-                                    do_sample: true,
-                                    temperature: 0.6,
-                                    return_full_text: false,
-                                },
-                                priority: 'normal',
-                                timeoutMs: INFERENCE_TIMEOUT_MS,
-                            }),
-                            INFERENCE_TIMEOUT_MS,
-                        )
-                        generated = extractGeneratedText(workerResult)
-                    } catch (workerError) {
-                        console.debug(
-                            '[LocalAI] Worker inference failed, falling back to main thread.',
-                            workerError,
-                        )
-                    }
-                }
-
-                // Fallback: main-thread Transformers.js inference
-                if (!generated) {
-                    const generator = await this.loadTextPipeline()
-                    const output = await withTimeout(
-                        generator(prompt, {
-                            max_new_tokens: 512,
-                            do_sample: true,
-                            temperature: 0.6,
-                            return_full_text: false,
-                        }),
-                        INFERENCE_TIMEOUT_MS,
-                    )
-                    generated = extractGeneratedText(output)
-                }
-                if (typeof generated === 'string' && generated.trim().length > 0) {
-                    const currentBackend = detectOnnxBackend()
-                    timer.stop({
-                        model: activeTextId,
-                        task: 'text-generation',
-                        backend: currentBackend,
-                        tokensGenerated: Math.ceil(generated.length / 4),
-                    })
-                    setCached(prompt, generated)
-                    void setCachedInference(prompt, generated, {
-                        model: activeTextId,
-                        task: 'text-generation',
-                    }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
-                    debouncedPersistSnapshot()
-                    return generated
-                }
-            } catch (error) {
-                console.debug(
-                    `[LocalAI] Transformers.js text generation failed (attempt ${attempt + 1}).`,
-                    error,
-                )
-                captureLocalAiError(error, {
-                    model: activeTextId,
-                    stage: 'inference',
-                    retryAttempt: attempt,
-                })
-                if (attempt < MAX_RETRIES) {
-                    // Brief delay before retry
-                    await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)))
-                }
+            if (attempt < MAX_RETRIES) {
+                // Brief delay before retry
+                await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)))
             }
         }
 

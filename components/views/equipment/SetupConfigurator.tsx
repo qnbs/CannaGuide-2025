@@ -295,10 +295,8 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             const newPriorities = new Set(prev)
             if (newPriorities.has(priority)) {
                 newPriorities.delete(priority)
-            } else {
-                if (newPriorities.size < 2) {
-                    newPriorities.add(priority)
-                }
+            } else if (newPriorities.size < 2) {
+                newPriorities.add(priority)
             }
             return Array.from(newPriorities)
         })

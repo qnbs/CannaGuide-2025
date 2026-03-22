@@ -19,7 +19,9 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
 
     useLayoutEffect(() => {
         if (navRef.current) {
-            const activeButton = navRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement
+            const activeButton = navRef.current.querySelector(
+                `[data-tab-id="${activeTab}"]`,
+            ) as HTMLElement
             if (activeButton) {
                 setIndicatorStyle({
                     left: `${activeButton.offsetLeft}px`,
@@ -49,7 +51,9 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                 const tab = tabs[nextIndex]
                 if (tab) {
                     setActiveTab(tab.id)
-                    const btn = navRef.current?.querySelector(`[data-tab-id="${tab.id}"]`) as HTMLElement
+                    const btn = navRef.current?.querySelector(
+                        `[data-tab-id="${tab.id}"]`,
+                    ) as HTMLElement
                     btn?.focus()
                 }
             }
@@ -61,22 +65,20 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
         <nav
             ref={navRef}
             className={`glass-pane relative flex items-center gap-1 overflow-x-auto rounded-[1.25rem] p-1.5 no-scrollbar ${className}`}
-            role="tablist"
             onKeyDown={handleKeyDown}
+            aria-label="Tabs"
         >
             {tabs.map((tab) => (
                 <button
                     key={tab.id}
                     data-tab-id={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                        className={`relative z-10 flex min-h-11 flex-shrink-0 items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+                    className={`relative z-10 flex min-h-11 flex-shrink-0 items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                         activeTab === tab.id
                             ? 'text-slate-50'
                             : 'text-slate-400 hover:text-slate-100'
                     }`}
-                    role="tab"
-                    aria-selected={activeTab === tab.id}
-                    tabIndex={activeTab === tab.id ? 0 : -1}
+                    aria-pressed={activeTab === tab.id}
                     title={tab.label}
                 >
                     {tab.icon && <div className="w-5 h-5">{tab.icon}</div>}
@@ -88,7 +90,8 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                 className="absolute inset-y-1.5 h-auto rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(var(--color-primary-500),0.24),rgba(var(--color-primary-300),0.12))] shadow-[0_10px_30px_rgba(8,145,178,0.22)]"
                 style={{
                     ...indicatorStyle,
-                    transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition:
+                        'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
                 aria-hidden="true"
             />

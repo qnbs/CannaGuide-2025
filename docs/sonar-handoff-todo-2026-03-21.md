@@ -103,6 +103,7 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 
 1. Sonar neu laufen lassen und verbleibende Issues gegen den aktuellen Branchstand neu clustern.
 1. GenealogyView-Cluster als naechsten Entry-Point abarbeiten (Smells + ggf. Tests).
+   Statusupdate: erste Welle erledigt (Decision-Logik in `genealogyViewUtils.ts` extrahiert, nested branchings reduziert, Regressionstest `genealogyViewUtils.test.ts` hinzugefuegt).
 1. Plants UI-Smells Cluster fortsetzen (insb. interaction/readability in detail tabs).
 1. db/crypto reliability smells fortsetzen (error-normalization, recovery guards).
 1. Vor jedem Push verbindlich: `npx prettier --check` auf dem geaenderten Stapel, plus `node scripts/lint-changed.mjs` und `npx tsc --noEmit`.

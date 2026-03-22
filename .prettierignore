@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+test-results
+artifacts
+.lighthouseci
+.stryker-tmp
+.turbo

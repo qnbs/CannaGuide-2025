@@ -66,7 +66,8 @@ class GrowLogRagService {
     private buildChunks(plants: Plant[]): LogChunk[] {
         let allChunks = plants.flatMap((plant) =>
             plant.journal.map((entry: JournalEntry) => {
-                const rawText = `${entry.type} ${entry.notes} ${(entry.details && JSON.stringify(entry.details)) || ''}`
+                const detailsText = entry.details ? JSON.stringify(entry.details) : null
+                const rawText = `${entry.type} ${entry.notes} ${detailsText ?? ''}`
                 return {
                     plantId: plant.id,
                     plantName: plant.name,

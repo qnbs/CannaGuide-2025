@@ -24,6 +24,36 @@ const base64ToBytes = (value: string): Uint8Array => {
     return Uint8Array.from(binary, (char) => char.charCodeAt(0))
 }
 
+interface EncryptedPayload {
+    v: number
+    iv: string
+    data: string
+}
+
+const parseEncryptedPayload = (payload: string): EncryptedPayload | null => {
+    try {
+        const parsed = JSON.parse(payload) as Partial<EncryptedPayload>
+        if (
+            parsed &&
+            parsed.v === 1 &&
+            typeof parsed.iv === 'string' &&
+            typeof parsed.data === 'string' &&
+            parsed.iv.length > 0 &&
+            parsed.data.length > 0
+        ) {
+            return {
+                v: 1,
+                iv: parsed.iv,
+                data: parsed.data,
+            }
+        }
+    } catch {
+        return null
+    }
+
+    return null
+}
+
 async function getOrCreateEncryptionKey(): Promise<CryptoKey> {
     const persisted = await getPersistedEncryptionKey()
     if (persisted) {
@@ -118,23 +148,36 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
         return null
     }
 
-    const raw = base64ToBytes(storedRaw)
-    const importedKey = await crypto.subtle.importKey(
-        'raw',
-        raw.buffer as ArrayBuffer,
-        { name: 'AES-GCM' },
-        false,
-        ['encrypt', 'decrypt'],
-    )
-    await persistEncryptionKey(importedKey)
-
     try {
-        localStorage.removeItem(CRYPTO_KEY_STORAGE)
-    } catch {
-        // Ignore cleanup failures after successful migration.
-    }
+        const raw = base64ToBytes(storedRaw)
+        const importedKey = await crypto.subtle.importKey(
+            'raw',
+            raw.buffer as ArrayBuffer,
+            { name: 'AES-GCM' },
+            false,
+            ['encrypt', 'decrypt'],
+        )
+        await persistEncryptionKey(importedKey)
 
-    return importedKey
+        try {
+            localStorage.removeItem(CRYPTO_KEY_STORAGE)
+        } catch {
+            // Ignore cleanup failures after successful migration.
+        }
+
+        return importedKey
+    } catch (error) {
+        console.debug(
+            '[cryptoService] Legacy key migration failed, ignoring legacy payload.',
+            error,
+        )
+        try {
+            localStorage.removeItem(CRYPTO_KEY_STORAGE)
+        } catch {
+            // Ignore cleanup failures.
+        }
+        return null
+    }
 }
 
 export async function encrypt(plaintext: string): Promise<string> {
@@ -150,17 +193,22 @@ export async function encrypt(plaintext: string): Promise<string> {
 }
 
 export async function decrypt(payload: string): Promise<string> {
-    const parsed = JSON.parse(payload) as { v: number; iv: string; data: string }
-    if (!parsed || parsed.v !== 1 || !parsed.iv || !parsed.data) return payload
+    const parsed = parseEncryptedPayload(payload)
+    if (!parsed) return payload
+
     const key = await getOrCreateEncryptionKey()
-    const iv = base64ToBytes(parsed.iv)
-    const encrypted = base64ToBytes(parsed.data)
-    const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
-        key,
-        encrypted.buffer as ArrayBuffer,
-    )
-    return new TextDecoder().decode(decrypted)
+    try {
+        const iv = base64ToBytes(parsed.iv)
+        const encrypted = base64ToBytes(parsed.data)
+        const decrypted = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
+            key,
+            encrypted.buffer as ArrayBuffer,
+        )
+        return new TextDecoder().decode(decrypted)
+    } catch {
+        return payload
+    }
 }
 
 /** Check if a string looks like an encrypted payload (starts with `{`) */

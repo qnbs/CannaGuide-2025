@@ -107,6 +107,7 @@ Prioritaet: Major/Critical zuerst, dann Minor-Konventionen.
 1. Plants UI-Smells Cluster fortsetzen (insb. interaction/readability in detail tabs).
    Statusupdate: `JournalTab.tsx` und `OverviewTab.tsx` in einer low-risk Welle bereinigt (Details-Reliability bei numerischen Nullwerten, unnötige Type-Assertion entfernt).
 1. db/crypto reliability smells fortsetzen (error-normalization, recovery guards).
+   Statusupdate: `cryptoService.ts` Decrypt-/Legacy-Migration gegen malformed payloads gehaertet; `growLogRagService.ts` nullish-sicheres Details-Stringifying umgesetzt.
 1. Vor jedem Push verbindlich: `npx prettier --check` auf dem geaenderten Stapel, plus `node scripts/lint-changed.mjs` und `npx tsc --noEmit`.
 
 ## G. Strategischer Plan fuer neue Sonar-Liste (432 Issues, Stand 2026-03-22)

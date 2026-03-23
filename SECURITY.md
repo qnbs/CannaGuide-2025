@@ -1,18 +1,35 @@
 # Security Policy
 
-If you believe you have found a security vulnerability, do not open a public issue.
+## Supported Versions
+
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.1.x   | :white_check_mark: |
+| 1.0.x   | :white_check_mark: |
+| < 1.0   | :x:                |
+
+## Reporting a Vulnerability
+
+If you believe you have found a security vulnerability, **do not open a public issue**.
 
 Please report it privately by following one of these paths:
 
-- Open a private security advisory in GitHub Security Advisories, if available.
-- Contact the repository maintainers through the channels listed in the project profile.
+1. **GitHub Security Advisories (preferred):** Use [GitHub's private vulnerability reporting](https://github.com/qnbs/CannaGuide-2025/security/advisories/new) to create a private advisory.
+2. **Email:** Contact the repository maintainers through the channels listed in the project profile.
 
-Include:
+### What to Include
 
 - A short description of the issue.
 - The affected file, workflow, dependency, or feature.
 - Steps to reproduce.
 - Any proof-of-concept or log output that is safe to share.
+
+### Disclosure Timeline
+
+- **Acknowledgement:** We will acknowledge receipt within **48 hours**.
+- **Assessment:** We aim to confirm the vulnerability within **5 business days**.
+- **Remediation:** A fix will be developed and released as soon as possible, typically within **30 days** for critical issues.
+- **Disclosure:** We coordinate public disclosure only after a fix is available.
 
 We will review reports as quickly as possible and coordinate remediation before public disclosure.
 

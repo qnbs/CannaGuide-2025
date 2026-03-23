@@ -1,0 +1,49 @@
+name: ClusterFuzzLite
+
+on:
+    pull_request:
+        branches: [main]
+        paths:
+            - 'services/**'
+            - 'stores/**'
+            - 'utils/**'
+            - '.clusterfuzzlite/**'
+            - '.github/workflows/cflite_pr.yml'
+    schedule:
+        - cron: '27 4 * * 3' # Weekly Wednesday
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    pr-fuzzing:
+        name: 🔀 PR Fuzzing
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        permissions:
+            contents: read
+            security-events: write
+        strategy:
+            fail-fast: false
+            matrix:
+                sanitizer: [address]
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+            - name: Build Fuzzers (${{ matrix.sanitizer }})
+              id: build
+              uses: google/clusterfuzzlite/actions/build_fuzzers@884713f6c30a92e5e8b0b02cb7a814bda1c62c32 # v1
+              with:
+                  language: javascript
+                  sanitizer: ${{ matrix.sanitizer }}
+
+            - name: Run Fuzzers (${{ matrix.sanitizer }})
+              id: run
+              uses: google/clusterfuzzlite/actions/run_fuzzers@884713f6c30a92e5e8b0b02cb7a814bda1c62c32 # v1
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  fuzz-seconds: 300
+                  mode: code-change
+                  sanitizer: ${{ matrix.sanitizer }}

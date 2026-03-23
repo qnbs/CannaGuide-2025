@@ -5,14 +5,15 @@ on:
         - cron: '0 7 * * 1'
     workflow_dispatch:
 
-permissions:
-    issues: write
-    pull-requests: write
+permissions: {}
 
 jobs:
     stale:
         runs-on: ubuntu-latest
         timeout-minutes: 10
+        permissions:
+            issues: write
+            pull-requests: write
         steps:
             - name: Mark stale items
               uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639

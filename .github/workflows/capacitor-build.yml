@@ -41,7 +41,7 @@ jobs:
                   BUILD_BASE_PATH: /
 
             - name: 📱 Install Capacitor CLI
-              run: npm install -g @capacitor/cli
+              run: npm install -g @capacitor/cli@8.2.0
 
             - name: 📱 Add Android platform
               run: |
@@ -84,7 +84,7 @@ jobs:
                   BUILD_BASE_PATH: /
 
             - name: 📱 Install Capacitor CLI
-              run: npm install -g @capacitor/cli
+              run: npm install -g @capacitor/cli@8.2.0
 
             - name: 📱 Add iOS platform
               run: |

@@ -188,7 +188,7 @@
         "rollup-plugin-visualizer": "^7.0.1",
         "snyk": "^1.1303.1",
         "source-map-explorer": "^2.5.3",
-        "tailwindcss": "^3.4.19",
+        "tailwindcss": "^4.2.2",
         "turbo": "^2.8.20",
         "vite": "^7.3.1",
         "vite-plugin-pwa": "^1.2.0",

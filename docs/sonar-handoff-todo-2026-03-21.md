@@ -1,8 +1,8 @@
-# Sonar Handoff TODO (Update 2026-03-23)
+# Sonar Handoff TODO (Update 2026-03-23 — Session Close)
 
 <!-- markdownlint-disable MD007 -->
 
-## Session-Update 2026-03-23 (SonarCloud QG + Scorecard)
+## Session-Update 2026-03-23 (SonarCloud QG + Scorecard + Admin Hardening)
 
 ### SonarCloud Quality Gate Status
 
@@ -20,6 +20,8 @@
 - **S5852 (ReDoS):** `commandService.ts` fuzzy-Regex mit 64-Zeichen-Limit abgesichert
 - **sonar-project.properties:** `sonar.tests` korrigiert (Inline-Tests), `sonar.test.inclusions` fuer fuzz-Tests, `sonar.coverage.exclusions` fuer data/types/workers/locales/public
 - **Dockerfile:** `apk upgrade` fuer zlib-CVE-Fix
+- **CodeQL Default Setup:** Extended Query Suite aktiviert (JS/TS + Actions)
+- **OpenSSF Scorecard:** 8.5/10 (11 Checks auf 10/10)
 
 ### Naechste Schritte fuer SonarCloud
 

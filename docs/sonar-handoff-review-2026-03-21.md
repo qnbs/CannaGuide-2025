@@ -1,6 +1,10 @@
-# Sonar Handoff Review (Update 2026-03-23)
+# Sonar Handoff Review (Update 2026-03-23 — Session Close)
 
-## Session-Update 2026-03-23: SonarCloud QG + Scorecard + Snyk
+## Session-Update 2026-03-23: SonarCloud QG + Scorecard + Snyk + Admin Hardening
+
+### OpenSSF Scorecard: 8.5/10
+
+11 Checks auf 10/10. Scorecard von 4.9 auf 8.5 gesteigert. Admin-Level Repository-Settings vollstaendig konfiguriert (Branch Protection, Security Features, CodeQL Extended, Actions Permissions, Tag Rulesets). CII-Best-Practices auf bestpractices.dev registriert (pending Aktivierung).
 
 ### Security Hotspot Elimination (S2245 + S5852)
 

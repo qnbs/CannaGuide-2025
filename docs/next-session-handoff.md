@@ -2,81 +2,50 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-23, Night) — Admin PAT Repository Hardening
+## Latest Session (2026-03-23) — CI/CD + Security + Admin Hardening Marathon
 
-**Status: CI green (622/622), all tests passing. All admin settings configured.**
+**Status: CI green (622/622), Scorecard 8.5/10, all admin settings configured.**
+**Commit Range: `4feb00a` → `d35a0e8` (20 commits)**
 
-### Admin-Level Repository Configuration (via PAT)
+### Session Summary (7 Phasen)
 
-Umfassende Konfiguration aller Admin-Level GitHub-Settings per REST API:
+| Phase | Focus                             | Key Commits          |
+| ----- | --------------------------------- | -------------------- |
+| 1     | CI/CD Badge Repair                | `126ea94`..`c8b2f61` |
+| 2     | Identity & Fuzzing Hardening      | `702a503`, `ee1a982` |
+| 3     | Comprehensive Repo Audit (20 WFs) | `b58d7d9`            |
+| 4     | OpenSSF Scorecard Optimization    | `a799a2c`            |
+| 5     | SonarCloud QG + Snyk Fixes        | `83b64a9`            |
+| 6     | CodeQL Scorecard Alert Resolution | `ccb21b0`            |
+| 7     | Admin-Level Repo Hardening        | `d35a0e8`            |
 
-#### Repository Settings
+### OpenSSF Scorecard: 8.5/10
 
-- **Merge Strategy:** Nur Squash-Merge (merge-commit & rebase deaktiviert)
-- **Squash Format:** PR_TITLE + PR_BODY
-- **Branch Cleanup:** Auto-delete merged branches
-- **Auto-Merge:** Aktiviert
-- **Signoff:** Web-Commit Signoff erforderlich
-- **Wiki/Projects:** Deaktiviert (nicht genutzt)
+11 Checks auf 10/10 (Binary-Artifacts, Dangerous-Workflow, Dependency-Update, Fuzzing, License, Maintained, Packaging, SAST, Security-Policy, Token-Permissions, Vulnerabilities). Pinned-Dependencies 9/10, Branch-Protection 8/10. Verbleibende Checks (CII-Best-Practices, Code-Review, Contributors, CI-Tests, Signed-Releases) sind strukturell bedingt und verbessern sich automatisch bei PR-Workflow und Releases.
 
-#### Branch Protection (main)
+### Repository Configuration (Admin-PAT, persistent)
 
-- **Required Reviews:** 1 Approving Review
-- **Dismiss Stale Reviews:** Ja
-- **CODEOWNER Reviews:** Erforderlich
-- **Last Push Approval:** Ja (verhindert Self-Approval nach Push)
-- **Status Checks:** `quality`, `ci-status` (strict — Branch muss aktuell sein)
-- **Signed Commits:** Erforderlich
-- **Linear History:** Ja (kein Merge-Commit)
-- **Conversation Resolution:** Alle Threads muessen resolved sein
-- **Force Push / Deletion:** Verboten
-- **Enforce Admins:** Nein (Admin-Bypass fuer direkte Pushes)
+- **Merge:** Nur Squash (PR_TITLE + PR_BODY), auto-delete branches, auto-merge
+- **Branch Protection (main):** 1 Review, CODEOWNER, signed commits, linear history, strict status checks (`quality`, `ci-status`), conversation resolution, no force push/delete. `enforce_admins: false` (Admin-Bypass aktiv fuer direkte Pushes)
+- **Security:** Secret Scanning + Push Protection, Vuln Alerts, Automated Fixes, Private Vuln Reporting, CodeQL Extended (JS/TS + Actions)
+- **Actions:** `read` default permissions, keine PR-Approvals
+- **Weitere:** Tag Ruleset v\*, Copilot env branch policy, Pages HTTPS, 14 Topics, Dependabot Docker-Ecosystems, Notifications ignored
+- **Admin-PAT:** Wurde nach Session widerrufen — alle Settings sind persistent
 
-#### Security Features
+### Naechste Schritte (Einstieg naechste Session)
 
-- **Secret Scanning:** Aktiviert + Push Protection
-- **Vulnerability Alerts:** Aktiviert
-- **Automated Security Fixes:** Aktiviert
-- **Private Vulnerability Reporting:** Aktiviert
-- **CodeQL Default Setup:** Extended Query Suite (JS/TS + Actions)
+1. **Feature-Entwicklung** — App ist im aktiven Iterationsmodus, direkte Pushes als Admin
+2. **CII-Best-Practices** — Badge auf bestpractices.dev aktivieren nach E-Mail-Verifikation
+3. **SonarCloud Hotspots** — Im UI reviewen/dismissend (0% reviewed = E-Rating)
+4. **Service-Tests** — `aiProviderService`, `aiService`, `exportService`, `strainService`, `commandService`
+5. **Coverage** — Von 22.8% Richtung >30% steigern
 
-#### Actions Permissions
+### Detaillierte Dokumentation
 
-- **Default Workflow Permissions:** `read` (minimal)
-- **PR Approval durch Actions:** Deaktiviert
-
-#### Weitere Settings
-
-- **Tag Protection:** Ruleset für `v*` Tags (creation/update/deletion geschuetzt)
-- **Copilot Environment:** Deployment Branch Policy auf protected branches
-- **HTTPS Enforcement:** GitHub Pages erzwingt HTTPS
-- **Topics:** 14 Tags fuer Discoverability gesetzt
-- **Dependabot:** Docker-Ecosystem fuer alle Dockerfiles ergaenzt (root, esp32-mock, tauri-mock, iot-mocks)
-
-### Vorheriger Commit — CodeQL Scorecard Alerts Fix
-
-- **Dangerous-Workflow (#175, Critical):** `deploy.yml` — Entfernung des untrusted `workflow_run.head_sha` Checkout
-- **Pinned-Dependencies (#192, #193):** ClusterFuzzLite Dockerfile SHA-gepinnt
-- **Pinned-Dependencies (#178, #177, #136):** Alle Mock-Dockerfiles SHA-gepinnt
-- **Pinned-Dependencies (#138, #137):** `capacitor-build.yml` — `@capacitor/cli@8.2.0` gepinnt
-- **Code-Review (#188):** Jetzt behoben durch Branch Protection mit Required Reviews
-- **Branch-Protection:** Jetzt vollstaendig konfiguriert via Admin-PAT
-
-### Nicht automatisch behebbar
-
-- **CII-Best-Practices (#187, Low):** Erfordert manuelle Registrierung auf https://www.bestpractices.dev/ (Login mit GitHub, Projekt eintragen, Fragebogen ausfuellen).
-
-### Admin-PAT Hinweis
-
-Der Admin-PAT (`GH_PAT`) sollte nach dieser Session widerrufen/rotiert werden. Alle Einstellungen sind persistent und benoetigen den PAT nicht mehr.
-
-### Vorherige Fixes (gleiche Session)
-
-- S2245 Weak PRNG: Alle Math.random() → secureRandom() (15 Stellen, 9 Dateien)
-- S5852 ReDoS: commandService.ts Laengenlimit
-- Dockerfile: apk upgrade fuer zlib CVEs
-- sonar-project.properties: Test-Sources + Coverage-Exclusions
-- Scorecard: Token-Permissions, Pinned-Dependencies, ClusterFuzzLite, SECURITY.md
+- `docs/session-activity-review-2026-03-23.md` — Vollstaendiger 7-Phasen-Review
+- `docs/session-activity-todo-2026-03-23.md` — Priorisierte TODO-Liste (P0-P3)
+- `docs/sonar-handoff-review-2026-03-21.md` — SonarCloud Tracking-Log
+- `docs/sonar-handoff-todo-2026-03-21.md` — Sonar-Backlog + Strategieplaene
 
 **Test-Baseline:** 622 Tests, 75 Dateien, 0 Failures
 
@@ -116,10 +85,10 @@ Workflow fuer automatische Aktualisierung:
 
 - `.github/workflows/security-alerts-handoff.yml` (daily + manual)
 
-> **Last updated:** 2026-03-22 — Session Close Wave
-> **Author:** Copilot session (Sonar Security Hotspot + Handoff sync)
-> **Test baseline:** geaenderte Cluster validiert (lint/typecheck + genetics tests gruen)
-> **Build:** nicht erneut in dieser Abschlusswelle ausgefuehrt
+> **Last updated:** 2026-03-23 — Session Close (7-Phase Security + Admin Hardening Marathon)
+> **Author:** Copilot session
+> **Test baseline:** 622 Tests, 75 Dateien, 0 Failures
+> **Build:** CI green, Scorecard 8.5/10, all admin settings persistent
 
 ---
 

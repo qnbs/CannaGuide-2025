@@ -2,7 +2,48 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-23, Continuation #2) — Full CodeAnt Cleanup + PR Purge
+## Latest Session (2026-03-23, Continuation #3) — Cache Tests + Coverage Boost
+
+**Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
+
+### Session Summary
+
+Added comprehensive IndexedDB cache tests: 21 new tests across 3 files. Test baseline increased from 622 → 643.
+
+| Category                | Fixed     | Remaining      | Notes                                                                             |
+| ----------------------- | --------- | -------------- | --------------------------------------------------------------------------------- |
+| Code Scanning Alerts    | 3/5       | 2 (admin-only) | Pinned-Deps fixed; Code-Review/Branch-Prot need admin                             |
+| Complex Functions       | 14/14     | 0              | All done — 2 sessions                                                             |
+| Duplicate Code (Major)  | 7 groups  | ~115 groups    | sw.js, GrowSetupModal, InlineStrainSelector, ipc.rs, BreedingView, cache services |
+| Infrastructure Security | 6/6       | 0              | (from previous session)                                                           |
+| Antipatterns/Bugs       | 29/29     | 0              | (from previous session)                                                           |
+| Open PRs                | 18 closed | 0              | 17 Dependabot + 1 automation, all branches deleted                                |
+| Test Coverage           | +21 tests | ongoing        | New: indexedDbLruCache (15), localAiCacheService (+3), imageGenCache (+3)         |
+
+### Changes Applied This Session
+
+**New Test File: `indexedDbLruCache.test.ts` (15 tests):**
+
+- hashKey: determinism, uniqueness, prefix handling, length encoding
+- CRUD: set/get roundtrip, missing key, overwrite, clear, count
+- TTL: expired entry eviction, valid entry retrieval
+- LRU eviction: oldest entry eviction at capacity
+- accessedAt update on read
+- resetDbPromise: DB re-open after reset
+
+**Enhanced: `localAiCacheService.test.ts` (5 → 8 tests):**
+
+- Added: set+get roundtrip, getCacheSize, clearPersistentCache, getCacheBreakdown (by model), MAX_VALUE_SIZE rejection, resetCacheDb
+
+**Rewritten: `imageGenerationCacheService.test.ts` (3 → 6 tests):**
+
+- Replaced hash duplication tests with real IndexedDB roundtrips: set+get, count, clear, overwrite, img\_ prefix
+
+**Technical Note:** jsdom + fake-indexeddb requires `vi.stubGlobal('indexedDB', new IDBFactory())` in `beforeEach` — `fake-indexeddb/auto` doesn't override jsdom's broken IndexedDB stub.
+
+---
+
+## Previous Session (2026-03-23, Continuation #2) — Full CodeAnt Cleanup + PR Purge
 
 **Status: CI green (622/622), all tests pass, type-check clean, lint clean.**
 

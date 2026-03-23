@@ -47,6 +47,7 @@
         "lint": "node ./scripts/lint-changed.mjs",
         "lint:changed": "node ./scripts/lint-changed.mjs",
         "check:commit-identity": "node ./scripts/check-commit-identity.mjs",
+        "devcontainer:doctor": "node ./scripts/devcontainer/doctor.mjs",
         "prettier:check:changed": "node ./scripts/prettier-check-changed.mjs",
         "lint:scopes": "node ./scripts/lint-scopes.mjs",
         "lint:full": "eslint . --report-unused-disable-directives",

@@ -1,0 +1,55 @@
+name: Fuzzing
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'services/**'
+            - 'stores/**'
+            - 'constants.ts'
+            - 'types.ts'
+            - 'vite.config.ts'
+            - 'package.json'
+            - 'package-lock.json'
+            - '.github/workflows/fuzzing.yml'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'services/**'
+            - 'stores/**'
+            - 'constants.ts'
+            - 'types.ts'
+            - 'vite.config.ts'
+            - 'package.json'
+            - 'package-lock.json'
+            - '.github/workflows/fuzzing.yml'
+    schedule:
+        - cron: '17 4 * * 2'
+    workflow_dispatch:
+
+concurrency:
+    group: fuzzing-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: '20'
+
+jobs:
+    url-service-fuzz:
+        name: Property Fuzz Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Run fuzz test suite
+              run: npm run test:fuzz

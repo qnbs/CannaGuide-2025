@@ -16,6 +16,7 @@
 
 import type { Strain } from '@/types'
 import type { ImageStyle } from '@/types/aiProvider'
+import { secureRandom } from '@/utils/random'
 import { captureLocalAiError } from './sentryService'
 import { detectOnnxBackend } from './localAIModelLoader'
 import {
@@ -161,7 +162,7 @@ export const buildImagePrompt = (
     const styles = ['botanical', 'fantasy', 'psychedelic', 'macro', 'cyberpunk'] as const
     const resolvedStyle: Exclude<ImageStyle, 'random'> =
         style === 'random'
-            ? (styles[Math.floor(Math.random() * styles.length)] ?? 'botanical')
+            ? (styles[Math.floor(secureRandom() * styles.length)] ?? 'botanical')
             : style
 
     let strainType: 'sativa' | 'indica' | 'hybrid' = 'hybrid'

@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { PlantStage } from '@/types';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { PlantStage } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -7,62 +7,62 @@ import { PlantStage } from '@/types';
 
 export interface NutrientScheduleEntry {
     /** Unique identifier */
-    id: string;
+    id: string
     /** Growth stage this entry applies to */
-    stage: PlantStage;
+    stage: PlantStage
     /** Target EC (mS/cm) */
-    targetEc: number;
+    targetEc: number
     /** Target pH */
-    targetPh: number;
+    targetPh: number
     /** N-P-K ratio */
-    npkRatio: { n: number; p: number; k: number };
+    npkRatio: { n: number; p: number; k: number }
     /** Optional notes */
-    notes: string;
+    notes: string
 }
 
 export interface EcPhReading {
     /** Unique identifier */
-    id: string;
+    id: string
     /** Associated plant ID (null for general readings) */
-    plantId: string | null;
+    plantId: string | null
     /** Timestamp when reading was taken */
-    timestamp: number;
+    timestamp: number
     /** Measured EC value (mS/cm) */
-    ec: number;
+    ec: number
     /** Measured pH value */
-    ph: number;
+    ph: number
     /** Water temperature in °C */
-    waterTempC: number | null;
+    waterTempC: number | null
     /** Whether this is input or runoff measurement */
-    readingType: 'input' | 'runoff';
+    readingType: 'input' | 'runoff'
     /** Optional notes */
-    notes: string;
+    notes: string
 }
 
 export interface NutrientAlert {
-    id: string;
-    plantId: string | null;
-    type: 'ec_high' | 'ec_low' | 'ph_high' | 'ph_low';
-    message: string;
-    timestamp: number;
-    dismissed: boolean;
+    id: string
+    plantId: string | null
+    type: 'ec_high' | 'ec_low' | 'ph_high' | 'ph_low'
+    message: string
+    timestamp: number
+    dismissed: boolean
 }
 
 export interface NutrientPlannerState {
     /** Custom nutrient schedule per stage */
-    schedule: NutrientScheduleEntry[];
+    schedule: NutrientScheduleEntry[]
     /** EC/pH reading history */
-    readings: EcPhReading[];
+    readings: EcPhReading[]
     /** Active alerts */
-    alerts: NutrientAlert[];
+    alerts: NutrientAlert[]
     /** Auto-adjustment enabled */
-    autoAdjustEnabled: boolean;
+    autoAdjustEnabled: boolean
     /** Grow medium: determines optimal pH/EC ranges */
-    medium: 'Soil' | 'Coco' | 'Hydro';
+    medium: 'Soil' | 'Coco' | 'Hydro'
     /** Whether AI recommendation is loading */
-    isAiLoading: boolean;
+    isAiLoading: boolean
     /** Last AI recommendation (raw text) */
-    lastAiRecommendation: string | null;
+    lastAiRecommendation: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -70,37 +70,37 @@ export interface NutrientPlannerState {
 // ---------------------------------------------------------------------------
 
 export interface OptimalRange {
-    ecMin: number;
-    ecMax: number;
-    phMin: number;
-    phMax: number;
+    ecMin: number
+    ecMax: number
+    phMin: number
+    phMax: number
 }
 
 const OPTIMAL_RANGES: Record<string, Record<string, OptimalRange>> = {
     Soil: {
-        [PlantStage.Seedling]:    { ecMin: 0.4, ecMax: 0.8, phMin: 6.0, phMax: 6.5 },
-        [PlantStage.Vegetative]:  { ecMin: 0.8, ecMax: 1.4, phMin: 6.0, phMax: 6.8 },
-        [PlantStage.Flowering]:   { ecMin: 1.2, ecMax: 1.8, phMin: 6.0, phMax: 6.5 },
-        default:                  { ecMin: 0.6, ecMax: 1.2, phMin: 6.0, phMax: 6.8 },
+        [PlantStage.Seedling]: { ecMin: 0.4, ecMax: 0.8, phMin: 6.0, phMax: 6.5 },
+        [PlantStage.Vegetative]: { ecMin: 0.8, ecMax: 1.4, phMin: 6.0, phMax: 6.8 },
+        [PlantStage.Flowering]: { ecMin: 1.2, ecMax: 1.8, phMin: 6.0, phMax: 6.5 },
+        default: { ecMin: 0.6, ecMax: 1.2, phMin: 6.0, phMax: 6.8 },
     },
     Coco: {
-        [PlantStage.Seedling]:    { ecMin: 0.4, ecMax: 0.8, phMin: 5.5, phMax: 6.2 },
-        [PlantStage.Vegetative]:  { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.3 },
-        [PlantStage.Flowering]:   { ecMin: 1.4, ecMax: 2.2, phMin: 5.5, phMax: 6.2 },
-        default:                  { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.3 },
+        [PlantStage.Seedling]: { ecMin: 0.4, ecMax: 0.8, phMin: 5.5, phMax: 6.2 },
+        [PlantStage.Vegetative]: { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.3 },
+        [PlantStage.Flowering]: { ecMin: 1.4, ecMax: 2.2, phMin: 5.5, phMax: 6.2 },
+        default: { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.3 },
     },
     Hydro: {
-        [PlantStage.Seedling]:    { ecMin: 0.3, ecMax: 0.6, phMin: 5.5, phMax: 6.0 },
-        [PlantStage.Vegetative]:  { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.0 },
-        [PlantStage.Flowering]:   { ecMin: 1.4, ecMax: 2.4, phMin: 5.5, phMax: 6.0 },
-        default:                  { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.0 },
+        [PlantStage.Seedling]: { ecMin: 0.3, ecMax: 0.6, phMin: 5.5, phMax: 6.0 },
+        [PlantStage.Vegetative]: { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.0 },
+        [PlantStage.Flowering]: { ecMin: 1.4, ecMax: 2.4, phMin: 5.5, phMax: 6.0 },
+        default: { ecMin: 0.8, ecMax: 1.6, phMin: 5.5, phMax: 6.0 },
     },
-};
+}
 
 export const getOptimalRange = (medium: string, stage: PlantStage): OptimalRange => {
-    const mediumRanges = OPTIMAL_RANGES[medium] ?? OPTIMAL_RANGES['Soil'];
-    return (mediumRanges?.[stage] ?? mediumRanges?.['default']) as OptimalRange;
-};
+    const mediumRanges = OPTIMAL_RANGES[medium] ?? OPTIMAL_RANGES['Soil']
+    return (mediumRanges?.[stage] ?? mediumRanges?.['default']) as OptimalRange
+}
 
 // ---------------------------------------------------------------------------
 // Default schedule (populated from optimal ranges)
@@ -131,7 +131,7 @@ const createDefaultSchedule = (): NutrientScheduleEntry[] => [
         npkRatio: { n: 1, p: 3, k: 3 },
         notes: '',
     },
-];
+]
 
 // ---------------------------------------------------------------------------
 // Initial state
@@ -145,14 +145,14 @@ const initialState: NutrientPlannerState = {
     medium: 'Soil',
     isAiLoading: false,
     lastAiRecommendation: null,
-};
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const MAX_READINGS = 500;
-const MAX_ALERTS = 50;
+const MAX_READINGS = 500
+const MAX_ALERTS = 50
 
 // ---------------------------------------------------------------------------
 // Slice
@@ -163,43 +163,49 @@ const nutrientPlannerSlice = createSlice({
     initialState,
     reducers: {
         setMedium(state, action: PayloadAction<'Soil' | 'Coco' | 'Hydro'>) {
-            state.medium = action.payload;
+            state.medium = action.payload
         },
 
         toggleAutoAdjust(state) {
-            state.autoAdjustEnabled = !state.autoAdjustEnabled;
+            state.autoAdjustEnabled = !state.autoAdjustEnabled
         },
 
         // --- Schedule management ---
-        updateScheduleEntry(state, action: PayloadAction<{ id: string; changes: Partial<Omit<NutrientScheduleEntry, 'id'>> }>) {
-            const entry = state.schedule.find(e => e.id === action.payload.id);
+        updateScheduleEntry(
+            state,
+            action: PayloadAction<{
+                id: string
+                changes: Partial<Omit<NutrientScheduleEntry, 'id'>>
+            }>,
+        ) {
+            const entry = state.schedule.find((e) => e.id === action.payload.id)
             if (entry) {
-                Object.assign(entry, action.payload.changes);
+                Object.assign(entry, action.payload.changes)
             }
         },
 
         resetScheduleToDefaults(state) {
-            state.schedule = createDefaultSchedule();
+            state.schedule = createDefaultSchedule()
         },
 
         // --- EC/pH readings ---
         addReading(state, action: PayloadAction<Omit<EcPhReading, 'id' | 'timestamp'>>) {
             const reading: EcPhReading = {
                 ...action.payload,
-                id: `reading-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                id: `reading-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
                 timestamp: Date.now(),
-            };
-            state.readings.push(reading);
+            }
+            state.readings.push(reading)
 
             // Cap readings (FIFO)
             if (state.readings.length > MAX_READINGS) {
-                state.readings = state.readings.slice(-MAX_READINGS);
+                state.readings = state.readings.slice(-MAX_READINGS)
             }
 
             // Auto-alert generation
-            const medium = state.medium;
-            const stage = PlantStage.Vegetative; // Default check; real plants override via component logic
-            const optimal = getOptimalRange(medium, stage);
+            const medium = state.medium
+            const stage = PlantStage.Vegetative // Default check; real plants override via component logic
+            const optimal = getOptimalRange(medium, stage)
 
             if (reading.ec > optimal.ecMax) {
                 state.alerts.push({
@@ -209,7 +215,7 @@ const nutrientPlannerSlice = createSlice({
                     message: `EC ${reading.ec.toFixed(2)} exceeds optimal max ${optimal.ecMax.toFixed(2)}`,
                     timestamp: Date.now(),
                     dismissed: false,
-                });
+                })
             } else if (reading.ec < optimal.ecMin) {
                 state.alerts.push({
                     id: `alert-${Date.now()}-ec-low`,
@@ -218,7 +224,7 @@ const nutrientPlannerSlice = createSlice({
                     message: `EC ${reading.ec.toFixed(2)} below optimal min ${optimal.ecMin.toFixed(2)}`,
                     timestamp: Date.now(),
                     dismissed: false,
-                });
+                })
             }
 
             if (reading.ph > optimal.phMax) {
@@ -229,7 +235,7 @@ const nutrientPlannerSlice = createSlice({
                     message: `pH ${reading.ph.toFixed(2)} exceeds optimal max ${optimal.phMax.toFixed(2)}`,
                     timestamp: Date.now(),
                     dismissed: false,
-                });
+                })
             } else if (reading.ph < optimal.phMin) {
                 state.alerts.push({
                     id: `alert-${Date.now()}-ph-low`,
@@ -238,46 +244,46 @@ const nutrientPlannerSlice = createSlice({
                     message: `pH ${reading.ph.toFixed(2)} below optimal min ${optimal.phMin.toFixed(2)}`,
                     timestamp: Date.now(),
                     dismissed: false,
-                });
+                })
             }
 
             // Cap alerts
             if (state.alerts.length > MAX_ALERTS) {
-                state.alerts = state.alerts.slice(-MAX_ALERTS);
+                state.alerts = state.alerts.slice(-MAX_ALERTS)
             }
         },
 
         removeReading(state, action: PayloadAction<string>) {
-            state.readings = state.readings.filter(r => r.id !== action.payload);
+            state.readings = state.readings.filter((r) => r.id !== action.payload)
         },
 
         clearReadings(state) {
-            state.readings = [];
+            state.readings = []
         },
 
         // --- Alerts ---
         dismissAlert(state, action: PayloadAction<string>) {
-            const alert = state.alerts.find(a => a.id === action.payload);
+            const alert = state.alerts.find((a) => a.id === action.payload)
             if (alert) {
-                alert.dismissed = true;
+                alert.dismissed = true
             }
         },
 
         clearAlerts(state) {
-            state.alerts = [];
+            state.alerts = []
         },
 
         // --- AI ---
         setAiLoading(state, action: PayloadAction<boolean>) {
-            state.isAiLoading = action.payload;
+            state.isAiLoading = action.payload
         },
 
         setAiRecommendation(state, action: PayloadAction<string | null>) {
-            state.lastAiRecommendation = action.payload;
-            state.isAiLoading = false;
+            state.lastAiRecommendation = action.payload
+            state.isAiLoading = false
         },
     },
-});
+})
 
 export const {
     setMedium,
@@ -291,6 +297,6 @@ export const {
     clearAlerts,
     setAiLoading,
     setAiRecommendation,
-} = nutrientPlannerSlice.actions;
+} = nutrientPlannerSlice.actions
 
-export default nutrientPlannerSlice.reducer;
+export default nutrientPlannerSlice.reducer

@@ -2,11 +2,13 @@
 
 ## Scope
 
-Full-day session covering three phases:
+Full-day session covering five phases:
 
 1. **CI/CD repair** — Fix three broken badges (CI, Deploy, Scorecard)
 2. **Infrastructure hardening** — Commit identity, fuzzing, devcontainer robustness
 3. **Comprehensive repo audit** — All 20 workflows, all config files, all docs, full cleanup
+4. **OpenSSF Scorecard optimization** — Token-Permissions, Pinned-Dependencies, Fuzzing (ClusterFuzzLite), Security-Policy
+5. **SonarCloud Quality Gate + Snyk** — S2245/S5852 hotspot elimination, sonar config, Dockerfile zlib CVE fix
 
 ## Phase 1: CI/CD Badge Repair
 
@@ -147,5 +149,70 @@ Three GitHub badges were broken:
 | Failures   | 0     |
 | Duration   | ~64s  |
 
-> **Last updated:** 2026-03-23 — Comprehensive Audit & Repair Session
-> **Build:** CI green, Scorecard green, Deploy running
+## Phase 4: OpenSSF Scorecard Optimization (Commit `a799a2c`)
+
+### Problem
+
+Scorecard was 4.9/10 with several checks at 0:
+
+- Token-Permissions: 0/10 (top-level write permissions in 11 workflows)
+- Pinned-Dependencies: 3/10 (unpinned action SHAs)
+- Fuzzing: 0/10 (no fuzz testing integration)
+- Security-Policy: 4/10 (minimal SECURITY.md)
+
+### Fixes Applied
+
+| Area                | Change                                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Token-Permissions   | Moved write permissions from top-level to job-level across 11 workflows                                          |
+| Pinned-Dependencies | SHA-pinned ossf/scorecard-action in security-scan.yml                                                            |
+| Fuzzing             | Created `.clusterfuzzlite/` (Dockerfile, build.sh, project.yaml, fuzz_url_service.js) + `cflite_pr.yml` workflow |
+| Security-Policy     | Enhanced SECURITY.md with Supported Versions table, Disclosure Timeline, GitHub Advisory link                    |
+
+### Results
+
+- Scorecard workflow: completed:success
+- CI: completed:success
+- All targeted checks improved (Token-Permissions, Pinned-Deps, Fuzzing, Security-Policy)
+
+## Phase 5: SonarCloud Quality Gate + Snyk Docker Fix
+
+### Problem
+
+SonarCloud Quality Gate: **Failed**
+
+- Security: A (0) (ok)
+- Reliability: B (49 issues) (!)
+- Maintainability: A (354 code smells)
+- Hotspots Reviewed: E (0.0%) (FAIL) — primary gate failure
+- Coverage: 22.8%
+- Duplications: 1.8%
+
+Snyk: 2 zlib CVEs in Docker base image (`node:20-alpine` → zlib 1.3.1-r2)
+
+### Root Causes
+
+1. **S2245 Weak PRNG**: 15+ `Math.random()` usages across components, services, utils flagged as security hotspots
+2. **S5852 ReDoS**: Dynamic regex in `commandService.ts` without length guard
+3. **sonar-project.properties**: Test sources misconfigured (inline tests not recognized), no coverage exclusions
+4. **Dockerfile**: Base image zlib vulnerable (Out-of-bounds Write CVSS 7.8 + Improper Validation CVSS 5.5)
+5. **Hotspots E**: All 26 security hotspots unreviewed in SonarCloud UI (requires manual triage)
+
+### Fixes Applied
+
+| File(s)                                 | Change                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------- |
+| `utils/random.ts`                       | NEW: `secureRandom()` using `crypto.getRandomValues()`                          |
+| 9 files (components, services, utils)   | Replaced all `Math.random()` with `secureRandom()`                              |
+| `stores/slices/nutrientPlannerSlice.ts` | `Math.random()` → `crypto.randomUUID()` for IDs                                 |
+| `services/commandService.ts`            | Added 64-char length limit on fuzzy regex to prevent ReDoS                      |
+| `sonar-project.properties`              | Fixed `sonar.tests`, added `sonar.test.inclusions`, `sonar.coverage.exclusions` |
+| `Dockerfile`                            | Added `RUN apk update && apk upgrade --no-cache` to patch zlib CVEs             |
+
+### Remaining Manual Steps
+
+- SonarCloud Hotspots: Must be reviewed/dismissed in SonarCloud UI (code fixes reduce count but don't mark reviewed)
+- Reliability B (49 issues): Likely includes non-null assertions, unreachable code, other patterns requiring SonarCloud dashboard inspection
+
+> **Last updated:** 2026-03-23 — SonarCloud QG + Scorecard + Snyk Session
+> **Build:** CI green (622/622), TypeScript clean, all changes verified

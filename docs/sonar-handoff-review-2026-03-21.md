@@ -1,6 +1,50 @@
-# Sonar Handoff Review (Update 2026-03-22, Session Close)
+# Sonar Handoff Review (Update 2026-03-23)
 
-## Session-Close Delta (neu)
+## Session-Update 2026-03-23: SonarCloud QG + Scorecard + Snyk
+
+### Security Hotspot Elimination (S2245 + S5852)
+
+Alle `Math.random()`-Verwendungen (15 Stellen in 9 Dateien) durch `secureRandom()` ersetzt.
+Neues Utility `utils/random.ts` nutzt `crypto.getRandomValues()`.
+
+Betroffene Dateien:
+
+- `utils/breedingUtils.tsx` (5 Stellen)
+- `components/views/plants/TipOfTheDay.tsx` (1)
+- `components/views/plants/deepDive/DeepDiveModal.tsx` (1)
+- `services/imageGenerationService.ts` (1)
+- `services/plantSimulationService.ts` (2)
+- `services/localAiPreloadService.ts` (1)
+- `services/geminiService.ts` (1)
+- `services/strainFactory.ts` (1 — Fallback von Math.random auf crypto.getRandomValues)
+- `services/localAiFallbackService.ts` (1)
+
+Zusaetzlich: `stores/slices/nutrientPlannerSlice.ts` Math.random() → crypto.randomUUID()
+
+S5852 ReDoS: `services/commandService.ts` — fuzzy-Regex mit 64-Zeichen Input-Limit.
+
+### SonarCloud Config-Optimierung
+
+`sonar-project.properties`:
+
+- `sonar.tests` korrigiert (Inline-Tests neben Source-Dateien)
+- `sonar.test.inclusions` fuer _.test.ts, _.fuzz.test.ts, _.e2e.ts, _.ct.tsx
+- `sonar.coverage.exclusions` fuer data/, types/, workers/, locales/, public/
+
+### Snyk Docker Fix
+
+`Dockerfile`: `RUN apk update && apk upgrade --no-cache` nach Build-Stage FROM — behebt zlib CVEs.
+
+### QG-Status nach Fixes
+
+- Code-seitige S2245-Hotspots: alle eliminiert (15/15 → 0)
+- S5852: 1 zusaetzlich abgesichert (Laengenlimit)
+- Hotspots Reviewed: weiterhin E (0.0%) — erfordert manuelles UI-Review
+- Coverage: sollte durch coverage.exclusions steigen (data/types/workers ausgeschlossen)
+
+---
+
+## Session-Close Delta (2026-03-22)
 
 Abschluss dieser Iteration erfolgte in zwei aufeinanderfolgenden Pushes auf `main`:
 

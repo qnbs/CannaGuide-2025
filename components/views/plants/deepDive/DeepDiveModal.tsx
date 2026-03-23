@@ -3,6 +3,7 @@ import { Modal } from '@/components/common/Modal'
 import { Plant, Scenario, DeepDiveGuide } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { secureRandom } from '@/utils/random'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { scenarioService } from '@/services/scenarioService'
@@ -36,7 +37,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
             useCase: 'deepDive',
             data: { topic, plantName: plant.name },
         })
-        return messages[Math.floor(Math.random() * messages.length)] ?? ''
+        return messages[Math.floor(secureRandom() * messages.length)] ?? ''
     }, [topic, plant.name, isLoading])
 
     const relevantScenario = useMemo(() => {

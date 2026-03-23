@@ -16,26 +16,39 @@
 - [x] Full 20-workflow audit completed
 - [x] Full config file audit completed
 - [x] Full documentation audit completed
+- [x] OpenSSF Scorecard optimized: Token-Permissions, Pinned-Dependencies, Fuzzing (ClusterFuzzLite), Security-Policy
+- [x] 11 Workflows auf Job-Level write-Permissions migriert
+- [x] ClusterFuzzLite-Config angelegt (`.clusterfuzzlite/` + `cflite_pr.yml`)
+- [x] SECURITY.md erweitert (Supported Versions, Disclosure Timeline)
+- [x] S2245: Alle Math.random() durch secureRandom() (crypto.getRandomValues) ersetzt — 15 Stellen, 9 Dateien
+- [x] S5852: ReDoS-Schutz in commandService.ts (64-Zeichen-Limit)
+- [x] nutrientPlannerSlice.ts: Math.random() → crypto.randomUUID()
+- [x] sonar-project.properties: Test-Sources, Coverage-Exclusions korrekt konfiguriert
+- [x] Dockerfile: apk upgrade fuer zlib-CVE-Fix (CVSS 7.8 + 5.5)
+- [x] utils/random.ts: Neues Utility fuer crypto-basierte Zufallszahlen
 
 ## P0 — Next Session
 
-- Enable branch protection on `main` with required status checks (requires admin PAT)
+- [ ] SonarCloud Security Hotspots im UI reviewen/dismissend (aktuell 0.0% reviewed = E-Rating)
+- [ ] Enable branch protection on `main` with required status checks (requires admin PAT)
     - Required checks: `quality`, `ci-status`, `fuzzing`
     - Enforce signed commits
-- Monitor Deploy workflow for first green run and verify live site at `qnbs.github.io/CannaGuide-2025/`
+- [ ] SonarCloud Reliability B (49 issues) im Dashboard inspizieren und priorisiert abarbeiten
 
 ## P1 — Short-Term
 
-- Extend property-based fuzzing to `commandService` ranking and parser-heavy services
-- Add fuzz seed replay (persist failing seeds in CI artifacts)
-- Consolidate `sonar-handoff-review-2026-03-21.md` and `sonar-handoff-todo-2026-03-21.md` into clean two-section format (Completed / Remaining)
-- Continue untested service coverage: `aiProviderService`, `aiService`, `exportService`, `strainService`, `commandService`
-- Evaluate adding Firefox/WebKit to Playwright E2E config
+- [ ] Extend property-based fuzzing to `commandService` ranking and parser-heavy services
+- [ ] Add fuzz seed replay (persist failing seeds in CI artifacts)
+- [ ] Consolidate `sonar-handoff-review-2026-03-21.md` and `sonar-handoff-todo-2026-03-21.md` into clean two-section format (Completed / Remaining)
+- [ ] Continue untested service coverage: `aiProviderService`, `aiService`, `exportService`, `strainService`, `commandService`
+- [ ] Evaluate adding Firefox/WebKit to Playwright E2E config
+- [ ] SonarCloud Coverage von 22.8% auf >30% steigern (neue Tests fuer services/)
 
 ## P2 — Medium-Term
 
-- Add Lighthouse score thresholds to `lighthouserc.json` (performance ≥ 0.80, accessibility ≥ 0.90)
-- Enable `security-full.yml` once Code Scanning is enabled in repo settings
-- Add quarterly signing-key rotation drill to runbook
-- Consider pre-building Playwright browser into devcontainer image (saves 2-3 min cold start)
-- Regenerate `scorecard.json` from fresh analysis (current file is stale from 2026-03-18)
+- [ ] Add Lighthouse score thresholds to `lighthouserc.json` (performance >= 0.80, accessibility >= 0.90)
+- [ ] Enable `security-full.yml` once Code Scanning is enabled in repo settings
+- [ ] Add quarterly signing-key rotation drill to runbook
+- [ ] Consider pre-building Playwright browser into devcontainer image (saves 2-3 min cold start)
+- [ ] Regenerate `scorecard.json` from fresh analysis (current file is stale from 2026-03-18)
+- [ ] SonarCloud Maintainability A (354 code smells) schrittweise reduzieren

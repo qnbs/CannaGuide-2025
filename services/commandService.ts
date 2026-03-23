@@ -153,8 +153,8 @@ export const scoreCommand = (
         score += 20
     }
 
-    // Fuzzy (character-order) match as fallback
-    if (score === 0) {
+    // Fuzzy (character-order) match as fallback — limit length to prevent ReDoS
+    if (score === 0 && lq.length <= 64) {
         const fuzzyPattern = lq.split('').map(escapeRegExp).join('.*?')
         const fuzzyRegex = new RegExp(fuzzyPattern, 'i')
         const allText = `${titleLower} ${keywordsLower} ${groupLower} ${subtitleLower}`

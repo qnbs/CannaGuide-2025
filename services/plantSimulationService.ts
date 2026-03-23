@@ -33,6 +33,7 @@ import {
     runDailySimulation,
 } from '@/utils/vpdCalculator'
 import { calculateVPD as calculateScientificVPD } from '@/lib/vpd/calculator'
+import { secureRandom } from '@/utils/random'
 
 const SIM_MILLISECONDS_PER_DAY = SIM_SECONDS_PER_DAY * 1000
 type SimulationSettings = AppSettings['simulation']
@@ -1564,7 +1565,7 @@ class PlantSimulationService {
         const vpdStressChance =
             ((p.stressCounters.vpd - 3) * 0.05 * pestPressureMultiplier) /
             this._getModifiers(p).pestResistance
-        if (Math.random() < vpdStressChance) {
+        if (secureRandom() < vpdStressChance) {
             p.problems.push({
                 type: ProblemType.PestInfestation,
                 severity: 1,
@@ -1587,7 +1588,7 @@ class PlantSimulationService {
             ((p.stressCounters.ph + p.stressCounters.ec - 3) * 0.04 * nutrientStressMultiplier) /
             this._getModifiers(p).stressTolerance
 
-        if (Math.random() < nutrientStressChance) {
+        if (secureRandom() < nutrientStressChance) {
             p.problems.push({
                 type: ProblemType.NutrientDeficiency,
                 severity: 1,

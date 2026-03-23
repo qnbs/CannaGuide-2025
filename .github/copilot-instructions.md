@@ -47,7 +47,7 @@ packages/iot-mocks/  # ESP32 sensor mock server (port 3001)
 scripts/             # Build/lint/merge scripts
 docker/              # nginx config, esp32-mock, tauri-mock
 docs/                # Developer guides, roadmap
-.github/             # 17 CI/CD workflows, issue templates
+.github/             # 21 CI/CD workflows, issue templates
 .devcontainer/       # Codespaces/DevContainer config (IoT mocks auto-start)
 ```
 
@@ -118,6 +118,9 @@ docs/                # Developer guides, roadmap
 - **No `console.warn`** for error detail logging — use `console.debug` to prevent info leaks
 - **Sentry** captures runtime errors — use `Sentry.captureException()` for explicit reporting
 - **Security scanners**: Semgrep, Gitleaks, Trojan-source all pass with 0 findings
+- **`secureRandom()`** via `utils/random.ts` replaces `Math.random()` everywhere (Web Crypto)
+- **OpenSSF Scorecard**: 8.5/10 — branch protection, signed commits, pinned deps, SAST, fuzzing
+- **ClusterFuzzLite**: Continuous fuzzing via `cflite_pr.yml` on PRs
 
 ### AI Integration
 
@@ -199,34 +202,35 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Important Files
 
-| File                                          | Purpose                                               |
-| --------------------------------------------- | ----------------------------------------------------- |
-| `index.tsx`                                   | App bootstrap, SW registration, safe recovery         |
-| `stores/store.ts`                             | Redux store creation, IndexedDB hydration             |
-| `services/geminiService.ts`                   | Gemini API abstraction (all AI features)              |
-| `services/aiProviderService.ts`               | Multi-provider AI routing                             |
-| `services/aiService.ts`                       | Unified AI service (cloud + local routing)            |
-| `services/localAI.ts`                         | Core local AI orchestration                           |
-| `services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard) |
-| `services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)   |
-| `services/localAiEmbeddingService.ts`         | MiniLM embeddings, semantic ranking                   |
-| `services/localAiFallbackService.ts`          | Heuristic fallback for all AI features                |
-| `services/localAiLanguageDetectionService.ts` | On-device EN/DE language detection                    |
-| `services/localAiImageSimilarityService.ts`   | CLIP image comparison, growth tracking                |
-| `services/localAiHealthService.ts`            | Device classification, health monitoring              |
-| `services/localAiPreloadService.ts`           | Model preload state management                        |
-| `services/localAiTelemetryService.ts`         | Inference performance tracking                        |
-| `services/localAiCacheService.ts`             | IndexedDB inference cache (LRU, TTL)                  |
-| `services/sentryService.ts`                   | Sentry error tracking initialization                  |
-| `services/communityShareService.ts`           | Anonymous Gist strain sharing (local-only guarded)    |
-| `services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)              |
-| `services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)        |
-| `simulation.worker.ts`                        | VPD simulation Web Worker                             |
-| `sw.js`                                       | Service Worker (precache + runtime caching)           |
-| `constants.ts`                                | App-wide constants                                    |
-| `types.ts`                                    | Core TypeScript types                                 |
-| `i18n.ts`                                     | i18next initialization                                |
-| `vite.config.ts`                              | Build configuration                                   |
-| `src-tauri/capabilities/default.json`         | Tauri v2 capability permissions (minimal set)         |
-| `apps/desktop/src/ipc.rs`                     | Tauri Rust IPC commands (image, sensor, sysinfo)      |
-| `.devcontainer/devcontainer.json`             | DevContainer config (IoT mocks, ports, extensions)    |
+| File                                          | Purpose                                                   |
+| --------------------------------------------- | --------------------------------------------------------- |
+| `index.tsx`                                   | App bootstrap, SW registration, safe recovery             |
+| `stores/store.ts`                             | Redux store creation, IndexedDB hydration                 |
+| `services/geminiService.ts`                   | Gemini API abstraction (all AI features)                  |
+| `services/aiProviderService.ts`               | Multi-provider AI routing                                 |
+| `services/aiService.ts`                       | Unified AI service (cloud + local routing)                |
+| `services/localAI.ts`                         | Core local AI orchestration                               |
+| `services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard)     |
+| `services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)       |
+| `services/localAiEmbeddingService.ts`         | MiniLM embeddings, semantic ranking                       |
+| `services/localAiFallbackService.ts`          | Heuristic fallback for all AI features                    |
+| `services/localAiLanguageDetectionService.ts` | On-device EN/DE language detection                        |
+| `services/localAiImageSimilarityService.ts`   | CLIP image comparison, growth tracking                    |
+| `services/localAiHealthService.ts`            | Device classification, health monitoring                  |
+| `services/localAiPreloadService.ts`           | Model preload state management                            |
+| `services/localAiTelemetryService.ts`         | Inference performance tracking                            |
+| `services/localAiCacheService.ts`             | IndexedDB inference cache (LRU, TTL)                      |
+| `services/sentryService.ts`                   | Sentry error tracking initialization                      |
+| `services/communityShareService.ts`           | Anonymous Gist strain sharing (local-only guarded)        |
+| `services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)                  |
+| `services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)            |
+| `simulation.worker.ts`                        | VPD simulation Web Worker                                 |
+| `utils/random.ts`                             | `secureRandom()` — Web Crypto replacement for Math.random |
+| `sw.js`                                       | Service Worker (precache + runtime caching)               |
+| `constants.ts`                                | App-wide constants                                        |
+| `types.ts`                                    | Core TypeScript types                                     |
+| `i18n.ts`                                     | i18next initialization                                    |
+| `vite.config.ts`                              | Build configuration                                       |
+| `src-tauri/capabilities/default.json`         | Tauri v2 capability permissions (minimal set)             |
+| `apps/desktop/src/ipc.rs`                     | Tauri Rust IPC commands (image, sensor, sysinfo)          |
+| `.devcontainer/devcontainer.json`             | DevContainer config (IoT mocks, ports, extensions)        |

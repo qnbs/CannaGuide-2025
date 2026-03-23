@@ -48,7 +48,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with an 11-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 700+ strains · 529+ tests · 51 services · 17 Redux slices · 16 custom hooks · 13 i18n namespaces · 9 themes · 18 CI workflows
+**Key numbers:** 700+ strains · 622+ tests · 51 services · 17 Redux slices · 16 custom hooks · 13 i18n namespaces · 9 themes · 21 CI workflows
 
 ---
 
@@ -101,7 +101,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                   |
 | **i18n**           | i18next 25                           | EN/DE, 13 namespaces                        |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**        | Vitest 4.1, Playwright 1.58, Stryker | 529+ unit, E2E, mutation tests              |
+| **Testing**        | Vitest 4.1, Playwright 1.58, Stryker | 622+ unit, E2E, mutation tests              |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay              |
 | **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                      |
 | **Mobile**         | Capacitor                            | iOS/Android wrapper                         |
@@ -235,7 +235,7 @@ Node.js 20+, npm 10+
 ```bash
 npm run dev              # Vite dev server (localhost:5173)
 npm run build            # Production build
-npm test                 # Vitest unit/integration (529+ tests)
+npm test                 # Vitest unit/integration (622+ tests)
 npm run test:e2e         # Playwright E2E
 npm run test:ct          # Playwright component tests
 npm run test:mutation    # Stryker mutation testing
@@ -266,7 +266,7 @@ npm run security:scan    # Full security scan
 ├── packages/            Monorepo packages (ai-core, iot-mocks, ui)
 ├── scripts/             Build/lint/security scripts
 ├── docker/              nginx config, ESP32-mock, Tauri-mock
-└── .github/             18 CI/CD workflows, issue templates
+└── .github/             21 CI/CD workflows, issue templates
 ```
 
 ---
@@ -279,7 +279,7 @@ npm run security:scan    # Full security scan
 
 | Job                     | Description                                                                 |
 | ----------------------- | --------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 529+ tests, production build |
+| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 622+ tests, production build |
 | 🛡 Security             | npm audit (critical), trojan-source scan, Trivy filesystem scan             |
 | 🎭 E2E Tests            | Playwright Chromium (needs quality artifact)                                |
 | 🐳 Docker Compose + IoT | ESP32-mock + Tauri-mock healthcheck, sensor endpoint validation             |
@@ -332,7 +332,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 | Version  | Status      | Highlights                                                                                                                                                 |
 | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **v1.0** | ✅ Released | 700+ strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                    |
-| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 529+ tests, Tauri v2, Docker IoT mocks, CodeQL, Trivy |
+| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 622+ tests, Tauri v2, Docker IoT mocks, CodeQL, Trivy |
 | **v1.2** | 🔄 Planned  | Additional languages (ES, FR, NL), nutrient automation, community marketplace, PDF reports                                                                 |
 | **v1.3** | 📋 Planned  | Additional IoT sensors, timelapse journal, strain comparison, 3D visualizations                                                                            |
 | **v1.4** | 📋 Planned  | Strain-scale program (2,000+ mid-term), infinite discovery feed (news, HD galleries), expanded practical guides and extraction education                   |
@@ -399,7 +399,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 11-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 700+ Sorten · 529+ Tests · 51 Services · 17 Redux Slices · 16 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 18 CI-Workflows
+**Kennzahlen:** 700+ Sorten · 622+ Tests · 51 Services · 17 Redux Slices · 16 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 21 CI-Workflows
 
 ---
 
@@ -452,7 +452,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 25                           | EN/DE, 13 Namensräume                         |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58, Stryker | 529+ Unit-, E2E-, Mutations-Tests             |
+| **Testing**        | Vitest 4.1, Playwright 1.58, Stryker | 622+ Unit-, E2E-, Mutations-Tests             |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 | **Desktop**        | Tauri v2 (Rust)                      | Nativer Desktop-Wrapper                       |
 | **Mobil**          | Capacitor                            | iOS/Android-Wrapper                           |
@@ -586,7 +586,7 @@ Node.js 20+, npm 10+
 ```bash
 npm run dev              # Vite Dev-Server (localhost:5173)
 npm run build            # Produktions-Build
-npm test                 # Vitest Unit/Integration (529+ Tests)
+npm test                 # Vitest Unit/Integration (622+ Tests)
 npm run test:e2e         # Playwright E2E
 npm run test:ct          # Playwright Komponenten-Tests
 npm run test:mutation    # Stryker Mutations-Tests
@@ -612,7 +612,7 @@ npm run security:scan    # Vollständiger Sicherheits-Scan
 ├── src-tauri/           Tauri v2 Desktop (Rust-Backend + Capabilities)
 ├── packages/            Monorepo-Pakete (ai-core, iot-mocks, ui)
 ├── docker/              nginx-Konfig, ESP32-Mock, Tauri-Mock
-└── .github/             16 CI/CD-Workflows, Issue-Templates
+└── .github/             21 CI/CD-Workflows, Issue-Templates
 ```
 
 ---
@@ -625,7 +625,7 @@ npm run security:scan    # Vollständiger Sicherheits-Scan
 
 | Job                     | Beschreibung                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 529+ Tests, Produktions-Build |
+| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 622+ Tests, Produktions-Build |
 | 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Trivy-Filesystem-Scan              |
 | 🎭 E2E Tests            | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🐳 Docker Compose + IoT | ESP32-Mock + Tauri-Mock Healthcheck, Sensor-Endpunkt-Validierung             |
@@ -677,7 +677,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | Version  | Status            | Highlights                                                                                                                                                  |
 | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                        |
-| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 529+ Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Trivy |
+| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 622+ Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Trivy |
 | **v1.2** | 🔄 Geplant        | Weitere Sprachen (ES, FR, NL), Nährstoff-Automatisierung, Community-Marktplatz, PDF-Berichte                                                                |
 | **v1.3** | 📋 Geplant        | Weitere IoT-Sensoren, Zeitraffer-Journal, Sorten-Vergleich, 3D-Visualisierungen                                                                             |
 | **v1.4** | 📋 Geplant        | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen        |

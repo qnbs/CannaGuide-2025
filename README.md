@@ -10,8 +10,8 @@
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
-[![Dependabot Alerts](https://img.shields.io/github/dependabot-alerts/qnbs/CannaGuide-2025)](https://github.com/qnbs/CannaGuide-2025/security/dependabot)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/CannaGuide-2025/badge)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
+[![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
+[![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fqnbs%2FCannaGuide-2025%2Fmain%2Fscorecard.json&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
@@ -367,8 +367,8 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
-[![Dependabot Alerts](https://img.shields.io/github/dependabot-alerts/qnbs/CannaGuide-2025)](https://github.com/qnbs/CannaGuide-2025/security/dependabot)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/CannaGuide-2025/badge)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
+[![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
+[![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fqnbs%2FCannaGuide-2025%2Fmain%2Fscorecard.json&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Doku:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
 

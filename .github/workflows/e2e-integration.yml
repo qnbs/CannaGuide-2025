@@ -3,8 +3,20 @@ name: 🌡 IoT Integration Tests
 on:
     push:
         branches: [main]
+        paths:
+            - 'packages/iot-mocks/**'
+            - 'docker/esp32-mock/**'
+            - 'docker/tauri-mock/**'
+            - 'docker-compose.yml'
+            - '.github/workflows/e2e-integration.yml'
     pull_request:
         branches: [main]
+        paths:
+            - 'packages/iot-mocks/**'
+            - 'docker/esp32-mock/**'
+            - 'docker/tauri-mock/**'
+            - 'docker-compose.yml'
+            - '.github/workflows/e2e-integration.yml'
     workflow_dispatch:
 
 permissions:
@@ -28,16 +40,12 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: 📥 Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
-            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@v4
+            - name: ⚙ Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: npm
-
-            - name: 📦 Install dependencies
-              run: npm ci --prefer-offline
 
             - name: 🌡 Start ESP32 Mock
               run: |

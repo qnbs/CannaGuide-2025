@@ -23,12 +23,12 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: 📥 Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
               with:
                   fetch-depth: 0
 
             - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -42,7 +42,7 @@ jobs:
 
             - name: 🔍 SonarCloud Scan
               if: ${{ env.HAS_TOKEN == 'true' }}
-              uses: SonarSource/sonarqube-scan-action@v6
+              uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
               env:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

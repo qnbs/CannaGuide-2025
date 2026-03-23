@@ -29,7 +29,7 @@ jobs:
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
             - name: Initialize CodeQL
-              uses: github/codeql-action/init@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/init@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               with:
                   languages: javascript-typescript
                   queries: security-and-quality
@@ -42,9 +42,9 @@ jobs:
                           - .stryker-tmp/**
 
             - name: Autobuild
-              uses: github/codeql-action/autobuild@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/autobuild@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
 
             - name: Perform CodeQL Analysis
-              uses: github/codeql-action/analyze@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/analyze@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               with:
                   category: '/language:javascript-typescript'

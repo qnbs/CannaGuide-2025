@@ -1,59 +1,69 @@
-import { describe, it, expect } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 
-// Since these are direct IndexedDB operations that are hard to mock
-// in vitest, we test the hash function logic and interface contracts
+vi.mock('./sentryService', () => ({
+    captureLocalAiError: vi.fn(),
+}))
+
+// Stub once before module loads — the module-level factory captures a lazy
+// openDb() that looks up globalThis.indexedDB at call time.
+beforeAll(() => {
+    vi.stubGlobal('indexedDB', new IDBFactory())
+    vi.stubGlobal('IDBKeyRange', IDBKeyRange)
+    if (typeof window !== 'undefined') {
+        Object.defineProperty(window, 'indexedDB', {
+            value: globalThis.indexedDB,
+            configurable: true,
+            writable: true,
+        })
+    }
+})
+
+import {
+    getCachedGeneratedImage,
+    setCachedGeneratedImage,
+    clearImageGenCache,
+    getImageGenCacheCount,
+} from './imageGenerationCacheService'
+
+beforeEach(async () => {
+    await clearImageGenCache()
+})
 
 describe('imageGenerationCacheService', () => {
-    describe('cache key generation', () => {
-        it('generates consistent keys for the same prompt', () => {
-            // Replicate the hash function used in the cache service
-            const hashKey = (prompt: string): string => {
-                let djb2 = 5381
-                let fnv = 0x811c9dc5
-                for (let i = 0; i < prompt.length; i++) {
-                    const c = prompt.charCodeAt(i)
-                    djb2 = ((djb2 << 5) + djb2 + c) | 0
-                    fnv = ((fnv ^ c) * 0x01000193) | 0
-                }
-                return `img_${djb2}_${fnv}_${prompt.length}`
-            }
+    it('set + get roundtrip', async () => {
+        await setCachedGeneratedImage('prompt-a', 'data:image/png;base64,abc')
+        const result = await getCachedGeneratedImage('prompt-a')
+        expect(result).not.toBeNull()
+        expect(result?.dataUrl).toBe('data:image/png;base64,abc')
+    })
 
-            const key1 = hashKey('Cannabis sativa strain, photorealistic')
-            const key2 = hashKey('Cannabis sativa strain, photorealistic')
-            expect(key1).toBe(key2)
-        })
+    it('returns null for unknown prompts', async () => {
+        expect(await getCachedGeneratedImage('never-stored')).toBeNull()
+    })
 
-        it('generates different keys for different prompts', () => {
-            const hashKey = (prompt: string): string => {
-                let djb2 = 5381
-                let fnv = 0x811c9dc5
-                for (let i = 0; i < prompt.length; i++) {
-                    const c = prompt.charCodeAt(i)
-                    djb2 = ((djb2 << 5) + djb2 + c) | 0
-                    fnv = ((fnv ^ c) * 0x01000193) | 0
-                }
-                return `img_${djb2}_${fnv}_${prompt.length}`
-            }
+    it('getImageGenCacheCount tracks entries', async () => {
+        expect(await getImageGenCacheCount()).toBe(0)
+        await setCachedGeneratedImage('p1', 'data:image/png;base64,1')
+        await setCachedGeneratedImage('p2', 'data:image/png;base64,2')
+        expect(await getImageGenCacheCount()).toBe(2)
+    })
 
-            const key1 = hashKey('Cannabis sativa strain')
-            const key2 = hashKey('Cannabis indica strain')
-            expect(key1).not.toBe(key2)
-        })
+    it('clearImageGenCache removes all entries', async () => {
+        await setCachedGeneratedImage('p', 'data:image/png;base64,x')
+        await clearImageGenCache()
+        expect(await getImageGenCacheCount()).toBe(0)
+    })
 
-        it('prefixes image keys with img_', () => {
-            const hashKey = (prompt: string): string => {
-                let djb2 = 5381
-                let fnv = 0x811c9dc5
-                for (let i = 0; i < prompt.length; i++) {
-                    const c = prompt.charCodeAt(i)
-                    djb2 = ((djb2 << 5) + djb2 + c) | 0
-                    fnv = ((fnv ^ c) * 0x01000193) | 0
-                }
-                return `img_${djb2}_${fnv}_${prompt.length}`
-            }
+    it('overwrites entry with same prompt', async () => {
+        await setCachedGeneratedImage('same', 'data:old')
+        await setCachedGeneratedImage('same', 'data:new')
+        const result = await getCachedGeneratedImage('same')
+        expect(result?.dataUrl).toBe('data:new')
+    })
 
-            const key = hashKey('test prompt')
-            expect(key).toMatch(/^img_/)
-        })
+    it('generates keys with img_ prefix', async () => {
+        await setCachedGeneratedImage('test-prompt', 'data:test')
+        expect(await getImageGenCacheCount()).toBe(1)
     })
 })

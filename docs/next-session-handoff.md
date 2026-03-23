@@ -2,46 +2,30 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-23, Late) — SonarCloud QG + Scorecard + Snyk
+## Latest Session (2026-03-23, Late) — CodeQL Scorecard Alerts Fix
 
-**Status: CI green (622/622), Scorecard green, all tests passing.**
+**Status: CI green (622/622), all tests passing.**
 
-### Scorecard-Optimierung (Commit `a799a2c`)
+### CodeQL Scorecard Alert Fixes (aktueller Commit)
 
-- Token-Permissions: alle 11 Workflows auf Job-Level write-Permissions migriert
-- Pinned-Dependencies: letzter unpinnter Action-SHA in security-scan.yml gefixed
-- Fuzzing: ClusterFuzzLite-Config angelegt (`.clusterfuzzlite/`, `cflite_pr.yml`)
-- Security-Policy: `SECURITY.md` erweitert (Supported Versions, Disclosure Timeline)
+- **Dangerous-Workflow (#175, Critical):** `deploy.yml` — Entfernung des untrusted `workflow_run.head_sha` Checkout. Benutzt jetzt Standard-Checkout (sicher, da `branches: [main]` Filter).
+- **Pinned-Dependencies (#192, #193):** ClusterFuzzLite Dockerfile SHA-gepinnt (`gcr.io/oss-fuzz-base/base-builder-javascript@sha256:035ca1d...`), `build.sh` `npm install` → `npm ci`
+- **Pinned-Dependencies (#178, #177, #136):** Alle Mock-Dockerfiles (iot-mocks, tauri-mock, esp32-mock) mit `node:20-alpine@sha256:b88333c...` gepinnt
+- **Pinned-Dependencies (#138, #137):** `capacitor-build.yml` — `@capacitor/cli` auf Version `8.2.0` gepinnt
 
-### SonarCloud Quality Gate Fixes (aktueller Commit)
+### Nicht automatisch behebbar
 
-- **S2245 Weak PRNG (19 Hotspots):** Alle `Math.random()` durch `secureRandom()` (crypto.getRandomValues) ersetzt — neues Utility `utils/random.ts`, 15 Stellen in 9 Dateien
-- **S5852 ReDoS:** `commandService.ts` fuzzy-Regex mit 64-Zeichen-Limit abgesichert
-- **sonar-project.properties:** Test-Source-Pfade korrigiert (inline-Tests), `sonar.coverage.exclusions` fuer data/types/workers/locales/public, `sonar.test.inclusions` fuer fuzz-Tests
-- **Reliability:** `nutrientPlannerSlice.ts` Math.random() → crypto.randomUUID()
+- **Code-Review (#188, High):** "0/30 approved changesets" — erfordert Branch Protection mit Required Reviews. Codespaces GITHUB_TOKEN hat keine Admin-Rechte. Loesung: Admin-PAT oder manuell in Repo Settings > Branches > main activieren.
+- **CII-Best-Practices (#187, Low):** Erfordert manuelle Registrierung auf https://www.bestpractices.dev/ (Login mit GitHub, Projekt eintragen, Fragebogen ausfuellen).
+- **Branch-Protection (?):** "Resource not accessible by integration" — gleiche PAT-Limitation.
 
-### Snyk Docker Fix
+### Vorherige Fixes (gleiche Session)
 
-- **Dockerfile:** `RUN apk update && apk upgrade --no-cache` nach Build-Stage FROM eingefuegt — behebt zlib CVEs (Out-of-bounds Write CVSS 7.8, Improper Validation CVSS 5.5)
-
-### Verbleibende manuelle Schritte
-
-- **SonarCloud Hotspots Reviewed E (0.0%):** Security Hotspots muessen im SonarCloud-UI manuell reviewed/dismissed werden. Code-Fixes reduzieren die Anzahl, aber die Bewertung erfordert UI-Interaktion.
-- **Branch Protection:** Weiterhin Admin-PAT noetig fuer `main`-Protection.
-
-### Wichtige Dateien geaendert
-
-| Datei                                   | Aenderung                                              |
-| --------------------------------------- | ------------------------------------------------------ |
-| `utils/random.ts`                       | NEU: crypto-basierter Random-Ersatz fuer Math.random() |
-| `Dockerfile`                            | apk upgrade fuer zlib-CVE-Fix                          |
-| `sonar-project.properties`              | Test-Sources, Coverage-Exclusions                      |
-| `stores/slices/nutrientPlannerSlice.ts` | crypto.randomUUID() statt Math.random()                |
-| `services/commandService.ts`            | ReDoS-Schutz (Laengenlimit)                            |
-| 9 Dateien                               | Math.random() → secureRandom()                         |
-| 11 Workflows                            | Job-Level Permissions (Scorecard)                      |
-| `.clusterfuzzlite/`                     | ClusterFuzzLite-Config (NEU)                           |
-| `SECURITY.md`                           | Erweitert                                              |
+- S2245 Weak PRNG: Alle Math.random() → secureRandom() (15 Stellen, 9 Dateien)
+- S5852 ReDoS: commandService.ts Laengenlimit
+- Dockerfile: apk upgrade fuer zlib CVEs
+- sonar-project.properties: Test-Sources + Coverage-Exclusions
+- Scorecard: Token-Permissions, Pinned-Dependencies, ClusterFuzzLite, SECURITY.md
 
 **Test-Baseline:** 622 Tests, 75 Dateien, 0 Failures
 

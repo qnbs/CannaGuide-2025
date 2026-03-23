@@ -26,13 +26,16 @@
 - [x] sonar-project.properties: Test-Sources, Coverage-Exclusions korrekt konfiguriert
 - [x] Dockerfile: apk upgrade fuer zlib-CVE-Fix (CVSS 7.8 + 5.5)
 - [x] utils/random.ts: Neues Utility fuer crypto-basierte Zufallszahlen
+- [x] Dangerous-Workflow (#175): deploy.yml untrusted head_sha Checkout entfernt
+- [x] Pinned-Dependencies (#192, #193): ClusterFuzzLite Dockerfile SHA-gepinnt + build.sh npm ci
+- [x] Pinned-Dependencies (#178, #177, #136): Alle Mock-Dockerfiles SHA-gepinnt
+- [x] Pinned-Dependencies (#138, #137): capacitor-build.yml @capacitor/cli@8.2.0 gepinnt
 
 ## P0 — Next Session
 
+- [ ] Code-Review (#188): Branch Protection mit Required Reviews aktivieren (Admin-PAT noetig)
+- [ ] CII-Best-Practices (#187): Projekt auf https://www.bestpractices.dev/ registrieren
 - [ ] SonarCloud Security Hotspots im UI reviewen/dismissend (aktuell 0.0% reviewed = E-Rating)
-- [ ] Enable branch protection on `main` with required status checks (requires admin PAT)
-    - Required checks: `quality`, `ci-status`, `fuzzing`
-    - Enforce signed commits
 - [ ] SonarCloud Reliability B (49 issues) im Dashboard inspizieren und priorisiert abarbeiten
 
 ## P1 — Short-Term

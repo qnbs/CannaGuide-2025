@@ -11,6 +11,41 @@ const base = process.env.TAURI_ENV_PLATFORM
     ? '/'
     : (process.env.BUILD_BASE_PATH ?? '/CannaGuide-2025/')
 
+// ── Manual Chunk Groups – declarative vendor split registry ─────────────
+const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
+    { name: 'react', patterns: ['/react/', 'react-dom', 'react-redux'] },
+    { name: 'redux', patterns: ['@reduxjs/toolkit', 'immer', 'reselect'] },
+    { name: 'i18n', patterns: ['i18next', 'react-i18next'] },
+    { name: 'charts-d3', patterns: ['d3-', '/d3/'] },
+    { name: 'charts-recharts', patterns: ['recharts', 'victory-vendor'] },
+    { name: 'ai', patterns: ['@google/genai'] },
+    {
+        name: 'ai-runtime',
+        patterns: [
+            '@xenova/transformers',
+            'onnxruntime-web',
+            'onnxruntime-node',
+            '@mlc-ai/web-llm',
+        ],
+    },
+    { name: 'pdf-export', patterns: ['jspdf', 'jspdf-autotable'] },
+    { name: 'image-export', patterns: ['html2canvas'] },
+    { name: 'image-compress', patterns: ['browser-image-compression'] },
+    { name: 'radix-ui', patterns: ['@radix-ui'] },
+    { name: 'sanitizer', patterns: ['dompurify'] },
+    { name: 'zod', patterns: ['zod'] },
+    { name: 'cmdk', patterns: ['cmdk'] },
+]
+
+function resolveManualChunk(id: string): string | undefined {
+    if (id.includes('/data/strains/') && !id.endsWith('index.ts')) return 'strains-data'
+    if (!id.includes('node_modules')) return undefined
+    for (const group of CHUNK_GROUPS) {
+        if (group.patterns.some((p) => id.includes(p))) return group.name
+    }
+    return undefined
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
     base,
@@ -85,87 +120,7 @@ export default defineConfig({
                 warn(warning)
             },
             output: {
-                // ── Manual Chunks – isolate heavy / rarely-changing vendor libs ──
-                manualChunks(id) {
-                    // Group all strain data files into a single deferred chunk
-                    if (id.includes('/data/strains/') && !id.endsWith('index.ts')) {
-                        return 'strains-data'
-                    }
-
-                    if (!id.includes('node_modules')) return undefined
-
-                    // React runtime core
-                    if (
-                        id.includes('/react/') ||
-                        id.includes('react-dom') ||
-                        id.includes('react-redux')
-                    ) {
-                        return 'react'
-                    }
-                    // State management
-                    if (
-                        id.includes('@reduxjs/toolkit') ||
-                        id.includes('immer') ||
-                        id.includes('reselect')
-                    ) {
-                        return 'redux'
-                    }
-                    // i18n runtime (translations are already code-split by locale)
-                    if (id.includes('i18next') || id.includes('react-i18next')) {
-                        return 'i18n'
-                    }
-                    // D3 suite – loaded only by chart / genealogy views (lazy)
-                    if (id.includes('d3-') || id.includes('/d3/')) {
-                        return 'charts-d3'
-                    }
-                    // Recharts – only used by VPDChart (lazy via PlantsView → DetailedPlantView)
-                    if (id.includes('recharts') || id.includes('victory-vendor')) {
-                        return 'charts-recharts'
-                    }
-                    // Google Generative AI SDK – dynamically imported in api.ts
-                    if (id.includes('@google/genai')) {
-                        return 'ai'
-                    }
-                    // Local AI runtime – keep browser model engines separate from the app shell
-                    if (
-                        id.includes('@xenova/transformers') ||
-                        id.includes('onnxruntime-web') ||
-                        id.includes('onnxruntime-node') ||
-                        id.includes('@mlc-ai/web-llm')
-                    ) {
-                        return 'ai-runtime'
-                    }
-                    // PDF export – on-demand only
-                    if (id.includes('jspdf') || id.includes('jspdf-autotable')) {
-                        return 'pdf-export'
-                    }
-                    // Screenshot / image export – on-demand only
-                    if (id.includes('html2canvas')) {
-                        return 'image-export'
-                    }
-                    // Image compression – used in AI diagnostics modal
-                    if (id.includes('browser-image-compression')) {
-                        return 'image-compress'
-                    }
-                    // Radix UI primitives
-                    if (id.includes('@radix-ui')) {
-                        return 'radix-ui'
-                    }
-                    // DOMPurify – loaded with geminiService
-                    if (id.includes('dompurify')) {
-                        return 'sanitizer'
-                    }
-                    // Zod – schema validation
-                    if (id.includes('zod')) {
-                        return 'zod'
-                    }
-                    // Command palette (cmdk)
-                    if (id.includes('cmdk')) {
-                        return 'cmdk'
-                    }
-
-                    return undefined
-                },
+                manualChunks: resolveManualChunk,
             },
         },
     },

@@ -38,6 +38,31 @@ const typeInfo: Record<StrainType, { icon: React.ReactNode; color: string; accen
     },
 }
 
+const THC_MAX_REFERENCE = 35
+
+function normalizeNodeData(data: GenealogyNode): {
+    safeType: StrainType
+    safeName: string
+    safeThc: number
+    thcPercentage: number
+} {
+    const safeType =
+        data.type === StrainType.Sativa ||
+        data.type === StrainType.Indica ||
+        data.type === StrainType.Hybrid
+            ? data.type
+            : StrainType.Hybrid
+    const safeName =
+        typeof data.name === 'string' && data.name.trim() !== '' ? data.name : 'Unknown Strain'
+    const safeThc = typeof data.thc === 'number' && Number.isFinite(data.thc) ? data.thc : 0
+    return {
+        safeType,
+        safeName,
+        safeThc,
+        thcPercentage: Math.min(100, (safeThc / THC_MAX_REFERENCE) * 100),
+    }
+}
+
 export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
     ({ node, onNodeClick, onNodeFocus, onToggle }) => {
         const { t } = useTranslation()
@@ -45,17 +70,8 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
         const isExpandable = !!data._children && data._children.length > 0
         const isCollapsible = !!data.children && data.children.length > 0
         const isPlaceholder = data.isPlaceholder
-        const safeType =
-            data.type === StrainType.Sativa ||
-            data.type === StrainType.Indica ||
-            data.type === StrainType.Hybrid
-                ? data.type
-                : StrainType.Hybrid
+        const { safeType, safeName, safeThc, thcPercentage } = normalizeNodeData(data)
         const { icon, color, accent } = typeInfo[safeType] || typeInfo.Hybrid
-        const safeName =
-            typeof data.name === 'string' && data.name.trim() !== '' ? data.name : 'Unknown Strain'
-        const safeThc = typeof data.thc === 'number' && Number.isFinite(data.thc) ? data.thc : 0
-        const thcPercentage = Math.min(100, (safeThc / 35) * 100)
 
         const handleFocusClick = () => {
             if (!isPlaceholder) onNodeFocus(data)

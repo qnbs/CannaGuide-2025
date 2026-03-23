@@ -82,7 +82,6 @@ iot:
     - hooks/useSensorData.ts
 
 pwa:
-    - sw.js
     - public/sw.js
     - public/manifest.json
 

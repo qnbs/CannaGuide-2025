@@ -93,9 +93,9 @@ pub fn process_image_binary(
     let _format = opts.format.as_deref().unwrap_or("jpeg");
     let _quality = opts.quality.unwrap_or(85);
 
-    // Validate input size (max 50 MB raw image)
-    if image_data.len() > 50 * 1024 * 1024 {
-        return Err("Image exceeds maximum size of 50 MB".to_string());
+    // Validate input size (max 20 MB raw image — matches frontend MAX_IPC_IMAGE_SIZE)
+    if image_data.len() > 20 * 1024 * 1024 {
+        return Err("Image exceeds maximum size of 20 MB".to_string());
     }
 
     if image_data.is_empty() {
@@ -144,9 +144,9 @@ pub fn read_sensor_binary(raw_bytes: Vec<u8>) -> Result<SensorBinaryPacket, Stri
 
     let reading_count = raw_bytes.len() / BYTES_PER_READING;
 
-    // Safety limit: max 10,000 readings per batch
-    if reading_count > 10_000 {
-        return Err("Too many readings in batch (max 10,000)".to_string());
+    // Safety limit: max 1,000 readings per batch to prevent memory abuse
+    if reading_count > 1_000 {
+        return Err("Too many readings in batch (max 1,000)".to_string());
     }
 
     let values: Vec<f32> = raw_bytes

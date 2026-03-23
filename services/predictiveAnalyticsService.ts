@@ -444,23 +444,25 @@ export const predictiveAnalyticsService = {
         let windowCount = 0
         let windowStart: number | null = null
 
+        const closeWindow = (endTimestamp: number): void => {
+            if (windowStart !== null && endTimestamp - windowStart >= minDurationMs) {
+                windowCount += 1
+            }
+            windowStart = null
+        }
+
         for (const entry of sorted) {
             if (entry.humidityPercent > threshold) {
                 if (windowStart === null) windowStart = entry.timestamp
             } else {
-                if (windowStart !== null && entry.timestamp - windowStart >= minDurationMs) {
-                    windowCount++
-                }
-                windowStart = null
+                closeWindow(entry.timestamp)
             }
         }
 
-        // Check final open window
-        if (windowStart !== null && sorted.length > 0) {
-            const last = sorted.at(-1)
-            if (last && last.timestamp - windowStart >= minDurationMs) {
-                windowCount++
-            }
+        // Close a trailing open window
+        const last = sorted.at(-1)
+        if (windowStart !== null && last) {
+            closeWindow(last.timestamp)
         }
 
         return windowCount

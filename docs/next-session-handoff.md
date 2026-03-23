@@ -2,86 +2,78 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-23, Late) — CodeAnt AI Report Fixes
+## Latest Session (2026-03-23, Continuation) — Code Scanning + CodeAnt Continuation
 
-**Status: CI green (622/622), all Infrastructure Security + Antipattern/Bug fixes applied.**
+**Status: CI green (622/622), all tests pass, type-check clean, lint clean.**
 
 ### Session Summary
 
-Fixed all actionable issues from the CodeAnt AI static analysis report (March 23, 2026).
+Continued CodeAnt AI report fixes and resolved GitHub code scanning alerts.
 
-| Category                | Fixed  | Remaining         | Notes                                      |
-| ----------------------- | ------ | ----------------- | ------------------------------------------ |
-| Infrastructure Security | 6/6    | 0                 | HEALTHCHECK + USER in all Dockerfiles      |
-| Antipatterns/Bugs       | 29/29  | 0                 | sw.js, public/sw.js, test, securityHeaders |
-| Complex Functions       | 0/14   | 14                | Deferred — requires careful refactoring    |
-| Docstrings Absent       | 0/609  | 609               | Low priority, cosmetic                     |
-| Duplicate Code          | 0/5726 | 5726 (124 groups) | Needs multi-session strategy               |
+| Category                | Fixed    | Remaining      | Notes                                                                                |
+| ----------------------- | -------- | -------------- | ------------------------------------------------------------------------------------ |
+| Code Scanning Alerts    | 3/5      | 2 (admin-only) | Pinned-Deps fixed; Code-Review/Branch-Prot need admin settings                       |
+| Complex Functions       | 8/14     | 6              | migrationLogic, localAiFallback, webLlm, plantSim, predictiveAnalytics, growReminder |
+| Duplicate Code (Major)  | 4 groups | ~120 groups    | sw.js, GrowSetupModal, InlineStrainSelector, ipc.rs                                  |
+| Infrastructure Security | 6/6      | 0              | (from previous session)                                                              |
+| Antipatterns/Bugs       | 29/29    | 0              | (from previous session)                                                              |
 
-### Changes Applied
+### Changes Applied This Session
 
-**Infrastructure Security (6 fixes):**
+**Code Scanning Fixes:**
 
-- `Dockerfile`: Added HEALTHCHECK (`nginx -t`)
-- `Dockerfile.dev`: Added `USER node` + HEALTHCHECK (Node fetch)
-- `docker/esp32-mock/Dockerfile`: Added HEALTHCHECK (Node fetch :3001)
-- `packages/iot-mocks/Dockerfile`: Added HEALTHCHECK (Node fetch :3001)
-- `docker/tauri-mock/Dockerfile`: Added HEALTHCHECK (Node fetch :3002)
+- **Pinned-Dependencies #137, #138**: Removed `npm install -g @capacitor/cli@8.2.0` from `capacitor-build.yml` — uses locally installed `npx cap` from devDependencies instead
+- **CII-Best-Practices #187**: Pending — requires email activation on bestpractices.dev (registered)
+- **Code-Review #188**: Requires admin — use PR workflow instead of direct pushes
+- **Branch-Protection #194**: Requires admin — enable `require_pull_request_reviews` in branch protection
 
-**Antipatterns/Bugs (29 fixes across 4 files):**
+**Duplicate Code Elimination (4 groups):**
 
-_sw.js + public/sw.js (22 fixes — 11 each):_
+- **sw.js duplication (919 lines)**: Deleted redundant root `sw.js` — `public/sw.js` is the single source of truth used by VitePWA. Updated eslint.config.js and labeler.yml
+- **GrowSetupModal (239 lines x2)**: Moved to `components/common/GrowSetupModal.tsx`. Deleted identical `equipment/` copy (unused dead code). Updated lazy import in `plants/App.tsx`
+- **InlineStrainSelector (268+235 lines)**: Moved refined `strains/` version to `components/common/InlineStrainSelector.tsx`. Deleted diverged `plants/` copy (PlantsView updated to use common version)
+- **ipc.rs (187 lines x2)**: Synced `src-tauri/src/ipc.rs` with `apps/desktop/src/ipc.rs` — both now use identical stricter limits (20MB images, 1K readings/batch)
 
-- **BLOCKER BUG**: `map()` in activate handler returned undefined — fixed with `filter().map()`
-- **CRITICAL**: `await` inside loops in `notifyDueReminders()` + `syncData()` — replaced with `Promise.all`
-- **CRITICAL**: Deep nesting (>4 levels) — flattened IndexedDB functions via `async/await`
-- **MAJOR**: Nested promises in navigate handler — refactored to async IIFE
-- **MAJOR**: Missing catch in nested promise chains — added `.catch(() => {})`
-- **MINOR**: `i++` → `i += 1` in hash computation loop
+**Complex Function Refactoring (8 functions):**
 
-_services/gpuResourceManager.test.ts (6 fixes):_
-
-- `.then()` callbacks now return explicit values
-- Promise constructor parameter `r` → `resolve`
-
-_securityHeaders.ts (1 fix):_
-
-- String concatenation `.join('; ') + ';'` → template literal
+- `migrationLogic.ts` `ensureLegacyHarvestData`: Extracted `ensureNumeric()` helper, eliminated 14 repetitive type-guard blocks
+- `migrationLogic.ts` `migrateState`: Migration registry pattern (`migrations` array), shape validators array — extensible without code changes
+- `localAiFallbackService.ts` `summarizeTrend`: Extracted `formatTrendChange()` helper, data-driven checks array, eliminated bilingual duplication
+- `localAiFallbackService.ts` `buildEquipmentRecommendation`: Extracted `bilingual()` helper, reduced variable accumulation
+- `webLlmDiagnosticsService.ts` `diagnoseWebLlm`: Extracted `CheckResult` type, 3 sync validators + `probeGpuAdapter()` async validator, composition chain
+- `plantSimulationService.ts` `_updateHealthAndStress`: Data-driven `stressChecks` array eliminates 4 parallel if/else branches
+- `predictiveAnalyticsService.ts` `countSustainedHighHumidity`: Extracted `closeWindow()` helper, eliminated duplicate final-window logic
+- `growReminderService.ts` `buildReminders`: Extracted `_createReminder()` factory + `_getPlantReminders()` per-plant builder
 
 ### Naechste Schritte (Einstieg naechste Session)
 
-#### P0 — CodeAnt Report Continuation
+#### P0 — Naechste Session (Remaining CodeAnt + Scorecard)
 
-1. **Complex Functions (14)** — Refactor low-maintainability functions:
-    - `exportService.ts` L317 (MI: 17)
-    - `plantSimulationService.ts` L608, L1448 (MI: 23, 17)
-    - `webLlmDiagnosticsService.ts` L88 (MI: 17)
-    - `migrationLogic.ts` L98, L920 (MI: 36, 16)
-    - `predictiveAnalyticsService.ts` L436 (MI: 17)
-    - `growReminderService.ts` L172 (MI: 16)
-    - `localAiFallbackService.ts` L217, L561 (MI: 18, 20)
-    - `AddStrainModal.tsx` L31 (MI: 20)
-    - `StrainTreeNode.tsx` L42 (MI: 17)
-    - `DetailedPlantView.tsx` L124 (MI: 16)
-    - `vite.config.ts` L89 (MI: 24)
+1. **Complex Functions (6 remaining)** — Refactor low-maintainability functions:
+    - `exportService.ts` `exportSetupsAsPdf` L317 (MI: 17) — Extract PDF section renderers
+    - `plantSimulationService.ts` `_applyDailyEnvironmentalDrift` L608 (MI: 23) — Named constants for magic numbers
+    - `AddStrainModal.tsx` L31 (MI: 20) — Split form sections
+    - `StrainTreeNode.tsx` L42 (MI: 17) — Extract node renderers
+    - `DetailedPlantView.tsx` L124 (MI: 16) — Extract tab content
+    - `vite.config.ts` L89 (MI: 24) — Extract plugin configs
 
-2. **Major Duplicate Code (20 groups, highest impact):**
-    - **Group 84**: `GrowSetupModal.tsx` — 452 duplicate lines between equipment/ and plants/ → Extract shared component
-    - **Groups 85-88, 91, 99-102, 105, 117**: `BreedingView.tsx` — plants/ vs knowledge/ → Unify into shared component
-    - **Groups 90, 92, 96, 98, 104, 106, 116**: `InlineStrainSelector.tsx` — strains/ vs plants/ → Extract shared
-    - **Groups 122-124**: `sw.js` vs `public/sw.js` — 919 duplicate lines → Single source of truth
-    - **Groups 118-121**: `ipc.rs` — src-tauri/ vs apps/desktop/ → Share via workspace module
-    - **Group 4, 26, 28, 68**: Cache services — localAiCacheService/imageGenerationCacheService → Extract base
+2. **Major Duplicate Code (remaining groups):**
+    - ~~**Group 84**: `GrowSetupModal.tsx` → DONE~~
+    - **Groups 85-88, 91, 99-102, 105, 117**: `BreedingView.tsx` — plants/ vs knowledge/ → Needs careful unification (562 vs 337 lines, significant divergence)
+    - ~~**Groups 90, 92, 96, 98, 104, 106, 116**: `InlineStrainSelector.tsx` → DONE~~
+    - ~~**Groups 122-124**: `sw.js` vs `public/sw.js` → DONE~~
+    - ~~**Groups 118-121**: `ipc.rs` → DONE (synced to identical)~~
+    - **Group 4, 26, 28, 68**: Cache services — localAiCacheService/imageGenerationCacheService → Extract base cache class
 
-3. **Minor Duplicate Code (104 groups):**
-    - Primarily strain data files (similar terpene/cannabinoid profiles) — structural, not actionable
-    - Locale duplicates (en/de index files) — structural i18n pattern
-    - Service interface duplicates (aiProvider types in 4 files) → Consolidate to single source
+3. **Scorecard Admin Actions (requires admin PAT or GitHub UI):**
+    - **Code-Review #188**: Enable `Require pull request reviews before merging` in branch protection
+    - **Branch-Protection #194**: Enable `Include administrators` in branch protection
+    - **CII-Best-Practices #187**: Complete email verification on bestpractices.dev, then add badge to README
 
 #### P1 — Ongoing Quality
 
 - [ ] SonarCloud Security Hotspots reviewen (0% reviewed = E-Rating)
-- [ ] CII-Best-Practices Badge aktivieren
+- [ ] CII-Best-Practices Badge aktivieren (bestpractices.dev email verification)
 - [ ] Coverage von 22.8% Richtung >30% steigern
 - [ ] Feature-Entwicklung fortsetzen
 
@@ -95,17 +87,10 @@ _securityHeaders.ts (1 fix):_
 - `docs/session-activity-todo-2026-03-23.md` — Priorisierte TODO-Liste
 - `docs/sonar-handoff-review-2026-03-21.md` — SonarCloud Tracking-Log
 
-1. verbleibende ungetestete Service-Cluster priorisieren (`aiProviderService`, `aiService`, `exportService`, `strainService`, `commandService`).
-2. nur low-risk, mockbare Pfade zuerst; dann Sonar-Restscan neu clustern.
-
-Workflow fuer automatische Aktualisierung:
-
-- `.github/workflows/security-alerts-handoff.yml` (daily + manual)
-
-> **Last updated:** 2026-03-23 — Session Close (7-Phase Security + Admin Hardening Marathon)
+> **Last updated:** 2026-03-23 — Code Scanning + CodeAnt Continuation Session
 > **Author:** Copilot session
 > **Test baseline:** 622 Tests, 75 Dateien, 0 Failures
-> **Build:** CI green, Scorecard 8.5/10, all admin settings persistent
+> **Build:** CI green, Scorecard 8.5/10
 
 ---
 

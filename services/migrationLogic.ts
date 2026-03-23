@@ -95,6 +95,10 @@ const ensureLegacyPlantTimestamps = (plant: LegacyPlant): void => {
     }
 }
 
+const ensureNumeric = (obj: Record<string, unknown>, key: string, fallback: number): void => {
+    if (typeof obj[key] !== 'number') obj[key] = fallback
+}
+
 const ensureLegacyHarvestData = (plant: LegacyPlant): void => {
     if (typeof plant.harvestData === 'undefined') {
         plant.harvestData = null
@@ -111,36 +115,25 @@ const ensureLegacyHarvestData = (plant: LegacyPlant): void => {
             ? (plant.terpeneProfile as Record<string, unknown>)
             : {}
     const { stage, isPostHarvest } = resolvePostHarvestStage(plant)
+    const isCuringOrFinished = stage === PlantStage.Curing || stage === PlantStage.Finished
 
-    if (typeof harvestData.wetWeight !== 'number') harvestData.wetWeight = 0
-    if (typeof harvestData.dryWeight !== 'number') harvestData.dryWeight = 0
-    if (typeof harvestData.currentDryDay !== 'number') {
-        harvestData.currentDryDay = stage === PlantStage.Drying ? 1 : 0
-    }
-    if (typeof harvestData.currentCureDay !== 'number') {
-        harvestData.currentCureDay =
-            stage === PlantStage.Curing || stage === PlantStage.Finished ? 1 : 0
-    }
-    if (typeof harvestData.lastBurpDay !== 'number') harvestData.lastBurpDay = 0
-    if (typeof harvestData.jarHumidity !== 'number') {
-        harvestData.jarHumidity =
-            stage === PlantStage.Curing || stage === PlantStage.Finished ? 62 : 68
-    }
-    if (typeof harvestData.chlorophyllPercent !== 'number') {
-        harvestData.chlorophyllPercent = isPostHarvest ? 100 : 0
-    }
-    if (typeof harvestData.terpeneRetentionPercent !== 'number') {
-        harvestData.terpeneRetentionPercent = isPostHarvest ? 100 : 0
-    }
-    if (typeof harvestData.moldRiskPercent !== 'number') harvestData.moldRiskPercent = 0
-    if (typeof harvestData.finalQuality !== 'number') harvestData.finalQuality = 0
+    ensureNumeric(harvestData, 'wetWeight', 0)
+    ensureNumeric(harvestData, 'dryWeight', 0)
+    ensureNumeric(harvestData, 'currentDryDay', stage === PlantStage.Drying ? 1 : 0)
+    ensureNumeric(harvestData, 'currentCureDay', isCuringOrFinished ? 1 : 0)
+    ensureNumeric(harvestData, 'lastBurpDay', 0)
+    ensureNumeric(harvestData, 'jarHumidity', isCuringOrFinished ? 62 : 68)
+    ensureNumeric(harvestData, 'chlorophyllPercent', isPostHarvest ? 100 : 0)
+    ensureNumeric(harvestData, 'terpeneRetentionPercent', isPostHarvest ? 100 : 0)
+    ensureNumeric(harvestData, 'moldRiskPercent', 0)
+    ensureNumeric(harvestData, 'finalQuality', 0)
 
     if (!harvestData.cannabinoidProfile || typeof harvestData.cannabinoidProfile !== 'object') {
         harvestData.cannabinoidProfile = { thc: 0, cbn: 0 }
     } else {
         const cannabinoidProfile = harvestData.cannabinoidProfile as Record<string, unknown>
-        if (typeof cannabinoidProfile.thc !== 'number') cannabinoidProfile.thc = 0
-        if (typeof cannabinoidProfile.cbn !== 'number') cannabinoidProfile.cbn = 0
+        ensureNumeric(cannabinoidProfile, 'thc', 0)
+        ensureNumeric(cannabinoidProfile, 'cbn', 0)
     }
 
     if (!harvestData.terpeneProfile || typeof harvestData.terpeneProfile !== 'object') {
@@ -923,26 +916,28 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
 
     let migratedState: PersistedState = persistedState
 
+    // Sequential version migrations via registry
+    const migrations: ReadonlyArray<{
+        targetVersion: number
+        migrate: (s: PersistedState) => PersistedState
+    }> = [
+        { targetVersion: 2, migrate: migrateV1ToV2 },
+        { targetVersion: 3, migrate: migrateV2ToV3 },
+        { targetVersion: 4, migrate: migrateV3ToV4 },
+        { targetVersion: 5, migrate: migrateV4ToV5 },
+    ]
+
     if (stateVersion < APP_VERSION) {
         console.debug(
             `[MigrationLogic] Migrating from version ${stateVersion} to ${APP_VERSION}...`,
         )
-
-        if (stateVersion < 2) {
-            migratedState = migrateV1ToV2(migratedState)
-        }
-        if (stateVersion < 3) {
-            migratedState = migrateV2ToV3(migratedState)
-        }
-        if (stateVersion < 4) {
-            migratedState = migrateV3ToV4(migratedState)
-        }
-        if (stateVersion < 5) {
-            migratedState = migrateV4ToV5(migratedState)
+        for (const { targetVersion, migrate } of migrations) {
+            if (stateVersion < targetVersion) {
+                migratedState = migrate(migratedState)
+            }
         }
     } else {
         console.debug('[MigrationLogic] Persisted state is up to date.')
-        // Even on current version, merge settings to catch new defaults from minor updates
         if (migratedState.settings?.settings) {
             migratedState.settings.settings = deepMergeSettings(migratedState.settings.settings)
         }
@@ -960,18 +955,23 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     }
 
     // Shape-level sanitization (runs every boot)
-    ensureSimulationShape(migratedState)
-    ensureGenealogyShape(migratedState)
-    ensureUserStrainsShape(migratedState)
-    ensureSavedItemsShape(migratedState)
-    normalizeSavedStrainTipImages(migratedState)
-    ensureFavoritesShape(migratedState)
-    ensureArchivesShape(migratedState)
-    ensureNotesShape(migratedState)
-    ensureKnowledgeShape(migratedState)
-    ensureBreedingShape(migratedState)
-    ensureSandboxShape(migratedState)
-    ensureStrainsViewShape(migratedState)
+    const shapeValidators = [
+        ensureSimulationShape,
+        ensureGenealogyShape,
+        ensureUserStrainsShape,
+        ensureSavedItemsShape,
+        normalizeSavedStrainTipImages,
+        ensureFavoritesShape,
+        ensureArchivesShape,
+        ensureNotesShape,
+        ensureKnowledgeShape,
+        ensureBreedingShape,
+        ensureSandboxShape,
+        ensureStrainsViewShape,
+    ] as const
+    for (const validate of shapeValidators) {
+        validate(migratedState)
+    }
 
     // Strip all transient / runtime-only state (runs every boot)
     stripTransientState(migratedState)

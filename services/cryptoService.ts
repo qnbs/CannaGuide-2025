@@ -25,7 +25,11 @@ const base64ToBytes = (value: string): Uint8Array => {
     return Uint8Array.from(binary, (char) => char.charCodeAt(0))
 }
 
-const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => Uint8Array.from(bytes).buffer
+const toWebCryptoBuffer = (bytes: Uint8Array): ArrayBuffer => {
+    const buffer = new ArrayBuffer(bytes.byteLength)
+    new Uint8Array(buffer).set(bytes)
+    return buffer
+}
 
 interface EncryptedPayload {
     v: number
@@ -163,7 +167,7 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
         const raw = base64ToBytes(storedRaw)
         const importedKey = await crypto.subtle.importKey(
             'raw',
-            toArrayBuffer(raw),
+            toWebCryptoBuffer(raw),
             { name: 'AES-GCM' },
             false,
             ['encrypt', 'decrypt'],
@@ -213,9 +217,9 @@ export async function decrypt(payload: string): Promise<string> {
         const iv = base64ToBytes(parsed.iv)
         const encrypted = base64ToBytes(parsed.data)
         const decrypted = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv: toArrayBuffer(iv) },
+            { name: 'AES-GCM', iv: toWebCryptoBuffer(iv) },
             key,
-            toArrayBuffer(encrypted),
+            toWebCryptoBuffer(encrypted),
         )
         return new TextDecoder().decode(decrypted)
     } catch {

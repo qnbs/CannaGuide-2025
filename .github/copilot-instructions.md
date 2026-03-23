@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE, 13 namespaces)
-- **Testing:** Vitest (529+ tests) + Playwright E2E + Playwright Component Tests + Stryker mutation
+- **Testing:** Vitest (622+ tests) + Playwright E2E + Playwright Component Tests + Stryker mutation
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Trojan-source, npm audit, Snyk, SonarCloud, GitGuardian, CodeAnt AI
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -143,7 +143,7 @@ docs/                # Developer guides, roadmap
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 529+ tests across 58 files, 0 failures
+- Baseline: 622+ tests across 75 files, 0 failures
 
 ### Git
 

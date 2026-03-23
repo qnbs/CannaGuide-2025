@@ -26,6 +26,7 @@ jobs:
     docker:
         name: 🐳 Build & Push
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         environment: ${{ github.event_name == 'pull_request' && 'container-pr-validation' || 'container-release' }}
         steps:
             - name: 📥 Checkout

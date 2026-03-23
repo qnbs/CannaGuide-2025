@@ -6,7 +6,6 @@ on:
     workflow_dispatch:
 
 permissions:
-    security-events: write
     id-token: write
     contents: read
     actions: read
@@ -16,6 +15,11 @@ jobs:
         name: Scorecard Analysis
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        permissions:
+            id-token: write
+            contents: read
+            actions: read
+            security-events: write
         steps:
             - name: Checkout repository
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5

@@ -13,6 +13,7 @@ const SECURE_KEY_ID = 'api-key-encryption'
 
 let secureDb: IDBDatabase | null = null
 let secureDbPromise: Promise<IDBDatabase> | null = null
+let cachedEncryptionKey: CryptoKey | null = null
 
 const toIndexedDbError = (error: DOMException | null, fallbackMessage: string): Error =>
     error ?? new Error(fallbackMessage)
@@ -57,13 +58,19 @@ const parseEncryptedPayload = (payload: string): EncryptedPayload | null => {
 }
 
 async function getOrCreateEncryptionKey(): Promise<CryptoKey> {
+    if (cachedEncryptionKey) {
+        return cachedEncryptionKey
+    }
+
     const persisted = await getPersistedEncryptionKey()
     if (persisted) {
+        cachedEncryptionKey = persisted
         return persisted
     }
 
     const migrated = await migrateLegacyEncryptionKey()
     if (migrated) {
+        cachedEncryptionKey = migrated
         return migrated
     }
 
@@ -72,6 +79,7 @@ async function getOrCreateEncryptionKey(): Promise<CryptoKey> {
         'decrypt',
     ])
     await persistEncryptionKey(key)
+    cachedEncryptionKey = key
     return key
 }
 
@@ -131,6 +139,7 @@ async function getPersistedEncryptionKey(): Promise<CryptoKey | null> {
 }
 
 async function persistEncryptionKey(key: CryptoKey): Promise<void> {
+    cachedEncryptionKey = key
     const db = await openSecureDb()
     const transaction = db.transaction(SECURE_STORE, 'readwrite')
     const store = transaction.objectStore(SECURE_STORE)
@@ -160,6 +169,7 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
             ['encrypt', 'decrypt'],
         )
         await persistEncryptionKey(importedKey)
+        cachedEncryptionKey = importedKey
 
         try {
             localStorage.removeItem(CRYPTO_KEY_STORAGE)

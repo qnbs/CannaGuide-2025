@@ -48,7 +48,7 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Restore Turbo cache
-              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+              uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
               with:
                   path: .turbo
                   key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
@@ -142,7 +142,7 @@ jobs:
 
             - name: Cache Playwright Chromium
               id: playwright-cache
-              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+              uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
               with:
                   path: ~/.cache/ms-playwright
                   key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}

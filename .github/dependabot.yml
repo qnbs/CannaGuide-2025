@@ -57,3 +57,19 @@ updates:
       directory: '/'
       schedule:
           interval: weekly
+    - package-ecosystem: docker
+      directory: '/'
+      schedule:
+          interval: weekly
+    - package-ecosystem: docker
+      directory: '/docker/esp32-mock'
+      schedule:
+          interval: weekly
+    - package-ecosystem: docker
+      directory: '/docker/tauri-mock'
+      schedule:
+          interval: weekly
+    - package-ecosystem: docker
+      directory: '/packages/iot-mocks'
+      schedule:
+          interval: weekly

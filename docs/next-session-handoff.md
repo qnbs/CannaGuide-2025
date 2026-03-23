@@ -2,22 +2,73 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-23, Late) — CodeQL Scorecard Alerts Fix
+## Latest Session (2026-03-23, Night) — Admin PAT Repository Hardening
 
-**Status: CI green (622/622), all tests passing.**
+**Status: CI green (622/622), all tests passing. All admin settings configured.**
 
-### CodeQL Scorecard Alert Fixes (aktueller Commit)
+### Admin-Level Repository Configuration (via PAT)
 
-- **Dangerous-Workflow (#175, Critical):** `deploy.yml` — Entfernung des untrusted `workflow_run.head_sha` Checkout. Benutzt jetzt Standard-Checkout (sicher, da `branches: [main]` Filter).
-- **Pinned-Dependencies (#192, #193):** ClusterFuzzLite Dockerfile SHA-gepinnt (`gcr.io/oss-fuzz-base/base-builder-javascript@sha256:035ca1d...`), `build.sh` `npm install` → `npm ci`
-- **Pinned-Dependencies (#178, #177, #136):** Alle Mock-Dockerfiles (iot-mocks, tauri-mock, esp32-mock) mit `node:20-alpine@sha256:b88333c...` gepinnt
-- **Pinned-Dependencies (#138, #137):** `capacitor-build.yml` — `@capacitor/cli` auf Version `8.2.0` gepinnt
+Umfassende Konfiguration aller Admin-Level GitHub-Settings per REST API:
+
+#### Repository Settings
+
+- **Merge Strategy:** Nur Squash-Merge (merge-commit & rebase deaktiviert)
+- **Squash Format:** PR_TITLE + PR_BODY
+- **Branch Cleanup:** Auto-delete merged branches
+- **Auto-Merge:** Aktiviert
+- **Signoff:** Web-Commit Signoff erforderlich
+- **Wiki/Projects:** Deaktiviert (nicht genutzt)
+
+#### Branch Protection (main)
+
+- **Required Reviews:** 1 Approving Review
+- **Dismiss Stale Reviews:** Ja
+- **CODEOWNER Reviews:** Erforderlich
+- **Last Push Approval:** Ja (verhindert Self-Approval nach Push)
+- **Status Checks:** `quality`, `ci-status` (strict — Branch muss aktuell sein)
+- **Signed Commits:** Erforderlich
+- **Linear History:** Ja (kein Merge-Commit)
+- **Conversation Resolution:** Alle Threads muessen resolved sein
+- **Force Push / Deletion:** Verboten
+- **Enforce Admins:** Nein (Admin-Bypass fuer direkte Pushes)
+
+#### Security Features
+
+- **Secret Scanning:** Aktiviert + Push Protection
+- **Vulnerability Alerts:** Aktiviert
+- **Automated Security Fixes:** Aktiviert
+- **Private Vulnerability Reporting:** Aktiviert
+- **CodeQL Default Setup:** Extended Query Suite (JS/TS + Actions)
+
+#### Actions Permissions
+
+- **Default Workflow Permissions:** `read` (minimal)
+- **PR Approval durch Actions:** Deaktiviert
+
+#### Weitere Settings
+
+- **Tag Protection:** Ruleset für `v*` Tags (creation/update/deletion geschuetzt)
+- **Copilot Environment:** Deployment Branch Policy auf protected branches
+- **HTTPS Enforcement:** GitHub Pages erzwingt HTTPS
+- **Topics:** 14 Tags fuer Discoverability gesetzt
+- **Dependabot:** Docker-Ecosystem fuer alle Dockerfiles ergaenzt (root, esp32-mock, tauri-mock, iot-mocks)
+
+### Vorheriger Commit — CodeQL Scorecard Alerts Fix
+
+- **Dangerous-Workflow (#175, Critical):** `deploy.yml` — Entfernung des untrusted `workflow_run.head_sha` Checkout
+- **Pinned-Dependencies (#192, #193):** ClusterFuzzLite Dockerfile SHA-gepinnt
+- **Pinned-Dependencies (#178, #177, #136):** Alle Mock-Dockerfiles SHA-gepinnt
+- **Pinned-Dependencies (#138, #137):** `capacitor-build.yml` — `@capacitor/cli@8.2.0` gepinnt
+- **Code-Review (#188):** Jetzt behoben durch Branch Protection mit Required Reviews
+- **Branch-Protection:** Jetzt vollstaendig konfiguriert via Admin-PAT
 
 ### Nicht automatisch behebbar
 
-- **Code-Review (#188, High):** "0/30 approved changesets" — erfordert Branch Protection mit Required Reviews. Codespaces GITHUB_TOKEN hat keine Admin-Rechte. Loesung: Admin-PAT oder manuell in Repo Settings > Branches > main activieren.
 - **CII-Best-Practices (#187, Low):** Erfordert manuelle Registrierung auf https://www.bestpractices.dev/ (Login mit GitHub, Projekt eintragen, Fragebogen ausfuellen).
-- **Branch-Protection (?):** "Resource not accessible by integration" — gleiche PAT-Limitation.
+
+### Admin-PAT Hinweis
+
+Der Admin-PAT (`GH_PAT`) sollte nach dieser Session widerrufen/rotiert werden. Alle Einstellungen sind persistent und benoetigen den PAT nicht mehr.
 
 ### Vorherige Fixes (gleiche Session)
 

@@ -214,5 +214,136 @@ Snyk: 2 zlib CVEs in Docker base image (`node:20-alpine` → zlib 1.3.1-r2)
 - SonarCloud Hotspots: Must be reviewed/dismissed in SonarCloud UI (code fixes reduce count but don't mark reviewed)
 - Reliability B (49 issues): Likely includes non-null assertions, unreachable code, other patterns requiring SonarCloud dashboard inspection
 
-> **Last updated:** 2026-03-23 — SonarCloud QG + Scorecard + Snyk Session
-> **Build:** CI green (622/622), TypeScript clean, all changes verified
+## Phase 6: CodeQL Scorecard Alert Resolution (Commit `ccb21b0`)
+
+### Problem
+
+6 CodeQL/Scorecard alerts open:
+
+- #175 Dangerous-Workflow (Critical): `deploy.yml` checked out untrusted `workflow_run.head_sha`
+- #192, #193 Pinned-Dependencies: ClusterFuzzLite Dockerfile + build.sh unpinned
+- #178, #177, #136 Pinned-Dependencies: Mock Dockerfiles (iot-mocks, tauri-mock, esp32-mock) unpinned
+- #138, #137 Pinned-Dependencies: `capacitor-build.yml` uses unpinned `@capacitor/cli`
+
+### Fixes Applied
+
+| File(s)                         | Change                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| `deploy.yml`                    | Removed untrusted `workflow_run.head_sha` checkout                      |
+| `.clusterfuzzlite/Dockerfile`   | SHA-pinned to `gcr.io/oss-fuzz-base/base-builder-javascript@sha256:...` |
+| `.clusterfuzzlite/build.sh`     | `npm install` → `npm ci`                                                |
+| `packages/iot-mocks/Dockerfile` | SHA-pinned to `node:20-alpine@sha256:b88333c...`                        |
+| `docker/tauri-mock/Dockerfile`  | SHA-pinned to `node:20-alpine@sha256:b88333c...`                        |
+| `docker/esp32-mock/Dockerfile`  | SHA-pinned to `node:20-alpine@sha256:b88333c...`                        |
+| `capacitor-build.yml`           | `@capacitor/cli` pinned to `8.2.0`                                      |
+
+## Phase 7: Admin-Level Repository Hardening (Commit `d35a0e8`)
+
+### Problem
+
+Admin-level settings (Branch Protection, Security Features, Actions Permissions) required a classic PAT with full admin scopes — Codespaces `GITHUB_TOKEN` returned 403 on all admin endpoints.
+
+### Configured via GitHub REST API
+
+#### Repository Settings
+
+- Squash-merge only (PR_TITLE + PR_BODY), merge-commit & rebase disabled
+- Auto-delete branches, auto-merge enabled
+- Web commit signoff required
+- Wiki + Projects disabled
+
+#### Branch Protection (main)
+
+- 1 required review, dismiss stale reviews, CODEOWNER reviews required
+- Last-push approval (prevents self-approval after push)
+- Status checks: `quality`, `ci-status` (strict)
+- Signed commits required, linear history enforced
+- Force push + deletion forbidden
+- Conversation resolution required
+- `enforce_admins: false` (allows admin direct push during development)
+
+#### Security Features
+
+- Secret Scanning + Push Protection enabled
+- Vulnerability Alerts + Automated Security Fixes enabled
+- Private Vulnerability Reporting enabled
+- CodeQL Default Setup: Extended Query Suite (JS/TS + Actions)
+
+#### Actions Permissions
+
+- Default workflow permissions: `read` (minimal principle of least privilege)
+- Actions cannot approve PRs
+
+#### Additional Settings
+
+- Tag Protection: Ruleset for `v*` tags (creation/update/deletion protected)
+- Copilot environment: deployment branch policy on protected branches
+- GitHub Pages HTTPS enforcement
+- 14 repository topics set for discoverability
+- Dependabot: Docker ecosystem added for all 4 Dockerfiles
+- Repository notifications set to ignored (Dependabot email notifications off)
+
+#### CII Best Practices
+
+- Registered on https://www.bestpractices.dev/ (pending email activation)
+
+### OpenSSF Scorecard Result
+
+**Score: 8.5/10** (up from 4.9 at session start)
+
+| Check               | Score | Notes                                         |
+| ------------------- | ----- | --------------------------------------------- |
+| Binary-Artifacts    | 10/10 | ✅                                            |
+| Dangerous-Workflow  | 10/10 | ✅ Fixed this session                         |
+| Dependency-Update   | 10/10 | ✅                                            |
+| Fuzzing             | 10/10 | ✅ ClusterFuzzLite added this session         |
+| License             | 10/10 | ✅                                            |
+| Maintained          | 10/10 | ✅                                            |
+| Packaging           | 10/10 | ✅                                            |
+| SAST                | 10/10 | ✅                                            |
+| Security-Policy     | 10/10 | ✅ Enhanced this session                      |
+| Token-Permissions   | 10/10 | ✅ Fixed this session                         |
+| Vulnerabilities     | 10/10 | ✅                                            |
+| Pinned-Dependencies | 9/10  | 🟡 npmCommand in capacitor-build not hashable |
+| Branch-Protection   | 8/10  | 🟡 Requires 2+ reviewers for 10/10            |
+| CII-Best-Practices  | 0/10  | ⏳ Registered, pending activation             |
+| Code-Review         | 0/10  | ⏳ Requires PRs (direct push mode currently)  |
+| Contributors        | 0/10  | Info: Solo project, not improvable            |
+| CI-Tests            | -1    | Info: No PR-based CI detected yet             |
+| Signed-Releases     | -1    | Info: No GitHub Releases created yet          |
+
+## Session Commits (Chronological)
+
+| Commit    | Message                                                                             |
+| --------- | ----------------------------------------------------------------------------------- |
+| `4feb00a` | chore(ci): harden pipeline, scorecard and github settings automation                |
+| `51a0c3b` | chore(ci): finalize verified signing and hardening baseline                         |
+| `8d78c4b` | chore(ci): finalize verified signing key linkage                                    |
+| `11958e8` | chore(ci): finalize verified ssh signing v3                                         |
+| `adf2fa6` | chore(ci): align committer identity for verified signing                            |
+| `5252e60` | chore(ci): align committer identity for verified signing                            |
+| `54341e0` | fix(ci): harden scans and pin container digests                                     |
+| `08f8d02` | feat(ci): add property-based fuzzing pipeline                                       |
+| `702a503` | chore(ci): harden commit identity and handoff ops                                   |
+| `ee1a982` | chore(devcontainer): add doctor and fuzzing branch-protection automation            |
+| `2ed1c52` | fix(ci): stabilize crypto tests and scorecard publish permissions                   |
+| `920e384` | fix(scorecard): trigger on main push for reliable publishing                        |
+| `126ea94` | fix(ci): resolve crypto webcrypto compat and scorecard permissions                  |
+| `be281c0` | fix(ci): polyfill crypto.subtle in jsdom and repair scorecard YAML                  |
+| `c8b2f61` | fix(ci): remove ArrayBuffer wrapping and pin codeql-action to valid v3 hash         |
+| `b58d7d9` | chore(ci): comprehensive repo audit — SHA-pin scorecard, add timeouts, update docs  |
+| `a799a2c` | chore(security): harden token-permissions, add ClusterFuzzLite, enhance SECURITY.md |
+| `83b64a9` | fix(security): eliminate S2245/S5852 SonarCloud hotspots + Snyk zlib CVE            |
+| `ccb21b0` | fix(security): resolve CodeQL Scorecard alerts — Dangerous-Workflow + Pinned-Deps   |
+| `d35a0e8` | chore(security): admin-level repo hardening + dependabot docker ecosystem           |
+
+## Operational Lessons (Additions)
+
+6. **Admin PAT vs Codespaces Token**: Codespaces `GITHUB_TOKEN` cannot configure branch protection, security features, or tag rulesets — a classic PAT with `repo` + `admin:repo_hook` scopes is required
+7. **Tag Protection API**: Legacy `/tags/protection` is deprecated — use Repository Rulesets API (`/rulesets`) instead
+8. **Scorecard Score Limits**: Code-Review, CI-Tests, and Signed-Releases checks require PR workflows and GitHub Releases — not applicable during direct-push development phase
+9. **Dependencies pinning**: `npm` commands in workflows (e.g., `npx @capacitor/cli`) cannot be SHA-pinned — this is a known Scorecard limitation
+
+> **Last updated:** 2026-03-23 — Session Close (Phase 7: Admin Hardening)
+> **Build:** CI green (622/622), TypeScript clean, Scorecard 8.5/10
+> **Author:** Copilot session (CI/CD repair → Scorecard optimization → Admin hardening)

@@ -56,6 +56,11 @@ const defaultStrainValues = strainToFormValues({
     agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
 })
 
+const SINGLE_VALUE_RANGE_RE = /^[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?$/
+const SPAN_RANGE_RE = /^\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?$/
+const isValidRange = (range: string): boolean =>
+    SINGLE_VALUE_RANGE_RE.test(range) || SPAN_RANGE_RE.test(range)
+
 const parseCommaSeparatedTokens = (value: string): string[] =>
     value
         .split(',')
@@ -116,10 +121,6 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         if (Number.isNaN(floweringTime) || floweringTime < 4 || floweringTime > 20)
             errors.floweringTime = t('strainsView.addStrainModal.validation.floweringTime')
 
-        const singleValueRangeRegex = /^[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?$/
-        const spanRangeRegex = /^\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?$/
-        const isValidRange = (range: string): boolean =>
-            singleValueRangeRegex.test(range) || spanRangeRegex.test(range)
         if (values.thcRange && !isValidRange(values.thcRange))
             errors.thcRange = t('strainsView.addStrainModal.validation.thcRange')
         if (values.cbdRange && !isValidRange(values.cbdRange))

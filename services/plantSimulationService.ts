@@ -246,6 +246,17 @@ export const PLANT_STAGE_DETAILS: Record<
     },
 }
 
+// Drift wave parameters for daily environmental variation
+const DRIFT = {
+    tempMagnitude: 2.4,
+    humidityMagnitude: 6.5,
+    tempFrequency: 0.73,
+    humidityFrequency: 0.57,
+    humidityPhaseShift: 1.3,
+    tempBounds: { min: 14, max: 36 },
+    humidityBounds: { min: 25, max: 90 },
+} as const
+
 class PlantSimulationService {
     private _clamp(value: number, min: number, max: number): number {
         return Math.min(max, Math.max(min, value))
@@ -700,18 +711,22 @@ class PlantSimulationService {
         const profileCurve = this._getProfileCurve(simulationSettings)
         const signal = this._getPlantSignal(p)
         const driftAmplitude = instability * profileCurve.environmentalDrift
-        const tempDrift = Math.sin(signal + p.age * 0.73) * 2.4 * driftAmplitude
-        const humidityDrift = Math.cos(signal * 1.3 + p.age * 0.57) * 6.5 * driftAmplitude
+        const tempDrift =
+            Math.sin(signal + p.age * DRIFT.tempFrequency) * DRIFT.tempMagnitude * driftAmplitude
+        const humidityDrift =
+            Math.cos(signal * DRIFT.humidityPhaseShift + p.age * DRIFT.humidityFrequency) *
+            DRIFT.humidityMagnitude *
+            driftAmplitude
 
         p.environment.internalTemperature = this._clamp(
             p.environment.internalTemperature + tempDrift,
-            14,
-            36,
+            DRIFT.tempBounds.min,
+            DRIFT.tempBounds.max,
         )
         p.environment.internalHumidity = this._clamp(
             p.environment.internalHumidity + humidityDrift,
-            25,
-            90,
+            DRIFT.humidityBounds.min,
+            DRIFT.humidityBounds.max,
         )
         return p
     }

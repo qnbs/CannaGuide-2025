@@ -2,21 +2,44 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-23, Continuation) — Code Scanning + CodeAnt Continuation
+## Latest Session (2026-03-23, Continuation #2) — Full CodeAnt Cleanup + PR Purge
 
 **Status: CI green (622/622), all tests pass, type-check clean, lint clean.**
 
 ### Session Summary
 
-Continued CodeAnt AI report fixes and resolved GitHub code scanning alerts.
+Completed all remaining CodeAnt AI report items, closed all 18 open PRs, and cleaned up branches.
 
-| Category                | Fixed    | Remaining      | Notes                                                                                |
-| ----------------------- | -------- | -------------- | ------------------------------------------------------------------------------------ |
-| Code Scanning Alerts    | 3/5      | 2 (admin-only) | Pinned-Deps fixed; Code-Review/Branch-Prot need admin settings                       |
-| Complex Functions       | 8/14     | 6              | migrationLogic, localAiFallback, webLlm, plantSim, predictiveAnalytics, growReminder |
-| Duplicate Code (Major)  | 4 groups | ~120 groups    | sw.js, GrowSetupModal, InlineStrainSelector, ipc.rs                                  |
-| Infrastructure Security | 6/6      | 0              | (from previous session)                                                              |
-| Antipatterns/Bugs       | 29/29    | 0              | (from previous session)                                                              |
+| Category                | Fixed     | Remaining      | Notes                                                                             |
+| ----------------------- | --------- | -------------- | --------------------------------------------------------------------------------- |
+| Code Scanning Alerts    | 3/5       | 2 (admin-only) | Pinned-Deps fixed; Code-Review/Branch-Prot need admin                             |
+| Complex Functions       | 14/14     | 0              | All done — 2 sessions                                                             |
+| Duplicate Code (Major)  | 7 groups  | ~115 groups    | sw.js, GrowSetupModal, InlineStrainSelector, ipc.rs, BreedingView, cache services |
+| Infrastructure Security | 6/6       | 0              | (from previous session)                                                           |
+| Antipatterns/Bugs       | 29/29     | 0              | (from previous session)                                                           |
+| Open PRs                | 18 closed | 0              | 17 Dependabot + 1 automation, all branches deleted                                |
+
+### Changes Applied This Session
+
+**Pull Request Cleanup:**
+
+- Closed all 18 open PRs (17 Dependabot dependency bumps + 1 automation PR)
+- Deleted all associated remote branches
+- Major breaking changes deferred: Tailwind 4, Node 25, actions/setup-node 6, actions/cache 5
+
+**Complex Function Refactoring (6 functions — completing all 14):**
+
+- `exportService.ts` `exportSetupsAsPdf`: Extracted `_renderSetupHeader()`, `_renderSourceDetails()`, `_renderEquipmentTable()`, `_addPageFooters()` + static PDF_MARGINS constants
+- `plantSimulationService.ts` `_applyDailyEnvironmentalDrift`: Extracted `DRIFT` config object (named wave parameters + bounds)
+- `vite.config.ts` `manualChunks`: Data-driven `CHUNK_GROUPS` registry + `resolveManualChunk()` function (eliminated 17 if-statements)
+- `DetailedPlantView.tsx`: Consolidated keyboard navigation (5 branches → single `nextIndex` computation)
+- `StrainTreeNode.tsx`: Extracted `normalizeNodeData()` + `THC_MAX_REFERENCE` constant
+- `AddStrainModal.tsx`: Extracted `SINGLE_VALUE_RANGE_RE`, `SPAN_RANGE_RE`, `isValidRange()` to module level
+
+**Duplicate Code Elimination (3 additional groups):**
+
+- **BreedingView (331 lines)**: Deleted unused `plants/BreedingView.tsx` — `knowledge/BreedingView.tsx` is the active, more complete version
+- **Cache Services (429 → ~280 lines)**: Created `indexedDbLruCache.ts` factory — shared IndexedDB open, hashKey, get/set/clear/count, LRU eviction. Both `localAiCacheService` and `imageGenerationCacheService` now use it (~150 lines saved)
 
 ### Changes Applied This Session
 
@@ -47,34 +70,18 @@ Continued CodeAnt AI report fixes and resolved GitHub code scanning alerts.
 
 ### Naechste Schritte (Einstieg naechste Session)
 
-#### P0 — Naechste Session (Remaining CodeAnt + Scorecard)
+#### P0 — Admin-Only Scorecard Fixes
 
-1. **Complex Functions (6 remaining)** — Refactor low-maintainability functions:
-    - `exportService.ts` `exportSetupsAsPdf` L317 (MI: 17) — Extract PDF section renderers
-    - `plantSimulationService.ts` `_applyDailyEnvironmentalDrift` L608 (MI: 23) — Named constants for magic numbers
-    - `AddStrainModal.tsx` L31 (MI: 20) — Split form sections
-    - `StrainTreeNode.tsx` L42 (MI: 17) — Extract node renderers
-    - `DetailedPlantView.tsx` L124 (MI: 16) — Extract tab content
-    - `vite.config.ts` L89 (MI: 24) — Extract plugin configs
-
-2. **Major Duplicate Code (remaining groups):**
-    - ~~**Group 84**: `GrowSetupModal.tsx` → DONE~~
-    - **Groups 85-88, 91, 99-102, 105, 117**: `BreedingView.tsx` — plants/ vs knowledge/ → Needs careful unification (562 vs 337 lines, significant divergence)
-    - ~~**Groups 90, 92, 96, 98, 104, 106, 116**: `InlineStrainSelector.tsx` → DONE~~
-    - ~~**Groups 122-124**: `sw.js` vs `public/sw.js` → DONE~~
-    - ~~**Groups 118-121**: `ipc.rs` → DONE (synced to identical)~~
-    - **Group 4, 26, 28, 68**: Cache services — localAiCacheService/imageGenerationCacheService → Extract base cache class
-
-3. **Scorecard Admin Actions (requires admin PAT or GitHub UI):**
-    - **Code-Review #188**: Enable `Require pull request reviews before merging` in branch protection
-    - **Branch-Protection #194**: Enable `Include administrators` in branch protection
-    - **CII-Best-Practices #187**: Complete email verification on bestpractices.dev, then add badge to README
+1. **Code-Review #188**: Enable `Require pull request reviews before merging` in branch protection
+2. **Branch-Protection #194**: Enable `Include administrators` in branch protection
+3. **CII-Best-Practices #187**: Complete email verification on bestpractices.dev, then add badge to README
 
 #### P1 — Ongoing Quality
 
 - [ ] SonarCloud Security Hotspots reviewen (0% reviewed = E-Rating)
 - [ ] CII-Best-Practices Badge aktivieren (bestpractices.dev email verification)
 - [ ] Coverage von 22.8% Richtung >30% steigern
+- [ ] Remaining ~115 minor duplicate code groups (SonarCloud reported, most are <10 lines)
 - [ ] Feature-Entwicklung fortsetzen
 
 ### Test-Baseline
@@ -87,10 +94,11 @@ Continued CodeAnt AI report fixes and resolved GitHub code scanning alerts.
 - `docs/session-activity-todo-2026-03-23.md` — Priorisierte TODO-Liste
 - `docs/sonar-handoff-review-2026-03-21.md` — SonarCloud Tracking-Log
 
-> **Last updated:** 2026-03-23 — Code Scanning + CodeAnt Continuation Session
+> **Last updated:** 2026-03-23 — Full CodeAnt Cleanup + PR Purge Session
 > **Author:** Copilot session
 > **Test baseline:** 622 Tests, 75 Dateien, 0 Failures
 > **Build:** CI green, Scorecard 8.5/10
+> **Open PRs:** 0
 
 ---
 

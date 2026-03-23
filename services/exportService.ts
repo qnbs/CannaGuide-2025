@@ -307,185 +307,215 @@ class ExportService {
         }
     }
 
+    private static readonly PDF_MARGINS = { left: 15, right: 15, top: 20 } as const
+    private static readonly PDF_PAGE_WIDTH = 210
+    private static readonly PDF_PAGE_HEIGHT = 297
+
+    private _pdfContentWidth(): number {
+        return (
+            ExportService.PDF_PAGE_WIDTH -
+            ExportService.PDF_MARGINS.left -
+            ExportService.PDF_MARGINS.right
+        )
+    }
+
+    private _renderSetupHeader(doc: jsPDF, setup: SavedSetup, t: TFunction): number {
+        const { left: lm, right: rm, top: tm } = ExportService.PDF_MARGINS
+        const pageRight = ExportService.PDF_PAGE_WIDTH - rm
+        let y = tm
+
+        doc.setFontSize(9)
+        doc.setTextColor(150)
+        doc.text('CannaGuide 2025', lm, tm - 10)
+        doc.text(t('equipmentView.savedSetups.pdfReport.title'), pageRight, tm - 10, {
+            align: 'right',
+        })
+        doc.setDrawColor(50)
+        doc.line(lm, tm - 7, pageRight, tm - 7)
+
+        doc.setFontSize(20)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(40, 50, 70)
+        doc.text(setup.name, lm, y)
+        y += 8
+
+        doc.setFontSize(9)
+        doc.setTextColor(150)
+        doc.text(`${t('common.generated')}: ${new Date(setup.createdAt).toLocaleString()}`, lm, y)
+        return y + 10
+    }
+
+    private _renderSourceDetails(
+        doc: JsPDFWithAutoTable,
+        setup: SavedSetup,
+        startY: number,
+        t: TFunction,
+    ): number {
+        if (!setup.sourceDetails) return startY
+        const lm = ExportService.PDF_MARGINS.left
+        let y = startY
+
+        const prioritiesLabel = setup.sourceDetails.priorities
+            .map((p) => t(`equipmentView.configurator.priorities.${p}`))
+            .join(', ')
+
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(40, 50, 70)
+        doc.text(t('equipmentView.savedSetups.pdfReport.sourceDetails'), lm, y)
+        y += 7
+
+        const rows = [
+            [t('equipmentView.savedSetups.pdfReport.plantCount'), setup.sourceDetails.plantCount],
+            [
+                t('equipmentView.savedSetups.pdfReport.experience'),
+                t(`strainsView.tips.form.experienceOptions.${setup.sourceDetails.experience}`),
+            ],
+            [
+                t('equipmentView.savedSetups.pdfReport.budget'),
+                `${setup.sourceDetails.budget} ${t('common.units.currency_eur')}`,
+            ],
+            [
+                t('equipmentView.savedSetups.pdfReport.priorities'),
+                prioritiesLabel.length > 0 ? prioritiesLabel : t('common.none'),
+            ],
+            [
+                t('equipmentView.savedSetups.pdfReport.customNotes'),
+                setup.sourceDetails.customNotes ?? t('common.none'),
+            ],
+        ]
+        doc.autoTable({
+            startY: y,
+            body: rows,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 1.5, halign: 'left' },
+            columnStyles: {
+                0: { fontStyle: 'bold', textColor: 50, cellWidth: 40 },
+                1: { textColor: 20 },
+            },
+            didDrawPage: (data: { cursor: { y: number } }) => {
+                y = data.cursor.y
+            },
+        })
+        return doc.lastAutoTable.finalY + 10
+    }
+
+    private _renderEquipmentTable(
+        doc: JsPDFWithAutoTable,
+        setup: SavedSetup,
+        startY: number,
+        t: TFunction,
+    ): number {
+        if (!setup.recommendation) return startY
+        const { left: lm, top: tm } = ExportService.PDF_MARGINS
+        let y = startY
+
+        const categoryOrder: RecommendationCategory[] = [
+            'tent',
+            'light',
+            'ventilation',
+            'circulationFan',
+            'pots',
+            'soil',
+            'nutrients',
+            'extra',
+        ]
+        const body: (string | number | undefined)[][] = []
+        for (const key of categoryOrder) {
+            const item = setup.recommendation[key as keyof typeof setup.recommendation] as
+                | RecommendationItem
+                | string
+            if (typeof item === 'object' && item.name) {
+                body.push([
+                    t(`equipmentView.configurator.categories.${key}`),
+                    item.name,
+                    `${item.price.toFixed(2)} ${t('common.units.currency_eur')}`,
+                    item.rationale,
+                ])
+            }
+        }
+
+        doc.autoTable({
+            startY: y,
+            head: [
+                [
+                    t('common.type'),
+                    t('equipmentView.savedSetups.pdfReport.product'),
+                    t('equipmentView.savedSetups.pdfReport.price'),
+                    t('equipmentView.savedSetups.pdfReport.rationale'),
+                ],
+            ],
+            body,
+            theme: 'striped',
+            headStyles: { fillColor: [40, 50, 70] },
+            didDrawPage: (data: { cursor: { y: number } }) => {
+                y = data.cursor.y
+            },
+        })
+        y = doc.lastAutoTable.finalY + 10
+
+        if (setup.recommendation.proTip) {
+            if (y > 250) {
+                doc.addPage()
+                y = tm
+            }
+            doc.setFontSize(12)
+            doc.setFont('helvetica', 'bold')
+            doc.text(t('strainsView.tips.form.categories.proTip'), lm, y)
+            y += 6
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'normal')
+            const splitText = doc.splitTextToSize(
+                setup.recommendation.proTip,
+                this._pdfContentWidth(),
+            )
+            doc.text(splitText, lm, y)
+            y += splitText.length * 5 + 5
+        }
+        return y
+    }
+
+    private _addPageFooters(doc: JsPDFWithAutoTable, t: TFunction): void {
+        const rm = ExportService.PDF_MARGINS.right
+        const pageRight = ExportService.PDF_PAGE_WIDTH - rm
+        const pageCount = doc.internal.getNumberOfPages()
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i)
+            doc.setFontSize(8)
+            doc.setTextColor(150)
+            doc.text(
+                `${t('common.page')} ${i} / ${pageCount}`,
+                pageRight,
+                ExportService.PDF_PAGE_HEIGHT - 10,
+                { align: 'right' },
+            )
+        }
+    }
+
     public exportSetupsAsPdf(setups: SavedSetup[], fileName: string, t: TFunction) {
         const doc = new jsPDF()
-        const leftMargin = 15
-        const rightMargin = 15
-        const topMargin = 20
-        const contentWidth = 210 - leftMargin - rightMargin
+        const typedDoc = doc as JsPDFWithAutoTable
+        const rm = ExportService.PDF_MARGINS.right
+        const pageRight = ExportService.PDF_PAGE_WIDTH - rm
 
         setups.forEach((setup, index) => {
             if (index > 0) doc.addPage()
-            let y = topMargin
 
-            // Header
-            doc.setFontSize(9)
-            doc.setTextColor(150)
-            doc.text('CannaGuide 2025', leftMargin, topMargin - 10)
-            doc.text(
-                t('equipmentView.savedSetups.pdfReport.title'),
-                210 - rightMargin,
-                topMargin - 10,
-                { align: 'right' },
-            )
-            doc.setDrawColor(50)
-            doc.line(leftMargin, topMargin - 7, 210 - rightMargin, topMargin - 7)
+            let y = this._renderSetupHeader(doc, setup, t)
+            y = this._renderSourceDetails(typedDoc, setup, y, t)
+            y = this._renderEquipmentTable(typedDoc, setup, y, t)
 
-            // Title
-            doc.setFontSize(20)
-            doc.setFont('helvetica', 'bold')
-            doc.setTextColor(40, 50, 70)
-            doc.text(setup.name, leftMargin, y)
-            y += 8
-
-            doc.setFontSize(9)
-            doc.setTextColor(150)
-            doc.text(
-                `${t('common.generated')}: ${new Date(setup.createdAt).toLocaleString()}`,
-                leftMargin,
-                y,
-            )
-            y += 10
-
-            // Source details
-            if (setup.sourceDetails) {
-                const prioritiesLabel = setup.sourceDetails.priorities
-                    .map((p) => t(`equipmentView.configurator.priorities.${p}`))
-                    .join(', ')
-                const resolvedPrioritiesLabel =
-                    prioritiesLabel.length > 0 ? prioritiesLabel : t('common.none')
-                const resolvedCustomNotes = setup.sourceDetails.customNotes ?? t('common.none')
-                doc.setFontSize(14)
-                doc.setFont('helvetica', 'bold')
-                doc.setTextColor(40, 50, 70)
-                doc.text(t('equipmentView.savedSetups.pdfReport.sourceDetails'), leftMargin, y)
-                y += 7
-
-                const sourceDetails = [
-                    [
-                        t('equipmentView.savedSetups.pdfReport.plantCount'),
-                        setup.sourceDetails.plantCount,
-                    ],
-                    [
-                        t('equipmentView.savedSetups.pdfReport.experience'),
-                        t(
-                            `strainsView.tips.form.experienceOptions.${setup.sourceDetails.experience}`,
-                        ),
-                    ],
-                    [
-                        t('equipmentView.savedSetups.pdfReport.budget'),
-                        `${setup.sourceDetails.budget} ${t('common.units.currency_eur')}`,
-                    ],
-                    [
-                        t('equipmentView.savedSetups.pdfReport.priorities'),
-                        resolvedPrioritiesLabel,
-                    ],
-                    [
-                        t('equipmentView.savedSetups.pdfReport.customNotes'),
-                        resolvedCustomNotes,
-                    ],
-                ]
-                ;(doc as JsPDFWithAutoTable).autoTable({
-                    startY: y,
-                    body: sourceDetails,
-                    theme: 'plain',
-                    styles: { fontSize: 10, cellPadding: 1.5, halign: 'left' },
-                    columnStyles: {
-                        0: { fontStyle: 'bold', textColor: 50, cellWidth: 40 },
-                        1: { textColor: 20 },
-                    },
-                    didDrawPage: (data: { cursor: { y: number } }) => {
-                        y = data.cursor.y
-                    },
-                })
-                y = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 10
-            }
-
-            // Equipment Table
-            if (setup.recommendation) {
-                const body: (string | number | undefined)[][] = []
-                const categoryOrder: RecommendationCategory[] = [
-                    'tent',
-                    'light',
-                    'ventilation',
-                    'circulationFan',
-                    'pots',
-                    'soil',
-                    'nutrients',
-                    'extra',
-                ]
-                for (const key of categoryOrder) {
-                    const item = setup.recommendation[key as keyof typeof setup.recommendation] as
-                        | RecommendationItem
-                        | string
-                    if (typeof item === 'object' && item.name) {
-                        body.push([
-                            t(`equipmentView.configurator.categories.${key}`),
-                            item.name,
-                            `${item.price.toFixed(2)} ${t('common.units.currency_eur')}`,
-                            item.rationale,
-                        ])
-                    }
-                }
-
-                ;(doc as JsPDFWithAutoTable).autoTable({
-                    startY: y,
-                    head: [
-                        [
-                            t('common.type'),
-                            t('equipmentView.savedSetups.pdfReport.product'),
-                            t('equipmentView.savedSetups.pdfReport.price'),
-                            t('equipmentView.savedSetups.pdfReport.rationale'),
-                        ],
-                    ],
-                    body: body,
-                    theme: 'striped',
-                    headStyles: { fillColor: [40, 50, 70] },
-                    didDrawPage: (data: { cursor: { y: number } }) => {
-                        y = data.cursor.y
-                    },
-                })
-                y = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 10
-
-                // Pro Tip
-                if (setup.recommendation.proTip) {
-                    if (y > 250) {
-                        doc.addPage()
-                        y = topMargin
-                    }
-                    doc.setFontSize(12)
-                    doc.setFont('helvetica', 'bold')
-                    doc.text(t('strainsView.tips.form.categories.proTip'), leftMargin, y)
-                    y += 6
-                    doc.setFontSize(10)
-                    doc.setFont('helvetica', 'normal')
-                    const splitText = doc.splitTextToSize(setup.recommendation.proTip, contentWidth)
-                    doc.text(splitText, leftMargin, y)
-                    y += splitText.length * 5 + 5
-                }
-            }
-
-            // Total Cost
             doc.setFontSize(12)
             doc.setFont('helvetica', 'bold')
             doc.text(
                 `${t('equipmentView.savedSetups.pdfReport.totalCost')}: ${setup.totalCost.toFixed(2)} ${t('common.units.currency_eur')}`,
-                210 - rightMargin,
+                pageRight,
                 y,
                 { align: 'right' },
             )
         })
 
-        const pageCount = (doc as JsPDFWithAutoTable).internal.getNumberOfPages()
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i)
-            doc.setFontSize(8)
-            doc.setTextColor(150)
-            doc.text(`${t('common.page')} ${i} / ${pageCount}`, 210 - rightMargin, 297 - 10, {
-                align: 'right',
-            })
-        }
-
+        this._addPageFooters(typedDoc, t)
         doc.save(`${fileName}.pdf`)
     }
 

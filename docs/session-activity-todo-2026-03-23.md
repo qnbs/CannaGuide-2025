@@ -42,12 +42,31 @@
 - [x] CII-Best-Practices auf bestpractices.dev registriert (pending Aktivierung)
 - [x] Admin-PAT kann widerrufen werden — alle Settings persistent
 
+## CodeAnt AI Report Fixes (Late Session)
+
+- [x] Infrastructure Security: HEALTHCHECK in Dockerfile (nginx -t)
+- [x] Infrastructure Security: USER node + HEALTHCHECK in Dockerfile.dev
+- [x] Infrastructure Security: HEALTHCHECK in docker/esp32-mock/Dockerfile
+- [x] Infrastructure Security: HEALTHCHECK in packages/iot-mocks/Dockerfile
+- [x] Infrastructure Security: HEALTHCHECK in docker/tauri-mock/Dockerfile
+- [x] BLOCKER BUG: sw.js + public/sw.js map() in activate returns undefined — fixed with filter().map()
+- [x] CRITICAL: sw.js + public/sw.js await-in-loop in notifyDueReminders — Promise.all
+- [x] CRITICAL: sw.js + public/sw.js await-in-loop in syncData — batch deletes with Promise.all
+- [x] CRITICAL: sw.js + public/sw.js nesting >4 levels — flattened IndexedDB via async/await
+- [x] MAJOR: sw.js + public/sw.js nested promise in navigate handler — async IIFE
+- [x] MAJOR: sw.js + public/sw.js missing catch on nested promises
+- [x] MINOR: sw.js + public/sw.js i++ → i += 1
+- [x] gpuResourceManager.test.ts: then() returns, Promise param naming, executor returns
+- [x] securityHeaders.ts: string concatenation → template literal
+
 ## OpenSSF Scorecard: 8.5/10
 
 11 Checks auf 10/10. Verbleibende Checks sind strukturell bedingt:
 
-## P0 — Naechste Session (Feature-Entwicklung)
+## P0 — Naechste Session (CodeAnt Report Continuation)
 
+- [ ] Complex Functions refactoring (14 functions, MI < 25) — see next-session-handoff.md
+- [ ] Major Duplicate Code elimination (20 groups) — GrowSetupModal, BreedingView, InlineStrainSelector, sw.js, ipc.rs, cache services
 - [ ] SonarCloud Security Hotspots im UI reviewen/dismissend (aktuell 0.0% reviewed = E-Rating)
 - [ ] SonarCloud Reliability B (49 issues) im Dashboard inspizieren und priorisiert abarbeiten
 - [ ] CII-Best-Practices Badge aktivieren sobald E-Mail-Verifikation abgeschlossen

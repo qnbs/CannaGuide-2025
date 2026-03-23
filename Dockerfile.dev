@@ -11,6 +11,11 @@ RUN npm ci
 # Source is volume-mounted at runtime – this COPY is a fallback
 COPY . .
 
+USER node
+
 EXPOSE 5173
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD node -e "fetch('http://localhost:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["npx", "vite", "--host", "0.0.0.0"]

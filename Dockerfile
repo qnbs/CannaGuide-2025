@@ -17,7 +17,7 @@ ENV BUILD_BASE_PATH=/
 RUN npm run build
 
 # ── Runtime stage ───────────────────────────────────────────────────────
-FROM cgr.dev/chainguard/nginx:latest@sha256:770994a6d14bfd17a34fcf0503e13f5f7c4cf6327b0ec6636f4607cb7dd91afc AS runtime
+FROM cgr.dev/chainguard/nginx:latest@sha256:df82184bf05b5c9c0a7b9eee02084b6ff945fa764e89dd91921b1deccc16cff2 AS runtime
 
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY --from=build --chown=65532:65532 /app/dist /usr/share/nginx/html

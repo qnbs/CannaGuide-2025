@@ -23,7 +23,7 @@ jobs:
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
             - name: Initialize CodeQL
-              uses: github/codeql-action/init@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/init@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               with:
                   languages: javascript-typescript
                   config: |
@@ -46,7 +46,7 @@ jobs:
               run: npm run build
 
             - name: Perform CodeQL analysis
-              uses: github/codeql-action/analyze@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/analyze@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
 
     dependabot-check:
         name: Dependabot Check
@@ -106,7 +106,7 @@ jobs:
                   output: trivy-results.sarif
 
             - name: Upload Trivy results
-              uses: github/codeql-action/upload-sarif@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               if: always()
               with:
                   sarif_file: trivy-results.sarif
@@ -125,7 +125,7 @@ jobs:
               run: semgrep scan --config auto --metrics=off --sarif -o semgrep-results.sarif
 
             - name: Upload Semgrep results
-              uses: github/codeql-action/upload-sarif@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               if: always()
               with:
                   sarif_file: semgrep-results.sarif
@@ -166,7 +166,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Run Scorecard
-              uses: ossf/scorecard-action@ff5dd8929f96a8a4dc67d13f32b8c75057829621
+              uses: ossf/scorecard-action@v2.4.0
               with:
                   results_file: scorecard-results.sarif
                   results_format: sarif
@@ -174,7 +174,7 @@ jobs:
                   publish_results: true
 
             - name: Upload Scorecard results
-              uses: github/codeql-action/upload-sarif@256d634097be96e792d6764f9edaefc4320557b1
+              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               if: always()
               with:
                   sarif_file: scorecard-results.sarif

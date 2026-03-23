@@ -8,7 +8,7 @@
         "storage": "32gb"
     },
 
-    "postCreateCommand": "apt-get update && apt-get install -y ripgrep && npm ci && npx playwright install --with-deps chromium",
+    "postCreateCommand": "apt-get update && apt-get install -y ripgrep gh jq && npm ci && node ./scripts/devcontainer/bootstrap-git-signing.mjs && npx playwright install --with-deps chromium",
 
     "postStartCommand": "pkill -f 'packages/iot-mocks/src/server.mjs' >/dev/null 2>&1 || true && pkill -f 'docker/tauri-mock/server.mjs' >/dev/null 2>&1 || true && node packages/iot-mocks/src/server.mjs &disown && node docker/tauri-mock/server.mjs &disown && HEALTHY=0 && for i in $(seq 1 30); do if curl -sf http://localhost:3001/health >/dev/null 2>&1 && curl -sf http://localhost:3002/health >/dev/null 2>&1; then echo '✅ IoT mocks healthy'; HEALTHY=1; break; fi; echo \"⏳ Waiting for IoT mocks... ($i/30)\"; sleep 1; done && if [ \"$HEALTHY\" -ne 1 ]; then echo '❌ IoT mocks failed to start within 30s'; exit 1; fi",
 

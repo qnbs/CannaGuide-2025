@@ -5,17 +5,32 @@
  * Uses GitHub REST API with a PAT from GITHUB_PAT, GITHUB_TOKEN, GH_TOKEN, or GH_AUTH_TOKEN.
  */
 
+import { spawnSync } from 'node:child_process'
+
+function readGhAuthToken() {
+    const result = spawnSync('gh', ['auth', 'token'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        shell: false,
+    })
+
+    if (result.status !== 0) return ''
+    return result.stdout.trim()
+}
+
 const token =
     process.env.GH_TOKEN ||
     process.env.GH_AUTH_TOKEN ||
     process.env.GITHUB_PAT ||
-    process.env.GITHUB_TOKEN
+    process.env.GITHUB_TOKEN ||
+    readGhAuthToken()
 const owner = process.env.GITHUB_OWNER || 'qnbs'
 const repo = process.env.GITHUB_REPO || 'CannaGuide-2025'
 const mainBranch = process.env.GITHUB_MAIN_BRANCH || 'main'
 const dryRun = ['1', 'true', 'yes'].includes((process.env.DRY_RUN || '').toLowerCase())
 
-const defaultChecks = ['✅ CI Status', '🔬 CodeQL Analysis']
+const FUZZING_CHECK_NAME = process.env.FUZZING_REQUIRED_CHECK || 'Property Fuzz Tests'
+const defaultChecks = ['✅ CI Status', '🔬 CodeQL Analysis', FUZZING_CHECK_NAME]
 
 const checks = (process.env.REQUIRED_STATUS_CHECKS || defaultChecks.join(','))
     .split(',')
@@ -208,10 +223,24 @@ async function setEnvironments() {
 async function setBranchProtection() {
     logStep(`Configure branch protection for ${mainBranch}`)
 
+    const protectionResp = await request(
+        'GET',
+        `/repos/${owner}/${repo}/branches/${encodeURIComponent(mainBranch)}/protection`,
+        null,
+        { allowStatuses: [404] },
+    )
+
+    const existingContexts =
+        protectionResp.status === 404
+            ? []
+            : (protectionResp.data?.required_status_checks?.contexts ?? [])
+
+    const mergedChecks = [...new Set([...existingContexts, ...checks, FUZZING_CHECK_NAME])]
+
     const body = {
         required_status_checks: {
             strict: true,
-            contexts: checks,
+            contexts: mergedChecks,
         },
         enforce_admins: false,
         required_pull_request_reviews: {
@@ -233,7 +262,7 @@ async function setBranchProtection() {
         body,
     )
     summary.push(
-        `Branch protection configured for ${mainBranch} with checks: ${checks.join(', ')}.`,
+        `Branch protection configured for ${mainBranch} with checks: ${mergedChecks.join(', ')}.`,
     )
 }
 

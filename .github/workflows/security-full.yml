@@ -6,9 +6,7 @@ on:
     workflow_dispatch:
 
 permissions:
-    actions: read
     contents: read
-    security-events: write
 
 env:
     NODE_VERSION: '20'
@@ -18,6 +16,10 @@ jobs:
         name: CodeQL
         runs-on: ubuntu-latest
         timeout-minutes: 30
+        permissions:
+            contents: read
+            actions: read
+            security-events: write
         steps:
             - name: Checkout repository
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -91,6 +93,9 @@ jobs:
         name: Trivy
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        permissions:
+            contents: read
+            security-events: write
         steps:
             - name: Checkout repository
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -115,6 +120,9 @@ jobs:
         name: Semgrep
         runs-on: ubuntu-latest
         timeout-minutes: 25
+        permissions:
+            contents: read
+            security-events: write
         container:
             image: semgrep/semgrep
         steps:

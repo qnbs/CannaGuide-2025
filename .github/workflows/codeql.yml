@@ -15,15 +15,17 @@ concurrency:
     cancel-in-progress: true
 
 permissions:
-    actions: read
     contents: read
-    security-events: write
 
 jobs:
     analyze:
         name: 🔬 CodeQL Analysis
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        permissions:
+            actions: read
+            contents: read
+            security-events: write
         steps:
             - name: Checkout
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5

@@ -10,10 +10,7 @@ concurrency:
     cancel-in-progress: true
 
 permissions:
-    contents: write
-    security-events: read
-    actions: read
-    pull-requests: write
+    contents: read
 
 env:
     NODE_VERSION: '20'
@@ -23,6 +20,11 @@ jobs:
         name: Refresh security alert report
         runs-on: ubuntu-latest
         timeout-minutes: 10
+        permissions:
+            contents: write
+            security-events: read
+            actions: read
+            pull-requests: write
         steps:
             - name: Checkout
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5

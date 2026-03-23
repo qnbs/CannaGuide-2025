@@ -1448,43 +1448,44 @@ class PlantSimulationService {
     private _updateHealthAndStress(plant: Plant, simulationSettings?: SimulationSettings): Plant {
         const p = this.clonePlant(plant)
         const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals
-        let stress = 0
-        const environmentalStressMultiplier =
-            this._getEnvironmentalStressMultiplier(simulationSettings)
-        const nutrientStressMultiplier = this._getNutrientStressMultiplier(simulationSettings)
+        const envMult = this._getEnvironmentalStressMultiplier(simulationSettings)
+        const nutMult = this._getNutrientStressMultiplier(simulationSettings)
 
-        // VPD Stress
-        if (p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max) {
-            stress += 10 * environmentalStressMultiplier
-            p.stressCounters.vpd = (p.stressCounters.vpd ?? 0) + 1
-        } else {
-            p.stressCounters.vpd = 0
-        }
-        // pH Stress
-        if (p.medium.ph < ideal.ph.min || p.medium.ph > ideal.ph.max) {
-            stress += 15 * nutrientStressMultiplier
-            p.stressCounters.ph = (p.stressCounters.ph ?? 0) + 1
-        } else {
-            p.stressCounters.ph = 0
-        }
-        // EC Stress
-        if (p.medium.ec < ideal.ec.min || p.medium.ec > ideal.ec.max) {
-            stress += 10 * nutrientStressMultiplier
-            p.stressCounters.ec = (p.stressCounters.ec ?? 0) + 1
-        } else {
-            p.stressCounters.ec = 0
-        }
-        // Moisture Stress
-        if (p.medium.moisture < 20) {
-            // Underwatering
-            stress += 20
-            p.stressCounters.moisture = (p.stressCounters.moisture ?? 0) + 1
-        } else if (p.medium.moisture > 98) {
-            // Overwatering
-            stress += 5
-            p.stressCounters.moisture = (p.stressCounters.moisture ?? 0) + 1
-        } else {
-            p.stressCounters.moisture = 0
+        const stressChecks: ReadonlyArray<{
+            key: keyof typeof p.stressCounters
+            outOfRange: boolean
+            penalty: number
+        }> = [
+            {
+                key: 'vpd',
+                outOfRange: p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max,
+                penalty: 10 * envMult,
+            },
+            {
+                key: 'ph',
+                outOfRange: p.medium.ph < ideal.ph.min || p.medium.ph > ideal.ph.max,
+                penalty: 15 * nutMult,
+            },
+            {
+                key: 'ec',
+                outOfRange: p.medium.ec < ideal.ec.min || p.medium.ec > ideal.ec.max,
+                penalty: 10 * nutMult,
+            },
+            {
+                key: 'moisture',
+                outOfRange: p.medium.moisture < 20 || p.medium.moisture > 98,
+                penalty: p.medium.moisture < 20 ? 20 : 5,
+            },
+        ]
+
+        let stress = 0
+        for (const { key, outOfRange, penalty } of stressChecks) {
+            if (outOfRange) {
+                stress += penalty
+                p.stressCounters[key] = (p.stressCounters[key] ?? 0) + 1
+            } else {
+                p.stressCounters[key] = 0
+            }
         }
 
         p.stressLevel = Math.min(100, p.stressLevel * 0.8 + stress)

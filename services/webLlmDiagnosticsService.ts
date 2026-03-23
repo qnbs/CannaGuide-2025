@@ -78,6 +78,111 @@ const buildProbeErrorResult = (
 
 // ─── Core Diagnostic ─────────────────────────────────────────────────────────
 
+type CheckResult = { passed: true } | { passed: false; result: WebLlmDiagnosticResult }
+
+const checkForceWasm = (details: WebLlmDiagnosticResult['details']): CheckResult =>
+    details.forceWasm
+        ? {
+              passed: false,
+              result: {
+                  available: false,
+                  reason: 'force-wasm-override',
+                  message: 'WebLLM is disabled because Force WASM mode is active in Settings.',
+                  details,
+              },
+          }
+        : { passed: true }
+
+const checkSecureContext = (details: WebLlmDiagnosticResult['details']): CheckResult => {
+    const isSecure = resolveSecureContext()
+    details.secureContext = isSecure
+    if (!isSecure) {
+        return {
+            passed: false,
+            result: {
+                available: false,
+                reason: 'insecure-context',
+                message:
+                    'WebGPU requires a Secure Context (HTTPS or localhost). The current page is loaded over an insecure connection.',
+                details,
+            },
+        }
+    }
+    return { passed: true }
+}
+
+const checkWebGpuApi = (details: WebLlmDiagnosticResult['details']): CheckResult => {
+    if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
+        details.webGpuApiPresent = false
+        return {
+            passed: false,
+            result: {
+                available: false,
+                reason: 'no-webgpu-api',
+                message:
+                    'This browser does not support WebGPU. WebLLM requires Chrome 113+, Safari 26+, or Firefox 141+.',
+                details,
+            },
+        }
+    }
+    details.webGpuApiPresent = true
+    return { passed: true }
+}
+
+const probeGpuAdapter = async (
+    details: WebLlmDiagnosticResult['details'],
+): Promise<CheckResult> => {
+    try {
+        const gpu = navigator.gpu as GPU
+        const adapter = await Promise.race([
+            gpu.requestAdapter({ powerPreference: 'high-performance' }),
+            new Promise<null>((resolve) =>
+                setTimeout(() => resolve(null), ADAPTER_REQUEST_TIMEOUT_MS),
+            ),
+        ])
+
+        if (!adapter) {
+            return {
+                passed: false,
+                result: {
+                    available: false,
+                    reason: 'no-gpu-adapter',
+                    message:
+                        'No compatible GPU adapter found. The GPU may not support Direct3D 12, Metal, or Vulkan 1.0+.',
+                    details,
+                },
+            }
+        }
+
+        details.adapterAcquired = true
+        details.adapterDescription =
+            (adapter as unknown as { info?: { description?: string } }).info?.description ?? null
+
+        const maxBufferBytes = (adapter.limits as GPUSupportedLimits).maxBufferSize ?? 0
+        const vramMB = maxBufferBytes > 0 ? Math.round(maxBufferBytes / (1024 * 1024)) : null
+        details.vramMB = vramMB
+
+        if (vramMB !== null) {
+            details.vramSufficient = vramMB >= MIN_VRAM_FOR_WEBLLM_MB
+            if (!details.vramSufficient) {
+                return {
+                    passed: false,
+                    result: {
+                        available: false,
+                        reason: 'vram-insufficient',
+                        message: `Insufficient VRAM: ${vramMB}MB detected, ${MIN_VRAM_FOR_WEBLLM_MB}MB required. The browser may be using an integrated GPU instead of the dedicated graphics card.`,
+                        details,
+                    },
+                }
+            }
+        }
+
+        return { passed: true }
+    } catch (error) {
+        return { passed: false, result: buildProbeErrorResult(error, details) }
+    }
+}
+
 /**
  * Run a comprehensive diagnostic to determine WebLLM availability.
  * Safe to call from any context — gracefully handles all failures.
@@ -98,87 +203,23 @@ export const diagnoseWebLlm = async (options?: {
         browserInfo: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
     }
 
-    // 1. Force WASM override check
-    if (options?.forceWasm) {
-        return {
-            available: false,
-            reason: 'force-wasm-override',
-            message: 'WebLLM is disabled because Force WASM mode is active in Settings.',
-            details,
-        }
+    // Sequential validation checks
+    const syncChecks: ReadonlyArray<(d: WebLlmDiagnosticResult['details']) => CheckResult> = [
+        checkForceWasm,
+        checkSecureContext,
+        checkWebGpuApi,
+    ]
+
+    for (const check of syncChecks) {
+        const result = check(details)
+        if (!result.passed) return result.result
     }
 
-    // 2. Secure Context
-    const isSecure = resolveSecureContext()
-    details.secureContext = isSecure
-    if (!isSecure) {
-        return {
-            available: false,
-            reason: 'insecure-context',
-            message:
-                'WebGPU requires a Secure Context (HTTPS or localhost). The current page is loaded over an insecure connection.',
-            details,
-        }
-    }
+    // GPU adapter probe (async)
+    const gpuResult = await probeGpuAdapter(details)
+    if (!gpuResult.passed) return gpuResult.result
 
-    // 3. WebGPU API presence
-    if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
-        details.webGpuApiPresent = false
-        return {
-            available: false,
-            reason: 'no-webgpu-api',
-            message:
-                'This browser does not support WebGPU. WebLLM requires Chrome 113+, Safari 26+, or Firefox 141+.',
-            details,
-        }
-    }
-    details.webGpuApiPresent = true
-
-    // 4. GPU Adapter acquisition
-    try {
-        const gpu = navigator.gpu as GPU
-        const adapter = await Promise.race([
-            gpu.requestAdapter({ powerPreference: 'high-performance' }),
-            new Promise<null>((resolve) =>
-                setTimeout(() => resolve(null), ADAPTER_REQUEST_TIMEOUT_MS),
-            ),
-        ])
-
-        if (!adapter) {
-            return {
-                available: false,
-                reason: 'no-gpu-adapter',
-                message:
-                    'No compatible GPU adapter found. The GPU may not support Direct3D 12, Metal, or Vulkan 1.0+.',
-                details,
-            }
-        }
-
-        details.adapterAcquired = true
-        details.adapterDescription =
-            (adapter as unknown as { info?: { description?: string } }).info?.description ?? null
-
-        // 5. VRAM evaluation
-        const maxBufferBytes = (adapter.limits as GPUSupportedLimits).maxBufferSize ?? 0
-        const vramMB = maxBufferBytes > 0 ? Math.round(maxBufferBytes / (1024 * 1024)) : null
-        details.vramMB = vramMB
-
-        if (vramMB !== null) {
-            details.vramSufficient = vramMB >= MIN_VRAM_FOR_WEBLLM_MB
-            if (!details.vramSufficient) {
-                return {
-                    available: false,
-                    reason: 'vram-insufficient',
-                    message: `Insufficient VRAM: ${vramMB}MB detected, ${MIN_VRAM_FOR_WEBLLM_MB}MB required. The browser may be using an integrated GPU instead of the dedicated graphics card.`,
-                    details,
-                }
-            }
-        }
-    } catch (error) {
-        return buildProbeErrorResult(error, details)
-    }
-
-    // 6. Model profile check
+    // Model profile check
     if (!options?.modelProfileId) {
         return {
             available: false,
@@ -189,7 +230,6 @@ export const diagnoseWebLlm = async (options?: {
         }
     }
 
-    // All checks passed
     return {
         available: true,
         reason: 'active',

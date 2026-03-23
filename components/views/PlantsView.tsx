@@ -10,7 +10,7 @@ import { TipOfTheDay } from './plants/TipOfTheDay'
 import { DashboardSummary } from './plants/DashboardSummary'
 import { GrowStatsDashboard } from './plants/GrowStatsDashboard'
 import { TasksAndWarnings } from './plants/TasksAndWarnings'
-import { InlineStrainSelector } from './plants/InlineStrainSelector'
+import { InlineStrainSelector } from '@/components/common/InlineStrainSelector'
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge'
 
 // Lazy-loaded heavy sub-views (only rendered when needed)

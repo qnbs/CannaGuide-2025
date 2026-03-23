@@ -19,7 +19,6 @@ export default [
             'src-tauri/**',
             '**/*.cjs',
             'scripts/**',
-            'sw.js',
             'docker/**',
             'packages/iot-mocks/**',
             'apps/desktop/**',

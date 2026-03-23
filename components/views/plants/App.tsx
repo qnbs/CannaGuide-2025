@@ -120,7 +120,7 @@ const browserWindow = typeof window === 'undefined' ? null : window
 
 // --- Lazy Loaded Modals (not needed on initial render) ---
 const GrowSetupModal = lazy(() =>
-    import('@/components/views/plants/GrowSetupModal').then((m) => ({ default: m.GrowSetupModal })),
+    import('@/components/common/GrowSetupModal').then((m) => ({ default: m.GrowSetupModal })),
 )
 const GrowConfirmationModal = lazy(() =>
     import('@/components/views/plants/GrowConfirmationModal').then((m) => ({

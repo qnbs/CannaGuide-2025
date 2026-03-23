@@ -214,6 +214,18 @@ const mediumAdvice = (medium: string, lang: Language): string => {
         : 'Soil is more forgiving. Gentle adjustments and slower corrections are usually the best choice.'
 }
 
+const TREND_THRESHOLD = 0.15
+
+const formatTrendChange = (nutrient: string, delta: number, lang: Language): string => {
+    const label = Math.abs(delta).toFixed(2)
+    if (isGerman(lang)) {
+        const direction = delta > 0 ? 'steigt' : 'fällt'
+        return `${nutrient} ${direction} über die letzten Messungen um ${label}.`
+    }
+    const direction = delta > 0 ? 'risen' : 'fallen'
+    return `${nutrient} has ${direction} by ${label} across the recent readings.`
+}
+
 const summarizeTrend = (context: NutrientRecommendationContext, lang: Language): string | null => {
     if (context.readings.length < 2) {
         return null
@@ -225,31 +237,15 @@ const summarizeTrend = (context: NutrientRecommendationContext, lang: Language):
     const firstReading = orderedReadings[0]
     const lastReading = orderedReadings[orderedReadings.length - 1]
     if (!firstReading || !lastReading) return null
-    const ecDelta = lastReading.ec - firstReading.ec
-    const phDelta = lastReading.ph - firstReading.ph
-    const german = isGerman(lang)
 
-    const changes: string[] = []
-    if (Math.abs(ecDelta) >= 0.15) {
-        const ecDirectionDe = ecDelta > 0 ? 'steigt' : 'fällt'
-        const ecDirectionEn = ecDelta > 0 ? 'risen' : 'fallen'
-        const ecDeltaLabel = Math.abs(ecDelta).toFixed(2)
-        changes.push(
-            german
-                ? `EC ${ecDirectionDe} über die letzten Messungen um ${ecDeltaLabel}.`
-                : `EC has ${ecDirectionEn} by ${ecDeltaLabel} across the recent readings.`,
-        )
-    }
-    if (Math.abs(phDelta) >= 0.15) {
-        const phDirectionDe = phDelta > 0 ? 'steigt' : 'fällt'
-        const phDirectionEn = phDelta > 0 ? 'risen' : 'fallen'
-        const phDeltaLabel = Math.abs(phDelta).toFixed(2)
-        changes.push(
-            german
-                ? `pH ${phDirectionDe} über die letzten Messungen um ${phDeltaLabel}.`
-                : `pH has ${phDirectionEn} by ${phDeltaLabel} across the recent readings.`,
-        )
-    }
+    const checks: ReadonlyArray<{ nutrient: string; delta: number }> = [
+        { nutrient: 'EC', delta: lastReading.ec - firstReading.ec },
+        { nutrient: 'pH', delta: lastReading.ph - firstReading.ph },
+    ]
+
+    const changes = checks
+        .filter(({ delta }) => Math.abs(delta) >= TREND_THRESHOLD)
+        .map(({ nutrient, delta }) => formatTrendChange(nutrient, delta, lang))
 
     return changes.length > 0 ? changes.join(' ') : null
 }
@@ -558,90 +554,101 @@ const resolveVentilationPrice = (flags: EquipmentPromptFlags): number => {
     return flags.isBudget ? 120 : 190
 }
 
+const bilingual = (lang: Language, de: string, en: string): string => (isGerman(lang) ? de : en)
+
 const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommendation => {
     const flags = parseEquipmentPromptFlags(prompt)
-
     const tent = getTentConfig(flags.isLarge, flags.isBudget)
     const lightSetup = resolveLightSetup(flags)
-
     const ventilationName = getVentilationName(flags.wantsSmellControl, flags.isSilent)
     const ventilationRationale = getVentilationRationale(
         flags.wantsSmellControl,
         flags.isSilent,
         lang,
     )
-    const ventilationPrice = resolveVentilationPrice(flags)
-    const soilName = getSoilName(flags.prefersCoco, flags.prefersSoil, lang)
-    const nutrientName = getNutrientName(flags.prefersCoco, flags.isAuto, lang)
-    const extraName = getExtraName(flags.wantsSmellControl, flags.isBudget, lang)
-
-    const proTip = isGerman(lang)
-        ? 'Erst Klima und Licht stabilisieren, dann erst Dünger und Training schrittweise anpassen.'
-        : 'Stabilize climate and light first, then adjust nutrients and training in small steps.'
-
     const tentItem = tent[lang]
 
     return {
         tent: makeRecommendationItem(
             tentItem.name,
             tentItem.price,
-            isGerman(lang)
-                ? 'Ein Zelt in dieser Größe gibt genug Platz für Klima, Licht und Wartung.'
-                : 'This tent size gives enough room for climate control, lighting, and maintenance.',
+            bilingual(
+                lang,
+                'Ein Zelt in dieser Größe gibt genug Platz für Klima, Licht und Wartung.',
+                'This tent size gives enough room for climate control, lighting, and maintenance.',
+            ),
         ),
         light: makeRecommendationItem(
             lightSetup.name,
             flags.isBudget ? 180 : 320,
-            isGerman(lang)
-                ? 'Vollspektrum-LED ist effizient, dimmbar und für die meisten Setups flexibel.'
-                : 'A full-spectrum LED is efficient, dimmable, and flexible for most grows.',
+            bilingual(
+                lang,
+                'Vollspektrum-LED ist effizient, dimmbar und für die meisten Setups flexibel.',
+                'A full-spectrum LED is efficient, dimmable, and flexible for most grows.',
+            ),
             lightSetup.watts,
         ),
         ventilation: makeRecommendationItem(
             ventilationName,
-            ventilationPrice,
+            resolveVentilationPrice(flags),
             ventilationRationale,
         ),
         circulationFan: makeRecommendationItem(
-            isGerman(lang) ? 'Clip-Ventilator' : 'Clip-on circulation fan',
+            bilingual(lang, 'Clip-Ventilator', 'Clip-on circulation fan'),
             flags.isBudget ? 25 : 45,
-            isGerman(lang)
-                ? 'Ein kleiner Umluftventilator verhindert stehende Luft und stärkt die Stängel.'
-                : 'A small circulation fan prevents stale pockets and strengthens stems.',
+            bilingual(
+                lang,
+                'Ein kleiner Umluftventilator verhindert stehende Luft und stärkt die Stängel.',
+                'A small circulation fan prevents stale pockets and strengthens stems.',
+            ),
         ),
         pots: makeRecommendationItem(
-            isGerman(lang) ? 'Stofftöpfe 11 L' : '11 L fabric pots',
+            bilingual(lang, 'Stofftöpfe 11 L', '11 L fabric pots'),
             flags.isBudget ? 30 : 45,
-            isGerman(lang)
-                ? 'Stofftöpfe verbessern die Belüftung im Wurzelraum und reduzieren Überwässerungsrisiken.'
-                : 'Fabric pots improve root-zone aeration and reduce overwatering risk.',
+            bilingual(
+                lang,
+                'Stofftöpfe verbessern die Belüftung im Wurzelraum und reduzieren Überwässerungsrisiken.',
+                'Fabric pots improve root-zone aeration and reduce overwatering risk.',
+            ),
         ),
         soil: makeRecommendationItem(
-            soilName,
+            getSoilName(flags.prefersCoco, flags.prefersSoil, lang),
             flags.isBudget ? 35 : 55,
             flags.prefersCoco
-                ? isGerman(lang)
-                    ? 'Coco ist schnell reagierend und eignet sich gut für präzise Fütterung.'
-                    : 'Coco responds quickly and suits precise feeding.'
-                : isGerman(lang)
-                  ? 'Eine gute Erde verzeiht Fehler und ist für gemischte Setups am einfachsten.'
-                  : 'A good soil mix is forgiving and easiest for mixed setups.',
+                ? bilingual(
+                      lang,
+                      'Coco ist schnell reagierend und eignet sich gut für präzise Fütterung.',
+                      'Coco responds quickly and suits precise feeding.',
+                  )
+                : bilingual(
+                      lang,
+                      'Eine gute Erde verzeiht Fehler und ist für gemischte Setups am einfachsten.',
+                      'A good soil mix is forgiving and easiest for mixed setups.',
+                  ),
         ),
         nutrients: makeRecommendationItem(
-            nutrientName,
+            getNutrientName(flags.prefersCoco, flags.isAuto, lang),
             flags.isBudget ? 35 : 70,
-            isGerman(lang)
-                ? 'Beginne mit einem soliden Basisdünger und erhöhe nur nach messbaren Reaktionen.'
-                : 'Start with a solid base nutrient kit and increase only after measurable response.',
+            bilingual(
+                lang,
+                'Beginne mit einem soliden Basisdünger und erhöhe nur nach messbaren Reaktionen.',
+                'Start with a solid base nutrient kit and increase only after measurable response.',
+            ),
         ),
         extra: makeRecommendationItem(
-            extraName,
+            getExtraName(flags.wantsSmellControl, flags.isBudget, lang),
             flags.isBudget ? 35 : 85,
-            isGerman(lang)
-                ? 'Kleine Mess- und Kontrollwerkzeuge liefern den größten Nutzen pro investiertem Euro.'
-                : 'Small measurement and control tools deliver the best return per dollar spent.',
+            bilingual(
+                lang,
+                'Kleine Mess- und Kontrollwerkzeuge liefern den größten Nutzen pro investiertem Euro.',
+                'Small measurement and control tools deliver the best return per dollar spent.',
+            ),
         ),
-        proTip,
+        proTip: bilingual(
+            lang,
+            'Erst Klima und Licht stabilisieren, dann erst Dünger und Training schrittweise anpassen.',
+            'Stabilize climate and light first, then adjust nutrients and training in small steps.',
+        ),
     }
 }
 

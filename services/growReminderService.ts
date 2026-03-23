@@ -166,78 +166,97 @@ const notifyReminderBatch = async (
 }
 
 class GrowReminderService {
+    private _createReminder(
+        plant: Plant,
+        type: GrowReminder['type'],
+        title: string,
+        body: string,
+        severity: GrowReminder['severity'],
+        now: number,
+    ): GrowReminder {
+        return {
+            id: `${plant.id}-${type}`,
+            plantId: plant.id,
+            plantName: plant.name,
+            type,
+            title,
+            body,
+            severity,
+            dueAt: now,
+        }
+    }
+
+    private _getPlantReminders(plant: Plant, now: number): GrowReminder[] {
+        const reminders: GrowReminder[] = []
+        const stageVitals = PLANT_STAGE_DETAILS[plant.stage]?.idealVitals
+
+        if (stageVitals) {
+            const { min: minVpd, max: maxVpd } = stageVitals.vpd
+            if (plant.environment.vpd < minVpd || plant.environment.vpd > maxVpd) {
+                reminders.push(
+                    this._createReminder(
+                        plant,
+                        'vpd',
+                        `VPD alarm for ${plant.name}`,
+                        `Current VPD ${plant.environment.vpd.toFixed(2)} kPa is outside ${minVpd.toFixed(1)}-${maxVpd.toFixed(1)} kPa.`,
+                        'warning',
+                        now,
+                    ),
+                )
+            }
+        }
+
+        if (plant.medium.moisture < 38) {
+            reminders.push(
+                this._createReminder(
+                    plant,
+                    'watering',
+                    `Watering reminder: ${plant.name}`,
+                    `Soil moisture is ${Math.round(plant.medium.moisture)}%. Consider watering soon.`,
+                    plant.medium.moisture < 25 ? 'critical' : 'warning',
+                    now,
+                ),
+            )
+        }
+
+        if (
+            stageVitals?.ph &&
+            (plant.medium.ph < stageVitals.ph.min || plant.medium.ph > stageVitals.ph.max)
+        ) {
+            reminders.push(
+                this._createReminder(
+                    plant,
+                    'ph',
+                    `pH drift detected: ${plant.name}`,
+                    `Current pH ${plant.medium.ph.toFixed(1)} is outside ${stageVitals.ph.min.toFixed(1)}-${stageVitals.ph.max.toFixed(1)} for ${plant.stage.toLowerCase()}.`,
+                    'warning',
+                    now,
+                ),
+            )
+        }
+
+        const daysToHarvest = getDaysToHarvest(plant)
+        if (plant.stage === PlantStage.Harvest || daysToHarvest <= 7) {
+            reminders.push(
+                this._createReminder(
+                    plant,
+                    'harvest',
+                    `Harvest reminder: ${plant.name}`,
+                    daysToHarvest === 0
+                        ? 'Harvest window is open now.'
+                        : `Estimated harvest window in ${daysToHarvest} day(s).`,
+                    daysToHarvest <= 2 ? 'critical' : 'info',
+                    now,
+                ),
+            )
+        }
+
+        return reminders
+    }
+
     public buildReminders(plants: Plant[]): GrowReminder[] {
         const now = Date.now()
-
-        return plants.flatMap((plant) => {
-            const reminders: GrowReminder[] = []
-            const stageVitals = PLANT_STAGE_DETAILS[plant.stage]?.idealVitals
-
-            if (stageVitals) {
-                const minVpd = stageVitals.vpd.min
-                const maxVpd = stageVitals.vpd.max
-                if (plant.environment.vpd < minVpd || plant.environment.vpd > maxVpd) {
-                    reminders.push({
-                        id: `${plant.id}-vpd`,
-                        plantId: plant.id,
-                        plantName: plant.name,
-                        type: 'vpd',
-                        title: `VPD alarm for ${plant.name}`,
-                        body: `Current VPD ${plant.environment.vpd.toFixed(2)} kPa is outside ${minVpd.toFixed(1)}-${maxVpd.toFixed(1)} kPa.`,
-                        severity: 'warning',
-                        dueAt: now,
-                    })
-                }
-            }
-
-            if (plant.medium.moisture < 38) {
-                reminders.push({
-                    id: `${plant.id}-watering`,
-                    plantId: plant.id,
-                    plantName: plant.name,
-                    type: 'watering',
-                    title: `Watering reminder: ${plant.name}`,
-                    body: `Soil moisture is ${Math.round(plant.medium.moisture)}%. Consider watering soon.`,
-                    severity: plant.medium.moisture < 25 ? 'critical' : 'warning',
-                    dueAt: now,
-                })
-            }
-
-            if (
-                stageVitals?.ph &&
-                (plant.medium.ph < stageVitals.ph.min || plant.medium.ph > stageVitals.ph.max)
-            ) {
-                reminders.push({
-                    id: `${plant.id}-ph`,
-                    plantId: plant.id,
-                    plantName: plant.name,
-                    type: 'ph',
-                    title: `pH drift detected: ${plant.name}`,
-                    body: `Current pH ${plant.medium.ph.toFixed(1)} is outside ${stageVitals.ph.min.toFixed(1)}-${stageVitals.ph.max.toFixed(1)} for ${plant.stage.toLowerCase()}.`,
-                    severity: 'warning',
-                    dueAt: now,
-                })
-            }
-
-            const daysToHarvest = getDaysToHarvest(plant)
-            if (plant.stage === PlantStage.Harvest || daysToHarvest <= 7) {
-                reminders.push({
-                    id: `${plant.id}-harvest`,
-                    plantId: plant.id,
-                    plantName: plant.name,
-                    type: 'harvest',
-                    title: `Harvest reminder: ${plant.name}`,
-                    body:
-                        daysToHarvest === 0
-                            ? 'Harvest window is open now.'
-                            : `Estimated harvest window in ${daysToHarvest} day(s).`,
-                    severity: daysToHarvest <= 2 ? 'critical' : 'info',
-                    dueAt: now,
-                })
-            }
-
-            return reminders
-        })
+        return plants.flatMap((plant) => this._getPlantReminders(plant, now))
     }
 
     public buildReminderBatches(reminders: GrowReminder[]): GrowReminderBatch[] {

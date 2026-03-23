@@ -2,19 +2,29 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Newer Session-Closure Docs (2026-03-22)
+## Latest Session (2026-03-23) — CI/CD Repair + Full Repo Audit
 
-Fuer die aktuelle Fortsetzungsbasis nach den Sonar-/Strains-/Export-Wellen siehe:
+**Status: CI green, Scorecard green, Deploy running.**
 
-- `docs/session-activity-review-2026-03-23.md`
-- `docs/session-activity-todo-2026-03-23.md`
+Primaere Resultate:
 
-- `docs/session-activity-review-2026-03-22.md`
-- `docs/session-activity-todo-2026-03-22.md`
-- `docs/sonar-handoff-review-2026-03-21.md` (aktualisiert, Session-Close Delta)
-- `docs/sonar-handoff-todo-2026-03-21.md` (aktualisiert, Restfokus)
+- Alle 3 defekten Badges repariert (CI, Deploy, Scorecard)
+- 20 Workflows auditiert, alle SHA-gepinnt, alle mit Timeouts
+- Alle Config-Dateien auditiert, `engines` Feld in package.json ergaenzt
+- Docs aktualisiert (distribution.md, CONTRIBUTING.md, copilot-instructions.md)
+- Test-Baseline: **622 Tests, 75 Dateien, 0 Failures**
 
-Security-Fortsetzung (Dependabot + CodeQL Queue) ist in den beiden TODO/Review-Dateien jetzt explizit als eigener Cluster dokumentiert.
+Fuer Details:
+
+- `docs/session-activity-review-2026-03-23.md` — Vollstaendiger Review aller 3 Phasen
+- `docs/session-activity-todo-2026-03-23.md` — Priorisierte Folge-Aufgaben
+
+## Fruehere Sessions
+
+- `docs/session-activity-review-2026-03-22.md` / `docs/session-activity-todo-2026-03-22.md`
+- `docs/sonar-handoff-review-2026-03-21.md` / `docs/sonar-handoff-todo-2026-03-21.md`
+
+Security-Fortsetzung (Dependabot + CodeQL Queue) ist in den TODO-Dateien als eigener Cluster dokumentiert.
 
 Automatisierte Alert-Basis liegt in:
 

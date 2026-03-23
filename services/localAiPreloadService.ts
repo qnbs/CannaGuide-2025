@@ -2,6 +2,7 @@ import type { LocalAiPreloadReport } from './localAI'
 import { probeGpuVram, isVramInsufficient } from './localAiHealthService'
 import { setVramInsufficientOverride } from './localAIModelLoader'
 import { applyAdaptiveMode, isEcoMode } from './aiEcoModeService'
+import { secureRandom } from '@/utils/random'
 
 export type LocalAiPreloadState = 'idle' | 'preloading' | 'ready' | 'partial' | 'error'
 
@@ -130,7 +131,7 @@ const getLocalAiService = async () => {
 }
 
 const waitForRetryBackoff = async (attempt: number): Promise<void> => {
-    const jitter = Math.random() * 500
+    const jitter = secureRandom() * 500
     await new Promise((resolve) => setTimeout(resolve, 1500 * (attempt + 1) + jitter))
 }
 

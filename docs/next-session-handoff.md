@@ -2,22 +2,48 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-23) — CI/CD Repair + Full Repo Audit
+## Latest Session (2026-03-23, Late) — SonarCloud QG + Scorecard + Snyk
 
-**Status: CI green, Scorecard green, Deploy running.**
+**Status: CI green (622/622), Scorecard green, all tests passing.**
 
-Primaere Resultate:
+### Scorecard-Optimierung (Commit `a799a2c`)
 
-- Alle 3 defekten Badges repariert (CI, Deploy, Scorecard)
-- 20 Workflows auditiert, alle SHA-gepinnt, alle mit Timeouts
-- Alle Config-Dateien auditiert, `engines` Feld in package.json ergaenzt
-- Docs aktualisiert (distribution.md, CONTRIBUTING.md, copilot-instructions.md)
-- Test-Baseline: **622 Tests, 75 Dateien, 0 Failures**
+- Token-Permissions: alle 11 Workflows auf Job-Level write-Permissions migriert
+- Pinned-Dependencies: letzter unpinnter Action-SHA in security-scan.yml gefixed
+- Fuzzing: ClusterFuzzLite-Config angelegt (`.clusterfuzzlite/`, `cflite_pr.yml`)
+- Security-Policy: `SECURITY.md` erweitert (Supported Versions, Disclosure Timeline)
 
-Fuer Details:
+### SonarCloud Quality Gate Fixes (aktueller Commit)
 
-- `docs/session-activity-review-2026-03-23.md` — Vollstaendiger Review aller 3 Phasen
-- `docs/session-activity-todo-2026-03-23.md` — Priorisierte Folge-Aufgaben
+- **S2245 Weak PRNG (19 Hotspots):** Alle `Math.random()` durch `secureRandom()` (crypto.getRandomValues) ersetzt — neues Utility `utils/random.ts`, 15 Stellen in 9 Dateien
+- **S5852 ReDoS:** `commandService.ts` fuzzy-Regex mit 64-Zeichen-Limit abgesichert
+- **sonar-project.properties:** Test-Source-Pfade korrigiert (inline-Tests), `sonar.coverage.exclusions` fuer data/types/workers/locales/public, `sonar.test.inclusions` fuer fuzz-Tests
+- **Reliability:** `nutrientPlannerSlice.ts` Math.random() → crypto.randomUUID()
+
+### Snyk Docker Fix
+
+- **Dockerfile:** `RUN apk update && apk upgrade --no-cache` nach Build-Stage FROM eingefuegt — behebt zlib CVEs (Out-of-bounds Write CVSS 7.8, Improper Validation CVSS 5.5)
+
+### Verbleibende manuelle Schritte
+
+- **SonarCloud Hotspots Reviewed E (0.0%):** Security Hotspots muessen im SonarCloud-UI manuell reviewed/dismissed werden. Code-Fixes reduzieren die Anzahl, aber die Bewertung erfordert UI-Interaktion.
+- **Branch Protection:** Weiterhin Admin-PAT noetig fuer `main`-Protection.
+
+### Wichtige Dateien geaendert
+
+| Datei                                   | Aenderung                                              |
+| --------------------------------------- | ------------------------------------------------------ |
+| `utils/random.ts`                       | NEU: crypto-basierter Random-Ersatz fuer Math.random() |
+| `Dockerfile`                            | apk upgrade fuer zlib-CVE-Fix                          |
+| `sonar-project.properties`              | Test-Sources, Coverage-Exclusions                      |
+| `stores/slices/nutrientPlannerSlice.ts` | crypto.randomUUID() statt Math.random()                |
+| `services/commandService.ts`            | ReDoS-Schutz (Laengenlimit)                            |
+| 9 Dateien                               | Math.random() → secureRandom()                         |
+| 11 Workflows                            | Job-Level Permissions (Scorecard)                      |
+| `.clusterfuzzlite/`                     | ClusterFuzzLite-Config (NEU)                           |
+| `SECURITY.md`                           | Erweitert                                              |
+
+**Test-Baseline:** 622 Tests, 75 Dateien, 0 Failures
 
 ## Fruehere Sessions
 

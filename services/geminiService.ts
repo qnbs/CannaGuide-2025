@@ -25,6 +25,7 @@ import { apiKeyService } from '@/services/apiKeyService'
 import { growLogRagService } from '@/services/growLogRagService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
+import { secureRandom } from '@/utils/random'
 
 const formatPlantContextForPrompt = (
     plant: Plant,
@@ -972,7 +973,7 @@ PLANT CONTEXT:
     private resolveImageStyle(style: ImageStyle): Exclude<ImageStyle, 'random'> {
         if (style === 'random') {
             return (
-                availableStyles[Math.floor(Math.random() * availableStyles.length)] ?? 'botanical'
+                availableStyles[Math.floor(secureRandom() * availableStyles.length)] ?? 'botanical'
             )
         }
 

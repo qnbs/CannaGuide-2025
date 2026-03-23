@@ -4,6 +4,9 @@
 FROM node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617de04142dde7315e3bc0afa AS build
 WORKDIR /app
 
+# Patch OS-level vulnerabilities (e.g. zlib CVEs) before installing deps
+RUN apk update && apk upgrade --no-cache
+
 COPY package*.json ./
 RUN npm ci
 

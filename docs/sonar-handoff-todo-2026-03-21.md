@@ -1,8 +1,35 @@
-# Sonar Handoff TODO (Update 2026-03-22)
+# Sonar Handoff TODO (Update 2026-03-23)
 
 <!-- markdownlint-disable MD007 -->
 
-## Session-Close Update (neu)
+## Session-Update 2026-03-23 (SonarCloud QG + Scorecard)
+
+### SonarCloud Quality Gate Status
+
+- Security: A (0) (ok)
+- Reliability: B (49 issues) (!) — erfordert Dashboard-Inspektion
+- Maintainability: A (354 code smells)
+- Hotspots Reviewed: E (0.0%) (FAIL) — manuelles Review im SonarCloud-UI noetig
+- Coverage: 22.8% (sonar.coverage.exclusions jetzt konfiguriert)
+- Duplications: 1.8%
+
+### In dieser Runde erledigt (2026-03-23)
+
+- **S2245 (Weak PRNG):** ALLE 15 `Math.random()`-Stellen durch `secureRandom()` ersetzt (crypto.getRandomValues). Betroffen: breedingUtils.tsx, TipOfTheDay.tsx, DeepDiveModal.tsx, imageGenerationService.ts, plantSimulationService.ts, localAiPreloadService.ts, geminiService.ts, strainFactory.ts, localAiFallbackService.ts. Neues Utility: `utils/random.ts`.
+- **S2245 (IDs):** `nutrientPlannerSlice.ts` Math.random() → crypto.randomUUID()
+- **S5852 (ReDoS):** `commandService.ts` fuzzy-Regex mit 64-Zeichen-Limit abgesichert
+- **sonar-project.properties:** `sonar.tests` korrigiert (Inline-Tests), `sonar.test.inclusions` fuer fuzz-Tests, `sonar.coverage.exclusions` fuer data/types/workers/locales/public
+- **Dockerfile:** `apk upgrade` fuer zlib-CVE-Fix
+
+### Naechste Schritte fuer SonarCloud
+
+1. **Hotspots reviewen:** Alle Security Hotspots im SonarCloud-UI durchgehen und als Safe/Fixed markieren
+2. **Reliability B:** 49 Bug-Issues im Dashboard inspizieren — wahrscheinlich Non-null-Assertions, unreachable Code, etc.
+3. **Coverage erhoehen:** Neue Tests fuer services/ und stores/ (Ziel: >30%)
+
+---
+
+## Session-Close Update (2026-03-22)
 
 Seit dem letzten Zwischenstand wurden zusaetzlich abgeschlossen:
 

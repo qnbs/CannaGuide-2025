@@ -11,6 +11,7 @@ import {
 } from '@/types'
 import DOMPurify from 'dompurify'
 import type { ImageStyle, NutrientContext } from '@/types/aiProvider'
+import { secureRandom } from '@/utils/random'
 
 const isGerman = (lang: Language) => lang === 'de'
 
@@ -654,7 +655,7 @@ const AVAILABLE_STYLES: Exclude<ImageStyle, 'random'>[] = [
 
 const resolveStyle = (style: ImageStyle): Exclude<ImageStyle, 'random'> => {
     if (style === 'random') {
-        return AVAILABLE_STYLES[Math.floor(Math.random() * AVAILABLE_STYLES.length)] ?? 'botanical'
+        return AVAILABLE_STYLES[Math.floor(secureRandom() * AVAILABLE_STYLES.length)] ?? 'botanical'
     }
     return style as Exclude<ImageStyle, 'random'>
 }

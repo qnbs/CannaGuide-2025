@@ -58,7 +58,11 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
     const fallbackId =
         typeof globalThis.crypto?.randomUUID === 'function'
             ? globalThis.crypto.randomUUID()
-            : `unknown-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+            : `unknown-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(5)), (b) =>
+                  b.toString(36),
+              )
+                  .join('')
+                  .slice(0, 8)}`
 
     // Default genetic modifiers, derived deterministically from the strain name for consistency
     const defaultGeneticModifiers: GeneticModifiers = {

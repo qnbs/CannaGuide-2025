@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, memo } from 'react'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
+import { secureRandom } from '@/utils/random'
 
 export const TipOfTheDay: React.FC = memo(() => {
     const { t } = useTranslation()
@@ -14,7 +15,7 @@ export const TipOfTheDay: React.FC = memo(() => {
 
     useEffect(() => {
         if (allTips.length > 0) {
-            const randomIndex = Math.floor(Math.random() * allTips.length)
+            const randomIndex = Math.floor(secureRandom() * allTips.length)
             setTip(allTips[randomIndex])
         }
     }, [allTips])

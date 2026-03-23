@@ -6,6 +6,9 @@
 
 Fuer die aktuelle Fortsetzungsbasis nach den Sonar-/Strains-/Export-Wellen siehe:
 
+- `docs/session-activity-review-2026-03-23.md`
+- `docs/session-activity-todo-2026-03-23.md`
+
 - `docs/session-activity-review-2026-03-22.md`
 - `docs/session-activity-todo-2026-03-22.md`
 - `docs/sonar-handoff-review-2026-03-21.md` (aktualisiert, Session-Close Delta)
@@ -28,9 +31,9 @@ Automatisierte Alert-Basis liegt in:
   und in priorisierten Stellen bereits umgesetzt:
     - S5852-Fixes in `AddStrainModal.tsx`, `geneticsService.ts`, `listenerMiddleware.ts`
     - S2245-Fix in `GrowRoom3D.tsx` (`crypto.getRandomValues`)
-- Push-Gate-Blockierung durch commit-identity/signing wurde fuer lokale Sessions entschaerft:
-    - `scripts/check-commit-identity.mjs` arbeitet nun advisory fuer reine Signatur-/Lokalkonfig-Defizite,
-      blockiert aber weiterhin unsichere Author/Committer-Overrides.
+- Push-Gate-Blockierung durch commit-identity/signing wurde fuer lokale Sessions verstaerkt:
+    - `scripts/check-commit-identity.mjs` arbeitet standardmaessig im Enforce-Modus.
+    - Unsichere Author/Committer-Overrides (`GitHub`/`noreply`) werden jetzt fruehzeitig geblockt.
 - `README.md` Markdown-Probleme wurden geschlossen (Heading/Links/Codefence/ToC-Fragmente).
 
 Naechster Einstiegspunkt:

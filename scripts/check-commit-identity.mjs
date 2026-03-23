@@ -31,7 +31,8 @@ const committerEmail = process.env.GIT_COMMITTER_EMAIL || ''
 
 const issues = []
 const warnings = []
-const enforceIdentity = process.env.ENFORCE_COMMIT_IDENTITY === '1'
+const mode = process.env.CHECK_COMMIT_IDENTITY_MODE === 'warn' ? 'warn' : 'enforce'
+const enforceIdentity = mode === 'enforce'
 
 if (!userName || !userEmail) {
     warnings.push('git user.name/user.email are missing')
@@ -52,11 +53,7 @@ const hasUnsafeCommitterOverride =
     authorEmail === 'noreply@github.com'
 
 if (hasUnsafeCommitterOverride) {
-    if (enforceIdentity) {
-        issues.push('unsafe author/committer override detected (GitHub/noreply)')
-    } else {
-        warnings.push('unsafe author/committer override detected (GitHub/noreply)')
-    }
+    issues.push('unsafe author/committer override detected (GitHub/noreply)')
 }
 
 if (committerName && userName && committerName !== userName) {
@@ -110,9 +107,7 @@ if (warnings.length > 0) {
         warn(`- ${warningMessage}`)
     }
 
-    if (enforceIdentity) {
-        process.exit(1)
-    }
+    if (enforceIdentity) process.exit(1)
 }
 
 console.log('[check:commit-identity] OK')

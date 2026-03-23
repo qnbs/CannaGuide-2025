@@ -15,7 +15,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Mark stale items
-              uses: actions/stale@v9
+              uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639
               with:
                   stale-issue-message: 'This issue has been marked stale because there has been no recent activity.'
                   stale-pr-message: 'This pull request has been marked stale because there has been no recent activity.'

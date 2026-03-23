@@ -18,13 +18,13 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
             - name: Capture benchmark start
               run: echo "BENCHMARK_START=$(date +%s)" >> "$GITHUB_ENV"
 
             - name: Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -65,7 +65,7 @@ jobs:
 
             - name: Upload benchmark artifacts
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:
                   name: benchmark-artifacts
                   path: |

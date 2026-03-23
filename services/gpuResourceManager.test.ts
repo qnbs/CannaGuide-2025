@@ -43,10 +43,11 @@ describe('gpuResourceManager', () => {
         let resolved = false
         const pending = acquireGpu('image-gen').then(() => {
             resolved = true
+            return undefined
         })
 
         // Give microtask a chance to resolve (it shouldn't)
-        await new Promise((r) => setTimeout(r, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
 
         // image-gen should trigger eviction hook and acquire immediately
         // since no hook is set, it queues
@@ -107,11 +108,12 @@ describe('gpuResourceManager', () => {
         let imageGenAcquired = false
         const pending = acquireGpu('image-gen').then(() => {
             imageGenAcquired = true
+            return undefined
         })
 
         // Not resolved yet because no eviction hook & webllm holds lock
         // Actually with eviction hook not set, image-gen queues
-        await new Promise((r) => setTimeout(r, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
 
         releaseGpu('webllm')
         await pending

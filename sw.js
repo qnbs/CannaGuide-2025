@@ -7,7 +7,7 @@ const MANIFEST_HASH =
               .reduce((acc, entry) => {
                   const rev = typeof entry === 'string' ? entry : entry.revision || entry.url
                   let h = acc
-                  for (let i = 0; i < rev.length; i++) {
+                  for (let i = 0; i < rev.length; i += 1) {
                       h = ((h << 5) - h + rev.charCodeAt(i)) | 0
                   }
                   return h
@@ -129,12 +129,15 @@ self.addEventListener('activate', (event) => {
             .keys()
             .then((cacheNames) => {
                 return Promise.all(
-                    cacheNames.map((cacheName) => {
-                        if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME) {
+                    cacheNames
+                        .filter(
+                            (cacheName) =>
+                                cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME,
+                        )
+                        .map((cacheName) => {
                             console.debug('[SW] Deleting old cache:', cacheName)
                             return caches.delete(cacheName)
-                        }
-                    }),
+                        }),
                 )
             })
             .then(() => {
@@ -190,24 +193,24 @@ self.addEventListener('fetch', (event) => {
 
     if (request.mode === 'navigate') {
         event.respondWith(
-            fetch(request)
-                .then((networkResponse) => {
+            (async () => {
+                try {
+                    const networkResponse = await fetch(request)
                     if (
                         networkResponse &&
                         networkResponse.status === 200 &&
                         url.origin === self.location.origin
                     ) {
                         const responseToCache = networkResponse.clone()
-                        caches.open(CACHE_NAME).then((cache) => {
-                            cache.put(request, responseToCache)
-                        })
+                        const cache = await caches.open(CACHE_NAME)
+                        cache.put(request, responseToCache).catch(() => {})
                     }
                     return networkResponse
-                })
-                .catch(async () => {
+                } catch {
                     const cachedResponse = await caches.match(request)
                     return cachedResponse || offlineFallback
-                }),
+                }
+            })(),
         )
         return
     }
@@ -286,31 +289,29 @@ function openDB() {
  * Retrieves all queued actions from the offline store.
  * @returns {Promise<any[]>} A promise that resolves with an array of actions, including their DB keys.
  */
-function getQueuedActions() {
-    return openDB().then((db) => {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readonly')
-            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
-            const request = store.getAll()
-            const keysRequest = store.getAllKeys()
+async function getQueuedActions() {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readonly')
+        const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
+        const request = store.getAll()
+        const keysRequest = store.getAllKeys()
 
-            let items = []
-            let keys = []
+        let items = []
+        let keys = []
 
-            transaction.oncomplete = () => {
-                // Combine keys with items
-                const result = items.map((item, index) => ({ id: keys[index], ...item }))
-                resolve(result)
-            }
-            transaction.onerror = () => reject(transaction.error)
+        transaction.oncomplete = () => {
+            const result = items.map((item, index) => ({ id: keys[index], ...item }))
+            resolve(result)
+        }
+        transaction.onerror = () => reject(transaction.error)
 
-            request.onsuccess = () => {
-                items = request.result
-            }
-            keysRequest.onsuccess = () => {
-                keys = keysRequest.result
-            }
-        })
+        request.onsuccess = () => {
+            items = request.result
+        }
+        keysRequest.onsuccess = () => {
+            keys = keysRequest.result
+        }
     })
 }
 
@@ -319,15 +320,14 @@ function getQueuedActions() {
  * @param {number} id The primary key of the item to delete.
  * @returns {Promise<void>}
  */
-function deleteQueuedAction(id) {
-    return openDB().then((db) => {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
-            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
-            store.delete(id)
-            transaction.oncomplete = () => resolve()
-            transaction.onerror = () => reject(transaction.error)
-        })
+async function deleteQueuedAction(id) {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
+        const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
+        store.delete(id)
+        transaction.oncomplete = () => resolve()
+        transaction.onerror = () => reject(transaction.error)
     })
 }
 
@@ -345,52 +345,49 @@ function openReminderDB() {
     })
 }
 
-function replaceReminders(reminders) {
-    return openReminderDB().then((db) => {
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(REMINDER_STORE, 'readwrite')
-            const store = tx.objectStore(REMINDER_STORE)
-            const clearReq = store.clear()
+async function replaceReminders(reminders) {
+    const db = await openReminderDB()
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(REMINDER_STORE, 'readwrite')
+        const store = tx.objectStore(REMINDER_STORE)
+        const clearReq = store.clear()
 
-            clearReq.onsuccess = () => {
-                reminders.forEach((reminder) => {
-                    store.put({ ...reminder, lastNotifiedAt: reminder.lastNotifiedAt || 0 })
-                })
-            }
+        clearReq.onsuccess = () => {
+            reminders.forEach((reminder) => {
+                store.put({ ...reminder, lastNotifiedAt: reminder.lastNotifiedAt || 0 })
+            })
+        }
 
-            tx.oncomplete = () => resolve()
-            tx.onerror = () => reject(tx.error)
-        })
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
     })
 }
 
-function getStoredReminders() {
-    return openReminderDB().then((db) => {
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(REMINDER_STORE, 'readonly')
-            const store = tx.objectStore(REMINDER_STORE)
-            const req = store.getAll()
-            req.onsuccess = () => resolve(req.result || [])
-            req.onerror = () => reject(req.error)
-        })
+async function getStoredReminders() {
+    const db = await openReminderDB()
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(REMINDER_STORE, 'readonly')
+        const store = tx.objectStore(REMINDER_STORE)
+        const req = store.getAll()
+        req.onsuccess = () => resolve(req.result || [])
+        req.onerror = () => reject(req.error)
     })
 }
 
-function updateReminderNotificationTime(id, timestamp) {
-    return openReminderDB().then((db) => {
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(REMINDER_STORE, 'readwrite')
-            const store = tx.objectStore(REMINDER_STORE)
-            const getReq = store.get(id)
-            getReq.onsuccess = () => {
-                const existing = getReq.result
-                if (existing) {
-                    store.put({ ...existing, lastNotifiedAt: timestamp })
-                }
+async function updateReminderNotificationTime(id, timestamp) {
+    const db = await openReminderDB()
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(REMINDER_STORE, 'readwrite')
+        const store = tx.objectStore(REMINDER_STORE)
+        const getReq = store.get(id)
+        getReq.onsuccess = () => {
+            const existing = getReq.result
+            if (existing) {
+                store.put({ ...existing, lastNotifiedAt: timestamp })
             }
-            tx.oncomplete = () => resolve()
-            tx.onerror = () => reject(tx.error)
-        })
+        }
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
     })
 }
 
@@ -400,26 +397,26 @@ async function notifyDueReminders() {
 
     const now = Date.now()
 
-    for (const reminder of reminders) {
+    const dueReminders = reminders.filter((reminder) => {
         const dueAt = reminder.dueAt || now
         const lastNotifiedAt = reminder.lastNotifiedAt || 0
         const isDue = dueAt <= now
         const isCooledDown = now - lastNotifiedAt >= REMINDER_COOLDOWN_MS
+        return isDue && isCooledDown
+    })
 
-        if (!isDue || !isCooledDown) {
-            continue
-        }
-
-        await self.registration.showNotification(reminder.title || 'Grow Reminder', {
-            body: reminder.body || 'You have a pending grow reminder.',
-            icon: './icon.svg',
-            badge: './icon.svg',
-            tag: `grow-reminder-${reminder.id}`,
-            data: { plantId: reminder.plantId, reminderId: reminder.id },
-        })
-
-        await updateReminderNotificationTime(reminder.id, now)
-    }
+    await Promise.all(
+        dueReminders.map(async (reminder) => {
+            await self.registration.showNotification(reminder.title || 'Grow Reminder', {
+                body: reminder.body || 'You have a pending grow reminder.',
+                icon: './icon.svg',
+                badge: './icon.svg',
+                tag: `grow-reminder-${reminder.id}`,
+                data: { plantId: reminder.plantId, reminderId: reminder.id },
+            })
+            await updateReminderNotificationTime(reminder.id, now)
+        }),
+    )
 }
 
 /**
@@ -439,14 +436,16 @@ async function syncData() {
         console.debug(`[SW] Found ${queuedActions.length} action(s) to sync.`)
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
 
-        for (const action of queuedActions) {
-            const { id, ...actionData } = action
-            // Notify all open app windows so they can replay the action in Redux.
-            for (const client of clients) {
+        // Notify all open app windows about each action
+        queuedActions.forEach((action) => {
+            const { id: _id, ...actionData } = action
+            clients.forEach((client) => {
                 client.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData })
-            }
-            await deleteQueuedAction(id)
-        }
+            })
+        })
+
+        // Batch-delete all processed actions
+        await Promise.all(queuedActions.map((action) => deleteQueuedAction(action.id)))
         console.debug('[SW] All queued actions dispatched to clients.')
     } catch (error) {
         console.debug('[SW] Sync failed, will retry later.', error)

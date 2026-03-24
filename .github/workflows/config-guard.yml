@@ -1,0 +1,91 @@
+name: Config Guard
+
+on:
+    pull_request:
+        branches: [main]
+        paths:
+            - '.devcontainer/**'
+            - '.vscode/**'
+            - '**/devcontainer.json'
+            - '**/tasks.json'
+            - '**/settings.json'
+
+permissions:
+    contents: read
+
+jobs:
+    scan-config:
+        name: Scan Config Changes
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout PR
+              uses: actions/checkout@de0fac2e3c1112f476e07a5c46b0bfb33c0e4b70 # v6.0.2
+
+            - name: Scan for dangerous patterns
+              run: |
+                  set -euo pipefail
+                  FAILED=0
+
+                  echo "[scan] Scanning for dangerous patterns in config files..."
+
+                  # Patterns that indicate RCE attempts (external data exfiltration)
+                  DANGEROUS_PATTERNS=(
+                      'curl.*https?://[^l]'
+                      'wget.*https?://'
+                      'PROMPT_COMMAND'
+                      '/exfil'
+                      'user-secrets-envs'
+                      'GITHUB_TOKEN'
+                      'base64.*-d'
+                      'eval\s*\('
+                      '\$\(env\)'
+                      'nc\s+-'
+                      'bash\s+-c.*curl'
+                      'bash\s+-c.*wget'
+                  )
+
+                  # Allowlisted patterns (legit localhost health checks etc.)
+                  ALLOWLIST='localhost|127\.0\.0\.1|0\.0\.0\.0'
+
+                  # Files to scan
+                  CONFIG_FILES=$(find . -name 'devcontainer.json' -o -name 'tasks.json' -o -name 'settings.json' -o -path './.devcontainer/*.sh' -o -path './.devcontainer/*.mjs' 2>/dev/null || true)
+
+                  for file in $CONFIG_FILES; do
+                      [ -f "$file" ] || continue
+                      for pattern in "${DANGEROUS_PATTERNS[@]}"; do
+                          if grep -qEi "$pattern" "$file" 2>/dev/null; then
+                              # Filter out allowlisted matches (localhost etc.)
+                              MATCHES=$(grep -nEi "$pattern" "$file" 2>/dev/null | grep -vEi "$ALLOWLIST" || true)
+                              if [ -n "$MATCHES" ]; then
+                                  echo "[WARN] Suspicious pattern '$pattern' found in $file"
+                                  echo "$MATCHES"
+                                  FAILED=1
+                              fi
+                          fi
+                      done
+                  done
+
+                  # Check tasks.json for auto-execution
+                  if [ -f ".vscode/tasks.json" ]; then
+                      if grep -q '"runOn"' .vscode/tasks.json 2>/dev/null; then
+                          echo "[WARN] .vscode/tasks.json contains 'runOn' (auto-execution trigger)"
+                          FAILED=1
+                      fi
+                  fi
+
+                  # Check settings.json for terminal env injection
+                  if [ -f ".vscode/settings.json" ]; then
+                      if grep -q 'terminal.integrated.env' .vscode/settings.json 2>/dev/null; then
+                          echo "[WARN] .vscode/settings.json contains terminal environment overrides"
+                          FAILED=1
+                      fi
+                  fi
+
+                  if [ "$FAILED" -eq 0 ]; then
+                      echo "[PASS] No dangerous patterns detected"
+                  else
+                      echo ""
+                      echo "[FAIL] Dangerous patterns detected in config files!"
+                      echo "   Review these changes carefully before merging."
+                      exit 1
+                  fi

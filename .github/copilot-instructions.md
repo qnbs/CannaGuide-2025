@@ -23,7 +23,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **i18n:** i18next (EN + DE, 13 namespaces)
 - **Testing:** Vitest (622+ tests) + Playwright E2E + Playwright Component Tests + Stryker mutation
 - **Error Tracking:** Sentry (browser SDK)
-- **Security Scanning:** Semgrep, Gitleaks, Trojan-source, npm audit, Snyk, SonarCloud, GitGuardian, CodeAnt AI
+- **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, SonarCloud, GitGuardian, CodeAnt AI
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
 
 ### Project Structure
@@ -170,7 +170,7 @@ npx tsc --noEmit         # Type check
 npm run format           # Prettier format
 npm run lighthouse:ci    # Lighthouse audit
 npm run test:mutation    # Stryker mutation testing
-npm run security:scan    # Full security scan (semgrep, gitleaks, trivy, etc.)
+npm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
 ```
 
 ---

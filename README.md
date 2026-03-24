@@ -218,7 +218,7 @@ Defense-in-depth across multiple layers:
 | **Content Security Policy** | Hardened CSP across 4 delivery paths (Vite, index.html, Netlify, Tauri)                         |
 | **EXIF Stripping**          | Canvas re-encode removes GPS/metadata before AI transmission                                    |
 | **Access Gates**            | Age verification (KCanG §1), optional PIN lock, DSGVO consent                                   |
-| **SAST**                    | CodeQL (security-and-quality), Trivy filesystem scan, trojan-source scanner                     |
+| **SAST**                    | CodeQL (security-and-quality), Grype vulnerability scan, trojan-source scanner                  |
 | **Secret Scanning**         | Gitleaks, Semgrep                                                                               |
 | **External Links**          | `rel="noopener noreferrer"` on all external anchors                                             |
 | **Local-Only Mode**         | All outbound services check `isLocalOnlyMode()` before fetch                                    |
@@ -294,7 +294,7 @@ npm run security:scan    # Full security scan
 | Job                     | Description                                                                 |
 | ----------------------- | --------------------------------------------------------------------------- |
 | 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 622+ tests, production build |
-| 🛡 Security             | npm audit (critical), trojan-source scan, Trivy filesystem scan             |
+| 🛡 Security             | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
 | 🎭 E2E Tests            | Playwright Chromium (needs quality artifact)                                |
 | 🐳 Docker Compose + IoT | ESP32-mock + Tauri-mock healthcheck, sensor endpoint validation             |
 | 🖥 Tauri Build Check    | `cargo check` on ubuntu-22.04 with Linux deps                               |
@@ -346,7 +346,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 | Version  | Status      | Highlights                                                                                                                                                 |
 | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **v1.0** | ✅ Released | 700+ strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                    |
-| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 622+ tests, Tauri v2, Docker IoT mocks, CodeQL, Trivy |
+| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 622+ tests, Tauri v2, Docker IoT mocks, CodeQL, Grype |
 | **v1.2** | 🔄 Planned  | Additional languages (ES, FR, NL), nutrient automation, community marketplace, PDF reports                                                                 |
 | **v1.3** | 📋 Planned  | Additional IoT sensors, timelapse journal, strain comparison, 3D visualizations                                                                            |
 | **v1.4** | 📋 Planned  | Strain-scale program (2,000+ mid-term), infinite discovery feed (news, HD galleries), expanded practical guides and extraction education                   |
@@ -597,7 +597,7 @@ Defense-in-Depth über mehrere Schichten:
 | **Content Security Policy** | Gehärtete CSP über 4 Delivery-Pfade (Vite, index.html, Netlify, Tauri)                         |
 | **EXIF-Stripping**          | Canvas-Re-Encode entfernt GPS/Metadaten vor KI-Übertragung                                     |
 | **Zugangs-Gates**           | Altersverifikation (KCanG §1), optionale PIN-Sperre, DSGVO-Einwilligung                        |
-| **SAST**                    | CodeQL (Security-and-Quality), Trivy-Filesystem-Scan, Trojan-Source-Scanner                    |
+| **SAST**                    | CodeQL (Security-and-Quality), Grype-Vulnerability-Scan, Trojan-Source-Scanner                 |
 | **Secret-Scanning**         | Gitleaks, Semgrep                                                                              |
 | **Externe Links**           | `rel="noopener noreferrer"` auf allen externen Anchors                                         |
 | **Nur-Lokal-Modus**         | Alle ausgehenden Services prüfen `isLocalOnlyMode()` vor Fetch                                 |
@@ -668,7 +668,7 @@ npm run security:scan    # Vollständiger Sicherheits-Scan
 | Job                     | Beschreibung                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
 | 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 622+ Tests, Produktions-Build |
-| 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Trivy-Filesystem-Scan              |
+| 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
 | 🎭 E2E Tests            | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🐳 Docker Compose + IoT | ESP32-Mock + Tauri-Mock Healthcheck, Sensor-Endpunkt-Validierung             |
 | 🖥 Tauri Build Check    | `cargo check` auf ubuntu-22.04 mit Linux-Deps                                |
@@ -719,7 +719,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | Version  | Status            | Highlights                                                                                                                                                  |
 | -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                        |
-| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 622+ Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Trivy |
+| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 622+ Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype |
 | **v1.2** | 🔄 Geplant        | Weitere Sprachen (ES, FR, NL), Nährstoff-Automatisierung, Community-Marktplatz, PDF-Berichte                                                                |
 | **v1.3** | 📋 Geplant        | Weitere IoT-Sensoren, Zeitraffer-Journal, Sorten-Vergleich, 3D-Visualisierungen                                                                             |
 | **v1.4** | 📋 Geplant        | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen        |

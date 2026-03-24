@@ -148,6 +148,8 @@ npx tsc --noEmit
 
 - All third-party GitHub Actions **must** be pinned to a full 40-character commit SHA. No mutable tags (`@v4`, `@latest`).
 - All Dockerfile `FROM` directives **must** include an `@sha256:` digest.
+- New third-party actions require adding the owner to the repository's Actions allowlist (Settings > Actions > General).
+- Compromised tools are removed immediately and replaced with vetted alternatives (e.g., Trivy -> Grype).
 - See [`SECURITY.md`](SECURITY.md#supply-chain-security) for the full policy and rationale.
 
 ---

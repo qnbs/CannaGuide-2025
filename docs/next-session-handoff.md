@@ -2,87 +2,100 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-24) — SSH Signing Root Cause Fix + Security Hardening
+## Latest Session (2026-03-24) -- Grype Replacement + Repo Hardening + Session Closeout
 
 **Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
 
 ### Session Summary
 
-**Root Cause Analysis — Commit Signing Breakage:**
-Full forensic investigation of why commits oscillated between verified/unsigned/unknown_key over 3 days of development:
+Final comprehensive session completing the Trivy supply-chain incident response:
 
-1. **Mar 22, ~17:37:** AI copilot introduced `gpg.format=ssh` in `.git/config`, generated SSH signing key, registered as "codespaces-signing-2026-03-22" on GitHub. Flip-flopping between SSH/GPG→ some commits `unknown_key`.
-2. **Mar 23, 08:08–08:41:** 3 more keys generated+registered (v1–v3), rapid key rotation → 5 commits `unknown_key` (signed before matching key was registered).
-3. **Mar 23, 08:46–13:04:** v3 key matched → all commits `valid` ✓.
-4. **Mar 23, 19:06+:** Codespace rebuild/hibernate wiped ephemeral `~/.ssh/signing_key`. Git still had `gpg.format=ssh` pointing to missing file. Pre-commit hook was advisory → **6 unsigned commits** slipped through.
-5. **Mar 24, 06:48:** Previous session removed `gpg.format=ssh` → `gh-gpgsign` activated, but its GPG key `B5690EEEBB952194` is not registered on GitHub → commit `d3ee092` shows `unknown_key`.
-
-**Core Problem:** Ephemeral Codespace storage + no key persistence mechanism + multiple AI sessions generating different keys without cleanup.
+- **Grype** (`anchore/scan-action@v7.4.0`, SHA-pinned) replaces Trivy in `docker.yml` (container image scan) and `security-full.yml` (filesystem scan)
+- **Branch protection hardened**: `enforce_admins` enabled (fixes Scorecard #188/#194)
+- **Actions restricted**: `allowed_actions` changed from "all" to curated allowlist (GitHub-owned + verified + 10 approved third-party orgs)
+- **SSH signing fixed**: Full root cause analysis, bootstrap script rewritten, key registered, verified on GitHub
+- **All Trivy references purged** from README, copilot-instructions, ROADMAP, package.json scripts
+- **All documentation updated**: SECURITY.md, CONTRIBUTING.md, security-alerts-status.md, next-session-handoff.md
 
 ### Changes Applied
 
-**SSH Signing Fix:**
+**Grype Integration (replaces Trivy):**
 
-- Deleted all 4 orphaned SSH signing keys from GitHub (IDs: 865589, 866156, 866186, 866188)
-- Registered current ED25519 key as "codespaces-cannaguide-2025" on GitHub
-- Git config: `gpg.format=ssh`, `user.signingkey=~/.ssh/signing_key`, `commit.gpgsign=true`
-- Verified: `Good "git" signature for 155236708+qnbs@users.noreply.github.com with ED25519 key`
+- `docker.yml`: Grype container image scan after Docker build + SARIF upload to Security tab
+- `security-full.yml`: New Grype filesystem scan job + SARIF upload
+- `ci.yml` + `security-scan.yml`: Updated comments (Grype reference, no separate step needed -- npm audit + Snyk + CodeQL cover filesystem)
+- `package.json`: `security:trivy` script -> `security:grype` (grype CLI for local runs)
+- `.github/copilot-instructions.md`: Updated security scanning list
 
-**Bootstrap Script Rewrite (`scripts/devcontainer/bootstrap-git-signing.mjs`):**
+**Repo Settings Hardening (via PAT):**
 
-- Auto-generates ED25519 signing key if none exists on Codespace rebuild
-- Creates `~/.ssh/allowed_signers` for local verification
-- Auto-registers key on GitHub via `gh ssh-key add` (graceful fallback if scope missing)
-- Checks if key already registered (avoids duplicates)
-- Neutralises `GIT_COMMITTER_NAME=GitHub` / `GIT_COMMITTER_EMAIL=noreply@github.com` overrides in `~/.bashrc`
-- Standardised key path: `~/.ssh/signing_key` (replaces old v1/v2/v3 naming chaos)
+- `enforce_admins`: **true** (was false) -- admins now follow same branch protection rules
+- `allowed_actions`: **selected** with curated allowlist:
+    - GitHub-owned + verified marketplace creators
+    - Explicitly: `anchore/*`, `gitleaks/*`, `ossf/*`, `snyk/*`, `SonarSource/*`, `Swatinem/*`, `dtolnay/*`, `google/clusterfuzzlite/*`, `peter-evans/*`, `tauri-apps/*`
 
-**Repo Security Hardening (via PAT audit):**
+**Documentation Updates:**
 
-- Secret scanning: enabled (push protection active)
-- Dependabot security updates: enabled
-- Default workflow token: read-only (least privilege) ✓
-- All 27 actions: SHA-pinned ✓, all 5 Dockerfiles: digest-pinned ✓
-- Branch protection: signed commits required, linear history, no force pushes ✓
+- `SECURITY.md`: Enhanced "Removed Tools" with Grype replacement details; new "Actions Allowlist" subsection
+- `CONTRIBUTING.md`: Added 2 new supply-chain rules (allowlist + replacement policy)
+- `README.md`: All 6 Trivy mentions replaced (EN + DE: SAST table, CI jobs table, v1.1 changelog)
+- `ROADMAP.md`: Trivy -> Grype
+- `docs/security-alerts-status.md`: New "Trivy Removal & Grype Replacement" section with full migration table
+- `docs/next-session-handoff.md`: This section
 
-### Repo Settings Audit Results
+**SSH Signing (carried forward from earlier in session):**
 
-| Setting                         | Status      | Notes                                            |
-| ------------------------------- | ----------- | ------------------------------------------------ |
-| `required_signatures`           | ✅ enabled  | Signed commits required on main                  |
-| `enforce_admins`                | ⚠ false     | Admin bypasses protections — Scorecard #188/#194 |
-| `required_status_checks`        | ✅ strict   | quality + ci-status required                     |
-| `required_pull_request_reviews` | ✅ 1 review | dismiss stale, codeowner, last push approval     |
-| `required_linear_history`       | ✅ enabled  | No merge commits                                 |
-| `allow_force_pushes`            | ✅ disabled | Force push blocked                               |
-| `default_workflow_permissions`  | ✅ read     | Least privilege                                  |
-| `allowed_actions`               | ⚠ all       | Consider restricting to verified creators        |
-| `secret_scanning`               | ✅ enabled  | Push protection active                           |
-| `secret_scanning_non_provider`  | ❌ disabled | Requires GitHub Advanced Security (Enterprise)   |
-| `dependabot_security_updates`   | ✅ enabled  | Auto PRs for vulnerable deps                     |
+- Bootstrap script rewrite (`scripts/devcontainer/bootstrap-git-signing.mjs`)
+- 4 orphaned SSH keys deleted from GitHub, current key registered
+- Verified: commits signed with ED25519 key, `verified: true` on GitHub
 
-### Historical Signing Damage (not fixable without force-push)
+### Repo Settings Audit (Final State)
 
-- **6 unsigned commits** (Mar 23 19:06 – Mar 24 00:52): `49807f4`, `aeb1ce3`, `8de9e15`, `6dde593`, `d261345`, and 1 more
-- **5 unknown_key commits** (Mar 23 08:08–08:41): Signed with SSH keys that were later deleted/replaced
-- **1 unknown_key commit** (`d3ee092`, Mar 24): Signed with gh-gpgsign GPG key not registered on GitHub
+| Setting                         | Status      | Notes                                        |
+| ------------------------------- | ----------- | -------------------------------------------- |
+| `required_signatures`           | ✅ enabled  | Signed commits required on main              |
+| `enforce_admins`                | ✅ enabled  | **Fixed this session** (was false)           |
+| `required_status_checks`        | ✅ strict   | quality + ci-status required                 |
+| `required_pull_request_reviews` | ✅ 1 review | dismiss stale, codeowner, last push approval |
+| `required_linear_history`       | ✅ enabled  | No merge commits                             |
+| `allow_force_pushes`            | ✅ disabled | Force push blocked                           |
+| `default_workflow_permissions`  | ✅ read     | Least privilege                              |
+| `allowed_actions`               | ✅ selected | **Fixed this session** (was "all")           |
+| `secret_scanning`               | ✅ enabled  | Push protection active                       |
+| `dependabot_security_updates`   | ✅ enabled  | Auto PRs for vulnerable deps                 |
 
-These cannot be fixed without `git rebase --force` which is blocked by branch protection. Future commits will all be verified ✓.
-
-### Immediate Next Tasks (P0 — Admin-Only)
+### Immediate Next Tasks
 
 - [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating, blocks QG)
 - [ ] CII-Best-Practices badge email verification (bestpractices.dev)
-- [ ] Branch Protection: enforce for admins (Scorecard #188/#194)
-- [ ] Consider: restrict `allowed_actions` to verified creators (currently "all")
-- [ ] Consider: store SSH signing key as Codespace secret for zero-downtime persistence
+- [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`, verify SARIF output in Security tab
+- [ ] Optional: store SSH signing key as Codespace secret for zero-downtime persistence
+- [ ] Optional: enable `sha_pinning_required` in Actions settings (currently false, all actions already SHA-pinned manually)
 
-> **📋 Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
-> Previous session review: `docs/session-activity-review-2026-03-24.md`
+> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
 
 ---
 
-## Previous Session (2026-03-24) — Trivy Supply-Chain Incident Response
+## Previous Session (2026-03-24) -- SSH Signing Root Cause Fix
+
+**Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
+
+### Session Summary
+
+Full forensic root cause analysis of commit signing breakage (3-day timeline):
+
+1. Mar 22: AI copilot introduced `gpg.format=ssh`, generated SSH keys
+2. Mar 23, 08-13h: 4 keys generated/registered (rapid rotation -> unknown_key commits)
+3. Mar 23, 19h+: Codespace rebuild wiped ephemeral key -> 6 unsigned commits
+4. Mar 24: Previous session tried gh-gpgsign -> GPG key not registered -> unknown_key
+
+Fix: Deleted 4 orphaned keys, registered current key, rewrote bootstrap script for persistence.
+
+Historical damage (12 commits unsigned/unknown_key) cannot be fixed without force-push (blocked by branch protection).
+
+---
+
+## Previous Session (2026-03-24) -- Trivy Supply-Chain Incident Response
 
 **Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
 

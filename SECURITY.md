@@ -73,4 +73,14 @@ These policies were adopted on 2026-03-24 in response to the [Trivy supply-chain
 
 ### Removed Tools
 
-- **Trivy** (`aquasecurity/trivy-action`): Removed from all workflows on 2026-03-24. Filesystem and vulnerability scanning is covered by CodeQL, Snyk, Semgrep, Gitleaks, and `npm audit`.
+- **Trivy** (`aquasecurity/trivy-action`): Removed from all workflows on 2026-03-24 due to the supply-chain attack ([GHSA-69fq-xp46-6x23](https://github.com/advisories/GHSA-69fq-xp46-6x23)). This was the second compromise of the Aqua Security service account within one month, rendering the entire Trivy ecosystem unreliable. Replaced by **Grype** (`anchore/scan-action`) for container image and filesystem scanning in `docker.yml` and `security-full.yml`. Remaining filesystem coverage is provided by CodeQL, Snyk, Semgrep, Gitleaks, and `npm audit`.
+
+### Actions Allowlist
+
+GitHub Actions are restricted to a curated allowlist (`allowed_actions: selected`):
+
+- GitHub-owned actions (e.g., `actions/*`, `github/*`, `docker/*`)
+- Verified marketplace creators
+- Explicitly approved third-party: `anchore/*`, `gitleaks/*`, `ossf/*`, `snyk/*`, `SonarSource/*`, `Swatinem/*`, `dtolnay/*`, `google/clusterfuzzlite/*`, `peter-evans/*`, `tauri-apps/*`
+
+Adding a new third-party action requires updating the allowlist via repository Settings > Actions > General.

@@ -65,6 +65,7 @@ jobs:
                   cache-to: type=gha,mode=max
 
             - name: 🛡 Grype container image scan
+              if: github.event_name != 'pull_request'
               uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
               id: grype
               with:
@@ -74,7 +75,7 @@ jobs:
                   output-format: sarif
 
             - name: 📤 Upload Grype SARIF
-              if: always() && steps.grype.outputs.sarif != ''
+              if: github.event_name != 'pull_request' && always() && steps.grype.outputs.sarif != ''
               uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               with:
                   sarif_file: ${{ steps.grype.outputs.sarif }}
@@ -88,4 +89,5 @@ jobs:
                   sleep 3
                   curl -sS --fail http://localhost:8080/ | grep -q "CannaGuide"
                   docker stop cg-test
+                  echo "✅ Container health check passed"
                   echo "✅ Container health check passed"

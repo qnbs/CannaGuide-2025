@@ -29,11 +29,11 @@ env:
     TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
-    # ─────────────────────────────────────────────────────────────────────
-    # Quality Gates — npm run for root tasks, turbo for workspace packages
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
+    # Quality Gates -- npm run for root tasks, turbo for workspace packages
+    # ---------------------------------------------------------------------
     quality:
-        name: 🔍 Quality Gates
+        name: Quality Gates
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -90,11 +90,11 @@ jobs:
                   path: dist/
                   retention-days: 1
 
-    # ─────────────────────────────────────────────────────────────────────
-    # Security — hard-fail, no continue-on-error
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
+    # Security -- hard-fail, no continue-on-error
+    # ---------------------------------------------------------------------
     security:
-        name: 🛡 Security
+        name: Security
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
@@ -124,11 +124,11 @@ jobs:
                     | tar -xz -C /usr/local/bin gitleaks
                   gitleaks detect --source . --no-banner --redact --config .gitleaks.toml -v
 
-    # ─────────────────────────────────────────────────────────────────────
-    # E2E — Playwright (reuses build artifact from quality)
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
+    # E2E -- Playwright (reuses build artifact from quality)
+    # ---------------------------------------------------------------------
     e2e:
-        name: 🎭 E2E Tests
+        name: E2E Tests
         needs: quality
         runs-on: ubuntu-latest
         timeout-minutes: 15
@@ -174,11 +174,11 @@ jobs:
     # Docker integration: covered by docker.yml (release) + e2e-integration.yml
     # Tauri build check: covered by tauri-build.yml (release)
 
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
     # CI Gate -- all jobs must pass
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
     ci-status:
-        name: ✅ CI Status
+        name: "\u2705 CI Status"
         if: always()
         needs: [quality, security, e2e]
         runs-on: ubuntu-latest

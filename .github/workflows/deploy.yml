@@ -1,4 +1,4 @@
-name: 🚀 Deploy to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
     workflow_run:
@@ -8,13 +8,13 @@ on:
     workflow_dispatch:
 
 # ---------------------------------------------------------------------------
-# Permissions – minimal surface, exactly what each job needs
+# Permissions -- minimal surface, exactly what each job needs
 # ---------------------------------------------------------------------------
 permissions:
     contents: read
 
 # ---------------------------------------------------------------------------
-# Concurrency – at most one build+deploy pipeline runs at a time.
+# Concurrency -- at most one build+deploy pipeline runs at a time.
 # A new push cancels the in-flight build, but NEVER cancels an active deploy
 # (deploy job has its own group without cancel-in-progress so Pages stays stable).
 # ---------------------------------------------------------------------------
@@ -30,11 +30,11 @@ env:
     PAGES_URL: https://qnbs.github.io/CannaGuide-2025/
 
 jobs:
-    # ─────────────────────────────────────────────────────────────────────────
-    # BUILD – lint, test, bundle
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # BUILD -- lint, test, bundle
+    # -------------------------------------------------------------------------
     build:
-        name: 🏗 Build
+        name: Build
         if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
         runs-on: ubuntu-latest
         permissions:
@@ -42,21 +42,21 @@ jobs:
             pages: write
             id-token: write
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 2 # needed for lint:changed (HEAD~1 diff)
 
-            - name: ⚙ Setup Node + install dependencies
+            - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            # ── Quality gates ───────────────────────────────────────────────────
-            - name: 🔒 Security audit
+            # -- Quality gates ---------------------------------------------------
+            - name: Security audit
               run: npm audit --audit-level=critical --omit=dev
 
-            - name: 🔍 Lint changed files
+            - name: Lint changed files
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'workflow_dispatch' && format('origin/{0}~1', github.ref_name) || '' }}
               run: |
@@ -64,45 +64,45 @@ jobs:
                   npm run lint:changed
                   echo "::endgroup::"
 
-            - name: 🔍 Lint strict scopes
+            - name: Lint strict scopes
               run: |
                   echo "::group::lint:scopes"
                   npm run lint:scopes
                   echo "::endgroup::"
 
-            - name: 🔬 Type check
+            - name: Type check
               run: npx tsc --noEmit
 
-            - name: 🧪 Unit tests
+            - name: Unit tests
               run: |
                   echo "::group::vitest"
                   npm run test -- --run --reporter=verbose
                   echo "::endgroup::"
 
-            # ── Build ───────────────────────────────────────────────────────────
-            - name: 🚀 Build for GitHub Pages
+            # -- Build -----------------------------------------------------------
+            - name: Build for GitHub Pages
               run: |
                   echo "::group::vite build"
                   npm run build:gh
                   echo "::endgroup::"
-                  echo "✅ Build complete – dist size: $(du -sh dist | cut -f1)"
+                  echo "[OK] Build complete -- dist size: $(du -sh dist | cut -f1)"
 
-            # ── Pages setup + upload ────────────────────────────────────────────
-            - name: 🌐 Configure Pages
+            # -- Pages setup + upload --------------------------------------------
+            - name: Configure Pages
               uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
 
-            - name: 📤 Upload Pages artifact
+            - name: Upload Pages artifact
               uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
               with:
                   path: ./dist
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # DEPLOY – publish to GitHub Pages
+    # -------------------------------------------------------------------------
+    # DEPLOY -- publish to GitHub Pages
     # Own concurrency group so a parallel build cancellation never kills a
     # running deploy (that would leave Pages in an inconsistent state).
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
     deploy:
-        name: 🌍 Deploy
+        name: Deploy
         needs: build
         runs-on: ubuntu-latest
         permissions:
@@ -116,34 +116,34 @@ jobs:
             name: github-pages
             url: ${{ steps.deployment.outputs.page_url }}
         steps:
-            - name: 🚀 Deploy to GitHub Pages
+            - name: Deploy to GitHub Pages
               id: deployment
               uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
 
-            - name: ✅ Deployed
-              run: echo "✅ Live at ${{ steps.deployment.outputs.page_url }}"
+            - name: Deployed
+              run: echo "[OK] Live at ${{ steps.deployment.outputs.page_url }}"
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # E2E – smoke-test the live Pages deployment
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # E2E -- smoke-test the live Pages deployment
+    # -------------------------------------------------------------------------
     e2e-pages:
-        name: 🎭 E2E Smoke Tests
+        name: E2E Smoke Tests
         needs: deploy
         runs-on: ubuntu-latest
-        # Post-deploy validation is advisory – failures should not block the
+        # Post-deploy validation is advisory -- failures should not block the
         # green checkmark on the commit.
         continue-on-error: true
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            - name: ⚙ Setup Node + install dependencies
+            - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            # Cache Playwright browser binaries (~200 MB) – key on Playwright version
-            - name: 💾 Cache Playwright Chromium
+            # Cache Playwright browser binaries (~200 MB) -- key on Playwright version
+            - name: Cache Playwright Chromium
               id: playwright-cache
               uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
               with:
@@ -152,11 +152,11 @@ jobs:
                   restore-keys: |
                       playwright-chromium-${{ runner.os }}-
 
-            - name: 🎭 Install Playwright browser
+            - name: Install Playwright browser
               if: steps.playwright-cache.outputs.cache-hit != 'true'
               run: npm run test:e2e:install:ci
 
-            - name: 🧪 Run E2E tests on deployed URL
+            - name: Run E2E tests on deployed URL
               env:
                   DEPLOY_BASE_URL: ${{ env.PAGES_URL }}
               run: |
@@ -164,7 +164,7 @@ jobs:
                   npm run test:e2e:deploy
                   echo "::endgroup::"
 
-            - name: 📊 Upload Playwright traces on failure
+            - name: Upload Playwright traces on failure
               if: failure()
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:
@@ -172,31 +172,31 @@ jobs:
                   path: test-results/
                   retention-days: 7
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # LIGHTHOUSE – audit the live Pages deployment
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # LIGHTHOUSE -- audit the live Pages deployment
+    # -------------------------------------------------------------------------
     lighthouse:
-        name: 🔆 Lighthouse
+        name: Lighthouse
         needs: deploy
         runs-on: ubuntu-latest
         continue-on-error: true
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            - name: ⚙ Setup Node + install dependencies
+            - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: 🔆 Lighthouse CI (live URL)
+            - name: Lighthouse CI (live URL)
               run: |
                   npx @lhci/cli autorun \
                     --collect.url=${{ env.PAGES_URL }} \
                     --collect.numberOfRuns=3 \
                     --upload.target=temporary-public-storage
 
-            - name: 📊 Upload Lighthouse report
+            - name: Upload Lighthouse report
               if: always()
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:

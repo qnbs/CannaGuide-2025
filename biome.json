@@ -9,7 +9,6 @@
             "!!**/node_modules",
             "!!**/test-results",
             "!!**/artifacts",
-            "!!**/.stryker-tmp",
             "!!**/.lighthouseci"
         ]
     },

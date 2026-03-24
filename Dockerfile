@@ -27,6 +27,7 @@ USER 65532
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD ["nginx", "-t"]
+    CMD ["/usr/sbin/nginx", "-t"]
 
-CMD ["nginx", "-g", "daemon off;"]
+# Chainguard nginx has ENTRYPOINT ["/usr/sbin/nginx"] — CMD provides args only
+CMD ["-g", "daemon off;"]

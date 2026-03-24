@@ -115,7 +115,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                   |
 | **i18n**           | i18next 25                           | EN/DE, 13 namespaces                        |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**        | Vitest 4.1, Playwright 1.58, Stryker | 622+ unit, E2E, mutation tests              |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 622+ unit, E2E, component tests             |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay              |
 | **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                      |
 | **Mobile**         | Capacitor                            | iOS/Android wrapper                         |
@@ -252,7 +252,6 @@ npm run build            # Production build
 npm test                 # Vitest unit/integration (622+ tests)
 npm run test:e2e         # Playwright E2E
 npm run test:ct          # Playwright component tests
-npm run test:mutation    # Stryker mutation testing
 npm run lint             # ESLint changed files
 npm run lint:full        # ESLint entire project
 npx tsc --noEmit         # Type check
@@ -311,7 +310,6 @@ npm run security:scan    # Full security scan
 | Tauri Build             | release tags     | Cross-platform desktop builds                       |
 | Capacitor Build         | release tags     | iOS/Android builds                                  |
 | Docker                  | release tags     | Container image                                     |
-| Mutation Tests          | push to main     | Stryker mutation testing                            |
 | Strains Daily Update    | cron             | Automated strain data refresh                       |
 | Renovate                | bot              | Dependency updates                                  |
 
@@ -494,7 +492,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 25                           | EN/DE, 13 Namensräume                         |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58, Stryker | 622+ Unit-, E2E-, Mutations-Tests             |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 622+ Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 | **Desktop**        | Tauri v2 (Rust)                      | Nativer Desktop-Wrapper                       |
 | **Mobil**          | Capacitor                            | iOS/Android-Wrapper                           |
@@ -631,7 +629,6 @@ npm run build            # Produktions-Build
 npm test                 # Vitest Unit/Integration (622+ Tests)
 npm run test:e2e         # Playwright E2E
 npm run test:ct          # Playwright Komponenten-Tests
-npm run test:mutation    # Stryker Mutations-Tests
 npm run lint             # ESLint geänderte Dateien
 npm run lint:full        # ESLint gesamtes Projekt
 npx tsc --noEmit         # Type-Check
@@ -684,7 +681,6 @@ npm run security:scan    # Vollständiger Sicherheits-Scan
 | Tauri Build          | Release-Tags          | Cross-Platform Desktop-Builds            |
 | Capacitor Build      | Release-Tags          | iOS/Android-Builds                       |
 | Docker               | Release-Tags          | Container-Image                          |
-| Mutation Tests       | Push auf main         | Stryker Mutations-Tests                  |
 | Strains Daily Update | Cron                  | Automatische Sorten-Daten-Aktualisierung |
 | Renovate             | Bot                   | Dependency-Updates                       |
 

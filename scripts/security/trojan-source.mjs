@@ -7,7 +7,6 @@ const excludedPrefixes = [
     'artifacts/',
     'test-results/',
     '.lighthouseci/',
-    '.stryker-tmp/',
     '.git/',
 ]
 

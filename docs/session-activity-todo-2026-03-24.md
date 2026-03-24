@@ -67,7 +67,7 @@
 - **What:** Increase coverage from 22.8% to >30%
 - **Target services:** aiProviderService, aiService, exportService, strainService, commandService
 - **How:** Vitest + Playwright-CT for services/
-- **Impact:** Mutation testing (Stryker) stability, fewer regression risks
+- **Impact:** Quality gates stability, fewer regression risks
 - **Effort:** 1–2 days
 - **Status:** ⬜ Not started
 

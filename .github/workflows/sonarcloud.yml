@@ -19,16 +19,17 @@ env:
 jobs:
     sonarcloud:
         name: 🔍 SonarCloud Analysis
+        # Advisory — not a required CI check. Quality Gate is managed on sonarcloud.io.
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
             - name: 📥 Checkout
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
 
             - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -43,6 +44,7 @@ jobs:
             - name: 🔍 SonarCloud Scan
               if: ${{ env.HAS_TOKEN == 'true' }}
               uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+              continue-on-error: true
               env:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -154,12 +154,12 @@ Blocker:            SonarCloud Hotspot Review (Admin UI), CII Badge (Email), Bra
 
 ### S2.2 — Test-Coverage auf >30 % steigern
 
-| Feld                    | Detail                                                          |
-| ----------------------- | --------------------------------------------------------------- |
-| **Was**                 | Gezielte Tests für unterabgedeckte Services schreiben           |
-| **Warum**               | Aktuell ~22–28 %; Stryker Mutation-Testing braucht solide Basis |
-| **Wie**                 | Vitest Unit-Tests + Playwright-CT für kritische Services        |
-| **Prioritäts-Services** |                                                                 |
+| Feld                    | Detail                                                    |
+| ----------------------- | --------------------------------------------------------- |
+| **Was**                 | Gezielte Tests für unterabgedeckte Services schreiben     |
+| **Warum**               | Aktuell ~22–28 %; solide Basis für Quality Gates benötigt |
+| **Wie**                 | Vitest Unit-Tests + Playwright-CT für kritische Services  |
+| **Prioritäts-Services** |                                                           |
 
 | Service             | Geschätzte Coverage | Ziel | Aufwand |
 | ------------------- | ------------------- | ---- | ------- |
@@ -464,7 +464,6 @@ npx prettier --check "**/*.{ts,tsx}" # Format-Check
 
 # Erweiterte Checks (pro Sprint)
 npx vitest run --coverage            # Coverage-Report (Ziel >30%)
-npm run test:mutation                 # Stryker Mutation-Testing
 npm run lighthouse:ci                 # Lighthouse Audit
 npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
 ```

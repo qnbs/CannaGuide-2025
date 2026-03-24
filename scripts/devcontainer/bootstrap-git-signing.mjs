@@ -78,11 +78,11 @@ try {
         // Only ensure commit.gpgsign is on and remove any SSH overrides from previous sessions.
         cleanSshSigningOverrides()
         gitSet('commit.gpgsign', 'true')
-        console.log(`${PREFIX} Codespaces detected — using native gh-gpgsign ✓`)
+        console.log(`${PREFIX} Codespaces detected -- using native gh-gpgsign`)
     } else {
         // Outside Codespaces: just enable signing (user must configure GPG/SSH themselves)
         gitSet('commit.gpgsign', 'true')
-        console.log(`${PREFIX} non-Codespaces environment — commit signing enabled ✓`)
+        console.log(`${PREFIX} non-Codespaces environment -- commit signing enabled`)
     }
 } catch (error) {
     console.error(`${PREFIX} failed:`, error instanceof Error ? error.message : String(error))

@@ -23,7 +23,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **i18n:** i18next (EN + DE, 13 namespaces)
 - **Testing:** Vitest (622+ tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
-- **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, SonarCloud, GitGuardian, CodeAnt AI
+- **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
 
 ### Project Structure
@@ -47,8 +47,8 @@ packages/iot-mocks/  # ESP32 sensor mock server (port 3001)
 scripts/             # Build/lint/merge scripts
 docker/              # nginx config, esp32-mock, tauri-mock
 docs/                # Developer guides, roadmap
-.github/             # 21 CI/CD workflows, issue templates
-.devcontainer/       # Codespaces/DevContainer config (IoT mocks auto-start)
+.github/             # 20 CI/CD workflows, issue templates
+.devcontainer/       # Codespaces DevContainer (Dockerfile-based build)
 ```
 
 ### Key Patterns
@@ -121,6 +121,17 @@ docs/                # Developer guides, roadmap
 - **`secureRandom()`** via `utils/random.ts` replaces `Math.random()` everywhere (Web Crypto)
 - **OpenSSF Scorecard**: 8.5/10 — branch protection, signed commits, pinned deps, SAST, fuzzing
 - **ClusterFuzzLite**: Continuous fuzzing via `cflite_pr.yml` on PRs
+- **Config Guard**: CI workflow scans devcontainer/vscode config changes for RCE patterns
+
+### Text Encoding (Mandatory -- Global Rule)
+
+- **ASCII-only** in ALL source files (`.ts`, `.tsx`, `.mjs`, `.js`, `.sh`, `.yml`, `.json`)
+- **No emojis, no Unicode symbols** in code, scripts, configs, or CI workflows
+- Reason: non-ASCII characters trigger `anti-trojan-source` false positives and complicate diffs
+- Use ASCII text markers in scripts/CI: `[OK]`, `[FAIL]`, `[WARN]`, `[INFO]`, `[PASS]`, `[SKIP]`
+- Use `--` instead of em-dash, `->` instead of arrows, `(ok)` instead of checkmarks
+- **Exceptions:** i18n translation files (`locales/`) and documentation (`*.md`, `docs/`) may use Unicode
+- **Enforcement:** `anti-trojan-source` scanner runs in CI (`security:trojan-source`) and pre-commit (lint-staged)
 
 ### AI Integration
 
@@ -155,6 +166,17 @@ docs/                # Developer guides, roadmap
 - Scopes: ai, plants, strains, equipment, knowledge, settings, help, genealogy, pwa, ci, security, ui, sentry
 - **Push workflow:** Direct pushes to `main` are blocked. Use `npm run pr:push` (or `node scripts/github/pr-push.mjs`) to push changes via automated PR → auto-merge → cleanup.
 - Branch protection: `enforce_admins=true`, PRs required (0 reviews, CI-gated), signed commits, linear history
+- Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
+
+### Dev Container
+
+- **Dockerfile-based build** in `.devcontainer/Dockerfile` (Playwright noble base image)
+- System deps (ripgrep, gh, jq) baked into image layer with apt cache cleanup
+- `postCreateCommand` in `.devcontainer/setup.sh` (npm ci, git signing, Playwright browsers)
+- `postStartCommand` in `.devcontainer/start.sh` (IoT mock servers health-checked)
+- `.devcontainer/.dockerignore` excludes node_modules, .git, dist, coverage
+- All `.devcontainer/` files under CODEOWNERS review
+- `remoteUser: root` (solo-dev Codespaces -- container isolation sufficient)
 
 ---
 
@@ -204,36 +226,40 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Important Files
 
-| File                                          | Purpose                                                    |
-| --------------------------------------------- | ---------------------------------------------------------- |
-| `index.tsx`                                   | App bootstrap, SW registration, safe recovery              |
-| `stores/store.ts`                             | Redux store creation, IndexedDB hydration                  |
-| `services/geminiService.ts`                   | Gemini API abstraction (all AI features)                   |
-| `services/aiProviderService.ts`               | Multi-provider AI routing                                  |
-| `services/aiService.ts`                       | Unified AI service (cloud + local routing)                 |
-| `services/localAI.ts`                         | Core local AI orchestration                                |
-| `services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard)      |
-| `services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)        |
-| `services/localAiEmbeddingService.ts`         | MiniLM embeddings, semantic ranking                        |
-| `services/localAiFallbackService.ts`          | Heuristic fallback for all AI features                     |
-| `services/localAiLanguageDetectionService.ts` | On-device EN/DE language detection                         |
-| `services/localAiImageSimilarityService.ts`   | CLIP image comparison, growth tracking                     |
-| `services/localAiHealthService.ts`            | Device classification, health monitoring                   |
-| `services/localAiPreloadService.ts`           | Model preload state management                             |
-| `services/localAiTelemetryService.ts`         | Inference performance tracking                             |
-| `services/localAiCacheService.ts`             | IndexedDB inference cache (LRU, TTL)                       |
-| `services/sentryService.ts`                   | Sentry error tracking initialization                       |
-| `services/communityShareService.ts`           | Anonymous Gist strain sharing (local-only guarded)         |
-| `services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)                   |
-| `services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)             |
-| `simulation.worker.ts`                        | VPD simulation Web Worker                                  |
-| `utils/random.ts`                             | `secureRandom()` — Web Crypto replacement for Math.random  |
-| `sw.js`                                       | Service Worker (precache + runtime caching)                |
-| `constants.ts`                                | App-wide constants                                         |
-| `types.ts`                                    | Core TypeScript types                                      |
-| `i18n.ts`                                     | i18next initialization                                     |
-| `vite.config.ts`                              | Build configuration                                        |
-| `scripts/github/pr-push.mjs`                  | Automated PR workflow (branch → PR → auto-merge → cleanup) |
-| `src-tauri/capabilities/default.json`         | Tauri v2 capability permissions (minimal set)              |
-| `apps/desktop/src/ipc.rs`                     | Tauri Rust IPC commands (image, sensor, sysinfo)           |
-| `.devcontainer/devcontainer.json`             | DevContainer config (IoT mocks, ports, extensions)         |
+| File                                          | Purpose                                                       |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| `index.tsx`                                   | App bootstrap, SW registration, safe recovery                 |
+| `stores/store.ts`                             | Redux store creation, IndexedDB hydration                     |
+| `services/geminiService.ts`                   | Gemini API abstraction (all AI features)                      |
+| `services/aiProviderService.ts`               | Multi-provider AI routing                                     |
+| `services/aiService.ts`                       | Unified AI service (cloud + local routing)                    |
+| `services/localAI.ts`                         | Core local AI orchestration                                   |
+| `services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard)         |
+| `services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)           |
+| `services/localAiEmbeddingService.ts`         | MiniLM embeddings, semantic ranking                           |
+| `services/localAiFallbackService.ts`          | Heuristic fallback for all AI features                        |
+| `services/localAiLanguageDetectionService.ts` | On-device EN/DE language detection                            |
+| `services/localAiImageSimilarityService.ts`   | CLIP image comparison, growth tracking                        |
+| `services/localAiHealthService.ts`            | Device classification, health monitoring                      |
+| `services/localAiPreloadService.ts`           | Model preload state management                                |
+| `services/localAiTelemetryService.ts`         | Inference performance tracking                                |
+| `services/localAiCacheService.ts`             | IndexedDB inference cache (LRU, TTL)                          |
+| `services/sentryService.ts`                   | Sentry error tracking initialization                          |
+| `services/communityShareService.ts`           | Anonymous Gist strain sharing (local-only guarded)            |
+| `services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)                      |
+| `services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)                |
+| `simulation.worker.ts`                        | VPD simulation Web Worker                                     |
+| `utils/random.ts`                             | `secureRandom()` — Web Crypto replacement for Math.random     |
+| `sw.js`                                       | Service Worker (precache + runtime caching)                   |
+| `constants.ts`                                | App-wide constants                                            |
+| `types.ts`                                    | Core TypeScript types                                         |
+| `i18n.ts`                                     | i18next initialization                                        |
+| `vite.config.ts`                              | Build configuration                                           |
+| `scripts/github/pr-push.mjs`                  | Automated PR workflow (branch -> PR -> auto-merge -> cleanup) |
+| `src-tauri/capabilities/default.json`         | Tauri v2 capability permissions (minimal set)                 |
+| `apps/desktop/src/ipc.rs`                     | Tauri Rust IPC commands (image, sensor, sysinfo)              |
+| `.devcontainer/devcontainer.json`             | DevContainer config (Dockerfile build, ports, extensions)     |
+| `.devcontainer/Dockerfile`                    | Dev container image (Playwright + system deps)                |
+| `.devcontainer/setup.sh`                      | postCreateCommand (npm ci, git signing, browsers)             |
+| `.devcontainer/start.sh`                      | postStartCommand (IoT mock servers)                           |
+| `.github/workflows/config-guard.yml`          | CI scan for RCE patterns in config files                      |

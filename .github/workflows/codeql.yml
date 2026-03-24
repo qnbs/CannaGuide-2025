@@ -41,7 +41,6 @@ jobs:
                           - node_modules/**
                           - coverage/**
                           - test-results/**
-                          - .stryker-tmp/**
 
             - name: Autobuild
               uses: github/codeql-action/autobuild@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3

@@ -18,7 +18,6 @@ updates:
                   - '@vitest/*'
                   - '@playwright/*'
                   - 'vitest'
-                  - '@stryker-mutator/*'
                   - '@testing-library/*'
                   - 'fake-indexeddb'
                   - 'msw'

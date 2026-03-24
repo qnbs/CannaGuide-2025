@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.tsbuildinfo
 coverage
-.stryker-tmp
 .lighthouseci
 benchmark-metrics.json
 *.local

@@ -14,7 +14,7 @@ Comprehensive CI pipeline audit and fix across all 21 workflows. Key changes:
 2. **Gitleaks Exit 127 Fix:** Replaced `gitleaks-action` (requires paid license) with direct CLI install + run in ci.yml, security-full.yml, and security-scan.yml. Uses pinned Gitleaks v8.24.3 binary.
 3. **Actions Updated to Node 22:** `actions/checkout` v4→v6.0.2 (`de0fac2e`) and `actions/setup-node` v4→v6.3.0 (`53b83947`) across all 21 workflows + composite action. Resolves Node.js 20 deprecation warnings.
 4. **SonarCloud Advisory:** Added `continue-on-error: true` to scan step. Expanded `sonar.coverage.exclusions` for untestable code. SonarCloud is informational, not a CI gate.
-5. **Stryker Threshold:** Reduced mutation score threshold from 95→80 (realistic for solo-dev).
+5. **Stryker Removed:** Fully removed mutation.yml, stryker.config.json, 3 @stryker-mutator/\* deps (132 packages), all config refs. Deferred to Q3 2026 — reduces CI attack surface and GitHub Actions minutes.
 6. **Scorecard Alerts:** #188 (Code-Review) expected for solo-dev (0 reviews). #194 (Branch-Protection) should clear on next Scorecard run with improved enforce_admins settings.
 
 ### Files Changed
@@ -28,8 +28,11 @@ Comprehensive CI pipeline audit and fix across all 21 workflows. Key changes:
 | `.github/workflows/sonarcloud.yml`               | continue-on-error on scan step, actions v6           |
 | `.github/workflows/*.yml` (all 21)               | checkout v6.0.2 + setup-node v6.3.0                  |
 | `.github/actions/setup-node-ci/action.yml`       | setup-node v6.3.0                                    |
-| `sonar-project.properties`                       | Expanded coverage exclusions                         |
-| `stryker.config.json`                            | thresholds.break: 95→80                              |
+| `sonar-project.properties`                       | Expanded coverage exclusions, removed .stryker-tmp   |
+| `stryker.config.json`                            | **Deleted** (Stryker fully removed)                  |
+| `.github/workflows/mutation.yml`                 | **Deleted** (Stryker fully removed)                  |
+| `package.json`                                   | Removed 3 @stryker-mutator deps + test:mutation      |
+| `.gitignore, .prettierignore, biome.json, etc.`  | Removed .stryker-tmp references                      |
 
 ### Immediate Next Tasks
 

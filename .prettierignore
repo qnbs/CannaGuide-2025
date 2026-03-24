@@ -4,5 +4,4 @@ coverage
 test-results
 artifacts
 .lighthouseci
-.stryker-tmp
 .turbo

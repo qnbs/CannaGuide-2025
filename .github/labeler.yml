@@ -27,7 +27,6 @@ tests:
     - vitest.setup.ts
     - playwright.config.ts
     - playwright-ct.config.ts
-    - stryker.config.json
 
 ai:
     - services/ai*.ts

@@ -1,4 +1,4 @@
-name: 🏗 Tauri Desktop Builds
+name: Tauri Desktop Builds
 
 on:
     push:
@@ -16,37 +16,37 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
     # Build frontend once, share across all Tauri matrix targets
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
     frontend:
-        name: 🌐 Build Frontend
+        name: Build Frontend
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            - name: ⚙ Setup Node + install dependencies
+            - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: 🏗 Build frontend
+            - name: Build frontend
               run: npm run build
 
-            - name: 📤 Upload dist artifact
+            - name: Upload dist artifact
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:
                   name: frontend-dist
                   path: dist/
                   retention-days: 1
 
-    # ─────────────────────────────────────────────────────────────────────
-    # Matrix builds — Rust only (frontend pre-built)
-    # ─────────────────────────────────────────────────────────────────────
+    # ---------------------------------------------------------------------
+    # Matrix builds -- Rust only (frontend pre-built)
+    # ---------------------------------------------------------------------
     build-tauri:
-        name: 🖥 ${{ matrix.target }}
+        name: ${{ matrix.target }}
         needs: frontend
         environment: desktop-release
         permissions:
@@ -70,20 +70,20 @@ jobs:
         runs-on: ${{ matrix.platform }}
         timeout-minutes: 45
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            - name: ⚙ Setup Node + install dependencies
+            - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: 🦀 Setup Rust
+            - name: Setup Rust
               uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7
               with:
                   targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-            - name: 📦 Rust cache
+            - name: Rust cache
               uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae
               with:
                   workspaces: src-tauri
@@ -98,16 +98,16 @@ jobs:
                   sudo apt-get update
                   sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-            - name: 📥 Download pre-built frontend
+            - name: Download pre-built frontend
               uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
               with:
                   name: frontend-dist
                   path: dist/
 
-            - name: 🖼 Generate Tauri icons (if missing)
+            - name: Generate Tauri icons (if missing)
               run: |
                   if [ ! -d "src-tauri/icons" ] || [ -z "$(ls -A src-tauri/icons 2>/dev/null)" ]; then
-                    echo "⚠ No icons found. Run 'npx tauri icon <source.png>' locally and commit the icons."
+                    echo "[WARN] No icons found. Run 'npx tauri icon <source.png>' locally and commit the icons."
                     echo "Using placeholder for CI..."
                     mkdir -p src-tauri/icons
                     node -e "
@@ -122,7 +122,7 @@ jobs:
                   fi
               shell: bash
 
-            - name: 🔨 Build Tauri app
+            - name: Build Tauri app
               uses: tauri-apps/tauri-action@fce9c6108b31ea247710505d3aaaa893ee6768d4
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -136,35 +136,35 @@ jobs:
                   tauriScript: npx tauri
 
     build-capacitor:
-        name: 📱 Capacitor bundle
+        name: Capacitor bundle
         needs: frontend
         runs-on: ubuntu-latest
         timeout-minutes: 15
         environment: mobile-release
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            - name: ⚙ Setup Node + install dependencies
+            - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: 📥 Download pre-built frontend
+            - name: Download pre-built frontend
               uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
               with:
                   name: frontend-dist
                   path: dist/
 
-            - name: 📦 Capacitor sync check
+            - name: Capacitor sync check
               run: |
                   if [ -d android ] || [ -d ios ]; then
                     npm run cap:sync
                   else
-                    echo "⚠ No native Capacitor projects are committed yet; uploading the web bundle as the release-ready fallback."
+                    echo "[WARN] No native Capacitor projects are committed yet; uploading the web bundle as the release-ready fallback."
                   fi
 
-            - name: 📤 Upload Capacitor-ready bundle
+            - name: Upload Capacitor-ready bundle
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:
                   name: capacitor-web-bundle

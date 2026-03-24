@@ -81,7 +81,6 @@
         "security:snyk": "snyk test --all-projects --severity-threshold=high",
         "security:grype": "grype dir:. --fail-on high --only-fixed --exclude ./node_modules --exclude ./dist --exclude ./coverage",
         "security:scorecard": "scorecard --local . --file-mode git --format json --output scorecard.json --show-details",
-        "security:alerts:report": "node ./scripts/security/update-alerts-report.mjs",
         "gate:push": "npm run check:commit-identity && npm run lint:changed && npm run typecheck && npm run test:changed && npm run prettier:check:changed",
         "pr:push": "node ./scripts/github/pr-push.mjs",
         "security:scan": "npm run security:prettier && npm run security:trojan-source && npm run security:eslint && npm run security:pre-commit && npm run security:secrets && npm run security:semgrep && npm run security:socket && npm run security:snyk && npm run security:grype && npm run security:scorecard",

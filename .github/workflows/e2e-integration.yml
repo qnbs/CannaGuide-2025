@@ -1,4 +1,4 @@
-name: 🌡 IoT Integration Tests
+name: IoT Integration Tests
 
 on:
     push:
@@ -26,28 +26,28 @@ env:
     NODE_VERSION: '20'
 
 jobs:
-    # ─────────────────────────────────────────────────────────────────────────
-    # NOTE: E2E tests removed — they run in ci.yml (quality → e2e job).
+    # -------------------------------------------------------------------------
+    # NOTE: E2E tests removed -- they run in ci.yml (quality -> e2e job).
     # This workflow focuses on IoT integration and Docker Compose validation.
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # IOT — ESP32 Mock Docker integration
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # IOT -- ESP32 Mock Docker integration
+    # -------------------------------------------------------------------------
     iot-integration:
-        name: 🌡 IoT Sensor Integration
+        name: IoT Sensor Integration
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            - name: ⚙ Setup Node + install dependencies
+            - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: 🌡 Start ESP32 Mock
+            - name: Start ESP32 Mock
               run: |
                   node packages/iot-mocks/src/server.mjs &
                   ESP32_PID=$!
@@ -55,18 +55,18 @@ jobs:
                   # Wait for health endpoint
                   for i in $(seq 1 15); do
                     if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
-                      echo "✅ ESP32 mock healthy"
+                      echo "[OK] ESP32 mock healthy"
                       break
                     fi
-                    echo "⏳ Waiting for ESP32 mock... ($i/15)"
+                    echo "[WAIT] Waiting for ESP32 mock... ($i/15)"
                     sleep 1
                   done
                   if ! curl -sf http://localhost:3001/health > /dev/null 2>&1; then
-                    echo "❌ ESP32 mock failed to start after 15s"
+                    echo "[FAIL] ESP32 mock failed to start after 15s"
                     exit 1
                   fi
 
-            - name: 🧪 Verify ESP32 sensor endpoint
+            - name: Verify ESP32 sensor endpoint
               run: |
                   RESPONSE=$(curl -sf http://localhost:3001/sensor)
                   echo "Sensor response: $RESPONSE"
@@ -75,10 +75,10 @@ jobs:
                     if (typeof data.temperature !== 'number') process.exit(1);
                     if (typeof data.humidity !== 'number') process.exit(1);
                     if (!data.timestamp) process.exit(1);
-                    console.log('✅ Sensor data valid:', data.temperature + '°C', data.humidity + '% RH');
+                    console.log('[OK] Sensor data valid:', data.temperature + 'degC', data.humidity + '% RH');
                   "
 
-            - name: 🧪 Test sensor value boundaries
+            - name: Test sensor value boundaries
               run: |
                   node -e "
                     async function test() {
@@ -92,16 +92,16 @@ jobs:
                       let allValid = true;
                       for (const r of readings) {
                         if (r.temperature < 15 || r.temperature > 35) {
-                          console.error('❌ Temperature out of range:', r.temperature);
+                          console.error('[FAIL] Temperature out of range:', r.temperature);
                           allValid = false;
                         }
                         if (r.humidity < 30 || r.humidity > 85) {
-                          console.error('❌ Humidity out of range:', r.humidity);
+                          console.error('[FAIL] Humidity out of range:', r.humidity);
                           allValid = false;
                         }
                       }
                       if (allValid) {
-                        console.log('✅ All', readings.length, 'readings within expected bounds');
+                        console.log('[OK] All', readings.length, 'readings within expected bounds');
                       } else {
                         process.exit(1);
                       }
@@ -109,17 +109,17 @@ jobs:
                     test().catch(e => { console.error(e); process.exit(1); });
                   "
 
-            - name: 🧪 Test health endpoint
+            - name: Test health endpoint
               run: |
                   HEALTH=$(curl -sf http://localhost:3001/health)
                   echo "$HEALTH" | node -e "
                     const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
                     if (data.status !== 'ok') process.exit(1);
                     if (typeof data.uptime !== 'number') process.exit(1);
-                    console.log('✅ Health OK, uptime:', data.uptime.toFixed(1) + 's');
+                    console.log('[OK] Health OK, uptime:', data.uptime.toFixed(1) + 's');
                   "
 
-            - name: 🧹 Cleanup ESP32 Mock
+            - name: Cleanup ESP32 Mock
               if: always()
               run: |
                   if [ -n "$ESP32_MOCK_PID" ]; then

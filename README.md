@@ -11,9 +11,6 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
-[![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
-[![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.securityscorecards.dev%2Fprojects%2Fgithub.com%2Fqnbs%2FCannaGuide-2025&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 [![Tests](https://img.shields.io/badge/tests-643%2B%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- AI Development Stack -->
@@ -301,17 +298,16 @@ npm run security:scan    # Full security scan
 
 ### Additional Workflows
 
-| Workflow                | Trigger          | Purpose                                             |
-| ----------------------- | ---------------- | --------------------------------------------------- |
-| CodeQL                  | push, PR, weekly | SAST analysis (JavaScript/TypeScript)               |
-| Security Alerts Handoff | daily, manual    | Auto-report open Dependabot + CodeQL alerts to docs |
-| Deploy                  | push to main     | GitHub Pages deployment + Lighthouse                |
-| E2E & Integration       | push, PR         | Standalone E2E suite                                |
-| Tauri Build             | release tags     | Cross-platform desktop builds                       |
-| Capacitor Build         | release tags     | iOS/Android builds                                  |
-| Docker                  | release tags     | Container image                                     |
-| Strains Daily Update    | cron             | Automated strain data refresh                       |
-| Renovate                | bot              | Dependency updates                                  |
+| Workflow             | Trigger          | Purpose                               |
+| -------------------- | ---------------- | ------------------------------------- |
+| CodeQL               | push, PR, weekly | SAST analysis (JavaScript/TypeScript) |
+| Deploy               | push to main     | GitHub Pages deployment + Lighthouse  |
+| E2E & Integration    | push, PR         | Standalone E2E suite                  |
+| Tauri Build          | release tags     | Cross-platform desktop builds         |
+| Capacitor Build      | release tags     | iOS/Android builds                    |
+| Docker               | release tags     | Container image                       |
+| Strains Daily Update | cron             | Automated strain data refresh         |
+| Renovate             | bot              | Dependency updates                    |
 
 ---
 
@@ -397,9 +393,6 @@ This transparent documentation of the development process reflects the project's
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
-[![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
-[![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.securityscorecards.dev%2Fprojects%2Fgithub.com%2Fqnbs%2FCannaGuide-2025&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 [![Tests](https://img.shields.io/badge/Tests-643%2B%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->

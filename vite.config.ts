@@ -164,8 +164,19 @@ export default defineConfig({
             provider: 'v8' as const,
             reporter: ['text', 'html', 'lcov'],
             reportsDirectory: './coverage',
-            include: ['services/**/*.ts', 'hooks/**/*.ts', 'stores/**/*.ts', 'components/**/*.tsx'],
+            include: [
+                'services/**/*.ts',
+                'hooks/**/*.ts',
+                'stores/**/*.ts',
+                'components/**/*.tsx',
+                'utils/**/*.ts',
+                'lib/**/*.ts',
+            ],
             exclude: ['tests/**', '**/*.d.ts'],
+            thresholds: {
+                lines: 25,
+                functions: 25,
+            },
         },
     },
 })

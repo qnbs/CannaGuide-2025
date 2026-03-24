@@ -2,55 +2,48 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-24) -- CI Pipeline Audit, Fix & Optimization
+## Latest Session (2026-03-24) -- Codespaces RCE Hardening + Signing Fix
 
-**Status: All CI blockers resolved. 3 non-required check failures fixed. Pipeline ready for full green run.**
+**Status: PR #49 merged. Codespaces signing fixed. Full RCE hardening applied.**
 
 ### Session Summary
 
-Comprehensive CI pipeline audit and fix across all 21 workflows. Key changes:
+Comprehensive Codespaces security hardening based on Orca Security RCE disclosure (Feb 2026). Fixes persistent SSH signing issue across Codespace sessions.
 
-1. **CodeQL TOCTOU Fixes (#195, #196):** Replaced `existsSync()` + read pattern with try/catch in `bootstrap-git-signing.mjs` — eliminates race conditions.
-2. **Gitleaks Exit 127 Fix:** Replaced `gitleaks-action` (requires paid license) with direct CLI install + run in ci.yml, security-full.yml, and security-scan.yml. Uses pinned Gitleaks v8.24.3 binary.
-3. **Actions Updated to Node 22:** `actions/checkout` v4→v6.0.2 (`de0fac2e`) and `actions/setup-node` v4→v6.3.0 (`53b83947`) across all 21 workflows + composite action. Resolves Node.js 20 deprecation warnings.
-4. **SonarCloud Advisory:** Added `continue-on-error: true` to scan step. Expanded `sonar.coverage.exclusions` for untestable code. SonarCloud is informational, not a CI gate.
-5. **Stryker Removed:** Fully removed mutation.yml, stryker.config.json, 3 @stryker-mutator/\* deps (132 packages), all config refs. Deferred to Q3 2026 — reduces CI attack surface and GitHub Actions minutes.
-6. **Scorecard Alerts:** #188 (Code-Review) expected for solo-dev (0 reviews). #194 (Branch-Protection) should clear on next Scorecard run with improved enforce_admins settings.
-7. **Labeler v6 Fix (NEW):** Converted `.github/labeler.yml` from invalid flat-string / `any:` format to proper `changed-files` + `any-glob-to-any-file` format required by `actions/labeler@v6`.
-8. **ClusterFuzzLite SHA Fix (NEW):** Corrected `google/clusterfuzzlite` SHA typo (`884713f...` → `884713a6c30a92e5e8544c39945cd7cb630abcd1`). v1 tag commit now resolves correctly.
-9. **Docker Environment Fix (NEW):** Removed `container-pr-validation` environment requirement for PR builds — PRs only build+test (no push), so no environment approval needed.
-10. **security-scan.yml Fix (NEW):** Eliminated double Gitleaks execution (was running both direct CLI and `npm run security:secrets` redundantly).
-11. **pr-push.mjs Hardening (NEW):** Addressed 9 review comments — added origin/main freshness check, cryptographic signature verification, auto-merge status handling, CI polling `.state` normalization, squash-safe `reset --hard` cleanup, improved failure messages.
-12. **bootstrap-git-signing.mjs Partial Key Fix (NEW):** Detects inconsistent key state (only private or only public key exists) and fails with clear recovery instructions instead of silently attempting overwrite.
+1. **SSH Signing → Codespaces GPG (CRITICAL FIX):** Root cause identified — `bootstrap-git-signing.mjs` generated ephemeral SSH keys that became "Unverified" across Codespace sessions. Fixed: In Codespaces, now uses native `gh-gpgsign` from `/etc/gitconfig` (GitHub's web-flow GPG key). Commits are permanently "Verified" regardless of session changes.
+2. **DevContainer Hardening:** Extracted inline `postCreateCommand` and `postStartCommand` from `devcontainer.json` into separate auditable scripts (`.devcontainer/setup.sh`, `.devcontainer/start.sh`). All under CODEOWNERS review.
+3. **CODEOWNERS Expansion:** Added explicit entries for RCE-critical paths: `/.devcontainer/`, `/.vscode/`, `/.github/workflows/`, `/.github/actions/`.
+4. **Config Guard Workflow (NEW):** New CI workflow `.github/workflows/config-guard.yml` scans PRs that modify devcontainer/vscode configs for dangerous patterns (curl/wget exfil, PROMPT_COMMAND injection, tasks.json auto-execution, env variable injection). Blocks merge on detection.
+5. **PR #49 Merged:** Resolved all 21 CI review threads, squash-merged the mandatory PR-based push workflow + CI fixes.
+6. **Branch Cleanup:** Deleted stale `automation/security-alerts-handoff` branch (2 closed PRs, no active use).
+
+### RCE Hardening Checklist (Completed)
+
+- [x] CODEOWNERS covers `.devcontainer/`, `.vscode/`, `.github/workflows/`
+- [x] Branch Protection: PRs required, CI-gated, signed commits, enforce_admins
+- [x] `.vscode/*` in `.gitignore` (no tasks.json/settings.json via PRs)
+- [x] devcontainer.json uses external scripts (auditable, CODEOWNERS-protected)
+- [x] Config Guard CI workflow scans for dangerous patterns
+- [x] No PROMPT_COMMAND, no eval, no curl/wget in config files
+- [x] Commit signing: Codespaces-native GPG (session-persistent)
 
 ### Files Changed
 
-| File                                             | Change                                               |
-| ------------------------------------------------ | ---------------------------------------------------- |
-| `scripts/devcontainer/bootstrap-git-signing.mjs` | TOCTOU fix: existsSync→try/catch                     |
-| `.github/workflows/ci.yml`                       | Gitleaks: action→CLI install, checkout/setup-node v6 |
-| `.github/workflows/security-full.yml`            | Gitleaks: action→CLI install, actions v6             |
-| `.github/workflows/security-scan.yml`            | Gitleaks: install before run, deduplicated execution |
-| `.github/workflows/sonarcloud.yml`               | continue-on-error on scan step, actions v6           |
-| `.github/workflows/cflite_pr.yml`                | ClusterFuzzLite SHA typo fix (v1 commit)             |
-| `.github/workflows/docker.yml`                   | Removed PR environment blocker                       |
-| `.github/labeler.yml`                            | Full v6 format migration (changed-files)             |
-| `scripts/github/pr-push.mjs`                     | Signature check, origin sync, state normalization    |
-| `scripts/devcontainer/bootstrap-git-signing.mjs` | Partial key state detection + clear error            |
-| `.github/workflows/*.yml` (all 21)               | checkout v6.0.2 + setup-node v6.3.0                  |
-| `.github/actions/setup-node-ci/action.yml`       | setup-node v6.3.0                                    |
-| `sonar-project.properties`                       | Expanded coverage exclusions, removed .stryker-tmp   |
-| `stryker.config.json`                            | **Deleted** (Stryker fully removed)                  |
-| `.github/workflows/mutation.yml`                 | **Deleted** (Stryker fully removed)                  |
-| `package.json`                                   | Removed 3 @stryker-mutator deps + test:mutation      |
-| `.gitignore, .prettierignore, biome.json, etc.`  | Removed .stryker-tmp references                      |
+| File                                             | Change                                                    |
+| ------------------------------------------------ | --------------------------------------------------------- |
+| `scripts/devcontainer/bootstrap-git-signing.mjs` | Complete rewrite: Codespaces GPG instead of ephemeral SSH |
+| `.devcontainer/devcontainer.json`                | Extracted commands to setup.sh/start.sh                   |
+| `.devcontainer/setup.sh`                         | **New** — postCreateCommand (auditable)                   |
+| `.devcontainer/start.sh`                         | **New** — postStartCommand (auditable)                    |
+| `CODEOWNERS`                                     | Added .devcontainer/, .vscode/, .github/workflows/        |
+| `.github/workflows/config-guard.yml`             | **New** — CI scan for dangerous config patterns           |
 
 ### Immediate Next Tasks
 
 - [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
 - [ ] CII-Best-Practices badge email verification (#187, bestpractices.dev)
 - [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`
-- [ ] Optional: store SSH signing key as Codespace secret for zero-downtime persistence
+- [x] ~~SSH signing key persistence across sessions~~ (fixed: native GPG)
 - [ ] Increase test coverage toward SonarCloud 80% target on new code
 - [ ] Monitor Scorecard #188/#194 after next run on main
 

@@ -23,6 +23,10 @@ const userName = readGitConfig('user.name')
 const userEmail = readGitConfig('user.email')
 const signEnabled = readGitConfig('commit.gpgsign')
 const signingKey = readGitConfig('user.signingkey')
+const gpgProgram = readGitConfig('gpg.program')
+
+// Codespaces uses gh-gpgsign which manages keys internally — no user.signingkey needed
+const isCodespacesGpg = gpgProgram.includes('gh-gpgsign')
 
 const authorName = process.env.GIT_AUTHOR_NAME || ''
 const authorEmail = process.env.GIT_AUTHOR_EMAIL || ''
@@ -42,7 +46,7 @@ if (signEnabled !== 'true') {
     warnings.push('commit signing is disabled (commit.gpgsign != true)')
 }
 
-if (!signingKey) {
+if (!signingKey && !isCodespacesGpg) {
     warnings.push('user.signingkey is not configured')
 }
 

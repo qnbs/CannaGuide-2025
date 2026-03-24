@@ -1,3 +1,25 @@
-* @qnbs
-.github/ @qnbs
-docs/ @qnbs
+# === CannaGuide-2025 CODEOWNERS ===
+
+# Solo-dev: @qnbs owns everything. Explicit entries for RCE-critical paths
+
+# ensure visibility in PR diffs when these files are changed.
+
+- @qnbs
+
+# RCE-critical: devcontainer lifecycle hooks (postCreateCommand etc.)
+
+/.devcontainer/ @qnbs
+
+# RCE-critical: VS Code auto-execution configs (tasks.json runOn, PROMPT_COMMAND)
+
+/.vscode/ @qnbs
+
+# CI/CD workflows — supply-chain attack surface
+
+/.github/workflows/ @qnbs
+/.github/actions/ @qnbs
+/.github/ @qnbs
+
+# Documentation
+
+/docs/ @qnbs

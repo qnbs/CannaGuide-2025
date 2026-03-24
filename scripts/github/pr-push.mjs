@@ -68,21 +68,28 @@ if (ghAuth.status !== 0) {
     process.exit(1)
 }
 
-// Ensure local main is up-to-date with origin
+// Ensure local main is not behind origin
 run('git', ['fetch', 'origin', 'main'], { silent: true })
-const localHead = capture('git', ['rev-parse', 'HEAD'])
-const remoteHead = capture('git', ['rev-parse', 'origin/main'])
-if (localHead !== remoteHead) {
-    console.error(
-        '\x1b[31m✖ Local main is out of sync with origin/main. Run: git pull --ff-only\x1b[0m',
-    )
+const behindCount = capture('git', ['rev-list', '--count', 'HEAD..origin/main'])
+if (behindCount !== '0') {
+    console.error('\x1b[31m✖ Local main is behind origin/main. Run: git pull --ff-only\x1b[0m')
+    process.exit(1)
+}
+
+const aheadCount = capture('git', ['rev-list', '--count', 'origin/main..HEAD'])
+if (aheadCount === '0') {
+    console.error('\x1b[31m✖ No local commits to push (main is up-to-date with origin).\x1b[0m')
     process.exit(1)
 }
 
 // Verify HEAD commit is cryptographically signed
+// G=Good, U=Unknown signer (valid sig), E=Can't check (Codespaces GPG, key not in local keyring)
+// All indicate the commit IS signed. Reject N=No signature, B=Bad signature.
 const sigStatus = capture('git', ['log', '-1', '--format=%G?'])
-if (sigStatus !== 'G') {
-    console.error('\x1b[31m✖ HEAD commit is not cryptographically signed. Aborting.\x1b[0m')
+if (!['G', 'U', 'E'].includes(sigStatus)) {
+    console.error(
+        `\x1b[31m✖ HEAD commit is not cryptographically signed (status: ${sigStatus}). Aborting.\x1b[0m`,
+    )
     process.exit(1)
 }
 

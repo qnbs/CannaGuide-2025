@@ -18,10 +18,10 @@ permissions:
 
 jobs:
     pr-fuzzing:
-        name: 🔀 PR Fuzzing
+        name: PR Fuzzing
         runs-on: ubuntu-latest
         timeout-minutes: 20
-        # ClusterFuzzLite has limited JavaScript support — sanitizers and
+        # ClusterFuzzLite has limited JavaScript support -- sanitizers and
         # config_utils may fail. Primary fuzzing via fuzzing.yml (fast-check).
         continue-on-error: true
         permissions:
@@ -32,7 +32,7 @@ jobs:
             matrix:
                 sanitizer: [none]
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Build Fuzzers (${{ matrix.sanitizer }})

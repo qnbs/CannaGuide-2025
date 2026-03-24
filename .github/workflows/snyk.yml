@@ -17,26 +17,26 @@ env:
 
 jobs:
     snyk:
-        name: 🛡 Snyk Security Scan
+        name: Snyk Security Scan
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
             contents: read
             security-events: write
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+            - name: Setup Node ${{ env.NODE_VERSION }}
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
-            - name: 📦 Install dependencies
+            - name: Install dependencies
               run: npm ci --prefer-offline
 
-            - name: 🛡 Snyk Open Source scan
+            - name: Snyk Open Source scan
               if: ${{ env.HAS_TOKEN == 'true' }}
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04
               continue-on-error: true
@@ -45,15 +45,15 @@ jobs:
               with:
                   args: --severity-threshold=high --sarif-file-output=snyk-results.sarif
 
-            - name: 📤 Upload Snyk SARIF
+            - name: Upload Snyk SARIF
               if: ${{ env.HAS_TOKEN == 'true' && always() }}
               uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
               with:
                   sarif_file: snyk-results.sarif
 
-            - name: ⚠ Skip notice
+            - name: Skip notice (no token)
               if: ${{ env.HAS_TOKEN != 'true' }}
-              run: echo "⚠ SNYK_TOKEN not configured – skipping Snyk scan. Install the Snyk GitHub App or add the token as a repository secret."
+              run: echo "[WARN] SNYK_TOKEN not configured -- skipping Snyk scan. Install the Snyk GitHub App or add the token as a repository secret."
 
         env:
             HAS_TOKEN: ${{ secrets.SNYK_TOKEN != '' }}

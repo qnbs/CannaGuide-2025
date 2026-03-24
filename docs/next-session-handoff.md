@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-24) -- Dockerfile Best Practices + CI Slimming
+## Latest Session (2026-03-25) -- Cleanup, Workflow ASCII, Test Coverage
+
+**Status: 669 tests in 79 files (all passing). Security handoff infrastructure removed. All 19 workflows ASCII-validated. Sonar docs consolidated. 3 new test files.**
+
+### Session Summary
+
+Comprehensive cleanup session: removed dead security-alerts-handoff infrastructure, enforced ASCII-only rule across all 19 workflow YAML files, consolidated sonar handoff docs, and expanded test coverage (+26 tests, +3 files).
+
+1. **Security Handoff Removal:** Deleted workflow (`security-alerts-handoff.yml`), script (`update-alerts-report.mjs`), and report (`security-alerts-status.md`). Cleaned all references from README (EN+DE badge blocks, CI/CD table), CONTRIBUTING.md, SECURITY.md, and package.json.
+2. **Workflow ASCII Cleanup:** Stripped all emoji/Unicode from 12 workflow YAML files (name fields, echo strings). Fixed YAML syntax issues caused by `[OK]`/`[WARN]` bracket notation in ci.yml, deploy.yml, snyk.yml. All 19 workflows pass YAML validation.
+3. **Sonar Docs Consolidated:** Merged `sonar-handoff-review-2026-03-21.md` and `sonar-handoff-todo-2026-03-21.md` into single `sonar-handoff-2026-03-21.md`. Originals deleted.
+4. **Test Coverage Expansion:** Created 3 new test files:
+    - `commandService.test.ts` (22 tests) -- frecency tracking, grouping, scoring, search
+    - `strainService.test.ts` (2 tests) -- singleton, similarity sorting
+    - `exportService.test.ts` (4 tests) -- TXT/PDF export with Proxy-based jsPDF mock
+5. **App Verification:** TypeScript type-check clean, full test suite 669/669 pass (76 -> 79 files).
+
+### Files Changed
+
+| File                                            | Change                                            |
+| ----------------------------------------------- | ------------------------------------------------- |
+| `README.md`                                     | Removed 3 dynamic badges (EN+DE), CI/CD table row |
+| `CONTRIBUTING.md`                               | Removed Security Alert Baseline section           |
+| `SECURITY.md`                                   | Removed Security Automation section               |
+| `package.json`                                  | Removed `security:alerts:report` script           |
+| `.github/workflows/security-alerts-handoff.yml` | **Deleted**                                       |
+| `scripts/security/update-alerts-report.mjs`     | **Deleted**                                       |
+| `docs/security-alerts-status.md`                | **Deleted**                                       |
+| `docs/sonar-handoff-review-2026-03-21.md`       | **Deleted** (merged)                              |
+| `docs/sonar-handoff-todo-2026-03-21.md`         | **Deleted** (merged)                              |
+| `docs/sonar-handoff-2026-03-21.md`              | **New** -- consolidated sonar handoff             |
+| `services/commandService.test.ts`               | **New** -- 22 tests                               |
+| `services/strainService.test.ts`                | **New** -- 2 tests                                |
+| `services/exportService.test.ts`                | **New** -- 4 tests (Proxy-based jsPDF mock)       |
+| 12 workflow YAML files                          | ASCII-only emoji cleanup, YAML syntax fixes       |
+
+### Immediate Next Tasks
+
+- [ ] Commit + push all changes via `npm run pr:push`
+- [ ] CII-Best-Practices badge email verification (#187, bestpractices.dev)
+- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
+- [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`
+- [ ] Additional test coverage: aiProviderService, aiService, geminiService (harder -- external API deps)
+- [ ] Re-enable SonarCloud when SONAR_TOKEN secret is configured (optional)
+
+> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+
+---
+
+## Previous Session (2026-03-24) -- Dockerfile Best Practices + CI Slimming
 
 **Status: Dockerfile-based dev container, CI slimmed (3 core jobs), SonarCloud removed, anti-emoji rule added. All PRs closed (0 open). Branch protection: only `ci-status` required.**
 
@@ -19,28 +68,13 @@ Dockerfile best practices for Codespaces dev container. CI pipeline slimmed from
 7. **PR/Branch Cleanup:** Closed 13 Dependabot PRs (#50-#62) with branches deleted. PR #65 squash-merged. 0 open PRs remain. Only `gh-pages` branch exists besides `main`.
 8. **Branch Protection Simplified:** Removed `quality` from required status checks, keeping only `ci-status` (which gates all sub-jobs).
 
-### Files Changed
-
-| File                                             | Change                                                   |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| `.devcontainer/Dockerfile`                       | **New** -- Playwright base + system deps                 |
-| `.devcontainer/.dockerignore`                    | **New** -- build context exclusions                      |
-| `.devcontainer/devcontainer.json`                | `image` -> `build.dockerfile`                            |
-| `.devcontainer/setup.sh`                         | Removed apt-get (moved to Dockerfile)                    |
-| `.github/workflows/ci.yml`                       | Removed docker-integration + tauri-check, cleaned emojis |
-| `.github/workflows/sonarcloud.yml`               | **Deleted**                                              |
-| `.github/copilot-instructions.md`                | Anti-emoji rule, Dev Container section, full update      |
-| `scripts/devcontainer/bootstrap-git-signing.mjs` | Cleaned non-ASCII (em-dash, checkmark)                   |
-| `docs/next-session-handoff.md`                   | Updated with this session                                |
-
 ### Immediate Next Tasks
 
+- [x] ~~Workflow ASCII cleanup~~ (done this session)
+- [x] ~~Test coverage expansion~~ (done this session)
 - [ ] Rebuild Codespace to test Dockerfile-based build
 - [ ] Enable Codespaces Prebuilds (Repo Settings -> Codespaces -> Prebuilds)
 - [ ] Pin Playwright base image SHA digest (optional hardening)
-- [ ] CII-Best-Practices badge email verification (#187, bestpractices.dev)
-- [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`
-- [ ] Re-enable SonarCloud when SONAR_TOKEN secret is configured (optional)
 
 > **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
 
@@ -54,7 +88,7 @@ Dockerfile best practices for Codespaces dev container. CI pipeline slimmed from
 
 Comprehensive Codespaces security hardening based on Orca Security RCE disclosure (Feb 2026). Fixes persistent SSH signing issue across Codespace sessions.
 
-1. **SSH Signing → Codespaces GPG (CRITICAL FIX):** Root cause identified — `bootstrap-git-signing.mjs` generated ephemeral SSH keys that became "Unverified" across Codespace sessions. Fixed: In Codespaces, now uses native `gh-gpgsign` from `/etc/gitconfig` (GitHub's web-flow GPG key). Commits are permanently "Verified" regardless of session changes.
+1. **SSH Signing -> Codespaces GPG (CRITICAL FIX):** Root cause identified -- `bootstrap-git-signing.mjs` generated ephemeral SSH keys that became "Unverified" across Codespace sessions. Fixed: In Codespaces, now uses native `gh-gpgsign` from `/etc/gitconfig` (GitHub's web-flow GPG key). Commits are permanently "Verified" regardless of session changes.
 2. **DevContainer Hardening:** Extracted inline `postCreateCommand` and `postStartCommand` from `devcontainer.json` into separate auditable scripts (`.devcontainer/setup.sh`, `.devcontainer/start.sh`). All under CODEOWNERS review.
 3. **CODEOWNERS Expansion:** Added explicit entries for RCE-critical paths: `/.devcontainer/`, `/.vscode/`, `/.github/workflows/`, `/.github/actions/`.
 4. **Config Guard Workflow (NEW):** New CI workflow `.github/workflows/config-guard.yml` scans PRs that modify devcontainer/vscode configs for dangerous patterns (curl/wget exfil, PROMPT_COMMAND injection, tasks.json auto-execution, env variable injection). Blocks merge on detection.

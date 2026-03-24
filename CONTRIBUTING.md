@@ -192,13 +192,6 @@ npm run build && npx playwright test
 - Use existing mocks from `tests/mocks/` for Gemini, IndexedDB, etc.
 - Current baseline: **622+ tests, 0 failures**.
 
-### Security Alert Baseline (Recommended)
-
-- Run `npm run security:alerts:report` before larger remediation waves.
-- Use `docs/security-alerts-status.md` as session handoff baseline.
-- For CI automation, trigger `.github/workflows/security-alerts-handoff.yml` manually or rely on the daily schedule (opens/updates an automation PR when report content changes).
-- Prefer repository `GITHUB_TOKEN`; a personal access token is not required for this workflow.
-
 ---
 
 ## Internationalization (i18n)

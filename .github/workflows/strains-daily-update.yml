@@ -1,4 +1,4 @@
-name: 🌿 Strain Catalog Update
+name: Strain Catalog Update
 
 on:
     workflow_dispatch:
@@ -15,47 +15,47 @@ concurrency:
 
 jobs:
     update-catalog:
-        name: 🧬 Merge & Validate Strain Catalog
+        name: Merge & Validate Strain Catalog
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
             contents: write
         steps:
-            - name: 📥 Checkout
+            - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
 
-            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+            - name: Setup Node ${{ env.NODE_VERSION }}
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
-            - name: 📦 Install dependencies
+            - name: Install dependencies
               run: npm ci --prefer-offline
 
-            - name: 🧬 Run strain merge (strict)
+            - name: Run strain merge (strict)
               env:
                   STRICT_STRAIN_MERGE: '1'
               run: npm run strains:merge
 
-            - name: 📊 Upload merge report
+            - name: Upload merge report
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:
                   name: strain-merge-report-${{ github.run_id }}
                   path: artifacts/strain-merge-report.json
                   retention-days: 30
 
-            - name: 🔍 Check for duplicate IDs
+            - name: Check for duplicate IDs
               env:
                   BASE_REF: origin/main
               run: npm run strains:check-new-duplicates
 
-            - name: 📈 Log catalog stats
+            - name: Log catalog stats
               run: |
                   if [ -f artifacts/strain-merge-report.json ]; then
-                    echo "### 🌿 Strain Catalog Report" >> "$GITHUB_STEP_SUMMARY"
+                    echo "### Strain Catalog Report" >> "$GITHUB_STEP_SUMMARY"
                     echo "" >> "$GITHUB_STEP_SUMMARY"
                     echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
                     echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"

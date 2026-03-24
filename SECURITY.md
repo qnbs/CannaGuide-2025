@@ -40,3 +40,37 @@ We will review reports as quickly as possible and coordinate remediation before 
 - If report content changes, the workflow opens or updates an automation PR instead of pushing directly to `main`.
 - For local refresh, run `npm run security:alerts:report` with a token that can read security events.
 - No dedicated PAT is required for the workflow: repository `GITHUB_TOKEN` is sufficient.
+
+## Supply-Chain Security
+
+### SHA-Pinning Mandate
+
+All third-party GitHub Actions **must** be pinned to a full 40-character commit SHA. Mutable tags (`@v4`, `@latest`, `@main`) are **never** permitted in any workflow.
+
+```yaml
+# ✅ CORRECT — pinned to immutable commit SHA
+uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+# ❌ FORBIDDEN — mutable tag can be force-pushed by attacker
+uses: actions/checkout@v4
+```
+
+### Docker Image Pinning
+
+All `FROM` directives in Dockerfiles **must** include an `@sha256:` digest alongside the human-readable tag.
+
+```dockerfile
+# ✅ CORRECT
+FROM node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617...
+
+# ❌ FORBIDDEN
+FROM node:20-alpine
+```
+
+### Rationale
+
+These policies were adopted on 2026-03-24 in response to the [Trivy supply-chain attack](https://github.com/advisories/GHSA-69fq-xp46-6x23) (March 2026), where mutable tags in `aquasecurity/trivy-action` and `aquasecurity/setup-trivy` were force-pushed to malicious commits, exfiltrating GitHub Secrets from CI runners. SHA-pinning ensures immutability: even if a tag is compromised, the workflow always runs the exact audited code.
+
+### Removed Tools
+
+- **Trivy** (`aquasecurity/trivy-action`): Removed from all workflows on 2026-03-24. Filesystem and vulnerability scanning is covered by CodeQL, Snyk, Semgrep, Gitleaks, and `npm audit`.

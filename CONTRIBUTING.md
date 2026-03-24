@@ -144,6 +144,12 @@ npx tsc --noEmit
 - All AI API calls **must** go through `geminiService.ts` (or the provider abstraction).
 - No `console.log` in production code. Use `console.debug` (stripped in builds) or `console.warn`/`console.error` for legitimate diagnostics.
 
+### Supply-Chain Security Rules
+
+- All third-party GitHub Actions **must** be pinned to a full 40-character commit SHA. No mutable tags (`@v4`, `@latest`).
+- All Dockerfile `FROM` directives **must** include an `@sha256:` digest.
+- See [`SECURITY.md`](SECURITY.md#supply-chain-security) for the full policy and rationale.
+
 ---
 
 ## Testing

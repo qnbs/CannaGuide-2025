@@ -67,14 +67,8 @@ jobs:
                   fi
                   npm run security:snyk
 
-            - name: Trivy filesystem scan
-              uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
-              with:
-                  scan-type: fs
-                  scan-ref: .
-                  scanners: secret,misconfig,vuln
-                  severity: HIGH,CRITICAL
-                  format: table
+            # Trivy removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
+            # Filesystem scanning covered by Snyk + npm audit + Gitleaks + Semgrep above.
 
             - name: Scorecard local scan
               continue-on-error: true

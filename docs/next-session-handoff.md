@@ -2,18 +2,37 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-24) — Development Journey Transparency
+## Latest Session (2026-03-24) — Trivy Supply-Chain Incident Response + Commit Signing Fix
 
 **Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
 
 ### Session Summary
 
-Added transparent development process documentation across README, in-app About section, and i18n locales. The 4-phase AI-assisted development journey (AI Studio Prototyping → Grok Evaluation → Copilot/Opus 4.6 Core Development → Deployment) is now reflected in:
+Comprehensive incident response to the Trivy supply-chain attack (GHSA-69fq-xp46-6x23, March 2026). Full audit confirmed the repo was **not compromised** (SHA `57a97c7e7821a5776cebc9bb87c984fa69cba8f1` = v0.35.0, the only safe tag), but Trivy was removed entirely as a precautionary measure.
 
-- **README.md:** Restructured badge block (grouped with comments), 5 new badges (Tests, AI Studio, Grok, Claude, Codespaces), new "Development Journey" section (EN + DE) with 4-phase table
-- **AboutTab.tsx:** New "Development Journey" card in Settings → About with 4 phases and icons
-- **i18n:** 20 new translation keys (`settingsView.about.devJourney.*`) in EN + DE, updated `readmeContent.aiStudioTitle/Content` in both locales
-- **Handoff docs:** New review + todo files for 2026-03-24
+**Commit Signing Fix:** Identified and fixed root cause of unsigned commits — `gpg.format=ssh` in `.git/config` conflicted with Codespaces' `gh-gpgsign` (which uses openpgp format). Removed the conflicting setting; all new commits are now signed and verified.
+
+### Changes Applied
+
+**Trivy Removal (4 workflows):**
+
+- `ci.yml`: Removed Trivy fs scan from security job, replaced with Gitleaks secret scan
+- `docker.yml`: Removed Trivy image scan + build-for-scan step
+- `security-full.yml`: Removed entire Trivy job (CodeQL + Semgrep + Gitleaks cover its scope)
+- `security-scan.yml`: Removed Trivy fs scan step from Glassworm sweep
+
+**Supply-Chain Security Policy:**
+
+- `SECURITY.md`: New "Supply-Chain Security" section — SHA-pinning mandate, Docker digest pinning, Trivy removal rationale
+- `CONTRIBUTING.md`: New "Supply-Chain Security Rules" subsection in Code Style
+
+**Full Audit Results:**
+
+- ✅ All 27 third-party GitHub Actions: SHA-pinned (verified across 21 workflows)
+- ✅ All 5 Dockerfile FROM directives: digest-pinned (`@sha256:`)
+- ✅ All workflow permissions: already minimized (top-level `contents: read`, job-level escalation only where needed)
+- ✅ No Trivy binary, Docker image, or action reference remains (only removal comments)
+- ✅ Commit signing: fixed and verified
 
 ### Immediate Next Tasks (P0 — Admin-Only)
 
@@ -21,13 +40,12 @@ Added transparent development process documentation across README, in-app About 
 - [ ] CII-Best-Practices badge email verification (bestpractices.dev)
 - [ ] Branch Protection: enforce for admins (Scorecard #188/#194)
 
-> **📋 Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md) — zentraler Einstiegspunkt für alle zukünftigen Sessions (6 Sprints, 29 Tasks, P0–P3 + v1.2–v2.0)
-> Full action plan: `docs/session-activity-todo-2026-03-24.md`
-> Session review: `docs/session-activity-review-2026-03-24.md`
+> **📋 Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+> Previous session review: `docs/session-activity-review-2026-03-24.md`
 
 ---
 
-## Previous Session (2026-03-23, Continuation #3) — Cache Tests + Coverage Boost
+## Previous Session (2026-03-24) — Development Journey Transparency
 
 **Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
 

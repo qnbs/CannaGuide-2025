@@ -114,14 +114,10 @@ jobs:
             - name: Trojan-source scan
               run: npm run security:trojan-source
 
-            - name: Trivy filesystem scan
-              uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
-              with:
-                  scan-type: fs
-                  scan-ref: .
-                  severity: CRITICAL,HIGH
-                  exit-code: '1'
-                  ignore-unfixed: true
+            # Trivy removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
+            # Filesystem scanning covered by npm audit + Snyk + CodeQL.
+            - name: Gitleaks secret scan
+              run: npm run security:secrets
 
     # ─────────────────────────────────────────────────────────────────────
     # E2E — Playwright (reuses build artifact from quality)

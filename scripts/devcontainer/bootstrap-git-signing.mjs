@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs'
+import {
+    mkdirSync,
+    readFileSync,
+    writeFileSync,
+    appendFileSync,
+    accessSync,
+    constants as FS,
+} from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -36,7 +43,11 @@ const gitSet = (key, value) => {
 const neutraliseCommitterOverrides = () => {
     const bashrc = path.join(os.homedir(), '.bashrc')
     const marker = '# bootstrap-git-signing: unset committer overrides'
-    if (existsSync(bashrc) && readFileSync(bashrc, 'utf8').includes(marker)) return
+    try {
+        if (readFileSync(bashrc, 'utf8').includes(marker)) return
+    } catch {
+        // File doesn't exist yet — will be created by appendFileSync below
+    }
     appendFileSync(
         bashrc,
         `\n${marker}\nunset GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL 2>/dev/null\n`,
@@ -50,9 +61,13 @@ const neutraliseCommitterOverrides = () => {
  * Generate an ED25519 SSH signing key if none exists.
  */
 const ensureSigningKey = (email) => {
-    if (existsSync(KEY_PATH) && existsSync(PUB_PATH)) {
+    try {
+        accessSync(KEY_PATH, FS.F_OK)
+        accessSync(PUB_PATH, FS.F_OK)
         console.log(`${PREFIX} existing signing key found at ${KEY_PATH}`)
         return
+    } catch {
+        // Key doesn't exist yet — generate below
     }
 
     mkdirSync(SSH_DIR, { mode: 0o700, recursive: true })
@@ -71,9 +86,11 @@ const ensureAllowedSigners = (email) => {
     const pubKey = readFileSync(PUB_PATH, 'utf8').trim()
     const entry = `${email} ${pubKey}`
 
-    if (existsSync(ALLOWED_SIGNERS)) {
+    try {
         const existing = readFileSync(ALLOWED_SIGNERS, 'utf8')
         if (existing.includes(pubKey)) return
+    } catch {
+        // File doesn't exist yet — will be created below
     }
 
     writeFileSync(ALLOWED_SIGNERS, `${entry}\n`, { mode: 0o644 })

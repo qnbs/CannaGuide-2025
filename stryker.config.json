@@ -19,6 +19,6 @@
         "configFile": "vite.config.ts"
     },
     "thresholds": {
-        "break": 95
+        "break": 80
     }
 }

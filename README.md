@@ -15,6 +15,7 @@
 [![Security Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fqnbs%2FCannaGuide-2025%2Fmain%2Fdocs%2Fsecurity-alerts-badge.json)](https://github.com/qnbs/CannaGuide-2025/security)
 [![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
 [![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.securityscorecards.dev%2Fprojects%2Fgithub.com%2Fqnbs%2FCannaGuide-2025&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12242/badge)](https://www.bestpractices.dev/projects/12242)
 [![Tests](https://img.shields.io/badge/tests-643%2B%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- AI Development Stack -->
@@ -402,6 +403,7 @@ This transparent documentation of the development process reflects the project's
 [![Security Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fqnbs%2FCannaGuide-2025%2Fmain%2Fdocs%2Fsecurity-alerts-badge.json)](https://github.com/qnbs/CannaGuide-2025/security)
 [![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
 [![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.securityscorecards.dev%2Fprojects%2Fgithub.com%2Fqnbs%2FCannaGuide-2025&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12242/badge)](https://www.bestpractices.dev/projects/12242)
 [![Tests](https://img.shields.io/badge/Tests-643%2B%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->

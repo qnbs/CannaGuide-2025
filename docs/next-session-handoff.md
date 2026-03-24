@@ -20,6 +20,8 @@ Comprehensive CI pipeline audit and fix across all 21 workflows. Key changes:
 8. **ClusterFuzzLite SHA Fix (NEW):** Corrected `google/clusterfuzzlite` SHA typo (`884713f...` → `884713a6c30a92e5e8544c39945cd7cb630abcd1`). v1 tag commit now resolves correctly.
 9. **Docker Environment Fix (NEW):** Removed `container-pr-validation` environment requirement for PR builds — PRs only build+test (no push), so no environment approval needed.
 10. **security-scan.yml Fix (NEW):** Eliminated double Gitleaks execution (was running both direct CLI and `npm run security:secrets` redundantly).
+11. **pr-push.mjs Hardening (NEW):** Addressed 9 review comments — added origin/main freshness check, cryptographic signature verification, auto-merge status handling, CI polling `.state` normalization, squash-safe `reset --hard` cleanup, improved failure messages.
+12. **bootstrap-git-signing.mjs Partial Key Fix (NEW):** Detects inconsistent key state (only private or only public key exists) and fails with clear recovery instructions instead of silently attempting overwrite.
 
 ### Files Changed
 
@@ -33,6 +35,8 @@ Comprehensive CI pipeline audit and fix across all 21 workflows. Key changes:
 | `.github/workflows/cflite_pr.yml`                | ClusterFuzzLite SHA typo fix (v1 commit)             |
 | `.github/workflows/docker.yml`                   | Removed PR environment blocker                       |
 | `.github/labeler.yml`                            | Full v6 format migration (changed-files)             |
+| `scripts/github/pr-push.mjs`                     | Signature check, origin sync, state normalization    |
+| `scripts/devcontainer/bootstrap-git-signing.mjs` | Partial key state detection + clear error            |
 | `.github/workflows/*.yml` (all 21)               | checkout v6.0.2 + setup-node v6.3.0                  |
 | `.github/actions/setup-node-ci/action.yml`       | setup-node v6.3.0                                    |
 | `sonar-project.properties`                       | Expanded coverage exclusions, removed .stryker-tmp   |
@@ -77,13 +81,15 @@ npm run pr:push -- "feat/my-feature"     # explicit branch name
 
 **What the script does:**
 
-1. Validates clean working tree + signed commit
-2. Creates timestamped feature branch from HEAD
-3. Pushes branch to origin
-4. Opens PR targeting main with auto-merge (squash) enabled
-5. Waits for CI checks (`quality` + `ci-status`) to pass
-6. Auto-merges after checks pass
-7. Cleans up local branch, pulls updated main
+1. Validates clean working tree, main branch, and GitHub CLI auth
+2. Ensures local main matches origin/main (fetch + compare)
+3. Verifies HEAD commit is cryptographically signed
+4. Creates timestamped feature branch from HEAD
+5. Pushes branch to origin
+6. Opens PR targeting main with auto-merge (squash) enabled
+7. Waits for CI checks (`quality` + `ci-status`) to pass
+8. Auto-merges after checks pass
+9. Cleans up local branch, resets main to origin/main
 
 ### Branch Protection Changes
 

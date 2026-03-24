@@ -61,13 +61,34 @@ const neutraliseCommitterOverrides = () => {
  * Generate an ED25519 SSH signing key if none exists.
  */
 const ensureSigningKey = (email) => {
-    try {
-        accessSync(KEY_PATH, FS.F_OK)
-        accessSync(PUB_PATH, FS.F_OK)
+    const hasPrivateKey = (() => {
+        try {
+            accessSync(KEY_PATH, FS.F_OK)
+            return true
+        } catch {
+            return false
+        }
+    })()
+
+    const hasPublicKey = (() => {
+        try {
+            accessSync(PUB_PATH, FS.F_OK)
+            return true
+        } catch {
+            return false
+        }
+    })()
+
+    if (hasPrivateKey && hasPublicKey) {
         console.log(`${PREFIX} existing signing key found at ${KEY_PATH}`)
         return
-    } catch {
-        // Key doesn't exist yet — generate below
+    }
+
+    if (hasPrivateKey || hasPublicKey) {
+        throw new Error(
+            `signing key files are inconsistent (private: ${hasPrivateKey}, public: ${hasPublicKey}). ` +
+                `Remove stale key files before rerunning bootstrap: rm -f ${KEY_PATH} ${PUB_PATH}`,
+        )
     }
 
     mkdirSync(SSH_DIR, { mode: 0o700, recursive: true })

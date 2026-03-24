@@ -8,13 +8,15 @@
  *   node scripts/github/pr-push.mjs "feat/my-feature"  # explicit branch name
  *
  * Flow:
- *   1. Validates signed commit(s) on current branch
- *   2. Creates a timestamped feature branch from HEAD
- *   3. Pushes branch to origin
- *   4. Opens a PR targeting main with auto-merge enabled
- *   5. Waits for CI status checks to pass
- *   6. PR auto-merges (squash) once checks pass
- *   7. Cleans up local branch and fetches updated main
+ *   1. Validates clean working tree, current branch is main, and GitHub CLI auth
+ *   2. Ensures local main matches origin/main
+ *   3. Verifies HEAD commit is cryptographically signed
+ *   4. Creates a timestamped feature branch from HEAD
+ *   5. Pushes branch to origin
+ *   6. Opens a PR targeting main with auto-merge enabled
+ *   7. Waits for CI status checks to pass
+ *   8. PR auto-merges (squash) once checks pass
+ *   9. Cleans up local branch and resets main to origin/main
  *
  * Requirements:
  *   - gh CLI authenticated with repo scope
@@ -66,6 +68,24 @@ if (ghAuth.status !== 0) {
     process.exit(1)
 }
 
+// Ensure local main is up-to-date with origin
+run('git', ['fetch', 'origin', 'main'], { silent: true })
+const localHead = capture('git', ['rev-parse', 'HEAD'])
+const remoteHead = capture('git', ['rev-parse', 'origin/main'])
+if (localHead !== remoteHead) {
+    console.error(
+        '\x1b[31m✖ Local main is out of sync with origin/main. Run: git pull --ff-only\x1b[0m',
+    )
+    process.exit(1)
+}
+
+// Verify HEAD commit is cryptographically signed
+const sigStatus = capture('git', ['log', '-1', '--format=%G?'])
+if (sigStatus !== 'G') {
+    console.error('\x1b[31m✖ HEAD commit is not cryptographically signed. Aborting.\x1b[0m')
+    process.exit(1)
+}
+
 // ── Determine branch name ───────────────────────────────────────────────
 
 const commitMsg = capture('git', ['log', '-1', '--format=%s'])
@@ -104,8 +124,17 @@ const prUrl = prResult.stdout.trim()
 console.log(`\x1b[32m✓ PR created: ${prUrl}\x1b[0m`)
 
 // Enable auto-merge (squash)
-run('gh', ['pr', 'merge', prUrl, '--squash', '--auto'], { silent: true, allowFail: true })
-console.log('\x1b[32m✓ Auto-merge enabled (squash)\x1b[0m')
+const autoMergeResult = run('gh', ['pr', 'merge', prUrl, '--squash', '--auto'], {
+    silent: true,
+    allowFail: true,
+})
+if (autoMergeResult.status === 0) {
+    console.log('\x1b[32m✓ Auto-merge enabled (squash)\x1b[0m')
+} else {
+    console.log(
+        '\x1b[33m⚠ Auto-merge could not be enabled. The PR will need to be merged manually.\x1b[0m',
+    )
+}
 
 // ── Wait for CI ─────────────────────────────────────────────────────────
 
@@ -147,14 +176,18 @@ for (let attempt = 0; attempt < 120; attempt++) {
         '--json',
         'statusCheckRollup',
         '--jq',
-        '[.statusCheckRollup[] | {s: .status, c: .conclusion}]',
+        '[.statusCheckRollup[] | {s: (.status // (if .state == "SUCCESS" or .state == "FAILURE" or .state == "ERROR" then "COMPLETED" else "IN_PROGRESS" end)), c: (.conclusion // .state)}]',
     ])
     if (raw) {
         try {
             const checks = JSON.parse(raw)
             const completed = checks.filter((c) => c.s === 'COMPLETED')
             const failed = completed.filter(
-                (c) => c.c === 'FAILURE' || c.c === 'CANCELLED' || c.c === 'TIMED_OUT',
+                (c) =>
+                    c.c === 'FAILURE' ||
+                    c.c === 'CANCELLED' ||
+                    c.c === 'TIMED_OUT' ||
+                    c.c === 'ERROR',
             )
             const pending = checks.filter((c) => c.s !== 'COMPLETED')
             const total = checks.length
@@ -178,9 +211,12 @@ for (let attempt = 0; attempt < 120; attempt++) {
 }
 
 if (!checksPass) {
-    console.error('\x1b[31m✖ CI checks failed. Fix issues, push to branch, and re-run.\x1b[0m')
-    console.log(`\x1b[33m  Branch ${branchName} is still open. Fix and push:\x1b[0m`)
+    console.error('\x1b[31m✖ CI checks failed.\x1b[0m')
+    console.log(`\x1b[33m  Branch ${branchName} is still open. Fix and push new commits:\x1b[0m`)
     console.log(`\x1b[33m  git checkout ${branchName} && <fix> && git push\x1b[0m`)
+    console.log(
+        '\x1b[33m  CI will re-run for the existing PR; re-running this script is not required.\x1b[0m',
+    )
     // Switch back to main but don't delete the branch
     run('git', ['checkout', 'main'])
     process.exit(1)
@@ -221,7 +257,8 @@ if (merged) {
 // ── Cleanup ─────────────────────────────────────────────────────────────
 
 run('git', ['checkout', 'main'])
-run('git', ['pull', '--ff-only', 'origin', 'main'])
+run('git', ['fetch', 'origin', 'main'], { silent: true })
+run('git', ['reset', '--hard', 'origin/main'])
 run('git', ['branch', '-D', branchName], { allowFail: true, silent: true })
 
 console.log('\x1b[32m✓ Done — main is up to date\x1b[0m')

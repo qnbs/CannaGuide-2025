@@ -1,6 +1,6 @@
 name: Security Full
 
-# Disabled: SARIF upload (CodeQL, Trivy, Scorecard) requires Code Scanning
+# Disabled: SARIF upload (CodeQL, Scorecard) requires Code Scanning
 # to be enabled in GitHub repo settings. Run manually after enabling.
 on:
     workflow_dispatch:
@@ -89,32 +89,8 @@ jobs:
               with:
                   args: detect --source . --no-banner --redact --config .gitleaks.toml
 
-    trivy:
-        name: Trivy
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-        permissions:
-            contents: read
-            security-events: write
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-
-            - name: Run Trivy filesystem scan
-              uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
-              with:
-                  scan-type: fs
-                  scan-ref: .
-                  scanners: secret,misconfig,vuln
-                  severity: HIGH,CRITICAL
-                  format: sarif
-                  output: trivy-results.sarif
-
-            - name: Upload Trivy results
-              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
-              if: always()
-              with:
-                  sarif_file: trivy-results.sarif
+    # trivy job removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
+    # Filesystem scanning covered by CodeQL + Semgrep + Gitleaks + Snyk.
 
     semgrep:
         name: Semgrep

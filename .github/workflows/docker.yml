@@ -1,7 +1,6 @@
 name: 🐳 Docker
 
 # Build + push on release tags; PR-only path-scoped validation.
-# Removed push-to-main trigger to avoid blocking CI with Trivy exit-code 1.
 on:
     push:
         tags: ['v*']
@@ -65,16 +64,8 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
-            - name: 🔎 Build local image for Trivy
-              run: docker build -t cannaguide-scan .
-
-            - name: 🛡 Trivy image scan
-              uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
-              with:
-                  image-ref: cannaguide-scan
-                  format: table
-                  severity: HIGH,CRITICAL
-                  exit-code: '1'
+            # Trivy image scan removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
+            # Image security covered by Snyk Container + npm audit in CI.
 
             - name: 🧪 Test container (PR only)
               if: github.event_name == 'pull_request'

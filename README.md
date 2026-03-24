@@ -4,6 +4,8 @@
 
 <!-- markdownlint-disable MD060 -->
 
+<!-- Status & Quality -->
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
@@ -12,6 +14,17 @@
 [![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
 [![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
 [![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.securityscorecards.dev%2Fprojects%2Fgithub.com%2Fqnbs%2FCannaGuide-2025&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
+[![Tests](https://img.shields.io/badge/tests-643%2B%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+
+<!-- AI Development Stack -->
+
+[![Prototyped in AI Studio](https://img.shields.io/badge/Prototyped%20in-Google%20AI%20Studio-4285F4)](https://aistudio.google.com)
+[![Evaluated by Grok](https://img.shields.io/badge/Evaluated%20by-xAI%20Grok-000000)](https://x.ai)
+[![Built with Claude](https://img.shields.io/badge/Built%20with-Claude%20Opus%204.6-cc785c)](https://claude.ai)
+[![GitHub Codespaces](https://img.shields.io/badge/Dev%20in-GitHub%20Codespaces-24292e)](https://github.com/codespaces)
+
+<!-- App Capabilities -->
+
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
@@ -39,6 +52,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 - [Distribution](#distribution)
 - [Contributing](#contributing)
 - [Roadmap](#roadmap)
+- [Development Journey](#development-journey)
 - [Disclaimer](#disclaimer)
 - [Deutsche Version](#-cannaguide-2025-deutsch)
 
@@ -351,6 +365,23 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
+## Development Journey
+
+CannaGuide 2025 was built iteratively through an AI-assisted development process spanning four distinct phases:
+
+| Phase                            | Tools                                                 | Role                                                                                                                         | Period       |
+| -------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                            | v0.1 → v1.0  |
+| **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                      | Throughout   |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine — feature refinement, security hardening, 643+ tests, CI/CD pipeline, local AI stack, documentation | v1.0 → v1.1+ |
+| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Production deployment, PR previews, desktop/mobile distribution, OpenSSF compliance                                          | Continuous   |
+
+> **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
+
+This transparent documentation of the development process reflects the project's commitment to openness and reproducibility — every line of code was written through human-AI collaboration in the open.
+
+---
+
 ## Disclaimer
 
 > All information in this app is for educational and entertainment purposes only. Cannabis cultivation is subject to strict regulations. Please check the laws in your region and always act responsibly and legally. This app does not provide legal or medical advice.
@@ -361,6 +392,8 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 🌿 CannaGuide 2025 (Deutsch)
 
+<!-- Status & Qualität -->
+
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/Release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
@@ -369,6 +402,14 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 [![Security Alerts Handoff](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/security-alerts-handoff.yml)
 [![Dependabot PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%3Aqnbs%2FCannaGuide-2025%2Bis%3Apr%2Bis%3Aopen%2Bauthor%3Aapp%2Fdependabot&query=%24.total_count&label=dependabot%20prs&color=blue)](https://github.com/qnbs/CannaGuide-2025/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
 [![OpenSSF Scorecard](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.securityscorecards.dev%2Fprojects%2Fgithub.com%2Fqnbs%2FCannaGuide-2025&query=%24.score&label=OpenSSF%20Scorecard&suffix=%2F10&color=brightgreen)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
+[![Tests](https://img.shields.io/badge/Tests-643%2B%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+
+<!-- KI-Entwicklungs-Stack -->
+
+[![Prototyped in AI Studio](https://img.shields.io/badge/Prototyp%20in-Google%20AI%20Studio-4285F4)](https://aistudio.google.com)
+[![Evaluated by Grok](https://img.shields.io/badge/Evaluiert%20von-xAI%20Grok-000000)](https://x.ai)
+[![Built with Claude](https://img.shields.io/badge/Gebaut%20mit-Claude%20Opus%204.6-cc785c)](https://claude.ai)
+[![GitHub Codespaces](https://img.shields.io/badge/Entwickelt%20in-GitHub%20Codespaces-24292e)](https://github.com/codespaces)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Doku:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
 
@@ -391,6 +432,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 - [Distribution](#distribution-de)
 - [Mitwirken](#mitwirken)
 - [Roadmap](#roadmap-de)
+- [Entwicklungsweg](#entwicklungsweg)
 - [Haftungsausschluss](#haftungsausschluss)
 
 ---
@@ -693,6 +735,23 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 - **Scholarly-Lexikon-Programm:** Entwicklung des Hilfe-Lexikons zur umfassenden Enzyklopädie (Cannabinoide, ECS, Entourage, Botanik, Biologie, Chemie, Genetik, Pharmakologie, Medizin, Evolution) mit akademisch nachvollziehbaren Quellen.
 - **AR/VR und digitale Zwillinge:** Einführung kameragestützter AR/VR-Overlays und schrittweise Weiterentwicklung der Simulation zu praxisnahen digitalen Zwillingen der Nutzerpflanzen.
 - **What-if- und BreedingLab-Weiterentwicklung:** Mehr Szenariotiefe, Merkmals-Simulation und reproduzierbare Zucht-Workflows für strategische Planung und Phänotyp-Entscheidungen.
+
+---
+
+## Entwicklungsweg
+
+CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über vier Phasen aufgebaut:
+
+| Phase                            | Werkzeuge                                             | Rolle                                                                                                                             | Zeitraum       |
+| -------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                            | v0.1 → v1.0    |
+| **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                    | Durchgehend    |
+| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primäre Iterations-Engine — Feature-Verfeinerung, Security-Hardening, 643+ Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 → v1.1+   |
+| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Produktions-Deployment, PR-Previews, Desktop-/Mobil-Distribution, OpenSSF-Compliance                                              | Kontinuierlich |
+
+> **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.
+
+Diese transparente Dokumentation des Entwicklungsprozesses spiegelt das Engagement des Projekts für Offenheit und Reproduzierbarkeit wider — jede Zeile Code wurde durch Mensch-KI-Kollaboration im Offenen geschrieben.
 
 ---
 

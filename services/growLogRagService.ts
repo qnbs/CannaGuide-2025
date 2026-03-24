@@ -115,7 +115,8 @@ class GrowLogRagService {
             const uncachedIndices: number[] = []
             const uncachedTexts: string[] = []
             const allVecs: Array<Float32Array | null> = chunkTexts.map((text, i) => {
-                const chunk = chunks[i]!
+                const chunk = chunks[i]
+                if (!chunk) return null
                 const key = buildChunkEmbeddingKey(chunk)
                 const cached = getCachedEmbedding(key)
                 if (cached) return cached
@@ -127,9 +128,11 @@ class GrowLogRagService {
             if (uncachedTexts.length > 0) {
                 const computed = await embedBatch(uncachedTexts)
                 for (let j = 0; j < uncachedIndices.length; j++) {
-                    const idx = uncachedIndices[j]!
+                    const idx = uncachedIndices[j]
+                    if (idx === undefined) continue
                     allVecs[idx] = computed[j] ?? null
-                    const chunk = chunks[idx]!
+                    const chunk = chunks[idx]
+                    if (!chunk) continue
                     const key = buildChunkEmbeddingKey(chunk)
                     const emb = computed[j]
                     if (emb) setCachedEmbedding(key, emb)

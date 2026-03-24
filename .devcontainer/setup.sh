@@ -3,9 +3,6 @@
 # This file is under CODEOWNERS review. Any changes require PR review.
 set -euo pipefail
 
-echo "[setup] Installing system dependencies..."
-apt-get update && apt-get install -y --no-install-recommends ripgrep gh jq
-
 echo "[setup] Installing npm dependencies..."
 npm ci
 

@@ -2,7 +2,49 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-24) -- Codespaces RCE Hardening + Signing Fix
+## Latest Session (2026-03-24) -- Dockerfile Best Practices + CI Slimming
+
+**Status: Dockerfile-based dev container, CI slimmed (3 core jobs), SonarCloud removed, anti-emoji rule added.**
+
+### Session Summary
+
+Dockerfile best practices for Codespaces dev container. CI pipeline slimmed from 5 to 3 core jobs. SonarCloud workflow removed. Global ASCII-only rule added to copilot-instructions.md.
+
+1. **Dockerfile-based Dev Container:** Created `.devcontainer/Dockerfile` with Playwright noble base, system deps (ripgrep, gh, jq) baked into image layer with proper apt cache cleanup. `.devcontainer/.dockerignore` added. `devcontainer.json` switched from `image` to `build.dockerfile`.
+2. **CI Pipeline Slimmed:** Removed `docker-integration` and `tauri-check` from main CI (covered by release workflows `docker.yml` and `tauri-build.yml`). CI now: quality -> security -> e2e -> ci-status (3+1 jobs).
+3. **SonarCloud Removed:** Deleted `.github/workflows/sonarcloud.yml` (was failing, not a required check, `continue-on-error: true`). `sonar-project.properties` kept for potential re-enablement.
+4. **Anti-Emoji Rule:** Added "Text Encoding (Mandatory)" section to copilot-instructions.md: ASCII-only in all code/scripts/configs. Exceptions: i18n files and markdown docs.
+5. **copilot-instructions.md Updated:** Added Dev Container section, Config Guard mention, updated file table, Codespaces signing docs, removed SonarCloud references.
+6. **Non-ASCII Cleanup:** Cleaned Unicode characters from `bootstrap-git-signing.mjs` and `setup.sh`.
+
+### Files Changed
+
+| File                                             | Change                                                   |
+| ------------------------------------------------ | -------------------------------------------------------- |
+| `.devcontainer/Dockerfile`                       | **New** -- Playwright base + system deps                 |
+| `.devcontainer/.dockerignore`                    | **New** -- build context exclusions                      |
+| `.devcontainer/devcontainer.json`                | `image` -> `build.dockerfile`                            |
+| `.devcontainer/setup.sh`                         | Removed apt-get (moved to Dockerfile)                    |
+| `.github/workflows/ci.yml`                       | Removed docker-integration + tauri-check, cleaned emojis |
+| `.github/workflows/sonarcloud.yml`               | **Deleted**                                              |
+| `.github/copilot-instructions.md`                | Anti-emoji rule, Dev Container section, full update      |
+| `scripts/devcontainer/bootstrap-git-signing.mjs` | Cleaned non-ASCII (em-dash, checkmark)                   |
+| `docs/next-session-handoff.md`                   | Updated with this session                                |
+
+### Immediate Next Tasks
+
+- [ ] Rebuild Codespace to test Dockerfile-based build
+- [ ] Enable Codespaces Prebuilds (Repo Settings -> Codespaces -> Prebuilds)
+- [ ] Pin Playwright base image SHA digest (optional hardening)
+- [ ] CII-Best-Practices badge email verification (#187, bestpractices.dev)
+- [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`
+- [ ] Re-enable SonarCloud when SONAR_TOKEN secret is configured (optional)
+
+> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+
+---
+
+## Previous Session (2026-03-24) -- Codespaces RCE Hardening + Signing Fix
 
 **Status: PR #49 merged. Codespaces signing fixed. Full RCE hardening applied.**
 

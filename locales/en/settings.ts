@@ -614,6 +614,23 @@ export const settingsView = {
         },
         githubLinkText: 'View Project on GitHub',
         aiStudioLinkText: 'Fork Project in AI Studio',
+        devJourney: {
+            title: 'Development Journey',
+            subtitle: 'Built iteratively with AI-assisted development across 4 phases:',
+            phase1Title: 'Prototyping',
+            phase1Desc:
+                'App scaffolding and initial feature set built with Google Gemini 2.5 Pro & 3.1 Pro in Google AI Studio, then exported to GitHub.',
+            phase2Title: 'Evaluation & Advisory',
+            phase2Desc:
+                'Continuous architecture evaluation, security consulting, and quality advisory by xAI Grok 4.20 throughout the entire development process.',
+            phase3Title: 'Core Development',
+            phase3Desc:
+                'Primary iteration and refinement in GitHub Codespaces with VS Code Copilot powered by Claude Opus 4.6 — the majority of feature development, security hardening, testing, and CI/CD pipeline work.',
+            phase4Title: 'Deployment & Distribution',
+            phase4Desc:
+                'Production deployment to GitHub Pages, Netlify PR previews, Docker containers, Tauri desktop, and Capacitor mobile builds.',
+            secondaryNote: 'Minor contributions by GPT-4 Mini and GPT-5.3 Codex.',
+        },
         disclaimer: {
             title: 'Disclaimer',
             content:
@@ -714,10 +731,17 @@ export const settingsView = {
                 <li><strong>App Not Updating (PWA Caching)</strong>: If you've made changes but don't see them, clear your browser data or unregister the Service Worker in the developer tools.</li>
             </ul>
         `,
-            aiStudioTitle: 'Development with AI Studio & Open Source',
+            aiStudioTitle: 'Development Journey & Open Source',
             aiStudioContent: `
-            <p>This application was developed entirely with <strong>Google's AI Studio</strong>. The entire process, from the initial project scaffolding to implementing complex features, was driven by iterative prompts in natural language.</p>
-            <p>This project is also fully open source. Dive into the code, fork the project, or contribute on GitHub. See firsthand how natural language can build sophisticated applications.</p>
+            <p>CannaGuide 2025 was built through a transparent, iterative AI-assisted development process:</p>
+            <ol>
+                <li><strong>Prototyping</strong>: Initial app scaffolding and feature set built with <strong>Google Gemini 2.5 Pro & 3.1 Pro</strong> in <strong>Google AI Studio</strong>, then exported to GitHub.</li>
+                <li><strong>Evaluation & Advisory</strong>: Continuous architecture review, security consulting, and quality guidance by <strong>xAI Grok 4.20</strong> throughout the entire process.</li>
+                <li><strong>Core Development</strong>: Primary iteration in <strong>GitHub Codespaces</strong> with <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — the majority of feature refinement, security hardening, 643+ tests, CI/CD, and the local AI stack.</li>
+                <li><strong>Deployment</strong>: Production via GitHub Pages, Netlify, Docker, Tauri v2, and Capacitor.</li>
+            </ol>
+            <p><em>Minor contributions by GPT-4 Mini and GPT-5.3 Codex.</em></p>
+            <p>This project is fully open source. Dive into the code, fork the project, or contribute on GitHub.</p>
             <ul>
                 <li><a href="https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-" target="_blank" rel="noopener noreferrer">Fork project in AI Studio</a></li>
                 <li><a href="https://github.com/qnbs/CannaGuide-2025" target="_blank" rel="noopener noreferrer">View source code on GitHub</a></li>

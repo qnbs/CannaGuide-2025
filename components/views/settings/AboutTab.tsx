@@ -147,6 +147,46 @@ const AboutAppContent = memo(() => {
 
             <Card>
                 <InfoSection
+                    title={t('settingsView.about.devJourney.title')}
+                    icon={<PhosphorIcons.Sparkle />}
+                >
+                    <p className="text-sm text-slate-400 mb-4">
+                        {t('settingsView.about.devJourney.subtitle')}
+                    </p>
+                    <ul className="space-y-3">
+                        <ListItem icon={<PhosphorIcons.LightbulbFilament />}>
+                            <span className="font-semibold text-slate-100">
+                                {t('settingsView.about.devJourney.phase1Title')}:
+                            </span>{' '}
+                            {t('settingsView.about.devJourney.phase1Desc')}
+                        </ListItem>
+                        <ListItem icon={<PhosphorIcons.MagnifyingGlass />}>
+                            <span className="font-semibold text-slate-100">
+                                {t('settingsView.about.devJourney.phase2Title')}:
+                            </span>{' '}
+                            {t('settingsView.about.devJourney.phase2Desc')}
+                        </ListItem>
+                        <ListItem icon={<PhosphorIcons.BracketsCurly />}>
+                            <span className="font-semibold text-slate-100">
+                                {t('settingsView.about.devJourney.phase3Title')}:
+                            </span>{' '}
+                            {t('settingsView.about.devJourney.phase3Desc')}
+                        </ListItem>
+                        <ListItem icon={<PhosphorIcons.CloudArrowUp />}>
+                            <span className="font-semibold text-slate-100">
+                                {t('settingsView.about.devJourney.phase4Title')}:
+                            </span>{' '}
+                            {t('settingsView.about.devJourney.phase4Desc')}
+                        </ListItem>
+                    </ul>
+                    <p className="text-xs text-slate-500 mt-3 italic">
+                        {t('settingsView.about.devJourney.secondaryNote')}
+                    </p>
+                </InfoSection>
+            </Card>
+
+            <Card>
+                <InfoSection
                     title={t('settingsView.about.disclaimer.title')}
                     icon={<PhosphorIcons.WarningCircle />}
                 >

@@ -115,7 +115,8 @@ jobs:
               run: npm run security:trojan-source
 
             # Trivy removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
-            # Filesystem scanning covered by npm audit + Snyk + CodeQL.
+            # Replaced by Grype in docker.yml (image) + security-full.yml (filesystem).
+            # CI filesystem scanning covered by npm audit + Snyk + CodeQL.
             - name: Gitleaks secret scan
               run: npm run security:secrets
 

@@ -68,7 +68,8 @@ jobs:
                   npm run security:snyk
 
             # Trivy removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
-            # Filesystem scanning covered by Snyk + npm audit + Gitleaks + Semgrep above.
+            # Replaced by Grype in docker.yml (image) + security-full.yml (filesystem).
+            # This sweep relies on Snyk + npm audit + Gitleaks + Semgrep above.
 
             - name: Scorecard local scan
               continue-on-error: true

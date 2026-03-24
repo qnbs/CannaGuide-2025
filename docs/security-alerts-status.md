@@ -44,3 +44,39 @@
 
 - API queries completed successfully.
 - Use this report as handoff baseline for next remediation wave.
+
+---
+
+## Trivy Removal & Grype Replacement -- 24. Marz 2026
+
+### Incident
+
+- **Advisory:** [GHSA-69fq-xp46-6x23](https://github.com/advisories/GHSA-69fq-xp46-6x23)
+- **Impact:** Malicious artifacts (v0.69.4--0.69.6) + force-pushed tags in `aquasecurity/trivy-action` and `setup-trivy` exfiltrated GitHub Secrets from CI runners
+- **Second incident** within one month (after Mar 1) -- trust in Trivy ecosystem severely compromised
+- **This repo:** Never exposed (only safe v0.35.0 SHA was pinned), removal is purely preventive
+
+### Changes
+
+| Workflow            | Before               | After                                                                 |
+| ------------------- | -------------------- | --------------------------------------------------------------------- |
+| `docker.yml`        | Trivy image scan     | Grype container image scan (`anchore/scan-action@v7.4.0`, SHA-pinned) |
+| `security-full.yml` | Trivy filesystem job | Grype filesystem scan job (`anchore/scan-action@v7.4.0`, SHA-pinned)  |
+| `ci.yml`            | Trivy FS scan        | Covered by npm audit + Snyk + CodeQL (no Grype needed)                |
+| `security-scan.yml` | Trivy FS scan        | Covered by Snyk + npm audit + Gitleaks + Semgrep (no Grype needed)    |
+
+### Why Grype (Anchore)
+
+- Open-source, actively maintained by Anchore (no supply-chain incidents)
+- Container + SBOM + Filesystem scanning (same coverage as Trivy)
+- SARIF output -> GitHub Security Tab integration
+- No external registry dependencies (unlike Trivy-DB/mirror.gcr.io)
+- Top-3 in 2026 vulnerability scanner benchmarks
+
+### Repo Security Hardening (same session)
+
+- `enforce_admins`: **enabled** (was false -- Scorecard #188/#194 fixed)
+- `allowed_actions`: **restricted** to GitHub-owned + verified + specific allowlist (was "all")
+- SSH commit signing: **fixed** (bootstrap script rewritten for Codespace persistence)
+- All 27 actions: SHA-pinned, all 5 Dockerfiles: digest-pinned
+- Status: **0 exposure, 0 alerts, preventive measures only**

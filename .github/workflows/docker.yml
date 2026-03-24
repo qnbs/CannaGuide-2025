@@ -64,8 +64,21 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
-            # Trivy image scan removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
-            # Image security covered by Snyk Container + npm audit in CI.
+            - name: 🛡 Grype container image scan
+              uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+              id: grype
+              with:
+                  image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+                  fail-build: false
+                  severity-cutoff: high
+                  output-format: sarif
+
+            - name: 📤 Upload Grype SARIF
+              if: always() && steps.grype.outputs.sarif != ''
+              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
+              with:
+                  sarif_file: ${{ steps.grype.outputs.sarif }}
+                  category: grype-container
 
             - name: 🧪 Test container (PR only)
               if: github.event_name == 'pull_request'

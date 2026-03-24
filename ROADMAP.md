@@ -44,7 +44,7 @@ Released: **2026-07-07**
 | Docker + Chainguard nginx deployment                           | DevOps       | ✅     |
 | GitHub Pages CI/CD deployment                                  | DevOps       | ✅     |
 | 13 GitHub Actions workflows                                    | DevOps       | ✅     |
-| OpenSSF Scorecard + CodeQL + Snyk + Trivy scanning             | Security     | ✅     |
+| OpenSSF Scorecard + CodeQL + Snyk + Grype scanning             | Security     | ✅     |
 
 ---
 

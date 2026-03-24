@@ -86,8 +86,17 @@ jobs:
               run: |
                   docker build -t cannaguide-test .
                   docker run -d --name cg-test -p 8080:8080 cannaguide-test
-                  sleep 3
-                  curl -sS --fail http://localhost:8080/ | grep -q "CannaGuide"
+                  for i in $(seq 1 15); do
+                    if curl -sS --fail http://localhost:8080/ | grep -q "CannaGuide"; then
+                      echo "✅ Container health check passed"
+                      docker stop cg-test
+                      exit 0
+                    fi
+                    echo "⏳ Waiting for container... ($i/15)"
+                    sleep 2
+                  done
+                  echo "❌ Container failed to respond within 30s"
+                  docker logs cg-test
                   docker stop cg-test
-                  echo "✅ Container health check passed"
+                  exit 1
                   echo "✅ Container health check passed"

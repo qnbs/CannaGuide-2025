@@ -21,6 +21,9 @@ jobs:
         name: 🔀 PR Fuzzing
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        # ClusterFuzzLite has limited JavaScript support — sanitizers and
+        # config_utils may fail. Primary fuzzing via fuzzing.yml (fast-check).
+        continue-on-error: true
         permissions:
             contents: read
             security-events: write

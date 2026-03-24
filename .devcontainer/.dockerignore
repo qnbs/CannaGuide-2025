@@ -1,0 +1,11 @@
+node_modules
+.git
+*.log
+.DS_Store
+coverage
+dist
+test-results
+.turbo
+.lighthouseci
+playwright-report
+src-tauri/target

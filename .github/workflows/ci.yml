@@ -171,167 +171,31 @@ jobs:
                   path: test-results/
                   retention-days: 7
 
-    # ─────────────────────────────────────────────────────────────────────
-    # Docker Compose + IoT Integration (ESP32 + Tauri mock)
-    # ─────────────────────────────────────────────────────────────────────
-    docker-integration:
-        name: 🐳 Docker Compose + IoT
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        steps:
-            - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
-            - name: Validate docker-compose.yml syntax
-              run: docker compose config --quiet
-
-            - name: Build mock images
-              run: docker compose build esp32-mock tauri-mock
-
-            - name: Start mock containers
-              run: docker compose up -d esp32-mock tauri-mock
-
-            - name: ESP32 Mock healthcheck
-              run: |
-                  for i in $(seq 1 30); do
-                    if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
-                      echo "✅ ESP32 mock healthy"
-                      break
-                    fi
-                    echo "⏳ Waiting for ESP32 mock... ($i/30)"
-                    sleep 1
-                    if [ "$i" -eq 30 ]; then
-                      echo "❌ ESP32 mock failed to start within 30s"
-                      docker compose logs esp32-mock
-                      exit 1
-                    fi
-                  done
-
-            - name: Tauri Mock healthcheck
-              run: |
-                  for i in $(seq 1 30); do
-                    if curl -sf http://localhost:3002/health > /dev/null 2>&1; then
-                      echo "✅ Tauri mock healthy"
-                      break
-                    fi
-                    echo "⏳ Waiting for Tauri mock... ($i/30)"
-                    sleep 1
-                    if [ "$i" -eq 30 ]; then
-                      echo "❌ Tauri mock failed to start within 30s"
-                      docker compose logs tauri-mock
-                      exit 1
-                    fi
-                  done
-
-            - name: Verify sensor endpoint
-              run: |
-                  RESPONSE=$(curl -sf http://localhost:3001/sensor)
-                  echo "Sensor response: $RESPONSE"
-                  echo "$RESPONSE" | node -e "
-                    const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-                    if (typeof d.temperature !== 'number') process.exit(1);
-                    if (typeof d.humidity !== 'number') process.exit(1);
-                    console.log('✅ Sensor OK:', d.temperature + '°C', d.humidity + '% RH');
-                  "
-
-            - name: Verify Tauri IPC mock
-              run: |
-                  RESPONSE=$(curl -sf http://localhost:3002/health)
-                  echo "Tauri mock response: $RESPONSE"
-                  echo "$RESPONSE" | node -e "
-                    const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-                    if (d.status !== 'ok') process.exit(1);
-                    console.log('✅ Tauri IPC mock OK');
-                  "
-
-            - name: Cleanup
-              if: always()
-              run: docker compose down --timeout 5
+    # Docker integration: covered by docker.yml (release) + e2e-integration.yml
+    # Tauri build check: covered by tauri-build.yml (release)
 
     # ─────────────────────────────────────────────────────────────────────
-    # Tauri Build Check (Linux only — full matrix in tauri-build.yml)
-    # ─────────────────────────────────────────────────────────────────────
-    tauri-check:
-        name: 🖥 Tauri Build Check
-        needs: quality
-        runs-on: ubuntu-22.04
-        timeout-minutes: 20
-        steps:
-            - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
-            - name: Setup Node + install dependencies
-              uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-
-            - name: Setup Rust
-              uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7
-
-            - name: Rust cache
-              uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae
-              with:
-                  workspaces: src-tauri
-                  shared-key: tauri-linux-ci
-
-            - name: Install Linux dependencies
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-            - name: Download build artifact
-              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-              with:
-                  name: dist
-                  path: dist/
-
-            - name: Generate Tauri icons (if missing)
-              run: |
-                  if [ ! -d "src-tauri/icons" ] || [ -z "$(ls -A src-tauri/icons 2>/dev/null)" ]; then
-                    mkdir -p src-tauri/icons
-                    node -e "
-                      const fs = require('fs');
-                      const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
-                      ['32x32','128x128','128x128@2x'].forEach(s => fs.writeFileSync('src-tauri/icons/' + s + '.png', png));
-                      fs.writeFileSync('src-tauri/icons/icon.ico', png);
-                      fs.writeFileSync('src-tauri/icons/icon.icns', png);
-                    "
-                  fi
-
-            - name: Verify Tauri Rust compiles
-              working-directory: src-tauri
-              run: cargo check
-
-    # ─────────────────────────────────────────────────────────────────────
-    # CI Gate — all jobs must pass
+    # CI Gate -- all jobs must pass
     # ─────────────────────────────────────────────────────────────────────
     ci-status:
         name: ✅ CI Status
         if: always()
-        needs: [quality, security, e2e, docker-integration, tauri-check]
+        needs: [quality, security, e2e]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
               run: |
-                  echo "Quality:          ${{ needs.quality.result }}"
-                  echo "Security:         ${{ needs.security.result }}"
-                  echo "E2E:              ${{ needs.e2e.result }}"
-                  echo "Docker:           ${{ needs.docker-integration.result }}"
-                  echo "Tauri:            ${{ needs.tauri-check.result }}"
+                  echo "Quality:  ${{ needs.quality.result }}"
+                  echo "Security: ${{ needs.security.result }}"
+                  echo "E2E:      ${{ needs.e2e.result }}"
                   echo "---"
                   if [[ "${{ needs.quality.result }}" != "success" ]]; then
-                    echo "❌ Quality gates failed"; exit 1
+                    echo "[FAIL] Quality gates failed"; exit 1
                   fi
                   if [[ "${{ needs.security.result }}" != "success" ]]; then
-                    echo "❌ Security checks failed"; exit 1
+                    echo "[FAIL] Security checks failed"; exit 1
                   fi
                   if [[ "${{ needs.e2e.result }}" != "success" ]]; then
-                    echo "❌ E2E tests failed"; exit 1
+                    echo "[FAIL] E2E tests failed"; exit 1
                   fi
-                  if [[ "${{ needs.docker-integration.result }}" != "success" ]]; then
-                    echo "❌ Docker integration failed"; exit 1
-                  fi
-                  if [[ "${{ needs.tauri-check.result }}" != "success" ]]; then
-                    echo "❌ Tauri build check failed"; exit 1
-                  fi
-                  echo "✅ All CI checks passed!"
+                  echo "[PASS] All CI checks passed"

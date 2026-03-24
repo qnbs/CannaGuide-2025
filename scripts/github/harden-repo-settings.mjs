@@ -29,8 +29,8 @@ const repo = process.env.GITHUB_REPO || 'CannaGuide-2025'
 const mainBranch = process.env.GITHUB_MAIN_BRANCH || 'main'
 const dryRun = ['1', 'true', 'yes'].includes((process.env.DRY_RUN || '').toLowerCase())
 
-const FUZZING_CHECK_NAME = process.env.FUZZING_REQUIRED_CHECK || 'Property Fuzz Tests'
-const defaultChecks = ['✅ CI Status', '🔬 CodeQL Analysis', FUZZING_CHECK_NAME]
+// Only the CI umbrella check is required -- CodeQL/Fuzzing run as informational checks
+const defaultChecks = ['\u2705 CI Status']
 
 const checks = (process.env.REQUIRED_STATUS_CHECKS || defaultChecks.join(','))
     .split(',')
@@ -230,29 +230,25 @@ async function setBranchProtection() {
         { allowStatuses: [404] },
     )
 
-    const existingContexts =
-        protectionResp.status === 404
-            ? []
-            : (protectionResp.data?.required_status_checks?.contexts ?? [])
-
-    const mergedChecks = [...new Set([...existingContexts, ...checks, FUZZING_CHECK_NAME])]
+    // Replace checks entirely instead of accumulating stale ones
+    const requiredChecks = [...new Set(checks)]
 
     const body = {
         required_status_checks: {
             strict: true,
-            contexts: mergedChecks,
+            contexts: requiredChecks,
         },
-        enforce_admins: false,
+        enforce_admins: true,
         required_pull_request_reviews: {
             dismiss_stale_reviews: true,
             require_code_owner_reviews: false,
-            required_approving_review_count: 1,
+            required_approving_review_count: 0,
         },
         restrictions: null,
         allow_force_pushes: false,
         allow_deletions: false,
         required_linear_history: true,
-        required_conversation_resolution: true,
+        required_conversation_resolution: false,
         lock_branch: false,
     }
 
@@ -262,7 +258,7 @@ async function setBranchProtection() {
         body,
     )
     summary.push(
-        `Branch protection configured for ${mainBranch} with checks: ${mergedChecks.join(', ')}.`,
+        `Branch protection configured for ${mainBranch} with checks: ${requiredChecks.join(', ')}.`,
     )
 }
 

@@ -1,11 +1,12 @@
 documentation:
-    - README.md
-    - CHANGELOG.md
-    - CONTRIBUTING.md
-    - CODE_OF_CONDUCT.md
-    - SECURITY.md
-    - ROADMAP.md
-    - docs/**
+    - any:
+          - README.md
+          - CHANGELOG.md
+          - CONTRIBUTING.md
+          - CODE_OF_CONDUCT.md
+          - SECURITY.md
+          - ROADMAP.md
+          - docs/**
 
 security:
     - any:

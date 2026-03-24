@@ -118,7 +118,12 @@ jobs:
             # Replaced by Grype in docker.yml (image) + security-full.yml (filesystem).
             # CI filesystem scanning covered by npm audit + Snyk + CodeQL.
             - name: Gitleaks secret scan
-              run: npm run security:secrets
+              uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+              with:
+                  args: detect --source . --no-banner --redact --config .gitleaks.toml
 
     # ─────────────────────────────────────────────────────────────────────
     # E2E — Playwright (reuses build artifact from quality)

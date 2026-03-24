@@ -19,7 +19,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout PR
-              uses: actions/checkout@de0fac2e3c1112f476e07a5c46b0bfb33c0e4b70 # v6.0.2
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
             - name: Scan for dangerous patterns
               run: |

@@ -49,7 +49,7 @@ All third-party GitHub Actions **must** be pinned to a full 40-character commit 
 
 ```yaml
 # ✅ CORRECT — pinned to immutable commit SHA
-uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
 # ❌ FORBIDDEN — mutable tag can be force-pushed by attacker
 uses: actions/checkout@v4

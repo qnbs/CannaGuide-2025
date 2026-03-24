@@ -2,15 +2,93 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-24) — Trivy Supply-Chain Incident Response + Commit Signing Fix
+## Latest Session (2026-03-24) — SSH Signing Root Cause Fix + Security Hardening
+
+**Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
+
+### Session Summary
+
+**Root Cause Analysis — Commit Signing Breakage:**
+Full forensic investigation of why commits oscillated between verified/unsigned/unknown_key over 3 days of development:
+
+1. **Mar 22, ~17:37:** AI copilot introduced `gpg.format=ssh` in `.git/config`, generated SSH signing key, registered as "codespaces-signing-2026-03-22" on GitHub. Flip-flopping between SSH/GPG→ some commits `unknown_key`.
+2. **Mar 23, 08:08–08:41:** 3 more keys generated+registered (v1–v3), rapid key rotation → 5 commits `unknown_key` (signed before matching key was registered).
+3. **Mar 23, 08:46–13:04:** v3 key matched → all commits `valid` ✓.
+4. **Mar 23, 19:06+:** Codespace rebuild/hibernate wiped ephemeral `~/.ssh/signing_key`. Git still had `gpg.format=ssh` pointing to missing file. Pre-commit hook was advisory → **6 unsigned commits** slipped through.
+5. **Mar 24, 06:48:** Previous session removed `gpg.format=ssh` → `gh-gpgsign` activated, but its GPG key `B5690EEEBB952194` is not registered on GitHub → commit `d3ee092` shows `unknown_key`.
+
+**Core Problem:** Ephemeral Codespace storage + no key persistence mechanism + multiple AI sessions generating different keys without cleanup.
+
+### Changes Applied
+
+**SSH Signing Fix:**
+
+- Deleted all 4 orphaned SSH signing keys from GitHub (IDs: 865589, 866156, 866186, 866188)
+- Registered current ED25519 key as "codespaces-cannaguide-2025" on GitHub
+- Git config: `gpg.format=ssh`, `user.signingkey=~/.ssh/signing_key`, `commit.gpgsign=true`
+- Verified: `Good "git" signature for 155236708+qnbs@users.noreply.github.com with ED25519 key`
+
+**Bootstrap Script Rewrite (`scripts/devcontainer/bootstrap-git-signing.mjs`):**
+
+- Auto-generates ED25519 signing key if none exists on Codespace rebuild
+- Creates `~/.ssh/allowed_signers` for local verification
+- Auto-registers key on GitHub via `gh ssh-key add` (graceful fallback if scope missing)
+- Checks if key already registered (avoids duplicates)
+- Neutralises `GIT_COMMITTER_NAME=GitHub` / `GIT_COMMITTER_EMAIL=noreply@github.com` overrides in `~/.bashrc`
+- Standardised key path: `~/.ssh/signing_key` (replaces old v1/v2/v3 naming chaos)
+
+**Repo Security Hardening (via PAT audit):**
+
+- Secret scanning: enabled (push protection active)
+- Dependabot security updates: enabled
+- Default workflow token: read-only (least privilege) ✓
+- All 27 actions: SHA-pinned ✓, all 5 Dockerfiles: digest-pinned ✓
+- Branch protection: signed commits required, linear history, no force pushes ✓
+
+### Repo Settings Audit Results
+
+| Setting                         | Status      | Notes                                            |
+| ------------------------------- | ----------- | ------------------------------------------------ |
+| `required_signatures`           | ✅ enabled  | Signed commits required on main                  |
+| `enforce_admins`                | ⚠ false     | Admin bypasses protections — Scorecard #188/#194 |
+| `required_status_checks`        | ✅ strict   | quality + ci-status required                     |
+| `required_pull_request_reviews` | ✅ 1 review | dismiss stale, codeowner, last push approval     |
+| `required_linear_history`       | ✅ enabled  | No merge commits                                 |
+| `allow_force_pushes`            | ✅ disabled | Force push blocked                               |
+| `default_workflow_permissions`  | ✅ read     | Least privilege                                  |
+| `allowed_actions`               | ⚠ all       | Consider restricting to verified creators        |
+| `secret_scanning`               | ✅ enabled  | Push protection active                           |
+| `secret_scanning_non_provider`  | ❌ disabled | Requires GitHub Advanced Security (Enterprise)   |
+| `dependabot_security_updates`   | ✅ enabled  | Auto PRs for vulnerable deps                     |
+
+### Historical Signing Damage (not fixable without force-push)
+
+- **6 unsigned commits** (Mar 23 19:06 – Mar 24 00:52): `49807f4`, `aeb1ce3`, `8de9e15`, `6dde593`, `d261345`, and 1 more
+- **5 unknown_key commits** (Mar 23 08:08–08:41): Signed with SSH keys that were later deleted/replaced
+- **1 unknown_key commit** (`d3ee092`, Mar 24): Signed with gh-gpgsign GPG key not registered on GitHub
+
+These cannot be fixed without `git rebase --force` which is blocked by branch protection. Future commits will all be verified ✓.
+
+### Immediate Next Tasks (P0 — Admin-Only)
+
+- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating, blocks QG)
+- [ ] CII-Best-Practices badge email verification (bestpractices.dev)
+- [ ] Branch Protection: enforce for admins (Scorecard #188/#194)
+- [ ] Consider: restrict `allowed_actions` to verified creators (currently "all")
+- [ ] Consider: store SSH signing key as Codespace secret for zero-downtime persistence
+
+> **📋 Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+> Previous session review: `docs/session-activity-review-2026-03-24.md`
+
+---
+
+## Previous Session (2026-03-24) — Trivy Supply-Chain Incident Response
 
 **Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
 
 ### Session Summary
 
 Comprehensive incident response to the Trivy supply-chain attack (GHSA-69fq-xp46-6x23, March 2026). Full audit confirmed the repo was **not compromised** (SHA `57a97c7e7821a5776cebc9bb87c984fa69cba8f1` = v0.35.0, the only safe tag), but Trivy was removed entirely as a precautionary measure.
-
-**Commit Signing Fix:** Identified and fixed root cause of unsigned commits — `gpg.format=ssh` in `.git/config` conflicted with Codespaces' `gh-gpgsign` (which uses openpgp format). Removed the conflicting setting; all new commits are now signed and verified.
 
 ### Changes Applied
 
@@ -32,36 +110,10 @@ Comprehensive incident response to the Trivy supply-chain attack (GHSA-69fq-xp46
 - ✅ All 5 Dockerfile FROM directives: digest-pinned (`@sha256:`)
 - ✅ All workflow permissions: already minimized (top-level `contents: read`, job-level escalation only where needed)
 - ✅ No Trivy binary, Docker image, or action reference remains (only removal comments)
-- ✅ Commit signing: fixed and verified
-
-### Immediate Next Tasks (P0 — Admin-Only)
-
-- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating, blocks QG)
-- [ ] CII-Best-Practices badge email verification (bestpractices.dev)
-- [ ] Branch Protection: enforce for admins (Scorecard #188/#194)
-
-> **📋 Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
-> Previous session review: `docs/session-activity-review-2026-03-24.md`
-
----
-
-## Previous Session (2026-03-24) — Development Journey Transparency
-
-**Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
-
-### Session Summary
-
-Added comprehensive IndexedDB cache tests: 21 new tests across 3 files. Test baseline increased from 622 → 643.
-
-| Category                | Fixed     | Remaining      | Notes                                                                             |
-| ----------------------- | --------- | -------------- | --------------------------------------------------------------------------------- |
-| Code Scanning Alerts    | 3/5       | 2 (admin-only) | Pinned-Deps fixed; Code-Review/Branch-Prot need admin                             |
-| Complex Functions       | 14/14     | 0              | All done — 2 sessions                                                             |
-| Duplicate Code (Major)  | 7 groups  | ~115 groups    | sw.js, GrowSetupModal, InlineStrainSelector, ipc.rs, BreedingView, cache services |
-| Infrastructure Security | 6/6       | 0              | (from previous session)                                                           |
-| Antipatterns/Bugs       | 29/29     | 0              | (from previous session)                                                           |
-| Open PRs                | 18 closed | 0              | 17 Dependabot + 1 automation, all branches deleted                                |
-| Test Coverage           | +21 tests | ongoing        | New: indexedDbLruCache (15), localAiCacheService (+3), imageGenCache (+3)         |
+  | Infrastructure Security | 6/6 | 0 | (from previous session) |
+  | Antipatterns/Bugs | 29/29 | 0 | (from previous session) |
+  | Open PRs | 18 closed | 0 | 17 Dependabot + 1 automation, all branches deleted |
+  | Test Coverage | +21 tests | ongoing | New: indexedDbLruCache (15), localAiCacheService (+3), imageGenCache (+3) |
 
 ### Changes Applied This Session
 

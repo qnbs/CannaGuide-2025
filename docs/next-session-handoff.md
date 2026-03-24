@@ -4,11 +4,11 @@
 
 ## Latest Session (2026-03-24) -- Dockerfile Best Practices + CI Slimming
 
-**Status: Dockerfile-based dev container, CI slimmed (3 core jobs), SonarCloud removed, anti-emoji rule added.**
+**Status: Dockerfile-based dev container, CI slimmed (3 core jobs), SonarCloud removed, anti-emoji rule added. All PRs closed (0 open). Branch protection: only `ci-status` required.**
 
 ### Session Summary
 
-Dockerfile best practices for Codespaces dev container. CI pipeline slimmed from 5 to 3 core jobs. SonarCloud workflow removed. Global ASCII-only rule added to copilot-instructions.md.
+Dockerfile best practices for Codespaces dev container. CI pipeline slimmed from 5 to 3 core jobs. SonarCloud workflow removed. Global ASCII-only rule added to copilot-instructions.md. All 13 Dependabot PRs closed + branches deleted. Branch protection simplified (only `ci-status` required check).
 
 1. **Dockerfile-based Dev Container:** Created `.devcontainer/Dockerfile` with Playwright noble base, system deps (ripgrep, gh, jq) baked into image layer with proper apt cache cleanup. `.devcontainer/.dockerignore` added. `devcontainer.json` switched from `image` to `build.dockerfile`.
 2. **CI Pipeline Slimmed:** Removed `docker-integration` and `tauri-check` from main CI (covered by release workflows `docker.yml` and `tauri-build.yml`). CI now: quality -> security -> e2e -> ci-status (3+1 jobs).
@@ -16,6 +16,8 @@ Dockerfile best practices for Codespaces dev container. CI pipeline slimmed from
 4. **Anti-Emoji Rule:** Added "Text Encoding (Mandatory)" section to copilot-instructions.md: ASCII-only in all code/scripts/configs. Exceptions: i18n files and markdown docs.
 5. **copilot-instructions.md Updated:** Added Dev Container section, Config Guard mention, updated file table, Codespaces signing docs, removed SonarCloud references.
 6. **Non-ASCII Cleanup:** Cleaned Unicode characters from `bootstrap-git-signing.mjs` and `setup.sh`.
+7. **PR/Branch Cleanup:** Closed 13 Dependabot PRs (#50-#62) with branches deleted. PR #65 squash-merged. 0 open PRs remain. Only `gh-pages` branch exists besides `main`.
+8. **Branch Protection Simplified:** Removed `quality` from required status checks, keeping only `ci-status` (which gates all sub-jobs).
 
 ### Files Changed
 

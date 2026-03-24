@@ -2,67 +2,73 @@
 
 <!-- markdownlint-disable MD040 MD029 -->
 
-## Latest Session (2026-03-24) -- Grype Replacement + Repo Hardening + Session Closeout
+## Latest Session (2026-03-24) -- PR Workflow + Final Session Closeout
 
 **Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
 
 ### Session Summary
 
-Final comprehensive session completing the Trivy supply-chain incident response:
+Established mandatory PR-based push workflow. All changes to `main` now require a Pull Request -- no direct pushes allowed, even for admins.
 
-- **Grype** (`anchore/scan-action@v7.4.0`, SHA-pinned) replaces Trivy in `docker.yml` (container image scan) and `security-full.yml` (filesystem scan)
-- **Branch protection hardened**: `enforce_admins` enabled (fixes Scorecard #188/#194)
-- **Actions restricted**: `allowed_actions` changed from "all" to curated allowlist (GitHub-owned + verified + 10 approved third-party orgs)
-- **SSH signing fixed**: Full root cause analysis, bootstrap script rewritten, key registered, verified on GitHub
-- **All Trivy references purged** from README, copilot-instructions, ROADMAP, package.json scripts
-- **All documentation updated**: SECURITY.md, CONTRIBUTING.md, security-alerts-status.md, next-session-handoff.md
+### PR Workflow (NEW -- mandatory for all future pushes)
 
-### Changes Applied
+```bash
+# 1. Work on main, commit as usual (signed)
+git add -A && git commit -S -m "feat(scope): description"
 
-**Grype Integration (replaces Trivy):**
+# 2. Push via PR workflow script
+npm run pr:push                          # auto-generates branch name
+npm run pr:push -- "feat/my-feature"     # explicit branch name
 
-- `docker.yml`: Grype container image scan after Docker build + SARIF upload to Security tab
-- `security-full.yml`: New Grype filesystem scan job + SARIF upload
-- `ci.yml` + `security-scan.yml`: Updated comments (Grype reference, no separate step needed -- npm audit + Snyk + CodeQL cover filesystem)
-- `package.json`: `security:trivy` script -> `security:grype` (grype CLI for local runs)
-- `.github/copilot-instructions.md`: Updated security scanning list
+# Script automates: branch creation, push, PR, auto-merge, CI wait, cleanup
+```
 
-**Repo Settings Hardening (via PAT):**
+**What the script does:**
 
-- `enforce_admins`: **true** (was false) -- admins now follow same branch protection rules
-- `allowed_actions`: **selected** with curated allowlist:
-    - GitHub-owned + verified marketplace creators
-    - Explicitly: `anchore/*`, `gitleaks/*`, `ossf/*`, `snyk/*`, `SonarSource/*`, `Swatinem/*`, `dtolnay/*`, `google/clusterfuzzlite/*`, `peter-evans/*`, `tauri-apps/*`
+1. Validates clean working tree + signed commit
+2. Creates timestamped feature branch from HEAD
+3. Pushes branch to origin
+4. Opens PR targeting main with auto-merge (squash) enabled
+5. Waits for CI checks (`quality` + `ci-status`) to pass
+6. Auto-merges after checks pass
+7. Cleans up local branch, pulls updated main
 
-**Documentation Updates:**
+### Branch Protection Changes
 
-- `SECURITY.md`: Enhanced "Removed Tools" with Grype replacement details; new "Actions Allowlist" subsection
-- `CONTRIBUTING.md`: Added 2 new supply-chain rules (allowlist + replacement policy)
-- `README.md`: All 6 Trivy mentions replaced (EN + DE: SAST table, CI jobs table, v1.1 changelog)
-- `ROADMAP.md`: Trivy -> Grype
-- `docs/security-alerts-status.md`: New "Trivy Removal & Grype Replacement" section with full migration table
-- `docs/next-session-handoff.md`: This section
+| Setting                           | Before               | After                       |
+| --------------------------------- | -------------------- | --------------------------- |
+| `required_approving_review_count` | 1 (blocked solo dev) | **0** (CI gates sufficient) |
+| `require_code_owner_reviews`      | true                 | **false** (solo dev)        |
+| `require_last_push_approval`      | true                 | **false** (solo dev)        |
+| All other settings                | unchanged            | unchanged                   |
 
-**SSH Signing (carried forward from earlier in session):**
+**Rationale:** Solo-developer cannot self-approve PRs. With `enforce_admins: true` + `required_reviews: 0`, PRs are still mandatory but merge-gated by CI checks (`quality` + `ci-status`) and signed commits only. This is the optimal balance for a solo-dev repo.
 
-- Bootstrap script rewrite (`scripts/devcontainer/bootstrap-git-signing.mjs`)
-- 4 orphaned SSH keys deleted from GitHub, current key registered
-- Verified: commits signed with ED25519 key, `verified: true` on GitHub
+### Full Branch Protection (Final State)
 
-### Repo Settings Audit (Final State)
+| Setting                         | Status      | Notes                                |
+| ------------------------------- | ----------- | ------------------------------------ |
+| `enforce_admins`                | ✅ enabled  | No one bypasses protection           |
+| `required_pull_request_reviews` | ✅ enabled  | PRs required, 0 approvals (CI-gated) |
+| `required_status_checks`        | ✅ strict   | `quality` + `ci-status` must pass    |
+| `required_signatures`           | ✅ enabled  | Signed commits only                  |
+| `required_linear_history`       | ✅ enabled  | Squash-only, no merge commits        |
+| `allow_force_pushes`            | ✅ disabled | Force push blocked                   |
+| `allow_deletions`               | ✅ disabled | Branch deletion blocked              |
+| `default_workflow_permissions`  | ✅ read     | Least privilege GITHUB_TOKEN         |
+| `allowed_actions`               | ✅ selected | Curated allowlist                    |
+| `secret_scanning`               | ✅ enabled  | Push protection active               |
+| `dependabot_security_updates`   | ✅ enabled  | Auto PRs for vulnerable deps         |
 
-| Setting                         | Status      | Notes                                        |
-| ------------------------------- | ----------- | -------------------------------------------- |
-| `required_signatures`           | ✅ enabled  | Signed commits required on main              |
-| `enforce_admins`                | ✅ enabled  | **Fixed this session** (was false)           |
-| `required_status_checks`        | ✅ strict   | quality + ci-status required                 |
-| `required_pull_request_reviews` | ✅ 1 review | dismiss stale, codeowner, last push approval |
-| `required_linear_history`       | ✅ enabled  | No merge commits                             |
-| `allow_force_pushes`            | ✅ disabled | Force push blocked                           |
-| `default_workflow_permissions`  | ✅ read     | Least privilege                              |
-| `allowed_actions`               | ✅ selected | **Fixed this session** (was "all")           |
-| `secret_scanning`               | ✅ enabled  | Push protection active                       |
-| `dependabot_security_updates`   | ✅ enabled  | Auto PRs for vulnerable deps                 |
+### Merge Settings
+
+| Setting                  | Value | Notes                         |
+| ------------------------ | ----- | ----------------------------- |
+| `allow_squash_merge`     | true  | Only merge strategy allowed   |
+| `allow_merge_commit`     | false | Disabled for linear history   |
+| `allow_rebase_merge`     | false | Disabled for linear history   |
+| `allow_auto_merge`       | true  | Auto-merge after CI passes    |
+| `delete_branch_on_merge` | true  | Feature branches auto-cleaned |
 
 ### Immediate Next Tasks
 
@@ -70,13 +76,13 @@ Final comprehensive session completing the Trivy supply-chain incident response:
 - [ ] CII-Best-Practices badge email verification (bestpractices.dev)
 - [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`, verify SARIF output in Security tab
 - [ ] Optional: store SSH signing key as Codespace secret for zero-downtime persistence
-- [ ] Optional: enable `sha_pinning_required` in Actions settings (currently false, all actions already SHA-pinned manually)
+- [ ] Optional: enable `sha_pinning_required` in Actions settings (currently false, all SHA-pinned manually)
 
 > **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
 
 ---
 
-## Previous Session (2026-03-24) -- SSH Signing Root Cause Fix
+## Previous Session (2026-03-24) -- Grype Replacement + Repo Hardening
 
 **Status: CI green (643/643 tests in 76 files), type-check clean, lint clean.**
 

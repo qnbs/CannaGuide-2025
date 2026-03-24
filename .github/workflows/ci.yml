@@ -38,7 +38,7 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
 
@@ -99,7 +99,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
 
@@ -118,7 +118,11 @@ jobs:
             # Replaced by Grype in docker.yml (image) + security-full.yml (filesystem).
             # CI filesystem scanning covered by npm audit + Snyk + CodeQL.
             - name: Gitleaks secret scan
-              run: npm run security:secrets
+              run: |
+                  GITLEAKS_VERSION="8.24.3"
+                  curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+                    | tar -xz -C /usr/local/bin gitleaks
+                  gitleaks detect --source . --no-banner --redact --config .gitleaks.toml -v
 
     # ─────────────────────────────────────────────────────────────────────
     # E2E — Playwright (reuses build artifact from quality)
@@ -130,7 +134,7 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -176,7 +180,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Validate docker-compose.yml syntax
               run: docker compose config --quiet
@@ -254,7 +258,7 @@ jobs:
         timeout-minutes: 20
         steps:
             - name: Checkout
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci

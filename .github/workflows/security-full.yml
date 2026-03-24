@@ -22,7 +22,7 @@ jobs:
             security-events: write
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Initialize CodeQL
               uses: github/codeql-action/init@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
@@ -35,7 +35,7 @@ jobs:
                           - coverage
 
             - name: Setup Node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -56,10 +56,10 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Setup Node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -77,17 +77,16 @@ jobs:
         timeout-minutes: 20
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
 
             - name: Run Gitleaks
-              uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
-              continue-on-error: true
-              env:
-                  GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-              with:
-                  args: detect --source . --no-banner --redact --config .gitleaks.toml
+              run: |
+                  GITLEAKS_VERSION="8.24.3"
+                  curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+                    | tar -xz -C /usr/local/bin gitleaks
+                  gitleaks detect --source . --no-banner --redact --config .gitleaks.toml -v
 
     grype:
         name: Grype Vulnerability Scan
@@ -98,7 +97,7 @@ jobs:
             security-events: write
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Run Grype filesystem scan
               uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
@@ -127,7 +126,7 @@ jobs:
             image: semgrep/semgrep
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Run Semgrep
               run: semgrep scan --config auto --metrics=off --sarif -o semgrep-results.sarif
@@ -144,10 +143,10 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Setup Node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -169,7 +168,7 @@ jobs:
             actions: read
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
 

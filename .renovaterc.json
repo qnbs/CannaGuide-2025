@@ -35,13 +35,7 @@
         },
         {
             "description": "Testing tools (grouped)",
-            "matchPackagePatterns": [
-                "^vitest",
-                "^@vitest/",
-                "^playwright",
-                "^@playwright/",
-                "^@stryker-mutator/"
-            ],
+            "matchPackagePatterns": ["^vitest", "^@vitest/", "^playwright", "^@playwright/"],
             "groupName": "testing",
             "labels": ["dependencies", "tests"],
             "prPriority": 3

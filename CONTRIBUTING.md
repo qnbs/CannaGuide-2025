@@ -81,6 +81,21 @@ No environment variables are required for local development. AI features require
 git checkout -b feature/my-new-feature
 ```
 
+### Push Workflow (Maintainers)
+
+Direct pushes to `main` are blocked (`enforce_admins: true`). All changes go through Pull Requests:
+
+```bash
+# 1. Commit your changes on main (signed)
+git add -A && git commit -S -m "feat(scope): description"
+
+# 2. Push via automated PR workflow
+npm run pr:push                          # auto-generated branch name
+npm run pr:push -- "feat/my-feature"     # explicit branch name
+```
+
+The `pr:push` script (`scripts/github/pr-push.mjs`) automates: branch creation → push → PR → auto-merge (squash) → CI wait → cleanup. PRs are merge-gated by CI checks (`quality` + `ci-status`) and signed commits.
+
 ---
 
 ## Commit Convention

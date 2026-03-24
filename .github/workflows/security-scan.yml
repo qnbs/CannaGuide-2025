@@ -18,12 +18,12 @@ jobs:
         timeout-minutes: 45
         steps:
             - name: Checkout repository
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   fetch-depth: 0
 
             - name: Setup Node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -46,7 +46,11 @@ jobs:
               run: npm run security:eslint
 
             - name: Gitleaks secret scan
-              run: npm run security:secrets
+              run: |
+                  GITLEAKS_VERSION="8.24.3"
+                  curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+                    | tar -xz -C /usr/local/bin gitleaks
+                  gitleaks detect --source . --no-banner --redact --config .gitleaks.toml -v
 
             - name: Semgrep scan
               continue-on-error: true

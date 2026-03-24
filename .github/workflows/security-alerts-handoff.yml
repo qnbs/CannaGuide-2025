@@ -24,12 +24,9 @@ jobs:
             contents: write
             security-events: read
             actions: read
-            pull-requests: write
         steps:
             - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-              with:
-                  persist-credentials: false
 
             - name: Setup Node ${{ env.NODE_VERSION }}
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
@@ -44,22 +41,11 @@ jobs:
                   REPO_BRANCH: main
               run: node ./scripts/security/update-alerts-report.mjs
 
-            - name: Create update PR when report changed
-              uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676
-              with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  commit-message: 'docs(security): refresh automated alerts report'
-                  title: 'docs(security): refresh automated alerts report'
-                  body: |
-                      Automated refresh of `docs/security-alerts-status.md`.
-
-                      Source:
-                      - `.github/workflows/security-alerts-handoff.yml`
-                      - `scripts/security/update-alerts-report.mjs`
-                  branch: automation/security-alerts-handoff
-                  delete-branch: true
-                  add-paths: |
-                      docs/security-alerts-status.md
-                  labels: |
-                      security
-                      automation
+            - name: Commit and push if changed
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add docs/security-alerts-status.md docs/security-alerts-badge.json
+                  git diff --cached --quiet && echo "No changes to commit" && exit 0
+                  git commit -m "docs(security): refresh automated alerts report"
+                  git push

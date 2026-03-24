@@ -201,3 +201,18 @@ const markdown = [
 
 await writeFile('docs/security-alerts-status.md', markdown, 'utf8')
 console.log('Updated docs/security-alerts-status.md')
+
+const totalAlerts = dependabotAlerts.length + codeScanningAlerts.length
+const badgeColor = totalAlerts === 0 ? 'brightgreen' : totalAlerts <= 3 ? 'yellow' : 'red'
+const badgeJson = JSON.stringify(
+    {
+        schemaVersion: 1,
+        label: 'security alerts',
+        message: `${totalAlerts} open`,
+        color: badgeColor,
+    },
+    null,
+    2,
+)
+await writeFile('docs/security-alerts-badge.json', badgeJson + '\n', 'utf8')
+console.log('Updated docs/security-alerts-badge.json')

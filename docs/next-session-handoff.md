@@ -2,7 +2,46 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-24) -- Dockerfile Best Practices + CI Slimming
+## Latest Session (2026-03-24) -- Security Alerts Fix + Deployment Cleanup
+
+**Status: security-alerts-handoff workflow fixed (direct commit, no PR). Dynamic security alerts badge added to README. 236 old deployments deleted. 2 unused environments removed. All PRs merged (0 open).**
+
+### Session Summary
+
+Fixed failing `security-alerts-handoff.yml` workflow, added dynamic security alerts badge, cleaned GitHub deployments and environments.
+
+1. **security-alerts-handoff Fix:** Root cause: "GitHub Actions is not permitted to create or approve pull requests". Replaced `peter-evans/create-pull-request` with direct git commit+push (solo-dev, no PR overhead). Removed `pull-requests: write` permission, removed `persist-credentials: false` from checkout.
+2. **Dynamic Security Alerts Badge:** Script now generates `docs/security-alerts-badge.json` (shields.io endpoint format). Badge reads from `raw.githubusercontent.com` -- auto-updates on each workflow run. Added to both EN and DE README sections.
+3. **Deployment Cleanup:** 223 old `github-pages` deployments deleted (kept latest). 13 `container-pr-validation` deployments deactivated + deleted.
+4. **Environment Cleanup:** Deleted `container-pr-validation` and `copilot` environments (unused). 4 remain: `github-pages`, `container-release`, `desktop-release`, `mobile-release`.
+5. **PR #66 merged:** Session closure docs + sonar config comment.
+
+### Files Changed
+
+| File                                            | Change                                     |
+| ----------------------------------------------- | ------------------------------------------ |
+| `.github/workflows/security-alerts-handoff.yml` | Direct commit replaces create-pull-request |
+| `scripts/security/update-alerts-report.mjs`     | Badge JSON generation added                |
+| `docs/security-alerts-badge.json`               | **New** -- shields.io endpoint badge data  |
+| `README.md`                                     | Dynamic security alerts badge (EN + DE)    |
+| `docs/next-session-handoff.md`                  | Updated with this session                  |
+
+### Immediate Next Tasks
+
+- [ ] Trigger `security-alerts-handoff.yml` via `workflow_dispatch` to verify fix
+- [ ] Rebuild Codespace to test Dockerfile-based build
+- [ ] Enable Codespaces Prebuilds (Repo Settings -> Codespaces -> Prebuilds)
+- [ ] Pin Playwright base image SHA digest (optional hardening)
+- [ ] CII-Best-Practices badge email verification (#187, bestpractices.dev)
+- [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`
+
+> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+
+---
+
+## Previous Session (2026-03-24) -- Dockerfile Best Practices + CI Slimming
+
+## Previous Session (2026-03-24) -- Dockerfile Best Practices + CI Slimming
 
 **Status: Dockerfile-based dev container, CI slimmed (3 core jobs), SonarCloud removed, anti-emoji rule added. All PRs closed (0 open). Branch protection: only `ci-status` required.**
 

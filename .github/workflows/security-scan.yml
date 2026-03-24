@@ -50,7 +50,7 @@ jobs:
                   GITLEAKS_VERSION="8.24.3"
                   curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
                     | tar -xz -C /usr/local/bin gitleaks
-                  npm run security:secrets
+                  gitleaks detect --source . --no-banner --redact --config .gitleaks.toml -v
 
             - name: Semgrep scan
               continue-on-error: true

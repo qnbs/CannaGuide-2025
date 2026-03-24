@@ -1,10 +1,10 @@
 # Next Session Handoff
 
-<!-- markdownlint-disable MD040 MD029 -->
+<!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-24) -- CI Pipeline Audit & Fix
+## Latest Session (2026-03-24) -- CI Pipeline Audit, Fix & Optimization
 
-**Status: All CI blockers resolved. Pipeline ready for green run.**
+**Status: All CI blockers resolved. 3 non-required check failures fixed. Pipeline ready for full green run.**
 
 ### Session Summary
 
@@ -16,6 +16,10 @@ Comprehensive CI pipeline audit and fix across all 21 workflows. Key changes:
 4. **SonarCloud Advisory:** Added `continue-on-error: true` to scan step. Expanded `sonar.coverage.exclusions` for untestable code. SonarCloud is informational, not a CI gate.
 5. **Stryker Removed:** Fully removed mutation.yml, stryker.config.json, 3 @stryker-mutator/\* deps (132 packages), all config refs. Deferred to Q3 2026 — reduces CI attack surface and GitHub Actions minutes.
 6. **Scorecard Alerts:** #188 (Code-Review) expected for solo-dev (0 reviews). #194 (Branch-Protection) should clear on next Scorecard run with improved enforce_admins settings.
+7. **Labeler v6 Fix (NEW):** Converted `.github/labeler.yml` from invalid flat-string / `any:` format to proper `changed-files` + `any-glob-to-any-file` format required by `actions/labeler@v6`.
+8. **ClusterFuzzLite SHA Fix (NEW):** Corrected `google/clusterfuzzlite` SHA typo (`884713f...` → `884713a6c30a92e5e8544c39945cd7cb630abcd1`). v1 tag commit now resolves correctly.
+9. **Docker Environment Fix (NEW):** Removed `container-pr-validation` environment requirement for PR builds — PRs only build+test (no push), so no environment approval needed.
+10. **security-scan.yml Fix (NEW):** Eliminated double Gitleaks execution (was running both direct CLI and `npm run security:secrets` redundantly).
 
 ### Files Changed
 
@@ -24,8 +28,11 @@ Comprehensive CI pipeline audit and fix across all 21 workflows. Key changes:
 | `scripts/devcontainer/bootstrap-git-signing.mjs` | TOCTOU fix: existsSync→try/catch                     |
 | `.github/workflows/ci.yml`                       | Gitleaks: action→CLI install, checkout/setup-node v6 |
 | `.github/workflows/security-full.yml`            | Gitleaks: action→CLI install, actions v6             |
-| `.github/workflows/security-scan.yml`            | Gitleaks: install before run, actions v6             |
+| `.github/workflows/security-scan.yml`            | Gitleaks: install before run, deduplicated execution |
 | `.github/workflows/sonarcloud.yml`               | continue-on-error on scan step, actions v6           |
+| `.github/workflows/cflite_pr.yml`                | ClusterFuzzLite SHA typo fix (v1 commit)             |
+| `.github/workflows/docker.yml`                   | Removed PR environment blocker                       |
+| `.github/labeler.yml`                            | Full v6 format migration (changed-files)             |
 | `.github/workflows/*.yml` (all 21)               | checkout v6.0.2 + setup-node v6.3.0                  |
 | `.github/actions/setup-node-ci/action.yml`       | setup-node v6.3.0                                    |
 | `sonar-project.properties`                       | Expanded coverage exclusions, removed .stryker-tmp   |

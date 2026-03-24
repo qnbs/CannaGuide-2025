@@ -1,96 +1,128 @@
 documentation:
-    - any:
-          - README.md
-          - CHANGELOG.md
-          - CONTRIBUTING.md
-          - CODE_OF_CONDUCT.md
-          - SECURITY.md
-          - ROADMAP.md
-          - docs/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - README.md
+                - CHANGELOG.md
+                - CONTRIBUTING.md
+                - CODE_OF_CONDUCT.md
+                - SECURITY.md
+                - ROADMAP.md
+                - docs/**
 
 security:
-    - any:
-          - .github/**
-          - package.json
-          - package-lock.json
-          - .pre-commit-config.yaml
-          - .renovaterc.json
-          - .gitguardian.yml
-          - sonar-project.properties
-          - services/cryptoService.ts
-          - securityHeaders.ts
+    - changed-files:
+          - any-glob-to-any-file:
+                - .github/**
+                - package.json
+                - package-lock.json
+                - .pre-commit-config.yaml
+                - .renovaterc.json
+                - .gitguardian.yml
+                - sonar-project.properties
+                - services/cryptoService.ts
+                - securityHeaders.ts
 
 tests:
-    - tests/**
-    - '**/*.test.ts'
-    - '**/*.test.tsx'
-    - vitest.setup.ts
-    - playwright.config.ts
-    - playwright-ct.config.ts
+    - changed-files:
+          - any-glob-to-any-file:
+                - tests/**
+                - '**/*.test.ts'
+                - '**/*.test.tsx'
+                - vitest.setup.ts
+                - playwright.config.ts
+                - playwright-ct.config.ts
 
 ai:
-    - services/ai*.ts
-    - services/gemini*.ts
-    - services/localAi*.ts
-    - services/localAI*.ts
-    - services/growLogRagService.ts
-    - workers/inference.worker.ts
-    - packages/ai-core/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - services/ai*.ts
+                - services/gemini*.ts
+                - services/localAi*.ts
+                - services/localAI*.ts
+                - services/growLogRagService.ts
+                - workers/inference.worker.ts
+                - packages/ai-core/**
 
 ui:
-    - components/**
-    - styles.css
-    - tailwind.config.cjs
+    - changed-files:
+          - any-glob-to-any-file:
+                - components/**
+                - styles.css
+                - tailwind.config.cjs
 
 plants:
-    - stores/slices/plantSlice*
-    - components/views/PlantView*
-    - data/strains*
-    - data/strains/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - stores/slices/plantSlice*
+                - components/views/PlantView*
+                - data/strains*
+                - data/strains/**
 
 i18n:
-    - locales/**
-    - i18n.ts
+    - changed-files:
+          - any-glob-to-any-file:
+                - locales/**
+                - i18n.ts
 
 hooks:
-    - hooks/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - hooks/**
 
 services:
-    - services/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - services/**
 
 types:
-    - types.ts
-    - types/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - types.ts
+                - types/**
 
 workers:
-    - workers/**
-    - simulation.worker.ts
+    - changed-files:
+          - any-glob-to-any-file:
+                - workers/**
+                - simulation.worker.ts
 
 tauri:
-    - src-tauri/**
-    - apps/desktop/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - src-tauri/**
+                - apps/desktop/**
 
 docker:
-    - Dockerfile
-    - Dockerfile.dev
-    - docker-compose.yml
-    - docker/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - Dockerfile
+                - Dockerfile.dev
+                - docker-compose.yml
+                - docker/**
 
 iot:
-    - packages/iot-mocks/**
-    - services/iotService*
-    - hooks/useSensorData.ts
+    - changed-files:
+          - any-glob-to-any-file:
+                - packages/iot-mocks/**
+                - services/iotService*
+                - hooks/useSensorData.ts
 
 pwa:
-    - public/sw.js
-    - public/manifest.json
+    - changed-files:
+          - any-glob-to-any-file:
+                - public/sw.js
+                - public/manifest.json
 
 ci:
-    - .github/workflows/**
+    - changed-files:
+          - any-glob-to-any-file:
+                - .github/workflows/**
 
 config:
-    - vite.config.ts
-    - tsconfig.json
-    - eslint.config.js
-    - biome.json
-    - postcss.config.cjs
+    - changed-files:
+          - any-glob-to-any-file:
+                - vite.config.ts
+                - tsconfig.json
+                - eslint.config.js
+                - biome.json
+                - postcss.config.cjs

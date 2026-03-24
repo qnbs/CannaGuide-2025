@@ -25,7 +25,7 @@ jobs:
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
             - name: Initialize CodeQL
-              uses: github/codeql-action/init@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
+              uses: github/codeql-action/init@38697555549f1db7851b81482ff19f1fa5c4fedc
               with:
                   languages: javascript-typescript
                   config: |
@@ -48,7 +48,7 @@ jobs:
               run: npm run build
 
             - name: Perform CodeQL analysis
-              uses: github/codeql-action/analyze@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
+              uses: github/codeql-action/analyze@38697555549f1db7851b81482ff19f1fa5c4fedc
 
     dependabot-check:
         name: Dependabot Check
@@ -110,7 +110,7 @@ jobs:
 
             - name: Upload Grype SARIF
               if: always() && steps.grype.outputs.sarif != ''
-              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
+              uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc
               with:
                   sarif_file: ${{ steps.grype.outputs.sarif }}
                   category: grype-filesystem
@@ -132,7 +132,7 @@ jobs:
               run: semgrep scan --config auto --metrics=off --sarif -o semgrep-results.sarif
 
             - name: Upload Semgrep results
-              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
+              uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc
               if: always()
               with:
                   sarif_file: semgrep-results.sarif
@@ -181,7 +181,7 @@ jobs:
                   publish_results: true
 
             - name: Upload Scorecard results
-              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
+              uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc
               if: always()
               with:
                   sarif_file: scorecard-results.sarif

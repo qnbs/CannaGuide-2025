@@ -47,7 +47,7 @@ jobs:
 
             - name: 📤 Upload Snyk SARIF
               if: ${{ env.HAS_TOKEN == 'true' && always() }}
-              uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3
+              uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc
               with:
                   sarif_file: snyk-results.sarif
 

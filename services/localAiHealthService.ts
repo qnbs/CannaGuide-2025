@@ -285,7 +285,21 @@ export const classifyDevice = (): DeviceClass => {
  * Recommend model configuration based on device capabilities and current state.
  * Integrates the progressive quantization profile for VRAM-aware model selection.
  */
-export const getModelRecommendation = (): ModelRecommendation => {
+export const getModelRecommendation = (options?: { ecoMode?: boolean }): ModelRecommendation => {
+    // Eco-mode forces minimal resource usage
+    if (options?.ecoMode) {
+        return {
+            textModel: 'qwen3',
+            enableWebLlm: false,
+            enableImageGen: false,
+            preferredBackend: 'wasm',
+            reason: 'Eco-mode enabled — using lightweight model and WASM backend to conserve resources.',
+            quantLevel: 'q4',
+            sizeTier: '0.5B',
+            estimatedSavingsPercent: 70,
+        }
+    }
+
     const deviceClass = classifyDevice()
     const memory = getMemoryInfo()
     const backend = detectOnnxBackend()

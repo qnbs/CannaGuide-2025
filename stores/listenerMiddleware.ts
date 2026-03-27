@@ -5,7 +5,7 @@ import {
     ForkedTask,
 } from '@reduxjs/toolkit'
 import type { RootState, AppDispatch } from './store'
-import { i18nInstance, getT, loadLocale } from '@/i18n'
+import { i18nInstance, getT, loadLocale, SupportedLocale } from '@/i18n'
 import { Language, Strain, View } from '@/types'
 import type { AiMode, PlantProblem } from '@/types'
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice'
@@ -101,7 +101,7 @@ startAppListening({
             if (i18nInstance.language !== newLang) {
                 // Load the new language bundle on demand if not already loaded
                 if (!i18nInstance.hasResourceBundle(newLang, 'translation')) {
-                    const translations = await loadLocale(newLang as 'en' | 'de')
+                    const translations = await loadLocale(newLang as SupportedLocale)
                     i18nInstance.addResourceBundle(newLang, 'translation', translations)
                 }
                 await i18nInstance.changeLanguage(newLang)

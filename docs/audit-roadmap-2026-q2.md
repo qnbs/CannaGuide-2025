@@ -69,11 +69,14 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-03-24 (Development Journey Transparency)
-Nächste Priorität:  Sprint 1 — P0 Admin-Blocker
-Sprint-Fortschritt: S1 [0/3] | S2 [0/4] | S3 [0/5] | S4 [0/2] | S5 [0/8] | S6 [0/7]
-Gesamtfortschritt:  ████░░░░░░░░░░░░░░░░ 0/29 Tasks (0%)
-Blocker:            SonarCloud Hotspot Review (Admin UI), CII Badge (Email), Branch Protection (Admin-PAT)
+Letzte Session:     2026-03-27 (Full Audit Plan Implementation -- 12 Phases)
+Naechste Prioritaet:  i18n Vervollstaendigung, Nutrient UI, DSGVO i18n, Unit Tests
+Sprint-Fortschritt: S1 [0/3] | S2 [0/4] | S3 [2/5] | S4 [0/2] | S5 [5/8] | S6 [0/7]
+Gesamtfortschritt:  ███████░░░░░░░░░░░░░ 7/29 Tasks (~24%)
+Blocker:            SonarCloud Hotspot Review (Admin UI), CII Badge (Email)
+Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
+                        Three.js-Splitting, i18n ES/FR/NL, Nutrient-Plugin, DSGVO,
+                        Eco-Mode, ARCHITECTURE.md, Lighthouse-Fonts
 ```
 
 ---
@@ -499,6 +502,7 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
 
 | Datum      | Session-Fokus                    | Sprint       | Fortschritt                                          | Review-Doc                                      |
 | ---------- | -------------------------------- | ------------ | ---------------------------------------------------- | ----------------------------------------------- |
+| 2026-03-27 | Full Audit Plan (12 Phases)      | S3 + S5      | 24 files modified, 11 new, 12/12 phases done         | [review](session-activity-review-2026-03-27.md) |
 | 2026-03-24 | Development Journey Transparency | Vorbereitung | Roadmap erstellt, README + AboutTab + i18n + Handoff | [review](session-activity-review-2026-03-24.md) |
 | 2026-03-23 | Cache Tests + Coverage Boost     | Vorbereitung | 643 Tests, IndexedDB-Cache-Tests                     | [review](session-activity-review-2026-03-23.md) |
 | 2026-03-23 | CodeAnt Cleanup + PR Purge       | Vorbereitung | 18 PRs geschlossen, CodeAnt vollständig              | [review](session-activity-review-2026-03-23.md) |
@@ -518,7 +522,7 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
     - UI/UX Audit: [`ui-ux-audit.md`](../ui-ux-audit.md)
     - Security Status: [`docs/security-alerts-status.md`](security-alerts-status.md)
     - Sonar Handoff: [`docs/sonar-handoff-review-2026-03-21.md`](sonar-handoff-review-2026-03-21.md)
-    - Session Todo: [`docs/session-activity-todo-2026-03-24.md`](session-activity-todo-2026-03-24.md)
+    - Session Todo: [`docs/session-activity-todo-2026-03-27.md`](session-activity-todo-2026-03-27.md)
 7. **Conventional Commit Format:** `<type>(<scope>): <description>` — Typen: feat, fix, docs, refactor, test, perf, chore, a11y, i18n, security
 
 ---

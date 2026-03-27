@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
     Plant,
     ModalType,
@@ -50,6 +50,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
     const [details, setDetails] = useState<Partial<JournalEntryDetails>>({})
     const [image, setImage] = useState<string | null>(null)
     const [isCameraOpen, setIsCameraOpen] = useState(false)
+    const cameraButtonRef = useRef<HTMLButtonElement>(null)
 
     const handleSubmit = async () => {
         let entryType: JournalEntryType
@@ -173,6 +174,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                 <CameraModal
                     isOpen={isCameraOpen}
                     onClose={() => setIsCameraOpen(false)}
+                    triggerRef={cameraButtonRef}
                     onCapture={async (dataUrl) => {
                         const timelineMetadata = photoTimelineService.buildPhotoTimelineMetadata(
                             plant,
@@ -336,6 +338,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                         }}
                                     />
                                     <Button
+                                        ref={cameraButtonRef}
                                         variant="secondary"
                                         className="w-full min-h-11"
                                         onClick={() => setIsCameraOpen(true)}

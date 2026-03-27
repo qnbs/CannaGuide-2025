@@ -70,7 +70,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
             onSelect(strain)
         }, [onSelect, strain])
         const cardClassName = `flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`
-        const favoriteButtonClassName = `!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`
+        const favoriteButtonClassName = `!p-2.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`
 
         return (
             <Card className={cardClassName} style={{ animationDelay: `${index * 20}ms` }}>

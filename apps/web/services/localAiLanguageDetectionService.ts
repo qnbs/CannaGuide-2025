@@ -1,4 +1,4 @@
-import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
+import { createCachedPipelineLoader } from './localAIModelLoader'
 import { captureLocalAiError } from './sentryService'
 import DOMPurify from 'dompurify'
 
@@ -35,20 +35,7 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
 // ─── Model ───────────────────────────────────────────────────────────────────
 const LANG_MODEL_ID = 'Xenova/mobilebert-uncased-mnli'
 
-let langPipeline: Promise<LocalAiPipeline> | null = null
-
-const loadLangPipeline = (): Promise<LocalAiPipeline> => {
-    if (!langPipeline) {
-        langPipeline = loadTransformersPipeline('zero-shot-classification', LANG_MODEL_ID, {
-            quantized: true,
-        }).catch((error: unknown) => {
-            langPipeline = null
-            captureLocalAiError(error, { model: LANG_MODEL_ID, stage: 'preload' })
-            throw error
-        })
-    }
-    return langPipeline
-}
+const loadLangPipeline = createCachedPipelineLoader('zero-shot-classification', LANG_MODEL_ID)
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -281,5 +268,6 @@ export const preloadLanguageDetectionModel = async (): Promise<boolean> => {
 
 /** Reset internal state (tests). */
 export const resetLanguageDetectionPipeline = (): void => {
-    langPipeline = null
+    // Pipeline is managed by createCachedPipelineLoader;
+    // use clearPipelineCache() from localAIModelLoader for full reset.
 }

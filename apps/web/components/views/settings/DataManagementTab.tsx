@@ -25,7 +25,13 @@ import { addNotification } from '@/stores/slices/uiSlice'
 import { dbService } from '@/services/dbService'
 import { selectSettings, selectSimulation } from '@/stores/selectors'
 import { setSetting } from '@/stores/slices/settingsSlice'
-import { eraseAllData, exportAllUserData } from '@/services/privacyService'
+import {
+    eraseAllData,
+    exportAllUserData,
+    eraseSingleDatabase,
+    getKnownDatabaseNames,
+} from '@/services/privacyService'
+import * as Sentry from '@sentry/react'
 import { CommunitySharePanel } from './CommunitySharePanel'
 const CloudSyncPanel = lazy(() => import('./CloudSyncPanel'))
 import {
@@ -232,6 +238,33 @@ const DataManagementTab: React.FC = () => {
             setIsExportingAll(false)
         }
     }, [])
+
+    const knownDatabases = getKnownDatabaseNames()
+
+    const handleEraseSingleDb = useCallback(
+        async (dbName: string) => {
+            const ok = await eraseSingleDatabase(dbName)
+            Sentry.captureMessage(`gdpr.single_db_delete`, {
+                level: 'info',
+                tags: { database: dbName, success: String(ok) },
+            })
+            dispatch(
+                addNotification({
+                    type: ok ? 'success' : 'error',
+                    message: ok
+                        ? t('settingsView.data.singleDbDeleteSuccess', {
+                              db: dbName,
+                              defaultValue: `${dbName} deleted.`,
+                          })
+                        : t('settingsView.data.singleDbDeleteFail', {
+                              db: dbName,
+                              defaultValue: `Failed to delete ${dbName}.`,
+                          }),
+                }),
+            )
+        },
+        [dispatch, t],
+    )
 
     const handleRunStorageCleanup = async () => {
         setIsCleanupRunning(true)
@@ -632,6 +665,40 @@ const DataManagementTab: React.FC = () => {
                                     ? t('common.loading')
                                     : t('common.export', 'Export')}
                             </Button>
+                        </div>
+                        {/* Individual DB Deletion (Art. 17 partial) */}
+                        <div className="p-3 bg-slate-800/50 rounded-lg space-y-2">
+                            <h4 className="font-bold text-slate-100">
+                                {t(
+                                    'settingsView.data.gdprSelectiveDelete',
+                                    'Selective Database Deletion',
+                                )}
+                            </h4>
+                            <p className="text-sm text-slate-400">
+                                {t(
+                                    'settingsView.data.gdprSelectiveDeleteDesc',
+                                    'Delete individual databases instead of all data at once (Art. 17 GDPR partial erasure).',
+                                )}
+                            </p>
+                            <div className="grid grid-cols-1 gap-1 mt-2">
+                                {knownDatabases.map((dbName) => (
+                                    <div
+                                        key={dbName}
+                                        className="flex justify-between items-center py-1.5 px-2 rounded bg-slate-900/40"
+                                    >
+                                        <span className="text-xs font-mono text-slate-300">
+                                            {dbName}
+                                        </span>
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => handleEraseSingleDb(dbName)}
+                                        >
+                                            {t('common.delete')}
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-red-900/30 rounded-lg border border-red-800/40">
                             <div>

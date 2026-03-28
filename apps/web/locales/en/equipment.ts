@@ -214,6 +214,7 @@ export const equipmentView = {
             phTooltip:
                 'Potential of Hydrogen — acidity/alkalinity scale from 0 (acid) to 14 (alkaline).',
             logReading: 'Log Reading',
+            nutrientPlugins: 'Nutrient Schedule Plugins',
             aiRecommendation: 'AI Nutrient Advisor',
             getAiAdvice: 'Get AI Recommendation',
             clearAlerts: 'Clear all alerts',

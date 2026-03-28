@@ -1,4 +1,4 @@
-import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
+import { createCachedPipelineLoader } from './localAIModelLoader'
 import { captureLocalAiError } from './sentryService'
 
 /**
@@ -43,19 +43,13 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
         )
     })
 
-let featurePipeline: Promise<LocalAiPipeline> | null = null
+let featurePipeline: ReturnType<typeof createCachedPipelineLoader> | null = null
 
-const loadFeaturePipeline = (): Promise<LocalAiPipeline> => {
+const loadFeaturePipeline = (): ReturnType<ReturnType<typeof createCachedPipelineLoader>> => {
     if (!featurePipeline) {
-        featurePipeline = loadTransformersPipeline('feature-extraction', CLIP_MODEL_ID, {
-            quantized: true,
-        }).catch((error: unknown) => {
-            featurePipeline = null
-            captureLocalAiError(error, { model: CLIP_MODEL_ID, stage: 'preload' })
-            throw error
-        })
+        featurePipeline = createCachedPipelineLoader('feature-extraction', CLIP_MODEL_ID)
     }
-    return featurePipeline
+    return featurePipeline()
 }
 
 const toDataUrl = (base64Image: string, mimeType: string): string => {

@@ -6,6 +6,50 @@ import path from 'path'
 import type { PluginOption } from 'vite'
 import { CSP, PERMISSIONS_POLICY } from './securityHeaders'
 
+// ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
+// When missing, dynamic imports at runtime will fail gracefully — the app guards these.
+const OPTIONAL_ML_EXTERNALS = [
+    '@tensorflow/tfjs',
+    '@xenova/transformers',
+    '@mlc-ai/web-llm',
+    'onnxruntime-web',
+]
+
+// Resolve which ML modules are actually missing so we can stub them at build time.
+function resolveMissingMlModules(): string[] {
+    const missing: string[] = []
+    for (const mod of OPTIONAL_ML_EXTERNALS) {
+        try {
+            require.resolve(mod)
+        } catch {
+            missing.push(mod)
+        }
+    }
+    return missing
+}
+
+// Vite plugin that stubs missing ML modules with a throw at runtime.
+// This allows the build to succeed when heavy ML deps are not installed.
+function optionalMlPlugin(): PluginOption {
+    const missing = resolveMissingMlModules()
+    if (missing.length === 0) return null
+    return {
+        name: 'optional-ml-stub',
+        enforce: 'pre',
+        resolveId(source) {
+            if (missing.includes(source)) return `\0stub:${source}`
+            return null
+        },
+        load(id) {
+            if (id.startsWith('\0stub:')) {
+                const mod = id.slice(6)
+                return `throw new Error('[CannaGuide] ML module "${mod}" is not installed. AI features are disabled.');`
+            }
+            return null
+        },
+    }
+}
+
 // Tauri v2 sets TAURI_ENV_PLATFORM during builds; Docker sets BUILD_BASE_PATH=/
 const base = process.env.TAURI_ENV_PLATFORM
     ? '/'
@@ -54,6 +98,7 @@ export default defineConfig({
         __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0'),
     },
     plugins: [
+        optionalMlPlugin(),
         react({
             // React 19 Compiler – automatically memoises components and hooks
             babel: {

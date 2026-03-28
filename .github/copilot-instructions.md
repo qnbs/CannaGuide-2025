@@ -26,30 +26,61 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
 
-### Project Structure
+### Monorepo Layout
+
+The project uses **npm workspaces + TurboRepo** with ML dependencies isolated in `@cannaguide/ai-core`.
 
 ```
-components/          # React components: common/, icons/, navigation/, ui/, views/
-stores/              # Redux: slices/, selectors/, middleware, store config
-services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
-hooks/               # Custom React hooks (14+)
-data/                # Static data: 700+ strains, FAQ, lexicon, guides
-locales/             # i18n: en/, de/ (13 namespaces each)
-workers/             # Web Workers: VPD sim, genealogy, scenarios
-utils/               # Shared utilities
-types/               # TypeScript types + Zod schemas
-tests/               # E2E (tests/e2e/) + Component tests (tests/ct/)
-lib/                 # Utility library (cn(), VPD calculations)
-public/              # Static assets, SW, manifest
-src-tauri/           # Tauri v2 desktop config (Rust backend + capabilities)
-apps/desktop/        # Tauri desktop wrapper (Rust IPC commands)
-packages/iot-mocks/  # ESP32 sensor mock server (port 3001)
-scripts/             # Build/lint/merge scripts
-docker/              # nginx config, esp32-mock, tauri-mock
-docs/                # Developer guides, roadmap
-.github/             # 20 CI/CD workflows, issue templates
-.devcontainer/       # Codespaces DevContainer (Dockerfile-based build)
+package.json             # Workspace root (turbo, eslint, prettier -- NO app deps)
+turbo.json               # TurboRepo pipeline (build, dev, test, lint, typecheck)
+tsconfig.json            # References-only (apps/web, apps/desktop, packages/*)
+
+apps/
+  web/                   # Main PWA (React 19 + Vite 7)
+    package.json         # @cannaguide/web -- all frontend deps
+    vite.config.ts       # Vite build + optionalMlPlugin() for ML stub fallback
+    tsconfig.json        # strict, baseUrl ".", @/* path alias
+    index.html           # Entry HTML
+    index.tsx            # App bootstrap, SW registration, safe recovery
+    constants.ts         # App-wide constants
+    types.ts             # Core TypeScript types
+    i18n.ts              # i18next initialization
+    styles.css           # Tailwind entry point
+    simulation.worker.ts # VPD simulation Web Worker
+    components/          # React components: common/, icons/, navigation/, ui/, views/
+    stores/              # Redux: slices/, selectors/, middleware, store config
+    services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
+    hooks/               # Custom React hooks (14+)
+    data/                # Static data: 700+ strains, FAQ, lexicon, guides
+    locales/             # i18n: en/, de/ (13 namespaces each)
+    workers/             # Web Workers: VPD sim, genealogy, scenarios
+    utils/               # Shared utilities
+    types/               # Zod schemas for AI response validation
+    lib/                 # Utility library (cn(), VPD calculations)
+    public/              # Static assets, SW, manifest
+    tests/               # E2E (tests/e2e/) + Component tests (tests/ct/)
+  desktop/               # Tauri v2 desktop wrapper (Rust IPC commands)
+
+packages/
+  ai-core/               # Shared AI types + ML dependency isolation
+    package.json         # @cannaguide/ai-core -- ML libs as optionalDependencies
+    src/
+      index.ts           # AI types, providers, schemas
+      ml.ts              # Lazy loaders: loadTransformers(), loadWebLlm(), loadGenAI()
+  ui/                    # Shared UI tokens + theme types
+  iot-mocks/             # ESP32 sensor mock server (port 3001)
+
+src-tauri/               # Tauri v2 desktop config (Rust backend + capabilities)
+scripts/                 # Build/lint/merge scripts
+docker/                  # nginx config, esp32-mock, tauri-mock
+docs/                    # Developer guides, roadmap
+.github/                 # 20 CI/CD workflows, issue templates
+.devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
+
+### ML Isolation Strategy
+
+Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-web`) are declared as `optionalDependencies` in `@cannaguide/ai-core`. The web app's `vite.config.ts` includes `optionalMlPlugin()` that stubs missing ML modules at build time, allowing the build to succeed even without ML binaries installed. DevContainer uses `--no-optional` to skip ML packages for fast boot.
 
 ### Key Patterns
 
@@ -172,7 +203,10 @@ docs/                # Developer guides, roadmap
 
 - **Dockerfile-based build** in `.devcontainer/Dockerfile` (Playwright noble base image)
 - System deps (ripgrep, gh, jq) baked into image layer with apt cache cleanup
-- `postCreateCommand` in `.devcontainer/setup.sh` (npm ci, git signing, Playwright browsers)
+- `postCreateCommand` in `.devcontainer/setup.sh` -- workspace-filtered install with `--no-optional` to skip ML binaries:
+    ```
+    CI=1 npm install -w @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional
+    ```
 - `postStartCommand` in `.devcontainer/start.sh` (IoT mock servers health-checked)
 - `.devcontainer/.dockerignore` excludes node_modules, .git, dist, coverage
 - All `.devcontainer/` files under CODEOWNERS review
@@ -183,19 +217,24 @@ docs/                # Developer guides, roadmap
 ## Commands
 
 ```bash
-npm run dev              # Vite dev server (localhost:5173)
-npm run build            # Production build
-npm test                 # Vitest unit/integration
-npm run test:e2e         # Playwright E2E (requires build)
-npm run test:ct          # Playwright Component tests
-npm run lint             # ESLint changed files
-npm run lint:full        # ESLint entire project
-npx tsc --noEmit         # Type check
+# Root (delegates to TurboRepo)
+npm run dev              # turbo run dev (Vite dev server)
+npm run build            # turbo run build (all workspaces)
+npm test                 # turbo run test (Vitest)
+npm run lint             # turbo run lint
+npm run typecheck        # turbo run typecheck
 npm run format           # Prettier format
-npm run lighthouse:ci    # Lighthouse audit
 npm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
 git push origin main     # Direct push (admin bypass)
 npm run pr:push          # CI-gated push via automated PR workflow (optional)
+
+# Web app (from apps/web/ or via workspace flag)
+npm run -w @cannaguide/web dev       # Vite dev server (localhost:5173)
+npm run -w @cannaguide/web build     # Production build
+npm run -w @cannaguide/web test      # Vitest unit/integration
+npm run -w @cannaguide/web test:e2e  # Playwright E2E (requires build)
+npm run -w @cannaguide/web test:ct   # Playwright Component tests
+npm run -w @cannaguide/web typecheck # tsc --noEmit
 ```
 
 ---
@@ -227,40 +266,37 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Important Files
 
-| File                                          | Purpose                                                       |
-| --------------------------------------------- | ------------------------------------------------------------- |
-| `index.tsx`                                   | App bootstrap, SW registration, safe recovery                 |
-| `stores/store.ts`                             | Redux store creation, IndexedDB hydration                     |
-| `services/geminiService.ts`                   | Gemini API abstraction (all AI features)                      |
-| `services/aiProviderService.ts`               | Multi-provider AI routing                                     |
-| `services/aiService.ts`                       | Unified AI service (cloud + local routing)                    |
-| `services/localAI.ts`                         | Core local AI orchestration                                   |
-| `services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard)         |
-| `services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)           |
-| `services/localAiEmbeddingService.ts`         | MiniLM embeddings, semantic ranking                           |
-| `services/localAiFallbackService.ts`          | Heuristic fallback for all AI features                        |
-| `services/localAiLanguageDetectionService.ts` | On-device EN/DE language detection                            |
-| `services/localAiImageSimilarityService.ts`   | CLIP image comparison, growth tracking                        |
-| `services/localAiHealthService.ts`            | Device classification, health monitoring                      |
-| `services/localAiPreloadService.ts`           | Model preload state management                                |
-| `services/localAiTelemetryService.ts`         | Inference performance tracking                                |
-| `services/localAiCacheService.ts`             | IndexedDB inference cache (LRU, TTL)                          |
-| `services/sentryService.ts`                   | Sentry error tracking initialization                          |
-| `services/communityShareService.ts`           | Anonymous Gist strain sharing (local-only guarded)            |
-| `services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)                      |
-| `services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)                |
-| `simulation.worker.ts`                        | VPD simulation Web Worker                                     |
-| `utils/random.ts`                             | `secureRandom()` — Web Crypto replacement for Math.random     |
-| `sw.js`                                       | Service Worker (precache + runtime caching)                   |
-| `constants.ts`                                | App-wide constants                                            |
-| `types.ts`                                    | Core TypeScript types                                         |
-| `i18n.ts`                                     | i18next initialization                                        |
-| `vite.config.ts`                              | Build configuration                                           |
-| `scripts/github/pr-push.mjs`                  | Automated PR workflow (branch -> PR -> auto-merge -> cleanup) |
-| `src-tauri/capabilities/default.json`         | Tauri v2 capability permissions (minimal set)                 |
-| `apps/desktop/src/ipc.rs`                     | Tauri Rust IPC commands (image, sensor, sysinfo)              |
-| `.devcontainer/devcontainer.json`             | DevContainer config (Dockerfile build, ports, extensions)     |
-| `.devcontainer/Dockerfile`                    | Dev container image (Playwright + system deps)                |
-| `.devcontainer/setup.sh`                      | postCreateCommand (npm ci, git signing, browsers)             |
-| `.devcontainer/start.sh`                      | postStartCommand (IoT mock servers)                           |
-| `.github/workflows/config-guard.yml`          | CI scan for RCE patterns in config files                      |
+| File                                                   | Purpose                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------- |
+| `apps/web/index.tsx`                                   | App bootstrap, SW registration, safe recovery                 |
+| `apps/web/vite.config.ts`                              | Build config + optionalMlPlugin() for ML stub fallback        |
+| `apps/web/stores/store.ts`                             | Redux store creation, IndexedDB hydration                     |
+| `apps/web/services/geminiService.ts`                   | Gemini API abstraction (all AI features)                      |
+| `apps/web/services/aiProviderService.ts`               | Multi-provider AI routing                                     |
+| `apps/web/services/aiService.ts`                       | Unified AI service (cloud + local routing)                    |
+| `apps/web/services/localAI.ts`                         | Core local AI orchestration                                   |
+| `apps/web/services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard)         |
+| `apps/web/services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)           |
+| `apps/web/services/localAiEmbeddingService.ts`         | MiniLM embeddings, semantic ranking                           |
+| `apps/web/services/localAiFallbackService.ts`          | Heuristic fallback for all AI features                        |
+| `apps/web/services/localAiLanguageDetectionService.ts` | On-device EN/DE language detection                            |
+| `apps/web/services/localAiImageSimilarityService.ts`   | CLIP image comparison, growth tracking                        |
+| `apps/web/services/localAiHealthService.ts`            | Device classification, health monitoring                      |
+| `apps/web/services/sentryService.ts`                   | Sentry error tracking initialization                          |
+| `apps/web/services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)                      |
+| `apps/web/services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)                |
+| `apps/web/simulation.worker.ts`                        | VPD simulation Web Worker                                     |
+| `apps/web/utils/random.ts`                             | `secureRandom()` -- Web Crypto replacement for Math.random    |
+| `apps/web/constants.ts`                                | App-wide constants                                            |
+| `apps/web/types.ts`                                    | Core TypeScript types                                         |
+| `apps/web/i18n.ts`                                     | i18next initialization                                        |
+| `packages/ai-core/src/ml.ts`                           | Lazy ML loaders (transformers, web-llm, genai)                |
+| `packages/ai-core/package.json`                        | ML optionalDependencies isolation                             |
+| `scripts/github/pr-push.mjs`                           | Automated PR workflow (branch -> PR -> auto-merge -> cleanup) |
+| `src-tauri/capabilities/default.json`                  | Tauri v2 capability permissions (minimal set)                 |
+| `apps/desktop/src/ipc.rs`                              | Tauri Rust IPC commands (image, sensor, sysinfo)              |
+| `.devcontainer/devcontainer.json`                      | DevContainer config (Dockerfile build, ports, extensions)     |
+| `.devcontainer/Dockerfile`                             | Dev container image (Playwright + system deps)                |
+| `.devcontainer/setup.sh`                               | postCreateCommand (workspace-filtered install, no ML)         |
+| `.devcontainer/start.sh`                               | postStartCommand (IoT mock servers)                           |
+| `.github/workflows/config-guard.yml`                   | CI scan for RCE patterns in config files                      |

@@ -23,59 +23,77 @@
 
 ## Directory Structure
 
+The project is a **Turborepo monorepo** with npm workspaces. All web app source lives in `apps/web/`.
+
 ```
-index.tsx                 App bootstrap, SW registration, safe recovery
-constants.ts              App-wide constants
-types.ts                  Core TypeScript types + AppSettings interface
-i18n.ts                   i18next initialization (5 languages)
-styles.css                Tailwind entry point
-simulation.worker.ts      VPD simulation Web Worker
+package.json              Workspace root (turbo, eslint, prettier -- NO app deps)
+turbo.json                TurboRepo pipeline (build, dev, test, lint, typecheck)
+tsconfig.json             References-only (apps/web, apps/desktop, packages/*)
 
-components/
-  common/                 Shared UI: Modal, Card, Toast, DialogWrapper
-  icons/                  Icon components (Phosphor, custom)
-  navigation/             App navigation shell
-  ui/                     Primitives: Button, Input, Select, Dialog (Radix)
-  views/                  Feature views: plants/, strains/, equipment/, settings/
+apps/web/                 Main PWA (@cannaguide/web)
+  package.json            All frontend deps + @cannaguide/ai-core
+  vite.config.ts          Vite build + optionalMlPlugin() for ML stub fallback
+  tsconfig.json           strict, baseUrl ".", @/* path alias
+  index.tsx               App bootstrap, SW registration, safe recovery
+  constants.ts            App-wide constants
+  types.ts                Core TypeScript types + AppSettings interface
+  i18n.ts                 i18next initialization (5 languages)
+  styles.css              Tailwind entry point
+  simulation.worker.ts    VPD simulation Web Worker
 
-stores/
-  store.ts                Redux store creation + IndexedDB hydration
-  selectors.ts            Memoized selectors (map-based cache by ID)
-  listenerMiddleware.ts   Side effects: i18n sync, persistence triggers
-  slices/                 17 Redux slices (plants, strains, settings, etc.)
-  indexedDBStorage.ts     CannaGuideStateDB adapter
+  components/
+    common/               Shared UI: Modal, Card, Toast, DialogWrapper
+    icons/                Icon components (Phosphor, custom)
+    navigation/           App navigation shell
+    ui/                   Primitives: Button, Input, Select, Dialog (Radix)
+    views/                Feature views: plants/, strains/, equipment/, settings/
 
-services/
-  geminiService.ts        Gemini API abstraction (responseSchema)
-  aiProviderService.ts    Multi-provider AI routing (BYOK)
-  aiService.ts            Unified cloud + local AI entry point
-  localAI.ts              Core local AI orchestration
-  localAIModelLoader.ts   ONNX pipeline loader (WebGPU/WASM, semaphore)
-  localAi*.ts             11 local AI service modules
-  gpuResourceManager.ts   GPU mutex (FIFO queue, WebLLM eviction)
-  inferenceQueueService.ts Priority queue for inference tasks
-  dbService.ts            CannaGuideDB (strains, images, search index)
-  cryptoService.ts        AES-256-GCM key encryption at rest
-  privacyService.ts       GDPR Art. 17/20 -- full erasure + data export
-  pluginService.ts        Plugin architecture (nutrient, hardware, grow)
-  sentryService.ts        Sentry error tracking
-  consentService.ts       GDPR consent cookie management
+  stores/
+    store.ts              Redux store creation + IndexedDB hydration
+    selectors.ts          Memoized selectors (map-based cache by ID)
+    listenerMiddleware.ts Side effects: i18n sync, persistence triggers
+    slices/               17 Redux slices (plants, strains, settings, etc.)
+    indexedDBStorage.ts   CannaGuideStateDB adapter
 
-data/                     Static data: 700+ strains, FAQ, lexicon, guides
-locales/                  i18n translations: en/, de/, es/, fr/, nl/
-hooks/                    14+ custom React hooks
-workers/                  Web Workers: VPD sim, genealogy, scenarios
-utils/                    Shared utilities (secureRandom, etc.)
-types/                    Zod schemas for AI response validation
-lib/                      cn() utility, VPD calculation library
-public/                   Static assets, sw.js, manifest.json
+  services/
+    geminiService.ts      Gemini API abstraction (responseSchema)
+    aiProviderService.ts  Multi-provider AI routing (BYOK)
+    aiService.ts          Unified cloud + local AI entry point
+    localAI.ts            Core local AI orchestration
+    localAIModelLoader.ts ONNX pipeline loader (WebGPU/WASM, semaphore)
+    localAi*.ts           11 local AI service modules
+    gpuResourceManager.ts GPU mutex (FIFO queue, WebLLM eviction)
+    inferenceQueueService.ts  Priority queue for inference tasks
+    dbService.ts          CannaGuideDB (strains, images, search index)
+    cryptoService.ts      AES-256-GCM key encryption at rest
+    privacyService.ts     GDPR Art. 17/20 -- full erasure + data export
+    pluginService.ts      Plugin architecture (nutrient, hardware, grow)
+    sentryService.ts      Sentry error tracking
+    consentService.ts     GDPR consent cookie management
 
-src-tauri/                Tauri v2 desktop wrapper (Rust backend)
-apps/desktop/             Tauri IPC commands (image, sensor, sysinfo)
-packages/iot-mocks/       ESP32 sensor mock server (port 3001)
+  data/                   Static data: 700+ strains, FAQ, lexicon, guides
+  locales/                i18n translations: en/, de/, es/, fr/, nl/
+  hooks/                  14+ custom React hooks
+  workers/                Web Workers: VPD sim, genealogy, scenarios
+  utils/                  Shared utilities (secureRandom, etc.)
+  types/                  Zod schemas for AI response validation
+  lib/                    cn() utility, VPD calculation library
+  public/                 Static assets, sw.js, manifest.json
+  tests/                  E2E (tests/e2e/) + Component tests (tests/ct/)
+
+apps/desktop/             Tauri v2 desktop wrapper (Rust IPC commands)
+
+packages/
+  ai-core/                Shared AI types + ML dependency isolation
+    src/
+      index.ts            AI types, providers, schemas
+      ml.ts               Lazy loaders: loadTransformers(), loadWebLlm(), loadGenAI()
+  ui/                     Shared UI tokens & theme types
+  iot-mocks/              ESP32 sensor mock server (port 3001)
+
+src-tauri/                Tauri v2 desktop config (Rust backend)
 scripts/                  Build, lint, merge, CI scripts
 docker/                   nginx config, esp32-mock, tauri-mock
-tests/                    E2E (tests/e2e/) + Component tests (tests/ct/)
 ```
 
 ---

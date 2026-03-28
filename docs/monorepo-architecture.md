@@ -1,8 +1,8 @@
-# Monorepo Architecture — Migration Guide
+# Monorepo Architecture
 
-## Current State (Phase 1 — Completed)
+## Current State (Fully Migrated)
 
-The project has been configured as a **Turborepo monorepo** with npm workspaces.
+The project is a **Turborepo monorepo** with npm workspaces. All web application source code lives in `apps/web/`. Heavy ML dependencies are isolated in `@cannaguide/ai-core` as `optionalDependencies`.
 
 ### Turbo Pipeline
 
@@ -10,77 +10,111 @@ The project has been configured as a **Turborepo monorepo** with npm workspaces.
 | ------------- | ---------- | ------------------------------------ | ------ | ------------------------------------------- |
 | `build`       | `^build`   | `dist/**`                            | Yes    | Web app (Vite) + workspace packages (tsc)   |
 | `tauri:build` | `build`    | `src-tauri/target/release/bundle/**` | No     | Platform-specific binaries; env passthrough |
-| `tauri:dev`   | `^build`   | —                                    | No     | Persistent dev process; env passthrough     |
-| `dev`         | `^build`   | —                                    | No     | Persistent (Vite dev server)                |
+| `tauri:dev`   | `^build`   | --                                   | No     | Persistent dev process; env passthrough     |
+| `dev`         | `^build`   | --                                   | No     | Persistent (Vite dev server)                |
 | `test`        | `^build`   | `coverage/**`                        | Yes    |                                             |
 | `test:e2e`    | `build`    | `test-results/**`                    | Yes    | Needs web build artifact                    |
-| `lint`        | `^build`   | —                                    | Yes    |                                             |
-| `typecheck`   | `^build`   | —                                    | Yes    |                                             |
-
-Environment variables forwarded for Tauri: `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, `TAURI_ENV_*`.
+| `lint`        | `^build`   | --                                   | Yes    |                                             |
+| `typecheck`   | `^build`   | --                                   | Yes    |                                             |
 
 ### Directory Structure
 
 ```
 CannaGuide-2025/
-├── turbo.json                    # Turborepo pipeline configuration
-├── package.json                  # Workspace root (also: web app)
-│
-├── apps/
-│   └── desktop/                  # Tauri v2 desktop wrapper
-│       ├── package.json          # @cannaguide/desktop
-│       ├── tsconfig.json
-│       └── src/
-│           ├── main.rs           # Tauri entry (with IPC commands)
-│           └── ipc.rs            # Binary IPC: image processing, sensor data
-│
-├── packages/
-│   ├── ai-core/                  # Shared AI type definitions
-│   │   ├── package.json          # @cannaguide/ai-core
-│   │   ├── tsconfig.json
-│   │   └── src/
-│   │       ├── index.ts          # Public API re-exports
-│   │       ├── types.ts          # AI response types (AIResponse, PlantDiagnosis, etc.)
-│   │       ├── providers.ts      # AiProvider, AiProviderConfig
-│   │       └── schemas.ts        # Zod validation schemas
-│   │
-│   ├── ui/                       # Shared UI tokens & theme types
-│   │   ├── package.json          # @cannaguide/ui
-│   │   ├── tsconfig.json
-│   │   └── src/
-│   │       ├── index.ts
-│   │       └── theme.ts          # Theme type, ThemeTokens interface
-│   │
-│   └── iot-mocks/                # ESP32 sensor simulator (extracted)
-│       ├── package.json          # @cannaguide/iot-mocks
-│       ├── Dockerfile
-│       └── src/
-│           └── server.mjs        # HTTP sensor mock (diurnal cycle)
-│
-├── components/                   # React UI components (web app)
-├── stores/                       # Redux + Zustand stores
-│   ├── store.ts                  # Redux (global user state)
-│   └── sensorStore.ts            # Zustand (high-frequency sensor data)
-├── services/                     # Business logic
-│   ├── tauriIpcService.ts        # Binary IPC bridge (Tauri ↔ Frontend)
-│   ├── mqttSensorService.ts      # Pushes to Zustand sensor store
-│   └── ...
-├── hooks/
-│   ├── useSensorData.ts          # Zustand-based sensor subscriptions
-│   └── ...
-└── src-tauri/                    # Tauri source (legacy path, synced to apps/desktop)
+  package.json              # Workspace root (turbo, eslint, prettier -- NO app deps)
+  turbo.json                # TurboRepo pipeline
+  tsconfig.json             # References-only (apps/web, apps/desktop, packages/*)
+
+  apps/
+    web/                    # Main PWA (@cannaguide/web)
+      package.json          # All frontend deps + @cannaguide/ai-core
+      vite.config.ts        # Vite build + optionalMlPlugin() for ML stub fallback
+      tsconfig.json         # strict, baseUrl ".", @/* path alias
+      index.html            # Entry HTML
+      index.tsx             # App bootstrap, SW registration, safe recovery
+      components/           # React components
+      stores/               # Redux slices, selectors, middleware
+      services/             # Business logic (AI, DB, crypto, IoT, Sentry)
+      hooks/                # Custom React hooks (14+)
+      data/                 # Static data: 700+ strains, FAQ, lexicon
+      locales/              # i18n: en/, de/ (13 namespaces)
+      workers/              # Web Workers
+      utils/                # Shared utilities
+      types/                # Zod schemas for AI validation
+      lib/                  # cn(), VPD calculations
+      public/               # Static assets, SW, manifest
+      tests/                # E2E + Component tests
+    desktop/                # Tauri v2 desktop wrapper
+      package.json          # @cannaguide/desktop
+      src/
+        main.rs             # Tauri entry (with IPC commands)
+        ipc.rs              # Binary IPC: image processing, sensor data
+
+  packages/
+    ai-core/                # Shared AI types + ML dependency isolation
+      package.json          # @cannaguide/ai-core
+      src/
+        index.ts            # AI types, providers, schemas
+        ml.ts               # Lazy loaders: loadTransformers(), loadWebLlm(), loadGenAI()
+    ui/                     # Shared UI tokens & theme types
+    iot-mocks/              # ESP32 sensor mock server (port 3001)
+
+  src-tauri/                # Tauri v2 desktop config (Rust backend)
+  scripts/                  # Build, lint, merge, CI scripts
+  docker/                   # nginx config, esp32-mock, tauri-mock
 ```
 
-## Phase 2 — Move Web App to `apps/web/` (Next Session)
+### ML Isolation Strategy
 
-When ready, the main web application code should be moved into `apps/web/`:
+Heavy ML dependencies are declared as `optionalDependencies` in `@cannaguide/ai-core/package.json`:
 
-1. `git mv components stores services hooks data locales workers utils types tests lib public scripts apps/web/`
-2. `git mv index.tsx index.html types.ts constants.ts i18n.ts styles.css simulation.worker.ts vitest.setup.ts apps/web/`
-3. `git mv vite.config.ts tsconfig.json tailwind.config.cjs postcss.config.cjs apps/web/`
-4. Update `vite.config.ts` resolve alias: `'@': path.resolve('./')`
-5. Update all CI/CD workflows in `.github/workflows/` to use `working-directory: apps/web`
-6. Update `Dockerfile` COPY paths
+```json
+{
+    "optionalDependencies": {
+        "@mlc-ai/web-llm": "*",
+        "@xenova/transformers": "*",
+        "onnxruntime-web": "*"
+    }
+}
+```
+
+The web app's `vite.config.ts` includes `optionalMlPlugin()` -- a custom Vite plugin that:
+
+1. Detects which ML modules are missing via `require.resolve()`
+2. Stubs them with modules that throw runtime errors ("not installed")
+3. Allows the build to succeed without ML binaries installed
+
+DevContainer uses `--no-optional` to skip all ML packages for fast boot:
+
+```bash
+CI=1 npm install -w @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional
+```
+
+### Root package.json
+
+The root `package.json` contains **zero application dependencies**. Only global dev tooling:
+
+- turbo, eslint, prettier, husky, typescript, biome
+- commitlint, snyk, anti-trojan-source, lint-staged
+- Scripts delegate to `turbo run <task>`
+
+### TypeScript Configuration
+
+Root `tsconfig.json` is references-only:
+
+```json
+{
+    "references": [
+        { "path": "apps/web" },
+        { "path": "apps/desktop" },
+        { "path": "packages/ai-core" },
+        { "path": "packages/ui" }
+    ],
+    "include": []
+}
+```
+
+`apps/web/tsconfig.json` has full compiler options with `"baseUrl": "."` and `"paths": {"@/*": ["./*"]}` -- all `@/` imports resolve from `apps/web/`.
 
 ## State Management Strategy
 
@@ -93,8 +127,8 @@ When ready, the main web application code should be moved into `apps/web/`:
 
 ## Tauri IPC Protocol
 
-| Command                | Direction | Payload                     | Benefit                          |
-| ---------------------- | --------- | --------------------------- | -------------------------------- |
-| `process_image_binary` | JS → Rust | `Vec<u8>` (raw JPEG/WebP)   | ~33% smaller than Base64-JSON    |
-| `read_sensor_binary`   | JS → Rust | `Vec<u8>` (interleaved f32) | Zero-copy from USB/serial buffer |
-| `get_system_info`      | Rust → JS | JSON                        | Adaptive model selection         |
+| Command                | Direction  | Payload                     | Benefit                          |
+| ---------------------- | ---------- | --------------------------- | -------------------------------- |
+| `process_image_binary` | JS -> Rust | `Vec<u8>` (raw JPEG/WebP)   | ~33% smaller than Base64-JSON    |
+| `read_sensor_binary`   | JS -> Rust | `Vec<u8>` (interleaved f32) | Zero-copy from USB/serial buffer |
+| `get_system_info`      | Rust -> JS | JSON                        | Adaptive model selection         |

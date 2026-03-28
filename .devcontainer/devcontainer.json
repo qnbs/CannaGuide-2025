@@ -1,7 +1,7 @@
 {
-    "name": "CannaGuide 2025 (Minimal & stabil)",
+    "name": "CannaGuide 2025 – Sofort-Start (garantiert)",
     
-    // WICHTIG: Kein eigenes Dockerfile mehr → fertiges Microsoft-Dev-Image
+    // WICHTIG: Kein eigenes Dockerfile! Fertiges Microsoft-Image mit Node + allem
     "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20",
 
     "remoteUser": "node",
@@ -12,7 +12,7 @@
         "storage": "32gb"
     },
 
-    // Beide Commands vorerst komplett deaktiviert
+    // Beide Commands komplett deaktiviert (wir machen das später manuell)
     // "postCreateCommand": "bash .devcontainer/setup.sh",
     // "postStartCommand": "bash .devcontainer/start.sh",
 
@@ -34,9 +34,6 @@
                 "terminal.integrated.defaultProfile.linux": "bash",
                 "editor.formatOnSave": true,
                 "editor.defaultFormatter": "esbenp.prettier-vscode",
-                "editor.codeActionsOnSave": {
-                    "source.fixAll.eslint": "explicit"
-                },
                 "typescript.tsdk": "node_modules/typescript/lib"
             },
             "extensions": [

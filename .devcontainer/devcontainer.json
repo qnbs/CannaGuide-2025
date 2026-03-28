@@ -1,35 +1,26 @@
 {
-    "name": "CannaGuide 2025 (Minimal – funktioniert garantiert)",
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
+    "name": "CannaGuide 2025 (Minimal & stabil)",
+    
+    // WICHTIG: Kein eigenes Dockerfile mehr → fertiges Microsoft-Dev-Image
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20",
 
-    "remoteUser": "root",
+    "remoteUser": "node",
 
     "hostRequirements": {
         "cpus": 4,
-        "memory": "16gb",
+        "memory": "8gb",
         "storage": "32gb"
     },
 
-    // postCreateCommand vorerst DEAKTIVIERT → Codespace startet immer
+    // Beide Commands vorerst komplett deaktiviert
     // "postCreateCommand": "bash .devcontainer/setup.sh",
     // "postStartCommand": "bash .devcontainer/start.sh",
 
     "forwardPorts": [5173, 3001, 3002],
     "portsAttributes": {
-        "5173": {
-            "label": "Vite Dev Server",
-            "onAutoForward": "openBrowser"
-        },
-        "3001": {
-            "label": "ESP32 Sensor Mock",
-            "onAutoForward": "silent"
-        },
-        "3002": {
-            "label": "Tauri IPC Mock",
-            "onAutoForward": "silent"
-        }
+        "5173": { "label": "Vite Dev Server", "onAutoForward": "openBrowser" },
+        "3001": { "label": "ESP32 Sensor Mock", "onAutoForward": "silent" },
+        "3002": { "label": "Tauri IPC Mock", "onAutoForward": "silent" }
     },
 
     "containerEnv": {
@@ -46,8 +37,7 @@
                 "editor.codeActionsOnSave": {
                     "source.fixAll.eslint": "explicit"
                 },
-                "typescript.tsdk": "node_modules/typescript/lib",
-                "files.eol": "\n"
+                "typescript.tsdk": "node_modules/typescript/lib"
             },
             "extensions": [
                 "dbaeumer.vscode-eslint",
@@ -56,7 +46,6 @@
                 "bradlc.vscode-tailwindcss",
                 "github.copilot",
                 "github.copilot-chat",
-                "github.vscode-github-actions",
                 "biomejs.biome"
             ]
         }

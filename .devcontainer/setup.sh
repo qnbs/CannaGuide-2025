@@ -3,8 +3,14 @@
 set -uo pipefail
 
 echo "[setup] Installing npm dependencies..."
-# npm install statt npm ci, falls die lockfile fehlt oder spinnt
-npm install
+# CI=1 stoppt interaktive Prompts.
+# --no-fund und --no-audit sparen bei der riesigen Menge an Paketen enorm Zeit.
+# --ignore-scripts verhindert, dass 'husky' beim Setup dazwischengrätscht.
+CI=1 npm install --no-fund --no-audit --ignore-scripts
+
+# Husky danach manuell und sicher initialisieren
+echo "[setup] Initializing git hooks (husky)..."
+npx husky || echo "[setup] WARN: Husky setup failed, continuing..."
 
 echo "[setup] Configuring git signing..."
 # Checken ob die Datei überhaupt existiert, bevor node ausgeführt wird

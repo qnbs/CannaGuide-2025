@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DevContainer postStartCommand
+# Entschärft: Kein 'set -e'
 set -uo pipefail
 
 START_MOCKS="${CANNAGUIDE_START_MOCKS:-1}"
@@ -9,6 +11,7 @@ if [ "$START_MOCKS" = "0" ]; then
   exit 0
 fi
 
+# Stop any leftover mock servers from previous sessions
 pkill -f 'server.mjs' >/dev/null 2>&1 || true
 
 STARTED_3001=0
@@ -24,7 +27,6 @@ if [ -f "docker/tauri-mock/server.mjs" ]; then
   STARTED_3002=1
 fi
 
-# Simpler Healthcheck, der nicht endlos wartet, wenn Dateien fehlen
 if [ "$STARTED_3001" -eq 1 ]; then
     echo "[start] Waiting for ESP32 Mock..."
     for i in {1..15}; do curl -sf http://localhost:3001/health >/dev/null && break || sleep 1; done

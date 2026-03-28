@@ -1,20 +1,18 @@
 {
-    "name": "CannaGuide 2025 – Sofort-Start (garantiert)",
+    "name": "CannaGuide 2025",
     
-    // WICHTIG: Kein eigenes Dockerfile! Fertiges Microsoft-Image mit Node + allem
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20",
+    // So zwingst du Codespaces, dein geiles Dockerfile zu nutzen!
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
 
-    "remoteUser": "node",
+    "remoteUser": "pwuser", // Playwright-Images nutzen oft 'pwuser' statt 'node'
 
     "hostRequirements": {
         "cpus": 4,
         "memory": "8gb",
         "storage": "32gb"
     },
-
-    // Beide Commands komplett deaktiviert (wir machen das später manuell)
-    // "postCreateCommand": "bash .devcontainer/setup.sh",
-    // "postStartCommand": "bash .devcontainer/start.sh",
 
     "forwardPorts": [5173, 3001, 3002],
     "portsAttributes": {

@@ -19,11 +19,12 @@
 [![Evaluated by Grok](https://img.shields.io/badge/Evaluated%20by-xAI%20Grok-000000)](https://x.ai)
 [![Built with Claude](https://img.shields.io/badge/Built%20with-Claude%20Opus%204.6-cc785c)](https://claude.ai)
 [![GitHub Codespaces](https://img.shields.io/badge/Dev%20in-GitHub%20Codespaces-24292e)](https://github.com/codespaces)
+[![Consulting: Gemini](https://img.shields.io/badge/Consulting-Gemini%203.1%20Pro-4285F4)](https://deepmind.google/technologies/gemini/)
 
 <!-- App Capabilities -->
 
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)](https://qnbs.github.io/CannaGuide-2025/)
+[![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE%20|%20ES%20|%20FR%20|%20NL-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
@@ -416,8 +417,9 @@ This transparent documentation of the development process reflects the project's
 
 [![Prototyped in AI Studio](https://img.shields.io/badge/Prototyp%20in-Google%20AI%20Studio-4285F4)](https://aistudio.google.com)
 [![Evaluated by Grok](https://img.shields.io/badge/Evaluiert%20von-xAI%20Grok-000000)](https://x.ai)
-[![Built with Claude](https://img.shields.io/badge/Gebaut%20mit-Claude%20Opus%204.6-cc785c)](https://claude.ai)
+[![Gebaut mit Claude](https://img.shields.io/badge/Gebaut%20mit-Claude%20Opus%204.6-cc785c)](https://claude.ai)
 [![GitHub Codespaces](https://img.shields.io/badge/Entwickelt%20in-GitHub%20Codespaces-24292e)](https://github.com/codespaces)
+[![Consulting: Gemini](https://img.shields.io/badge/Consulting-Gemini%203.1%20Pro-4285F4)](https://deepmind.google/technologies/gemini/)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Doku:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
 

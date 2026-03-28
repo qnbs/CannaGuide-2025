@@ -80,7 +80,7 @@ docs/                    # Developer guides, roadmap
 
 ### ML Isolation Strategy
 
-Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-web`) are declared as `optionalDependencies` in `@cannaguide/ai-core`. The web app's `vite.config.ts` includes `optionalMlPlugin()` that stubs missing ML modules at build time, allowing the build to succeed even without ML binaries installed. DevContainer uses `--no-optional` to skip ML packages for fast boot.
+Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-web`) are declared as `optionalDependencies` in `@cannaguide/ai-core`. The web app's `vite.config.ts` includes `optionalMlPlugin()` that stubs missing ML modules at build time, allowing the build to succeed even without ML binaries installed. DevContainer uses `npm ci` for deterministic lockfile-pinned installs (OSSF Scorecard compliant). ML models are loaded lazily at runtime in-browser.
 
 ### Key Patterns
 
@@ -203,9 +203,9 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 - **Dockerfile-based build** in `.devcontainer/Dockerfile` (Playwright noble base image)
 - System deps (ripgrep, gh, jq) baked into image layer with apt cache cleanup
-- `postCreateCommand` in `.devcontainer/setup.sh` -- workspace-filtered install with `--no-optional` to skip ML binaries:
+- `postCreateCommand` in `.devcontainer/setup.sh` -- deterministic lockfile-pinned install:
     ```
-    CI=1 npm install -w @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional
+    CI=1 npm ci --no-fund --no-audit --ignore-scripts
     ```
 - `postStartCommand` in `.devcontainer/start.sh` (IoT mock servers health-checked)
 - `.devcontainer/.dockerignore` excludes node_modules, .git, dist, coverage

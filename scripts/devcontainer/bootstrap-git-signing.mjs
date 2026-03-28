@@ -82,8 +82,15 @@ const hasSshSigningKey = () => {
  */
 const configureSshSigning = () => {
     const pubKey = path.join(os.homedir(), '.ssh', 'id_ed25519.pub')
+    const allowedSigners = path.join(os.homedir(), '.ssh', 'allowed_signers')
+    // Build allowed_signers from git user.email + public key for local verification
+    const email =
+        run('git', ['config', 'user.email']).stdout?.trim() || 'unknown@users.noreply.github.com'
+    const pubKeyContent = readFileSync(pubKey, 'utf8').trim()
+    writeFileSync(allowedSigners, `${email} ${pubKeyContent}\n`, { mode: 0o644 })
     gitSet('gpg.format', 'ssh')
     gitSet('user.signingkey', pubKey)
+    gitSet('gpg.ssh.allowedSignersFile', allowedSigners)
     gitSet('commit.gpgsign', 'true')
     gitSet('tag.gpgsign', 'true')
     console.log(`${PREFIX} SSH signing configured (${pubKey})`)

@@ -12,7 +12,14 @@ vi.mock('dompurify', () => ({
     default: {
         sanitize: (input: string, opts?: { ALLOWED_TAGS?: string[] }) => {
             if (opts?.ALLOWED_TAGS?.length === 0) {
-                return input.replace(/<[^>]*>/g, '')
+                // Iteratively strip tags to avoid incomplete sanitization (CodeQL)
+                let result = input
+                let previous = ''
+                while (result !== previous) {
+                    previous = result
+                    result = result.replace(/<[^>]*>/g, '')
+                }
+                return result
             }
             return input
         },

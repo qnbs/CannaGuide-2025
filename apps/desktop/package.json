@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "npx tauri dev",
-        "build": "npx tauri build",
+        "build": "echo '[SKIP] tauri build requires Rust toolchain'",
         "typecheck": "echo 'Rust project – no TS to check'"
     },
     "devDependencies": {

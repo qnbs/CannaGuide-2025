@@ -1,5 +1,5 @@
 {
-    "name": "CannaGuide 2025",
+    "name": "CannaGuide 2025 (Minimal – funktioniert garantiert)",
     "build": {
         "dockerfile": "Dockerfile"
     },
@@ -12,8 +12,9 @@
         "storage": "32gb"
     },
 
-//    "postCreateCommand": "bash .devcontainer/setup.sh",
-    "postStartCommand": "bash .devcontainer/start.sh",
+    // postCreateCommand vorerst DEAKTIVIERT → Codespace startet immer
+    // "postCreateCommand": "bash .devcontainer/setup.sh",
+    // "postStartCommand": "bash .devcontainer/start.sh",
 
     "forwardPorts": [5173, 3001, 3002],
     "portsAttributes": {

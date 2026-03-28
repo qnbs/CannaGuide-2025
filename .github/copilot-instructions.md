@@ -164,8 +164,8 @@ docs/                # Developer guides, roadmap
 - Conventional Commits: `<type>(<scope>): <description>`
 - Types: feat, fix, docs, refactor, test, perf, chore, a11y, i18n
 - Scopes: ai, plants, strains, equipment, knowledge, settings, help, genealogy, pwa, ci, security, ui, sentry
-- **Push workflow:** Direct pushes to `main` are blocked. Use `npm run pr:push` (or `node scripts/github/pr-push.mjs`) to push changes via automated PR → auto-merge → cleanup.
-- Branch protection: `enforce_admins=true`, PRs required (0 reviews, CI-gated), signed commits, linear history
+- **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `npm run pr:push` (branch -> PR -> auto-merge).
+- Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
 
 ### Dev Container
@@ -194,7 +194,8 @@ npx tsc --noEmit         # Type check
 npm run format           # Prettier format
 npm run lighthouse:ci    # Lighthouse audit
 npm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
-npm run pr:push          # Push changes via automated PR workflow
+git push origin main     # Direct push (admin bypass)
+npm run pr:push          # CI-gated push via automated PR workflow (optional)
 ```
 
 ---

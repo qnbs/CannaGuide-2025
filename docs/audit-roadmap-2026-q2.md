@@ -5,8 +5,8 @@
 > Dedizierte Roadmap zur Umsetzung aller Maßnahmen aus dem **Full-Scale Deep Audit, Critical Evaluation & Action-Plan** (Stand: 23. März 2026, Commit `473044d`).
 > Dieses Dokument ist der zentrale Übergabe- und Anknüpfungspunkt für alle zukünftigen Sessions.
 
-**Letzte Aktualisierung:** 2026-03-24
-**Baseline:** v1.1.0 | 643 Tests (76 Dateien) | OpenSSF 8.5/10 | CI grün | 0 Security Alerts
+**Letzte Aktualisierung:** 2026-03-28
+**Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
 
 ---
 
@@ -69,11 +69,14 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-03-27 (Full Audit Plan Implementation -- 12 Phases)
-Naechste Prioritaet:  i18n Vervollstaendigung, Nutrient UI, DSGVO i18n, Unit Tests
-Sprint-Fortschritt: S1 [0/3] | S2 [0/4] | S3 [2/5] | S4 [0/2] | S5 [5/8] | S6 [0/7]
-Gesamtfortschritt:  ███████░░░░░░░░░░░░░ 7/29 Tasks (~24%)
+Letzte Session:     2026-03-28 (Deep Cleanup + 5-Feature Batch)
+Naechste Prioritaet:  Unit Tests neue Features, ES/FR/NL Vervollstaendigung, Sonar Hotspots
+Sprint-Fortschritt: S1 [0/3] | S2 [0/4] | S3 [3/5] | S4 [0/2] | S5 [5/8] | S6 [0/7]
+Gesamtfortschritt:  ████████░░░░░░░░░░░░ 8/29 Tasks (~28%)
 Blocker:            SonarCloud Hotspot Review (Admin UI), CII Badge (Email)
+Erledigt (2026-03-28): Monorepo-Docs-Sync, Eco-Mode-Redux-Sync, Nutrient-Plugin-UI,
+                        DSGVO-Individual-DB-Delete, Seedbanks-i18n-5-Locales,
+                        createCachedPipelineLoader-Dedup (4 Services, ~75 LOC)
 Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
                         Three.js-Splitting, i18n ES/FR/NL, Nutrient-Plugin, DSGVO,
                         Eco-Mode, ARCHITECTURE.md, Lighthouse-Fonts
@@ -357,16 +360,16 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 **Geschätzter Aufwand:** 1–2 Wochen pro Feature
 **Voraussetzung:** Sprint 1–4 (Quality Infrastructure)
 
-| #    | Feature                                | Kategorie | Prio   | Aufwand    | Status |
-| ---- | -------------------------------------- | --------- | ------ | ---------- | ------ |
-| S5.1 | Spanisch (ES) Sprachsupport            | i18n      | High   | 3–4 Tage   | ⬜     |
-| S5.2 | Französisch (FR) Sprachsupport         | i18n      | High   | 3–4 Tage   | ⬜     |
-| S5.3 | Niederländisch (NL) Sprachsupport      | i18n      | Medium | 3–4 Tage   | ⬜     |
-| S5.4 | Nutrient Scheduling + EC/pH Automation | Core      | High   | 1–2 Wochen | ⬜     |
-| S5.5 | Community Strain Marketplace           | Community | High   | 1–2 Wochen | ⬜     |
-| S5.6 | Auto-PDF Grow Reports                  | Export    | Medium | 1 Woche    | ⬜     |
-| S5.7 | Strain Comparison Tool (Side-by-Side)  | Core      | Medium | 3–5 Tage   | ⬜     |
-| S5.8 | Equipment Cost Tracking & Analytics    | Core      | Low    | 3–5 Tage   | ⬜     |
+| #    | Feature                                | Kategorie | Prio   | Aufwand    | Status                              |
+| ---- | -------------------------------------- | --------- | ------ | ---------- | ----------------------------------- |
+| S5.1 | Spanisch (ES) Sprachsupport            | i18n      | High   | 3–4 Tage   | ⬜                                  |
+| S5.2 | Französisch (FR) Sprachsupport         | i18n      | High   | 3–4 Tage   | ⬜                                  |
+| S5.3 | Niederländisch (NL) Sprachsupport      | i18n      | Medium | 3–4 Tage   | ⬜                                  |
+| S5.4 | Nutrient Scheduling + EC/pH Automation | Core      | High   | 1–2 Wochen | 🔄 Plugin-UI done, Auto-Adjust done |
+| S5.5 | Community Strain Marketplace           | Community | High   | 1–2 Wochen | ⬜                                  |
+| S5.6 | Auto-PDF Grow Reports                  | Export    | Medium | 1 Woche    | ⬜                                  |
+| S5.7 | Strain Comparison Tool (Side-by-Side)  | Core      | Medium | 3–5 Tage   | ⬜                                  |
+| S5.8 | Equipment Cost Tracking & Analytics    | Core      | Low    | 3–5 Tage   | ⬜                                  |
 
 ### i18n-Expansion Checkliste (pro Sprache)
 
@@ -500,13 +503,14 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
 
 > Chronologische Liste aller Sessions, die an dieser Roadmap arbeiten. Neue Einträge am Anfang.
 
-| Datum      | Session-Fokus                    | Sprint       | Fortschritt                                          | Review-Doc                                      |
-| ---------- | -------------------------------- | ------------ | ---------------------------------------------------- | ----------------------------------------------- |
-| 2026-03-27 | Full Audit Plan (12 Phases)      | S3 + S5      | 24 files modified, 11 new, 12/12 phases done         | [review](session-activity-review-2026-03-27.md) |
-| 2026-03-24 | Development Journey Transparency | Vorbereitung | Roadmap erstellt, README + AboutTab + i18n + Handoff | [review](session-activity-review-2026-03-24.md) |
-| 2026-03-23 | Cache Tests + Coverage Boost     | Vorbereitung | 643 Tests, IndexedDB-Cache-Tests                     | [review](session-activity-review-2026-03-23.md) |
-| 2026-03-23 | CodeAnt Cleanup + PR Purge       | Vorbereitung | 18 PRs geschlossen, CodeAnt vollständig              | [review](session-activity-review-2026-03-23.md) |
-| 2026-03-22 | 7-Phasen Security Sprint         | Vorbereitung | secureRandom, ReDoS, Docker, Fuzzing, Scorecard      | [review](session-activity-review-2026-03-22.md) |
+| Datum      | Session-Fokus                    | Sprint       | Fortschritt                                            | Review-Doc                                      |
+| ---------- | -------------------------------- | ------------ | ------------------------------------------------------ | ----------------------------------------------- |
+| 2026-03-28 | Deep Cleanup + 5-Feature Batch   | S3 + S5      | 18 files, eco-mode sync, plugin UI, DSGVO, i18n, dedup | [review](session-activity-review-2026-03-28.md) |
+| 2026-03-27 | Full Audit Plan (12 Phases)      | S3 + S5      | 24 files modified, 11 new, 12/12 phases done           | [review](session-activity-review-2026-03-27.md) |
+| 2026-03-24 | Development Journey Transparency | Vorbereitung | Roadmap erstellt, README + AboutTab + i18n + Handoff   | [review](session-activity-review-2026-03-24.md) |
+| 2026-03-23 | Cache Tests + Coverage Boost     | Vorbereitung | 643 Tests, IndexedDB-Cache-Tests                       | [review](session-activity-review-2026-03-23.md) |
+| 2026-03-23 | CodeAnt Cleanup + PR Purge       | Vorbereitung | 18 PRs geschlossen, CodeAnt vollständig                | [review](session-activity-review-2026-03-23.md) |
+| 2026-03-22 | 7-Phasen Security Sprint         | Vorbereitung | secureRandom, ReDoS, Docker, Fuzzing, Scorecard        | [review](session-activity-review-2026-03-22.md) |
 
 ---
 
@@ -522,7 +526,7 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
     - UI/UX Audit: [`ui-ux-audit.md`](../ui-ux-audit.md)
     - Security Status: [`docs/security-alerts-status.md`](security-alerts-status.md)
     - Sonar Handoff: [`docs/sonar-handoff-review-2026-03-21.md`](sonar-handoff-review-2026-03-21.md)
-    - Session Todo: [`docs/session-activity-todo-2026-03-27.md`](session-activity-todo-2026-03-27.md)
+    - Session Todo: [`docs/session-activity-todo-2026-03-28.md`](session-activity-todo-2026-03-28.md)
 7. **Conventional Commit Format:** `<type>(<scope>): <description>` — Typen: feat, fix, docs, refactor, test, perf, chore, a11y, i18n, security
 
 ---

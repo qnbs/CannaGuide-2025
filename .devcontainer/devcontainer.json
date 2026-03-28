@@ -1,47 +1,35 @@
 {
-    "name": "CannaGuide 2025",
-    
-    // So zwingst du Codespaces, dein geiles Dockerfile zu nutzen!
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
-
-    "remoteUser": "pwuser", // Playwright-Images nutzen oft 'pwuser' statt 'node'
-
+    "name": "CannaGuide 2025 - Safe Mode",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+    "remoteUser": "node",
     "hostRequirements": {
         "cpus": 4,
         "memory": "8gb",
         "storage": "32gb"
     },
-
     "forwardPorts": [5173, 3001, 3002],
     "portsAttributes": {
         "5173": { "label": "Vite Dev Server", "onAutoForward": "openBrowser" },
         "3001": { "label": "ESP32 Sensor Mock", "onAutoForward": "silent" },
         "3002": { "label": "Tauri IPC Mock", "onAutoForward": "silent" }
     },
-
     "containerEnv": {
         "VITE_ESP32_URL": "http://localhost:3001",
         "VITE_TAURI_MOCK_URL": "http://localhost:3002"
     },
-
     "customizations": {
         "vscode": {
             "settings": {
                 "terminal.integrated.defaultProfile.linux": "bash",
                 "editor.formatOnSave": true,
-                "editor.defaultFormatter": "esbenp.prettier-vscode",
-                "typescript.tsdk": "node_modules/typescript/lib"
+                "editor.defaultFormatter": "esbenp.prettier-vscode"
             },
             "extensions": [
                 "dbaeumer.vscode-eslint",
                 "esbenp.prettier-vscode",
-                "ms-playwright.playwright",
                 "bradlc.vscode-tailwindcss",
                 "github.copilot",
-                "github.copilot-chat",
-                "biomejs.biome"
+                "github.copilot-chat"
             ]
         }
     }

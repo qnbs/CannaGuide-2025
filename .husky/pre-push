@@ -1,4 +1,7 @@
 #!/bin/sh
 set -e
 
-npm run gate:push
+# Fast pre-push gate: identity check only.
+# Lint + typecheck + tests run in CI (ci.yml quality/security/e2e jobs).
+# Pre-commit hook already covers lint-staged + trojan-source + prettier.
+npm run check:commit-identity

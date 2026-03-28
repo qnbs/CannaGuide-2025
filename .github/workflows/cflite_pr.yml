@@ -13,6 +13,10 @@ on:
         - cron: '27 4 * * 3' # Weekly Wednesday
     workflow_dispatch:
 
+concurrency:
+    group: cflite-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 permissions:
     contents: read
 

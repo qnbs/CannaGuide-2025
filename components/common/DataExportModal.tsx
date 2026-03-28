@@ -42,6 +42,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
         if (!pendingFormat) return
         onExport(pendingFormat)
         setPendingFormat(null)
+        onClose()
     }
 
     const handleClose = () => {

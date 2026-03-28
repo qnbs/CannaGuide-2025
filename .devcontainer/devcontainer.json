@@ -12,7 +12,7 @@
         "storage": "32gb"
     },
 
-    "postCreateCommand": "bash .devcontainer/setup.sh",
+//    "postCreateCommand": "bash .devcontainer/setup.sh",
     "postStartCommand": "bash .devcontainer/start.sh",
 
     "forwardPorts": [5173, 3001, 3002],

@@ -90,6 +90,7 @@ export const exportAndSaveStrains = createAsyncThunk<
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
             dispatch(addNotification({ message, type: 'error' }))
+            dispatch(closeExportModal())
         }
     },
 )

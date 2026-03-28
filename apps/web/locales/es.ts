@@ -14,6 +14,7 @@ import {
     strainsData,
     legal,
 } from './es/index'
+import { seedbanks } from './es/seedbanks'
 
 export const es = {
     common,
@@ -34,4 +35,5 @@ export const es = {
     strainsData,
     tipOfTheDay,
     legal,
+    seedbanks,
 }

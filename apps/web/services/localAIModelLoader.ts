@@ -167,6 +167,27 @@ export const getTransformersModule = async (): Promise<TransformersModule> => {
     return transformersModulePromise
 }
 
+/**
+ * Factory for creating cached, singleton pipeline loaders with consistent error handling.
+ * Eliminates duplicated loader boilerplate across local AI services.
+ */
+export const createCachedPipelineLoader = (
+    task: string,
+    modelId: string,
+    options: Record<string, unknown> = { quantized: true },
+): (() => Promise<LocalAiPipeline>) => {
+    let cached: Promise<LocalAiPipeline> | null = null
+    return (): Promise<LocalAiPipeline> => {
+        if (!cached) {
+            cached = loadTransformersPipeline(task, modelId, options).catch((error: unknown) => {
+                cached = null
+                throw error
+            })
+        }
+        return cached
+    }
+}
+
 export const loadTransformersPipeline = async (
     task: string,
     modelId: string,

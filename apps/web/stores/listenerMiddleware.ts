@@ -87,6 +87,10 @@ startAppListening({
         if (action.payload.path === 'privacy.localOnlyMode') {
             await syncLocalOnlyMode(action.payload.value as boolean)
         }
+        if (action.payload.path === 'localAi.ecoMode') {
+            const { setEcoModeExplicit } = await import('@/services/aiEcoModeService')
+            setEcoModeExplicit(action.payload.value as boolean)
+        }
     },
 })
 

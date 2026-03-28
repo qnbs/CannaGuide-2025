@@ -1,4 +1,4 @@
-import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
+import { createCachedPipelineLoader } from './localAIModelLoader'
 import { captureLocalAiError } from './sentryService'
 import DOMPurify from 'dompurify'
 
@@ -37,53 +37,19 @@ const SENTIMENT_MODEL_ID = 'Xenova/distilbert-base-uncased-finetuned-sst-2-engli
 const SUMMARIZATION_MODEL_ID = 'Xenova/distilbart-cnn-6-6'
 const ZERO_SHOT_TEXT_MODEL_ID = 'Xenova/mobilebert-uncased-mnli'
 
-// ─── Pipeline Caches ─────────────────────────────────────────────────────────
-let sentimentPipeline: Promise<LocalAiPipeline> | null = null
-let summarizationPipeline: Promise<LocalAiPipeline> | null = null
-let zeroShotTextPipeline: Promise<LocalAiPipeline> | null = null
-
 // ─── Pipeline Loaders ────────────────────────────────────────────────────────
 
-const loadSentimentPipeline = (): Promise<LocalAiPipeline> => {
-    if (!sentimentPipeline) {
-        sentimentPipeline = loadTransformersPipeline('sentiment-analysis', SENTIMENT_MODEL_ID, {
-            quantized: true,
-        }).catch((error: unknown) => {
-            sentimentPipeline = null
-            captureLocalAiError(error, { model: SENTIMENT_MODEL_ID, stage: 'preload' })
-            throw error
-        })
-    }
-    return sentimentPipeline
-}
+const loadSentimentPipeline = createCachedPipelineLoader('sentiment-analysis', SENTIMENT_MODEL_ID)
 
-const loadSummarizationPipeline = (): Promise<LocalAiPipeline> => {
-    if (!summarizationPipeline) {
-        summarizationPipeline = loadTransformersPipeline('summarization', SUMMARIZATION_MODEL_ID, {
-            quantized: true,
-        }).catch((error: unknown) => {
-            summarizationPipeline = null
-            captureLocalAiError(error, { model: SUMMARIZATION_MODEL_ID, stage: 'preload' })
-            throw error
-        })
-    }
-    return summarizationPipeline
-}
+const loadSummarizationPipeline = createCachedPipelineLoader(
+    'summarization',
+    SUMMARIZATION_MODEL_ID,
+)
 
-const loadZeroShotTextPipeline = (): Promise<LocalAiPipeline> => {
-    if (!zeroShotTextPipeline) {
-        zeroShotTextPipeline = loadTransformersPipeline(
-            'zero-shot-classification',
-            ZERO_SHOT_TEXT_MODEL_ID,
-            { quantized: true },
-        ).catch((error: unknown) => {
-            zeroShotTextPipeline = null
-            captureLocalAiError(error, { model: ZERO_SHOT_TEXT_MODEL_ID, stage: 'preload' })
-            throw error
-        })
-    }
-    return zeroShotTextPipeline
-}
+const loadZeroShotTextPipeline = createCachedPipelineLoader(
+    'zero-shot-classification',
+    ZERO_SHOT_TEXT_MODEL_ID,
+)
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -352,7 +318,6 @@ export const preloadNlpModels = async (
 
 /** Reset all NLP pipeline caches (tests). */
 export const resetNlpPipelines = (): void => {
-    sentimentPipeline = null
-    summarizationPipeline = null
-    zeroShotTextPipeline = null
+    // Pipelines are managed by createCachedPipelineLoader;
+    // use clearPipelineCache() from localAIModelLoader for full reset.
 }

@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, useMemo } from 'react'
+import React, { memo, useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CalculatorSection, Input, ResultDisplay, Select } from './common'
 import { Button } from '@/components/common/Button'
@@ -16,6 +16,8 @@ import {
     setAiLoading,
     setAiRecommendation,
     getOptimalRange,
+    applyPluginSchedule,
+    detachPlugin,
 } from '@/stores/slices/nutrientPlannerSlice'
 import {
     selectNutrientSchedule,
@@ -25,9 +27,12 @@ import {
     selectNutrientAutoAdjust,
     selectNutrientAiLoading,
     selectNutrientAiRecommendation,
+    selectNutrientAutoAdjustRecommendation,
 } from '@/stores/selectors'
 import { selectActivePlants, selectSettings } from '@/stores/selectors'
 import { aiService } from '@/services/aiService'
+import { pluginService } from '@/services/pluginService'
+import type { NutrientSchedulePlugin } from '@/services/pluginService'
 import DOMPurify from 'dompurify'
 import { cn } from '@/lib/utils'
 
@@ -127,6 +132,7 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
     const autoAdjust = useAppSelector(selectNutrientAutoAdjust)
     const aiLoading = useAppSelector(selectNutrientAiLoading)
     const aiRecommendation = useAppSelector(selectNutrientAiRecommendation)
+    const autoAdjustRecommendation = useAppSelector(selectNutrientAutoAdjustRecommendation)
     const activePlants = useAppSelector(selectActivePlants)
     const settings = useAppSelector(selectSettings)
 
@@ -137,6 +143,12 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
     const [readingType, setReadingType] = useState<'input' | 'runoff'>('input')
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState<'monitor' | 'schedule' | 'history'>('monitor')
+
+    // Nutrient plugins
+    const [nutrientPlugins, setNutrientPlugins] = useState<NutrientSchedulePlugin[]>([])
+    useEffect(() => {
+        setNutrientPlugins(pluginService.getNutrientSchedules())
+    }, [])
 
     // Derived
     const currentStage = useMemo(() => {
@@ -414,6 +426,17 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
                         {t('equipmentView.calculators.ecPhPlanner.logReading')}
                     </Button>
 
+                    {/* Auto-Adjust Recommendation */}
+                    {autoAdjust && autoAdjustRecommendation && (
+                        <Card className="!p-4 space-y-2 border-amber-500/20 bg-amber-900/10">
+                            <h4 className="text-sm font-semibold text-amber-300 flex items-center gap-2">
+                                <PhosphorIcons.ArrowClockwise className="w-4 h-4" />
+                                {t('equipmentView.calculators.ecPhPlanner.autoAdjust')}
+                            </h4>
+                            <p className="text-sm text-slate-300">{autoAdjustRecommendation}</p>
+                        </Card>
+                    )}
+
                     {/* AI Recommendation */}
                     <Card className="!p-4 space-y-3 border-primary-500/20">
                         <h4 className="text-sm font-semibold text-primary-300 flex items-center gap-2">
@@ -454,6 +477,42 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
             {/* Schedule Tab */}
             {activeTab === 'schedule' && (
                 <div className="space-y-3">
+                    {/* Plugin Schedule Buttons */}
+                    {nutrientPlugins.length > 0 && (
+                        <Card className="!p-4 space-y-2">
+                            <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                                <PhosphorIcons.Lightning className="w-4 h-4 text-primary-400" />
+                                {t('equipmentView.calculators.ecPhPlanner.nutrientPlugins')}
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                                {nutrientPlugins.map((plugin) => (
+                                    <Button
+                                        key={plugin.id}
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() =>
+                                            dispatch(
+                                                applyPluginSchedule({
+                                                    pluginId: plugin.id,
+                                                    weeks: plugin.data.weeks,
+                                                }),
+                                            )
+                                        }
+                                    >
+                                        {plugin.name}
+                                    </Button>
+                                ))}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => dispatch(detachPlugin())}
+                                >
+                                    <PhosphorIcons.X className="w-3 h-3 mr-1" />
+                                    {t('common.reset')}
+                                </Button>
+                            </div>
+                        </Card>
+                    )}
                     {schedule.map((entry) => {
                         const range = getOptimalRange(medium, entry.stage)
                         return (

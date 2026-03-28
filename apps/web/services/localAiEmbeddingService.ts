@@ -1,4 +1,4 @@
-import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
+import { createCachedPipelineLoader } from './localAIModelLoader'
 import { captureLocalAiError } from './sentryService'
 
 /**
@@ -17,21 +17,16 @@ const EMBEDDING_TIMEOUT_MS = 30_000
 /** Maximum input length in characters to prevent model OOM. */
 const MAX_INPUT_LENGTH = 512
 
-let embeddingPipelinePromise: Promise<LocalAiPipeline> | null = null
+let embeddingPipelinePromise: ReturnType<typeof createCachedPipelineLoader> | null = null
 
-const loadEmbeddingPipeline = async (): Promise<LocalAiPipeline> => {
+const loadEmbeddingPipeline = (): ReturnType<ReturnType<typeof createCachedPipelineLoader>> => {
     if (!embeddingPipelinePromise) {
-        embeddingPipelinePromise = loadTransformersPipeline(
+        embeddingPipelinePromise = createCachedPipelineLoader(
             'feature-extraction',
             EMBEDDING_MODEL_ID,
-            { quantized: true },
-        ).catch((error: unknown) => {
-            embeddingPipelinePromise = null
-            captureLocalAiError(error, { model: EMBEDDING_MODEL_ID, stage: 'preload' })
-            throw error
-        })
+        )
     }
-    return embeddingPipelinePromise
+    return embeddingPipelinePromise()
 }
 
 /** Cosine similarity between two equal-length vectors. */

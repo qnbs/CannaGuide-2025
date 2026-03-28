@@ -113,8 +113,8 @@ const INJECTION_PATTERNS: RegExp[] = [
     /print\s+(the|your)\s+(system\s+)?prompt/gi,
     /show\s+(me\s+)?(the|your)\s+(system|hidden|internal)\s+(prompt|instructions?)/gi,
     /what\s+(are|were)\s+(your|the)\s+(system\s+)?(instructions?|prompt|rules)/gi,
-    // --- Base64 / data-URI injection ---
-    /data:\s*[a-z]+\/[a-z0-9.+-]+\s*;?\s*base64\s*,/gi,
+    // --- Base64 / data-URI injection (bounded quantifiers to prevent ReDoS) ---
+    /data:\s{0,10}[a-z]+\/[a-z0-9.+-]+\s{0,10};?\s{0,10}base64\s{0,10},/gi,
     // --- Unicode escape / obfuscation ---
     /\\u[0-9a-f]{4}/gi,
     /\\x[0-9a-f]{2}/gi,

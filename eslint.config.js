@@ -16,6 +16,8 @@ export default [
             'node_modules/**',
             'public/sw.js',
             'public/sw.mjs',
+            'apps/web/public/sw.js',
+            'apps/web/public/sw.mjs',
             'src-tauri/**',
             '**/*.cjs',
             'scripts/**',

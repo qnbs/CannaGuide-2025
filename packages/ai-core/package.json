@@ -1,6 +1,6 @@
 {
     "name": "@cannaguide/ai-core",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "private": true,
     "type": "module",
     "main": "./src/index.ts",
@@ -9,6 +9,10 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./src/index.ts"
+        },
+        "./ml": {
+            "types": "./dist/ml.d.ts",
+            "default": "./src/ml.ts"
         }
     },
     "files": [
@@ -22,6 +26,12 @@
         "clean": "rm -rf dist tsconfig.tsbuildinfo"
     },
     "dependencies": {
+        "@google/genai": "^1.46.0",
         "zod": "^3.25.76"
+    },
+    "optionalDependencies": {
+        "@mlc-ai/web-llm": "*",
+        "@xenova/transformers": "*",
+        "onnxruntime-web": "*"
     }
 }

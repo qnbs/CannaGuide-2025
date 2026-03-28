@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # DevContainer postCreateCommand (Lite Mode)
-# Entschärft: Kein 'set -e', damit der Container-Start bei kleinen Fehlern nicht stirbt!
+# Installs ONLY the UI frontend and IoT mocks — heavy AI/ML modules are skipped.
+# Full install (incl. ai-core) happens in CI via plain `npm install`.
 set -uo pipefail
 
-echo "[setup] Installing npm dependencies (Lite Mode)..."
-# CI=1 stoppt interaktive Prompts. 
-# --no-fund und --no-audit sparen Zeit. --ignore-scripts blockt Husky vorerst.
-CI=1 npm install --no-fund --no-audit --ignore-scripts
+echo "[setup] Installing UI and IoT dependencies ONLY (skipping heavy AI modules)..."
+# NPM workspace filter: install apps/web + packages/iot-mocks + root dev tools.
+# --no-optional skips the heavy ML binaries in @cannaguide/ai-core's optionalDependencies.
+CI=1 npm install -w @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional --no-fund --no-audit --ignore-scripts
 
 echo "[setup] Initializing git hooks (husky)..."
-npx husky || echo "[setup] WARN: Husky setup failed, continuing anyway..."
+npx husky || echo "[setup] WARN: Husky setup failed, continuing..."
 
 echo "[setup] Configuring git signing..."
 if [ -f "./scripts/devcontainer/bootstrap-git-signing.mjs" ]; then
@@ -17,8 +18,5 @@ if [ -f "./scripts/devcontainer/bootstrap-git-signing.mjs" ]; then
 else
     echo "[setup] WARN: bootstrap-git-signing.mjs not found, skipping."
 fi
-
-echo "[setup] Installing Playwright browsers (TEMPORÄR DEAKTIVIERT FÜR SCHNELLEN START)..."
-# npx playwright install --with-deps chromium || echo "[setup] Playwright install failed, continuing anyway..."
 
 echo "[setup] DevContainer setup complete"

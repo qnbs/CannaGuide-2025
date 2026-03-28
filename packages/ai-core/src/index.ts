@@ -3,6 +3,7 @@
 //
 // This package defines the contract between the web app, desktop app, and any
 // future consumer that needs to interact with AI services.
+// Heavy ML dependencies are available via '@cannaguide/ai-core/ml' sub-path.
 // ---------------------------------------------------------------------------
 
 export type { AiProvider, AiProviderConfig, AiProviderKeyMetadata } from './providers'

@@ -4,23 +4,23 @@ on:
     push:
         branches: [main]
         paths:
-            - 'services/**'
-            - 'stores/**'
-            - 'constants.ts'
-            - 'types.ts'
-            - 'vite.config.ts'
-            - 'package.json'
+            - 'apps/web/services/**'
+            - 'apps/web/stores/**'
+            - 'apps/web/constants.ts'
+            - 'apps/web/types.ts'
+            - 'apps/web/vite.config.ts'
+            - 'apps/web/package.json'
             - 'package-lock.json'
             - '.github/workflows/fuzzing.yml'
     pull_request:
         branches: [main]
         paths:
-            - 'services/**'
-            - 'stores/**'
-            - 'constants.ts'
-            - 'types.ts'
-            - 'vite.config.ts'
-            - 'package.json'
+            - 'apps/web/services/**'
+            - 'apps/web/stores/**'
+            - 'apps/web/constants.ts'
+            - 'apps/web/types.ts'
+            - 'apps/web/vite.config.ts'
+            - 'apps/web/package.json'
             - 'package-lock.json'
             - '.github/workflows/fuzzing.yml'
     schedule:
@@ -52,4 +52,4 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Run fuzz test suite
-              run: npm run test:fuzz
+              run: npm run -w @cannaguide/web test:fuzz

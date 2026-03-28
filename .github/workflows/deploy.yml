@@ -161,7 +161,7 @@ jobs:
                   DEPLOY_BASE_URL: ${{ env.PAGES_URL }}
               run: |
                   echo "::group::playwright e2e"
-                  npm run test:e2e:deploy
+                  npm run -w @cannaguide/web test:e2e:deploy
                   echo "::endgroup::"
 
             - name: Upload Playwright traces on failure

@@ -606,6 +606,14 @@ export const settingsView = {
             'Elimina permanentemente TODOS los datos de este dispositivo (Art. 17 GDPR). Esto no se puede deshacer.',
         gdprEraseWarning:
             'Esto eliminara permanentemente TODAS las bases de datos, almacenamiento local, caches y service workers. Escribe DELETE ALL para confirmar.',
+        gdprSelectiveTitle: 'Eliminacion Selectiva de Bases de Datos',
+        gdprSelectiveDesc:
+            'Eliminar bases de datos individuales en lugar de todos los datos a la vez (Art. 17 GDPR eliminacion parcial).',
+        gdprSelectiveDelete: 'Eliminar',
+        gdprSelectiveConfirm:
+            'Esta seguro de que desea eliminar la base de datos "{{name}}"? Esto no se puede deshacer.',
+        gdprSelectiveSuccess: 'Base de datos "{{name}}" eliminada con exito.',
+        gdprSelectiveError: 'Error al eliminar la base de datos "{{name}}".',
     },
     privacy: {
         title: 'Privacidad y Seguridad',

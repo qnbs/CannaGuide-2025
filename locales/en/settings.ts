@@ -578,6 +578,14 @@ export const settingsView = {
             'Permanently delete ALL data from this device (Art. 17 GDPR). This cannot be undone.',
         gdprEraseWarning:
             'This will permanently delete ALL databases, local storage, caches, and service workers. Type DELETE ALL to confirm.',
+        gdprSelectiveTitle: 'Selective Database Deletion',
+        gdprSelectiveDesc:
+            'Delete individual databases instead of all data at once (Art. 17 GDPR partial erasure).',
+        gdprSelectiveDelete: 'Delete',
+        gdprSelectiveConfirm:
+            'Are you sure you want to delete the database "{{name}}"? This cannot be undone.',
+        gdprSelectiveSuccess: 'Database "{{name}}" deleted successfully.',
+        gdprSelectiveError: 'Failed to delete database "{{name}}".',
     },
     privacy: {
         title: 'Privacy & Security',

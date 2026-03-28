@@ -592,6 +592,14 @@ export const settingsView = {
             'Verwijder permanent ALLE gegevens van dit apparaat (Art. 17 GDPR). Dit kan niet ongedaan worden gemaakt.',
         gdprEraseWarning:
             'Dit verwijdert permanent ALLE databases, lokale opslag, caches en service workers. Typ DELETE ALL om te bevestigen.',
+        gdprSelectiveTitle: 'Selectieve Database-Verwijdering',
+        gdprSelectiveDesc:
+            'Verwijder individuele databases in plaats van alle gegevens tegelijk (Art. 17 GDPR gedeeltelijke verwijdering).',
+        gdprSelectiveDelete: 'Verwijderen',
+        gdprSelectiveConfirm:
+            'Weet u zeker dat u de database "{{name}}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.',
+        gdprSelectiveSuccess: 'Database "{{name}}" succesvol verwijderd.',
+        gdprSelectiveError: 'Verwijderen van database "{{name}}" mislukt.',
     },
     privacy: {
         title: 'Privacy & Beveiliging',

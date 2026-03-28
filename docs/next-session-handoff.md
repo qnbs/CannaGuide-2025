@@ -2,36 +2,46 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-28) -- CI Fix, Eco-Mode UI, Language Selector, DSGVO i18n, Privacy Tests
+## Latest Session (2026-03-29) -- Tech Debt: i18n, Tests, DSGVO Selective Delete, DNS Prefetch
 
-**Status: 700 tests in 85 files (all passing). CI E2E tests fixed. Eco-Mode toggle exposed. 5-language selector. DSGVO i18n keys added. tsc clean. Zero regressions.**
+**Status: 719 tests in 86 files (all passing). Seedbanks i18n complete (ES/FR/NL). DSGVO individual DB deletion. New test coverage for photoTimeline, webBluetooth, privacyService. DNS-prefetch hints. Stale branches cleaned. tsc clean. Zero regressions.**
 
 ### Session Summary
 
-Fixed failing CI (10 E2E tests), added eco-mode toggle to Local AI settings, exposed ES/FR/NL in language selector, added DSGVO i18n keys for EN/DE, created privacyService unit tests.
+Systematic technical debt resolution from the full-scale audit document. Focus: i18n completion for seed bank namespace (ES/FR/NL ~400 lines each), new DSGVO selective database deletion feature with whitelist validation, expanded test coverage (+23 new tests across 3 files), DNS-prefetch hints for AI provider endpoints, and git branch audit (3 stale branches removed).
 
 ### Changes
 
-| File                                         | Change                                                               |
-| -------------------------------------------- | -------------------------------------------------------------------- |
-| `tests/e2e/helpers.ts`                       | CSP violation errors added to ignored patterns (fix 10 E2E failures) |
-| `services/privacyService.test.ts`            | **New** -- 6 unit tests for GDPR erasure + export                    |
-| `components/views/settings/SettingsView.tsx` | Eco-mode toggle + ES/FR/NL language options                          |
-| `locales/en/settings.ts`                     | Eco-mode, language names, DSGVO i18n keys                            |
-| `locales/de/settings.ts`                     | Eco-mode, language names, DSGVO i18n keys                            |
+| File                                         | Change                                                                        |
+| -------------------------------------------- | ----------------------------------------------------------------------------- |
+| `locales/es/seedbanks.ts`                    | **Replaced** -- Full Spanish translation (~400 lines, 15 seed banks)          |
+| `locales/fr/seedbanks.ts`                    | **Replaced** -- Full French translation (~400 lines, 15 seed banks)           |
+| `locales/nl/seedbanks.ts`                    | **Replaced** -- Full Dutch translation (~400 lines, 15 seed banks)            |
+| `services/privacyService.ts`                 | Added `getKnownDatabaseNames()` + `eraseSingleDatabase()` (whitelist-guarded) |
+| `services/privacyService.test.ts`            | Expanded: 6 -> 10 tests (+getKnownDatabaseNames, +eraseSingleDatabase)        |
+| `services/photoTimelineService.test.ts`      | Expanded: 1 -> 10 tests (buildPhotoTimelineMetadata + readCaptureTimestamp)   |
+| `services/webBluetoothSensorService.test.ts` | **New** -- 6 tests (isSupported, readEsp32EnvironmentalSensor)                |
+| `locales/{en,de,es,fr,nl}/settings.ts`       | Added 7 gdprSelective\* i18n keys (selective DB deletion UI)                  |
+| `index.html`                                 | DNS-prefetch hints for AI provider + HuggingFace endpoints                    |
+
+### Git Branch Cleanup
+
+- Deleted `fix/pr-202603241354` (closed PR)
+- Deleted `fix/security-hardening-2026-03-28` (superseded PR)
+- `feat/pr-202603280226` already auto-pruned
 
 ### Immediate Next Tasks
 
-- [ ] Translate remaining 12 i18n namespaces for ES/FR/NL (currently English fallback)
-- [ ] Expose nutrient planner plugin controls + auto-adjust in UI
+- [ ] Build UI for selective DSGVO database deletion (uses `eraseSingleDatabase`)
+- [ ] Translate remaining i18n namespaces: plants (ES/FR/NL have ~18 fewer keys than EN)
+- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
 - [ ] Playwright E2E: export dialog, DSGVO erase, touch target verification
 - [ ] Run Lighthouse CI post-deploy for FCP metrics
-- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
 - [ ] CII-Best-Practices badge email verification
 
 ---
 
-## Previous Session (2026-03-27) -- Full Audit Plan Implementation (12 Phases)
+## Previous Session (2026-03-28) -- CI Fix, Eco-Mode UI, Language Selector, DSGVO i18n, Privacy Tests
 
 **Status: 694 tests in 84 files (all passing). All 12 audit phases implemented. 24 files modified, 11 new files created. tsc clean. Zero regressions.**
 

@@ -64,4 +64,35 @@ describe('privacyService', () => {
             expect(data.databases).toBeDefined()
         })
     })
+
+    describe('getKnownDatabaseNames', () => {
+        it('should return all 7 known database names', async () => {
+            const { getKnownDatabaseNames } = await import('./privacyService')
+            const names = getKnownDatabaseNames()
+            expect(names).toHaveLength(7)
+            expect(names).toContain('CannaGuideDB')
+            expect(names).toContain('CannaGuideStateDB')
+            expect(names).toContain('CannaGuideSecureDB')
+        })
+    })
+
+    describe('eraseSingleDatabase', () => {
+        it('should return false for unknown database names', async () => {
+            const { eraseSingleDatabase } = await import('./privacyService')
+            const result = await eraseSingleDatabase('UnknownDB')
+            expect(result).toBe(false)
+        })
+
+        it('should return true for a valid known database name', async () => {
+            const { eraseSingleDatabase } = await import('./privacyService')
+            const result = await eraseSingleDatabase('CannaGuideLocalAiCache')
+            expect(result).toBe(true)
+        })
+
+        it('should reject empty string', async () => {
+            const { eraseSingleDatabase } = await import('./privacyService')
+            const result = await eraseSingleDatabase('')
+            expect(result).toBe(false)
+        })
+    })
 })

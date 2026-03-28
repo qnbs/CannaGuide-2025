@@ -36,6 +36,33 @@ const deleteDatabase = (name: string): Promise<void> =>
     })
 
 /**
+ * Get the list of all known IndexedDB database names.
+ */
+export const getKnownDatabaseNames = (): readonly string[] => INDEXED_DB_NAMES
+
+/**
+ * Delete a single IndexedDB database by name.
+ * Only allows deletion of known application databases (whitelist).
+ *
+ * Implements selective DSGVO Art. 17 partial erasure.
+ *
+ * @returns true if deletion succeeded (or DB did not exist)
+ */
+export const eraseSingleDatabase = async (dbName: string): Promise<boolean> => {
+    if (!INDEXED_DB_NAMES.includes(dbName as (typeof INDEXED_DB_NAMES)[number])) {
+        return false
+    }
+
+    try {
+        await deleteDatabase(dbName)
+        return true
+    } catch (error) {
+        Sentry.captureException(error)
+        return false
+    }
+}
+
+/**
  * Remove all cookies visible to JS on the current path/domain.
  */
 const clearAllCookies = (): void => {

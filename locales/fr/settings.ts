@@ -608,6 +608,14 @@ export const settingsView = {
             'Supprimer definitivement TOUTES les donnees de cet appareil (Art. 17 GDPR). Cette action est irreversible.',
         gdprEraseWarning:
             'Cela supprimera definitivement TOUTES les bases de donnees, le stockage local, les caches et les service workers. Tapez DELETE ALL pour confirmer.',
+        gdprSelectiveTitle: 'Suppression Selective de Bases de Donnees',
+        gdprSelectiveDesc:
+            'Supprimer des bases de donnees individuelles au lieu de toutes les donnees en une fois (Art. 17 GDPR suppression partielle).',
+        gdprSelectiveDelete: 'Supprimer',
+        gdprSelectiveConfirm:
+            'Etes-vous sur de vouloir supprimer la base de donnees "{{name}}" ? Cette action est irreversible.',
+        gdprSelectiveSuccess: 'Base de donnees "{{name}}" supprimee avec succes.',
+        gdprSelectiveError: 'Echec de la suppression de la base de donnees "{{name}}".',
     },
     privacy: {
         title: 'Confidentialite & Securite',

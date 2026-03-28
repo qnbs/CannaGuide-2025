@@ -590,6 +590,14 @@ export const settingsView = {
         gdprErase: 'Alle Daten loeschen',
         gdprEraseDesc:
             'Alle Daten auf diesem Geraet unwiderruflich loeschen (Art. 17 DSGVO). Dies kann nicht rueckgaengig gemacht werden.',
+        gdprSelectiveTitle: 'Selektive Datenbank-Loeschung',
+        gdprSelectiveDesc:
+            'Einzelne Datenbanken loeschen statt alle Daten auf einmal (Art. 17 DSGVO Teilloeschung).',
+        gdprSelectiveDelete: 'Loeschen',
+        gdprSelectiveConfirm:
+            'Sind Sie sicher, dass Sie die Datenbank "{{name}}" loeschen moechten? Dies kann nicht rueckgaengig gemacht werden.',
+        gdprSelectiveSuccess: 'Datenbank "{{name}}" erfolgreich geloescht.',
+        gdprSelectiveError: 'Loeschen der Datenbank "{{name}}" fehlgeschlagen.',
         gdprEraseWarning:
             'Dies loescht unwiderruflich ALLE Datenbanken, lokalen Speicher, Caches und Service Worker. Tippe DELETE ALL zur Bestaetigung.',
     },

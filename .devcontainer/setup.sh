@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # DevContainer postCreateCommand (Lite Mode)
-# Installs ONLY the UI frontend and IoT mocks — heavy AI/ML modules are skipped.
-# Full install (incl. ai-core) happens in CI via plain `npm install`.
+# Deterministic install via npm ci (lockfile-pinned, OSSF Scorecard compliant).
+# ML models are browser-side only -- no heavy binaries downloaded at install time.
 set -uo pipefail
 
-echo "[setup] Installing UI and IoT dependencies ONLY (skipping heavy AI modules)..."
-# NPM workspace filter: install apps/web + packages/iot-mocks + root dev tools.
-# --no-optional skips the heavy ML binaries in @cannaguide/ai-core's optionalDependencies.
-CI=1 npm install -w @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional --no-fund --no-audit --ignore-scripts
+echo "[setup] Installing dependencies (deterministic lockfile-pinned install)..."
+# npm ci uses package-lock.json for deterministic, hash-pinned installs (OSSF Scorecard compliant).
+# --ignore-scripts prevents postinstall scripts from running during container build.
+# ML models are loaded lazily at runtime in-browser, not at install time.
+CI=1 npm ci --no-fund --no-audit --ignore-scripts
 
 echo "[setup] Initializing git hooks (husky)..."
 npx husky || echo "[setup] WARN: Husky setup failed, continuing..."

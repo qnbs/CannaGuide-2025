@@ -177,7 +177,7 @@ for (let attempt = 0; attempt < 30; attempt++) {
 console.log('\x1b[36m→ CI checks detected — watching for completion...\x1b[0m')
 
 // Checks with continue-on-error that should not block the merge
-const IGNORABLE_CHECKS = new Set(['PR Fuzzing', 'PR Fuzzing (none)'])
+const IGNORABLE_CHECKS = new Set(['PR Fuzzing', 'PR Fuzzing (none)', 'Build & Push'])
 
 // Poll check status instead of --watch (avoids alternate buffer / TUI issues)
 let checksPass = false

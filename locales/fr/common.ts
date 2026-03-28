@@ -1,0 +1,136 @@
+// French (Francais) -- common namespace
+import { common as enCommon, problemMessages as enProblemMessages, ai as enAi } from '../en/common'
+
+export const common = {
+    ...enCommon,
+    save: 'Enregistrer',
+    cancel: 'Annuler',
+    close: 'Fermer',
+    back: 'Retour',
+    next: 'Suivant',
+    delete: 'Supprimer',
+    edit: 'Modifier',
+    export: 'Exporter',
+    downloadAgain: 'Telecharger a nouveau',
+    all: 'Tout',
+    none: 'Aucun',
+    name: 'Nom',
+    type: 'Type',
+    typeDetails: 'Details du type',
+    genetics: 'Genetique',
+    description: 'Description',
+    actions: 'Actions',
+    page: 'Page',
+    generated: 'Genere',
+    loadMore: 'Charger plus',
+    regenerate: 'Regenerer',
+    confirm: 'Confirmer',
+    exportConfirm: 'Voulez-vous vraiment exporter ces donnees ?',
+    deleteConfirm: 'Voulez-vous vraiment supprimer cet element ?',
+    deleteResponse: 'Supprimer la reponse',
+    removeImage: "Supprimer l'image",
+    capturedImage: 'Image capturee',
+    imagePreview: "Apercu de l'image",
+    clearSearch: 'Effacer la recherche',
+    unchanged: 'Inchange',
+    noDataToExport: 'Aucune donnee a exporter.',
+    successfullyExported_one: '1 element exporte avec succes au format {{format}}.',
+    successfullyExported_other: '{{count}} elements exportes avec succes au format {{format}}.',
+    installPwa: "Installer l'app",
+    installPwaHint:
+        'Astuce : Vous pouvez installer cette app pour une utilisation hors ligne depuis le menu du navigateur.',
+    installPwaSuccess: 'App installee avec succes !',
+    installPwaDismissed: 'Installation annulee.',
+    swUpdateAvailable: 'Une nouvelle version est disponible. Rechargez pour mettre a jour.',
+    swUpdateReload: 'Recharger maintenant',
+    offlineWarning:
+        'Vous etes actuellement hors ligne. Certaines fonctionnalites peuvent etre indisponibles.',
+    preparingGuide: 'Preparation de votre guide...',
+    error: 'Erreur',
+    deepDive: 'Analyse approfondie',
+    saveToJournal: 'Sauvegarder dans le journal',
+    search: 'Rechercher',
+    notes: 'Notes',
+    editor: {
+        bold: 'Gras',
+        italic: 'Italique',
+        list: 'Liste',
+    },
+    errorBoundary: {
+        title: 'Une erreur est survenue.',
+        description: "Une erreur inattendue s'est produite. Veuillez recharger l'application.",
+        reload: "Recharger l'application",
+        safeRecovery: 'Essayer la recuperation securisee',
+    },
+    imageResizeFailed: "Echec du redimensionnement de l'image, utilisation de l'original.",
+    offlineQueued: "Hors ligne. Action mise en file d'attente pour synchronisation.",
+    failedToSave: 'Echec de la sauvegarde.',
+    noDescription: 'Aucune description disponible.',
+    startOver: 'Recommencer',
+    on: 'Active',
+    exportPdf: 'Exporter PDF',
+    exporting: 'Exportation...',
+    exportFormats: {
+        pdfHint: "Export portable pour le partage et l'archivage.",
+        txtHint: 'Sortie texte brut pour copier, comparer et outiller.',
+    },
+    proTip: 'Astuce Pro',
+    resetState: "Reinitialiser l'etat",
+    quality: 'Qualite',
+    pagination: {
+        previous: 'Page precedente',
+        next: 'Page suivante',
+    },
+    accessibility: {
+        ...enCommon.accessibility,
+        close: 'Fermer',
+        skipToMain: 'Aller au contenu principal',
+        mainContent: 'Contenu principal',
+        mainNavigation: 'Navigation principale',
+    },
+}
+
+export const nav = {
+    strains: 'Varietes',
+    plants: 'Plantes',
+    equipment: 'Equipement',
+    knowledge: 'Connaissances',
+    settings: 'Parametres',
+    help: 'Aide',
+}
+
+export const plantStages = {
+    SEED: 'Graine',
+    GERMINATION: 'Germination',
+    SEEDLING: 'Semis',
+    VEGETATIVE: 'Vegetatif',
+    FLOWERING: 'Floraison',
+    HARVEST: 'Recolte',
+    DRYING: 'Sechage',
+    CURING: 'Affinage',
+    FINISHED: 'Termine',
+}
+
+export const problemMessages = {
+    ...enProblemMessages,
+    nutrientDeficiency: { message: 'Carence nutritive detectee' },
+    overwatering: { message: 'Arrosage excessif detecte' },
+    underwatering: { message: 'Sous-arrosage detecte' },
+    pestInfestation: { message: 'Infestation de parasites detectee' },
+}
+
+export const ai = {
+    ...enAi,
+    error: {
+        ...enAi.error,
+        generic: "Une erreur IA s'est produite. Veuillez reessayer.",
+        missingApiKey:
+            'Cle API introuvable. Ajoutez-la dans Parametres > General & UI > Securite IA.',
+        unknown: "Une erreur IA inconnue s'est produite.",
+    },
+    advisor: 'Conseiller IA',
+    getAdvice: 'Obtenir un conseil',
+    diagnostics: 'Lancer le diagnostic',
+    generating: "L'IA reflechit...",
+    disclaimer: 'Contenu genere par IA. Verifiez toujours les informations critiques.',
+}

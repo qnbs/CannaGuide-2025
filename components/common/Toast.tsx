@@ -24,23 +24,23 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
 
     useEffect(() => {
         const enterTimer = setTimeout(() => {
-            setStatus('toast-entered');
-        }, 10); // A small delay to ensure the entering class is applied first
+            setStatus('toast-entered')
+        }, 10) // A small delay to ensure the entering class is applied first
 
         const exitTimer = setTimeout(() => {
-            setStatus('toast-exiting');
-        }, 3000);
+            setStatus('toast-exiting')
+        }, 3000)
 
         const removeTimer = setTimeout(() => {
-            onClose(notification.id);
-        }, 3300); // 300ms for exit animation
+            onClose(notification.id)
+        }, 3300) // 300ms for exit animation
 
         return () => {
-            clearTimeout(enterTimer);
-            clearTimeout(exitTimer);
-            clearTimeout(removeTimer);
+            clearTimeout(enterTimer)
+            clearTimeout(exitTimer)
+            clearTimeout(removeTimer)
         }
-    }, [notification.id, onClose]);
+    }, [notification.id, onClose])
 
     // Use a key on the message div to force re-render and re-trigger animation on new toasts.
     return (
@@ -50,12 +50,10 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
             role="alert"
         >
             <div>{toastIcons[notification.type]}</div>
-            <div className="text-sm font-normal text-slate-200">
-                {notification.message}
-            </div>
+            <div className="text-sm font-normal text-slate-200">{notification.message}</div>
             <button
                 type="button"
-                className="ml-auto -mx-1.5 -my-1.5 bg-transparent text-slate-400 hover:text-white rounded-lg focus:ring-2 focus:ring-slate-300 p-1.5 hover:bg-slate-700"
+                className="ml-auto -mx-1.5 -my-1.5 bg-transparent text-slate-400 hover:text-white rounded-lg focus:ring-2 focus:ring-slate-300 p-2.5 hover:bg-slate-700"
                 onClick={() => onClose(notification.id)}
                 aria-label={t('common.close')}
             >
@@ -79,7 +77,11 @@ export const ToastContainer: React.FC = () => {
     if (!container) return null
 
     return ReactDOM.createPortal(
-        <div role="log" aria-live="assertive" aria-label={t('common.accessibility.toastNotifications')}>
+        <div
+            role="log"
+            aria-live="assertive"
+            aria-label={t('common.accessibility.toastNotifications')}
+        >
             {notifications.map((n) => (
                 <Toast key={n.id} notification={n} onClose={handleClose} />
             ))}

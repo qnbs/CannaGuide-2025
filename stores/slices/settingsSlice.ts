@@ -160,6 +160,7 @@ export const defaultSettings: AppSettings = {
         maxInferenceCacheSize: 256,
         inferenceTimeoutMs: 60000,
         quantizationLevel: 'auto',
+        ecoMode: false,
     },
 
     data: {

@@ -582,7 +582,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                     <button
                         type="button"
                         onClick={toggleFullscreen}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         aria-label={
                             isFullscreen
                                 ? t('plantsView.growRoom3d.exitFullscreen')

@@ -183,11 +183,12 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
         )
 
         return Object.entries(grouped)
-            .map(([strainName, tips]) =>
-                [strainName, tips.toSorted((a, b) => b.createdAt - a.createdAt)] as [
-                    string,
-                    SavedStrainTip[],
-                ],
+            .map(
+                ([strainName, tips]) =>
+                    [strainName, tips.toSorted((a, b) => b.createdAt - a.createdAt)] as [
+                        string,
+                        SavedStrainTip[],
+                    ],
             )
             .toSorted((a, b) => compareText(a[0], b[0]))
     }, [filteredTips, sortMode])
@@ -248,10 +249,10 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
         setIsExportModalOpen(false)
     }
 
-    const groupedSortButtonClass = `!p-1.5 !rounded-md ${
+    const groupedSortButtonClass = `!p-2.5 !rounded-md ${
         sortMode === 'grouped' ? '!bg-slate-700 !text-primary-300' : ''
     }`
-    const dateSortButtonClass = `!p-1.5 !rounded-md ${
+    const dateSortButtonClass = `!p-2.5 !rounded-md ${
         sortMode === 'date' ? '!bg-slate-700 !text-primary-300' : ''
     }`
 

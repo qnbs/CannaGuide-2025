@@ -1,0 +1,11 @@
+// Spanish locale -- re-exports English for namespaces not yet translated
+export { commandPalette } from '../en/commandPalette'
+export { equipmentView } from '../en/equipment'
+export { helpView, visualGuides, faq } from '../en/help'
+export { knowledgeView, tipOfTheDay } from '../en/knowledge'
+export { onboarding } from '../en/onboarding'
+export { plantsView } from '../en/plants'
+export { settingsView } from '../en/settings'
+export { strainsView } from '../en/strains'
+export { strainsData } from '../en/strainsData'
+export { legal } from '../en/legal'

@@ -35,6 +35,7 @@ const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
     { name: 'sanitizer', patterns: ['dompurify'] },
     { name: 'zod', patterns: ['zod'] },
     { name: 'cmdk', patterns: ['cmdk'] },
+    { name: 'three', patterns: ['three'] },
 ]
 
 function resolveManualChunk(id: string): string | undefined {

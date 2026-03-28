@@ -2,7 +2,83 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-25) -- Auto-Merge Fix, Coverage Push, Reliability
+## Latest Session (2026-03-27) -- Full Audit Plan Implementation (12 Phases)
+
+**Status: 694 tests in 84 files (all passing). All 12 audit phases implemented. 24 files modified, 11 new files created. tsc clean. Zero regressions.**
+
+### Session Summary
+
+Complete execution of the validated audit plan across all 5 categories: Bug Fixes (3 phases), Code Quality (2 phases), Extensions (3 phases), Performance + Polish (3 phases), plus 1 documentation phase. Work spanned two sub-sessions (2026-03-26 + 2026-03-27).
+
+### Changes by Category
+
+**Bug Fixes:**
+
+1. Export-Dialog: Replaced invisible nested ConfirmDialog with inline confirmation UI in DataExportModal
+2. Focus-Return: Added cameraButtonRef to LogActionModal for CameraModal focus-return
+3. IndexedDB Retry: Added `withRetry()` with exponential backoff (3 retries, 500/1000/2000ms) to dbService.ts
+
+**UI/UX Polish:** 4. Touch Targets: 6 components updated to 44x44px minimum (InlineStrainSelector, Toast, GrowRoom3D, StrainGridItem, StrainTipsView, HistoryChart)
+
+**Code Quality:** 5. Bundle Splitting: Three.js separated into own chunk via CHUNK_GROUPS 6. Zod Validation: Audited -- already complete, no gaps
+
+**Extensions:** 7. i18n ES/FR/NL: 11 new locale files, 5-language support infrastructure, common namespace translated 8. Nutrient Planner: Plugin integration (applyPluginSchedule/detachPlugin), auto-adjust recommendations 9. DSGVO: New privacyService.ts (Art. 17 erasure + Art. 20 export), UI in DataManagementTab
+
+**Performance + Polish:** 10. AI Eco-Mode: New setting forces WASM + smallest model (70% resource savings) 11. ARCHITECTURE.md: Standalone architecture document 12. Lighthouse: Google Fonts made non-render-blocking
+
+### Files Changed
+
+| File                                              | Change                                      |
+| ------------------------------------------------- | ------------------------------------------- |
+| `components/common/DataExportModal.tsx`           | Inline confirmation replacing ConfirmDialog |
+| `components/common/InlineStrainSelector.tsx`      | Touch target + aria-label                   |
+| `components/common/OnboardingModal.tsx`           | SupportedLocale import                      |
+| `components/common/Toast.tsx`                     | Touch target                                |
+| `components/views/plants/GrowRoom3D.tsx`          | Touch target                                |
+| `components/views/plants/HistoryChart.tsx`        | Touch target                                |
+| `components/views/plants/LogActionModal.tsx`      | Focus-return cameraButtonRef                |
+| `components/views/settings/DataManagementTab.tsx` | DSGVO section + erase dialog                |
+| `components/views/strains/StrainGridItem.tsx`     | Touch target                                |
+| `components/views/strains/StrainTipsView.tsx`     | Touch target                                |
+| `i18n.ts`                                         | 5-language support, SupportedLocale         |
+| `index.html`                                      | Non-render-blocking fonts                   |
+| `locales/index.ts`                                | ES/FR/NL exports                            |
+| `services/dbService.ts`                           | withRetry exponential backoff               |
+| `services/localAI.ts`                             | Language fallback for dictionary access     |
+| `services/localAiFallbackService.ts`              | Language fallback for LocalizedItem         |
+| `services/localAiHealthService.ts`                | Eco-mode in getModelRecommendation          |
+| `services/privacyService.ts`                      | **New** -- GDPR erasure + export            |
+| `stores/listenerMiddleware.ts`                    | SupportedLocale import                      |
+| `stores/selectors.ts`                             | 2 new nutrient selectors                    |
+| `stores/slices/nutrientPlannerSlice.ts`           | Plugin + auto-adjust                        |
+| `stores/slices/nutrientPlannerSlice.test.ts`      | Updated initial state                       |
+| `stores/slices/settingsSlice.ts`                  | ecoMode default                             |
+| `types.ts`                                        | Language expansion + ecoMode                |
+| `vite.config.ts`                                  | Three.js chunk group                        |
+| `locales/{es,fr,nl}/common.ts`                    | **New** -- Translated common namespaces     |
+| `locales/{es,fr,nl}/index.ts`                     | **New** -- Stub re-exports                  |
+| `locales/{es,fr,nl}.ts`                           | **New** -- Barrel files                     |
+| `docs/ARCHITECTURE.md`                            | **New** -- Architecture overview            |
+
+### Immediate Next Tasks
+
+- [ ] Translate remaining 12 i18n namespaces for ES/FR/NL (currently English fallback)
+- [ ] Add language selector options for ES/FR/NL in Settings UI
+- [ ] Expose nutrient planner plugin controls + auto-adjust in UI
+- [ ] Add eco-mode toggle to Local AI settings panel
+- [ ] Add i18n keys for DSGVO section in all languages
+- [ ] Unit tests for privacyService.ts, nutrient plugin integration, eco-mode
+- [ ] Playwright E2E: export dialog, DSGVO erase, touch target verification
+- [ ] Run Lighthouse CI post-deploy for FCP metrics
+- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
+- [ ] CII-Best-Practices badge email verification
+
+> **Full Session Review:** [`docs/session-activity-review-2026-03-27.md`](session-activity-review-2026-03-27.md)
+> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+
+---
+
+## Previous Session (2026-03-25) -- Auto-Merge Fix, Coverage Push, Reliability
 
 **Status: 694 tests in 84 files (all passing). Auto-merge workflow hardened. Branch protection solo-dev optimized. Coverage threshold enforced (25% lines/functions). 3 non-null assertions eliminated.**
 

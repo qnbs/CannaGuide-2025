@@ -380,3 +380,11 @@ export const selectNutrientAiRecommendation = createSelector(
     [selectNutrientPlanner],
     (np: NutrientPlannerState): string | null => np.lastAiRecommendation,
 )
+export const selectNutrientActivePluginId = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): string | null => np.activePluginId,
+)
+export const selectNutrientAutoAdjustRecommendation = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): string | null => np.autoAdjustRecommendation,
+)

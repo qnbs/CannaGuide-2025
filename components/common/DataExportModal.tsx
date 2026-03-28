@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { Card } from './Card'
-import { ConfirmDialog } from './ConfirmDialog'
+import { Button } from '@/components/ui/button'
 
 export type SimpleExportFormat = 'pdf' | 'txt'
 
@@ -44,24 +44,29 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
         setPendingFormat(null)
     }
 
-    return (
-        <>
-            <Modal
-                isOpen={isOpen}
-                onClose={onClose}
-                title={title}
-                description={t(`${translationBasePath}.chooseFormat`)}
-                size="lg"
-            >
-                <div className="space-y-4 pb-3">
-                    <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.12),rgba(15,23,42,0.9))]">
-                        <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
-                            <PhosphorIcons.ArchiveBox className="h-3.5 w-3.5" />
-                            {t(`${translationBasePath}.source`)}
-                        </div>
-                        <p className="text-sm leading-6 text-slate-300">{sourceText}</p>
-                    </Card>
+    const handleClose = () => {
+        setPendingFormat(null)
+        onClose()
+    }
 
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={handleClose}
+            title={title}
+            description={t(`${translationBasePath}.chooseFormat`)}
+            size="lg"
+        >
+            <div className="space-y-4 pb-3">
+                <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.12),rgba(15,23,42,0.9))]">
+                    <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
+                        <PhosphorIcons.ArchiveBox className="h-3.5 w-3.5" />
+                        {t(`${translationBasePath}.source`)}
+                    </div>
+                    <p className="text-sm leading-6 text-slate-300">{sourceText}</p>
+                </Card>
+
+                {pendingFormat === null ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                         <button
                             type="button"
@@ -102,24 +107,23 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
                             </div>
                         </button>
                     </div>
-                </div>
-            </Modal>
-
-            <ConfirmDialog
-                open={pendingFormat !== null}
-                onOpenChange={(open) => {
-                    if (!open) setPendingFormat(null)
-                }}
-                title={t('common.confirm')}
-                description={
-                    t('common.exportConfirm') +
-                    (pendingFormatLabel ? ` (${pendingFormatLabel})` : '')
-                }
-                confirmLabel={t('common.export')}
-                cancelLabel={t('common.cancel')}
-                confirmVariant="secondary"
-                onConfirm={handleConfirmExport}
-            />
-        </>
+                ) : (
+                    <div className="space-y-4">
+                        <p className="text-sm text-slate-300">
+                            {t('common.exportConfirm')}
+                            {pendingFormatLabel ? ` (${pendingFormatLabel})` : ''}
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <Button variant="secondary" onClick={() => setPendingFormat(null)}>
+                                {t('common.cancel')}
+                            </Button>
+                            <Button variant="secondary" onClick={handleConfirmExport}>
+                                {t('common.export')}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </Modal>
     )
 }

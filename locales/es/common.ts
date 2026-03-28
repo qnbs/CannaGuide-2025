@@ -1,0 +1,136 @@
+// Spanish (Espanol) -- common namespace
+// Aromas, terpenes, and AI prompts fall back to English via i18next fallbackLng
+import { common as enCommon, problemMessages as enProblemMessages, ai as enAi } from '../en/common'
+
+export const common = {
+    ...enCommon,
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    close: 'Cerrar',
+    back: 'Atras',
+    next: 'Siguiente',
+    delete: 'Eliminar',
+    edit: 'Editar',
+    export: 'Exportar',
+    downloadAgain: 'Descargar de nuevo',
+    all: 'Todo',
+    none: 'Ninguno',
+    name: 'Nombre',
+    type: 'Tipo',
+    typeDetails: 'Detalles del tipo',
+    genetics: 'Genetica',
+    description: 'Descripcion',
+    actions: 'Acciones',
+    page: 'Pagina',
+    generated: 'Generado',
+    loadMore: 'Cargar mas',
+    regenerate: 'Regenerar',
+    confirm: 'Confirmar',
+    exportConfirm: 'Seguro que quieres exportar estos datos?',
+    deleteConfirm: 'Seguro que quieres eliminar este elemento?',
+    deleteResponse: 'Eliminar respuesta',
+    removeImage: 'Eliminar imagen',
+    capturedImage: 'Imagen capturada',
+    imagePreview: 'Vista previa de imagen',
+    clearSearch: 'Borrar busqueda',
+    unchanged: 'Sin cambios',
+    noDataToExport: 'No hay datos para exportar.',
+    successfullyExported_one: 'Se exporto 1 elemento como {{format}}.',
+    successfullyExported_other: 'Se exportaron {{count}} elementos como {{format}}.',
+    installPwa: 'Instalar App',
+    installPwaHint:
+        'Consejo: Puedes instalar esta app para uso sin conexion desde el menu del navegador.',
+    installPwaSuccess: 'App instalada correctamente!',
+    installPwaDismissed: 'Instalacion cancelada.',
+    swUpdateAvailable: 'Una nueva version esta disponible. Recarga para actualizar.',
+    swUpdateReload: 'Recargar ahora',
+    offlineWarning: 'Estas sin conexion. Algunas funciones pueden no estar disponibles.',
+    preparingGuide: 'Preparando tu guia...',
+    error: 'Error',
+    deepDive: 'Analisis profundo',
+    saveToJournal: 'Guardar en el diario',
+    search: 'Buscar',
+    notes: 'Notas',
+    editor: {
+        bold: 'Negrita',
+        italic: 'Cursiva',
+        list: 'Lista',
+    },
+    errorBoundary: {
+        title: 'Algo salio mal.',
+        description: 'Ocurrio un error inesperado. Por favor, intenta recargar la aplicacion.',
+        reload: 'Recargar aplicacion',
+        safeRecovery: 'Intentar recuperacion segura',
+    },
+    imageResizeFailed: 'Fallo al redimensionar imagen, usando original.',
+    offlineQueued: 'Sin conexion. Accion en cola para sincronizar.',
+    failedToSave: 'Error al guardar la configuracion.',
+    noDescription: 'Sin descripcion disponible.',
+    startOver: 'Empezar de nuevo',
+    on: 'Activado',
+    exportPdf: 'Exportar PDF',
+    exporting: 'Exportando...',
+    exportFormats: {
+        pdfHint: 'Exportacion portatil para compartir y archivar.',
+        txtHint: 'Salida de texto plano para copiar, comparar y herramientas.',
+    },
+    proTip: 'Consejo Pro',
+    resetState: 'Restablecer estado',
+    quality: 'Calidad',
+    pagination: {
+        previous: 'Pagina anterior',
+        next: 'Pagina siguiente',
+    },
+    accessibility: {
+        ...enCommon.accessibility,
+        close: 'Cerrar',
+        skipToMain: 'Saltar al contenido principal',
+        mainContent: 'Contenido principal',
+        mainNavigation: 'Navegacion principal',
+    },
+}
+
+export const nav = {
+    strains: 'Variedades',
+    plants: 'Plantas',
+    equipment: 'Equipamiento',
+    knowledge: 'Conocimiento',
+    settings: 'Ajustes',
+    help: 'Ayuda',
+}
+
+export const plantStages = {
+    SEED: 'Semilla',
+    GERMINATION: 'Germinacion',
+    SEEDLING: 'Plantula',
+    VEGETATIVE: 'Vegetativo',
+    FLOWERING: 'Floracion',
+    HARVEST: 'Cosecha',
+    DRYING: 'Secado',
+    CURING: 'Curado',
+    FINISHED: 'Finalizado',
+}
+
+export const problemMessages = {
+    ...enProblemMessages,
+    nutrientDeficiency: { message: 'Deficiencia de nutrientes detectada' },
+    overwatering: { message: 'Exceso de riego detectado' },
+    underwatering: { message: 'Falta de riego detectada' },
+    pestInfestation: { message: 'Infestacion de plagas detectada' },
+}
+
+export const ai = {
+    ...enAi,
+    error: {
+        ...enAi.error,
+        generic: 'Ocurrio un error de IA. Por favor, intentalo de nuevo.',
+        missingApiKey:
+            'No se encontro clave API. Anadela en Ajustes > General & UI > Seguridad IA.',
+        unknown: 'Ocurrio un error de IA desconocido.',
+    },
+    advisor: 'Asesor IA',
+    getAdvice: 'Obtener consejo',
+    diagnostics: 'Iniciar diagnostico',
+    generating: 'La IA esta pensando...',
+    disclaimer: 'Contenido generado por IA. Verifica siempre la informacion critica.',
+}

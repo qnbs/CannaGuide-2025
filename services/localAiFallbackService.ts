@@ -566,7 +566,7 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
         flags.isSilent,
         lang,
     )
-    const tentItem = tent[lang]
+    const tentItem = tent[lang as 'en' | 'de'] ?? tent['en']
 
     return {
         tent: makeRecommendationItem(

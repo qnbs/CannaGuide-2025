@@ -55,9 +55,44 @@ const IMAGE_PRUNE_BATCH_SIZE = 20
 
 // --- CONNECTION MANAGEMENT ---
 
+const MAX_RETRIES = 3
+const BASE_RETRY_DELAY_MS = 500
+
 let db: IDBDatabase | null = null
 // Promise lock – prevents concurrent openDB() calls from opening duplicate connections
 let dbPromise: Promise<IDBDatabase> | null = null
+
+/**
+ * Retries an async operation with exponential backoff.
+ * Used for write operations that may fail under storage pressure or transient errors.
+ */
+const withRetry = async <T>(
+    operation: () => Promise<T>,
+    context: string,
+    retries: number = MAX_RETRIES,
+): Promise<T> => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            return await operation()
+        } catch (error) {
+            const isLastAttempt = attempt === retries - 1
+            if (isLastAttempt) {
+                console.error(`[dbService] ${context} failed after ${retries} attempts:`, error)
+                throw error
+            }
+            const delay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt)
+            console.debug(
+                `[dbService] ${context} attempt ${attempt + 1} failed, retrying in ${delay}ms`,
+            )
+            await new Promise((resolve) => setTimeout(resolve, delay))
+            // Reset connection on retry in case it was lost
+            db = null
+            dbPromise = null
+        }
+    }
+    // Unreachable, but TypeScript needs it
+    throw new Error(`[dbService] ${context} exhausted retries`)
+}
 
 const toIndexedDbError = (error: DOMException | null, fallbackMessage: string): Error =>
     error ?? new Error(fallbackMessage)
@@ -178,32 +213,39 @@ const performTx = async <T>(
     mode: IDBTransactionMode,
     action: (store: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T> => {
-    const conn = await openDB()
-    return new Promise((resolve, reject) => {
-        const transaction = conn.transaction(storeName, mode)
-        let requestResult: T
+    const execute = async (): Promise<T> => {
+        const conn = await openDB()
+        return new Promise((resolve, reject) => {
+            const transaction = conn.transaction(storeName, mode)
+            let requestResult: T
 
-        transaction.onerror = () => {
-            console.error(`[dbService] Transaction error on ${storeName}:`, transaction.error)
-            reject(
-                toIndexedDbError(
-                    transaction.error,
-                    `[dbService] Transaction failed on store "${storeName}".`,
-                ),
-            )
-        }
+            transaction.onerror = () => {
+                console.error(`[dbService] Transaction error on ${storeName}:`, transaction.error)
+                reject(
+                    toIndexedDbError(
+                        transaction.error,
+                        `[dbService] Transaction failed on store "${storeName}".`,
+                    ),
+                )
+            }
 
-        transaction.oncomplete = () => {
-            resolve(requestResult)
-        }
+            transaction.oncomplete = () => {
+                resolve(requestResult)
+            }
 
-        const store = transaction.objectStore(storeName)
-        const request = action(store)
+            const store = transaction.objectStore(storeName)
+            const request = action(store)
 
-        request.onsuccess = () => {
-            requestResult = request.result
-        }
-    })
+            request.onsuccess = () => {
+                requestResult = request.result
+            }
+        })
+    }
+
+    if (mode === 'readwrite') {
+        return withRetry(execute, `performTx(${storeName}, readwrite)`)
+    }
+    return execute()
 }
 
 const getStorageEstimateSnapshot = async (): Promise<StorageEstimateSnapshot> => {
@@ -276,31 +318,33 @@ const replaceStoreAtomically = async (
     clearErrorMessage: string,
     populate: (store: IDBObjectStore, transaction: IDBTransaction) => void,
 ): Promise<void> => {
-    const conn = await openDB()
+    return withRetry(async () => {
+        const conn = await openDB()
 
-    return new Promise<void>((resolve, reject) => {
-        const transaction = conn.transaction(storeName, 'readwrite')
-        const store = transaction.objectStore(storeName)
+        return new Promise<void>((resolve, reject) => {
+            const transaction = conn.transaction(storeName, 'readwrite')
+            const store = transaction.objectStore(storeName)
 
-        transaction.oncomplete = () => resolve()
-        transaction.onerror = () =>
-            reject(
-                toIndexedDbError(
-                    transaction.error,
-                    `[dbService] Atomic replace failed on store "${storeName}".`,
-                ),
-            )
+            transaction.oncomplete = () => resolve()
+            transaction.onerror = () =>
+                reject(
+                    toIndexedDbError(
+                        transaction.error,
+                        `[dbService] Atomic replace failed on store "${storeName}".`,
+                    ),
+                )
 
-        const clearRequest = store.clear()
-        clearRequest.onerror = () => {
-            console.error(clearErrorMessage, clearRequest.error)
-            transaction.abort()
-        }
+            const clearRequest = store.clear()
+            clearRequest.onerror = () => {
+                console.error(clearErrorMessage, clearRequest.error)
+                transaction.abort()
+            }
 
-        clearRequest.onsuccess = () => {
-            populate(store, transaction)
-        }
-    })
+            clearRequest.onsuccess = () => {
+                populate(store, transaction)
+            }
+        })
+    }, `replaceStoreAtomically(${storeName})`)
 }
 
 const collectIdsForToken = (

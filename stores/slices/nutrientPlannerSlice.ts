@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { PlantStage } from '@/types'
+import type { NutrientWeek } from '@/services/pluginService'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -63,6 +64,10 @@ export interface NutrientPlannerState {
     isAiLoading: boolean
     /** Last AI recommendation (raw text) */
     lastAiRecommendation: string | null
+    /** ID of the currently applied nutrient-schedule plugin (null = manual) */
+    activePluginId: string | null
+    /** Auto-generated adjustment recommendation based on recent readings */
+    autoAdjustRecommendation: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -145,6 +150,8 @@ const initialState: NutrientPlannerState = {
     medium: 'Soil',
     isAiLoading: false,
     lastAiRecommendation: null,
+    activePluginId: null,
+    autoAdjustRecommendation: null,
 }
 
 // ---------------------------------------------------------------------------
@@ -153,6 +160,55 @@ const initialState: NutrientPlannerState = {
 
 const MAX_READINGS = 500
 const MAX_ALERTS = 50
+
+/** Map plugin stage strings to PlantStage enum */
+const mapPluginStage = (stage: string): PlantStage => {
+    const lower = stage.toLowerCase()
+    if (lower.includes('seed') || lower.includes('clone') || lower.includes('germ'))
+        return PlantStage.Seedling
+    if (lower.includes('veg')) return PlantStage.Vegetative
+    if (lower.includes('flower') || lower.includes('bloom')) return PlantStage.Flowering
+    return PlantStage.Vegetative
+}
+
+/** Number of recent readings to consider for auto-adjust */
+const AUTO_ADJUST_WINDOW = 10
+
+/** Generate auto-adjustment recommendation from recent readings */
+const computeAutoAdjustment = (
+    readings: EcPhReading[],
+    medium: string,
+    stage: PlantStage,
+): string | null => {
+    if (readings.length === 0) return null
+    const recent = readings.slice(-AUTO_ADJUST_WINDOW)
+    const avgEc = recent.reduce((s, r) => s + r.ec, 0) / recent.length
+    const avgPh = recent.reduce((s, r) => s + r.ph, 0) / recent.length
+    const optimal = getOptimalRange(medium, stage)
+    const tips: string[] = []
+
+    if (avgEc > optimal.ecMax) {
+        tips.push(
+            `Avg EC ${avgEc.toFixed(2)} is above optimal max ${optimal.ecMax.toFixed(2)} -- reduce nutrient concentration or flush.`,
+        )
+    } else if (avgEc < optimal.ecMin) {
+        tips.push(
+            `Avg EC ${avgEc.toFixed(2)} is below optimal min ${optimal.ecMin.toFixed(2)} -- increase nutrient concentration.`,
+        )
+    }
+
+    if (avgPh > optimal.phMax) {
+        tips.push(
+            `Avg pH ${avgPh.toFixed(2)} is above optimal max ${optimal.phMax.toFixed(2)} -- use pH-down.`,
+        )
+    } else if (avgPh < optimal.phMin) {
+        tips.push(
+            `Avg pH ${avgPh.toFixed(2)} is below optimal min ${optimal.phMin.toFixed(2)} -- use pH-up.`,
+        )
+    }
+
+    return tips.length > 0 ? tips.join(' ') : null
+}
 
 // ---------------------------------------------------------------------------
 // Slice
@@ -251,6 +307,15 @@ const nutrientPlannerSlice = createSlice({
             if (state.alerts.length > MAX_ALERTS) {
                 state.alerts = state.alerts.slice(-MAX_ALERTS)
             }
+
+            // Auto-adjust recommendation
+            if (state.autoAdjustEnabled) {
+                state.autoAdjustRecommendation = computeAutoAdjustment(
+                    state.readings,
+                    state.medium,
+                    stage,
+                )
+            }
         },
 
         removeReading(state, action: PayloadAction<string>) {
@@ -282,6 +347,41 @@ const nutrientPlannerSlice = createSlice({
             state.lastAiRecommendation = action.payload
             state.isAiLoading = false
         },
+
+        /** Apply a nutrient-schedule plugin, replacing the current schedule */
+        applyPluginSchedule(
+            state,
+            action: PayloadAction<{
+                pluginId: string
+                weeks: NutrientWeek[]
+            }>,
+        ) {
+            const { pluginId, weeks } = action.payload
+            state.activePluginId = pluginId
+
+            // Group weeks by mapped stage, take the last week per stage as representative
+            const stageMap = new Map<PlantStage, NutrientWeek>()
+            for (const week of weeks) {
+                stageMap.set(mapPluginStage(week.stage), week)
+            }
+
+            state.schedule = Array.from(stageMap.entries()).map(([stage, week]) => ({
+                id: `plugin-${pluginId}-${stage}`,
+                stage,
+                targetEc: week.ecTarget ?? getOptimalRange(state.medium, stage).ecMin,
+                targetPh: week.phTarget
+                    ? (week.phTarget[0] + week.phTarget[1]) / 2
+                    : getOptimalRange(state.medium, stage).phMin,
+                npkRatio: { n: 1, p: 1, k: 1 },
+                notes: week.products.map((p) => `${p.name} ${p.dosageMlPerLiter} ml/L`).join(', '),
+            }))
+        },
+
+        /** Detach plugin and revert to default schedule */
+        detachPlugin(state) {
+            state.activePluginId = null
+            state.schedule = createDefaultSchedule()
+        },
     },
 })
 
@@ -297,6 +397,8 @@ export const {
     clearAlerts,
     setAiLoading,
     setAiRecommendation,
+    applyPluginSchedule,
+    detachPlugin,
 } = nutrientPlannerSlice.actions
 
 export default nutrientPlannerSlice.reducer

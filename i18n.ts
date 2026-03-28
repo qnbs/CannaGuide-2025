@@ -3,14 +3,33 @@ import { initReactI18next } from 'react-i18next'
 
 type LocalePayload = Record<string, unknown>
 
-export const loadLocale = async (lang: 'en' | 'de'): Promise<LocalePayload> => {
-    if (lang === 'de') {
-        const module = await import('./locales/de')
-        return module.de as LocalePayload
-    }
+export type SupportedLocale = 'en' | 'de' | 'es' | 'fr' | 'nl'
 
-    const module = await import('./locales/en')
-    return module.en as LocalePayload
+const SUPPORTED_LOCALES: readonly SupportedLocale[] = ['en', 'de', 'es', 'fr', 'nl'] as const
+
+export const loadLocale = async (lang: SupportedLocale): Promise<LocalePayload> => {
+    switch (lang) {
+        case 'de': {
+            const module = await import('./locales/de')
+            return module.de as LocalePayload
+        }
+        case 'es': {
+            const module = await import('./locales/es')
+            return module.es as LocalePayload
+        }
+        case 'fr': {
+            const module = await import('./locales/fr')
+            return module.fr as LocalePayload
+        }
+        case 'nl': {
+            const module = await import('./locales/nl')
+            return module.nl as LocalePayload
+        }
+        default: {
+            const module = await import('./locales/en')
+            return module.en as LocalePayload
+        }
+    }
 }
 
 // Create a direct instance of i18next
@@ -24,8 +43,11 @@ export const i18nInstance = i18next.createInstance()
 export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance)
 
 // Detect initial language from browser settings. The store will sync it up later upon hydration.
-const detectedLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'en'
-const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en'
+const detectedLang =
+    typeof navigator !== 'undefined' ? (navigator.language.split('-')[0] ?? 'en') : 'en'
+const initialLang: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(detectedLang)
+    ? (detectedLang as SupportedLocale)
+    : 'en'
 
 // The initialization is now a promise that the app will wait for
 export const i18nPromise = (async () => {

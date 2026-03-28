@@ -9,7 +9,7 @@ import { setSetting } from '@/stores/slices/settingsSlice'
 import { setOnboardingStep } from '@/stores/slices/uiSlice'
 import { selectOnboardingStep } from '@/stores/selectors'
 import { FlagDE, FlagEN } from '@/components/icons/Flags'
-import { i18nInstance, loadLocale } from '@/i18n'
+import { i18nInstance, loadLocale, SupportedLocale } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 
 // Wizard steps: 1–4 are feature slides, 5 = experience, 6 = goal, 7 = setup
@@ -108,7 +108,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
 
     const handleLanguageSelect = async (lang: Language) => {
         if (!i18nInstance.hasResourceBundle(lang, 'translation')) {
-            const translations = await loadLocale(lang as 'en' | 'de')
+            const translations = await loadLocale(lang as SupportedLocale)
             i18nInstance.addResourceBundle(lang, 'translation', translations)
         }
         await i18nInstance.changeLanguage(lang)

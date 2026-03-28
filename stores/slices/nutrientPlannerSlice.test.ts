@@ -48,6 +48,8 @@ const initialState: NutrientPlannerState = {
     medium: 'Soil',
     isAiLoading: false,
     lastAiRecommendation: null,
+    activePluginId: null,
+    autoAdjustRecommendation: null,
 }
 
 describe('nutrientPlannerSlice', () => {

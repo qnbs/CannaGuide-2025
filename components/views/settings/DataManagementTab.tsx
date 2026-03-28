@@ -1,4 +1,4 @@
-import React, { lazy, memo, Suspense, useState, useEffect } from 'react'
+import React, { lazy, memo, Suspense, useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/settingsSlice'
@@ -25,6 +25,7 @@ import { addNotification } from '@/stores/slices/uiSlice'
 import { dbService } from '@/services/dbService'
 import { selectSettings, selectSimulation } from '@/stores/selectors'
 import { setSetting } from '@/stores/slices/settingsSlice'
+import { eraseAllData, exportAllUserData } from '@/services/privacyService'
 import { CommunitySharePanel } from './CommunitySharePanel'
 const CloudSyncPanel = lazy(() => import('./CloudSyncPanel'))
 import {
@@ -133,6 +134,12 @@ const DataManagementTab: React.FC = () => {
     const [resetConfirmText, setResetConfirmText] = useState('')
     const [sliceToReset, setSliceToReset] = useState<VersionedSliceName | null>(null)
     const [isClearArchivesConfirmOpen, setIsClearArchivesConfirmOpen] = useState(false)
+    const [isEraseConfirmOpen, setIsEraseConfirmOpen] = useState(false)
+    const [eraseConfirmText, setEraseConfirmText] = useState('')
+    const [isErasing, setIsErasing] = useState(false)
+    const [isExportingAll, setIsExportingAll] = useState(false)
+    const erasePhrase = 'DELETE ALL'
+    const isEraseDisabled = eraseConfirmText !== erasePhrase
     const resetPhrase = String(t('settingsView.data.resetAllConfirmPhrase'))
     const isResetDisabled = resetConfirmText.toLowerCase() !== resetPhrase
 
@@ -193,6 +200,38 @@ const DataManagementTab: React.FC = () => {
         dispatch(resetAllData())
         setIsResetConfirmOpen(false)
     }
+
+    const handleEraseAll = useCallback(async () => {
+        setIsErasing(true)
+        const ok = await eraseAllData()
+        if (ok) {
+            globalThis.location.reload()
+        } else {
+            setIsErasing(false)
+            dispatch(
+                addNotification({
+                    type: 'error',
+                    message: 'Data erasure failed. Please try again.',
+                }),
+            )
+        }
+    }, [dispatch])
+
+    const handleExportAllUserData = useCallback(async () => {
+        setIsExportingAll(true)
+        try {
+            const json = await exportAllUserData()
+            const blob = new Blob([json], { type: 'application/json' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `cannaguide-full-export-${new Date().toISOString().slice(0, 10)}.json`
+            a.click()
+            URL.revokeObjectURL(url)
+        } finally {
+            setIsExportingAll(false)
+        }
+    }, [])
 
     const handleRunStorageCleanup = async () => {
         setIsCleanupRunning(true)
@@ -566,6 +605,94 @@ const DataManagementTab: React.FC = () => {
                     </div>
                 </FormSection>
             </Card>
+
+            {/* DSGVO / GDPR -- Right to be Forgotten */}
+            <Card className="p-4 space-y-4 border-red-700/40">
+                <FormSection title={t('settingsView.data.gdprTitle', 'Privacy (GDPR/DSGVO)')}>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg">
+                            <div>
+                                <h4 className="font-bold text-slate-100">
+                                    {t('settingsView.data.gdprExport', 'Export All Personal Data')}
+                                </h4>
+                                <p className="text-sm text-slate-400">
+                                    {t(
+                                        'settingsView.data.gdprExportDesc',
+                                        'Download a complete copy of all data (Art. 20 GDPR).',
+                                    )}
+                                </p>
+                            </div>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={isExportingAll}
+                                onClick={handleExportAllUserData}
+                            >
+                                {isExportingAll
+                                    ? t('common.loading')
+                                    : t('common.export', 'Export')}
+                            </Button>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-red-900/30 rounded-lg border border-red-800/40">
+                            <div>
+                                <h4 className="font-bold text-red-300">
+                                    {t('settingsView.data.gdprErase', 'Erase All Data')}
+                                </h4>
+                                <p className="text-sm text-red-400/80">
+                                    {t(
+                                        'settingsView.data.gdprEraseDesc',
+                                        'Permanently delete ALL data from this device (Art. 17 GDPR). This cannot be undone.',
+                                    )}
+                                </p>
+                            </div>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => setIsEraseConfirmOpen(true)}
+                            >
+                                {t('common.delete')}
+                            </Button>
+                        </div>
+                    </div>
+                </FormSection>
+            </Card>
+
+            {/* GDPR Erase Confirmation Dialog */}
+            <Dialog open={isEraseConfirmOpen} onOpenChange={setIsEraseConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {t('settingsView.data.gdprErase', 'Erase All Data')}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t(
+                                'settingsView.data.gdprEraseWarning',
+                                'This will permanently delete ALL databases, local storage, caches, and service workers. Type DELETE ALL to confirm.',
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Input
+                        value={eraseConfirmText}
+                        onChange={(e) => setEraseConfirmText(e.target.value)}
+                        placeholder="DELETE ALL"
+                        className="font-mono"
+                    />
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsEraseConfirmOpen(false)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            disabled={isEraseDisabled || isErasing}
+                            onClick={handleEraseAll}
+                        >
+                            {isErasing
+                                ? t('common.loading')
+                                : t('settingsView.data.gdprErase', 'Erase All Data')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

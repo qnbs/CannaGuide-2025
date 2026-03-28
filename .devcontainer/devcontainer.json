@@ -46,7 +46,10 @@
                     "source.fixAll.eslint": "explicit"
                 },
                 "typescript.tsdk": "node_modules/typescript/lib",
-                "files.eol": "\n"
+                "files.eol": "\n",
+                "json.schemaDownload.enable": false,
+                "security.workspace.trust.enabled": true,
+                "git.allowForcePush": false
             },
             "extensions": [
                 "dbaeumer.vscode-eslint",

@@ -178,6 +178,7 @@ export const attachRuntimeErrorTracking = (page: Page) => {
         /frame-ancestors' is ignored when delivered via a <meta> element/i,
         /The Content Security Policy directive 'frame-ancestors' is ignored/i,
         /Failed to load resource: the server responded with a status of [45]\d{2}/i,
+        /Content Security Policy directive/i,
     ]
 
     const shouldIgnore = (message: string) =>

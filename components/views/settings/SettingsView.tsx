@@ -852,6 +852,15 @@ const LocalAiFeaturesCard: React.FC = () => {
                                 onChange={(val) => handleToggle('enableQueryClassification', val)}
                             />
                         </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.ecoMode')}
+                            description={t('settingsView.offlineAi.ecoModeHint')}
+                        >
+                            <Switch
+                                checked={localAi.ecoMode ?? false}
+                                onChange={(val) => handleToggle('ecoMode', val)}
+                            />
+                        </SettingsRow>
                     </div>
                 </FormSection>
             </Card>
@@ -1085,6 +1094,9 @@ const GeneralSettingsTab: React.FC = () => {
                                 options={[
                                     { value: 'en', label: t('settingsView.languages.en') },
                                     { value: 'de', label: t('settingsView.languages.de') },
+                                    { value: 'es', label: t('settingsView.languages.es') },
+                                    { value: 'fr', label: t('settingsView.languages.fr') },
+                                    { value: 'nl', label: t('settingsView.languages.nl') },
                                 ]}
                             />
                         </SettingsRow>

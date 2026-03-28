@@ -137,6 +137,10 @@ export const settingsView = {
         enableQueryClassification: 'Smart Query Routing',
         enableQueryClassificationHint:
             'Automatically categorize questions to improve AI response relevance.',
+        // Eco Mode
+        ecoMode: 'Eco Mode',
+        ecoModeHint:
+            'Force WASM backend and smallest models to reduce CPU/GPU usage by up to 70%. Ideal for low-end devices or battery savings.',
         // Persistent Cache
         enablePersistentCache: 'Persistent Inference Cache',
         enablePersistentCacheHint:
@@ -249,6 +253,9 @@ export const settingsView = {
     languages: {
         en: 'English',
         de: 'German',
+        es: 'Spanish',
+        fr: 'French',
+        nl: 'Dutch',
     },
     tts: {
         title: 'Voice & Speech',
@@ -563,6 +570,14 @@ export const settingsView = {
                 userStrains: 'Custom Strains',
             },
         },
+        gdprTitle: 'Privacy (GDPR/DSGVO)',
+        gdprExport: 'Export All Personal Data',
+        gdprExportDesc: 'Download a complete copy of all data (Art. 20 GDPR).',
+        gdprErase: 'Erase All Data',
+        gdprEraseDesc:
+            'Permanently delete ALL data from this device (Art. 17 GDPR). This cannot be undone.',
+        gdprEraseWarning:
+            'This will permanently delete ALL databases, local storage, caches, and service workers. Type DELETE ALL to confirm.',
     },
     privacy: {
         title: 'Privacy & Security',

@@ -13,6 +13,10 @@ on:
             - '.github/workflows/docker.yml'
     workflow_dispatch:
 
+concurrency:
+    group: docker-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 permissions:
     contents: read
 

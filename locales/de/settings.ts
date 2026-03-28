@@ -142,6 +142,10 @@ export const settingsView = {
         enableQueryClassification: 'Intelligentes Frage-Routing',
         enableQueryClassificationHint:
             'Fragen automatisch kategorisieren, um die KI-Antwortrelevanz zu verbessern.',
+        // Eco Mode
+        ecoMode: 'Eco-Modus',
+        ecoModeHint:
+            'WASM-Backend und kleinste Modelle erzwingen, um CPU-/GPU-Auslastung um bis zu 70% zu reduzieren. Ideal fuer schwache Geraete oder Akkusparen.',
         // Persistent Cache
         enablePersistentCache: 'Persistenter Inferenz-Cache',
         enablePersistentCacheHint:
@@ -260,6 +264,9 @@ export const settingsView = {
     languages: {
         en: 'Englisch',
         de: 'Deutsch',
+        es: 'Spanisch',
+        fr: 'Franzoesisch',
+        nl: 'Niederlaendisch',
     },
     tts: {
         title: 'Sprache & Stimme',
@@ -577,6 +584,14 @@ export const settingsView = {
                 userStrains: 'Eigene Sorten',
             },
         },
+        gdprTitle: 'Datenschutz (DSGVO)',
+        gdprExport: 'Alle personenbezogenen Daten exportieren',
+        gdprExportDesc: 'Eine vollstaendige Kopie aller Daten herunterladen (Art. 20 DSGVO).',
+        gdprErase: 'Alle Daten loeschen',
+        gdprEraseDesc:
+            'Alle Daten auf diesem Geraet unwiderruflich loeschen (Art. 17 DSGVO). Dies kann nicht rueckgaengig gemacht werden.',
+        gdprEraseWarning:
+            'Dies loescht unwiderruflich ALLE Datenbanken, lokalen Speicher, Caches und Service Worker. Tippe DELETE ALL zur Bestaetigung.',
     },
     privacy: {
         title: 'Privatsphäre & Sicherheit',

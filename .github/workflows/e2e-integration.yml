@@ -19,6 +19,10 @@ on:
             - '.github/workflows/e2e-integration.yml'
     workflow_dispatch:
 
+concurrency:
+    group: e2e-integration-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 permissions:
     contents: read
 

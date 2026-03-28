@@ -110,7 +110,7 @@ Three-tier client-side architecture with offline-first design:
 | **Visualization**  | D3.js 7, Recharts                    | Genealogy trees, VPD charts                 |
 | **Validation**     | Zod 3.25                             | Runtime schema validation for AI + imports  |
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                   |
-| **i18n**           | i18next 25                           | EN/DE, 13 namespaces                        |
+| **i18n**           | i18next 25                           | EN/DE/ES/FR/NL, 13 namespaces               |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
 | **Testing**        | Vitest 4.1, Playwright 1.58          | 719+ unit, E2E, component tests             |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay              |
@@ -225,7 +225,7 @@ Defense-in-depth across multiple layers:
 
 ## Internationalization
 
-i18next with 13 namespaces, EN + DE:
+i18next with 13 namespaces, EN + DE + ES + FR + NL:
 
 `common` · `plants` · `strains` · `strainsData` · `equipment` · `knowledge` · `settings` · `help` · `commandPalette` · `onboarding` · `seedbanks` · `legal`
 
@@ -276,7 +276,7 @@ apps/
     services/               51 service modules (AI, simulation, DB, crypto, IoT)
     hooks/                  16 custom hooks
     data/                   Static data: 700+ strains, FAQ, lexicon, guides
-    locales/                i18n: en/, de/ (13 namespaces each)
+    locales/                i18n: en/, de/, es/, fr/, nl/ (13 namespaces each)
     workers/                Web Workers: VPD simulation, genealogy, scenarios
     utils/                  Shared utilities
     types/                  Zod schemas for AI response validation
@@ -615,7 +615,7 @@ Defense-in-Depth über mehrere Schichten:
 
 ## Internationalisierung
 
-i18next mit 13 Namensräumen, EN + DE:
+i18next mit 13 Namensräumen, EN + DE + ES + FR + NL:
 
 `common` · `plants` · `strains` · `strainsData` · `equipment` · `knowledge` · `settings` · `help` · `commandPalette` · `onboarding` · `seedbanks` · `legal`
 

@@ -2,7 +2,12 @@ import React from 'react'
 
 // German Flag
 export const FlagDE: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" className={className} aria-hidden="true">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 5 3"
+        className={className}
+        aria-hidden="true"
+    >
         <rect width="5" height="3" fill="#FFCE00" />
         <rect width="5" height="2" fill="#D00" />
         <rect width="5" height="1" fill="#000" />
@@ -11,7 +16,12 @@ export const FlagDE: React.FC<{ className?: string }> = ({ className }) => (
 
 // English Flag (Union Jack)
 export const FlagEN: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" className={className} aria-hidden="true">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 60 30"
+        className={className}
+        aria-hidden="true"
+    >
         <clipPath id="a">
             <path d="M0 0v30h60V0z" />
         </clipPath>
@@ -23,5 +33,46 @@ export const FlagEN: React.FC<{ className?: string }> = ({ className }) => (
         <path d="M0 0l60 30m0-30L0 30" clipPath="url(#b)" stroke="#C8102E" strokeWidth="4" />
         <path d="M30 0v30M0 15h60" stroke="#fff" strokeWidth="10" />
         <path d="M30 0v30M0 15h60" stroke="#C8102E" strokeWidth="6" />
+    </svg>
+)
+
+// Spanish Flag
+export const FlagES: React.FC<{ className?: string }> = ({ className }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 750 500"
+        className={className}
+        aria-hidden="true"
+    >
+        <rect width="750" height="500" fill="#AA151B" />
+        <rect width="750" height="250" y="125" fill="#F1BF00" />
+    </svg>
+)
+
+// French Flag
+export const FlagFR: React.FC<{ className?: string }> = ({ className }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 900 600"
+        className={className}
+        aria-hidden="true"
+    >
+        <rect width="300" height="600" fill="#002395" />
+        <rect width="300" height="600" x="300" fill="#fff" />
+        <rect width="300" height="600" x="600" fill="#ED2939" />
+    </svg>
+)
+
+// Dutch Flag
+export const FlagNL: React.FC<{ className?: string }> = ({ className }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 900 600"
+        className={className}
+        aria-hidden="true"
+    >
+        <rect width="900" height="200" fill="#AE1C28" />
+        <rect width="900" height="200" y="200" fill="#fff" />
+        <rect width="900" height="200" y="400" fill="#21468B" />
     </svg>
 )

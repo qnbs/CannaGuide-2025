@@ -163,7 +163,7 @@ test.describe('WebGPU AI Vision Pipeline', () => {
             return {
                 name: (adapter as unknown as { name: string }).name,
                 isFallback: adapter.isFallbackAdapter,
-                hasShaderF16: adapter.features.has('shader-f16'),
+                hasShaderF16: adapter.features?.has('shader-f16') ?? false,
             }
         })
 

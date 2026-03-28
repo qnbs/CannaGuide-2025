@@ -20,7 +20,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
-- **i18n:** i18next (EN + DE, 13 namespaces)
+- **i18n:** i18next (EN + DE + ES + FR + NL, 13 namespaces)
 - **Testing:** Vitest (719+ tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
@@ -52,7 +52,7 @@ apps/
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
     hooks/               # Custom React hooks (14+)
     data/                # Static data: 700+ strains, FAQ, lexicon, guides
-    locales/             # i18n: en/, de/ (13 namespaces each)
+    locales/             # i18n: en/, de/, es/, fr/, nl/ (13 namespaces each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios
     utils/               # Shared utilities
     types/               # Zod schemas for AI response validation

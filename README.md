@@ -244,39 +244,56 @@ Node.js 20+, npm 10+
 ### Commands
 
 ```bash
-npm run dev              # Vite dev server (localhost:5173)
-npm run build            # Production build
-npm test                 # Vitest unit/integration (622+ tests)
-npm run test:e2e         # Playwright E2E
-npm run test:ct          # Playwright component tests
-npm run lint             # ESLint changed files
-npm run lint:full        # ESLint entire project
-npx tsc --noEmit         # Type check
+# Root (TurboRepo -- runs across all workspaces)
+npm run dev              # turbo run dev (Vite dev server on localhost:5173)
+npm run build            # turbo run build (all workspaces)
+npm test                 # turbo run test (Vitest, 622+ tests)
+npm run lint             # turbo run lint
+npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
 npm run security:scan    # Full security scan
+
+# Web app (workspace-scoped)
+npm run -w @cannaguide/web dev       # Vite dev server
+npm run -w @cannaguide/web build     # Production build
+npm run -w @cannaguide/web test      # Vitest unit/integration
+npm run -w @cannaguide/web test:e2e  # Playwright E2E (requires build)
+npm run -w @cannaguide/web test:ct   # Playwright component tests
+npm run -w @cannaguide/web typecheck # tsc --noEmit
 ```
 
-### Project Structure
+### Monorepo Structure
 
 ```text
-├── components/          React components (common/, icons/, navigation/, ui/, views/)
-├── stores/              Redux: 17 slices, selectors, middleware
-├── services/            51 service modules (AI, simulation, DB, crypto, IoT)
-├── hooks/               16 custom hooks
-├── data/                Static data: 700+ strains, FAQ, lexicon, guides
-├── locales/             i18n: en/, de/ (13 namespaces each)
-├── workers/             Web Workers: VPD simulation, genealogy, scenarios
-├── utils/               Shared utilities
-├── types/               TypeScript types + Zod schemas
-├── tests/               E2E (tests/e2e/), component tests (tests/ct/)
-├── lib/                 Utility library (cn(), VPD calculations)
-├── public/              Static assets, SW, manifest
-├── src-tauri/           Tauri v2 desktop (Rust backend + capabilities)
-├── apps/desktop/        Tauri desktop wrapper (Rust IPC commands)
-├── packages/            Monorepo packages (ai-core, iot-mocks, ui)
-├── scripts/             Build/lint/security scripts
-├── docker/              nginx config, ESP32-mock, Tauri-mock
-└── .github/             21 CI/CD workflows, issue templates
+package.json               Workspace root (turbo, eslint, prettier -- NO app deps)
+turbo.json                 TurboRepo pipeline (build, dev, test, lint, typecheck)
+tsconfig.json              References-only (apps/web, apps/desktop, packages/*)
+
+apps/
+  web/                     Main PWA (@cannaguide/web)
+    components/             React components (common/, icons/, navigation/, ui/, views/)
+    stores/                 Redux: 17 slices, selectors, middleware
+    services/               51 service modules (AI, simulation, DB, crypto, IoT)
+    hooks/                  16 custom hooks
+    data/                   Static data: 700+ strains, FAQ, lexicon, guides
+    locales/                i18n: en/, de/ (13 namespaces each)
+    workers/                Web Workers: VPD simulation, genealogy, scenarios
+    utils/                  Shared utilities
+    types/                  Zod schemas for AI response validation
+    tests/                  E2E (tests/e2e/), component tests (tests/ct/)
+    lib/                    Utility library (cn(), VPD calculations)
+    public/                 Static assets, SW, manifest
+  desktop/                  Tauri v2 desktop wrapper (Rust IPC commands)
+
+packages/
+  ai-core/                  Shared AI types + ML dependency isolation
+  ui/                       Shared UI tokens & theme types
+  iot-mocks/                ESP32 sensor mock server (port 3001)
+
+src-tauri/                  Tauri v2 desktop config (Rust backend + capabilities)
+scripts/                    Build/lint/security scripts
+docker/                     nginx config, ESP32-mock, Tauri-mock
+.github/                    21 CI/CD workflows, issue templates
 ```
 
 ---
@@ -617,34 +634,56 @@ Node.js 20+, npm 10+
 ### Befehle
 
 ```bash
-npm run dev              # Vite Dev-Server (localhost:5173)
-npm run build            # Produktions-Build
-npm test                 # Vitest Unit/Integration (622+ Tests)
-npm run test:e2e         # Playwright E2E
-npm run test:ct          # Playwright Komponenten-Tests
-npm run lint             # ESLint geänderte Dateien
-npm run lint:full        # ESLint gesamtes Projekt
-npx tsc --noEmit         # Type-Check
+# Root (TurboRepo -- laeuft ueber alle Workspaces)
+npm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
+npm run build            # turbo run build (alle Workspaces)
+npm test                 # turbo run test (Vitest, 622+ Tests)
+npm run lint             # turbo run lint
+npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
-npm run security:scan    # Vollständiger Sicherheits-Scan
+npm run security:scan    # Vollstaendiger Sicherheits-Scan
+
+# Web-App (Workspace-spezifisch)
+npm run -w @cannaguide/web dev       # Vite Dev-Server
+npm run -w @cannaguide/web build     # Produktions-Build
+npm run -w @cannaguide/web test      # Vitest Unit/Integration
+npm run -w @cannaguide/web test:e2e  # Playwright E2E (erfordert Build)
+npm run -w @cannaguide/web test:ct   # Playwright Komponenten-Tests
+npm run -w @cannaguide/web typecheck # tsc --noEmit
 ```
 
-### Projektstruktur
+### Monorepo-Struktur
 
 ```text
-├── components/          React-Komponenten (common/, icons/, navigation/, ui/, views/)
-├── stores/              Redux: 17 Slices, Selektoren, Middleware
-├── services/            51 Service-Module (KI, Simulation, DB, Krypto, IoT)
-├── hooks/               16 Custom Hooks
-├── data/                Statische Daten: 700+ Sorten, FAQ, Lexikon, Guides
-├── locales/             i18n: en/, de/ (je 13 Namensräume)
-├── workers/             Web Workers: VPD-Simulation, Genealogie, Szenarien
-├── types/               TypeScript-Typen + Zod-Schemas
-├── tests/               E2E (tests/e2e/), Komponenten-Tests (tests/ct/)
-├── src-tauri/           Tauri v2 Desktop (Rust-Backend + Capabilities)
-├── packages/            Monorepo-Pakete (ai-core, iot-mocks, ui)
-├── docker/              nginx-Konfig, ESP32-Mock, Tauri-Mock
-└── .github/             21 CI/CD-Workflows, Issue-Templates
+package.json               Workspace-Root (turbo, eslint, prettier -- KEINE App-Deps)
+turbo.json                 TurboRepo-Pipeline (build, dev, test, lint, typecheck)
+tsconfig.json              Nur Referenzen (apps/web, apps/desktop, packages/*)
+
+apps/
+  web/                     Haupt-PWA (@cannaguide/web)
+    components/             React-Komponenten (common/, icons/, navigation/, ui/, views/)
+    stores/                 Redux: 17 Slices, Selektoren, Middleware
+    services/               51 Service-Module (KI, Simulation, DB, Krypto, IoT)
+    hooks/                  16 Custom Hooks
+    data/                   Statische Daten: 700+ Sorten, FAQ, Lexikon, Guides
+    locales/                i18n: en/, de/ (je 13 Namensraeume)
+    workers/                Web Workers: VPD-Simulation, Genealogie, Szenarien
+    utils/                  Gemeinsame Hilfsfunktionen
+    types/                  Zod-Schemas fuer KI-Validierung
+    tests/                  E2E (tests/e2e/), Komponenten-Tests (tests/ct/)
+    lib/                    Hilfsbibliothek (cn(), VPD-Berechnungen)
+    public/                 Statische Assets, SW, Manifest
+  desktop/                  Tauri v2 Desktop-Wrapper (Rust IPC-Commands)
+
+packages/
+  ai-core/                  Gemeinsame KI-Typen + ML-Dependency-Isolation
+  ui/                       Gemeinsame UI-Tokens & Theme-Typen
+  iot-mocks/                ESP32-Sensor-Mock-Server (Port 3001)
+
+src-tauri/                  Tauri v2 Desktop-Konfig (Rust-Backend + Capabilities)
+scripts/                    Build-/Lint-/Sicherheits-Skripte
+docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
+.github/                    21 CI/CD-Workflows, Issue-Templates
 ```
 
 ---

@@ -233,7 +233,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
             setHoveredData(null)
         }
         const getViewToggleClassName = (isActive: boolean): string =>
-            `px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${isActive ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`
+            `px-3 py-2 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 min-h-[44px] ${isActive ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`
 
         try {
             return (

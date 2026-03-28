@@ -227,7 +227,11 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
                 <h3 className="font-semibold text-primary-400">
                     {t('plantsView.inlineSelector.title')}
                 </h3>
-                <button onClick={onClose} className="p-1 rounded-full hover:bg-slate-700">
+                <button
+                    onClick={onClose}
+                    className="p-2.5 rounded-full hover:bg-slate-700"
+                    aria-label={t('common.close')}
+                >
                     <PhosphorIcons.X className="w-5 h-5" />
                 </button>
             </div>

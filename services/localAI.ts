@@ -950,7 +950,9 @@ class LocalAiService implements BaseAIProvider {
         }
 
         const entry = dictionary[labelKey]
-        return entry ? entry[lang] : null
+        if (!entry) return null
+        const localized = entry as Record<string, string>
+        return localized[lang] ?? localized['en'] ?? null
     }
 
     private buildDiagnosisContent(

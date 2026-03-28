@@ -36,7 +36,7 @@ export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard'
 export type YieldLevel = 'Low' | 'Medium' | 'High'
 export type HeightLevel = 'Short' | 'Medium' | 'Tall'
 
-export type Language = 'en' | 'de'
+export type Language = 'en' | 'de' | 'es' | 'fr' | 'nl'
 
 export type Theme =
     | 'midnight'
@@ -597,6 +597,8 @@ export interface AppSettings {
         inferenceTimeoutMs: number
         /** Progressive quantization preference: 'auto' (VRAM-based), 'q4f16', 'q4', or 'none'. */
         quantizationLevel: 'auto' | 'q4f16' | 'q4' | 'none'
+        /** Eco-mode: disables WebLLM + image gen, forces WASM backend and smallest model. */
+        ecoMode: boolean
     }
     data: {
         autoBackup: 'off' | 'daily' | 'weekly'

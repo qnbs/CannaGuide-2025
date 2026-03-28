@@ -2,7 +2,60 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-28) -- Deep Cleanup + 5-Feature Batch Implementation
+## Latest Session (2026-03-28 late) -- CI Fix + 5-Language Onboarding + Security PR Merge
+
+**Status: CI pipeline fully fixed (lint:scopes, fuzzing, typecheck all green). 5-language onboarding (EN/DE/ES/FR/NL) with flag icons integrated. PR #99 (harden-runner security) merged. 719/719 tests pass. Zero typecheck errors. Build succeeds.**
+
+### Session Summary
+
+Three-phase session: (1) CI pipeline diagnosis and fixes. (2) 5-language onboarding integration. (3) PR merge and documentation sync.
+
+**Phase 1 -- CI Fixes:**
+
+- `lint:scopes` fixed: monorepo paths (`apps/web/hooks/**/*.ts` instead of `hooks/**/*.ts`)
+- `test:fuzz` fixed: replaced Jest `--testPathPattern` with Vitest filter syntax
+- `typecheck` fixed: ambient type stubs for optional ML/native deps (`@xenova/transformers`, `@mlc-ai/web-llm`, `@tensorflow/tfjs`, `@tauri-apps/api/core`, WebGPU types)
+- `deploy.yml` fixed: `npx tsc --noEmit` replaced with `npx turbo run typecheck`
+- Tauri test stub: added `@tauri-apps/api/core` to `optionalMlPlugin()` externals
+
+**Phase 2 -- 5-Language Onboarding:**
+
+- Added FlagES, FlagFR, FlagNL SVG components to `Flags.tsx`
+- OnboardingModal step 0 expanded from 2 buttons (EN/DE) to 5-language grid
+- i18n + Redux integration already wired for all 5 languages (lazy loading)
+- Settings language selector already supports all 5 languages
+
+**Phase 3 -- PR/Security:**
+
+- Merged PR #99 (harden-runner to all critical workflows + devcontainer hardening)
+
+### Files Changed
+
+| File                                             | Change                               |
+| ------------------------------------------------ | ------------------------------------ |
+| `scripts/lint-burndown.config.json`              | Monorepo path fix for strict scopes  |
+| `apps/web/package.json`                          | Vitest fuzz command fix              |
+| `.github/workflows/deploy.yml`                   | turbo typecheck instead of tsc       |
+| `apps/web/types/optional-deps.d.ts`              | NEW: ambient stubs for optional deps |
+| `packages/ai-core/src/ml-stubs.d.ts`             | NEW: ambient stubs for ML deps       |
+| `apps/web/components/icons/Flags.tsx`            | Added ES/FR/NL flag SVGs             |
+| `apps/web/components/common/OnboardingModal.tsx` | 5-language selector grid             |
+| `apps/web/vite.config.ts`                        | Added Tauri to optional externals    |
+| `apps/web/services/yieldPredictionService.ts`    | Unchanged (pre-existing)             |
+| `apps/web/tests/e2e/webgpu-ai-vision.e2e.ts`     | Optional chaining fix                |
+| `README.md`                                      | 5-language documentation update      |
+| `.github/copilot-instructions.md`                | 5-language documentation update      |
+
+### Immediate Next Tasks
+
+- [ ] Unit tests for onboarding language selection (ES/FR/NL)
+- [ ] Complete remaining ES/FR/NL translation gaps if any
+- [ ] SonarCloud Hotspot review
+- [ ] Dockerfile + netlify.toml path verification for monorepo
+
+---
+
+## Previous Session (2026-03-28) -- Deep Cleanup + 5-Feature Batch Implementation
 
 **Status: Monorepo docs/metadata/CI synced. 5 feature tasks implemented: eco-mode Redux sync, nutrient plugin UI, DSGVO individual DB deletion, seedbanks i18n wiring (5 locales), createCachedPipelineLoader factory (4 services deduplicated). tsc clean (ML baseline only). 18 files changed, +256/-149. Zero regressions.**
 

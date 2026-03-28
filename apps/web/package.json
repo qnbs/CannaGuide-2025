@@ -18,7 +18,7 @@
         "test:e2e:install:ci": "playwright install --with-deps chromium",
         "test:ct": "playwright test -c playwright-ct.config.ts",
         "test:e2e:deploy": "playwright test -c playwright.deploy.config.ts",
-        "test:fuzz": "vitest run --testPathPattern=fuzz",
+        "test:fuzz": "vitest run fuzz",
         "lint": "eslint . --report-unused-disable-directives"
     },
     "dependencies": {

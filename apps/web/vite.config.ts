@@ -13,6 +13,7 @@ const OPTIONAL_ML_EXTERNALS = [
     '@xenova/transformers',
     '@mlc-ai/web-llm',
     'onnxruntime-web',
+    '@tauri-apps/api/core',
 ]
 
 // Resolve which ML modules are actually missing so we can stub them at build time.

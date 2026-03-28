@@ -76,7 +76,7 @@ jobs:
                   echo "::endgroup::"
 
             - name: Type check
-              run: npx tsc --noEmit
+              run: npx turbo run typecheck
 
             - name: Unit tests
               run: |

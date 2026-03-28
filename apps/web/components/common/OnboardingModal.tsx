@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { setOnboardingStep } from '@/stores/slices/uiSlice'
 import { selectOnboardingStep } from '@/stores/selectors'
-import { FlagDE, FlagEN } from '@/components/icons/Flags'
+import { FlagDE, FlagEN, FlagES, FlagFR, FlagNL } from '@/components/icons/Flags'
 import { i18nInstance, loadLocale, SupportedLocale } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 
@@ -174,15 +174,13 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                         </h1>
                     </div>
                     <h2 className="text-xl font-bold font-display text-primary-300 mb-2">
-                        Choose your language / Sprache wählen
+                        Choose your language
                     </h2>
-                    <p className="text-slate-400 mb-6">
-                        Select your preferred language / Wähle deine bevorzugte Sprache
-                    </p>
-                    <div className="flex gap-4 p-2">
+                    <p className="text-slate-400 mb-6">Select your preferred language</p>
+                    <div className="grid grid-cols-2 gap-3 p-2">
                         <Button
                             onClick={() => handleLanguageSelect('de')}
-                            className="flex-1 flex items-center justify-center"
+                            className="flex items-center justify-center"
                             variant="secondary"
                         >
                             <FlagDE className="w-6 h-6 mr-2" />
@@ -190,11 +188,35 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                         </Button>
                         <Button
                             onClick={() => handleLanguageSelect('en')}
-                            className="flex-1 flex items-center justify-center"
+                            className="flex items-center justify-center"
                             variant="secondary"
                         >
                             <FlagEN className="w-6 h-6 mr-2" />
                             English
+                        </Button>
+                        <Button
+                            onClick={() => handleLanguageSelect('es')}
+                            className="flex items-center justify-center"
+                            variant="secondary"
+                        >
+                            <FlagES className="w-6 h-6 mr-2" />
+                            Espanol
+                        </Button>
+                        <Button
+                            onClick={() => handleLanguageSelect('fr')}
+                            className="flex items-center justify-center"
+                            variant="secondary"
+                        >
+                            <FlagFR className="w-6 h-6 mr-2" />
+                            Francais
+                        </Button>
+                        <Button
+                            onClick={() => handleLanguageSelect('nl')}
+                            className="col-span-2 flex items-center justify-center"
+                            variant="secondary"
+                        >
+                            <FlagNL className="w-6 h-6 mr-2" />
+                            Nederlands
                         </Button>
                     </div>
                 </div>

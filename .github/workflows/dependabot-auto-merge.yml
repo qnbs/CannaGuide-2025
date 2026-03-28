@@ -5,13 +5,15 @@ on:
         types: [opened, synchronize, reopened]
 
 permissions:
-    contents: write
-    pull-requests: write
+    contents: read
 
 jobs:
     auto-merge:
         if: github.actor == 'dependabot[bot]'
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
         steps:
             - name: Approve PR
               run: gh pr review "$PR_URL" --approve

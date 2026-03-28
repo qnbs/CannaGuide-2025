@@ -4,7 +4,14 @@ updates:
       directory: '/'
       schedule:
           interval: weekly
-      open-pull-requests-limit: 10
+          day: monday
+      open-pull-requests-limit: 8
+      labels:
+          - dependencies
+      commit-message:
+          prefix: 'chore'
+          prefix-development: 'chore'
+          include: scope
       groups:
           ai-and-ml:
               patterns:
@@ -35,6 +42,9 @@ updates:
                   - '@aikidosec/*'
                   - 'snyk'
                   - '@socketsecurity/*'
+              update-types:
+                  - minor
+                  - patch
           build-tools:
               patterns:
                   - 'vite'
@@ -56,19 +66,46 @@ updates:
       directory: '/'
       schedule:
           interval: weekly
+          day: monday
+      open-pull-requests-limit: 5
+      labels:
+          - dependencies
+          - ci
+      commit-message:
+          prefix: 'chore'
+          include: scope
     - package-ecosystem: docker
       directory: '/'
       schedule:
-          interval: weekly
+          interval: monthly
+      open-pull-requests-limit: 3
+      labels:
+          - dependencies
+          - docker
+      commit-message:
+          prefix: 'chore'
+          include: scope
     - package-ecosystem: docker
       directory: '/docker/esp32-mock'
       schedule:
-          interval: weekly
+          interval: monthly
+      open-pull-requests-limit: 2
+      labels:
+          - dependencies
+          - docker
     - package-ecosystem: docker
       directory: '/docker/tauri-mock'
       schedule:
-          interval: weekly
+          interval: monthly
+      open-pull-requests-limit: 2
+      labels:
+          - dependencies
+          - docker
     - package-ecosystem: docker
       directory: '/packages/iot-mocks'
       schedule:
-          interval: weekly
+          interval: monthly
+      open-pull-requests-limit: 2
+      labels:
+          - dependencies
+          - docker

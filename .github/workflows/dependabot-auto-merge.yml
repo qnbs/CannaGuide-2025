@@ -4,6 +4,10 @@ on:
     pull_request:
         types: [opened, synchronize, reopened]
 
+concurrency:
+    group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
 permissions:
     contents: read
 
@@ -15,14 +19,17 @@ jobs:
             contents: write
             pull-requests: write
         steps:
-            - name: Approve PR
-              run: gh pr review "$PR_URL" --approve
-              env:
-                  PR_URL: ${{ github.event.pull_request.html_url }}
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Fetch Dependabot metadata
+              id: metadata
+              uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444e2d3ffac # v2
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Enable auto-merge (squash)
-              run: gh pr merge "$PR_URL" --auto --squash
+            - name: Auto-merge patch and minor updates
+              if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+              run: |
+                  gh pr review "$PR_URL" --approve
+                  gh pr merge "$PR_URL" --auto --squash
               env:
                   PR_URL: ${{ github.event.pull_request.html_url }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

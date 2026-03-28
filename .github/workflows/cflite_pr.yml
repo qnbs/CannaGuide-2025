@@ -1,17 +1,16 @@
 name: ClusterFuzzLite
 
 on:
-    pull_request:
-        branches: [main]
-        paths:
-            - 'services/**'
-            - 'stores/**'
-            - 'utils/**'
-            - '.clusterfuzzlite/**'
-            - '.github/workflows/cflite_pr.yml'
+    # PR trigger removed: ClusterFuzzLite rejects all sanitizer values for
+    # JavaScript projects (none=invalid, address/memory=unsupported).
+    # PR fuzzing is handled by fuzzing.yml (Jazzer.js, fast-check).
     schedule:
         - cron: '27 4 * * 3' # Weekly Wednesday
     workflow_dispatch:
+
+concurrency:
+    group: cflite-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 permissions:
     contents: read
@@ -30,7 +29,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                sanitizer: [none]
+                sanitizer: ['none']
         steps:
             - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd

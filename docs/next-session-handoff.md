@@ -2,7 +2,57 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-30) -- Monorepo Refactoring: Full Source Migration + ML Isolation
+## Latest Session (2026-03-28) -- Deep Cleanup + 5-Feature Batch Implementation
+
+**Status: Monorepo docs/metadata/CI synced. 5 feature tasks implemented: eco-mode Redux sync, nutrient plugin UI, DSGVO individual DB deletion, seedbanks i18n wiring (5 locales), createCachedPipelineLoader factory (4 services deduplicated). tsc clean (ML baseline only). 18 files changed, +256/-149. Zero regressions.**
+
+### Session Summary
+
+Two-phase session: (1) Deep cleanup syncing all documentation, metadata, artifacts, and CI/CD with the monorepo migration. (2) Autonomous batch execution of 5 feature tasks from the audit backlog.
+
+**Phase 1 -- Deep Cleanup:**
+
+- README.md EN+DE commands + structure updated for turbo/workspace
+- capacitor.config.ts `webDir` fixed to `apps/web/dist`
+- fuzzing.yml trigger paths + deploy.yml workspace-scoped commands
+- Added test:e2e:deploy + test:fuzz scripts to apps/web
+
+**Phase 2 -- Feature Batch:**
+
+1. Eco-Mode listener middleware syncs Redux toggle to aiEcoModeService
+2. autoAdjustRecommendation display + plugin schedule buttons in EcPhPlannerCalculator
+3. Individual IndexedDB deletion UI with Sentry GDPR tracking in DataManagementTab
+4. seedbanks namespace wired into all 5 locale bundles (en/de/es/fr/nl)
+5. createCachedPipelineLoader factory eliminates ~75 LOC duplication across 4 ML services
+
+### Files Changed
+
+| File                                                                                   | Change                                |
+| -------------------------------------------------------------------------------------- | ------------------------------------- |
+| `README.md`                                                                            | Monorepo commands + structure (EN+DE) |
+| `capacitor.config.ts`                                                                  | webDir -> apps/web/dist               |
+| `.github/workflows/fuzzing.yml`                                                        | Monorepo trigger paths                |
+| `.github/workflows/deploy.yml`                                                         | Workspace test command                |
+| `apps/web/package.json`                                                                | test:e2e:deploy + test:fuzz scripts   |
+| `apps/web/stores/listenerMiddleware.ts`                                                | Eco-mode sync listener                |
+| `apps/web/components/views/equipment/calculators/EcPhPlannerCalculator.tsx`            | Plugin UI + auto-adjust               |
+| `apps/web/components/views/settings/DataManagementTab.tsx`                             | Individual DB deletion                |
+| `apps/web/locales/{en,de,es,fr,nl}.ts`                                                 | Seedbanks namespace                   |
+| `apps/web/services/localAIModelLoader.ts`                                              | createCachedPipelineLoader factory    |
+| `apps/web/services/localAi{Nlp,Embedding,LanguageDetection,ImageSimilarity}Service.ts` | Factory refactor                      |
+
+### Immediate Next Tasks
+
+- [ ] Unit tests for new features (eco-mode sync, DB deletion, pipeline factory, plugin UI)
+- [ ] Playwright E2E: DSGVO erase, nutrient plugin workflow
+- [ ] Complete ES/FR/NL translations (remaining namespaces)
+- [ ] SonarCloud Hotspot review + CII Badge verification
+- [ ] Dockerfile + netlify.toml path updates for monorepo
+- [ ] Verify GitHub Pages deploy with apps/web/dist
+
+---
+
+## Previous Session (2026-03-30) -- Monorepo Refactoring: Full Source Migration + ML Isolation
 
 **Status: Full monorepo migration complete. All source code moved to `apps/web/`. ML dependencies isolated in `@cannaguide/ai-core` as optionalDependencies. DevContainer boots without ML binaries (`--no-optional`). `turbo run build` succeeds (2 tasks). 12 pre-existing tsc errors (ML/WebGPU types only). Zero regressions.**
 

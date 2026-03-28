@@ -4,6 +4,25 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [Unreleased]
+
+### Monorepo Cleanup & Sync (2026-03-28)
+
+- **Monorepo docs sync**: README.md (EN+DE) updated with turbo/workspace commands and monorepo directory structure
+- **capacitor.config.ts**: Fixed `webDir` from `dist` to `apps/web/dist` for monorepo layout
+- **CI/CD fixes**: fuzzing.yml trigger paths updated to `apps/web/` prefixes, deploy.yml workspace-scoped test command
+- **New scripts**: `test:e2e:deploy` and `test:fuzz` added to `apps/web/package.json`
+
+### Feature Batch (2026-03-28)
+
+- **Eco-Mode Redux sync**: Listener middleware syncs Redux `localAi.ecoMode` toggle to `aiEcoModeService`
+- **Nutrient plugin UI**: `autoAdjustRecommendation` display and plugin schedule apply/reset buttons in EC/pH Planner
+- **DSGVO individual DB deletion**: Per-database delete buttons in DataManagementTab with Sentry GDPR event tracking
+- **i18n seedbanks namespace**: Wired into all 5 locale bundles (EN/DE/ES/FR/NL)
+- **Code deduplication**: `createCachedPipelineLoader()` factory eliminates ~75 LOC across 4 ML services (NLP, Embedding, LanguageDetection, ImageSimilarity)
+
+---
+
 ## [1.1.0] — 2026-03-20
 
 ### 🔒 Security Hardening (3-Day Sprint)

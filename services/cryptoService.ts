@@ -190,6 +190,10 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
     }
 }
 
+/**
+ * Encrypt a plaintext string using AES-256-GCM.
+ * Returns a JSON string containing the version, IV, and ciphertext.
+ */
 export async function encrypt(plaintext: string): Promise<string> {
     const iv = crypto.getRandomValues(new Uint8Array(12))
     const key = await getOrCreateEncryptionKey()
@@ -202,6 +206,10 @@ export async function encrypt(plaintext: string): Promise<string> {
     })
 }
 
+/**
+ * Decrypt an AES-256-GCM encrypted payload.
+ * Returns the original plaintext, or the raw payload if parsing fails.
+ */
 export async function decrypt(payload: string): Promise<string> {
     const parsed = parseEncryptedPayload(payload)
     if (!parsed) return payload
@@ -221,7 +229,7 @@ export async function decrypt(payload: string): Promise<string> {
     }
 }
 
-/** Check if a string looks like an encrypted payload (starts with `{`) */
+/** Check whether a value is an encrypted JSON payload (v1 envelope). */
 export function isEncryptedPayload(value: string): boolean {
     return value.trim().startsWith('{')
 }

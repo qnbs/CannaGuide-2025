@@ -1,0 +1,53 @@
+// French (Francais) -- commandPalette namespace
+import { commandPalette as en } from '../en/commandPalette'
+
+export const commandPalette = {
+    ...en,
+    title: 'Palette de commandes',
+    placeholder: 'Tapez une commande ou recherchez...',
+    noResults: 'Aucune commande trouvee.',
+    noResultsHint:
+        'Essayez un autre mot-cle ou parcourez toutes les commandes en effacant la recherche.',
+    toggleLanguage: 'Changer la langue en {{lang}}',
+    close: 'Fermer la palette de commandes',
+    open: 'Ouvrir la palette de commandes',
+    recentlyUsed: 'Utilises recemment',
+    footer: {
+        navigate: 'Naviguer',
+        select: 'Selectionner',
+        close: 'Fermer',
+    },
+    groups: {
+        navigation: 'Navigation',
+        strains: 'Varietes',
+        plants: 'Plantes',
+        equipment: 'Equipement',
+        knowledge: 'Connaissances',
+        appearance: 'Apparence',
+        accessibility: 'Accessibilite',
+        ai: 'IA',
+        general: 'General',
+    },
+    commands: {
+        goTo: 'Aller a {{view}}',
+        switchTheme: 'Theme : {{theme}}',
+        switchTab: '{{view}} -> {{tab}}',
+        toggleDyslexiaFont: 'Basculer police dyslexie',
+        toggleReducedMotion: 'Basculer mouvement reduit',
+        toggleHighContrast: 'Basculer contraste eleve',
+        toggleViewMode: 'Basculer vue liste / grille',
+        aiModeCloud: 'Mode IA : Cloud',
+        aiModeLocal: 'Mode IA : Local',
+        aiModeHybrid: 'Mode IA : Hybride',
+        aiModeEco: 'Mode IA : Eco (economie de batterie)',
+        resetFilters: 'Reinitialiser tous les filtres',
+        showFavorites: 'Afficher les favoris',
+        exportData: 'Exporter les donnees',
+        addStrain: 'Ajouter une nouvelle variete',
+        waterAll: 'Arroser toutes les plantes',
+        clearSelection: 'Effacer la selection de variete',
+        filterSativa: 'Filtre : Sativa',
+        filterIndica: 'Filtre : Indica',
+        filterHybrid: 'Filtre : Hybride',
+    },
+}

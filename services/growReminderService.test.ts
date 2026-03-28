@@ -4,12 +4,30 @@ import { PlantStage } from '@/types'
 // Mock plantSimulationService before import
 vi.mock('@/services/plantSimulationService', () => ({
     PLANT_STAGE_DETAILS: {
-        [PlantStage.Seed]: { duration: 3, idealVitals: { vpd: { min: 0.4, max: 0.8 } } },
-        [PlantStage.Germination]: { duration: 5, idealVitals: { vpd: { min: 0.4, max: 0.8 } } },
-        [PlantStage.Seedling]: { duration: 14, idealVitals: { vpd: { min: 0.4, max: 0.8 } } },
-        [PlantStage.Vegetative]: { duration: 28, idealVitals: { vpd: { min: 0.8, max: 1.2 } } },
-        [PlantStage.Flowering]: { duration: 56, idealVitals: { vpd: { min: 1.0, max: 1.5 } } },
-        [PlantStage.Harvest]: { duration: Infinity, idealVitals: { vpd: { min: 0.8, max: 1.2 } } },
+        [PlantStage.Seed]: {
+            duration: 3,
+            idealVitals: { vpd: { min: 0.4, max: 0.8 }, ph: { min: 6.0, max: 7.0 } },
+        },
+        [PlantStage.Germination]: {
+            duration: 5,
+            idealVitals: { vpd: { min: 0.4, max: 0.8 }, ph: { min: 6.0, max: 7.0 } },
+        },
+        [PlantStage.Seedling]: {
+            duration: 14,
+            idealVitals: { vpd: { min: 0.4, max: 0.8 }, ph: { min: 5.8, max: 6.5 } },
+        },
+        [PlantStage.Vegetative]: {
+            duration: 28,
+            idealVitals: { vpd: { min: 0.8, max: 1.2 }, ph: { min: 5.8, max: 6.5 } },
+        },
+        [PlantStage.Flowering]: {
+            duration: 56,
+            idealVitals: { vpd: { min: 1.0, max: 1.5 }, ph: { min: 6.0, max: 6.8 } },
+        },
+        [PlantStage.Harvest]: {
+            duration: Infinity,
+            idealVitals: { vpd: { min: 0.8, max: 1.2 }, ph: { min: 5.8, max: 6.5 } },
+        },
     },
 }))
 
@@ -46,24 +64,28 @@ describe('GrowReminderService', () => {
         })
 
         it('generates VPD alarm when VPD is out of range', () => {
-            const plant = makePlant({ environment: { temperature: 25, humidity: 60, vpd: 2.0, co2: 400 } })
+            const plant = makePlant({
+                environment: { temperature: 25, humidity: 60, vpd: 2.0, co2: 400 },
+            })
             const reminders = growReminderService.buildReminders([plant as any])
-            const vpdReminder = reminders.find(r => r.type === 'vpd')
+            const vpdReminder = reminders.find((r) => r.type === 'vpd')
             expect(vpdReminder).toBeDefined()
             expect(vpdReminder!.severity).toBe('warning')
         })
 
         it('does not generate VPD alarm when VPD is in range', () => {
-            const plant = makePlant({ environment: { temperature: 25, humidity: 60, vpd: 1.0, co2: 400 } })
+            const plant = makePlant({
+                environment: { temperature: 25, humidity: 60, vpd: 1.0, co2: 400 },
+            })
             const reminders = growReminderService.buildReminders([plant as any])
-            const vpdReminder = reminders.find(r => r.type === 'vpd')
+            const vpdReminder = reminders.find((r) => r.type === 'vpd')
             expect(vpdReminder).toBeUndefined()
         })
 
         it('generates watering reminder for low moisture', () => {
             const plant = makePlant({ medium: { moisture: 30, ph: 6.5, ec: 1.2 } })
             const reminders = growReminderService.buildReminders([plant as any])
-            const waterReminder = reminders.find(r => r.type === 'watering')
+            const waterReminder = reminders.find((r) => r.type === 'watering')
             expect(waterReminder).toBeDefined()
             expect(waterReminder!.severity).toBe('warning')
         })
@@ -71,7 +93,7 @@ describe('GrowReminderService', () => {
         it('generates critical watering reminder for very low moisture', () => {
             const plant = makePlant({ medium: { moisture: 20, ph: 6.5, ec: 1.2 } })
             const reminders = growReminderService.buildReminders([plant as any])
-            const waterReminder = reminders.find(r => r.type === 'watering')
+            const waterReminder = reminders.find((r) => r.type === 'watering')
             expect(waterReminder).toBeDefined()
             expect(waterReminder!.severity).toBe('critical')
         })
@@ -79,24 +101,50 @@ describe('GrowReminderService', () => {
         it('does not generate watering reminder for adequate moisture', () => {
             const plant = makePlant({ medium: { moisture: 60, ph: 6.5, ec: 1.2 } })
             const reminders = growReminderService.buildReminders([plant as any])
-            const waterReminder = reminders.find(r => r.type === 'watering')
+            const waterReminder = reminders.find((r) => r.type === 'watering')
             expect(waterReminder).toBeUndefined()
         })
 
         it('generates harvest reminder for plants at harvest stage', () => {
             const plant = makePlant({ stage: PlantStage.Harvest, age: 110 })
             const reminders = growReminderService.buildReminders([plant as any])
-            const harvestReminder = reminders.find(r => r.type === 'harvest')
+            const harvestReminder = reminders.find((r) => r.type === 'harvest')
             expect(harvestReminder).toBeDefined()
         })
 
         it('handles multiple plants', () => {
             const plants = [
                 makePlant({ id: 'p1', medium: { moisture: 20, ph: 6.5, ec: 1.2 } }),
-                makePlant({ id: 'p2', environment: { temperature: 25, humidity: 60, vpd: 2.0, co2: 400 } }),
+                makePlant({
+                    id: 'p2',
+                    environment: { temperature: 25, humidity: 60, vpd: 2.0, co2: 400 },
+                }),
             ]
             const reminders = growReminderService.buildReminders(plants as any[])
             expect(reminders.length).toBeGreaterThanOrEqual(2)
+        })
+
+        it('generates pH drift warning when pH is too low', () => {
+            const plant = makePlant({ medium: { moisture: 50, ph: 4.5, ec: 1.2 } })
+            const reminders = growReminderService.buildReminders([plant as any])
+            const phReminder = reminders.find((r) => r.type === 'ph')
+            expect(phReminder).toBeDefined()
+            expect(phReminder!.severity).toBe('warning')
+            expect(phReminder!.title).toContain('pH drift')
+        })
+
+        it('generates pH drift warning when pH is too high', () => {
+            const plant = makePlant({ medium: { moisture: 50, ph: 8.0, ec: 1.2 } })
+            const reminders = growReminderService.buildReminders([plant as any])
+            const phReminder = reminders.find((r) => r.type === 'ph')
+            expect(phReminder).toBeDefined()
+        })
+
+        it('does not generate pH drift when pH is in range', () => {
+            const plant = makePlant({ medium: { moisture: 50, ph: 6.2, ec: 1.2 } })
+            const reminders = growReminderService.buildReminders([plant as any])
+            const phReminder = reminders.find((r) => r.type === 'ph')
+            expect(phReminder).toBeUndefined()
         })
     })
 

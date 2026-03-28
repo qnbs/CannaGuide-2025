@@ -62,6 +62,10 @@ const formatContextLine = (chunk: LogChunk, score?: number): string => {
     return `- ${chunk.plantName} @ ${new Date(chunk.createdAt).toLocaleString()}${scoreSuffix}: ${chunk.text.slice(0, 240)}`
 }
 
+/**
+ * RAG (Retrieval-Augmented Generation) service for grow journal context.
+ * Provides keyword and semantic retrieval of journal entries for AI prompts.
+ */
 class GrowLogRagService {
     private buildChunks(plants: Plant[]): LogChunk[] {
         let allChunks = plants.flatMap((plant) =>
@@ -160,6 +164,7 @@ class GrowLogRagService {
         }
     }
 
+    /** Synchronous context retrieval using keyword scoring. Use when embedding model is unavailable. */
     public retrieveRelevantContext(plants: Plant[], query: string, limit = 6): string {
         const chunks = this.buildChunks(plants)
         if (chunks.length === 0) {
@@ -192,4 +197,5 @@ class GrowLogRagService {
     }
 }
 
+/** Singleton RAG service instance for grow journal context retrieval. */
 export const growLogRagService = new GrowLogRagService()

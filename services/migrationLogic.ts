@@ -10,13 +10,14 @@ import {
 } from '@/constants'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
-// This represents the shape of the persisted state object.
+/** Shape of the Redux state as persisted in IndexedDB, with optional version and slice metadata. */
 export type PersistedState = Partial<RootState> & {
     version?: number
     /** Per-slice schema versions stamped at persist time. */
     _sliceVersions?: Partial<Record<VersionedSliceName, number>>
 }
 
+/** Describes the structural diff between two state snapshots (added/removed/changed keys). */
 export type SnapshotDiff = {
     added: string[]
     removed: string[]
@@ -27,6 +28,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
     return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
+/** Compare two state snapshots and return added, removed, and changed top-level keys. */
 export const createSnapshotDiff = (before: unknown, after: unknown): SnapshotDiff => {
     if (!isPlainObject(before) || !isPlainObject(after)) {
         return { added: [], removed: [], changed: [] }

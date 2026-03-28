@@ -189,7 +189,12 @@ const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMes
     }
 }
 
+/**
+ * Unified AI service that routes requests across cloud (Gemini/OpenAI/xAI/Anthropic)
+ * and local (WebLLM/Transformers.js/heuristics) backends based on the active AI mode.
+ */
 export const aiService = {
+    /** Get equipment recommendations for a given prompt, routed by AI mode. */
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
         return runRouted(
             () => withLocalService((local) => local.getEquipmentRecommendation(prompt, lang)),
@@ -198,6 +203,7 @@ export const aiService = {
         )
     },
 
+    /** Get nutrient feeding recommendations based on plant context. */
     async getNutrientRecommendation(
         context: NutrientRecommendationInput,
         lang: Language,
@@ -209,6 +215,7 @@ export const aiService = {
         )
     },
 
+    /** Diagnose plant health from a photo using vision AI. */
     async diagnosePlant(
         base64Image: string,
         mimeType: string,
@@ -236,6 +243,7 @@ export const aiService = {
         )
     },
 
+    /** Get general plant care advice based on current plant state. */
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
         return runRouted(
             () => withLocalService((local) => local.getPlantAdvice(plant, lang)),
@@ -244,6 +252,7 @@ export const aiService = {
         )
     },
 
+    /** Run proactive health analysis to detect potential issues early. */
     async getProactiveDiagnosis(plant: Plant, lang: Language): Promise<AIResponse> {
         return runRouted(
             () => withLocalService((local) => local.getProactiveDiagnosis(plant, lang)),
@@ -252,6 +261,7 @@ export const aiService = {
         )
     },
 
+    /** Get an interactive mentor response with RAG-enriched journal context. */
     async getMentorResponse(
         plant: Plant,
         query: string,
@@ -298,6 +308,7 @@ export const aiService = {
         return this.getMentorResponse(plant, query, lang)
     },
 
+    /** Get strain-specific grow tips tailored to focus area, stage, and experience level. */
     async getStrainTips(
         strain: Strain,
         context: { focus: string; stage: string; experienceLevel: string },
@@ -310,6 +321,7 @@ export const aiService = {
         )
     },
 
+    /** Generate a strain illustration in the requested art style. */
     async generateStrainImage(
         strain: Strain,
         style: ImageStyle,
@@ -329,6 +341,7 @@ export const aiService = {
         )
     },
 
+    /** Generate an in-depth educational deep-dive guide for a topic. */
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
         return runRouted(
             () => withLocalService((local) => local.generateDeepDive(topic, plant, lang)),
@@ -337,6 +350,7 @@ export const aiService = {
         )
     },
 
+    /** Get a garden-wide status summary across all plants. */
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
         return runRouted(
             () => withLocalService((local) => local.getGardenStatusSummary(plants, lang)),
@@ -345,6 +359,7 @@ export const aiService = {
         )
     },
 
+    /** Answer a question using RAG-enhanced grow journal context. */
     async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
         return runRouted(
             async () => {

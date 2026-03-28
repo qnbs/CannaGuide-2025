@@ -1,0 +1,90 @@
+// Spanish (Espanol) -- equipment namespace
+import { seedbanks } from '../en/seedbanks'
+import { equipmentView as en } from '../en/equipment'
+
+export const equipmentView = {
+    ...en,
+    tabs: {
+        configurator: 'Configurador',
+        setups: 'Configuraciones guardadas',
+        calculators: 'Calculadoras',
+        growShops: 'Tiendas de cultivo',
+        seedbanks: 'Bancos de semillas',
+    },
+    configurator: {
+        ...en.configurator,
+        title: 'Configurador IA de equipamiento',
+        subtitle: 'Obtiene una lista personalizada de equipamiento segun tus necesidades.',
+        generate: 'Generar configuracion',
+        resultsTitle: 'Tu configuracion de cultivo personalizada',
+        total: 'Coste total estimado',
+        saveSetup: 'Guardar configuracion',
+        startOver: 'Empezar de nuevo',
+        tryAgain: 'Intentar de nuevo',
+        error: 'Hubo un error al generar tu configuracion.',
+        plantCount: 'Numero de plantas',
+        experience: 'Experiencia',
+        budget: 'Presupuesto (EUR)',
+        step1Title: 'Basicos',
+        step2Title: 'Prioridades',
+        step3Title: 'Detalles',
+        categories: {
+            tent: 'Carpa de cultivo',
+            light: 'Iluminacion',
+            ventilation: 'Ventilacion',
+            circulationFan: 'Ventilador de circulacion',
+            pots: 'Macetas',
+            soil: 'Medio/Sustrato',
+            nutrients: 'Nutrientes',
+            extra: 'Extras y monitoreo',
+        },
+        priorities: {
+            yield: 'Rendimiento',
+            quality: 'Calidad',
+            stealth: 'Discrecion',
+            easeOfUse: 'Facilidad de uso',
+            energy: 'Eficiencia energetica',
+        },
+    },
+    savedSetups: {
+        ...en.savedSetups,
+        noSetups: {
+            title: 'Sin configuraciones guardadas',
+            subtitle: 'Usa el Configurador IA para generar y guardar tu primera configuracion.',
+        },
+        editTitle: 'Editar configuracion',
+        exportTitle: 'Exportar configuraciones',
+    },
+    calculators: {
+        ...en.calculators,
+        title: 'Calculadoras',
+        yes: 'Si',
+        no: 'No',
+    },
+    growShops: {
+        ...en.growShops,
+        region: {
+            europe: 'Europa',
+            usa: 'EE.UU. / Canada',
+        },
+        strengths: 'Fortalezas',
+        shipping: 'Envio',
+        paymentMethods: 'Metodos de pago',
+        visitShop: 'Visitar {{shopName}}',
+        searchPlaceholder: 'Buscar tiendas...',
+        sortBy: 'Ordenar',
+        sortRating: 'Calificacion',
+        sortName: 'A-Z',
+        shopsFound: 'tiendas',
+        noResults: 'Ninguna tienda coincide con tu busqueda.',
+    },
+    seedbanks,
+    exportModal: {
+        ...en.exportModal,
+        format: 'Formato',
+        chooseFormat: 'Elige un formato de las opciones a continuacion.',
+        downloadReady: 'Descarga lista',
+        clickToDownload:
+            'Tu archivo "{{filename}}" esta listo. Haz clic en el boton para descargar.',
+    },
+}

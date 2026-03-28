@@ -45,7 +45,12 @@ const extractGistId = (value: string): string => {
     return match[1]
 }
 
+/**
+ * Community strain sharing via anonymous GitHub Gists.
+ * Validates imports with Zod schemas and respects local-only mode.
+ */
 class CommunityShareService {
+    /** Export strains as an anonymous (unlisted) GitHub Gist. Returns the gist ID and URL. */
     public async exportStrainsToAnonymousGist(
         strains: Strain[],
     ): Promise<{ id: string; url: string }> {
@@ -87,6 +92,7 @@ class CommunityShareService {
         return { id: gist.id, url: gist.html_url }
     }
 
+    /** Import strains from a Gist URL or ID. Validates with Zod schema and strips unknown fields. */
     public async importStrainsFromGist(gistUrlOrId: string): Promise<Strain[]> {
         if (isLocalOnlyMode()) {
             throw new Error(getT()('common.communityShare.blockedByLocalOnly'))

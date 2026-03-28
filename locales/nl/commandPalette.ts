@@ -1,0 +1,53 @@
+// Dutch (Nederlands) -- commandPalette namespace
+import { commandPalette as en } from '../en/commandPalette'
+
+export const commandPalette = {
+    ...en,
+    title: 'Opdrachtenpalet',
+    placeholder: 'Typ een opdracht of zoek...',
+    noResults: 'Geen opdrachten gevonden.',
+    noResultsHint:
+        'Probeer een ander trefwoord of blader door alle opdrachten door de zoekopdracht te wissen.',
+    toggleLanguage: 'Taal wijzigen naar {{lang}}',
+    close: 'Opdrachtenpalet sluiten',
+    open: 'Opdrachtenpalet openen',
+    recentlyUsed: 'Recent gebruikt',
+    footer: {
+        navigate: 'Navigeren',
+        select: 'Selecteren',
+        close: 'Sluiten',
+    },
+    groups: {
+        navigation: 'Navigatie',
+        strains: 'Rassen',
+        plants: 'Planten',
+        equipment: 'Apparatuur',
+        knowledge: 'Kennis',
+        appearance: 'Uiterlijk',
+        accessibility: 'Toegankelijkheid',
+        ai: 'AI',
+        general: 'Algemeen',
+    },
+    commands: {
+        goTo: 'Ga naar {{view}}',
+        switchTheme: 'Thema: {{theme}}',
+        switchTab: '{{view}} -> {{tab}}',
+        toggleDyslexiaFont: 'Dyslexie-lettertype wisselen',
+        toggleReducedMotion: 'Verminderde beweging wisselen',
+        toggleHighContrast: 'Hoog contrast wisselen',
+        toggleViewMode: 'Lijst / raster weergave wisselen',
+        aiModeCloud: 'AI-modus: Cloud',
+        aiModeLocal: 'AI-modus: Lokaal',
+        aiModeHybrid: 'AI-modus: Hybride',
+        aiModeEco: 'AI-modus: Eco (batterijbesparing)',
+        resetFilters: 'Alle filters resetten',
+        showFavorites: 'Favorieten tonen',
+        exportData: 'Gegevens exporteren',
+        addStrain: 'Nieuw ras toevoegen',
+        waterAll: 'Alle planten water geven',
+        clearSelection: 'Rasselectie wissen',
+        filterSativa: 'Filter: Sativa',
+        filterIndica: 'Filter: Indica',
+        filterHybrid: 'Filter: Hybride',
+    },
+}

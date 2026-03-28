@@ -124,6 +124,7 @@ const saveProviderMetadata = (provider: AiProvider, metadata: AiProviderKeyMetad
     }
 }
 
+/** Return the currently selected AI provider ID (defaults to 'gemini'). */
 function getActiveProviderId(): AiProvider {
     const stored = localStorage.getItem(ACTIVE_PROVIDER_KEY)
     if (stored && stored in PROVIDER_CONFIGS) {
@@ -132,14 +133,17 @@ function getActiveProviderId(): AiProvider {
     return 'gemini'
 }
 
+/** Persist the active AI provider selection in localStorage. */
 function setActiveProviderId(provider: AiProvider): void {
     localStorage.setItem(ACTIVE_PROVIDER_KEY, provider)
 }
 
+/** Return the full config object for the currently active provider. */
 function getActiveProviderConfig(): AiProviderConfig {
     return PROVIDER_CONFIGS[getActiveProviderId()]
 }
 
+/** Return config objects for all registered AI providers. */
 function getAllProviders(): AiProviderConfig[] {
     return Object.values(PROVIDER_CONFIGS)
 }
@@ -148,6 +152,7 @@ function getAllProviders(): AiProviderConfig[] {
 // Per-provider key management (encryption via shared cryptoService)
 // ---------------------------------------------------------------------------
 
+/** Retrieve, decrypt, and validate the API key for a given provider. Returns null if missing, expired, or corrupt. */
 async function getProviderApiKey(provider: AiProvider): Promise<string | null> {
     const config = PROVIDER_CONFIGS[provider]
     const raw = await indexedDBStorage.getItem(config.keyStorageKey)
@@ -181,6 +186,7 @@ async function getProviderApiKey(provider: AiProvider): Promise<string | null> {
     return trimmed.length > 0 ? trimmed : null
 }
 
+/** Validate, encrypt, and persist an API key for the given provider. Throws on invalid format. */
 async function setProviderApiKey(provider: AiProvider, apiKey: string): Promise<void> {
     const config = PROVIDER_CONFIGS[provider]
     const trimmed = apiKey.trim()
@@ -192,6 +198,7 @@ async function setProviderApiKey(provider: AiProvider, apiKey: string): Promise<
     saveProviderMetadata(provider, { updatedAt: Date.now() })
 }
 
+/** Remove the stored API key and metadata for a provider. */
 async function clearProviderApiKey(provider: AiProvider): Promise<void> {
     const config = PROVIDER_CONFIGS[provider]
     await indexedDBStorage.removeItem(config.keyStorageKey)
@@ -202,6 +209,7 @@ async function clearProviderApiKey(provider: AiProvider): Promise<void> {
     }
 }
 
+/** Remove all stored API keys for every registered provider. */
 async function clearAllProviderApiKeys(): Promise<void> {
     await Promise.all(
         Object.keys(PROVIDER_CONFIGS).map((provider) =>
@@ -210,6 +218,7 @@ async function clearAllProviderApiKeys(): Promise<void> {
     )
 }
 
+/** Return a masked representation of the stored API key (e.g. 'AIza••••••••••••xy4z') for UI display. */
 async function getMaskedProviderApiKey(provider: AiProvider): Promise<string | null> {
     const key = await getProviderApiKey(provider)
     if (!key) return null
@@ -218,14 +227,17 @@ async function getMaskedProviderApiKey(provider: AiProvider): Promise<string | n
     return `${prefix}••••••••••••${suffix}`
 }
 
+/** Check whether an API key matches the expected format for a given provider. */
 function isValidProviderKeyFormat(provider: AiProvider, apiKey: string): boolean {
     return PROVIDER_CONFIGS[provider].keyPattern.test(apiKey.trim())
 }
 
+/** Return stored metadata (e.g. updatedAt timestamp) for a provider key, or null. */
 function getProviderKeyMetadata(provider: AiProvider): AiProviderKeyMetadata | null {
     return loadProviderMetadata(provider)
 }
 
+/** Check whether a provider key has exceeded the 90-day rotation window. */
 function isProviderKeyRotationDue(provider: AiProvider): boolean {
     return isRotationDue(loadProviderMetadata(provider))
 }
@@ -255,6 +267,10 @@ const buildProviderMessages = (systemPrompt: string, userPrompt: string): OpenAi
     { role: 'user', content: userPrompt },
 ]
 
+/**
+ * Send a chat completion request to an OpenAI-compatible endpoint (OpenAI / xAI Grok).
+ * Supports optional JSON mode and configurable max tokens.
+ */
 async function callOpenAiCompatible(
     baseUrl: string,
     apiKey: string,
@@ -376,6 +392,11 @@ async function generateTextWithProvider(
 // Export
 // ---------------------------------------------------------------------------
 
+/**
+ * Multi-provider AI service facade.
+ * Handles provider selection, encrypted key management, and unified text generation
+ * across Gemini, OpenAI, xAI/Grok, and Anthropic backends.
+ */
 export const aiProviderService = {
     // Provider selection
     getActiveProviderId,

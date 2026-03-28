@@ -1,20 +1,16 @@
 {
-    "name": "CannaGuide 2025",
+    "name": "CannaGuide 2025 (Lite Mode)",
     "build": {
         "dockerfile": "Dockerfile"
     },
-
     "remoteUser": "root",
-
     "hostRequirements": {
         "cpus": 4,
         "memory": "8gb",
         "storage": "32gb"
     },
-
     "postCreateCommand": "bash .devcontainer/setup.sh",
     "postStartCommand": "bash .devcontainer/start.sh",
-
     "forwardPorts": [5173, 3001, 3002],
     "portsAttributes": {
         "5173": {
@@ -30,12 +26,10 @@
             "onAutoForward": "silent"
         }
     },
-
     "containerEnv": {
         "VITE_ESP32_URL": "http://localhost:3001",
         "VITE_TAURI_MOCK_URL": "http://localhost:3002"
     },
-
     "customizations": {
         "vscode": {
             "settings": {

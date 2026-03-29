@@ -158,6 +158,14 @@ describe('toDetailedTerpeneProfile', () => {
         expect(detailed.Myrcene?.sampleCount).toBe(5)
         expect(detailed.Myrcene?.stability).toBeDefined()
     })
+
+    it('rejects invalid property names to prevent prototype pollution', () => {
+        const malicious = { __proto__: 1.0, constructor: 2.0, Myrcene: 0.5 } as unknown as TerpeneProfile
+        const detailed = toDetailedTerpeneProfile(malicious)
+        expect(detailed.Myrcene?.percent).toBe(0.5)
+        expect(Object.keys(detailed)).not.toContain('__proto__')
+        expect(Object.keys(detailed)).not.toContain('constructor')
+    })
 })
 
 describe('toDetailedCannabinoidProfile', () => {
@@ -166,6 +174,14 @@ describe('toDetailedCannabinoidProfile', () => {
         const detailed = toDetailedCannabinoidProfile(simple)
         expect(detailed.THC?.percent).toBe(20)
         expect(detailed.THC?.sampleCount).toBe(0)
+    })
+
+    it('rejects invalid property names to prevent prototype pollution', () => {
+        const malicious = { __proto__: 10, toString: 5, THC: 20 } as unknown as CannabinoidProfile
+        const detailed = toDetailedCannabinoidProfile(malicious)
+        expect(detailed.THC?.percent).toBe(20)
+        expect(Object.keys(detailed)).not.toContain('__proto__')
+        expect(Object.keys(detailed)).not.toContain('toString')
     })
 })
 

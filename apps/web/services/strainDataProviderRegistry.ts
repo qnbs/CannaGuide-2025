@@ -17,10 +17,7 @@
  *  - Kushy/Community (static JSON datasets)
  */
 
-import type {
-    StrainApiProvider,
-    DataProvenance,
-} from '@/types'
+import type { StrainApiProvider, DataProvenance } from '@/types'
 import { externalStrainDataSchema, type ValidatedExternalStrainData } from '@/types/strainSchemas'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
@@ -93,7 +90,10 @@ const CORS_PROXIES = [
     (url: string): string => `https://corsproxy.io/?${encodeURIComponent(url)}`,
 ]
 
-export const fetchWithCorsProxy = async (url: string, options?: globalThis.RequestInit): Promise<Response> => {
+export const fetchWithCorsProxy = async (
+    url: string,
+    options?: globalThis.RequestInit,
+): Promise<Response> => {
     // Try direct first (works in non-browser or CORS-enabled APIs)
     try {
         const direct = await fetch(url, { ...options, signal: AbortSignal.timeout(8000) })
@@ -222,7 +222,7 @@ export const PROVIDER_CONFIGS: Record<StrainApiProvider, ProviderConfig> = {
     cansativa: {
         id: 'cansativa',
         name: 'Cansativa',
-        baseUrl: 'https://developer.cansativa.de/api',
+        baseUrl: 'https://cansativagw.azure-api.net/v2',
         requiresApiKey: true,
         apiKeyEnvVar: 'VITE_CANSATIVA_API_KEY',
         capabilities: [
@@ -238,7 +238,7 @@ export const PROVIDER_CONFIGS: Record<StrainApiProvider, ProviderConfig> = {
         hasStaticDataset: false,
         qualityTier: 1,
         region: 'de',
-        description: 'German medical cannabis distributor with GMP-grade lab data',
+        description: 'German medical cannabis distributor with GMP-grade lab data (Azure API)',
     },
     kushy: {
         id: 'kushy',
@@ -480,6 +480,32 @@ const providerFetchers: Partial<
             return []
         }
     },
+
+    cansativa: async (_query, config) => {
+        const apiKey = import.meta.env.VITE_CANSATIVA_API_KEY
+        if (!apiKey) return []
+        const headers: Record<string, string> = {
+            'Cache-Control': 'no-cache',
+            'Ocp-Apim-Subscription-Key': apiKey,
+        }
+        try {
+            // Fetch inventory (primary product catalog)
+            const inventoryRes = await fetch(`${config.baseUrl}/inventory`, {
+                method: 'POST',
+                headers,
+                signal: AbortSignal.timeout(10_000),
+            })
+            if (!inventoryRes.ok) return []
+            const inventoryData = await inventoryRes.json()
+            const items = Array.isArray(inventoryData)
+                ? inventoryData
+                : (inventoryData?.data ?? inventoryData?.items ?? [])
+            if (!Array.isArray(items)) return []
+            return items.map((item: Record<string, unknown>) => normalizeCansativaResult(item))
+        } catch {
+            return []
+        }
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -559,6 +585,88 @@ const normalizeCannlyticsResult = (data: Record<string, unknown>): Record<string
             Object.keys(cannabinoidProfile).length > 0 ? cannabinoidProfile : undefined,
         labTested: true,
     }
+}
+
+const normalizeCansativaResult = (data: Record<string, unknown>): Record<string, unknown> => {
+    const name =
+        (data.product_name as string) ??
+        (data.name as string) ??
+        (data.strain as string) ??
+        (data.kultivar as string) ??
+        'Unknown'
+
+    const terpeneProfile: Record<string, number> = {}
+    const cannabinoidProfile: Record<string, number> = {}
+
+    // Extract THC/CBD from top-level or nested lab data
+    const thc =
+        (data.thc as number) ??
+        (data.thc_percent as number) ??
+        (data.thc_content as number) ??
+        undefined
+    const cbd =
+        (data.cbd as number) ??
+        (data.cbd_percent as number) ??
+        (data.cbd_content as number) ??
+        undefined
+
+    if (thc !== undefined) cannabinoidProfile['THC'] = thc
+    if (cbd !== undefined) cannabinoidProfile['CBD'] = cbd
+
+    // Extract terpene data if available
+    const terpenes = data.terpenes as Record<string, number> | undefined
+    if (terpenes && typeof terpenes === 'object') {
+        for (const [key, val] of Object.entries(terpenes)) {
+            if (typeof val === 'number') terpeneProfile[key] = val
+        }
+    }
+
+    // Extract cultivar/genetics info
+    const genetics =
+        (data.genetics as string) ??
+        (data.cultivar as string) ??
+        (data.sorte as string) ??
+        undefined
+
+    const type = mapCansativaType(
+        (data.type as string) ?? (data.category as string) ?? genetics,
+    )
+
+    return {
+        provider: 'cansativa',
+        externalId: (data.id as string) ?? (data.pzn as string) ?? undefined,
+        name,
+        type,
+        genetics,
+        thc,
+        cbd,
+        terpeneProfile: Object.keys(terpeneProfile).length > 0 ? terpeneProfile : undefined,
+        cannabinoidProfile:
+            Object.keys(cannabinoidProfile).length > 0 ? cannabinoidProfile : undefined,
+        labTested: true,
+        medicalInfo: {
+            gmpCertified: true,
+            pzn: (data.pzn as string) ?? undefined,
+            apothekenpflichtig: true,
+            cultivationCountry: (data.origin as string) ?? (data.herkunft as string) ?? undefined,
+        },
+        description:
+            (data.description as string) ??
+            (data.beschreibung as string) ??
+            undefined,
+        sourceUrl: (data.url as string) ?? undefined,
+    }
+}
+
+const mapCansativaType = (
+    value: string | undefined,
+): 'Sativa' | 'Indica' | 'Hybrid' | undefined => {
+    if (!value) return undefined
+    const lower = value.toLowerCase()
+    if (lower.includes('sativa') && !lower.includes('indica')) return 'Sativa'
+    if (lower.includes('indica') && !lower.includes('sativa')) return 'Indica'
+    if (lower.includes('hybrid')) return 'Hybrid'
+    return undefined
 }
 
 // ---------------------------------------------------------------------------

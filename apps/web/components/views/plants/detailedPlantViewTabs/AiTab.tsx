@@ -1,5 +1,5 @@
-import React, { useState, useEffect, memo } from 'react'
-import { Plant, ArchivedAdvisorResponse } from '@/types'
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react'
+import { Plant, ArchivedAdvisorResponse, AIResponse } from '@/types'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
@@ -42,6 +42,17 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     const [isDiagnosisSaved, setIsDiagnosisSaved] = useState(false)
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
+    // Streaming state
+    const [isStreamingAdvice, setIsStreamingAdvice] = useState(false)
+    const [streamingAdviceText, setStreamingAdviceText] = useState('')
+    const [streamedAdvice, setStreamedAdvice] = useState<AIResponse | null>(null)
+    const adviceStreamRef = useRef('')
+
+    const [isStreamingDiagnosis, setIsStreamingDiagnosis] = useState(false)
+    const [streamingDiagnosisText, setStreamingDiagnosisText] = useState('')
+    const [streamedDiagnosis, setStreamedDiagnosis] = useState<AIResponse | null>(null)
+    const diagnosisStreamRef = useRef('')
+
     const plantQueryData = JSON.stringify(
         {
             age: plant.age,
@@ -56,11 +67,12 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     )
 
     useEffect(() => {
-        const useCase: LoadingUseCase | null = advisorState.isLoading
-            ? 'advisor'
-            : diagnosisState.isLoading
-              ? 'proactiveDiagnosis'
-              : null
+        const useCase: LoadingUseCase | null =
+            advisorState.isLoading || isStreamingAdvice
+                ? 'advisor'
+                : diagnosisState.isLoading || isStreamingDiagnosis
+                  ? 'proactiveDiagnosis'
+                  : null
 
         if (!useCase) {
             setLoadingMessage('')
@@ -86,24 +98,81 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
         }, 2000)
 
         return () => clearInterval(intervalId)
-    }, [advisorState.isLoading, diagnosisState.isLoading, plant.name])
+    }, [
+        advisorState.isLoading,
+        diagnosisState.isLoading,
+        isStreamingAdvice,
+        isStreamingDiagnosis,
+        plant.name,
+    ])
 
-    const handleGetAdvice = () => {
+    const handleGetAdvice = useCallback(async () => {
         setIsCurrentResponseSaved(false)
-        getPlantAdvice({ plant, lang })
-    }
+        setStreamedAdvice(null)
+        setStreamingAdviceText('')
+        adviceStreamRef.current = ''
+        setIsStreamingAdvice(true)
 
-    const handleGetDiagnosis = () => {
+        try {
+            const { aiService } = await import('@/services/aiService')
+            let rafPending = false
+            const onToken = (_token: string, accumulated: string) => {
+                adviceStreamRef.current = accumulated
+                if (!rafPending) {
+                    rafPending = true
+                    requestAnimationFrame(() => {
+                        rafPending = false
+                        setStreamingAdviceText(adviceStreamRef.current)
+                    })
+                }
+            }
+            const result = await aiService.getPlantAdviceStream(plant, lang, onToken)
+            setStreamedAdvice(result)
+        } catch {
+            // Streaming failed -- fall back to batch RTK mutation
+            getPlantAdvice({ plant, lang })
+        } finally {
+            setIsStreamingAdvice(false)
+        }
+    }, [plant, lang, getPlantAdvice])
+
+    const handleGetDiagnosis = useCallback(async () => {
         setIsDiagnosisSaved(false)
-        getProactiveDiagnosis({ plant, lang })
-    }
+        setStreamedDiagnosis(null)
+        setStreamingDiagnosisText('')
+        diagnosisStreamRef.current = ''
+        setIsStreamingDiagnosis(true)
+
+        try {
+            const { aiService } = await import('@/services/aiService')
+            let rafPending = false
+            const onToken = (_token: string, accumulated: string) => {
+                diagnosisStreamRef.current = accumulated
+                if (!rafPending) {
+                    rafPending = true
+                    requestAnimationFrame(() => {
+                        rafPending = false
+                        setStreamingDiagnosisText(diagnosisStreamRef.current)
+                    })
+                }
+            }
+            const result = await aiService.getProactiveDiagnosisStream(plant, lang, onToken)
+            setStreamedDiagnosis(result)
+        } catch {
+            // Streaming failed -- fall back to batch RTK mutation
+            getProactiveDiagnosis({ plant, lang })
+        } finally {
+            setIsStreamingDiagnosis(false)
+        }
+    }, [plant, lang, getProactiveDiagnosis])
 
     const handleSaveResponse = () => {
-        if (advisorState.data) {
+        const data = streamedAdvice ?? advisorState.data
+        if (data) {
             dispatch(
                 addArchivedAdvisorResponse({
                     plant,
-                    response: advisorState.data,
+                    response: data,
                     query: plantQueryData,
                 }),
             )
@@ -112,11 +181,12 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     }
 
     const handleSaveDiagnosisResponse = () => {
-        if (diagnosisState.data) {
+        const data = streamedDiagnosis ?? diagnosisState.data
+        if (data) {
             dispatch(
                 addArchivedAdvisorResponse({
                     plant,
-                    response: diagnosisState.data,
+                    response: data,
                     query: t('ai.proactiveDiagnosis'),
                 }),
             )
@@ -175,51 +245,64 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                 <div className="p-3 bg-slate-800/50 rounded-lg">
                     <Button
                         onClick={handleGetDiagnosis}
-                        disabled={diagnosisState.isLoading}
+                        disabled={diagnosisState.isLoading || isStreamingDiagnosis}
                         className="w-full"
                     >
-                        {diagnosisState.isLoading
+                        {diagnosisState.isLoading || isStreamingDiagnosis
                             ? loadingMessage
                             : t('plantsView.aiAdvisor.runDiagnosis')}
                     </Button>
 
                     <div className="mt-4">
-                        {diagnosisState.isLoading && (
-                            <AiLoadingIndicator loadingMessage={loadingMessage} />
-                        )}
-                        {diagnosisState.data && !diagnosisState.isLoading && (
+                        {(diagnosisState.isLoading || isStreamingDiagnosis) &&
+                            !streamingDiagnosisText && (
+                                <AiLoadingIndicator loadingMessage={loadingMessage} />
+                            )}
+                        {isStreamingDiagnosis && streamingDiagnosisText && (
                             <Card className="bg-slate-900/70 animate-fade-in">
-                                <Speakable elementId={`proactive-diag-content-${plant.id}`}>
-                                    <h4 className="font-bold text-primary-300">
-                                        {diagnosisState.data.title}
-                                    </h4>
-                                    <SafeHtml
-                                        className="prose prose-sm dark:prose-invert max-w-none"
-                                        html={diagnosisState.data.content}
-                                    />
-                                </Speakable>
-                                <div className="text-right mt-2">
-                                    <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={handleSaveDiagnosisResponse}
-                                        disabled={isDiagnosisSaved}
-                                    >
-                                        {isDiagnosisSaved ? (
-                                            <>
-                                                <PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />
-                                                {t('strainsView.tips.saved')}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
-                                                {t('knowledgeView.archive.saveButton')}
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
+                                <p className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+                                    {streamingDiagnosisText}
+                                </p>
                             </Card>
                         )}
+                        {(streamedDiagnosis ?? diagnosisState.data) &&
+                            !diagnosisState.isLoading &&
+                            !isStreamingDiagnosis && (
+                                <Card className="bg-slate-900/70 animate-fade-in">
+                                    <Speakable elementId={`proactive-diag-content-${plant.id}`}>
+                                        <h4 className="font-bold text-primary-300">
+                                            {(streamedDiagnosis ?? diagnosisState.data)?.title}
+                                        </h4>
+                                        <SafeHtml
+                                            className="prose prose-sm dark:prose-invert max-w-none"
+                                            html={
+                                                (streamedDiagnosis ?? diagnosisState.data)
+                                                    ?.content ?? ''
+                                            }
+                                        />
+                                    </Speakable>
+                                    <div className="text-right mt-2">
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={handleSaveDiagnosisResponse}
+                                            disabled={isDiagnosisSaved}
+                                        >
+                                            {isDiagnosisSaved ? (
+                                                <>
+                                                    <PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />
+                                                    {t('strainsView.tips.saved')}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
+                                                    {t('knowledgeView.archive.saveButton')}
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </Card>
+                            )}
                     </div>
                 </div>
             </Card>
@@ -234,54 +317,67 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                 <div className="p-3 bg-slate-800/50 rounded-lg">
                     <Button
                         onClick={handleGetAdvice}
-                        disabled={advisorState.isLoading}
+                        disabled={advisorState.isLoading || isStreamingAdvice}
                         className="w-full"
                     >
-                        {advisorState.isLoading ? loadingMessage : t('ai.getAdvice')}
+                        {advisorState.isLoading || isStreamingAdvice
+                            ? loadingMessage
+                            : t('ai.getAdvice')}
                     </Button>
 
                     <div className="mt-4">
-                        {advisorState.isLoading && (
+                        {(advisorState.isLoading || isStreamingAdvice) && !streamingAdviceText && (
                             <AiLoadingIndicator loadingMessage={loadingMessage} />
                         )}
-                        {advisorState.data && !advisorState.isLoading && (
+                        {isStreamingAdvice && streamingAdviceText && (
                             <Card className="bg-slate-900/70 animate-fade-in">
-                                <Speakable elementId={`advisor-content-${plant.id}`}>
-                                    <h4 className="font-bold text-primary-300">
-                                        {advisorState.data.title}
-                                    </h4>
-                                    <SafeHtml
-                                        className="prose prose-sm dark:prose-invert max-w-none"
-                                        html={advisorState.data.content}
-                                    />
-                                </Speakable>
-                                {!advisorState.error && (
-                                    <div className="text-right mt-2">
-                                        <Button
-                                            size="sm"
-                                            variant="secondary"
-                                            onClick={handleSaveResponse}
-                                            disabled={isCurrentResponseSaved}
-                                        >
-                                            {isCurrentResponseSaved ? (
-                                                <>
-                                                    <PhosphorIcons.CheckCircle
-                                                        className="w-4 h-4 mr-1.5"
-                                                        weight="fill"
-                                                    />
-                                                    {t('strainsView.tips.saved')}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
-                                                    {t('knowledgeView.archive.saveButton')}
-                                                </>
-                                            )}
-                                        </Button>
-                                    </div>
-                                )}
+                                <p className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+                                    {streamingAdviceText}
+                                </p>
                             </Card>
                         )}
+                        {(streamedAdvice ?? advisorState.data) &&
+                            !advisorState.isLoading &&
+                            !isStreamingAdvice && (
+                                <Card className="bg-slate-900/70 animate-fade-in">
+                                    <Speakable elementId={`advisor-content-${plant.id}`}>
+                                        <h4 className="font-bold text-primary-300">
+                                            {(streamedAdvice ?? advisorState.data)?.title}
+                                        </h4>
+                                        <SafeHtml
+                                            className="prose prose-sm dark:prose-invert max-w-none"
+                                            html={
+                                                (streamedAdvice ?? advisorState.data)?.content ?? ''
+                                            }
+                                        />
+                                    </Speakable>
+                                    {!advisorState.error && (
+                                        <div className="text-right mt-2">
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={handleSaveResponse}
+                                                disabled={isCurrentResponseSaved}
+                                            >
+                                                {isCurrentResponseSaved ? (
+                                                    <>
+                                                        <PhosphorIcons.CheckCircle
+                                                            className="w-4 h-4 mr-1.5"
+                                                            weight="fill"
+                                                        />
+                                                        {t('strainsView.tips.saved')}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
+                                                        {t('knowledgeView.archive.saveButton')}
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </Card>
+                            )}
                     </div>
                     <p className="text-xs text-slate-500 mt-4 text-center">{t('ai.disclaimer')}</p>
                 </div>

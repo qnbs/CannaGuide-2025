@@ -247,7 +247,13 @@ export async function handlePlantAdvice(
         nl: 'Vat de plantstatus kort samen in het Nederlands.',
     })
     const generated = await generateText(
-        `${instruction}\n${languageConstraint(lang)}\n${summarizePlant(plant)}`,
+        formatJsonPrompt([
+            instruction,
+            languageConstraint(lang),
+            summarizePlant(plant),
+            `Return ONLY valid JSON with this exact shape (keep keys in English, write all string values in ${LANGUAGE_NAMES[lang]}):`,
+            '{"title":"...","content":"..."}',
+        ]),
     )
     if (!generated) {
         return localAiFallbackService.getPlantAdvice(plant, lang)
@@ -285,9 +291,21 @@ export async function handleGardenStatusSummary(
         fr: 'Cree un bref resume de toute la culture.',
         nl: 'Maak een korte samenvatting van de gehele kweek.',
     })
-    const generated = await generateText(`${instruction}\n${languageConstraint(lang)}\n${summary}`)
+    const generated = await generateText(
+        formatJsonPrompt([
+            instruction,
+            languageConstraint(lang),
+            summary,
+            `Return ONLY valid JSON with this exact shape (keep keys in English, write all string values in ${LANGUAGE_NAMES[lang]}):`,
+            '{"title":"...","content":"..."}',
+        ]),
+    )
     if (!generated) {
         return localAiFallbackService.getGardenStatusSummary(plants, lang)
+    }
+    const parsed = parseJsonSafely(AIResponseSchema, generated)
+    if (parsed) {
+        return parsed
     }
     return {
         title: localize(lang, {
@@ -351,10 +369,21 @@ export async function handleGrowLogRagAnswer(
         nl: 'Beantwoord de vraag aan de hand van de kweeklog-context.',
     })
     const generated = await generateText(
-        `${instruction}\n${languageConstraint(lang)}\nQuestion: ${sanitizeText(query)}\nContext:\n${plantSummary}`,
+        formatJsonPrompt([
+            instruction,
+            languageConstraint(lang),
+            `Question: ${sanitizeText(query)}`,
+            `Context:\n${plantSummary}`,
+            `Return ONLY valid JSON with this exact shape (keep keys in English, write all string values in ${LANGUAGE_NAMES[lang]}):`,
+            '{"title":"...","content":"..."}',
+        ]),
     )
     if (!generated) {
         return localAiFallbackService.getGrowLogRagAnswer(query, plantSummary, lang)
+    }
+    const parsed = parseJsonSafely(AIResponseSchema, generated)
+    if (parsed) {
+        return parsed
     }
     return {
         title: localize(lang, {

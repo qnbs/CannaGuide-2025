@@ -188,7 +188,58 @@ const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMes
         content: result,
     }
 }
+const buildAdviceStreamPrompt = (plant: Plant, lang: Language): string => {
+    const isDE = lang === 'de'
+    const instruction = isDE
+        ? 'Gib kurze, strukturierte Anbautipps als CannaGuide AI auf Deutsch. Kein HTML.'
+        : 'Give concise, structured growing advice as CannaGuide AI. No HTML.'
 
+    return [
+        instruction,
+        `Plant: ${plant.name} | ${plant.strain.name} | stage=${plant.stage} | health=${plant.health}`,
+        `Environment: temp=${plant.environment.internalTemperature}C, rh=${plant.environment.internalHumidity}%`,
+        'Return ONLY valid JSON: {"title":"...","content":"..."}',
+    ].join('\n\n')
+}
+
+const buildDiagnosisStreamPrompt = (plant: Plant, lang: Language): string => {
+    const isDE = lang === 'de'
+    const instruction = isDE
+        ? 'Analysiere den Pflanzenstatus als CannaGuide AI und identifiziere Probleme. Kein HTML.'
+        : 'Analyze plant status as CannaGuide AI and identify issues. No HTML.'
+
+    return [
+        instruction,
+        `Plant: ${plant.name} | ${plant.strain.name} | stage=${plant.stage}`,
+        `Health: ${plant.health} | Stress: ${plant.stressLevel}`,
+        `Environment: temp=${plant.environment.internalTemperature}C, rh=${plant.environment.internalHumidity}%, vpd=${plant.environment.vpd}`,
+        'Return ONLY valid JSON: {"title":"...","content":"..."}',
+    ].join('\n\n')
+}
+
+const parseAiStreamResult = (
+    result: string,
+    lang: Language,
+    kind: 'advisor' | 'diagnosis',
+): AIResponse => {
+    try {
+        const parsed = JSON.parse(result) as { title?: string; content?: string }
+        if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
+            return parsed as AIResponse
+        }
+    } catch {
+        // Not valid JSON
+    }
+    const defaultTitle =
+        kind === 'advisor'
+            ? lang === 'de'
+                ? 'KI-Berater'
+                : 'AI Advisor'
+            : lang === 'de'
+              ? 'KI-Diagnose'
+              : 'AI Diagnosis'
+    return { title: defaultTitle, content: result }
+}
 export const aiService = {
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
         return runRouted(
@@ -296,6 +347,48 @@ export const aiService = {
 
         // Non-local: standard batch response
         return this.getMentorResponse(plant, query, lang)
+    },
+
+    /**
+     * Streaming plant advice -- yields tokens as they arrive.
+     * Falls back to batch getPlantAdvice when local AI is unavailable.
+     */
+    async getPlantAdviceStream(
+        plant: Plant,
+        lang: Language,
+        onToken: (token: string, accumulated: string) => void,
+    ): Promise<AIResponse> {
+        if (shouldRouteLocally()) {
+            const local = await getLocalAiService()
+            const prompt = buildAdviceStreamPrompt(plant, lang)
+            const result = await local.generateTextStream(prompt, onToken)
+            if (result) {
+                return parseAiStreamResult(result, lang, 'advisor')
+            }
+            return localAiFallbackService.getPlantAdvice(plant, lang)
+        }
+        return this.getPlantAdvice(plant, lang)
+    },
+
+    /**
+     * Streaming proactive diagnosis -- yields tokens as they arrive.
+     * Falls back to batch getProactiveDiagnosis when local AI is unavailable.
+     */
+    async getProactiveDiagnosisStream(
+        plant: Plant,
+        lang: Language,
+        onToken: (token: string, accumulated: string) => void,
+    ): Promise<AIResponse> {
+        if (shouldRouteLocally()) {
+            const local = await getLocalAiService()
+            const prompt = buildDiagnosisStreamPrompt(plant, lang)
+            const result = await local.generateTextStream(prompt, onToken)
+            if (result) {
+                return parseAiStreamResult(result, lang, 'diagnosis')
+            }
+            return localAiFallbackService.getPlantAdvice(plant, lang)
+        }
+        return this.getProactiveDiagnosis(plant, lang)
     },
 
     async getStrainTips(

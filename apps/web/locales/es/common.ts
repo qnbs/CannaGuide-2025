@@ -133,4 +133,9 @@ export const ai = {
     diagnostics: 'Iniciar diagnostico',
     generating: 'La IA esta pensando...',
     disclaimer: 'Contenido generado por IA. Verifica siempre la informacion critica.',
+    webLlmLoading: {
+        loadingModel: 'Cargando modelo en la cache...',
+        eta: '~{{time}} restante',
+        ariaLabel: 'Progreso de carga del modelo',
+    },
 }

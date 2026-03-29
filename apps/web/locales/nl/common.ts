@@ -132,4 +132,9 @@ export const ai = {
     diagnostics: 'Diagnose starten',
     generating: 'AI denkt na...',
     disclaimer: 'Door AI gegenereerde inhoud. Controleer altijd kritieke informatie.',
+    webLlmLoading: {
+        loadingModel: 'Model wordt in de cache geladen...',
+        eta: '~{{time}} resterend',
+        ariaLabel: 'Voortgang van het laden van het model',
+    },
 }

@@ -46,6 +46,7 @@ import {
     releaseGpu,
 } from './gpuResourceManager'
 import { streamTextGeneration } from './localAiStreamingService'
+import { reportWebLlmProgress, reportWebLlmReady, reportWebLlmError } from './webLlmProgressEmitter'
 import { z } from 'zod'
 
 const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
@@ -316,13 +317,31 @@ class LocalAiService implements BaseAIProvider {
             this.webLlmPromise = (async () => {
                 await acquireGpu('webllm')
                 const PRELOAD_RETRIES = 2
+                const loadStartTime = performance.now()
                 for (let attempt = 0; attempt <= PRELOAD_RETRIES; attempt++) {
                     try {
                         const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
-                        return (await CreateMLCEngine(webLlmId, {
-                            initProgressCallback: (report: unknown) =>
-                                console.debug('[LocalAI][WebLLM]', report),
+                        const engine = (await CreateMLCEngine(webLlmId, {
+                            initProgressCallback: (report: {
+                                progress?: number
+                                text?: string
+                                timeElapsed?: number
+                            }) => {
+                                const elapsed =
+                                    typeof report.timeElapsed === 'number'
+                                        ? report.timeElapsed
+                                        : (performance.now() - loadStartTime) / 1000
+                                reportWebLlmProgress({
+                                    progress:
+                                        typeof report.progress === 'number' ? report.progress : 0,
+                                    text: typeof report.text === 'string' ? report.text : '',
+                                    timeElapsed: elapsed,
+                                })
+                                console.debug('[LocalAI][WebLLM]', report)
+                            },
                         })) as unknown as LocalWebLlmEngine
+                        reportWebLlmReady()
+                        return engine
                     } catch (error) {
                         captureLocalAiError(error, {
                             model: webLlmId,
@@ -337,6 +356,7 @@ class LocalAiService implements BaseAIProvider {
                             '[LocalAI] WebLLM unavailable after retries, falling back to Transformers.js.',
                             error,
                         )
+                        reportWebLlmError('WebLLM failed to load after retries')
                         releaseGpu('webllm')
                         this.webLlmPromise = null
                         return null

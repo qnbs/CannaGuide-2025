@@ -299,6 +299,11 @@ export const ai = {
     diagnostics: 'Diagnose starten',
     generating: 'KI denkt nach...',
     disclaimer: 'KI-generierter Inhalt. Überprüfe kritische Informationen immer.',
+    webLlmLoading: {
+        loadingModel: 'Modell wird in den Cache geladen...',
+        eta: '~{{time}} verbleibend',
+        ariaLabel: 'Fortschritt beim Laden des Modells',
+    },
     prompts: {
         equipmentSystemInstruction:
             'Du bist ein Experte für Cannabis-Anbauberatung. Der Benutzer gibt seine Einschränkungen an und du lieferst eine vollständige Ausrüstungsliste im JSON-Format. Gib spezifische, reale Produktnamen und einen geschätzten Preis in Euro an. Deine Begründung sollte prägnant und hilfreich sein.',

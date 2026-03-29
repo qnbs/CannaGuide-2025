@@ -180,7 +180,140 @@ export interface TerpeneSimilarityResult {
 }
 
 /** External strain API provider identifiers */
-export type StrainApiProvider = 'otreeba' | 'cannlytics'
+export type StrainApiProvider =
+    | 'otreeba'
+    | 'cannlytics'
+    | 'seedfinder'
+    | 'strainapi'
+    | 'cannseek'
+    | 'openthc'
+    | 'cansativa'
+    | 'kushy'
+    | 'community'
+
+/** Cannabis flavonoid names (cannflavins and common plant flavonoids) */
+export type FlavonoidName =
+    | 'Cannflavin A'
+    | 'Cannflavin B'
+    | 'Cannflavin C'
+    | 'Quercetin'
+    | 'Kaempferol'
+    | 'Apigenin'
+    | 'Luteolin'
+    | 'Vitexin'
+    | 'Isovitexin'
+    | 'Orientin'
+    | 'Silymarin'
+    | 'Catechins'
+
+/** Quantitative flavonoid profile (% dry weight) */
+export type FlavonoidProfile = Partial<Record<FlavonoidName, number>>
+
+/** Detailed flavonoid entry with lab statistics */
+export interface FlavonoidProfileEntry {
+    percent: number
+    variance: number
+    stability: 'high' | 'medium' | 'low'
+    sampleCount: number
+}
+
+export type DetailedFlavonoidProfile = Partial<Record<FlavonoidName, FlavonoidProfileEntry>>
+
+/** Data provenance -- tracks where strain data originated */
+export interface DataProvenance {
+    /** Which API/source provided this data */
+    provider: StrainApiProvider
+    /** When this data was fetched/imported (ISO timestamp) */
+    fetchedAt: string
+    /** Provider-specific external ID */
+    externalId?: string
+    /** Whether data is verified by lab results */
+    labVerified: boolean
+    /** Data confidence score (0--1) */
+    confidence: number
+    /** URL to original data source */
+    sourceUrl?: string
+    /** API version or dataset version */
+    dataVersion?: string
+}
+
+/** Lab test result for a specific strain batch */
+export interface LabTestResult {
+    /** Lab name */
+    labName: string
+    /** Test date (ISO timestamp) */
+    testDate: string
+    /** Certificate of Analysis URL */
+    coaUrl?: string
+    /** Batch/lot number */
+    batchId?: string
+    /** Tested cannabinoid percentages */
+    cannabinoids: CannabinoidProfile
+    /** Tested terpene percentages */
+    terpenes?: TerpeneProfile
+    /** Moisture content percentage */
+    moisture?: number
+    /** Passed safety tests (pesticides, heavy metals, microbials) */
+    safetyPassed?: boolean
+    /** Country/jurisdiction of testing */
+    jurisdiction?: string
+}
+
+/** Lineage data for genetic ancestry tracking */
+export interface StrainLineage {
+    /** Direct parent strains */
+    parents: Array<{ name: string; id?: string }>
+    /** Known children/offspring */
+    children?: Array<{ name: string; id?: string }>
+    /** Breeder/creator name */
+    breeder?: string
+    /** Breeder country */
+    breederCountry?: string
+    /** Year first released */
+    yearReleased?: number
+    /** Generation depth (F1, F2, S1, BX, etc.) */
+    generation?: string
+    /** Original landrace or heirloom origins */
+    landraceOrigins?: string[]
+    /** Whether this is a stabilized IBL */
+    isIBL?: boolean
+}
+
+/** Medical/regulatory information for EU/DE market */
+export interface MedicalInfo {
+    /** EU Novel Food status */
+    euNovelFood?: boolean
+    /** EU common catalogue listed (Nutzhanf) */
+    euCatalogListed?: boolean
+    /** German PZN (Pharmazentralnummer) for medical strains */
+    pzn?: string
+    /** Available in German pharmacies */
+    apothekenpflichtig?: boolean
+    /** GMP certified producer */
+    gmpCertified?: boolean
+    /** Irradiation status */
+    irradiated?: boolean
+    /** Country of cultivation */
+    cultivationCountry?: string
+}
+
+/** Strain data quality assessment */
+export interface DataQualityScore {
+    /** Overall quality score (0--1) */
+    overall: number
+    /** Number of independent data sources confirming this data */
+    sourceCount: number
+    /** Has lab-verified cannabinoid data */
+    hasLabData: boolean
+    /** Has real (non-estimated) terpene data */
+    hasRealTerpeneData: boolean
+    /** Has lineage/genetics info */
+    hasLineageData: boolean
+    /** Has flavonoid data */
+    hasFlavonoidData: boolean
+    /** Last curated/reviewed (ISO timestamp) */
+    lastCurated?: string
+}
 
 /** Predicted consumer/therapeutic effect tags from entourage analysis */
 export type EffectTag =
@@ -321,8 +454,20 @@ export interface Strain {
     terpeneProfile?: TerpeneProfile
     /** Full cannabinoid profile beyond THC/CBD */
     cannabinoidProfile?: CannabinoidProfile
+    /** Flavonoid profile (cannflavins, quercetin, etc.) */
+    flavonoidProfile?: FlavonoidProfile
     /** Complete chemovar classification and detailed lab-grade profiles */
     chemovarProfile?: ChemovarProfile
+    /** Genetic lineage and breeder info */
+    lineage?: StrainLineage
+    /** Lab test results (most recent first) */
+    labResults?: LabTestResult[]
+    /** Medical/regulatory info (EU/DE market) */
+    medicalInfo?: MedicalInfo
+    /** Data provenance records from external sources */
+    dataProvenance?: DataProvenance[]
+    /** Data quality assessment */
+    dataQuality?: DataQualityScore
     geneticModifiers: GeneticModifiers
     availability?: SeedAvailability[]
 }

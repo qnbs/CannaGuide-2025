@@ -291,3 +291,82 @@ export async function getAvailabilityForStrain(
     availabilityCache.set(strainId, entry)
     return mock
 }
+
+// ---------------------------------------------------------------------------
+// SeedFinder lineage / breeder data
+// ---------------------------------------------------------------------------
+
+export interface SeedfinderLineageData {
+    parents: Array<{ name: string; type?: string }>
+    breeder?: string
+    breederCountry?: string
+    yearReleased?: number
+    description?: string
+    genetics?: string
+}
+
+const lineageCache = new Map<string, CacheEntry>()
+
+/**
+ * Fetch lineage and breeder information for a strain from SeedFinder.
+ *
+ * Uses the strain info endpoint which returns parent strains and breeder
+ * metadata. Requires VITE_SEEDFINDER_API_KEY.
+ */
+export async function getLineageFromSeedfinder(
+    strainName: string,
+): Promise<SeedfinderLineageData | null> {
+    if (!SEEDFINDER_API_KEY || isLocalOnlyMode()) return null
+
+    const cacheKey = `lineage:${strainName.toLowerCase()}`
+    const cached = lineageCache.get(cacheKey)
+    if (cached && Date.now() < cached.expiresAt) {
+        return cached.data as unknown as SeedfinderLineageData
+    }
+
+    try {
+        const encoded = encodeURIComponent(strainName)
+        const apiUrl = `${SEEDFINDER_BASE}/strain.json?str=${encoded}&ac=${SEEDFINDER_API_KEY}&lng=en&info=1`
+        const json = await fetchViaProxy(apiUrl)
+        if (!json || typeof json !== 'object') return null
+
+        const record = json as Record<string, unknown>
+        if (record['error']) return null
+
+        const parents: Array<{ name: string; type?: string }> = []
+        const parentsObj = record['parents'] ?? record['lineage']
+        if (parentsObj && typeof parentsObj === 'object') {
+            const entries = Array.isArray(parentsObj)
+                ? (parentsObj as Array<Record<string, unknown>>)
+                : Object.values(parentsObj as Record<string, Record<string, unknown>>)
+            for (const p of entries) {
+                if (p && typeof p === 'object') {
+                    const name = String(p['name'] ?? p['strain'] ?? '')
+                    if (name) {
+                        parents.push({ name, type: p['type'] ? String(p['type']) : undefined })
+                    }
+                }
+            }
+        }
+
+        const breeder = record['breeder']
+            ? String(record['breeder'])
+            : (record['breedby'] as string | undefined)
+        const result: SeedfinderLineageData = {
+            parents,
+            breeder: breeder ?? undefined,
+            breederCountry: record['country'] ? String(record['country']) : undefined,
+            yearReleased: record['year'] ? Number(record['year']) || undefined : undefined,
+            description: record['description'] ? String(record['description']) : undefined,
+            genetics: record['genetics'] ? String(record['genetics']) : undefined,
+        }
+
+        lineageCache.set(cacheKey, {
+            data: result as unknown as SeedAvailability[],
+            expiresAt: Date.now() + CACHE_TTL_MS,
+        })
+        return result
+    } catch {
+        return null
+    }
+}

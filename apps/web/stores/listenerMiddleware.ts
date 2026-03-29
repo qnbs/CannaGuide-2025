@@ -1,9 +1,4 @@
-import {
-    createListenerMiddleware,
-    isAnyOf,
-    TypedStartListening,
-    ForkedTask,
-} from '@reduxjs/toolkit'
+import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs/toolkit'
 import type { RootState, AppDispatch } from './store'
 import { i18nInstance, getT, loadLocale, SupportedLocale } from '@/i18n'
 import { Language, Strain, View } from '@/types'
@@ -22,15 +17,7 @@ import {
     processVoiceCommand,
     setVoiceStatusMessage,
 } from './slices/uiSlice'
-import {
-    setSearchTerm,
-    resetAllFilters,
-    setShowFavoritesOnly,
-    setSort,
-    toggleTypeFilter,
-    setAdvancedFilters,
-    setLetterFilter,
-} from './slices/filtersSlice'
+import { useFiltersStore, getFiltersSnapshot } from './useFiltersStore'
 import { urlService } from '@/services/urlService'
 import { ttsService } from '@/services/ttsService'
 
@@ -295,13 +282,13 @@ startAppListening({
                     const searchTerm = transcript.split(/search for|suche nach/i)[1]?.trim()
                     if (searchTerm) {
                         dispatch(setActiveView(View.Strains))
-                        dispatch(setSearchTerm(searchTerm))
+                        useFiltersStore.getState().setSearchTerm(searchTerm)
                     }
                 },
             },
             {
                 match: [t('strainsView.resetFilters').toLowerCase(), 'filter zurücksetzen'],
-                action: () => dispatch(resetAllFilters()),
+                action: () => useFiltersStore.getState().resetAllFilters(),
             },
             {
                 match: [
@@ -311,7 +298,7 @@ startAppListening({
                 ],
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setShowFavoritesOnly(true))
+                    useFiltersStore.getState().setShowFavoritesOnly(true)
                 },
             },
 
@@ -353,42 +340,46 @@ startAppListening({
     },
 })
 
-// --- URL Sync Logic for Strain Filters ---
-let urlUpdateTask: ForkedTask<void> | undefined
+// --- URL Sync Logic for Strain Filters (via Zustand subscription) ---
+let urlSyncTimeout: ReturnType<typeof setTimeout> | undefined
+let getActiveView: (() => View) | null = null
 
-startAppListening({
-    matcher: isAnyOf(
-        setSearchTerm,
-        toggleTypeFilter,
-        setShowFavoritesOnly,
-        setAdvancedFilters,
-        setLetterFilter,
-        resetAllFilters,
-        setSort,
-    ),
-    effect: (_action, listenerApi) => {
-        if (listenerApi.getState().ui.activeView !== View.Strains) {
+/**
+ * Called once from store.ts after the store is created to wire up the
+ * active-view check needed by the URL sync subscription.
+ */
+export const initFilterUrlSync = (viewGetter: () => View): void => {
+    getActiveView = viewGetter
+}
+
+// Subscribe to zustand filter changes and sync URL.
+useFiltersStore.subscribe(
+    (state) => ({
+        searchTerm: state.searchTerm,
+        typeFilter: state.typeFilter,
+        showFavoritesOnly: state.showFavoritesOnly,
+        advancedFilters: state.advancedFilters,
+        letterFilter: state.letterFilter,
+        sortKey: state.sortKey,
+        sortDirection: state.sortDirection,
+    }),
+    () => {
+        if (!getActiveView || getActiveView() !== View.Strains) {
             return
         }
 
-        urlUpdateTask?.cancel()
-
-        urlUpdateTask = listenerApi.fork(async (forkApi) => {
-            // Debounce for 300ms
-            await forkApi.delay(300)
-
-            const filtersState = listenerApi.getState().filters
+        clearTimeout(urlSyncTimeout)
+        urlSyncTimeout = setTimeout(() => {
+            const filtersState = getFiltersSnapshot()
             const queryString = urlService.serializeFiltersToQueryString(filtersState)
-
             const newUrl = queryString
                 ? `${window.location.pathname}?${queryString}`
                 : window.location.pathname
-
-            // Use replaceState to avoid polluting browser history with every minor change
             window.history.replaceState({}, '', newUrl)
-        })
+        }, 300)
     },
-})
+    { equalityFn: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
+)
 
 // --- Centralized Notification Listeners ---
 // NOTE: getT() is called lazily inside each listener to ensure the current language

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { urlService } from '@/services/urlService'
 import { StrainType } from '@/types'
 import { INITIAL_ADVANCED_FILTERS } from '@/constants'
-import type { FiltersState } from '@/stores/slices/filtersSlice'
+import type { FiltersState } from '@/stores/useFiltersStore'
 
 const defaultFilters: FiltersState = {
     searchTerm: '',
@@ -34,7 +34,10 @@ describe('urlService', () => {
         })
 
         it('serializes type filter', () => {
-            const filters = { ...defaultFilters, typeFilter: [StrainType.Indica, StrainType.Sativa] }
+            const filters = {
+                ...defaultFilters,
+                typeFilter: [StrainType.Indica, StrainType.Sativa],
+            }
             const qs = urlService.serializeFiltersToQueryString(filters)
             expect(qs).toContain('t=')
         })
@@ -46,7 +49,11 @@ describe('urlService', () => {
         })
 
         it('serializes sort key and direction', () => {
-            const filters = { ...defaultFilters, sortKey: 'thc' as const, sortDirection: 'desc' as const }
+            const filters = {
+                ...defaultFilters,
+                sortKey: 'thc' as const,
+                sortDirection: 'desc' as const,
+            }
             const qs = urlService.serializeFiltersToQueryString(filters)
             expect(qs).toContain('s=thc-desc')
         })

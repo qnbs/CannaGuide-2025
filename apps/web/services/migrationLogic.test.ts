@@ -266,8 +266,11 @@ describe('migrationLogic', () => {
             strainsView: undefined,
         } as never)
 
-        expect(migrated.strainsView).toBeDefined()
-        expect(migrated.strainsView!.selectedStrainIds).toEqual([])
+        // strainsView was migrated to zustand; migration logic may still produce it
+        // for backward compatibility but it is no longer part of the Redux RootState.
+        const raw = migrated as Record<string, unknown>
+        expect(raw.strainsView).toBeDefined()
+        expect((raw.strainsView as { selectedStrainIds: string[] }).selectedStrainIds).toEqual([])
     })
 
     it('repairs missing archives shape', () => {

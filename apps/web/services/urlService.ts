@@ -1,4 +1,4 @@
-import { FiltersState } from '@/stores/slices/filtersSlice'
+import { FiltersState } from '@/stores/useFiltersStore'
 import {
     StrainType,
     DifficultyLevel,

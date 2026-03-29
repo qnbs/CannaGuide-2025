@@ -173,10 +173,6 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                             CannaGuide 2025
                         </h1>
                     </div>
-                    <h2 className="text-xl font-bold font-display text-primary-300 mb-2">
-                        Choose your language
-                    </h2>
-                    <p className="text-slate-400 mb-6">Select your preferred language</p>
                     <div className="grid grid-cols-2 gap-3 p-2">
                         <Button
                             onClick={() => handleLanguageSelect('de')}

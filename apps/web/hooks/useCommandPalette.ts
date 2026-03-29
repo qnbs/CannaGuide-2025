@@ -596,7 +596,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 keywords: 'language deutsch german de switch locale sprache',
             },
         ],
-        [t, dispatch],
+        [t, dispatch, filtersStore, strainsViewStore],
     )
 
     return { allCommands }

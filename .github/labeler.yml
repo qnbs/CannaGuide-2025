@@ -124,5 +124,4 @@ config:
                 - vite.config.ts
                 - tsconfig.json
                 - eslint.config.js
-                - biome.json
                 - postcss.config.cjs

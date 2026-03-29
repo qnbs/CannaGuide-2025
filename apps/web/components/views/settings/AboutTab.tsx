@@ -114,6 +114,41 @@ const AboutAppContent = memo(() => {
                                 <strong>Phosphor Icons:</strong>{' '}
                                 {t('settingsView.about.credits.phosphor')}
                             </ListItem>
+                            <ListItem icon={<PhosphorIcons.Leafy />}>
+                                <strong>SeedFinder.eu:</strong>{' '}
+                                {t('settingsView.about.credits.seedfinder')}
+                            </ListItem>
+                            <ListItem icon={<PhosphorIcons.Database />}>
+                                <strong>Data Providers:</strong>{' '}
+                                {t('settingsView.about.credits.strainProviders')}
+                            </ListItem>
+                            <ListItem icon={<PhosphorIcons.Brain />}>
+                                <strong>Transformers.js:</strong>{' '}
+                                {t('settingsView.about.credits.transformersJs')}
+                            </ListItem>
+                            <ListItem icon={<PhosphorIcons.Cube />}>
+                                <strong>WebLLM / ONNX:</strong>{' '}
+                                {t('settingsView.about.credits.webLlm')}{' '}
+                                {t('settingsView.about.credits.onnx')}
+                            </ListItem>
+                            <ListItem icon={<PhosphorIcons.GridFour />}>
+                                <strong>UI/Styling:</strong>{' '}
+                                {t('settingsView.about.credits.radixUi')}{' '}
+                                {t('settingsView.about.credits.tailwind')}
+                            </ListItem>
+                            <ListItem icon={<PhosphorIcons.ChartLineUp />}>
+                                <strong>Charts:</strong>{' '}
+                                {t('settingsView.about.credits.recharts')}
+                            </ListItem>
+                            <ListItem icon={<PhosphorIcons.Globe />}>
+                                <strong>CORS Proxies:</strong>{' '}
+                                {t('settingsView.about.credits.corsProxies')}
+                            </ListItem>
+                            <ListItem icon={<PhosphorIcons.Wrench />}>
+                                <strong>Build/Ops:</strong>{' '}
+                                {t('settingsView.about.credits.vite')}{' '}
+                                {t('settingsView.about.credits.sentry')}
+                            </ListItem>
                             <ListItem icon={<PhosphorIcons.CommandLine />}>
                                 <Button asChild variant="secondary" size="sm">
                                     <a

@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-793%2B%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-912%2B%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- AI Development Stack -->
 
@@ -60,7 +60,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with an 15-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 700+ strains · 793+ tests · 51 services · 15 Redux slices + 3 Zustand stores · 16 custom hooks · 13 i18n namespaces · 9 themes · 21 CI workflows
+**Key numbers:** 700+ strains · 912+ tests · 51 services · 15 Redux slices + 3 Zustand stores · 16 custom hooks · 13 i18n namespaces · 9 themes · 20 CI workflows
 
 ---
 
@@ -116,7 +116,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                   |
 | **i18n**           | i18next 25                           | EN/DE/ES/FR/NL, 13 namespaces               |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 793+ unit, E2E, component tests             |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 912+ unit, E2E, component tests             |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay              |
 | **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                      |
 | **Mobile**         | Capacitor                            | iOS/Android wrapper                         |
@@ -131,7 +131,7 @@ Grow simulation from seed to harvest. VPD-based transpiration modeling, biomass 
 
 ### Strains
 
-700+ strain library with full-text search, filtering by type/effects/THC/CBD/terpenes. D3.js genealogy explorer for parent-child lineage visualization. AI-powered growing tips. Breeding lab for cross predictions. Community strain sharing via anonymous GitHub Gists. Daily automated strain updates.
+700+ strain library with full-text search, filtering by type/effects/THC/CBD/terpenes. D3.js genealogy explorer for parent-child lineage visualization. AI-powered growing tips. Breeding lab for cross predictions. Community strain sharing via anonymous GitHub Gists. Daily automated strain updates. Comprehensive terpene profiles (27 terpenes), cannabinoid profiles (11 cannabinoids), chemovar classification (Type I-V), and flavonoid profiles (12 flavonoids with scientific references). Multi-source data integration from 9 external providers (SeedFinder, Otreeba, Cannlytics, The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community) with Zod-validated import, data quality scoring, and provenance tracking. Seedbank availability with real-time pricing via SeedFinder API. Lineage/breeder data enrichment.
 
 ### Equipment
 
@@ -251,7 +251,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- runs across all workspaces)
 npm run dev              # turbo run dev (Vite dev server on localhost:5173)
 npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest, 793+ tests)
+npm test                 # turbo run test (Vitest, 912+ tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -297,7 +297,7 @@ packages/
 src-tauri/                  Tauri v2 desktop config (Rust backend + capabilities)
 scripts/                    Build/lint/security scripts
 docker/                     nginx config, ESP32-mock, Tauri-mock
-.github/                    21 CI/CD workflows, issue templates
+.github/                    20 CI/CD workflows, issue templates
 ```
 
 ---
@@ -310,7 +310,7 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 
 | Job                     | Description                                                                 |
 | ----------------------- | --------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 793+ tests, production build |
+| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 912+ tests, production build |
 | 🛡 Security             | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
 | 🎭 E2E Tests            | Playwright Chromium (needs quality artifact)                                |
 | 🐳 Docker Compose + IoT | ESP32-mock + Tauri-mock healthcheck, sensor endpoint validation             |
@@ -358,15 +358,15 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 > Full details: [ROADMAP.md](ROADMAP.md)
 
-| Version  | Status      | Highlights                                                                                                                                                 |
-| -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Released | 700+ strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                    |
-| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 793+ tests, Tauri v2, Docker IoT mocks, CodeQL, Grype |
-| **v1.2** | 🔄 Planned  | Additional languages (ES, FR, NL), nutrient automation, community marketplace, PDF reports                                                                 |
-| **v1.3** | 📋 Planned  | Additional IoT sensors, timelapse journal, strain comparison, 3D visualizations                                                                            |
-| **v1.4** | 📋 Planned  | Strain-scale program (2,000+ mid-term), infinite discovery feed (news, HD galleries), expanded practical guides and extraction education                   |
-| **v1.5** | 📋 Planned  | Curated DE/EN video hub, scholarly lexicon expansion (endocannabinoid system, pharmacology, botany, genetics), source transparency layer                   |
-| **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                   |
+| Version  | Status         | Highlights                                                                                                                                                                                                                               |
+| -------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Released    | 700+ strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                                                                                                  |
+| **v1.1** | ✅ Released    | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 912+ tests, Tauri v2, Docker IoT mocks, CodeQL, Grype                                                                               |
+| **v1.2** | 🔄 In Progress | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data integration (9 providers), strain curation service, data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
+| **v1.3** | 📋 Planned     | Additional IoT sensors, timelapse journal, strain comparison, 3D visualizations                                                                                                                                                          |
+| **v1.4** | 📋 Planned     | Strain-scale program (2,000+ mid-term), infinite discovery feed (news, HD galleries), expanded practical guides and extraction education                                                                                                 |
+| **v1.5** | 📋 Planned     | Curated DE/EN video hub, scholarly lexicon expansion (endocannabinoid system, pharmacology, botany, genetics), source transparency layer                                                                                                 |
+| **v2.0** | 📋 Planned     | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                                                 |
 
 ### Strategic Expansion Focus (2026-2028)
 
@@ -388,12 +388,32 @@ CannaGuide 2025 was built iteratively through an AI-assisted development process
 | -------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                            | v0.1 → v1.0  |
 | **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                      | Throughout   |
-| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine — feature refinement, security hardening, 793+ tests, CI/CD pipeline, local AI stack, documentation | v1.0 → v1.1+ |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine — feature refinement, security hardening, 912+ tests, CI/CD pipeline, local AI stack, documentation | v1.0 → v1.1+ |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Production deployment, PR previews, desktop/mobile distribution, OpenSSF compliance                                          | Continuous   |
 
 > **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
 
 This transparent documentation of the development process reflects the project's commitment to openness and reproducibility — every line of code was written through human-AI collaboration in the open.
+
+---
+
+## Acknowledgments
+
+CannaGuide 2025 relies on many excellent open-source projects and external services:
+
+**AI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web
+
+**Data Sources:** SeedFinder.eu (strain/breeder/pricing API), Otreeba (strain catalog), Cannlytics (lab analytics), The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community datasets (GitHub/Kaggle)
+
+**Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand
+
+**Security:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, ClusterFuzzLite, OpenSSF Scorecard
+
+**Infrastructure:** GitHub Pages, Netlify, Docker, Tauri (Rust), Capacitor, TurboRepo
+
+**Icons:** Phosphor Icons -- thank you for the beautiful icon set
+
+**CORS Proxies:** allorigins.win, corsproxy.io -- enabling client-side API access
 
 ---
 
@@ -414,7 +434,7 @@ This transparent documentation of the development process reflects the project's
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-793%2B%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-912%2B%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 
@@ -454,7 +474,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 15-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 700+ Sorten · 793+ Tests · 51 Services · 15 Redux Slices + 3 Zustand Stores · 16 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 21 CI-Workflows
+**Kennzahlen:** 700+ Sorten · 912+ Tests · 51 Services · 15 Redux Slices + 3 Zustand Stores · 16 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 20 CI-Workflows
 
 ---
 
@@ -509,7 +529,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 25                           | EN/DE, 13 Namensräume                         |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 793+ Unit-, E2E-, Komponenten-Tests           |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 912+ Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 | **Desktop**        | Tauri v2 (Rust)                      | Nativer Desktop-Wrapper                       |
 | **Mobil**          | Capacitor                            | iOS/Android-Wrapper                           |
@@ -524,7 +544,7 @@ Grow-Simulation von Samen bis Ernte. VPD-basierte Transpirationsmodellierung, Bi
 
 ### Sorten
 
-700+ Sorten-Bibliothek mit Volltextsuche, Filterung nach Typ/Effekte/THC/CBD/Terpene. D3.js Genealogie-Explorer für Eltern-Kind-Abstammungsvisualisierung. KI-gestützte Anbautipps. Zuchtlabor für Kreuzungsvorhersagen. Community-Sorten-Sharing via anonyme GitHub Gists. Tägliche automatisierte Sorten-Updates.
+700+ Sorten-Bibliothek mit Volltextsuche, Filterung nach Typ/Effekte/THC/CBD/Terpene. D3.js Genealogie-Explorer fuer Eltern-Kind-Abstammungsvisualisierung. KI-gestuetzte Anbautipps. Zuchtlabor fuer Kreuzungsvorhersagen. Community-Sorten-Sharing via anonyme GitHub Gists. Taegliche automatisierte Sorten-Updates. Umfassende Terpen-Profile (27 Terpene), Cannabinoid-Profile (11 Cannabinoide), Chemovar-Klassifizierung (Typ I-V) und Flavonoid-Profile (12 Flavonoide mit wissenschaftlichen Referenzen). Multi-Source-Datenintegration von 9 externen Anbietern (SeedFinder, Otreeba, Cannlytics, The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community) mit Zod-validiertem Import, Datenqualitaets-Scoring und Provenienz-Tracking. Seedbank-Verfuegbarkeit mit Echtzeit-Preisen via SeedFinder API. Abstammungs-/Zuechter-Datenanreicherung.
 
 ### Ausrüstung
 
@@ -644,7 +664,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- laeuft ueber alle Workspaces)
 npm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 npm run build            # turbo run build (alle Workspaces)
-npm test                 # turbo run test (Vitest, 793+ Tests)
+npm test                 # turbo run test (Vitest, 912+ Tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -690,7 +710,7 @@ packages/
 src-tauri/                  Tauri v2 Desktop-Konfig (Rust-Backend + Capabilities)
 scripts/                    Build-/Lint-/Sicherheits-Skripte
 docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
-.github/                    21 CI/CD-Workflows, Issue-Templates
+.github/                    20 CI/CD-Workflows, Issue-Templates
 ```
 
 ---
@@ -703,7 +723,7 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 
 | Job                     | Beschreibung                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 793+ Tests, Produktions-Build |
+| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 912+ Tests, Produktions-Build |
 | 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
 | 🎭 E2E Tests            | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🐳 Docker Compose + IoT | ESP32-Mock + Tauri-Mock Healthcheck, Sensor-Endpunkt-Validierung             |
@@ -751,15 +771,15 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 
 > Vollständige Details: [ROADMAP.md](ROADMAP.md)
 
-| Version  | Status            | Highlights                                                                                                                                                  |
-| -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                        |
-| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 793+ Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype |
-| **v1.2** | 🔄 Geplant        | Weitere Sprachen (ES, FR, NL), Nährstoff-Automatisierung, Community-Marktplatz, PDF-Berichte                                                                |
-| **v1.3** | 📋 Geplant        | Weitere IoT-Sensoren, Zeitraffer-Journal, Sorten-Vergleich, 3D-Visualisierungen                                                                             |
-| **v1.4** | 📋 Geplant        | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen        |
-| **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                 |
-| **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                 |
+| Version  | Status            | Highlights                                                                                                                                                                                                                                        |
+| -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                              |
+| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 912+ Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype                                                                                       |
+| **v1.2** | 🔄 In Arbeit      | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (9 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
+| **v1.3** | 📋 Geplant        | Weitere IoT-Sensoren, Zeitraffer-Journal, Sorten-Vergleich, 3D-Visualisierungen                                                                                                                                                                   |
+| **v1.4** | 📋 Geplant        | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen                                                                                              |
+| **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                       |
+| **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                       |
 
 ### Strategische Ausbau-Schwerpunkte (2026-2028)
 
@@ -781,12 +801,32 @@ CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über
 | -------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                            | v0.1 → v1.0    |
 | **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                    | Durchgehend    |
-| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primäre Iterations-Engine — Feature-Verfeinerung, Security-Hardening, 793+ Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 → v1.1+   |
+| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primäre Iterations-Engine — Feature-Verfeinerung, Security-Hardening, 912+ Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 → v1.1+   |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Produktions-Deployment, PR-Previews, Desktop-/Mobil-Distribution, OpenSSF-Compliance                                              | Kontinuierlich |
 
 > **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.
 
 Diese transparente Dokumentation des Entwicklungsprozesses spiegelt das Engagement des Projekts für Offenheit und Reproduzierbarkeit wider — jede Zeile Code wurde durch Mensch-KI-Kollaboration im Offenen geschrieben.
+
+---
+
+## Danksagungen
+
+CannaGuide 2025 basiert auf vielen hervorragenden Open-Source-Projekten und externen Diensten:
+
+**KI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web
+
+**Datenquellen:** SeedFinder.eu (Sorten-/Zuechter-/Preis-API), Otreeba (Sortenkatalog), Cannlytics (Labor-Analytik), The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community-Datensaetze (GitHub/Kaggle)
+
+**Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand
+
+**Sicherheit:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, ClusterFuzzLite, OpenSSF Scorecard
+
+**Infrastruktur:** GitHub Pages, Netlify, Docker, Tauri (Rust), Capacitor, TurboRepo
+
+**Icons:** Phosphor Icons -- Danke fuer das wunderschoene Icon-Set
+
+**CORS-Proxies:** allorigins.win, corsproxy.io -- ermoeglichen clientseitigen API-Zugriff
 
 ---
 

@@ -2,7 +2,22 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-29, Session 6) -- Audit v2 Fixes, Version Bump, Toolchain Cleanup
+## Latest Session (2026-03-30, Session 7) -- Multi-Source Strain Data, Biome Removal, Documentation Overhaul
+
+**Status: v1.2.0-alpha. Multi-source strain data integration shipped (9 providers, terpenes, cannabinoids, chemovar, flavonoids). Biome completely removed. Full documentation audit + acknowledgments added. 912 tests across 94 files. All docs synced.**
+
+### What Was Done (Session 7)
+
+1. **Multi-source strain data integration** -- 9-provider registry (SeedFinder, Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, Kushy, Leafly), Zod validation, quality scoring, provenance tracking, data hydration worker
+2. **Terpene profiles** -- 27 terpenes with aroma, flavor, effect metadata
+3. **Cannabinoid profiles** -- 11 cannabinoids with typed concentration ranges
+4. **Chemovar classification** -- Type I-V with THC:CBD ratio classification
+5. **Flavonoid database** -- 12 compounds with sources, bioavailability, research refs
+6. **Biome completely removed** -- Cleaned from devcontainer, renovaterc, dependabot, labeler, lockfile
+7. **Documentation overhaul** -- README (test counts x14, workflow counts x4, strains sections EN+DE, v1.2 roadmap EN+DE, Acknowledgments EN+DE), CONTRIBUTING, copilot-instructions, ROADMAP all updated
+8. **WorkerBus audit** -- All 6 workers verified on centralized bus protocol
+
+### Previous Session (2026-03-29, Session 6) -- Audit v2 Fixes, Version Bump, Toolchain Cleanup
 
 **Status: v1.2.0-alpha released. Biome dual-toolchain removed. gate:push silent bypass fixed. Test count synced across all docs (793/793, 88 files). CHANGELOG finalized for v1.2.0-alpha. All critical Audit v2 findings resolved.**
 
@@ -32,7 +47,7 @@
 
 ### Architecture Status
 
-- **Redux (15 slices):** simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, tts, sandbox, genealogy, navigation, nutrientPlanner, geminiApi
+- \*\*Re912 tests across 94simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, tts, sandbox, genealogy, navigation, nutrientPlanner, geminiApi
 - **Zustand (3 stores):** useUIStore (modals, views, notifications, voice), useFiltersStore, useStrainsViewStore
 - **Cross-store bridge:** `initUIStoreReduxBridge()` + `getUISnapshot()` for non-React access
 - **Hydration:** Redux from IndexedDB, UI state extracted and hydrated separately into Zustand

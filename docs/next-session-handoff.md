@@ -2,7 +2,72 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-28 late) -- CI Fix + 5-Language Onboarding + Security PR Merge
+## Latest Session (2026-03-29 late) -- localAI.ts Epic Refactoring + UI/UX Fixes + WebLLM Preload UX
+
+**Status: localAI.ts reduced from ~1295 to 649 lines (-50%) via 4 service extractions. 5 UI/UX audit issues fixed (touch targets, ARIA, focus return). WebLLM preload progress bar implemented (pub/sub, no Redux). i18n onboarding fix. Deploy workflow fix. 719/719 tests pass. Zero typecheck errors. Zero breaking changes.**
+
+### What Was Done
+
+1. **Deploy workflow fix** (`f0a0bcb`): Turbo CLI arg fix + cleanup job
+2. **Streaming extraction** (`856639c`): `localAiStreamingService.ts` (163 lines)
+3. **i18n onboarding fix** (`f6e3cc8`): Removed hardcoded text, uses i18n keys
+4. **UI/UX a11y fixes** (`ba2f6ae`): 44x44px touch targets, ARIA labels, focus return across 8 components
+5. **WebLLM progress bar** (`59623e4`): Pub/sub emitter + animated progress in MentorChatView
+6. **WebLLM lifecycle + Diagnosis extraction** (`e09e81a`): `localAiWebLlmService.ts` (219 lines) + `localAiDiagnosisService.ts` (~280 lines)
+7. **Prompt handler extraction** (`6345c3c`): `localAiPromptHandlers.ts` (~320 lines)
+
+### What Is Now Complete From the Audit
+
+- [x] localAI.ts under 650 lines (orchestrator-only, DI pattern)
+- [x] Touch targets 44x44px (6 components)
+- [x] ARIA labels for icon-only buttons
+- [x] Focus-return for nested modals
+- [x] WebLLM loading UX (progress bar with ETA)
+- [x] i18n onboarding hardcoded text removed
+- [x] Streaming logic isolated in dedicated service
+- [x] Monorepo migration complete (apps/web/ + packages/ai-core/)
+- [x] 5-language onboarding (EN/DE/ES/FR/NL)
+- [x] CI pipeline fully green
+
+### Focus for Next Session: Medium-Term Audit Goals
+
+The immediate audit items are resolved. The next session should target Sprint 3-4 goals from `audit-roadmap-2026-q2.md`:
+
+**Priority 1 -- Quality Infrastructure:**
+
+- [ ] Lighthouse CI assertions (Performance >=0.80, A11y >=0.90) -- `lighthouserc.json` + CI job
+- [ ] `security-full.yml` activation (daily CVE scanning)
+- [ ] SonarCloud code smells reduction (354 -> <200) -- cognitive complexity, duplicate strings
+- [ ] Screen-reader labels for chart toggles (`SimulationChart.tsx`)
+- [ ] Mobile E2E assertions against clipping (`tests/e2e/mobile-*.e2e.ts`)
+
+**Priority 2 -- Supply Chain & Scoring:**
+
+- [ ] Signed releases (GPG) + SLSA provenance attestation
+- [ ] OpenSSF Scorecard 10/10 (currently 8.5) -- Code-Review + Signed-Releases checks
+- [ ] CII-Best-Practices badge verification (email pending)
+
+**Priority 3 -- Feature Delivery (v1.2):**
+
+- [ ] Function-calling standardization for AI provider abstraction
+- [ ] Nutrient scheduling MVP with unit tests
+- [ ] Strain comparison tool (side-by-side)
+- [ ] Auto-PDF grow reports
+- [ ] Remaining i18n namespace gaps (plants EN has ~18 more keys than ES/FR/NL)
+
+**Priority 4 -- Vision (v1.3+):**
+
+- [ ] Three.js 3D plant visualization
+- [ ] Real-time ESP32 dashboard + WebSocket
+- [ ] Advanced analytics dashboard
+- [ ] Strain DB expansion (700 -> 2000+)
+
+> **Full Session Review:** [`docs/session-activity-review-2026-03-29.md`](session-activity-review-2026-03-29.md)
+> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+
+---
+
+## Previous Session (2026-03-28 late) -- CI Fix + 5-Language Onboarding + Security PR Merge
 
 **Status: CI pipeline fully fixed (lint:scopes, fuzzing, typecheck all green). 5-language onboarding (EN/DE/ES/FR/NL) with flag icons integrated. PR #99 (harden-runner security) merged. Scorecard pinned-dependencies fix (npm ci). Gemini 3.1 Pro badge added. Monorepo path migration completed (all workflows, Dockerfile, netlify.toml, tauri.conf.json updated to apps/web/dist). 719/719 tests pass. Zero typecheck errors. Build succeeds.**
 

@@ -52,7 +52,7 @@ const SEEDBANKS: Seedbank[] = [
 // ---------------------------------------------------------------------------
 
 const SEEDFINDER_BASE = 'https://en.seedfinder.eu/api/json'
-const SEEDFINDER_API_KEY = 'GKGDWJfHjCKz7kfTjJA6'
+const SEEDFINDER_API_KEY: string = import.meta.env.VITE_SEEDFINDER_API_KEY ?? ''
 
 /** Ordered list of CORS proxies -- first success wins. */
 const CORS_PROXIES = [
@@ -267,8 +267,8 @@ export async function getAvailabilityForStrain(
         return cached.data
     }
 
-    // 2. Try real API (skip in local-only mode)
-    if (strainName && !isLocalOnlyMode()) {
+    // 2. Try real API (skip in local-only mode or when API key is not configured)
+    if (strainName && SEEDFINDER_API_KEY && !isLocalOnlyMode()) {
         try {
             const encodedName = encodeURIComponent(strainName)
             const apiUrl = `${SEEDFINDER_BASE}/strain.json?str=${encodedName}&ac=${SEEDFINDER_API_KEY}&lng=en`

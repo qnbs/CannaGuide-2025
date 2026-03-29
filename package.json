@@ -108,7 +108,7 @@
         "prettier": "^3.8.1",
         "snyk": "^1.1303.2",
         "turbo": "^2.8.21",
-        "typescript": "^5.8.3"
+        "typescript": "^6.0.2"
     },
     "overrides": {
         "serialize-javascript": "7.0.4",

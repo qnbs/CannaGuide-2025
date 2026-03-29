@@ -25,8 +25,8 @@ import type {
     PlantState as VPDPlantState,
     SimulationPoint,
     VPDInput,
-    VPDWorkerResponse,
 } from '@/types/simulation.types'
+import { workerBus } from '@/services/workerBus'
 import {
     calculateVPD as calculateVpdValue,
     getVPDStatus,
@@ -1745,29 +1745,34 @@ const airflowToLevel = (power: Plant['equipment']['exhaustFan']['power']): Airfl
     return power
 }
 
+const VPD_WORKER_NAME = 'vpd'
+
 class VPDSimulationService {
-    private worker: Worker | null = null
+    private registered = false
 
-    private getWorker(): Worker | null {
+    private ensureWorker(): boolean {
         if (typeof Worker === 'undefined') {
-            return null
+            return false
         }
 
-        if (!this.worker) {
-            this.worker = new Worker(
-                new URL('../workers/vpdSimulation.worker.ts', import.meta.url),
-                { type: 'module' },
+        if (!this.registered) {
+            workerBus.register(
+                VPD_WORKER_NAME,
+                new Worker(new URL('../workers/vpdSimulation.worker.ts', import.meta.url), {
+                    type: 'module',
+                }),
             )
+            this.registered = true
         }
 
-        return this.worker
+        return true
     }
 
     /** Terminate the VPD simulation worker and release resources. */
     dispose(): void {
-        if (this.worker) {
-            this.worker.terminate()
-            this.worker = null
+        if (this.registered) {
+            workerBus.unregister(VPD_WORKER_NAME)
+            this.registered = false
         }
     }
 
@@ -1829,9 +1834,7 @@ class VPDSimulationService {
     ): Promise<SimulationPoint[]> {
         const profiles =
             tempProfile && rhProfile ? { tempProfile, rhProfile } : this.createProfiles(input)
-        const worker = this.getWorker()
-
-        if (!worker) {
+        if (!this.ensureWorker()) {
             return Promise.resolve(
                 runDailySimulation(
                     {
@@ -1846,50 +1849,20 @@ class VPDSimulationService {
             )
         }
 
-        return new Promise((resolve, reject) => {
-            const VPD_WORKER_TIMEOUT_MS = 30_000
-            const timer = setTimeout(() => {
-                reject(new Error('VPD daily simulation timed out'))
-            }, VPD_WORKER_TIMEOUT_MS)
-
-            const onMessage = (e: MessageEvent<VPDWorkerResponse>) => {
-                if (e.data.type === 'DAILY_RESULT') {
-                    clearTimeout(timer)
-                    worker.removeEventListener('message', onMessage)
-                    worker.removeEventListener('error', onError)
-                    resolve(e.data.data)
-                }
-            }
-            const onError = (e: ErrorEvent) => {
-                clearTimeout(timer)
-                worker.removeEventListener('message', onMessage)
-                worker.removeEventListener('error', onError)
-                reject(new Error(e.message))
-            }
-
-            worker.addEventListener('message', onMessage)
-            worker.addEventListener('error', onError)
-
-            worker.postMessage({
-                type: 'RUN_DAILY',
-                payload: {
-                    baseInput: {
-                        medium: input.medium,
-                        airflow: input.airflow,
-                        phase: input.phase,
-                        leafTempOffset: input.leafTempOffset,
-                    },
-                    tempProfile: profiles.tempProfile,
-                    rhProfile: profiles.rhProfile,
-                },
-            })
+        return workerBus.dispatch<SimulationPoint[]>(VPD_WORKER_NAME, 'RUN_DAILY', {
+            baseInput: {
+                medium: input.medium,
+                airflow: input.airflow,
+                phase: input.phase,
+                leafTempOffset: input.leafTempOffset,
+            },
+            tempProfile: profiles.tempProfile,
+            rhProfile: profiles.rhProfile,
         })
     }
 
     runGrowthProjection(plant: VPDPlantState, env: VPDInput, days = 7): Promise<VPDPlantState> {
-        const worker = this.getWorker()
-
-        if (!worker) {
+        if (!this.ensureWorker()) {
             let projectedPlant = { ...plant }
             const runDays = Math.max(1, days)
 
@@ -1931,34 +1904,10 @@ class VPDSimulationService {
             return Promise.resolve(projectedPlant)
         }
 
-        return new Promise((resolve, reject) => {
-            const VPD_WORKER_TIMEOUT_MS = 30_000
-            const timer = setTimeout(() => {
-                reject(new Error('VPD growth projection timed out'))
-            }, VPD_WORKER_TIMEOUT_MS)
-
-            const onMessage = (e: MessageEvent<VPDWorkerResponse>) => {
-                if (e.data.type === 'GROWTH_RESULT') {
-                    clearTimeout(timer)
-                    worker.removeEventListener('message', onMessage)
-                    worker.removeEventListener('error', onError)
-                    resolve(e.data.plant)
-                }
-            }
-            const onError = (e: ErrorEvent) => {
-                clearTimeout(timer)
-                worker.removeEventListener('message', onMessage)
-                worker.removeEventListener('error', onError)
-                reject(new Error(e.message))
-            }
-
-            worker.addEventListener('message', onMessage)
-            worker.addEventListener('error', onError)
-
-            worker.postMessage({
-                type: 'RUN_GROWTH',
-                payload: { plant, env, days },
-            })
+        return workerBus.dispatch<VPDPlantState>(VPD_WORKER_NAME, 'RUN_GROWTH', {
+            plant,
+            env,
+            days,
         })
     }
 }

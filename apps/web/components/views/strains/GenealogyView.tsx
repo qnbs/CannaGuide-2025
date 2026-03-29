@@ -31,6 +31,7 @@ import {
     toSelectedStrainId,
     type HighlightMode,
 } from './genealogyViewUtils'
+import { workerBus } from '@/services/workerBus'
 
 interface GenealogyLayoutNode {
     data: GenealogyNode
@@ -138,35 +139,40 @@ const AnalysisPanel = React.memo<{
             setContributions([])
             return
         }
-        const worker = new Worker(
-            new URL('../../../workers/genealogy.worker.ts', import.meta.url),
-            { type: 'module' },
+        const workerName = `genealogy-contributions-${crypto.randomUUID()}`
+        workerBus.register(
+            workerName,
+            new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), {
+                type: 'module',
+            }),
         )
 
-        worker.onmessage = (
-            event: MessageEvent<
-                | {
-                      type: 'CONTRIBUTIONS_RESULT'
-                      contributions: { name: string; contribution: number }[]
-                  }
-                | { type: 'ERROR'; message: string }
-            >,
-        ) => {
-            if (event.data.type === 'CONTRIBUTIONS_RESULT') {
-                setContributions(
-                    Array.isArray(event.data.contributions)
-                        ? event.data.contributions.slice(0, 5)
-                        : [],
-                )
-            } else {
-                console.error('[AnalysisPanel] worker error:', event.data.message)
-                setContributions([])
-            }
+        let cancelled = false
+        workerBus
+            .dispatch<{ contributions: { name: string; contribution: number }[] }>(
+                workerName,
+                'CONTRIBUTIONS',
+                { tree },
+            )
+            .then((data) => {
+                if (!cancelled) {
+                    setContributions(
+                        Array.isArray(data.contributions) ? data.contributions.slice(0, 5) : [],
+                    )
+                }
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    console.error('[AnalysisPanel] worker error:', err)
+                    setContributions([])
+                }
+            })
+            .finally(() => workerBus.unregister(workerName))
+
+        return () => {
+            cancelled = true
+            workerBus.unregister(workerName)
         }
-
-        worker.postMessage({ type: 'CONTRIBUTIONS', tree })
-
-        return () => worker.terminate()
     }, [tree])
 
     const toggleMode = (mode: HighlightMode) => {
@@ -422,40 +428,40 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             setLayoutLinks([])
             return
         }
-        const worker = new Worker(
-            new URL('../../../workers/genealogy.worker.ts', import.meta.url),
-            { type: 'module' },
+        const workerName = `genealogy-layout-${crypto.randomUUID()}`
+        workerBus.register(
+            workerName,
+            new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), {
+                type: 'module',
+            }),
         )
 
-        worker.onmessage = (
-            event: MessageEvent<
-                | {
-                      type: 'LAYOUT_RESULT'
-                      nodes: GenealogyLayoutNode[]
-                      links: GenealogyLayoutLink[]
-                  }
-                | { type: 'ERROR'; message: string }
-            >,
-        ) => {
-            if (event.data.type === 'LAYOUT_RESULT') {
-                setLayoutNodes(event.data.nodes)
-                setLayoutLinks(event.data.links)
-                return
-            }
+        let cancelled = false
+        workerBus
+            .dispatch<{
+                nodes: GenealogyLayoutNode[]
+                links: GenealogyLayoutLink[]
+            }>(workerName, 'LAYOUT', { tree, orientation: layoutOrientation })
+            .then((data) => {
+                if (!cancelled) {
+                    setLayoutNodes(data.nodes)
+                    setLayoutLinks(data.links)
+                }
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    console.error('[GenealogyView] worker error:', err)
+                    setLocalError(t('strainsView.genealogyView.errorCalculatingTree'))
+                    setLayoutNodes([])
+                    setLayoutLinks([])
+                }
+            })
+            .finally(() => workerBus.unregister(workerName))
 
-            console.error('[GenealogyView] worker error:', event.data.message)
-            setLocalError(t('strainsView.genealogyView.errorCalculatingTree'))
-            setLayoutNodes([])
-            setLayoutLinks([])
+        return () => {
+            cancelled = true
+            workerBus.unregister(workerName)
         }
-
-        worker.postMessage({
-            type: 'LAYOUT',
-            tree,
-            orientation: layoutOrientation,
-        })
-
-        return () => worker.terminate()
     }, [tree, layoutOrientation, t])
 
     // ── Handler (alle in try/catch) ──────────────────────────────────

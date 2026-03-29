@@ -4,6 +4,8 @@ import * as d3 from 'd3'
 import { geneticsService } from '@/services/geneticsService'
 import { GENEALOGY_NODE_SIZE, GENEALOGY_NODE_SEPARATION } from '@/constants'
 import type { GenealogyNode, Strain } from '@/types'
+import type { WorkerRequest } from '@/types/workerBus.types'
+import { workerOk, workerErr } from '@/types/workerBus.types'
 
 interface GenealogyLayoutNode {
     data: GenealogyNode
@@ -17,35 +19,43 @@ interface GenealogyLayoutLink {
     targetIndex: number
 }
 
-type GenealogyWorkerMessage =
-    | { type: 'LAYOUT'; tree: GenealogyNode; orientation: 'horizontal' | 'vertical' }
-    | { type: 'CONTRIBUTIONS'; tree: GenealogyNode | null }
-    | {
-          type: 'OFFSPRING_PROFILE'
-          parentA: Strain
-          parentB: Strain
-          phenotypes: {
-              parentA: { vigor: number; resin: number; aroma: number; resistance: number }
-              parentB: { vigor: number; resin: number; aroma: number; resistance: number }
-          }
-      }
+interface LayoutPayload {
+    tree: GenealogyNode
+    orientation: 'horizontal' | 'vertical'
+}
+
+interface ContributionsPayload {
+    tree: GenealogyNode | null
+}
+
+interface OffspringProfilePayload {
+    parentA: Strain
+    parentB: Strain
+    phenotypes: {
+        parentA: { vigor: number; resin: number; aroma: number; resistance: number }
+        parentB: { vigor: number; resin: number; aroma: number; resistance: number }
+    }
+}
 
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
 
-self.onmessage = (event: MessageEvent<GenealogyWorkerMessage>) => {
+self.onmessage = (event: MessageEvent<WorkerRequest>) => {
     if (!isTrustedWorkerMessage(event)) {
         return
     }
 
+    const { messageId, type, payload } = event.data
+
     try {
-        if (event.data.type === 'LAYOUT') {
-            const root = d3.hierarchy(event.data.tree, (node) => node?.children)
+        if (type === 'LAYOUT') {
+            const p = payload as LayoutPayload
+            const root = d3.hierarchy(p.tree, (node) => node?.children)
             const treeLayout = d3
                 .tree<GenealogyNode>()
                 .nodeSize(
-                    event.data.orientation === 'horizontal'
+                    p.orientation === 'horizontal'
                         ? [
                               GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y,
                               GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x,
@@ -75,31 +85,36 @@ self.onmessage = (event: MessageEvent<GenealogyWorkerMessage>) => {
                     indexByNode.get(link.target as d3.HierarchyPointNode<GenealogyNode>) ?? 0,
             }))
 
-            self.postMessage({ type: 'LAYOUT_RESULT', nodes, links })
+            self.postMessage(workerOk(messageId, { nodes, links }))
             return
         }
 
-        if (event.data.type === 'CONTRIBUTIONS') {
-            const contributions = event.data.tree
-                ? geneticsService.calculateGeneticContribution(event.data.tree)
-                : []
-            self.postMessage({ type: 'CONTRIBUTIONS_RESULT', contributions })
+        if (type === 'CONTRIBUTIONS') {
+            const p = payload as ContributionsPayload
+            const contributions = p.tree ? geneticsService.calculateGeneticContribution(p.tree) : []
+            self.postMessage(workerOk(messageId, { contributions }))
             return
         }
 
-        if (event.data.type === 'OFFSPRING_PROFILE') {
+        if (type === 'OFFSPRING_PROFILE') {
+            const p = payload as OffspringProfilePayload
             const result = geneticsService.estimateOffspringProfile(
-                event.data.parentA,
-                event.data.parentB,
-                event.data.phenotypes,
+                p.parentA,
+                p.parentB,
+                p.phenotypes,
             )
-            self.postMessage({ type: 'OFFSPRING_PROFILE_RESULT', result })
+            self.postMessage(workerOk(messageId, { result }))
+            return
         }
+
+        self.postMessage(workerErr(messageId, `Unknown command: ${type}`))
     } catch (error) {
-        self.postMessage({
-            type: 'ERROR',
-            message: error instanceof Error ? error.message : 'Unknown genealogy worker error',
-        })
+        self.postMessage(
+            workerErr(
+                messageId,
+                error instanceof Error ? error.message : 'Unknown genealogy worker error',
+            ),
+        )
     }
 }
 

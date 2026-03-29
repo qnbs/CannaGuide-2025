@@ -31,6 +31,10 @@ import {
     CANNABINOID_DATABASE,
 } from '@/data/terpeneDatabase'
 
+// Allowlists for safe dynamic property access (prevents prototype pollution -- CodeQL js/remote-property-injection)
+const VALID_TERPENE_NAMES: ReadonlySet<string> = new Set(ALL_TERPENE_NAMES)
+const VALID_CANNABINOID_NAMES: ReadonlySet<string> = new Set(Object.keys(CANNABINOID_DATABASE))
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -248,6 +252,7 @@ export const toDetailedTerpeneProfile = (
     const detailed: DetailedTerpeneProfile = {}
     for (const [name, percent] of Object.entries(profile)) {
         if (percent === undefined) continue
+        if (!VALID_TERPENE_NAMES.has(name)) continue
         const variance =
             sampleCount > 1
                 ? percent * 0.15 // Estimated 15% CV from population data
@@ -273,6 +278,7 @@ export const toDetailedCannabinoidProfile = (
     const detailed: DetailedCannabinoidProfile = {}
     for (const [name, percent] of Object.entries(profile)) {
         if (percent === undefined) continue
+        if (!VALID_CANNABINOID_NAMES.has(name)) continue
         const variance = sampleCount > 1 ? percent * 0.1 : percent * 0.2
         const entry: CannabinoidProfileEntry = {
             percent,

@@ -210,11 +210,11 @@ jobs:
                   retention-days: 14
 
     # -------------------------------------------------------------------------
-    # CLEANUP -- remove old skipped/failed workflow runs to keep history clean.
-    # Only the latest successful deploy matters.
+    # CLEANUP -- remove old skipped/failed workflow runs and stale deployments
+    # to keep history clean. Only the latest successful deploy matters.
     # -------------------------------------------------------------------------
     cleanup:
-        name: Cleanup old runs
+        name: Cleanup old runs and deployments
         needs: deploy
         runs-on: ubuntu-latest
         if: success()
@@ -222,6 +222,7 @@ jobs:
         permissions:
             actions: write
             contents: read
+            deployments: write
         steps:
             - name: Delete old skipped and failed runs
               uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
@@ -255,3 +256,50 @@ jobs:
                         }
                       }
                       core.info(`[OK] Deleted ${deleted} old skipped/failed/cancelled runs`);
+
+            - name: Prune old GitHub Pages deployments
+              uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+              with:
+                  script: |
+                      const owner = context.repo.owner;
+                      const repo = context.repo.repo;
+                      const environment = 'github-pages';
+                      const KEEP_COUNT = 3;
+
+                      // Fetch all deployments (newest first by default)
+                      const deployments = await github.paginate(
+                        github.rest.repos.listDeployments,
+                        { owner, repo, environment, per_page: 100 }
+                      );
+
+                      if (deployments.length <= KEEP_COUNT) {
+                        core.info(`[OK] Only ${deployments.length} deployments -- nothing to prune.`);
+                        return;
+                      }
+
+                      // Keep the N most recent, delete the rest
+                      const toDelete = deployments.slice(KEEP_COUNT);
+                      let pruned = 0;
+
+                      for (const dep of toDelete) {
+                        try {
+                          // Mark as inactive (required before deletion)
+                          await github.rest.repos.createDeploymentStatus({
+                            owner,
+                            repo,
+                            deployment_id: dep.id,
+                            state: 'inactive',
+                          });
+                          // Delete the deployment
+                          await github.rest.repos.deleteDeployment({
+                            owner,
+                            repo,
+                            deployment_id: dep.id,
+                          });
+                          pruned++;
+                        } catch (e) {
+                          // Some deployments cannot be deleted (active); skip them
+                          core.debug(`Could not delete deployment ${dep.id}: ${e.message}`);
+                        }
+                      }
+                      core.info(`[OK] Pruned ${pruned} of ${toDelete.length} old deployments (kept ${KEEP_COUNT}).`);

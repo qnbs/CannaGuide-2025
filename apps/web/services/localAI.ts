@@ -18,10 +18,7 @@ import {
     RecommendationSchema,
     StructuredGrowTipsSchema,
 } from '@/types/schemas'
-import {
-    localAiFallbackService,
-    diagnosePlant as diagnoseWithRules,
-} from '@/services/localAiFallbackService'
+import { localAiFallbackService } from '@/services/localAiFallbackService'
 import { captureLocalAiError } from '@/services/sentryService'
 import {
     loadTransformersPipeline,
@@ -39,22 +36,24 @@ import {
     debouncedPersistSnapshot,
 } from './localAiTelemetryService'
 import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
-import {
-    setEvictWebLlmHook,
-    setRehydrateWebLlmHook,
-    acquireGpu,
-    releaseGpu,
-} from './gpuResourceManager'
 import { streamTextGeneration } from './localAiStreamingService'
-import { reportWebLlmProgress, reportWebLlmReady, reportWebLlmError } from './webLlmProgressEmitter'
+import {
+    loadWebLlmEngine,
+    generateWithWebLlm,
+    getWebLlmModelId,
+    disposeWebLlm,
+    type WebLlmDeps,
+} from './localAiWebLlmService'
+import {
+    classifyPlantImage,
+    buildDiagnosisContent,
+    fallbackDiagnosis,
+    VISION_MODEL_ID,
+} from './localAiDiagnosisService'
 import { z } from 'zod'
 
-const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
 /** Fallback text model ID (always the lightweight 0.5B). */
 const ALT_TEXT_MODEL_ID = 'Xenova/Qwen2.5-0.5B-Instruct'
-
-/** Resolve the active WebLLM model ID via the progressive quantization profile. */
-const getWebLlmModelId = (): string | null => getResolvedProfile().webLlmModelId
 
 /** Simple LRU-style inference cache keyed by truncated prompt hash. */
 const INFERENCE_CACHE_MAX = 64
@@ -141,42 +140,6 @@ const calculatePreloadTotalSteps = (
     return total
 }
 
-const ZERO_SHOT_LABELS = [
-    'healthy plant',
-    'nitrogen deficiency',
-    'phosphorus deficiency',
-    'potassium deficiency',
-    'calcium deficiency',
-    'magnesium deficiency',
-    'iron deficiency',
-    'zinc deficiency',
-    'sulfur deficiency',
-    'manganese deficiency',
-    'boron deficiency',
-    'overwatering',
-    'underwatering',
-    'heat stress',
-    'light stress',
-    'light burn',
-    'cold stress',
-    'wind burn',
-    'nutrient burn',
-    'nutrient lockout',
-    'root rot',
-    'powdery mildew',
-    'botrytis bud rot',
-    'spider mites',
-    'fungus gnats',
-    'aphids',
-    'thrips',
-    'whiteflies',
-    'fungal leaf spot',
-    'septoria leaf spot',
-    'tobacco mosaic virus',
-    'pH imbalance',
-    'revegetation stress',
-] as const
-
 const isGerman = (lang: Language) => lang === 'de'
 
 const localized = (lang: Language, de: string, en: string): string => (isGerman(lang) ? de : en)
@@ -185,22 +148,6 @@ const sanitizeText = (value: string): string =>
     DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim()
 
 const supportsWebGpu = (): boolean => typeof navigator !== 'undefined' && 'gpu' in navigator
-
-const ALLOWED_IMAGE_MIME_TYPES = new Set([
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'image/bmp',
-])
-
-const toDataUrl = (base64Image: string, mimeType: string): string => {
-    if (base64Image.startsWith('data:')) {
-        return base64Image
-    }
-    const safeMime = ALLOWED_IMAGE_MIME_TYPES.has(mimeType) ? mimeType : 'image/jpeg'
-    return `data:${safeMime};base64,${base64Image}`
-}
 
 const summarizePlant = (plant: Plant): string =>
     `${sanitizeText(plant.name)} | ${sanitizeText(plant.strain.name)} | stage=${plant.stage} | health=${plant.health.toFixed(0)} | stress=${plant.stressLevel.toFixed(0)} | vpd=${plant.environment.vpd.toFixed(2)} | ph=${plant.medium.ph.toFixed(2)} | ec=${plant.medium.ec.toFixed(2)}`
@@ -212,29 +159,6 @@ const fallbackMentorMessage = (
     lang: Language,
 ): Omit<MentorMessage, 'role'> =>
     localAiFallbackService.getMentorResponse(plant, query, ragContext, lang)
-
-const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisResponse => {
-    const heuristic = diagnoseWithRules(plant, lang)
-    return {
-        title: isGerman(lang)
-            ? `Lokale Diagnose: ${sanitizeText(plant.name)}`
-            : `Local Diagnosis: ${sanitizeText(plant.name)}`,
-        content: heuristic.issues.length > 0 ? heuristic.issues.join('\n') : heuristic.topPriority,
-        confidence: heuristic.issues.length > 0 ? 0.72 : 0.93,
-        immediateActions:
-            heuristic.issues.length > 0
-                ? heuristic.issues.slice(0, 3).join('\n')
-                : heuristic.topPriority,
-        longTermSolution: heuristic.topPriority,
-        prevention: isGerman(lang)
-            ? 'Regelmäßig VPD, pH, EC und Substratfeuchte prüfen.'
-            : 'Check VPD, pH, EC, and substrate moisture regularly.',
-        diagnosis:
-            heuristic.issues.length > 0
-                ? (heuristic.issues[0] ?? heuristic.topPriority)
-                : heuristic.topPriority,
-    }
-}
 
 const formatJsonPrompt = (sections: string[]): string => sections.join('\n\n')
 
@@ -252,7 +176,14 @@ class LocalAiService implements BaseAIProvider {
 
     private textPipelinePromise: Promise<LocalAiPipeline> | null = null
     private visionPipelinePromise: Promise<LocalAiPipeline> | null = null
-    private webLlmPromise: Promise<LocalWebLlmEngine | null> | null = null
+
+    /** Shared deps for WebLLM inference (avoids re-creating on every call). */
+    private readonly webLlmDeps: WebLlmDeps = {
+        createInferenceTimer,
+        persistGeneratedText: (prompt, content, model) =>
+            this.persistGeneratedText(prompt, content, model),
+        timeoutMs: INFERENCE_TIMEOUT_MS,
+    }
 
     private async loadTextPipeline(): Promise<LocalAiPipeline> {
         if (!this.textPipelinePromise) {
@@ -298,101 +229,6 @@ class LocalAiService implements BaseAIProvider {
         return this.visionPipelinePromise
     }
 
-    private async loadWebLlmEngine(): Promise<LocalWebLlmEngine | null> {
-        if (!supportsWebGpu()) {
-            return null
-        }
-        const webLlmId = getWebLlmModelId()
-        if (!webLlmId) {
-            return null
-        }
-        if (!this.webLlmPromise) {
-            // Register hooks so the GPU mutex can evict/rehydrate WebLLM
-            setEvictWebLlmHook(() => this.evictWebLlm())
-            setRehydrateWebLlmHook(() => {
-                // Mark WebLLM as evicted so next chat request re-initializes lazily
-                this._webLlmEvicted = true
-            })
-
-            this.webLlmPromise = (async () => {
-                await acquireGpu('webllm')
-                const PRELOAD_RETRIES = 2
-                const loadStartTime = performance.now()
-                for (let attempt = 0; attempt <= PRELOAD_RETRIES; attempt++) {
-                    try {
-                        const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
-                        const engine = (await CreateMLCEngine(webLlmId, {
-                            initProgressCallback: (report: {
-                                progress?: number
-                                text?: string
-                                timeElapsed?: number
-                            }) => {
-                                const elapsed =
-                                    typeof report.timeElapsed === 'number'
-                                        ? report.timeElapsed
-                                        : (performance.now() - loadStartTime) / 1000
-                                reportWebLlmProgress({
-                                    progress:
-                                        typeof report.progress === 'number' ? report.progress : 0,
-                                    text: typeof report.text === 'string' ? report.text : '',
-                                    timeElapsed: elapsed,
-                                })
-                                console.debug('[LocalAI][WebLLM]', report)
-                            },
-                        })) as unknown as LocalWebLlmEngine
-                        reportWebLlmReady()
-                        return engine
-                    } catch (error) {
-                        captureLocalAiError(error, {
-                            model: webLlmId,
-                            stage: 'webllm',
-                            retryAttempt: attempt,
-                        })
-                        if (attempt < PRELOAD_RETRIES) {
-                            await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)))
-                            continue
-                        }
-                        console.debug(
-                            '[LocalAI] WebLLM unavailable after retries, falling back to Transformers.js.',
-                            error,
-                        )
-                        reportWebLlmError('WebLLM failed to load after retries')
-                        releaseGpu('webllm')
-                        this.webLlmPromise = null
-                        return null
-                    }
-                }
-                return null
-            })()
-        }
-        return this.webLlmPromise
-    }
-
-    /** Whether WebLLM was evicted by the GPU mutex for image generation. */
-    get webLlmEvicted(): boolean {
-        return this._webLlmEvicted
-    }
-    private _webLlmEvicted = false
-
-    /**
-     * Evict the WebLLM engine to free VRAM for image generation.
-     * Called by the GPU resource manager's eviction hook.
-     */
-    private async evictWebLlm(): Promise<void> {
-        console.debug('[LocalAI] Evicting WebLLM engine to free VRAM')
-        const engine = this.webLlmPromise ? await this.webLlmPromise : null
-        if (engine?.unload) {
-            try {
-                await engine.unload()
-            } catch (error) {
-                captureLocalAiError(error, { stage: 'webllm-eviction' })
-            }
-        }
-        this.webLlmPromise = null
-        this._webLlmEvicted = true
-        releaseGpu('webllm')
-    }
-
     private persistGeneratedText(prompt: string, content: string, model: string): void {
         setCached(prompt, content)
         void setCachedInference(prompt, content, {
@@ -400,50 +236,6 @@ class LocalAiService implements BaseAIProvider {
             task: 'text-generation',
         }).catch((error) => captureLocalAiError(error, { stage: 'cache-persist' }))
         debouncedPersistSnapshot()
-    }
-
-    private async tryGenerateWithWebLlm(prompt: string, attempt: number): Promise<string | null> {
-        const webLlm = await this.loadWebLlmEngine()
-        if (!webLlm) {
-            return null
-        }
-
-        try {
-            const timer = createInferenceTimer()
-            const response = await withTimeout(
-                webLlm.chat.completions.create({
-                    messages: [{ role: 'user', content: prompt }],
-                    temperature: 0.5,
-                    max_gen_len: 512,
-                }),
-                INFERENCE_TIMEOUT_MS,
-            )
-            const content = response?.choices?.[0]?.message?.content
-            if (typeof content !== 'string' || content.trim().length === 0) {
-                return null
-            }
-
-            const activeWebLlmId = getWebLlmModelId() ?? 'webllm-unknown'
-            timer.stop({
-                model: activeWebLlmId,
-                task: 'text-generation',
-                backend: 'webllm',
-                tokensGenerated: Math.ceil(content.length / 4),
-            })
-            this.persistGeneratedText(prompt, content, activeWebLlmId)
-            return content
-        } catch (error) {
-            console.debug(
-                `[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`,
-                error,
-            )
-            captureLocalAiError(error, {
-                model: getWebLlmModelId() ?? 'webllm-unknown',
-                stage: 'inference',
-                retryAttempt: attempt,
-            })
-            return null
-        }
     }
 
     private async tryGenerateWithTransformers(
@@ -544,7 +336,7 @@ class LocalAiService implements BaseAIProvider {
         recordCacheMiss()
 
         for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-            const webLlmResult = await this.tryGenerateWithWebLlm(prompt, attempt)
+            const webLlmResult = await generateWithWebLlm(prompt, attempt, this.webLlmDeps)
             if (webLlmResult) {
                 return webLlmResult
             }
@@ -577,7 +369,7 @@ class LocalAiService implements BaseAIProvider {
             getCached,
             setCached,
             loadWebLlmEngine: () =>
-                this.loadWebLlmEngine() as ReturnType<
+                loadWebLlmEngine() as ReturnType<
                     import('./localAiStreamingService').StreamingDeps['loadWebLlmEngine']
                 >,
             getWebLlmModelId,
@@ -697,7 +489,7 @@ class LocalAiService implements BaseAIProvider {
         let webLlmResult: PromiseSettledResult<unknown> | null = null
         if (hasWebLlm) {
             onProgress?.(loaded, totalSteps, 'web-llm')
-            webLlmResult = await Promise.allSettled([this.loadWebLlmEngine()]).then((r) => r[0])
+            webLlmResult = await Promise.allSettled([loadWebLlmEngine()]).then((r) => r[0])
             onProgress?.(++loaded, totalSteps, 'web-llm')
         }
 
@@ -729,206 +521,6 @@ class LocalAiService implements BaseAIProvider {
         }
     }
 
-    private async classifyPlantImage(
-        base64Image: string,
-        mimeType: string,
-    ): Promise<Array<{ label: string; score: number }>> {
-        try {
-            // Guard against oversized images that could cause OOM
-            if (base64Image.length > 5_000_000) {
-                console.debug('[LocalAI] Image too large for local processing, skipping.')
-                return []
-            }
-            const classifier = await this.loadVisionPipeline()
-            const image = await fetch(toDataUrl(base64Image, mimeType)).then((response) =>
-                response.blob(),
-            )
-            const result = await withTimeout(
-                classifier(image, { candidate_labels: [...ZERO_SHOT_LABELS] }),
-                INFERENCE_TIMEOUT_MS,
-            )
-            return Array.isArray(result) ? result : []
-        } catch (error) {
-            console.debug('[LocalAI] Vision classification failed.', error)
-            captureLocalAiError(error, { model: VISION_MODEL_ID, stage: 'vision' })
-            return []
-        }
-    }
-
-    private mapIssueLabel(label: string, lang: Language): string | null {
-        const labelKey = label.toLowerCase()
-        const dictionary: Record<string, { en: string; de: string }> = {
-            'healthy plant': {
-                en: 'The plant appears generally healthy in the local model scan.',
-                de: 'Die Pflanze wirkt im lokalen Modellscan insgesamt gesund.',
-            },
-            'nitrogen deficiency': {
-                en: 'Possible nitrogen deficiency: older leaves may fade or yellow first.',
-                de: 'Möglicher Stickstoffmangel: Ältere Blätter hellen oft zuerst auf.',
-            },
-            'phosphorus deficiency': {
-                en: 'Possible phosphorus deficiency: look for slowed growth and darker foliage.',
-                de: 'Möglicher Phosphormangel: Auf verlangsamtes Wachstum und dunkleres Laub achten.',
-            },
-            'potassium deficiency': {
-                en: 'Possible potassium deficiency: leaf edges may crisp or discolor.',
-                de: 'Möglicher Kaliummangel: Blattränder können bräunen oder austrocknen.',
-            },
-            'calcium deficiency': {
-                en: 'Possible calcium deficiency: new growth may twist or spot.',
-                de: 'Möglicher Calciummangel: Neues Wachstum kann sich verformen oder fleckig werden.',
-            },
-            'magnesium deficiency': {
-                en: 'Possible magnesium deficiency: interveinal chlorosis can appear first on older leaves.',
-                de: 'Möglicher Magnesiummangel: Zwischenadernvergilbung tritt oft zuerst an älteren Blättern auf.',
-            },
-            overwatering: {
-                en: 'Possible overwatering: droopy growth and slow recovery often point to saturated media.',
-                de: 'Mögliche Überwässerung: Hängendes Wachstum und langsame Erholung sprechen oft für zu nasses Substrat.',
-            },
-            underwatering: {
-                en: 'Possible underwatering: leaves may curl, claw, or lose turgor.',
-                de: 'Mögliche Unterwässerung: Blätter können rollen, krallen oder an Spannung verlieren.',
-            },
-            'heat stress': {
-                en: 'Possible heat stress: upward leaf cupping and rapid transpiration may appear.',
-                de: 'Möglicher Hitzestress: Aufwärts gewölbte Blätter und hohe Transpiration sind typische Hinweise.',
-            },
-            'light stress': {
-                en: 'Possible light stress: bleaching or upward leaf posture can indicate too much intensity.',
-                de: 'Möglicher Lichtstress: Aufhellung oder aufgestellte Blätter können auf zu hohe Intensität hinweisen.',
-            },
-            'nutrient burn': {
-                en: 'Possible nutrient burn: dark tips and crisp edges may indicate excess feed.',
-                de: 'Möglicher Nährstoffbrand: Dunkle Spitzen und spröde Ränder deuten oft auf Überdüngung hin.',
-            },
-            'powdery mildew': {
-                en: 'Possible powdery mildew: check for white dusty patches on upper surfaces.',
-                de: 'Möglicher Mehltau: Achte auf weiße, staubige Beläge auf den Blattoberflächen.',
-            },
-            'spider mites': {
-                en: 'Possible spider mites: tiny stippling and webbing should be inspected closely.',
-                de: 'Mögliche Spinnmilben: Auf feine Sprenkelung und Gespinste achten.',
-            },
-            'fungal leaf spot': {
-                en: 'Possible fungal leaf spot: circular lesions may indicate moisture-related disease.',
-                de: 'Mögliche Blattfleckenpilze: Kreisförmige Läsionen können auf feuchtebedingte Probleme hindeuten.',
-            },
-            'iron deficiency': {
-                en: 'Possible iron deficiency: new growth turns pale yellow while veins stay green.',
-                de: 'Möglicher Eisenmangel: Neues Wachstum wird blassgelb, während Blattadern grün bleiben.',
-            },
-            'zinc deficiency': {
-                en: 'Possible zinc deficiency: interveinal chlorosis on newer leaves with stunted growth.',
-                de: 'Möglicher Zinkmangel: Zwischenadernvergilbung an jungen Blättern mit gehemmtem Wachstum.',
-            },
-            'sulfur deficiency': {
-                en: 'Possible sulfur deficiency: uniform yellowing of new leaves.',
-                de: 'Möglicher Schwefelmangel: Gleichmäßige Vergilbung junger Blätter.',
-            },
-            'manganese deficiency': {
-                en: 'Possible manganese deficiency: light yellow areas between veins of young leaves.',
-                de: 'Möglicher Manganmangel: Hellgelbe Bereiche zwischen den Adern junger Blätter.',
-            },
-            'boron deficiency': {
-                en: 'Possible boron deficiency: hollow stems and distorted, thick new growth.',
-                de: 'Möglicher Bormangel: Hohle Stängel und verformtes, verdicktes Neuwachstum.',
-            },
-            'light burn': {
-                en: 'Possible light burn: bleached upper canopy with crispy leaf tips closest to the light.',
-                de: 'Mögliche Lichtverbrennung: Gebleichte obere Krone mit verbrannten Blattspitzen nahe der Lampe.',
-            },
-            'cold stress': {
-                en: 'Possible cold stress: purple stems and slowed growth may signal low temperatures.',
-                de: 'Möglicher Kältestress: Violette Stängel und verlangsamtes Wachstum deuten auf zu niedrige Temperaturen.',
-            },
-            'wind burn': {
-                en: 'Possible wind burn: clawed leaves and uneven canopy from excessive airflow.',
-                de: 'Möglicher Windschaden: Gekrallte Blätter und ungleichmäßiges Blätterdach durch zu starke Belüftung.',
-            },
-            'nutrient lockout': {
-                en: 'Possible nutrient lockout: deficiency symptoms despite feeding – check pH and EC.',
-                de: 'Mögliche Nährstoffblockade: Mangelsymptome trotz Düngung – pH und EC prüfen.',
-            },
-            'root rot': {
-                en: 'Possible root rot: brown, slimy roots and persistent wilting despite adequate moisture.',
-                de: 'Mögliche Wurzelfäule: Braune, schleimige Wurzeln und anhaltendes Welken trotz ausreichend Feuchtigkeit.',
-            },
-            'botrytis bud rot': {
-                en: 'Possible botrytis (bud rot): gray mold on buds, often starts inside dense colas.',
-                de: 'Mögliche Botrytis (Blütenfäule): Grauschimmel an Buds, beginnt oft in dichten Blüten.',
-            },
-            'fungus gnats': {
-                en: 'Possible fungus gnats: tiny black flies near soil surface; larvae damage roots.',
-                de: 'Mögliche Trauermücken: Kleine schwarze Fliegen an der Substratoberfläche; Larven schädigen Wurzeln.',
-            },
-            aphids: {
-                en: 'Possible aphids: clusters of small soft-bodied insects on stems and undersides of leaves.',
-                de: 'Mögliche Blattläuse: Ansammlungen kleiner Insekten an Stängeln und Blattunterseiten.',
-            },
-            thrips: {
-                en: 'Possible thrips: silver streaks on leaves and tiny elongated insects.',
-                de: 'Mögliche Thripse: Silberne Streifen auf Blättern und winzige, längliche Insekten.',
-            },
-            whiteflies: {
-                en: 'Possible whiteflies: small white moths on leaf undersides; sticky honeydew residue.',
-                de: 'Mögliche Weiße Fliegen: Kleine weiße Falter an Blattunterseiten; klebrige Honigtau-Rückstände.',
-            },
-            'septoria leaf spot': {
-                en: 'Possible septoria: yellow-brown spots with dark borders on lower leaves.',
-                de: 'Mögliche Septoria: Gelb-braune Flecken mit dunklem Rand an unteren Blättern.',
-            },
-            'tobacco mosaic virus': {
-                en: 'Possible TMV: mosaic-patterned discoloration with curled and stunted leaves.',
-                de: 'Möglicher Tabakmosaikvirus: Mosaik-artige Verfärbungen mit eingerollten und verkümmerten Blättern.',
-            },
-            'pH imbalance': {
-                en: 'Possible pH imbalance: multiple deficiency symptoms at once, check and adjust root zone pH.',
-                de: 'Mögliches pH-Ungleichgewicht: Mehrere Mangelsymptome gleichzeitig – pH in der Wurzelzone prüfen und anpassen.',
-            },
-            'revegetation stress': {
-                en: 'Possible revegetation stress: unusual leaf shapes from light-cycle interruption.',
-                de: 'Möglicher Revegetationsstress: Ungewöhnliche Blattformen durch Unterbrechung des Lichtzyklus.',
-            },
-        }
-
-        const entry = dictionary[labelKey]
-        if (!entry) return null
-        const localized = entry as Record<string, string>
-        return localized[lang] ?? localized['en'] ?? null
-    }
-
-    private buildDiagnosisContent(
-        plant: Plant,
-        lang: Language,
-        labels: Array<{ label: string; score: number }>,
-    ): PlantDiagnosisResponse {
-        const heuristic = diagnoseWithRules(plant, lang)
-        const rankedIssues = labels
-            .filter((item) => item.label.toLowerCase() !== 'healthy plant')
-            .slice(0, 4)
-            .map((item) => this.mapIssueLabel(item.label, lang))
-            .filter((value): value is string => Boolean(value))
-
-        const mergedIssues = [...rankedIssues, ...heuristic.issues]
-        const fallbackScore = mergedIssues.length > 0 ? 0.75 : 0.95
-        const topScore = labels[0]?.score ?? fallbackScore
-
-        return {
-            title: isGerman(lang)
-                ? `Lokale Diagnose: ${plant.name}`
-                : `Local Diagnosis: ${plant.name}`,
-            content: mergedIssues.length > 0 ? mergedIssues.join('\n') : heuristic.topPriority,
-            confidence: Math.max(0.1, Math.min(1, topScore)),
-            immediateActions: mergedIssues.slice(0, 3).join('\n') || heuristic.topPriority,
-            longTermSolution: heuristic.topPriority,
-            prevention: isGerman(lang)
-                ? 'Licht, Bewässerung, VPD und Nährstoffversorgung im Verlauf dokumentieren.'
-                : 'Track light, watering, VPD, and feeding over time.',
-            diagnosis: mergedIssues[0] || heuristic.topPriority,
-        }
-    }
-
     async diagnosePlant(
         base64Image: string,
         mimeType: string,
@@ -936,8 +528,13 @@ class LocalAiService implements BaseAIProvider {
         userNotes: string,
         lang: Language,
     ): Promise<PlantDiagnosisResponse> {
-        const labels = await this.classifyPlantImage(base64Image, mimeType)
-        const modelDiagnosis = this.buildDiagnosisContent(plant, lang, labels)
+        const labels = await classifyPlantImage(
+            base64Image,
+            mimeType,
+            () => this.loadVisionPipeline(),
+            INFERENCE_TIMEOUT_MS,
+        )
+        const modelDiagnosis = buildDiagnosisContent(plant, lang, labels)
         const notes = sanitizeText(userNotes)
 
         if (labels.length === 0) {
@@ -1237,35 +834,12 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
 
     /** Release all loaded model pipelines and WebLLM engine to free GPU/WASM memory. */
     dispose(): void {
-        if (this.webLlmPromise) {
-            releaseGpu('webllm')
-        }
+        disposeWebLlm()
         this.textPipelinePromise = null
         this.visionPipelinePromise = null
-        this.webLlmPromise = null
-        this._webLlmEvicted = false
         clearPipelineCache()
         clearInferenceCache()
     }
-}
-
-interface LocalWebLlmEngine {
-    chat: {
-        completions: {
-            create: (request: {
-                messages: Array<{ role: 'user'; content: string }>
-                temperature: number
-                max_gen_len: number
-                stream?: boolean
-            }) => Promise<{
-                choices?: Array<{
-                    message?: { content?: string }
-                }>
-            }>
-        }
-    }
-    /** Unload model weights from VRAM. Safe to call multiple times. */
-    unload?: () => Promise<void>
 }
 
 export interface LocalAiPreloadReport {

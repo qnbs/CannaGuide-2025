@@ -330,9 +330,19 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                         </div>
                         <Button
                             variant="secondary"
+                            size="icon"
                             onClick={() => dispatch(toggleFavorite(strain.id))}
                             aria-pressed={isFavorite}
-                            className={`favorite-btn-glow !h-11 !w-11 !p-0 ${isFavorite ? 'is-favorite' : ''}`}
+                            aria-label={
+                                isFavorite
+                                    ? t('strainsView.accessibility.removeFromFavorites', {
+                                          name: strain.name,
+                                      })
+                                    : t('strainsView.accessibility.addToFavorites', {
+                                          name: strain.name,
+                                      })
+                            }
+                            className={`favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
                         >
                             <PhosphorIcons.Heart
                                 weight={isFavorite ? 'fill' : 'regular'}

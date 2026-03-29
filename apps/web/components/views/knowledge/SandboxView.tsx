@@ -44,7 +44,12 @@ const SavedExperimentCard: React.FC<{
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button size="sm" variant="danger" onClick={onDelete}>
+                    <Button
+                        size="icon"
+                        variant="danger"
+                        onClick={onDelete}
+                        aria-label={t('common.delete')}
+                    >
                         <PhosphorIcons.TrashSimple />
                     </Button>
                 </div>

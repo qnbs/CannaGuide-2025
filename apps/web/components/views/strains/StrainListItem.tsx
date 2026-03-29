@@ -77,7 +77,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
             onSelect(strain)
         }, [onSelect, strain])
         const cardClassName = `relative bg-slate-800/60 rounded-lg transition-all duration-200 ring-1 ring-inset ring-white/20 ${isSelected ? 'bg-primary-900/30 ring-2 !ring-primary-500' : 'hover:bg-slate-700/50'}`
-        const favoriteButtonClassName = `!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`
+        const favoriteButtonClassName = `transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`
 
         return (
             <div style={style} className={cardClassName}>
@@ -153,21 +153,19 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                     <div className="flex items-center gap-1.5 ml-auto pointer-events-auto">
                         <Button
                             variant="ghost"
-                            size="sm"
-                            className="!p-2"
+                            size="icon"
                             onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
                                 handleActionClick(e, () =>
                                     dispatch(initiateGrowFromStrainList(strain)),
                                 )
                             }
-                            title={t('strainsView.startGrowing')}
                             aria-label={t('strainsView.startGrowing')}
                         >
                             <PhosphorIcons.Plant className="w-5 h-5 text-primary-300" />
                         </Button>
                         <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             className={favoriteButtonClassName}
                             onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
                                 handleActionClick(e, () => onToggleFavorite(strain.id))

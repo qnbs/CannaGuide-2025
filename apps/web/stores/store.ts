@@ -5,7 +5,6 @@ import type { ForkedTask } from '@reduxjs/toolkit'
 import simulationReducer from './slices/simulationSlice'
 import uiReducer, { initialState as initialUiState, setActiveView } from './slices/uiSlice'
 import settingsReducer from './slices/settingsSlice'
-import strainsViewReducer from './slices/strainsViewSlice'
 import userStrainsReducer from './slices/userStrainsSlice'
 import favoritesReducer from './slices/favoritesSlice'
 import notesReducer from './slices/notesSlice'
@@ -15,12 +14,12 @@ import knowledgeReducer from './slices/knowledgeSlice'
 import breedingReducer from './slices/breedingSlice'
 import ttsReducer from './slices/ttsSlice'
 import sandboxReducer from './slices/sandboxSlice'
-import filtersReducer from './slices/filtersSlice'
 import genealogyReducer from './slices/genealogySlice'
 import navigationReducer from './slices/navigationSlice'
 import nutrientPlannerReducer from './slices/nutrientPlannerSlice'
 import { geminiApi } from './api'
 import { listenerMiddleware } from './listenerMiddleware'
+import { initFilterUrlSync } from './listenerMiddleware'
 import { indexedDBStorage } from './indexedDBStorage'
 import { migrateState } from '../services/migrationLogic'
 import { REDUX_STATE_KEY } from '@/constants'
@@ -29,7 +28,6 @@ const rootReducer = combineReducers({
     simulation: simulationReducer,
     ui: uiReducer,
     settings: settingsReducer,
-    strainsView: strainsViewReducer,
     userStrains: userStrainsReducer,
     favorites: favoritesReducer,
     notes: notesReducer,
@@ -39,7 +37,6 @@ const rootReducer = combineReducers({
     breeding: breedingReducer,
     tts: ttsReducer,
     sandbox: sandboxReducer,
-    filters: filtersReducer,
     genealogy: genealogyReducer,
     navigation: navigationReducer,
     nutrientPlanner: nutrientPlannerReducer,
@@ -128,6 +125,9 @@ export const createAppStore = async (): Promise<AppStore> => {
     }
 
     const store = makeStore(preloadedState)
+
+    // Wire up zustand filter URL sync with access to the Redux store's active view
+    initFilterUrlSync(() => store.getState().ui.activeView)
 
     // After store creation, set the initial view. Prioritize user's default setting over last active view.
     if (preloadedState?.settings?.settings?.general?.defaultView) {

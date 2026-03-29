@@ -11,8 +11,6 @@ import notesReducer from '@/stores/slices/notesSlice'
 import archivesReducer from '@/stores/slices/archivesSlice'
 import breedingReducer from '@/stores/slices/breedingSlice'
 import knowledgeReducer from '@/stores/slices/knowledgeSlice'
-import filtersReducer from '@/stores/slices/filtersSlice'
-import strainsViewReducer from '@/stores/slices/strainsViewSlice'
 import userStrainsReducer from '@/stores/slices/userStrainsSlice'
 import sandboxReducer from '@/stores/slices/sandboxSlice'
 import savedItemsReducer from '@/stores/slices/savedItemsSlice'
@@ -31,8 +29,6 @@ const rootReducer = combineReducers({
     archives: archivesReducer,
     breeding: breedingReducer,
     knowledge: knowledgeReducer,
-    filters: filtersReducer,
-    strainsView: strainsViewReducer,
     userStrains: userStrainsReducer,
     sandbox: sandboxReducer,
     savedItems: savedItemsReducer,

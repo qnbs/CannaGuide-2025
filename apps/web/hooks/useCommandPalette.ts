@@ -19,17 +19,15 @@ import {
     setKnowledgeViewTab,
 } from '@/stores/slices/uiSlice'
 import { setSetting, toggleSetting } from '@/stores/slices/settingsSlice'
-import { resetAllFilters, toggleTypeFilter } from '@/stores/slices/filtersSlice'
-import {
-    setStrainsViewTab,
-    setStrainsViewMode,
-    clearStrainSelection,
-} from '@/stores/slices/strainsViewSlice'
+import { useFiltersStore } from '@/stores/useFiltersStore'
+import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
 import { waterAllPlants } from '@/stores/slices/simulationSlice'
 
 export const useCommandPalette = (): { allCommands: Command[] } => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
+    const filtersStore = useFiltersStore
+    const strainsViewStore = useStrainsViewStore
 
     const allCommands: Command[] = useMemo(
         () => [
@@ -131,7 +129,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 title: t('commandPalette.commands.resetFilters'),
                 group: 'Strains',
                 icon: PhosphorIcons.FunnelSimple,
-                action: () => dispatch(resetAllFilters()),
+                action: () => filtersStore.getState().resetAllFilters(),
                 keywords: 'reset clear filters all',
             },
             {
@@ -141,7 +139,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.Heart,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setStrainsViewTab(StrainViewTab.Favorites))
+                    strainsViewStore.getState().setStrainsViewTab(StrainViewTab.Favorites)
                 },
                 keywords: 'favorites liked bookmarks hearts',
             },
@@ -152,7 +150,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.Leafy,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(toggleTypeFilter(StrainType.Sativa))
+                    filtersStore.getState().toggleTypeFilter(StrainType.Sativa)
                 },
                 keywords: 'filter sativa type energetic uplifting',
             },
@@ -163,7 +161,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.Leafy,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(toggleTypeFilter(StrainType.Indica))
+                    filtersStore.getState().toggleTypeFilter(StrainType.Indica)
                 },
                 keywords: 'filter indica type relaxing sedating',
             },
@@ -174,7 +172,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.Leafy,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(toggleTypeFilter(StrainType.Hybrid))
+                    filtersStore.getState().toggleTypeFilter(StrainType.Hybrid)
                 },
                 keywords: 'filter hybrid type balanced',
             },
@@ -183,7 +181,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 title: t('commandPalette.commands.clearSelection'),
                 group: 'Strains',
                 icon: PhosphorIcons.Broom,
-                action: () => dispatch(clearStrainSelection()),
+                action: () => strainsViewStore.getState().clearStrainSelection(),
                 keywords: 'clear deselect uncheck selection',
             },
             {
@@ -194,7 +192,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.ListBullets,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setStrainsViewMode('list'))
+                    strainsViewStore.getState().setStrainsViewMode('list')
                 },
                 keywords: 'list view mode table rows',
             },
@@ -206,7 +204,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.GridFour,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setStrainsViewMode('grid'))
+                    strainsViewStore.getState().setStrainsViewMode('grid')
                 },
                 keywords: 'grid view mode cards tiles',
             },
@@ -222,7 +220,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.ListChecks,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setStrainsViewTab(StrainViewTab.All))
+                    strainsViewStore.getState().setStrainsViewTab(StrainViewTab.All)
                 },
                 keywords: 'all strains tab browse catalog',
             },
@@ -236,7 +234,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.Person,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setStrainsViewTab(StrainViewTab.MyStrains))
+                    strainsViewStore.getState().setStrainsViewTab(StrainViewTab.MyStrains)
                 },
                 keywords: 'my strains custom personal',
             },
@@ -250,7 +248,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.TreeStructure,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setStrainsViewTab(StrainViewTab.Genealogy))
+                    strainsViewStore.getState().setStrainsViewTab(StrainViewTab.Genealogy)
                 },
                 keywords: 'genealogy tree lineage family genetics',
             },
@@ -264,7 +262,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 icon: PhosphorIcons.Flask,
                 action: () => {
                     dispatch(setActiveView(View.Strains))
-                    dispatch(setStrainsViewTab(StrainViewTab.BreedingLab))
+                    strainsViewStore.getState().setStrainsViewTab(StrainViewTab.BreedingLab)
                 },
                 keywords: 'breeding lab cross punnett genetics',
             },

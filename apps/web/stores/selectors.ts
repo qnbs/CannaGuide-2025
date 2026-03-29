@@ -17,7 +17,6 @@ import {
     Language,
     Theme,
     AiMode,
-    StrainViewTab,
     Seed,
     SavedExperiment,
 } from '@/types'
@@ -26,7 +25,6 @@ import { UIState } from './slices/uiSlice'
 import { FavoritesState } from './slices/favoritesSlice'
 import { ArchivesState } from './slices/archivesSlice'
 import { TtsState } from './slices/ttsSlice'
-import { StrainsViewState } from './slices/strainsViewSlice'
 import { BreedingState } from './slices/breedingSlice'
 import { SettingsState } from './slices/settingsSlice'
 
@@ -38,7 +36,6 @@ const selectFavoritesState = (state: RootState): FavoritesState => state.favorit
 export const selectArchives = (state: RootState): ArchivesState => state.archives
 const selectTts = (state: RootState): TtsState => state.tts
 export const selectSimulation = (state: RootState): SimulationState => state.simulation
-export const selectStrainsView = (state: RootState): StrainsViewState => state.strainsView
 const selectKnowledge = (state: RootState) => state.knowledge
 const selectBreeding = (state: RootState) => state.breeding
 const selectSandbox = (state: RootState) => state.sandbox
@@ -303,21 +300,6 @@ export const selectGardenHealthMetrics = createSelector(
             avgVPD: totalVpd / activePlantsCount,
         }
     },
-)
-
-// --- Strains View Selectors ---
-export const selectStrainsViewState = selectStrainsView
-export const selectActiveStrainViewTab = createSelector(
-    [selectStrainsView],
-    (view: StrainsViewState): StrainViewTab => view.strainsViewTab,
-)
-export const selectStrainsViewMode = createSelector(
-    [selectStrainsView],
-    (view: StrainsViewState): 'list' | 'grid' => view.strainsViewMode,
-)
-export const selectSelectedStrainIds = createSelector(
-    [selectStrainsView],
-    (view: StrainsViewState): Set<string> => new Set(view.selectedStrainIds),
 )
 
 // --- Knowledge & Breeding Selectors ---

@@ -5,23 +5,17 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { strainService } from '@/services/strainService'
 import { useStrainFilters } from '@/hooks/useStrainFilters'
 import { urlService } from '@/services/urlService'
-import { hydrateFilters } from '@/stores/slices/filtersSlice'
+import { useFiltersStore } from '@/stores/useFiltersStore'
 import {
     selectUserStrains,
     selectUserStrainIds,
     selectFavoriteIds,
     selectSettings,
-    selectStrainsView,
     selectSavedStrainTips,
     selectSavedExports,
     selectSavedExportsCount,
 } from '@/stores/selectors'
-import {
-    setStrainsViewTab,
-    toggleStrainSelection,
-    clearStrainSelection,
-    setSelectedStrainId,
-} from '@/stores/slices/strainsViewSlice'
+import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
 import { closeAddModal, addNotification, closeExportModal } from '@/stores/slices/uiSlice'
 import {
     toggleFavorite,
@@ -126,14 +120,14 @@ export const StrainsView: React.FC = () => {
     const [_currentPage, setCurrentPage] = useState(1)
 
     const settings = useAppSelector(selectSettings)
-    const strainsViewState = useAppSelector(selectStrainsView)
-    const strainsViewTab = strainsViewState?.strainsViewTab ?? StrainViewTab.All
-    const strainsViewMode = strainsViewState?.strainsViewMode ?? 'list'
+    const strainsViewState = useStrainsViewStore()
+    const strainsViewTab = strainsViewState.strainsViewTab
+    const strainsViewMode = strainsViewState.strainsViewMode
     const selectedStrainIds = useMemo(
-        () => strainsViewState?.selectedStrainIds ?? [],
-        [strainsViewState?.selectedStrainIds],
+        () => strainsViewState.selectedStrainIds,
+        [strainsViewState.selectedStrainIds],
     )
-    const selectedStrainId = strainsViewState?.selectedStrainId ?? null
+    const selectedStrainId = strainsViewState.selectedStrainId
     const selectedStrainForDetail = useMemo(
         () => allStrains.find((s) => s.id === selectedStrainId) || null,
         [allStrains, selectedStrainId],
@@ -161,10 +155,10 @@ export const StrainsView: React.FC = () => {
         if (queryString) {
             const parsedState = urlService.parseQueryStringToFilterState(queryString)
             if (Object.keys(parsedState).length > 0) {
-                dispatch(hydrateFilters(parsedState))
+                useFiltersStore.getState().hydrateFilters(parsedState)
             }
         }
-    }, [dispatch])
+    }, [])
 
     const viewIcons = useMemo(
         () => ({
@@ -406,8 +400,8 @@ export const StrainsView: React.FC = () => {
     }, [])
 
     const handleClearSelection = useCallback(() => {
-        dispatch(clearStrainSelection())
-    }, [dispatch])
+        strainsViewState.clearStrainSelection()
+    }, [strainsViewState])
 
     const handleAddSelectedToFavorites = useCallback(() => {
         dispatch(addMultipleToFavorites(selectedStrainIds))
@@ -455,7 +449,7 @@ export const StrainsView: React.FC = () => {
             )
         ) {
             selectedIdsSet.forEach((id) => dispatch(deleteUserStrain(id)))
-            dispatch(clearStrainSelection())
+            strainsViewState.clearStrainSelection()
         }
     }, [strainsViewTab, selectedIdsSet, t, dispatch])
 
@@ -499,16 +493,16 @@ export const StrainsView: React.FC = () => {
 
     const handleSelect = useCallback(
         (strain: Strain) => {
-            dispatch(setSelectedStrainId(strain.id))
+            strainsViewState.setSelectedStrainId(strain.id)
         },
-        [dispatch],
+        [strainsViewState],
     )
 
     const handleToggleSelection = useCallback(
         (id: string) => {
-            dispatch(toggleStrainSelection(id))
+            strainsViewState.toggleStrainSelection(id)
         },
-        [dispatch],
+        [strainsViewState],
     )
 
     if (selectedStrainForDetail) {
@@ -516,7 +510,7 @@ export const StrainsView: React.FC = () => {
             <div className="animate-fade-in">
                 <StrainDetailView
                     strain={selectedStrainForDetail}
-                    onBack={() => dispatch(setSelectedStrainId(null))}
+                    onBack={() => strainsViewState.setSelectedStrainId(null)}
                 />
             </div>
         )
@@ -651,7 +645,7 @@ export const StrainsView: React.FC = () => {
 
             <StrainSubNav
                 activeTab={strainsViewTab}
-                onTabChange={(id) => dispatch(setStrainsViewTab(id))}
+                onTabChange={(id) => strainsViewState.setStrainsViewTab(id)}
                 counts={{ tips: savedTips.length, exports: savedExportsCount }}
             />
 

@@ -8,7 +8,7 @@ import { StrainType, SortKey, SortDirection } from '@/types'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
 import { AlphabeticalFilter } from '@/components/views/strains/AlphabeticalFilter'
-import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice'
+import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
 
 interface StrainToolbarProps {
     searchTerm: string
@@ -27,6 +27,7 @@ interface StrainToolbarProps {
 const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
+    const setStrainsViewMode = useStrainsViewStore((s) => s.setStrainsViewMode)
     const {
         searchTerm,
         onSearchTermChange,
@@ -143,7 +144,7 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                     )}
                 </Button>
                 <Button
-                    onClick={() => dispatch(setStrainsViewMode(nextViewMode))}
+                    onClick={() => setStrainsViewMode(nextViewMode)}
                     variant="secondary"
                     className="!p-2.5"
                     aria-label={t('strainsView.toggleView')}

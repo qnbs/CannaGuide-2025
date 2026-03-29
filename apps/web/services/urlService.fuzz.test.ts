@@ -3,7 +3,7 @@ import fc from 'fast-check'
 import { urlService } from '@/services/urlService'
 import { StrainType } from '@/types'
 import { INITIAL_ADVANCED_FILTERS } from '@/constants'
-import type { FiltersState } from '@/stores/slices/filtersSlice'
+import type { FiltersState } from '@/stores/useFiltersStore'
 
 const defaultFilters: FiltersState = {
     searchTerm: '',

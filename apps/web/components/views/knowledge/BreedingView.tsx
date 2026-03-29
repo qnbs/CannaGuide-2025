@@ -73,9 +73,9 @@ const ParentSlot: React.FC<{
                         </p>
                     </div>
                     <Button
-                        size="sm"
+                        size="icon"
                         variant="danger"
-                        className="!absolute top-1 right-1 !p-1"
+                        className="!absolute top-1 right-1"
                         onClick={onClear}
                         aria-label={t('knowledgeView.breeding.clearParent', { title })}
                     >

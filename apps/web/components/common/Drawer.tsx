@@ -9,6 +9,8 @@ interface DrawerProps {
     description?: string
     footer?: React.ReactNode
     size?: Exclude<DialogWrapperSize, '4xl'>
+    onOpenAutoFocus?: (event: Event) => void
+    onCloseAutoFocus?: (event: Event) => void
 }
 
 export const Drawer: React.FC<DrawerProps> = ({
@@ -19,6 +21,8 @@ export const Drawer: React.FC<DrawerProps> = ({
     description,
     footer,
     size = 'md',
+    onOpenAutoFocus,
+    onCloseAutoFocus,
 }) => {
     return (
         <DialogWrapper
@@ -30,6 +34,8 @@ export const Drawer: React.FC<DrawerProps> = ({
             size={size}
             variant="drawer"
             enableSwipeToClose
+            onOpenAutoFocus={onOpenAutoFocus}
+            onCloseAutoFocus={onCloseAutoFocus}
         >
             {children}
         </DialogWrapper>

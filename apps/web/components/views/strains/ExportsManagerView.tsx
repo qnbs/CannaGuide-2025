@@ -109,18 +109,18 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
                                 <Button
-                                    size="sm"
+                                    size="icon"
                                     variant="secondary"
                                     onClick={() => setPendingDownloadExport(exp)}
-                                    title={t('common.downloadAgain')}
+                                    aria-label={t('common.downloadAgain')}
                                 >
                                     <PhosphorIcons.DownloadSimple />
                                 </Button>
                                 <Button
-                                    size="sm"
+                                    size="icon"
                                     variant="danger"
                                     onClick={() => setPendingDeleteId(exp.id)}
-                                    title={t('common.delete')}
+                                    aria-label={t('common.delete')}
                                 >
                                     <PhosphorIcons.TrashSimple />
                                 </Button>

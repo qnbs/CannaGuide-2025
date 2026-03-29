@@ -249,12 +249,10 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
         setIsExportModalOpen(false)
     }
 
-    const groupedSortButtonClass = `!p-2.5 !rounded-md ${
+    const groupedSortButtonClass = `${
         sortMode === 'grouped' ? '!bg-slate-700 !text-primary-300' : ''
     }`
-    const dateSortButtonClass = `!p-2.5 !rounded-md ${
-        sortMode === 'date' ? '!bg-slate-700 !text-primary-300' : ''
-    }`
+    const dateSortButtonClass = `${sortMode === 'date' ? '!bg-slate-700 !text-primary-300' : ''}`
 
     const hasNoSavedTips = savedTips.length === 0
     const hasNoFilteredTips = filteredTips.length === 0
@@ -413,25 +411,30 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                     />
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-center">
-                    <Button variant="secondary" onClick={() => setIsExportModalOpen(true)}>
+                    <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => setIsExportModalOpen(true)}
+                        aria-label={t('common.export')}
+                    >
                         <PhosphorIcons.DownloadSimple className="w-5 h-5" />
                     </Button>
                     <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
                         <Button
                             variant="ghost"
+                            size="icon"
                             onClick={() => setSortMode('grouped')}
                             className={groupedSortButtonClass}
                             aria-label={t('strainsView.tips.sortOptions.grouped')}
-                            title={t('strainsView.tips.sortOptions.grouped')}
                         >
                             <PhosphorIcons.GridFour className="w-5 h-5" />
                         </Button>
                         <Button
                             variant="ghost"
+                            size="icon"
                             onClick={() => setSortMode('date')}
                             className={dateSortButtonClass}
                             aria-label={t('strainsView.tips.sortOptions.date')}
-                            title={t('strainsView.tips.sortOptions.date')}
                         >
                             <PhosphorIcons.ListBullets className="w-5 h-5" />
                         </Button>

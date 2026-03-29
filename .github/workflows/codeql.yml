@@ -42,7 +42,7 @@ jobs:
                   queries: security-and-quality
                   config: |
                       paths-ignore:
-                          - dist/**
+                          - apps/web/dist/**
                           - node_modules/**
                           - coverage/**
                           - test-results/**

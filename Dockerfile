@@ -20,7 +20,7 @@ RUN npm run build
 FROM cgr.dev/chainguard/nginx:latest@sha256:770994a6d14bfd17a34fcf0503e13f5f7c4cf6327b0ec6636f4607cb7dd91afc AS runtime
 
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
-COPY --from=build --chown=65532:65532 /app/dist /usr/share/nginx/html
+COPY --from=build --chown=65532:65532 /app/apps/web/dist /usr/share/nginx/html
 
 USER 65532
 

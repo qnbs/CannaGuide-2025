@@ -4,7 +4,7 @@
 
 ## Latest Session (2026-03-28 late) -- CI Fix + 5-Language Onboarding + Security PR Merge
 
-**Status: CI pipeline fully fixed (lint:scopes, fuzzing, typecheck all green). 5-language onboarding (EN/DE/ES/FR/NL) with flag icons integrated. PR #99 (harden-runner security) merged. Scorecard pinned-dependencies fix (npm ci). Gemini 3.1 Pro badge added. 719/719 tests pass. Zero typecheck errors. Build succeeds.**
+**Status: CI pipeline fully fixed (lint:scopes, fuzzing, typecheck all green). 5-language onboarding (EN/DE/ES/FR/NL) with flag icons integrated. PR #99 (harden-runner security) merged. Scorecard pinned-dependencies fix (npm ci). Gemini 3.1 Pro badge added. Monorepo path migration completed (all workflows, Dockerfile, netlify.toml, tauri.conf.json updated to apps/web/dist). 719/719 tests pass. Zero typecheck errors. Build succeeds.**
 
 ### Session Summary
 

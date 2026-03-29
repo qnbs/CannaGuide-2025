@@ -20,6 +20,9 @@ updates:
                   - '@xenova/*'
                   - '@tensorflow/*'
                   - 'onnxruntime-web'
+              update-types:
+                  - minor
+                  - patch
           testing:
               patterns:
                   - '@vitest/*'
@@ -28,6 +31,9 @@ updates:
                   - '@testing-library/*'
                   - 'fake-indexeddb'
                   - 'msw'
+              update-types:
+                  - minor
+                  - patch
           ui-and-styling:
               patterns:
                   - '@radix-ui/*'
@@ -35,6 +41,9 @@ updates:
                   - 'class-variance-authority'
                   - 'clsx'
                   - 'recharts'
+              update-types:
+                  - minor
+                  - patch
           security:
               patterns:
                   - 'dompurify'
@@ -54,6 +63,9 @@ updates:
                   - 'rollup-plugin-*'
                   - 'postcss'
                   - 'autoprefixer'
+              update-types:
+                  - minor
+                  - patch
           linting:
               patterns:
                   - 'eslint'
@@ -61,6 +73,18 @@ updates:
                   - '@eslint/*'
                   - '@typescript-eslint/*'
                   - 'prettier'
+              update-types:
+                  - minor
+                  - patch
+          core-toolchain:
+              patterns:
+                  - 'typescript'
+                  - '@commitlint/*'
+                  - 'husky'
+                  - 'lint-staged'
+              update-types:
+                  - minor
+                  - patch
     - package-ecosystem: github-actions
       directory: '/'
       schedule:

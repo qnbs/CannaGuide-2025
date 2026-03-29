@@ -296,6 +296,11 @@ export const ai = {
     diagnostics: 'Start Diagnosis',
     generating: 'AI is thinking...',
     disclaimer: 'AI-generated content. Always verify critical information.',
+    webLlmLoading: {
+        loadingModel: 'Loading model into cache...',
+        eta: '~{{time}} remaining',
+        ariaLabel: 'Model loading progress',
+    },
     prompts: {
         equipmentSystemInstruction:
             'You are an expert cannabis cultivation advisor. The user will provide their constraints and you will provide a full equipment list in JSON format. Provide specific, real product names and an estimated price in Euros. Your rationale should be concise and helpful.',

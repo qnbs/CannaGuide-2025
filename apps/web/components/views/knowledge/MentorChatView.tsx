@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
+import { ModelLoadingProgress } from '@/components/common/ModelLoadingProgress'
 import { Textarea } from '@/components/ui/textarea'
 import { useGetMentorResponseMutation } from '@/stores/api'
 import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice'
@@ -269,6 +270,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                     <Message key={msg.id} message={msg} />
                 ))}
                 {isLoading && <AiLoadingIndicator loadingMessage={t('ai.generating')} />}
+                <ModelLoadingProgress />
                 <div ref={messagesEndRef} />
             </div>
             <p className="text-xs text-slate-500 italic px-1 pt-2">{t('ai.disclaimer')}</p>

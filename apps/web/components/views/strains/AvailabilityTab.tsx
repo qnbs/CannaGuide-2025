@@ -103,7 +103,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ strain }) => {
         setIsLoading(true)
         setError(null)
 
-        getAvailabilityForStrain(strain.id)
+        getAvailabilityForStrain(strain.id, strain.name)
             .then((data) => {
                 if (!cancelled) {
                     setItems(data)

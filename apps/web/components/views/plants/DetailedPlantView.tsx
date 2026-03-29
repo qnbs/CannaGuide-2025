@@ -13,6 +13,7 @@ import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab'
 import { useAppDispatch } from '@/stores/store'
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
+import { calculateVPD } from '@/lib/vpd/calculator'
 
 interface DetailedPlantViewProps {
     plant: Plant
@@ -171,6 +172,15 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     const openProblems = plant.problems.filter((p) => p.status === 'active').length
     const stageBadgeColor = getStageBadgeColor(plant.stage)
 
+    // VPD zone assessment for header alert
+    const currentVpd = useMemo(
+        () =>
+            calculateVPD(plant.environment.internalTemperature, plant.environment.internalHumidity),
+        [plant.environment.internalTemperature, plant.environment.internalHumidity],
+    )
+    const vpdCritical = currentVpd < 0.4 || currentVpd > 1.6
+    const vpdWarn = !vpdCritical && (currentVpd < 0.8 || currentVpd > 1.2)
+
     const header = (
         <header className="relative">
             <div className="flex items-center justify-between">
@@ -185,6 +195,26 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                             {openProblems} {t('plantsView.warnings.title')}
                         </span>
                     </div>
+                )}
+                {(vpdCritical || vpdWarn) && (
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('environment')}
+                        className={`flex items-center gap-1.5 rounded-full px-3 py-1 ring-1 ring-inset transition-colors ${
+                            vpdCritical
+                                ? 'bg-red-500/15 ring-red-400/30'
+                                : 'bg-amber-500/15 ring-amber-400/30'
+                        }`}
+                    >
+                        <PhosphorIcons.ChartLineUp
+                            className={`w-4 h-4 ${vpdCritical ? 'text-red-400' : 'text-amber-400'}`}
+                        />
+                        <span
+                            className={`text-xs font-bold ${vpdCritical ? 'text-red-300' : 'text-amber-300'}`}
+                        >
+                            VPD {currentVpd.toFixed(2)}
+                        </span>
+                    </button>
                 )}
             </div>
             <div className="mt-4 text-center space-y-3">

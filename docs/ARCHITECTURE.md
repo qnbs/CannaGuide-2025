@@ -16,6 +16,7 @@
 | Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                      |
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                           |
 | i18n         | i18next -- EN, DE, ES, FR, NL (13 namespaces)                                 |
+| Workers      | WorkerBus (promise-based, 6 workers, messageId correlation, auto-timeout)     |
 | Testing      | Vitest 793+ unit tests, Playwright E2E + Component tests                      |
 | Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor              |
 
@@ -75,7 +76,8 @@ apps/web/                 Main PWA (@cannaguide/web)
   data/                   Static data: 700+ strains, FAQ, lexicon, guides
   locales/                i18n translations: en/, de/, es/, fr/, nl/
   hooks/                  14+ custom React hooks
-  workers/                Web Workers: VPD sim, genealogy, scenarios
+  workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen
+  services/workerBus.ts   Centralized promise-based WorkerBus (6 workers, timeout, messageId)
   utils/                  Shared utilities (secureRandom, etc.)
   types/                  Zod schemas for AI response validation
   lib/                    cn() utility, VPD calculation library

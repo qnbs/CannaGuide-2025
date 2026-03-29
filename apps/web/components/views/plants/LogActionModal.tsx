@@ -26,7 +26,7 @@ import { Select } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
 import { CameraModal } from '@/components/common/CameraModal'
 import { dbService } from '@/services/dbService'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { resizeImage } from '@/services/imageService'
 import { photoTimelineService } from '@/services/photoTimelineService'
@@ -84,12 +84,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     ).timelineLabel
                 }
             } catch {
-                dispatch(
-                    addNotification({
+                getUISnapshot().addNotification({
                         message: t('plantsView.aiDiagnostics.saveImageError'),
                         type: 'error',
-                    }),
-                )
+                    })
             }
         } else {
             entryType = typeMapping[type] || JournalEntryType.Observation
@@ -191,12 +189,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         } catch (err) {
                             console.error('Image resizing failed:', err)
                             setImage(dataUrl) // fallback to original
-                            dispatch(
-                                addNotification({
+                            getUISnapshot().addNotification({
                                     message: t('common.imageResizeFailed'),
                                     type: 'error',
-                                }),
-                            )
+                                })
                         }
                         setIsCameraOpen(false)
                     }}
@@ -327,12 +323,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                                 } catch (err) {
                                                     console.error('Image resizing failed:', err)
                                                     setImage(dataUrl)
-                                                    dispatch(
-                                                        addNotification({
+                                                    getUISnapshot().addNotification({
                                                             message: t('common.imageResizeFailed'),
                                                             type: 'error',
-                                                        }),
-                                                    )
+                                                        })
                                                 }
                                             }
                                         }}

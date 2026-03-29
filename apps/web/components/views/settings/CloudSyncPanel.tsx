@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { syncService } from '@/services/syncService'
 import { generateSyncEncryptionKey } from '@/services/syncEncryptionService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
@@ -38,24 +38,20 @@ const CloudSyncPanel: React.FC = () => {
     const handleGenerateEncryptionKey = async (): Promise<void> => {
         const key = await generateSyncEncryptionKey()
         dispatch(setSetting({ path: 'data.cloudSync.encryptionKeyBase64', value: key }))
-        dispatch(
-            addNotification({
-                type: 'success',
-                message: String(t('settingsView.data.sync.e2ee.keyGenerated')),
-            }),
-        )
+        getUISnapshot().addNotification({
+            type: 'success',
+            message: String(t('settingsView.data.sync.e2ee.keyGenerated')),
+        })
     }
     const browserWindow = typeof window === 'undefined' ? null : window
 
     const handleCopyEncryptionKey = async (): Promise<void> => {
         if (!cloudSync.encryptionKeyBase64) return
         await navigator.clipboard.writeText(cloudSync.encryptionKeyBase64)
-        dispatch(
-            addNotification({
-                type: 'success',
-                message: String(t('settingsView.data.sync.e2ee.keyCopied')),
-            }),
-        )
+        getUISnapshot().addNotification({
+            type: 'success',
+            message: String(t('settingsView.data.sync.e2ee.keyCopied')),
+        })
     }
 
     const handleToggleSync = (): void => {
@@ -74,7 +70,7 @@ const CloudSyncPanel: React.FC = () => {
         try {
             const stateJson = await indexedDBStorage.getItem(REDUX_STATE_KEY)
             if (!stateJson) {
-                dispatch(addNotification({ type: 'error', message: 'No state to sync.' }))
+                getUISnapshot().addNotification({ type: 'error', message: 'No state to sync.' })
                 return
             }
 
@@ -85,23 +81,19 @@ const CloudSyncPanel: React.FC = () => {
             )
             dispatch(setSetting({ path: 'data.cloudSync.gistId', value: result.gistId }))
             dispatch(setSetting({ path: 'data.cloudSync.lastSyncAt', value: result.syncedAt }))
-            dispatch(
-                addNotification({
-                    type: 'success',
-                    message: String(t('settingsView.data.sync.pushSuccess')),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'success',
+                message: String(t('settingsView.data.sync.pushSuccess')),
+            })
         } catch (error) {
             console.error('[CloudSync] Push failed:', error)
-            dispatch(
-                addNotification({
-                    type: 'error',
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : String(t('settingsView.data.sync.pushFailed', { status: 'unknown' })),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'error',
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : String(t('settingsView.data.sync.pushFailed', { status: 'unknown' })),
+            })
         } finally {
             setIsPushing(false)
         }
@@ -117,26 +109,22 @@ const CloudSyncPanel: React.FC = () => {
 
             const result = await syncService.pullFromGist(gistRef, cloudSync.encryptionKeyBase64)
             await indexedDBStorage.setItem(REDUX_STATE_KEY, result.state)
-            dispatch(
-                addNotification({
-                    type: 'success',
-                    message: String(t('settingsView.data.sync.pullSuccess')),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'success',
+                message: String(t('settingsView.data.sync.pullSuccess')),
+            })
             if (browserWindow) {
                 setTimeout(() => browserWindow.location.reload(), 1000)
             }
         } catch (error) {
             console.error('[CloudSync] Pull failed:', error)
-            dispatch(
-                addNotification({
-                    type: 'error',
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : String(t('settingsView.data.sync.pullFailed', { status: 'unknown' })),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'error',
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : String(t('settingsView.data.sync.pullFailed', { status: 'unknown' })),
+            })
             setIsPulling(false)
         }
     }

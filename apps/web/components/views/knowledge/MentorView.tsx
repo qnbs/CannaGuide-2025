@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from '@/components/common/Button'
 import { useActivePlants } from '@/hooks/useSimulationBridge'
-import { useAppDispatch } from '@/stores/store'
-import { setActiveMentorPlantId } from '@/stores/slices/uiSlice'
+import { useUIStore } from '@/stores/useUIStore'
 import { KnowledgeArticle, Plant } from '@/types'
 import { knowledgeBase } from '@/data/knowledgebase'
 import { Select } from '@/components/ui/form'
@@ -41,7 +40,6 @@ const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
 
 export const MentorView: React.FC = () => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
     const activePlants = useActivePlants()
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null)
 
@@ -98,7 +96,9 @@ export const MentorView: React.FC = () => {
                             })}
                         />
                         <Button
-                            onClick={() => dispatch(setActiveMentorPlantId(selectedPlantId))}
+                            onClick={() =>
+                                useUIStore.getState().setActiveMentorPlantId(selectedPlantId)
+                            }
                             disabled={!selectedPlantId}
                             className="w-full"
                         >
@@ -116,7 +116,9 @@ export const MentorView: React.FC = () => {
             {selectedPlantForHub && relevantArticles.length > 0 && (
                 <div className="mt-4">
                     <h3 className="text-xl font-bold font-display text-slate-100 mb-2">
-                        {t('knowledgeView.hub.todaysFocus', { plantName: selectedPlantForHub.name })}
+                        {t('knowledgeView.hub.todaysFocus', {
+                            plantName: selectedPlantForHub.name,
+                        })}
                     </h3>
                     <details
                         className="group glass-pane rounded-lg overflow-hidden ring-1 ring-inset ring-white/20"

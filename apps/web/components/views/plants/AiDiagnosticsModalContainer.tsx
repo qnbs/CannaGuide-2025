@@ -1,29 +1,27 @@
-import React from 'react';
-import { AiDiagnosticsModal } from './AiDiagnosticsModal';
-import { selectPlantById, selectIsDiagnosticsModalOpen, selectDiagnosticsPlantId } from '@/stores/selectors';
-import { useAppSelector, useAppDispatch } from '@/stores/store';
-import { closeDiagnosticsModal } from '@/stores/slices/uiSlice';
-import { useDiagnosePlantMutation } from '@/stores/api';
-
+import React from 'react'
+import { AiDiagnosticsModal } from './AiDiagnosticsModal'
+import { selectPlantById } from '@/stores/selectors'
+import { useAppSelector } from '@/stores/store'
+import { useUIStore } from '@/stores/useUIStore'
+import { useDiagnosePlantMutation } from '@/stores/api'
 
 export const AiDiagnosticsModalContainer: React.FC = () => {
-    const dispatch = useAppDispatch();
-    const isDiagnosticsModalOpen = useAppSelector(selectIsDiagnosticsModalOpen);
-    const diagnosticsPlantId = useAppSelector(selectDiagnosticsPlantId);
-    const plant = useAppSelector(selectPlantById(diagnosticsPlantId));
+    const isDiagnosticsModalOpen = useUIStore((s) => s.isDiagnosticsModalOpen)
+    const diagnosticsPlantId = useUIStore((s) => s.diagnosticsPlantId)
+    const plant = useAppSelector(selectPlantById(diagnosticsPlantId))
 
     // The mutation hook is now in the container that controls its lifecycle.
     const [diagnosePlant, { isLoading, data, error, reset }] = useDiagnosePlantMutation(
-        diagnosticsPlantId ? { fixedCacheKey: `plant-diagnosis-${diagnosticsPlantId}` } : {}
-    );
+        diagnosticsPlantId ? { fixedCacheKey: `plant-diagnosis-${diagnosticsPlantId}` } : {},
+    )
 
     const handleClose = () => {
-        dispatch(closeDiagnosticsModal());
-        reset(); // Explicitly reset the mutation state when the user closes the modal.
-    };
+        useUIStore.getState().closeDiagnosticsModal()
+        reset() // Explicitly reset the mutation state when the user closes the modal.
+    }
 
     if (!isDiagnosticsModalOpen || !plant) {
-        return null;
+        return null
     }
 
     return (
@@ -36,5 +34,5 @@ export const AiDiagnosticsModalContainer: React.FC = () => {
             error={error}
             resetDiagnosis={reset}
         />
-    );
-};
+    )
+}

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from '@/hooks/useForm'
 import { Modal } from '@/components/common/Modal'
 import { useAppDispatch } from '@/stores/store'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { Input, FormSection } from '@/components/ui/form'
 import { createStrainObject } from '@/services/strainFactory'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
@@ -182,7 +182,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
 
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
-            dispatch(addNotification({ message: Object.values(errors).join(' '), type: 'error' }))
+            getUISnapshot().addNotification({ message: Object.values(errors).join(' '), type: 'error' })
         }
     }, [errors, dispatch])
 

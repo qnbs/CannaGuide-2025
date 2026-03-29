@@ -1,6 +1,5 @@
 import React, { memo } from 'react'
-import { useAppSelector } from '@/stores/store'
-import { selectHighlightedElement } from '@/stores/selectors'
+import { useUIStore } from '@/stores/useUIStore'
 
 interface VitalBarProps {
     label: string
@@ -22,7 +21,7 @@ const getBarColor = (value: number, min: number, max: number): string => {
 
 export const VitalBar: React.FC<VitalBarProps> = memo(
     ({ label, value, min, max, unit = '', highlightId, icon }) => {
-        const highlightedElement = useAppSelector(selectHighlightedElement)
+        const highlightedElement = useUIStore((s) => s.highlightedElement)
         const range = max - min
         const margin = range * 0.5
         const displayMin = min - margin

@@ -4,10 +4,9 @@ import { Button } from './Button'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { Language } from '@/types'
-import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { useAppDispatch } from '@/stores/store'
 import { setSetting } from '@/stores/slices/settingsSlice'
-import { setOnboardingStep } from '@/stores/slices/uiSlice'
-import { selectOnboardingStep } from '@/stores/selectors'
+import { useUIStore } from '@/stores/useUIStore'
 import { FlagDE, FlagEN, FlagES, FlagFR, FlagNL } from '@/components/icons/Flags'
 import { i18nInstance, loadLocale, SupportedLocale } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
@@ -67,7 +66,8 @@ function ChoiceCard({
 export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onClose }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    const step = useAppSelector(selectOnboardingStep)
+    const step = useUIStore((s) => s.onboardingStep)
+    const setOnboardingStep = useUIStore((s) => s.setOnboardingStep)
 
     const [experience, setExperience] = useState<ExperienceLevel>('beginner')
     const [growGoal, setGrowGoal] = useState<GrowGoal>('recreational')
@@ -113,11 +113,11 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         }
         await i18nInstance.changeLanguage(lang)
         dispatch(setSetting({ path: 'general.language', value: lang }))
-        dispatch(setOnboardingStep(1))
+        setOnboardingStep(1)
     }
 
-    const handleNext = () => dispatch(setOnboardingStep(step + 1))
-    const handleBack = () => dispatch(setOnboardingStep(step - 1))
+    const handleNext = () => setOnboardingStep(step + 1)
+    const handleBack = () => setOnboardingStep(step - 1)
 
     const handleFinish = () => {
         const aiTipsExperienceByLevel: Record<

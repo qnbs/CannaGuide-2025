@@ -1,32 +1,37 @@
-import React from 'react';
-import { Modal } from '@/components/common/Modal';
-import { Button } from '@/components/common/Button';
-import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch } from '@/stores/store';
-import { cancelNewGrow } from '@/stores/slices/uiSlice';
-import { startNewPlant } from '@/stores/slices/simulationSlice';
-import { Card } from '@/components/common/Card';
+import React from 'react'
+import { Modal } from '@/components/common/Modal'
+import { Button } from '@/components/common/Button'
+import { useTranslation } from 'react-i18next'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { useAppDispatch } from '@/stores/store'
+import { startNewPlant } from '@/stores/slices/simulationSlice'
+import { Card } from '@/components/common/Card'
+import { useUIStore } from '@/stores/useUIStore'
 
 export const GrowConfirmationModal: React.FC = () => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const cancelNewGrow = useUIStore((s) => s.cancelNewGrow)
 
     const handleConfirm = () => {
-        dispatch(startNewPlant());
-    };
+        dispatch(startNewPlant())
+    }
 
     const footer = (
         <>
-            <Button variant="secondary" onClick={() => dispatch(cancelNewGrow())}>{t('common.cancel')}</Button>
-            <Button onClick={handleConfirm} glow={true}>{t('plantsView.confirmationModal.confirmButton')}</Button>
+            <Button variant="secondary" onClick={() => cancelNewGrow()}>
+                {t('common.cancel')}
+            </Button>
+            <Button onClick={handleConfirm} glow={true}>
+                {t('plantsView.confirmationModal.confirmButton')}
+            </Button>
         </>
-    );
+    )
 
     return (
         <Modal
             isOpen={true}
-            onClose={() => dispatch(cancelNewGrow())}
+            onClose={() => cancelNewGrow()}
             title={t('plantsView.confirmationModal.title')}
             description={t('plantsView.confirmationModal.text')}
             footer={footer}
@@ -39,5 +44,5 @@ export const GrowConfirmationModal: React.FC = () => {
                 </Card>
             </div>
         </Modal>
-    );
-};
+    )
+}

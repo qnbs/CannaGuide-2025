@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectUserStrains } from '@/stores/selectors'
 import { communityShareService } from '@/services/communityShareService'
 import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
 
@@ -23,14 +23,12 @@ const CommunitySharePanelComponent: React.FC = () => {
         try {
             const gist = await communityShareService.exportStrainsToAnonymousGist(userStrains)
             setLastGistUrl(gist.url)
-            dispatch(addNotification({ message: t('settingsView.communityShare.exportSuccess'), type: 'success' }))
+            getUISnapshot().addNotification({ message: t('settingsView.communityShare.exportSuccess'), type: 'success' })
         } catch (error) {
-            dispatch(
-                addNotification({
+            getUISnapshot().addNotification({
                     message: error instanceof Error ? error.message : t('settingsView.communityShare.exportError'),
                     type: 'error',
-                }),
-            )
+                })
         } finally {
             setIsBusy(false)
         }
@@ -44,15 +42,13 @@ const CommunitySharePanelComponent: React.FC = () => {
             imported.forEach((strain) => {
                 dispatch(addUserStrainWithValidation(strain))
             })
-            dispatch(addNotification({ message: t('settingsView.communityShare.importSuccess_other', { count: imported.length }), type: 'success' }))
+            getUISnapshot().addNotification({ message: t('settingsView.communityShare.importSuccess_other', { count: imported.length }), type: 'success' })
             setGistInput('')
         } catch (error) {
-            dispatch(
-                addNotification({
+            getUISnapshot().addNotification({
                     message: error instanceof Error ? error.message : t('settingsView.communityShare.importError'),
                     type: 'error',
-                }),
-            )
+                })
         } finally {
             setIsBusy(false)
         }

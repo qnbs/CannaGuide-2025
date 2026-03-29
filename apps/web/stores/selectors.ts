@@ -9,8 +9,6 @@ import {
     AppSettings,
     Task,
     PlantProblem,
-    Notification,
-    View,
     Plant,
     TTSSettings,
     SandboxState,
@@ -21,7 +19,6 @@ import {
     SavedExperiment,
 } from '@/types'
 import { SavedItemsState } from './slices/savedItemsSlice'
-import { UIState } from './slices/uiSlice'
 import { FavoritesState } from './slices/favoritesSlice'
 import { ArchivesState } from './slices/archivesSlice'
 import { TtsState } from './slices/ttsSlice'
@@ -29,7 +26,6 @@ import { BreedingState } from './slices/breedingSlice'
 import { SettingsState } from './slices/settingsSlice'
 
 // --- Base Selectors (for each slice) ---
-export const selectUi = (state: RootState): UIState => state.ui
 const selectSettingsState = (state: RootState): SettingsState => state.settings
 export const selectSavedItems = (state: RootState): SavedItemsState => state.savedItems
 const selectFavoritesState = (state: RootState): FavoritesState => state.favorites
@@ -51,57 +47,6 @@ import {
     savedExportsAdapter,
 } from './slices/savedItemsSlice'
 import { plantsAdapter } from './slices/simulationSlice'
-
-// --- UI Selectors ---
-export const selectActiveView = createSelector([selectUi], (ui: UIState): View => ui.activeView)
-export const selectIsCommandPaletteOpen = createSelector(
-    [selectUi],
-    (ui: UIState): boolean => ui.isCommandPaletteOpen,
-)
-export const selectHighlightedElement = createSelector(
-    [selectUi],
-    (ui: UIState): string | null => ui.highlightedElement,
-)
-export const selectNotifications = createSelector(
-    [selectUi],
-    (ui: UIState): Notification[] => ui.notifications,
-)
-export const selectOnboardingStep = createSelector(
-    [selectUi],
-    (ui: UIState): number => ui.onboardingStep,
-)
-export const selectActionModalState = createSelector([selectUi], (ui: UIState) => ui.actionModal)
-export const selectDeepDiveModalState = createSelector(
-    [selectUi],
-    (ui: UIState) => ui.deepDiveModal,
-)
-export const selectIsAppReady = createSelector([selectUi], (ui: UIState): boolean => ui.isAppReady)
-export const selectNewGrowFlow = createSelector([selectUi], (ui: UIState) => ui.newGrowFlow)
-export const selectKnowledgeViewTab = createSelector(
-    [selectUi],
-    (ui: UIState) => ui.knowledgeViewTab,
-)
-export const selectActiveMentorPlantId = createSelector(
-    [selectUi],
-    (ui: UIState) => ui.activeMentorPlantId,
-)
-export const selectEquipmentViewTab = createSelector(
-    [selectUi],
-    (ui: UIState) => ui.equipmentViewTab,
-)
-export const selectIsSaveSetupModalOpen = createSelector(
-    [selectUi],
-    (ui: UIState): boolean => ui.isSaveSetupModalOpen,
-)
-export const selectSetupToSave = createSelector([selectUi], (ui: UIState) => ui.setupToSave)
-export const selectIsDiagnosticsModalOpen = createSelector(
-    [selectUi],
-    (ui: UIState): boolean => ui.isDiagnosticsModalOpen,
-)
-export const selectDiagnosticsPlantId = createSelector(
-    [selectUi],
-    (ui: UIState): string | null => ui.diagnosticsPlantId,
-)
 
 // --- Settings Selectors ---
 export const selectSettings = createSelector(

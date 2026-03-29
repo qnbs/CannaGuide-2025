@@ -10,7 +10,7 @@ import type {
 import type { RootState } from '../store'
 import type { SimpleExportFormat } from '@/components/common/DataExportModal'
 import { getT } from '@/i18n'
-import { addNotification, closeExportModal } from './uiSlice'
+import { getUISnapshot } from '../useUIStore'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
 const getExportService = async () => {
@@ -77,20 +77,18 @@ export const exportAndSaveStrains = createAsyncThunk<
                 }),
             )
 
-            dispatch(
-                addNotification({
-                    message: t('common.successfullyExported_other', {
-                        count: strains.length,
-                        format: format.toUpperCase(),
-                    }),
-                    type: 'success',
+            getUISnapshot().addNotification({
+                message: t('common.successfullyExported_other', {
+                    count: strains.length,
+                    format: format.toUpperCase(),
                 }),
-            )
-            dispatch(closeExportModal())
+                type: 'success',
+            })
+            getUISnapshot().closeExportModal()
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
-            dispatch(addNotification({ message, type: 'error' }))
-            dispatch(closeExportModal())
+            getUISnapshot().addNotification({ message, type: 'error' })
+            getUISnapshot().closeExportModal()
         }
     },
 )
@@ -99,27 +97,25 @@ export const exportStrainTips = createAsyncThunk<
     void,
     { tips: SavedStrainTip[]; format: 'pdf' | 'txt'; fileName: string },
     { state: RootState }
->('savedItems/exportStrainTips', async ({ tips, format, fileName }, { dispatch }) => {
+>('savedItems/exportStrainTips', async ({ tips, format, fileName }) => {
     const t = getT()
     const exportService = await getExportService()
     exportService.exportStrainTips(tips, format, fileName, t)
 
-    dispatch(
-        addNotification({
-            message: t('common.successfullyExported_other', {
-                count: tips.length,
-                format: format.toUpperCase(),
-            }),
-            type: 'success',
+    getUISnapshot().addNotification({
+        message: t('common.successfullyExported_other', {
+            count: tips.length,
+            format: format.toUpperCase(),
         }),
-    )
+        type: 'success',
+    })
 })
 
 export const exportSetups = createAsyncThunk<
     void,
     { setups: SavedSetup[]; format: 'pdf' | 'txt'; fileName: string },
     { state: RootState }
->('savedItems/exportSetups', async ({ setups, format, fileName }, { dispatch }) => {
+>('savedItems/exportSetups', async ({ setups, format, fileName }) => {
     const t = getT()
     const exportService = await getExportService()
     if (format === 'pdf') {
@@ -127,15 +123,13 @@ export const exportSetups = createAsyncThunk<
     } else {
         exportService.exportSetupsAsTxt(setups, fileName, t)
     }
-    dispatch(
-        addNotification({
-            message: t('common.successfullyExported_other', {
-                count: setups.length,
-                format: format.toUpperCase(),
-            }),
-            type: 'success',
+    getUISnapshot().addNotification({
+        message: t('common.successfullyExported_other', {
+            count: setups.length,
+            format: format.toUpperCase(),
         }),
-    )
+        type: 'success',
+    })
 })
 
 const savedItemsSlice = createSlice({

@@ -9,7 +9,7 @@ import { selectHasAvailableSlots } from '@/stores/selectors'
 import { DataExportModal } from '@/components/common/DataExportModal'
 import type { SimpleExportFormat } from '@/components/common/DataExportModal'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
-import { addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice'
+import { getUISnapshot, initiateGrowFromStrainList } from '@/stores/useUIStore'
 import { BulkActionsBar } from './BulkActionsBar'
 import { SearchBar } from '@/components/common/SearchBar'
 import { Speakable } from '@/components/common/Speakable'
@@ -231,7 +231,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
             selectedIds.size > 0 ? savedTips.filter((tip) => selectedIds.has(tip.id)) : filteredTips
 
         if (dataToExport.length === 0) {
-            dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }))
+            getUISnapshot().addNotification({ message: t('common.noDataToExport'), type: 'error' })
             setIsExportModalOpen(false)
             return
         }
@@ -309,9 +309,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                                                           e: React.MouseEvent<HTMLButtonElement>,
                                                       ) => {
                                                           e.stopPropagation()
-                                                          dispatch(
-                                                              initiateGrowFromStrainList(strain),
-                                                          )
+                                                          initiateGrowFromStrainList(strain)
                                                       }}
                                                       disabled={!hasAvailableSlots}
                                                   >

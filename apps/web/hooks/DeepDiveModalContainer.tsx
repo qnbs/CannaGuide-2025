@@ -1,20 +1,19 @@
 import React, { useEffect } from 'react'
 import { Scenario } from '@/types'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
-import { closeDeepDiveModal } from '@/stores/slices/uiSlice'
+import { useUIStore } from '@/stores/useUIStore'
 import { useGetDeepDiveMutation } from '@/stores/api'
-import {
-    selectDeepDiveModalState,
-    selectPlantById,
-    selectLanguage,
-} from '@/stores/selectors'
+import { selectPlantById, selectLanguage } from '@/stores/selectors'
 import { runComparisonScenario } from '@/stores/slices/sandboxSlice'
 import { DeepDiveModal } from '@/components/views/plants/deepDive/DeepDiveModal'
 
 export const DeepDiveModalContainer: React.FC = () => {
     const dispatch = useAppDispatch()
     const lang = useAppSelector(selectLanguage)
-    const { isOpen, plantId, topic } = useAppSelector(selectDeepDiveModalState)
+    const isOpen = useUIStore((s) => s.deepDiveModal.isOpen)
+    const plantId = useUIStore((s) => s.deepDiveModal.plantId)
+    const topic = useUIStore((s) => s.deepDiveModal.topic)
+    const closeDeepDiveModal = useUIStore((s) => s.closeDeepDiveModal)
     const plant = useAppSelector(selectPlantById(plantId))
 
     const [getDeepDive, { reset, ...mutationState }] = useGetDeepDiveMutation(
@@ -35,7 +34,7 @@ export const DeepDiveModalContainer: React.FC = () => {
     }, [isOpen, plant, topic, mutationState, getDeepDive, lang])
 
     const handleClose = () => {
-        dispatch(closeDeepDiveModal())
+        closeDeepDiveModal()
         reset()
     }
 

@@ -14,20 +14,8 @@ import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
-import {
-    selectActiveView,
-    selectIsCommandPaletteOpen,
-    selectSettings,
-    selectIsAppReady,
-    selectOnboardingStep,
-    selectNewGrowFlow,
-} from '@/stores/selectors'
-import {
-    setIsCommandPaletteOpen,
-    addNotification,
-    cancelNewGrow,
-    confirmSetupAndShowConfirmation,
-} from '@/stores/slices/uiSlice'
+import { selectSettings } from '@/stores/selectors'
+import { useUIStore } from '@/stores/useUIStore'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { clearArchives } from '@/stores/slices/archivesSlice'
 import { ToastContainer } from '@/components/common/Toast'
@@ -177,12 +165,12 @@ export const App: React.FC = () => {
     const { showBanner: showGeoLegal, dismiss: dismissGeoLegal } = useGeoLegalBanner()
     const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
 
-    const activeView = useAppSelector(selectActiveView)
-    const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
+    const activeView = useUIStore((s) => s.activeView)
+    const isCommandPaletteOpen = useUIStore((s) => s.isCommandPaletteOpen)
     const settings = useAppSelector(selectSettings)
-    const isAppReady = useAppSelector(selectIsAppReady)
-    const onboardingStep = useAppSelector(selectOnboardingStep)
-    const newGrowFlow = useAppSelector(selectNewGrowFlow)
+    const isAppReady = useUIStore((s) => s.isAppReady)
+    const onboardingStep = useUIStore((s) => s.onboardingStep)
+    const newGrowFlow = useUIStore((s) => s.newGrowFlow)
     const [isPinUnlocked, setIsPinUnlocked] = useState(
         () => !settings.privacy.requirePinOnLaunch || !settings.privacy.pin,
     )
@@ -274,14 +262,12 @@ export const App: React.FC = () => {
 
     useEffect(() => {
         if (isOffline) {
-            dispatch(
-                addNotification({
-                    message: t('common.offlineWarning'),
-                    type: 'info',
-                }),
-            )
+            useUIStore.getState().addNotification({
+                message: t('common.offlineWarning'),
+                type: 'info',
+            })
         }
-    }, [isOffline, dispatch, t])
+    }, [isOffline, t])
 
     const renderContent = () => {
         switch (activeView) {
@@ -334,7 +320,7 @@ export const App: React.FC = () => {
             <SideNav />
             <div className="relative flex min-h-0 flex-grow flex-col overflow-hidden">
                 <Header
-                    onCommandPaletteOpen={() => dispatch(setIsCommandPaletteOpen(true))}
+                    onCommandPaletteOpen={() => useUIStore.getState().setIsCommandPaletteOpen(true)}
                     deferredPrompt={deferredPrompt}
                     isInstalled={isInstalled}
                     onInstallClick={handleInstallClick}
@@ -372,14 +358,16 @@ export const App: React.FC = () => {
             <TTSControls />
             <CommandPalette
                 isOpen={isCommandPaletteOpen}
-                onClose={() => dispatch(setIsCommandPaletteOpen(false))}
+                onClose={() => useUIStore.getState().setIsCommandPaletteOpen(false)}
             />
             {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
                 <Suspense fallback={null}>
                     <GrowSetupModal
                         strain={newGrowFlow.strain}
-                        onClose={() => dispatch(cancelNewGrow())}
-                        onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
+                        onClose={() => useUIStore.getState().cancelNewGrow()}
+                        onConfirm={(setup) =>
+                            useUIStore.getState().confirmSetupAndShowConfirmation(setup)
+                        }
                     />
                 </Suspense>
             )}

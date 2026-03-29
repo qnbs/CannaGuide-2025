@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { EquipmentViewTab, SavedSetup } from '@/types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { setEquipmentViewTab, openSaveSetupModal } from '@/stores/slices/uiSlice'
-import { selectEquipmentViewTab, selectSavedSetups } from '@/stores/selectors'
+import { useUIStore, getUISnapshot } from '@/stores/useUIStore'
+import { selectSavedSetups } from '@/stores/selectors'
 import { updateSetup, deleteSetup } from '@/stores/slices/savedItemsSlice'
 import { Card } from '@/components/common/Card'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
@@ -25,7 +25,7 @@ const SeedbanksView = lazy(() => import('./SeedbanksView'))
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    const activeTab = useAppSelector(selectEquipmentViewTab)
+    const activeTab = useUIStore((s) => s.equipmentViewTab)
     const savedSetups = useAppSelector(selectSavedSetups)
     const [isPending, startTransition] = useTransition()
     const contentOpacityClass = isPending ? 'opacity-50' : 'opacity-100'
@@ -64,12 +64,12 @@ export const EquipmentView: React.FC = () => {
 
     const handleSetTab = (id: EquipmentViewTab) => {
         startTransition(() => {
-            dispatch(setEquipmentViewTab(id))
+            getUISnapshot().setEquipmentViewTab(id)
         })
     }
 
     const handleSaveGeneratedSetup = (setupData: Omit<SavedSetup, 'id' | 'createdAt' | 'name'>) => {
-        dispatch(openSaveSetupModal(setupData))
+        getUISnapshot().openSaveSetupModal(setupData)
     }
 
     const renderContent = () => {

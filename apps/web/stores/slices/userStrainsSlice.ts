@@ -7,7 +7,7 @@ import {
     createAsyncThunk,
 } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
-import { addNotification, closeAddModal } from './uiSlice'
+import { getUISnapshot } from '../useUIStore'
 import { getT } from '@/i18n'
 
 export const userStrainsAdapter = createEntityAdapter<Strain>()
@@ -19,7 +19,7 @@ const initialState: UserStrainsState = userStrainsAdapter.getInitialState()
 export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { state: RootState }>(
     'userStrains/addUserStrainWithValidation',
     (strain, { dispatch, getState }) => {
-        const t = getT();
+        const t = getT()
         const { userStrains } = getState()
         const existingStrains = userStrainsAdapter.getSelectors().selectAll(userStrains)
         const isDuplicate = existingStrains.some(
@@ -27,40 +27,38 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
         )
 
         if (isDuplicate) {
-            dispatch(
-                addNotification({
-                    message: t('strainsView.addStrainModal.validation.duplicate', {
-                        name: strain.name,
-                    }),
-                    type: 'error',
+            getUISnapshot().addNotification({
+                message: t('strainsView.addStrainModal.validation.duplicate', {
+                    name: strain.name,
                 }),
-            )
+                type: 'error',
+            })
             return
         }
 
         dispatch(userStrainsSlice.actions.addUserStrain(strain))
-        dispatch(
-            addNotification({
-                message: t('strainsView.addStrainModal.validation.addSuccess', { name: strain.name }),
-                type: 'success',
+        getUISnapshot().addNotification({
+            message: t('strainsView.addStrainModal.validation.addSuccess', {
+                name: strain.name,
             }),
-        )
-        dispatch(closeAddModal())
+            type: 'success',
+        })
+        getUISnapshot().closeAddModal()
     },
 )
 
 export const updateUserStrainAndCloseModal = createAsyncThunk<void, Strain, { state: RootState }>(
     'userStrains/updateUserStrainAndCloseModal',
     (strain, { dispatch }) => {
-        const t = getT();
+        const t = getT()
         dispatch(userStrainsSlice.actions.updateUserStrain(strain))
-        dispatch(
-            addNotification({
-                message: t('strainsView.addStrainModal.validation.updateSuccess', { name: strain.name }),
-                type: 'success',
+        getUISnapshot().addNotification({
+            message: t('strainsView.addStrainModal.validation.updateSuccess', {
+                name: strain.name,
             }),
-        )
-        dispatch(closeAddModal())
+            type: 'success',
+        })
+        getUISnapshot().closeAddModal()
     },
 )
 

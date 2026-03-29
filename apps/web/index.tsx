@@ -6,7 +6,7 @@ import { I18nextProvider } from 'react-i18next'
 import { App } from '@/components/views/plants/App'
 import { createAppStore, AppStore, RootState } from '@/stores/store'
 import { i18nPromise, i18nInstance } from './i18n'
-import { setAppReady } from './stores/slices/uiSlice'
+import { getUISnapshot } from './stores/useUIStore'
 import { strainService } from './services/strainService'
 import { initializeSimulation } from './stores/slices/simulationSlice'
 import { ttsService } from './services/ttsService'
@@ -215,16 +215,16 @@ const mountHydratedApp = async () => {
                     genealogy: state.genealogy,
                     sandbox: {
                         savedExperiments: state.sandbox.savedExperiments,
-                        // Strip transient runtime status – always starts idle
+                        // Strip transient runtime status -- always starts idle
                         currentExperiment: null,
                         status: 'idle' as const,
                     },
                     ui: {
                         // Only persist essential, non-transient UI state
-                        lastActiveView: state.ui.lastActiveView,
-                        onboardingStep: state.ui.onboardingStep,
-                        equipmentViewTab: state.ui.equipmentViewTab,
-                        knowledgeViewTab: state.ui.knowledgeViewTab,
+                        lastActiveView: getUISnapshot().lastActiveView,
+                        onboardingStep: getUISnapshot().onboardingStep,
+                        equipmentViewTab: getUISnapshot().equipmentViewTab,
+                        knowledgeViewTab: getUISnapshot().knowledgeViewTab,
                     },
                 }
                 const serializedState = JSON.stringify(stateToSave)
@@ -269,7 +269,7 @@ const mountHydratedApp = async () => {
         setAiMode(store.getState().settings.settings.aiMode ?? 'hybrid')
 
         // 6. Signal that the app is fully ready and hide the loading gate.
-        store.dispatch(setAppReady(true))
+        getUISnapshot().setAppReady(true)
     } catch (error) {
         console.error('Failed to initialize the application:', error)
         const recovered = await triggerSafeRecovery('boot-initialization-failure', error)

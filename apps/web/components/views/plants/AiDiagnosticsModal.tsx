@@ -7,7 +7,7 @@ import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { CameraModal } from '@/components/common/CameraModal'
 import { Modal } from '@/components/common/Modal'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { addJournalEntry } from '@/stores/slices/simulationSlice'
 import { Card } from '@/components/common/Card'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
@@ -66,12 +66,10 @@ ${response.prevention}
                 journalDetails.imageId = imageId
             } catch (error) {
                 console.error('Failed to save diagnosis image to DB', error)
-                dispatch(
-                    addNotification({
-                        message: t('plantsView.aiDiagnostics.saveImageError'),
-                        type: 'error',
-                    }),
-                )
+                getUISnapshot().addNotification({
+                    message: t('plantsView.aiDiagnostics.saveImageError'),
+                    type: 'error',
+                })
             }
         }
 
@@ -207,12 +205,10 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             resetDiagnosis()
             const validationError = validateImageFile(file)
             if (validationError) {
-                dispatch(
-                    addNotification({
-                        message: t(`plantsView.aiDiagnostics.validation.${validationError}`),
-                        type: 'error',
-                    }),
-                )
+                getUISnapshot().addNotification({
+                    message: t(`plantsView.aiDiagnostics.validation.${validationError}`),
+                    type: 'error',
+                })
                 return
             }
             const reader = new FileReader()
@@ -224,9 +220,10 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                 } catch (err) {
                     console.error('Image resizing failed:', err)
                     setImage(reader.result as string) // fallback to original
-                    dispatch(
-                        addNotification({ message: t('common.imageResizeFailed'), type: 'error' }),
-                    )
+                    getUISnapshot().addNotification({
+                        message: t('common.imageResizeFailed'),
+                        type: 'error',
+                    })
                 }
             }
             reader.readAsDataURL(file)
@@ -269,7 +266,10 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
         } catch (err) {
             console.error('Image resizing failed:', err)
             setImage(dataUrl) // fallback to original
-            dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }))
+            getUISnapshot().addNotification({
+                message: t('common.imageResizeFailed'),
+                type: 'error',
+            })
         }
         setIsCameraOpen(false)
     }
@@ -289,7 +289,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
     const handleRevokeConsent = useCallback(() => {
         localStorage.removeItem(IMAGE_CONSENT_KEY)
         setConsentGiven(false)
-        dispatch(addNotification({ message: t('legal.imageConsent.revoked'), type: 'info' }))
+        getUISnapshot().addNotification({ message: t('legal.imageConsent.revoked'), type: 'info' })
     }, [dispatch, t])
 
     const errorMessage =

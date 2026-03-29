@@ -11,10 +11,13 @@ import {
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
 // This represents the shape of the persisted state object.
+// NOTE: `ui` was migrated to Zustand but may still exist in older persisted snapshots.
 export type PersistedState = Partial<RootState> & {
     version?: number
     /** Per-slice schema versions stamped at persist time. */
     _sliceVersions?: Partial<Record<VersionedSliceName, number>>
+    /** Legacy UI state from pre-Zustand migration (may exist in old persisted data). */
+    ui?: Record<string, unknown>
 }
 
 export type SnapshotDiff = {

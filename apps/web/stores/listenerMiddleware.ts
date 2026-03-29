@@ -10,13 +10,7 @@ import {
     addJournalEntry,
     waterAllPlants,
 } from './slices/simulationSlice'
-import {
-    addNotification,
-    setOnboardingStep,
-    setActiveView,
-    processVoiceCommand,
-    setVoiceStatusMessage,
-} from './slices/uiSlice'
+import { getUISnapshot, useUIStore } from './useUIStore'
 import { useFiltersStore, getFiltersSnapshot } from './useFiltersStore'
 import { urlService } from '@/services/urlService'
 import { ttsService } from '@/services/ttsService'
@@ -127,7 +121,7 @@ startAppListening({
                     .toLowerCase()
                     .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
                 const message = `${updatedPlant.name}: ${t(`problemMessages.${problemKey}.message`)}`
-                listenerApi.dispatch(addNotification({ message, type: 'error' }))
+                getUISnapshot().addNotification({ message, type: 'error' })
             }
         })
     },
@@ -178,178 +172,202 @@ const parseAssistantQuery = (transcript: string): string | null => {
 }
 
 /**
- * Listener to process recognized voice commands.
+ * Voice command processing via Zustand subscription.
+ * Called once from store.ts after the store is created.
  */
-startAppListening({
-    actionCreator: processVoiceCommand,
-    effect: async (action, { dispatch, getState }) => {
-        const transcript = action.payload.toLowerCase()
-        const t = getT()
-        const state = getState()
+export const initVoiceCommandSubscription = (
+    reduxDispatch: AppDispatch,
+    reduxGetState: () => RootState,
+): void => {
+    useUIStore.subscribe(
+        (s) => s.voiceControl.lastTranscript,
+        async (transcript) => {
+            if (!transcript) return
+            const lowered = transcript.toLowerCase()
+            const t = getT()
+            const state = reduxGetState()
 
-        const query = parseAssistantQuery(transcript)
-        if (query) {
-            const selectedPlantId =
-                state.simulation.selectedPlantId ??
-                state.simulation.plantSlots.find((slot) => slot !== null) ??
-                null
-            const plant = selectedPlantId ? state.simulation.plants.entities[selectedPlantId] : null
+            const query = parseAssistantQuery(lowered)
+            if (query) {
+                const selectedPlantId =
+                    state.simulation.selectedPlantId ??
+                    state.simulation.plantSlots.find((slot) => slot !== null) ??
+                    null
+                const plant = selectedPlantId
+                    ? state.simulation.plants.entities[selectedPlantId]
+                    : null
 
-            if (!plant) {
-                dispatch(setVoiceStatusMessage(t('voiceControl.errors.noPlantContext')))
-                setTimeout(() => dispatch(setVoiceStatusMessage(null)), 4000)
+                if (!plant) {
+                    getUISnapshot().setVoiceStatusMessage(t('voiceControl.errors.noPlantContext'))
+                    setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 4000)
+                    return
+                }
+
+                getUISnapshot().setVoiceStatusMessage(t('voiceControl.assistantThinking'))
+                try {
+                    const language = state.settings.settings.general.language
+                    const aiService = await getAiService()
+                    const response = await aiService.getMentorResponse(plant, query, language)
+                    const speechText = `${response.title}. ${response.content}`.slice(0, 320)
+                    getUISnapshot().addNotification({
+                        message: response.title,
+                        type: 'info',
+                    })
+                    ttsService.speak(
+                        speechText,
+                        language,
+                        () => getUISnapshot().setVoiceStatusMessage(null),
+                        state.settings.settings.tts,
+                    )
+                    getUISnapshot().setVoiceStatusMessage(response.content)
+                } catch (error) {
+                    console.error('Voice assistant response failed:', error)
+                    getUISnapshot().setVoiceStatusMessage(t('voiceControl.errors.assistantFailed'))
+                    setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 5000)
+                }
+
                 return
             }
 
-            dispatch(setVoiceStatusMessage(t('voiceControl.assistantThinking')))
-            try {
-                const language = state.settings.settings.general.language
-                const aiService = await getAiService()
-                const response = await aiService.getMentorResponse(plant, query, language)
-                const speechText = `${response.title}. ${response.content}`.slice(0, 320)
-                dispatch(addNotification({ message: response.title, type: 'info' }))
-                ttsService.speak(
-                    speechText,
-                    language,
-                    () => dispatch(setVoiceStatusMessage(null)),
-                    state.settings.settings.tts,
-                )
-                dispatch(setVoiceStatusMessage(response.content))
-            } catch (error) {
-                console.error('Voice assistant response failed:', error)
-                dispatch(setVoiceStatusMessage(t('voiceControl.errors.assistantFailed')))
-                setTimeout(() => dispatch(setVoiceStatusMessage(null)), 5000)
-            }
+            // --- Define Voice Commands ---
+            const commands = [
+                // Navigation
+                {
+                    match: [t('nav.plants').toLowerCase(), 'show garden', 'gehe zu pflanzen'],
+                    action: () => getUISnapshot().setActiveView(View.Plants),
+                },
+                {
+                    match: [
+                        'open yield predictor',
+                        'yield predictor öffnen',
+                        'yield prognose öffnen',
+                    ],
+                    action: () => getUISnapshot().setActiveView(View.Plants),
+                },
+                {
+                    match: ['open ar preview', 'ar vorschau öffnen', 'breeding preview öffnen'],
+                    action: () => getUISnapshot().setActiveView(View.Knowledge),
+                },
+                {
+                    match: [t('nav.strains').toLowerCase(), 'show strains', 'gehe zu sorten'],
+                    action: () => getUISnapshot().setActiveView(View.Strains),
+                },
+                {
+                    match: [t('nav.equipment').toLowerCase(), 'gehe zu ausrüstung'],
+                    action: () => getUISnapshot().setActiveView(View.Equipment),
+                },
+                {
+                    match: [t('nav.knowledge').toLowerCase(), 'show knowledge', 'gehe zu wissen'],
+                    action: () => getUISnapshot().setActiveView(View.Knowledge),
+                },
+                {
+                    match: [
+                        t('nav.settings').toLowerCase(),
+                        'show settings',
+                        'gehe zu einstellungen',
+                    ],
+                    action: () => getUISnapshot().setActiveView(View.Settings),
+                },
+                {
+                    match: ['open settings', 'settings öffnen', 'settings offnen'],
+                    action: () => getUISnapshot().setActiveView(View.Settings),
+                },
+                {
+                    match: [t('nav.help').toLowerCase(), 'show help', 'gehe zu hilfe'],
+                    action: () => getUISnapshot().setActiveView(View.Help),
+                },
+                {
+                    match: ['open help', 'hilfe öffnen', 'hilfe offnen'],
+                    action: () => getUISnapshot().setActiveView(View.Help),
+                },
+                {
+                    match: ['read sensors', 'sensoren lesen', 'sensor hub öffnen'],
+                    action: () => getUISnapshot().setActiveView(View.Plants),
+                },
 
-            return
-        }
+                // Strain Actions
+                {
+                    match: [
+                        `${t('common.search', { lng: 'en' }).toLowerCase()} for`,
+                        `${t('common.search', { lng: 'de' }).toLowerCase()} nach`,
+                    ],
+                    action: () => {
+                        const searchTerm = lowered.split(/search for|suche nach/i)[1]?.trim()
+                        if (searchTerm) {
+                            getUISnapshot().setActiveView(View.Strains)
+                            useFiltersStore.getState().setSearchTerm(searchTerm)
+                        }
+                    },
+                },
+                {
+                    match: [t('strainsView.resetFilters').toLowerCase(), 'filter zurücksetzen'],
+                    action: () => useFiltersStore.getState().resetAllFilters(),
+                },
+                {
+                    match: [
+                        t('strainsView.tabs.favorites').toLowerCase(),
+                        'show favorites',
+                        'zeige favoriten',
+                    ],
+                    action: () => {
+                        getUISnapshot().setActiveView(View.Strains)
+                        useFiltersStore.getState().setShowFavoritesOnly(true)
+                    },
+                },
 
-        // --- Define Voice Commands ---
-        const commands = [
-            // Navigation
-            {
-                match: [t('nav.plants').toLowerCase(), 'show garden', 'gehe zu pflanzen'],
-                action: () => dispatch(setActiveView(View.Plants)),
-            },
-            {
-                match: ['open yield predictor', 'yield predictor öffnen', 'yield prognose öffnen'],
-                action: () => dispatch(setActiveView(View.Plants)),
-            },
-            {
-                match: ['open ar preview', 'ar vorschau öffnen', 'breeding preview öffnen'],
-                action: () => dispatch(setActiveView(View.Knowledge)),
-            },
-            {
-                match: [t('nav.strains').toLowerCase(), 'show strains', 'gehe zu sorten'],
-                action: () => dispatch(setActiveView(View.Strains)),
-            },
-            {
-                match: [t('nav.equipment').toLowerCase(), 'gehe zu ausrüstung'],
-                action: () => dispatch(setActiveView(View.Equipment)),
-            },
-            {
-                match: [t('nav.knowledge').toLowerCase(), 'show knowledge', 'gehe zu wissen'],
-                action: () => dispatch(setActiveView(View.Knowledge)),
-            },
-            {
-                match: [t('nav.settings').toLowerCase(), 'show settings', 'gehe zu einstellungen'],
-                action: () => dispatch(setActiveView(View.Settings)),
-            },
-            {
-                match: ['open settings', 'settings öffnen', 'settings offnen'],
-                action: () => dispatch(setActiveView(View.Settings)),
-            },
-            {
-                match: [t('nav.help').toLowerCase(), 'show help', 'gehe zu hilfe'],
-                action: () => dispatch(setActiveView(View.Help)),
-            },
-            {
-                match: ['open help', 'hilfe öffnen', 'hilfe offnen'],
-                action: () => dispatch(setActiveView(View.Help)),
-            },
-            {
-                match: ['read sensors', 'sensoren lesen', 'sensor hub öffnen'],
-                action: () => dispatch(setActiveView(View.Plants)),
-            },
+                // Plant Actions
+                {
+                    match: [t('plantsView.summary.waterAll').toLowerCase(), 'alle pflanzen gießen'],
+                    action: () => reduxDispatch(waterAllPlants()),
+                },
+                {
+                    match: ['water all plants', 'water all'],
+                    action: () => reduxDispatch(waterAllPlants()),
+                },
 
-            // Strain Actions
-            {
-                match: [
-                    `${t('common.search', { lng: 'en' }).toLowerCase()} for`,
-                    `${t('common.search', { lng: 'de' }).toLowerCase()} nach`,
-                ],
-                action: () => {
-                    const searchTerm = transcript.split(/search for|suche nach/i)[1]?.trim()
-                    if (searchTerm) {
-                        dispatch(setActiveView(View.Strains))
-                        useFiltersStore.getState().setSearchTerm(searchTerm)
+                // UI Control
+                {
+                    match: ['go back', 'zurück'],
+                    action: () => {
+                        const { activeView, lastActiveView } = getUISnapshot()
+                        if (activeView !== lastActiveView) {
+                            getUISnapshot().setActiveView(lastActiveView)
+                        }
+                    },
+                },
+            ]
+
+            let commandFound = false
+            for (const cmd of commands) {
+                if (cmd.match.some((keyword) => lowered.startsWith(keyword))) {
+                    cmd.action()
+                    commandFound = true
+                    if (reduxGetState().settings.settings.voiceControl.confirmationSound) {
+                        playConfirmationSound()
                     }
-                },
-            },
-            {
-                match: [t('strainsView.resetFilters').toLowerCase(), 'filter zurücksetzen'],
-                action: () => useFiltersStore.getState().resetAllFilters(),
-            },
-            {
-                match: [
-                    t('strainsView.tabs.favorites').toLowerCase(),
-                    'show favorites',
-                    'zeige favoriten',
-                ],
-                action: () => {
-                    dispatch(setActiveView(View.Strains))
-                    useFiltersStore.getState().setShowFavoritesOnly(true)
-                },
-            },
-
-            // Plant Actions
-            {
-                match: [t('plantsView.summary.waterAll').toLowerCase(), 'alle pflanzen gießen'],
-                action: () => dispatch(waterAllPlants()),
-            },
-            { match: ['water all plants', 'water all'], action: () => dispatch(waterAllPlants()) },
-
-            // UI Control
-            {
-                match: ['go back', 'zurück'],
-                action: () => {
-                    const { activeView, lastActiveView } = getState().ui
-                    if (activeView !== lastActiveView) {
-                        dispatch(setActiveView(lastActiveView))
-                    }
-                },
-            },
-        ]
-
-        let commandFound = false
-        for (const cmd of commands) {
-            if (cmd.match.some((keyword) => transcript.startsWith(keyword))) {
-                cmd.action()
-                commandFound = true
-                if (getState().settings.settings.voiceControl.confirmationSound) {
-                    playConfirmationSound()
+                    break
                 }
-                break
             }
-        }
 
-        if (!commandFound) {
-            dispatch(setVoiceStatusMessage(`Unknown command: "${action.payload}"`))
-            setTimeout(() => dispatch(setVoiceStatusMessage(null)), 4000)
-        }
-    },
-})
+            if (!commandFound) {
+                getUISnapshot().setVoiceStatusMessage(`Unknown command: "${transcript}"`)
+                setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 4000)
+            }
+        },
+    )
+}
 
 // --- URL Sync Logic for Strain Filters (via Zustand subscription) ---
 let urlSyncTimeout: ReturnType<typeof setTimeout> | undefined
-let getActiveView: (() => View) | null = null
 
 /**
  * Called once from store.ts after the store is created to wire up the
  * active-view check needed by the URL sync subscription.
+ * The viewGetter parameter is kept for backward compatibility but now
+ * falls back to Zustand if not provided.
  */
-export const initFilterUrlSync = (viewGetter: () => View): void => {
-    getActiveView = viewGetter
+export const initFilterUrlSync = (_viewGetter?: () => View): void => {
+    // noop - subscription below uses Zustand directly
 }
 
 // Subscribe to zustand filter changes and sync URL.
@@ -364,7 +382,7 @@ useFiltersStore.subscribe(
         sortDirection: state.sortDirection,
     }),
     () => {
-        if (!getActiveView || getActiveView() !== View.Strains) {
+        if (getUISnapshot().activeView !== View.Strains) {
             return
         }
 
@@ -387,51 +405,47 @@ useFiltersStore.subscribe(
 
 startAppListening({
     matcher: isAnyOf(addUserStrain, updateUserStrain),
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
         const type = action.type.includes('addUser') ? 'add' : 'update'
         // The payload for userStrainsAdapter actions is the strain object itself.
         const strain = action.payload as Strain
-        dispatch(
-            addNotification({
-                message: t(`strainsView.addStrainModal.validation.${type}Success`, {
-                    name: strain.name,
-                }),
-                type: 'success',
+        getUISnapshot().addNotification({
+            message: t(`strainsView.addStrainModal.validation.${type}Success`, {
+                name: strain.name,
             }),
-        )
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: addSetup.fulfilled,
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
-        dispatch(
-            addNotification({
-                message: t('equipmentView.configurator.setupSaveSuccess', {
-                    name: action.payload.name,
-                }),
-                type: 'success',
+        getUISnapshot().addNotification({
+            message: t('equipmentView.configurator.setupSaveSuccess', {
+                name: action.payload.name,
             }),
-        )
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     matcher: isAnyOf(deleteSetup, deleteStrainTip, deleteUserStrain),
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
         let message = 'Item removed.'
         if (action.type.includes('Export')) message = t('strainsView.exportsManager.exportRemoved')
         // Add more specific messages if needed for other types
-        dispatch(addNotification({ message, type: 'info' }))
+        getUISnapshot().addNotification({ message, type: 'info' })
     },
 })
 
 startAppListening({
     matcher: isAnyOf(updateSetup, updateStrainTip),
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
         const p = action.payload as {
             id?: string
@@ -444,90 +458,81 @@ startAppListening({
         let message = `Item "${name}" updated.`
         if (action.type.includes('Export'))
             message = t('strainsView.exportsManager.updateExportSuccess', { name })
-        dispatch(addNotification({ message, type: 'success' }))
+        getUISnapshot().addNotification({ message, type: 'success' })
     },
 })
 
 startAppListening({
     actionCreator: addStrainTip,
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
-        dispatch(
-            addNotification({
-                message: t('strainsView.tips.saveSuccess', { name: action.payload.strain.name }),
-                type: 'success',
-            }),
-        )
+        getUISnapshot().addNotification({
+            message: t('strainsView.tips.saveSuccess', { name: action.payload.strain.name }),
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: addMultipleToFavorites,
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
-        dispatch(
-            addNotification({
-                message: t('strainsView.bulkActions.addedToFavorites_other', {
-                    count: action.payload.length,
-                }),
-                type: 'success',
+        getUISnapshot().addNotification({
+            message: t('strainsView.bulkActions.addedToFavorites_other', {
+                count: action.payload.length,
             }),
-        )
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: removeMultipleFromFavorites,
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
-        dispatch(
-            addNotification({
-                message: t('strainsView.bulkActions.removedFromFavorites_other', {
-                    count: action.payload.length,
-                }),
-                type: 'info',
+        getUISnapshot().addNotification({
+            message: t('strainsView.bulkActions.removedFromFavorites_other', {
+                count: action.payload.length,
             }),
-        )
+            type: 'info',
+        })
     },
 })
 
 startAppListening({
     actionCreator: addArchivedMentorResponse,
-    effect: (_, { dispatch }) => {
+    effect: () => {
         const t = getT()
-        dispatch(
-            addNotification({ message: t('knowledgeView.archive.saveSuccess'), type: 'success' }),
-        )
+        getUISnapshot().addNotification({
+            message: t('knowledgeView.archive.saveSuccess'),
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: addExport,
-    effect: (action, { dispatch }) => {
+    effect: (action) => {
         const t = getT()
-        dispatch(
-            addNotification({
-                message: t('common.successfullyExported_other', {
-                    count: action.payload.strainIds.length,
-                    format: action.payload.format.toUpperCase(),
-                }),
-                type: 'success',
+        getUISnapshot().addNotification({
+            message: t('common.successfullyExported_other', {
+                count: action.payload.strainIds.length,
+                format: action.payload.format.toUpperCase(),
             }),
-        )
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: addJournalEntry,
-    effect: async (action, { dispatch }) => {
+    effect: async (action) => {
         const t = getT()
         if (action.payload.entry.details && 'diagnosis' in action.payload.entry.details) {
-            dispatch(
-                addNotification({
-                    message: t('plantsView.aiDiagnostics.savedToJournal'),
-                    type: 'success',
-                }),
-            )
+            getUISnapshot().addNotification({
+                message: t('plantsView.aiDiagnostics.savedToJournal'),
+                type: 'success',
+            })
         }
 
         // Background Sync demonstration
@@ -538,9 +543,10 @@ startAppListening({
                     await (
                         registration.sync as { register: (tag: string) => Promise<void> }
                     ).register('data-sync')
-                    dispatch(
-                        addNotification({ message: getT()('common.offlineQueued'), type: 'info' }),
-                    )
+                    getUISnapshot().addNotification({
+                        message: getT()('common.offlineQueued'),
+                        type: 'info',
+                    })
                 }
             } catch (err) {
                 console.error('Background sync registration failed:', err)
@@ -551,64 +557,69 @@ startAppListening({
 
 startAppListening({
     actionCreator: clearArchives,
-    effect: (_, { dispatch }) => {
+    effect: () => {
         const t = getT()
-        dispatch(
-            addNotification({
-                message: t('settingsView.data.clearArchivesSuccess'),
-                type: 'success',
-            }),
-        )
+        getUISnapshot().addNotification({
+            message: t('settingsView.data.clearArchivesSuccess'),
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: resetPlants,
-    effect: (_, { dispatch }) => {
+    effect: () => {
         const t = getT()
-        dispatch(
-            addNotification({
-                message: t('settingsView.data.resetPlantsSuccess'),
-                type: 'success',
-            }),
-        )
+        getUISnapshot().addNotification({
+            message: t('settingsView.data.resetPlantsSuccess'),
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: exportAllData.fulfilled,
-    effect: (_, { dispatch }) => {
+    effect: () => {
         const t = getT()
-        dispatch(
-            addNotification({ message: t('settingsView.data.exportSuccess'), type: 'success' }),
-        )
+        getUISnapshot().addNotification({
+            message: t('settingsView.data.exportSuccess'),
+            type: 'success',
+        })
     },
 })
 
 startAppListening({
     actionCreator: resetAllData.fulfilled,
-    effect: (_, { dispatch }) => {
+    effect: () => {
         const t = getT()
-        dispatch(
-            addNotification({ message: t('settingsView.data.resetAllSuccess'), type: 'success' }),
-        )
+        getUISnapshot().addNotification({
+            message: t('settingsView.data.resetAllSuccess'),
+            type: 'success',
+        })
     },
 })
 
-startAppListening({
-    matcher: isAnyOf(setOnboardingStep),
-    effect: (action, listenerApi) => {
-        if (
-            action.payload === 0 &&
-            (listenerApi.getOriginalState() as RootState).settings.settings.onboardingCompleted
-        ) {
-            const t = getT()
-            listenerApi.dispatch(
-                addNotification({
+/**
+ * Onboarding step subscription via Zustand.
+ * Called once from store.ts after the store is created.
+ */
+export const initOnboardingSubscription = (reduxGetState: () => RootState): void => {
+    let prevStep = getUISnapshot().onboardingStep
+    useUIStore.subscribe(
+        (s) => s.onboardingStep,
+        (step) => {
+            if (
+                step === 0 &&
+                prevStep !== 0 &&
+                reduxGetState().settings.settings.onboardingCompleted
+            ) {
+                const t = getT()
+                getUISnapshot().addNotification({
                     message: t('settingsView.data.replayOnboardingSuccess'),
                     type: 'success',
-                }),
-            )
-        }
-    },
-})
+                })
+            }
+            prevStep = step
+        },
+    )
+}

@@ -16,7 +16,7 @@ import {
     selectSavedExportsCount,
 } from '@/stores/selectors'
 import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
-import { closeAddModal, addNotification, closeExportModal } from '@/stores/slices/uiSlice'
+import { useUIStore, getUISnapshot } from '@/stores/useUIStore'
 import {
     toggleFavorite,
     addMultipleToFavorites,
@@ -143,9 +143,9 @@ export const StrainsView: React.FC = () => {
     const rawSavedExports = useAppSelector(selectSavedExports)
     const savedExports = useMemo(() => rawSavedExports ?? [], [rawSavedExports])
     const savedExportsCount = useAppSelector(selectSavedExportsCount) ?? 0
-    const isAddModalOpen = useAppSelector((state) => state.ui.isAddModalOpen)
-    const isExportModalOpen = useAppSelector((state) => state.ui.isExportModalOpen)
-    const strainToEdit = useAppSelector((state) => state.ui.strainToEdit)
+    const isAddModalOpen = useUIStore((s) => s.isAddModalOpen)
+    const isExportModalOpen = useUIStore((s) => s.isExportModalOpen)
+    const strainToEdit = useUIStore((s) => s.strainToEdit)
 
     const selectedIdsSet = useMemo(() => new Set<string>(selectedStrainIds), [selectedStrainIds])
 
@@ -469,8 +469,11 @@ export const StrainsView: React.FC = () => {
             }
 
             if (dataToExport.length === 0) {
-                dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }))
-                dispatch(closeExportModal())
+                getUISnapshot().addNotification({
+                    message: t('common.noDataToExport'),
+                    type: 'error',
+                })
+                getUISnapshot().closeExportModal()
                 return
             }
 
@@ -652,7 +655,7 @@ export const StrainsView: React.FC = () => {
             {isAddModalOpen && (
                 <AddStrainModal
                     isOpen={true}
-                    onClose={() => dispatch(closeAddModal())}
+                    onClose={() => getUISnapshot().closeAddModal()}
                     onAddStrain={handleAddStrain}
                     onUpdateStrain={handleUpdateStrain}
                     strainToEdit={strainToEdit}
@@ -661,7 +664,7 @@ export const StrainsView: React.FC = () => {
             {isExportModalOpen && (
                 <DataExportModal
                     isOpen={true}
-                    onClose={() => dispatch(closeExportModal())}
+                    onClose={() => getUISnapshot().closeExportModal()}
                     onExport={handleExport}
                     title={t('strainsView.exportModal.title')}
                     selectionCount={selectedIdsSet.size}

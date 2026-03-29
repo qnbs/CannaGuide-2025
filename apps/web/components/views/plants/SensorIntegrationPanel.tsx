@@ -7,7 +7,7 @@ import type { SensorReading } from '@/services/webBluetoothSensorService'
 import { mqttSensorService, type MqttConnectionState } from '@/services/mqttSensorService'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { setGlobalEnvironment } from '@/stores/slices/simulationSlice'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { selectSettings } from '@/stores/selectors'
 import { useTranslation } from 'react-i18next'
 
@@ -52,14 +52,12 @@ const SensorIntegrationPanelComponent: React.FC = () => {
         try {
             const nextReading = await webBluetoothSensorService.readEsp32EnvironmentalSensor()
             applyReading(nextReading)
-            dispatch(addNotification({ message: t('plantsView.sensor.success'), type: 'success' }))
+            getUISnapshot().addNotification({ message: t('plantsView.sensor.success'), type: 'success' })
         } catch (error) {
-            dispatch(
-                addNotification({
+            getUISnapshot().addNotification({
                     message: error instanceof Error ? error.message : t('plantsView.sensor.error'),
                     type: 'error',
-                }),
-            )
+                })
         } finally {
             setIsConnecting(false)
         }
@@ -77,12 +75,10 @@ const SensorIntegrationPanelComponent: React.FC = () => {
         }
 
         if (!/^wss?:\/\/.+/i.test(brokerUrl)) {
-            dispatch(
-                addNotification({
+            getUISnapshot().addNotification({
                     message: t('plantsView.sensor.mqttError'),
                     type: 'error',
-                }),
-            )
+                })
             return
         }
 
@@ -95,17 +91,13 @@ const SensorIntegrationPanelComponent: React.FC = () => {
         const unsubState = mqttSensorService.onConnectionStateChange((state) => {
             setMqttState(state)
             if (state === 'connected') {
-                dispatch(
-                    addNotification({
+                getUISnapshot().addNotification({
                         message: t('plantsView.sensor.mqttConnected'),
                         type: 'success',
-                    }),
-                )
+                    })
             }
             if (state === 'error') {
-                dispatch(
-                    addNotification({ message: t('plantsView.sensor.mqttError'), type: 'error' }),
-                )
+                getUISnapshot().addNotification({ message: t('plantsView.sensor.mqttError'), type: 'error' })
             }
         })
 

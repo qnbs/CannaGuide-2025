@@ -45,7 +45,7 @@ describe('inferenceQueueService', () => {
     afterEach(() => {
         terminateInferenceWorker()
         resetWorkerState()
-        workerBus.dispose()
+        workerBus.reset()
     })
 
     it('isWorkerAvailable returns true when Worker is defined', () => {

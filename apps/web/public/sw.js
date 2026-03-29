@@ -462,6 +462,9 @@ async function notifyDueReminders() {
  * The core sync logic. Notifies all open clients about queued offline actions
  * so they can replay them locally. This app is client-only — there is no backend
  * server to POST to. Adding a real server endpoint here is left as a future extension.
+ *
+ * Uses idempotency keys to prevent duplicate replay when multiple tabs are open.
+ * Only ONE client receives each action to avoid duplicate journal entries etc.
  */
 async function syncData() {
     console.debug('[SW] Attempting to sync data...')
@@ -475,17 +478,31 @@ async function syncData() {
         console.debug(`[SW] Found ${queuedActions.length} action(s) to sync.`)
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
 
-        // Notify all open app windows about each action
-        queuedActions.forEach((action) => {
-            const { id: _id, ...actionData } = action
-            clients.forEach((client) => {
-                client.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData })
-            })
+        // Deduplicate by idempotencyKey before dispatching
+        const seenKeys = new Set()
+        const uniqueActions = queuedActions.filter((action) => {
+            const key = action.idempotencyKey
+            if (!key || !seenKeys.has(key)) {
+                if (key) seenKeys.add(key)
+                return true
+            }
+            console.debug(`[SW] Skipping duplicate action: ${key}`)
+            return false
         })
+
+        // Send each action to only the first available client to prevent
+        // cross-tab duplication. Other tabs hydrate from IndexedDB.
+        const primaryClient = clients[0]
+        if (primaryClient) {
+            uniqueActions.forEach((action) => {
+                const { id: _id, ...actionData } = action
+                primaryClient.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData })
+            })
+        }
 
         // Batch-delete all processed actions
         await Promise.all(queuedActions.map((action) => deleteQueuedAction(action.id)))
-        console.debug('[SW] All queued actions dispatched to clients.')
+        console.debug('[SW] All queued actions dispatched to primary client.')
     } catch (error) {
         console.debug('[SW] Sync failed, will retry later.', error)
         throw error

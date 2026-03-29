@@ -410,6 +410,11 @@ export interface PestControlDetails {
 export interface EnvironmentDetails {
     temp?: number
     humidity?: number
+    ec?: number
+    ph?: number
+    lightPpfd?: number
+    waterVolumeMl?: number
+    source?: 'manual' | 'iot_sensor'
 }
 export interface AmendmentDetails {
     type: AmendmentType

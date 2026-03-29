@@ -45,6 +45,7 @@ import {
     acquireGpu,
     releaseGpu,
 } from './gpuResourceManager'
+import { streamTextGeneration } from './localAiStreamingService'
 import { z } from 'zod'
 
 const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
@@ -552,95 +553,17 @@ class LocalAiService implements BaseAIProvider {
         prompt: string,
         onToken: (token: string, accumulated: string) => void,
     ): Promise<string | null> {
-        // Check cache first
-        const cached = getCached(prompt)
-        if (cached) {
-            recordCacheHit()
-            onToken(cached, cached)
-            return cached
-        }
-
-        const persisted = await getCachedInference(prompt)
-        if (persisted) {
-            setCached(prompt, persisted)
-            recordCacheHit()
-            onToken(persisted, persisted)
-            return persisted
-        }
-
-        recordCacheMiss()
-
-        // Try WebLLM streaming
-        const webLlm = await this.loadWebLlmEngine()
-        if (webLlm) {
-            try {
-                const timer = createInferenceTimer()
-                const engine = webLlm as unknown as {
-                    chat: {
-                        completions: {
-                            create: (req: Record<string, unknown>) => Promise<
-                                AsyncIterable<{
-                                    choices?: Array<{ delta?: { content?: string } }>
-                                }>
-                            >
-                        }
-                    }
-                }
-
-                const stream = await withTimeout(
-                    engine.chat.completions.create({
-                        messages: [{ role: 'user', content: prompt }],
-                        temperature: 0.5,
-                        max_gen_len: 512,
-                        stream: true,
-                        stream_options: { include_usage: true },
-                    }),
-                    INFERENCE_TIMEOUT_MS,
-                )
-
-                let accumulated = ''
-                let tokenCount = 0
-
-                for await (const chunk of stream) {
-                    const delta = chunk.choices?.[0]?.delta?.content
-                    if (typeof delta === 'string' && delta.length > 0) {
-                        accumulated += delta
-                        tokenCount++
-                        onToken(delta, accumulated)
-                    }
-                }
-
-                if (accumulated.trim().length > 0) {
-                    const activeWebLlmId = getWebLlmModelId() ?? 'webllm-unknown'
-                    timer.stop({
-                        model: activeWebLlmId,
-                        task: 'text-generation',
-                        backend: 'webllm',
-                        tokensGenerated: tokenCount,
-                    })
-                    setCached(prompt, accumulated)
-                    void setCachedInference(prompt, accumulated, {
-                        model: activeWebLlmId,
-                        task: 'text-generation',
-                    }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
-                    debouncedPersistSnapshot()
-                    return accumulated
-                }
-            } catch (error) {
-                captureLocalAiError(error, {
-                    model: getWebLlmModelId() ?? 'webllm-unknown',
-                    stage: 'webllm-streaming',
-                })
-                console.debug('[LocalAI] WebLLM streaming failed, falling back to batch mode.')
-            }
-        }
-
-        // Fall back to batch generateText
-        const result = await this.generateText(prompt)
-        if (result) {
-            onToken(result, result)
-        }
-        return result
+        return streamTextGeneration(prompt, onToken, {
+            getCached,
+            setCached,
+            loadWebLlmEngine: () =>
+                this.loadWebLlmEngine() as ReturnType<
+                    import('./localAiStreamingService').StreamingDeps['loadWebLlmEngine']
+                >,
+            getWebLlmModelId,
+            generateText: (p) => this.generateText(p),
+            timeoutMs: INFERENCE_TIMEOUT_MS,
+        })
     }
 
     /**

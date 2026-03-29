@@ -421,4 +421,17 @@ export const strainsView = {
     sortBy: 'Sort by',
     showingCount: 'Showing {{count}} of {{total}}',
     loadMore: 'Load More... ({{count}} of {{total}})',
+    availability: {
+        packSizes: 'Packs',
+        seeds: 'seeds',
+        visit: 'Visit',
+        noResults: 'No availability data found for this strain.',
+        disclaimer: 'Prices are indicative. Check the seedbank website for current pricing.',
+        outOfStock: 'Out of stock',
+        seedType: {
+            feminized: 'Feminized',
+            regular: 'Regular',
+            autoflowering: 'Autoflowering',
+        },
+    },
 }

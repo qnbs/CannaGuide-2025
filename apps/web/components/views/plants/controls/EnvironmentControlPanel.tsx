@@ -175,17 +175,28 @@ interface VpdIndicatorProps {
 }
 
 const VPD_ZONES = [
-    { max: 0.4, label: 'Too Low', color: 'text-sky-400', bg: 'bg-sky-500/15' },
-    { max: 0.8, label: 'Seedling', color: 'text-lime-400', bg: 'bg-lime-500/15' },
-    { max: 1.2, label: 'Vegetative', color: 'text-green-400', bg: 'bg-green-500/15' },
-    { max: 1.6, label: 'Flowering', color: 'text-amber-400', bg: 'bg-amber-500/15' },
-    { max: Infinity, label: 'Too High', color: 'text-red-400', bg: 'bg-red-500/15' },
+    { max: 0.4, labelKey: 'tooLow', color: 'text-sky-400', bg: 'bg-sky-500/15' },
+    { max: 0.8, labelKey: 'seedling', color: 'text-lime-400', bg: 'bg-lime-500/15' },
+    { max: 1.2, labelKey: 'vegetative', color: 'text-green-400', bg: 'bg-green-500/15' },
+    { max: 1.6, labelKey: 'flowering', color: 'text-amber-400', bg: 'bg-amber-500/15' },
+    { max: Infinity, labelKey: 'tooHigh', color: 'text-red-400', bg: 'bg-red-500/15' },
 ] as const
+
+const VPD_ZONE_DEFAULTS: Record<string, string> = {
+    tooLow: 'Too Low',
+    seedling: 'Seedling',
+    vegetative: 'Vegetative',
+    flowering: 'Flowering',
+    tooHigh: 'Too High',
+}
 
 const VpdIndicator: React.FC<VpdIndicatorProps> = React.memo(({ temperature, humidity }) => {
     const { t } = useTranslation()
     const vpd = calculateVPD(temperature, humidity)
     const zone = VPD_ZONES.find((z) => vpd < z.max) ?? VPD_ZONES[VPD_ZONES.length - 1]
+    const zoneLabel = t(`plantsView.environment.vpdZone.${zone?.labelKey ?? 'tooHigh'}`, {
+        defaultValue: VPD_ZONE_DEFAULTS[zone?.labelKey ?? 'tooHigh'],
+    })
 
     return (
         <div
@@ -204,7 +215,7 @@ const VpdIndicator: React.FC<VpdIndicatorProps> = React.memo(({ temperature, hum
                     {vpd.toFixed(2)}
                 </span>
                 <span className={`text-xs font-medium ${zone?.color ?? 'text-slate-400'}`}>
-                    kPa -- {zone?.label ?? 'Unknown'}
+                    kPa -- {zoneLabel}
                 </span>
             </div>
         </div>

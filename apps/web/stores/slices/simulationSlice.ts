@@ -381,7 +381,7 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
             const validation = GrowSetupSchema.safeParse(mergedSetup)
             if (!validation.success) {
                 const t = getT()
-                console.error('Grow setup validation failed:', validation.error)
+                console.debug('Grow setup validation failed:', validation.error)
                 getUISnapshot().addNotification({
                     message: t('common.simulationErrors.invalidSetup'),
                     type: 'error',
@@ -422,7 +422,7 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
             // Clean up the flow state.
             getUISnapshot().cancelNewGrow()
         } else {
-            console.error('startNewPlant called without complete strain or setup data.', {
+            console.debug('startNewPlant called without complete strain or setup data.', {
                 strain,
                 setup,
                 finalSlotIndex,
@@ -538,7 +538,7 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                         }),
                     )
                 } catch (error) {
-                    console.error('[SimWorker] Error during plant state update:', error)
+                    console.debug('[SimWorker] Error during plant state update:', error)
                 } finally {
                     dispatch(simulationSlice.actions.setCatchUpState(false))
                 }
@@ -578,7 +578,7 @@ export const applyWateringAction = createAsyncThunk<
 >('simulation/applyWatering', ({ plantId, data, notes }, { dispatch, getState }) => {
     const validation = WaterDataSchema.safeParse(data)
     if (!validation.success) {
-        console.error('Watering action validation failed:', validation.error)
+        console.debug('Watering action validation failed:', validation.error)
         getUISnapshot().addNotification({
             message: getT()('common.simulationErrors.invalidActionData', {
                 action: 'Watering',
@@ -617,7 +617,7 @@ export const applyTrainingAction = createAsyncThunk<
 >('simulation/applyTraining', ({ plantId, data, notes }, { dispatch, getState }) => {
     const validation = TrainingDataSchema.safeParse(data)
     if (!validation.success) {
-        console.error('Training action validation failed:', validation.error)
+        console.debug('Training action validation failed:', validation.error)
         getUISnapshot().addNotification({
             message: getT()('common.simulationErrors.invalidActionData', {
                 action: 'Training',
@@ -652,7 +652,7 @@ export const applyPestControlAction = createAsyncThunk<
 >('simulation/applyPestControl', ({ plantId, data, notes }, { dispatch }) => {
     const validation = PestControlDataSchema.safeParse(data)
     if (!validation.success) {
-        console.error('Pest Control action validation failed:', validation.error)
+        console.debug('Pest Control action validation failed:', validation.error)
         getUISnapshot().addNotification({
             message: getT()('common.simulationErrors.invalidActionData', {
                 action: 'Pest Control',
@@ -676,7 +676,7 @@ export const applyAmendmentAction = createAsyncThunk<
 >('simulation/applyAmendment', ({ plantId, data, notes }, { dispatch }) => {
     const validation = AmendmentDataSchema.safeParse(data)
     if (!validation.success) {
-        console.error('Amendment action validation failed:', validation.error)
+        console.debug('Amendment action validation failed:', validation.error)
         getUISnapshot().addNotification({
             message: getT()('common.simulationErrors.invalidActionData', {
                 action: 'Amendment',

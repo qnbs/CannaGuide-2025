@@ -62,13 +62,17 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
             .catch(() => {
                 if (!cancelled) {
                     setIsCapable(false)
-                    setCapabilityReason('Image generation service unavailable.')
+                    setCapabilityReason(
+                        t('common.imageGenCapability.serviceUnavailable', {
+                            defaultValue: 'Image generation service unavailable.',
+                        }),
+                    )
                 }
             })
         return () => {
             cancelled = true
         }
-    }, [])
+    }, [t])
 
     const handleGenerate = useCallback(async () => {
         setIsGenerating(true)

@@ -29,6 +29,7 @@ import {
 import { getCachedGeneratedImage, setCachedGeneratedImage } from './imageGenerationCacheService'
 import { acquireGpu, releaseGpu, getGpuLockState } from './gpuResourceManager'
 import { workerBus } from '@/services/workerBus'
+import { getT } from '@/i18n'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -187,7 +188,10 @@ export const checkImageGenCapability = (): ImageGenCapability => {
     if (backend !== 'webgpu') {
         return {
             supported: false,
-            reason: 'WebGPU is required for image generation. This device only supports WASM.',
+            reason: getT()('common.imageGenCapability.webgpuRequired', {
+                defaultValue:
+                    'WebGPU is required for image generation. This device only supports WASM.',
+            }),
             backend,
             deviceClass,
             estimatedLatencyMs: -1,
@@ -197,7 +201,9 @@ export const checkImageGenCapability = (): ImageGenCapability => {
     if (deviceClass === 'low-end') {
         return {
             supported: false,
-            reason: 'Device capabilities are insufficient for image generation.',
+            reason: getT()('common.imageGenCapability.deviceInsufficient', {
+                defaultValue: 'Device capabilities are insufficient for image generation.',
+            }),
             backend,
             deviceClass,
             estimatedLatencyMs: -1,
@@ -209,7 +215,11 @@ export const checkImageGenCapability = (): ImageGenCapability => {
         const vram = getCachedVramInfo()
         return {
             supported: false,
-            reason: `Insufficient VRAM (${vram?.vramMB ?? '?'}MB). At least 4096MB required for image generation.`,
+            reason: getT()('common.imageGenCapability.insufficientVram', {
+                defaultValue:
+                    'Insufficient VRAM ({{vram}}MB). At least 4096MB required for image generation.',
+                vram: String(vram?.vramMB ?? '?'),
+            }),
             backend,
             deviceClass,
             estimatedLatencyMs: -1,
@@ -287,7 +297,12 @@ export const generateStrainImageLocal = async (
     }
 
     if (activeCount >= MAX_CONCURRENT) {
-        throw new Error('Image generation already in progress. Please wait for the current task.')
+        throw new Error(
+            getT()('common.imageGenCapability.alreadyInProgress', {
+                defaultValue:
+                    'Image generation already in progress. Please wait for the current task.',
+            }),
+        )
     }
 
     // Check if GPU is already locked by another consumer

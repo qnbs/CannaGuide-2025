@@ -106,10 +106,14 @@ describe('simulationSlice catch-up edge cases', () => {
 
     it('recovers from worker failures without leaving catch-up mode stuck on', async () => {
         const store = createTestStore()
-        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Broken Worker Plant')
+        const plant = plantSimulationService.createPlant(
+            testStrain,
+            testSetup,
+            'Broken Worker Plant',
+        )
         plant.lastUpdated = Date.now() - daysMs(1)
 
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
 
         class ThrowingWorker {
             onmessage: ((event: MessageEvent) => void) | null = null
@@ -131,6 +135,6 @@ describe('simulationSlice catch-up edge cases', () => {
         expect(updatedPlant?.age).toBe(plant.age)
         expect(updatedPlant?.lastUpdated).toBe(plant.lastUpdated)
         expect(store.getState().simulation.isCatchingUp).toBe(false)
-        expect(consoleErrorSpy).toHaveBeenCalled()
+        expect(consoleDebugSpy).toHaveBeenCalled()
     })
 })

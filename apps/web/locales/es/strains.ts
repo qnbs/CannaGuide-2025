@@ -423,4 +423,18 @@ export const strainsView = {
     sortBy: 'Ordenar por',
     showingCount: 'Mostrando {{count}} de {{total}}',
     loadMore: 'Cargar Mas... ({{count}} de {{total}})',
+    availability: {
+        packSizes: 'Paquetes',
+        seeds: 'semillas',
+        visit: 'Visitar',
+        noResults: 'No se encontraron datos de disponibilidad para esta variedad.',
+        disclaimer:
+            'Los precios son indicativos. Consulta la web del banco de semillas para precios actuales.',
+        outOfStock: 'Agotado',
+        seedType: {
+            feminized: 'Feminizada',
+            regular: 'Regular',
+            autoflowering: 'Autofloreciente',
+        },
+    },
 }

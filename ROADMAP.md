@@ -85,7 +85,25 @@ Released: **2026-Q1**
 
 ---
 
-## v1.2 — Community & Automation 🔄
+## Short-Term Refactoring Phase (completed 2026-03-29)
+
+| Feature                                                    | Category     | Status |
+| ---------------------------------------------------------- | ------------ | ------ |
+| WorkerBus: Centralized promise-based Web Worker dispatcher | Architecture | done   |
+| Worker Migration: All 6 workers on WorkerBus protocol      | Architecture | done   |
+| Redux/Zustand Hybrid: 15 Redux slices + Zustand UI store   | Architecture | done   |
+| AI Streaming UX for Mentor, Advisor, Diagnosis views       | AI/UX        | done   |
+| Structured responseSchema (Zod) for AI Function Calling    | AI           | done   |
+| DOMPurify audit: sanitizeValue fix in geminiService        | Security     | done   |
+| GDPR state-leak fix in privacy service                     | Security     | done   |
+| Offline queue race condition fix                           | PWA          | done   |
+| Seedbank integration with real API + CORS proxy cascade    | Core         | done   |
+| Environment Control Panel (Digital Twin)                   | Core         | done   |
+| VPD alert badge in plant header                            | UX           | done   |
+
+---
+
+## v1.2 -- Community & Automation
 
 Target: **2026-Q2**
 

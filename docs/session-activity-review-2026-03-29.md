@@ -326,3 +326,22 @@ Zero failures, zero type errors.
 | Files changed (uiSlice) | --                 | 47 (+2321/-1461)                                       |
 | UI selectors removed    | --                 | 14+                                                    |
 | Type errors             | 0                  | 0                                                      |
+
+---
+
+## Session 4: Production-Grade Perfection (Evening)
+
+### Completed Work
+
+1. **WorkerBus Migration Phase 2** -- Migrated all 4 remaining workers (simulation, scenario, inference, imageGeneration) to centralized WorkerBus protocol. Added `getWorker()` method. Updated test mocks. 793/793 tests pass.
+
+2. **Real-World Seedbank API** -- Rewrote `seedbankService.ts` to fetch from SeedFinder.eu via CORS proxy cascade (allorigins -> corsproxy.io). In-memory 5-min TTL cache. `isLocalOnlyMode()` guard. Deterministic mock fallback when API fails.
+
+3. **VPD Alert Badge** -- Added real-time VPD zone assessment to `DetailedPlantView.tsx` header. Red badge for critical (< 0.4 or > 1.6 kPa), amber for warning. Clickable to jump to Environment tab.
+
+4. **Architecture Docs Sync** -- Updated README.md (EN+DE), ARCHITECTURE.md, ROADMAP.md with WorkerBus, AI streaming, Zod responseSchema, and completed refactoring items.
+
+### Commits
+
+- `refactor(workers): finalize worker bus migration for ml and simulation workers`
+- `feat(app): integrate real seedbank api with proxy, perfect plant view interactivity, and sync architecture docs`

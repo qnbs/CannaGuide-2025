@@ -92,7 +92,9 @@ Three-tier client-side architecture with offline-first design:
 
 - **Offline-First:** Service Worker with Network-First navigation, Cache-First assets, Background Sync for offline action queuing
 - **Dual IndexedDB:** `CannaGuideStateDB` (Redux state, debounce-save 1s, force-save on `visibilitychange`) + `CannaGuideDB` (strains, images, full-text search index)
-- **Web Workers:** VPD simulation runs off main thread via `simulation.worker.ts`
+- **WorkerBus:** Centralized promise-based Web Worker dispatcher (`workerBus.ts`) manages 6 workers (VPD simulation, genealogy, scenarios, inference, image generation, VPD chart) with automatic timeout, messageId correlation, and error propagation
+- **AI Streaming UX:** All AI views (Mentor, Advisor, Diagnosis) use character-by-character streaming with typing indicators for responsive feedback
+- **Structured AI Output:** Zod-validated `responseSchema` for all AI function-calling responses
 - **Memoized Selectors:** Map-based cache keyed by entity ID, `??` over `||` for nullish safety
 - **Safe Recovery:** Corrupted state → auto-clear + restart with session flag to prevent loops
 
@@ -484,7 +486,9 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 
 - **Offline-First:** Service Worker mit Network-First Navigation, Cache-First Assets, Background Sync für Offline-Action-Queuing
 - **Dual IndexedDB:** `CannaGuideStateDB` (Redux State, Debounce-Save 1s, Force-Save bei `visibilitychange`) + `CannaGuideDB` (Sorten, Bilder, Volltextsuche-Index)
-- **Web Workers:** VPD-Simulation läuft off-thread via `simulation.worker.ts`
+- **WorkerBus:** Zentraler promise-basierter Web Worker Dispatcher (`workerBus.ts`) verwaltet 6 Worker (VPD-Sim, Genealogie, Szenarien, Inferenz, Bildgenerierung, VPD-Chart) mit Timeout, messageId-Korrelation und Fehlerpropagation
+- **AI Streaming UX:** Alle KI-Views (Mentor, Advisor, Diagnose) nutzen Zeichen-fuer-Zeichen-Streaming mit Tipp-Indikatoren
+- **Strukturierte KI-Ausgabe:** Zod-validiertes `responseSchema` fuer alle AI Function-Calling-Antworten
 - **Memoisierte Selektoren:** Map-basierter Cache mit Entity-ID-Key, `??` statt `||` für Nullish-Sicherheit
 - **Safe Recovery:** Korrupter State → Auto-Clear + Neustart mit Session-Flag gegen Endlos-Schleifen
 

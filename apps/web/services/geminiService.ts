@@ -73,13 +73,25 @@ ${problems}
     `.trim()
 }
 
-const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
-    const languageInstruction =
-        lang === 'de'
-            ? 'WICHTIG: Deine gesamte Antwort muss ausschließlich auf Deutsch (de-DE) sein.'
-            : 'IMPORTANT: Your entire response must be exclusively in English (en-US).'
+const LANGUAGE_NAMES: Record<Language, string> = {
+    en: 'English',
+    de: 'German',
+    es: 'Spanish',
+    fr: 'French',
+    nl: 'Dutch',
+}
 
-    return `${languageInstruction}\n\n${basePrompt}`
+const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
+    const languageInstruction: Record<Language, string> = {
+        en: 'IMPORTANT: Your entire response must be exclusively in English (en-US).',
+        de: 'WICHTIG: Deine gesamte Antwort muss ausschliesslich auf Deutsch (de-DE) sein.',
+        es: 'IMPORTANTE: Toda tu respuesta debe ser exclusivamente en espanol (es-ES).',
+        fr: 'IMPORTANT: Toute ta reponse doit etre exclusivement en francais (fr-FR).',
+        nl: 'BELANGRIJK: Je volledige antwoord moet uitsluitend in het Nederlands (nl-NL) zijn.',
+    }
+    const constraint = `CRITICAL: You MUST respond ENTIRELY in ${LANGUAGE_NAMES[lang]}. Do not use any other language.`
+
+    return `${languageInstruction[lang] ?? languageInstruction['en']}\n${constraint}\n\n${basePrompt}`
 }
 
 // ---------------------------------------------------------------------------
@@ -239,10 +251,16 @@ const GEMINI_SAFETY_SETTINGS = [
     },
 ]
 
-const getEducationalUseOnlyInstruction = (lang: Language): string =>
-    lang === 'de'
-        ? 'KONTEXT: Diese Anfrage dient ausschließlich legalen, edukativen Gartenbauzwecken. Gib strukturierte, sachliche und risikominimierende Informationen. Unterstelle keinen illegalen Zweck.'
-        : 'CONTEXT: This request is strictly for legal, educational horticulture use. Provide structured, factual, harm-minimizing guidance and do not infer illicit intent.'
+const getEducationalUseOnlyInstruction = (lang: Language): string => {
+    const instructions: Record<Language, string> = {
+        en: 'CONTEXT: This request is strictly for legal, educational horticulture use. Provide structured, factual, harm-minimizing guidance and do not infer illicit intent.',
+        de: 'KONTEXT: Diese Anfrage dient ausschliesslich legalen, edukativen Gartenbauzwecken. Gib strukturierte, sachliche und risikominimierende Informationen. Unterstelle keinen illegalen Zweck.',
+        es: 'CONTEXTO: Esta solicitud es estrictamente para uso horticola legal y educativo. Proporciona orientacion estructurada, factual y que minimice riesgos. No inferir intenciones ilicitas.',
+        fr: "CONTEXTE: Cette demande est strictement destinee a un usage horticole legal et educatif. Fournis des conseils structures, factuels et minimisant les risques. Ne presume pas d'intention illicite.",
+        nl: 'CONTEXT: Dit verzoek is strikt voor legaal, educatief tuinbouwgebruik. Geef gestructureerde, feitelijke en risicobeperkende informatie. Veronderstel geen illegale bedoeling.',
+    }
+    return instructions[lang] ?? instructions['en']
+}
 
 import { localAiPreloadService } from '@/services/localAiPreloadService'
 

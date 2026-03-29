@@ -231,3 +231,98 @@ Zero failures, zero regressions, zero type errors across all phases.
 | Type errors              | 0      | 0                    |
 | Breaking changes         | --     | 0                    |
 | UI/UX audit issues fixed | 0      | 5                    |
+
+---
+
+## Session 3 (Late): Performance & Test Offensive -- Zustand Migration + 806 Unit Tests
+
+### Goal
+
+Migrate high-frequency, transient UI state from Redux to Zustand using the Strangler Fig Pattern. Expand test coverage with comprehensive test suites for newly extracted localAI services.
+
+### Phase 1: Unit Test Suites for Extracted localAI Services
+
+Created 3 comprehensive test files for services extracted in Session 2:
+
+| File                                       | Tests | Coverage                                                  |
+| ------------------------------------------ | ----- | --------------------------------------------------------- |
+| `services/localAiDiagnosisService.test.ts` | 25    | classifyPlantImage, buildDiagnosisContent, fallback, i18n |
+| `services/localAiPromptHandlers.test.ts`   | 35    | All 10 prompt handlers, JSON parsing, error paths         |
+| `services/localAiStreamingService.test.ts` | 14    | Token streaming, abort, timeout, progress callbacks       |
+
+### Phase 2: filtersSlice + strainsViewSlice Migration to Zustand (`1e890b5`)
+
+- Migrated `filtersSlice` and `strainsViewSlice` to Zustand stores (`useFiltersStore`, `useStrainsViewStore`)
+- Updated all consumer components and hooks
+- 14 files changed, +435/-245 lines
+
+### Phase 3: uiSlice Migration to Zustand (`dcfef5a`) -- Largest Migration
+
+The uiSlice was the largest Redux slice (~290 lines, 30+ actions, consumed by ~40 files). Full Strangler Fig migration:
+
+**New Store:** `stores/useUIStore.ts` (~330 lines)
+
+- `subscribeWithSelector` middleware for voice command and onboarding subscriptions
+- `getUISnapshot()` for non-React access from services and middleware
+- `initUIStoreReduxBridge()` for standalone functions needing both stores
+- `hydrateUI()` for boot-time state restoration from IndexedDB
+- Standalone functions: `initiateGrowFromStrainList()`, `confirmSetupAndGoToSlotSelection()`
+
+**Infrastructure Changes:**
+
+- Removed `uiReducer` from Redux `rootReducer` (15 slices remain)
+- Removed all 14+ UI selectors from `selectors.ts`
+- Converted `processVoiceCommand` listener to Zustand subscription
+- Converted `setOnboardingStep` listener to Zustand subscription
+- Updated `store.ts` hydration to extract UI state for Zustand
+- Updated `index.tsx` persistence to read UI state from Zustand
+- Updated `migrationLogic.ts` `PersistedState` type for backward compat
+- Updated `test-utils.tsx` to remove uiReducer
+
+**Consumer Files Migrated (~40):**
+
+- Navigation: BottomNav, SideNav, Header
+- Common: Toast, OnboardingModal, VoiceControl
+- Hooks: useCommandPalette (30 commands), DeepDiveModalContainer, usePwaInstall
+- Views: App.tsx, PlantsView, KnowledgeView, EquipmentView, SaveSetupModalContainer
+- Plants: VitalBar, LogActionModalContainer, AiDiagnosticsModalContainer, GrowConfirmationModal, OverviewTab
+- Knowledge: MentorView
+- Strains: StrainToolbar, StrainDetailView, StrainListItem, StrainTipsView, StrainsView
+- Settings: CloudSyncPanel, DataManagementTab, CommunitySharePanel, SensorIntegrationPanel
+- Redux slices: simulationSlice, savedItemsSlice, userStrainsSlice
+- Entry: index.tsx
+
+**Cross-Store Communication Patterns:**
+
+- `getUISnapshot().someAction()` -- non-React Zustand access from Redux thunks
+- `initUIStoreReduxBridge(() => store.getState())` -- provides Redux state to Zustand standalone functions
+- `useUIStore.subscribe()` -- Zustand subscriptions replacing Redux listener middleware for UI actions
+
+### Commits (Session 3)
+
+| Hash      | Message                                                                    |
+| --------- | -------------------------------------------------------------------------- |
+| `1e890b5` | refactor(store): migrate strains UI and filter state from redux to zustand |
+| `dcfef5a` | refactor(store): migrate uiSlice from Redux to Zustand                     |
+
+### Test Results
+
+```
+Test Files  88 passed (88)
+     Tests  793 passed (793)
+  Duration  73.51s
+```
+
+Zero failures, zero type errors.
+
+### Metrics
+
+| Metric                  | Before (Session 2) | After (Session 3)                                      |
+| ----------------------- | ------------------ | ------------------------------------------------------ |
+| Redux slices            | 17                 | 15 (-2: uiSlice removed, filters/strainsView migrated) |
+| Zustand stores          | 0                  | 3 (useUIStore, useFiltersStore, useStrainsViewStore)   |
+| Test count              | 719                | 793 (+74)                                              |
+| Test files              | 86                 | 88 (+2)                                                |
+| Files changed (uiSlice) | --                 | 47 (+2321/-1461)                                       |
+| UI selectors removed    | --                 | 14+                                                    |
+| Type errors             | 0                  | 0                                                      |

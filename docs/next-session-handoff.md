@@ -2,11 +2,20 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-29 late, Session 4+5) -- Real Seedbank API, i18n Audit, Security Fix
+## Latest Session (2026-03-29, Session 6) -- Audit v2 Fixes, Version Bump, Toolchain Cleanup
 
-**Status: Real SeedFinder.eu API integrated with CORS proxy cascade. GitGuardian key leak fixed (env var migration). Full 5-language i18n audit completed (availability tab, environment panel, VPD zones, image gen capability). console.error compliance enforced. WorkerBus finalization for all 6 workers. 793/793 tests pass. Zero typecheck errors.**
+**Status: v1.2.0-alpha released. Biome dual-toolchain removed. gate:push silent bypass fixed. Test count synced across all docs (793/793, 88 files). CHANGELOG finalized for v1.2.0-alpha. All critical Audit v2 findings resolved.**
 
-### What Was Done (Session 4)
+### What Was Done (Session 6)
+
+1. **Biome dual-toolchain removed** -- Deleted `biome.json`, removed `@biomejs/biome` dep, `biome:check`/`biome:format` scripts, depcheck ignore entry. ESLint + Prettier remain sole toolchain.
+2. **gate:push silent bypass fixed** -- Removed `--changed --passWithNoTests` so all tests run on every push
+3. **Version bump 1.1.0 -> 1.2.0-alpha** -- root + web package.json, README badges, copilot-instructions
+4. **Test count discrepancy fixed** -- CONTRIBUTING.md 622 -> 793+, audit-roadmap Ist-Zustand updated
+5. **CHANGELOG finalized** -- Unreleased -> v1.2.0-alpha with new audit section
+6. **Audit roadmap dashboard updated** -- Sprint progress, erledigt log, version/test metrics
+
+### Previous Session (2026-03-29, Session 4+5)
 
 1. **WorkerBus phase 2** -- ML + simulation workers migrated to central bus (all 6 workers complete)
 2. **Real SeedFinder.eu API** -- `seedbankService.ts` with CORS proxy cascade, 5-min cache, `isLocalOnlyMode()` guard, mock fallback

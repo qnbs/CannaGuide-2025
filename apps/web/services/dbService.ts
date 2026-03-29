@@ -688,9 +688,13 @@ export const dbService = {
      * @param action The Redux action object to queue.
      * @returns {Promise<void>}
      */
-    async addOfflineAction(action: unknown): Promise<void> {
+    async addOfflineAction(action: Record<string, unknown>): Promise<void> {
+        const entry = {
+            ...action,
+            idempotencyKey: action.idempotencyKey ?? crypto.randomUUID(),
+        }
         await performTx<IDBValidKey>(OFFLINE_ACTIONS_STORE, 'readwrite', (store) =>
-            store.add(action),
+            store.add(entry),
         )
     },
 

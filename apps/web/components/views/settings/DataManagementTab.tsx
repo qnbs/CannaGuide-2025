@@ -242,18 +242,26 @@ const DataManagementTab: React.FC = () => {
                 level: 'info',
                 tags: { database: dbName, success: String(ok) },
             })
-            getUISnapshot().addNotification({
-                type: ok ? 'success' : 'error',
-                message: ok
-                    ? t('settingsView.data.singleDbDeleteSuccess', {
-                          db: dbName,
-                          defaultValue: `${dbName} deleted.`,
-                      })
-                    : t('settingsView.data.singleDbDeleteFail', {
-                          db: dbName,
-                          defaultValue: `Failed to delete ${dbName}.`,
-                      }),
-            })
+            if (ok) {
+                getUISnapshot().addNotification({
+                    type: 'success',
+                    message: t('settingsView.data.singleDbDeleteSuccess', {
+                        db: dbName,
+                        defaultValue: `${dbName} deleted. Reloading...`,
+                    }),
+                })
+                // Invalidate in-memory state to prevent Redux/Zustand from
+                // writing the deleted data back on visibilitychange or save-tick.
+                globalThis.setTimeout(() => globalThis.location.reload(), 600)
+            } else {
+                getUISnapshot().addNotification({
+                    type: 'error',
+                    message: t('settingsView.data.singleDbDeleteFail', {
+                        db: dbName,
+                        defaultValue: `Failed to delete ${dbName}.`,
+                    }),
+                })
+            }
         },
         [dispatch, t],
     )

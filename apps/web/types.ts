@@ -909,3 +909,10 @@ export interface PluginManifest {
     icon?: string
     tags?: string[]
 }
+
+/** Queued offline action with idempotency key to prevent duplicate replay across tabs. */
+export interface OfflineAction {
+    idempotencyKey: string
+    type: string
+    payload?: unknown
+}

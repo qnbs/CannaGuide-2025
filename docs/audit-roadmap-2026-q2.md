@@ -30,12 +30,12 @@
 
 ## Gesamtübersicht & Zielzustand
 
-### Ist-Zustand (2026-03-24)
+### Ist-Zustand (2026-03-29)
 
 | Metrik                     | Wert                 | Bewertung           |
 | -------------------------- | -------------------- | ------------------- |
-| App-Version                | v1.1.0               | ✅ Stabil           |
-| Tests                      | 643/643 (76 Dateien) | ✅ Grün             |
+| App-Version                | v1.2.0-alpha         | ✅ Stabil           |
+| Tests                      | 793/793 (88 Dateien) | ✅ Grün             |
 | OpenSSF Scorecard          | 8.5/10               | ⚠ Ziel: 10/10       |
 | SonarCloud Security        | A                    | ✅                  |
 | SonarCloud Reliability     | B                    | ⚠ Ziel: A           |
@@ -69,11 +69,19 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-03-28 (Deep Cleanup + 5-Feature Batch)
-Naechste Prioritaet:  Unit Tests neue Features, ES/FR/NL Vervollstaendigung, Sonar Hotspots
-Sprint-Fortschritt: S1 [0/3] | S2 [0/4] | S3 [3/5] | S4 [0/2] | S5 [5/8] | S6 [0/7]
-Gesamtfortschritt:  ████████░░░░░░░░░░░░ 8/29 Tasks (~28%)
+Letzte Session:     2026-03-29 (Audit v2 Fixes + Version Bump)
+App-Version:        v1.2.0-alpha
+Tests:              793/793 (88 files)
+Naechste Prioritaet:  Sonar Hotspots, Test Coverage >30%, Cache-Deduplizierung
+Sprint-Fortschritt: S1 [0/3] | S2 [1/4] | S3 [3/5] | S4 [0/2] | S5 [6/8] | S6 [0/7]
+Gesamtfortschritt:  ██████████░░░░░░░░░░ 10/29 Tasks (~34%)
 Blocker:            SonarCloud Hotspot Review (Admin UI), CII Badge (Email)
+Erledigt (2026-03-29): Biome-Toolchain entfernt (Dual-Toolchain-Kollision aufgeloest),
+                        gate:push --passWithNoTests Silent-Bypass behoben,
+                        Version 1.1.0 -> 1.2.0-alpha (root + web),
+                        Test-Diskrepanz behoben (CONTRIBUTING.md 622 -> 793),
+                        GitGuardian API-Key Fix, Full i18n Audit (21 Dateien),
+                        Changelog + Docs Sync
 Erledigt (2026-03-28): Monorepo-Docs-Sync, Eco-Mode-Redux-Sync, Nutrient-Plugin-UI,
                         DSGVO-Individual-DB-Delete, Seedbanks-i18n-5-Locales,
                         createCachedPipelineLoader-Dedup (4 Services, ~75 LOC)

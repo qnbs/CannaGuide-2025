@@ -4,7 +4,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
-## [Unreleased]
+## [1.2.0-alpha] — 2026-03-29
+
+### Quality & Toolchain Audit (2026-03-29)
+
+- **Biome dual-toolchain removed**: Removed dead `@biomejs/biome` dependency, `biome.json` config, and `biome:check`/`biome:format` scripts. ESLint + Prettier remain the sole toolchain -- eliminates formatting conflicts
+- **gate:push silent bypass fixed**: Removed `--changed --passWithNoTests` from push gate -- all tests now run on every push, preventing false green gates
+- **Version bump**: 1.1.0 -> 1.2.0-alpha across root and web package.json
+- **Test count sync**: CONTRIBUTING.md updated from 622 to 793+ tests (88 files)
+- **Audit roadmap dashboard**: Updated Ist-Zustand to v1.2.0-alpha / 793 tests / 88 files
 
 ### Localization & Security Audit (2026-03-29)
 

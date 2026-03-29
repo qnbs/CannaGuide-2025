@@ -12,6 +12,7 @@ import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab'
 import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab'
 import { useAppDispatch } from '@/stores/store'
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
+import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
 
 interface DetailedPlantViewProps {
     plant: Plant
@@ -78,6 +79,13 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 id: 'overview',
                 label: t('plantsView.detailedView.tabs.overview'),
                 icon: <PhosphorIcons.ChartPieSlice />,
+            },
+            {
+                id: 'environment',
+                label: t('plantsView.detailedView.tabs.environment', {
+                    defaultValue: 'Environment',
+                }),
+                icon: <PhosphorIcons.Thermometer />,
             },
             ...(isPostHarvest
                 ? [
@@ -249,6 +257,9 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 className="animate-fade-in"
             >
                 {activeTab === 'overview' && <OverviewTab plant={plant} />}
+                {activeTab === 'environment' && (
+                    <EnvironmentControlPanel plant={plant} />
+                )}
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
                 {activeTab === 'simulation' && <SimulationDebugTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}

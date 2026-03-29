@@ -3,7 +3,6 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 import type { ForkedTask } from '@reduxjs/toolkit'
 
 import simulationReducer from './slices/simulationSlice'
-import uiReducer, { initialState as initialUiState, setActiveView } from './slices/uiSlice'
 import settingsReducer from './slices/settingsSlice'
 import userStrainsReducer from './slices/userStrainsSlice'
 import favoritesReducer from './slices/favoritesSlice'
@@ -18,15 +17,20 @@ import genealogyReducer from './slices/genealogySlice'
 import navigationReducer from './slices/navigationSlice'
 import nutrientPlannerReducer from './slices/nutrientPlannerSlice'
 import { geminiApi } from './api'
-import { listenerMiddleware } from './listenerMiddleware'
-import { initFilterUrlSync } from './listenerMiddleware'
+import {
+    listenerMiddleware,
+    initFilterUrlSync,
+    initVoiceCommandSubscription,
+    initOnboardingSubscription,
+} from './listenerMiddleware'
 import { indexedDBStorage } from './indexedDBStorage'
 import { migrateState } from '../services/migrationLogic'
 import { REDUX_STATE_KEY } from '@/constants'
+import { getUISnapshot, initialUIState, initUIStoreReduxBridge } from './useUIStore'
+import type { UIState } from './useUIStore'
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
-    ui: uiReducer,
     settings: settingsReducer,
     userStrains: userStrainsReducer,
     favorites: favoritesReducer,
@@ -69,13 +73,18 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
 export const createAppStore = async (): Promise<AppStore> => {
     let preloadedState: Partial<RootState> | undefined
+    let persistedUiState: Partial<UIState> | undefined
 
     const hydratePersistedState = (persistedString: string): Partial<RootState> => {
         const persistedState = JSON.parse(persistedString)
-        const migrated = migrateState(persistedState) as Partial<RootState>
+        const migrated = migrateState(persistedState) as Partial<RootState> & {
+            ui?: Partial<UIState>
+        }
 
+        // Extract UI state for Zustand hydration and remove from Redux preloaded state
         if (migrated.ui) {
-            migrated.ui = { ...initialUiState, ...migrated.ui }
+            persistedUiState = { ...initialUIState, ...migrated.ui }
+            delete (migrated as Record<string, unknown>).ui
         }
 
         return migrated
@@ -126,14 +135,22 @@ export const createAppStore = async (): Promise<AppStore> => {
 
     const store = makeStore(preloadedState)
 
-    // Wire up zustand filter URL sync with access to the Redux store's active view
-    initFilterUrlSync(() => store.getState().ui.activeView)
+    // Wire up Zustand <-> Redux bridges
+    initUIStoreReduxBridge(() => store.getState())
+    initFilterUrlSync()
+    initVoiceCommandSubscription(store.dispatch, () => store.getState())
+    initOnboardingSubscription(() => store.getState())
+
+    // Hydrate Zustand UI state from persisted data
+    if (persistedUiState) {
+        getUISnapshot().hydrateUI(persistedUiState)
+    }
 
     // After store creation, set the initial view. Prioritize user's default setting over last active view.
     if (preloadedState?.settings?.settings?.general?.defaultView) {
-        store.dispatch(setActiveView(preloadedState.settings.settings.general.defaultView))
-    } else if (preloadedState?.ui?.lastActiveView) {
-        store.dispatch(setActiveView(preloadedState.ui.lastActiveView))
+        getUISnapshot().setActiveView(preloadedState.settings.settings.general.defaultView)
+    } else if (persistedUiState?.lastActiveView) {
+        getUISnapshot().setActiveView(persistedUiState.lastActiveView)
     }
 
     return store

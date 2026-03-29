@@ -10,14 +10,7 @@ import {
     KnowledgeViewTab,
 } from '@/types'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import {
-    setActiveView,
-    openAddModal,
-    setIsCommandPaletteOpen,
-    openExportModal,
-    setEquipmentViewTab,
-    setKnowledgeViewTab,
-} from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { setSetting, toggleSetting } from '@/stores/slices/settingsSlice'
 import { useFiltersStore } from '@/stores/useFiltersStore'
 import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
@@ -38,7 +31,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 subtitle: t('nav.plants'),
                 group: 'Navigation',
                 icon: PhosphorIcons.Plant,
-                action: () => dispatch(setActiveView(View.Plants)),
+                action: () => getUISnapshot().setActiveView(View.Plants),
                 shortcut: ['G', 'P'],
                 keywords: 'plants garden grow home dashboard',
                 priority: 10,
@@ -49,7 +42,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 subtitle: t('nav.strains'),
                 group: 'Navigation',
                 icon: PhosphorIcons.Leafy,
-                action: () => dispatch(setActiveView(View.Strains)),
+                action: () => getUISnapshot().setActiveView(View.Strains),
                 shortcut: ['G', 'S'],
                 keywords: 'strains varieties cultivars database',
                 priority: 10,
@@ -60,7 +53,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 subtitle: t('nav.equipment'),
                 group: 'Navigation',
                 icon: PhosphorIcons.Wrench,
-                action: () => dispatch(setActiveView(View.Equipment)),
+                action: () => getUISnapshot().setActiveView(View.Equipment),
                 shortcut: ['G', 'E'],
                 keywords: 'equipment tools setup configurator hardware',
                 priority: 10,
@@ -71,7 +64,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 subtitle: t('nav.knowledge'),
                 group: 'Navigation',
                 icon: PhosphorIcons.Brain,
-                action: () => dispatch(setActiveView(View.Knowledge)),
+                action: () => getUISnapshot().setActiveView(View.Knowledge),
                 shortcut: ['G', 'K'],
                 keywords: 'knowledge mentor guide wiki learn ai chat',
                 priority: 10,
@@ -82,7 +75,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 subtitle: t('nav.settings'),
                 group: 'Navigation',
                 icon: PhosphorIcons.Gear,
-                action: () => dispatch(setActiveView(View.Settings)),
+                action: () => getUISnapshot().setActiveView(View.Settings),
                 shortcut: ['G', 'T'],
                 keywords: 'settings preferences config options',
                 priority: 9,
@@ -93,7 +86,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 subtitle: t('nav.help'),
                 group: 'Navigation',
                 icon: PhosphorIcons.Question,
-                action: () => dispatch(setActiveView(View.Help)),
+                action: () => getUISnapshot().setActiveView(View.Help),
                 shortcut: ['?'],
                 keywords: 'help faq support documentation',
                 priority: 8,
@@ -106,8 +99,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.Plus,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
-                    dispatch(openAddModal())
+                    getUISnapshot().setActiveView(View.Strains)
+                    getUISnapshot().openAddModal()
                 },
                 keywords: 'add create new strain custom',
                 priority: 8,
@@ -118,8 +111,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.DownloadSimple,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
-                    dispatch(openExportModal())
+                    getUISnapshot().setActiveView(View.Strains)
+                    getUISnapshot().openExportModal()
                 },
                 keywords: 'export csv pdf download backup',
                 priority: 5,
@@ -138,7 +131,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.Heart,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     strainsViewStore.getState().setStrainsViewTab(StrainViewTab.Favorites)
                 },
                 keywords: 'favorites liked bookmarks hearts',
@@ -149,7 +142,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.Leafy,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     filtersStore.getState().toggleTypeFilter(StrainType.Sativa)
                 },
                 keywords: 'filter sativa type energetic uplifting',
@@ -160,7 +153,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.Leafy,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     filtersStore.getState().toggleTypeFilter(StrainType.Indica)
                 },
                 keywords: 'filter indica type relaxing sedating',
@@ -171,7 +164,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.Leafy,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     filtersStore.getState().toggleTypeFilter(StrainType.Hybrid)
                 },
                 keywords: 'filter hybrid type balanced',
@@ -191,7 +184,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.ListBullets,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     strainsViewStore.getState().setStrainsViewMode('list')
                 },
                 keywords: 'list view mode table rows',
@@ -203,7 +196,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.GridFour,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     strainsViewStore.getState().setStrainsViewMode('grid')
                 },
                 keywords: 'grid view mode cards tiles',
@@ -219,7 +212,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.ListChecks,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     strainsViewStore.getState().setStrainsViewTab(StrainViewTab.All)
                 },
                 keywords: 'all strains tab browse catalog',
@@ -233,7 +226,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.Person,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     strainsViewStore.getState().setStrainsViewTab(StrainViewTab.MyStrains)
                 },
                 keywords: 'my strains custom personal',
@@ -247,7 +240,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.TreeStructure,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     strainsViewStore.getState().setStrainsViewTab(StrainViewTab.Genealogy)
                 },
                 keywords: 'genealogy tree lineage family genetics',
@@ -261,7 +254,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Strains',
                 icon: PhosphorIcons.Flask,
                 action: () => {
-                    dispatch(setActiveView(View.Strains))
+                    getUISnapshot().setActiveView(View.Strains)
                     strainsViewStore.getState().setStrainsViewTab(StrainViewTab.BreedingLab)
                 },
                 keywords: 'breeding lab cross punnett genetics',
@@ -288,8 +281,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Equipment',
                 icon: PhosphorIcons.GearSix,
                 action: () => {
-                    dispatch(setActiveView(View.Equipment))
-                    dispatch(setEquipmentViewTab(EquipmentViewTab.Configurator))
+                    getUISnapshot().setActiveView(View.Equipment)
+                    getUISnapshot().setEquipmentViewTab(EquipmentViewTab.Configurator)
                 },
                 keywords: 'configurator setup ai recommendations',
             },
@@ -302,8 +295,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Equipment',
                 icon: PhosphorIcons.Archive,
                 action: () => {
-                    dispatch(setActiveView(View.Equipment))
-                    dispatch(setEquipmentViewTab(EquipmentViewTab.Setups))
+                    getUISnapshot().setActiveView(View.Equipment)
+                    getUISnapshot().setEquipmentViewTab(EquipmentViewTab.Setups)
                 },
                 keywords: 'saved setups configurations presets',
             },
@@ -316,8 +309,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Equipment',
                 icon: PhosphorIcons.Calculator,
                 action: () => {
-                    dispatch(setActiveView(View.Equipment))
-                    dispatch(setEquipmentViewTab(EquipmentViewTab.Calculators))
+                    getUISnapshot().setActiveView(View.Equipment)
+                    getUISnapshot().setEquipmentViewTab(EquipmentViewTab.Calculators)
                 },
                 keywords: 'calculators vpd cost light wattage',
             },
@@ -330,8 +323,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Equipment',
                 icon: PhosphorIcons.Storefront,
                 action: () => {
-                    dispatch(setActiveView(View.Equipment))
-                    dispatch(setEquipmentViewTab(EquipmentViewTab.GrowShops))
+                    getUISnapshot().setActiveView(View.Equipment)
+                    getUISnapshot().setEquipmentViewTab(EquipmentViewTab.GrowShops)
                 },
                 keywords: 'grow shops stores buy purchase',
             },
@@ -344,8 +337,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Equipment',
                 icon: PhosphorIcons.Cannabis,
                 action: () => {
-                    dispatch(setActiveView(View.Equipment))
-                    dispatch(setEquipmentViewTab(EquipmentViewTab.Seedbanks))
+                    getUISnapshot().setActiveView(View.Equipment)
+                    getUISnapshot().setEquipmentViewTab(EquipmentViewTab.Seedbanks)
                 },
                 keywords: 'seed banks seeds purchase order',
             },
@@ -360,8 +353,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Knowledge',
                 icon: PhosphorIcons.Brain,
                 action: () => {
-                    dispatch(setActiveView(View.Knowledge))
-                    dispatch(setKnowledgeViewTab(KnowledgeViewTab.Mentor))
+                    getUISnapshot().setActiveView(View.Knowledge)
+                    getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Mentor)
                 },
                 keywords: 'ai mentor chat advice assistant',
                 priority: 6,
@@ -375,8 +368,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Knowledge',
                 icon: PhosphorIcons.BookOpenText,
                 action: () => {
-                    dispatch(setActiveView(View.Knowledge))
-                    dispatch(setKnowledgeViewTab(KnowledgeViewTab.Guide))
+                    getUISnapshot().setActiveView(View.Knowledge)
+                    getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Guide)
                 },
                 keywords: 'grow guide tutorial howto steps',
             },
@@ -389,8 +382,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Knowledge',
                 icon: PhosphorIcons.ArchiveBox,
                 action: () => {
-                    dispatch(setActiveView(View.Knowledge))
-                    dispatch(setKnowledgeViewTab(KnowledgeViewTab.Archive))
+                    getUISnapshot().setActiveView(View.Knowledge)
+                    getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Archive)
                 },
                 keywords: 'archive history conversations saved',
             },
@@ -403,8 +396,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Knowledge',
                 icon: PhosphorIcons.Flask,
                 action: () => {
-                    dispatch(setActiveView(View.Knowledge))
-                    dispatch(setKnowledgeViewTab(KnowledgeViewTab.Breeding))
+                    getUISnapshot().setActiveView(View.Knowledge)
+                    getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Breeding)
                 },
                 keywords: 'breeding genetics knowledge',
             },
@@ -417,8 +410,8 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 group: 'Knowledge',
                 icon: PhosphorIcons.GameController,
                 action: () => {
-                    dispatch(setActiveView(View.Knowledge))
-                    dispatch(setKnowledgeViewTab(KnowledgeViewTab.Sandbox))
+                    getUISnapshot().setActiveView(View.Knowledge)
+                    getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Sandbox)
                 },
                 keywords: 'sandbox experiment simulate test playground',
             },
@@ -582,7 +575,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 title: t('commandPalette.close'),
                 group: 'General',
                 icon: PhosphorIcons.CommandLine,
-                action: () => dispatch(setIsCommandPaletteOpen(false)),
+                action: () => getUISnapshot().setIsCommandPaletteOpen(false),
                 shortcut: ['⌘', 'K'],
                 keywords: 'close palette command',
             },

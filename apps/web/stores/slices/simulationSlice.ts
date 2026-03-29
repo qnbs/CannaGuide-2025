@@ -11,7 +11,7 @@ import {
 } from '@/types'
 import { plantSimulationService, vpdService } from '@/services/plantSimulationService'
 import { RootState } from '../store'
-import { addNotification, cancelNewGrow, setActiveView } from './uiSlice'
+import { getUISnapshot } from '../useUIStore'
 import { getT } from '@/i18n'
 import {
     GrowSetupSchema,
@@ -350,8 +350,8 @@ export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: R
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (_, { dispatch, getState }) => {
-        const { ui, simulation, settings } = getState()
-        const { strain, setup, slotIndex } = ui.newGrowFlow
+        const { simulation, settings } = getState()
+        const { strain, setup, slotIndex } = getUISnapshot().newGrowFlow
 
         let finalSlotIndex = slotIndex
 
@@ -363,13 +363,11 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
         // Check if a slot was found (could be -1 if all are full).
         if (finalSlotIndex === -1) {
             const t = getT()
-            dispatch(
-                addNotification({
-                    message: t('plantsView.notifications.allSlotsFull'),
-                    type: 'error',
-                }),
-            )
-            dispatch(cancelNewGrow())
+            getUISnapshot().addNotification({
+                message: t('plantsView.notifications.allSlotsFull'),
+                type: 'error',
+            })
+            getUISnapshot().cancelNewGrow()
             return
         }
 
@@ -383,13 +381,11 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
             if (!validation.success) {
                 const t = getT()
                 console.error('Grow setup validation failed:', validation.error)
-                dispatch(
-                    addNotification({
-                        message: t('common.simulationErrors.invalidSetup'),
-                        type: 'error',
-                    }),
-                )
-                dispatch(cancelNewGrow())
+                getUISnapshot().addNotification({
+                    message: t('common.simulationErrors.invalidSetup'),
+                    type: 'error',
+                })
+                getUISnapshot().cancelNewGrow()
                 return
             }
 
@@ -414,25 +410,23 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
             )
 
             const t = getT()
-            dispatch(
-                addNotification({
-                    message: t('plantsView.notifications.growStarted', { name: newPlant.name }),
-                    type: 'success',
-                }),
-            )
+            getUISnapshot().addNotification({
+                message: t('plantsView.notifications.growStarted', { name: newPlant.name }),
+                type: 'success',
+            })
 
             // Navigate to plants view to show the new plant, regardless of where the flow started.
-            dispatch(setActiveView(View.Plants))
+            getUISnapshot().setActiveView(View.Plants)
 
             // Clean up the flow state.
-            dispatch(cancelNewGrow())
+            getUISnapshot().cancelNewGrow()
         } else {
             console.error('startNewPlant called without complete strain or setup data.', {
                 strain,
                 setup,
                 finalSlotIndex,
             })
-            dispatch(cancelNewGrow())
+            getUISnapshot().cancelNewGrow()
         }
     },
 )
@@ -599,14 +593,12 @@ export const applyWateringAction = createAsyncThunk<
     const validation = WaterDataSchema.safeParse(data)
     if (!validation.success) {
         console.error('Watering action validation failed:', validation.error)
-        dispatch(
-            addNotification({
-                message: getT()('common.simulationErrors.invalidActionData', {
-                    action: 'Watering',
-                }),
-                type: 'error',
+        getUISnapshot().addNotification({
+            message: getT()('common.simulationErrors.invalidActionData', {
+                action: 'Watering',
             }),
-        )
+            type: 'error',
+        })
         return
     }
 
@@ -640,14 +632,12 @@ export const applyTrainingAction = createAsyncThunk<
     const validation = TrainingDataSchema.safeParse(data)
     if (!validation.success) {
         console.error('Training action validation failed:', validation.error)
-        dispatch(
-            addNotification({
-                message: getT()('common.simulationErrors.invalidActionData', {
-                    action: 'Training',
-                }),
-                type: 'error',
+        getUISnapshot().addNotification({
+            message: getT()('common.simulationErrors.invalidActionData', {
+                action: 'Training',
             }),
-        )
+            type: 'error',
+        })
         return
     }
 
@@ -677,14 +667,12 @@ export const applyPestControlAction = createAsyncThunk<
     const validation = PestControlDataSchema.safeParse(data)
     if (!validation.success) {
         console.error('Pest Control action validation failed:', validation.error)
-        dispatch(
-            addNotification({
-                message: getT()('common.simulationErrors.invalidActionData', {
-                    action: 'Pest Control',
-                }),
-                type: 'error',
+        getUISnapshot().addNotification({
+            message: getT()('common.simulationErrors.invalidActionData', {
+                action: 'Pest Control',
             }),
-        )
+            type: 'error',
+        })
         return
     }
     dispatch(
@@ -703,14 +691,12 @@ export const applyAmendmentAction = createAsyncThunk<
     const validation = AmendmentDataSchema.safeParse(data)
     if (!validation.success) {
         console.error('Amendment action validation failed:', validation.error)
-        dispatch(
-            addNotification({
-                message: getT()('common.simulationErrors.invalidActionData', {
-                    action: 'Amendment',
-                }),
-                type: 'error',
+        getUISnapshot().addNotification({
+            message: getT()('common.simulationErrors.invalidActionData', {
+                action: 'Amendment',
             }),
-        )
+            type: 'error',
+        })
         return
     }
     dispatch(

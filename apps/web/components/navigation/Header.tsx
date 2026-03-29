@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 import { Button } from '../common/Button'
-import { useAppSelector, useAppDispatch } from '@/stores/store'
-import { selectActiveView } from '@/stores/selectors'
-import { setActiveView } from '@/stores/slices/uiSlice'
+import { useUIStore } from '@/stores/useUIStore'
 import { VoiceControl } from '../common/VoiceControl'
 
 interface HeaderProps {
@@ -23,8 +21,8 @@ export const Header: React.FC<HeaderProps> = ({
     onInstallClick,
 }) => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const activeView = useAppSelector(selectActiveView)
+    const activeView = useUIStore((s) => s.activeView)
+    const setActiveView = useUIStore((s) => s.setActiveView)
 
     const viewTitles: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
@@ -39,28 +37,28 @@ export const Header: React.FC<HeaderProps> = ({
 
     const handleHeaderClick = () => {
         // Act as a "home" button, returning to the main dashboard
-        dispatch(setActiveView(View.Plants))
+        setActiveView(View.Plants)
     }
 
     const headerIcon = useMemo(() => {
-        const iconClass = "w-8 h-8 flex-shrink-0";
+        const iconClass = 'w-8 h-8 flex-shrink-0'
         switch (activeView) {
             case View.Strains:
-                return <PhosphorIcons.Leafy className={`${iconClass} text-green-400`} />;
+                return <PhosphorIcons.Leafy className={`${iconClass} text-green-400`} />
             case View.Plants:
-                return <PhosphorIcons.Plant className={`${iconClass} text-green-400`} />;
+                return <PhosphorIcons.Plant className={`${iconClass} text-green-400`} />
             case View.Equipment:
-                return <PhosphorIcons.MagicWand className={`${iconClass} text-purple-400`} />;
+                return <PhosphorIcons.MagicWand className={`${iconClass} text-purple-400`} />
             case View.Knowledge:
-                return <PhosphorIcons.Flask className={`${iconClass} text-rose-400`} />;
+                return <PhosphorIcons.Flask className={`${iconClass} text-rose-400`} />
             case View.Help:
-                return <PhosphorIcons.Question className={`${iconClass} text-primary-400`} />;
+                return <PhosphorIcons.Question className={`${iconClass} text-primary-400`} />
             case View.Settings:
-                return <PhosphorIcons.GearSix className={`${iconClass} text-primary-400`} />;
+                return <PhosphorIcons.GearSix className={`${iconClass} text-primary-400`} />
             default:
-                return <CannabisLeafIcon className={`${iconClass} text-primary-400`} />;
+                return <CannabisLeafIcon className={`${iconClass} text-primary-400`} />
         }
-    }, [activeView]);
+    }, [activeView])
 
     return (
         <header className="sticky top-0 z-30 flex-shrink-0 px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8">
@@ -110,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <Button
                             variant="ghost"
                             className="rounded-xl !p-2"
-                            onClick={() => dispatch(setActiveView(View.Help))}
+                            onClick={() => setActiveView(View.Help)}
                             aria-label={t('nav.help')}
                         >
                             <PhosphorIcons.Question className="w-6 h-6" />
@@ -118,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <Button
                             variant="ghost"
                             className="rounded-xl !p-2"
-                            onClick={() => dispatch(setActiveView(View.Settings))}
+                            onClick={() => setActiveView(View.Settings)}
                             aria-label={t('nav.settings')}
                         >
                             <PhosphorIcons.GearSix className="w-6 h-6" />

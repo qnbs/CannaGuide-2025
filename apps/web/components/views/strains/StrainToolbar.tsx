@@ -2,8 +2,7 @@ import React, { memo } from 'react'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
-import { useAppDispatch } from '@/stores/store'
-import { openAddModal, openExportModal } from '@/stores/slices/uiSlice'
+import { useUIStore } from '@/stores/useUIStore'
 import { StrainType, SortKey, SortDirection } from '@/types'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
@@ -26,7 +25,6 @@ interface StrainToolbarProps {
 
 const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
     const setStrainsViewMode = useStrainsViewStore((s) => s.setStrainsViewMode)
     const {
         searchTerm,
@@ -78,7 +76,7 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                 </div>
 
                 <Button
-                    onClick={() => dispatch(openAddModal())}
+                    onClick={() => useUIStore.getState().openAddModal()}
                     variant="secondary"
                     className="!p-2.5"
                     aria-label={t('strainsView.addStrain')}
@@ -88,7 +86,7 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                 </Button>
 
                 <Button
-                    onClick={() => dispatch(openExportModal())}
+                    onClick={() => useUIStore.getState().openExportModal()}
                     variant="secondary"
                     className="!p-2.5"
                     aria-label={t('common.export')}

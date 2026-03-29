@@ -7,7 +7,7 @@ import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTyp
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors'
 import { toggleFavorite } from '@/stores/slices/favoritesSlice'
-import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice'
+import { initiateGrowFromStrainList } from '@/stores/useUIStore'
 import { updateNote, undoNoteChange, redoNoteChange } from '@/stores/slices/notesSlice'
 import { StrainAiTips } from './StrainAiTips'
 import { Tabs } from '@/components/common/Tabs'
@@ -321,7 +321,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                             }
                         >
                             <Button
-                                onClick={() => dispatch(initiateGrowFromStrainList(strain))}
+                                onClick={() => initiateGrowFromStrainList(strain)}
                                 disabled={!hasAvailableSlots}
                                 className="inline-flex min-h-11 w-full sm:w-auto"
                             >

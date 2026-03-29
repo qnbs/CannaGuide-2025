@@ -21,7 +21,7 @@ import {
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 import type { VersionedSliceName } from '@/constants'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { getUISnapshot } from '@/stores/useUIStore'
 import { dbService } from '@/services/dbService'
 import { selectSettings, selectSimulation } from '@/stores/selectors'
 import { setSetting } from '@/stores/slices/settingsSlice'
@@ -173,12 +173,10 @@ const DataManagementTab: React.FC = () => {
                             throw new Error('Invalid file structure')
                         }
                     } catch {
-                        dispatch(
-                            addNotification({
-                                type: 'error',
-                                message: String(t('settingsView.data.importError')),
-                            }),
-                        )
+                        getUISnapshot().addNotification({
+                            type: 'error',
+                            message: String(t('settingsView.data.importError')),
+                        })
                     }
                 }
             }
@@ -192,12 +190,10 @@ const DataManagementTab: React.FC = () => {
             await indexedDBStorage.setItem(REDUX_STATE_KEY, fileToImport)
             setIsImportConfirmOpen(false)
             setFileToImport(null)
-            dispatch(
-                addNotification({
-                    type: 'success',
-                    message: String(t('settingsView.data.importSuccess')),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'success',
+                message: String(t('settingsView.data.importSuccess')),
+            })
             setTimeout(() => globalThis.location.reload(), 1000)
         }
     }
@@ -214,12 +210,10 @@ const DataManagementTab: React.FC = () => {
             globalThis.location.reload()
         } else {
             setIsErasing(false)
-            dispatch(
-                addNotification({
-                    type: 'error',
-                    message: 'Data erasure failed. Please try again.',
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'error',
+                message: 'Data erasure failed. Please try again.',
+            })
         }
     }, [dispatch])
 
@@ -248,20 +242,18 @@ const DataManagementTab: React.FC = () => {
                 level: 'info',
                 tags: { database: dbName, success: String(ok) },
             })
-            dispatch(
-                addNotification({
-                    type: ok ? 'success' : 'error',
-                    message: ok
-                        ? t('settingsView.data.singleDbDeleteSuccess', {
-                              db: dbName,
-                              defaultValue: `${dbName} deleted.`,
-                          })
-                        : t('settingsView.data.singleDbDeleteFail', {
-                              db: dbName,
-                              defaultValue: `Failed to delete ${dbName}.`,
-                          }),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: ok ? 'success' : 'error',
+                message: ok
+                    ? t('settingsView.data.singleDbDeleteSuccess', {
+                          db: dbName,
+                          defaultValue: `${dbName} deleted.`,
+                      })
+                    : t('settingsView.data.singleDbDeleteFail', {
+                          db: dbName,
+                          defaultValue: `Failed to delete ${dbName}.`,
+                      }),
+            })
         },
         [dispatch, t],
     )
@@ -278,22 +270,16 @@ const DataManagementTab: React.FC = () => {
             const deletedImages = await dbService.pruneOldImages(80)
             setStorageRefreshTick((prev) => prev + 1)
 
-            dispatch(
-                addNotification({
-                    type: 'success',
-                    message: String(
-                        t('settingsView.data.cleanupSuccess', { count: deletedImages }),
-                    ),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'success',
+                message: String(t('settingsView.data.cleanupSuccess', { count: deletedImages })),
+            })
         } catch (error) {
             console.error('[DataManagement] Storage cleanup failed:', error)
-            dispatch(
-                addNotification({
-                    type: 'error',
-                    message: String(t('settingsView.data.cleanupError')),
-                }),
-            )
+            getUISnapshot().addNotification({
+                type: 'error',
+                message: String(t('settingsView.data.cleanupError')),
+            })
         } finally {
             setIsCleanupRunning(false)
         }

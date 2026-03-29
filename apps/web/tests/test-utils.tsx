@@ -5,7 +5,6 @@ import { Provider } from 'react-redux'
 
 // Import all slice reducers
 import settingsReducer from '@/stores/slices/settingsSlice'
-import uiReducer from '@/stores/slices/uiSlice'
 import favoritesReducer from '@/stores/slices/favoritesSlice'
 import notesReducer from '@/stores/slices/notesSlice'
 import archivesReducer from '@/stores/slices/archivesSlice'
@@ -23,7 +22,6 @@ import type { RootState } from '@/stores/store'
 
 const rootReducer = combineReducers({
     settings: settingsReducer,
-    ui: uiReducer,
     favorites: favoritesReducer,
     notes: notesReducer,
     archives: archivesReducer,

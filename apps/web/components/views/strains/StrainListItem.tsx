@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { Button } from '@/components/common/Button'
-import { useAppDispatch } from '@/stores/store'
-import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice'
+import { initiateGrowFromStrainList } from '@/stores/useUIStore'
 
 interface StrainListItemProps {
     strain: Strain
@@ -51,7 +50,6 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
         onToggleFavorite,
     }) => {
         const { t } = useTranslation()
-        const dispatch = useAppDispatch()
 
         const safeType = getSafeStrainType(strain.type)
         const TypeIcon = typeIcons[safeType]
@@ -155,9 +153,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                             variant="ghost"
                             size="icon"
                             onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                                handleActionClick(e, () =>
-                                    dispatch(initiateGrowFromStrainList(strain)),
-                                )
+                                handleActionClick(e, () => initiateGrowFromStrainList(strain))
                             }
                             aria-label={t('strainsView.startGrowing')}
                         >

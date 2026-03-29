@@ -3,9 +3,7 @@ import ReactDOM from 'react-dom'
 import { Notification } from '@/types'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
-import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { removeNotification } from '@/stores/slices/uiSlice'
-import { selectNotifications } from '@/stores/selectors'
+import { useUIStore } from '@/stores/useUIStore'
 
 interface ToastProps {
     notification: Notification
@@ -66,12 +64,12 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
 
 export const ToastContainer: React.FC = () => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const notifications = useAppSelector(selectNotifications)
+    const notifications = useUIStore((s) => s.notifications)
+    const removeNotification = useUIStore((s) => s.removeNotification)
     const container = document.getElementById('toast-container')
 
     const handleClose = (id: number) => {
-        dispatch(removeNotification(id))
+        removeNotification(id)
     }
 
     if (!container) return null

@@ -2,9 +2,7 @@ import React, { useTransition, Suspense, lazy, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { KnowledgeViewTab } from '@/types'
-import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice'
-import { selectKnowledgeViewTab, selectActiveMentorPlantId } from '@/stores/selectors'
+import { useUIStore } from '@/stores/useUIStore'
 import { Card } from '@/components/common/Card'
 import { usePlantById } from '@/hooks/useSimulationBridge'
 import { SkeletonLoader } from '../common/SkeletonLoader'
@@ -22,9 +20,8 @@ const SandboxView = lazy(() => import('./knowledge/SandboxView'))
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const activeTab = useAppSelector(selectKnowledgeViewTab)
-    const activeMentorPlantId = useAppSelector(selectActiveMentorPlantId)
+    const activeTab = useUIStore((s) => s.knowledgeViewTab)
+    const activeMentorPlantId = useUIStore((s) => s.activeMentorPlantId)
     const [isPending, startTransition] = useTransition()
     const contentOpacityClass = isPending ? 'opacity-50' : 'opacity-100'
 
@@ -68,7 +65,7 @@ export const KnowledgeView: React.FC = () => {
             <Suspense fallback={<SkeletonLoader count={3} />}>
                 <MentorChatView
                     plant={activeMentorPlant}
-                    onClose={() => dispatch(setActiveMentorPlantId(null))}
+                    onClose={() => useUIStore.getState().setActiveMentorPlantId(null)}
                 />
             </Suspense>
         )
@@ -76,7 +73,7 @@ export const KnowledgeView: React.FC = () => {
 
     const handleSetTab = (id: KnowledgeViewTab) => {
         startTransition(() => {
-            dispatch(setKnowledgeViewTab(id))
+            useUIStore.getState().setKnowledgeViewTab(id)
         })
     }
 

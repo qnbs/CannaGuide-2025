@@ -4,8 +4,7 @@ import { Card } from '@/components/common/Card'
 import { useTranslation } from 'react-i18next'
 import { EquipmentControls } from '../EquipmentControls'
 import { ActionToolbar } from '../ActionToolbar'
-import { useAppDispatch } from '@/stores/store'
-import { openActionModal, openDiagnosticsModal } from '@/stores/slices/uiSlice'
+import { useUIStore } from '@/stores/useUIStore'
 import { PlantLifecycleTimeline } from '../PlantLifecycleTimeline'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -55,19 +54,18 @@ const VitalStat: React.FC<{
 
 export const OverviewTab: React.FC<OverviewTabProps> = memo(({ plant }) => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
     const [isExporting, setIsExporting] = useState(false)
 
     const openActionModalAction = useCallback(
         (type: ModalType) => {
-            dispatch(openActionModal({ plantId: plant.id, type }))
+            useUIStore.getState().openActionModal({ plantId: plant.id, type })
         },
-        [dispatch, plant.id],
+        [plant.id],
     )
 
     const handleDiagnose = useCallback(() => {
-        dispatch(openDiagnosticsModal(plant.id))
-    }, [dispatch, plant.id])
+        useUIStore.getState().openDiagnosticsModal(plant.id)
+    }, [plant.id])
 
     const handleExportReport = useCallback(async () => {
         setIsExporting(true)

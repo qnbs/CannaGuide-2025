@@ -32,14 +32,8 @@ const GrowRoom3D = lazy(() =>
     import('./plants/GrowRoom3D').then((m) => ({ default: m.GrowRoom3D })),
 )
 
-import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { selectNewGrowFlow } from '@/stores/selectors'
-import {
-    startGrowInSlot,
-    selectStrainForGrow,
-    cancelNewGrow,
-    selectSlotForGrow,
-} from '@/stores/slices/uiSlice'
+import { useAppDispatch } from '@/stores/store'
+import { useUIStore } from '@/stores/useUIStore'
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice'
 
 interface EmptyPlantSlotProps {
@@ -147,7 +141,7 @@ export const PlantsView: React.FC = () => {
         return () => clearTimeout(timer)
     }, [])
 
-    const newGrowFlow = useAppSelector(selectNewGrowFlow)
+    const newGrowFlow = useUIStore((s) => s.newGrowFlow)
 
     const { slotsWithData } = usePlantSlotsData()
     const { tasks, problems } = useGardenSummary()
@@ -158,9 +152,9 @@ export const PlantsView: React.FC = () => {
     const handleEmptySlotClick = useCallback(
         (index: number) => {
             if (newGrowFlow.status === 'selectingSlot') {
-                dispatch(selectSlotForGrow(index))
+                useUIStore.getState().selectSlotForGrow(index)
             } else {
-                dispatch(startGrowInSlot(index))
+                useUIStore.getState().startGrowInSlot(index)
             }
         },
         [dispatch, newGrowFlow.status],
@@ -171,8 +165,8 @@ export const PlantsView: React.FC = () => {
             return (
                 <InlineStrainSelector
                     key={`selector-slot-${slotIndex}`}
-                    onClose={() => dispatch(cancelNewGrow())}
-                    onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}
+                    onClose={() => useUIStore.getState().cancelNewGrow()}
+                    onSelectStrain={(strain) => useUIStore.getState().selectStrainForGrow(strain)}
                 />
             )
         }
@@ -288,7 +282,7 @@ export const PlantsView: React.FC = () => {
                                     <Button
                                         variant="secondary"
                                         size="sm"
-                                        onClick={() => dispatch(cancelNewGrow())}
+                                        onClick={() => useUIStore.getState().cancelNewGrow()}
                                     >
                                         {t('common.cancel')}
                                     </Button>

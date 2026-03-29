@@ -70,8 +70,8 @@ jobs:
               with:
                   name: benchmark-artifacts
                   path: |
-                      dist/stats.html
-                      dist/source-map-explorer.html
+                      apps/web/dist/stats.html
+                      apps/web/dist/source-map-explorer.html
                       .lighthouseci/
                       benchmark-metrics.json
                   retention-days: 14

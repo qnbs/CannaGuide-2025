@@ -90,7 +90,7 @@ jobs:
                   echo "::group::vite build"
                   npm run build:gh
                   echo "::endgroup::"
-                  echo "[OK] Build complete -- dist size: $(du -sh dist | cut -f1)"
+                  echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
 
             # -- Pages setup + upload --------------------------------------------
             - name: Configure Pages
@@ -99,7 +99,7 @@ jobs:
             - name: Upload Pages artifact
               uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
               with:
-                  path: ./dist
+                  path: ./apps/web/dist
 
     # -------------------------------------------------------------------------
     # DEPLOY -- publish to GitHub Pages
@@ -174,7 +174,7 @@ jobs:
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:
                   name: playwright-traces-${{ github.run_id }}
-                  path: test-results/
+                  path: apps/web/test-results/
                   retention-days: 7
 
     # -------------------------------------------------------------------------

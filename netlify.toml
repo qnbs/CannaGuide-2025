@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = "dist"
+  publish = "apps/web/dist"
 
 [build.environment]
   NODE_VERSION = "20"

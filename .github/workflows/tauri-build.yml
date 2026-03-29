@@ -44,7 +44,7 @@ jobs:
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
               with:
                   name: frontend-dist
-                  path: dist/
+                  path: apps/web/dist/
                   retention-days: 1
 
     # ---------------------------------------------------------------------
@@ -112,7 +112,7 @@ jobs:
               uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
               with:
                   name: frontend-dist
-                  path: dist/
+                  path: apps/web/dist/
 
             - name: Generate Tauri icons (if missing)
               run: |
@@ -164,7 +164,7 @@ jobs:
               uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
               with:
                   name: frontend-dist
-                  path: dist/
+                  path: apps/web/dist/
 
             - name: Capacitor sync check
               run: |
@@ -179,6 +179,6 @@ jobs:
               with:
                   name: capacitor-web-bundle
                   path: |
-                      dist/
+                      apps/web/dist/
                       capacitor.config.ts
                   retention-days: 14

@@ -271,7 +271,7 @@ Tracked separately in [`docs/refactor-roadmap-2026-q1.md`](docs/refactor-roadmap
 | Initiative                                   | Status     |
 | -------------------------------------------- | ---------- |
 | Tailwind CDN → PostCSS + shadcn/ui           | 📋 Planned |
-| Redux scope reduction (Zustand for UI state) | 📋 Planned |
+| Redux scope reduction (Zustand for UI state) | ✅ Done    |
 | Virtualization improvements                  | 📋 Planned |
 | Worker architecture consolidation            | 📋 Planned |
 | Charts & analytics surfaces                  | 📋 Planned |

@@ -79,14 +79,14 @@ Three-tier client-side architecture with offline-first design:
 │  VPD Simulation · AI Providers · Genetics · RAG         │
 ├─────────────────────────────────────────────────────────┤
 │  State & Persistence Layer                              │
-│  Redux Toolkit · 17 Slices · RTK Query                  │
+│  Redux Toolkit (15 Slices) · Zustand (UI) · RTK Query   │
 │  Dual IndexedDB · Service Worker · Background Sync      │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ### Application Bootstrap
 
-`index.html` → `index.tsx` (i18n init, Redux store hydration from IndexedDB, SW registration) → `App.tsx` (security gates: age verification, PIN lock, DSGVO consent) → lazy-loaded views via `React.Suspense`.
+`index.html` → `index.tsx` (i18n init, Redux store hydration from IndexedDB, Zustand UI state hydration, SW registration) → `App.tsx` (security gates: age verification, PIN lock, DSGVO consent) → lazy-loaded views via `React.Suspense`.
 
 ### Key Architectural Patterns
 
@@ -104,7 +104,8 @@ Three-tier client-side architecture with offline-first design:
 | ------------------ | ------------------------------------ | ------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Component UI with zero `any`                |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Fast HMR, InjectManifest SW                 |
-| **State**          | Redux Toolkit 2.11 + RTK Query       | Centralized state, AI API caching           |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | Redux for domain data, Zustand for UI state |
+| **API Cache**      | RTK Query                            | AI API caching                              |
 | **AI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction             |
 | **AI (Local)**     | Transformers.js, WebLLM, TF.js, ONNX | 11 services, 8 ML models, 3-layer fallback  |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 cannabis themes via CSS custom properties |
@@ -113,7 +114,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                   |
 | **i18n**           | i18next 25                           | EN/DE/ES/FR/NL, 13 namespaces               |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 719+ unit, E2E, component tests             |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 793+ unit, E2E, component tests             |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay              |
 | **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                      |
 | **Mobile**         | Capacitor                            | iOS/Android wrapper                         |
@@ -248,7 +249,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- runs across all workspaces)
 npm run dev              # turbo run dev (Vite dev server on localhost:5173)
 npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest, 719+ tests)
+npm test                 # turbo run test (Vitest, 793+ tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -273,7 +274,7 @@ tsconfig.json              References-only (apps/web, apps/desktop, packages/*)
 apps/
   web/                     Main PWA (@cannaguide/web)
     components/             React components (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux: 17 slices, selectors, middleware
+    stores/                 Redux (15 slices) + Zustand (useUIStore), selectors, middleware
     services/               51 service modules (AI, simulation, DB, crypto, IoT)
     hooks/                  16 custom hooks
     data/                   Static data: 700+ strains, FAQ, lexicon, guides

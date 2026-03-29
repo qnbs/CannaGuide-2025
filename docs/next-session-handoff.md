@@ -2,7 +2,72 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-29 late) -- localAI.ts Epic Refactoring + UI/UX Fixes + WebLLM Preload UX
+## Latest Session (2026-03-29 late, Session 3) -- Zustand Migration + Test Offensive
+
+**Status: uiSlice fully migrated from Redux to Zustand (Strangler Fig Pattern). 47 files changed (+2321/-1461). filtersSlice + strainsViewSlice also migrated. 3 new localAI test suites added. Redux reduced from 17 to 15 slices. 3 Zustand stores created. 793/793 tests pass. Zero typecheck errors. Zero breaking changes.**
+
+### What Was Done
+
+1. **localAI test suites** -- 74 new tests across 3 files (diagnosis, prompt handlers, streaming)
+2. **filtersSlice + strainsViewSlice migration** (`1e890b5`) -- Zustand stores `useFiltersStore` + `useStrainsViewStore`
+3. **uiSlice migration** (`dcfef5a`) -- Largest migration: ~40 consumer files, 30+ actions, 14+ selectors removed
+
+### Architecture Status
+
+- **Redux (15 slices):** simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, tts, sandbox, genealogy, navigation, nutrientPlanner, geminiApi
+- **Zustand (3 stores):** useUIStore (modals, views, notifications, voice), useFiltersStore, useStrainsViewStore
+- **Cross-store bridge:** `initUIStoreReduxBridge()` + `getUISnapshot()` for non-React access
+- **Hydration:** Redux from IndexedDB, UI state extracted and hydrated separately into Zustand
+
+### What Is Now Complete
+
+- [x] uiSlice migrated to Zustand (30+ actions, ~40 consumers)
+- [x] filtersSlice + strainsViewSlice migrated to Zustand
+- [x] localAI.ts under 650 lines (orchestrator-only, DI pattern)
+- [x] 4 localAI services extracted with full test coverage
+- [x] Touch targets 44x44px, ARIA labels, focus-return
+- [x] WebLLM loading UX (progress bar with ETA)
+- [x] Monorepo migration complete
+- [x] CI pipeline fully green
+- [x] 793 tests across 88 files
+
+### Focus for Next Session: Digital Twin Architecture -- Manual Data Capture & IoT Preparation
+
+The Zustand migration and test offensive are complete. The next session should begin the **Digital Twin** vision: bridging manual plant data entry with future IoT sensor integration.
+
+**Priority 1 -- Digital Twin Foundation (v1.2):**
+
+- [ ] Sensor data model design: `SensorReading` type with timestamp, source (manual/ble/mqtt), value, unit
+- [ ] Manual environment entry UI: temperature, humidity, CO2, soil moisture input per plant
+- [ ] VPD auto-calculation from manual entries (tie into existing VPD simulation worker)
+- [ ] Sensor history timeline component (reuse photo timeline pattern)
+- [ ] Unit tests for sensor data model + VPD integration
+
+**Priority 2 -- Quality Infrastructure:**
+
+- [ ] Lighthouse CI assertions (Performance >=0.80, A11y >=0.90)
+- [ ] SonarCloud code smells reduction (354 -> <200)
+- [ ] Screen-reader labels for chart toggles (`SimulationChart.tsx`)
+
+**Priority 3 -- Feature Delivery (v1.2):**
+
+- [ ] Nutrient scheduling MVP with unit tests
+- [ ] Strain comparison tool (side-by-side)
+- [ ] Auto-PDF grow reports
+- [ ] Remaining i18n namespace gaps (plants EN has ~18 more keys than ES/FR/NL)
+
+**Priority 4 -- Vision (v1.3+):**
+
+- [ ] Real-time ESP32 BLE/MQTT dashboard (build on iot-mocks package)
+- [ ] Three.js 3D plant visualization
+- [ ] Advanced analytics dashboard
+
+> **Full Session Review:** [`docs/session-activity-review-2026-03-29.md`](session-activity-review-2026-03-29.md)
+> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+
+---
+
+## Previous Session (2026-03-29 early) -- localAI.ts Epic Refactoring + UI/UX Fixes + WebLLM Preload UX
 
 **Status: localAI.ts reduced from ~1295 to 649 lines (-50%) via 4 service extractions. 5 UI/UX audit issues fixed (touch targets, ARIA, focus return). WebLLM preload progress bar implemented (pub/sub, no Redux). i18n onboarding fix. Deploy workflow fix. 719/719 tests pass. Zero typecheck errors. Zero breaking changes.**
 
@@ -28,42 +93,6 @@
 - [x] Monorepo migration complete (apps/web/ + packages/ai-core/)
 - [x] 5-language onboarding (EN/DE/ES/FR/NL)
 - [x] CI pipeline fully green
-
-### Focus for Next Session: Medium-Term Audit Goals
-
-The immediate audit items are resolved. The next session should target Sprint 3-4 goals from `audit-roadmap-2026-q2.md`:
-
-**Priority 1 -- Quality Infrastructure:**
-
-- [ ] Lighthouse CI assertions (Performance >=0.80, A11y >=0.90) -- `lighthouserc.json` + CI job
-- [ ] `security-full.yml` activation (daily CVE scanning)
-- [ ] SonarCloud code smells reduction (354 -> <200) -- cognitive complexity, duplicate strings
-- [ ] Screen-reader labels for chart toggles (`SimulationChart.tsx`)
-- [ ] Mobile E2E assertions against clipping (`tests/e2e/mobile-*.e2e.ts`)
-
-**Priority 2 -- Supply Chain & Scoring:**
-
-- [ ] Signed releases (GPG) + SLSA provenance attestation
-- [ ] OpenSSF Scorecard 10/10 (currently 8.5) -- Code-Review + Signed-Releases checks
-- [ ] CII-Best-Practices badge verification (email pending)
-
-**Priority 3 -- Feature Delivery (v1.2):**
-
-- [ ] Function-calling standardization for AI provider abstraction
-- [ ] Nutrient scheduling MVP with unit tests
-- [ ] Strain comparison tool (side-by-side)
-- [ ] Auto-PDF grow reports
-- [ ] Remaining i18n namespace gaps (plants EN has ~18 more keys than ES/FR/NL)
-
-**Priority 4 -- Vision (v1.3+):**
-
-- [ ] Three.js 3D plant visualization
-- [ ] Real-time ESP32 dashboard + WebSocket
-- [ ] Advanced analytics dashboard
-- [ ] Strain DB expansion (700 -> 2000+)
-
-> **Full Session Review:** [`docs/session-activity-review-2026-03-29.md`](session-activity-review-2026-03-29.md)
-> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
 
 ---
 

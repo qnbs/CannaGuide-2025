@@ -51,6 +51,30 @@
             "persistent": true,
             "env": ["TAURI_ENV_*"]
         },
+        "build:gh": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**"],
+            "inputs": [
+                "src/**",
+                "components/**",
+                "stores/**",
+                "services/**",
+                "hooks/**",
+                "data/**",
+                "locales/**",
+                "workers/**",
+                "utils/**",
+                "types/**",
+                "lib/**",
+                "public/**",
+                "vite.config.ts",
+                "tsconfig.json",
+                "tailwind.config.cjs",
+                "postcss.config.cjs",
+                "index.html",
+                "index.tsx"
+            ]
+        },
         "test": {
             "dependsOn": ["^build"],
             "outputs": ["coverage/**"]

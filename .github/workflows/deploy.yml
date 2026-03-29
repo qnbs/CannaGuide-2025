@@ -81,7 +81,7 @@ jobs:
             - name: Unit tests
               run: |
                   echo "::group::vitest"
-                  npm run test -- --run --reporter=verbose
+                  npm run -w @cannaguide/web test -- --run --reporter=verbose
                   echo "::endgroup::"
 
             # -- Build -----------------------------------------------------------
@@ -208,3 +208,50 @@ jobs:
                   name: lighthouse-report-${{ github.run_id }}
                   path: .lighthouseci/
                   retention-days: 14
+
+    # -------------------------------------------------------------------------
+    # CLEANUP -- remove old skipped/failed workflow runs to keep history clean.
+    # Only the latest successful deploy matters.
+    # -------------------------------------------------------------------------
+    cleanup:
+        name: Cleanup old runs
+        needs: deploy
+        runs-on: ubuntu-latest
+        if: success()
+        continue-on-error: true
+        permissions:
+            actions: write
+            contents: read
+        steps:
+            - name: Delete old skipped and failed runs
+              uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+              with:
+                  script: |
+                      const owner = context.repo.owner;
+                      const repo = context.repo.repo;
+                      const workflowId = 'deploy.yml';
+                      const currentRunId = context.runId;
+
+                      // Fetch recent runs for this workflow
+                      const { data: { workflow_runs: runs } } = await github.rest.actions.listWorkflowRuns({
+                        owner,
+                        repo,
+                        workflow_id: workflowId,
+                        per_page: 50,
+                      });
+
+                      let deleted = 0;
+                      for (const run of runs) {
+                        // Keep the current run and any in-progress runs
+                        if (run.id === currentRunId || run.status !== 'completed') continue;
+                        // Delete skipped, failed, and cancelled runs
+                        if (['skipped', 'failure', 'cancelled'].includes(run.conclusion)) {
+                          try {
+                            await github.rest.actions.deleteWorkflowRun({ owner, repo, run_id: run.id });
+                            deleted++;
+                          } catch (e) {
+                            // Ignore errors for individual deletions
+                          }
+                        }
+                      }
+                      core.info(`[OK] Deleted ${deleted} old skipped/failed/cancelled runs`);

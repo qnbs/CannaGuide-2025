@@ -14,6 +14,7 @@ export const common = {
     downloadAgain: 'Opnieuw downloaden',
     all: 'Alles',
     none: 'Geen',
+    outOfStock: 'Niet op voorraad',
     name: 'Naam',
     type: 'Type',
     typeDetails: 'Type details',

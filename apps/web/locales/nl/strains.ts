@@ -423,4 +423,18 @@ export const strainsView = {
     sortBy: 'Sorteren op',
     showingCount: '{{count}} van {{total}} weergegeven',
     loadMore: 'Meer laden... ({{count}} van {{total}})',
+    availability: {
+        packSizes: 'Verpakkingen',
+        seeds: 'zaden',
+        visit: 'Bezoeken',
+        noResults: 'Geen beschikbaarheidsgegevens gevonden voor deze soort.',
+        disclaimer:
+            'Prijzen zijn indicatief. Controleer de website van de zaadbank voor actuele prijzen.',
+        outOfStock: 'Niet op voorraad',
+        seedType: {
+            feminized: 'Gefeminiseerd',
+            regular: 'Regulier',
+            autoflowering: 'Autoflowering',
+        },
+    },
 }

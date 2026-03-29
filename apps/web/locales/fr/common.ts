@@ -14,6 +14,7 @@ export const common = {
     downloadAgain: 'Telecharger a nouveau',
     all: 'Tout',
     none: 'Aucun',
+    outOfStock: 'Rupture de stock',
     name: 'Nom',
     type: 'Type',
     typeDetails: 'Details du type',

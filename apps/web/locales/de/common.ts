@@ -10,6 +10,17 @@ export const common = {
     downloadAgain: 'Erneut herunterladen',
     all: 'Alle',
     none: 'Keine',
+    outOfStock: 'Nicht vorraetig',
+    imageGenCapability: {
+        webgpuRequired:
+            'WebGPU wird fuer die Bildgenerierung benoetigt. Dieses Geraet unterstuetzt nur WASM.',
+        deviceInsufficient: 'Die Geraete-Kapazitaeten sind fuer die Bildgenerierung unzureichend.',
+        insufficientVram:
+            'Unzureichender VRAM ({{vram}}MB). Mindestens 4096MB fuer die Bildgenerierung erforderlich.',
+        alreadyInProgress:
+            'Bildgenerierung laeuft bereits. Bitte warten Sie auf die aktuelle Aufgabe.',
+        serviceUnavailable: 'Bildgenerierungsdienst nicht verfuegbar.',
+    },
     name: 'Name',
     type: 'Typ',
     typeDetails: 'Typ-Details',

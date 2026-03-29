@@ -10,6 +10,16 @@ export const common = {
     downloadAgain: 'Download Again',
     all: 'All',
     none: 'None',
+    outOfStock: 'Out of stock',
+    imageGenCapability: {
+        webgpuRequired: 'WebGPU is required for image generation. This device only supports WASM.',
+        deviceInsufficient: 'Device capabilities are insufficient for image generation.',
+        insufficientVram:
+            'Insufficient VRAM ({{vram}}MB). At least 4096MB required for image generation.',
+        alreadyInProgress:
+            'Image generation already in progress. Please wait for the current task.',
+        serviceUnavailable: 'Image generation service unavailable.',
+    },
     name: 'Name',
     type: 'Type',
     typeDetails: 'Type Details',

@@ -11,15 +11,23 @@ interface AvailabilityTabProps {
 }
 
 const SeedTypeBadge: React.FC<{ seedType: string }> = ({ seedType }) => {
+    const { t } = useTranslation()
     const colorMap: Record<string, string> = {
         Feminized: 'bg-pink-600/30 text-pink-300 border-pink-500/40',
         Regular: 'bg-slate-600/30 text-slate-300 border-slate-500/40',
         Autoflowering: 'bg-amber-600/30 text-amber-300 border-amber-500/40',
     }
+    const labelMap: Record<string, string> = {
+        Feminized: t('strainsView.availability.seedType.feminized', { defaultValue: 'Feminized' }),
+        Regular: t('strainsView.availability.seedType.regular', { defaultValue: 'Regular' }),
+        Autoflowering: t('strainsView.availability.seedType.autoflowering', {
+            defaultValue: 'Autoflowering',
+        }),
+    }
     const classes = colorMap[seedType] ?? colorMap['Regular']
     return (
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${classes}`}>
-            {seedType}
+            {labelMap[seedType] ?? seedType}
         </span>
     )
 }
@@ -59,7 +67,9 @@ const AvailabilityRow: React.FC<AvailabilityRowProps> = ({ item, seedbank }) => 
                         <SeedTypeBadge seedType={item.seedType} />
                         {!item.inStock && (
                             <span className="text-xs font-medium px-2 py-0.5 rounded-full border bg-red-600/20 text-red-300 border-red-500/40">
-                                {t('common.outOfStock', { defaultValue: 'Out of stock' })}
+                                {t('strainsView.availability.outOfStock', {
+                                    defaultValue: 'Out of stock',
+                                })}
                             </span>
                         )}
                     </div>

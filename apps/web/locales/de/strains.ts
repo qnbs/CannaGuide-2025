@@ -428,4 +428,17 @@ export const strainsView = {
     sortBy: 'Sortieren nach',
     showingCount: 'Zeige {{count}} von {{total}}',
     loadMore: 'Mehr laden... ({{count}} von {{total}})',
+    availability: {
+        packSizes: 'Packungen',
+        seeds: 'Samen',
+        visit: 'Besuchen',
+        noResults: 'Keine Verfuegbarkeitsdaten fuer diese Sorte gefunden.',
+        disclaimer: 'Preise sind Richtwerte. Aktuelle Preise auf der Seedbank-Website pruefen.',
+        outOfStock: 'Nicht vorraetig',
+        seedType: {
+            feminized: 'Feminisiert',
+            regular: 'Regulaer',
+            autoflowering: 'Autoflowering',
+        },
+    },
 }

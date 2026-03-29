@@ -423,4 +423,18 @@ export const strainsView = {
     sortBy: 'Trier par',
     showingCount: 'Affichage de {{count}} sur {{total}}',
     loadMore: 'Charger plus... ({{count}} sur {{total}})',
+    availability: {
+        packSizes: 'Paquets',
+        seeds: 'graines',
+        visit: 'Visiter',
+        noResults: 'Aucune donnee de disponibilite trouvee pour cette variete.',
+        disclaimer:
+            'Les prix sont indicatifs. Consultez le site de la banque de graines pour les prix actuels.',
+        outOfStock: 'Rupture de stock',
+        seedType: {
+            feminized: 'Feminisee',
+            regular: 'Reguliere',
+            autoflowering: 'Autofloraison',
+        },
+    },
 }

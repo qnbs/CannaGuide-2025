@@ -293,7 +293,9 @@ class GeminiService implements BaseAIProvider {
 
     private sanitizeValue<T>(value: T): T {
         if (typeof value === 'string') {
-            return DOMPurify.sanitize(value) as T
+            // Strip all HTML tags from structured API data to prevent XSS
+            // without corrupting angle-bracket content in plain-text fields.
+            return DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }) as T
         }
         if (Array.isArray(value)) {
             return value.map((item) => this.sanitizeValue(item)) as T

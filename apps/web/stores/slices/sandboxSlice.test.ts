@@ -41,7 +41,7 @@ const rootReducer = combineReducers({
 })
 
 afterEach(() => {
-    workerBus.dispose()
+    workerBus.reset()
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
 })

@@ -95,8 +95,8 @@
         "@eslint/js": "^9.39.4",
         "@lhci/cli": "^0.15.1",
         "@socketsecurity/cli": "^1.1.76",
-        "@typescript-eslint/eslint-plugin": "^8.57.1",
-        "@typescript-eslint/parser": "^8.57.1",
+        "@typescript-eslint/eslint-plugin": "^8.57.2",
+        "@typescript-eslint/parser": "^8.57.2",
         "anti-trojan-source": "^1.8.1",
         "depcheck": "^1.4.7",
         "eslint": "^9.39.4",
@@ -107,7 +107,7 @@
         "lint-staged": "^16.4.0",
         "prettier": "^3.8.1",
         "snyk": "^1.1303.2",
-        "turbo": "^2.8.20",
+        "turbo": "^2.8.21",
         "typescript": "^5.8.3"
     },
     "overrides": {

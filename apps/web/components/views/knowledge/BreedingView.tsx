@@ -8,6 +8,7 @@ import { Seed, Strain } from '@/types'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { setParentA, setParentB, clearBreedingSlots } from '@/stores/slices/breedingSlice'
 import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice'
+import { workerBus } from '@/services/workerBus'
 import { strainService } from '@/services/strainService'
 import { Input } from '@/components/ui/form'
 import { createStrainObject } from '@/services/strainFactory'
@@ -168,36 +169,41 @@ const BreedingView: React.FC = () => {
             return
         }
 
-        const worker = new Worker(
-            new URL('../../../workers/genealogy.worker.ts', import.meta.url),
-            { type: 'module' },
+        const workerName = `genealogy-breeding-${crypto.randomUUID()}`
+        workerBus.register(
+            workerName,
+            new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), {
+                type: 'module',
+            }),
         )
 
-        worker.onmessage = (
-            event: MessageEvent<
-                | { type: 'OFFSPRING_PROFILE_RESULT'; result: typeof automatedGenetics }
-                | { type: 'ERROR'; message: string }
-            >,
-        ) => {
-            if (event.data.type === 'OFFSPRING_PROFILE_RESULT') {
-                setAutomatedGenetics(event.data.result)
-            } else {
-                console.error('[BreedingView] worker error:', event.data.message)
-                setAutomatedGenetics(null)
-            }
+        let cancelled = false
+        workerBus
+            .dispatch<{ result: typeof automatedGenetics }>(workerName, 'OFFSPRING_PROFILE', {
+                parentA,
+                parentB,
+                phenotypes: {
+                    parentA: phenoA,
+                    parentB: phenoB,
+                },
+            })
+            .then((data) => {
+                if (!cancelled) {
+                    setAutomatedGenetics(data.result)
+                }
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    console.error('[BreedingView] worker error:', err)
+                    setAutomatedGenetics(null)
+                }
+            })
+            .finally(() => workerBus.unregister(workerName))
+
+        return () => {
+            cancelled = true
+            workerBus.unregister(workerName)
         }
-
-        worker.postMessage({
-            type: 'OFFSPRING_PROFILE',
-            parentA,
-            parentB,
-            phenotypes: {
-                parentA: phenoA,
-                parentB: phenoB,
-            },
-        })
-
-        return () => worker.terminate()
     }, [parentA, parentB, phenoA, phenoB])
 
     const handleSeedClick = (seedId: string) => {

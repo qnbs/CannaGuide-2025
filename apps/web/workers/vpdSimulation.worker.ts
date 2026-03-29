@@ -1,12 +1,9 @@
 /// <reference lib="webworker" />
 
 import { calculateVPD, getVPDStatus, runDailySimulation } from '@/utils/vpdCalculator'
-import type {
-    PlantState,
-    RunDailyPayload,
-    RunGrowthPayload,
-    VPDWorkerResponse,
-} from '@/types/simulation.types'
+import type { PlantState, RunDailyPayload, RunGrowthPayload } from '@/types/simulation.types'
+import type { WorkerRequest } from '@/types/workerBus.types'
+import { workerOk, workerErr } from '@/types/workerBus.types'
 
 const growthFactorByStage = {
     seedling: 0.012,
@@ -59,36 +56,40 @@ const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
 
-self.onmessage = (
-    e: MessageEvent<
-        | { type: 'RUN_DAILY'; payload: RunDailyPayload }
-        | { type: 'RUN_GROWTH'; payload: RunGrowthPayload }
-    >,
-) => {
+self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPayload>>) => {
     if (!isTrustedWorkerMessage(e)) {
         return
     }
 
-    const { type, payload } = e.data
+    const { messageId, type, payload } = e.data
 
-    if (type === 'RUN_DAILY') {
-        const result = runDailySimulation(payload.baseInput, payload.tempProfile, payload.rhProfile)
-        const message: VPDWorkerResponse = { type: 'DAILY_RESULT', data: result }
-        self.postMessage(message)
-        return
-    }
-
-    if (type === 'RUN_GROWTH') {
-        let plant: PlantState = payload.plant
-        const days = Math.max(1, payload.days || 7)
-
-        for (let day = 0; day < days; day += 1) {
-            const vpd = calculateVPD(payload.env)
-            const status = getVPDStatus(vpd, 1.2)
-            plant = updatePlantForDay(plant, vpd, status)
+    try {
+        if (type === 'RUN_DAILY') {
+            const p = payload as RunDailyPayload
+            const result = runDailySimulation(p.baseInput, p.tempProfile, p.rhProfile)
+            self.postMessage(workerOk(messageId, result))
+            return
         }
 
-        const message: VPDWorkerResponse = { type: 'GROWTH_RESULT', plant }
-        self.postMessage(message)
+        if (type === 'RUN_GROWTH') {
+            const p = payload as RunGrowthPayload
+            let plant: PlantState = p.plant
+            const days = Math.max(1, p.days || 7)
+
+            for (let day = 0; day < days; day += 1) {
+                const vpd = calculateVPD(p.env)
+                const status = getVPDStatus(vpd, 1.2)
+                plant = updatePlantForDay(plant, vpd, status)
+            }
+
+            self.postMessage(workerOk(messageId, plant))
+            return
+        }
+
+        self.postMessage(workerErr(messageId, `Unknown command: ${type}`))
+    } catch (error) {
+        self.postMessage(
+            workerErr(messageId, error instanceof Error ? error.message : 'VPD worker error'),
+        )
     }
 }

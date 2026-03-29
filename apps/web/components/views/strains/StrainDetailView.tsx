@@ -15,6 +15,7 @@ import { InfoSection } from '@/components/common/InfoSection'
 import { AttributeDisplay } from '@/components/common/AttributeDisplay'
 import { Speakable } from '@/components/common/Speakable'
 import { StrainImageGalleryTab } from './StrainImageGalleryTab'
+import { AvailabilityTab } from './AvailabilityTab'
 
 // --- Sub-components for better structure ---
 
@@ -282,6 +283,11 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
             label: t('strainsView.strainDetail.tabs.images'),
             icon: <PhosphorIcons.Camera />,
         },
+        {
+            id: 'availability',
+            label: t('strainsView.strainDetail.tabs.availability', { defaultValue: 'Seedbanks' }),
+            icon: <PhosphorIcons.Storefront />,
+        },
     ]
 
     const typeClasses: Record<StrainType, string> = {
@@ -377,6 +383,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                 {activeTab === 'notes' && <NotesTab strain={strain} />}
                 {activeTab === 'aiTips' && <StrainAiTips strain={strain} />}
                 {activeTab === 'images' && <StrainImageGalleryTab strain={strain} />}
+                {activeTab === 'availability' && <AvailabilityTab strain={strain} />}
             </div>
         </div>
     )

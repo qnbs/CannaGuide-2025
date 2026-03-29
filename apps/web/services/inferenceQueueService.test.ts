@@ -7,19 +7,33 @@ import {
     terminateInferenceWorker,
     resetWorkerState,
 } from './inferenceQueueService'
+import { workerBus } from '@/services/workerBus'
 
-// Mock Worker since it's not available in Node test environment
+// Mock Worker that responds via WorkerBus protocol (addEventListener-based)
 class MockWorker {
-    onmessage: ((e: MessageEvent) => void) | null = null
-    onerror: ((e: ErrorEvent) => void) | null = null
-    postMessage = vi.fn().mockImplementation((data: { id: string }) => {
-        // Simulate async response
+    private _listeners: Array<(event: MessageEvent) => void> = []
+
+    addEventListener(type: string, handler: (event: MessageEvent) => void) {
+        if (type === 'message') this._listeners.push(handler)
+    }
+
+    removeEventListener(type: string, handler: (event: MessageEvent) => void) {
+        if (type === 'message') this._listeners = this._listeners.filter((h) => h !== handler)
+    }
+
+    postMessage = vi.fn().mockImplementation((data: { messageId: string }) => {
         setTimeout(() => {
-            this.onmessage?.(
-                new MessageEvent('message', {
-                    data: { id: data.id, result: [{ generated_text: 'test output' }] },
-                }),
-            )
+            for (const listener of this._listeners) {
+                listener(
+                    new MessageEvent('message', {
+                        data: {
+                            messageId: data.messageId,
+                            success: true,
+                            data: [{ generated_text: 'test output' }],
+                        },
+                    }),
+                )
+            }
         }, 10)
     })
     terminate = vi.fn()
@@ -31,6 +45,7 @@ describe('inferenceQueueService', () => {
     afterEach(() => {
         terminateInferenceWorker()
         resetWorkerState()
+        workerBus.dispose()
     })
 
     it('isWorkerAvailable returns true when Worker is defined', () => {
@@ -56,14 +71,18 @@ describe('inferenceQueueService', () => {
     })
 
     it('rejects when queue is full', async () => {
-        // Fill the queue by making Worker not respond
-        const slowWorker = new MockWorker()
-        slowWorker.postMessage = vi.fn() // never responds
+        // Use a Worker that never responds so tasks stay active/queued
         vi.stubGlobal(
             'Worker',
             class {
-                onmessage: ((e: MessageEvent) => void) | null = null
-                onerror: ((e: ErrorEvent) => void) | null = null
+                private _listeners: Array<(event: MessageEvent) => void> = []
+                addEventListener(type: string, handler: (event: MessageEvent) => void) {
+                    if (type === 'message') this._listeners.push(handler)
+                }
+                removeEventListener(type: string, handler: (event: MessageEvent) => void) {
+                    if (type === 'message')
+                        this._listeners = this._listeners.filter((h) => h !== handler)
+                }
                 postMessage = vi.fn() // never resolves
                 terminate = vi.fn()
             },
@@ -101,8 +120,14 @@ describe('inferenceQueueService', () => {
         vi.stubGlobal(
             'Worker',
             class {
-                onmessage: ((e: MessageEvent) => void) | null = null
-                onerror: ((e: ErrorEvent) => void) | null = null
+                private _listeners: Array<(event: MessageEvent) => void> = []
+                addEventListener(type: string, handler: (event: MessageEvent) => void) {
+                    if (type === 'message') this._listeners.push(handler)
+                }
+                removeEventListener(type: string, handler: (event: MessageEvent) => void) {
+                    if (type === 'message')
+                        this._listeners = this._listeners.filter((h) => h !== handler)
+                }
                 postMessage = vi.fn() // never responds
                 terminate = vi.fn()
             },
@@ -118,6 +143,6 @@ describe('inferenceQueueService', () => {
 
         terminateInferenceWorker()
 
-        await expect(promise).rejects.toThrow('terminated')
+        await expect(promise).rejects.toThrow(/terminated|unregistered/)
     })
 })

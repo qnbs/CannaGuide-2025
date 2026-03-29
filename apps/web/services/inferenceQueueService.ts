@@ -1,14 +1,16 @@
-import type { InferenceWorkerRequest, InferenceWorkerResponse } from '@/workers/inference.worker'
+import type { InferencePayload } from '@/workers/inference.worker'
+import { workerBus } from '@/services/workerBus'
 
 /**
- * Inference Queue Service — dispatches ML inference tasks to a dedicated
- * Web Worker and manages a priority queue to prevent UI thread blocking.
+ * Inference Queue Service -- dispatches ML inference tasks to a dedicated
+ * Web Worker via WorkerBus and manages a priority queue to prevent UI
+ * thread blocking.
  *
  * Features:
- * • Off-main-thread inference via dedicated Web Worker
- * • Priority queue with configurable concurrency (default: 1 concurrent task)
- * • Timeout per task with automatic rejection
- * • Graceful fallback to main-thread when Worker is unavailable
+ * - Off-main-thread inference via WorkerBus-managed Web Worker
+ * - Priority queue with configurable concurrency (default: 1 concurrent task)
+ * - Timeout per task with automatic rejection
+ * - Graceful fallback when Worker is unavailable
  */
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -26,7 +28,7 @@ export interface InferenceTask {
 }
 
 interface QueuedTask {
-    request: InferenceWorkerRequest
+    payload: InferencePayload
     priority: InferencePriority
     timeoutMs: number
     resolve: (result: unknown) => void
@@ -36,6 +38,7 @@ interface QueuedTask {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
+const WORKER_NAME = 'inference'
 const DEFAULT_TIMEOUT_MS = 60_000
 const MAX_QUEUE_SIZE = 32
 /** Reject tasks that have been queued longer than this before processing. */
@@ -44,80 +47,37 @@ const PRIORITY_ORDER: Record<InferencePriority, number> = { high: 0, normal: 1, 
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
-let worker: Worker | null = null
-let workerFailed = false
-const pendingCallbacks = new Map<
-    string,
-    {
-        resolve: (result: unknown) => void
-        reject: (error: Error) => void
-        timer: ReturnType<typeof setTimeout>
-    }
->()
 const queue: QueuedTask[] = []
 let activeCount = 0
 const MAX_CONCURRENT = 1
 let isProcessing = false
 
-// ─── Worker Lifecycle ────────────────────────────────────────────────────────
+// ─── Worker Registration ─────────────────────────────────────────────────────
 
-const getWorker = (): Worker | null => {
-    if (workerFailed) return null
-    if (worker) return worker
-
+const ensureWorker = (): boolean => {
+    if (typeof Worker === 'undefined') return false
+    if (workerBus.has(WORKER_NAME)) return true
     try {
-        worker = new Worker(new URL('../workers/inference.worker.ts', import.meta.url), {
-            type: 'module',
-            name: 'cannaGuideInference',
-        })
-        worker.onmessage = (e: MessageEvent<InferenceWorkerResponse>) => {
-            const { id, result, error } = e.data
-            const pending = pendingCallbacks.get(id)
-            if (!pending) return
-            clearTimeout(pending.timer)
-            pendingCallbacks.delete(id)
-            activeCount = Math.max(0, activeCount - 1)
-            if (error) {
-                pending.reject(new Error(error))
-            } else {
-                pending.resolve(result)
-            }
-            processQueue()
-        }
-        worker.onerror = (event) => {
-            console.debug('[InferenceQueue] Worker error:', event.message)
-            // Reject all pending tasks
-            for (const [id, pending] of pendingCallbacks) {
-                clearTimeout(pending.timer)
-                pending.reject(new Error('Inference worker crashed'))
-                pendingCallbacks.delete(id)
-            }
-            activeCount = 0
-            workerFailed = true
-            worker = null
-            // Drain queue with rejections
-            while (queue.length > 0) {
-                const item = queue.shift()
-                item?.reject(new Error('Inference worker unavailable'))
-            }
-        }
-        return worker
+        workerBus.register(
+            WORKER_NAME,
+            new Worker(new URL('../workers/inference.worker.ts', import.meta.url), {
+                type: 'module',
+                name: 'cannaGuideInference',
+            }),
+        )
+        return true
     } catch {
-        workerFailed = true
-        return null
+        return false
     }
 }
 
 // ─── Queue Processing ────────────────────────────────────────────────────────
 
 const processQueue = (): void => {
-    // Re-entrancy guard: prevent concurrent queue processing that could
-    // double-schedule tasks (e.g. when onmessage triggers processQueue
-    // while a previous processQueue call is still in its while-loop).
     if (isProcessing) return
     isProcessing = true
     try {
-        // Prune stale tasks that have waited too long in the queue
+        // Prune stale tasks
         const now = Date.now()
         for (let i = queue.length - 1; i >= 0; i--) {
             const item = queue[i]
@@ -131,29 +91,24 @@ const processQueue = (): void => {
             const task = queue.shift()
             if (!task) break
 
-            const w = getWorker()
-            if (!w) {
+            if (!ensureWorker()) {
                 task.reject(new Error('Inference worker unavailable'))
                 continue
             }
 
             activeCount++
-            const timer = setTimeout(() => {
-                const pending = pendingCallbacks.get(task.request.id)
-                if (pending) {
-                    pendingCallbacks.delete(task.request.id)
+            workerBus
+                .dispatch<unknown>(WORKER_NAME, 'INFER', task.payload, task.timeoutMs)
+                .then((result) => {
+                    task.resolve(result)
+                })
+                .catch((err: unknown) => {
+                    task.reject(err instanceof Error ? err : new Error(String(err)))
+                })
+                .finally(() => {
                     activeCount = Math.max(0, activeCount - 1)
-                    pending.reject(new Error('Inference task timed out'))
                     processQueue()
-                }
-            }, task.timeoutMs)
-
-            pendingCallbacks.set(task.request.id, {
-                resolve: task.resolve,
-                reject: task.reject,
-                timer,
-            })
-            w.postMessage(task.request)
+                })
         }
     } finally {
         isProcessing = false
@@ -173,10 +128,8 @@ export const enqueueInference = (task: InferenceTask): Promise<unknown> => {
             return
         }
 
-        const id = crypto.randomUUID()
         const priority = task.priority ?? 'normal'
-        const request: InferenceWorkerRequest = {
-            id,
+        const payload: InferencePayload = {
             task: task.task,
             modelId: task.modelId,
             input: task.input,
@@ -185,7 +138,7 @@ export const enqueueInference = (task: InferenceTask): Promise<unknown> => {
         }
 
         const queued: QueuedTask = {
-            request,
+            payload,
             priority,
             timeoutMs: task.timeoutMs ?? DEFAULT_TIMEOUT_MS,
             resolve,
@@ -209,7 +162,6 @@ export const enqueueInference = (task: InferenceTask): Promise<unknown> => {
 
 /** Returns true if the inference worker is available. */
 export const isWorkerAvailable = (): boolean => {
-    if (workerFailed) return false
     return typeof Worker !== 'undefined'
 }
 
@@ -221,17 +173,10 @@ export const getActiveCount = (): number => activeCount
 
 /** Terminate the worker and clear queues. */
 export const terminateInferenceWorker = (): void => {
-    if (worker) {
-        worker.terminate()
-        worker = null
+    if (workerBus.has(WORKER_NAME)) {
+        workerBus.unregister(WORKER_NAME)
     }
-    workerFailed = false
     isProcessing = false
-    for (const [, pending] of pendingCallbacks) {
-        clearTimeout(pending.timer)
-        pending.reject(new Error('Inference worker terminated'))
-    }
-    pendingCallbacks.clear()
     activeCount = 0
     while (queue.length > 0) {
         const item = queue.shift()
@@ -241,5 +186,8 @@ export const terminateInferenceWorker = (): void => {
 
 /** Reset worker failure state so it can be retried. */
 export const resetWorkerState = (): void => {
-    workerFailed = false
+    // With WorkerBus, unregister allows re-registration on next use
+    if (workerBus.has(WORKER_NAME)) {
+        workerBus.unregister(WORKER_NAME)
+    }
 }

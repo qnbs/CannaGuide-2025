@@ -2,8 +2,10 @@
 // It receives a plant state and a time delta, runs the simulation logic,
 // and posts the updated state back to the main thread.
 
-import { Plant, AppSettings } from '@/types'
+import type { Plant, AppSettings } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
+import type { WorkerRequest } from '@/types/workerBus.types'
+import { workerOk, workerErr } from '@/types/workerBus.types'
 
 export interface SimulationWorkerInput {
     plant: Plant
@@ -11,36 +13,33 @@ export interface SimulationWorkerInput {
     simulationSettings?: AppSettings['simulation']
 }
 
-export interface SimulationWorkerError {
-    error: string
-}
-
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
 
-self.onmessage = (e: MessageEvent<SimulationWorkerInput>) => {
+self.onmessage = (e: MessageEvent<WorkerRequest<SimulationWorkerInput>>) => {
     if (!isTrustedWorkerMessage(e)) {
         return
     }
 
+    const { messageId, payload } = e.data
+
     try {
-        const data = e.data
-        if (!data?.plant || typeof data.deltaTime !== 'number' || data.deltaTime <= 0) {
-            self.postMessage({
-                error: 'Invalid input: plant is required and deltaTime must be > 0',
-            } satisfies SimulationWorkerError)
+        if (!payload?.plant || typeof payload.deltaTime !== 'number' || payload.deltaTime <= 0) {
+            self.postMessage(
+                workerErr(messageId, 'Invalid input: plant is required and deltaTime must be > 0'),
+            )
             return
         }
-        const { plant, deltaTime, simulationSettings } = data
+        const { plant, deltaTime, simulationSettings } = payload
         const result = plantSimulationService.calculateStateForTimeDelta(
             plant,
             deltaTime,
             simulationSettings,
         )
-        self.postMessage(result)
+        self.postMessage(workerOk(messageId, result))
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown simulation error'
-        self.postMessage({ error: message } satisfies SimulationWorkerError)
+        self.postMessage(workerErr(messageId, message))
     }
 }

@@ -131,6 +131,18 @@ class WorkerBusImpl {
     }
 
     /**
+     * Get the underlying Worker instance for direct event listeners (e.g. progress).
+     * Throws if the worker is not registered.
+     */
+    getWorker(name: string): Worker {
+        const w = this.workers.get(name)
+        if (!w) {
+            throw new Error(`[WorkerBus] No worker registered with name "${name}"`)
+        }
+        return w
+    }
+
+    /**
      * Terminate all workers and reject all pending requests.
      */
     dispose(): void {

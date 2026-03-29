@@ -4,10 +4,11 @@
  * Dedicated Web Worker for Transformers.js inference.
  * Runs all ONNX/WASM pipeline inference off the main thread to keep the UI responsive.
  *
- * Protocol:
- *   Main → Worker: InferenceWorkerRequest (id, task, modelId, input, options)
- *   Worker → Main: InferenceWorkerResponse (id, result | error)
+ * Protocol: WorkerBus (messageId-correlated request/response)
  */
+
+import type { WorkerRequest } from '@/types/workerBus.types'
+import { workerOk, workerErr } from '@/types/workerBus.types'
 
 type TransformersModule = typeof import('@xenova/transformers')
 type Pipeline = (input: unknown, options?: Record<string, unknown>) => Promise<unknown>
@@ -15,19 +16,12 @@ type Pipeline = (input: unknown, options?: Record<string, unknown>) => Promise<u
 let transformersPromise: Promise<TransformersModule> | null = null
 const pipelineCache = new Map<string, Promise<Pipeline>>()
 
-export interface InferenceWorkerRequest {
-    id: string
+export interface InferencePayload {
     task: string
     modelId: string
     input: unknown
     pipelineOptions?: Record<string, unknown>
     inferenceOptions?: Record<string, unknown>
-}
-
-export interface InferenceWorkerResponse {
-    id: string
-    result?: unknown
-    error?: string
 }
 
 const getTransformers = (): Promise<TransformersModule> => {
@@ -71,31 +65,26 @@ const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
 
-self.onmessage = async (e: MessageEvent<InferenceWorkerRequest>) => {
+self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
     if (!isTrustedWorkerMessage(e)) {
         return
     }
 
-    const data = e.data
-    if (!data?.id || !data?.task || !data?.modelId) {
-        const response: InferenceWorkerResponse = {
-            id: data?.id ?? 'unknown',
-            error: 'Invalid inference request: id, task, and modelId are required',
-        }
-        self.postMessage(response)
+    const { messageId, payload } = e.data
+    if (!payload?.task || !payload?.modelId) {
+        self.postMessage(
+            workerErr(messageId, 'Invalid inference request: task and modelId are required'),
+        )
         return
     }
-    const { id, task, modelId, input, pipelineOptions, inferenceOptions } = data
+    const { task, modelId, input, pipelineOptions, inferenceOptions } = payload
     try {
         const pipe = await loadPipeline(task, modelId, pipelineOptions ?? { quantized: true })
         const result = await pipe(input, inferenceOptions)
-        const response: InferenceWorkerResponse = { id, result }
-        self.postMessage(response)
+        self.postMessage(workerOk(messageId, result))
     } catch (err) {
-        const response: InferenceWorkerResponse = {
-            id,
-            error: err instanceof Error ? err.message : 'Worker inference failed',
-        }
-        self.postMessage(response)
+        self.postMessage(
+            workerErr(messageId, err instanceof Error ? err.message : 'Worker inference failed'),
+        )
     }
 }

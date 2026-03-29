@@ -8,6 +8,7 @@ import sandboxReducer, {
 } from '@/stores/slices/sandboxSlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
 import settingsReducer, { defaultSettings } from '@/stores/slices/settingsSlice'
+import { workerBus } from '@/services/workerBus'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import { StrainType, type Strain } from '@/types'
 
@@ -40,6 +41,7 @@ const rootReducer = combineReducers({
 })
 
 afterEach(() => {
+    workerBus.dispose()
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
 })
@@ -51,7 +53,11 @@ describe('sandboxSlice', () => {
     })
 
     it('clearCurrentExperiment resets experiment and status', () => {
-        const running = { ...initial, status: 'succeeded' as const, currentExperiment: { id: 'exp-1' } as any }
+        const running = {
+            ...initial,
+            status: 'succeeded' as const,
+            currentExperiment: { id: 'exp-1' } as any,
+        }
         const state = sandboxReducer(running, clearCurrentExperiment())
         expect(state.currentExperiment).toBeNull()
         expect(state.status).toBe('idle')
@@ -60,10 +66,7 @@ describe('sandboxSlice', () => {
     it('deleteExperiment removes by id', () => {
         const withExps = {
             ...initial,
-            savedExperiments: [
-                { id: 'exp-1' } as any,
-                { id: 'exp-2' } as any,
-            ],
+            savedExperiments: [{ id: 'exp-1' } as any, { id: 'exp-2' } as any],
         }
         const state = sandboxReducer(withExps, deleteExperiment('exp-1'))
         expect(state.savedExperiments).toHaveLength(1)
@@ -87,26 +90,52 @@ describe('sandboxSlice', () => {
     })
 
     it('runComparisonScenario forwards active simulation settings to the worker', async () => {
-        const basePlant = plantSimulationService.createPlant(testStrain, {
-            lightType: 'LED',
-            lightWattage: 300,
-            lightHours: 18,
-            ventilation: 'medium',
-            hasCirculationFan: true,
-            potSize: 11,
-            potType: 'Fabric',
-            medium: 'Soil',
-        }, 'Scenario Plant')
+        const basePlant = plantSimulationService.createPlant(
+            testStrain,
+            {
+                lightType: 'LED',
+                lightWattage: 300,
+                lightHours: 18,
+                ventilation: 'medium',
+                hasCirculationFan: true,
+                potSize: 11,
+                potType: 'Fabric',
+                medium: 'Soil',
+            },
+            'Scenario Plant',
+        )
 
         let workerPayload: unknown
 
         class MockWorker {
-            onmessage: ((event: MessageEvent) => void) | null = null
-            onerror: ((event: ErrorEvent) => void) | null = null
+            private _listeners: Array<(event: MessageEvent) => void> = []
 
-            postMessage(payload: unknown) {
-                workerPayload = payload
-                this.onmessage?.({ data: { originalHistory: [], modifiedHistory: [], originalFinalState: basePlant, modifiedFinalState: basePlant } } as MessageEvent)
+            addEventListener(type: string, handler: (event: MessageEvent) => void) {
+                if (type === 'message') this._listeners.push(handler)
+            }
+
+            removeEventListener(type: string, handler: (event: MessageEvent) => void) {
+                if (type === 'message')
+                    this._listeners = this._listeners.filter((h) => h !== handler)
+            }
+
+            postMessage(msg: { messageId: string; type: string; payload: unknown }) {
+                workerPayload = msg.payload
+                const response = {
+                    messageId: msg.messageId,
+                    success: true,
+                    data: {
+                        originalHistory: [],
+                        modifiedHistory: [],
+                        originalFinalState: basePlant,
+                        modifiedFinalState: basePlant,
+                    },
+                }
+                setTimeout(() => {
+                    for (const listener of this._listeners) {
+                        listener({ data: response } as MessageEvent)
+                    }
+                }, 0)
             }
 
             terminate() {}
@@ -141,17 +170,19 @@ describe('sandboxSlice', () => {
             },
         })
 
-        await store.dispatch(runComparisonScenario({
-            plantId: basePlant.id,
-            scenario: {
-                id: 'scenario-1',
-                titleKey: 'scenario.title',
-                descriptionKey: 'scenario.description',
-                durationDays: 2,
-                plantAModifier: { day: 1, action: 'NONE' },
-                plantBModifier: { day: 1, action: 'TEMP_PLUS_2' },
-            },
-        }) as never)
+        await store.dispatch(
+            runComparisonScenario({
+                plantId: basePlant.id,
+                scenario: {
+                    id: 'scenario-1',
+                    titleKey: 'scenario.title',
+                    descriptionKey: 'scenario.description',
+                    durationDays: 2,
+                    plantAModifier: { day: 1, action: 'NONE' },
+                    plantBModifier: { day: 1, action: 'TEMP_PLUS_2' },
+                },
+            }) as never,
+        )
 
         expect(workerPayload).toMatchObject({
             simulationSettings: expect.objectContaining({

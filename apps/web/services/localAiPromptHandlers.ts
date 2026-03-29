@@ -35,9 +35,20 @@ import { z } from 'zod'
 
 type GenerateText = (prompt: string) => Promise<string | null>
 
-const isGerman = (lang: Language): boolean => lang === 'de'
+const LANGUAGE_NAMES: Record<Language, string> = {
+    en: 'English',
+    de: 'German',
+    es: 'Spanish',
+    fr: 'French',
+    nl: 'Dutch',
+}
 
-const localized = (lang: Language, de: string, en: string): string => (isGerman(lang) ? de : en)
+const languageConstraint = (lang: Language): string =>
+    `CRITICAL: You MUST respond ENTIRELY in ${LANGUAGE_NAMES[lang]}. Do not use any other language.`
+
+/** Build a localized one-line instruction for the given language. */
+const localize = (lang: Language, instructions: Record<Language, string>): string =>
+    instructions[lang] ?? instructions['en']
 
 const sanitizeText = (value: string): string =>
     DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim()
@@ -66,15 +77,17 @@ export async function handleEquipmentRecommendation(
     generateText: GenerateText,
 ): Promise<Recommendation> {
     const sanitizedPrompt = sanitizeText(prompt)
-    const instruction = localized(
-        lang,
-        'Erstelle eine strukturierte Ausruestungsempfehlung auf Deutsch.',
-        'Create a structured equipment recommendation in English.',
-    )
+    const instruction = localize(lang, {
+        en: 'Create a structured equipment recommendation in English.',
+        de: 'Erstelle eine strukturierte Ausruestungsempfehlung auf Deutsch.',
+        es: 'Crea una recomendacion estructurada de equipamiento en espanol.',
+        fr: "Cree une recommandation structuree d'equipement en francais.",
+        nl: 'Maak een gestructureerd uitrustingsadvies in het Nederlands.',
+    })
     const generated = await generateText(
-        `${instruction}
+        `${instruction}\n${languageConstraint(lang)}
 Prompt: ${sanitizedPrompt}
-Return ONLY valid JSON with this exact shape: {"tent":{"name":"...","price":0,"rationale":"..."},"light":{"name":"...","price":0,"rationale":"...","watts":0},"ventilation":{"name":"...","price":0,"rationale":"..."},"circulationFan":{"name":"...","price":0,"rationale":"..."},"pots":{"name":"...","price":0,"rationale":"..."},"soil":{"name":"...","price":0,"rationale":"..."},"nutrients":{"name":"...","price":0,"rationale":"..."},"extra":{"name":"...","price":0,"rationale":"..."},"proTip":"..."}`,
+Return ONLY valid JSON with this exact shape (keep keys in English, write all string values in ${LANGUAGE_NAMES[lang]}): {"tent":{"name":"...","price":0,"rationale":"..."},"light":{"name":"...","price":0,"rationale":"...","watts":0},"ventilation":{"name":"...","price":0,"rationale":"..."},"circulationFan":{"name":"...","price":0,"rationale":"..."},"pots":{"name":"...","price":0,"rationale":"..."},"soil":{"name":"...","price":0,"rationale":"..."},"nutrients":{"name":"...","price":0,"rationale":"..."},"extra":{"name":"...","price":0,"rationale":"..."},"proTip":"..."}`,
     )
 
     if (!generated) {
@@ -113,13 +126,15 @@ export async function handleNutrientRecommendation(
     lang: Language,
     generateText: GenerateText,
 ): Promise<string> {
-    const instruction = localized(
-        lang,
-        'Erstelle eine kompakte Naehrstoff-Empfehlung auf Deutsch.',
-        'Create a compact nutrient recommendation in English.',
-    )
+    const instruction = localize(lang, {
+        en: 'Create a compact nutrient recommendation in English.',
+        de: 'Erstelle eine kompakte Naehrstoff-Empfehlung auf Deutsch.',
+        es: 'Crea una recomendacion compacta de nutrientes en espanol.',
+        fr: 'Cree une recommandation compacte de nutriments en francais.',
+        nl: 'Maak een compact voedingsadvies in het Nederlands.',
+    })
     const generated = await generateText(
-        `${instruction}
+        `${instruction}\n${languageConstraint(lang)}
 Context: ${sanitizeText(JSON.stringify(context))}
 Return a concise plain-text answer with practical next steps, EC/pH guidance, and one medium-specific note. Do not use HTML.`,
     )
@@ -172,16 +187,21 @@ function buildMentorPrompt(
     ragContext: string,
     lang: Language,
 ): string {
-    const instruction = isGerman(lang)
-        ? 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.'
-        : 'Answer as CannaGuide AI in English, structured, factual, and without HTML.'
+    const instruction = localize(lang, {
+        en: 'Answer as CannaGuide AI in English, structured, factual, and without HTML.',
+        de: 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.',
+        es: 'Responde como CannaGuide AI en espanol, estructurado, objetivo y sin HTML.',
+        fr: 'Reponds en tant que CannaGuide AI en francais, structure, factuel et sans HTML.',
+        nl: 'Antwoord als CannaGuide AI in het Nederlands, gestructureerd, feitelijk en zonder HTML.',
+    })
 
     return formatJsonPrompt([
         instruction,
+        languageConstraint(lang),
         `Plant: ${summarizePlant(plant)}`,
         `Context: ${sanitizeText(ragContext)}`,
         `Question: ${sanitizeText(query)}`,
-        'Return ONLY valid JSON with this exact shape:',
+        `Return ONLY valid JSON with this exact shape (keep keys in English, write all string values in ${LANGUAGE_NAMES[lang]}):`,
         '{"title":"...","content":"...","uiHighlights":[]}',
     ])
 }
@@ -219,21 +239,29 @@ export async function handlePlantAdvice(
     lang: Language,
     generateText: GenerateText,
 ): Promise<AIResponse> {
-    const instruction = localized(
-        lang,
-        'Fasse die Pflanzenlage knapp auf Deutsch zusammen.',
-        'Summarize the plant status succinctly in English.',
+    const instruction = localize(lang, {
+        en: 'Summarize the plant status succinctly in English.',
+        de: 'Fasse die Pflanzenlage knapp auf Deutsch zusammen.',
+        es: 'Resume el estado de la planta de forma breve en espanol.',
+        fr: "Resume brievement l'etat de la plante en francais.",
+        nl: 'Vat de plantstatus kort samen in het Nederlands.',
+    })
+    const generated = await generateText(
+        `${instruction}\n${languageConstraint(lang)}\n${summarizePlant(plant)}`,
     )
-    const generated = await generateText(`${instruction}\n${summarizePlant(plant)}`)
     if (!generated) {
         return localAiFallbackService.getPlantAdvice(plant, lang)
     }
     const parsed = parseJsonSafely(AIResponseSchema, generated)
     if (!parsed) {
         return {
-            title: isGerman(lang)
-                ? `Lokale Beratung: ${plant.name}`
-                : `Local Advice: ${plant.name}`,
+            title: localize(lang, {
+                en: `Local Advice: ${plant.name}`,
+                de: `Lokale Beratung: ${plant.name}`,
+                es: `Consejo Local: ${plant.name}`,
+                fr: `Conseil Local: ${plant.name}`,
+                nl: `Lokaal Advies: ${plant.name}`,
+            }),
             content: sanitizeText(generated),
         }
     }
@@ -250,17 +278,25 @@ export async function handleGardenStatusSummary(
     generateText: GenerateText,
 ): Promise<AIResponse> {
     const summary = plants.map((plant) => summarizePlant(plant)).join('\n')
-    const instruction = localized(
-        lang,
-        'Erstelle eine kurze Zusammenfassung fuer den gesamten Garten.',
-        'Create a short summary for the full grow.',
-    )
-    const generated = await generateText(`${instruction}\n${summary}`)
+    const instruction = localize(lang, {
+        en: 'Create a short summary for the full grow.',
+        de: 'Erstelle eine kurze Zusammenfassung fuer den gesamten Garten.',
+        es: 'Crea un breve resumen de todo el cultivo.',
+        fr: 'Cree un bref resume de toute la culture.',
+        nl: 'Maak een korte samenvatting van de gehele kweek.',
+    })
+    const generated = await generateText(`${instruction}\n${languageConstraint(lang)}\n${summary}`)
     if (!generated) {
         return localAiFallbackService.getGardenStatusSummary(plants, lang)
     }
     return {
-        title: isGerman(lang) ? 'Lokaler Gartenstatus' : 'Local Garden Status',
+        title: localize(lang, {
+            en: 'Local Garden Status',
+            de: 'Lokaler Gartenstatus',
+            es: 'Estado Local del Jardin',
+            fr: 'Etat Local du Jardin',
+            nl: 'Lokale Tuinstatus',
+        }),
         content: sanitizeText(generated),
     }
 }
@@ -275,13 +311,15 @@ export async function handleStrainTips(
     lang: Language,
     generateText: GenerateText,
 ): Promise<StructuredGrowTips> {
-    const instruction = localized(
-        lang,
-        'Gib kompakte Anbautipps auf Deutsch.',
-        'Give concise grow tips in English.',
-    )
+    const instruction = localize(lang, {
+        en: 'Give concise grow tips in English.',
+        de: 'Gib kompakte Anbautipps auf Deutsch.',
+        es: 'Da consejos de cultivo concisos en espanol.',
+        fr: 'Donne des conseils de culture concis en francais.',
+        nl: 'Geef beknopte kweektips in het Nederlands.',
+    })
     const generated = await generateText(
-        `${instruction}\nStrain: ${JSON.stringify(strain)}\nContext: ${JSON.stringify(context)}`,
+        `${instruction}\n${languageConstraint(lang)}\nStrain: ${JSON.stringify(strain)}\nContext: ${JSON.stringify(context)}`,
     )
     if (!generated) {
         return localAiFallbackService.getStrainTips(strain, lang)
@@ -305,19 +343,27 @@ export async function handleGrowLogRagAnswer(
     generateText: GenerateText,
 ): Promise<AIResponse> {
     const plantSummary = ragContext || plants.map((plant) => summarizePlant(plant)).join('\n')
-    const instruction = localized(
-        lang,
-        'Beantworte die Frage anhand des Grow-Log-Kontexts.',
-        'Answer the question using the grow-log context.',
-    )
+    const instruction = localize(lang, {
+        en: 'Answer the question using the grow-log context.',
+        de: 'Beantworte die Frage anhand des Grow-Log-Kontexts.',
+        es: 'Responde la pregunta usando el contexto del registro de cultivo.',
+        fr: 'Reponds a la question en utilisant le contexte du journal de culture.',
+        nl: 'Beantwoord de vraag aan de hand van de kweeklog-context.',
+    })
     const generated = await generateText(
-        `${instruction}\nQuestion: ${sanitizeText(query)}\nContext:\n${plantSummary}`,
+        `${instruction}\n${languageConstraint(lang)}\nQuestion: ${sanitizeText(query)}\nContext:\n${plantSummary}`,
     )
     if (!generated) {
         return localAiFallbackService.getGrowLogRagAnswer(query, plantSummary, lang)
     }
     return {
-        title: isGerman(lang) ? 'RAG-Analyse (lokal)' : 'RAG Analysis (local)',
+        title: localize(lang, {
+            en: 'RAG Analysis (local)',
+            de: 'RAG-Analyse (lokal)',
+            es: 'Analisis RAG (local)',
+            fr: 'Analyse RAG (locale)',
+            nl: 'RAG-Analyse (lokaal)',
+        }),
         content: sanitizeText(generated),
     }
 }
@@ -332,33 +378,55 @@ export async function handleDeepDive(
     lang: Language,
     generateText: GenerateText,
 ): Promise<DeepDiveGuide> {
-    const instruction = localized(
-        lang,
-        'Erstelle eine tiefe Analyse auf Deutsch.',
-        'Create a deep dive guide in English.',
-    )
+    const instruction = localize(lang, {
+        en: 'Create a deep dive guide in English.',
+        de: 'Erstelle eine tiefe Analyse auf Deutsch.',
+        es: 'Crea una guia de analisis profundo en espanol.',
+        fr: "Cree un guide d'analyse approfondie en francais.",
+        nl: 'Maak een diepgaande analyse in het Nederlands.',
+    })
     const generated = await generateText(
-        `${instruction}\nTopic: ${sanitizeText(topic)}\nPlant: ${summarizePlant(plant)}\nReturn JSON with keys introduction, stepByStep, prosAndCons, proTip.`,
+        `${instruction}\n${languageConstraint(lang)}\nTopic: ${sanitizeText(topic)}\nPlant: ${summarizePlant(plant)}\nReturn JSON with keys introduction, stepByStep, prosAndCons, proTip. Keep keys in English, write all string values in ${LANGUAGE_NAMES[lang]}.`,
     )
     if (!generated) {
         return {
             introduction: localAiFallbackService.getPlantAdvice(plant, lang).content,
             stepByStep: [
-                isGerman(lang)
-                    ? 'Parameter pruefen und Notizen vergleichen.'
-                    : 'Check parameters and compare notes.',
+                localize(lang, {
+                    en: 'Check parameters and compare notes.',
+                    de: 'Parameter pruefen und Notizen vergleichen.',
+                    es: 'Verificar parametros y comparar notas.',
+                    fr: 'Verifier les parametres et comparer les notes.',
+                    nl: 'Parameters controleren en notities vergelijken.',
+                }),
             ],
             prosAndCons: {
-                pros: [isGerman(lang) ? 'Lokale Analyse verfuegbar.' : 'Local analysis available.'],
+                pros: [
+                    localize(lang, {
+                        en: 'Local analysis available.',
+                        de: 'Lokale Analyse verfuegbar.',
+                        es: 'Analisis local disponible.',
+                        fr: 'Analyse locale disponible.',
+                        nl: 'Lokale analyse beschikbaar.',
+                    }),
+                ],
                 cons: [
-                    isGerman(lang)
-                        ? 'LLM-Modell konnte nicht geladen werden.'
-                        : 'LLM model could not be loaded.',
+                    localize(lang, {
+                        en: 'LLM model could not be loaded.',
+                        de: 'LLM-Modell konnte nicht geladen werden.',
+                        es: 'No se pudo cargar el modelo LLM.',
+                        fr: "Le modele LLM n'a pas pu etre charge.",
+                        nl: 'LLM-model kon niet worden geladen.',
+                    }),
                 ],
             },
-            proTip: isGerman(lang)
-                ? 'Einzelne Aenderungen getrennt testen.'
-                : 'Test changes one at a time.',
+            proTip: localize(lang, {
+                en: 'Test changes one at a time.',
+                de: 'Einzelne Aenderungen getrennt testen.',
+                es: 'Probar los cambios uno a la vez.',
+                fr: 'Tester les changements un par un.',
+                nl: 'Test wijzigingen een voor een.',
+            }),
         }
     }
     const parsed = parseJsonSafely(DeepDiveGuideSchema, generated)
@@ -366,20 +434,32 @@ export async function handleDeepDive(
         parsed ?? {
             introduction: sanitizeText(generated),
             stepByStep: [
-                isGerman(lang)
-                    ? 'Nutze lokale Diagnosewerte als Ausgangspunkt.'
-                    : 'Use the local diagnosis values as a starting point.',
+                localize(lang, {
+                    en: 'Use the local diagnosis values as a starting point.',
+                    de: 'Nutze lokale Diagnosewerte als Ausgangspunkt.',
+                    es: 'Usa los valores de diagnostico local como punto de partida.',
+                    fr: 'Utilise les valeurs de diagnostic local comme point de depart.',
+                    nl: 'Gebruik de lokale diagnosewaarden als startpunt.',
+                }),
             ],
             prosAndCons: {
                 pros: [
-                    isGerman(lang)
-                        ? 'Lokales Modell liefert sofortige Hilfe.'
-                        : 'The local model provides immediate help.',
+                    localize(lang, {
+                        en: 'The local model provides immediate help.',
+                        de: 'Lokales Modell liefert sofortige Hilfe.',
+                        es: 'El modelo local proporciona ayuda inmediata.',
+                        fr: 'Le modele local fournit une aide immediate.',
+                        nl: 'Het lokale model biedt directe hulp.',
+                    }),
                 ],
                 cons: [
-                    isGerman(lang)
-                        ? 'Antwort ist eventuell knapper als ein Cloud-LLM.'
-                        : 'The answer may be shorter than a cloud LLM response.',
+                    localize(lang, {
+                        en: 'The answer may be shorter than a cloud LLM response.',
+                        de: 'Antwort ist eventuell knapper als ein Cloud-LLM.',
+                        es: 'La respuesta puede ser mas breve que la de un LLM en la nube.',
+                        fr: "La reponse peut etre plus courte qu'un LLM cloud.",
+                        nl: 'Het antwoord kan korter zijn dan een cloud-LLM.',
+                    }),
                 ],
             },
             proTip: sanitizeText(topic),

@@ -68,7 +68,8 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
 const sanitizeText = (value: string): string =>
     DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim()
 
-const isGerman = (lang: Language): boolean => lang === 'de'
+const localizeStr = (lang: Language, texts: Record<string, string>): string =>
+    texts[lang] ?? texts['en'] ?? ''
 
 const toDataUrl = (base64Image: string, mimeType: string): string => {
     if (base64Image.startsWith('data:')) return base64Image
@@ -287,14 +288,24 @@ export const buildDiagnosisContent = (
     const topScore = labels[0]?.score ?? fallbackScore
 
     return {
-        title: isGerman(lang) ? `Lokale Diagnose: ${plant.name}` : `Local Diagnosis: ${plant.name}`,
+        title: localizeStr(lang, {
+            en: `Local Diagnosis: ${plant.name}`,
+            de: `Lokale Diagnose: ${plant.name}`,
+            es: `Diagnostico Local: ${plant.name}`,
+            fr: `Diagnostic Local: ${plant.name}`,
+            nl: `Lokale Diagnose: ${plant.name}`,
+        }),
         content: mergedIssues.length > 0 ? mergedIssues.join('\n') : heuristic.topPriority,
         confidence: Math.max(0.1, Math.min(1, topScore)),
         immediateActions: mergedIssues.slice(0, 3).join('\n') || heuristic.topPriority,
         longTermSolution: heuristic.topPriority,
-        prevention: isGerman(lang)
-            ? 'Licht, Bew\u00e4sserung, VPD und N\u00e4hrstoffversorgung im Verlauf dokumentieren.'
-            : 'Track light, watering, VPD, and feeding over time.',
+        prevention: localizeStr(lang, {
+            en: 'Track light, watering, VPD, and feeding over time.',
+            de: 'Licht, Bew\u00e4sserung, VPD und N\u00e4hrstoffversorgung im Verlauf dokumentieren.',
+            es: 'Registrar luz, riego, VPD y alimentacion a lo largo del tiempo.',
+            fr: "Suivre la lumiere, l'arrosage, le VPD et l'alimentation dans le temps.",
+            nl: 'Licht, bewateringssysteem, VPD en voeding in de tijd bijhouden.',
+        }),
         diagnosis: mergedIssues[0] || heuristic.topPriority,
     }
 }
@@ -303,9 +314,13 @@ export const buildDiagnosisContent = (
 export const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisResponse => {
     const heuristic = diagnoseWithRules(plant, lang)
     return {
-        title: isGerman(lang)
-            ? `Lokale Diagnose: ${sanitizeText(plant.name)}`
-            : `Local Diagnosis: ${sanitizeText(plant.name)}`,
+        title: localizeStr(lang, {
+            en: `Local Diagnosis: ${sanitizeText(plant.name)}`,
+            de: `Lokale Diagnose: ${sanitizeText(plant.name)}`,
+            es: `Diagnostico Local: ${sanitizeText(plant.name)}`,
+            fr: `Diagnostic Local: ${sanitizeText(plant.name)}`,
+            nl: `Lokale Diagnose: ${sanitizeText(plant.name)}`,
+        }),
         content: heuristic.issues.length > 0 ? heuristic.issues.join('\n') : heuristic.topPriority,
         confidence: heuristic.issues.length > 0 ? 0.72 : 0.93,
         immediateActions:
@@ -313,9 +328,13 @@ export const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisR
                 ? heuristic.issues.slice(0, 3).join('\n')
                 : heuristic.topPriority,
         longTermSolution: heuristic.topPriority,
-        prevention: isGerman(lang)
-            ? 'Regelm\u00e4\u00dfig VPD, pH, EC und Substratfeuchte pr\u00fcfen.'
-            : 'Check VPD, pH, EC, and substrate moisture regularly.',
+        prevention: localizeStr(lang, {
+            en: 'Check VPD, pH, EC, and substrate moisture regularly.',
+            de: 'Regelm\u00e4\u00dfig VPD, pH, EC und Substratfeuchte pr\u00fcfen.',
+            es: 'Verificar VPD, pH, EC y humedad del sustrato regularmente.',
+            fr: "V\u00e9rifier r\u00e9guli\u00e8rement le VPD, le pH, l'EC et l'humidit\u00e9 du substrat.",
+            nl: 'Controleer regelmatig VPD, pH, EC en substraatvocht.',
+        }),
         diagnosis:
             heuristic.issues.length > 0
                 ? (heuristic.issues[0] ?? heuristic.topPriority)

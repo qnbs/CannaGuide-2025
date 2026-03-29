@@ -15,6 +15,10 @@ import { secureRandom } from '@/utils/random'
 
 const isGerman = (lang: Language) => lang === 'de'
 
+/** Resolve a localized string with English fallback. */
+const localizeStr = (lang: Language, texts: Record<string, string>): string =>
+    texts[lang] ?? texts['en'] ?? ''
+
 type NutrientRecommendationContext = NutrientContext
 
 const formatPlantLine = (plant: Plant) =>
@@ -1438,7 +1442,12 @@ class LocalAiFallbackService {
         }
 
         return {
-            title: `Local Advice: ${safe(plant.name)}`,
+            title: localizeStr(lang, {
+                en: `Local Advice: ${safe(plant.name)}`,
+                es: `Consejo Local: ${safe(plant.name)}`,
+                fr: `Conseil Local: ${safe(plant.name)}`,
+                nl: `Lokaal Advies: ${safe(plant.name)}`,
+            }),
             content: `Status: ${formatPlantLine(plant)}\n\n${issueList}\n\nTop priority: ${diagnosis.topPriority}`,
         }
     }
@@ -1462,7 +1471,12 @@ class LocalAiFallbackService {
             }
         }
         return {
-            title: 'Local Garden Status',
+            title: localizeStr(lang, {
+                en: 'Local Garden Status',
+                es: 'Estado Local del Jardin',
+                fr: 'Etat Local du Jardin',
+                nl: 'Lokale Tuinstatus',
+            }),
             content:
                 plantDetails.length > 0
                     ? `Local analysis (AI unavailable):\n\n${plantDetails.join('\n')}`
@@ -1539,7 +1553,12 @@ class LocalAiFallbackService {
         }
 
         return {
-            title: 'RAG Analysis (local fallback)',
+            title: localizeStr(lang, {
+                en: 'RAG Analysis (local fallback)',
+                es: 'Analisis RAG (alternativa local)',
+                fr: 'Analyse RAG (alternative locale)',
+                nl: 'RAG-Analyse (lokale terugval)',
+            }),
             content: `Question: ${safeQuery}\n\nRelevant entries:\n${safeRag}\n\nSummary: resolve recurring patterns first (watering, VPD, light distance) and track outcomes for 24-48h.`,
         }
     }

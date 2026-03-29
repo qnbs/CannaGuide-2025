@@ -105,18 +105,36 @@ Released: **2026-Q1**
 
 ## v1.2 -- Community & Automation
 
-Target: **2026-Q2**
+Target: **2026-Q2** | Status: **In Progress**
+
+### Completed (v1.2.0-alpha)
+
+| Feature                                                      | Category     | Status | Issue |
+| ------------------------------------------------------------ | ------------ | ------ | ----- |
+| Spanish (ES) language support (13 namespaces)                | i18n         | done   | --    |
+| French (FR) language support (13 namespaces)                 | i18n         | done   | --    |
+| Dutch (NL) language support (13 namespaces)                  | i18n         | done   | --    |
+| Terpene profiles (27 terpenes, aroma/flavor/effect metadata) | Strains/Data | done   | --    |
+| Cannabinoid profiles (11 cannabinoids, typed ranges)         | Strains/Data | done   | --    |
+| Chemovar classification (Type I-V + ratios)                  | Strains/Data | done   | --    |
+| Flavonoid database (12 compounds, bioavailability data)      | Strains/Data | done   | --    |
+| Multi-source strain data integration (9 providers)           | Architecture | done   | --    |
+| Provider registry + quality scoring + provenance tracking    | Architecture | done   | --    |
+| Zod validation schemas for all strain data                   | Quality      | done   | --    |
+| Data hydration worker (background enrichment)                | Architecture | done   | --    |
+| WorkerBus audit + migration (all 6 workers)                  | Architecture | done   | --    |
+| Biome toolchain removal (ESLint + Prettier only)             | DevOps       | done   | --    |
+| 912+ tests across 94 files                                   | Testing      | done   | --    |
+
+### Remaining
 
 | Feature                                            | Category  | Priority | Issue |
 | -------------------------------------------------- | --------- | -------- | ----- |
-| Spanish (ES) language support                      | i18n      | High     | —     |
-| French (FR) language support                       | i18n      | High     | —     |
-| Dutch (NL) language support                        | i18n      | Medium   | —     |
-| Advanced nutrient scheduling with EC/pH automation | Core      | High     | —     |
-| Community strain marketplace                       | Community | High     | —     |
-| Auto-generated grow reports (PDF)                  | Export    | Medium   | —     |
-| Strain comparison side-by-side tool                | Core      | Medium   | —     |
-| Equipment cost tracking & analytics                | Core      | Low      | —     |
+| Advanced nutrient scheduling with EC/pH automation | Core      | High     | --    |
+| Community strain marketplace                       | Community | High     | --    |
+| Auto-generated grow reports (PDF)                  | Export    | Medium   | --    |
+| Strain comparison side-by-side tool                | Core      | Medium   | --    |
+| Equipment cost tracking & analytics                | Core      | Low      | --    |
 
 ---
 

@@ -88,7 +88,6 @@
             "anti-trojan-source"
         ]
     },
-    "dependencies": {},
     "devDependencies": {
         "@aikidosec/safe-chain": "^1.4.4",
         "@commitlint/cli": "^20.5.0",

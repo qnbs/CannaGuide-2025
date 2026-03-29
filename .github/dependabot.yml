@@ -60,7 +60,6 @@ updates:
                   - 'eslint-*'
                   - '@eslint/*'
                   - '@typescript-eslint/*'
-                  - '@biomejs/*'
                   - 'prettier'
     - package-ecosystem: github-actions
       directory: '/'

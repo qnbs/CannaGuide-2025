@@ -52,8 +52,7 @@
                 "bradlc.vscode-tailwindcss",
                 "github.copilot",
                 "github.copilot-chat",
-                "github.vscode-github-actions",
-                "biomejs.biome"
+                "github.vscode-github-actions"
             ]
         }
     }

@@ -65,13 +65,7 @@
         },
         {
             "description": "Linting & formatting (grouped, auto-merge patches)",
-            "matchPackagePatterns": [
-                "^eslint",
-                "^@eslint/",
-                "^prettier",
-                "^@biomejs/",
-                "^typescript-eslint"
-            ],
+            "matchPackagePatterns": ["^eslint", "^@eslint/", "^prettier", "^typescript-eslint"],
             "groupName": "linting",
             "labels": ["dependencies"],
             "automerge": true,

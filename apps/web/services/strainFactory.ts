@@ -1,4 +1,9 @@
 import { Strain, GeneticModifiers, StrainType } from '@/types'
+import {
+    generateTerpeneProfile,
+    generateCannabinoidProfile,
+    buildChemovarProfile,
+} from '@/services/terpeneService'
 
 const inferFloweringType = (
     typeDetailsText: string,
@@ -109,6 +114,32 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
     const inferredFloweringType = inferFloweringType(typeDetailsText, floweringTimeRangeText)
     if (!safeData.floweringType && inferredFloweringType) {
         merged.floweringType = inferredFloweringType
+    }
+
+    // --- Terpene / Cannabinoid / Chemovar enrichment ---
+    // Generate terpene profile if not explicitly provided
+    if (!merged.terpeneProfile && (merged.dominantTerpenes?.length ?? 0) > 0) {
+        merged.terpeneProfile = generateTerpeneProfile(
+            merged.dominantTerpenes ?? [],
+            nameHash,
+            merged.type,
+        )
+    }
+
+    // Generate cannabinoid profile if not explicitly provided
+    if (!merged.cannabinoidProfile) {
+        merged.cannabinoidProfile = generateCannabinoidProfile(
+            merged.thc,
+            merged.cbd,
+            merged.cbg,
+            merged.thcv,
+            nameHash,
+        )
+    }
+
+    // Build chemovar profile if not explicitly provided
+    if (!merged.chemovarProfile) {
+        merged.chemovarProfile = buildChemovarProfile(merged)
     }
 
     return merged

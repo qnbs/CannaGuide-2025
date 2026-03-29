@@ -75,9 +75,112 @@ export type TerpeneName =
     | 'Camphene'
     | 'Nerolidol'
     | 'Phytol'
+    | 'Eucalyptol'
+    | 'Borneol'
+    | 'Sabinene'
+    | 'Terpineol'
+    | 'Fenchol'
+    | 'Pulegone'
+    | 'Carene'
+    | 'Phellandrene'
+    | 'Cedrol'
+    | 'Citral'
+    | 'Farnesene'
+    | 'Isopulegol'
 
-/** Terpene percentage by dry-weight (typical range 0.01 – 2.0 %) */
+/** Terpene percentage by dry-weight (typical range 0.01 -- 2.0 %) */
 export type TerpeneProfile = Partial<Record<TerpeneName, number>>
+
+/** Extended terpene entry with lab-data-grade statistics */
+export interface TerpeneProfileEntry {
+    /** Mean percentage across lab samples */
+    percent: number
+    /** Standard deviation across samples (0 if only 1 sample) */
+    variance: number
+    /** Consistency rating derived from variance */
+    stability: 'high' | 'medium' | 'low'
+    /** Number of lab samples used (0 = estimated) */
+    sampleCount: number
+}
+
+/** Full lab-grade terpene profile with per-terpene statistics */
+export type DetailedTerpeneProfile = Partial<Record<TerpeneName, TerpeneProfileEntry>>
+
+/** Scientifically recognised cannabis cannabinoids */
+export type CannabinoidName =
+    | 'THC'
+    | 'CBD'
+    | 'CBG'
+    | 'CBN'
+    | 'THCV'
+    | 'CBC'
+    | 'CBDV'
+    | 'THCA'
+    | 'CBDA'
+    | 'CBGA'
+    | 'Delta8THC'
+
+/** Cannabinoid percentage profile */
+export type CannabinoidProfile = Partial<Record<CannabinoidName, number>>
+
+/** Extended cannabinoid entry with lab statistics */
+export interface CannabinoidProfileEntry {
+    percent: number
+    variance: number
+    stability: 'high' | 'medium' | 'low'
+    sampleCount: number
+}
+
+/** Full lab-grade cannabinoid profile */
+export type DetailedCannabinoidProfile = Partial<Record<CannabinoidName, CannabinoidProfileEntry>>
+
+/**
+ * Chemovar classification (chemotype-based, not indica/sativa/hybrid morphology).
+ * Based on cannabinoid ratios as defined by Hazekamp & Fischedick (2012).
+ */
+export type ChemovarType =
+    | 'Type I' // THC-dominant (THC:CBD > 5:1)
+    | 'Type II' // Balanced (THC:CBD 1:1 to 5:1)
+    | 'Type III' // CBD-dominant (THC:CBD < 1:1)
+    | 'Type IV' // CBG-dominant
+    | 'Type V' // Low cannabinoid
+
+/** Complete chemovar profile combining terpene + cannabinoid + classification data */
+export interface ChemovarProfile {
+    /** Chemovar type classification */
+    chemovarType: ChemovarType
+    /** Total terpene content percentage */
+    totalTerpenePercent: number
+    /** Total cannabinoid content percentage */
+    totalCannabinoidPercent: number
+    /** THC:CBD ratio (Infinity if CBD is 0) */
+    thcCbdRatio: number
+    /** Detailed terpene profile with lab statistics */
+    detailedTerpeneProfile: DetailedTerpeneProfile
+    /** Detailed cannabinoid profile with lab statistics */
+    detailedCannabinoidProfile: DetailedCannabinoidProfile
+    /** Predicted effects from entourage analysis */
+    predictedEffects: EffectTag[]
+    /** Data quality score (0--1): 1 = all real lab data, 0 = fully estimated */
+    dataQuality: number
+    /** ISO timestamp of last data update */
+    lastUpdated: string
+}
+
+/** Terpene similarity search result */
+export interface TerpeneSimilarityResult {
+    strainId: string
+    strainName: string
+    /** Cosine similarity score (0--1) */
+    cosineSimilarity: number
+    /** Euclidean distance (lower = more similar) */
+    euclideanDistance: number
+    /** Matched terpene overlap count */
+    sharedTerpeneCount: number
+}
+
+/** External strain API provider identifiers */
+export type StrainApiProvider = 'otreeba' | 'cannlytics'
 
 /** Predicted consumer/therapeutic effect tags from entourage analysis */
 export type EffectTag =
@@ -216,6 +319,10 @@ export interface Strain {
     dominantTerpenes?: string[]
     /** Quantitative terpene profile (% dry-weight). Derived from dominantTerpenes if not set. */
     terpeneProfile?: TerpeneProfile
+    /** Full cannabinoid profile beyond THC/CBD */
+    cannabinoidProfile?: CannabinoidProfile
+    /** Complete chemovar classification and detailed lab-grade profiles */
+    chemovarProfile?: ChemovarProfile
     geneticModifiers: GeneticModifiers
     availability?: SeedAvailability[]
 }

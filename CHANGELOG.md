@@ -6,6 +6,23 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Localization & Security Audit (2026-03-29)
+
+- **GitGuardian incident fix**: Removed hardcoded SeedFinder API key from source; moved to `VITE_SEEDFINDER_API_KEY` env var with graceful mock fallback
+- **Full i18n audit (5 languages)**: Added `strainsView.availability.*` keys (seed types, pack sizes, stock status, disclaimer), `plantsView.environment.*` keys (metrics, VPD zones, log messages), `common.outOfStock`, `common.imageGenCapability.*`
+- **SeedTypeBadge localization**: Seed type labels (Feminized/Regular/Autoflowering) now translated via i18n
+- **VPD zone label localization**: VPD indicator zone names (Too Low/Seedling/Vegetative/Flowering/Too High) now translated
+- **Image generation capability strings**: Localized via `getT()` in service layer + StrainImageGenerator component
+- **console.error compliance**: Replaced 7x `console.error` with `console.debug` in `simulationSlice.ts` (project rule: no error detail leaks in production)
+- **Test update**: `simulationSlice.test.ts` updated to expect `console.debug`
+
+### Real-World Seedbank API & Digital Twin (2026-03-29)
+
+- **SeedFinder.eu API integration**: `seedbankService.ts` fetches real availability data via CORS proxy cascade (allorigins -> corsproxy.io), 5-min in-memory TTL cache, `isLocalOnlyMode()` guard, deterministic mock fallback
+- **EnvironmentControlPanel**: Digital twin manual data capture (temperature, humidity, light PPFD, pH, EC, water volume) with live VPD indicator, journal logging, simulation state sync
+- **VPD Alert Badge**: Badge overlay on plant cards showing current VPD zone status
+- **WorkerBus finalization**: All 6 workers (VPD simulation, genealogy, scenario, inference, image generation, ML) migrated to promise-based `workerBus.ts`
+
 ### Monorepo Cleanup & Sync (2026-03-28)
 
 - **Monorepo docs sync**: README.md (EN+DE) updated with turbo/workspace commands and monorepo directory structure

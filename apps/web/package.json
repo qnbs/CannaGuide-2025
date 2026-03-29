@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@cannaguide/ai-core": "*",
+        "@google/genai": "^1.47.0",
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-select": "^2.2.6",
         "@radix-ui/react-slot": "^1.2.4",
@@ -45,7 +46,7 @@
         "react-dom": "^19.2.4",
         "react-i18next": "^17.0.1",
         "react-redux": "^9.2.0",
-        "recharts": "^3.8.0",
+        "recharts": "^3.8.1",
         "tailwind-merge": "^3.5.0",
         "three": "^0.180.0",
         "zod": "^3.25.76",

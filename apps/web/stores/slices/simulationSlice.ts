@@ -22,6 +22,7 @@ import {
 } from '@/types/schemas'
 import { View } from '@/types'
 import type { SimulationPoint } from '@/types/simulation.types'
+import { workerBus } from '@/services/workerBus'
 
 export const plantsAdapter = createEntityAdapter<Plant>()
 
@@ -444,50 +445,35 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                 // Only update if more than a minute has passed
                 dispatch(simulationSlice.actions.setCatchUpState(true))
                 try {
-                    const result = await new Promise<{
-                        updatedPlant: Plant
-                        newJournalEntries: JournalEntry[]
-                        newTasks: Task[]
-                    }>((resolve, reject) => {
+                    const result = await (async () => {
                         if (typeof Worker === 'undefined') {
-                            resolve(
-                                plantSimulationService.calculateStateForTimeDelta(
-                                    plant,
-                                    deltaTime,
-                                    settings.simulation,
-                                ),
+                            return plantSimulationService.calculateStateForTimeDelta(
+                                plant,
+                                deltaTime,
+                                settings.simulation,
                             )
-                            return
                         }
 
-                        const worker = new Worker(
-                            new URL('../../simulation.worker.ts', import.meta.url),
-                            { type: 'module' },
-                        )
-                        worker.onmessage = (e) => {
-                            worker.terminate()
-                            if (e.data?.error) {
-                                reject(new Error(e.data.error))
-                                return
-                            }
-                            resolve(
-                                e.data as {
-                                    updatedPlant: Plant
-                                    newJournalEntries: JournalEntry[]
-                                    newTasks: Task[]
-                                },
+                        const SIM_WORKER = 'simulation'
+                        if (!workerBus.has(SIM_WORKER)) {
+                            workerBus.register(
+                                SIM_WORKER,
+                                new Worker(new URL('../../simulation.worker.ts', import.meta.url), {
+                                    type: 'module',
+                                }),
                             )
                         }
-                        worker.onerror = (e) => {
-                            worker.terminate()
-                            reject(new Error(e.message))
-                        }
-                        worker.postMessage({
+
+                        return workerBus.dispatch<{
+                            updatedPlant: Plant
+                            newJournalEntries: JournalEntry[]
+                            newTasks: Task[]
+                        }>(SIM_WORKER, 'SIMULATE', {
                             plant,
                             deltaTime,
                             simulationSettings: settings.simulation,
                         })
-                    })
+                    })()
 
                     const filteredJournalEntries = result.newJournalEntries.filter((entry) => {
                         if (entry.type !== JournalEntryType.System) {

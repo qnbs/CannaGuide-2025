@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { ExperimentResult, SavedExperiment, Scenario, SandboxState } from '@/types'
 import { RootState } from '../store'
+import { workerBus } from '@/services/workerBus'
+
+const SCENARIO_WORKER = 'scenario'
 
 const initialState: SandboxState = {
     currentExperiment: null,
@@ -13,38 +16,40 @@ export const runComparisonScenario = createAsyncThunk<
     { plantId: string; scenario: Scenario },
     { state: RootState }
 >('sandbox/runComparison', async ({ plantId, scenario }, { getState }) => {
-    return new Promise((resolve, reject) => {
-        const state = getState()
-        const basePlant = state.simulation.plants.entities[plantId]
-        const simulationSettings = state.settings.settings.simulation
+    const state = getState()
+    const basePlant = state.simulation.plants.entities[plantId]
+    const simulationSettings = state.settings.settings.simulation
 
-        if (!basePlant) {
-            return reject(new Error('Base plant not found for scenario.'))
-        }
+    if (!basePlant) {
+        throw new Error('Base plant not found for scenario.')
+    }
 
-        const worker = new Worker(new URL('../../workers/scenario.worker.ts', import.meta.url), {
-            type: 'module',
-        })
+    if (!workerBus.has(SCENARIO_WORKER)) {
+        workerBus.register(
+            SCENARIO_WORKER,
+            new Worker(new URL('../../workers/scenario.worker.ts', import.meta.url), {
+                type: 'module',
+            }),
+        )
+    }
 
-        worker.onmessage = (e: MessageEvent<ExperimentResult>) => {
-            resolve({ ...e.data, basePlantId: plantId, scenarioId: scenario.id })
-            worker.terminate()
-        }
-
-        worker.onerror = (e) => {
-            reject(e)
-            worker.terminate()
-        }
-
-        worker.postMessage({ basePlant, scenario, simulationSettings })
-    })
+    const result = await workerBus.dispatch<ExperimentResult>(
+        SCENARIO_WORKER,
+        'RUN_SCENARIO',
+        { basePlant, scenario, simulationSettings },
+        120_000,
+    )
+    return { ...result, basePlantId: plantId, scenarioId: scenario.id }
 })
 
 const sandboxSlice = createSlice({
     name: 'sandbox',
     initialState,
     reducers: {
-        saveExperiment: (state, action: PayloadAction<{ scenario: Scenario; basePlantName: string }>) => {
+        saveExperiment: (
+            state,
+            action: PayloadAction<{ scenario: Scenario; basePlantName: string }>,
+        ) => {
             if (state.currentExperiment) {
                 const newSavedExperiment: SavedExperiment = {
                     ...state.currentExperiment,
@@ -63,7 +68,9 @@ const sandboxSlice = createSlice({
             state.status = 'idle'
         },
         deleteExperiment: (state, action: PayloadAction<string>) => {
-            state.savedExperiments = state.savedExperiments.filter((exp) => exp.id !== action.payload)
+            state.savedExperiments = state.savedExperiments.filter(
+                (exp) => exp.id !== action.payload,
+            )
         },
         setSandboxState: (_state, action: PayloadAction<SandboxState>) => {
             return action.payload

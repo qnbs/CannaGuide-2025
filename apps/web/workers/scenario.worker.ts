@@ -1,6 +1,8 @@
 import { Plant, Scenario, ScenarioAction, PlantHistoryEntry, AppSettings } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import { SIM_SECONDS_PER_DAY } from '@/constants'
+import type { WorkerRequest } from '@/types/workerBus.types'
+import { workerOk, workerErr } from '@/types/workerBus.types'
 
 const applyAction = (
     plant: Plant,
@@ -32,70 +34,90 @@ const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
 
-self.onmessage = (
-    e: MessageEvent<{
-        basePlant: Plant
-        scenario: Scenario
-        simulationSettings?: AppSettings['simulation']
-    }>,
-) => {
+interface ScenarioPayload {
+    basePlant: Plant
+    scenario: Scenario
+    simulationSettings?: AppSettings['simulation']
+}
+
+self.onmessage = (e: MessageEvent<WorkerRequest<ScenarioPayload>>) => {
     if (!isTrustedWorkerMessage(e)) {
         return
     }
 
-    let plantA = plantSimulationService.clonePlant(e.data.basePlant)
-    let plantB = plantSimulationService.clonePlant(e.data.basePlant)
-    const { scenario, simulationSettings } = e.data
+    const { messageId, payload } = e.data
 
-    const historyA: PlantHistoryEntry[] = []
-    const historyB: PlantHistoryEntry[] = []
-
-    const oneDayInMillis = SIM_SECONDS_PER_DAY * 1000
-
-    for (let day = 1; day <= scenario.durationDays; day++) {
-        if (day === scenario.plantAModifier.day) {
-            plantA = applyAction(plantA, scenario.plantAModifier.action, simulationSettings)
-        }
-        if (day === scenario.plantBModifier.day) {
-            plantB = applyAction(plantB, scenario.plantBModifier.action, simulationSettings)
+    try {
+        if (!payload) {
+            self.postMessage(workerErr(messageId, 'Missing payload'))
+            return
         }
 
-        plantA = plantSimulationService.applyEnvironmentalCorrections(plantA, simulationSettings)
-        plantB = plantSimulationService.applyEnvironmentalCorrections(plantB, simulationSettings)
+        let plantA = plantSimulationService.clonePlant(payload.basePlant)
+        let plantB = plantSimulationService.clonePlant(payload.basePlant)
+        const { scenario, simulationSettings } = payload
 
-        const resultA = plantSimulationService.calculateStateForTimeDelta(
-            plantA,
-            oneDayInMillis,
-            simulationSettings,
-        )
-        plantA = resultA.updatedPlant
-        historyA.push({
-            day: plantA.age,
-            height: plantA.height,
-            health: plantA.health,
-            stressLevel: plantA.stressLevel,
-            medium: plantA.medium,
-        })
+        const historyA: PlantHistoryEntry[] = []
+        const historyB: PlantHistoryEntry[] = []
 
-        const resultB = plantSimulationService.calculateStateForTimeDelta(
-            plantB,
-            oneDayInMillis,
-            simulationSettings,
+        const oneDayInMillis = SIM_SECONDS_PER_DAY * 1000
+
+        for (let day = 1; day <= scenario.durationDays; day++) {
+            if (day === scenario.plantAModifier.day) {
+                plantA = applyAction(plantA, scenario.plantAModifier.action, simulationSettings)
+            }
+            if (day === scenario.plantBModifier.day) {
+                plantB = applyAction(plantB, scenario.plantBModifier.action, simulationSettings)
+            }
+
+            plantA = plantSimulationService.applyEnvironmentalCorrections(
+                plantA,
+                simulationSettings,
+            )
+            plantB = plantSimulationService.applyEnvironmentalCorrections(
+                plantB,
+                simulationSettings,
+            )
+
+            const resultA = plantSimulationService.calculateStateForTimeDelta(
+                plantA,
+                oneDayInMillis,
+                simulationSettings,
+            )
+            plantA = resultA.updatedPlant
+            historyA.push({
+                day: plantA.age,
+                height: plantA.height,
+                health: plantA.health,
+                stressLevel: plantA.stressLevel,
+                medium: plantA.medium,
+            })
+
+            const resultB = plantSimulationService.calculateStateForTimeDelta(
+                plantB,
+                oneDayInMillis,
+                simulationSettings,
+            )
+            plantB = resultB.updatedPlant
+            historyB.push({
+                day: plantB.age,
+                height: plantB.height,
+                health: plantB.health,
+                stressLevel: plantB.stressLevel,
+                medium: plantB.medium,
+            })
+        }
+
+        self.postMessage(
+            workerOk(messageId, {
+                originalHistory: historyA,
+                modifiedHistory: historyB,
+                originalFinalState: plantA,
+                modifiedFinalState: plantB,
+            }),
         )
-        plantB = resultB.updatedPlant
-        historyB.push({
-            day: plantB.age,
-            height: plantB.height,
-            health: plantB.health,
-            stressLevel: plantB.stressLevel,
-            medium: plantB.medium,
-        })
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown scenario error'
+        self.postMessage(workerErr(messageId, message))
     }
-
-    self.postMessage({
-        originalHistory: historyA,
-        modifiedHistory: historyB,
-        originalFinalState: plantA,
-        modifiedFinalState: plantB,
-    })
 }

@@ -257,9 +257,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 className="animate-fade-in"
             >
                 {activeTab === 'overview' && <OverviewTab plant={plant} />}
-                {activeTab === 'environment' && (
-                    <EnvironmentControlPanel plant={plant} />
-                )}
+                {activeTab === 'environment' && <EnvironmentControlPanel plant={plant} />}
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
                 {activeTab === 'simulation' && <SimulationDebugTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}

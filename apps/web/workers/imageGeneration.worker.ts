@@ -4,17 +4,20 @@
  * Dedicated Web Worker for SD-Turbo image generation via Transformers.js.
  *
  * Isolates GPU-heavy diffusion work from the main thread to keep the UI
- * responsive during 512×512 image synthesis.
+ * responsive during 512x512 image synthesis.
  *
  * Protocol:
- *   Main → Worker: ImageGenWorkerRequest
- *   Worker → Main: ImageGenWorkerResponse (progress updates + final result)
+ *   Main -> Worker: WorkerRequest<ImageGenPayload> (via WorkerBus)
+ *   Worker -> Main: workerOk/workerErr for final result (via WorkerBus)
+ *   Worker -> Main: ImageGenProgressMessage for progress (plain postMessage, no messageId)
  */
+
+import type { WorkerRequest } from '@/types/workerBus.types'
+import { workerOk, workerErr } from '@/types/workerBus.types'
 
 type TransformersModule = typeof import('@xenova/transformers')
 
-interface ImageGenWorkerRequest {
-    id: string
+export interface ImageGenPayload {
     prompt: string
     numSteps: number
     guidanceScale: number
@@ -24,21 +27,15 @@ interface ImageGenWorkerRequest {
     modelId: string
 }
 
-interface ImageGenProgress {
+export interface ImageGenProgress {
     phase: 'loading' | 'encoding' | 'denoising' | 'decoding' | 'complete'
     percent: number
     elapsedMs: number
 }
 
-interface ImageGenWorkerResponse {
-    id: string
-    result?: {
-        dataUrl: string
-        latencyMs: number
-        backend: string
-    }
-    progress?: ImageGenProgress
-    error?: string
+/** Progress messages bypass WorkerBus (no messageId field). */
+export interface ImageGenProgressMessage {
+    progress: ImageGenProgress
 }
 
 let transformersPromise: Promise<TransformersModule> | null = null
@@ -92,51 +89,50 @@ const rawImageToDataUrl = async (rawImage: {
 }
 
 const sendProgress = (
-    id: string,
     phase: ImageGenProgress['phase'],
     percent: number,
     startTime: number,
 ): void => {
-    const response: ImageGenWorkerResponse = {
-        id,
+    const msg: ImageGenProgressMessage = {
         progress: {
             phase,
             percent: Math.round(percent),
             elapsedMs: Math.round(performance.now() - startTime),
         },
     }
-    self.postMessage(response)
+    self.postMessage(msg)
 }
 
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
 
-self.onmessage = async (e: MessageEvent<ImageGenWorkerRequest>) => {
+self.onmessage = async (e: MessageEvent<WorkerRequest<ImageGenPayload>>) => {
     if (!isTrustedWorkerMessage(e)) {
         return
     }
 
-    const data = e.data
-    if (!data?.id || !data?.prompt || !data?.modelId) {
-        const response: ImageGenWorkerResponse = {
-            id: data?.id ?? 'unknown',
-            error: 'Invalid image generation request: id, prompt, and modelId are required',
-        }
-        self.postMessage(response)
+    const { messageId, payload } = e.data
+    if (!messageId || !payload?.prompt || !payload?.modelId) {
+        self.postMessage(
+            workerErr(
+                messageId ?? '',
+                'Invalid image generation request: prompt and modelId are required',
+            ),
+        )
         return
     }
 
-    const { id, prompt, numSteps, guidanceScale, seed, modelId } = data
+    const { prompt, numSteps, guidanceScale, seed, modelId } = payload
     const startTime = performance.now()
 
     try {
         // Phase 1: Load Transformers.js and pipeline
-        sendProgress(id, 'loading', 0, startTime)
+        sendProgress('loading', 0, startTime)
 
         const transformers = await getTransformers()
 
-        sendProgress(id, 'loading', 50, startTime)
+        sendProgress('loading', 50, startTime)
 
         // Load the diffusion pipeline
         // SD-Turbo uses AutoPipelineForText2Image in Transformers.js v3
@@ -165,21 +161,21 @@ self.onmessage = async (e: MessageEvent<ImageGenWorkerRequest>) => {
             device: typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm',
             progress_callback: (progress: { status: string; progress?: number }) => {
                 if (progress.status === 'progress' && typeof progress.progress === 'number') {
-                    sendProgress(id, 'loading', 50 + progress.progress * 0.5, startTime)
+                    sendProgress('loading', 50 + progress.progress * 0.5, startTime)
                 }
             },
         })
 
-        sendProgress(id, 'encoding', 0, startTime)
+        sendProgress('encoding', 0, startTime)
 
         // Phase 2-4: Run diffusion
-        sendProgress(id, 'denoising', 0, startTime)
+        sendProgress('denoising', 0, startTime)
 
         const generateOptions: Record<string, unknown> = {
             num_inference_steps: numSteps,
             guidance_scale: guidanceScale,
             callback: (step: number, total: number) => {
-                sendProgress(id, 'denoising', (step / total) * 100, startTime)
+                sendProgress('denoising', (step / total) * 100, startTime)
             },
         }
 
@@ -189,7 +185,7 @@ self.onmessage = async (e: MessageEvent<ImageGenWorkerRequest>) => {
 
         const output = await pipeline(prompt, generateOptions)
 
-        sendProgress(id, 'decoding', 50, startTime)
+        sendProgress('decoding', 50, startTime)
 
         // Phase 5: Convert to data URL
         const rawImage = output.images[0]
@@ -201,22 +197,21 @@ self.onmessage = async (e: MessageEvent<ImageGenWorkerRequest>) => {
         const latencyMs = Math.round(performance.now() - startTime)
         const backend = typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm'
 
-        sendProgress(id, 'complete', 100, startTime)
+        sendProgress('complete', 100, startTime)
 
-        const response: ImageGenWorkerResponse = {
-            id,
-            result: {
+        self.postMessage(
+            workerOk(messageId, {
                 dataUrl,
                 latencyMs,
                 backend,
-            },
-        }
-        self.postMessage(response)
+            }),
+        )
     } catch (err) {
-        const response: ImageGenWorkerResponse = {
-            id,
-            error: err instanceof Error ? err.message : 'Image generation failed in worker',
-        }
-        self.postMessage(response)
+        self.postMessage(
+            workerErr(
+                messageId,
+                err instanceof Error ? err.message : 'Image generation failed in worker',
+            ),
+        )
     }
 }

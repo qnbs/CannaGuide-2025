@@ -16,6 +16,7 @@
 
 import type { Strain } from '@/types'
 import type { ImageStyle } from '@/types/aiProvider'
+import type { ImageGenPayload, ImageGenProgressMessage } from '@/workers/imageGeneration.worker'
 import { secureRandom } from '@/utils/random'
 import { captureLocalAiError } from './sentryService'
 import { detectOnnxBackend } from './localAIModelLoader'
@@ -27,6 +28,7 @@ import {
 } from './localAiHealthService'
 import { getCachedGeneratedImage, setCachedGeneratedImage } from './imageGenerationCacheService'
 import { acquireGpu, releaseGpu, getGpuLockState } from './gpuResourceManager'
+import { workerBus } from '@/services/workerBus'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -93,33 +95,9 @@ export interface ImageGenerationProgress {
     elapsedMs: number
 }
 
-/** Worker message types. */
-export interface ImageGenWorkerRequest {
-    id: string
-    prompt: string
-    numSteps: number
-    guidanceScale: number
-    seed: number | null
-    width: number
-    height: number
-    modelId: string
-}
-
-export interface ImageGenWorkerResponse {
-    id: string
-    result?: {
-        dataUrl: string
-        latencyMs: number
-        backend: string
-    }
-    progress?: ImageGenerationProgress
-    error?: string
-}
-
 // ─── State ───────────────────────────────────────────────────────────────────
 
-let worker: Worker | null = null
-let workerFailed = false
+const WORKER_NAME = 'imageGeneration'
 let activeCount = 0
 
 // ─── Prompt Engineering ──────────────────────────────────────────────────────
@@ -249,32 +227,24 @@ export const checkImageGenCapability = (): ImageGenCapability => {
     }
 }
 
-// ─── Worker Management ───────────────────────────────────────────────────────
+// ─── Worker Registration ─────────────────────────────────────────────────────
 
-const getWorker = (): Worker | null => {
-    if (workerFailed) return null
-    if (worker) return worker
-
-    try {
-        worker = new Worker(new URL('../workers/imageGeneration.worker.ts', import.meta.url), {
-            type: 'module',
-        })
-        worker.onerror = () => {
-            workerFailed = true
-            worker = null
-        }
-        return worker
-    } catch {
-        workerFailed = true
-        return null
+const ensureWorker = (): Worker => {
+    if (!workerBus.has(WORKER_NAME)) {
+        workerBus.register(
+            WORKER_NAME,
+            new Worker(new URL('../workers/imageGeneration.worker.ts', import.meta.url), {
+                type: 'module',
+            }),
+        )
     }
+    return workerBus.getWorker(WORKER_NAME)
 }
 
 /** Terminate the image generation worker to free GPU/WASM resources. */
 export const terminateImageGenWorker = (): void => {
-    if (worker) {
-        worker.terminate()
-        worker = null
+    if (workerBus.has(WORKER_NAME)) {
+        workerBus.unregister(WORKER_NAME)
     }
 }
 
@@ -333,8 +303,7 @@ export const generateStrainImageLocal = async (
     const startTime = performance.now()
 
     try {
-        const workerRequest: ImageGenWorkerRequest = {
-            id: request.id,
+        const payload: ImageGenPayload = {
             prompt,
             numSteps: Math.min(Math.max(request.numSteps ?? DEFAULT_NUM_STEPS, 1), 4),
             guidanceScale: request.guidanceScale ?? 1.0,
@@ -344,11 +313,11 @@ export const generateStrainImageLocal = async (
             modelId: SD_TURBO_MODEL_ID,
         }
 
-        const dataUrl = await executeInWorker(workerRequest, onProgress)
+        const workerResult = await executeInWorker(payload, onProgress)
         const latencyMs = Math.round(performance.now() - startTime)
 
         const result: ImageGenerationResult = {
-            dataUrl,
+            dataUrl: workerResult.dataUrl,
             latencyMs,
             modelId: SD_TURBO_MODEL_ID,
             backend: detectOnnxBackend(),
@@ -358,7 +327,7 @@ export const generateStrainImageLocal = async (
         }
 
         // Cache result asynchronously
-        setCachedGeneratedImage(prompt, dataUrl).catch((e) =>
+        setCachedGeneratedImage(prompt, workerResult.dataUrl).catch((e) =>
             captureLocalAiError(e, { model: SD_TURBO_MODEL_ID, stage: 'cache-write' }),
         )
 
@@ -375,50 +344,30 @@ export const generateStrainImageLocal = async (
     }
 }
 
-/** Execute generation in the Web Worker with timeout. */
-const executeInWorker = (
-    request: ImageGenWorkerRequest,
+/** Execute generation via WorkerBus with progress listener on the raw worker. */
+const executeInWorker = async (
+    payload: ImageGenPayload,
     onProgress?: (progress: ImageGenerationProgress) => void,
-): Promise<string> => {
-    const w = getWorker()
-    if (!w) {
-        return Promise.reject(
-            new Error('Image generation Web Worker unavailable. WebGPU may not be supported.'),
-        )
+): Promise<{ dataUrl: string; latencyMs: number; backend: string }> => {
+    const w = ensureWorker()
+
+    // Listen for progress messages (no messageId — bypasses WorkerBus)
+    const progressHandler = (event: MessageEvent<ImageGenProgressMessage>) => {
+        const msg = event.data
+        if (msg && 'progress' in msg && msg.progress) {
+            onProgress?.(msg.progress)
+        }
     }
+    w.addEventListener('message', progressHandler)
 
-    return new Promise<string>((resolve, reject) => {
-        const timer = setTimeout(() => {
-            cleanup()
-            reject(new Error('Image generation timed out.'))
-        }, GENERATION_TIMEOUT_MS)
-
-        const cleanup = () => {
-            clearTimeout(timer)
-            w.removeEventListener('message', handler)
-        }
-
-        const handler = (event: MessageEvent<ImageGenWorkerResponse>) => {
-            const msg = event.data
-            if (msg.id !== request.id) return
-
-            if (msg.progress) {
-                onProgress?.(msg.progress)
-                return
-            }
-
-            cleanup()
-
-            if (msg.error) {
-                reject(new Error(msg.error))
-            } else if (msg.result) {
-                resolve(msg.result.dataUrl)
-            } else {
-                reject(new Error('Unexpected worker response.'))
-            }
-        }
-
-        w.addEventListener('message', handler)
-        w.postMessage(request)
-    })
+    try {
+        const result = await workerBus.dispatch<{
+            dataUrl: string
+            latencyMs: number
+            backend: string
+        }>(WORKER_NAME, 'GENERATE', payload, GENERATION_TIMEOUT_MS)
+        return result
+    } finally {
+        w.removeEventListener('message', progressHandler)
+    }
 }

@@ -2,15 +2,24 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-29 late, Session 3) -- Zustand Migration + Test Offensive
+## Latest Session (2026-03-29 late, Session 4+5) -- Real Seedbank API, i18n Audit, Security Fix
 
-**Status: uiSlice fully migrated from Redux to Zustand (Strangler Fig Pattern). 47 files changed (+2321/-1461). filtersSlice + strainsViewSlice also migrated. 3 new localAI test suites added. Redux reduced from 17 to 15 slices. 3 Zustand stores created. 793/793 tests pass. Zero typecheck errors. Zero breaking changes.**
+**Status: Real SeedFinder.eu API integrated with CORS proxy cascade. GitGuardian key leak fixed (env var migration). Full 5-language i18n audit completed (availability tab, environment panel, VPD zones, image gen capability). console.error compliance enforced. WorkerBus finalization for all 6 workers. 793/793 tests pass. Zero typecheck errors.**
 
-### What Was Done
+### What Was Done (Session 4)
 
-1. **localAI test suites** -- 74 new tests across 3 files (diagnosis, prompt handlers, streaming)
-2. **filtersSlice + strainsViewSlice migration** (`1e890b5`) -- Zustand stores `useFiltersStore` + `useStrainsViewStore`
-3. **uiSlice migration** (`dcfef5a`) -- Largest migration: ~40 consumer files, 30+ actions, 14+ selectors removed
+1. **WorkerBus phase 2** -- ML + simulation workers migrated to central bus (all 6 workers complete)
+2. **Real SeedFinder.eu API** -- `seedbankService.ts` with CORS proxy cascade, 5-min cache, `isLocalOnlyMode()` guard, mock fallback
+3. **VPD Alert Badge** -- Badge on plant cards showing VPD zone
+4. **Architecture docs sync** -- copilot-instructions and ARCHITECTURE.md updated
+
+### What Was Done (Session 5)
+
+1. **GitGuardian fix** -- Removed hardcoded SeedFinder API key, moved to `VITE_SEEDFINDER_API_KEY` env var
+2. **Full i18n audit** -- Added `strainsView.availability.*`, `plantsView.environment.*`, `common.imageGenCapability.*` keys across EN/DE/ES/FR/NL
+3. **Component localization** -- SeedTypeBadge, VPD zone labels, image gen capability strings
+4. **console.error compliance** -- 7x `console.error` -> `console.debug` in simulationSlice
+5. **Documentation sync** -- README, CHANGELOG, copilot-instructions, next-session-handoff updated
 
 ### Architecture Status
 
@@ -18,30 +27,27 @@
 - **Zustand (3 stores):** useUIStore (modals, views, notifications, voice), useFiltersStore, useStrainsViewStore
 - **Cross-store bridge:** `initUIStoreReduxBridge()` + `getUISnapshot()` for non-React access
 - **Hydration:** Redux from IndexedDB, UI state extracted and hydrated separately into Zustand
+- **Workers:** All 6 on workerBus.ts (VPD sim, genealogy, scenario, inference, image gen, ML)
 
 ### What Is Now Complete
 
-- [x] uiSlice migrated to Zustand (30+ actions, ~40 consumers)
-- [x] filtersSlice + strainsViewSlice migrated to Zustand
-- [x] localAI.ts under 650 lines (orchestrator-only, DI pattern)
-- [x] 4 localAI services extracted with full test coverage
-- [x] Touch targets 44x44px, ARIA labels, focus-return
-- [x] WebLLM loading UX (progress bar with ETA)
-- [x] Monorepo migration complete
-- [x] CI pipeline fully green
+- [x] Digital Twin Phase 1: EnvironmentControlPanel (manual T/RH/PPFD/pH/EC/H2O + live VPD)
+- [x] Real SeedFinder.eu API with CORS proxy cascade + mock fallback
+- [x] VITE_SEEDFINDER_API_KEY env var (no more hardcoded secrets)
+- [x] Full 5-language i18n for availability tab, environment panel, image gen capability
+- [x] VPD zone labels + SeedTypeBadge localized
+- [x] WorkerBus migration complete (all 6 workers)
+- [x] console.error -> console.debug compliance in simulationSlice
 - [x] 793 tests across 88 files
 
-### Focus for Next Session: Digital Twin Architecture -- Manual Data Capture & IoT Preparation
+### Focus for Next Session: Digital Twin Phase 2 + Quality Infrastructure
 
-The Zustand migration and test offensive are complete. The next session should begin the **Digital Twin** vision: bridging manual plant data entry with future IoT sensor integration.
+**Priority 1 -- Digital Twin Phase 2 (v1.2):**
 
-**Priority 1 -- Digital Twin Foundation (v1.2):**
-
-- [ ] Sensor data model design: `SensorReading` type with timestamp, source (manual/ble/mqtt), value, unit
-- [ ] Manual environment entry UI: temperature, humidity, CO2, soil moisture input per plant
-- [ ] VPD auto-calculation from manual entries (tie into existing VPD simulation worker)
+- [ ] Sensor data model: `SensorReading` type with timestamp, source (manual/ble/mqtt), value, unit
 - [ ] Sensor history timeline component (reuse photo timeline pattern)
-- [ ] Unit tests for sensor data model + VPD integration
+- [ ] VPD auto-calculation from manual entries (tie into existing VPD simulation worker)
+- [ ] Real-time ESP32 BLE/MQTT dashboard (build on iot-mocks package)
 
 **Priority 2 -- Quality Infrastructure:**
 
@@ -62,8 +68,11 @@ The Zustand migration and test offensive are complete. The next session should b
 - [ ] Three.js 3D plant visualization
 - [ ] Advanced analytics dashboard
 
-> **Full Session Review:** [`docs/session-activity-review-2026-03-29.md`](session-activity-review-2026-03-29.md)
-> **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
+---
+
+## Previous Session (2026-03-29, Session 3) -- Zustand Migration + Test Offensive
+
+**Status: uiSlice fully migrated from Redux to Zustand (Strangler Fig Pattern). 47 files changed (+2321/-1461). filtersSlice + strainsViewSlice also migrated. 3 new localAI test suites added. Redux reduced from 17 to 15 slices. 3 Zustand stores created. 793/793 tests pass.**
 
 ---
 

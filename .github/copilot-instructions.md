@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 13 namespaces)
-- **Testing:** Vitest (719+ tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (793+ tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -98,7 +98,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 6. **Archive Capping:** Mentor: 100 entries, Advisor: 50/plant, FIFO culling.
 
-7. **Local AI Stack:** 11 service modules orchestrate on-device ML:
+7. **Local AI Stack:** 15 service modules orchestrate on-device ML:
     - `localAI.ts` — Core orchestration (text gen, vision, diagnosis, preload)
     - `localAIModelLoader.ts` — ONNX backend detection, pipeline loading (max 3 concurrent), cache
     - `localAiNlpService.ts` — Sentiment analysis, summarization, zero-shot classification
@@ -110,6 +110,14 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiPreloadService.ts` — Model preload state (localStorage persistence)
     - `localAiTelemetryService.ts` — Inference latency/success tracking
     - `localAiCacheService.ts` — IndexedDB inference cache (256 entries, 7d TTL)
+    - `localAiStreamingService.ts` — SSE-style streaming for local text generation
+    - `localAiDiagnosisService.ts` — Plant health diagnosis pipeline
+    - `localAiPromptHandlers.ts` — Prompt formatting for all AI features
+    - `localAiWebLlmService.ts` — WebLLM lifecycle, model loading, progress tracking
+
+8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication. All 6 workers (VPD simulation, genealogy, scenario, inference, image generation, ML) use this bus.
+
+9. **Seedbank API:** `seedbankService.ts` fetches from SeedFinder.eu via CORS proxy cascade (allorigins -> corsproxy.io). 5-min in-memory TTL cache. `isLocalOnlyMode()` guard. Deterministic mock fallback when API unavailable or `VITE_SEEDFINDER_API_KEY` not set.
 
 ---
 
@@ -188,7 +196,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 719+ tests across 86 files, 0 failures
+- Baseline: 793+ tests across 88 files, 0 failures
 
 ### Git
 
@@ -285,6 +293,9 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/services/sentryService.ts`                   | Sentry error tracking initialization                          |
 | `apps/web/services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)                      |
 | `apps/web/services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)                |
+| `apps/web/services/seedbankService.ts`                 | SeedFinder.eu API + CORS proxy cascade + mock fallback        |
+| `apps/web/services/imageGenerationService.ts`          | SD-Turbo text-to-image (WebGPU, worker-offloaded)             |
+| `apps/web/services/workerBus.ts`                       | Promise-based worker communication bus (6 workers)            |
 | `apps/web/simulation.worker.ts`                        | VPD simulation Web Worker                                     |
 | `apps/web/utils/random.ts`                             | `secureRandom()` -- Web Crypto replacement for Math.random    |
 | `apps/web/constants.ts`                                | App-wide constants                                            |

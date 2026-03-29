@@ -217,6 +217,26 @@ export interface Strain {
     /** Quantitative terpene profile (% dry-weight). Derived from dominantTerpenes if not set. */
     terpeneProfile?: TerpeneProfile
     geneticModifiers: GeneticModifiers
+    availability?: SeedAvailability[]
+}
+
+export type SeedType = 'Feminized' | 'Regular' | 'Autoflowering'
+
+export interface Seedbank {
+    id: string
+    name: string
+    websiteUrl: string
+    logoUrl?: string
+    rating: number
+}
+
+export interface SeedAvailability {
+    seedbankId: string
+    pricePerSeed: number
+    currency: string
+    inStock: boolean
+    packSizes: number[]
+    seedType: SeedType
 }
 
 export interface StrainTranslationData {

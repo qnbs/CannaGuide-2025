@@ -521,8 +521,42 @@ export const strainsView = {
     flavonoids: {
         title: 'Flavonoid Profile',
         estimated: 'Estimated',
+        estimatedHint: 'Based on cannabinoid and terpene signature',
         labVerified: 'Lab-verified',
         noData: 'No flavonoid data available.',
+        sectionDescription:
+            'Flavonoids are polyphenolic secondary metabolites that contribute to color, UV protection, and pharmacological activity. Cannabis contains both ubiquitous plant flavonoids and the unique cannflavins.',
+        exclusive: 'Cannabis-Exclusive',
+        cannabisExclusive: 'Cannabis-Exclusive Flavonoids',
+        cannabisExclusiveDescription:
+            'Cannflavins A, B, and C are prenylated flavones found exclusively in Cannabis sativa. They are not present in any other known plant species.',
+        cannflavinNote:
+            'Cannflavin A inhibits PGE-2 production approximately 30x more potently than aspirin (Barrett et al., 1986).',
+        subclassLegend: 'Flavonoid Subclasses',
+        subclass: {
+            cannflavin: 'Cannflavin',
+            flavone: 'Flavone',
+            flavonol: 'Flavonol',
+            flavanonol: 'Flavanonol',
+            flavanone: 'Flavanone',
+            catechin: 'Catechin',
+        },
+        detail: {
+            formula: 'Formula',
+            molarMass: 'Molar Mass',
+            typicalRange: 'Typical Range',
+            effects: 'Known Effects',
+            mechanisms: 'Mechanisms of Action',
+            alsoFoundIn: 'Also Found In',
+        },
+        effects: {
+            AntiInflammatory: 'Anti-Inflammatory',
+            PainRelief: 'Pain Relief',
+            Neuroprotective: 'Neuroprotective',
+            AntiAnxiety: 'Anti-Anxiety',
+            Relaxing: 'Relaxing',
+            Sedating: 'Sedating',
+        },
         cannflavinA: 'Cannflavin A',
         cannflavinB: 'Cannflavin B',
         cannflavinC: 'Cannflavin C',

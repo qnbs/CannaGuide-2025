@@ -528,8 +528,42 @@ export const strainsView = {
     flavonoids: {
         title: 'Flavonoid-Profil',
         estimated: 'Geschaetzt',
+        estimatedHint: 'Basierend auf Cannabinoid- und Terpensignatur',
         labVerified: 'Laborverifiziert',
         noData: 'Keine Flavonoid-Daten verfuegbar.',
+        sectionDescription:
+            'Flavonoide sind polyphenolische Sekundaermetaboliten, die zu Farbe, UV-Schutz und pharmakologischer Aktivitaet beitragen. Cannabis enthaelt sowohl weitverbreitete Pflanzenflavonoide als auch die einzigartigen Cannflavine.',
+        exclusive: 'Cannabis-exklusiv',
+        cannabisExclusive: 'Cannabis-exklusive Flavonoide',
+        cannabisExclusiveDescription:
+            'Cannflavine A, B und C sind prenylierte Flavone, die ausschliesslich in Cannabis sativa vorkommen. Sie sind in keiner anderen bekannten Pflanzenart enthalten.',
+        cannflavinNote:
+            'Cannflavin A hemmt die PGE-2-Produktion ca. 30x staerker als Aspirin (Barrett et al., 1986).',
+        subclassLegend: 'Flavonoid-Unterklassen',
+        subclass: {
+            cannflavin: 'Cannflavin',
+            flavone: 'Flavon',
+            flavonol: 'Flavonol',
+            flavanonol: 'Flavanonol',
+            flavanone: 'Flavanon',
+            catechin: 'Catechin',
+        },
+        detail: {
+            formula: 'Summenformel',
+            molarMass: 'Molare Masse',
+            typicalRange: 'Typischer Bereich',
+            effects: 'Bekannte Wirkungen',
+            mechanisms: 'Wirkmechanismen',
+            alsoFoundIn: 'Auch enthalten in',
+        },
+        effects: {
+            AntiInflammatory: 'Entzuendungshemmend',
+            PainRelief: 'Schmerzlindernd',
+            Neuroprotective: 'Neuroprotektiv',
+            AntiAnxiety: 'Angstloesend',
+            Relaxing: 'Entspannend',
+            Sedating: 'Sedierend',
+        },
         cannflavinA: 'Cannflavin A',
         cannflavinB: 'Cannflavin B',
         cannflavinC: 'Cannflavin C',

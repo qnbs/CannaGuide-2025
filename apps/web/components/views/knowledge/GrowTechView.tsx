@@ -72,8 +72,12 @@ export const GrowTechView: React.FC = () => {
         <div className="space-y-6">
             {/* Header */}
             <div className="text-center">
-                <h3 className="text-xl font-bold text-primary-300">{t('knowledgeView.growTech.title')}</h3>
-                <p className="text-sm text-slate-400 mt-1">{t('knowledgeView.growTech.subtitle')}</p>
+                <h3 className="text-xl font-bold text-primary-300">
+                    {t('knowledgeView.growTech.title')}
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">
+                    {t('knowledgeView.growTech.subtitle')}
+                </p>
             </div>
 
             {/* Year Badge */}
@@ -85,7 +89,9 @@ export const GrowTechView: React.FC = () => {
             </div>
 
             {/* Introduction */}
-            <p className="text-sm text-slate-300 leading-relaxed">{t('knowledgeView.growTech.intro')}</p>
+            <p className="text-sm text-slate-300 leading-relaxed">
+                {t('knowledgeView.growTech.intro')}
+            </p>
 
             {/* Technology Categories */}
             <div className="space-y-3">
@@ -124,7 +130,9 @@ export const GrowTechView: React.FC = () => {
                                         className="text-sm text-slate-300 leading-relaxed"
                                         dangerouslySetInnerHTML={{
                                             __html: DOMPurify.sanitize(
-                                                t(`knowledgeView.growTech.categories.${cat.id}.content`),
+                                                t(
+                                                    `knowledgeView.growTech.categories.${cat.id}.content`,
+                                                ),
                                             ),
                                         }}
                                     />
@@ -137,7 +145,9 @@ export const GrowTechView: React.FC = () => {
                                             className="text-xs text-slate-400 leading-relaxed"
                                             dangerouslySetInnerHTML={{
                                                 __html: DOMPurify.sanitize(
-                                                    t(`knowledgeView.growTech.categories.${cat.id}.benefits`),
+                                                    t(
+                                                        `knowledgeView.growTech.categories.${cat.id}.benefits`,
+                                                    ),
                                                 ),
                                             }}
                                         />

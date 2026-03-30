@@ -56,7 +56,9 @@ export const GeneticTrendsView: React.FC = () => {
                 <h2 className="text-2xl font-bold font-display text-slate-100">
                     {t('strainsView.geneticTrends.title')}
                 </h2>
-                <p className="mt-1 text-sm text-slate-400">{t('strainsView.geneticTrends.subtitle')}</p>
+                <p className="mt-1 text-sm text-slate-400">
+                    {t('strainsView.geneticTrends.subtitle')}
+                </p>
             </div>
 
             {/* Intro */}
@@ -107,7 +109,8 @@ export const GeneticTrendsView: React.FC = () => {
                                     <div className="flex items-center gap-2 p-2 rounded bg-primary-900/30 border border-primary-800/50">
                                         <PhosphorIcons.ChartLineUp className="w-4 h-4 text-primary-400 flex-shrink-0" />
                                         <span className="text-xs text-primary-300">
-                                            {t('strainsView.geneticTrends.relevanceLabel')}: {cat.relevance}
+                                            {t('strainsView.geneticTrends.relevanceLabel')}:{' '}
+                                            {cat.relevance}
                                         </span>
                                     </div>
                                 </div>
@@ -122,7 +125,9 @@ export const GeneticTrendsView: React.FC = () => {
                 <table className="w-full text-sm text-left">
                     <thead className="bg-slate-800 text-slate-300">
                         <tr>
-                            <th className="p-3 font-semibold">{t('strainsView.geneticTrends.table.trend')}</th>
+                            <th className="p-3 font-semibold">
+                                {t('strainsView.geneticTrends.table.trend')}
+                            </th>
                             <th className="p-3 font-semibold">
                                 {t('strainsView.geneticTrends.table.description')}
                             </th>

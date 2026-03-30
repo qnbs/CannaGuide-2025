@@ -1081,8 +1081,7 @@ export const strainsC: Strain[] = [
         },
         "aromas": ["Citrus", "Sweet", "Earthy", "Herbal"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "cambodian-landrace", "name": "Cambodian Landrace", "type": StrainType.Sativa, "typeDetails": "Sativa 100%",
         "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 11,
@@ -1135,15 +1134,21 @@ export const strainsC: Strain[] = [
     }),
     createStrainObject({
         "id": "california-black-rose", "name": "California Black Rose", "type": StrainType.Indica, "typeDetails": "Indica 100%",
-        "genetics": "Roze x OG Eddy", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 7.5
+        "genetics": "Roze x OG Eddy", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 7.5,
+        "aromas": ["Berry", "Earthy", "Grape", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Linalool"]
     }),
     createStrainObject({
         "id": "crystal-locomotive-f1", "name": "Crystal Locomotive F1", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Trainwreck x White Widow", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 9.5
+        "genetics": "Trainwreck x White Widow", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 9.5,
+        "aromas": ["Sweet", "Earthy", "Floral", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "clementine", "name": "Clementine", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Tangie x Lemon Skunk", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8.5
+        "genetics": "Tangie x Lemon Skunk", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8.5,
+        "aromas": ["Citrus", "Sweet", "Orange", "Tropical"],
+        "dominantTerpenes": ["Limonene", "Terpinolene", "Myrcene"]
     }),
     createStrainObject({
         "id": "crystal-locomotive",
@@ -1219,50 +1224,6 @@ export const strainsC: Strain[] = [
         "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Medium" },
         "aromas": ["Cherry", "Sweet", "Pepper", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }),
-    createStrainObject({
-        "id": "california-black-rose",
-        "name": "California Black Rose",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
-        "genetics": "Roze x OG Eddy",
-        "floweringType": "Photoperiod",
-        "thc": 20,
-        "cbd": 1,
-        "thcRange": "18-22%",
-        "cbdRange": "<1%",
-        "floweringTime": 7.5,
-        "floweringTimeRange": "7-8",
-        "description": "An award-winning indica strain known for its fast flowering time and unique floral, rose-like aroma with fruity undertones. It provides a relaxing and calming effect, perfect for unwinding. Its beautiful dark purple to black coloration makes it visually stunning.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Short"
-        },
-        "aromas": ["Rose", "Floral", "Sweet", "Fruity"],
-        "dominantTerpenes": ["Myrcene", "Linalool", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "california-orange-cbd",
-        "name": "California Orange CBD",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50% (CBD Dominant)",
-        "genetics": "California Orange x high-CBD strain",
-        "floweringType": "Photoperiod",
-        "thc": 7,
-        "cbd": 12,
-        "thcRange": "5-10%",
-        "cbdRange": "10-15%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "description": "A CBD-rich version of the classic California Orange. It offers a ~1:2 THC to CBD ratio, providing a mild, uplifting, and functional effect with significant therapeutic benefits. The aroma is a sweet and tangy burst of fresh oranges and citrus.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "High",
-            "height": "Medium"
-        },
-        "aromas": ["Orange", "Citrus", "Sweet", "Tangy"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Terpinolene"]
     }),
     createStrainObject({
         "id": "champagne",
@@ -1397,36 +1358,6 @@ export const strainsC: Strain[] = [
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
     }),
     createStrainObject({
-        "id": "champagne",
-        "name": "Champagne",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "Hash Plant x Burmese Kush",
-        "floweringType": "Photoperiod",
-        "thc": 21,
-        "cbd": 1,
-        "floweringTime": 8.5,
-        "description": "Champagne Kush, often just called Champagne, is an indica-dominant hybrid known for its uplifting, 'bubbly' effect reminiscent of its namesake sparkling wine. It provides a happy, social high that settles into a gentle body relaxation. The aroma is typically sweet and grape-like with floral and earthy undertones. It is a parent of Rainbow Sherbet.",
-        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
-        "aromas": ["Sweet", "Grape", "Floral", "Berry"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    }),
-    createStrainObject({
-        "id": "cambodian-landrace",
-        "name": "Cambodian Landrace",
-        "type": StrainType.Sativa,
-        "typeDetails": "Sativa 100%",
-        "genetics": "Landrace",
-        "floweringType": "Photoperiod",
-        "thc": 19,
-        "cbd": 1,
-        "floweringTime": 11,
-        "description": "A pure sativa landrace from Cambodia, known for its clear, energetic, and long-lasting cerebral high. The aroma is often sweet and fruity with earthy undertones. It is a parent of Raspberry Cough.",
-        "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Tall" },
-        "aromas": ["Sweet", "Fruity", "Earthy", "Tropical"],
-        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    }),
-    createStrainObject({
         "id": "cheese-quake",
         "name": "Cheese Quake",
         "type": StrainType.Hybrid,
@@ -1477,5 +1408,5 @@ export const strainsC: Strain[] = [
         },
         "aromas": ["Chocolate", "Coffee", "Sweet", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    }),
+    })
 ];

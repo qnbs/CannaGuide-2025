@@ -313,8 +313,7 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Sweet", "Creamy", "Fruity", "Earthy"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "kenyan-landrace",
         "name": "Kenyan Landrace",
@@ -341,11 +340,15 @@ export const strainsK: Strain[] = [
     }),
     createStrainObject({
         "id": "kc-33", "name": "KC 33", "type": StrainType.Hybrid, "typeDetails": "Sativa 60% / Indica 40%",
-        "genetics": "Thai x Brazilian x Afghani", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8
+        "genetics": "Thai x Brazilian x Afghani", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Sweet", "Fruity", "Earthy", "Tropical"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "kish", "name": "Kish", "type": StrainType.Hybrid, "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "DJ Short Blueberry x Afghani", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5
+        "genetics": "DJ Short Blueberry x Afghani", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5,
+        "aromas": ["Sweet", "Earthy", "Pine", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "killer-new-haven",
@@ -368,29 +371,5 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Earthy", "Pungent", "Spicy", "Hash"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }),
-    createStrainObject({
-        "id": "kish",
-        "name": "Kish",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "DJ Short Blueberry x Afghani",
-        "floweringType": "Photoperiod",
-        "thc": 22,
-        "cbd": 1,
-        "thcRange": "18-26%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "Kish, often known as Shishkaberry, is a potent indica-dominant hybrid. It delivers a happy, blissful high that starts with a cerebral uplift before settling into a full-body relaxation. Its aroma is a delightful blend of sweet berries and earthy notes.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Short",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
-        },
-        "aromas": ["Berry", "Sweet", "Earthy", "Fruity"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }),
+    })
 ];

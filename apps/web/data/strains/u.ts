@@ -15,7 +15,7 @@ export const strainsU: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine legendäre Hybridsorte, die im Vereinigten Königreich entstanden ist. Sie ist ein Phänotyp von Skunk #1 und berühmt für ihr ausgeprägtes, scharfes, käsiges Aroma. UK Cheese bietet ein ausgewogenes High, das mit einem energetischen, euphorischen Rausch beginnt und in einen entspannenden Körperstein übergeht, was sie für die Bewältigung von Stress und Schmerzen über den Tag hinweg geeignet macht.",
+        "description": "A legendary hybrid strain that originated in the United Kingdom. It is a phenotype of Skunk #1 and is famous for its distinct, pungent, cheesy aroma. UK Cheese offers a balanced high that begins with an energetic, euphoric rush and settles into a relaxing body stone, making it suitable for managing stress and pain throughout the day.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -39,7 +39,7 @@ export const strainsU: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist entspannend, glücklich und erhebend.",
+        "description": "A balanced hybrid with a sweet, fruity, and earthy aroma. The effect is relaxing, happy, and uplifting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",

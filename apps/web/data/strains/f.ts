@@ -289,11 +289,12 @@ export const strainsF: Strain[] = [
         },
         "aromas": ["Pineapple", "Mango", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "forum-cut-cookies", "name": "Forum Cut Cookies", "type": StrainType.Hybrid, "typeDetails": "Indica 75% / Sativa 25%",
-        "genetics": "GSC", "floweringType": "Photoperiod", "thc": 26, "cbd": 1, "floweringTime": 9.5
+        "genetics": "GSC", "floweringType": "Photoperiod", "thc": 26, "cbd": 1, "floweringTime": 9.5,
+        "aromas": ["Sweet", "Earthy", "Vanilla", "Nutty"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Linalool"]
     }),
     createStrainObject({
         "id": "fire-alien-kush",
@@ -362,29 +363,5 @@ export const strainsF: Strain[] = [
         },
         "aromas": ["Pine", "Earthy", "Lemon", "Pungent"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "forum-cut-cookies",
-        "name": "Forum Cut Cookies",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 75% / Sativa 25%",
-        "genetics": "GSC (phenotype)",
-        "floweringType": "Photoperiod",
-        "thc": 26,
-        "cbd": 1,
-        "thcRange": "24-28%",
-        "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "description": "The 'Forum Cut' is one of the original, legendary clone-only phenotypes of Girl Scout Cookies. It is prized for its classic GSC effects: a potent, euphoric head high that melts into a relaxing body buzz. It has a characteristic sweet, earthy, and doughy aroma. It's a parent of Mandarin Cookies.",
-        "agronomic": {
-            "difficulty": "Hard",
-            "yield": "Low",
-            "height": "Short",
-            "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/plant" },
-            "heightDetails": { "indoor": "70-110 cm", "outdoor": "90-130 cm" }
-        },
-        "aromas": ["Sweet", "Earthy", "Cookie", "Pungent"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }),
+    })
 ];

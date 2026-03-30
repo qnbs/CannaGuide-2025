@@ -362,10 +362,11 @@ export const strainsH: Strain[] = [
         "aromas": ["Diesel", "Pungent", "Earthy", "Sweet"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
     }),
-
     createStrainObject({
         "id": "harmony", "name": "Harmony", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30% (CBD Rich)",
-        "genetics": "Unknown CBD strain", "floweringType": "Photoperiod", "thc": 8, "cbd": 12, "floweringTime": 9
+        "genetics": "Unknown CBD strain", "floweringType": "Photoperiod", "thc": 8, "cbd": 12, "floweringTime": 9,
+        "aromas": ["Floral", "Sweet", "Earthy", "Herbal"],
+        "dominantTerpenes": ["Myrcene", "Linalool", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "high-octane-og",
@@ -472,20 +473,5 @@ export const strainsH: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Hash", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    }),
-    createStrainObject({
-        "id": "himalayan-kush",
-        "name": "Himalayan Kush",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
-        "genetics": "Himalayan Landrace",
-        "floweringType": "Photoperiod",
-        "thc": 18,
-        "cbd": 1,
-        "floweringTime": 8.5,
-        "description": "A pure indica landrace from the Himalayan mountain range. It is prized for its resilience to cold climates and its deeply relaxing, almost meditative body high. Its aroma is a classic mix of earthy, woody, and sweet hash notes. It is a parent of Red Dragon.",
-        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
-        "aromas": ["Earthy", "Woody", "Sweet", "Spicy"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }),
+    })
 ];

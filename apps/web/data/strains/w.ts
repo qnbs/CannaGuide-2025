@@ -337,8 +337,7 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Lemon", "Pine", "Spicy", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "williams-wonder", "name": "William's Wonder", "type": StrainType.Indica, "typeDetails": "Indica 100%",
         "genetics": "Afghani Landrace", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8,
@@ -367,19 +366,6 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Lavender", "Mint", "Diesel", "Pine"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "williams-wonder",
-        "name": "William's Wonder",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
-        "genetics": "Afghani Landrace",
-        "floweringType": "Photoperiod",
-        "thc": 22, "cbd": 1, "floweringTime": 8,
-        "description": "A classic, old-school indica known for its high yields, fast flowering time, and potent, relaxing effects. It has a sweet, citrusy, and floral aroma. It's a key parent of the original Lowryder.",
-        "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Short" },
-        "aromas": ["Sweet", "Citrus", "Floral", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Linalool", "Pinene"]
     }),
     createStrainObject({
         "id": "white-fire-alien-og",
@@ -423,27 +409,5 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Diesel", "Earthy", "Pine", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    }),
-    createStrainObject({
-        "id": "wookie-15",
-        "name": "Wookie #15",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "The White x Girl Scout Cookies",
-        "floweringType": "Photoperiod",
-        "thc": 25,
-        "cbd": 1,
-        "thcRange": "22-28%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "9",
-        "description": "Wookie #15 is a potent indica-dominant hybrid, famous for its unique aroma profile that blends lavender, mint, and diesel. It provides a happy, relaxing high that soothes the body while keeping the mind euphoric. It is a parent of Monkey Glue.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Lavender", "Mint", "Diesel", "Pine"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    }),
+    })
 ];

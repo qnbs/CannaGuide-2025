@@ -737,14 +737,20 @@ export const strainsA: Strain[] = [
     }),
     createStrainObject({
         "id": "alien-tahoe-og", "name": "Alien Tahoe OG", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Tahoe OG Kush x Alien Kush", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9
+        "genetics": "Tahoe OG Kush x Alien Kush", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9,
+        "aromas": ["Pine", "Earthy", "Citrus", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
     createStrainObject({
-        "id": "afghan-landrace", "name": "Afghan Landrace", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8
+        "id": "afghan-landrace", "name": "Afghan Landrace", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Earthy", "Spicy", "Woody", "Hash"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
     }),
     createStrainObject({
         "id": "american-haze", "name": "American Haze", "type": StrainType.Hybrid, "typeDetails": "Sativa 80% / Indica 20%",
-        "genetics": "Haze x American Sativa", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 10
+        "genetics": "Haze x American Sativa", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 10,
+        "aromas": ["Citrus", "Earthy", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "apricot-helix",

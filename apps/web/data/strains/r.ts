@@ -265,8 +265,7 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Sweet", "Diesel"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "rare-dankness-2",
         "name": "Rare Dankness #2",
@@ -280,28 +279,8 @@ export const strainsR: Strain[] = [
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
     }),
     createStrainObject({
-        "id": "roze", "name": "Roze", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Unknown", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8
-    }),
-    createStrainObject({
-        "id": "roze",
-        "name": "Roze",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
-        "genetics": "Unknown",
-        "floweringType": "Photoperiod",
-        "thc": 18,
-        "cbd": 1,
-        "thcRange": "16-20%",
-        "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "7-9",
-        "description": "Roze is a pure indica strain celebrated for its unique and intense floral aroma, strongly reminiscent of fresh roses. It provides a calming and relaxing high, perfect for unwinding. It is one of the parents of the visually stunning California Black Rose.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Short"
-        },
-        "aromas": ["Rose", "Floral", "Sweet", "Earthy"],
+        "id": "roze", "name": "Roze", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Unknown", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Floral", "Sweet", "Berry", "Earthy"],
         "dominantTerpenes": ["Linalool", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
@@ -394,27 +373,6 @@ export const strainsR: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
-        "id": "rare-dankness-2",
-        "name": "Rare Dankness #2",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
-        "genetics": "Ghost OG x (Chemdawg x Triangle Kush)",
-        "floweringType": "Photoperiod",
-        "thc": 24,
-        "cbd": 1,
-        "thcRange": "22-26%",
-        "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "agronomic": {
-            "difficulty": "Hard",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Citrus", "Earthy", "Spicy", "Diesel"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }),
-    createStrainObject({
         "id": "royal-kush",
         "name": "Royal Kush",
         "type": StrainType.Hybrid,
@@ -447,21 +405,6 @@ export const strainsR: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
-        "id": "rare-dankness-2",
-        "name": "Rare Dankness #2",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
-        "genetics": "Chemdawg x Triangle Kush",
-        "floweringType": "Photoperiod",
-        "thc": 24,
-        "cbd": 1,
-        "floweringTime": 9.5,
-        "description": "A prized phenotype from the Rare Dankness breeding program, this balanced hybrid offers an uplifting and creative head high coupled with gentle body relaxation. It's known for a complex OG Kush and Chemdawg aroma, blending citrus, earth, and diesel notes. It is a parent of Rare Dankness #1.",
-        "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Medium" },
-        "aromas": ["Citrus", "Earthy", "Spicy", "Diesel"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }),
-    createStrainObject({
         "id": "rainbow-chip",
         "name": "Rainbow Chip",
         "type": StrainType.Hybrid,
@@ -475,5 +418,5 @@ export const strainsR: Strain[] = [
         "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Medium" },
         "aromas": ["Sweet", "Fruity", "Chocolate", "Mint"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }),
+    })
 ];

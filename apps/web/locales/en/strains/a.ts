@@ -43,5 +43,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "auto-duck": {},
   "auto-white-widow": {},
   "ayahuasca-purple": {},
-  "aspen-og": {}
+  "aspen-og": {
+        "description": "Aspen OG is a sativa-dominant hybrid known for its sour, diesel-like aroma and uplifting, energetic effects. By combining the genetics of Sour Cream (a Sour Diesel descendant) and OG Kush, this strain delivers a strong cerebral high that stimulates creativity and focus while maintaining a pleasant body relaxation."
+    }
 };

@@ -5,8 +5,14 @@ export const strains: Record<string, StrainTranslationData> = {
   "gelato-42": {},
   "green-ribbon-bx": {},
   "green-spirit": {},
-  "gupta-kush": {},
-  "grape-gasoline": {},
+  "gupta-kush": {
+        "description": "A potent indica and key parent strain for several modern kush varieties. Delivers a heavy, classic OG experience with earthy, piney notes. Ideal for deep relaxation.",
+        "typeDetails": "Indica 100%",
+        "genetics": "Ghost OG x (likely another OG phenotype)"
+    },
+  "grape-gasoline": {
+        "description": "A balanced hybrid with a powerful aroma that lives up to its name, combining sweet grape notes with a sharp, gas-like diesel finish. The effect is typically uplifting and euphoric at first, then transitions into a pleasant and relaxing body sensation."
+    },
   "g-13": {},
   "g-13-haze": {},
   "galactica-og": {},

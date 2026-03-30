@@ -1,4 +1,11 @@
-import { Strain, GeneticModifiers, StrainType } from '@/types'
+import {
+    Strain,
+    GeneticModifiers,
+    StrainType,
+    TerpeneProfile,
+    CannabinoidProfile,
+    FlavonoidProfile,
+} from '@/types'
 import {
     generateTerpeneProfile,
     generateCannabinoidProfile,
@@ -13,6 +20,35 @@ const inferFloweringType = (
         typeDetailsText.toLowerCase().includes('autoflower') ||
         floweringTimeRangeText.toLowerCase().includes('lifecycle')
     return hasAutoMarker ? 'Autoflower' : undefined
+}
+
+const estimateFlavonoidProfile = (
+    terpeneProfile?: TerpeneProfile,
+    cannabinoidProfile?: CannabinoidProfile,
+    nameHash?: number,
+): FlavonoidProfile => {
+    const hash = nameHash ?? 42
+    const profile: FlavonoidProfile = {}
+
+    profile['Cannflavin A'] = 0.003 + (hash % 11) * 0.001
+    profile['Cannflavin B'] = 0.002 + (hash % 8) * 0.001
+    profile['Cannflavin C'] = 0.001 + (hash % 5) * 0.0005
+
+    const thc = cannabinoidProfile?.THC ?? 0
+    const cbd = cannabinoidProfile?.CBD ?? 0
+
+    profile['Apigenin'] = thc > 20 ? 0.04 + (hash % 7) * 0.005 : 0.02 + (hash % 7) * 0.003
+    profile['Quercetin'] = cbd > 5 ? 0.05 + (hash % 9) * 0.006 : 0.03 + (hash % 9) * 0.003
+    profile['Kaempferol'] = cbd > 5 ? 0.025 + (hash % 6) * 0.004 : 0.015 + (hash % 6) * 0.002
+
+    const myrcene = terpeneProfile?.Myrcene ?? 0
+    profile['Luteolin'] = myrcene > 0.3 ? 0.03 + (hash % 5) * 0.004 : 0.015 + (hash % 5) * 0.002
+
+    profile['Vitexin'] = 0.005 + (hash % 4) * 0.002
+    profile['Isovitexin'] = 0.003 + (hash % 3) * 0.002
+    profile['Catechins'] = 0.01 + (hash % 6) * 0.003
+
+    return profile
 }
 
 const ensureRequiredStrainFields = (
@@ -140,6 +176,15 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
     // Build chemovar profile if not explicitly provided
     if (!merged.chemovarProfile) {
         merged.chemovarProfile = buildChemovarProfile(merged)
+    }
+
+    // Generate flavonoid profile if not explicitly provided
+    if (!merged.flavonoidProfile) {
+        merged.flavonoidProfile = estimateFlavonoidProfile(
+            merged.terpeneProfile,
+            merged.cannabinoidProfile,
+            nameHash,
+        )
     }
 
     return merged

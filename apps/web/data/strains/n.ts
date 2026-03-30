@@ -304,23 +304,33 @@ export const strainsN: Strain[] = [
     })
 ,
     createStrainObject({
-        "id": "north-american-indica", "name": "North American Indica", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8
+        "id": "north-american-indica", "name": "North American Indica", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Earthy", "Pine", "Woody", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
     }),
     createStrainObject({
         "id": "nicole-kush", "name": "Nicole Kush", "type": StrainType.Hybrid, "typeDetails": "Indica 75% / Sativa 25%",
-        "genetics": "Kosher Kush x MK Ultra", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8.5
+        "genetics": "Kosher Kush x MK Ultra", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8.5,
+        "aromas": ["Earthy", "Pine", "Diesel", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "naran-j", "name": "Naran J", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Orange Juice x New England Rock Candy", "floweringType": "Photoperiod", "thc": 24, "cbd": 1, "floweringTime": 9
+        "genetics": "Orange Juice x New England Rock Candy", "floweringType": "Photoperiod", "thc": 24, "cbd": 1, "floweringTime": 9,
+        "aromas": ["Orange", "Citrus", "Sweet", "Tropical"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Terpinolene"]
     }),
     createStrainObject({
         "id": "new-england-rock-candy", "name": "New England Rock Candy", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "Rock Candy Kush x an unknown strain", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 9
+        "genetics": "Rock Candy Kush x an unknown strain", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 9,
+        "aromas": ["Sweet", "Candy", "Citrus", "Earthy"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
     }),
     createStrainObject({
         "id": "northern-lights-5", "name": "Northern Lights #5", "type": StrainType.Indica, "typeDetails": "Indica 95% / Sativa 5%",
-        "genetics": "Northern Lights (phenotype)", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8
+        "genetics": "Northern Lights (phenotype)", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Earthy", "Pine", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
         "id": "northern-lights-1",

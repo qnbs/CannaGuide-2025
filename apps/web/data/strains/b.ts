@@ -1249,8 +1249,7 @@ export const strainsB: Strain[] = [
         },
         "aromas": ["Bubblegum", "Sweet", "Fruity", "Berry"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "banana",
         "name": "Banana",
@@ -1304,7 +1303,9 @@ export const strainsB: Strain[] = [
     }),
     createStrainObject({
         "id": "bc-hashplant", "name": "BC Hashplant", "type": StrainType.Indica, "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Hash Plant x BC Kush", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 8
+        "genetics": "Hash Plant x BC Kush", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Earthy", "Hash", "Spicy", "Woody"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
     }),
     createStrainObject({
         "id": "blue-mammoth-auto",
@@ -1408,27 +1409,6 @@ export const strainsB: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
-        "id": "blue-moonshine",
-        "name": "Blue Moonshine",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 100%",
-        "genetics": "Blueberry phenotype",
-        "floweringType": "Photoperiod",
-        "thc": 17.5,
-        "cbd": 1,
-        "thcRange": "15-20%",
-        "cbdRange": "<1%",
-        "floweringTime": 7.5,
-        "floweringTimeRange": "7-8",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Short"
-        },
-        "aromas": ["Blueberry", "Berry", "Sweet", "Fruity"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }),
-    createStrainObject({
         "id": "bangi-haze",
         "name": "Bangi Haze",
         "type": StrainType.Hybrid,
@@ -1449,28 +1429,6 @@ export const strainsB: Strain[] = [
         },
         "aromas": ["Sweet", "Floral", "Anise", "Lemon", "Spicy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    }),
-    createStrainObject({
-        "id": "bay-11",
-        "name": "Bay 11",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 80% / Indica 20%",
-        "genetics": "Appalachia (Green Crack x Tres Dawg)",
-        "floweringType": "Photoperiod",
-        "thc": 24,
-        "cbd": 1,
-        "thcRange": "22-26%",
-        "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "description": "An award-winning (High Times Cannabis Cup 2011) sativa strain known for its dense, crystal-coated buds. It provides a potent, uplifting, and creative high that's great for daytime use. The aroma is sweet and piney with earthy undertones.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium"
-        },
-        "aromas": ["Pine", "Sweet", "Earthy", "Woody"],
-        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "biker-kush",
@@ -1515,5 +1473,5 @@ export const strainsB: Strain[] = [
         },
         "aromas": ["Berry", "Sweet", "Fruity", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }),
+    })
 ];

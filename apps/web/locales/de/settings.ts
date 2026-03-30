@@ -16,6 +16,7 @@ export const settingsView = {
         lookAndFeel: 'Erscheinungsbild',
         interactivity: 'Interaktivität',
         ai: 'KI-Konfiguration',
+        iot: 'Hardware & IoT',
     },
     security: {
         title: 'KI-Sicherheit (Multi-Model BYOK)',

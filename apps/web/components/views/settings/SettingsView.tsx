@@ -28,6 +28,7 @@ const AboutTab = lazy(() => import('./AboutTab'))
 const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
 const VoiceSettingsTab = lazy(() => import('./VoiceSettingsTab'))
 const DataManagementTab = lazy(() => import('./DataManagementTab'))
+const IotSettingsTab = lazy(() => import('./IotSettingsTab'))
 
 const timeOptions = [
     { value: '12', label: '12/12' },
@@ -2084,6 +2085,7 @@ const SettingsViewComponent: React.FC = () => {
             notifications: <PhosphorIcons.Bell className="w-14 h-14 mx-auto text-amber-400" />,
             defaults: <PhosphorIcons.ListChecks className="w-14 h-14 mx-auto text-cyan-400" />,
             privacy: <PhosphorIcons.ShieldCheck className="w-14 h-14 mx-auto text-emerald-400" />,
+            iot: <PhosphorIcons.WifiHigh className="w-14 h-14 mx-auto text-sky-400" />,
             data: <PhosphorIcons.Archive className="w-14 h-14 mx-auto text-orange-400" />,
             about: <PhosphorIcons.Info className="w-14 h-14 mx-auto text-cyan-400" />,
         }),
@@ -2100,6 +2102,7 @@ const SettingsViewComponent: React.FC = () => {
             notifications: t('settingsView.categories.notifications'),
             defaults: t('settingsView.categories.defaults'),
             privacy: t('settingsView.categories.privacy'),
+            iot: t('settingsView.categories.iot', { defaultValue: 'Hardware & IoT' }),
             data: t('settingsView.categories.data'),
             about: t('settingsView.categories.about'),
         }),
@@ -2144,6 +2147,18 @@ const SettingsViewComponent: React.FC = () => {
                 return <DefaultsSettingsTab />
             case 'privacy':
                 return <PrivacySettingsTab />
+            case 'iot':
+                return (
+                    <Suspense
+                        fallback={
+                            <Card>
+                                <SkeletonLoader count={3} />
+                            </Card>
+                        }
+                    >
+                        <IotSettingsTab />
+                    </Suspense>
+                )
             case 'data':
                 return (
                     <Suspense

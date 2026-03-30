@@ -23,7 +23,8 @@ import {
     generateCannabinoidProfile,
 } from '@/services/terpeneService'
 import { TERPENE_DATABASE, CANNABINOID_DATABASE } from '@/data/terpeneDatabase'
-import type { TerpeneName, CannabinoidName } from '@/types'
+import { FLAVONOID_DATABASE } from '@/data/flavonoidDatabase'
+import type { TerpeneName, CannabinoidName, FlavonoidName } from '@/types'
 
 /** Simple deterministic hash from string */
 const strHash = (s: string): number => {
@@ -79,6 +80,174 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
         </div>
     )
 }
+
+/** Expandable flavonoid entry with scientific details */
+const FlavonoidEntry: React.FC<{
+    name: string
+    val: number
+    barWidth: number
+    ref_: (typeof FLAVONOID_DATABASE)[FlavonoidName] | undefined
+    isExclusive: boolean
+    t: ReturnType<typeof useTranslation>['t']
+}> = React.memo(({ name, val, barWidth, ref_, isExclusive, t }) => {
+    const [expanded, setExpanded] = useState(false)
+
+    const subclassColor = ref_
+        ? ({
+              cannflavin: 'bg-amber-900/40 text-amber-300',
+              flavone: 'bg-purple-900/40 text-purple-300',
+              flavonol: 'bg-emerald-900/40 text-emerald-300',
+              flavanonol: 'bg-blue-900/40 text-blue-300',
+              flavanone: 'bg-orange-900/40 text-orange-300',
+              catechin: 'bg-rose-900/40 text-rose-300',
+          }[ref_.subclass] ?? 'bg-slate-700 text-slate-300')
+        : ''
+
+    const barColor = isExclusive ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 'bg-amber-500'
+
+    return (
+        <div
+            className="group cursor-pointer rounded-lg hover:bg-slate-800/50 transition-colors p-2 -mx-2"
+            onClick={() => setExpanded((prev) => !prev)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') setExpanded((prev) => !prev)
+            }}
+        >
+            {/* Header Row */}
+            <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-slate-200">{name}</span>
+                    {isExclusive && (
+                        <span className="text-xs bg-amber-900/50 text-amber-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                            <PhosphorIcons.Star className="w-3 h-3" />
+                            {t('strainsView.flavonoids.exclusive')}
+                        </span>
+                    )}
+                    {ref_ && (
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${subclassColor}`}>
+                            {t(`strainsView.flavonoids.subclass.${ref_.subclass}`)}
+                        </span>
+                    )}
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-amber-300 font-mono">{val.toFixed(3)}%</span>
+                    <PhosphorIcons.ChevronDown
+                        className={`w-3.5 h-3.5 text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
+                    />
+                </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-slate-700 rounded-full h-1.5">
+                <div
+                    className={`${barColor} rounded-full h-1.5 transition-all`}
+                    style={{ width: `${barWidth}%` }}
+                />
+            </div>
+
+            {/* Inline Effects Preview */}
+            {ref_ && ref_.effects.length > 0 && !expanded && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                    {ref_.effects.map((effect) => (
+                        <span key={effect} className="text-xs text-slate-500">
+                            {t(`strainsView.flavonoids.effects.${effect.replace(/[\s-]/g, '')}`, {
+                                defaultValue: effect,
+                            })}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {/* Expanded Details */}
+            {expanded && ref_ && (
+                <div className="mt-3 space-y-3 text-xs">
+                    {/* Molecular Info */}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-500">
+                        <span>
+                            {t('strainsView.flavonoids.detail.formula')}:{' '}
+                            <span className="text-slate-300 font-mono">{ref_.formula}</span>
+                        </span>
+                        <span>
+                            {t('strainsView.flavonoids.detail.molarMass')}:{' '}
+                            <span className="text-slate-300">{ref_.molecularWeight} g/mol</span>
+                        </span>
+                        <span>
+                            CAS: <span className="text-slate-300 font-mono">{ref_.cas}</span>
+                        </span>
+                        <span>
+                            {t('strainsView.flavonoids.detail.typicalRange')}:{' '}
+                            <span className="text-slate-300 font-mono">
+                                {ref_.typicalRange.min.toFixed(4)}-
+                                {ref_.typicalRange.max.toFixed(3)}%
+                            </span>
+                        </span>
+                    </div>
+
+                    {/* Effects */}
+                    {ref_.effects.length > 0 && (
+                        <div>
+                            <div className="text-slate-400 font-semibold mb-1">
+                                {t('strainsView.flavonoids.detail.effects')}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                                {ref_.effects.map((effect) => (
+                                    <span
+                                        key={effect}
+                                        className="bg-amber-900/30 text-amber-200 px-2 py-0.5 rounded-full"
+                                    >
+                                        {t(
+                                            `strainsView.flavonoids.effects.${effect.replace(/[\s-]/g, '')}`,
+                                            { defaultValue: effect },
+                                        )}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mechanisms */}
+                    {ref_.mechanisms.length > 0 && (
+                        <div>
+                            <div className="text-slate-400 font-semibold mb-1">
+                                {t('strainsView.flavonoids.detail.mechanisms')}
+                            </div>
+                            <ul className="space-y-1 text-slate-400">
+                                {ref_.mechanisms.map((m, i) => (
+                                    <li key={`mech-${i}`} className="flex items-start gap-1.5">
+                                        <PhosphorIcons.Flask className="w-3 h-3 text-amber-500/60 flex-shrink-0 mt-0.5" />
+                                        <span>{m}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {/* Also Found In */}
+                    {ref_.alsoFoundIn.length > 0 && (
+                        <div>
+                            <div className="text-slate-400 font-semibold mb-1">
+                                {t('strainsView.flavonoids.detail.alsoFoundIn')}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                                {ref_.alsoFoundIn.map((source) => (
+                                    <span
+                                        key={source}
+                                        className="bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full"
+                                    >
+                                        {source}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    )
+})
+FlavonoidEntry.displayName = 'FlavonoidEntry'
 
 const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation()
@@ -362,28 +531,135 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                 </InfoSection>
             )}
 
-            {/* Flavonoid Profile */}
+            {/* Flavonoid Profile -- Elaborate Section */}
             {flavonoidProfile && Object.keys(flavonoidProfile).length > 0 && (
-                <InfoSection title={t('strainsView.strainDetail.flavonoidSection')}>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <InfoSection
+                    title={t('strainsView.strainDetail.flavonoidSection')}
+                    icon={<PhosphorIcons.Leafy className="w-5 h-5 text-amber-400" />}
+                >
+                    <p className="text-xs text-slate-400 mb-4">
+                        {t('strainsView.flavonoids.sectionDescription')}
+                    </p>
+
+                    {/* Estimated badge */}
+                    <div className="flex items-center gap-2 mb-4">
+                        <span className="inline-flex items-center gap-1 text-xs bg-slate-700/80 text-amber-300 px-2 py-0.5 rounded-full">
+                            <PhosphorIcons.Info className="w-3 h-3" />
+                            {t('strainsView.flavonoids.estimated')}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                            {t('strainsView.flavonoids.estimatedHint')}
+                        </span>
+                    </div>
+
+                    {/* Cannabis-exclusive Cannflavins highlight */}
+                    {(() => {
+                        const exclusives = (
+                            Object.entries(flavonoidProfile) as [string, number][]
+                        ).filter(([name]) => {
+                            const ref = FLAVONOID_DATABASE[name as FlavonoidName]
+                            return ref?.cannabisExclusive
+                        })
+                        if (exclusives.length === 0) return null
+                        return (
+                            <div className="bg-gradient-to-r from-amber-900/30 to-emerald-900/20 border border-amber-700/30 rounded-lg p-3 mb-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <PhosphorIcons.Star className="w-4 h-4 text-amber-400" />
+                                    <span className="text-sm font-semibold text-amber-300">
+                                        {t('strainsView.flavonoids.cannabisExclusive')}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-slate-400 mb-3">
+                                    {t('strainsView.flavonoids.cannabisExclusiveDescription')}
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {exclusives.map(([name, val]) => {
+                                        const ref = FLAVONOID_DATABASE[name as FlavonoidName]
+                                        return (
+                                            <div
+                                                key={name}
+                                                className="bg-slate-800/60 rounded-lg p-2.5"
+                                            >
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <span className="text-sm font-medium text-amber-300">
+                                                        {name}
+                                                    </span>
+                                                </div>
+                                                <div className="text-lg font-mono text-slate-200">
+                                                    {val.toFixed(3)}%
+                                                </div>
+                                                {ref && (
+                                                    <div className="text-xs text-slate-500 mt-1">
+                                                        {ref.formula} -- {ref.molecularWeight} g/mol
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                <div className="mt-2 text-xs text-slate-500 italic">
+                                    {t('strainsView.flavonoids.cannflavinNote')}
+                                </div>
+                            </div>
+                        )
+                    })()}
+
+                    {/* All Flavonoids -- Bar Chart with Details */}
+                    <div className="space-y-3">
                         {(Object.entries(flavonoidProfile) as [string, number][])
                             .filter(([, v]) => v > 0)
                             .sort((a, b) => b[1] - a[1])
-                            .map(([name, val]) => (
-                                <div key={name} className="bg-slate-800 rounded-lg p-3 text-center">
-                                    <div className="text-sm font-medium text-amber-300">
-                                        {t(
-                                            `strainsView.flavonoids.${name.replace(/\s+/g, '').charAt(0).toLowerCase() + name.replace(/\s+/g, '').slice(1)}`,
-                                            {
-                                                defaultValue: name,
-                                            },
-                                        )}
-                                    </div>
-                                    <div className="text-lg font-mono text-slate-200 mt-1">
-                                        {val.toFixed(3)}%
-                                    </div>
-                                </div>
+                            .map(([name, val]) => {
+                                const ref = FLAVONOID_DATABASE[name as FlavonoidName]
+                                const barWidth = Math.min((val / 0.1) * 100, 100)
+                                const isExclusive = ref?.cannabisExclusive ?? false
+                                return (
+                                    <FlavonoidEntry
+                                        key={name}
+                                        name={name}
+                                        val={val}
+                                        barWidth={barWidth}
+                                        ref_={ref}
+                                        isExclusive={isExclusive}
+                                        t={t}
+                                    />
+                                )
+                            })}
+                    </div>
+
+                    {/* Flavonoid Subclass Legend */}
+                    <div className="mt-4 pt-3 border-t border-slate-700/50">
+                        <div className="text-xs font-semibold text-slate-400 mb-2">
+                            {t('strainsView.flavonoids.subclassLegend')}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {(
+                                [
+                                    'cannflavin',
+                                    'flavone',
+                                    'flavonol',
+                                    'flavanonol',
+                                    'catechin',
+                                ] as const
+                            ).map((sc) => (
+                                <span
+                                    key={sc}
+                                    className={`text-xs px-2 py-0.5 rounded-full ${
+                                        sc === 'cannflavin'
+                                            ? 'bg-amber-900/40 text-amber-300'
+                                            : sc === 'flavone'
+                                              ? 'bg-purple-900/40 text-purple-300'
+                                              : sc === 'flavonol'
+                                                ? 'bg-emerald-900/40 text-emerald-300'
+                                                : sc === 'flavanonol'
+                                                  ? 'bg-blue-900/40 text-blue-300'
+                                                  : 'bg-rose-900/40 text-rose-300'
+                                    }`}
+                                >
+                                    {t(`strainsView.flavonoids.subclass.${sc}`)}
+                                </span>
                             ))}
+                        </div>
                     </div>
                 </InfoSection>
             )}

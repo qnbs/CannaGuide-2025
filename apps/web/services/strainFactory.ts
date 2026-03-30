@@ -47,6 +47,8 @@ const estimateFlavonoidProfile = (
     profile['Vitexin'] = 0.005 + (hash % 4) * 0.002
     profile['Isovitexin'] = 0.003 + (hash % 3) * 0.002
     profile['Catechins'] = 0.01 + (hash % 6) * 0.003
+    profile['Orientin'] = 0.002 + (hash % 4) * 0.001
+    profile['Silymarin'] = 0.001 + (hash % 3) * 0.0005
 
     return profile
 }

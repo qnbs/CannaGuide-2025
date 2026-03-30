@@ -94,6 +94,8 @@ export const fetchWithCorsProxy = async (
     url: string,
     options?: globalThis.RequestInit,
 ): Promise<Response> => {
+    if (isLocalOnlyMode()) throw new Error('Network requests blocked in local-only mode')
+
     // Try direct first (works in non-browser or CORS-enabled APIs)
     try {
         const direct = await fetch(url, { ...options, signal: AbortSignal.timeout(8000) })
@@ -628,9 +630,7 @@ const normalizeCansativaResult = (data: Record<string, unknown>): Record<string,
         (data.sorte as string) ??
         undefined
 
-    const type = mapCansativaType(
-        (data.type as string) ?? (data.category as string) ?? genetics,
-    )
+    const type = mapCansativaType((data.type as string) ?? (data.category as string) ?? genetics)
 
     return {
         provider: 'cansativa',
@@ -650,10 +650,7 @@ const normalizeCansativaResult = (data: Record<string, unknown>): Record<string,
             apothekenpflichtig: true,
             cultivationCountry: (data.origin as string) ?? (data.herkunft as string) ?? undefined,
         },
-        description:
-            (data.description as string) ??
-            (data.beschreibung as string) ??
-            undefined,
+        description: (data.description as string) ?? (data.beschreibung as string) ?? undefined,
         sourceUrl: (data.url as string) ?? undefined,
     }
 }

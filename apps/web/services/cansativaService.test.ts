@@ -13,18 +13,15 @@ vi.mock('@/services/localOnlyModeService', () => ({
 const env = import.meta.env as Record<string, string>
 env['VITE_CANSATIVA_API_KEY'] = 'test-subscription-key'
 
-// Reset module registry so cansativaService picks up the mocked dependency
-vi.resetModules()
-
-const { isLocalOnlyMode } = await import('@/services/localOnlyModeService')
-const {
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import {
     fetchInventory,
     fetchMenu,
     fetchPartners,
     fetchByPostalCode,
     isCansativaAvailable,
     clearCansativaCache,
-} = await import('./cansativaService')
+} from './cansativaService'
 
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)

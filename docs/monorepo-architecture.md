@@ -35,7 +35,7 @@ CannaGuide-2025/
       components/           # React components
       stores/               # Redux slices, selectors, middleware
       services/             # Business logic (AI, DB, crypto, IoT, Sentry)
-      hooks/                # Custom React hooks (14+)
+      hooks/                # Custom React hooks (17)
       data/                 # Static data: 700+ strains, FAQ, lexicon
       locales/              # i18n: en/, de/ (13 namespaces)
       workers/              # Web Workers

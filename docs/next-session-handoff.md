@@ -46,7 +46,7 @@
 
 - AbortController + Priority Queue for dispatch (high priority for VPD alerts)
 - Dedicated workerTelemetry.ts export (Redux DevTools / Lighthouse integration)
-- Generic WorkerMessage<T, R> types for all 6 workers (zero-runtime type checks)
+- Generic WorkerMessage<T, R> types for all 7 workers (zero-runtime type checks)
 - Lighthouse CI assertion: TTI < 2s with 6 active workers
 
 **P2 -- Mid-term (v1.3, Q2 2026):**
@@ -82,7 +82,7 @@
 5. **Flavonoid database** -- 12 compounds with sources, bioavailability, research refs
 6. **Biome completely removed** -- Cleaned from devcontainer, renovaterc, dependabot, labeler, lockfile
 7. **Documentation overhaul** -- README (test counts x14, workflow counts x4, strains sections EN+DE, v1.2 roadmap EN+DE, Acknowledgments EN+DE), CONTRIBUTING, copilot-instructions, ROADMAP all updated
-8. **WorkerBus audit** -- All 6 workers verified on centralized bus protocol
+8. **WorkerBus audit** -- All 7 workers verified on centralized bus protocol
 
 ### Previous Session (2026-03-29, Session 6) -- Audit v2 Fixes, Version Bump, Toolchain Cleanup
 
@@ -99,7 +99,7 @@
 
 ### Previous Session (2026-03-29, Session 4+5)
 
-1. **WorkerBus phase 2** -- ML + simulation workers migrated to central bus (all 6 workers complete)
+1. **WorkerBus phase 2** -- ML + simulation workers migrated to central bus (all 7 workers complete)
 2. **Real SeedFinder.eu API** -- `seedbankService.ts` with CORS proxy cascade, 5-min cache, `isLocalOnlyMode()` guard, mock fallback
 3. **VPD Alert Badge** -- Badge on plant cards showing VPD zone
 4. **Architecture docs sync** -- copilot-instructions and ARCHITECTURE.md updated
@@ -127,7 +127,7 @@
 - [x] VITE_SEEDFINDER_API_KEY env var (no more hardcoded secrets)
 - [x] Full 5-language i18n for availability tab, environment panel, image gen capability
 - [x] VPD zone labels + SeedTypeBadge localized
-- [x] WorkerBus migration complete (all 6 workers)
+- [x] WorkerBus migration complete (all 7 workers)
 - [x] console.error -> console.debug compliance in simulationSlice
 - [x] 793 tests across 88 files
 

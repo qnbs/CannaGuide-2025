@@ -60,7 +60,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with an 15-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 700+ strains · 928+ tests · 51 services · 15 Redux slices + 3 Zustand stores · 16 custom hooks · 13 i18n namespaces · 9 themes · 20 CI workflows
+**Key numbers:** 700+ strains · 928+ tests · 69 services · 16 Redux slices + 4 Zustand stores · 17 custom hooks · 13 i18n namespaces · 9 themes · 20 CI workflows
 
 ---
 
@@ -75,11 +75,11 @@ Three-tier client-side architecture with offline-first design:
 │  6 Views: Plants│Strains│Equipment│Knowledge│Settings│Help│
 ├─────────────────────────────────────────────────────────┤
 │  Business Logic Layer                                   │
-│  51 Services · 16 Hooks · Web Workers                   │
+│  69 Services · 17 Hooks · 7 Web Workers                 │
 │  VPD Simulation · AI Providers · Genetics · RAG         │
 ├─────────────────────────────────────────────────────────┤
 │  State & Persistence Layer                              │
-│  Redux Toolkit (15 Slices) · Zustand (UI) · RTK Query   │
+│  Redux Toolkit (16 Slices) · Zustand (4 Stores) · RTK Query│
 │  Dual IndexedDB · Service Worker · Background Sync      │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -92,7 +92,7 @@ Three-tier client-side architecture with offline-first design:
 
 - **Offline-First:** Service Worker with Network-First navigation, Cache-First assets, Background Sync for offline action queuing
 - **Dual IndexedDB:** `CannaGuideStateDB` (Redux state, debounce-save 1s, force-save on `visibilitychange`) + `CannaGuideDB` (strains, images, full-text search index)
-- **WorkerBus:** Centralized promise-based Web Worker dispatcher (`workerBus.ts`) manages 6 workers (VPD simulation, genealogy, scenarios, inference, image generation, VPD chart) with automatic timeout, messageId correlation, backpressure queue, retry with exponential backoff, telemetry, and safe teardown on pagehide ([docs](docs/worker-bus.md))
+- **WorkerBus:** Centralized promise-based Web Worker dispatcher (`workerBus.ts`) manages 7 workers (VPD simulation, genealogy, scenarios, inference, image generation, strain hydration, terpene analysis) with automatic timeout, messageId correlation, backpressure queue, retry with exponential backoff, telemetry, and safe teardown on pagehide ([docs](docs/worker-bus.md))
 - **AI Streaming UX:** All AI views (Mentor, Advisor, Diagnosis) use character-by-character streaming with typing indicators for responsive feedback
 - **Structured AI Output:** Zod-validated `responseSchema` for all AI function-calling responses
 - **Memoized Selectors:** Map-based cache keyed by entity ID, `??` over `||` for nullish safety
@@ -106,15 +106,15 @@ Three-tier client-side architecture with offline-first design:
 | ------------------ | ------------------------------------ | ------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Component UI with zero `any`                |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Fast HMR, InjectManifest SW                 |
-| **State**          | Redux Toolkit 2.11 + Zustand 5       | Redux for domain data, Zustand for UI state |
-| **API Cache**      | RTK Query                            | AI API caching                              |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | 16 Redux slices + 4 Zustand stores          |
+| **API Cache**      | RTK Query                            | AI API caching + data fetching              |
 | **AI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction             |
 | **AI (Local)**     | Transformers.js, WebLLM, TF.js, ONNX | 15 services, 8 ML models, 3-layer fallback  |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 cannabis themes via CSS custom properties |
 | **Visualization**  | D3.js 7, Recharts                    | Genealogy trees, VPD charts                 |
 | **Validation**     | Zod 3.25                             | Runtime schema validation for AI + imports  |
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                   |
-| **i18n**           | i18next 25                           | EN/DE/ES/FR/NL, 13 namespaces               |
+| **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 13 namespaces               |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
 | **Testing**        | Vitest 4.1, Playwright 1.58          | 928+ unit, E2E, component tests             |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay              |
@@ -157,14 +157,16 @@ Searchable FAQ, grower's lexicon (200+ terms), visual growing guides, user manua
 
 All calls route through `aiProviderService.ts` → provider-specific services. Rate-limited (15 req/min sliding window). Structured JSON output via `responseSchema` with Zod validation.
 
-| Provider      | Service               | Models           |
-| ------------- | --------------------- | ---------------- |
-| Google Gemini | `geminiService.ts`    | Primary provider |
-| OpenAI        | `openaiService.ts`    | GPT series       |
-| Anthropic     | `anthropicService.ts` | Claude series    |
-| xAI           | `xaiService.ts`       | Grok series      |
+| Provider      | Service                | Models           |
+| ------------- | ---------------------- | ---------------- |
+| Google Gemini | `aiProviderService.ts` | Primary provider |
+| OpenAI        | `aiProviderService.ts` | GPT series       |
+| Anthropic     | `aiProviderService.ts` | Claude series    |
+| xAI           | `aiProviderService.ts` | Grok series      |
 
-### Local AI Stack (11 Services)
+All providers are unified through `aiProviderService.ts` with provider-specific API endpoints and key management.
+
+### Local AI Stack (15 Services)
 
 Fully offline inference with 3-layer fallback: WebLLM → Transformers.js → Heuristics.
 
@@ -181,6 +183,10 @@ Fully offline inference with 3-layer fallback: WebLLM → Transformers.js → He
 | `localAiPreloadService.ts`           | Model preload state (localStorage)                          |
 | `localAiTelemetryService.ts`         | Inference latency/success tracking                          |
 | `localAiCacheService.ts`             | IndexedDB inference cache (256 entries, 7d TTL)             |
+| `localAiStreamingService.ts`         | SSE-style streaming for local text generation               |
+| `localAiDiagnosisService.ts`         | Plant health diagnosis pipeline                             |
+| `localAiPromptHandlers.ts`           | Prompt formatting for all AI features                       |
+| `localAiWebLlmService.ts`            | WebLLM lifecycle, model loading, progress tracking          |
 
 ### Prompt Engineering & RAG
 
@@ -276,9 +282,9 @@ tsconfig.json              References-only (apps/web, apps/desktop, packages/*)
 apps/
   web/                     Main PWA (@cannaguide/web)
     components/             React components (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux (15 slices) + Zustand (useUIStore), selectors, middleware
-    services/               51 service modules (AI, simulation, DB, crypto, IoT)
-    hooks/                  16 custom hooks
+    stores/                 Redux (16 slices) + Zustand (4 stores), selectors, middleware
+    services/               69 service modules (AI, simulation, DB, crypto, IoT)
+    hooks/                  17 custom hooks
     data/                   Static data: 700+ strains, FAQ, lexicon, guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (13 namespaces each)
     workers/                Web Workers: VPD simulation, genealogy, scenarios
@@ -319,16 +325,27 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 
 ### Additional Workflows
 
-| Workflow             | Trigger          | Purpose                               |
-| -------------------- | ---------------- | ------------------------------------- |
-| CodeQL               | push, PR, weekly | SAST analysis (JavaScript/TypeScript) |
-| Deploy               | push to main     | GitHub Pages deployment + Lighthouse  |
-| E2E & Integration    | push, PR         | Standalone E2E suite                  |
-| Tauri Build          | release tags     | Cross-platform desktop builds         |
-| Capacitor Build      | release tags     | iOS/Android builds                    |
-| Docker               | release tags     | Container image                       |
-| Strains Daily Update | cron             | Automated strain data refresh         |
-| Renovate             | bot              | Dependency updates                    |
+| Workflow              | Trigger          | Purpose                               |
+| --------------------- | ---------------- | ------------------------------------- |
+| CodeQL                | push, PR, weekly | SAST analysis (JavaScript/TypeScript) |
+| Deploy                | push to main     | GitHub Pages deployment + Lighthouse  |
+| E2E & Integration     | push, PR         | Standalone E2E suite                  |
+| Tauri Build           | release tags     | Cross-platform desktop builds         |
+| Capacitor Build       | release tags     | iOS/Android builds                    |
+| Docker                | release tags     | Container image                       |
+| Security Full         | push, PR, weekly | Comprehensive security scan suite     |
+| Security Scan         | push, PR         | Quick security checks                 |
+| Snyk                  | push, PR         | Vulnerability scanning                |
+| ClusterFuzzLite       | PR               | Continuous fuzzing                    |
+| Scorecard             | push, weekly     | OpenSSF Scorecard (8.5/10)            |
+| Config Guard          | push, PR         | RCE pattern scanning in configs       |
+| Benchmark             | push, PR         | Performance benchmarking              |
+| Fuzzing               | push, PR         | Vitest fuzz testing                   |
+| Strains Daily Update  | cron             | Automated strain data refresh         |
+| Strains Merge         | push, PR         | Strain merge automation               |
+| Dependabot Auto-Merge | bot              | Dependency update automation          |
+| Labeler               | PR               | Automatic PR labeling                 |
+| Stale                 | scheduled        | Stale issue/PR management             |
 
 ---
 
@@ -474,7 +491,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 15-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 700+ Sorten · 928+ Tests · 51 Services · 15 Redux Slices + 3 Zustand Stores · 16 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 20 CI-Workflows
+**Kennzahlen:** 700+ Sorten · 928+ Tests · 69 Services · 16 Redux Slices + 4 Zustand Stores · 17 Custom Hooks · 13 i18n-Namensräume · 9 Themes · 20 CI-Workflows
 
 ---
 
@@ -489,11 +506,11 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 │  6 Views: Pflanzen│Sorten│Ausrüstung│Wissen│Settings│Hilfe│
 ├─────────────────────────────────────────────────────────┤
 │  Business-Logik-Schicht                                 │
-│  51 Services · 16 Hooks · Web Workers                   │
+│  69 Services · 17 Hooks · 7 Web Workers                 │
 │  VPD-Simulation · KI-Provider · Genetik · RAG           │
 ├─────────────────────────────────────────────────────────┤
 │  State- & Persistenzschicht                             │
-│  Redux Toolkit · 17 Slices · RTK Query                  │
+│  Redux Toolkit (16 Slices) · Zustand (4 Stores) · RTK Query│
 │  Dual IndexedDB · Service Worker · Background Sync      │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -506,7 +523,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 
 - **Offline-First:** Service Worker mit Network-First Navigation, Cache-First Assets, Background Sync für Offline-Action-Queuing
 - **Dual IndexedDB:** `CannaGuideStateDB` (Redux State, Debounce-Save 1s, Force-Save bei `visibilitychange`) + `CannaGuideDB` (Sorten, Bilder, Volltextsuche-Index)
-- **WorkerBus:** Zentraler promise-basierter Web Worker Dispatcher (`workerBus.ts`) verwaltet 6 Worker (VPD-Sim, Genealogie, Szenarien, Inferenz, Bildgenerierung, VPD-Chart) mit Timeout, messageId-Korrelation, Backpressure-Queue, Retry mit exponentiellem Backoff, Telemetrie und sicherem Teardown bei pagehide ([Doku](docs/worker-bus.md))
+- **WorkerBus:** Zentraler promise-basierter Web Worker Dispatcher (`workerBus.ts`) verwaltet 7 Worker (VPD-Sim, Genealogie, Szenarien, Inferenz, Bildgenerierung, Sorten-Hydration, Terpen-Analyse) mit Timeout, messageId-Korrelation, Backpressure-Queue, Retry mit exponentiellem Backoff, Telemetrie und sicherem Teardown bei pagehide ([Doku](docs/worker-bus.md))
 - **AI Streaming UX:** Alle KI-Views (Mentor, Advisor, Diagnose) nutzen Zeichen-fuer-Zeichen-Streaming mit Tipp-Indikatoren
 - **Strukturierte KI-Ausgabe:** Zod-validiertes `responseSchema` fuer alle AI Function-Calling-Antworten
 - **Memoisierte Selektoren:** Map-basierter Cache mit Entity-ID-Key, `??` statt `||` für Nullish-Sicherheit
@@ -520,14 +537,14 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | ------------------ | ------------------------------------ | --------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Komponenten-UI mit null `any`                 |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Schnelles HMR, InjectManifest SW              |
-| **State**          | Redux Toolkit 2.11 + RTK Query       | Zentraler State, KI-API-Caching               |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | 16 Redux Slices + 4 Zustand Stores            |
 | **KI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
-| **KI (Lokal)**     | Transformers.js, WebLLM, TF.js, ONNX | 11 Services, 8 ML-Modelle, 3-Schicht-Fallback |
+| **KI (Lokal)**     | Transformers.js, WebLLM, TF.js, ONNX | 15 Services, 8 ML-Modelle, 3-Schicht-Fallback |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 Cannabis-Themes via CSS Custom Properties   |
 | **Visualisierung** | D3.js 7, Recharts                    | Stammbaum-Bäume, VPD-Diagramme                |
 | **Validierung**    | Zod 3.25                             | Runtime-Schema-Validierung für KI + Imports   |
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
-| **i18n**           | i18next 25                           | EN/DE, 13 Namensräume                         |
+| **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 13 Namensräume                |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
 | **Testing**        | Vitest 4.1, Playwright 1.58          | 928+ Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
@@ -570,14 +587,16 @@ Durchsuchbare FAQ, Grower-Lexikon (200+ Begriffe), visuelle Anbauguides, Benutze
 
 Alle Aufrufe routen über `aiProviderService.ts` → Provider-spezifische Services. Rate-limitiert (15 Req/Min Sliding Window). Strukturierte JSON-Ausgabe via `responseSchema` mit Zod-Validierung.
 
-| Anbieter      | Service               | Modelle           |
-| ------------- | --------------------- | ----------------- |
-| Google Gemini | `geminiService.ts`    | Primärer Provider |
-| OpenAI        | `openaiService.ts`    | GPT-Serie         |
-| Anthropic     | `anthropicService.ts` | Claude-Serie      |
-| xAI           | `xaiService.ts`       | Grok-Serie        |
+| Anbieter      | Service                | Modelle           |
+| ------------- | ---------------------- | ----------------- |
+| Google Gemini | `aiProviderService.ts` | Primärer Provider |
+| OpenAI        | `aiProviderService.ts` | GPT-Serie         |
+| Anthropic     | `aiProviderService.ts` | Claude-Serie      |
+| xAI           | `aiProviderService.ts` | Grok-Serie        |
 
-### Lokaler KI-Stack (11 Services)
+Alle Anbieter sind über `aiProviderService.ts` mit Provider-spezifischen API-Endpunkten und Key-Management vereinheitlicht.
+
+### Lokaler KI-Stack (15 Services)
 
 Vollständig offline Inferenz mit 3-Schicht-Fallback: WebLLM → Transformers.js → Heuristiken.
 
@@ -594,6 +613,10 @@ Vollständig offline Inferenz mit 3-Schicht-Fallback: WebLLM → Transformers.js
 | `localAiPreloadService.ts`           | Modell-Preload-State (localStorage)                     |
 | `localAiTelemetryService.ts`         | Inferenz-Latenz/Erfolgs-Tracking                        |
 | `localAiCacheService.ts`             | IndexedDB-Inferenz-Cache (256 Einträge, 7d TTL)         |
+| `localAiStreamingService.ts`         | SSE-Streaming für lokale Textgenerierung                |
+| `localAiDiagnosisService.ts`         | Pflanzengesundheits-Diagnose-Pipeline                   |
+| `localAiPromptHandlers.ts`           | Prompt-Formatierung für alle KI-Features                |
+| `localAiWebLlmService.ts`            | WebLLM-Lebenszyklus, Modell-Laden, Fortschritt          |
 
 ### Prompt Engineering & RAG (DE)
 
@@ -689,11 +712,11 @@ tsconfig.json              Nur Referenzen (apps/web, apps/desktop, packages/*)
 apps/
   web/                     Haupt-PWA (@cannaguide/web)
     components/             React-Komponenten (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux: 17 Slices, Selektoren, Middleware
-    services/               51 Service-Module (KI, Simulation, DB, Krypto, IoT)
-    hooks/                  16 Custom Hooks
+    stores/                 Redux: 16 Slices, 4 Zustand Stores, Selektoren, Middleware
+    services/               69 Service-Module (KI, Simulation, DB, Krypto, IoT)
+    hooks/                  17 Custom Hooks
     data/                   Statische Daten: 700+ Sorten, FAQ, Lexikon, Guides
-    locales/                i18n: en/, de/ (je 13 Namensraeume)
+    locales/                i18n: en/, de/, es/, fr/, nl/ (je 13 Namensräume)
     workers/                Web Workers: VPD-Simulation, Genealogie, Szenarien
     utils/                  Gemeinsame Hilfsfunktionen
     types/                  Zod-Schemas fuer KI-Validierung
@@ -732,16 +755,27 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 
 ### Weitere Workflows
 
-| Workflow             | Trigger               | Zweck                                    |
-| -------------------- | --------------------- | ---------------------------------------- |
-| CodeQL               | Push, PR, wöchentlich | SAST-Analyse (JavaScript/TypeScript)     |
-| Deploy               | Push auf main         | GitHub Pages Deployment + Lighthouse     |
-| E2E & Integration    | Push, PR              | Eigenständige E2E-Suite                  |
-| Tauri Build          | Release-Tags          | Cross-Platform Desktop-Builds            |
-| Capacitor Build      | Release-Tags          | iOS/Android-Builds                       |
-| Docker               | Release-Tags          | Container-Image                          |
-| Strains Daily Update | Cron                  | Automatische Sorten-Daten-Aktualisierung |
-| Renovate             | Bot                   | Dependency-Updates                       |
+| Workflow              | Trigger                | Zweck                                    |
+| --------------------- | ---------------------- | ---------------------------------------- |
+| CodeQL                | Push, PR, woechentlich | SAST-Analyse (JavaScript/TypeScript)     |
+| Deploy                | Push auf main          | GitHub Pages Deployment + Lighthouse     |
+| E2E & Integration     | Push, PR               | Eigenstaendige E2E-Suite                 |
+| Tauri Build           | Release-Tags           | Cross-Platform Desktop-Builds            |
+| Capacitor Build       | Release-Tags           | iOS/Android-Builds                       |
+| Docker                | Release-Tags           | Container-Image                          |
+| Security Full         | Push, PR, woechentlich | Umfassende Sicherheits-Scan-Suite        |
+| Security Scan         | Push, PR               | Schnelle Sicherheitspruefungen           |
+| Snyk                  | Push, PR               | Schwachstellen-Scanning                  |
+| ClusterFuzzLite       | PR                     | Kontinuierliches Fuzzing                 |
+| Scorecard             | Push, woechentlich     | OpenSSF Scorecard (8.5/10)               |
+| Config Guard          | Push, PR               | RCE-Pattern-Scanning in Configs          |
+| Benchmark             | Push, PR               | Performance-Benchmarking                 |
+| Fuzzing               | Push, PR               | Vitest-Fuzz-Testing                      |
+| Strains Daily Update  | Cron                   | Automatische Sorten-Daten-Aktualisierung |
+| Strains Merge         | Push, PR               | Sorten-Merge-Automatisierung             |
+| Dependabot Auto-Merge | Bot                    | Dependency-Update-Automatisierung        |
+| Labeler               | PR                     | Automatisches PR-Labeling                |
+| Stale                 | Geplant                | Verwaltung veralteter Issues/PRs         |
 
 ---
 

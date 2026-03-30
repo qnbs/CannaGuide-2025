@@ -7,18 +7,18 @@
 
 ## High-Level Stack
 
-| Layer        | Technology                                                                    |
-| ------------ | ----------------------------------------------------------------------------- |
-| UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                           |
-| State        | Redux Toolkit 2.11 (15 slices), Zustand 5 (UI), RTK Query, memoized selectors |
-| AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                   |
-| AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js          |
-| Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                      |
-| Persistence  | Dual IndexedDB, localStorage, Service Worker caches                           |
-| i18n         | i18next -- EN, DE, ES, FR, NL (13 namespaces)                                 |
-| Workers      | WorkerBus (promise-based, 6 workers, messageId correlation, auto-timeout)     |
-| Testing      | Vitest 793+ unit tests, Playwright E2E + Component tests                      |
-| Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor              |
+| Layer        | Technology                                                                          |
+| ------------ | ----------------------------------------------------------------------------------- |
+| UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                 |
+| State        | Redux Toolkit 2.11 (16 slices), Zustand 5 (4 stores), RTK Query, memoized selectors |
+| AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                         |
+| AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                |
+| Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                            |
+| Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                 |
+| i18n         | i18next -- EN, DE, ES, FR, NL (13 namespaces)                                       |
+| Workers      | WorkerBus (promise-based, 7 workers, messageId correlation, auto-timeout)           |
+| Testing      | Vitest 928+ unit tests, Playwright E2E + Component tests                            |
+| Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                    |
 
 ---
 
@@ -54,7 +54,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     useUIStore.ts         Zustand store for transient UI state (modals, views, notifications)
     selectors.ts          Memoized selectors (map-based cache by ID)
     listenerMiddleware.ts Side effects: i18n sync, persistence triggers
-    slices/               15 Redux slices (simulation, settings, strains, etc.)
+    slices/               16 Redux slices (simulation, settings, strains, etc.)
     indexedDBStorage.ts   CannaGuideStateDB adapter
 
   services/
@@ -63,7 +63,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     aiService.ts          Unified cloud + local AI entry point
     localAI.ts            Core local AI orchestration
     localAIModelLoader.ts ONNX pipeline loader (WebGPU/WASM, semaphore)
-    localAi*.ts           11 local AI service modules
+    localAi*.ts           15 local AI service modules
     gpuResourceManager.ts GPU mutex (FIFO queue, WebLLM eviction)
     inferenceQueueService.ts  Priority queue for inference tasks
     dbService.ts          CannaGuideDB (strains, images, search index)
@@ -75,9 +75,9 @@ apps/web/                 Main PWA (@cannaguide/web)
 
   data/                   Static data: 700+ strains, FAQ, lexicon, guides
   locales/                i18n translations: en/, de/, es/, fr/, nl/
-  hooks/                  14+ custom React hooks
-  workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen
-  services/workerBus.ts   Centralized promise-based WorkerBus (6 workers, timeout, messageId)
+  hooks/                  17 custom React hooks
+  workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
+  services/workerBus.ts   Centralized promise-based WorkerBus (7 workers, timeout, messageId)
   utils/                  Shared utilities (secureRandom, etc.)
   types/                  Zod schemas for AI response validation
   lib/                    cn() utility, VPD calculation library
@@ -190,7 +190,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 npm run dev              # Vite dev server (localhost:5173)
 npm run build            # Production build (Vite 7 + PWA manifest injection)
-npm test                 # Vitest unit/integration (694+ tests)
+npm test                 # Vitest unit/integration (928+ tests)
 npm run test:e2e         # Playwright E2E
 npm run test:ct          # Playwright Component tests
 npm run lint:full        # ESLint entire project

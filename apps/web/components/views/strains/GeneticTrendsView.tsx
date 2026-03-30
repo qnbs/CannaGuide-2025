@@ -26,7 +26,7 @@ const categoryIcons = {
 }
 
 export const GeneticTrendsView: React.FC = () => {
-    const { t } = useTranslation('strains')
+    const { t } = useTranslation()
     const [openId, setOpenId] = useState<GeneticTrendCategory | null>(null)
 
     const toggle = (id: GeneticTrendCategory): void => {
@@ -37,11 +37,11 @@ export const GeneticTrendsView: React.FC = () => {
         () =>
             CATEGORIES.map((cat) => ({
                 ...cat,
-                title: t(`geneticTrends.categories.${cat.id}.title`),
-                tagline: t(`geneticTrends.categories.${cat.id}.tagline`),
-                content: t(`geneticTrends.categories.${cat.id}.content`),
-                examples: t(`geneticTrends.categories.${cat.id}.examples`),
-                relevance: t(`geneticTrends.categories.${cat.id}.relevance`),
+                title: t(`strainsView.geneticTrends.categories.${cat.id}.title`),
+                tagline: t(`strainsView.geneticTrends.categories.${cat.id}.tagline`),
+                content: t(`strainsView.geneticTrends.categories.${cat.id}.content`),
+                examples: t(`strainsView.geneticTrends.categories.${cat.id}.examples`),
+                relevance: t(`strainsView.geneticTrends.categories.${cat.id}.relevance`),
             })),
         [t],
     )
@@ -51,17 +51,17 @@ export const GeneticTrendsView: React.FC = () => {
             {/* Header */}
             <div className="text-center">
                 <span className="inline-block px-3 py-1 mb-2 text-xs font-bold tracking-wider uppercase rounded-full bg-gradient-to-r from-pink-600 to-purple-600 text-white">
-                    {t('geneticTrends.badge2026')}
+                    {t('strainsView.geneticTrends.badge2026')}
                 </span>
                 <h2 className="text-2xl font-bold font-display text-slate-100">
-                    {t('geneticTrends.title')}
+                    {t('strainsView.geneticTrends.title')}
                 </h2>
-                <p className="mt-1 text-sm text-slate-400">{t('geneticTrends.subtitle')}</p>
+                <p className="mt-1 text-sm text-slate-400">{t('strainsView.geneticTrends.subtitle')}</p>
             </div>
 
             {/* Intro */}
             <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-slate-300 leading-relaxed">
-                {t('geneticTrends.intro')}
+                {t('strainsView.geneticTrends.intro')}
             </div>
 
             {/* Category Accordions */}
@@ -100,14 +100,14 @@ export const GeneticTrendsView: React.FC = () => {
                                     </p>
                                     <div className="p-3 rounded-md bg-slate-900/60 border border-slate-700">
                                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                                            {t('geneticTrends.examplesLabel')}
+                                            {t('strainsView.geneticTrends.examplesLabel')}
                                         </h4>
                                         <p className="text-sm text-slate-300">{cat.examples}</p>
                                     </div>
                                     <div className="flex items-center gap-2 p-2 rounded bg-primary-900/30 border border-primary-800/50">
                                         <PhosphorIcons.ChartLineUp className="w-4 h-4 text-primary-400 flex-shrink-0" />
                                         <span className="text-xs text-primary-300">
-                                            {t('geneticTrends.relevanceLabel')}: {cat.relevance}
+                                            {t('strainsView.geneticTrends.relevanceLabel')}: {cat.relevance}
                                         </span>
                                     </div>
                                 </div>
@@ -122,15 +122,15 @@ export const GeneticTrendsView: React.FC = () => {
                 <table className="w-full text-sm text-left">
                     <thead className="bg-slate-800 text-slate-300">
                         <tr>
-                            <th className="p-3 font-semibold">{t('geneticTrends.table.trend')}</th>
+                            <th className="p-3 font-semibold">{t('strainsView.geneticTrends.table.trend')}</th>
                             <th className="p-3 font-semibold">
-                                {t('geneticTrends.table.description')}
+                                {t('strainsView.geneticTrends.table.description')}
                             </th>
                             <th className="p-3 font-semibold">
-                                {t('geneticTrends.table.examples')}
+                                {t('strainsView.geneticTrends.table.examples')}
                             </th>
                             <th className="p-3 font-semibold">
-                                {t('geneticTrends.table.relevance')}
+                                {t('strainsView.geneticTrends.table.relevance')}
                             </th>
                         </tr>
                     </thead>
@@ -150,19 +150,19 @@ export const GeneticTrendsView: React.FC = () => {
             {/* Implications */}
             <div className="p-4 rounded-lg bg-gradient-to-br from-pink-900/20 to-purple-900/20 border border-pink-800/30">
                 <h3 className="text-sm font-bold text-pink-300 mb-2">
-                    {t('geneticTrends.implications.title')}
+                    {t('strainsView.geneticTrends.implications.title')}
                 </h3>
                 <ul className="space-y-1 text-sm text-slate-300 list-disc list-inside">
-                    <li>{t('geneticTrends.implications.homeGrow')}</li>
-                    <li>{t('geneticTrends.implications.quality')}</li>
-                    <li>{t('geneticTrends.implications.cannaGuide')}</li>
+                    <li>{t('strainsView.geneticTrends.implications.homeGrow')}</li>
+                    <li>{t('strainsView.geneticTrends.implications.quality')}</li>
+                    <li>{t('strainsView.geneticTrends.implications.cannaGuide')}</li>
                 </ul>
             </div>
 
             {/* Conclusion */}
             <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-slate-300 leading-relaxed">
                 <PhosphorIcons.Sparkle className="w-5 h-5 text-purple-400 inline mr-2" />
-                {t('geneticTrends.conclusion')}
+                {t('strainsView.geneticTrends.conclusion')}
             </div>
         </div>
     )

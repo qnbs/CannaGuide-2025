@@ -4,8 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Mocks -- must be set up before module import
 // ---------------------------------------------------------------------------
 
+const isLocalOnlyModeMock = vi.fn(() => false)
+
 vi.mock('@/services/localOnlyModeService', () => ({
-    isLocalOnlyMode: vi.fn(() => false),
+    isLocalOnlyMode: () => isLocalOnlyModeMock(),
 }))
 
 // Vitest uses import.meta.env which is readonly in TS.
@@ -13,24 +15,31 @@ vi.mock('@/services/localOnlyModeService', () => ({
 const env = import.meta.env as Record<string, string>
 env['VITE_CANSATIVA_API_KEY'] = 'test-subscription-key'
 
-import { isLocalOnlyMode } from '@/services/localOnlyModeService'
-import {
-    fetchInventory,
-    fetchMenu,
-    fetchPartners,
-    fetchByPostalCode,
-    isCansativaAvailable,
-    clearCansativaCache,
-} from './cansativaService'
-
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-beforeEach(() => {
+type CansativaModule = typeof import('./cansativaService')
+const loadService = async (): Promise<CansativaModule> => import('./cansativaService')
+
+let fetchInventory: CansativaModule['fetchInventory']
+let fetchMenu: CansativaModule['fetchMenu']
+let fetchPartners: CansativaModule['fetchPartners']
+let fetchByPostalCode: CansativaModule['fetchByPostalCode']
+let isCansativaAvailable: CansativaModule['isCansativaAvailable']
+let clearCansativaCache: CansativaModule['clearCansativaCache']
+
+beforeEach(async () => {
+    vi.resetModules()
     vi.clearAllMocks()
-    clearCansativaCache()
-    vi.mocked(isLocalOnlyMode).mockReturnValue(false)
+    isLocalOnlyModeMock.mockReturnValue(false)
     env['VITE_CANSATIVA_API_KEY'] = 'test-subscription-key'
+    const mod = await loadService()
+    fetchInventory = mod.fetchInventory
+    fetchMenu = mod.fetchMenu
+    fetchPartners = mod.fetchPartners
+    fetchByPostalCode = mod.fetchByPostalCode
+    isCansativaAvailable = mod.isCansativaAvailable
+    clearCansativaCache = mod.clearCansativaCache
 })
 
 // ---------------------------------------------------------------------------
@@ -43,7 +52,7 @@ describe('isCansativaAvailable', () => {
     })
 
     it('returns false in local-only mode', () => {
-        vi.mocked(isLocalOnlyMode).mockReturnValue(true)
+        isLocalOnlyModeMock.mockReturnValue(true)
         expect(isCansativaAvailable()).toBe(false)
     })
 
@@ -103,7 +112,7 @@ describe('fetchInventory', () => {
     })
 
     it('returns empty array in local-only mode', async () => {
-        vi.mocked(isLocalOnlyMode).mockReturnValue(true)
+        isLocalOnlyModeMock.mockReturnValue(true)
         const results = await fetchInventory()
         expect(results).toEqual([])
         expect(mockFetch).not.toHaveBeenCalled()

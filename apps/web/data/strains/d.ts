@@ -601,8 +601,7 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Eucalyptus", "Pine", "Sweet", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "dabney-blue",
         "name": "Dabney Blue",
@@ -617,29 +616,9 @@ export const strainsD: Strain[] = [
     }),
     createStrainObject({
         "id": "dj-short-blueberry", "name": "DJ Short Blueberry", "type": StrainType.Hybrid, "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Afghani x Thai", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 8
-    }),
-    createStrainObject({
-        "id": "dabney-blue",
-        "name": "Dabney Blue",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "DJ Short Blueberry x an unknown 90s Indica",
-        "floweringType": "Photoperiod",
-        "thc": 17.5,
-        "cbd": 1,
-        "thcRange": "15-20%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "Dabney Blue is a classic indica-dominant hybrid known for its rich blueberry flavor and relaxing effects. As a descendant of DJ Short's Blueberry, it delivers a happy and uplifting euphoria that gently fades into a calm body high. It is one of the parent strains of Lemon Berry.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Short"
-        },
-        "aromas": ["Blueberry", "Berry", "Sweet", "Fruity"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+        "genetics": "Afghani x Thai", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Blueberry", "Sweet", "Berry", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Linalool"]
     }),
     createStrainObject({
         "id": "double-burger",
@@ -661,5 +640,5 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Garlic", "Diesel", "Pungent", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }),
+    })
 ];

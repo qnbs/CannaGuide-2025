@@ -937,8 +937,7 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Tropical", "Cookie"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "gelato-25", "name": "Gelato #25", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Sunset Sherbet x Thin Mint GSC", "floweringType": "Photoperiod", "thc": 22.5, "cbd": 1, "floweringTime": 8.5,
@@ -960,11 +959,15 @@ export const strainsG: Strain[] = [
     }),
     createStrainObject({
         "id": "green-ribbon", "name": "Green Ribbon", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Green Crack x Trainwreck", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 8
+        "genetics": "Green Crack x Trainwreck", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Earthy", "Sweet", "Citrus", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "g13-hashplant", "name": "G13 Hashplant", "type": StrainType.Hybrid, "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "G13 x Hash Plant", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9
+        "genetics": "G13 x Hash Plant", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9,
+        "aromas": ["Earthy", "Hash", "Pine", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
     }),
     createStrainObject({
         "id": "grateful-breath",
@@ -1072,30 +1075,6 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Spicy", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    }),
-    createStrainObject({
-        "id": "gelato-25",
-        "name": "Gelato #25",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "Sunset Sherbet x Thin Mint GSC",
-        "floweringType": "Photoperiod",
-        "thc": 22.5,
-        "cbd": 1,
-        "thcRange": "20-25%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "A phenotype of the famous Gelato strain, bred by Cookie Fam Genetics. It's known for its fruity, dessert-like aroma with notes of berry and citrus. The effect is typically relaxing and euphoric, leaning towards a calming body high. It's a key parent of Biscotti.",
-        "agronomic": {
-            "difficulty": "Hard",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-        },
-        "aromas": ["Fruity", "Berry", "Sweet", "Citrus"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     }),
     createStrainObject({
         "id": "gelato-42",
@@ -1216,5 +1195,5 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Diesel", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }),
+    })
 ];

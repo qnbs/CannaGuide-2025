@@ -2,22 +2,38 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-30, Session 9) -- Strain Detail View Enhancement
+## Latest Session (2026-03-30, Session 10) -- Strain Data Audit & Optimization
 
-**Status: v1.2.0-alpha. Comprehensive strain detail view enhancement: genealogy navigation, extended cannabinoid/terpene/flavonoid/chemovar/entourage profiles, notes templates, image generation criteria clarity. 5 files changed, 30+ i18n keys added (EN+DE). TS 0 errors.**
+**Status: v1.2.0-alpha. Comprehensive strain data audit: fixed 8 hardcoded German descriptions, added 3 missing EN translations, removed 30 duplicate strain entries (714 unique strains), enriched 40 strains with terpene/aroma data, added flavonoid profile generation to strainFactory. TS 0 errors, 928 tests pass.**
 
-### What Was Done (Session 9)
+### What Was Done (Session 10)
 
-1. **Genealogy navigation from strain detail** -- New tree icon button navigates to Genealogy tab with strain pre-selected via Redux
-2. **Extended cannabinoid profile** -- Shows CBG, CBN, THCV, CBC, CBDV, THCA, CBDA, CBGA, Delta-8-THC with psychoactivity labels
-3. **Detailed terpene analysis** -- Visual bars with %, class, boiling point, and "also found in" from TERPENE_DATABASE
-4. **Flavonoid profile display** -- Grid of available flavonoids when data exists
-5. **Chemovar classification** -- Type I-V, THC:CBD ratio, total cannabinoid/terpene %, predicted effects
-6. **Entourage effect & synergies** -- Overall character + detailed synergy descriptions from analyzeEntourage()
-7. **Notes section with templates** -- 4 structured templates (Grow Log, Review, Medical, Breeding), char counter, monospace
-8. **Image generation criteria clarity** -- Renamed to "Image Generation Criteria", added note, Camera icon
+1. **Fixed hardcoded German** -- 8 strains in u.ts/v.ts had German descriptions as base data (fallback for EN users). Replaced with English.
+2. **EN translation gaps** -- 3 strains (aspen-og, grape-gasoline, gupta-kush) had no description in data files AND empty EN translations. Added proper EN translations. Also added EN content for monkey-glue and tropicana-banana.
+3. **Removed 30 duplicate strains** -- 27 strain IDs appeared multiple times across 15 data files. Deduplicated keeping first occurrence. 744->714 entries.
+4. **Enriched 40 strains** -- Added dominantTerpenes and aromas arrays to all 40 strains that were missing them. Now 100% coverage for terpene/aroma data.
+5. **Flavonoid profile generation** -- Added `estimateFlavonoidProfile()` to strainFactory. All strains now get auto-generated flavonoid profiles based on their terpene/cannabinoid signatures.
 
-### What To Do Next (Session 10 Priorities)
+### Audit Findings (Session 10)
+
+| Metric                          | Before        | After          |
+| ------------------------------- | ------------- | -------------- |
+| Total strain entries            | 744           | 714            |
+| Unique strains                  | 714           | 714            |
+| Duplicate entries               | 30            | 0              |
+| Missing dominantTerpenes        | 40            | 0              |
+| Missing aromas                  | 40            | 0              |
+| Hardcoded German in data        | 8             | 0              |
+| Strains without any description | 3             | 0              |
+| Flavonoid profile (factory)     | Not generated | Auto-generated |
+
+### Architecture Notes
+
+- **207 empty EN translation entries** are NOT a bug: the i18n fallback uses `defaultValue: strain.description` from data files which are already in English.
+- **strainCurationService.ts** + **strainHydration.worker.ts** (~1200 lines) are fully implemented but never invoked. The entire external enrichment pipeline (9 providers) is dead code.
+- **37 temp-additions-\* files** in locales/ are supplementary translations for strains already in main data files -- not a problem but messy organization.
+
+### What To Do Next (Session 11 Priorities)
 
 **P0 -- Immediate:**
 

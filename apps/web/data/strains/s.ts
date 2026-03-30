@@ -1033,8 +1033,7 @@ export const strainsS: Strain[] = [
         },
         "aromas": ["Berry", "Sweet", "Earthy", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "silver-haze",
         "name": "Silver Haze",
@@ -1049,19 +1048,27 @@ export const strainsS: Strain[] = [
     }),
     createStrainObject({
         "id": "starfighter", "name": "Starfighter", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "Alien Tahoe OG x Lemon Alien Dawg", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 9
+        "genetics": "Alien Tahoe OG x Lemon Alien Dawg", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 9,
+        "aromas": ["Earthy", "Pine", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
         "id": "sharksbreath", "name": "Sharksbreath", "type": StrainType.Hybrid, "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Great White Shark x Lamb's Bread", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9
+        "genetics": "Great White Shark x Lamb's Bread", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9,
+        "aromas": ["Earthy", "Cheese", "Pungent", "Skunk"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
         "id": "sweet-irish-kush", "name": "Sweet Irish Kush", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Sweet Skunk x Kish", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8
+        "genetics": "Sweet Skunk x Kish", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Sweet", "Earthy", "Pine", "Herbal"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
         "id": "sweet-skunk", "name": "Sweet Skunk", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Skunk #1 x an unknown sweet Indica", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 7.5
+        "genetics": "Skunk #1 x an unknown sweet Indica", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 7.5,
+        "aromas": ["Sweet", "Skunk", "Citrus", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "sour-cream",
@@ -1091,28 +1098,6 @@ export const strainsS: Strain[] = [
         "description": "A backcross of the famous Sunset Sherbet, bred to stabilize and enhance its desirable traits. It has a sweet, fruity, and creamy aroma. The effect is relaxing and happy. Parent of Permanent Marker.",
         "floweringTime": 9, "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
         "aromas": ["Sweet", "Fruity", "Creamy", "Berry"], "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }),
-    createStrainObject({
-        "id": "sweet-skunk",
-        "name": "Sweet Skunk",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Skunk #1 x an unknown sweet Indica",
-        "floweringType": "Photoperiod",
-        "thc": 19,
-        "cbd": 1,
-        "thcRange": "17-21%",
-        "cbdRange": "<1%",
-        "floweringTime": 7.5,
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Short",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
-        },
-        "aromas": ["Sweet", "Skunk", "Fruity", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
         "id": "sophisticated-lady",
@@ -1194,5 +1179,5 @@ export const strainsS: Strain[] = [
         "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
         "aromas": ["Sweet", "Mango", "Tropical", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Terpinolene"]
-    }),
+    })
 ];

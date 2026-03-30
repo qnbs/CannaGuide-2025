@@ -337,8 +337,7 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Orange", "Mango", "Sweet", "Fruity"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "joseph-og",
         "name": "Joseph OG",
@@ -442,27 +441,5 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Tropical", "Sweet", "Fruity", "Berry"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "joseph-og",
-        "name": "Joseph OG",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "OG Kush phenotype",
-        "floweringType": "Photoperiod",
-        "thc": 26,
-        "cbd": 1,
-        "thcRange": "24-28%",
-        "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "description": "Joseph OG is a potent indica-dominant phenotype of OG Kush, known for its heavy resin production and classic OG aroma. It delivers a powerful, relaxing body high with a euphoric cerebral buzz. It's one of the parent strains of Grateful Breath.",
-        "agronomic": {
-            "difficulty": "Hard",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Earthy", "Pine", "Diesel", "Lemon"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    }),
+    })
 ];

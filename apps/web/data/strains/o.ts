@@ -313,41 +313,24 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Woody", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "orange-skunk", "name": "Orange Skunk", "type": StrainType.Hybrid, "typeDetails": "Sativa 60% / Indica 40%",
-        "genetics": "Skunk #1", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 8
+        "genetics": "Skunk #1", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 8,
+        "aromas": ["Orange", "Skunk", "Citrus", "Sweet"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "og-eddy", "name": "OG Eddy", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "OG Kush x Grape Ape", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5
+        "genetics": "OG Kush x Grape Ape", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5,
+        "aromas": ["Earthy", "Pine", "Diesel", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "og-chem-4-ibx", "name": "OG/Chem #4 IBX", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Chemdawg #4 (backcross)", "floweringType": "Photoperiod", "thc": 25, "cbd": 1, "floweringTime": 9.5
-    }),
-    createStrainObject({
-        "id": "og-eddy",
-        "name": "OG Eddy",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "OG Kush x Grape Ape",
-        "floweringType": "Photoperiod",
-        "thc": 22,
-        "cbd": 1,
-        "thcRange": "20-24%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "Also known as OG Eddy Lepp, this is an indica-dominant hybrid with a sweet, grape, and earthy aroma. It delivers a relaxing body high, coupled with a happy, euphoric mental state. It is a parent of California Black Rose.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Grape", "Sweet", "Earthy", "Woody"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+        "genetics": "Chemdawg #4 (backcross)", "floweringType": "Photoperiod", "thc": 25, "cbd": 1, "floweringTime": 9.5,
+        "aromas": ["Chemical", "Diesel", "Earthy", "Pungent"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
     }),
     createStrainObject({
         "id": "orange-crush",
@@ -453,5 +436,5 @@ export const strainsO: Strain[] = [
         "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Short" },
         "aromas": ["Orange", "Citrus", "Sweet", "Tangy"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Linalool"]
-    }),
+    })
 ];

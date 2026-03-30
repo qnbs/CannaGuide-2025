@@ -625,8 +625,7 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Tropical", "Pineapple", "Sweet", "Fruity"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    })
-,
+    }),
     createStrainObject({
         "id": "the-power",
         "name": "The Power",
@@ -704,7 +703,9 @@ export const strainsT: Strain[] = [
     }),
     createStrainObject({
         "id": "the-original", "name": "The Original", "type": StrainType.Hybrid, "typeDetails": "Indica 85% / Sativa 15%",
-        "genetics": "OG Kush", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5
+        "genetics": "OG Kush", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5,
+        "aromas": ["Earthy", "Sweet", "Citrus", "Herbal"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
         "id": "the-white",
@@ -752,50 +753,6 @@ export const strainsT: Strain[] = [
         "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Medium" },
         "aromas": ["Cherry", "Earthy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "the-creature",
-        "name": "The Creature",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Unknown (presumed OG Kush lineage)",
-        "floweringType": "Photoperiod",
-        "thc": 27.5,
-        "cbd": 1,
-        "thcRange": "25-30%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "The Creature is a highly potent and mysterious indica-dominant strain, rumored to have emerged from OG Kush genetics. It's known for its monstrously dense, resin-caked buds and a pungent, gassy aroma. The effects are heavy and sedating, providing a powerful body stone. It is a parent of the acclaimed Chimera #2.",
-        "agronomic": {
-            "difficulty": "Hard",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Pungent", "Diesel", "Earthy", "Skunk"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    }),
-    createStrainObject({
-        "id": "trophy-wife",
-        "name": "Trophy Wife",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "The Wife x Cherry Wine",
-        "floweringType": "Photoperiod",
-        "thc": 24,
-        "cbd": 1,
-        "thcRange": "22-26%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "While often known as a high-CBD strain, Trophy Wife also has high-THC phenotypes that are used for breeding. This version offers a balanced, relaxing high with a sweet and earthy cherry aroma. It is a parent of the popular Point Break strain.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium"
-        },
-        "aromas": ["Cherry", "Sweet", "Earthy", "Floral"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
         "id": "trinity",
@@ -874,5 +831,5 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Banana", "Tropical", "Sweet", "Citrus"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Pinene"]
-    }),
+    })
 ];

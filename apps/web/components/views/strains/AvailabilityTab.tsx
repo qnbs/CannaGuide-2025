@@ -136,7 +136,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ strain }) => {
         return () => {
             cancelled = true
         }
-    }, [strain.id, t])
+    }, [strain.id, strain.name, t])
 
     if (isLoading) {
         return (

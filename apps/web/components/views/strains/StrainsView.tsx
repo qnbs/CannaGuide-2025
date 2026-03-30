@@ -451,7 +451,7 @@ export const StrainsView: React.FC = () => {
             selectedIdsSet.forEach((id) => dispatch(deleteUserStrain(id)))
             strainsViewState.clearStrainSelection()
         }
-    }, [strainsViewTab, selectedIdsSet, t, dispatch])
+    }, [strainsViewTab, selectedIdsSet, t, dispatch, strainsViewState])
 
     const handleToggleFavorite = useCallback(
         (id: string) => {

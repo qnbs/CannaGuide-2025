@@ -165,7 +165,6 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
     resetDiagnosis,
 }) => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
     const lang = useAppSelector(selectLanguage)
 
     const [image, setImage] = useState<string | null>(null)
@@ -228,7 +227,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             }
             reader.readAsDataURL(file)
         },
-        [dispatch, t, resetDiagnosis],
+        [t, resetDiagnosis],
     )
 
     const handleDrag = useCallback((e: React.DragEvent) => {
@@ -290,7 +289,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
         localStorage.removeItem(IMAGE_CONSENT_KEY)
         setConsentGiven(false)
         getUISnapshot().addNotification({ message: t('legal.imageConsent.revoked'), type: 'info' })
-    }, [dispatch, t])
+    }, [t])
 
     const errorMessage =
         error && typeof error === 'object' && 'message' in error

@@ -13,6 +13,7 @@ import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab'
 import { useAppDispatch } from '@/stores/store'
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
+import { EnvironmentDashboard } from './analytics/EnvironmentDashboard'
 import { calculateVPD } from '@/lib/vpd/calculator'
 
 interface DetailedPlantViewProps {
@@ -87,6 +88,13 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                     defaultValue: 'Environment',
                 }),
                 icon: <PhosphorIcons.Thermometer />,
+            },
+            {
+                id: 'analytics',
+                label: t('plantsView.detailedView.tabs.analytics', {
+                    defaultValue: 'Analytics',
+                }),
+                icon: <PhosphorIcons.ChartLineUp />,
             },
             ...(isPostHarvest
                 ? [
@@ -288,6 +296,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
             >
                 {activeTab === 'overview' && <OverviewTab plant={plant} />}
                 {activeTab === 'environment' && <EnvironmentControlPanel plant={plant} />}
+                {activeTab === 'analytics' && <EnvironmentDashboard plantId={plant.id} />}
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
                 {activeTab === 'simulation' && <SimulationDebugTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}

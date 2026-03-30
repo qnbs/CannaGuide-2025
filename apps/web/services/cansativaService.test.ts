@@ -26,7 +26,6 @@ let fetchMenu: CansativaModule['fetchMenu']
 let fetchPartners: CansativaModule['fetchPartners']
 let fetchByPostalCode: CansativaModule['fetchByPostalCode']
 let isCansativaAvailable: CansativaModule['isCansativaAvailable']
-let clearCansativaCache: CansativaModule['clearCansativaCache']
 
 beforeEach(async () => {
     vi.resetModules()
@@ -39,7 +38,6 @@ beforeEach(async () => {
     fetchPartners = mod.fetchPartners
     fetchByPostalCode = mod.fetchByPostalCode
     isCansativaAvailable = mod.isCansativaAvailable
-    clearCansativaCache = mod.clearCansativaCache
 })
 
 // ---------------------------------------------------------------------------

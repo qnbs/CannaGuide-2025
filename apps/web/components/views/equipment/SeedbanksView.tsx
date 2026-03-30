@@ -29,6 +29,21 @@ interface BankData {
 }
 
 type ConclusionsCategory = { title: string; content: string }
+type GeneticTrendCriterion = { title: string; content: string }
+type GeneticTrends2026Data = {
+    title: string
+    intro: string
+    criteria: Record<string, GeneticTrendCriterion>
+    recommendation: string
+}
+
+const NON_BANK_KEYS = new Set([
+    'conclusions',
+    'geneticTrends2026',
+    'searchPlaceholder',
+    'banksLabel',
+    'noResults',
+])
 
 const Section = memo<{ title: string; icon?: React.ReactNode; children: React.ReactNode }>(
     ({ title, icon, children }) => (
@@ -233,7 +248,7 @@ const SeedbanksView: React.FC = () => {
     const allBankKeys = useMemo(
         () =>
             Object.entries(allBanksData)
-                .filter(([key, value]) => key !== 'conclusions' && typeof value === 'object')
+                .filter(([key, value]) => !NON_BANK_KEYS.has(key) && typeof value === 'object')
                 .toSorted(([, leftValue], [, rightValue]) => {
                     const leftTitle = (leftValue as BankData).title ?? ''
                     const rightTitle = (rightValue as BankData).title ?? ''
@@ -266,6 +281,9 @@ const SeedbanksView: React.FC = () => {
     }, [allBankKeys, allBanksData, searchQuery])
 
     const conclusions = allBanksData.conclusions
+    const geneticTrends = allBanksData.geneticTrends2026 as unknown as
+        | GeneticTrends2026Data
+        | undefined
 
     return (
         <div className="space-y-3 pb-[calc(7rem+env(safe-area-inset-bottom))] scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-0 sm:scroll-pb-0">
@@ -345,6 +363,52 @@ const SeedbanksView: React.FC = () => {
                                 ),
                             )}
                         <p className="leading-relaxed">{conclusions.summary}</p>
+                    </div>
+                </Card>
+            )}
+
+            {/* Genetic Trends 2026 */}
+            {geneticTrends?.title && !searchQuery && (
+                <Card>
+                    <div className="space-y-4">
+                        <div className="text-center">
+                            <span className="inline-block px-3 py-1 mb-2 text-xs font-bold tracking-wider uppercase rounded-full bg-gradient-to-r from-pink-600 to-purple-600 text-white">
+                                2026
+                            </span>
+                            <h3 className="text-xl font-bold font-display text-primary-400 flex items-center justify-center gap-2">
+                                <PhosphorIcons.ChartLineUp className="w-5 h-5" />
+                                {geneticTrends.title}
+                            </h3>
+                        </div>
+                        <p className="text-sm text-slate-300 leading-relaxed">
+                            {geneticTrends.intro}
+                        </p>
+                        {geneticTrends.criteria && (
+                            <div className="space-y-3">
+                                {Object.values(geneticTrends.criteria).map(
+                                    (criterion: GeneticTrendCriterion) => (
+                                        <div
+                                            key={criterion.title}
+                                            className="p-3 bg-slate-800/50 rounded-lg ring-1 ring-inset ring-white/5"
+                                        >
+                                            <h4 className="font-bold text-slate-100 flex items-center gap-2">
+                                                <PhosphorIcons.Sparkle className="w-4 h-4 text-pink-400" />
+                                                {criterion.title}
+                                            </h4>
+                                            <p className="mt-1 text-sm text-slate-300 leading-relaxed">
+                                                {criterion.content}
+                                            </p>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+                        )}
+                        <div className="p-3 rounded-lg bg-gradient-to-r from-primary-600/10 to-purple-600/10 border border-primary-500/20">
+                            <p className="text-sm text-primary-300 leading-relaxed flex items-start gap-2">
+                                <PhosphorIcons.LightbulbFilament className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                {geneticTrends.recommendation}
+                            </p>
+                        </div>
                     </div>
                 </Card>
             )}

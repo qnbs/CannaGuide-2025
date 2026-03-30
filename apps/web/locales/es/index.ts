@@ -1,4 +1,3 @@
-// Spanish locale -- all namespaces translated
 export { commandPalette } from './commandPalette'
 export { equipmentView } from './equipment'
 export { helpView, visualGuides, faq } from './help'
@@ -9,4 +8,3 @@ export { settingsView } from './settings'
 export { strainsView } from './strains'
 export { strainsData } from './strainsData'
 export { legal } from './legal'
-export { seedbanks } from './seedbanks'

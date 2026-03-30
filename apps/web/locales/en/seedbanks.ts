@@ -386,4 +386,37 @@ export const seedbanks = {
         summary:
             'For maximum security and quality, it is recommended to either buy directly from a reputable breeder with their own distribution structure or to choose a large, well-reviewed distributor that carries the genetics of the desired breeder.',
     },
+    geneticTrends2026: {
+        title: '2026 Genetic Trends -- What to Look for in Seed Banks',
+        intro: 'The cannabis genetics landscape has shifted dramatically in 2026. When choosing a seed bank, look for these key indicators of a forward-thinking provider.',
+        criteria: {
+            terpeneFocus: {
+                title: 'Terpene-Forward Selections',
+                content:
+                    'Top seed banks now curate for complex terpene profiles (savory, gassy, earthy) rather than just THC numbers. Look for banks that provide detailed terpene data and chemovar classifications.',
+            },
+            autoflowerPrograms: {
+                title: 'Next-Gen Autoflower Programs',
+                content:
+                    'Leading breeders offer autoflower lines that rival photoperiod quality. Seed banks stocking these (Royal Gorilla Auto, Pluto Cut Auto) demonstrate awareness of the 2026 market.',
+            },
+            polyploidAvailability: {
+                title: 'Polyploid and F1 Hybrid Seeds',
+                content:
+                    'The most innovative seed banks carry triploid or F1 hybrid seeds from breeders like Tesoro Genetics. These represent the cutting edge of cannabis breeding technology.',
+            },
+            landracePreservation: {
+                title: 'Landrace and Heritage Genetics',
+                content:
+                    'Banks that preserve and offer landrace genetics from original growing regions show commitment to genetic diversity and the long-term health of the cannabis gene pool.',
+            },
+            balancedCultivars: {
+                title: 'Balanced and Functional Cultivars',
+                content:
+                    'The best 2026 seed banks feature balanced hybrids, 1:1 CBD:THC lines, and high-THCV cultivars for intentional consumption -- not just maximum THC.',
+            },
+        },
+        recommendation:
+            'When selecting seeds in 2026, prioritize genetic diversity, terpene complexity, and proven breeding programs over pure THC numbers. The CannaGuide strain library tracks all these attributes for 700+ cultivars.',
+    },
 }

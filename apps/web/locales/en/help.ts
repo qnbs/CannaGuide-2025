@@ -300,6 +300,26 @@ export const helpView = {
                 definition:
                     'The total amount of photosynthetically active photons delivered to a surface over a 24-hour period, measured in mol/m2/day. Combines PPFD and photoperiod to quantify total light energy.',
             },
+            polyploidy: {
+                term: 'Polyploidy',
+                definition:
+                    'A condition where organisms have more than two complete sets of chromosomes. In cannabis, triploid (3n), tetraploid (4n), and hexaploid (6n) plants can produce up to 65% more cannabinoids and higher biomass. Triploids are pollen-sterile.',
+            },
+            autoflowering: {
+                term: 'Autoflowering',
+                definition:
+                    'Cannabis genetics carrying Ruderalis traits that flower based on age rather than light cycle changes. Modern autoflowers (2026) match photoperiod strains in potency and terpene richness with 75-90 day seed-to-harvest cycles.',
+            },
+            chemovar: {
+                term: 'Chemovar',
+                definition:
+                    'A classification system based on chemical composition (cannabinoid and terpene profiles) rather than morphology. Type I (THC-dominant), Type II (balanced), Type III (CBD-dominant), Type IV (CBG-dominant), Type V (no cannabinoids).',
+            },
+            f1Hybrid: {
+                term: 'F1 Hybrid',
+                definition:
+                    'First filial generation cross between two genetically distinct, stable parent lines. F1 hybrids exhibit hybrid vigor (heterosis) with uniform growth, higher yields, and consistent cannabinoid profiles.',
+            },
         },
     },
     manual: {
@@ -381,6 +401,11 @@ export const helpView = {
                 title: 'Exports & Data Management',
                 content:
                     'Select one or more strains and use the export button in the toolbar to generate a PDF or TXT file. Manage all your past exports in the "Exports" tab, where you can re-download or delete them.',
+            },
+            geneticTrends: {
+                title: 'Genetics 2026 Trends',
+                content:
+                    'Explore the latest cannabis genetic trends for 2026 in a dedicated tab. Covers terpene diversity (savory/gassy aromas), ultra-high potency with full-spectrum effects, balanced hybrids for intentional consumption, the autoflowering revolution, advanced breeding techniques (polyploidy, F1 hybrids, marker-assisted selection), and the landrace revival movement. Each trend includes detailed descriptions, key examples, and relevance ratings.',
             },
         },
         plants: {
@@ -663,5 +688,29 @@ export const faq = {
     smartFertigation: {
         question: 'What is smart fertigation?',
         answer: 'Smart fertigation combines automated irrigation with precision nutrient dosing using EC/pH sensors and closed-loop control systems. It automatically adjusts nutrient concentration and pH in real-time based on runoff readings, eliminating manual mixing and reducing waste. This is the standard in modern hydroponic and aeroponic setups.',
+    },
+    terpeneTrends: {
+        question: 'What are the terpene trends in 2026?',
+        answer: 'In 2026, the market is shifting away from sweet candy-gas profiles toward complex, savory and gassy aromas. Dark cherry, vanilla-petrol, lemon-pine-fuel, cheese revivals, and earthy/spicy notes dominated by beta-caryophyllene and humulene are the new premium. Functional terpenes like THCV for energy without hunger are also gaining popularity.',
+    },
+    autoflowerQuality: {
+        question: 'Are autoflowers now as good as photoperiod strains?',
+        answer: 'Yes, in 2026 modern autoflowers have closed the gap. Advanced backcrossing techniques produce autoflower genetics that match photoperiod strains in potency, terpene richness, and yield. With 75-90 day cycles, growers can achieve 2-3 harvests per year. They are ideal for beginners and quick turnarounds.',
+    },
+    polyploidyBasics: {
+        question: 'What is polyploidy in cannabis?',
+        answer: 'Polyploidy refers to plants with more than two sets of chromosomes. Triploid (3n), tetraploid (4n), and hexaploid (6n) cannabis plants can produce up to 65% more cannabinoids, higher biomass, and better pest resistance. Triploids are pollen-sterile, preventing accidental pollination. This is the most advanced breeding technology available in 2026.',
+    },
+    balancedHybrids: {
+        question: 'Why are balanced hybrids trending in 2026?',
+        answer: 'Consumers increasingly seek cultivars that deliver specific functional effects -- calm focus without sedation, social uplift without anxiety, or therapeutic relief without heavy intoxication. Balanced hybrids with moderate THC and rich terpene profiles meet this demand for intentional, everyday consumption.',
+    },
+    landraceGenetics: {
+        question: 'What is the landrace revival movement?',
+        answer: 'The landrace revival preserves and revitalizes original cannabis genetics from regions like Afghanistan, Morocco, Thailand, and South Africa. These ancient cultivars offer unique terpene profiles, natural pest resistance, and effects rarely found in modern hybrids. Breeders cross them with modern genetics to create climate-resilient, heritage-honoring cultivars.',
+    },
+    ultraThcStrains: {
+        question: 'Are ultra-high THC strains (33%+) safe to grow?',
+        answer: 'Ultra-high THC strains (33-37%) are safe to grow but require careful environmental control. They often need precise VPD management, strong lighting (>800 PPFD), and nutrient precision to reach their full potential. These cultivars pair best with experienced growers who can leverage the CannaGuide simulation and diagnostic tools.',
     },
 }

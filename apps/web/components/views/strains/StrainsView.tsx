@@ -62,6 +62,9 @@ const ExportsManagerView = lazy(() => import('./ExportsManagerView'))
 const BreedingLabView = lazy(() =>
     import('./BreedingLab').then((m) => ({ default: m.BreedingLab })),
 )
+const GeneticTrendsView = lazy(() =>
+    import('./GeneticTrendsView').then((m) => ({ default: m.GeneticTrendsView })),
+)
 
 const DEFAULT_AGRONOMIC = {
     difficulty: 'Medium',
@@ -184,6 +187,9 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.Tips]: (
                 <PhosphorIcons.LightbulbFilament className="w-16 h-16 mx-auto text-yellow-400" />
             ),
+            [StrainViewTab.Trends]: (
+                <PhosphorIcons.Sparkle className="w-16 h-16 mx-auto text-pink-400" />
+            ),
         }),
         [],
     )
@@ -197,6 +203,7 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab'),
             [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
             [StrainViewTab.Tips]: t('strainsView.tabs.tips', { count: savedTips.length }),
+            [StrainViewTab.Trends]: t('strainsView.tabs.trends'),
         }),
         [t, savedTips.length, savedExportsCount],
     )
@@ -628,6 +635,14 @@ export const StrainsView: React.FC = () => {
                                 onDelete={(id) => dispatch(deleteExport(id))}
                                 onUpdate={(exp) => dispatch(updateExport(exp))}
                             />
+                        </Suspense>
+                    </ErrorBoundary>
+                )
+            case StrainViewTab.Trends:
+                return (
+                    <ErrorBoundary>
+                        <Suspense fallback={<SkeletonLoader count={3} />}>
+                            <GeneticTrendsView />
                         </Suspense>
                     </ErrorBoundary>
                 )

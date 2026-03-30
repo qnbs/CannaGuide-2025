@@ -378,7 +378,16 @@ export enum StrainViewTab {
     BreedingLab = 'breeding-lab',
     Exports = 'exports',
     Tips = 'tips',
+    Trends = 'trends',
 }
+
+export type GeneticTrendCategory =
+    | 'terpeneDiversity'
+    | 'ultraPotency'
+    | 'balancedHybrids'
+    | 'autofloweringRevolution'
+    | 'advancedBreeding'
+    | 'landraceRevival'
 
 export type TaskPriority = 'high' | 'medium' | 'low'
 

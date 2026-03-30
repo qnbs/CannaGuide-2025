@@ -237,4 +237,40 @@ export const faqData: FAQItem[] = [
         answerKey: 'faq.smartFertigation.answer',
         triggers: { plantStage: [PlantStage.Vegetative, PlantStage.Flowering] },
     },
+    {
+        id: 'faq-terpene-trends',
+        questionKey: 'faq.terpeneTrends.question',
+        answerKey: 'faq.terpeneTrends.answer',
+        triggers: {},
+    },
+    {
+        id: 'faq-autoflower-quality',
+        questionKey: 'faq.autoflowerQuality.question',
+        answerKey: 'faq.autoflowerQuality.answer',
+        triggers: {},
+    },
+    {
+        id: 'faq-polyploidy-basics',
+        questionKey: 'faq.polyploidyBasics.question',
+        answerKey: 'faq.polyploidyBasics.answer',
+        triggers: {},
+    },
+    {
+        id: 'faq-balanced-hybrids',
+        questionKey: 'faq.balancedHybrids.question',
+        answerKey: 'faq.balancedHybrids.answer',
+        triggers: {},
+    },
+    {
+        id: 'faq-landrace-genetics',
+        questionKey: 'faq.landraceGenetics.question',
+        answerKey: 'faq.landraceGenetics.answer',
+        triggers: {},
+    },
+    {
+        id: 'faq-ultra-thc-strains',
+        questionKey: 'faq.ultraThcStrains.question',
+        answerKey: 'faq.ultraThcStrains.answer',
+        triggers: { plantStage: [PlantStage.Flowering] },
+    },
 ]

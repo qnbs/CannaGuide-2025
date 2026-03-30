@@ -46,6 +46,7 @@ export const strainsView = {
         breedingLab: 'Breeding Lab',
         exports: 'Exports ({{count}})',
         tips: 'Tips ({{count}})',
+        trends: 'Genetics 2026',
     },
     filters: {
         thcMax: 'THC',
@@ -658,5 +659,88 @@ export const strainsView = {
         noApiKey:
             'Cansativa API key not configured. Set VITE_CANSATIVA_API_KEY in your environment.',
         fetchError: 'Could not load Cansativa data. Please try again later.',
+    },
+    geneticTrends: {
+        badge2026: 'Genetics 2026',
+        title: 'Cannabis Genetic Trends 2026',
+        subtitle:
+            'Precision, complexity, functionality and sustainability -- the new standard in cannabis breeding.',
+        intro: 'The cannabis genetics industry is experiencing a renaissance in 2026. After years of pure THC chasing and candy-flavored crosses, breeders and consumers now demand terpene-rich, balanced, high-yielding and adaptable genetics -- from ultra-fast autoflowers to polyploid super-plants and landrace revivals. Over 1,200 new registered varieties in 2026 alone mark the shift toward precision breeding.',
+        examplesLabel: 'Key Examples',
+        relevanceLabel: 'Relevance 2026',
+        categories: {
+            terpeneDiversity: {
+                title: 'Terpene Diversity',
+                tagline: 'Complex, savory and gassy aromas replace candy profiles',
+                content:
+                    'The big shift in 2026: Away from sweet candy-gas profiles (Gelato/Zkittlez descendants) toward dark, deep, funky and multi-layered terpenes. Purple candy-gas remains strong but more mature (dark cherry, vanilla waffle, petrol). Gassy OGs and savory terps make a comeback with lemon-pine-fuel, cheese revivals, and earthy/spicy/herbal notes dominated by beta-caryophyllene and humulene. Functional terpenes like THCV ("diet weed") for energy without hunger are gaining traction.',
+                examples:
+                    'Whitethorn Rose (Paradise Punch x Lemon OG), Lantz (Green Lantern x Ridgeline Runtz), Pave-Candy variants (Compound Genetics), Bubble Tea (Z-Terp)',
+                relevance: 'High',
+            },
+            ultraPotency: {
+                title: 'Ultra-High Potency & Full-Spectrum',
+                tagline: '33-37% THC with terpene synergy and minor cannabinoids',
+                content:
+                    'THC values continue to explode with new records at 33-37%. But the focus shifts from pure THC to terpene synergy plus minor cannabinoids (CBG, CBN, THCV) for targeted effects like sleep, pain relief, focus, and micro-dosing. Hash-dumper genetics (5%+ hash yield) dominate among breeders seeking maximum resin production.',
+                examples:
+                    'Hyper Za (35%, gassy-sweet, purple, frosty), Puff Pastry (33% sativa-dominant, chocolate-cinnamon-citrus), Future #1 by Anesia Seeds (37%)',
+                relevance: 'High',
+            },
+            balancedHybrids: {
+                title: 'Balanced Hybrids',
+                tagline: 'Calm focus without sedation or jitters -- intentional consumption',
+                content:
+                    'Hybrids dominate in 2026 with balanced effects for everyday use, social situations, and intentional consumption. Sativa-leaning hybrids become "brighter", indica-leaning ones "more profound". Consumers seek cultivars that deliver specific functional effects rather than just maximum potency.',
+                examples:
+                    'Durban Z (energy focus), Lemon Cherry Gelato (uplift + body melt), balanced 1:1 CBD:THC cultivars for therapeutic use',
+                relevance: 'Very High',
+            },
+            autofloweringRevolution: {
+                title: 'Autoflowering Revolution',
+                tagline: 'Photoperiod quality in 75-90 days -- no longer a compromise',
+                content:
+                    'Modern autoflowers are no longer a compromise in 2026. Advanced backcrossing techniques make them more potent, higher yielding, and terpene-rich. With 75-90 day cycles, growers can achieve 2-3 harvests per year. They are beginner-friendly, resilient, and ideal for home growers seeking fast turnarounds.',
+                examples:
+                    'Royal Gorilla Auto, Blueberry x Big Bud Auto, Pluto Cut Auto -- all with genuine photoperiod-quality results',
+                relevance: 'Very High',
+            },
+            advancedBreeding: {
+                title: 'Advanced Breeding & Polyploidy',
+                tagline:
+                    'Triploid, tetraploid and hexaploid plants with up to 65% more cannabinoids',
+                content:
+                    'The absolute game-changer: Polyploid plants (triploid, tetraploid, hexaploid) created via colchicine treatment or Tesoro Genetics deliver up to 65% more cannabinoids, higher biomass (+60% height, 2.7x flower yield), and better resistance. Triploids are pollen-sterile, preventing seeds in grow rooms. Additional trends include F1 hybrids, marker-assisted selection, and genomic mapping for stable, IP-secure genetics. Climate-resistant landrace hybrids (Afghanistan/Morocco x modern) are emerging.',
+                examples:
+                    'Tesoro Triploids, F1 hybrid programs, marker-assisted breeding pipelines, climate-adapted landrace crosses',
+                relevance: 'Game-Changer',
+            },
+            landraceRevival: {
+                title: 'Landrace Revival',
+                tagline: 'Authentic, functional genetics from original growing regions',
+                content:
+                    'A growing movement to preserve and revitalize original landrace genetics from regions like Afghanistan, Morocco, Colombia, Thailand, and South Africa. These ancient cultivars offer unique terpene profiles, natural pest resistance, and functional effects rarely found in modern hybrids. Breeders cross them with modern genetics to create climate-resilient, terpene-rich hybrids that honor their heritage.',
+                examples:
+                    'Afghan landrace x modern indica, Thai sativa revivals, Moroccan hash plant crosses, Colombian Gold preservation',
+                relevance: 'Medium-High',
+            },
+        },
+        table: {
+            trend: 'Trend',
+            description: 'Description',
+            examples: 'Examples',
+            relevance: 'Relevance 2026',
+        },
+        implications: {
+            title: 'What This Means for Growers',
+            homeGrow:
+                'Start with stable autoflowers or polyploid seeds for maximum yields with minimal effort.',
+            quality:
+                'Choose terpene-rich genetics for better flavor and effect -- quality beats quantity.',
+            cannaGuide:
+                'CannaGuide tracks these trends with 700+ strains, chemovar classification, terpene and cannabinoid profiles -- perfect for your next breeding plan.',
+        },
+        conclusion:
+            'Genetics in 2026 are more precise, functional and diverse -- away from hype, toward real plant perfection. Complex terps, balanced hybrids, strong autos and polyploid lines deliver massive gains in quality, yield and consistency.',
     },
 }

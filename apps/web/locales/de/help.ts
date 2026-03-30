@@ -303,6 +303,26 @@ export const helpView = {
                 definition:
                     'Die Gesamtmenge photosynthetisch aktiver Photonen, die einer Oberflaeche ueber einen 24-Stunden-Zeitraum zugestellt werden, gemessen in mol/m2/Tag. Kombiniert PPFD und Photoperiode zur Quantifizierung der gesamten Lichtenergie.',
             },
+            polyploidy: {
+                term: 'Polyploidie',
+                definition:
+                    'Ein Zustand, bei dem Organismen mehr als zwei vollstaendige Chromosomensaetze besitzen. Bei Cannabis koennen triploide (3n), tetraploide (4n) und hexaploide (6n) Pflanzen bis zu 65% mehr Cannabinoide und hoehere Biomasse produzieren. Triploide sind pollen-steril.',
+            },
+            autoflowering: {
+                term: 'Autoflowering',
+                definition:
+                    'Cannabis-Genetik mit Ruderalis-Merkmalen, die basierend auf dem Alter statt auf Lichtzyklusaenderungen blueht. Moderne Autoflower (2026) erreichen Photoperiod-Qualitaet in Potenz und Terpen-Reichtum mit 75-90-Tage Samen-bis-Ernte-Zyklen.',
+            },
+            chemovar: {
+                term: 'Chemovar',
+                definition:
+                    'Ein Klassifizierungssystem basierend auf chemischer Zusammensetzung (Cannabinoid- und Terpen-Profile) statt Morphologie. Typ I (THC-dominant), Typ II (ausgewogen), Typ III (CBD-dominant), Typ IV (CBG-dominant), Typ V (keine Cannabinoide).',
+            },
+            f1Hybrid: {
+                term: 'F1-Hybrid',
+                definition:
+                    'Erste Filialgeneration-Kreuzung zwischen zwei genetisch unterschiedlichen, stabilen Elternlinien. F1-Hybride zeigen Hybridvigeur (Heterosis) mit einheitlichem Wachstum, hoeheren Ertraegen und konsistenten Cannabinoid-Profilen.',
+            },
         },
     },
     manual: {
@@ -384,6 +404,11 @@ export const helpView = {
                 title: 'Exporte & Datenverwaltung',
                 content:
                     'Wählen Sie eine oder mehrere Sorten aus und verwenden Sie den Export-Button in der Werkzeugleiste, um eine PDF- oder TXT-Datei zu erstellen. Verwalten Sie alle Ihre bisherigen Exporte im Tab "Exporte", wo Sie sie erneut herunterladen oder löschen können.',
+            },
+            geneticTrends: {
+                title: 'Genetik 2026 Trends',
+                content:
+                    'Entdecken Sie die neuesten Cannabis-Genetik-Trends fuer 2026 in einem eigenen Tab. Umfasst Terpen-Diversitaet (herzhafte/gassige Aromen), ultra-hohe Potenz mit Full-Spectrum-Effekten, ausgewogene Hybride fuer bewussten Konsum, die Autoflowering-Revolution, fortgeschrittene Zuechtertechniken (Polyploidie, F1-Hybride, Marker-gestuetzte Selektion) und die Landrace-Revival-Bewegung. Jeder Trend beinhaltet detaillierte Beschreibungen, Schluesselbeispiele und Relevanz-Bewertungen.',
             },
         },
         plants: {
@@ -665,5 +690,29 @@ export const faq = {
     smartFertigation: {
         question: 'Was ist Smart Fertigation?',
         answer: 'Smart Fertigation kombiniert automatisierte Bewaesserung mit Praezisions-Naehrstoffdosierung unter Verwendung von EC/pH-Sensoren und geschlossenen Regelkreissystemen. Es passt die Naehrstoffkonzentration und den pH-Wert automatisch in Echtzeit basierend auf Drainageablesungen an, eliminiert manuelles Mischen und reduziert Verschwendung. Dies ist der Standard in modernen hydroponischen und aeroponischen Setups.',
+    },
+    terpeneTrends: {
+        question: 'Was sind die Terpen-Trends 2026?',
+        answer: 'Der Markt verschiebt sich 2026 weg von suessen Candy-Gas-Profilen hin zu komplexen, herzhaften und gassigen Aromen. Dunkle Kirsche, Vanille-Petrol, Lemon-Pine-Fuel, Cheese-Revivals und erdige/wuerzige Noten dominiert von Beta-Caryophyllen und Humulen sind das neue Premium. Funktionale Terpene wie THCV fuer Energie ohne Hunger gewinnen ebenfalls an Popularitaet.',
+    },
+    autoflowerQuality: {
+        question: 'Sind Autoflower jetzt so gut wie Photoperiod-Sorten?',
+        answer: 'Ja, 2026 haben moderne Autoflower die Luecke geschlossen. Fortgeschrittene Backcrossing-Techniken produzieren Autoflower-Genetik, die Photoperiod-Sorten in Potenz, Terpen-Reichtum und Ertrag gleichkommt. Mit 75-90-Tage-Zyklen koennen Grower 2-3 Ernten pro Jahr erzielen. Sie sind ideal fuer Anfaenger und schnelle Turnarounds.',
+    },
+    polyploidyBasics: {
+        question: 'Was ist Polyploidie bei Cannabis?',
+        answer: 'Polyploidie bezeichnet Pflanzen mit mehr als zwei Chromosomensaetzen. Triploide (3n), tetraploide (4n) und hexaploide (6n) Cannabis-Pflanzen koennen bis zu 65% mehr Cannabinoide, hoehere Biomasse und bessere Schaedlingsresistenz produzieren. Triploide sind pollen-steril und verhindern versehentliche Bestaeubung. Dies ist die fortschrittlichste Zuechtertechnologie 2026.',
+    },
+    balancedHybrids: {
+        question: 'Warum liegen ausgewogene Hybride 2026 im Trend?',
+        answer: 'Konsumenten suchen zunehmend Kultivare, die spezifische funktionale Effekte liefern -- ruhiger Fokus ohne Sedierung, sozialer Uplift ohne Angst oder therapeutische Linderung ohne starke Berauschung. Ausgewogene Hybride mit moderatem THC und reichen Terpen-Profilen erfuellen diese Nachfrage nach bewusstem, alltaeglichem Konsum.',
+    },
+    landraceGenetics: {
+        question: 'Was ist die Landrace-Revival-Bewegung?',
+        answer: 'Das Landrace-Revival bewahrt und revitalisiert urspruengliche Cannabis-Genetik aus Regionen wie Afghanistan, Marokko, Thailand und Suedafrika. Diese alten Kultivare bieten einzigartige Terpen-Profile, natuerliche Schaedlingsresistenz und Effekte, die in modernen Hybriden selten zu finden sind. Zuechter kreuzen sie mit moderner Genetik fuer klimaresistente, traditionshonorierende Sorten.',
+    },
+    ultraThcStrains: {
+        question: 'Sind Ultra-High-THC-Sorten (33%+) sicher zum Anbauen?',
+        answer: 'Ultra-High-THC-Sorten (33-37%) sind sicher zum Anbauen, erfordern aber praezise Umgebungskontrolle. Sie benoetigen oft genaues VPD-Management, starke Beleuchtung (>800 PPFD) und Naehrstoff-Praezision, um ihr volles Potenzial zu erreichen. Diese Kultivare passen am besten zu erfahrenen Growern, die die CannaGuide-Simulations- und Diagnose-Tools nutzen koennen.',
     },
 }

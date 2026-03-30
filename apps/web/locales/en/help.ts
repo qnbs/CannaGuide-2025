@@ -265,6 +265,41 @@ export const helpView = {
                 definition:
                     'A pure, original cannabis variety that has naturally adapted and stabilized in a specific geographic region over a long period.',
             },
+            dynamicLighting: {
+                term: 'Dynamic Lighting',
+                definition:
+                    'LED lighting systems that automatically adjust their spectral output based on the plant growth phase and environmental conditions (VPD). Blue-dominant for vegetative growth, red-dominant for flowering.',
+            },
+            digitalTwin: {
+                term: 'Digital Twin',
+                definition:
+                    'A virtual replica of a grow environment built from real-time sensor data. Used to simulate what-if scenarios (CO2 changes, temperature adjustments) and predict their impact on yield before making real changes.',
+            },
+            aeroponics: {
+                term: 'Aeroponics',
+                definition:
+                    'A soilless growing method where plant roots are suspended in air and nutrients are delivered via a fine mist. Achieves up to 30% faster growth with 90% less water than traditional soil methods.',
+            },
+            smartFertigation: {
+                term: 'Smart Fertigation',
+                definition:
+                    'An automated system that combines irrigation with precision nutrient dosing, using EC/pH sensors and closed-loop control to maintain optimal nutrient levels in real-time.',
+            },
+            tissueCulture: {
+                term: 'Tissue Culture',
+                definition:
+                    'A sterile laboratory technique (micropropagation) for producing virus-free, genetically identical clones from tiny plant tissue samples, enabling massive scaling of elite genetics.',
+            },
+            ppfd: {
+                term: 'PPFD (Photosynthetic Photon Flux Density)',
+                definition:
+                    'A measure of the amount of photosynthetically active radiation (PAR) that reaches a surface per second, measured in umol/m2/s. The key metric for evaluating grow light performance.',
+            },
+            dli: {
+                term: 'DLI (Daily Light Integral)',
+                definition:
+                    'The total amount of photosynthetically active photons delivered to a surface over a 24-hour period, measured in mol/m2/day. Combines PPFD and photoperiod to quantify total light energy.',
+            },
         },
     },
     manual: {
@@ -415,6 +450,11 @@ export const helpView = {
                 title: 'Integrated Grow Guide',
                 content:
                     "Access a comprehensive reference that includes this User Manual, a Grower's Lexicon, clearly separated visual guides, and a searchable FAQ organized by app and grow topics.",
+            },
+            growTech: {
+                title: 'Grow Tech 2026',
+                content:
+                    'Explore the latest cannabis cultivation technologies for 2026 -- from dynamic LED spectra and AI-powered controllers to digital twins, aeroponics, tissue culture, and smart grow boxes. Each technology section includes key benefits, practical tips, and integration points with CannaGuide features already available in the app.',
             },
         },
     },
@@ -595,5 +635,33 @@ export const faq = {
     visionClassification: {
         question: 'How does photo-based plant diagnosis work offline?',
         answer: 'The app uses a CLIP-ViT-L-14 vision model that recognises 33 cannabis-specific labels — from healthy leaves to nutrient deficiencies, pests, and mould. The model runs entirely in the browser via ONNX and does not send images to any server. Preload it in Settings → General & UI while online.',
+    },
+    dynamicLighting: {
+        question: 'What is dynamic lighting and how does it help?',
+        answer: 'Dynamic lighting uses LEDs that automatically adjust their spectrum based on the growth phase and VPD conditions. Blue-heavy spectra promote compact vegetative growth, while red-dominant spectra increase bud density and THC production during flowering. Modern panels achieve >2.8 umol/J efficiency, reducing power consumption by up to 40% versus legacy HPS lamps.',
+    },
+    aeroponicsBasics: {
+        question: 'What is aeroponics and is it suitable for home growing?',
+        answer: 'Aeroponics suspends plant roots in air and delivers nutrients via a fine mist. It can achieve up to 30% faster growth with 90% less water than soil. While it requires more initial setup, it is increasingly accessible for home growers with compact systems. CannaGuide supports Aeroponics as a grow medium with adapted EC/pH targets.',
+    },
+    digitalTwin: {
+        question: 'What is a Digital Twin in cannabis growing?',
+        answer: 'A Digital Twin is a virtual replica of your grow environment built from sensor data. It lets you simulate "what-if" scenarios -- like adding CO2 or changing light schedules -- and see the projected yield impact before making real changes. CannaGuide\'s Sandbox already offers basic digital twin experiments (Topping vs. LST, Temperature +2C).',
+    },
+    tissueCulture: {
+        question: 'What is tissue culture for cannabis?',
+        answer: 'Tissue culture (micropropagation) is a sterile laboratory technique for producing virus-free, genetically identical clones from tiny plant tissue samples. It eliminates the need for mother plants and enables massive scaling of elite genetics. Home-lab kits are now available for advanced growers.',
+    },
+    smartGrowBox: {
+        question: 'Are all-in-one smart grow boxes worth it?',
+        answer: 'Smart grow boxes like Hey Abby GrowMate integrate LEDs, ventilation, sensors, and app control into a single unit. They are ideal for beginners and urban growers who want minimal setup complexity. Even with a smart box, using CannaGuide for journaling, AI advice, and VPD simulation adds significant value.',
+    },
+    co2Enrichment: {
+        question: 'When should I add CO2 to my grow room?',
+        answer: 'CO2 enrichment (typically 800-1500 ppm) is most effective during the vegetative and early flowering phases when combined with high-intensity lighting (>600 PPFD). It can increase yields by 20-30% but requires a sealed room and proper safety equipment. Without sufficient light, extra CO2 provides no benefit.',
+    },
+    smartFertigation: {
+        question: 'What is smart fertigation?',
+        answer: 'Smart fertigation combines automated irrigation with precision nutrient dosing using EC/pH sensors and closed-loop control systems. It automatically adjusts nutrient concentration and pH in real-time based on runoff readings, eliminating manual mixing and reducing waste. This is the standard in modern hydroponic and aeroponic setups.',
     },
 }

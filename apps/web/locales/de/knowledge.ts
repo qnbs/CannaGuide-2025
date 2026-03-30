@@ -7,6 +7,7 @@ export const knowledgeView = {
         archive: 'Mentor-Archiv',
         breeding: 'Zuchtlabor',
         sandbox: 'Sandbox',
+        growTech: 'Grow Tech 2026',
     },
     hub: {
         selectPlant: 'Pflanze auswählen',
@@ -241,6 +242,126 @@ export const knowledgeView = {
         analyzing: 'Analysiere...',
         startAnalysis: 'RAG Analyse starten',
         activeCorpus: 'Aktive Pflanzen im RAG-Korpus: {{count}}',
+    },
+    growTech: {
+        title: 'Cannabis Grow-Technologien 2026',
+        subtitle: 'Praezision, Automatisierung, KI und Nachhaltigkeit -- die Zukunft des Anbaus.',
+        badge2026: '2026 Tech-Ueberblick',
+        intro: 'Die Cannabis-Anbau-Technologie 2026 steht ganz im Zeichen von datengetriebenen, skalierbaren Systemen, die Ertrag, Qualitaet (THC, Terpene, Cannabinoide) und Effizienz maximieren. Von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins und Aeroponik -- diese Technologien profitieren sowohl professionelle als auch Home-Grower.',
+        keyBenefits: 'Vorteile',
+        categories: {
+            dynamicLighting: {
+                title: 'Dynamische LED-Beleuchtung',
+                tagline: 'Vollspektrum-LEDs mit adaptiven Spektren fuer jede Wachstumsphase',
+                content:
+                    'Hoch-effiziente Vollspektrum-LEDs mit starkem Rot-Anteil erreichen >2,8 umol/J Effizienz und senken den Stromverbrauch um bis zu 40% gegenueber alten HPS-Lampen. Modelle wie HLG 350R oder AC Infinity-Systeme liefern ueberlegene Lichtgleichmaessigkeit und weniger Hitze.<br><br><strong>Dynamische Beleuchtung:</strong> Fortschrittliche Controller passen das Lichtspektrum automatisch an die Wachstumsphase und VPD-Bedingungen an -- blau-lastig fuer vegetatives Wachstum, rot-dominant fuer dichte Bluete.',
+                benefits:
+                    '<ul><li>20-40% hoeherer Ertrag mit optimierten Spektren</li><li>Bis zu 40% niedrigere Stromkosten</li><li>Bessere THC-Produktion durch gezielte Rot-/Dunkelrot-Wellenlaengen</li><li>Reduzierte Hitzestress am Kronendach</li></ul>',
+                tip: 'Ein 350-600W LED-Panel in einem 1,2 x 1,2m Zelt reicht fuer 4-6 Pflanzen. Achte auf Modelle mit >2,5 umol/J Effizienz fuer den besten ROI in 1-2 Erntezyklen.',
+            },
+            sensorsIoT: {
+                title: 'Sensoren, IoT & VPD-Optimierung',
+                tagline: 'Drahtlose Umgebungsueberwachung mit KI-gesteuerten Regelkreisen',
+                content:
+                    'Drahtlose Sensoren fuer Temperatur, Luftfeuchtigkeit, VPD, EC, pH, PAR/PPFD, CO2 und Bodenfeuchte bilden das Rueckgrat der Praezisionslandwirtschaft. KI-gesteuerte Controller wie der AC Infinity Controller AI+ sagen Temperaturschwankungen vorher und regeln automatisch Heizung, Lueftung und Feuchtigkeit fuer perfekten VPD (0,8-1,2 kPa in der Bluete).',
+                benefits:
+                    '<ul><li>Echtzeit-VPD-Optimierung verhindert Stress, Schimmel und geringe Harzproduktion</li><li>Vorausschauende Umgebungsanpassungen reduzieren manuellen Aufwand</li><li>Kontinuierliche Datenprotokollierung ermeoglicht Trendanalyse und Fruehwarnung</li><li>Integration mit CannaGuide ueber MQTT und BLE-Sensoren</li></ul>',
+                tip: 'VPD ist der "unsichtbare Killer" -- falsche Werte verursachen Stress, Schimmel oder geringe Trichom-Produktion. CannaGuide berechnet bereits Echtzeit-VPD mit Hoehenkorrektur.',
+            },
+            aiAutomation: {
+                title: 'KI & Automatisierung',
+                tagline: 'KI-Plattformen erkennen Probleme vor sichtbaren Symptomen',
+                content:
+                    'KI-Plattformen analysieren Echtzeit-Sensordaten, erkennen Schaedlinge und Maengel vor sichtbaren Symptomen und optimieren automatisch Naehrstoff-, Licht- und Bewaesserungsplaene. Systeme wie Spectron AI-Kameras (4K + Timelapse) oder Hey Abby GrowMate bieten Smartphone-gesteuerten Praezisionsanbau.',
+                benefits:
+                    '<ul><li>Proaktive Schaedlings- und Mangelfrueherkennung rettet ganze Ernten</li><li>Automatisierte Naehrstoff- und Bewaesserungsplanung reduziert den taeglichen Aufwand</li><li>Datengetriebene Compliance-Protokollierung fuer kommerzielle Betriebe</li><li>Skalierbar vom Einzelzelt bis zur Multi-Raum-Anlage</li></ul>',
+                tip: 'CannaGuide bietet bereits KI-gestuetzte Pflanzendiagnostik (Foto + Daten-basiert), proaktiven Berater und lokalen KI-Fallback -- alles offline nutzbar.',
+            },
+            digitalTwin: {
+                title: 'Digital-Twin-Simulation',
+                tagline: 'Virtuelle Grow-Room-Repliken fuer risikofreies Experimentieren',
+                content:
+                    'Ein Digital Twin erstellt ein virtuelles Abbild deiner Grow-Umgebung mittels Sensordaten und CFD-Modellen (Computational Fluid Dynamics). Du simulierst "Was-waere-wenn"-Szenarien -- wie z. B. +200 ppm CO2 oder geaenderte Lichtplaene -- und siehst den Ertragseffekt, bevor du reale Aenderungen vornimmst.',
+                benefits:
+                    '<ul><li>Risikofreies Experimentieren mit Umgebungseinstellungen</li><li>Vorausschauende Ertrags- und Qualitaetsmodellierung</li><li>Virtuelle Optimierung von HVAC und Beleuchtungsplatzierung</li><li>Drastische Reduzierung von Trial-and-Error-Zyklen</li></ul>',
+                tip: 'CannaGuides Sandbox bietet bereits Was-waere-wenn-Experimente (Topping vs. LST, Temperatur +2C) an geklonten Pflanzen -- der erste Schritt zum vollstaendigen Digital Twin.',
+            },
+            hydroAero: {
+                title: 'Hydroponik & Aeroponik',
+                tagline:
+                    'Erdlose Systeme mit bis zu 30% schnellerem Wachstum und 90% weniger Wasser',
+                content:
+                    'Aeroponik haengt Wurzeln in die Luft und liefert Naehrstoffe ueber feinen Nebel -- bis zu 30% schnelleres Wachstum bei 90% weniger Wasserverbrauch. Rezirkulierende Hydroponiksysteme mit Smart Fertigation nutzen geschlossene Kreislaeufe, automatische pH/EC-Anpassung und Praezisionsdosierung ueber Substratsensoren.',
+                benefits:
+                    '<ul><li>Deutlich schnellere Wachstumszyklen</li><li>90% Wasserreduktion gegenueber Erdanbau</li><li>Praezise Naehrstoffkontrolle eliminiert Verschwendung</li><li>Ideal fuer Vertical Farming und platzbeschraenkte Setups</li></ul>',
+                tip: 'CannaGuide unterstuetzt Erde, Kokos, Hydro und Aeroponik als Anbaumedien. Der Naehrstoffplaner passt EC/pH-Zielwerte automatisch je Medium an.',
+            },
+            tissueCulture: {
+                title: 'Gewebekultur & Mikrovermehrung',
+                tagline: 'Virusfreies Klonen von Elite-Genetik in grossem Massstab',
+                content:
+                    'Home-Lab-Kits und professionelle Gewebenkultursysteme ermeoglichen die virusfreie Vermehrung von Elite-Genetik. Dies produziert genetisch identische Klone ohne Mutterpflanzenerhaltung -- und ermoeglicht massive Skalierung mit stabiler Genetik und hoeherer Krankheitsresistenz.',
+                benefits:
+                    '<ul><li>100% genetische Konsistenz ueber alle Klone</li><li>Viren- und Pathogeneliminierung</li><li>Keine Mutterpflanzenpflege noetig</li><li>Schnellere Skalierung preisgekroenter Phaenotypen</li></ul>',
+                tip: 'Verfolge deine Phaenotypen und genetische Abstammung in CannaGuides Zuchtlabor und Genealogie-Explorer, um Elite-Kandidaten fuer die Gewebekultur zu identifizieren.',
+            },
+            smartGrowBoxes: {
+                title: 'All-in-One Smart Grow-Boxen',
+                tagline: 'Integrierte Systeme mit LEDs, Lueftern, Sensoren und App-Steuerung',
+                content:
+                    'Komplettsysteme wie Hey Abby GrowMate oder Mars Hydro Smart Tents integrieren LEDs, Belueftung, Sensoren und App-Steuerung in einer einzigen Einheit. "Einrichten und vergessen" -- perfekt fuer Einsteiger und Stadt-Grower mit wenig Platz.',
+                benefits:
+                    '<ul><li>Null Einrichtungskomplexitaet fuer Anfaenger</li><li>Integrierte Umgebungskontrolle</li><li>Kompakter Platzbedarf fuer Wohnungsanbau</li><li>App-basiertes Monitoring und Alarme</li></ul>',
+                tip: 'Selbst mit einer All-in-One-Box: Nutze CannaGuide fuer dein Grow-Tagebuch, KI-Beratung und die VPD-Simulation fuer optimale Ergebnisse.',
+            },
+            sustainability: {
+                title: 'Nachhaltigkeit & Post-Harvest-Tech',
+                tagline: 'Energieeinsparung, regenerative Boeden und Praezisions-Curing',
+                content:
+                    'LED- und HVAC-Optimierung reduzieren den Energie- und Wasserverbrauch drastisch. Regenerative Bodenpraktiken, CO2-Anreicherung und Praezisions-Trocknungs-/Curing-Systeme (wie Cannatrol) maximieren die Terpenerhaltung und die Endproduktqualitaet. Post-Harvest-Technologie wird zunehmend als ebenso wichtig wie der Anbau selbst anerkannt.',
+                benefits:
+                    '<ul><li>30-50% Reduzierung der Energiekosten mit modernen LEDs + HVAC</li><li>Ueberlegene Terpen- und Cannabinoid-Konservierung</li><li>Regenerative Boeden verbessern die Qualitaet ueber mehrere Zyklen</li><li>Nachhaltige Praktiken erfuellen wachsende regulatorische Anforderungen</li></ul>',
+                tip: 'CannaGuides Post-Harvest-Simulation (Trocknungs- + Curing-Phasen) verfolgt Glasfeuchtigkeit, Chlorophyllabbau, Terpenerhaltung und Schimmelrisiko.',
+            },
+        },
+        impact: {
+            title: 'Technologie-Auswirkungsmatrix',
+            headers: {
+                area: 'Technologie',
+                homeGrower: 'Home-Grower-Vorteil',
+                commercial: 'Kommerzieller Vorteil',
+                effort: 'Aufwand',
+            },
+            areas: {
+                ledSensors: 'LED + Sensoren',
+                aiAutomation: 'KI / Automatisierung',
+                aeroponics: 'Aeroponik',
+                digitalTwin: 'Digital Twin',
+            },
+            home: {
+                ledSensors: '20-40% mehr Ertrag, weniger Strom',
+                aiAutomation: 'Weniger taegliche Arbeit, proaktive Warnungen',
+                aeroponics: 'Schnelleres Wachstum, platzsparend',
+                digitalTwin: 'Risikofreies Experimentieren',
+            },
+            commercial: {
+                ledSensors: 'Kosteneinsparung, gleichbleibende Qualitaet',
+                aiAutomation: 'Skalierbarkeit, Daten-Compliance',
+                aeroponics: 'Maximale Effizienz im grossen Massstab',
+                digitalTwin: 'Vorausschauende Planung, Optimierung',
+            },
+            effort: {
+                medium: 'Mittel',
+                high: 'Hoch',
+                highInitial: 'Hoch (anfangs)',
+                mediumHigh: 'Mittel-Hoch',
+            },
+        },
+        cannaGuideIntegration: {
+            title: 'Bereits in CannaGuide',
+            content:
+                'CannaGuide integriert bereits viele dieser 2026-Technologien: Echtzeit-VPD-Simulation mit Hoehenkorrektur, KI-gestuetzte Diagnostik (Cloud + Lokal), Was-waere-wenn-Sandbox-Experimente, IoT-Sensorintegration (MQTT + BLE), dynamische Spektrumserkennung im Lichtrechner, Aeroponik als Anbaumedium, Post-Harvest-Simulation mit Terpen-Tracking und einen 3-Schicht-lokalen KI-Fallback fuer vollstaendig offline Betrieb.',
+        },
     },
 }
 

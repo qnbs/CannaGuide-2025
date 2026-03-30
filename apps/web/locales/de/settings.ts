@@ -415,6 +415,20 @@ export const settingsView = {
         altitudeM: 'Grow-Höhe',
         altitudeMDesc:
             'Wendet die barometrische VPD-Korrektur anhand der Höhe deines Grow-Raums über dem Meeresspiegel an.',
+        growTech2026: '2026 Grow-Technologien',
+        dynamicLighting: 'Dynamische Beleuchtung',
+        dynamicLightingDesc:
+            'Aktiviert spektrumadaptive Beleuchtung, die die LED-Ausgabe automatisch an die aktuelle Wachstumsphase und VPD anpasst (blau fuer Wuchs, rot fuer Bluete).',
+        enableAeroponics: 'Aeroponik-Modus',
+        enableAeroponicsDesc:
+            'Aktiviert aeroponik-spezifische Simulationsparameter: schnellere Naehrstoffaufnahme, reduziertes Wasserverbrauchsmodell und Nebel-Zyklus-Timing.',
+        co2Enrichment: 'CO2-Anreicherungs-Simulation',
+        co2EnrichmentDesc:
+            'Aktiviert CO2-Anreicherungseffekte in der Simulations-Engine. Lege den Ziel-ppm-Wert fuer Ertragsberechnungen fest.',
+        co2TargetPpm: 'CO2-Ziel (ppm)',
+        smartFertigationAlerts: 'Smart-Fertigation-Alarme',
+        smartFertigationAlertsDesc:
+            'Erhalte automatisierte Warnungen, wenn pH oder EC basierend auf Echtzeit-Sensordaten den optimalen Bereich verlassen.',
     },
     notifications: {
         title: 'Benachrichtigungen',
@@ -650,9 +664,11 @@ export const settingsView = {
             title: 'Danksagungen & Links',
             phosphor: 'Icons bereitgestellt von Phosphor Icons.',
             seedfinder: 'Sorten- und Seedbank-Daten von SeedFinder.eu.',
-            strainProviders: 'Sorten-Anreicherung via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa und Kushy.',
+            strainProviders:
+                'Sorten-Anreicherung via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa und Kushy.',
             corsProxies: 'CORS-Proxy-Relay durch allorigins.win und corsproxy.io.',
-            transformersJs: 'On-Device NLP und Embeddings via Transformers.js (Xenova/Hugging Face).',
+            transformersJs:
+                'On-Device NLP und Embeddings via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Lokale LLM-Inferenz via WebLLM (MLC AI).',
             onnx: 'ML-Runtime durch ONNX Runtime Web und TensorFlow.js.',
             radixUi: 'Barrierefreie UI-Primitiven von Radix UI.',

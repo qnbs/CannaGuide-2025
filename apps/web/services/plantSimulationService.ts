@@ -684,6 +684,7 @@ class PlantSimulationService {
             Soil: 0,
             Coco: -2,
             Hydro: 2,
+            Aeroponics: 2,
         }
 
         const potAdjustment = plant.equipment.potType === 'Fabric' ? -1 : 0

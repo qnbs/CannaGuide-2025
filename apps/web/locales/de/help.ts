@@ -268,6 +268,41 @@ export const helpView = {
                 definition:
                     'Eine reine, ursprüngliche Cannabis-Sorte, die sich über einen langen Zeitraum in einer bestimmten geografischen Region natürlich angepasst und stabilisiert hat.',
             },
+            dynamicLighting: {
+                term: 'Dynamische Beleuchtung',
+                definition:
+                    'LED-Beleuchtungssysteme, die ihre Spektralausgabe automatisch an die Pflanzenwachstumsphase und Umgebungsbedingungen (VPD) anpassen. Blau-dominant fuer vegetatives Wachstum, rot-dominant fuer die Bluete.',
+            },
+            digitalTwin: {
+                term: 'Digital Twin',
+                definition:
+                    'Ein virtuelles Abbild einer Grow-Umgebung, das aus Echtzeit-Sensordaten erstellt wird. Wird verwendet, um Was-waere-wenn-Szenarien (CO2-Aenderungen, Temperaturanpassungen) zu simulieren und deren Auswirkungen auf den Ertrag vorherzusagen.',
+            },
+            aeroponics: {
+                term: 'Aeroponik',
+                definition:
+                    'Eine erdlose Anbaumethode, bei der Pflanzenwurzeln in der Luft haengen und Naehrstoffe ueber feinen Nebel zugestellt werden. Erreicht bis zu 30% schnelleres Wachstum bei 90% weniger Wasser als traditionelle Erdmethoden.',
+            },
+            smartFertigation: {
+                term: 'Smart Fertigation',
+                definition:
+                    'Ein automatisiertes System, das Bewaesserung mit Praezisions-Naehrstoffdosierung kombiniert und EC/pH-Sensoren sowie geschlossene Regelkreise nutzt, um optimale Naehrstoffwerte in Echtzeit aufrechtzuerhalten.',
+            },
+            tissueCulture: {
+                term: 'Gewebekultur',
+                definition:
+                    'Eine sterile Labortechnik (Mikrovermehrung) zur Herstellung virusfreier, genetisch identischer Klone aus winzigen Pflanzengewebeproben, die eine massive Skalierung von Elite-Genetik ermoeglicht.',
+            },
+            ppfd: {
+                term: 'PPFD (Photosynthetische Photonenflussdichte)',
+                definition:
+                    'Ein Mass fuer die Menge an photosynthetisch aktiver Strahlung (PAR), die pro Sekunde eine Oberflaeche erreicht, gemessen in umol/m2/s. Die Schluesselmetrik zur Bewertung der Grow-Light-Leistung.',
+            },
+            dli: {
+                term: 'DLI (Taegliches Lichtintegral)',
+                definition:
+                    'Die Gesamtmenge photosynthetisch aktiver Photonen, die einer Oberflaeche ueber einen 24-Stunden-Zeitraum zugestellt werden, gemessen in mol/m2/Tag. Kombiniert PPFD und Photoperiode zur Quantifizierung der gesamten Lichtenergie.',
+            },
         },
     },
     manual: {
@@ -417,6 +452,11 @@ export const helpView = {
                 title: 'Integrierter Grow Guide',
                 content:
                     'Greifen Sie auf ein umfassendes Nachschlagewerk zu, das dieses Benutzerhandbuch, ein Grower-Lexikon, klar getrennte visuelle Anleitungen und eine nach App- und Grow-Themen strukturierte FAQ enthält.',
+            },
+            growTech: {
+                title: 'Grow Tech 2026',
+                content:
+                    'Entdecken Sie die neuesten Cannabis-Anbau-Technologien fuer 2026 -- von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins, Aeroponik, Gewebekultur und smarten Grow-Boxen. Jeder Technologiebereich enthaelt Hauptvorteile, praktische Tipps und Integrationspunkte mit bereits in der App verfuegbaren CannaGuide-Funktionen.',
             },
         },
     },
@@ -597,5 +637,33 @@ export const faq = {
     visionClassification: {
         question: 'Wie funktioniert die fotobasierte Pflanzendiagnose offline?',
         answer: 'Die App verwendet ein CLIP-ViT-L-14-Bildmodell, das 33 Cannabis-spezifische Labels erkennt — von gesunden Blättern über Nährstoffmängel bis hin zu Schädlingen und Schimmel. Das Modell läuft vollständig im Browser über ONNX und sendet keine Bilder an einen Server. Laden Sie es unter Einstellungen → Allgemein & UI vor, solange Sie online sind.',
+    },
+    dynamicLighting: {
+        question: 'Was ist dynamische Beleuchtung und wie hilft sie?',
+        answer: 'Dynamische Beleuchtung nutzt LEDs, die ihr Spektrum automatisch an die Wachstumsphase und VPD-Bedingungen anpassen. Blaue Spektren foerdern kompaktes vegetatives Wachstum, waehrend rotdominante Spektren die Bluetendichte und THC-Produktion waehrend der Bluete steigern. Moderne Panels erreichen >2,8 umol/J Effizienz und reduzieren den Stromverbrauch um bis zu 40% gegenueber alten HPS-Lampen.',
+    },
+    aeroponicsBasics: {
+        question: 'Was ist Aeroponik und eignet sie sich fuer den Heimanbau?',
+        answer: 'Aeroponik haengt Pflanzenwurzeln in die Luft und liefert Naehrstoffe ueber einen feinen Nebel. Sie kann bis zu 30% schnelleres Wachstum bei 90% weniger Wasser als Erde erreichen. Obwohl sie mehr anfaengliche Einrichtung erfordert, wird sie mit kompakten Systemen zunehmend fuer Heimanbauer zugaenglich. CannaGuide unterstuetzt Aeroponik als Anbaumedium mit angepassten EC/pH-Zielwerten.',
+    },
+    digitalTwin: {
+        question: 'Was ist ein Digital Twin im Cannabis-Anbau?',
+        answer: 'Ein Digital Twin ist ein virtuelles Abbild deiner Grow-Umgebung, das aus Sensordaten erstellt wird. Es ermoeglicht die Simulation von "Was-waere-wenn"-Szenarien -- wie das Hinzufuegen von CO2 oder das Aendern von Lichtplaenen -- und zeigt die prognostizierte Ertragsauswirkung, bevor du reale Aenderungen vornimmst. CannaGuides Sandbox bietet bereits grundlegende Digital-Twin-Experimente (Topping vs. LST, Temperatur +2C).',
+    },
+    tissueCulture: {
+        question: 'Was ist Gewebekultur fuer Cannabis?',
+        answer: 'Gewebekultur (Mikrovermehrung) ist eine sterile Labortechnik zur Herstellung virusfreier, genetisch identischer Klone aus winzigen Pflanzengewebeproben. Sie eliminiert die Notwendigkeit von Mutterpflanzen und ermoeglicht massive Skalierung von Elite-Genetik. Home-Lab-Kits sind jetzt fuer fortgeschrittene Anbauer erhaeltlich.',
+    },
+    smartGrowBox: {
+        question: 'Lohnen sich All-in-One Smart Grow-Boxen?',
+        answer: 'Smarte Grow-Boxen wie Hey Abby GrowMate integrieren LEDs, Belueftung, Sensoren und App-Steuerung in einer einzigen Einheit. Sie sind ideal fuer Anfaenger und Stadt-Grower, die minimale Einrichtungskomplexitaet wuenschen. Selbst mit einer Smart-Box bietet die Nutzung von CannaGuide fuer Tagebuch, KI-Beratung und VPD-Simulation einen erheblichen Mehrwert.',
+    },
+    co2Enrichment: {
+        question: 'Wann sollte ich meinem Grow-Room CO2 hinzufuegen?',
+        answer: 'CO2-Anreicherung (typischerweise 800-1500 ppm) ist waehrend der vegetativen und fruehen Bluetephase am effektivsten, wenn sie mit Hochleistungsbeleuchtung (>600 PPFD) kombiniert wird. Sie kann die Ertraege um 20-30% steigern, erfordert aber einen abgedichteten Raum und geeignete Sicherheitsausruestung. Ohne ausreichend Licht bietet zusaetzliches CO2 keinen Vorteil.',
+    },
+    smartFertigation: {
+        question: 'Was ist Smart Fertigation?',
+        answer: 'Smart Fertigation kombiniert automatisierte Bewaesserung mit Praezisions-Naehrstoffdosierung unter Verwendung von EC/pH-Sensoren und geschlossenen Regelkreissystemen. Es passt die Naehrstoffkonzentration und den pH-Wert automatisch in Echtzeit basierend auf Drainageablesungen an, eliminiert manuelles Mischen und reduziert Verschwendung. Dies ist der Standard in modernen hydroponischen und aeroponischen Setups.',
     },
 }

@@ -40,6 +40,7 @@ const testSetup = {
     potSize: 11,
     potType: 'Fabric' as const,
     medium: 'Soil' as const,
+    dynamicLighting: false,
 }
 
 const tunedSimulationSettings = {
@@ -221,7 +222,11 @@ describe('plantSimulationService', () => {
 
             const start = Date.now()
             vi.setSystemTime(start + daysMs(10))
-            const baseline = plantSimulationService.calculateStateForTimeDelta(plant, daysMs(10), tunedSimulationSettings).updatedPlant
+            const baseline = plantSimulationService.calculateStateForTimeDelta(
+                plant,
+                daysMs(10),
+                tunedSimulationSettings,
+            ).updatedPlant
             const tuned = plantSimulationService.calculateStateForTimeDelta(plant, daysMs(10), {
                 ...tunedSimulationSettings,
                 lightExtinctionCoefficient: 1.1,
@@ -276,8 +281,8 @@ describe('plantSimulationService', () => {
             // VPD ≈ 1.06 kPa — solidly inside vegetative window (0.8–1.2 kPa)
             plant.environment.internalTemperature = 20
             plant.environment.internalHumidity = 70
-            plant.medium.ph = 6.2   // ideal for vegetative
-            plant.medium.ec = 1.0   // within 0.8–1.5
+            plant.medium.ph = 6.2 // ideal for vegetative
+            plant.medium.ec = 1.0 // within 0.8–1.5
             plant.medium.moisture = 70
             plant.medium.substrateWater = 1500
             plant.nutrientPool = { nitrogen: 50, phosphorus: 50, potassium: 50 }
@@ -325,11 +330,17 @@ describe('plantSimulationService', () => {
             const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
             const halfDayMs = daysMs(0.5)
 
-            const first = plantSimulationService.calculateStateForTimeDelta(plant, halfDayMs).updatedPlant
+            const first = plantSimulationService.calculateStateForTimeDelta(
+                plant,
+                halfDayMs,
+            ).updatedPlant
             expect(first.age).toBe(0)
             expect(first.simulationClock.accumulatedDayMs).toBe(halfDayMs)
 
-            const second = plantSimulationService.calculateStateForTimeDelta(first, halfDayMs).updatedPlant
+            const second = plantSimulationService.calculateStateForTimeDelta(
+                first,
+                halfDayMs,
+            ).updatedPlant
             expect(second.age).toBe(1)
             expect(second.simulationClock.accumulatedDayMs).toBe(0)
         })
@@ -362,10 +373,16 @@ describe('plantSimulationService', () => {
 
             let currentPlant = plantSimulationService.ensurePostHarvestData(plant)
             for (let day = 0; day < 8; day += 1) {
-                currentPlant = plantSimulationService.advancePostHarvestState(currentPlant, 'dry', tunedSimulationSettings).updatedPlant
+                currentPlant = plantSimulationService.advancePostHarvestState(
+                    currentPlant,
+                    'dry',
+                    tunedSimulationSettings,
+                ).updatedPlant
             }
 
-            expect([PlantStage.Drying, PlantStage.Curing, PlantStage.Finished]).toContain(currentPlant.stage)
+            expect([PlantStage.Drying, PlantStage.Curing, PlantStage.Finished]).toContain(
+                currentPlant.stage,
+            )
             expect(currentPlant.harvestData?.chlorophyllPercent).toBeLessThan(100)
             expect(currentPlant.harvestData?.finalQuality).toBeGreaterThan(0)
         })
@@ -389,7 +406,11 @@ describe('plantSimulationService', () => {
             }
 
             const baseline = plantSimulationService.clonePlant(plant)
-            const result = plantSimulationService.advancePostHarvestState(plant, 'burp', tunedSimulationSettings)
+            const result = plantSimulationService.advancePostHarvestState(
+                plant,
+                'burp',
+                tunedSimulationSettings,
+            )
 
             expect(result.newJournalEntries).toHaveLength(0)
             expect(result.updatedPlant.stage).toBe(PlantStage.Drying)
@@ -417,7 +438,11 @@ describe('plantSimulationService', () => {
                 terpeneProfile: {},
             }
 
-            const result = plantSimulationService.advancePostHarvestState(plant, 'cure', tunedSimulationSettings)
+            const result = plantSimulationService.advancePostHarvestState(
+                plant,
+                'cure',
+                tunedSimulationSettings,
+            )
 
             expect(result.updatedPlant.harvestData?.currentCureDay).toBe(21)
             expect(result.updatedPlant.harvestData?.moldRiskPercent).toBeGreaterThan(10)
@@ -434,7 +459,10 @@ describe('plantSimulationService', () => {
             plant.biomass = { total: 1.5, stem: 0.6, leaves: 0.7, flowers: 0 }
             plant.leafAreaIndex = 0.55
 
-            const diagnostics = plantSimulationService.getSimulationDiagnostics(plant, tunedSimulationSettings)
+            const diagnostics = plantSimulationService.getSimulationDiagnostics(
+                plant,
+                tunedSimulationSettings,
+            )
             expect(diagnostics.profile.name).toBe('expert')
             expect(diagnostics.dominantFactors.length).toBeGreaterThan(0)
             expect(diagnostics.growth.lightAbsorption).toBeGreaterThan(0)

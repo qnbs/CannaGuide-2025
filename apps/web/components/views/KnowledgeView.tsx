@@ -17,6 +17,7 @@ const GuideView = lazy(() => import('./knowledge/GuideView'))
 const ArchiveView = lazy(() => import('./knowledge/ArchiveView'))
 const BreedingView = lazy(() => import('./knowledge/BreedingView'))
 const SandboxView = lazy(() => import('./knowledge/SandboxView'))
+const GrowTechView = lazy(() => import('./knowledge/GrowTechView'))
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation()
@@ -44,6 +45,9 @@ export const KnowledgeView: React.FC = () => {
             [KnowledgeViewTab.Sandbox]: (
                 <PhosphorIcons.Flask className="w-16 h-16 mx-auto text-rose-400" />
             ),
+            [KnowledgeViewTab.GrowTech]: (
+                <PhosphorIcons.Lightning className="w-16 h-16 mx-auto text-yellow-400" />
+            ),
         }),
         [],
     )
@@ -55,6 +59,7 @@ export const KnowledgeView: React.FC = () => {
             [KnowledgeViewTab.Archive]: t('knowledgeView.tabs.archive'),
             [KnowledgeViewTab.Breeding]: t('knowledgeView.tabs.breeding'),
             [KnowledgeViewTab.Sandbox]: t('knowledgeView.tabs.sandbox'),
+            [KnowledgeViewTab.GrowTech]: t('knowledgeView.tabs.growTech'),
         }),
         [t],
     )
@@ -89,6 +94,8 @@ export const KnowledgeView: React.FC = () => {
                 return <BreedingView />
             case KnowledgeViewTab.Sandbox:
                 return <SandboxView />
+            case KnowledgeViewTab.GrowTech:
+                return <GrowTechView />
             default:
                 return <MentorView />
         }

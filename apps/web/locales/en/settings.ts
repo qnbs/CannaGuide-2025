@@ -404,6 +404,20 @@ export const settingsView = {
         altitudeM: 'Grow Altitude',
         altitudeMDesc:
             'Applies barometric VPD correction based on the elevation of your grow room above sea level.',
+        growTech2026: '2026 Grow Technologies',
+        dynamicLighting: 'Dynamic Lighting',
+        dynamicLightingDesc:
+            'Enable spectrum-adaptive lighting that automatically adjusts LED output (blue for veg, red for flower) based on the current growth phase and VPD.',
+        enableAeroponics: 'Aeroponics Mode',
+        enableAeroponicsDesc:
+            'Activates aeroponic-specific simulation parameters: faster nutrient uptake, reduced water usage model, and mist-cycle timing.',
+        co2Enrichment: 'CO2 Enrichment Simulation',
+        co2EnrichmentDesc:
+            'Enables CO2 enrichment effects in the simulation engine. Set target ppm for yield calculations.',
+        co2TargetPpm: 'CO2 Target (ppm)',
+        smartFertigationAlerts: 'Smart Fertigation Alerts',
+        smartFertigationAlertsDesc:
+            'Receive automated alerts when pH or EC drifts outside optimal ranges based on real-time sensor data.',
     },
     notifications: {
         title: 'Notifications',
@@ -635,9 +649,11 @@ export const settingsView = {
             title: 'Acknowledgements & Links',
             phosphor: 'Icons provided by Phosphor Icons.',
             seedfinder: 'Strain and seedbank data from SeedFinder.eu.',
-            strainProviders: 'Strain enrichment via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, and Kushy.',
+            strainProviders:
+                'Strain enrichment via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, and Kushy.',
             corsProxies: 'CORS proxy relay by allorigins.win and corsproxy.io.',
-            transformersJs: 'On-device NLP and embeddings via Transformers.js (Xenova/Hugging Face).',
+            transformersJs:
+                'On-device NLP and embeddings via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Local LLM inference via WebLLM (MLC AI).',
             onnx: 'ML runtime by ONNX Runtime Web and TensorFlow.js.',
             radixUi: 'Accessible UI primitives by Radix UI.',

@@ -16,7 +16,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Frontend:** React 19 + TypeScript (strict mode, zero `any`)
 - **State:** Redux Toolkit + RTK Query (memoized selectors, listener middleware)
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
-- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web — 11 services, 8 ML models, 3-layer fallback (WebLLM → Transformers.js → Heuristics)
+- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 15 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
@@ -50,10 +50,10 @@ apps/
     components/          # React components: common/, icons/, navigation/, ui/, views/
     stores/              # Redux: slices/, selectors/, middleware, store config
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
-    hooks/               # Custom React hooks (14+)
+    hooks/               # Custom React hooks (17)
     data/                # Static data: 700+ strains, FAQ, lexicon, guides
     locales/             # i18n: en/, de/, es/, fr/, nl/ (13 namespaces each)
-    workers/             # Web Workers: VPD sim, genealogy, scenarios
+    workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
     utils/               # Shared utilities
     types/               # Zod schemas for AI response validation
     lib/                 # Utility library (cn(), VPD calculations)
@@ -115,7 +115,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiPromptHandlers.ts` — Prompt formatting for all AI features
     - `localAiWebLlmService.ts` — WebLLM lifecycle, model loading, progress tracking
 
-8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, and pagehide teardown. All 6 workers (VPD simulation, genealogy, scenario, inference, image generation, ML) use this bus. See `docs/worker-bus.md`.
+8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, and pagehide teardown. All 7 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene) use this bus. See `docs/worker-bus.md`.
 
 9. **Seedbank API:** `seedbankService.ts` fetches from SeedFinder.eu via CORS proxy cascade (allorigins -> corsproxy.io). 5-min in-memory TTL cache. `isLocalOnlyMode()` guard. Deterministic mock fallback when API unavailable or `VITE_SEEDFINDER_API_KEY` not set.
 
@@ -295,7 +295,7 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)                |
 | `apps/web/services/seedbankService.ts`                 | SeedFinder.eu API + CORS proxy cascade + mock fallback        |
 | `apps/web/services/imageGenerationService.ts`          | SD-Turbo text-to-image (WebGPU, worker-offloaded)             |
-| `apps/web/services/workerBus.ts`                       | Promise-based worker communication bus (6 workers)            |
+| `apps/web/services/workerBus.ts`                       | Promise-based worker communication bus (7 workers)            |
 | `apps/web/simulation.worker.ts`                        | VPD simulation Web Worker                                     |
 | `apps/web/utils/random.ts`                             | `secureRandom()` -- Web Crypto replacement for Math.random    |
 | `apps/web/constants.ts`                                | App-wide constants                                            |

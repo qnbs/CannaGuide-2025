@@ -4,7 +4,7 @@
 
 ## Overview
 
-`workerBus.ts` is the centralized, promise-based Web Worker communication dispatcher for CannaGuide 2025. It manages all 6 application workers through a single singleton instance, providing type-safe request/response messaging with automatic timeout, backpressure, retry, and telemetry.
+`workerBus.ts` is the centralized, promise-based Web Worker communication dispatcher for CannaGuide 2025. It manages all 7 application workers through a single singleton instance, providing type-safe request/response messaging with automatic timeout, backpressure, retry, and telemetry.
 
 **Location:** `apps/web/services/workerBus.ts`
 **Types:** `apps/web/types/workerBus.types.ts`
@@ -19,8 +19,8 @@ Main Thread                              Worker Threads
                     |                     [Scenarios]
                     |-- messageId tag     [Inference (ML)]
                     |-- timeout guard     [Image Generation]
-                    |-- backpressure      [VPD Chart]
-                    |-- retry logic
+                    |-- backpressure      [Strain Hydration]
+                    |-- retry logic       [Terpene Analysis]
                     v
               [Pending Map]
               messageId -> {resolve, reject, timer}

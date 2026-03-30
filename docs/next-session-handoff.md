@@ -2,7 +2,52 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-30, Session 7) -- Multi-Source Strain Data, Biome Removal, Documentation Overhaul
+## Latest Session (2026-03-30, Session 8) -- Technical Debt Reduction, WorkerBus Audit, Nullish Coalescing
+
+**Status: v1.2.0-alpha. Comprehensive code quality sweep: 50+ || to ?? fixes, 8 React hooks dep warnings fixed, 44 any suppressions in three.d.ts, zombie worker prevention via pagehide dispose, fetchWithCorsProxy security guard, TS 6 attempted + rolled back. WorkerBus fully documented. 928 tests across 95 files. 0 ESLint warnings.**
+
+### What Was Done (Session 8)
+
+1. **CansativaService test fix** -- Mock isolation refactored with wrapper function pattern for reliable isLocalOnlyMode mocking
+2. **TypeScript 6 attempted + rolled back** -- @typescript-eslint/eslint-plugin requires TS <6.0.0, ecosystem not ready
+3. **fetchWithCorsProxy security fix** -- Added isLocalOnlyMode() guard to all outbound fetch paths
+4. **ESLint warning cleanup** -- Fixed 8 react-hooks/exhaustive-deps across 6 components, eslint-disable for three.d.ts ambient types, **/dist/** ignore for monorepo
+5. **Nullish coalescing standardization** -- 50+ || to ?? across 20 files per coding standard
+6. **WorkerBus zombie worker fix** -- workerBus.dispose() on pagehide event prevents memory leaks
+7. **WorkerBus documentation** -- Full docs/worker-bus.md with architecture, API, Mermaid diagram, roadmap
+
+### What To Do Next (Session 9 Priorities)
+
+**P0 -- Immediate:**
+
+- SonarCloud review of workerBus.ts + all 6 .worker.ts files (security hotspots + code smells)
+- WorkerBus unit test coverage >95% (backpressure queue, retry edge cases, 20+ concurrent calls)
+- Transferable Objects for large payloads (ML tensors, image buffers) -- avoid structured clone overhead
+
+**P1 -- Short-term (v1.2.0 stable):**
+
+- AbortController + Priority Queue for dispatch (high priority for VPD alerts)
+- Dedicated workerTelemetry.ts export (Redux DevTools / Lighthouse integration)
+- Generic WorkerMessage<T, R> types for all 6 workers (zero-runtime type checks)
+- Lighthouse CI assertion: TTI < 2s with 6 active workers
+
+**P2 -- Mid-term (v1.3, Q2 2026):**
+
+- WorkerBus Event Emitter for real-time IoT sensor streaming (ESP32 BLE/MQTT)
+- Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
+- Cross-worker communication (inference -> VPD without main-thread hop)
+- Eco-Mode: Bus detects low-power mode, auto-throttles retry/backpressure
+- Per-worker-type rate limiting (inference max 3 req/s)
+- Performance benchmarks (Worker vs. Main-Thread) in docs
+- Telemetry dashboard in UI ("AI Health" panel)
+
+**P3 -- Long-term (v2.0+):**
+
+- Extract @cannaguide/worker-bus as open-source package
+- WebGPU worker + advanced ONNX Runtime support
+- AR/VR extension (Three.js + WorkerBus for real-time 3D plant rendering)
+
+### Previous Session (2026-03-30, Session 7) -- Multi-Source Strain Data, Biome Removal, Documentation Overhaul
 
 **Status: v1.2.0-alpha. Multi-source strain data integration shipped (9 providers, terpenes, cannabinoids, chemovar, flavonoids). Biome completely removed. Full documentation audit + acknowledgments added. 912 tests across 94 files. All docs synced.**
 

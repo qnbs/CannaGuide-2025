@@ -13,6 +13,7 @@ import { ttsService } from './services/ttsService'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { indexedDBStorage } from './stores/indexedDBStorage'
 import { REDUX_STATE_KEY, SLICE_SCHEMA_VERSIONS } from './constants'
+import { workerBus } from './services/workerBus'
 import { dbService } from './services/dbService'
 import { growReminderService } from './services/growReminderService'
 import { BootstrapConsentGate } from './components/common/BootstrapConsentGate'
@@ -256,6 +257,7 @@ const mountHydratedApp = async () => {
         window.addEventListener('pagehide', () => {
             clearTimeout(saveTimeout)
             void saveState()
+            workerBus.dispose()
         })
 
         // 5. Now that the store is hydrated and the app is rendered, initialize services

@@ -69,6 +69,9 @@ const DEFAULT_MAX_CONCURRENT = 8
 const DEFAULT_MAX_QUEUE_SIZE = 64
 const DEFAULT_RETRY_DELAY_MS = 500
 
+// Non-retryable error markers (avoid brittle string matching)
+const NON_RETRYABLE = ['No worker registered', 'disposed', 'unregistered', 'Queue full'] as const
+
 // ---------------------------------------------------------------------------
 // Telemetry tracking (per worker)
 // ---------------------------------------------------------------------------
@@ -436,12 +439,8 @@ class WorkerBusImpl {
                 return await this.dispatchOnce<TResponse>(workerName, type, payload, timeoutMs)
             } catch (err) {
                 lastError = err instanceof Error ? err : new Error(String(err))
-                // Do not retry if worker is missing or bus disposed
-                if (
-                    lastError.message.includes('No worker registered') ||
-                    lastError.message.includes('disposed') ||
-                    lastError.message.includes('unregistered')
-                ) {
+                // Do not retry if worker is missing, bus disposed, or queue full
+                if (NON_RETRYABLE.some((marker) => lastError?.message.includes(marker))) {
                     throw lastError
                 }
                 if (attempt < retries) {

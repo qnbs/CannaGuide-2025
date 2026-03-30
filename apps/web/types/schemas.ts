@@ -9,7 +9,8 @@ export const GrowSetupSchema = z.object({
   hasCirculationFan: z.boolean().optional(),
   potSize: z.number().min(1),
   potType: z.enum(['Plastic', 'Fabric']).optional(),
-  medium: z.enum(['Soil', 'Coco', 'Hydro']),
+  medium: z.enum(['Soil', 'Coco', 'Hydro', 'Aeroponics']),
+  dynamicLighting: z.boolean().optional(),
 });
 
 // Schemas for user actions (to be used in Ring 3)

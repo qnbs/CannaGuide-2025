@@ -367,6 +367,7 @@ export enum KnowledgeViewTab {
     Archive = 'archive',
     Breeding = 'breeding',
     Sandbox = 'sandbox',
+    GrowTech = 'growTech',
 }
 
 export enum StrainViewTab {
@@ -504,16 +505,27 @@ export interface GrowSetup {
     lightType: LightType
     lightWattage: number
     lightHours: number
+    dynamicLighting: boolean
     ventilation: VentilationPower
     hasCirculationFan: boolean
     potSize: number
     potType: PotType
-    medium: 'Soil' | 'Coco' | 'Hydro'
+    medium: 'Soil' | 'Coco' | 'Hydro' | 'Aeroponics'
 }
 
 export type LightType = 'LED' | 'HPS'
 export type VentilationPower = 'low' | 'medium' | 'high'
 export type PotType = 'Plastic' | 'Fabric'
+
+export type GrowTechCategory =
+    | 'dynamicLighting'
+    | 'sensorsIoT'
+    | 'aiAutomation'
+    | 'digitalTwin'
+    | 'hydroAero'
+    | 'tissueCulture'
+    | 'smartGrowBoxes'
+    | 'sustainability'
 
 export interface PlantEnvironment {
     internalTemperature: number

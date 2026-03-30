@@ -36,6 +36,7 @@ const testSetup = {
     potSize: 11,
     potType: 'Fabric' as const,
     medium: 'Soil' as const,
+    dynamicLighting: false,
 }
 
 const rootReducer = combineReducers({

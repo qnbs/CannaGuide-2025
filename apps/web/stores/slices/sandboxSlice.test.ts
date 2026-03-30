@@ -101,6 +101,7 @@ describe('sandboxSlice', () => {
                 potSize: 11,
                 potType: 'Fabric',
                 medium: 'Soil',
+                dynamicLighting: false,
             },
             'Scenario Plant',
         )

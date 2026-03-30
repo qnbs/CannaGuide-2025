@@ -399,6 +399,7 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 potSize: validation.data.potSize,
                 potType: validation.data.potType ?? 'Fabric',
                 medium: validation.data.medium,
+                dynamicLighting: validation.data.dynamicLighting ?? false,
             }
 
             const newPlant = plantSimulationService.createPlant(

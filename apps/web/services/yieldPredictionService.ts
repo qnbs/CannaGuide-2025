@@ -21,6 +21,7 @@ const mediumTypes: Record<Plant['mediumType'], number[]> = {
     Soil: [1, 0, 0],
     Coco: [0, 1, 0],
     Hydro: [0, 0, 1],
+    Aeroponics: [0, 0, 1],
 }
 
 const strainTypeOrder = ['Indica', 'Sativa', 'Hybrid', 'Ruderalis'] as const

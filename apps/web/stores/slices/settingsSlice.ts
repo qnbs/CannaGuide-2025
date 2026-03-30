@@ -136,6 +136,7 @@ export const defaultSettings: AppSettings = {
             lightType: 'LED',
             lightWattage: 150,
             lightHours: 18,
+            dynamicLighting: false,
             ventilation: 'medium',
             hasCirculationFan: true,
             potSize: 15,

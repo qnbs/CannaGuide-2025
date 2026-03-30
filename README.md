@@ -139,7 +139,7 @@ AI equipment configurator recommending optimal setups based on grow parameters. 
 
 ### Knowledge
 
-AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials.
+AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials. **Grow Tech 2026** hub covering dynamic LED lighting, sensor/IoT/VPD automation, AI digital twins, aeroponics, tissue culture, smart grow boxes, and sustainability/post-harvest innovations.
 
 ### Settings
 
@@ -552,7 +552,7 @@ KI-Ausrüstungskonfigurator mit optimalen Setup-Empfehlungen basierend auf Grow-
 
 ### Wissen
 
-KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials.
+KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials. **Grow Tech 2026** Hub mit dynamischer LED-Beleuchtung, Sensor/IoT/VPD-Automatisierung, KI-Digital-Twins, Aeroponik, Gewebekultur, Smart Grow Boxes und Nachhaltigkeit/Post-Harvest-Innovationen.
 
 ### Einstellungen
 

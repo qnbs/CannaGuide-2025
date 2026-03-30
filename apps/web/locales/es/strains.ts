@@ -46,6 +46,7 @@ export const strainsView = {
         breedingLab: 'Laboratorio de Cruce',
         exports: 'Exportaciones ({{count}})',
         tips: 'Consejos ({{count}})',
+        trends: 'Genetica 2026',
     },
     filters: {
         thcMax: 'THC',
@@ -436,5 +437,199 @@ export const strainsView = {
             regular: 'Regular',
             autoflowering: 'Autofloreciente',
         },
+    },
+    flavonoids: {
+        title: 'Flavonoid Profile',
+        estimated: 'Estimated',
+        estimatedHint: 'Based on cannabinoid and terpene signature',
+        labVerified: 'Lab-verified',
+        noData: 'No flavonoid data available.',
+        sectionDescription:
+            'Flavonoids are polyphenolic secondary metabolites that contribute to color, UV protection, and pharmacological activity.',
+        exclusive: 'Cannabis-Exclusive',
+        cannabisExclusive: 'Cannabis-Exclusive Flavonoids',
+        cannabisExclusiveDescription:
+            'Cannflavins A, B, and C are prenylated flavones found exclusively in Cannabis sativa.',
+        cannflavinNote:
+            'Cannflavin A inhibits PGE-2 production approximately 30x more potently than aspirin.',
+        subclassLegend: 'Flavonoid Subclasses',
+        subclass: {
+            cannflavin: 'Cannflavin',
+            flavone: 'Flavone',
+            flavonol: 'Flavonol',
+            flavanonol: 'Flavanonol',
+            flavanone: 'Flavanone',
+            catechin: 'Catechin',
+        },
+        detail: {
+            formula: 'Formula',
+            molarMass: 'Molar Mass',
+            typicalRange: 'Typical Range',
+            effects: 'Known Effects',
+            mechanisms: 'Mechanisms of Action',
+            alsoFoundIn: 'Also Found In',
+        },
+        effects: {
+            AntiInflammatory: 'Anti-Inflammatory',
+            PainRelief: 'Pain Relief',
+            Neuroprotective: 'Neuroprotective',
+            AntiAnxiety: 'Anti-Anxiety',
+            Relaxing: 'Relaxing',
+            Sedating: 'Sedating',
+        },
+        cannflavinA: 'Cannflavin A',
+        cannflavinB: 'Cannflavin B',
+        cannflavinC: 'Cannflavin C',
+        quercetin: 'Quercetin',
+        kaempferol: 'Kaempferol',
+        apigenin: 'Apigenin',
+        luteolin: 'Luteolin',
+        vitexin: 'Vitexin',
+        isovitexin: 'Isovitexin',
+        orientin: 'Orientin',
+        silymarin: 'Silymarin',
+        catechins: 'Catechins',
+    },
+    dataProvenance: {
+        title: 'Data Sources',
+        provider: 'Provider',
+        fetchedAt: 'Fetched',
+        labVerified: 'Lab-verified',
+        confidence: 'Confidence',
+        sourceUrl: 'Source',
+        multipleProviders: '{{count}} data sources',
+    },
+    labResults: {
+        title: 'Lab Test Results',
+        labName: 'Laboratory',
+        testDate: 'Test Date',
+        coaUrl: 'Certificate of Analysis',
+        batchId: 'Batch ID',
+        moisture: 'Moisture',
+        safetyPassed: 'Safety Test',
+        passed: 'Passed',
+        failed: 'Failed',
+        jurisdiction: 'Jurisdiction',
+        noResults: 'No lab results available.',
+    },
+    lineage: {
+        title: 'Lineage',
+        parents: 'Parent Strains',
+        children: 'Child Strains',
+        breeder: 'Breeder',
+        breederCountry: 'Country',
+        yearReleased: 'Year Released',
+        generation: 'Generation',
+        landraceOrigins: 'Landrace Origins',
+        isIBL: 'Inbred Line (IBL)',
+        noLineage: 'No lineage data available.',
+    },
+    medicalInfo: {
+        title: 'Medical / Regulatory',
+        euNovelFood: 'EU Novel Food Status',
+        euCatalogListed: 'EU Plant Variety Catalog',
+        pzn: 'PZN (Pharmazentralnummer)',
+        apothekenpflichtig: 'Pharmacy-only',
+        gmpCertified: 'GMP Certified',
+        irradiated: 'Irradiated',
+        cultivationCountry: 'Cultivation Country',
+        yes: 'Yes',
+        no: 'No',
+    },
+    dataQuality: {
+        title: 'Data Quality',
+        overall: 'Overall Score',
+        sourceCount: 'Sources',
+        hasLabData: 'Lab Data',
+        hasRealTerpeneData: 'Verified Terpene Data',
+        hasLineageData: 'Lineage Data',
+        hasFlavonoidData: 'Flavonoid Data',
+        lastCurated: 'Last Curated',
+        excellent: 'Excellent',
+        good: 'Good',
+        fair: 'Fair',
+        poor: 'Poor',
+    },
+    geneticTrends: {
+        badge2026: 'Genetics 2026',
+        title: 'Cannabis Genetic Trends 2026',
+        subtitle:
+            'Precision, complexity, functionality and sustainability -- the new standard in cannabis breeding.',
+        intro: 'The cannabis genetics industry is experiencing a renaissance in 2026. After years of pure THC chasing and candy-flavored crosses, breeders and consumers now demand terpene-rich, balanced, high-yielding and adaptable genetics -- from ultra-fast autoflowers to polyploid super-plants and landrace revivals. Over 1,200 new registered varieties in 2026 alone mark the shift toward precision breeding.',
+        examplesLabel: 'Key Examples',
+        relevanceLabel: 'Relevance 2026',
+        categories: {
+            terpeneDiversity: {
+                title: 'Terpene Diversity',
+                tagline: 'Complex, savory and gassy aromas replace candy profiles',
+                content:
+                    'The big shift in 2026: Away from sweet candy-gas profiles (Gelato/Zkittlez descendants) toward dark, deep, funky and multi-layered terpenes.',
+                examples:
+                    'Whitethorn Rose (Paradise Punch x Lemon OG), Lantz (Green Lantern x Ridgeline Runtz), Pave-Candy variants (Compound Genetics)',
+                relevance: 'High',
+            },
+            ultraPotency: {
+                title: 'Ultra-High Potency & Full-Spectrum',
+                tagline: '33-37% THC with terpene synergy and minor cannabinoids',
+                content:
+                    'THC values continue to explode with new records at 33-37%. But the focus shifts from pure THC to terpene synergy plus minor cannabinoids (CBG, CBN, THCV) for targeted effects.',
+                examples:
+                    'Hyper Za (35%, gassy-sweet, purple, frosty), Puff Pastry (33% sativa-dominant), Future #1 by Anesia Seeds (37%)',
+                relevance: 'High',
+            },
+            balancedHybrids: {
+                title: 'Balanced Hybrids',
+                tagline: 'Calm focus without sedation or jitters -- intentional consumption',
+                content:
+                    'Hybrids dominate in 2026 with balanced effects for everyday use, social situations, and intentional consumption.',
+                examples:
+                    'Durban Z (energy focus), Lemon Cherry Gelato (uplift + body melt), balanced 1:1 CBD:THC cultivars',
+                relevance: 'Very High',
+            },
+            autofloweringRevolution: {
+                title: 'Autoflowering Revolution',
+                tagline: 'Photoperiod quality in 75-90 days -- no longer a compromise',
+                content:
+                    'Modern autoflowers are no longer a compromise in 2026. Advanced backcrossing techniques make them more potent, higher yielding, and terpene-rich.',
+                examples: 'Royal Gorilla Auto, Blueberry x Big Bud Auto, Pluto Cut Auto',
+                relevance: 'Very High',
+            },
+            advancedBreeding: {
+                title: 'Advanced Breeding & Polyploidy',
+                tagline:
+                    'Triploid, tetraploid and hexaploid plants with up to 65% more cannabinoids',
+                content:
+                    'The absolute game-changer: Polyploid plants created via colchicine treatment or Tesoro Genetics deliver up to 65% more cannabinoids, higher biomass, and better resistance.',
+                examples:
+                    'Tesoro Triploids, F1 hybrid programs, marker-assisted breeding pipelines',
+                relevance: 'Game-Changer',
+            },
+            landraceRevival: {
+                title: 'Landrace Revival',
+                tagline: 'Authentic, functional genetics from original growing regions',
+                content:
+                    'A growing movement to preserve and revitalize original landrace genetics from regions like Afghanistan, Morocco, Colombia, Thailand, and South Africa.',
+                examples:
+                    'Afghan landrace x modern indica, Thai sativa revivals, Moroccan hash plant crosses, Colombian Gold preservation',
+                relevance: 'Medium-High',
+            },
+        },
+        table: {
+            trend: 'Trend',
+            description: 'Description',
+            examples: 'Examples',
+            relevance: 'Relevance 2026',
+        },
+        implications: {
+            title: 'What This Means for Growers',
+            homeGrow:
+                'Start with stable autoflowers or polyploid seeds for maximum yields with minimal effort.',
+            quality:
+                'Choose terpene-rich genetics for better flavor and effect -- quality beats quantity.',
+            cannaGuide:
+                'CannaGuide tracks these trends with 700+ strains, chemovar classification, terpene and cannabinoid profiles -- perfect for your next breeding plan.',
+        },
+        conclusion:
+            'Genetics in 2026 are more precise, functional and diverse -- away from hype, toward real plant perfection.',
     },
 }

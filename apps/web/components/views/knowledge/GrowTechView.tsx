@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import DOMPurify from 'dompurify'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import type { GrowTechCategory } from '@/types'
 
@@ -122,7 +123,9 @@ export const GrowTechView: React.FC = () => {
                                     <p
                                         className="text-sm text-slate-300 leading-relaxed"
                                         dangerouslySetInnerHTML={{
-                                            __html: t(`growTech.categories.${cat.id}.content`),
+                                            __html: DOMPurify.sanitize(
+                                                t(`growTech.categories.${cat.id}.content`),
+                                            ),
                                         }}
                                     />
                                     {/* Key Benefits */}
@@ -133,7 +136,9 @@ export const GrowTechView: React.FC = () => {
                                         <p
                                             className="text-xs text-slate-400 leading-relaxed"
                                             dangerouslySetInnerHTML={{
-                                                __html: t(`growTech.categories.${cat.id}.benefits`),
+                                                __html: DOMPurify.sanitize(
+                                                    t(`growTech.categories.${cat.id}.benefits`),
+                                                ),
                                             }}
                                         />
                                     </div>

@@ -157,7 +157,7 @@ export const PlantsView: React.FC = () => {
                 useUIStore.getState().startGrowInSlot(index)
             }
         },
-        [dispatch, newGrowFlow.status],
+        [newGrowFlow.status],
     )
 
     const renderSlotCard = (slot: (typeof slotsWithData)[number], slotIndex: number) => {

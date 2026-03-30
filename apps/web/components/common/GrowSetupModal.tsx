@@ -34,7 +34,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
             ...settings.defaults.growSetup,
             lightHours: 18,
         }),
-        [settings.defaults.growSetup, strain.floweringType],
+        [settings.defaults.growSetup],
     )
 
     const [setup, setSetup] = useState<GrowSetup>(initialSetup)

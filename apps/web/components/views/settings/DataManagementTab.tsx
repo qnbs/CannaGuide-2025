@@ -215,7 +215,7 @@ const DataManagementTab: React.FC = () => {
                 message: 'Data erasure failed. Please try again.',
             })
         }
-    }, [dispatch])
+    }, [])
 
     const handleExportAllUserData = useCallback(async () => {
         setIsExportingAll(true)
@@ -263,7 +263,7 @@ const DataManagementTab: React.FC = () => {
                 })
             }
         },
-        [dispatch, t],
+        [t],
     )
 
     const handleRunStorageCleanup = async () => {

@@ -13,6 +13,7 @@ export default [
     {
         ignores: [
             'dist/**',
+            '**/dist/**',
             'node_modules/**',
             'public/sw.js',
             'public/sw.mjs',

@@ -270,6 +270,10 @@ const mountHydratedApp = async () => {
         const { setAiMode } = await import('@/services/aiService')
         setAiMode(store.getState().settings.settings.aiMode ?? 'hybrid')
 
+        // Initialize MQTT IoT sensor bridge
+        const { mqttClientService } = await import('@/services/mqttClientService')
+        mqttClientService.init(store)
+
         // 6. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)
     } catch (error) {

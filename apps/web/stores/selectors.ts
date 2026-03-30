@@ -11,6 +11,9 @@ import {
     PlantProblem,
     Plant,
     TTSSettings,
+    JournalEntryType,
+    EnvironmentDetails,
+    JournalEntry,
     SandboxState,
     Language,
     Theme,
@@ -315,3 +318,63 @@ export const selectNutrientAutoAdjustRecommendation = createSelector(
     [selectNutrientPlanner],
     (np: NutrientPlannerState): string | null => np.autoAdjustRecommendation,
 )
+
+// --- Environment Analytics Selectors ---
+export interface EnvironmentLogEntry {
+    timestamp: number
+    temp?: number
+    humidity?: number
+    vpd?: number
+    ec?: number
+    ph?: number
+    lightPpfd?: number
+    waterVolumeMl?: number
+    source?: 'manual' | 'iot_sensor'
+}
+
+const envLogCache = new Map<string | null, (state: RootState) => EnvironmentLogEntry[]>()
+export const selectEnvironmentLogs = (
+    plantId: string | null,
+): ((state: RootState) => EnvironmentLogEntry[]) => {
+    let selector = envLogCache.get(plantId)
+    if (!selector) {
+        selector = createSelector(
+            [selectSimulation],
+            (sim: SimulationState): EnvironmentLogEntry[] => {
+                const plant = plantId ? sim.plants.entities[plantId] : null
+                if (!plant) return []
+                return plant.journal
+                    .filter(
+                        (
+                            entry: JournalEntry,
+                        ): entry is JournalEntry & { details: EnvironmentDetails } =>
+                            entry.type === JournalEntryType.Environment && entry.details != null,
+                    )
+                    .map((entry) => {
+                        const d = entry.details
+                        let vpd: number | undefined
+                        if (d.temp != null && d.humidity != null) {
+                            // Tetens formula for saturation vapor pressure
+                            const svp = 0.6108 * Math.exp((17.27 * d.temp) / (d.temp + 237.3))
+                            const avp = svp * (d.humidity / 100)
+                            vpd = svp - avp
+                        }
+                        return {
+                            timestamp: entry.createdAt,
+                            temp: d.temp,
+                            humidity: d.humidity,
+                            vpd,
+                            ec: d.ec,
+                            ph: d.ph,
+                            lightPpfd: d.lightPpfd,
+                            waterVolumeMl: d.waterVolumeMl,
+                            source: d.source,
+                        }
+                    })
+                    .sort((a, b) => a.timestamp - b.timestamp)
+            },
+        )
+        envLogCache.set(plantId, selector)
+    }
+    return selector
+}

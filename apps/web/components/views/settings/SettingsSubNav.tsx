@@ -17,6 +17,7 @@ const navItemIds = [
     'notifications',
     'defaults',
     'privacy',
+    'iot',
     'data',
     'about',
 ] as const
@@ -30,6 +31,7 @@ const navIcons: Record<string, React.ReactNode> = {
     notifications: <PhosphorIcons.Bell />,
     defaults: <PhosphorIcons.ListChecks />,
     privacy: <PhosphorIcons.ShieldCheck />,
+    iot: <PhosphorIcons.WifiHigh />,
     data: <PhosphorIcons.Archive />,
     about: <PhosphorIcons.Info />,
 }

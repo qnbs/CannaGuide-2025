@@ -228,6 +228,39 @@ export const strainsView = {
         },
         cannabinoidProfile: 'Cannabinoid-Profil',
         aromaProfile: 'Aroma- & Terpenprofil',
+        viewGenealogy: 'Im Stammbaum anzeigen',
+        viewGenealogyTooltip: 'Erkunde die genetische Abstammung dieser Sorte im Stammbaum',
+        cannabinoidDetails: 'Erweitertes Cannabinoid-Profil',
+        cannabinoidNote:
+            'Angezeigte Werte sind typische Bereiche. Der tatsaechliche Gehalt variiert je nach Phaenotyp, Anbaubedingungen und Erntezeitpunkt.',
+        terpenePct: '{{percent}}%',
+        terpeneDetails: 'Detaillierte Terpen-Analyse',
+        terpeneBoilingPoint: '{{temp}} C',
+        terpeneClass: 'Klasse',
+        terpeneMechanisms: 'Wirkmechanismen',
+        terpeneAlsoFoundIn: 'Auch in',
+        terpeneRange: 'Bereich: {{min}}-{{max}}%',
+        flavonoidSection: 'Flavonoid-Profil',
+        chemovarSection: 'Chemovar-Klassifikation',
+        entourageSection: 'Entourage-Effekt & Synergien',
+        entourageDescription:
+            'Der Entourage-Effekt beschreibt, wie Cannabinoide, Terpene und Flavonoide synergistisch zusammenwirken, um das Gesamterlebnis zu modulieren.',
+        overallCharacter: 'Gesamtcharakter',
+        noSynergies: 'Keine nennenswerten Synergien mit den aktuellen Profildaten erkannt.',
+        notesPlaceholder: 'Schreibe hier deine Notizen zu dieser Sorte...',
+        notesTemplates: 'Notiz-Vorlagen',
+        notesTemplateGrow: 'Anbau-Log',
+        notesTemplateReview: 'Sorten-Review',
+        notesTemplateMedical: 'Medizinische Notizen',
+        notesTemplateBreeding: 'Zucht-Notizen',
+        notesGrowTemplate:
+            '## Anbau-Log -- {{name}}\\nDatum: {{date}}\\nMedium: Erde / Kokos / Hydro\\nDuenger: \\nLicht: \\nTag: \\n\\n### Vegetationsphase\\nHoehe: \\nNotizen: \\n\\n### Bluetephase\\nWoche: \\nTrichom-Status: \\nNotizen: \\n\\n### Ernte\\nNassgewicht: \\nTrockengewicht: \\nAushärte-Notizen: ',
+        notesReviewTemplate:
+            '## Sorten-Review -- {{name}}\\nDatum: {{date}}\\nQuelle: \\n\\n### Aussehen\\nFarbe: \\nDichte: \\nTrichome: \\n\\n### Aroma\\nTrocken: \\nZerkleinert: \\nBeim Rauchen: \\n\\n### Wirkung\\nEinsatz: \\nHoehepunkt: \\nDauer: \\nIntensitaet (1-10): \\n\\n### Gesamt\\nBewertung (1-10): \\nWuerde erneut anbauen: Ja / Nein\\nNotizen: ',
+        notesMedicalTemplate:
+            '## Medizinische Notizen -- {{name}}\\nDatum: {{date}}\\nDarreichungsform: Bluete / Extrakt / Edible\\n\\n### Behandelte Symptome\\n- \\n\\n### Dosierung\\nMenge: \\nHaeufigkeit: \\nVerabreichung: Inhalation / Oral / Topisch\\n\\n### Wirkung\\nEinsatz (min): \\nDauer (Std): \\nLinderungsgrad (1-10): \\nNebenwirkungen: \\n\\n### Notizen\\n',
+        notesBreedingTemplate:
+            '## Zucht-Notizen -- {{name}}\\nDatum: {{date}}\\n\\n### Kreuzungspartner\\nSorte: \\nZiel: \\n\\n### Phaenotyp-Beobachtungen\\nWuchsmuster: \\nBluetezeit: \\nHarzproduktion: \\nAroma: \\n\\n### Selektionskriterien\\nKeeper-Phaeno: Ja / Nein\\nZu erhaltende Merkmale: \\nZu eliminierende Merkmale: \\n\\n### Saatgutproduktion\\nSamenanzahl: \\nKeimrate: \\n',
         chemovar: {
             title: 'Chemovar-Analyse',
             type: 'Chemovar-Typ',
@@ -281,6 +314,9 @@ export const strainsView = {
         },
         notes: {
             saveSuccess: 'Notiz gespeichert!',
+            charCount: '{{count}} Zeichen',
+            lastEdited: 'Zuletzt bearbeitet',
+            insertTemplate: 'Vorlage einfuegen',
         },
     },
     exportsManager: {
@@ -374,7 +410,9 @@ export const strainsView = {
                 macro: 'Makro',
                 cyberpunk: 'Cyberpunk',
             },
-            imageCriteria: 'Generierungs-Kriterien',
+            imageCriteria: 'Bildgenerierungs-Kriterien',
+            imageCriteriaNote:
+                'Diese Einstellungen steuern das KI-generierte Sortenvisualisierungsbild (nicht die Textipps oben).',
             imageFocus: 'Fokus',
             imageFocusOptions: {
                 buds: 'Blüten',
@@ -590,7 +628,8 @@ export const strainsView = {
         origin: 'Herkunft',
         available: 'Verfuegbar',
         unavailable: 'Derzeit nicht verfuegbar',
-        noApiKey: 'Cansativa API-Schluessel nicht konfiguriert. Setze VITE_CANSATIVA_API_KEY in deiner Umgebung.',
+        noApiKey:
+            'Cansativa API-Schluessel nicht konfiguriert. Setze VITE_CANSATIVA_API_KEY in deiner Umgebung.',
         fetchError: 'Cansativa-Daten konnten nicht geladen werden. Bitte spaeter erneut versuchen.',
     },
 }

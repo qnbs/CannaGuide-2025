@@ -2,27 +2,29 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-30, Session 8) -- Technical Debt Reduction, WorkerBus Audit, Nullish Coalescing
+## Latest Session (2026-03-30, Session 9) -- Strain Detail View Enhancement
 
-**Status: v1.2.0-alpha. Comprehensive code quality sweep: 50+ || to ?? fixes, 8 React hooks dep warnings fixed, 44 any suppressions in three.d.ts, zombie worker prevention via pagehide dispose, fetchWithCorsProxy security guard, TS 6 attempted + rolled back. WorkerBus fully documented. 928 tests across 95 files. 0 ESLint warnings.**
+**Status: v1.2.0-alpha. Comprehensive strain detail view enhancement: genealogy navigation, extended cannabinoid/terpene/flavonoid/chemovar/entourage profiles, notes templates, image generation criteria clarity. 5 files changed, 30+ i18n keys added (EN+DE). TS 0 errors.**
 
-### What Was Done (Session 8)
+### What Was Done (Session 9)
 
-1. **CansativaService test fix** -- Mock isolation refactored with wrapper function pattern for reliable isLocalOnlyMode mocking
-2. **TypeScript 6 attempted + rolled back** -- @typescript-eslint/eslint-plugin requires TS <6.0.0, ecosystem not ready
-3. **fetchWithCorsProxy security fix** -- Added isLocalOnlyMode() guard to all outbound fetch paths
-4. **ESLint warning cleanup** -- Fixed 8 react-hooks/exhaustive-deps across 6 components, eslint-disable for three.d.ts ambient types, **/dist/** ignore for monorepo
-5. **Nullish coalescing standardization** -- 50+ || to ?? across 20 files per coding standard
-6. **WorkerBus zombie worker fix** -- workerBus.dispose() on pagehide event prevents memory leaks
-7. **WorkerBus documentation** -- Full docs/worker-bus.md with architecture, API, Mermaid diagram, roadmap
+1. **Genealogy navigation from strain detail** -- New tree icon button navigates to Genealogy tab with strain pre-selected via Redux
+2. **Extended cannabinoid profile** -- Shows CBG, CBN, THCV, CBC, CBDV, THCA, CBDA, CBGA, Delta-8-THC with psychoactivity labels
+3. **Detailed terpene analysis** -- Visual bars with %, class, boiling point, and "also found in" from TERPENE_DATABASE
+4. **Flavonoid profile display** -- Grid of available flavonoids when data exists
+5. **Chemovar classification** -- Type I-V, THC:CBD ratio, total cannabinoid/terpene %, predicted effects
+6. **Entourage effect & synergies** -- Overall character + detailed synergy descriptions from analyzeEntourage()
+7. **Notes section with templates** -- 4 structured templates (Grow Log, Review, Medical, Breeding), char counter, monospace
+8. **Image generation criteria clarity** -- Renamed to "Image Generation Criteria", added note, Camera icon
 
-### What To Do Next (Session 9 Priorities)
+### What To Do Next (Session 10 Priorities)
 
 **P0 -- Immediate:**
 
 - SonarCloud review of workerBus.ts + all 6 .worker.ts files (security hotspots + code smells)
 - WorkerBus unit test coverage >95% (backpressure queue, retry edge cases, 20+ concurrent calls)
-- Transferable Objects for large payloads (ML tensors, image buffers) -- avoid structured clone overhead
+- Consider adding lab results tab and lineage tab to StrainDetailView (data structures already exist)
+- E2E tests for new strain detail features (genealogy navigation, template insertion)
 
 **P1 -- Short-term (v1.2.0 stable):**
 
@@ -36,16 +38,20 @@
 - WorkerBus Event Emitter for real-time IoT sensor streaming (ESP32 BLE/MQTT)
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
 - Cross-worker communication (inference -> VPD without main-thread hop)
-- Eco-Mode: Bus detects low-power mode, auto-throttles retry/backpressure
-- Per-worker-type rate limiting (inference max 3 req/s)
-- Performance benchmarks (Worker vs. Main-Thread) in docs
-- Telemetry dashboard in UI ("AI Health" panel)
 
-**P3 -- Long-term (v2.0+):**
+### Previous Session (2026-03-30, Session 8) -- Technical Debt Reduction, WorkerBus Audit, Nullish Coalescing
 
-- Extract @cannaguide/worker-bus as open-source package
-- WebGPU worker + advanced ONNX Runtime support
-- AR/VR extension (Three.js + WorkerBus for real-time 3D plant rendering)
+**Status: v1.2.0-alpha. Comprehensive code quality sweep: 50+ || to ?? fixes, 8 React hooks dep warnings fixed, 44 any suppressions in three.d.ts, zombie worker prevention via pagehide dispose, fetchWithCorsProxy security guard, TS 6 attempted + rolled back. WorkerBus fully documented. 928 tests across 95 files. 0 ESLint warnings.**
+
+### What Was Done (Session 8)
+
+1. **CansativaService test fix** -- Mock isolation refactored with wrapper function pattern for reliable isLocalOnlyMode mocking
+2. **TypeScript 6 attempted + rolled back** -- @typescript-eslint/eslint-plugin requires TS <6.0.0, ecosystem not ready
+3. **fetchWithCorsProxy security fix** -- Added isLocalOnlyMode() guard to all outbound fetch paths
+4. **ESLint warning cleanup** -- Fixed 8 react-hooks/exhaustive-deps across 6 components, eslint-disable for three.d.ts ambient types, **/dist/** ignore for monorepo
+5. **Nullish coalescing standardization** -- 50+ || to ?? across 20 files per coding standard
+6. **WorkerBus zombie worker fix** -- workerBus.dispose() on pagehide event prevents memory leaks
+7. **WorkerBus documentation** -- Full docs/worker-bus.md with architecture, API, Mermaid diagram, roadmap
 
 ### Previous Session (2026-03-30, Session 7) -- Multi-Source Strain Data, Biome Removal, Documentation Overhaul
 

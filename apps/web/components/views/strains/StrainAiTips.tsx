@@ -108,9 +108,13 @@ const ImageGenerationControls: React.FC<{
     return (
         <details className="group bg-slate-800/30 rounded-lg p-3 mt-4">
             <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center gap-2">
-                <PhosphorIcons.MagicWand /> {t('strainsView.tips.form.imageCriteria')}
+                <PhosphorIcons.Camera className="w-4 h-4" />{' '}
+                {t('strainsView.tips.form.imageCriteria')}
                 <PhosphorIcons.ChevronDown className="w-4 h-4 transition-transform duration-200 group-open:rotate-180 ml-auto" />
             </summary>
+            <p className="text-xs text-slate-400 mt-2 mb-2">
+                {t('strainsView.tips.form.imageCriteriaNote')}
+            </p>
             <div className="pt-4 space-y-4">
                 <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-1">

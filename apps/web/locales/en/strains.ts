@@ -223,6 +223,39 @@ export const strainsView = {
         },
         cannabinoidProfile: 'Cannabinoid Profile',
         aromaProfile: 'Aroma & Terpene Profile',
+        viewGenealogy: 'View in Genealogy Tree',
+        viewGenealogyTooltip: 'Explore the genetic lineage of this strain in the genealogy tree',
+        cannabinoidDetails: 'Extended Cannabinoid Profile',
+        cannabinoidNote:
+            'Values shown are typical ranges. Actual content varies by phenotype, growing conditions, and harvest timing.',
+        terpenePct: '{{percent}}%',
+        terpeneDetails: 'Detailed Terpene Analysis',
+        terpeneBoilingPoint: '{{temp}} C',
+        terpeneClass: 'Class',
+        terpeneMechanisms: 'Mechanisms',
+        terpeneAlsoFoundIn: 'Also in',
+        terpeneRange: 'Range: {{min}}-{{max}}%',
+        flavonoidSection: 'Flavonoid Profile',
+        chemovarSection: 'Chemovar Classification',
+        entourageSection: 'Entourage Effect & Synergies',
+        entourageDescription:
+            'The entourage effect describes how cannabinoids, terpenes, and flavonoids work together synergistically to modulate the overall experience.',
+        overallCharacter: 'Overall Character',
+        noSynergies: 'No notable synergies detected with the current profile data.',
+        notesPlaceholder: 'Write your notes about this strain here...',
+        notesTemplates: 'Note Templates',
+        notesTemplateGrow: 'Grow Log',
+        notesTemplateReview: 'Strain Review',
+        notesTemplateMedical: 'Medical Notes',
+        notesTemplateBreeding: 'Breeding Notes',
+        notesGrowTemplate:
+            '## Grow Log -- {{name}}\\nDate: {{date}}\\nMedium: Soil / Coco / Hydro\\nNutrients: \\nLight: \\nDay: \\n\\n### Vegetation Phase\\nHeight: \\nNotes: \\n\\n### Flowering Phase\\nWeek: \\nTrichome Status: \\nNotes: \\n\\n### Harvest\\nWet Weight: \\nDry Weight: \\nCure Notes: ',
+        notesReviewTemplate:
+            '## Strain Review -- {{name}}\\nDate: {{date}}\\nSource: \\n\\n### Appearance\\nColor: \\nDensity: \\nTrichomes: \\n\\n### Aroma\\nDry: \\nGround: \\nBurning: \\n\\n### Effect\\nOnset: \\nPeak: \\nDuration: \\nIntensity (1-10): \\n\\n### Overall\\nRating (1-10): \\nWould grow again: Yes / No\\nNotes: ',
+        notesMedicalTemplate:
+            '## Medical Notes -- {{name}}\\nDate: {{date}}\\nDosage Form: Flower / Extract / Edible\\n\\n### Symptoms Treated\\n- \\n\\n### Dosage\\nAmount: \\nFrequency: \\nROA: Inhalation / Oral / Topical\\n\\n### Effects\\nOnset (min): \\nDuration (hrs): \\nRelief Level (1-10): \\nSide Effects: \\n\\n### Notes\\n',
+        notesBreedingTemplate:
+            '## Breeding Notes -- {{name}}\\nDate: {{date}}\\n\\n### Cross Partner\\nStrain: \\nGoal: \\n\\n### Phenotype Observations\\nGrowth Pattern: \\nFlowering Time: \\nResin Production: \\nAroma: \\n\\n### Selection Criteria\\nKeeper Pheno: Yes / No\\nTraits to Preserve: \\nTraits to Eliminate: \\n\\n### Seed Production\\nSeed Count: \\nGermination Rate: \\n',
         chemovar: {
             title: 'Chemovar Analysis',
             type: 'Chemovar Type',
@@ -276,6 +309,9 @@ export const strainsView = {
         },
         notes: {
             saveSuccess: 'Note saved!',
+            charCount: '{{count}} characters',
+            lastEdited: 'Last edited',
+            insertTemplate: 'Insert template',
         },
     },
     exportsManager: {
@@ -368,7 +404,9 @@ export const strainsView = {
                 macro: 'Macro',
                 cyberpunk: 'Cyberpunk',
             },
-            imageCriteria: 'Generation Criteria',
+            imageCriteria: 'Image Generation Criteria',
+            imageCriteriaNote:
+                'These settings control the AI-generated strain visualization image (not the text tips above).',
             imageFocus: 'Focus',
             imageFocusOptions: {
                 buds: 'Buds',
@@ -583,7 +621,8 @@ export const strainsView = {
         origin: 'Origin',
         available: 'Available',
         unavailable: 'Currently unavailable',
-        noApiKey: 'Cansativa API key not configured. Set VITE_CANSATIVA_API_KEY in your environment.',
+        noApiKey:
+            'Cansativa API key not configured. Set VITE_CANSATIVA_API_KEY in your environment.',
         fetchError: 'Could not load Cansativa data. Please try again later.',
     },
 }

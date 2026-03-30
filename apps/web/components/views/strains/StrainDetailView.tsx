@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Strain, StrainType } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/common/Button'
@@ -16,6 +16,23 @@ import { AttributeDisplay } from '@/components/common/AttributeDisplay'
 import { Speakable } from '@/components/common/Speakable'
 import { StrainImageGalleryTab } from './StrainImageGalleryTab'
 import { AvailabilityTab } from './AvailabilityTab'
+import {
+    buildChemovarProfile,
+    analyzeEntourage,
+    generateTerpeneProfile,
+    generateCannabinoidProfile,
+} from '@/services/terpeneService'
+import { TERPENE_DATABASE, CANNABINOID_DATABASE } from '@/data/terpeneDatabase'
+import type { TerpeneName, CannabinoidName } from '@/types'
+
+/** Simple deterministic hash from string */
+const strHash = (s: string): number => {
+    let h = 0
+    for (let i = 0; i < s.length; i++) {
+        h = ((h << 5) - h + s.charCodeAt(i)) | 0
+    }
+    return Math.abs(h)
+}
 
 // --- Sub-components for better structure ---
 
@@ -78,6 +95,28 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     })
     const genetics = t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics ?? '' })
 
+    // Build extended cannabinoid profile
+    const cannabinoidProfile = useMemo(
+        () =>
+            strain.cannabinoidProfile ??
+            generateCannabinoidProfile(
+                strain.thc,
+                strain.cbd,
+                strain.cbg,
+                strain.thcv,
+                strHash(strain.id),
+            ),
+        [strain],
+    )
+
+    // Minor cannabinoids beyond THC/CBD
+    const minorCannabinoids = useMemo(() => {
+        const entries = Object.entries(cannabinoidProfile) as [CannabinoidName, number][]
+        return entries
+            .filter(([name, val]) => name !== 'THC' && name !== 'CBD' && val > 0)
+            .sort((a, b) => b[1] - a[1])
+    }, [cannabinoidProfile])
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InfoSection title={t('common.description')}>
@@ -96,6 +135,32 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                         label={t('strainsView.table.cbd')}
                         value={strain.cbdRange || safeCbd}
                     />
+                    {minorCannabinoids.map(([name, val]) => {
+                        const ref = CANNABINOID_DATABASE[name]
+                        return (
+                            <AttributeDisplay
+                                key={name}
+                                label={ref?.abbreviation ?? name}
+                                value={
+                                    <span className="flex items-center gap-2">
+                                        <span>{val.toFixed(2)}%</span>
+                                        {ref && (
+                                            <span className="text-xs text-slate-500">
+                                                {ref.psychoactive
+                                                    ? '(psychoactive)'
+                                                    : '(non-psychoactive)'}
+                                            </span>
+                                        )}
+                                    </span>
+                                }
+                            />
+                        )
+                    })}
+                    {minorCannabinoids.length > 0 && (
+                        <p className="text-xs text-slate-500 mt-2 italic">
+                            {t('strainsView.strainDetail.cannabinoidNote')}
+                        </p>
+                    )}
                 </div>
             </InfoSection>
         </div>
@@ -158,33 +223,256 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const terpenes = Array.isArray(strain.dominantTerpenes)
         ? strain.dominantTerpenes.filter((item): item is string => typeof item === 'string')
         : []
+
+    // Compute full profiles
+    const terpeneProfile = useMemo(
+        () =>
+            strain.terpeneProfile ??
+            generateTerpeneProfile(strain.dominantTerpenes ?? [], strHash(strain.id), strain.type),
+        [strain],
+    )
+    const cannabinoidProfile = useMemo(
+        () =>
+            strain.cannabinoidProfile ??
+            generateCannabinoidProfile(
+                strain.thc,
+                strain.cbd,
+                strain.cbg,
+                strain.thcv,
+                strHash(strain.id),
+            ),
+        [strain],
+    )
+    const chemovar = useMemo(() => buildChemovarProfile(strain), [strain])
+    const entourage = useMemo(
+        () => analyzeEntourage(terpeneProfile, cannabinoidProfile),
+        [terpeneProfile, cannabinoidProfile],
+    )
+    const flavonoidProfile = strain.flavonoidProfile
+
+    // Sort terpenes by percentage for display
+    const sortedTerpenes = useMemo(
+        () =>
+            (Object.entries(terpeneProfile) as [TerpeneName, number][])
+                .filter(([, v]) => v >= 0.01)
+                .sort((a, b) => b[1] - a[1]),
+        [terpeneProfile],
+    )
+
+    const chemovarLabel =
+        {
+            'Type I': t('strainsView.strainDetail.chemovar.typeI'),
+            'Type II': t('strainsView.strainDetail.chemovar.typeII'),
+            'Type III': t('strainsView.strainDetail.chemovar.typeIII'),
+            'Type IV': t('strainsView.strainDetail.chemovar.typeIV'),
+            'Type V': t('strainsView.strainDetail.chemovar.typeV'),
+        }[chemovar.chemovarType] ?? chemovar.chemovarType
+
+    const profileLabel =
+        {
+            sedating: t('strainsView.strainDetail.chemovar.sedating'),
+            balanced: t('strainsView.strainDetail.chemovar.balanced'),
+            energizing: t('strainsView.strainDetail.chemovar.energizing'),
+        }[entourage.overallProfile] ?? entourage.overallProfile
+
     return (
-        <InfoSection title={t('strainsView.strainDetail.aromaProfile')}>
-            <div className="space-y-4">
-                <AttributeDisplay
-                    label={t('strainsView.strainModal.aromas')}
-                    value={
-                        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                            {aromas.map((a) => (
-                                <Tag key={a}>{t(`common.aromas.${a}`, { defaultValue: a })}</Tag>
+        <div className="space-y-6">
+            {/* Aromas & Dominant Terpenes */}
+            <InfoSection title={t('strainsView.strainDetail.aromaProfile')}>
+                <div className="space-y-4">
+                    <AttributeDisplay
+                        label={t('strainsView.strainModal.aromas')}
+                        value={
+                            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                                {aromas.map((a) => (
+                                    <Tag key={a}>
+                                        {t(`common.aromas.${a}`, { defaultValue: a })}
+                                    </Tag>
+                                ))}
+                            </div>
+                        }
+                    />
+                    <AttributeDisplay
+                        label={t('strainsView.strainModal.dominantTerpenes')}
+                        value={
+                            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                                {terpenes.map((terp) => (
+                                    <Tag key={terp}>
+                                        {t(`common.terpenes.${terp}`, { defaultValue: terp })}
+                                    </Tag>
+                                ))}
+                            </div>
+                        }
+                    />
+                </div>
+            </InfoSection>
+
+            {/* Detailed Terpene Analysis */}
+            {sortedTerpenes.length > 0 && (
+                <InfoSection title={t('strainsView.strainDetail.terpeneDetails')}>
+                    <div className="space-y-3">
+                        {sortedTerpenes.map(([name, percent]) => {
+                            const ref = TERPENE_DATABASE[name]
+                            const barWidth = Math.min((percent / 2.0) * 100, 100)
+                            return (
+                                <div key={name} className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium text-slate-200">
+                                            {t(`common.terpenes.${name}`, { defaultValue: name })}
+                                        </span>
+                                        <span className="text-sm text-primary-300 font-mono">
+                                            {percent.toFixed(2)}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-slate-700 rounded-full h-2">
+                                        <div
+                                            className="bg-primary-500 rounded-full h-2 transition-all"
+                                            style={{ width: `${barWidth}%` }}
+                                        />
+                                    </div>
+                                    {ref && (
+                                        <div className="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1 pl-1">
+                                            <span>
+                                                {t('strainsView.strainDetail.terpeneClass')}:{' '}
+                                                {ref.class}
+                                            </span>
+                                            <span>
+                                                {t(
+                                                    'strainsView.strainDetail.chemovar.boilingPoint',
+                                                )}
+                                                :{' '}
+                                                {t('strainsView.strainDetail.terpeneBoilingPoint', {
+                                                    temp: ref.boilingPointC,
+                                                })}
+                                            </span>
+                                            {ref.alsoFoundIn.length > 0 && (
+                                                <span>
+                                                    {t(
+                                                        'strainsView.strainDetail.terpeneAlsoFoundIn',
+                                                    )}
+                                                    : {ref.alsoFoundIn.slice(0, 3).join(', ')}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </InfoSection>
+            )}
+
+            {/* Flavonoid Profile */}
+            {flavonoidProfile && Object.keys(flavonoidProfile).length > 0 && (
+                <InfoSection title={t('strainsView.strainDetail.flavonoidSection')}>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {(Object.entries(flavonoidProfile) as [string, number][])
+                            .filter(([, v]) => v > 0)
+                            .sort((a, b) => b[1] - a[1])
+                            .map(([name, val]) => (
+                                <div key={name} className="bg-slate-800 rounded-lg p-3 text-center">
+                                    <div className="text-sm font-medium text-amber-300">
+                                        {t(
+                                            `strainsView.flavonoids.${name.replace(/\s+/g, '').charAt(0).toLowerCase() + name.replace(/\s+/g, '').slice(1)}`,
+                                            {
+                                                defaultValue: name,
+                                            },
+                                        )}
+                                    </div>
+                                    <div className="text-lg font-mono text-slate-200 mt-1">
+                                        {val.toFixed(3)}%
+                                    </div>
+                                </div>
+                            ))}
+                    </div>
+                </InfoSection>
+            )}
+
+            {/* Chemovar Classification */}
+            <InfoSection title={t('strainsView.strainDetail.chemovarSection')}>
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-slate-800 rounded-lg p-3">
+                        <div className="text-xs text-slate-400">
+                            {t('strainsView.strainDetail.chemovar.type')}
+                        </div>
+                        <div className="text-sm font-semibold text-primary-300 mt-1">
+                            {chemovarLabel}
+                        </div>
+                    </div>
+                    <div className="bg-slate-800 rounded-lg p-3">
+                        <div className="text-xs text-slate-400">
+                            {t('strainsView.strainDetail.chemovar.thcCbdRatio')}
+                        </div>
+                        <div className="text-sm font-semibold text-slate-200 mt-1">
+                            {Number.isFinite(chemovar.thcCbdRatio)
+                                ? `${chemovar.thcCbdRatio.toFixed(1)}:1`
+                                : 'N/A'}
+                        </div>
+                    </div>
+                    <div className="bg-slate-800 rounded-lg p-3">
+                        <div className="text-xs text-slate-400">
+                            {t('strainsView.strainDetail.chemovar.totalCannabinoids')}
+                        </div>
+                        <div className="text-sm font-semibold text-slate-200 mt-1">
+                            {chemovar.totalCannabinoidPercent.toFixed(1)}%
+                        </div>
+                    </div>
+                    <div className="bg-slate-800 rounded-lg p-3">
+                        <div className="text-xs text-slate-400">
+                            {t('strainsView.strainDetail.chemovar.totalTerpenes')}
+                        </div>
+                        <div className="text-sm font-semibold text-slate-200 mt-1">
+                            {chemovar.totalTerpenePercent.toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+                {chemovar.predictedEffects.length > 0 && (
+                    <div className="mt-3">
+                        <div className="text-xs text-slate-400 mb-2">
+                            {t('strainsView.strainDetail.chemovar.predictedEffects')}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {chemovar.predictedEffects.map((effect) => (
+                                <Tag key={effect}>{effect}</Tag>
                             ))}
                         </div>
-                    }
-                />
-                <AttributeDisplay
-                    label={t('strainsView.strainModal.dominantTerpenes')}
-                    value={
-                        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                            {terpenes.map((terp) => (
-                                <Tag key={terp}>
-                                    {t(`common.terpenes.${terp}`, { defaultValue: terp })}
-                                </Tag>
+                    </div>
+                )}
+            </InfoSection>
+
+            {/* Entourage Effect & Synergies */}
+            <InfoSection title={t('strainsView.strainDetail.entourageSection')}>
+                <p className="text-xs text-slate-400 mb-3">
+                    {t('strainsView.strainDetail.entourageDescription')}
+                </p>
+                <div className="space-y-3">
+                    <AttributeDisplay
+                        label={t('strainsView.strainDetail.overallCharacter')}
+                        value={<Tag>{profileLabel}</Tag>}
+                    />
+                    {entourage.synergies.length > 0 ? (
+                        <div className="space-y-2">
+                            <div className="text-xs font-semibold text-slate-300">
+                                {t('strainsView.strainDetail.chemovar.synergies')}
+                            </div>
+                            {entourage.synergies.map((synergy, idx) => (
+                                <div
+                                    key={`synergy-${idx}`}
+                                    className="bg-slate-800 rounded-lg p-3 text-sm text-slate-300 flex items-start gap-2"
+                                >
+                                    <PhosphorIcons.Sparkle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                                    <span>{synergy}</span>
+                                </div>
                             ))}
                         </div>
-                    }
-                />
-            </div>
-        </InfoSection>
+                    ) : (
+                        <p className="text-sm text-slate-500 italic">
+                            {t('strainsView.strainDetail.noSynergies')}
+                        </p>
+                    )}
+                </div>
+            </InfoSection>
+        </div>
     )
 }
 
@@ -192,6 +480,7 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const noteHistory = useAppSelector((state) => state.notes.strainNotes[strain.id])
+    const [showTemplates, setShowTemplates] = useState(false)
 
     const canUndo = noteHistory && noteHistory.past.length > 0
     const canRedo = noteHistory && noteHistory.future.length > 0
@@ -201,10 +490,47 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
         dispatch(updateNote({ strainId: strain.id, note: e.target.value }))
     }
 
+    const today = new Date().toISOString().slice(0, 10)
+    const templateData = { name: strain.name, date: today }
+
+    const templates = [
+        {
+            id: 'grow',
+            label: t('strainsView.strainDetail.notesTemplateGrow'),
+            icon: <PhosphorIcons.Leafy className="w-4 h-4" />,
+            content: t('strainsView.strainDetail.notesGrowTemplate', templateData),
+        },
+        {
+            id: 'review',
+            label: t('strainsView.strainDetail.notesTemplateReview'),
+            icon: <PhosphorIcons.Star className="w-4 h-4" />,
+            content: t('strainsView.strainDetail.notesReviewTemplate', templateData),
+        },
+        {
+            id: 'medical',
+            label: t('strainsView.strainDetail.notesTemplateMedical'),
+            icon: <PhosphorIcons.Heart className="w-4 h-4" />,
+            content: t('strainsView.strainDetail.notesMedicalTemplate', templateData),
+        },
+        {
+            id: 'breeding',
+            label: t('strainsView.strainDetail.notesTemplateBreeding'),
+            icon: <PhosphorIcons.Flask className="w-4 h-4" />,
+            content: t('strainsView.strainDetail.notesBreedingTemplate', templateData),
+        },
+    ]
+
+    const insertTemplate = (content: string) => {
+        const resolvedContent = content.replace(/\\n/g, '\n')
+        const newContent = noteContent ? `${noteContent}\n\n${resolvedContent}` : resolvedContent
+        dispatch(updateNote({ strainId: strain.id, note: newContent }))
+        setShowTemplates(false)
+    }
+
     return (
         <InfoSection title={t('strainsView.strainModal.notes')}>
             <div className="bg-slate-800 rounded-md border border-slate-700">
-                <div className="flex items-center p-2 border-b border-slate-700 gap-2">
+                <div className="flex items-center p-2 border-b border-slate-700 gap-2 flex-wrap">
                     <Button
                         variant="secondary"
                         onClick={() => dispatch(undoNoteChange({ strainId: strain.id }))}
@@ -223,13 +549,48 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                     >
                         <PhosphorIcons.ArrowClockwise className="w-4 h-4" />
                     </Button>
+                    <div className="ml-auto relative">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setShowTemplates(!showTemplates)}
+                            className="min-h-11"
+                        >
+                            <PhosphorIcons.BookOpenText className="w-4 h-4 mr-1.5" />
+                            {t('strainsView.strainDetail.notesTemplates')}
+                            <PhosphorIcons.ChevronDown
+                                className={`w-3 h-3 ml-1 transition-transform ${showTemplates ? 'rotate-180' : ''}`}
+                            />
+                        </Button>
+                        {showTemplates && (
+                            <div className="absolute right-0 top-full mt-1 z-20 bg-slate-700 border border-slate-600 rounded-lg shadow-xl min-w-[200px]">
+                                {templates.map((tmpl) => (
+                                    <button
+                                        key={tmpl.id}
+                                        onClick={() => insertTemplate(tmpl.content)}
+                                        className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-600 first:rounded-t-lg last:rounded-b-lg transition-colors text-left"
+                                    >
+                                        {tmpl.icon}
+                                        {tmpl.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <textarea
                     value={noteContent}
                     onChange={handleNoteChange}
-                    className="w-full bg-transparent resize-none min-h-[180px] p-3 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 rounded-b-md"
-                    placeholder={t('strainsView.addStrainModal.aromasPlaceholder')}
+                    className="w-full bg-transparent resize-none min-h-[250px] p-3 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 rounded-b-md font-mono text-sm"
+                    placeholder={t('strainsView.strainDetail.notesPlaceholder')}
                 />
+                <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-700 text-xs text-slate-500">
+                    <span>
+                        {t('strainsView.strainDetail.notes.charCount', {
+                            count: noteContent.length,
+                        })}
+                    </span>
+                </div>
             </div>
         </InfoSection>
     )
@@ -238,9 +599,14 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 interface StrainDetailViewProps {
     strain: Strain
     onBack: () => void
+    onNavigateToGenealogy?: (strainId: string) => void
 }
 
-export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBack }) => {
+export const StrainDetailView: React.FC<StrainDetailViewProps> = ({
+    strain,
+    onBack,
+    onNavigateToGenealogy,
+}) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const favoriteIds = useAppSelector(selectFavoriteIds) ?? new Set<string>()
@@ -355,6 +721,17 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                                 className="w-5 h-5"
                             />
                         </Button>
+                        {onNavigateToGenealogy && (
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                                onClick={() => onNavigateToGenealogy(strain.id)}
+                                aria-label={t('strainsView.strainDetail.viewGenealogy')}
+                                title={t('strainsView.strainDetail.viewGenealogyTooltip')}
+                            >
+                                <PhosphorIcons.TreeStructure className="w-5 h-5" />
+                            </Button>
+                        )}
                     </div>
                 </div>
                 <div className="flex items-center gap-4 mt-4">

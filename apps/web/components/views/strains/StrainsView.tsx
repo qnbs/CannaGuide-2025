@@ -36,6 +36,7 @@ import {
     deleteExport,
     exportAndSaveStrains,
 } from '@/stores/slices/savedItemsSlice'
+import { setSelectedGenealogyStrain } from '@/stores/slices/genealogySlice'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { FilterDrawer } from './FilterDrawer'
@@ -514,6 +515,11 @@ export const StrainsView: React.FC = () => {
                 <StrainDetailView
                     strain={selectedStrainForDetail}
                     onBack={() => strainsViewState.setSelectedStrainId(null)}
+                    onNavigateToGenealogy={(strainId) => {
+                        strainsViewState.setSelectedStrainId(null)
+                        dispatch(setSelectedGenealogyStrain(strainId))
+                        strainsViewState.setStrainsViewTab(StrainViewTab.Genealogy)
+                    }}
                 />
             </div>
         )

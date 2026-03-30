@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 13 namespaces)
-- **Testing:** Vitest (912+ tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (928+ tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -115,7 +115,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiPromptHandlers.ts` — Prompt formatting for all AI features
     - `localAiWebLlmService.ts` — WebLLM lifecycle, model loading, progress tracking
 
-8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication. All 6 workers (VPD simulation, genealogy, scenario, inference, image generation, ML) use this bus.
+8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, and pagehide teardown. All 6 workers (VPD simulation, genealogy, scenario, inference, image generation, ML) use this bus. See `docs/worker-bus.md`.
 
 9. **Seedbank API:** `seedbankService.ts` fetches from SeedFinder.eu via CORS proxy cascade (allorigins -> corsproxy.io). 5-min in-memory TTL cache. `isLocalOnlyMode()` guard. Deterministic mock fallback when API unavailable or `VITE_SEEDFINDER_API_KEY` not set.
 
@@ -196,7 +196,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 912+ tests across 94 files, 0 failures
+- Baseline: 928+ tests across 95 files, 0 failures
 
 ### Git
 

@@ -11,7 +11,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     ({ className, value, onClear, ...props }, ref) => {
         const { t } = useTranslation()
         const hasClearButton = Boolean(value && onClear)
-        const inputClassName = `pl-10 ${hasClearButton ? 'pr-10' : ''} ${className || ''}`
+        const inputClassName = `pl-10 ${hasClearButton ? 'pr-10' : ''} ${className ?? ''}`
         const computedAriaLabel =
             props['aria-label'] ??
             (typeof props.placeholder === 'string' ? props.placeholder : undefined) ??

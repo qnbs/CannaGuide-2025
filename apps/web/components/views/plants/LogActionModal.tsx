@@ -85,9 +85,9 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                 }
             } catch {
                 getUISnapshot().addNotification({
-                        message: t('plantsView.aiDiagnostics.saveImageError'),
-                        type: 'error',
-                    })
+                    message: t('plantsView.aiDiagnostics.saveImageError'),
+                    type: 'error',
+                })
             }
         } else {
             entryType = typeMapping[type] || JournalEntryType.Observation
@@ -190,9 +190,9 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                             console.error('Image resizing failed:', err)
                             setImage(dataUrl) // fallback to original
                             getUISnapshot().addNotification({
-                                    message: t('common.imageResizeFailed'),
-                                    type: 'error',
-                                })
+                                message: t('common.imageResizeFailed'),
+                                type: 'error',
+                            })
                         }
                         setIsCameraOpen(false)
                     }}
@@ -203,7 +203,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     {type === 'training' && (
                         <Select
                             label={t('plantsView.actionModals.logTraining')}
-                            value={(details as Partial<TrainingDetails>)?.type || ''}
+                            value={(details as Partial<TrainingDetails>)?.type ?? ''}
                             onChange={(e: { target: { value: string | number } }) =>
                                 setDetails({ type: e.target.value as TrainingType })
                             }
@@ -218,7 +218,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     {type === 'amendment' && (
                         <Select
                             label={t('plantsView.actionModals.logAmendment')}
-                            value={(details as Partial<AmendmentDetails>)?.type || ''}
+                            value={(details as Partial<AmendmentDetails>)?.type ?? ''}
                             onChange={(e: { target: { value: string | number } }) =>
                                 setDetails({ type: e.target.value as AmendmentType })
                             }
@@ -234,7 +234,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         <>
                             <Select
                                 label={t('plantsView.actionModals.photo.category')}
-                                value={(details as PhotoDetailsType)?.photoCategory || ''}
+                                value={(details as PhotoDetailsType)?.photoCategory ?? ''}
                                 onChange={(e: { target: { value: string | number } }) =>
                                     setDetails({
                                         photoCategory: e.target.value as PhotoCategory,
@@ -324,9 +324,9 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                                     console.error('Image resizing failed:', err)
                                                     setImage(dataUrl)
                                                     getUISnapshot().addNotification({
-                                                            message: t('common.imageResizeFailed'),
-                                                            type: 'error',
-                                                        })
+                                                        message: t('common.imageResizeFailed'),
+                                                        type: 'error',
+                                                    })
                                                 }
                                             }
                                         }}

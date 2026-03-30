@@ -29,27 +29,27 @@ const getSafeStrainType = (value: unknown): StrainType => {
 }
 
 const strainToFormValues = (strain: Partial<Strain>) => ({
-    name: strain.name || '',
-    type: strain.type || 'Hybrid',
-    typeDetails: strain.typeDetails || '',
-    genetics: strain.genetics || '',
+    name: strain.name ?? '',
+    type: strain.type ?? 'Hybrid',
+    typeDetails: strain.typeDetails ?? '',
+    genetics: strain.genetics ?? '',
     isAutoflower: strain.floweringType === 'Autoflower',
-    thc: strain.thc || 20,
-    cbd: strain.cbd || 1,
-    thcRange: strain.thcRange || '',
-    cbdRange: strain.cbdRange || '',
-    floweringTime: strain.floweringTime || 9,
-    floweringTimeRange: strain.floweringTimeRange || '',
-    description: strain.description || '',
-    aromasString: (strain.aromas || []).join(', '),
-    terpenesString: (strain.dominantTerpenes || []).join(', '),
+    thc: strain.thc ?? 20,
+    cbd: strain.cbd ?? 1,
+    thcRange: strain.thcRange ?? '',
+    cbdRange: strain.cbdRange ?? '',
+    floweringTime: strain.floweringTime ?? 9,
+    floweringTimeRange: strain.floweringTimeRange ?? '',
+    description: strain.description ?? '',
+    aromasString: (strain.aromas ?? []).join(', '),
+    terpenesString: (strain.dominantTerpenes ?? []).join(', '),
     difficulty: strain.agronomic?.difficulty ?? 'Medium',
     yield: strain.agronomic?.yield ?? 'Medium',
     height: strain.agronomic?.height ?? 'Medium',
-    yieldIndoor: strain.agronomic?.yieldDetails?.indoor || '',
-    yieldOutdoor: strain.agronomic?.yieldDetails?.outdoor || '',
-    heightIndoor: strain.agronomic?.heightDetails?.indoor || '',
-    heightOutdoor: strain.agronomic?.heightDetails?.outdoor || '',
+    yieldIndoor: strain.agronomic?.yieldDetails?.indoor ?? '',
+    yieldOutdoor: strain.agronomic?.yieldDetails?.outdoor ?? '',
+    heightIndoor: strain.agronomic?.heightDetails?.indoor ?? '',
+    heightOutdoor: strain.agronomic?.heightDetails?.outdoor ?? '',
 })
 
 const defaultStrainValues = strainToFormValues({
@@ -182,7 +182,10 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
 
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
-            getUISnapshot().addNotification({ message: Object.values(errors).join(' '), type: 'error' })
+            getUISnapshot().addNotification({
+                message: Object.values(errors).join(' '),
+                type: 'error',
+            })
         }
     }, [errors, dispatch])
 

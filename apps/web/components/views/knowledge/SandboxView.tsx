@@ -136,7 +136,7 @@ const SandboxView: React.FC = () => {
                         <div className="space-y-4">
                             <p>{t('knowledgeView.sandbox.modal.description')}</p>
                             <select
-                                value={selectedPlantId || ''}
+                                value={selectedPlantId ?? ''}
                                 onChange={(e) => setSelectedPlantId(e.target.value)}
                                 className="w-full bg-slate-800 border border-slate-700 rounded-md p-2"
                             >

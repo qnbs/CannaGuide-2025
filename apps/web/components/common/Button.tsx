@@ -43,7 +43,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
             ref={ref}
             className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
                 glow ? 'animate-pulse-glow' : ''
-            } ${className || ''}`}
+            } ${className ?? ''}`}
             {...props}
         >
             {children}

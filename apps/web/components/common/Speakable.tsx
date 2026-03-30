@@ -15,8 +15,8 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const currentlySpeakingId = useAppSelector(selectCurrentlySpeakingId)
-    const settings = useAppSelector(selectSettings);
-    const highlightEnabled = settings.tts.highlightSpeakingText;
+    const settings = useAppSelector(selectSettings)
+    const highlightEnabled = settings.tts.highlightSpeakingText
     const ref = useRef<HTMLDivElement>(null)
 
     const isSpeaking = currentlySpeakingId === elementId
@@ -24,7 +24,7 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
     const handleSpeak = (e: React.MouseEvent) => {
         e.stopPropagation()
         if (ref.current) {
-            const textToSpeak = ref.current.innerText || ''
+            const textToSpeak = ref.current.innerText ?? ''
             if (textToSpeak.trim()) {
                 dispatch(addToTtsQueue({ id: elementId, text: textToSpeak }))
             }
@@ -36,7 +36,7 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
             ref={ref}
             className={`speakable-container relative group ${
                 isSpeaking && highlightEnabled ? 'speakable-highlight' : ''
-            } ${className || ''}`}
+            } ${className ?? ''}`}
         >
             {children}
             <button

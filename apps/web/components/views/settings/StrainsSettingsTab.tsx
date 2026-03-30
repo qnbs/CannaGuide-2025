@@ -36,7 +36,7 @@ const StrainsSettingsTab: React.FC = () => {
         label: t(`settingsView.strains.sortDirections.${key}`),
     }))
 
-    const visibleColumns = strainsViewSettings.visibleColumns || []
+    const visibleColumns = strainsViewSettings.visibleColumns ?? []
 
     const handleColumnToggle = (column: string) => {
         const newColumns = visibleColumns.includes(column)

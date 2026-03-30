@@ -173,7 +173,7 @@ const summarizeJournalForPrompt = (journal: JournalEntry[], maxRecent = 10): str
     }
 
     const byType = journal.reduce<Record<string, number>>((acc, entry) => {
-        acc[entry.type] = (acc[entry.type] || 0) + 1
+        acc[entry.type] = (acc[entry.type] ?? 0) + 1
         return acc
     }, {})
 

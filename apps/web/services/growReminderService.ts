@@ -119,7 +119,7 @@ const isBatchCoolingDown = (
     snoozedMap: Record<string, number>,
     now: number,
 ): boolean => {
-    const lastNotified = snoozedMap[batchId] || 0
+    const lastNotified = snoozedMap[batchId] ?? 0
     return now - lastNotified < REMINDER_COOLDOWN_MS
 }
 
@@ -263,7 +263,7 @@ class GrowReminderService {
         const batches = new Map<string, GrowReminder[]>()
 
         for (const reminder of reminders) {
-            const existing = batches.get(reminder.plantId) || []
+            const existing = batches.get(reminder.plantId) ?? []
             existing.push(reminder)
             batches.set(reminder.plantId, existing)
         }

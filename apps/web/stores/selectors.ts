@@ -103,7 +103,7 @@ export const selectUserStrainIds = createSelector(
 )
 export const selectFavoriteIds = createSelector(
     [selectFavoritesState],
-    (favorites: FavoritesState): Set<string> => new Set(favorites?.favoriteIds || []),
+    (favorites: FavoritesState): Set<string> => new Set(favorites?.favoriteIds ?? []),
 )
 
 // --- Archives Selectors ---

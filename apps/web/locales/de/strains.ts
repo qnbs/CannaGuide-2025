@@ -46,6 +46,7 @@ export const strainsView = {
         breedingLab: 'Zucht-Labor',
         exports: 'Exporte ({{count}})',
         tips: 'Tipps ({{count}})',
+        trends: 'Genetik 2026',
     },
     filters: {
         thcMax: 'THC',
@@ -665,5 +666,88 @@ export const strainsView = {
         noApiKey:
             'Cansativa API-Schluessel nicht konfiguriert. Setze VITE_CANSATIVA_API_KEY in deiner Umgebung.',
         fetchError: 'Cansativa-Daten konnten nicht geladen werden. Bitte spaeter erneut versuchen.',
+    },
+    geneticTrends: {
+        badge2026: 'Genetik 2026',
+        title: 'Cannabis Genetik Trends 2026',
+        subtitle:
+            'Praezision, Komplexitaet, Funktionalitaet und Nachhaltigkeit -- der neue Standard in der Cannabis-Zuechtung.',
+        intro: 'Die Cannabis-Genetik erlebt 2026 eine Renaissance. Nach Jahren reiner THC-Jagd und Candy-Kreuzungen fordern Zuechter und Konsumenten terpen-reiche, ausgewogene, ertragsstarke und anpassungsfaehige Genetik -- von ultra-schnellen Autos ueber polyploide Super-Pflanzen bis hin zu Landrace-Revivals. Ueber 1.200 neue registrierte Varietaeten allein 2026 markieren den Wandel hin zu Praezisions-Zuechtung.',
+        examplesLabel: 'Wichtige Beispiele',
+        relevanceLabel: 'Relevanz 2026',
+        categories: {
+            terpeneDiversity: {
+                title: 'Terpen-Diversitaet',
+                tagline: 'Komplexe, herzhafte und gassige Aromen ersetzen Candy-Profile',
+                content:
+                    'Der grosse Shift 2026: Weg von suessen Candy-Gas-Profilen (Gelato/Zkittlez-Nachfahren) hin zu dunklen, tiefen, funkigen und vielschichtigen Terpenen. Purple Candy-Gas bleibt stark, aber reifer (dunkle Kirsche, Vanille-Waffel, Petrol). Gassy OGs und herzhafte Terps feiern ein Comeback mit Lemon-Pine-Fuel, Cheese-Revivals und erdigen/wuerzigen/herbalen Noten, dominiert von Beta-Caryophyllen und Humulen. Funktionale Terpene wie THCV ("Diaet-Weed") fuer Energie ohne Hunger gewinnen an Bedeutung.',
+                examples:
+                    'Whitethorn Rose (Paradise Punch x Lemon OG), Lantz (Green Lantern x Ridgeline Runtz), Pave-Candy-Varianten (Compound Genetics), Bubble Tea (Z-Terp)',
+                relevance: 'Hoch',
+            },
+            ultraPotency: {
+                title: 'Ultra-Hohe Potenz & Full-Spectrum',
+                tagline: '33-37% THC mit Terpen-Synergie und Minor-Cannabinoiden',
+                content:
+                    'THC-Werte explodieren weiter mit neuen Rekorden bei 33-37%. Aber der Fokus verschiebt sich von reinem THC zu Terpen-Synergie plus Minor-Cannabinoiden (CBG, CBN, THCV) fuer gezielte Effekte wie Schlaf, Schmerzlinderung, Fokus und Mikro-Dosierung. Hash-Dumper-Genetik (5%+ Hash-Ertrag) dominiert bei Zuechtern, die maximale Harzproduktion anstreben.',
+                examples:
+                    'Hyper Za (35%, gassig-suess, purple, frostig), Puff Pastry (33% sativa-dominant, Schoko-Zimt-Citrus), Future #1 von Anesia Seeds (37%)',
+                relevance: 'Hoch',
+            },
+            balancedHybrids: {
+                title: 'Ausgewogene Hybride',
+                tagline: 'Ruhiger Fokus ohne Sedierung oder Nervositaet -- bewusster Konsum',
+                content:
+                    'Hybride dominieren 2026 mit ausgewogenen Effekten fuer den Alltag, soziale Situationen und bewussten Konsum. Sativa-lastige Hybride werden "heller", Indica-lastige "tiefgruendiger". Konsumenten suchen Kultivare, die spezifische funktionale Effekte liefern, statt nur maximale Potenz.',
+                examples:
+                    'Durban Z (Energie-Fokus), Lemon Cherry Gelato (Uplift + Body-Melt), ausgewogene 1:1 CBD:THC Kultivare fuer therapeutische Nutzung',
+                relevance: 'Sehr Hoch',
+            },
+            autofloweringRevolution: {
+                title: 'Autoflowering Revolution',
+                tagline: 'Photoperiod-Qualitaet in 75-90 Tagen -- kein Kompromiss mehr',
+                content:
+                    'Moderne Autoflower sind 2026 kein Kompromiss mehr. Fortgeschrittene Backcrossing-Techniken machen sie potenter, ertragsreicher und terpen-reicher. Mit 75-90-Tage-Zyklen koennen Grower 2-3 Ernten pro Jahr erzielen. Sie sind anfaengerfreundlich, widerstandsfaehig und ideal fuer Home-Grower mit schnellen Turnarounds.',
+                examples:
+                    'Royal Gorilla Auto, Blueberry x Big Bud Auto, Pluto Cut Auto -- alle mit echter Photoperiod-Qualitaet',
+                relevance: 'Sehr Hoch',
+            },
+            advancedBreeding: {
+                title: 'Advanced Breeding & Polyploidie',
+                tagline:
+                    'Triploide, tetraploide und hexaploide Pflanzen mit bis zu 65% mehr Cannabinoiden',
+                content:
+                    'Der absolute Game-Changer: Polyploide Pflanzen (triploid, tetraploid, hexaploid), erstellt via Colchicin-Behandlung oder Tesoro Genetics, liefern bis zu 65% mehr Cannabinoide, hoehere Biomasse (+60% Hoehe, 2,7-facher Blueten-Ertrag) und bessere Resistenz. Triploide sind pollen-steril und verhindern Samen in Grow-Raeumen. Weitere Trends umfassen F1-Hybride, Marker-gestuetzte Selektion und genomisches Mapping fuer stabile, IP-sichere Genetik. Klimaresistente Landrace-Hybride (Afghanistan/Marokko x modern) entstehen.',
+                examples:
+                    'Tesoro Triploids, F1-Hybrid-Programme, Marker-gestuetzte Zucht-Pipelines, klimaangepasste Landrace-Kreuzungen',
+                relevance: 'Game-Changer',
+            },
+            landraceRevival: {
+                title: 'Landrace Revival',
+                tagline: 'Authentische, funktionale Genetik aus den Ursprungsregionen',
+                content:
+                    'Eine wachsende Bewegung zur Erhaltung und Revitalisierung urspruenglicher Landrace-Genetik aus Regionen wie Afghanistan, Marokko, Kolumbien, Thailand und Suedafrika. Diese alten Kultivare bieten einzigartige Terpen-Profile, natuerliche Schaedlingsresistenz und funktionale Effekte, die in modernen Hybriden selten zu finden sind. Zuechter kreuzen sie mit moderner Genetik, um klimaresistente, terpen-reiche Hybride zu schaffen.',
+                examples:
+                    'Afghan-Landrace x moderne Indica, Thai-Sativa-Revivals, Marokkanische Haschpflanzen-Kreuzungen, Colombian Gold Erhaltung',
+                relevance: 'Mittel-Hoch',
+            },
+        },
+        table: {
+            trend: 'Trend',
+            description: 'Beschreibung',
+            examples: 'Beispiele',
+            relevance: 'Relevanz 2026',
+        },
+        implications: {
+            title: 'Was das fuer Grower bedeutet',
+            homeGrow:
+                'Starte mit stabilen Autos oder polyploiden Seeds fuer maximale Ertraege bei minimalem Aufwand.',
+            quality:
+                'Waehle terpen-reiche Genetik fuer besseren Geschmack und Effekt -- Qualitaet schlaegt Quantitaet.',
+            cannaGuide:
+                'CannaGuide trackt diese Trends mit 700+ Sorten, Chemovar-Klassifikation, Terpen- und Cannabinoid-Profilen -- perfekt fuer deine naechste Zuchtplanung.',
+        },
+        conclusion:
+            'Genetik wird 2026 praeziser, funktionaler und vielfaeltiger -- weg vom Hype, hin zu echter Pflanzen-Perfektion. Komplexe Terps, ausgewogene Hybride, starke Autos und polyploide Linien bringen massive Gewinne bei Qualitaet, Ertrag und Konsistenz.',
     },
 }

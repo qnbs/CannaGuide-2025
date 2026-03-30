@@ -386,4 +386,37 @@ export const seedbanks = {
         summary:
             'Für maximale Sicherheit und Qualität wird empfohlen, entweder direkt bei einem angesehenen Züchter mit eigener Vertriebsstruktur zu kaufen oder einen großen, gut bewerteten Distributor zu wählen, der die Genetik des gewünschten Züchters führt.',
     },
+    geneticTrends2026: {
+        title: '2026 Genetik-Trends -- Worauf bei Saatgutbanken achten',
+        intro: 'Die Cannabis-Genetik-Landschaft hat sich 2026 dramatisch verschoben. Bei der Wahl einer Saatgutbank sollten diese Schluesselindikatoren eines zukunftsorientierten Anbieters beachtet werden.',
+        criteria: {
+            terpeneFocus: {
+                title: 'Terpen-orientierte Auswahl',
+                content:
+                    'Top-Saatgutbanken kuratieren jetzt fuer komplexe Terpen-Profile (herzhaft, gassig, erdig) statt nur THC-Zahlen. Achte auf Banken, die detaillierte Terpen-Daten und Chemovar-Klassifikationen bereitstellen.',
+            },
+            autoflowerPrograms: {
+                title: 'Next-Gen Autoflower-Programme',
+                content:
+                    'Fuehrende Zuechter bieten Autoflower-Linien an, die mit Photoperiod-Qualitaet konkurrieren. Saatgutbanken, die diese fuehren (Royal Gorilla Auto, Pluto Cut Auto), zeigen Bewusstsein fuer den 2026-Markt.',
+            },
+            polyploidAvailability: {
+                title: 'Polyploide und F1-Hybrid-Seeds',
+                content:
+                    'Die innovativsten Saatgutbanken fuehren triploide oder F1-Hybrid-Seeds von Zuechtern wie Tesoro Genetics. Diese repraesentieren die Spitze der Cannabis-Zuechtertechnologie.',
+            },
+            landracePreservation: {
+                title: 'Landrace- und Heritage-Genetik',
+                content:
+                    'Banken, die Landrace-Genetik aus den Ursprungsregionen bewahren und anbieten, zeigen Engagement fuer genetische Vielfalt und die langfristige Gesundheit des Cannabis-Genpools.',
+            },
+            balancedCultivars: {
+                title: 'Ausgewogene und funktionale Kultivare',
+                content:
+                    'Die besten 2026-Saatgutbanken bieten ausgewogene Hybride, 1:1 CBD:THC-Linien und High-THCV-Kultivare fuer bewussten Konsum -- nicht nur maximales THC.',
+            },
+        },
+        recommendation:
+            'Bei der Saatgutwahl 2026 sollte genetische Vielfalt, Terpen-Komplexitaet und bewaehrte Zuchtprogramme ueber reine THC-Zahlen priorisiert werden. Die CannaGuide-Sorten-Bibliothek trackt all diese Attribute fuer 700+ Kultivare.',
+    },
 }

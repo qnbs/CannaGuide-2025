@@ -7,6 +7,7 @@ export const knowledgeView = {
         archive: 'Mentor Archief',
         breeding: 'Kruisingslaboratorium',
         sandbox: 'Sandbox',
+        growTech: 'Grow Tech 2026',
     },
     hub: {
         selectPlant: 'Plant Selecteren',
@@ -214,6 +215,124 @@ export const knowledgeView = {
         analyzing: 'Analyseren...',
         startAnalysis: 'RAG-analyse Starten',
         activeCorpus: 'Actieve planten in RAG-corpus: {{count}}',
+    },
+    growTech: {
+        title: 'Cannabis Grow Technologies 2026',
+        subtitle: 'Precision, automation, AI, and sustainability -- the future of cultivation.',
+        badge2026: '2026 Tech Overview',
+        intro: 'The cannabis cultivation technology landscape in 2026 is defined by data-driven, scalable systems that maximize yield, quality, and efficiency.',
+        keyBenefits: 'Key Benefits',
+        categories: {
+            dynamicLighting: {
+                title: 'Dynamic LED Lighting',
+                tagline: 'Full-spectrum LEDs with adaptive spectra for each growth phase',
+                content:
+                    'High-efficiency full-spectrum LEDs with strong red emphasis reach >2.8 umol/J efficiency and reduce power consumption by up to 40%.',
+                benefits:
+                    '<ul><li>20-40% higher yield with optimized spectra</li><li>Up to 40% lower electricity costs</li><li>Better THC production</li></ul>',
+                tip: 'A 350-600W LED panel in a 1.2 x 1.2m tent covers 4-6 plants.',
+            },
+            sensorsIoT: {
+                title: 'Sensors, IoT & VPD Optimization',
+                tagline: 'Wireless environmental monitoring with AI-driven control loops',
+                content:
+                    'Wireless sensors for temperature, humidity, VPD, EC, pH form the backbone of precision cultivation.',
+                benefits:
+                    '<ul><li>Real-time VPD optimization</li><li>Predictive adjustments</li><li>MQTT and BLE integration</li></ul>',
+                tip: 'VPD is the "invisible killer" -- wrong values cause stress, mold, or low trichome production.',
+            },
+            aiAutomation: {
+                title: 'AI & Automation',
+                tagline: 'AI platforms that detect problems before visible symptoms appear',
+                content:
+                    'AI platforms analyze sensor data and detect pests and deficiencies before visible symptoms.',
+                benefits:
+                    '<ul><li>Proactive pest detection</li><li>Automated scheduling</li><li>Data-driven compliance</li></ul>',
+                tip: 'CannaGuide includes AI-powered diagnostics and local AI fallback -- all working offline.',
+            },
+            digitalTwin: {
+                title: 'Digital Twin Simulation',
+                tagline: 'Virtual grow room replicas for risk-free experimentation',
+                content:
+                    'A Digital Twin creates a virtual replica of your grow environment using sensor data.',
+                benefits:
+                    '<ul><li>Zero-risk experimentation</li><li>Predictive yield modeling</li><li>Virtual optimization</li></ul>',
+                tip: 'CannaGuide Sandbox offers what-if experiments on cloned plants.',
+            },
+            hydroAero: {
+                title: 'Hydroponics & Aeroponics',
+                tagline: 'Soilless systems with up to 30% faster growth and 90% less water',
+                content:
+                    'Aeroponics delivers nutrients via fine mist -- up to 30% faster growth with 90% less water.',
+                benefits:
+                    '<ul><li>Faster growth</li><li>90% water reduction</li><li>Precise nutrient control</li></ul>',
+                tip: 'CannaGuide supports Soil, Coco, Hydro, and Aeroponics as grow media.',
+            },
+            tissueCulture: {
+                title: 'Tissue Culture & Micropropagation',
+                tagline: 'Virus-free cloning of elite genetics at scale',
+                content: 'Home-lab kits enable virus-free propagation of elite genetics.',
+                benefits:
+                    '<ul><li>100% genetic consistency</li><li>Pathogen elimination</li><li>Faster scaling</li></ul>',
+                tip: 'Track phenotypes in CannaGuide Breeding Lab and Genealogy Explorer.',
+            },
+            smartGrowBoxes: {
+                title: 'All-in-One Smart Grow Boxes',
+                tagline: 'Integrated systems with LEDs, fans, sensors, and app control',
+                content:
+                    'Complete systems with LEDs, ventilation, sensors, and app control in one unit.',
+                benefits:
+                    '<ul><li>Zero setup complexity</li><li>Integrated control</li><li>App-based monitoring</li></ul>',
+                tip: 'Use CannaGuide alongside for grow journal and AI advice.',
+            },
+            sustainability: {
+                title: 'Sustainability & Post-Harvest Tech',
+                tagline: 'Energy savings, regenerative soils, and precision curing',
+                content:
+                    'LED + HVAC optimization reduces energy consumption. Regenerative soils maximize terpene retention.',
+                benefits:
+                    '<ul><li>30-50% energy reduction</li><li>Superior terpene preservation</li><li>Sustainable practices</li></ul>',
+                tip: 'CannaGuide post-harvest simulation tracks humidity, chlorophyll, and mold risk.',
+            },
+        },
+        impact: {
+            title: 'Technology Impact Matrix',
+            headers: {
+                area: 'Technology',
+                homeGrower: 'Home Grower Advantage',
+                commercial: 'Commercial Advantage',
+                effort: 'Setup Effort',
+            },
+            areas: {
+                ledSensors: 'LED + Sensors',
+                aiAutomation: 'AI / Automation',
+                aeroponics: 'Aeroponics',
+                digitalTwin: 'Digital Twin',
+            },
+            home: {
+                ledSensors: '20-40% more yield, lower power bills',
+                aiAutomation: 'Less daily work, proactive alerts',
+                aeroponics: 'Faster growth, space-saving',
+                digitalTwin: 'Risk-free experimentation',
+            },
+            commercial: {
+                ledSensors: 'Cost savings, consistent quality',
+                aiAutomation: 'Scalability, data compliance',
+                aeroponics: 'Maximum efficiency at scale',
+                digitalTwin: 'Predictive planning, optimization',
+            },
+            effort: {
+                medium: 'Medium',
+                high: 'High',
+                highInitial: 'High (initial)',
+                mediumHigh: 'Medium-High',
+            },
+        },
+        cannaGuideIntegration: {
+            title: 'Already in CannaGuide',
+            content:
+                'CannaGuide integrates many 2026 technologies: real-time VPD simulation, AI-powered diagnostics, what-if sandbox, IoT sensor integration, and 3-layer local AI fallback.',
+        },
     },
 }
 

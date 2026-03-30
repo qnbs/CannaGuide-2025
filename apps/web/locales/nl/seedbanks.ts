@@ -383,4 +383,36 @@ export const seedbanks = {
         summary:
             'Voor maximale veiligheid en kwaliteit wordt aanbevolen om direct bij een gerenommeerde veredelaar met eigen distributiestructuur te kopen of een grote, goed beoordeelde distributeur te kiezen die de genetica van de gewenste veredelaar voert.',
     },
+    geneticTrends2026: {
+        title: '2026 Genetic Trends -- What to Look for in Seed Banks',
+        intro: 'The cannabis genetics landscape has shifted dramatically in 2026. When choosing a seed bank, look for these key indicators of a forward-thinking provider.',
+        criteria: {
+            terpeneFocus: {
+                title: 'Terpene-Forward Selections',
+                content:
+                    'Top seed banks now curate for complex terpene profiles rather than just THC numbers.',
+            },
+            autoflowerPrograms: {
+                title: 'Next-Gen Autoflower Programs',
+                content: 'Leading breeders offer autoflower lines that rival photoperiod quality.',
+            },
+            polyploidAvailability: {
+                title: 'Polyploid and F1 Hybrid Seeds',
+                content:
+                    'The most innovative seed banks carry triploid or F1 hybrid seeds from breeders like Tesoro Genetics.',
+            },
+            landracePreservation: {
+                title: 'Landrace and Heritage Genetics',
+                content:
+                    'Banks that preserve and offer landrace genetics show commitment to genetic diversity.',
+            },
+            balancedCultivars: {
+                title: 'Balanced and Functional Cultivars',
+                content:
+                    'The best 2026 seed banks feature balanced hybrids, 1:1 CBD:THC lines, and high-THCV cultivars.',
+            },
+        },
+        recommendation:
+            'When selecting seeds in 2026, prioritize genetic diversity, terpene complexity, and proven breeding programs over pure THC numbers.',
+    },
 }

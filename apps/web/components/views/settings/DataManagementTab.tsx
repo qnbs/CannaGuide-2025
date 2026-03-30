@@ -62,8 +62,8 @@ const StorageInfo: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) =>
                 .estimate()
                 .then((estimate) => {
                     setStorage({
-                        usage: estimate.usage || 0,
-                        quota: estimate.quota || 0,
+                        usage: estimate.usage ?? 0,
+                        quota: estimate.quota ?? 0,
                     })
                     setIsLoading(false)
                 })

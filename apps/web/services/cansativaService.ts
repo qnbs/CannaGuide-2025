@@ -81,7 +81,7 @@ export interface CansativaMenuItem {
 
 const getApiKey = (): string | undefined => {
     const key: string = import.meta.env.VITE_CANSATIVA_API_KEY ?? ''
-    return key || undefined
+    return key ?? undefined
 }
 
 const buildHeaders = (apiKey: string): Record<string, string> => ({

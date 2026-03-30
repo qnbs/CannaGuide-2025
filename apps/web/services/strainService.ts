@@ -155,11 +155,11 @@ class StrainService {
             score += 10 - Math.abs(s1.cbd - s2.cbd)
 
             // Aroma/Terpene overlap
-            const aromaIntersection = (s1.aromas || []).filter((a) => (s2.aromas || []).includes(a))
+            const aromaIntersection = (s1.aromas ?? []).filter((a) => (s2.aromas ?? []).includes(a))
             score += aromaIntersection.length * 5
 
-            const terpeneIntersection = (s1.dominantTerpenes || []).filter((t) =>
-                (s2.dominantTerpenes || []).includes(t),
+            const terpeneIntersection = (s1.dominantTerpenes ?? []).filter((t) =>
+                (s2.dominantTerpenes ?? []).includes(t),
             )
             score += terpeneIntersection.length * 10
 

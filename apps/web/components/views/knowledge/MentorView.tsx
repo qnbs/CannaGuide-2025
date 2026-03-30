@@ -83,7 +83,7 @@ export const MentorView: React.FC = () => {
                     <div className="space-y-3">
                         <Select
                             label={t('knowledgeView.hub.selectPlant')}
-                            value={selectedPlantId || ''}
+                            value={selectedPlantId ?? ''}
                             onChange={(e: { target: { value: string | number } }) =>
                                 setSelectedPlantId(e.target.value as string)
                             }

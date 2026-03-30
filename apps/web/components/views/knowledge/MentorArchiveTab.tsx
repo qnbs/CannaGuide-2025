@@ -50,9 +50,9 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(
             const lowerCaseSearch = searchTerm.toLowerCase()
             return cleanArchive.filter(
                 (res) =>
-                    (res.title || '').toLowerCase().includes(lowerCaseSearch) ||
-                    (res.query || '').toLowerCase().includes(lowerCaseSearch) ||
-                    (res.content || '').toLowerCase().includes(lowerCaseSearch),
+                    (res.title ?? '').toLowerCase().includes(lowerCaseSearch) ||
+                    (res.query ?? '').toLowerCase().includes(lowerCaseSearch) ||
+                    (res.content ?? '').toLowerCase().includes(lowerCaseSearch),
             )
         }, [sortedArchive, searchTerm])
 
@@ -111,7 +111,7 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(
 
                 {editingResponse && (
                     <EditResponseModal
-                        response={{ ...editingResponse, title: editingResponse.title || '' }}
+                        response={{ ...editingResponse, title: editingResponse.title ?? '' }}
                         onClose={() => setEditingResponse(null)}
                         onSave={(updated) => handleUpdate({ ...editingResponse, ...updated })}
                     />

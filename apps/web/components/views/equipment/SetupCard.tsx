@@ -35,7 +35,7 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                         <span className="hidden sm:block">
                             {t('equipmentView.configurator.total')}:{' '}
                             <span className="font-semibold">
-                                {(setup.totalCost || 0).toFixed(2)}
+                                {(setup.totalCost ?? 0).toFixed(2)}
                                 {t('common.units.currency_eur')}
                             </span>
                         </span>
@@ -89,7 +89,7 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                                         </p>
                                     </div>
                                     <span className="text-sm font-mono font-semibold text-slate-300">
-                                        {(item.price || 0).toFixed(2)}{' '}
+                                        {(item.price ?? 0).toFixed(2)}{' '}
                                         {t('common.units.currency_eur')}
                                     </span>
                                 </div>

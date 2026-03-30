@@ -298,13 +298,13 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
                         </g>
 
                         {view === 'growth' && (
-                            <path d={areaGenerator(history) || ''} fill="url(#heightGradient)" />
+                            <path d={areaGenerator(history) ?? ''} fill="url(#heightGradient)" />
                         )}
 
                         {paths.map((pathInfo) => (
                             <path
                                 key={pathInfo.key}
-                                d={lineGenerators[pathInfo.key](history) || ''}
+                                d={lineGenerators[pathInfo.key](history) ?? ''}
                                 fill="none"
                                 stroke={pathInfo.color}
                                 strokeWidth={pathInfo.strokeWidth}

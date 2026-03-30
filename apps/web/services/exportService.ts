@@ -174,13 +174,13 @@ class ExportService {
             printSectionTitle(t('strainsView.strainDetail.aromaProfile'))
             printKeyValuePair(
                 t('strainsView.strainModal.aromas'),
-                (strain.aromas || [])
+                (strain.aromas ?? [])
                     .map((a) => t(`common.aromas.${a}`, { defaultValue: a }))
                     .join(', '),
             )
             printKeyValuePair(
                 t('strainsView.strainModal.dominantTerpenes'),
-                (strain.dominantTerpenes || [])
+                (strain.dominantTerpenes ?? [])
                     .map((terp) => t(`common.terpenes.${terp}`, { defaultValue: terp }))
                     .join(', '),
             )
@@ -216,7 +216,7 @@ class ExportService {
 
         strains.forEach((s) => {
             const typeDetailsLabel = t(`strainsData.${s.id}.typeDetails`, {
-                defaultValue: s.typeDetails || s.type,
+                defaultValue: s.typeDetails ?? s.type,
             })
             const geneticsLabel = t(`strainsData.${s.id}.genetics`, {
                 defaultValue: s.genetics ?? 'N/A',
@@ -248,20 +248,20 @@ class ExportService {
             content += `${t('common.genetics')}: ${geneticsLabel}\n\n`
 
             content += `--- ${t('strainsView.strainDetail.cannabinoidProfile')} ---\n`
-            content += `${t('strainsView.table.thc')}: ${s.thcRange || `${s.thc}%`}\n`
-            content += `${t('strainsView.table.cbd')}: ${s.cbdRange || `${s.cbd}%`}\n\n`
+            content += `${t('strainsView.table.thc')}: ${s.thcRange ?? `${s.thc}%`}\n`
+            content += `${t('strainsView.table.cbd')}: ${s.cbdRange ?? `${s.cbd}%`}\n\n`
 
             content += `--- ${t('strainsView.strainModal.agronomicData')} ---\n`
             content += `${t('strainsView.table.difficulty')}: ${difficultyLabel}\n`
-            content += `${t('strainsView.table.flowering')}: ${s.floweringTimeRange || s.floweringTime} ${t('common.units.weeks')}\n`
+            content += `${t('strainsView.table.flowering')}: ${s.floweringTimeRange ?? s.floweringTime} ${t('common.units.weeks')}\n`
             content += `${t('strainsView.strainModal.yieldIndoor')}: ${yieldIndoorLabel}\n`
             content += `${t('strainsView.strainModal.yieldOutdoor')}: ${yieldOutdoorLabel}\n`
             content += `${t('strainsView.strainModal.heightIndoor')}: ${heightIndoorLabel}\n`
             content += `${t('strainsView.strainModal.heightOutdoor')}: ${heightOutdoorLabel}\n\n`
 
             content += `--- ${t('strainsView.strainDetail.aromaProfile')} ---\n`
-            content += `${t('strainsView.strainModal.aromas')}: ${(s.aromas || []).map((a) => t(`common.aromas.${a}`, { defaultValue: a })).join(', ')}\n`
-            content += `${t('strainsView.strainModal.dominantTerpenes')}: ${(s.dominantTerpenes || []).map((terp) => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', ')}\n\n`
+            content += `${t('strainsView.strainModal.aromas')}: ${(s.aromas ?? []).map((a) => t(`common.aromas.${a}`, { defaultValue: a })).join(', ')}\n`
+            content += `${t('strainsView.strainModal.dominantTerpenes')}: ${(s.dominantTerpenes ?? []).map((terp) => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', ')}\n\n`
 
             content += `--- ${t('common.description')} ---\n`
             content += `${descriptionLabel}\n\n\n`

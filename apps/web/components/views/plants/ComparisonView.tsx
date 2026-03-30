@@ -100,13 +100,13 @@ const ComparisonChart: React.FC<{
                         ))}
                     </g>
                     <path
-                        d={lineGen(historyA) || ''}
+                        d={lineGen(historyA) ?? ''}
                         fill="none"
                         stroke="rgb(var(--color-primary-500))"
                         strokeWidth={2}
                     />
                     <path
-                        d={lineGen(historyB) || ''}
+                        d={lineGen(historyB) ?? ''}
                         fill="none"
                         stroke="rgb(var(--color-accent-500))"
                         strokeWidth={2}

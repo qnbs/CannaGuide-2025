@@ -14,6 +14,11 @@ const mockSetCachedInference = vi.fn()
 vi.mock('./localAiCacheService', () => ({
     getCachedInference: (...args: unknown[]) => mockGetCachedInference(...args),
     setCachedInference: (...args: unknown[]) => mockSetCachedInference(...args),
+    clearPersistentCache: vi.fn(),
+    getCacheSize: vi.fn(() => Promise.resolve(0)),
+    getCacheBreakdown: vi.fn(() => Promise.resolve({})),
+    applyCacheSettings: vi.fn(),
+    resetCacheDb: vi.fn(),
 }))
 
 const mockCreateInferenceTimer = vi.fn()
@@ -26,6 +31,37 @@ vi.mock('./localAiTelemetryService', () => ({
     recordCacheHit: () => mockRecordCacheHit(),
     recordCacheMiss: () => mockRecordCacheMiss(),
     debouncedPersistSnapshot: () => mockDebouncedPersistSnapshot(),
+    recordInference: vi.fn(),
+    measureInference: vi.fn(),
+    getSnapshot: vi.fn(() => ({
+        totalInferences: 0,
+        totalTokensGenerated: 0,
+        averageLatencyMs: 0,
+        averageTokensPerSecond: 0,
+        cacheHitRate: 0,
+        modelBreakdown: {},
+        backendBreakdown: {},
+        successRate: 1,
+        peakTokensPerSecond: 0,
+        lastUpdated: 0,
+    })),
+    persistSnapshot: vi.fn(),
+    loadPersistedSnapshot: vi.fn(),
+    checkPerformanceDegradation: vi.fn(() => ({
+        degraded: false,
+        recentTokensPerSecond: 0,
+        recommendation: 'none',
+    })),
+    resetTelemetry: vi.fn(),
+}))
+
+vi.mock('./localAiPreloadService', () => ({
+    localAiPreloadService: {
+        getStatus: vi.fn(() => ({ state: 'idle' })),
+        isReady: vi.fn(() => false),
+        preloadOfflineModels: vi.fn(),
+    },
+    ensurePersistentStorage: vi.fn(() => Promise.resolve(null)),
 }))
 
 // ---------------------------------------------------------------------------

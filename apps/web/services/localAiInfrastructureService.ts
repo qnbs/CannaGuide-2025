@@ -1,10 +1,14 @@
 /**
- * Local AI Infrastructure Service -- Facade
+ * Local AI Infrastructure Service -- backward-compatible barrel.
  *
- * Consolidates cache, telemetry, and preload services into a single import
- * point. Internal sub-services remain separate files for maintainability
- * but consumers should prefer importing from this barrel module.
+ * All real logic now lives in LocalAIInfrastructure.ts (class) and sub-
+ * service files. This module re-exports everything so existing import
+ * paths keep working.
+ *
+ * New consumers should import from './LocalAIInfrastructure' directly.
  */
+
+export { localAIInfrastructure } from './LocalAIInfrastructure'
 
 // -- Cache ---------------------------------------------------------------
 export {

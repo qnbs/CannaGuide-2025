@@ -763,7 +763,8 @@ const LocalAiFeaturesCard: React.FC = () => {
         let cancelled = false
         const loadTelemetry = async () => {
             try {
-                const { getSnapshot } = await import('../../../services/localAiTelemetryService')
+                const { getSnapshot } =
+                    await import('../../../services/localAiInfrastructureService')
                 if (cancelled) return
                 const snap = getSnapshot()
                 setTelemetry({
@@ -780,7 +781,8 @@ const LocalAiFeaturesCard: React.FC = () => {
         }
         const loadCacheCount = async () => {
             try {
-                const { getCacheSize } = await import('../../../services/localAiCacheService')
+                const { getCacheSize } =
+                    await import('../../../services/localAiInfrastructureService')
                 if (cancelled) return
                 setCacheCount(await getCacheSize())
             } catch {
@@ -800,7 +802,8 @@ const LocalAiFeaturesCard: React.FC = () => {
 
     const handleClearCache = async () => {
         try {
-            const { clearPersistentCache } = await import('../../../services/localAiCacheService')
+            const { clearPersistentCache } =
+                await import('../../../services/localAiInfrastructureService')
             await clearPersistentCache()
             setCacheCount(0)
         } catch {

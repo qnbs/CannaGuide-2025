@@ -33,7 +33,7 @@ const VoiceSelect: React.FC<{
     disabled?: boolean
     options: { value: string; label: string }[]
 }> = ({ value, onChange, disabled, options }) => (
-    <Select value={value} onValueChange={onChange} disabled={disabled}>
+    <Select value={value} onValueChange={onChange} {...(disabled != null ? { disabled } : {})}>
         <SelectTrigger>
             <SelectValue />
         </SelectTrigger>

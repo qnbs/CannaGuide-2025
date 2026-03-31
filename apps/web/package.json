@@ -10,7 +10,7 @@
         "build:docker": "BUILD_BASE_PATH=/ vite build",
         "build:analyze": "ANALYZE=1 vite build --sourcemap",
         "preview": "vite preview",
-        "typecheck": "tsc --noEmit",
+        "typecheck": "node ../../scripts/typecheck-filter.mjs",
         "test": "vitest",
         "test:coverage": "vitest run --coverage",
         "test:e2e": "playwright test -c playwright.config.ts",

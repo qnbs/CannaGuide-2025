@@ -1,6 +1,6 @@
 import React from 'react'
 
-const IconBase: React.FC<{ children: React.ReactNode; className?: string }> = ({
+const IconBase: React.FC<{ children: React.ReactNode; className?: string | undefined }> = ({
     children,
     className,
 }) => (

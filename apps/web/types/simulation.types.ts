@@ -5,8 +5,8 @@ export type GrowthStage = 'seedling' | 'vegetative' | 'earlyFlower' | 'lateFlowe
 export interface VPDInput {
   airTemp: number
   rh: number
-  leafTempOffset?: number
-  altitudeM?: number
+  leafTempOffset?: number | undefined
+  altitudeM?: number | undefined
   medium: MediumType
   airflow: AirflowLevel
   lightOn: boolean

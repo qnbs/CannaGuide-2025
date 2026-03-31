@@ -11,7 +11,7 @@ import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
 
 type TransformersModule = typeof import('@xenova/transformers')
-type Pipeline = (input: unknown, options?: Record<string, unknown>) => Promise<unknown>
+type Pipeline = (input: unknown, options?: Record<string, unknown>) => Promise<unknown> | undefined
 
 let transformersPromise: Promise<TransformersModule> | null = null
 const pipelineCache = new Map<string, Promise<Pipeline>>()
@@ -20,8 +20,8 @@ export interface InferencePayload {
     task: string
     modelId: string
     input: unknown
-    pipelineOptions?: Record<string, unknown>
-    inferenceOptions?: Record<string, unknown>
+    pipelineOptions?: Record<string, unknown> | undefined
+    inferenceOptions?: Record<string, unknown> | undefined
 }
 
 const getTransformers = (): Promise<TransformersModule> => {

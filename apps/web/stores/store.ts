@@ -47,15 +47,15 @@ const rootReducer = combineReducers({
     [geminiApi.reducerPath]: geminiApi.reducer,
 })
 
-const makeStore = (preloadedState?: Partial<RootState>) =>
+// RTK's GetDefaultMiddleware callback has optional properties incompatible
+// with exactOptionalPropertyTypes (TS2719). This is a known upstream RTK issue.
+const makeStore = (preloadedState?: Partial<RootState> | undefined) =>
     configureStore({
         reducer: rootReducer,
         preloadedState,
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {
-                    // RTK Query caches and timestamps are not plain-serializable;
-                    // ignore the geminiApi slice paths to keep the guard active elsewhere.
                     ignoredPaths: ['geminiApi'],
                 },
             })

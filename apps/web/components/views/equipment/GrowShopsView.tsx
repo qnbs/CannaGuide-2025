@@ -8,7 +8,7 @@ import { Modal } from '@/components/common/Modal'
 
 type ShopRegion = 'europe' | 'us'
 type SortMode = 'rating' | 'name'
-type TranslateFn = (key: string, params?: Record<string, unknown>) => string
+type TranslateFn = ReturnType<typeof useTranslation>['t']
 
 interface Shop {
     name: string

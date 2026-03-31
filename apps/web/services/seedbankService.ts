@@ -297,12 +297,12 @@ export async function getAvailabilityForStrain(
 // ---------------------------------------------------------------------------
 
 export interface SeedfinderLineageData {
-    parents: Array<{ name: string; type?: string }>
-    breeder?: string
-    breederCountry?: string
-    yearReleased?: number
-    description?: string
-    genetics?: string
+    parents: Array<{ name: string; type?: string | undefined }>
+    breeder?: string | undefined
+    breederCountry?: string | undefined
+    yearReleased?: number | undefined
+    description?: string | undefined
+    genetics?: string | undefined
 }
 
 const lineageCache = new Map<string, CacheEntry>()
@@ -333,7 +333,7 @@ export async function getLineageFromSeedfinder(
         const record = json as Record<string, unknown>
         if (record['error']) return null
 
-        const parents: Array<{ name: string; type?: string }> = []
+        const parents: Array<{ name: string; type?: string | undefined }> = []
         const parentsObj = record['parents'] ?? record['lineage']
         if (parentsObj && typeof parentsObj === 'object') {
             const entries = Array.isArray(parentsObj)

@@ -67,7 +67,7 @@ const parseCommaSeparatedTokens = (value: string): string[] =>
         .map((token) => token.trim())
         .filter(Boolean)
 
-const ErrorText: React.FC<{ message?: string }> = ({ message }) => {
+const ErrorText: React.FC<{ message?: string | undefined }> = ({ message }) => {
     if (!message) return null
     return <p className="mt-1 text-xs font-medium text-rose-300">{message}</p>
 }

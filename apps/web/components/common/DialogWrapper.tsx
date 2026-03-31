@@ -11,17 +11,17 @@ interface DialogWrapperProps {
     isOpen: boolean
     onClose: () => void
     children: React.ReactNode
-    title?: string
-    description?: string
-    footer?: React.ReactNode
-    size?: DialogWrapperSize
-    containerClassName?: string
-    bodyClassName?: string
-    showCloseButton?: boolean
-    variant?: 'modal' | 'drawer'
-    enableSwipeToClose?: boolean
-    onOpenAutoFocus?: (event: Event) => void
-    onCloseAutoFocus?: (event: Event) => void
+    title?: string | undefined
+    description?: string | undefined
+    footer?: React.ReactNode | undefined
+    size?: DialogWrapperSize | undefined
+    containerClassName?: string | undefined
+    bodyClassName?: string | undefined
+    showCloseButton?: boolean | undefined
+    variant?: 'modal' | 'drawer' | undefined
+    enableSwipeToClose?: boolean | undefined
+    onOpenAutoFocus?: ((event: Event) => void) | undefined
+    onCloseAutoFocus?: ((event: Event) => void) | undefined
 }
 
 const sizeClasses: Record<DialogWrapperSize, string> = {

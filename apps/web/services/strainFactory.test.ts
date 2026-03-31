@@ -6,10 +6,6 @@ describe('createStrainObject', () => {
     it('fills in required fields for malformed strain data', () => {
         const strain = createStrainObject({
             name: '',
-            type: undefined,
-            thc: undefined,
-            cbd: undefined,
-            floweringTime: undefined,
             aromas: ['citrus', 42 as unknown as string],
             dominantTerpenes: [null as unknown as string],
         })
@@ -21,7 +17,11 @@ describe('createStrainObject', () => {
         expect(strain.cbd).toBe(0)
         expect(strain.floweringTime).toBe(9)
         expect(strain.floweringType).toBe('Photoperiod')
-        expect(strain.agronomic).toEqual({ difficulty: 'Medium', yield: 'Medium', height: 'Medium' })
+        expect(strain.agronomic).toEqual({
+            difficulty: 'Medium',
+            yield: 'Medium',
+            height: 'Medium',
+        })
     })
 
     it('preserves valid fields while inferring missing optional shape', () => {

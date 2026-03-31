@@ -131,8 +131,8 @@ class MqttSensorService {
         }, CONNECT_TIMEOUT_MS)
 
         this.client = mqtt.connect(brokerUrl, {
-            username,
-            password,
+            ...(username != null ? { username } : {}),
+            ...(password != null ? { password } : {}),
             reconnectPeriod: RECONNECT_PERIOD_MS,
             connectTimeout: CONNECT_TIMEOUT_MS,
             protocolVersion: 5,

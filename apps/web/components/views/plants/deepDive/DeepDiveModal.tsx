@@ -15,9 +15,9 @@ interface DeepDiveModalProps {
     topic: string
     onClose: () => void
     onRunScenario: (scenario: Scenario) => void
-    data?: DeepDiveGuide
+    data?: DeepDiveGuide | undefined
     isLoading: boolean
-    error?: unknown
+    error?: unknown | undefined
 }
 
 export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({

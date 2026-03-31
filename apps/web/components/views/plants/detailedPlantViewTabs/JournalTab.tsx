@@ -21,7 +21,7 @@ interface JournalTabProps {
 
 const appendBaseFeedDetails = (
     detailsArray: string[],
-    details: { amountMl?: number; ph?: number; ec?: number },
+    details: { amountMl?: number | undefined; ph?: number | undefined; ec?: number | undefined },
     t: (key: string) => string,
 ): void => {
     if (details.amountMl != null)

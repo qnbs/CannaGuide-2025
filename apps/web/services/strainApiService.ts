@@ -115,15 +115,15 @@ const getApiKey = (provider: StrainApiProvider): string | undefined => {
 export interface ExternalStrainData {
     provider: StrainApiProvider
     name: string
-    type?: string
-    description?: string
-    thc?: number
-    cbd?: number
-    terpeneProfile?: TerpeneProfile
-    cannabinoidProfile?: CannabinoidProfile
-    effects?: string[]
-    aromas?: string[]
-    labTested?: boolean
+    type?: string | undefined
+    description?: string | undefined
+    thc?: number | undefined
+    cbd?: number | undefined
+    terpeneProfile?: TerpeneProfile | undefined
+    cannabinoidProfile?: CannabinoidProfile | undefined
+    effects?: string[] | undefined
+    aromas?: string[] | undefined
+    labTested?: boolean | undefined
 }
 
 // ---------------------------------------------------------------------------

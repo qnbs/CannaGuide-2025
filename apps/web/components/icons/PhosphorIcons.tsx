@@ -27,8 +27,8 @@ interface IconProps {
  */
 const IconBase: React.FC<{
     children: React.ReactNode
-    className?: string
-    style?: React.CSSProperties
+    className?: string | undefined
+    style?: React.CSSProperties | undefined
 }> = ({ children, className = '', style }) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"

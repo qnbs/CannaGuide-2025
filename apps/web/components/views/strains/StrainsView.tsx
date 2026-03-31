@@ -127,6 +127,15 @@ export const StrainsView: React.FC = () => {
     const strainsViewState = useStrainsViewStore()
     const strainsViewTab = strainsViewState.strainsViewTab
     const strainsViewMode = strainsViewState.strainsViewMode
+
+    // Scroll to top on tab change
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [strainsViewTab])
+
     const selectedStrainIds = useMemo(
         () => strainsViewState.selectedStrainIds,
         [strainsViewState.selectedStrainIds],
@@ -525,7 +534,11 @@ export const StrainsView: React.FC = () => {
                     onNavigateToGenealogy={(strainId) => {
                         strainsViewState.setSelectedStrainId(null)
                         dispatch(setSelectedGenealogyStrain(strainId))
-                        strainsViewState.setStrainsViewTab(StrainViewTab.Genealogy)
+                        // Defer tab switch to next microtask to ensure Redux state
+                        // is committed before GenealogyView mounts
+                        queueMicrotask(() => {
+                            strainsViewState.setStrainsViewTab(StrainViewTab.Genealogy)
+                        })
                     }}
                 />
             </div>

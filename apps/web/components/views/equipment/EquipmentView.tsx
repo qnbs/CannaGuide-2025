@@ -1,4 +1,4 @@
-import React, { useTransition, lazy, Suspense, useMemo } from 'react'
+import React, { useTransition, useEffect, lazy, Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { EquipmentViewTab, SavedSetup } from '@/types'
@@ -29,6 +29,14 @@ export const EquipmentView: React.FC = () => {
     const savedSetups = useAppSelector(selectSavedSetups)
     const [isPending, startTransition] = useTransition()
     const contentOpacityClass = isPending ? 'opacity-50' : 'opacity-100'
+
+    // Scroll to top on tab change
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [activeTab])
 
     const viewIcons = useMemo(
         () => ({

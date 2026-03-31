@@ -69,29 +69,27 @@ export const GrowTechView: React.FC = () => {
     )
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="text-center">
-                <h3 className="text-xl font-bold text-primary-300">
-                    {t('knowledgeView.growTech.title')}
-                </h3>
-                <p className="text-sm text-slate-400 mt-1">
-                    {t('knowledgeView.growTech.subtitle')}
-                </p>
-            </div>
-
-            {/* Year Badge */}
-            <div className="flex justify-center">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-600/20 text-primary-300 text-xs font-semibold border border-primary-500/30">
-                    <PhosphorIcons.Sparkle className="w-3.5 h-3.5" />
-                    {t('knowledgeView.growTech.badge2026')}
-                </span>
+            <div className="section-hero">
+                <div className="relative z-10 text-center">
+                    <div className="surface-badge mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-primary-200">
+                        <PhosphorIcons.Sparkle className="h-3.5 w-3.5" />
+                        {t('knowledgeView.growTech.badge2026')}
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold font-display text-slate-100">
+                        {t('knowledgeView.growTech.title')}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-400 max-w-xl mx-auto">
+                        {t('knowledgeView.growTech.subtitle')}
+                    </p>
+                </div>
             </div>
 
             {/* Introduction */}
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700/50 text-sm text-slate-300 leading-relaxed">
                 {t('knowledgeView.growTech.intro')}
-            </p>
+            </div>
 
             {/* Technology Categories */}
             <div className="space-y-3">

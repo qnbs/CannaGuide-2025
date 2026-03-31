@@ -49,20 +49,23 @@ export const GeneticTrendsView: React.FC = () => {
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="text-center">
-                <span className="inline-block px-3 py-1 mb-2 text-xs font-bold tracking-wider uppercase rounded-full bg-gradient-to-r from-pink-600 to-purple-600 text-white">
-                    {t('strainsView.geneticTrends.badge2026')}
-                </span>
-                <h2 className="text-2xl font-bold font-display text-slate-100">
-                    {t('strainsView.geneticTrends.title')}
-                </h2>
-                <p className="mt-1 text-sm text-slate-400">
-                    {t('strainsView.geneticTrends.subtitle')}
-                </p>
+            <div className="section-hero">
+                <div className="relative z-10 text-center">
+                    <div className="surface-badge mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-primary-200">
+                        <PhosphorIcons.Sparkle className="h-3.5 w-3.5" />
+                        {t('strainsView.geneticTrends.badge2026')}
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold font-display text-slate-100">
+                        {t('strainsView.geneticTrends.title')}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-400 max-w-xl mx-auto">
+                        {t('strainsView.geneticTrends.subtitle')}
+                    </p>
+                </div>
             </div>
 
             {/* Intro */}
-            <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-slate-300 leading-relaxed">
+            <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700/50 text-sm text-slate-300 leading-relaxed">
                 {t('strainsView.geneticTrends.intro')}
             </div>
 
@@ -74,7 +77,7 @@ export const GeneticTrendsView: React.FC = () => {
                     return (
                         <div
                             key={cat.id}
-                            className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden"
+                            className="rounded-lg border border-slate-700/50 bg-slate-800/60 overflow-hidden"
                         >
                             <button
                                 type="button"
@@ -121,7 +124,7 @@ export const GeneticTrendsView: React.FC = () => {
             </div>
 
             {/* Trend Overview Table */}
-            <div className="overflow-x-auto rounded-lg border border-slate-700">
+            <div className="overflow-x-auto rounded-lg border border-slate-700/50 bg-slate-800/60">
                 <table className="w-full text-sm text-left">
                     <thead className="bg-slate-800 text-slate-300">
                         <tr>
@@ -153,8 +156,8 @@ export const GeneticTrendsView: React.FC = () => {
             </div>
 
             {/* Implications */}
-            <div className="p-4 rounded-lg bg-gradient-to-br from-pink-900/20 to-purple-900/20 border border-pink-800/30">
-                <h3 className="text-sm font-bold text-pink-300 mb-2">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-primary-900/20 to-purple-900/20 border border-primary-800/30">
+                <h3 className="text-sm font-bold text-primary-300 mb-2">
                     {t('strainsView.geneticTrends.implications.title')}
                 </h3>
                 <ul className="space-y-1 text-sm text-slate-300 list-disc list-inside">
@@ -165,7 +168,7 @@ export const GeneticTrendsView: React.FC = () => {
             </div>
 
             {/* Conclusion */}
-            <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-slate-300 leading-relaxed">
+            <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700/50 text-sm text-slate-300 leading-relaxed">
                 <PhosphorIcons.Sparkle className="w-5 h-5 text-purple-400 inline mr-2" />
                 {t('strainsView.geneticTrends.conclusion')}
             </div>

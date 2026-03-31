@@ -142,6 +142,11 @@ export const captureLocalAiError = (
             | 'webllm-eviction'
             | 'webllm-diagnostics'
             | 'webllm-streaming'
+            | 'webgpu-probe'
+            | 'webgpu-device-create'
+            | 'webgpu-device-destroy-pagehide'
+            | 'webgpu-device-destroy-hidden'
+            | 'webgpu-device-destroy-explicit'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
         batchItem?: number

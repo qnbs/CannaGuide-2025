@@ -112,7 +112,18 @@ export const settingsView = {
         offlineHint: 'Bringe die App online, damit der Modell-Cache vorab gefüllt werden kann.',
         forceWasm: 'WASM-Backend erzwingen',
         forceWasmHint:
-            'WebGPU-Erkennung übersteuern und immer das WASM-Backend verwenden. Nützlich zur Fehlersuche.',
+            'WebGPU-Erkennung uebersteuern und immer das WASM-Backend verwenden. Nuetzlich zur Fehlersuche.',
+        enableWebGpu: 'WebGPU-Beschleunigung aktivieren',
+        enableWebGpuHint:
+            'GPU fuer lokale KI-Inferenz nutzen, wenn verfuegbar. Liefert 3-8x schnellere Inferenz auf unterstuetzten Geraeten. Deaktivieren fuer reinen CPU-Modus.',
+        webGpuTier: 'GPU-Stufe: {{value}}',
+        webGpuVram: 'GPU-VRAM: {{value}} MB',
+        webGpuVendor: 'GPU: {{value}}',
+        webGpuBatteryGated:
+            'WebGPU pausiert -- Akku unter 15%. Ladegeraet anschliessen, um GPU-Beschleunigung zu reaktivieren.',
+        webGpuFeatureF16: 'shader-f16: {{value}}',
+        webGpuDeviceCleanup:
+            'GPU-Speicher wird automatisch freigegeben, wenn der Tab 30 Sekunden verborgen ist.',
         preferredModel: 'Bevorzugtes Textmodell',
         modelAuto: 'Automatisch (Qwen2.5-1.5B)',
         modelQwen25: 'Qwen2.5-1.5B (Ausgewogen)',

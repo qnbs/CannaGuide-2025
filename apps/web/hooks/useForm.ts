@@ -17,7 +17,7 @@ export const useForm = <T extends Record<string, unknown>>({
     validate,
     onSubmit,
 }: UseFormProps<T>) => {
-    const [values, setValues] = useState<T>(initialValues)
+    const [values, setValues] = useState(initialValues)
     const [errors, setErrors] = useState<ValidationErrors<T>>({})
 
     const handleChange = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
@@ -34,7 +34,7 @@ export const useForm = <T extends Record<string, unknown>>({
                 onSubmit(values)
             }
         },
-        [values, validate, onSubmit]
+        [values, validate, onSubmit],
     )
 
     const resetForm = useCallback(
@@ -42,7 +42,7 @@ export const useForm = <T extends Record<string, unknown>>({
             setValues(nextValues ?? initialValues)
             setErrors({})
         },
-        [initialValues]
+        [initialValues],
     )
 
     return {

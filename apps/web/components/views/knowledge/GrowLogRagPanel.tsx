@@ -5,7 +5,7 @@ import { Button } from '@/components/common/Button'
 import { useActivePlants } from '@/hooks/useSimulationBridge'
 import { useAppSelector } from '@/stores/store'
 import { selectLanguage } from '@/stores/selectors'
-import { aiService } from '@/services/aiService'
+import { aiService } from '@/services/aiFacade'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
 

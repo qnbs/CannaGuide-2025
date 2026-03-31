@@ -30,7 +30,7 @@ import {
     selectNutrientAutoAdjustRecommendation,
 } from '@/stores/selectors'
 import { selectActivePlants, selectSettings } from '@/stores/selectors'
-import { aiService } from '@/services/aiService'
+import { aiService } from '@/services/aiFacade'
 import { pluginService } from '@/services/pluginService'
 import type { NutrientSchedulePlugin } from '@/services/pluginService'
 import DOMPurify from 'dompurify'

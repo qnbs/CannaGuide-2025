@@ -10,14 +10,14 @@
 | Layer        | Technology                                                                          |
 | ------------ | ----------------------------------------------------------------------------------- |
 | UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                 |
-| State        | Redux Toolkit 2.11 (16 slices), Zustand 5 (4 stores), RTK Query, memoized selectors |
+| State        | Redux Toolkit 2.11 (12 slices), Zustand 5 (6 stores), RTK Query, memoized selectors |
 | AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                         |
 | AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                |
 | Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                            |
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                 |
 | i18n         | i18next -- EN, DE, ES, FR, NL (13 namespaces)                                       |
 | Workers      | WorkerBus (promise-based, 7 workers, messageId correlation, auto-timeout)           |
-| Testing      | Vitest 928+ unit tests, Playwright E2E + Component tests                            |
+| Testing      | Vitest 960+ unit tests, Playwright E2E + Component tests                            |
 | Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                    |
 
 ---
@@ -32,7 +32,7 @@ turbo.json                TurboRepo pipeline (build, dev, test, lint, typecheck)
 tsconfig.json             References-only (apps/web, apps/desktop, packages/*)
 
 apps/web/                 Main PWA (@cannaguide/web)
-  package.json            All frontend deps + @cannaguide/ai-core
+  package.json            All frontend deps + @cannaguide/ai-core + @cannaguide/ui
   vite.config.ts          Vite build + optionalMlPlugin() for ML stub fallback
   tsconfig.json           strict, baseUrl ".", @/* path alias
   index.tsx               App bootstrap, SW registration, safe recovery
@@ -52,15 +52,22 @@ apps/web/                 Main PWA (@cannaguide/web)
   stores/
     store.ts              Redux store creation + IndexedDB hydration
     useUIStore.ts         Zustand store for transient UI state (modals, views, notifications)
+    useTtsStore.ts        Zustand store for TTS queue and speaking state
+    useFiltersStore.ts    Zustand store for filter/sort UI state
+    useStrainsViewStore.ts Zustand store for strains view UI state
+    useIotStore.ts        Zustand store for IoT device UI state
+    sensorStore.ts        Zustand vanilla store for real-time sensor data
     selectors.ts          Memoized selectors (map-based cache by ID)
     listenerMiddleware.ts Side effects: i18n sync, persistence triggers
-    slices/               16 Redux slices (simulation, settings, strains, etc.)
+    slices/               12 Redux slices (simulation, settings, strains, etc.)
     indexedDBStorage.ts   CannaGuideStateDB adapter
 
   services/
+    aiFacade.ts           Public AI entry point (re-exports aiService, aiProviderService, localAIInfrastructure)
     geminiService.ts      Gemini API abstraction (responseSchema)
-    aiProviderService.ts  Multi-provider AI routing (BYOK)
+    aiProviderService.ts  Multi-provider AI routing (BYOK, imports configs from @cannaguide/ai-core)
     aiService.ts          Unified cloud + local AI entry point
+    LocalAIInfrastructure.ts Unified cache + telemetry + preload class
     localAI.ts            Core local AI orchestration
     localAIModelLoader.ts ONNX pipeline loader (WebGPU/WASM, semaphore)
     localAi*.ts           15 local AI service modules
@@ -87,17 +94,54 @@ apps/web/                 Main PWA (@cannaguide/web)
 apps/desktop/             Tauri v2 desktop wrapper (Rust IPC commands)
 
 packages/
-  ai-core/                Shared AI types + ML dependency isolation
+  ai-core/                Shared AI types, provider configs, key validation, ML isolation
     src/
-      index.ts            AI types, providers, schemas
+      index.ts            Re-exports types, configs, validation, Zod schemas
+      providers.ts        PROVIDER_CONFIGS map, isKeyRotationDue, isValidProviderKeyFormat
+      schemas.ts          Zod schemas for AI response validation
+      types.ts            AI response types (AIResponse, PlantDiagnosisResponse, etc.)
       ml.ts               Lazy loaders: loadTransformers(), loadWebLlm(), loadGenAI()
-  ui/                     Shared UI tokens & theme types
+  ui/                     Shared design system tokens + Tailwind preset
+    src/
+      theme.ts            Theme type + ThemeTokens interface
+      tokens.css          9 cannabis theme CSS custom properties (478 lines)
+      tailwind-preset.cjs Shared Tailwind preset (colors, keyframes, animations)
   iot-mocks/              ESP32 sensor mock server (port 3001)
 
 src-tauri/                Tauri v2 desktop config (Rust backend)
 scripts/                  Build, lint, merge, CI scripts
 docker/                   nginx config, esp32-mock, tauri-mock
 ```
+
+---
+
+## State Management Paradigm
+
+The app uses a **dual-store architecture** with clear separation of concerns:
+
+**Redux Toolkit (12 slices, persisted in IndexedDB):**
+Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner. Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
+
+**Zustand (6 stores, transient/never persisted):**
+`useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices), `sensorStore` (real-time sensor data).
+
+**Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
+
+## AI Service Architecture
+
+All AI capabilities are exposed through a single facade (`aiFacade.ts`):
+
+- **`aiService`** -- routed cloud/local AI methods (diagnose, chat, embed, etc.)
+- **`aiProviderService`** -- multi-provider BYOK key management (imports configs from `@cannaguide/ai-core`)
+- **`localAIInfrastructure`** -- unified cache + telemetry + preload class (`LocalAIInfrastructure.ts`)
+- **`setAiMode` / `getAiMode` / `isEcoMode`** -- execution mode helpers
+
+Components and hooks must import from `aiFacade`, not from individual service files.
+
+## Monorepo Package Responsibilities
+
+- **`@cannaguide/ai-core`** -- Canonical source for AI provider types (`AiProvider`, `AiProviderConfig`), `PROVIDER_CONFIGS` map, key validation (`isKeyRotationDue`, `isValidProviderKeyFormat`), Zod schemas for AI response validation, and lazy ML loaders. ML dependencies are `optionalDependencies` to isolate heavy binaries.
+- **`@cannaguide/ui`** -- Design system tokens: 9 cannabis theme CSS custom properties (`tokens.css`), shared Tailwind preset with colors, keyframes, animations, and shadows (`tailwind-preset.cjs`), theme TypeScript types.
 
 ---
 
@@ -128,22 +172,22 @@ Additional databases: `CannaGuideSecureDB` (crypto keys), `CannaGuideTimeSeriesD
 User Input
     |
     v
-aiService.ts  -->  Cloud available?  --yes-->  aiProviderService.ts
-    |                                               |
-    no                                         geminiService.ts / openai / xai / anthropic
-    |                                               |
-    v                                               v
-localAI.ts  -->  WebLLM available?             Structured JSON (responseSchema)
-    |               |
-    no             yes --> gpuResourceManager.ts (mutex)
-    |               |
-    v               v
-Transformers.js   @mlc-ai/web-llm (WebGPU)
-    |
-    no model?
-    |
-    v
-localAiFallbackService.ts (heuristics)
+aiFacade.ts  -->  aiService.ts  -->  Cloud available?  --yes-->  aiProviderService.ts
+                      |                                               |
+                      no                                         geminiService.ts / openai / xai / anthropic
+                      |                                               |
+                      v                                               v
+                  localAI.ts  -->  WebLLM available?             Structured JSON (responseSchema)
+                      |               |
+                      no             yes --> gpuResourceManager.ts (mutex)
+                      |               |
+                      v               v
+                  Transformers.js   @mlc-ai/web-llm (WebGPU)
+                      |
+                      no model?
+                      |
+                      v
+                  localAiFallbackService.ts (heuristics)
 ```
 
 **Concurrency Controls:**
@@ -190,7 +234,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 npm run dev              # Vite dev server (localhost:5173)
 npm run build            # Production build (Vite 7 + PWA manifest injection)
-npm test                 # Vitest unit/integration (928+ tests)
+npm test                 # Vitest unit/integration (960+ tests)
 npm run test:e2e         # Playwright E2E
 npm run test:ct          # Playwright Component tests
 npm run lint:full        # ESLint entire project

@@ -31,7 +31,10 @@ export const usePwaInstall = () => {
         const beforeInstallPromptHandler = (e: Event) => {
             console.debug('[PWA] beforeinstallprompt event fired.')
             e.preventDefault() // Prevent the mini-infobar from appearing automatically.
-            setDeferredPrompt(e as BeforeInstallPromptEvent)
+            if ('prompt' in e) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- BeforeInstallPromptEvent extends Event, runtime-checked via 'prompt' in e
+                setDeferredPrompt(e as BeforeInstallPromptEvent)
+            }
 
             const lastDismissedAt = Number(localStorage.getItem(PWA_INSTALL_HINT_KEY) || 0)
             if (Date.now() - lastDismissedAt > INSTALL_HINT_COOLDOWN_MS) {

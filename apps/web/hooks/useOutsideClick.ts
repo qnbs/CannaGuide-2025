@@ -17,7 +17,7 @@ export const useOutsideClick = <T extends HTMLElement = HTMLElement>(
 
     const stableListener = useCallback((event: Event) => {
         const el = ref.current
-        if (!el || el.contains(event.target as Node)) {
+        if (!el || (event.target instanceof Node && el.contains(event.target))) {
             return
         }
         handlerRef.current(event)

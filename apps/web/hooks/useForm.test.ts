@@ -3,7 +3,10 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useForm } from './useForm'
 
-const fakeEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent
+function createFakeEvent(): React.FormEvent {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- test mock
+    return { preventDefault: vi.fn() } as unknown as React.FormEvent
+}
 
 describe('useForm', () => {
     it('initializes with given values', () => {
@@ -61,7 +64,7 @@ describe('useForm', () => {
             }),
         )
         act(() => {
-            result.current.handleSubmit(fakeEvent)
+            result.current.handleSubmit(createFakeEvent())
         })
         expect(onSubmit).toHaveBeenCalledWith({ name: 'OK' })
     })
@@ -77,7 +80,7 @@ describe('useForm', () => {
             }),
         )
         act(() => {
-            result.current.handleSubmit(fakeEvent)
+            result.current.handleSubmit(createFakeEvent())
         })
         expect(onSubmit).not.toHaveBeenCalled()
         expect(result.current.errors.name).toBe('required')
@@ -95,7 +98,7 @@ describe('useForm', () => {
             }),
         )
         act(() => {
-            result.current.handleSubmit(fakeEvent)
+            result.current.handleSubmit(createFakeEvent())
         })
         expect(result.current.errors.name).toBe('required')
 
@@ -103,7 +106,7 @@ describe('useForm', () => {
             result.current.handleChange('name', 'fixed')
         })
         act(() => {
-            result.current.handleSubmit(fakeEvent)
+            result.current.handleSubmit(createFakeEvent())
         })
         expect(result.current.errors.name).toBeUndefined()
     })

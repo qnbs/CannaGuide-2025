@@ -10,11 +10,12 @@ export const useFocusTrap = (isOpen: boolean) => {
     useEffect(() => {
         if (!isOpen || !containerRef.current) return
 
-        previouslyFocusedElement.current = document.activeElement as HTMLElement
+        previouslyFocusedElement.current =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null
 
         const focusableElements = Array.from(
-            containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS),
-        ) as HTMLElement[]
+            containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS),
+        )
 
         if (focusableElements.length > 0) {
             // Delay focus to allow for modal transitions

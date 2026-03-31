@@ -128,8 +128,8 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 10. **State Management Split:**
     - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner. RTK Query for AI API caching (9 endpoints).
-    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state). No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
-    - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores.
+    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI), `sensorStore` (real-time sensor data). No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
+    - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. Components must import AI services from `aiFacade`, not from individual service files.
 
 ---
 
@@ -190,7 +190,8 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 ### AI Integration
 
-- All cloud AI calls go through `services/geminiService.ts` or provider abstraction
+- All AI calls go through `services/aiFacade.ts` (public entry point), never through individual services directly
+- Cloud AI routes through `aiProviderService.ts` (imports configs from `@cannaguide/ai-core`) and `geminiService.ts`
 - Rate limiting: 15 req/min sliding window
 - Use `responseSchema` for structured JSON output
 - RAG via `growLogRagService.ts` for journal context

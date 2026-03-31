@@ -14,6 +14,8 @@ const OPTIONAL_ML_EXTERNALS = [
     '@mlc-ai/web-llm',
     'onnxruntime-web',
     '@tauri-apps/api/core',
+    '@tauri-apps/plugin-notification',
+    '@capacitor/local-notifications',
 ]
 
 // Resolve which ML modules are actually missing so we can stub them at build time.

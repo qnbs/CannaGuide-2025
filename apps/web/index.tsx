@@ -299,6 +299,10 @@ const mountHydratedApp = async () => {
         const { proactiveCoachService } = await import('@/services/proactiveCoachService')
         proactiveCoachService.init(hydratedStore)
 
+        // Pre-request notification permissions so native alerts work immediately
+        const { requestNotificationPermission } = await import('@/services/nativeBridgeService')
+        void requestNotificationPermission()
+
         // 6. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)
     } catch (error) {

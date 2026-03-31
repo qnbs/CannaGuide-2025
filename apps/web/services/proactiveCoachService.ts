@@ -158,6 +158,26 @@ async function requestAiAdvice(plant: Plant, breach: Breach): Promise<void> {
             plantName: plant.name,
         })
 
+        // Push native OS notification so the user is alerted even when the
+        // app is minimised or in the background.
+        try {
+            const { sendNotification } = await import('@/services/nativeBridgeService')
+            const metricLabels: Record<AlertMetric, string> = {
+                temperature: 'Temperature',
+                humidity: 'Humidity',
+                vpd: 'VPD',
+                ph: 'pH',
+                ec: 'EC',
+            }
+            void sendNotification({
+                title: `${plant.name}: ${metricLabels[breach.metric]} critical`,
+                body: advice.slice(0, 200),
+                tag: `coach_${plant.id}_${breach.metric}`,
+            })
+        } catch {
+            // Native notification is best-effort -- never block the alert flow
+        }
+
         setCooldown(plant.id, breach.metric)
     } catch {
         // Silently swallow -- the coach is best-effort

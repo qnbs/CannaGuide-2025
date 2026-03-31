@@ -59,6 +59,25 @@ declare module '@tauri-apps/api/core' {
     export function invoke<T = unknown>(cmd: string, args?: Record<string, unknown>): Promise<T>
 }
 
+declare module '@tauri-apps/plugin-notification' {
+    export function isPermissionGranted(): Promise<boolean>
+    export function requestPermission(): Promise<'granted' | 'denied' | 'default'>
+    export function sendNotification(options: { title: string; body?: string }): void
+}
+
+declare module '@capacitor/local-notifications' {
+    export interface LocalNotificationSchema {
+        title: string
+        body: string
+        id: number
+        schedule?: { at: Date } | undefined
+    }
+    export const LocalNotifications: {
+        requestPermissions(): Promise<{ display: 'granted' | 'denied' | 'prompt' }>
+        schedule(options: { notifications: LocalNotificationSchema[] }): Promise<unknown>
+    }
+}
+
 // WebGPU types (not available in all TS lib targets)
 interface GPU {
     requestAdapter(options?: Record<string, unknown>): Promise<GPUAdapter | null>

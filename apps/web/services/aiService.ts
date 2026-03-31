@@ -1,5 +1,5 @@
 import type { ImageStyle } from '@/types/aiProvider'
-import { localAiPreloadService } from '@/services/localAiPreloadService'
+import { localAiPreloadService } from '@/services/localAiInfrastructureService'
 import { localAiFallbackService } from '@/services/localAiFallbackService'
 import { growLogRagService } from '@/services/growLogRagService'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'

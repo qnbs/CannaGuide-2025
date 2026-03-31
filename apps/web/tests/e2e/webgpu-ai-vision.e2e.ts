@@ -92,7 +92,8 @@ test.describe('WebGPU AI Vision Pipeline', () => {
         await injectCameraFeedMock(page)
     })
 
-    test('app boots without crash when WebGPU mock is active', async ({ page }) => {
+    test('app boots without crash when WebGPU mock is active', async ({ page, browserName }) => {
+        test.skip(browserName === 'firefox', 'WebGPU not available in Firefox stable')
         const tracker = attachRuntimeErrorTracking(page)
         await bootFreshAppPastOnboarding(page)
 
@@ -115,8 +116,9 @@ test.describe('WebGPU AI Vision Pipeline', () => {
         expect(hasGpu).toBe(true)
     })
 
-    test('app degrades gracefully when WebGPU is absent', async ({ page }) => {
-        // Override the mock — remove GPU entirely
+    test('app degrades gracefully when WebGPU is absent', async ({ page, browserName }) => {
+        test.skip(browserName === 'firefox', 'navigator.gpu injection not supported in Firefox')
+        // Override the mock -- remove GPU entirely
         await page.addInitScript(() => {
             Object.defineProperty(navigator, 'gpu', {
                 value: undefined,

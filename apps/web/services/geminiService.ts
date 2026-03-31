@@ -297,7 +297,7 @@ const getEducationalUseOnlyInstruction = (lang: Language): string => {
     return instructions[lang] ?? instructions['en']
 }
 
-import { localAiPreloadService } from '@/services/localAiPreloadService'
+import { localAiPreloadService } from '@/services/localAiInfrastructureService'
 
 const getLocalAiService = async () => {
     const module = await import('@/services/localAI')

@@ -7,13 +7,14 @@ import {
     type QuantizationLevel,
     type ModelSizeTier,
 } from './localAIModelLoader'
-import { localAiPreloadService, type LocalAiPreloadStatus } from './localAiPreloadService'
 import {
+    localAiPreloadService,
+    type LocalAiPreloadStatus,
     getSnapshot,
     type TelemetrySnapshot,
     loadPersistedSnapshot,
-} from './localAiTelemetryService'
-import { getCacheSize } from './localAiCacheService'
+    getCacheSize,
+} from './localAiInfrastructureService'
 
 /**
  * Local AI Health Service — monitors the health, performance, and resource

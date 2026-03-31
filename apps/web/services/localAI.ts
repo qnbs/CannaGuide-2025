@@ -20,13 +20,14 @@ import {
     getResolvedProfile,
     type LocalAiPipeline,
 } from './localAIModelLoader'
-import { getCachedInference, setCachedInference } from './localAiCacheService'
 import {
+    getCachedInference,
+    setCachedInference,
     createInferenceTimer,
     recordCacheHit,
     recordCacheMiss,
     debouncedPersistSnapshot,
-} from './localAiTelemetryService'
+} from './localAiInfrastructureService'
 import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { streamTextGeneration } from './localAiStreamingService'
 import {

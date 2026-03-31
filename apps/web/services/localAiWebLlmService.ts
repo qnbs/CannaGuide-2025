@@ -7,7 +7,7 @@
 
 import { captureLocalAiError } from '@/services/sentryService'
 import { getResolvedProfile } from './localAIModelLoader'
-import { createInferenceTimer } from './localAiTelemetryService'
+import { createInferenceTimer } from './localAiInfrastructureService'
 import {
     setEvictWebLlmHook,
     setRehydrateWebLlmHook,

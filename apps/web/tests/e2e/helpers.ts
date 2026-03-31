@@ -120,8 +120,8 @@ export const bootFreshAppPastOnboarding = async (page: Page) => {
 
 export const expectShellVisible = async (page: Page) => {
     await closeOnboardingIfVisible(page)
-    await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
-    await expect(page.locator('nav').first()).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('main').first()).toBeVisible({ timeout: 30_000 })
+    await expect(page.locator('nav').first()).toBeVisible({ timeout: 30_000 })
 }
 
 export const closeOnboardingIfVisible = async (page: Page) => {

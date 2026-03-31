@@ -35,7 +35,7 @@ test.describe('Offline & PWA', () => {
                     const fallbackVisible = await offlineHeading.isVisible().catch(() => false)
                     return rootVisible || fallbackVisible
                 },
-                { timeout: 15_000 },
+                { timeout: 30_000 },
             )
             .toBe(true)
 

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// AI Provider Abstraction – Multi-Model BYOK Switch
+// AI Provider Abstraction -- Multi-Model BYOK Switch
 // ---------------------------------------------------------------------------
 // Supports Gemini (native), OpenAI-compatible (xAI/Grok), and Anthropic (Claude).
 // Provider selection + per-provider API keys are persisted in localStorage.
@@ -7,93 +7,15 @@
 
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { encrypt, decrypt, isEncryptedPayload, ensureEncrypted } from '@/services/cryptoService'
+import {
+    PROVIDER_CONFIGS,
+    isKeyRotationDue,
+    isValidProviderKeyFormat as coreIsValidKeyFormat,
+} from '@cannaguide/ai-core'
+import type { AiProvider, AiProviderConfig, AiProviderKeyMetadata } from '@cannaguide/ai-core'
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export type AiProvider = 'gemini' | 'openai' | 'xai' | 'anthropic'
-
-export interface AiProviderConfig {
-    id: AiProvider
-    label: string
-    keyPattern: RegExp
-    placeholder: string
-    keyStorageKey: string
-    getKeyUrl: string
-    models: { text: string; json: string; image?: string; deepDive?: string }
-}
-
-export interface AiProviderKeyMetadata {
-    updatedAt: number
-}
-
-const KEY_ROTATION_WINDOW_MS = 90 * 24 * 60 * 60 * 1000
-
-const isRotationDue = (metadata: AiProviderKeyMetadata | null): boolean => {
-    if (!metadata) return false
-    return Date.now() - metadata.updatedAt >= KEY_ROTATION_WINDOW_MS
-}
-
-// ---------------------------------------------------------------------------
-// Provider Configurations
-// ---------------------------------------------------------------------------
-
-const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
-    gemini: {
-        id: 'gemini',
-        label: 'Google Gemini',
-        keyPattern: /^AIza[0-9A-Za-z_-]{20,}$/,
-        placeholder: 'AIza...',
-        keyStorageKey: 'geminiApiKey',
-        getKeyUrl: 'https://aistudio.google.com/app/apikey',
-        models: {
-            text: 'gemini-2.5-flash',
-            json: 'gemini-2.5-flash',
-            image: 'gemini-2.0-flash-preview-image-generation',
-            deepDive: 'gemini-2.5-pro',
-        },
-    },
-    openai: {
-        id: 'openai',
-        label: 'OpenAI',
-        keyPattern: /^sk-[A-Za-z0-9_-]{20,}$/,
-        placeholder: 'sk-...',
-        keyStorageKey: 'openaiApiKey',
-        getKeyUrl: 'https://platform.openai.com/api-keys',
-        models: {
-            text: 'gpt-4o-mini',
-            json: 'gpt-4o-mini',
-            deepDive: 'gpt-4o',
-        },
-    },
-    xai: {
-        id: 'xai',
-        label: 'xAI (Grok)',
-        keyPattern: /^xai-[A-Za-z0-9_-]{20,}$/,
-        placeholder: 'xai-...',
-        keyStorageKey: 'xaiApiKey',
-        getKeyUrl: 'https://console.x.ai/',
-        models: {
-            text: 'grok-3-mini-fast',
-            json: 'grok-3-mini-fast',
-            deepDive: 'grok-3',
-        },
-    },
-    anthropic: {
-        id: 'anthropic',
-        label: 'Anthropic (Claude)',
-        keyPattern: /^sk-ant-[A-Za-z0-9_-]{20,}$/,
-        placeholder: 'sk-ant-...',
-        keyStorageKey: 'anthropicApiKey',
-        getKeyUrl: 'https://console.anthropic.com/settings/keys',
-        models: {
-            text: 'claude-sonnet-4-20250514',
-            json: 'claude-sonnet-4-20250514',
-            deepDive: 'claude-sonnet-4-20250514',
-        },
-    },
-}
+// Re-export types for existing local consumers
+export type { AiProvider, AiProviderConfig, AiProviderKeyMetadata }
 
 // ---------------------------------------------------------------------------
 // Provider Selection (persisted in localStorage)
@@ -154,7 +76,7 @@ async function getProviderApiKey(provider: AiProvider): Promise<string | null> {
     if (!raw || typeof raw !== 'string') return null
 
     const metadata = loadProviderMetadata(provider)
-    if (isRotationDue(metadata)) {
+    if (isKeyRotationDue(metadata)) {
         await clearProviderApiKey(provider)
         return null
     }
@@ -219,7 +141,7 @@ async function getMaskedProviderApiKey(provider: AiProvider): Promise<string | n
 }
 
 function isValidProviderKeyFormat(provider: AiProvider, apiKey: string): boolean {
-    return PROVIDER_CONFIGS[provider].keyPattern.test(apiKey.trim())
+    return coreIsValidKeyFormat(provider, apiKey)
 }
 
 function getProviderKeyMetadata(provider: AiProvider): AiProviderKeyMetadata | null {
@@ -227,7 +149,7 @@ function getProviderKeyMetadata(provider: AiProvider): AiProviderKeyMetadata | n
 }
 
 function isProviderKeyRotationDue(provider: AiProvider): boolean {
-    return isRotationDue(loadProviderMetadata(provider))
+    return isKeyRotationDue(loadProviderMetadata(provider))
 }
 
 // ---------------------------------------------------------------------------

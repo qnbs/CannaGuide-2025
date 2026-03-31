@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@cannaguide/ai-core": "*",
+        "@cannaguide/ui": "*",
         "@google/genai": "^1.47.0",
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-select": "^2.2.6",

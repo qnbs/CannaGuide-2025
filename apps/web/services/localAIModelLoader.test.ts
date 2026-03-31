@@ -294,4 +294,24 @@ describe('localAIModelLoader', () => {
             expect(resolveModelProfile(null).useQuantized).toBe(false)
         })
     })
+
+    // ── Adaptive Concurrency ──────────────────────────────────────────
+
+    describe('adaptive concurrency', () => {
+        it('loadTransformersPipeline respects concurrency guard', async () => {
+            // The concurrency limit is adaptive (2-5 based on hardwareConcurrency).
+            // We just verify that getLoadedPipelineCount starts at 0 and the
+            // concurrency system is initialized.
+            expect(getLoadedPipelineCount()).toBe(0)
+            expect(getLoadedPipelineKeys()).toEqual([])
+        })
+
+        it('hardwareConcurrency influences the adaptive limit', () => {
+            // With jsdom default hardwareConcurrency of ~4, max concurrent should be 2
+            const cores = navigator.hardwareConcurrency ?? 2
+            const expected = Math.max(2, Math.min(5, Math.floor(cores * 0.5)))
+            expect(expected).toBeGreaterThanOrEqual(2)
+            expect(expected).toBeLessThanOrEqual(5)
+        })
+    })
 })

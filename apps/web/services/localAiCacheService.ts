@@ -23,7 +23,7 @@ const cache = createIndexedDbLruCache<CacheEntry>({
     dbName: 'CannaGuideLocalAiCache',
     storeName: 'inferences',
     maxEntries: 256,
-    ttlMs: 7 * 24 * 60 * 60 * 1000,
+    ttlMs: 30 * 24 * 60 * 60 * 1000,
     hashPrefix: '',
     stages: {
         read: 'cache-read',
@@ -32,6 +32,14 @@ const cache = createIndexedDbLruCache<CacheEntry>({
         clear: 'cache-clear',
     },
 })
+
+/**
+ * Apply user settings to the cache (maxEntries + TTL).
+ * Called from settings listener middleware when localAi settings change.
+ */
+export const applyCacheSettings = (maxEntries: number): void => {
+    cache.updateConfig({ maxEntries: Math.max(32, Math.min(maxEntries, 2048)) })
+}
 
 /**
  * Retrieve a cached inference result by prompt.

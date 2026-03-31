@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 13 namespaces)
-- **Testing:** Vitest (951+ tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (960+ tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -62,12 +62,19 @@ apps/
   desktop/               # Tauri v2 desktop wrapper (Rust IPC commands)
 
 packages/
-  ai-core/               # Shared AI types + ML dependency isolation
+  ai-core/               # Shared AI types, provider configs, key validation, ML isolation
     package.json         # @cannaguide/ai-core -- ML libs as optionalDependencies
     src/
-      index.ts           # AI types, providers, schemas
+      index.ts           # Re-exports types, configs, validation, schemas
+      providers.ts       # PROVIDER_CONFIGS, key validation (isKeyRotationDue, isValidProviderKeyFormat)
+      schemas.ts         # Zod schemas for AI response validation
+      types.ts           # AI response types (AIResponse, PlantDiagnosisResponse, etc.)
       ml.ts              # Lazy loaders: loadTransformers(), loadWebLlm(), loadGenAI()
-  ui/                    # Shared UI tokens + theme types
+  ui/                    # Shared design system tokens + Tailwind preset
+    src/
+      theme.ts           # Theme type + ThemeTokens interface
+      tokens.css         # 9 cannabis theme CSS custom properties (478 lines)
+      tailwind-preset.cjs # Shared Tailwind preset (colors, keyframes, animations, shadows)
   iot-mocks/             # ESP32 sensor mock server (port 3001)
 
 src-tauri/               # Tauri v2 desktop config (Rust backend + capabilities)
@@ -205,7 +212,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 951+ tests, 0 failures
+- Baseline: 960+ tests, 0 failures
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
 
@@ -314,8 +321,13 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/constants.ts`                                | App-wide constants                                            |
 | `apps/web/types.ts`                                    | Core TypeScript types                                         |
 | `apps/web/i18n.ts`                                     | i18next initialization                                        |
+| `packages/ai-core/src/providers.ts`                    | PROVIDER_CONFIGS map + key rotation/validation functions      |
+| `packages/ai-core/src/schemas.ts`                      | Zod schemas for AI response validation                        |
 | `packages/ai-core/src/ml.ts`                           | Lazy ML loaders (transformers, web-llm, genai)                |
 | `packages/ai-core/package.json`                        | ML optionalDependencies isolation                             |
+| `packages/ui/src/tokens.css`                           | 9 cannabis theme CSS custom properties (RGB triplets)         |
+| `packages/ui/src/tailwind-preset.cjs`                  | Shared Tailwind preset (colors, keyframes, animations)        |
+| `lighthouserc.json`                                    | Lighthouse CI config + performance budget assertions          |
 | `scripts/typecheck-filter.mjs`                         | Typecheck with RTK TS2719 filter (known upstream bug)         |
 | `scripts/generate-service-map.mjs`                     | AI service Mermaid dependency map generator                   |
 | `scripts/github/pr-push.mjs`                           | Automated PR workflow (branch -> PR -> auto-merge -> cleanup) |

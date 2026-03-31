@@ -9,6 +9,12 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./src/index.ts"
+        },
+        "./tailwind-preset": {
+            "default": "./src/tailwind-preset.cjs"
+        },
+        "./tokens.css": {
+            "default": "./src/tokens.css"
         }
     },
     "files": [

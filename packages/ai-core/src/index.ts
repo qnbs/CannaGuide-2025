@@ -7,6 +7,12 @@
 // ---------------------------------------------------------------------------
 
 export type { AiProvider, AiProviderConfig, AiProviderKeyMetadata } from './providers'
+export {
+    PROVIDER_CONFIGS,
+    KEY_ROTATION_WINDOW_MS,
+    isKeyRotationDue,
+    isValidProviderKeyFormat,
+} from './providers'
 export type {
     AIResponse,
     PlantDiagnosisResponse,

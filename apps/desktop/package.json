@@ -9,6 +9,7 @@
         "typecheck": "echo 'Rust project – no TS to check'"
     },
     "devDependencies": {
-        "@tauri-apps/api": "^2.0.0"
+        "@tauri-apps/api": "^2.0.0",
+        "@tauri-apps/plugin-notification": "^2.0.0"
     }
 }

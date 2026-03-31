@@ -269,6 +269,14 @@ export const App: React.FC = () => {
         }
     }, [isOffline, t])
 
+    // Scroll to top when view changes
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [activeView])
+
     const renderContent = () => {
         switch (activeView) {
             case View.Strains:

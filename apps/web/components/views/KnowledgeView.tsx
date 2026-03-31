@@ -1,4 +1,4 @@
-import React, { useTransition, Suspense, lazy, useMemo } from 'react'
+import React, { useTransition, useEffect, Suspense, lazy, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { KnowledgeViewTab } from '@/types'
@@ -25,6 +25,14 @@ export const KnowledgeView: React.FC = () => {
     const activeMentorPlantId = useUIStore((s) => s.activeMentorPlantId)
     const [isPending, startTransition] = useTransition()
     const contentOpacityClass = isPending ? 'opacity-50' : 'opacity-100'
+
+    // Scroll to top on tab change
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [activeTab])
 
     const activeMentorPlant = usePlantById(activeMentorPlantId)
 

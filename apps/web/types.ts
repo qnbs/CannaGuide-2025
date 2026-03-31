@@ -884,6 +884,8 @@ export interface AppSettings {
     }
     localAi: {
         forceWasm: boolean
+        /** Feature flag: enable WebGPU acceleration for local AI inference. */
+        enableWebGpu: boolean
         preferredTextModel: 'auto' | 'qwen2.5' | 'qwen3'
         enableSemanticRag: boolean
         enableSentimentAnalysis: boolean

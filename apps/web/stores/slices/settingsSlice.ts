@@ -151,6 +151,7 @@ export const defaultSettings: AppSettings = {
 
     localAi: {
         forceWasm: false,
+        enableWebGpu: true,
         preferredTextModel: 'auto',
         enableSemanticRag: true,
         enableSentimentAnalysis: true,

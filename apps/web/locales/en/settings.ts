@@ -108,6 +108,17 @@ export const settingsView = {
         forceWasm: 'Force WASM Backend',
         forceWasmHint:
             'Override WebGPU auto-detection and always use the WASM backend. Useful for debugging.',
+        enableWebGpu: 'Enable WebGPU Acceleration',
+        enableWebGpuHint:
+            'Use the GPU for local AI inference when available. Delivers 3-8x faster inference on supported devices. Disable to force CPU-only mode.',
+        webGpuTier: 'GPU tier: {{value}}',
+        webGpuVram: 'GPU VRAM: {{value}} MB',
+        webGpuVendor: 'GPU: {{value}}',
+        webGpuBatteryGated:
+            'WebGPU paused -- battery below 15%. Plug in to re-enable GPU acceleration.',
+        webGpuFeatureF16: 'shader-f16: {{value}}',
+        webGpuDeviceCleanup:
+            'GPU memory is automatically released when the tab is hidden for 30 seconds.',
         preferredModel: 'Preferred Text Model',
         modelAuto: 'Auto (Qwen2.5-1.5B)',
         modelQwen25: 'Qwen2.5-1.5B (Balanced)',

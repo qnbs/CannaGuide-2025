@@ -383,6 +383,7 @@ export const plantsView = {
         enableBtn: 'Activer les notifications',
         enabledBtn: 'Notifications activees',
         checkNowBtn: 'Verifier maintenant',
+        exportIcal: 'Exporter iCal',
         statusLabel: 'Statut: {{permission}}. Background Sync periodique utilise lorsque supporte.',
         batchTitle: 'QR de rappel par lot',
         batchDescription:

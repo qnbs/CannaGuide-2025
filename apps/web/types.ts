@@ -1003,6 +1003,7 @@ export interface ArchivedMentorResponse {
     query: string
     title: string
     content: string
+    feedback?: 'positive' | 'negative'
     uiHighlights?: { elementId: string; plantId?: string }[]
 }
 
@@ -1012,6 +1013,7 @@ export interface ArchivedAdvisorResponse extends AIResponse {
     plantId: string
     plantStage: PlantStage
     query: string // What was asked, or "Proactive Diagnosis"
+    feedback?: 'positive' | 'negative'
 }
 
 export interface SavedStrainTip extends StructuredGrowTips {

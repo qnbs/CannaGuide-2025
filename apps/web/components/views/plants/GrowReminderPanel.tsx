@@ -6,6 +6,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppSelector } from '@/stores/store'
 import { selectActivePlants, selectSettings } from '@/stores/selectors'
 import { growReminderService } from '@/services/growReminderService'
+import { downloadICalFile } from '@/services/icalExportService'
 import { QRCodeSVG } from 'qrcode.react'
 
 const browserWindow = typeof window === 'undefined' ? null : window
@@ -117,6 +118,15 @@ const GrowReminderPanelComponent: React.FC = () => {
                 >
                     <PhosphorIcons.Lightning className="w-5 h-5 mr-2" />
                     {t('plantsView.growReminderPanel.checkNowBtn')}
+                </Button>
+                <Button
+                    onClick={() => downloadICalFile(reminders)}
+                    variant="secondary"
+                    className="w-full"
+                    disabled={reminders.length === 0}
+                >
+                    <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2" />
+                    {t('plantsView.growReminderPanel.exportIcal')}
                 </Button>
             </div>
 

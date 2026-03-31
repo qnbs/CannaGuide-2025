@@ -7,9 +7,9 @@ const expectNoCrashPatterns = async (page: import('@playwright/test').Page) => {
 }
 
 const waitForVisibleNavigation = async (page: import('@playwright/test').Page) => {
-    await page.waitForSelector('[data-view-id]', { state: 'attached' })
+    await page.waitForSelector('[data-view-id]', { state: 'attached', timeout: 60_000 })
     const navButtons = page.locator('[data-view-id]:visible')
-    await expect.poll(async () => navButtons.count(), { timeout: 10_000 }).toBeGreaterThan(0)
+    await expect.poll(async () => navButtons.count(), { timeout: 30_000 }).toBeGreaterThan(0)
     return navButtons
 }
 

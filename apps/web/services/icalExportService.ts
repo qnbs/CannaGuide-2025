@@ -2,9 +2,30 @@ import type { GrowReminder } from '@/services/growReminderService'
 
 const CRLF = '\r\n'
 const PRODID = '-//CannaGuide 2025//Grow Calendar//EN'
+const MAX_LINE_OCTETS = 75
 
 const escapeICalText = (text: string): string =>
-    text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
+    text
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\r\n/g, '\\n')
+        .replace(/\r/g, '\\n')
+        .replace(/\n/g, '\\n')
+
+/** RFC 5545 Section 3.1: fold content lines longer than 75 octets. */
+const foldLine = (line: string): string => {
+    if (line.length <= MAX_LINE_OCTETS) return line
+
+    const parts: string[] = [line.slice(0, MAX_LINE_OCTETS)]
+    let offset = MAX_LINE_OCTETS
+    while (offset < line.length) {
+        // Continuation lines start with a single space (counts toward 75 octets)
+        parts.push(' ' + line.slice(offset, offset + MAX_LINE_OCTETS - 1))
+        offset += MAX_LINE_OCTETS - 1
+    }
+    return parts.join(CRLF)
+}
 
 const formatICalDate = (timestamp: number): string => {
     const d = new Date(timestamp)
@@ -51,7 +72,7 @@ const buildVEvent = (reminder: GrowReminder): string => {
         'END:VEVENT',
     ]
 
-    return lines.join(CRLF)
+    return lines.map(foldLine).join(CRLF)
 }
 
 export const generateICalString = (reminders: GrowReminder[]): string => {
@@ -63,6 +84,10 @@ export const generateICalString = (reminders: GrowReminder[]): string => {
         'METHOD:PUBLISH',
         'X-WR-CALNAME:CannaGuide Grow Calendar',
     ].join(CRLF)
+
+    if (reminders.length === 0) {
+        return header + CRLF + 'END:VCALENDAR' + CRLF
+    }
 
     const events = reminders.map(buildVEvent).join(CRLF)
 

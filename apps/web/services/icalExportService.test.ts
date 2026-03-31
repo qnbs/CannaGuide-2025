@@ -65,11 +65,31 @@ describe('icalExportService', () => {
         expect(ical).toContain('SUMMARY:Test\\; with\\, special\\nchars')
     })
 
-    it('generates empty calendar for no reminders', () => {
+    it('escapes carriage return characters', () => {
+        const ical = generateICalString([createReminder({ body: 'Line1\r\nLine2\rLine3' })])
+        expect(ical).toContain('DESCRIPTION:Line1\\nLine2\\nLine3')
+    })
+
+    it('generates empty calendar without double CRLF', () => {
         const ical = generateICalString([])
 
         expect(ical).toContain('BEGIN:VCALENDAR')
         expect(ical).toContain('END:VCALENDAR')
         expect(ical).not.toContain('BEGIN:VEVENT')
+        // No double CRLF between header and footer
+        expect(ical).not.toContain('\r\n\r\nEND:VCALENDAR')
+    })
+
+    it('folds lines longer than 75 octets per RFC 5545', () => {
+        const longTitle = 'A'.repeat(100)
+        const ical = generateICalString([createReminder({ title: longTitle })])
+
+        // The folded line should contain CRLF + space continuation
+        const summaryLine = `SUMMARY:${'A'.repeat(100)}`
+        // Original line is 108 chars, should be folded
+        expect(ical).not.toContain(summaryLine)
+        // First chunk is 75 chars, continuation starts with space
+        expect(ical).toContain('SUMMARY:' + 'A'.repeat(67))
+        expect(ical).toContain('\r\n ' + 'A'.repeat(33))
     })
 })

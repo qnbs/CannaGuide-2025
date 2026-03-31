@@ -14,9 +14,7 @@ import userStrainsReducer from '@/stores/slices/userStrainsSlice'
 import sandboxReducer from '@/stores/slices/sandboxSlice'
 import savedItemsReducer from '@/stores/slices/savedItemsSlice'
 import genealogyReducer from '@/stores/slices/genealogySlice'
-import ttsReducer from '@/stores/slices/ttsSlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
-import navigationReducer from '@/stores/slices/navigationSlice'
 
 import type { RootState } from '@/stores/store'
 
@@ -31,9 +29,7 @@ const rootReducer = combineReducers({
     sandbox: sandboxReducer,
     savedItems: savedItemsReducer,
     genealogy: genealogyReducer,
-    tts: ttsReducer,
     simulation: simulationReducer,
-    navigation: navigationReducer,
 })
 
 export function createTestStore(preloadedState?: Partial<RootState>) {

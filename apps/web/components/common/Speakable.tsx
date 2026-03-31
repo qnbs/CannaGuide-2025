@@ -1,9 +1,9 @@
 import React, { useRef } from 'react'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { selectCurrentlySpeakingId, selectSettings } from '@/stores/selectors'
+import { selectSettings } from '@/stores/selectors'
 import { useTranslation } from 'react-i18next'
-import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { addToTtsQueue } from '@/stores/slices/ttsSlice'
+import { useAppSelector } from '@/stores/store'
+import { useTtsStore } from '@/stores/useTtsStore'
 
 interface SpeakableProps {
     children: React.ReactNode
@@ -13,8 +13,8 @@ interface SpeakableProps {
 
 export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, className }) => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const currentlySpeakingId = useAppSelector(selectCurrentlySpeakingId)
+    const currentlySpeakingId = useTtsStore((s) => s.currentlySpeakingId)
+    const addToTtsQueue = useTtsStore((s) => s.addToTtsQueue)
     const settings = useAppSelector(selectSettings)
     const highlightEnabled = settings.tts.highlightSpeakingText
     const ref = useRef<HTMLDivElement>(null)
@@ -26,7 +26,7 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
         if (ref.current) {
             const textToSpeak = ref.current.innerText ?? ''
             if (textToSpeak.trim()) {
-                dispatch(addToTtsQueue({ id: elementId, text: textToSpeak }))
+                addToTtsQueue({ id: elementId, text: textToSpeak })
             }
         }
     }

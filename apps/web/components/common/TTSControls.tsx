@@ -1,16 +1,16 @@
 import React from 'react'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
-import { selectTtsState, selectTtsEnabled } from '@/stores/selectors'
+import { selectTtsEnabled, selectSettings } from '@/stores/selectors'
 import { Button } from '@/components/common/Button'
-import { useAppSelector, useAppDispatch } from '@/stores/store'
-import { playTts, pauseTts, stopTts, nextTts } from '@/stores/slices/ttsSlice'
+import { useAppSelector } from '@/stores/store'
+import { useTtsStore } from '@/stores/useTtsStore'
 
 export const TTSControls: React.FC = () => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const { isTtsSpeaking, isTtsPaused, ttsQueue } = useAppSelector(selectTtsState);
-    const ttsEnabled = useAppSelector(selectTtsEnabled);
+    const settings = useAppSelector(selectSettings)
+    const { isTtsSpeaking, isTtsPaused, ttsQueue, play, pause, stop, next } = useTtsStore()
+    const ttsEnabled = useAppSelector(selectTtsEnabled)
 
     if (!ttsEnabled || (ttsQueue.length === 0 && !isTtsSpeaking && !isTtsPaused)) {
         return null
@@ -23,7 +23,7 @@ export const TTSControls: React.FC = () => {
                     variant="secondary"
                     size="sm"
                     className="!p-2 rounded-full"
-                    onClick={() => dispatch(pauseTts())}
+                    onClick={() => pause()}
                     aria-label={t('settingsView.tts.pause')}
                 >
                     <PhosphorIcons.Pause className="w-5 h-5" />
@@ -33,7 +33,7 @@ export const TTSControls: React.FC = () => {
                     variant="primary"
                     size="sm"
                     className="!p-2 rounded-full"
-                    onClick={() => dispatch(playTts())}
+                    onClick={() => play(settings)}
                     aria-label={t('settingsView.tts.play')}
                 >
                     <PhosphorIcons.Play className="w-5 h-5" />
@@ -43,7 +43,7 @@ export const TTSControls: React.FC = () => {
                 variant="secondary"
                 size="sm"
                 className="!p-2 rounded-full"
-                onClick={() => dispatch(nextTts())}
+                onClick={() => next()}
                 disabled={ttsQueue.length <= 1 && !isTtsPaused}
                 aria-label={t('settingsView.tts.next')}
             >
@@ -53,7 +53,7 @@ export const TTSControls: React.FC = () => {
                 variant="danger"
                 size="sm"
                 className="!p-2 rounded-full"
-                onClick={() => dispatch(stopTts())}
+                onClick={() => stop()}
                 aria-label={t('settingsView.tts.stop')}
             >
                 <PhosphorIcons.Stop className="w-5 h-5" />

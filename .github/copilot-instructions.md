@@ -14,7 +14,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 ### Tech Stack
 
 - **Frontend:** React 19 + TypeScript (strict mode, zero `any`)
-- **State:** Redux Toolkit + RTK Query (memoized selectors, listener middleware)
+- **State:** Redux Toolkit (persisted app-state) + Zustand (transient UI-state) + RTK Query (AI API caching)
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
 - **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 15 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
@@ -118,6 +118,11 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, and pagehide teardown. All 7 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene) use this bus. See `docs/worker-bus.md`.
 
 9. **Seedbank API:** `seedbankService.ts` fetches from SeedFinder.eu via CORS proxy cascade (allorigins -> corsproxy.io). 5-min in-memory TTL cache. `isLocalOnlyMode()` guard. Deterministic mock fallback when API unavailable or `VITE_SEEDFINDER_API_KEY` not set.
+
+10. **State Management Split:**
+    - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner. RTK Query for AI API caching (9 endpoints).
+    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state). No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
+    - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores.
 
 ---
 

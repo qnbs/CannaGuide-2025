@@ -4,7 +4,7 @@ import './styles.css'
 import { Provider } from 'react-redux'
 import { I18nextProvider } from 'react-i18next'
 import { App } from '@/components/views/plants/App'
-import { createAppStore, AppStore, RootState } from '@/stores/store'
+import { createAppStore, createAppStoreSync, AppStore, RootState } from '@/stores/store'
 import { i18nPromise, i18nInstance } from './i18n'
 import { getUISnapshot } from './stores/useUIStore'
 import { strainService } from './services/strainService'
@@ -155,6 +155,20 @@ const renderBootstrapConsentGate = (onAccept: () => Promise<void>) => {
     )
 }
 
+const renderAppWithStore = (store: AppStore) => {
+    root.render(
+        <React.StrictMode>
+            <ErrorBoundary>
+                <Provider store={store}>
+                    <I18nextProvider i18n={i18nInstance}>
+                        <App />
+                    </I18nextProvider>
+                </Provider>
+            </ErrorBoundary>
+        </React.StrictMode>,
+    )
+}
+
 const mountHydratedApp = async () => {
     try {
         window.addEventListener(
@@ -175,27 +189,21 @@ const mountHydratedApp = async () => {
         // 1. Wait for i18n to be ready
         await i18nPromise
 
-        // 2. Create the store, which includes async hydration from IndexedDB
-        const store: AppStore = await createAppStore()
+        // 2. Render app shell immediately with an empty store so the browser
+        //    can paint while IndexedDB hydration runs in the background.
+        //    This prevents large databases from blocking First Contentful Paint.
+        const shellStore: AppStore = createAppStoreSync()
+        renderAppWithStore(shellStore)
 
-        // 3. Render the app with the fully hydrated store
-        root.render(
-            <React.StrictMode>
-                {/* FIX: Wrap the application in an ErrorBoundary to catch runtime errors. */}
-                <ErrorBoundary>
-                    <Provider store={store}>
-                        <I18nextProvider i18n={i18nInstance}>
-                            <App />
-                        </I18nextProvider>
-                    </Provider>
-                </ErrorBoundary>
-            </React.StrictMode>,
-        )
+        // 3. Hydrate from IndexedDB in the background (non-blocking).
+        //    Once complete, re-render with the fully hydrated store.
+        const hydratedStore: AppStore = await createAppStore()
+        renderAppWithStore(hydratedStore)
 
         // 4. Setup robust, event-driven persistence
         const saveState = async () => {
             try {
-                const state = store.getState() as RootState
+                const state = hydratedStore.getState() as RootState
                 const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
                     state.simulation,
                 )
@@ -236,11 +244,11 @@ const mountHydratedApp = async () => {
         }
 
         let saveTimeout: number
-        store.subscribe(() => {
+        hydratedStore.subscribe(() => {
             // Debounced save for frequent actions
             clearTimeout(saveTimeout)
             const persistenceDelay =
-                store.getState().settings.settings.data.persistenceIntervalMs ?? 1500
+                hydratedStore.getState().settings.settings.data.persistenceIntervalMs ?? 1500
             saveTimeout = window.setTimeout(() => {
                 void saveState()
             }, persistenceDelay)
@@ -263,16 +271,16 @@ const mountHydratedApp = async () => {
         // 5. Now that the store is hydrated and the app is rendered, initialize services
         // and dispatch post-hydration actions.
         await strainService.init()
-        store.dispatch(initializeSimulation())
+        hydratedStore.dispatch(initializeSimulation())
         ttsService.init()
 
         // Sync AI mode from persisted settings into the service layer
         const { setAiMode } = await import('@/services/aiService')
-        setAiMode(store.getState().settings.settings.aiMode ?? 'hybrid')
+        setAiMode(hydratedStore.getState().settings.settings.aiMode ?? 'hybrid')
 
         // Initialize MQTT IoT sensor bridge
         const { mqttClientService } = await import('@/services/mqttClientService')
-        mqttClientService.init(store)
+        mqttClientService.init(hydratedStore)
 
         // 6. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)

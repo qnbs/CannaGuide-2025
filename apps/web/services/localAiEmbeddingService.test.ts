@@ -5,13 +5,11 @@ import {
     resetEmbeddingPipeline,
 } from '@/services/localAiEmbeddingService'
 
-vi.mock('@xenova/transformers', () => ({
-    env: {},
-    pipeline: vi.fn(async () =>
-        vi.fn(async () => ({
-            data: new Float32Array(384).fill(0.1),
-        })),
-    ),
+vi.mock('@/services/inferenceQueueService', () => ({
+    isWorkerAvailable: vi.fn(() => true),
+    enqueueInference: vi.fn(async () => ({
+        data: new Float32Array(384).fill(0.1),
+    })),
 }))
 
 vi.mock('@/i18n', () => ({

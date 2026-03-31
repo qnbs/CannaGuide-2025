@@ -4,7 +4,7 @@ on:
     push:
         branches: [main]
         paths:
-            - 'packages/iot-mocks/**'
+            - 'docker/iot-mocks/**'
             - 'docker/esp32-mock/**'
             - 'docker/tauri-mock/**'
             - 'docker-compose.yml'
@@ -12,7 +12,7 @@ on:
     pull_request:
         branches: [main]
         paths:
-            - 'packages/iot-mocks/**'
+            - 'docker/iot-mocks/**'
             - 'docker/esp32-mock/**'
             - 'docker/tauri-mock/**'
             - 'docker-compose.yml'
@@ -53,7 +53,7 @@ jobs:
 
             - name: Start ESP32 Mock
               run: |
-                  node packages/iot-mocks/src/server.mjs &
+                  node docker/iot-mocks/src/server.mjs &
                   ESP32_PID=$!
                   echo "ESP32_MOCK_PID=$ESP32_PID" >> "$GITHUB_ENV"
                   # Wait for health endpoint

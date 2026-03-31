@@ -38,7 +38,7 @@ services:
     # ── ESP32 Sensor Mock ───────────────────────────────────────────────
     esp32-mock:
         build:
-            context: ./packages/iot-mocks
+            context: ./docker/iot-mocks
             dockerfile: Dockerfile
         ports:
             - '3001:3001'

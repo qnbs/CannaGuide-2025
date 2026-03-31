@@ -125,7 +125,7 @@ updates:
           - dependencies
           - docker
     - package-ecosystem: docker
-      directory: '/packages/iot-mocks'
+      directory: '/docker/iot-mocks'
       schedule:
           interval: monthly
       open-pull-requests-limit: 2

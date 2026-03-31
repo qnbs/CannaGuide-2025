@@ -103,7 +103,7 @@ docker:
 iot:
     - changed-files:
           - any-glob-to-any-file:
-                - packages/iot-mocks/**
+                - docker/iot-mocks/**
                 - services/iotService*
                 - hooks/useSensorData.ts
 

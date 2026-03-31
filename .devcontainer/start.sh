@@ -17,8 +17,8 @@ pkill -f 'server.mjs' >/dev/null 2>&1 || true
 STARTED_3001=0
 STARTED_3002=0
 
-if [ -f "packages/iot-mocks/src/server.mjs" ]; then
-  node packages/iot-mocks/src/server.mjs >/tmp/iot-mocks-3001.log 2>&1 & disown
+if [ -f "docker/iot-mocks/src/server.mjs" ]; then
+  node docker/iot-mocks/src/server.mjs >/tmp/iot-mocks-3001.log 2>&1 & disown
   STARTED_3001=1
 fi
 

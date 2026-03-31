@@ -71,6 +71,12 @@ export type { ForkedTask }
 export const useAppDispatch: () => AppDispatch = useDispatch
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
+/**
+ * Create a store synchronously with default (empty) state.
+ * Used to render the app shell immediately while IndexedDB hydration runs.
+ */
+export const createAppStoreSync = (): AppStore => makeStore()
+
 export const createAppStore = async (): Promise<AppStore> => {
     let preloadedState: Partial<RootState> | undefined
     let persistedUiState: Partial<UIState> | undefined

@@ -1,22 +1,22 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { resetNlpPipelines } from '@/services/localAiNlpService'
 
-vi.mock('@xenova/transformers', () => ({
-    env: {},
-    pipeline: vi.fn(async (task: string) => {
-        if (task === 'sentiment-analysis') {
-            return vi.fn(async () => [{ label: 'POSITIVE', score: 0.92 }])
+vi.mock('@/services/inferenceQueueService', () => ({
+    isWorkerAvailable: vi.fn(() => true),
+    enqueueInference: vi.fn(async (task: { task: string }) => {
+        if (task.task === 'sentiment-analysis') {
+            return [{ label: 'POSITIVE', score: 0.92 }]
         }
-        if (task === 'summarization') {
-            return vi.fn(async () => [{ summary_text: 'Plant is healthy and growing well.' }])
+        if (task.task === 'summarization') {
+            return [{ summary_text: 'Plant is healthy and growing well.' }]
         }
-        if (task === 'zero-shot-classification') {
-            return vi.fn(async () => ({
+        if (task.task === 'zero-shot-classification') {
+            return {
                 labels: ['watering and irrigation', 'pH and EC', 'general question'],
                 scores: [0.85, 0.1, 0.05],
-            }))
+            }
         }
-        throw new Error(`Unknown task: ${task}`)
+        throw new Error(`Unknown task: ${task.task}`)
     }),
 }))
 

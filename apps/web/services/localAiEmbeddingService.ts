@@ -1,32 +1,65 @@
-import { createCachedPipelineLoader } from './localAIModelLoader'
+import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { captureLocalAiError } from './sentryService'
 
 /**
  * Local AI Embedding Service — computes vector embeddings using a
  * sentence-transformer model running entirely in the browser.
  *
- * Used for semantic search in the RAG pipeline, nearest-neighbor strain
- * matching, and journal similarity clustering.
+ * All inference is off-loaded to the inference Web Worker via
+ * inferenceQueueService to keep the UI thread responsive.
  */
 
 const EMBEDDING_MODEL_ID = 'Xenova/all-MiniLM-L6-v2'
 const EMBEDDING_DIMENSION = 384
-/** Timeout for a single embedding inference (30s — embeddings are fast). */
+/** Timeout for a single embedding inference (30s -- embeddings are fast). */
 const EMBEDDING_TIMEOUT_MS = 30_000
 
 /** Maximum input length in characters to prevent model OOM. */
 const MAX_INPUT_LENGTH = 512
 
-let embeddingPipelinePromise: ReturnType<typeof createCachedPipelineLoader> | null = null
-
-const loadEmbeddingPipeline = (): ReturnType<ReturnType<typeof createCachedPipelineLoader>> => {
-    if (!embeddingPipelinePromise) {
-        embeddingPipelinePromise = createCachedPipelineLoader(
-            'feature-extraction',
-            EMBEDDING_MODEL_ID,
-        )
+/** Dispatch a feature-extraction task to the inference worker. */
+const dispatchEmbedding = async (
+    input: unknown,
+    inferenceOptions?: Record<string, unknown>,
+): Promise<unknown> => {
+    if (!isWorkerAvailable()) {
+        throw new Error('Inference worker unavailable')
     }
-    return embeddingPipelinePromise()
+    return enqueueInference({
+        task: 'feature-extraction',
+        modelId: EMBEDDING_MODEL_ID,
+        input,
+        pipelineOptions: { quantized: true },
+        inferenceOptions,
+        priority: 'normal',
+        timeoutMs: EMBEDDING_TIMEOUT_MS,
+    })
+}
+
+/** Track whether we have dispatched at least one embedding (for readiness check). */
+let embeddingDispatched = false
+
+/** Extract a Float32Array embedding from the pipeline output. */
+const extractEmbedding = (raw: unknown): Float32Array => {
+    // Transformers.js feature-extraction returns a Tensor with { data, dims }.
+    // The first row represents the [CLS] pooled output.
+    const output = raw as {
+        data?: Float32Array | number[]
+        tolist?: () => number[][]
+    }
+
+    if (output.data instanceof Float32Array) {
+        return normalize(new Float32Array(output.data.slice(0, EMBEDDING_DIMENSION)))
+    }
+    if (Array.isArray(output.data)) {
+        return normalize(new Float32Array(output.data.slice(0, EMBEDDING_DIMENSION)))
+    }
+    if (typeof output.tolist === 'function') {
+        const list = output.tolist()
+        const first = Array.isArray(list[0]) ? list[0] : list
+        return normalize(new Float32Array((first as number[]).slice(0, EMBEDDING_DIMENSION)))
+    }
+    return new Float32Array(EMBEDDING_DIMENSION)
 }
 
 /** Cosine similarity between two equal-length vectors. */
@@ -55,45 +88,6 @@ const normalize = (vec: Float32Array): Float32Array => {
     return vec
 }
 
-/** Race a promise against a timeout. */
-const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-    new Promise<T>((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error('Embedding timeout')), ms)
-        promise.then(
-            (value) => {
-                clearTimeout(timer)
-                resolve(value)
-            },
-            (error) => {
-                clearTimeout(timer)
-                reject(error)
-            },
-        )
-    })
-
-/** Extract a Float32Array embedding from the pipeline output. */
-const extractEmbedding = (raw: unknown): Float32Array => {
-    // Transformers.js feature-extraction returns a Tensor with { data, dims }.
-    // The first row represents the [CLS] pooled output.
-    const output = raw as {
-        data?: Float32Array | number[]
-        tolist?: () => number[][]
-    }
-
-    if (output.data instanceof Float32Array) {
-        return normalize(new Float32Array(output.data.slice(0, EMBEDDING_DIMENSION)))
-    }
-    if (Array.isArray(output.data)) {
-        return normalize(new Float32Array(output.data.slice(0, EMBEDDING_DIMENSION)))
-    }
-    if (typeof output.tolist === 'function') {
-        const list = output.tolist()
-        const first = Array.isArray(list[0]) ? list[0] : list
-        return normalize(new Float32Array((first as number[]).slice(0, EMBEDDING_DIMENSION)))
-    }
-    return new Float32Array(EMBEDDING_DIMENSION)
-}
-
 /**
  * Compute a dense embedding for a single text input.
  * Returns a Float32Array of length 384 (MiniLM dimension).
@@ -102,11 +96,8 @@ export const embedText = async (text: string): Promise<Float32Array> => {
     const sanitized = text.trim().slice(0, MAX_INPUT_LENGTH)
     if (sanitized.length === 0) return new Float32Array(EMBEDDING_DIMENSION)
     try {
-        const pipeline = await loadEmbeddingPipeline()
-        const result = await withTimeout(
-            pipeline(sanitized, { pooling: 'mean', normalize: true }),
-            EMBEDDING_TIMEOUT_MS,
-        )
+        embeddingDispatched = true
+        const result = await dispatchEmbedding(sanitized, { pooling: 'mean', normalize: true })
         return extractEmbedding(result)
     } catch (error) {
         captureLocalAiError(error, { model: EMBEDDING_MODEL_ID, stage: 'embedding' })
@@ -121,7 +112,7 @@ export const embedText = async (text: string): Promise<Float32Array> => {
  */
 export const embedBatch = async (texts: string[]): Promise<Float32Array[]> => {
     if (texts.length === 0) return []
-    const pipeline = await loadEmbeddingPipeline()
+    embeddingDispatched = true
     const results: Float32Array[] = []
     // Process in micro-batches of 8 to avoid OOM on low-memory devices
     const BATCH = 8
@@ -131,10 +122,7 @@ export const embedBatch = async (texts: string[]): Promise<Float32Array[]> => {
             slice.map(async (t) => {
                 const sanitized = t.trim().slice(0, MAX_INPUT_LENGTH)
                 if (sanitized.length === 0) return new Float32Array(EMBEDDING_DIMENSION)
-                const r = await withTimeout(
-                    pipeline(sanitized, { pooling: 'mean', normalize: true }),
-                    EMBEDDING_TIMEOUT_MS,
-                )
+                const r = await dispatchEmbedding(sanitized, { pooling: 'mean', normalize: true })
                 return extractEmbedding(r)
             }),
         )
@@ -172,16 +160,17 @@ export const semanticRank = async (
     return scored
 }
 
-/** Check whether the embedding model has been loaded. */
-export const isEmbeddingModelReady = (): boolean => embeddingPipelinePromise !== null
+/** Check whether the embedding model has been used. */
+export const isEmbeddingModelReady = (): boolean => embeddingDispatched
 
-/** Preload the embedding model. */
+/** Preload the embedding model by dispatching a no-op inference. */
 export const preloadEmbeddingModel = async (
     onProgress?: (label: string) => void,
 ): Promise<boolean> => {
     try {
         onProgress?.('embedding-model')
-        await loadEmbeddingPipeline()
+        await dispatchEmbedding('warmup', { pooling: 'mean', normalize: true })
+        embeddingDispatched = true
         return true
     } catch {
         return false
@@ -193,5 +182,5 @@ export const EMBEDDING_DIM = EMBEDDING_DIMENSION
 
 /** Reset internal state (tests). */
 export const resetEmbeddingPipeline = (): void => {
-    embeddingPipelinePromise = null
+    embeddingDispatched = false
 }

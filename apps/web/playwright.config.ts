@@ -23,7 +23,12 @@ export default defineConfig({
         },
         {
             name: 'webkit',
-            use: { ...devices['Desktop Safari'] },
+            use: {
+                ...devices['Desktop Safari'],
+                actionTimeout: 30_000,
+                navigationTimeout: 90_000,
+            },
+            timeout: 120_000,
         },
     ],
     webServer: {

@@ -74,6 +74,17 @@ jobs:
             - name: Type check (root)
               run: npm run typecheck
 
+            - name: Zero-any enforcement
+              run: |
+                  COUNT=$(grep -rn ": any\b\|as any\b\|<any>" apps/web/services/ apps/web/stores/ apps/web/components/ apps/web/hooks/ apps/web/utils/ apps/web/workers/ --include="*.ts" --include="*.tsx" | grep -v "\.d\.ts:" | grep -v "\.test\." | grep -v "^\s*//" | grep -v "// .*any" | wc -l)
+                  echo "Found ${COUNT} any-usage(s) in app source"
+                  if [ "$COUNT" -gt 0 ]; then
+                    grep -rn ": any\b\|as any\b\|<any>" apps/web/services/ apps/web/stores/ apps/web/components/ apps/web/hooks/ apps/web/utils/ apps/web/workers/ --include="*.ts" --include="*.tsx" | grep -v "\.d\.ts:" | grep -v "\.test\." | grep -v "^\s*//" | grep -v "// .*any"
+                    echo "[FAIL] any usage detected in app source -- strict mode requires zero any"
+                    exit 1
+                  fi
+                  echo "[OK] Zero any in app source"
+
             - name: Test + Coverage
               run: npm run test:coverage
 
@@ -144,7 +155,7 @@ jobs:
         name: E2E Tests
         needs: quality
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 25
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0

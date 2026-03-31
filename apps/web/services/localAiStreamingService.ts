@@ -6,13 +6,14 @@
  */
 
 import { captureLocalAiError } from '@/services/sentryService'
-import { getCachedInference, setCachedInference } from './localAiCacheService'
 import {
+    getCachedInference,
+    setCachedInference,
     createInferenceTimer,
     recordCacheHit,
     recordCacheMiss,
     debouncedPersistSnapshot,
-} from './localAiTelemetryService'
+} from './localAiInfrastructureService'
 
 // ---------------------------------------------------------------------------
 // Types for dependency injection (keeps localAI private members private)

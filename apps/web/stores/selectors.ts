@@ -322,14 +322,14 @@ export const selectNutrientAutoAdjustRecommendation = createSelector(
 // --- Environment Analytics Selectors ---
 export interface EnvironmentLogEntry {
     timestamp: number
-    temp?: number
-    humidity?: number
-    vpd?: number
-    ec?: number
-    ph?: number
-    lightPpfd?: number
-    waterVolumeMl?: number
-    source?: 'manual' | 'iot_sensor'
+    temp?: number | undefined
+    humidity?: number | undefined
+    vpd?: number | undefined
+    ec?: number | undefined
+    ph?: number | undefined
+    lightPpfd?: number | undefined
+    waterVolumeMl?: number | undefined
+    source?: 'manual' | 'iot_sensor' | undefined
 }
 
 const envLogCache = new Map<string | null, (state: RootState) => EnvironmentLogEntry[]>()

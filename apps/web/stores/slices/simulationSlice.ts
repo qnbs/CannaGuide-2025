@@ -262,10 +262,10 @@ const simulationSlice = createSlice({
         setGlobalEnvironment: (
             state,
             action: PayloadAction<{
-                temperature?: number
-                humidity?: number
-                ph?: number
-                simulationSettings?: AppSettings['simulation']
+                temperature?: number | undefined
+                humidity?: number | undefined
+                ph?: number | undefined
+                simulationSettings?: AppSettings['simulation'] | undefined
             }>,
         ) => {
             const { temperature, humidity, ph, simulationSettings } = action.payload

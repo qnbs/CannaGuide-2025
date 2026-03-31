@@ -29,7 +29,7 @@ import { secureRandom } from '@/utils/random'
 
 const formatPlantContextForPrompt = (
     plant: Plant,
-    t: (key: string, options?: Record<string, unknown>) => string,
+    t: (key: string, options?: Record<string, unknown> | undefined) => string,
 ): string => {
     const stageDetails = t(`plantStages.${plant.stage}`)
     const problems =
@@ -313,14 +313,16 @@ type NutrientRecommendationInput = {
     currentPh: number
     optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
     readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
-    plant?: {
-        name: string
-        strain: { name: string }
-        stage: string
-        age: number
-        health: number
-        medium: { ph: number; ec: number }
-    }
+    plant?:
+        | {
+              name: string
+              strain: { name: string }
+              stage: string
+              age: number
+              health: number
+              medium: { ph: number; ec: number }
+          }
+        | undefined
 }
 
 class GeminiService implements BaseAIProvider {
@@ -409,9 +411,14 @@ class GeminiService implements BaseAIProvider {
         model: string
         contents:
             | string
-            | { parts: Array<{ text?: string; inlineData?: { data: string; mimeType: string } }> }
-        config?: Record<string, unknown>
-        fallbackModel?: string
+            | {
+                  parts: Array<{
+                      text?: string
+                      inlineData?: { data: string; mimeType: string }
+                  }>
+              }
+        config?: Record<string, unknown> | undefined
+        fallbackModel?: string | undefined
     }) {
         try {
             return await ai.models.generateContent({
@@ -489,7 +496,10 @@ class GeminiService implements BaseAIProvider {
         throw new Error(fallbackErrorKey)
     }
 
-    private getResponseTextOrThrow(response: { text?: string }, errorKey: string): string {
+    private getResponseTextOrThrow(
+        response: { text?: string | undefined },
+        errorKey: string,
+    ): string {
         if (typeof response.text !== 'string' || response.text.trim().length === 0) {
             throw new Error(errorKey)
         }
@@ -498,7 +508,7 @@ class GeminiService implements BaseAIProvider {
     }
 
     private parseJsonResponse<T>(
-        response: { text?: string },
+        response: { text?: string | undefined },
         errorKey: string,
         schema?: z.ZodSchema<T>,
     ): T {
@@ -772,7 +782,7 @@ class GeminiService implements BaseAIProvider {
         return this.parseJsonFromText<Omit<MentorMessage, 'role'>>(
             text,
             'ai.error.generic',
-            MentorMessageContentSchema,
+            MentorMessageContentSchema as z.ZodSchema<Omit<MentorMessage, 'role'>>,
         )
     }
 
@@ -807,7 +817,7 @@ class GeminiService implements BaseAIProvider {
         return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(
             response,
             'ai.error.generic',
-            MentorMessageContentSchema,
+            MentorMessageContentSchema as z.ZodSchema<Omit<MentorMessage, 'role'>>,
         )
     }
 
@@ -1133,14 +1143,16 @@ PLANT CONTEXT:
     }
 
     private buildNutrientPlantInfo(context: {
-        plant?: {
-            name: string
-            strain: { name: string }
-            stage: string
-            age: number
-            health: number
-            medium: { ph: number; ec: number }
-        }
+        plant?:
+            | {
+                  name: string
+                  strain: { name: string }
+                  stage: string
+                  age: number
+                  health: number
+                  medium: { ph: number; ec: number }
+              }
+            | undefined
     }): string {
         if (!context.plant) {
             return 'No specific plant selected.'
@@ -1171,7 +1183,9 @@ PLANT CONTEXT:
     }
 
     private buildPlantJournalContext(plant: Plant, t: ReturnType<typeof getT>): string {
-        return `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
+        const translate = (key: string, options?: Record<string, unknown> | undefined): string =>
+            t(key, options ?? {})
+        return `${formatPlantContextForPrompt(plant, translate)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
     }
 
     private buildLocalizedEducationalPrompt(prompt: string, lang: Language): string {

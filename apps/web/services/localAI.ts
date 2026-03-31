@@ -544,14 +544,16 @@ class LocalAiService implements BaseAIProvider {
             currentPh: number
             optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
             readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
-            plant?: {
-                name: string
-                strain: { name: string }
-                stage: string
-                age: number
-                health: number
-                medium: { ph: number; ec: number }
-            }
+            plant?:
+                | {
+                      name: string
+                      strain: { name: string }
+                      stage: string
+                      age: number
+                      health: number
+                      medium: { ph: number; ec: number }
+                  }
+                | undefined
         },
         lang: Language,
     ): Promise<string> {

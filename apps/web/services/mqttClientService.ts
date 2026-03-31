@@ -10,14 +10,14 @@ import type { AppStore } from '@/stores/store'
 // ---------------------------------------------------------------------------
 
 interface SensorPayload {
-    temperature?: number
-    humidity?: number
-    ec?: number
-    ph?: number
-    lightPpfd?: number
-    waterVolumeMl?: number
-    plantId?: string
-    timestamp?: number
+    temperature?: number | undefined
+    humidity?: number | undefined
+    ec?: number | undefined
+    ph?: number | undefined
+    lightPpfd?: number | undefined
+    waterVolumeMl?: number | undefined
+    plantId?: string | undefined
+    timestamp?: number | undefined
 }
 
 // ---------------------------------------------------------------------------

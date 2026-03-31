@@ -52,6 +52,8 @@ export default [
                 ecmaVersion: 2021,
                 sourceType: 'module',
                 ecmaFeatures: { jsx: true },
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname,
             },
             globals: {
                 ...globals.browser,
@@ -85,7 +87,10 @@ export default [
                 'warn',
                 { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
             ],
-            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/no-explicit-any': 'error',
+            // TypeScript strictness (total-typescript inspired)
+            '@typescript-eslint/no-unsafe-type-assertion': 'warn',
+            '@typescript-eslint/no-unnecessary-type-arguments': 'warn',
             // React Hooks
             'react-hooks/rules-of-hooks': 'error',
             'react-hooks/exhaustive-deps': 'warn',

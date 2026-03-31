@@ -26,14 +26,16 @@ type NutrientRecommendationInput = {
     currentPh: number
     optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
     readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
-    plant?: {
-        name: string
-        strain: { name: string }
-        stage: string
-        age: number
-        health: number
-        medium: { ph: number; ec: number }
-    }
+    plant?:
+        | {
+              name: string
+              strain: { name: string }
+              stage: string
+              age: number
+              health: number
+              medium: { ph: number; ec: number }
+          }
+        | undefined
 }
 
 const getGeminiService = async () => {
@@ -172,12 +174,12 @@ const buildMentorStreamPrompt = (
 const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMessage, 'role'> => {
     try {
         const parsed = JSON.parse(result) as {
-            title?: string
-            content?: string
-            uiHighlights?: string[]
+            title?: string | undefined
+            content?: string | undefined
+            uiHighlights?: string[] | undefined
         }
         if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
-            return parsed as Omit<MentorMessage, 'role'>
+            return parsed as unknown as Omit<MentorMessage, 'role'>
         }
     } catch {
         // Not valid JSON — fall through to plain text response

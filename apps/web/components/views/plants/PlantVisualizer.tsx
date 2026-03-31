@@ -81,7 +81,7 @@ const Bud: React.FC<{ cx: number; cy: number; size: number; color: string }> = (
 
 const DryingOrCuringVisual: React.FC<{
     stage: PlantStage
-    className?: string
+    className?: string | undefined
     stemColor: string
     leafColor: string
 }> = ({ stage, className, stemColor, leafColor }) => {

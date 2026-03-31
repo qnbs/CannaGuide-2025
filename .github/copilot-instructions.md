@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 13 namespaces)
-- **Testing:** Vitest (928+ tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (951+ tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -126,9 +126,12 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 ### TypeScript
 
 - Strict mode — zero `any`, zero `@ts-expect-error`
+- `exactOptionalPropertyTypes: true` — optional props must be typed as `T | undefined`
+- `noUncheckedIndexedAccess: true` — index signatures return `T | undefined`
 - Named exports preferred over default exports
 - Explicit return types on public functions
 - `??` for nullish coalescing, never `||` for falsy-sensitive values
+- **Known RTK TS2719**: Redux Toolkit 2.x `configureStore` middleware callback is incompatible with `exactOptionalPropertyTypes`. Filtered in CI via `scripts/typecheck-filter.mjs`
 
 ### React
 
@@ -145,6 +148,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 ### Security (Critical)
 
+- **ESLint hardened:** `@typescript-eslint/no-explicit-any: error`, `no-unsafe-type-assertion: warn`, `no-unnecessary-type-arguments: warn` with type-aware linting (`projectService: true`)
 - **DOMPurify v3** on ALL `dangerouslySetInnerHTML` content
 - **`rel="noopener noreferrer"`** on ALL external links
 - **AES-256-GCM** encryption for API keys at rest (cryptoService.ts)
@@ -196,7 +200,9 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 928+ tests across 95 files, 0 failures
+- Baseline: 951+ tests, 0 failures
+- **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
+- **CI E2E timeout:** 25 minutes
 
 ### Git
 
@@ -242,7 +248,7 @@ npm run -w @cannaguide/web build     # Production build
 npm run -w @cannaguide/web test      # Vitest unit/integration
 npm run -w @cannaguide/web test:e2e  # Playwright E2E (requires build)
 npm run -w @cannaguide/web test:ct   # Playwright Component tests
-npm run -w @cannaguide/web typecheck # tsc --noEmit
+npm run -w @cannaguide/web typecheck # tsc --noEmit (TS2719 filtered)
 ```
 
 ---
@@ -303,6 +309,7 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/i18n.ts`                                     | i18next initialization                                        |
 | `packages/ai-core/src/ml.ts`                           | Lazy ML loaders (transformers, web-llm, genai)                |
 | `packages/ai-core/package.json`                        | ML optionalDependencies isolation                             |
+| `scripts/typecheck-filter.mjs`                         | Typecheck with RTK TS2719 filter (known upstream bug)         |
 | `scripts/github/pr-push.mjs`                           | Automated PR workflow (branch -> PR -> auto-merge -> cleanup) |
 | `src-tauri/capabilities/default.json`                  | Tauri v2 capability permissions (minimal set)                 |
 | `apps/desktop/src/ipc.rs`                              | Tauri Rust IPC commands (image, sensor, sysinfo)              |

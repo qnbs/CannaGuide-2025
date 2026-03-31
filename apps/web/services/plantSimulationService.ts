@@ -127,7 +127,7 @@ export interface SimulationDiagnostics {
         moldRiskPercent: number
         finalQuality: number
         burpDebtDays: number
-    }
+    } | undefined
 }
 
 // More detailed stage information for the mechanistic model
@@ -348,15 +348,15 @@ class PlantSimulationService {
         }
     }
 
-    private _getSimulationAltitude(simulationSettings?: SimulationSettings): number {
+    private _getSimulationAltitude(simulationSettings?: SimulationSettings| undefined): number {
         return this._clamp(simulationSettings?.altitudeM ?? 0, 0, 5000)
     }
 
-    private _getProfileCurve(simulationSettings?: SimulationSettings) {
+    private _getProfileCurve(simulationSettings?: SimulationSettings| undefined) {
         return SIMULATION_PROFILE_CURVES[simulationSettings?.simulationProfile ?? 'intermediate']
     }
 
-    private _getEnvironmentalInstabilityCurve(simulationSettings?: SimulationSettings): number {
+    private _getEnvironmentalInstabilityCurve(simulationSettings?: SimulationSettings| undefined): number {
         if (!simulationSettings) {
             return 0.18
         }
@@ -369,7 +369,7 @@ class PlantSimulationService {
         return Math.pow(1 - normalizedStability, 1.35)
     }
 
-    private _getPestPressureCurve(simulationSettings?: SimulationSettings): number {
+    private _getPestPressureCurve(simulationSettings?: SimulationSettings| undefined): number {
         if (!simulationSettings) {
             return 1
         }
@@ -377,7 +377,7 @@ class PlantSimulationService {
         return 0.45 + Math.pow(this._clamp(simulationSettings.pestPressure, 0, 1), 1.6) * 3.2
     }
 
-    private _getNutrientSensitivityCurve(simulationSettings?: SimulationSettings): number {
+    private _getNutrientSensitivityCurve(simulationSettings?: SimulationSettings| undefined): number {
         if (!simulationSettings) {
             return 1
         }
@@ -396,7 +396,7 @@ class PlantSimulationService {
 
     private _getSimulationLeafTemperatureOffset(
         plant: Plant,
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): number {
         if (simulationSettings && Number.isFinite(simulationSettings.leafTemperatureOffset)) {
             return this._clamp(simulationSettings.leafTemperatureOffset, -5, 5)
@@ -408,7 +408,7 @@ class PlantSimulationService {
     }
 
     private _getSimulationLightExtinctionCoefficient(
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): number {
         return this._clamp(
             simulationSettings?.lightExtinctionCoefficient ?? SIM_LIGHT_EXTINCTION_COEFFICIENT_K,
@@ -418,7 +418,7 @@ class PlantSimulationService {
     }
 
     private _getSimulationNutrientConversionEfficiency(
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): number {
         return this._clamp(
             simulationSettings?.nutrientConversionEfficiency ?? SIM_BIOMASS_CONVERSION_EFFICIENCY,
@@ -429,7 +429,7 @@ class PlantSimulationService {
 
     private _getSimulationStomataSensitivity(
         plant: Plant,
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): number {
         const modifiers = this._getModifiers(plant)
         return this._clamp(
@@ -439,7 +439,7 @@ class PlantSimulationService {
         )
     }
 
-    private _getEnvironmentalStressMultiplier(simulationSettings?: SimulationSettings): number {
+    private _getEnvironmentalStressMultiplier(simulationSettings?: SimulationSettings| undefined): number {
         return this._clamp(
             (0.72 + this._getEnvironmentalInstabilityCurve(simulationSettings) * 0.95) *
                 this._getProfileCurve(simulationSettings).environmentStress,
@@ -448,7 +448,7 @@ class PlantSimulationService {
         )
     }
 
-    private _getNutrientStressMultiplier(simulationSettings?: SimulationSettings): number {
+    private _getNutrientStressMultiplier(simulationSettings?: SimulationSettings| undefined): number {
         return this._clamp(
             this._getNutrientSensitivityCurve(simulationSettings) *
                 this._getProfileCurve(simulationSettings).nutrientStress,
@@ -457,7 +457,7 @@ class PlantSimulationService {
         )
     }
 
-    private _getPestPressureMultiplier(simulationSettings?: SimulationSettings): number {
+    private _getPestPressureMultiplier(simulationSettings?: SimulationSettings| undefined): number {
         return this._clamp(
             this._getPestPressureCurve(simulationSettings) *
                 this._getProfileCurve(simulationSettings).pestPressure,
@@ -701,7 +701,7 @@ class PlantSimulationService {
 
     private _applyDailyEnvironmentalDrift(
         plant: Plant,
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): Plant {
         const p = this.clonePlant(plant)
         const instability = this._getEnvironmentalInstabilityCurve(simulationSettings)
@@ -763,7 +763,7 @@ class PlantSimulationService {
 
     private _computePostHarvestQuality(
         harvestData: HarvestData,
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): number {
         const profilePrecision = this._getProfileCurve(simulationSettings).postHarvestPrecision
         const humiditySweetSpot =
@@ -984,7 +984,7 @@ class PlantSimulationService {
     advancePostHarvestState(
         plant: Plant,
         action: 'dry' | 'burp' | 'cure',
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): { updatedPlant: Plant; newJournalEntries: JournalEntry[] } {
         let p = this.ensurePostHarvestData(plant)
         const harvestData = p.harvestData
@@ -1037,7 +1037,7 @@ class PlantSimulationService {
 
     getSimulationDiagnostics(
         plant: Plant,
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): SimulationDiagnostics {
         const p = this.applyEnvironmentalCorrections(
             this.ensurePostHarvestData(plant),
@@ -1152,7 +1152,7 @@ class PlantSimulationService {
         }
     }
 
-    applyEnvironmentalCorrections(plant: Plant, simulationSettings?: SimulationSettings): Plant {
+    applyEnvironmentalCorrections(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
         const p = this._normalizePlant(this.clonePlant(plant))
         const correctedRh = this._getCorrectedRh(p)
         const leafOffset = this._getSimulationLeafTemperatureOffset(p, simulationSettings)
@@ -1246,7 +1246,7 @@ class PlantSimulationService {
     calculateStateForTimeDelta(
         plant: Plant,
         deltaTime: number,
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): { updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] } {
         let updatedPlant = this._normalizePlant(this.clonePlant(plant))
         const newJournalEntries: JournalEntry[] = []
@@ -1299,7 +1299,7 @@ class PlantSimulationService {
         return { updatedPlant, newJournalEntries, newTasks }
     }
 
-    private _runDailyEcosystem(plant: Plant, simulationSettings?: SimulationSettings): Plant {
+    private _runDailyEcosystem(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
         const p = this._applyDailyEnvironmentalDrift(this.clonePlant(plant), simulationSettings)
 
         // Exhaust fan replenishes CO2 toward ambient (400 ppm).
@@ -1323,7 +1323,7 @@ class PlantSimulationService {
         return p
     }
 
-    private _runDailyMetabolism(plant: Plant, simulationSettings?: SimulationSettings): Plant {
+    private _runDailyMetabolism(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
         const p = this.clonePlant(plant)
 
         p.environment = this.applyEnvironmentalCorrections(p, simulationSettings).environment
@@ -1368,7 +1368,7 @@ class PlantSimulationService {
         return p
     }
 
-    private _runDailyGrowth(plant: Plant, simulationSettings?: SimulationSettings): Plant {
+    private _runDailyGrowth(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
         const p = this.clonePlant(plant)
         const nutrientConversionEfficiency =
             this._getSimulationNutrientConversionEfficiency(simulationSettings)
@@ -1461,7 +1461,7 @@ class PlantSimulationService {
         return p
     }
 
-    private _updateHealthAndStress(plant: Plant, simulationSettings?: SimulationSettings): Plant {
+    private _updateHealthAndStress(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
         const p = this.clonePlant(plant)
         const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals
         const envMult = this._getEnvironmentalStressMultiplier(simulationSettings)
@@ -1650,7 +1650,7 @@ class PlantSimulationService {
 
     private _checkForEvents(
         plant: Plant,
-        simulationSettings?: SimulationSettings,
+        simulationSettings?: SimulationSettings | undefined,
     ): { plant: Plant; journalEntries: JournalEntry[]; tasks: Task[] } {
         const p = this.clonePlant(plant)
         const journalEntries: JournalEntry[] = []
@@ -1792,7 +1792,7 @@ class VPDSimulationService {
         return { tempProfile, rhProfile }
     }
 
-    createInputFromPlant(plant: Plant, simulationSettings?: SimulationSettings): VPDInput {
+    createInputFromPlant(plant: Plant, simulationSettings?: SimulationSettings| undefined): VPDInput {
         const dynamicLeafOffset =
             plant.equipment.light.type === 'HPS'
                 ? 3.5
@@ -1830,8 +1830,8 @@ class VPDSimulationService {
 
     runDailyVPD(
         input: VPDInput,
-        tempProfile?: number[],
-        rhProfile?: number[],
+        tempProfile?: number[] | undefined,
+        rhProfile?: number[] | undefined,
     ): Promise<SimulationPoint[]> {
         const profiles =
             tempProfile && rhProfile ? { tempProfile, rhProfile } : this.createProfiles(input)

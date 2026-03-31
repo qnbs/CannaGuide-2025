@@ -226,15 +226,15 @@ export interface DataProvenance {
     /** When this data was fetched/imported (ISO timestamp) */
     fetchedAt: string
     /** Provider-specific external ID */
-    externalId?: string
+    externalId?: string | undefined
     /** Whether data is verified by lab results */
     labVerified: boolean
     /** Data confidence score (0--1) */
     confidence: number
     /** URL to original data source */
-    sourceUrl?: string
+    sourceUrl?: string | undefined
     /** API version or dataset version */
-    dataVersion?: string
+    dataVersion?: string | undefined
 }
 
 /** Lab test result for a specific strain batch */
@@ -244,57 +244,57 @@ export interface LabTestResult {
     /** Test date (ISO timestamp) */
     testDate: string
     /** Certificate of Analysis URL */
-    coaUrl?: string
+    coaUrl?: string | undefined
     /** Batch/lot number */
-    batchId?: string
+    batchId?: string | undefined
     /** Tested cannabinoid percentages */
     cannabinoids: CannabinoidProfile
     /** Tested terpene percentages */
-    terpenes?: TerpeneProfile
+    terpenes?: TerpeneProfile | undefined
     /** Moisture content percentage */
-    moisture?: number
+    moisture?: number | undefined
     /** Passed safety tests (pesticides, heavy metals, microbials) */
-    safetyPassed?: boolean
+    safetyPassed?: boolean | undefined
     /** Country/jurisdiction of testing */
-    jurisdiction?: string
+    jurisdiction?: string | undefined
 }
 
 /** Lineage data for genetic ancestry tracking */
 export interface StrainLineage {
     /** Direct parent strains */
-    parents: Array<{ name: string; id?: string }>
+    parents: Array<{ name: string; id?: string | undefined }>
     /** Known children/offspring */
-    children?: Array<{ name: string; id?: string }>
+    children?: Array<{ name: string; id?: string | undefined }> | undefined
     /** Breeder/creator name */
-    breeder?: string
+    breeder?: string | undefined
     /** Breeder country */
-    breederCountry?: string
+    breederCountry?: string | undefined
     /** Year first released */
-    yearReleased?: number
+    yearReleased?: number | undefined
     /** Generation depth (F1, F2, S1, BX, etc.) */
-    generation?: string
+    generation?: string | undefined
     /** Original landrace or heirloom origins */
-    landraceOrigins?: string[]
+    landraceOrigins?: string[] | undefined
     /** Whether this is a stabilized IBL */
-    isIBL?: boolean
+    isIBL?: boolean | undefined
 }
 
 /** Medical/regulatory information for EU/DE market */
 export interface MedicalInfo {
     /** EU Novel Food status */
-    euNovelFood?: boolean
+    euNovelFood?: boolean | undefined
     /** EU common catalogue listed (Nutzhanf) */
-    euCatalogListed?: boolean
+    euCatalogListed?: boolean | undefined
     /** German PZN (Pharmazentralnummer) for medical strains */
-    pzn?: string
+    pzn?: string | undefined
     /** Available in German pharmacies */
-    apothekenpflichtig?: boolean
+    apothekenpflichtig?: boolean | undefined
     /** GMP certified producer */
-    gmpCertified?: boolean
+    gmpCertified?: boolean | undefined
     /** Irradiation status */
-    irradiated?: boolean
+    irradiated?: boolean | undefined
     /** Country of cultivation */
-    cultivationCountry?: string
+    cultivationCountry?: string | undefined
 }
 
 /** Strain data quality assessment */
@@ -312,7 +312,7 @@ export interface DataQualityScore {
     /** Has flavonoid data */
     hasFlavonoidData: boolean
     /** Last curated/reviewed (ISO timestamp) */
-    lastCurated?: string
+    lastCurated?: string | undefined
 }
 
 /** Predicted consumer/therapeutic effect tags from entourage analysis */
@@ -439,47 +439,47 @@ export interface Strain {
     id: string
     name: string
     type: StrainType
-    typeDetails?: string
-    genetics?: string
+    typeDetails?: string | undefined
+    genetics?: string | undefined
     floweringType: FloweringType
     thc: number
     cbd: number
-    thcRange?: string
-    cbdRange?: string
-    cbg?: number // optional CBG %
-    thcv?: number // optional THCV %
+    thcRange?: string | undefined
+    cbdRange?: string | undefined
+    cbg?: number // optional CBG % | undefined
+    thcv?: number // optional THCV % | undefined
     floweringTime: number
-    floweringTimeRange?: string
-    description?: string
+    floweringTimeRange?: string | undefined
+    description?: string | undefined
     agronomic: {
         difficulty: DifficultyLevel
         yield: YieldLevel
         height: HeightLevel
-        yieldDetails?: { indoor?: string; outdoor?: string }
-        heightDetails?: { indoor?: string; outdoor?: string }
+        yieldDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
+        heightDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
     }
-    aromas?: string[]
-    dominantTerpenes?: string[]
+    aromas?: string[] | undefined
+    dominantTerpenes?: string[] | undefined
     /** Quantitative terpene profile (% dry-weight). Derived from dominantTerpenes if not set. */
-    terpeneProfile?: TerpeneProfile
+    terpeneProfile?: TerpeneProfile | undefined
     /** Full cannabinoid profile beyond THC/CBD */
-    cannabinoidProfile?: CannabinoidProfile
+    cannabinoidProfile?: CannabinoidProfile | undefined
     /** Flavonoid profile (cannflavins, quercetin, etc.) */
-    flavonoidProfile?: FlavonoidProfile
+    flavonoidProfile?: FlavonoidProfile | undefined
     /** Complete chemovar classification and detailed lab-grade profiles */
-    chemovarProfile?: ChemovarProfile
+    chemovarProfile?: ChemovarProfile | undefined
     /** Genetic lineage and breeder info */
-    lineage?: StrainLineage
+    lineage?: StrainLineage | undefined
     /** Lab test results (most recent first) */
-    labResults?: LabTestResult[]
+    labResults?: LabTestResult[] | undefined
     /** Medical/regulatory info (EU/DE market) */
-    medicalInfo?: MedicalInfo
+    medicalInfo?: MedicalInfo | undefined
     /** Data provenance records from external sources */
-    dataProvenance?: DataProvenance[]
+    dataProvenance?: DataProvenance[] | undefined
     /** Data quality assessment */
-    dataQuality?: DataQualityScore
+    dataQuality?: DataQualityScore | undefined
     geneticModifiers: GeneticModifiers
-    availability?: SeedAvailability[]
+    availability?: SeedAvailability[] | undefined
 }
 
 export type SeedType = 'Feminized' | 'Regular' | 'Autoflowering'
@@ -488,7 +488,7 @@ export interface Seedbank {
     id: string
     name: string
     websiteUrl: string
-    logoUrl?: string
+    logoUrl?: string | undefined
     rating: number
 }
 
@@ -502,11 +502,11 @@ export interface SeedAvailability {
 }
 
 export interface StrainTranslationData {
-    description?: string
-    typeDetails?: string
-    genetics?: string
-    yieldDetails?: { indoor?: string; outdoor?: string }
-    heightDetails?: { indoor?: string; outdoor?: string }
+    description?: string | undefined
+    typeDetails?: string | undefined
+    genetics?: string | undefined
+    yieldDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
+    heightDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
 }
 
 // Plant & Simulation types
@@ -614,7 +614,7 @@ export interface Plant {
     harvestData: HarvestData | null
     structuralModel: PlantStructuralModel
     // Per-individual phenotype expression; may diverge from strain defaults via training or amendments
-    phenotypeModifiers?: GeneticModifiers
+    phenotypeModifiers?: GeneticModifiers | undefined
     history: PlantHistoryEntry[]
     // Real-time chemical synthesis tracking
     cannabinoidProfile: { thc: number; cbd: number; cbn: number }
@@ -635,7 +635,7 @@ export interface JournalEntry {
     createdAt: number
     type: JournalEntryType
     notes: string
-    details?: JournalEntryDetails
+    details?: JournalEntryDetails | undefined
 }
 
 export type JournalEntryDetails =
@@ -651,42 +651,42 @@ export type JournalEntryDetails =
     | HarvestDetails
     | PostHarvestDetails
 export interface WateringDetails {
-    amountMl?: number
-    ph?: number
-    ec?: number
+    amountMl?: number | undefined
+    ph?: number | undefined
+    ec?: number | undefined
 }
 export interface FeedingDetails extends WateringDetails {
-    npk?: { n: number; p: number; k: number }
+    npk?: { n: number; p: number; k: number } | undefined
 }
 export interface TrainingDetails {
     type: TrainingType
 }
 export interface ObservationDetails {
-    diagnosis?: string
+    diagnosis?: string | undefined
 }
 export interface SystemDetails {
     from: PlantStage
     to: PlantStage
 }
 export interface PhotoDetails {
-    imageId?: string
-    imageUrl?: string
+    imageId?: string | undefined
+    imageUrl?: string | undefined
     photoCategory: PhotoCategory
-    timelineLabel?: string
-    capturedAt?: number
-    exifCapturedAt?: number
+    timelineLabel?: string | undefined
+    capturedAt?: number | undefined
+    exifCapturedAt?: number | undefined
 }
 export interface PestControlDetails {
     method: string
-    product?: string
+    product?: string | undefined
 }
 export interface EnvironmentDetails {
-    temp?: number
-    humidity?: number
-    ec?: number
-    ph?: number
-    lightPpfd?: number
-    waterVolumeMl?: number
+    temp?: number | undefined
+    humidity?: number | undefined
+    ec?: number | undefined
+    ph?: number | undefined
+    lightPpfd?: number | undefined
+    waterVolumeMl?: number | undefined
     source?: 'manual' | 'iot_sensor'
 }
 export interface AmendmentDetails {
@@ -706,7 +706,7 @@ export interface Task {
     description: string
     isCompleted: boolean
     createdAt: number
-    completedAt?: number
+    completedAt?: number | undefined
     priority: TaskPriority
 }
 
@@ -739,7 +739,7 @@ export interface SimulationState {
     selectedPlantId: string | null
     vpdProfiles: Record<string, SimulationPoint[]>
     /** Set to true while the background worker is processing a catch-up delta. */
-    isCatchingUp?: boolean
+    isCatchingUp?: boolean | undefined
 }
 
 // AI related types
@@ -747,7 +747,7 @@ export interface RecommendationItem {
     name: string
     price: number
     rationale: string
-    watts?: number
+    watts?: number | undefined
 }
 export type RecommendationCategory =
     | 'tent'
@@ -799,11 +799,11 @@ export interface DeepDiveGuide {
 }
 
 export interface MentorMessage {
-    id?: string
+    id?: string | undefined
     role: 'user' | 'model'
     title: string
     content: string
-    uiHighlights?: { elementId: string; plantId?: string }[]
+    uiHighlights?: { elementId: string; plantId?: string | undefined }[] | undefined
 }
 
 // App settings
@@ -965,7 +965,7 @@ export interface BeforeInstallPromptEvent extends Event {
 
 // Help & Knowledge types
 export interface LexiconEntry {
-    id?: string
+    id?: string | undefined
     key: string
     category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General'
 }
@@ -991,9 +991,9 @@ export interface KnowledgeArticle {
     contentKey: string
     tags: string[]
     triggers: {
-        ageInDays?: { min: number; max: number }
+        ageInDays?: { min: number; max: number } | undefined
         plantStage?: PlantStage | PlantStage[]
-        activeProblems?: ProblemType[]
+        activeProblems?: ProblemType[] | undefined
     }
 }
 
@@ -1003,8 +1003,8 @@ export interface ArchivedMentorResponse {
     query: string
     title: string
     content: string
-    feedback?: 'positive' | 'negative'
-    uiHighlights?: { elementId: string; plantId?: string }[]
+    feedback?: 'positive' | 'negative' | undefined
+    uiHighlights?: { elementId: string; plantId?: string | undefined }[] | undefined
 }
 
 export interface ArchivedAdvisorResponse extends AIResponse {
@@ -1013,7 +1013,7 @@ export interface ArchivedAdvisorResponse extends AIResponse {
     plantId: string
     plantStage: PlantStage
     query: string // What was asked, or "Proactive Diagnosis"
-    feedback?: 'positive' | 'negative'
+    feedback?: 'positive' | 'negative' | undefined
 }
 
 export interface SavedStrainTip extends StructuredGrowTips {
@@ -1022,7 +1022,7 @@ export interface SavedStrainTip extends StructuredGrowTips {
     strainId: string
     strainName: string
     title: string
-    imageUrl?: string
+    imageUrl?: string | undefined
 }
 
 export interface SavedSetup {
@@ -1061,15 +1061,15 @@ export type CommandGroup =
 export interface Command {
     id: string
     title: string
-    subtitle?: string
+    subtitle?: string | undefined
     group: CommandGroup | string
     icon: FC
     action: () => void
-    keywords?: string
-    shortcut?: string[]
-    isHeader?: boolean
+    keywords?: string | undefined
+    shortcut?: string[] | undefined
+    isHeader?: boolean | undefined
     /** Higher = shown first when no query (default 0) */
-    priority?: number
+    priority?: number | undefined
 }
 
 export interface SpeechQueueItem {
@@ -1093,8 +1093,8 @@ export interface Scenario {
     id: string
     titleKey: string
     descriptionKey: string
-    title?: string
-    description?: string
+    title?: string | undefined
+    description?: string | undefined
     durationDays: number
     plantAModifier: { day: number; action: ScenarioAction }
     plantBModifier: { day: number; action: ScenarioAction }
@@ -1122,9 +1122,9 @@ export interface GenealogyNode {
     type: StrainType
     thc: number
     isLandrace: boolean
-    isPlaceholder?: boolean // For circular dependencies
-    children?: GenealogyNode[]
-    _children?: GenealogyNode[] // For d3 collapse/expand
+    isPlaceholder?: boolean // For circular dependencies | undefined
+    children?: GenealogyNode[] | undefined
+    _children?: GenealogyNode[] // For d3 collapse/expand | undefined
 }
 
 export interface GeneticContribution {
@@ -1154,7 +1154,7 @@ export interface SavedExport {
 export type TimeSeriesResolution = 'raw' | 'hourly' | 'daily'
 
 export interface TimeSeriesEntry {
-    id?: number
+    id?: number | undefined
     deviceId: string
     timestamp: number
     resolution: TimeSeriesResolution
@@ -1207,14 +1207,14 @@ export interface PluginManifest {
     description: string
     author: string
     category: PluginCategory
-    minAppVersion?: number
-    icon?: string
-    tags?: string[]
+    minAppVersion?: number | undefined
+    icon?: string | undefined
+    tags?: string[] | undefined
 }
 
 /** Queued offline action with idempotency key to prevent duplicate replay across tabs. */
 export interface OfflineAction {
     idempotencyKey: string
     type: string
-    payload?: unknown
+    payload?: unknown | undefined
 }

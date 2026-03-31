@@ -154,7 +154,7 @@ const savedItemsSlice = createSlice({
                 strain: Strain
                 tip: StructuredGrowTips
                 title: string
-                imageUrl?: string
+                imageUrl?: string | undefined
             }>,
         ) => {
             const { strain, tip, title, imageUrl } = action.payload

@@ -35,7 +35,7 @@ interface StrainLibraryViewProps {
     onClearSelection: () => void
     onAddToFavorites: () => void
     onRemoveFromFavorites: () => void
-    onDelete?: () => void
+    onDelete?: (() => void) | undefined
     strainsViewTab: StrainViewTab
 }
 

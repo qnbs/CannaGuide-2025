@@ -21,10 +21,10 @@ export interface InferenceTask {
     task: string
     modelId: string
     input: unknown
-    pipelineOptions?: Record<string, unknown>
-    inferenceOptions?: Record<string, unknown>
-    priority?: InferencePriority
-    timeoutMs?: number
+    pipelineOptions?: Record<string, unknown> | undefined
+    inferenceOptions?: Record<string, unknown> | undefined
+    priority?: InferencePriority | undefined
+    timeoutMs?: number | undefined
 }
 
 interface QueuedTask {

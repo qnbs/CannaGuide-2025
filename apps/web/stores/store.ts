@@ -11,10 +11,8 @@ import archivesReducer from './slices/archivesSlice'
 import savedItemsReducer from './slices/savedItemsSlice'
 import knowledgeReducer from './slices/knowledgeSlice'
 import breedingReducer from './slices/breedingSlice'
-import ttsReducer from './slices/ttsSlice'
 import sandboxReducer from './slices/sandboxSlice'
 import genealogyReducer from './slices/genealogySlice'
-import navigationReducer from './slices/navigationSlice'
 import nutrientPlannerReducer from './slices/nutrientPlannerSlice'
 import { geminiApi } from './api'
 import {
@@ -39,10 +37,8 @@ const rootReducer = combineReducers({
     savedItems: savedItemsReducer,
     knowledge: knowledgeReducer,
     breeding: breedingReducer,
-    tts: ttsReducer,
     sandbox: sandboxReducer,
     genealogy: genealogyReducer,
-    navigation: navigationReducer,
     nutrientPlanner: nutrientPlannerReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,
 })

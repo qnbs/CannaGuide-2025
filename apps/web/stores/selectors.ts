@@ -24,7 +24,6 @@ import {
 import { SavedItemsState } from './slices/savedItemsSlice'
 import { FavoritesState } from './slices/favoritesSlice'
 import { ArchivesState } from './slices/archivesSlice'
-import { TtsState } from './slices/ttsSlice'
 import { BreedingState } from './slices/breedingSlice'
 import { SettingsState } from './slices/settingsSlice'
 
@@ -33,13 +32,11 @@ const selectSettingsState = (state: RootState): SettingsState => state.settings
 export const selectSavedItems = (state: RootState): SavedItemsState => state.savedItems
 const selectFavoritesState = (state: RootState): FavoritesState => state.favorites
 export const selectArchives = (state: RootState): ArchivesState => state.archives
-const selectTts = (state: RootState): TtsState => state.tts
 export const selectSimulation = (state: RootState): SimulationState => state.simulation
 const selectKnowledge = (state: RootState) => state.knowledge
 const selectBreeding = (state: RootState) => state.breeding
 const selectSandbox = (state: RootState) => state.sandbox
 const selectGenealogy = (state: RootState) => state.genealogy
-export const selectNavigation = (state: RootState) => state.navigation
 const selectNutrientPlanner = (state: RootState) => state.nutrientPlanner
 
 // --- Adapter Selectors ---
@@ -130,13 +127,6 @@ export const selectArchivedAdvisorResponsesForPlant = createSelector(
 )
 
 export const selectArchivedAdvisorResponses = selectAllArchivedAdvisorResponses
-
-// --- TTS Selectors ---
-export const selectTtsState = selectTts
-export const selectCurrentlySpeakingId = createSelector(
-    [selectTts],
-    (tts: TtsState): string | null => tts.currentlySpeakingId,
-)
 
 // --- Plant Simulation Selectors ---
 export const { selectAll: selectAllPlants, selectById: selectPlantEntityById } =

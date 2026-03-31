@@ -208,7 +208,8 @@ const mountHydratedApp = async () => {
                     state.simulation,
                 )
                 // Construct a state object with only the slices we want to persist.
-                // TTS and navigation are runtime-only and never persisted.
+                // TTS is now a Zustand store (runtime-only, never persisted).
+                // navigationSlice was removed (dead code, useUIStore handles it).
                 const stateToSave = {
                     version: state.settings.version,
                     _sliceVersions: SLICE_SCHEMA_VERSIONS,
@@ -222,6 +223,18 @@ const mountHydratedApp = async () => {
                     knowledge: state.knowledge,
                     breeding: state.breeding,
                     genealogy: state.genealogy,
+                    nutrientPlanner: {
+                        schedule: state.nutrientPlanner.schedule,
+                        readings: state.nutrientPlanner.readings,
+                        alerts: state.nutrientPlanner.alerts,
+                        autoAdjustEnabled: state.nutrientPlanner.autoAdjustEnabled,
+                        medium: state.nutrientPlanner.medium,
+                        activePluginId: state.nutrientPlanner.activePluginId,
+                        // Strip transient AI loading state
+                        isAiLoading: false,
+                        lastAiRecommendation: state.nutrientPlanner.lastAiRecommendation,
+                        autoAdjustRecommendation: state.nutrientPlanner.autoAdjustRecommendation,
+                    },
                     sandbox: {
                         savedExperiments: state.sandbox.savedExperiments,
                         // Strip transient runtime status -- always starts idle

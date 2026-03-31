@@ -825,15 +825,6 @@ const migrateV4ToV5 = (state: PersistedState): PersistedState => {
  * Called on EVERY boot, regardless of version.
  */
 const stripTransientState = (state: PersistedState): void => {
-    // TTS: always starts idle — queue and speaking state are runtime only
-    if (state.tts) {
-        const tts = state.tts as unknown as Record<string, unknown>
-        tts.ttsQueue = []
-        tts.isTtsSpeaking = false
-        tts.isTtsPaused = false
-        tts.currentlySpeakingId = null
-    }
-
     // Sandbox: 'running' status can never resolve after restart
     if (state.sandbox) {
         const sb = state.sandbox as unknown as Record<string, unknown>

@@ -90,7 +90,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `CannaGuideStateDB`: Redux state with promise-locked hydration, debounce-save (1s), force-save on visibilitychange
     - `CannaGuideDB`: Strains, images (auto-pruned), full-text search index
 
-3. **AI Service Abstraction:** All AI calls route through `services/aiProviderService.ts` → provider-specific services. Structured JSON output via `responseSchema`. Local fallback via `localAiFallbackService.ts`.
+3. **AI Service Facade:** `services/aiFacade.ts` is the single public entry point for all AI capabilities (cloud + local). It re-exports `aiService` (routed methods), `aiProviderService` (BYOK multi-provider), and `localAIInfrastructure` (cache + telemetry + preload as a unified class in `LocalAIInfrastructure.ts`). Structured JSON output via `responseSchema`. Local fallback via `localAiFallbackService.ts`. Dependency map: `docs/architecture/service-dependencies.md` (Mermaid, auto-generated via `scripts/generate-service-map.mjs`).
 
 4. **Safe Recovery:** Boot wraps store creation in try/catch. Corrupted state → auto-clear + restart. Session flag prevents infinite recovery loops.
 
@@ -292,7 +292,9 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/stores/store.ts`                             | Redux store creation, IndexedDB hydration                     |
 | `apps/web/services/geminiService.ts`                   | Gemini API abstraction (all AI features)                      |
 | `apps/web/services/aiProviderService.ts`               | Multi-provider AI routing                                     |
+| `apps/web/services/aiFacade.ts`                        | Public AI facade (re-exports aiService + provider + infra)    |
 | `apps/web/services/aiService.ts`                       | Unified AI service (cloud + local routing)                    |
+| `apps/web/services/LocalAIInfrastructure.ts`           | Unified cache + telemetry + preload class                     |
 | `apps/web/services/localAI.ts`                         | Core local AI orchestration                                   |
 | `apps/web/services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard)         |
 | `apps/web/services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)           |
@@ -315,6 +317,7 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `packages/ai-core/src/ml.ts`                           | Lazy ML loaders (transformers, web-llm, genai)                |
 | `packages/ai-core/package.json`                        | ML optionalDependencies isolation                             |
 | `scripts/typecheck-filter.mjs`                         | Typecheck with RTK TS2719 filter (known upstream bug)         |
+| `scripts/generate-service-map.mjs`                     | AI service Mermaid dependency map generator                   |
 | `scripts/github/pr-push.mjs`                           | Automated PR workflow (branch -> PR -> auto-merge -> cleanup) |
 | `src-tauri/capabilities/default.json`                  | Tauri v2 capability permissions (minimal set)                 |
 | `apps/desktop/src/ipc.rs`                              | Tauri Rust IPC commands (image, sensor, sysinfo)              |

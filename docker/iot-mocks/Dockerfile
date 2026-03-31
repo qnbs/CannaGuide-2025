@@ -1,4 +1,4 @@
-FROM node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617de04142dde7315e3bc0afa
+FROM node:25-alpine@sha256:cf38e1f3c28ac9d81cdc0c51d8220320b3b618780e44ef96a39f76f7dbfef023
 WORKDIR /app
 COPY src/server.mjs ./server.mjs
 EXPOSE 3001

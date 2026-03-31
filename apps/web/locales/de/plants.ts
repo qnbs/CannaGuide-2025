@@ -426,6 +426,7 @@ export const plantsView = {
         enableBtn: 'Benachrichtigungen aktivieren',
         enabledBtn: 'Benachrichtigungen aktiv',
         checkNowBtn: 'Jetzt prüfen',
+        exportIcal: 'iCal exportieren',
         statusLabel:
             'Status: {{permission}}. Periodische Hintergrundsynchronisierung wird genutzt, wenn verfügbar.',
         batchTitle: 'Batch-Reminder per QR',

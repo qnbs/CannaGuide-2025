@@ -29,6 +29,10 @@ export const common = {
     exportConfirm: 'Weet je zeker dat je deze gegevens wilt exporteren?',
     deleteConfirm: 'Weet je zeker dat je dit item wilt verwijderen?',
     deleteResponse: 'Antwoord verwijderen',
+    feedback: {
+        helpful: 'Nuttig',
+        notHelpful: 'Niet nuttig',
+    },
     removeImage: 'Afbeelding verwijderen',
     capturedImage: 'Vastgelegde afbeelding',
     imagePreview: 'Afbeelding voorbeeld',

@@ -35,6 +35,10 @@ export const common = {
     exportConfirm: 'Möchten Sie diese Daten wirklich exportieren?',
     downloadConfirm: 'Möchten Sie "{{name}}" jetzt herunterladen?',
     deleteConfirm: 'Möchtest du dieses Element wirklich löschen?',
+    feedback: {
+        helpful: 'Hilfreich',
+        notHelpful: 'Nicht hilfreich',
+    },
     deleteResponse: 'Antwort löschen',
     removeImage: 'Bild entfernen',
     capturedImage: 'Aufgenommenes Bild',

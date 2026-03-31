@@ -35,6 +35,10 @@ export const common = {
     downloadConfirm: 'Do you want to download "{{name}}" now?',
     deleteConfirm: 'Are you sure you want to delete this item?',
     deleteResponse: 'Delete response',
+    feedback: {
+        helpful: 'Helpful',
+        notHelpful: 'Not helpful',
+    },
     removeImage: 'Remove Image',
     capturedImage: 'Captured image',
     imagePreview: 'Image preview',

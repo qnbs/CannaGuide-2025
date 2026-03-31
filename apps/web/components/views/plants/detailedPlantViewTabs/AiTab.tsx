@@ -14,6 +14,7 @@ import {
     addArchivedAdvisorResponse,
     updateArchivedAdvisorResponse,
     deleteArchivedAdvisorResponse,
+    setAdvisorResponseFeedback,
 } from '@/stores/slices/archivesSlice'
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
@@ -407,6 +408,62 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                         />
                                     </Speakable>
                                     <div className="flex justify-end items-center gap-2 mt-2">
+                                        <div className="flex items-center gap-1 mr-auto">
+                                            <Button
+                                                size="sm"
+                                                variant={
+                                                    res.feedback === 'positive'
+                                                        ? 'primary'
+                                                        : 'secondary'
+                                                }
+                                                onClick={() =>
+                                                    dispatch(
+                                                        setAdvisorResponseFeedback({
+                                                            plantId: plant.id,
+                                                            responseId: res.id,
+                                                            feedback: 'positive',
+                                                        }),
+                                                    )
+                                                }
+                                                aria-label={t('common.feedback.helpful')}
+                                            >
+                                                <PhosphorIcons.ThumbsUp
+                                                    className="w-4 h-4"
+                                                    weight={
+                                                        res.feedback === 'positive'
+                                                            ? 'fill'
+                                                            : 'regular'
+                                                    }
+                                                />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={
+                                                    res.feedback === 'negative'
+                                                        ? 'danger'
+                                                        : 'secondary'
+                                                }
+                                                onClick={() =>
+                                                    dispatch(
+                                                        setAdvisorResponseFeedback({
+                                                            plantId: plant.id,
+                                                            responseId: res.id,
+                                                            feedback: 'negative',
+                                                        }),
+                                                    )
+                                                }
+                                                aria-label={t('common.feedback.notHelpful')}
+                                            >
+                                                <PhosphorIcons.ThumbsDown
+                                                    className="w-4 h-4"
+                                                    weight={
+                                                        res.feedback === 'negative'
+                                                            ? 'fill'
+                                                            : 'regular'
+                                                    }
+                                                />
+                                            </Button>
+                                        </div>{' '}
                                         <Button
                                             size="sm"
                                             variant="secondary"

@@ -6,6 +6,8 @@ import archivesReducer, {
     addArchivedAdvisorResponse,
     deleteArchivedAdvisorResponse,
     clearArchives,
+    setMentorResponseFeedback,
+    setAdvisorResponseFeedback,
     type ArchivesState,
 } from '@/stores/slices/archivesSlice'
 import { PlantStage } from '@/types'
@@ -50,7 +52,11 @@ describe('archivesSlice', () => {
             for (let i = 0; i < 105; i++) {
                 state = archivesReducer(
                     state,
-                    addArchivedMentorResponse({ title: `T${i}`, content: `C${i}`, tags: [] } as any),
+                    addArchivedMentorResponse({
+                        title: `T${i}`,
+                        content: `C${i}`,
+                        tags: [],
+                    } as any),
                 )
             }
             expect(state.archivedMentorResponses.length).toBeLessThanOrEqual(100)
@@ -59,12 +65,19 @@ describe('archivesSlice', () => {
         it('updates a mentor response', () => {
             let state = archivesReducer(
                 initial,
-                addArchivedMentorResponse({ title: 'Original', content: 'Original', tags: [] } as any),
+                addArchivedMentorResponse({
+                    title: 'Original',
+                    content: 'Original',
+                    tags: [],
+                } as any),
             )
             const id = state.archivedMentorResponses[0]!.id
             state = archivesReducer(
                 state,
-                updateArchivedMentorResponse({ ...state.archivedMentorResponses[0]!, title: 'Updated' }),
+                updateArchivedMentorResponse({
+                    ...state.archivedMentorResponses[0]!,
+                    title: 'Updated',
+                }),
             )
             expect(state.archivedMentorResponses[0]!.title).toBe('Updated')
             expect(state.archivedMentorResponses[0]!.id).toBe(id)
@@ -73,7 +86,11 @@ describe('archivesSlice', () => {
         it('deletes a mentor response', () => {
             let state = archivesReducer(
                 initial,
-                addArchivedMentorResponse({ title: 'Delete Me', content: 'Content', tags: [] } as any),
+                addArchivedMentorResponse({
+                    title: 'Delete Me',
+                    content: 'Content',
+                    tags: [],
+                } as any),
             )
             const id = state.archivedMentorResponses[0]!.id
             state = archivesReducer(state, deleteArchivedMentorResponse(id))
@@ -88,7 +105,11 @@ describe('archivesSlice', () => {
         it('adds a valid advisor response', () => {
             const state = archivesReducer(
                 initial,
-                addArchivedAdvisorResponse({ plant: mockPlant as any, response: mockResponse as any, query: 'help' }),
+                addArchivedAdvisorResponse({
+                    plant: mockPlant as any,
+                    response: mockResponse as any,
+                    query: 'help',
+                }),
             )
             expect(state.archivedAdvisorResponses['plant-1']).toHaveLength(1)
         })
@@ -96,7 +117,11 @@ describe('archivesSlice', () => {
         it('rejects invalid advisor response', () => {
             const state = archivesReducer(
                 initial,
-                addArchivedAdvisorResponse({ plant: mockPlant as any, response: { title: '', content: '' } as any, query: '' }),
+                addArchivedAdvisorResponse({
+                    plant: mockPlant as any,
+                    response: { title: '', content: '' } as any,
+                    query: '',
+                }),
             )
             expect(state.archivedAdvisorResponses['plant-1']).toBeUndefined()
         })
@@ -104,7 +129,11 @@ describe('archivesSlice', () => {
         it('deletes an advisor response', () => {
             let state = archivesReducer(
                 initial,
-                addArchivedAdvisorResponse({ plant: mockPlant as any, response: mockResponse as any, query: 'help' }),
+                addArchivedAdvisorResponse({
+                    plant: mockPlant as any,
+                    response: mockResponse as any,
+                    query: 'help',
+                }),
             )
             const responseId = state.archivedAdvisorResponses['plant-1']![0]!.id
             state = archivesReducer(
@@ -123,5 +152,51 @@ describe('archivesSlice', () => {
         state = archivesReducer(state, clearArchives())
         expect(state.archivedMentorResponses).toHaveLength(0)
         expect(state.archivedAdvisorResponses).toEqual({})
+    })
+
+    describe('feedback', () => {
+        it('sets positive feedback on mentor response', () => {
+            let state = archivesReducer(
+                initial,
+                addArchivedMentorResponse({ title: 'T', content: 'C', tags: [] } as any),
+            )
+            const id = state.archivedMentorResponses[0]!.id
+            state = archivesReducer(state, setMentorResponseFeedback({ id, feedback: 'positive' }))
+            expect(state.archivedMentorResponses[0]!.feedback).toBe('positive')
+        })
+
+        it('toggles feedback off when same value set again', () => {
+            let state = archivesReducer(
+                initial,
+                addArchivedMentorResponse({ title: 'T', content: 'C', tags: [] } as any),
+            )
+            const id = state.archivedMentorResponses[0]!.id
+            state = archivesReducer(state, setMentorResponseFeedback({ id, feedback: 'positive' }))
+            state = archivesReducer(state, setMentorResponseFeedback({ id, feedback: 'positive' }))
+            expect(state.archivedMentorResponses[0]!.feedback).toBeUndefined()
+        })
+
+        it('sets feedback on advisor response', () => {
+            const mockPlant = { id: 'plant-1', name: 'Test', stage: PlantStage.Vegetative }
+            const mockResponse = { title: 'Advice', content: 'Do this' }
+            let state = archivesReducer(
+                initial,
+                addArchivedAdvisorResponse({
+                    plant: mockPlant as any,
+                    response: mockResponse as any,
+                    query: 'help',
+                }),
+            )
+            const responseId = state.archivedAdvisorResponses['plant-1']![0]!.id
+            state = archivesReducer(
+                state,
+                setAdvisorResponseFeedback({
+                    plantId: 'plant-1',
+                    responseId,
+                    feedback: 'negative',
+                }),
+            )
+            expect(state.archivedAdvisorResponses['plant-1']![0]!.feedback).toBe('negative')
+        })
     })
 })

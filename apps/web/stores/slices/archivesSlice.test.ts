@@ -198,5 +198,36 @@ describe('archivesSlice', () => {
             )
             expect(state.archivedAdvisorResponses['plant-1']![0]!.feedback).toBe('negative')
         })
+
+        it('toggles advisor feedback off when same value set again', () => {
+            const mockPlant = { id: 'plant-1', name: 'Test', stage: PlantStage.Vegetative }
+            const mockResponse = { title: 'Advice', content: 'Do this' }
+            let state = archivesReducer(
+                initial,
+                addArchivedAdvisorResponse({
+                    plant: mockPlant as any,
+                    response: mockResponse as any,
+                    query: 'help',
+                }),
+            )
+            const responseId = state.archivedAdvisorResponses['plant-1']![0]!.id
+            state = archivesReducer(
+                state,
+                setAdvisorResponseFeedback({
+                    plantId: 'plant-1',
+                    responseId,
+                    feedback: 'negative',
+                }),
+            )
+            state = archivesReducer(
+                state,
+                setAdvisorResponseFeedback({
+                    plantId: 'plant-1',
+                    responseId,
+                    feedback: 'negative',
+                }),
+            )
+            expect(state.archivedAdvisorResponses['plant-1']![0]!.feedback).toBeUndefined()
+        })
     })
 })

@@ -5,12 +5,15 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { ArchivedAdvisorResponse, Plant } from '@/types'
 import { selectArchivedAdvisorResponses } from '@/stores/selectors'
 import { Card } from '@/components/common/Card'
+import { Button } from '@/components/common/Button'
 import { useActivePlants } from '@/hooks/useSimulationBridge'
-import { useAppSelector } from '@/stores/store'
+import { useAppSelector, useAppDispatch } from '@/stores/store'
+import { setAdvisorResponseFeedback } from '@/stores/slices/archivesSlice'
 import { SearchBar } from '@/components/common/SearchBar'
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslation()
+    const dispatch = useAppDispatch()
     const archive = useAppSelector(selectArchivedAdvisorResponses)
     const activePlants = useActivePlants()
 
@@ -133,6 +136,62 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                                             className="prose prose-sm dark:prose-invert max-w-none mt-2"
                                             html={res.content}
                                         />
+                                        <div className="flex items-center gap-1 mt-2">
+                                            <Button
+                                                size="sm"
+                                                variant={
+                                                    res.feedback === 'positive'
+                                                        ? 'primary'
+                                                        : 'secondary'
+                                                }
+                                                onClick={() =>
+                                                    dispatch(
+                                                        setAdvisorResponseFeedback({
+                                                            plantId: res.plantId,
+                                                            responseId: res.id,
+                                                            feedback: 'positive',
+                                                        }),
+                                                    )
+                                                }
+                                                aria-label={t('common.feedback.helpful')}
+                                            >
+                                                <PhosphorIcons.ThumbsUp
+                                                    className="w-4 h-4"
+                                                    weight={
+                                                        res.feedback === 'positive'
+                                                            ? 'fill'
+                                                            : 'regular'
+                                                    }
+                                                />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={
+                                                    res.feedback === 'negative'
+                                                        ? 'danger'
+                                                        : 'secondary'
+                                                }
+                                                onClick={() =>
+                                                    dispatch(
+                                                        setAdvisorResponseFeedback({
+                                                            plantId: res.plantId,
+                                                            responseId: res.id,
+                                                            feedback: 'negative',
+                                                        }),
+                                                    )
+                                                }
+                                                aria-label={t('common.feedback.notHelpful')}
+                                            >
+                                                <PhosphorIcons.ThumbsDown
+                                                    className="w-4 h-4"
+                                                    weight={
+                                                        res.feedback === 'negative'
+                                                            ? 'fill'
+                                                            : 'regular'
+                                                    }
+                                                />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </Card>
                             )

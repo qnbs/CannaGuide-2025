@@ -1,4 +1,4 @@
-import { createCachedPipelineLoader } from './localAIModelLoader'
+import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { captureLocalAiError } from './sentryService'
 import DOMPurify from 'dompurify'
 
@@ -6,36 +6,34 @@ import DOMPurify from 'dompurify'
  * Local AI Language Detection Service — detects the language of user input
  * on-device using a lightweight zero-shot classification model.
  *
- * Used for:
- * • Automatic AI response language selection
- * • Bilingual query routing (EN/DE)
- * • Journal entry language tagging
- *
+ * All inference is off-loaded to the inference Web Worker via
+ * inferenceQueueService to keep the UI thread responsive.
  * Falls back to simple heuristic detection when model is unavailable.
  */
 
 const LANG_DETECT_TIMEOUT_MS = 15_000
 
-/** Race a promise against a timeout. */
-const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-    new Promise<T>((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error('Language detection timeout')), ms)
-        promise.then(
-            (value) => {
-                clearTimeout(timer)
-                resolve(value)
-            },
-            (error) => {
-                clearTimeout(timer)
-                reject(error)
-            },
-        )
-    })
-
 // ─── Model ───────────────────────────────────────────────────────────────────
 const LANG_MODEL_ID = 'Xenova/mobilebert-uncased-mnli'
 
-const loadLangPipeline = createCachedPipelineLoader('zero-shot-classification', LANG_MODEL_ID)
+/** Dispatch a zero-shot classification task to the inference worker. */
+const dispatchLangDetection = async (
+    input: unknown,
+    inferenceOptions?: Record<string, unknown>,
+): Promise<unknown> => {
+    if (!isWorkerAvailable()) {
+        throw new Error('Inference worker unavailable')
+    }
+    return enqueueInference({
+        task: 'zero-shot-classification',
+        modelId: LANG_MODEL_ID,
+        input,
+        pipelineOptions: { quantized: true },
+        inferenceOptions,
+        priority: 'normal',
+        timeoutMs: LANG_DETECT_TIMEOUT_MS,
+    })
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -226,14 +224,10 @@ export const detectLanguage = async (text: string): Promise<LanguageDetectionRes
     }
 
     try {
-        const pipeline = await loadLangPipeline()
-        const result = await withTimeout(
-            pipeline(sanitized, {
-                candidate_labels: ['English text', 'German text (Deutsch)'],
-                multi_label: false,
-            }),
-            LANG_DETECT_TIMEOUT_MS,
-        )
+        const result = await dispatchLangDetection(sanitized, {
+            candidate_labels: ['English text', 'German text (Deutsch)'],
+            multi_label: false,
+        })
 
         const output = result as { labels?: string[]; scores?: number[] }
         const topLabel = output.labels?.[0] ?? ''
@@ -256,10 +250,13 @@ export const detectLanguage = async (text: string): Promise<LanguageDetectionRes
     }
 }
 
-/** Preload the language detection model. */
+/** Preload the language detection model via a warm-up dispatch. */
 export const preloadLanguageDetectionModel = async (): Promise<boolean> => {
     try {
-        await loadLangPipeline()
+        await dispatchLangDetection('warmup', {
+            candidate_labels: ['English text', 'German text (Deutsch)'],
+            multi_label: false,
+        })
         return true
     } catch {
         return false
@@ -268,6 +265,6 @@ export const preloadLanguageDetectionModel = async (): Promise<boolean> => {
 
 /** Reset internal state (tests). */
 export const resetLanguageDetectionPipeline = (): void => {
-    // Pipeline is managed by createCachedPipelineLoader;
-    // use clearPipelineCache() from localAIModelLoader for full reset.
+    // Pipeline is managed inside the inference worker;
+    // no local state to reset.
 }

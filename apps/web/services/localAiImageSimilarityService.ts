@@ -1,18 +1,12 @@
-import { createCachedPipelineLoader } from './localAIModelLoader'
+import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { captureLocalAiError } from './sentryService'
 
 /**
  * Local AI Image Similarity Service — uses CLIP vision features to compare
  * plant photos for visual similarity, anomaly detection, and growth tracking.
  *
- * Capabilities:
- * • Extract CLIP feature vectors from plant photos
- * • Compare two plant photos for visual similarity (cosine)
- * • Find most similar photos in a collection
- * • Track visual changes over time (growth progression)
- *
- * Uses the same CLIP model as plant diagnosis but extracts feature vectors
- * instead of zero-shot classification labels.
+ * All inference is off-loaded to the inference Web Worker via
+ * inferenceQueueService to keep the UI thread responsive.
  */
 
 const CLIP_MODEL_ID = 'Xenova/clip-vit-large-patch14'
@@ -27,29 +21,23 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
     'image/bmp',
 ])
 
-/** Race a promise against a timeout. */
-const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-    new Promise<T>((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error('Image similarity timeout')), ms)
-        promise.then(
-            (value) => {
-                clearTimeout(timer)
-                resolve(value)
-            },
-            (error) => {
-                clearTimeout(timer)
-                reject(error)
-            },
-        )
-    })
-
-let featurePipeline: ReturnType<typeof createCachedPipelineLoader> | null = null
-
-const loadFeaturePipeline = (): ReturnType<ReturnType<typeof createCachedPipelineLoader>> => {
-    if (!featurePipeline) {
-        featurePipeline = createCachedPipelineLoader('feature-extraction', CLIP_MODEL_ID)
+/** Dispatch a feature-extraction task to the inference worker. */
+const dispatchFeatureExtraction = async (
+    input: unknown,
+    inferenceOptions?: Record<string, unknown>,
+): Promise<unknown> => {
+    if (!isWorkerAvailable()) {
+        throw new Error('Inference worker unavailable')
     }
-    return featurePipeline()
+    return enqueueInference({
+        task: 'feature-extraction',
+        modelId: CLIP_MODEL_ID,
+        input,
+        pipelineOptions: { quantized: true },
+        inferenceOptions,
+        priority: 'normal',
+        timeoutMs: IMAGE_SIMILARITY_TIMEOUT_MS,
+    })
 }
 
 const toDataUrl = (base64Image: string, mimeType: string): string => {
@@ -147,12 +135,11 @@ export const extractImageFeatures = async (
     mimeType: string,
 ): Promise<ImageFeatureVector> => {
     try {
-        const pipeline = await loadFeaturePipeline()
         const imageBlob = await fetch(toDataUrl(base64Image, mimeType)).then((r) => r.blob())
-        const result = await withTimeout(
-            pipeline(imageBlob, { pooling: 'mean', normalize: true }),
-            IMAGE_SIMILARITY_TIMEOUT_MS,
-        )
+        const result = await dispatchFeatureExtraction(imageBlob, {
+            pooling: 'mean',
+            normalize: true,
+        })
         return {
             features: extractFeatures(result),
             extractedAt: Date.now(),
@@ -275,10 +262,11 @@ export const analyzeGrowthProgression = async (
     return { averageChange, changes, trend }
 }
 
-/** Preload the CLIP feature extraction pipeline. */
+/** Preload the CLIP feature extraction pipeline via a warm-up dispatch. */
 export const preloadImageSimilarityModel = async (): Promise<boolean> => {
     try {
-        await loadFeaturePipeline()
+        // Dispatch a minimal warm-up to trigger model loading in the worker
+        await dispatchFeatureExtraction('warmup', { pooling: 'mean', normalize: true })
         return true
     } catch {
         return false
@@ -290,5 +278,6 @@ export const IMAGE_FEATURE_DIM = FEATURE_DIM
 
 /** Reset internal state (tests). */
 export const resetImageSimilarityPipeline = (): void => {
-    featurePipeline = null
+    // Pipeline is managed inside the inference worker;
+    // no local state to reset.
 }

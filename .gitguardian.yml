@@ -12,7 +12,7 @@ paths-ignore:
     - '**/*.test.ts'
     - '**/*.test.tsx'
     - '**/tests/mocks/**'
-    - '**/packages/iot-mocks/**'
+    - '**/docker/iot-mocks/**'
     - '**/data/strains/*.json'
     - '**/public/screenshots/**'
     - '**/*.png'

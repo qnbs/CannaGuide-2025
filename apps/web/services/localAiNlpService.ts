@@ -1,55 +1,46 @@
-import { createCachedPipelineLoader } from './localAIModelLoader'
+import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { captureLocalAiError } from './sentryService'
 import DOMPurify from 'dompurify'
 
 /**
  * Local AI NLP Service — runs dedicated NLP pipelines on-device:
  *
- * • Sentiment analysis   (positive / negative / neutral)
- * • Text summarization   (condense long journal entries)
- * • Zero-shot text classification (categorize free-form queries)
+ * - Sentiment analysis   (positive / negative / neutral)
+ * - Text summarization   (condense long journal entries)
+ * - Zero-shot text classification (categorize free-form queries)
  *
- * All pipelines are lazy-loaded and cached. Designed for offline-first
- * operation with graceful degradation.
+ * All inference is off-loaded to the inference Web Worker via
+ * inferenceQueueService to keep the UI thread responsive.
  */
 
-/** Timeout for NLP inference calls (45s — summarization is heavier). */
+/** Timeout for NLP inference calls (45s -- summarization is heavier). */
 const NLP_TIMEOUT_MS = 45_000
-
-/** Race a promise against a timeout. */
-const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-    new Promise<T>((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error('NLP inference timeout')), ms)
-        promise.then(
-            (value) => {
-                clearTimeout(timer)
-                resolve(value)
-            },
-            (error) => {
-                clearTimeout(timer)
-                reject(error)
-            },
-        )
-    })
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 const SENTIMENT_MODEL_ID = 'Xenova/distilbert-base-uncased-finetuned-sst-2-english'
 const SUMMARIZATION_MODEL_ID = 'Xenova/distilbart-cnn-6-6'
 const ZERO_SHOT_TEXT_MODEL_ID = 'Xenova/mobilebert-uncased-mnli'
 
-// ─── Pipeline Loaders ────────────────────────────────────────────────────────
-
-const loadSentimentPipeline = createCachedPipelineLoader('sentiment-analysis', SENTIMENT_MODEL_ID)
-
-const loadSummarizationPipeline = createCachedPipelineLoader(
-    'summarization',
-    SUMMARIZATION_MODEL_ID,
-)
-
-const loadZeroShotTextPipeline = createCachedPipelineLoader(
-    'zero-shot-classification',
-    ZERO_SHOT_TEXT_MODEL_ID,
-)
+/** Dispatch an NLP task to the inference worker. */
+const dispatchNlp = async (
+    task: string,
+    modelId: string,
+    input: unknown,
+    inferenceOptions?: Record<string, unknown>,
+): Promise<unknown> => {
+    if (!isWorkerAvailable()) {
+        throw new Error('Inference worker unavailable')
+    }
+    return enqueueInference({
+        task,
+        modelId,
+        input,
+        pipelineOptions: { quantized: true },
+        inferenceOptions,
+        priority: 'normal',
+        timeoutMs: NLP_TIMEOUT_MS,
+    })
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -84,8 +75,11 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
         return { label: 'POSITIVE', score: 0.5, normalized: 'neutral' }
     }
     try {
-        const pipeline = await loadSentimentPipeline()
-        const result = await withTimeout(pipeline(sanitized.slice(0, 512)), NLP_TIMEOUT_MS)
+        const result = await dispatchNlp(
+            'sentiment-analysis',
+            SENTIMENT_MODEL_ID,
+            sanitized.slice(0, 512),
+        )
         const output = Array.isArray(result) ? result[0] : result
         const typed = output as { label?: string; score?: number }
         const label = (typed.label ?? 'POSITIVE') as 'POSITIVE' | 'NEGATIVE'
@@ -130,17 +124,13 @@ export const summarizeText = async (
         return { summary: sanitized, inputLength: sanitized.length, outputLength: sanitized.length }
     }
     try {
-        const pipeline = await loadSummarizationPipeline()
         // Truncate to 1024 tokens (roughly 4096 chars) to stay within model context
         const truncated = sanitized.slice(0, 4096)
-        const result = await withTimeout(
-            pipeline(truncated, {
-                max_length: maxLength,
-                min_length: minLength,
-                do_sample: false,
-            }),
-            NLP_TIMEOUT_MS,
-        )
+        const result = await dispatchNlp('summarization', SUMMARIZATION_MODEL_ID, truncated, {
+            max_length: maxLength,
+            min_length: minLength,
+            do_sample: false,
+        })
         const output = Array.isArray(result) ? result[0] : result
         const summary =
             typeof (output as { summary_text?: string }).summary_text === 'string'
@@ -203,13 +193,14 @@ export const classifyGrowTopic = async (
         }
     }
     try {
-        const pipeline = await loadZeroShotTextPipeline()
-        const result = await withTimeout(
-            pipeline(sanitized.slice(0, 512), {
+        const result = await dispatchNlp(
+            'zero-shot-classification',
+            ZERO_SHOT_TEXT_MODEL_ID,
+            sanitized.slice(0, 512),
+            {
                 candidate_labels: [...candidateLabels],
                 multi_label: false,
-            }),
-            NLP_TIMEOUT_MS,
+            },
         )
         const output = result as {
             labels?: string[]
@@ -298,15 +289,26 @@ export const preloadNlpModels = async (
     let loaded = 0
 
     onProgress?.(loaded, total, 'sentiment-model')
-    const sentimentResult = await Promise.allSettled([loadSentimentPipeline()]).then((r) => r[0])
+    const sentimentResult = await Promise.allSettled([
+        dispatchNlp('sentiment-analysis', SENTIMENT_MODEL_ID, 'warmup'),
+    ]).then((r) => r[0])
     onProgress?.(++loaded, total, 'summarization-model')
 
-    const summarizationResult = await Promise.allSettled([loadSummarizationPipeline()]).then(
-        (r) => r[0],
-    )
+    const summarizationResult = await Promise.allSettled([
+        dispatchNlp('summarization', SUMMARIZATION_MODEL_ID, 'warmup', {
+            max_length: 30,
+            min_length: 5,
+            do_sample: false,
+        }),
+    ]).then((r) => r[0])
     onProgress?.(++loaded, total, 'zero-shot-text-model')
 
-    const zeroShotResult = await Promise.allSettled([loadZeroShotTextPipeline()]).then((r) => r[0])
+    const zeroShotResult = await Promise.allSettled([
+        dispatchNlp('zero-shot-classification', ZERO_SHOT_TEXT_MODEL_ID, 'warmup', {
+            candidate_labels: ['test'],
+            multi_label: false,
+        }),
+    ]).then((r) => r[0])
     onProgress?.(++loaded, total, 'nlp-complete')
 
     return {
@@ -318,6 +320,6 @@ export const preloadNlpModels = async (
 
 /** Reset all NLP pipeline caches (tests). */
 export const resetNlpPipelines = (): void => {
-    // Pipelines are managed by createCachedPipelineLoader;
-    // use clearPipelineCache() from localAIModelLoader for full reset.
+    // Pipelines are managed inside the inference worker;
+    // no local state to reset.
 }

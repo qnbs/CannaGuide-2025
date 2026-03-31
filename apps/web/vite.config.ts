@@ -151,9 +151,9 @@ export default defineConfig({
         target: 'esnext',
         // Minify with esbuild (default, fastest)
         minify: 'esbuild',
-        // Local AI runtime bundles are intentionally large and loaded on demand.
-        // Keep the warning threshold high enough to avoid noise from these lazy chunks.
-        chunkSizeWarningLimit: 8000,
+        // Local AI runtime bundles are lazy-loaded on demand.
+        // Budget enforcement is handled by scripts/check-bundle-budget.mjs in CI.
+        chunkSizeWarningLimit: 1500,
         rollupOptions: {
             onwarn(warning, warn) {
                 if (

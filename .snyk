@@ -8,5 +8,5 @@ exclude:
     global:
         - apps/desktop/package.json
         - packages/ai-core/package.json
-        - packages/iot-mocks/package.json
+        - docker/iot-mocks/package.json
         - packages/ui/package.json

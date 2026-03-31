@@ -95,12 +95,41 @@ const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
 }
 
 // ---------------------------------------------------------------------------
-// Prompt-injection protection
+// Prompt-injection protection (layered: allowlist + blocklist)
 // ---------------------------------------------------------------------------
+
+/**
+ * Character-class allowlist for user-supplied text.
+ * Only printable ASCII, basic punctuation, whitespace, and common
+ * Latin/accented characters (for DE/FR/ES/NL i18n) are permitted.
+ * Everything else is stripped before the blocklist pass runs.
+ *
+ * This makes the blocklist a defence-in-depth layer rather than the sole
+ * protection, addressing the inherent incompleteness of regex blacklists.
+ */
+const ALLOWED_INPUT_CHARS = /[^a-zA-Z0-9\s.,;:!?'"()\-/@#%&*+=\n\u00C0-\u00FF\u0100-\u017F]/g
+
+/**
+ * Structural normalisation applied before any pattern matching.
+ * Collapses obfuscation tricks (zero-width chars, excessive whitespace,
+ * control characters) so the blocklist patterns can match reliably.
+ */
+const normalizeInputStructure = (input: string): string => {
+    let s = input
+    // Strip zero-width and invisible Unicode (ZWJ, ZWNJ, ZWSP, BOM, soft-hyphen, etc.)
+    s = s.replace(/[\u200B-\u200F\u2028-\u202F\uFEFF\u00AD\u180E]/g, '')
+    // Collapse multiple whitespace / control chars to single space
+    // eslint-disable-next-line no-control-regex
+    s = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/g, ' ')
+    // Normalize excessive newlines (>3 consecutive) to 2
+    s = s.replace(/\n{4,}/g, '\n\n')
+    return s
+}
 
 /**
  * Patterns that could be used to hijack or escape the LLM system prompt.
  * Applied to all user-supplied free-text before it is interpolated into prompts.
+ * This is a defence-in-depth layer — the character allowlist above is the primary guard.
  */
 const INJECTION_PATTERNS: RegExp[] = [
     // --- Instruction override ---
@@ -140,13 +169,19 @@ const INJECTION_PATTERNS: RegExp[] = [
 /**
  * Sanitize a user-supplied string for safe interpolation inside an LLM prompt.
  * 1. Strips all HTML/XML markup (DOMPurify)
- * 2. Removes known prompt-injection patterns
- * 3. Truncates to `maxLength` characters
+ * 2. Normalises invisible/control characters (structural allowlist)
+ * 3. Strips characters outside the permitted character-class allowlist
+ * 4. Removes known prompt-injection patterns (blocklist defence-in-depth)
+ * 5. Truncates to `maxLength` characters
  */
 const sanitizeForPrompt = (input: string, maxLength = 500): string => {
-    // Strip HTML - use text-only output (no tags allowed)
+    // Layer 1: Strip HTML
     const stripped = DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
-    let clean = stripped
+    // Layer 2: Structural normalisation (zero-width chars, control chars)
+    const normalized = normalizeInputStructure(stripped)
+    // Layer 3: Character-class allowlist -- drop anything not explicitly permitted
+    let clean = normalized.replace(ALLOWED_INPUT_CHARS, '')
+    // Layer 4: Blocklist patterns (defence-in-depth)
     for (const pattern of INJECTION_PATTERNS) {
         clean = clean.replace(pattern, '[redacted]')
     }

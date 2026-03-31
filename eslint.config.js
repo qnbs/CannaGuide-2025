@@ -23,7 +23,7 @@ export default [
             '**/*.cjs',
             'scripts/**',
             'docker/**',
-            'packages/iot-mocks/**',
+            'docker/iot-mocks/**',
             'apps/desktop/**',
             'types/**/*.d.ts',
         ],

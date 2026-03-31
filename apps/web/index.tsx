@@ -295,6 +295,10 @@ const mountHydratedApp = async () => {
         const { mqttClientService } = await import('@/services/mqttClientService')
         mqttClientService.init(hydratedStore)
 
+        // Initialize proactive smart coach (monitors sensor thresholds -> AI advice)
+        const { proactiveCoachService } = await import('@/services/proactiveCoachService')
+        proactiveCoachService.init(hydratedStore)
+
         // 6. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)
     } catch (error) {

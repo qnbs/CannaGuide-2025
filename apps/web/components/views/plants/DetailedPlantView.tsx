@@ -14,6 +14,7 @@ import { useAppDispatch } from '@/stores/store'
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
 import { EnvironmentDashboard } from './analytics/EnvironmentDashboard'
+import { ProactiveAlertBanner } from './ProactiveAlertBanner'
 import { calculateVPD } from '@/lib/vpd/calculator'
 
 interface DetailedPlantViewProps {
@@ -252,6 +253,8 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     return (
         <div className="animate-fade-in space-y-6">
             {header}
+
+            <ProactiveAlertBanner plantId={plant.id} />
 
             <div
                 ref={tabListRef}

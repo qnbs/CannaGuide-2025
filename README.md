@@ -373,7 +373,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Roadmap
 
-> Full details: [ROADMAP.md](ROADMAP.md)
+> Full details: [ROADMAP.md](ROADMAP.md) | Audit-driven priorities: [docs/PRIORITY_ROADMAP.md](docs/PRIORITY_ROADMAP.md) | Audit backlog: [docs/AUDIT_BACKLOG.md](docs/AUDIT_BACKLOG.md) | ADRs: [docs/adr/](docs/adr/)
 
 | Version  | Status         | Highlights                                                                                                                                                                                                                               |
 | -------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

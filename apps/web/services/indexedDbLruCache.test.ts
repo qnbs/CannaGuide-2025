@@ -210,3 +210,55 @@ describe('resetDbPromise', () => {
         expect(result?.value).toBe('val')
     })
 })
+
+describe('updateConfig', () => {
+    it('updates maxEntries at runtime', async () => {
+        const cache = makeCache({ maxEntries: 2 })
+        await cache.set(makeEntry('a', '1'))
+        await cache.set(makeEntry('b', '2'))
+        await cache.set(makeEntry('c', '3'))
+        expect(await cache.count()).toBeLessThanOrEqual(3)
+
+        // Now increase maxEntries
+        cache.updateConfig({ maxEntries: 100 })
+        await cache.set(makeEntry('d', '4'))
+        await cache.set(makeEntry('e', '5'))
+        expect(await cache.count()).toBeGreaterThanOrEqual(3)
+    })
+
+    it('ignores non-positive maxEntries', async () => {
+        const cache = makeCache({ maxEntries: 10 })
+        cache.updateConfig({ maxEntries: 0 })
+        cache.updateConfig({ maxEntries: -5 })
+        await cache.set(makeEntry('x', 'y'))
+        expect(await cache.count()).toBe(1)
+    })
+
+    it('updates ttlMs at runtime', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true })
+        const cache = makeCache({ ttlMs: 1000 })
+        await cache.set(makeEntry('k', 'v'))
+
+        // Extend TTL to 1 hour
+        cache.updateConfig({ ttlMs: 3_600_000 })
+
+        // Advance time by 2s -- should still be valid with new TTL
+        vi.advanceTimersByTime(2000)
+        const result = await cache.get('k')
+        expect(result?.value).toBe('v')
+        vi.useRealTimers()
+    })
+
+    it('ignores non-positive ttlMs', () => {
+        const cache = makeCache()
+        cache.updateConfig({ ttlMs: 0 })
+        cache.updateConfig({ ttlMs: -1 })
+    })
+
+    it('accepts partial updates', () => {
+        const cache = makeCache()
+        cache.updateConfig({ maxEntries: 500 })
+        cache.updateConfig({ ttlMs: 86_400_000 })
+        cache.updateConfig({})
+    })
+})

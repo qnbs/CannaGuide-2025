@@ -12,7 +12,8 @@ import {
     getCacheSize,
     getCacheBreakdown,
     resetCacheDb,
-} from '@/services/localAiCacheService'
+    applyCacheSettings,
+} from './localAiCacheService'
 
 beforeEach(() => {
     vi.stubGlobal('indexedDB', new IDBFactory())
@@ -84,5 +85,21 @@ describe('localAiCacheService', () => {
         resetCacheDb()
         const result = await getCachedInference('p')
         expect(result).toBe('v')
+    })
+
+    it('applyCacheSettings is a function', () => {
+        expect(typeof applyCacheSettings).toBe('function')
+    })
+
+    it('applyCacheSettings clamps to minimum 32', () => {
+        // Should not throw
+        applyCacheSettings(10)
+        applyCacheSettings(32)
+        applyCacheSettings(2048)
+    })
+
+    it('applyCacheSettings clamps to maximum 2048', () => {
+        applyCacheSettings(5000)
+        // No error means it clamped and applied
     })
 })

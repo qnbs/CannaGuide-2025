@@ -39,8 +39,12 @@ export const detectOnnxBackend = (): OnnxBackend => {
     return detectedBackend
 }
 
-/** Guard against concurrent excessive pipeline loads (max 3 simultaneous). */
-const MAX_CONCURRENT_LOADS = 3
+/** Adaptive concurrency: scale with hardware, capped at 2-5. */
+const getMaxConcurrentLoads = (): number => {
+    const cores = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency ?? 2) : 2
+    return Math.max(2, Math.min(5, Math.floor(cores * 0.5)))
+}
+
 let activeLoads = 0
 const loadQueue: Array<() => void> = []
 
@@ -60,7 +64,7 @@ const checkMemoryPressure = (): void => {
 }
 
 const acquireLoadSlot = (): Promise<void> => {
-    if (activeLoads < MAX_CONCURRENT_LOADS) {
+    if (activeLoads < getMaxConcurrentLoads()) {
         activeLoads++
         return Promise.resolve()
     }

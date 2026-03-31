@@ -484,4 +484,11 @@ class WorkerBusImpl {
 /** Singleton WorkerBus instance for the entire application. */
 export const workerBus = new WorkerBusImpl()
 
+// Auto-dispose all workers on page unload to prevent resource leaks.
+if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', () => {
+        workerBus.dispose()
+    })
+}
+
 export type { WorkerBusImpl }

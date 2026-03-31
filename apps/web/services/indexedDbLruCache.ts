@@ -33,6 +33,8 @@ interface CacheOps<T extends BaseCacheEntry> {
     clear: () => Promise<void>
     count: () => Promise<number>
     resetDbPromise: () => void
+    /** Update maxEntries and/or ttlMs at runtime. */
+    updateConfig: (patch: { maxEntries?: number; ttlMs?: number }) => void
 }
 
 export function createIndexedDbLruCache<T extends BaseCacheEntry>(
@@ -193,6 +195,14 @@ export function createIndexedDbLruCache<T extends BaseCacheEntry>(
         count,
         resetDbPromise: () => {
             dbPromise = null
+        },
+        updateConfig: (patch: { maxEntries?: number; ttlMs?: number }) => {
+            if (patch.maxEntries !== undefined && patch.maxEntries > 0) {
+                config.maxEntries = patch.maxEntries
+            }
+            if (patch.ttlMs !== undefined && patch.ttlMs > 0) {
+                config.ttlMs = patch.ttlMs
+            }
         },
     }
 }

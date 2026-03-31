@@ -126,9 +126,11 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 9. **Seedbank API:** `seedbankService.ts` fetches from SeedFinder.eu via CORS proxy cascade (allorigins -> corsproxy.io). 5-min in-memory TTL cache. `isLocalOnlyMode()` guard. Deterministic mock fallback when API unavailable or `VITE_SEEDFINDER_API_KEY` not set.
 
-10. **State Management Split:**
+10. **Proactive Smart Coach:** `proactiveCoachService.ts` subscribes to the Redux store and monitors plant environment values (temperature, humidity, VPD, pH, EC) against safe thresholds. When a metric breaches limits, the service requests plant-specific advice via `aiFacade.aiService.getPlantAdvice()` and pushes a `SmartAlert` into `useAlertsStore` (Zustand). 2-hour per-metric per-plant cooldown prevents alert spam. Initialised in `index.tsx` after store hydration. `ProactiveAlertBanner.tsx` renders active alerts in `DetailedPlantView`.
+
+11. **State Management Split:**
     - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner. RTK Query for AI API caching (9 endpoints).
-    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI), `sensorStore` (real-time sensor data). No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
+    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts). No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
     - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. Components must import AI services from `aiFacade`, not from individual service files.
 
 ---
@@ -317,6 +319,8 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/services/seedbankService.ts`                 | SeedFinder.eu API + CORS proxy cascade + mock fallback        |
 | `apps/web/services/imageGenerationService.ts`          | SD-Turbo text-to-image (WebGPU, worker-offloaded)             |
 | `apps/web/services/workerBus.ts`                       | Promise-based worker communication bus (7 workers)            |
+| `apps/web/services/proactiveCoachService.ts`           | Smart coach: threshold monitoring + AI advice + cooldown      |
+| `apps/web/stores/useAlertsStore.ts`                    | Zustand store for transient smart coach alerts                |
 | `apps/web/simulation.worker.ts`                        | VPD simulation Web Worker                                     |
 | `apps/web/utils/random.ts`                             | `secureRandom()` -- Web Crypto replacement for Math.random    |
 | `apps/web/constants.ts`                                | App-wide constants                                            |

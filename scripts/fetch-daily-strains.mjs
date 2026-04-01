@@ -57,7 +57,8 @@ async function fetchJson(url) {
 async function fetchSeedFinderList(listType) {
     const keyParam = API_KEY ? `&ac=${API_KEY}` : ''
     const url = `${SEEDFINDER_BASE}/lst/${listType}/?lang=en${keyParam}`
-    console.log(`[fetch] ${listType}: ${url}`)
+    const safeUrl = API_KEY ? url.replace(API_KEY, '***') : url
+    console.log(`[fetch] ${listType}: ${safeUrl}`)
     return fetchJson(url)
 }
 
@@ -291,12 +292,10 @@ async function main() {
     if (discoveries.length > 0) {
         const pendingPath = join(PENDING_DIR, 'pending-strains.json')
         let existing = []
-        if (existsSync(pendingPath)) {
-            try {
-                existing = JSON.parse(readFileSync(pendingPath, 'utf-8'))
-            } catch {
-                /* start fresh */
-            }
+        try {
+            existing = JSON.parse(readFileSync(pendingPath, 'utf-8'))
+        } catch {
+            /* file missing or corrupt -- start fresh */
         }
         const merged = [...existing, ...discoveries]
         // Keep only last 200 pending entries

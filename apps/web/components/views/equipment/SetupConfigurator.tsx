@@ -12,6 +12,7 @@ import {
     RecommendationCategory,
 } from '@/types'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
+import { resolveProductLinks, getVendorColor } from '@/services/equipmentProductService'
 import { useAppSelector } from '@/stores/store'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { useGetEquipmentRecommendationMutation } from '@/stores/api'
@@ -152,6 +153,30 @@ const SetupResultDisplayComponent: React.FC<{
                                     : t('equipmentView.configurator.noRationaleAvailable')}
                                 &quot;
                             </p>
+                            {(() => {
+                                const links =
+                                    item.productLinks ??
+                                    resolveProductLinks(item.name, key as RecommendationCategory)
+                                if (links.length === 0) return null
+                                return (
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {links.map((link) => (
+                                            <a
+                                                key={`${link.vendor}-${link.url}`}
+                                                href={link.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-opacity hover:opacity-80 ${getVendorColor(link.vendor)}`}
+                                            >
+                                                <PhosphorIcons.ArrowSquareOut className="w-3 h-3" />
+                                                {link.vendor}
+                                                {typeof link.price === 'number' &&
+                                                    ` ${link.price.toFixed(0)}${link.currency ?? 'EUR'}`}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )
+                            })()}
                         </div>
                     )
                 })}

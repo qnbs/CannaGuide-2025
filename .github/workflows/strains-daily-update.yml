@@ -1,6 +1,8 @@
-name: Strain Catalog Update
+name: Daily Strain Discovery & Catalog Update
 
 on:
+    schedule:
+        - cron: '30 6 * * *' # Daily at 06:30 UTC
     workflow_dispatch:
 
 permissions:
@@ -35,6 +37,32 @@ jobs:
             - name: Install dependencies
               run: npm ci --prefer-offline
 
+            - name: Fetch new strains from SeedFinder API
+              env:
+                  VITE_SEEDFINDER_API_KEY: ${{ secrets.SEEDFINDER_API_KEY }}
+              run: node scripts/fetch-daily-strains.mjs
+
+            - name: Upload daily feed artifact
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: daily-strains-feed-${{ github.run_id }}
+                  path: |
+                      artifacts/daily-strains-feed.json
+                      apps/web/data/strains/pending/pending-strains.json
+                  retention-days: 90
+
+            - name: Commit pending strains
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add apps/web/data/strains/pending/ artifacts/daily-strains-feed.json || true
+                  if git diff --cached --quiet; then
+                    echo "No new strain discoveries to commit."
+                  else
+                    git commit -m "chore(strains): daily strain discovery $(date -u +%Y-%m-%d)"
+                    git push origin main
+                  fi
+
             - name: Run strain merge (strict)
               env:
                   STRICT_STRAIN_MERGE: '1'
@@ -54,8 +82,19 @@ jobs:
 
             - name: Log catalog stats
               run: |
+                  if [ -f artifacts/daily-strains-feed.json ]; then
+                    echo "### Daily Strain Discovery" >> "$GITHUB_STEP_SUMMARY"
+                    echo "" >> "$GITHUB_STEP_SUMMARY"
+                    echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
+                    echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+                    echo "| New strains | $(jq '.stats.newStrains' artifacts/daily-strains-feed.json) |" >> "$GITHUB_STEP_SUMMARY"
+                    echo "| Updated strains | $(jq '.stats.updatedStrains' artifacts/daily-strains-feed.json) |" >> "$GITHUB_STEP_SUMMARY"
+                    echo "| Catalog size | $(jq '.stats.existingCatalogSize' artifacts/daily-strains-feed.json) |" >> "$GITHUB_STEP_SUMMARY"
+                    echo "| Errors | $(jq '.stats.errors' artifacts/daily-strains-feed.json) |" >> "$GITHUB_STEP_SUMMARY"
+                    echo "" >> "$GITHUB_STEP_SUMMARY"
+                  fi
                   if [ -f artifacts/strain-merge-report.json ]; then
-                    echo "### Strain Catalog Report" >> "$GITHUB_STEP_SUMMARY"
+                    echo "### Strain Catalog Merge" >> "$GITHUB_STEP_SUMMARY"
                     echo "" >> "$GITHUB_STEP_SUMMARY"
                     echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
                     echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"

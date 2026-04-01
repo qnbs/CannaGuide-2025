@@ -12,7 +12,7 @@ const navIcons: Record<string, React.ReactNode> = {
     [View.Knowledge]: <PhosphorIcons.Brain />,
 }
 
-const mainNavViews: View[] = [View.Strains, View.Plants, View.Equipment, View.Knowledge]
+const mainNavViews: View[] = [View.Plants, View.Strains, View.Equipment, View.Knowledge]
 
 export const SideNav: React.FC = () => {
     const { t } = useTranslation()

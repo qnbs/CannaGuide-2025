@@ -1298,4 +1298,53 @@ export const strainsP: Strain[] = [
         "aromas": ["Sweet", "Skunk", "Citrus", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     }),
+
+    createStrainObject({
+        "id": "platinum-cookies",
+        "name": "Platinum Cookies",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "OG Kush x Durban Poison x Girl Scout Cookies",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 0.5,
+        "thcRange": "20-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Platinum Cookies (also known as Platinum Girl Scout Cookies) is a potent hybrid crossing OG Kush phenotype with GSC genetics. It features a complex terpene profile with sweet, earthy, and minty notes. The effects are powerful and long-lasting, combining euphoric cerebral high with deep body relaxation.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m2", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-140 cm", "outdoor": "140-180 cm" }
+        },
+        "aromas": ["Sweet", "Earthy", "Minty", "Herbal"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Humulene"]
+    }),
+    createStrainObject({
+        "id": "purple-skunk",
+        "name": "Purple Skunk",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 55% / Sativa 45%",
+        "genetics": "Skunk #1 x Unknown Purple Indica",
+        "floweringType": "Photoperiod",
+        "thc": 17,
+        "cbd": 0.3,
+        "thcRange": "15-19%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
+        "description": "Purple Skunk combines the vigorous growth and skunky aroma of Skunk #1 with the vibrant purple coloring of an indica parent. It offers a balanced high that starts cerebral and transitions to body relaxation. The buds display stunning purple and green hues when exposed to cool temperatures.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m2", "outdoor": "500-650 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-200 cm" }
+        },
+        "aromas": ["Skunky", "Sweet", "Berry", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
 ];

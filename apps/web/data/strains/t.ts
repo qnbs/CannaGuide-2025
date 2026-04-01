@@ -832,4 +832,53 @@ export const strainsT: Strain[] = [
         "aromas": ["Banana", "Tropical", "Sweet", "Citrus"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Pinene"]
     })
+,
+    createStrainObject({
+        "id": "tahoe-og",
+        "name": "Tahoe OG",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 90% / Sativa 10%",
+        "genetics": "OG Kush x SFV OG",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 0.3,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "Tahoe OG is a potent indica-dominant OG Kush phenotype named after Lake Tahoe. Known for its fast-acting, heavy sedation that makes it one of the strongest OG variants. It delivers an earthy, lemon, and pine flavor profile. A staple in dispensaries across the West Coast.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "350-450 g/m2", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "90-130 cm", "outdoor": "130-180 cm" }
+        },
+        "aromas": ["Earthy", "Lemon", "Pine", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "top-44",
+        "name": "Top 44",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 90% / Sativa 10%",
+        "genetics": "Skunk #1 x Viking",
+        "floweringType": "Photoperiod",
+        "thc": 16,
+        "cbd": 0.5,
+        "thcRange": "14-18%",
+        "cbdRange": "<1%",
+        "floweringTime": 6.5,
+        "floweringTimeRange": "6-7",
+        "description": "Top 44 by Nirvana Seeds is named for its remarkably fast flowering time of approximately 44 days. This indica-dominant strain is a favorite among commercial growers for its speed and reliability. It delivers a mild, relaxing body high with a sweet and skunky flavor profile.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "350-450 g/m2", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "60-90 cm", "outdoor": "80-130 cm" }
+        },
+        "aromas": ["Sweet", "Skunky", "Earthy", "Berry"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
 ];

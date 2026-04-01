@@ -641,4 +641,29 @@ export const strainsD: Strain[] = [
         "aromas": ["Garlic", "Diesel", "Pungent", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     })
+,
+    createStrainObject({
+        "id": "dance-hall",
+        "name": "Dance Hall",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Juanita la Lagrimosa x Kalijah",
+        "floweringType": "Photoperiod",
+        "thc": 5,
+        "cbd": 9,
+        "thcRange": "3-8%",
+        "cbdRange": "6-12%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Dance Hall by Royal Queen Seeds is a CBD-rich strain bred for therapeutic use with minimal psychoactive effects. The balanced THC:CBD ratio makes it ideal for daytime medicinal use. It provides a clear-headed, functional uplift without anxiety or paranoia.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "475-525 g/m2", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-140 cm", "outdoor": "140-200 cm" }
+        },
+        "aromas": ["Sweet", "Fruity", "Earthy", "Floral"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
 ];

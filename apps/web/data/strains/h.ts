@@ -474,4 +474,30 @@ export const strainsH: Strain[] = [
         "aromas": ["Earthy", "Spicy", "Hash", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     })
+,
+    createStrainObject({
+        "id": "hawaiian",
+        "name": "Hawaiian",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Hawaiian Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 0.4,
+        "thcRange": "15-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 11,
+        "floweringTimeRange": "10-12",
+        "description": "Hawaiian is a pure sativa landrace originating from the volcanic islands of Hawaii. Prized for its tropical, sweet pineapple flavors and uplifting, energetic effects. A foundational strain used extensively in breeding programs for its vigorous growth and unique terpene profile.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "350-450 g/m2", "outdoor": "500-700 g/plant" },
+            "heightDetails": { "indoor": "150-220 cm", "outdoor": "200-350 cm" }
+        },
+        "aromas": ["Tropical", "Pineapple", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
+    }),
+    
 ];

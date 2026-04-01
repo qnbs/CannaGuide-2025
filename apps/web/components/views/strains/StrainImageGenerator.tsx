@@ -187,13 +187,13 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
                         </div>
                     )}
 
-                    <details className="group bg-slate-800/30 rounded-lg p-3 mb-4">
-                        <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center gap-2">
+                    <details className="group bg-slate-800 rounded-lg ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200 mb-4">
+                        <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center gap-2 p-3 select-none">
                             <PhosphorIcons.GearSix className="w-4 h-4" />
                             {t('strainsView.imageGen.settings')}
-                            <PhosphorIcons.ChevronDown className="w-4 h-4 transition-transform duration-200 group-open:rotate-180 ml-auto" />
+                            <PhosphorIcons.ChevronDown className="w-4 h-4 transition-transform duration-300 group-open:rotate-180 ml-auto" />
                         </summary>
-                        <div className="pt-4 space-y-4">
+                        <div className="px-3 pb-3 pt-2 border-t border-slate-700/50 space-y-4 animate-fade-in">
                             <div>
                                 <label className="block text-sm font-semibold text-slate-300 mb-1">
                                     {t('strainsView.tips.form.imageStyle')}

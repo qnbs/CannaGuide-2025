@@ -11,9 +11,9 @@
 | ID   | Finding                      | Effort | Status |
 | ---- | ---------------------------- | ------ | ------ |
 | C-02 | Automated release workflow   | Low    | Done   |
-| C-01 | Changelog generation         | Low    | Open   |
+| C-01 | Changelog generation         | Low    | Done   |
 | P-02 | Bundle size budget           | Medium | Open   |
-| K-01 | Package boundary enforcement | Medium | Open   |
+| K-01 | Package boundary enforcement | Medium | Done   |
 | I-01 | Translation completeness CI  | Low    | Open   |
 
 ## Short-term (Sprint 2)

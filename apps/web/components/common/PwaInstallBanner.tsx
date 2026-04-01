@@ -72,26 +72,26 @@ export const PwaInstallBanner: React.FC<PwaInstallBannerProps> = ({
                     </div>
                     <div className="flex-grow min-w-0">
                         <h4 className="font-bold text-slate-100 text-sm">
-                            {t('settings.pwa.installBannerTitle')}
+                            {t('settingsView.pwa.installBannerTitle')}
                         </h4>
                         <p className="text-xs text-slate-400 mt-0.5">
-                            {t('settings.pwa.installBannerDesc')}
+                            {t('settingsView.pwa.installBannerDesc')}
                         </p>
                         <div className="flex items-center gap-2 mt-3">
                             <Button size="sm" onClick={handleInstall} glow>
                                 <PhosphorIcons.DownloadSimple className="w-4 h-4 mr-1.5" />
-                                {t('settings.pwa.installNow')}
+                                {t('settingsView.pwa.installNow')}
                             </Button>
                             <Button variant="ghost" size="sm" onClick={handleLater}>
-                                {t('settings.pwa.later')}
+                                {t('settingsView.pwa.later')}
                             </Button>
                         </div>
                     </div>
                     <button
                         onClick={handleDismiss}
                         className="flex-shrink-0 text-slate-500 hover:text-slate-300 transition-colors"
-                        aria-label={t('settings.pwa.dontShowAgain')}
-                        title={t('settings.pwa.dontShowAgain')}
+                        aria-label={t('settingsView.pwa.dontShowAgain')}
+                        title={t('settingsView.pwa.dontShowAgain')}
                     >
                         <PhosphorIcons.X className="w-4 h-4" />
                     </button>

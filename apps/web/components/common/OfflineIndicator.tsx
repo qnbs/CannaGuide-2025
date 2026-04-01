@@ -22,7 +22,7 @@ export const OfflineIndicator: React.FC = () => {
     return (
         <div className="fixed top-0 left-0 right-0 z-[60] bg-amber-600 text-white text-center text-sm font-semibold py-1.5 px-4 shadow-lg animate-fade-in flex items-center justify-center gap-2">
             <PhosphorIcons.Warning className="w-4 h-4" />
-            {t('settings.pwa.offlineNotice')}
+            {t('settingsView.pwa.offlineNotice')}
         </div>
     )
 }

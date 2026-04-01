@@ -291,7 +291,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                           <details
                               key={strainName}
                               open={true}
-                              className="group ring-1 ring-inset ring-white/20 rounded-lg overflow-hidden"
+                              className="group ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200 rounded-lg overflow-hidden"
                           >
                               <summary className="list-none">
                                   <div className="flex justify-between items-center p-3 rounded-t-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer">

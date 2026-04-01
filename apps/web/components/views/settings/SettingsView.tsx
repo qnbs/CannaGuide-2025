@@ -1071,7 +1071,7 @@ const GeneralSettingsTab: React.FC = () => {
                         </h3>
                         {isInstalled ? (
                             <p className="text-sm text-green-400 mt-1 font-semibold">
-                                {t('settings.pwa.installed')}
+                                {t('settingsView.pwa.installed')}
                             </p>
                         ) : deferredPrompt ? (
                             <>
@@ -1080,12 +1080,12 @@ const GeneralSettingsTab: React.FC = () => {
                                 </p>
                                 <Button onClick={handleInstallClick} className="mt-3">
                                     <PhosphorIcons.DownloadSimple className="mr-2" />
-                                    {t('settings.pwa.installNow')}
+                                    {t('settingsView.pwa.installNow')}
                                 </Button>
                             </>
                         ) : (
                             <p className="text-sm text-slate-400 mt-1">
-                                {t('settings.pwa.notAvailable')}
+                                {t('settingsView.pwa.notAvailable')}
                             </p>
                         )}
                     </div>

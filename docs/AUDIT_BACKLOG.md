@@ -12,7 +12,7 @@ Last updated: 2026-Q2
 | Severity | Total | Done | Open |
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 1    | 2    |
-| High     | 10    | 4    | 6    |
+| High     | 10    | 5    | 5    |
 | Medium   | 10    | 2    | 8    |
 | Low      | 4     | 0    | 4    |
 
@@ -26,11 +26,11 @@ Last updated: 2026-Q2
 | -------- | ----------------- |
 | Severity | High              |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** `apps/web` imports directly from `packages/ai-core/src/` instead of through the package entry point (`@cannaguide/ai-core`). This breaks encapsulation and may cause issues with build tooling.
 
-**Action:** Enforce package boundary imports. Add ESLint rule (`no-restricted-imports`) to block deep imports into `packages/*/src/`. All cross-package imports must go through the published entry point.
+**Resolution:** ESLint `no-restricted-imports` rule added in `eslint.config.js` to block deep `packages/*/src/*` imports. All existing imports already use proper entry points.
 
 ---
 
@@ -328,11 +328,11 @@ Last updated: 2026-Q2
 | -------- | ----------- |
 | Severity | High        |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** CHANGELOG.md is manually maintained. Conventional Commits are enforced but not automatically aggregated.
 
-**Action:** Configure release-please (now active via `release.yml`) to auto-generate changelog from Conventional Commits. Validate output format.
+**Resolution:** `npm run changelog` (conventional-changelog-cli) and `npm run changelog:latest` scripts in place. release-please active via `release.yml`.
 
 ---
 
@@ -689,7 +689,7 @@ Recommended implementation order based on impact and effort:
 ### Sprint 1 (Immediate)
 
 - [x] C-02 -- Release workflow (Done)
-- [ ] C-01 -- Changelog generation (unblocked by C-02)
+- [x] C-01 -- Changelog generation (unblocked by C-02)
 - [ ] P-02 -- Bundle size budget
 - [ ] K-01 -- Package boundary enforcement
 - [ ] I-01 -- Translation completeness CI

@@ -1,8 +1,8 @@
+@import '@cannaguide/ui/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import '@cannaguide/ui/tokens.css';
 
 /* --- FONT FAMILIES --- */
 html {

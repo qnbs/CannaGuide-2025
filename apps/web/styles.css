@@ -1,4 +1,4 @@
-@import '@cannaguide/ui/tokens.css';
+@import '../../packages/ui/src/tokens.css';
 
 @tailwind base;
 @tailwind components;

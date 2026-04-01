@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import type { PluginOption } from 'vite'
-import { CSP, PERMISSIONS_POLICY } from './securityHeaders'
+import { CSP, DEV_CSP, PERMISSIONS_POLICY } from './securityHeaders'
 
 // ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
 // When missing, dynamic imports at runtime will fail gracefully — the app guards these.
@@ -58,6 +58,25 @@ const base = process.env.TAURI_ENV_PLATFORM
     ? '/'
     : (process.env.BUILD_BASE_PATH ?? '/CannaGuide-2025/')
 
+// In dev mode the restrictive CSP meta tag in index.html blocks Vite's inline
+// HMR preamble script.  Strip it so only the relaxed HTTP header (DEV_CSP) applies.
+function devCspPlugin(): PluginOption {
+    let isDev = false
+    return {
+        name: 'dev-strip-csp-meta',
+        configResolved(config) {
+            isDev = config.command === 'serve'
+        },
+        transformIndexHtml(html) {
+            if (!isDev) return html
+            return html.replace(
+                /<meta\s+http-equiv="Content-Security-Policy"[^>]*>/i,
+                '<!-- CSP meta stripped in dev — HTTP header provides relaxed policy -->',
+            )
+        },
+    }
+}
+
 // ── Manual Chunk Groups – declarative vendor split registry ─────────────
 const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
     { name: 'react', patterns: ['/react/', 'react-dom', 'react-redux'] },
@@ -102,6 +121,7 @@ export default defineConfig({
     },
     plugins: [
         optionalMlPlugin(),
+        devCspPlugin(),
         react({
             // React 19 Compiler – automatically memoises components and hooks
             babel: {
@@ -135,7 +155,7 @@ export default defineConfig({
             : []),
     ],
     server: {
-        headers: { 'Content-Security-Policy': CSP, 'Permissions-Policy': PERMISSIONS_POLICY },
+        headers: { 'Content-Security-Policy': DEV_CSP, 'Permissions-Policy': PERMISSIONS_POLICY },
     },
     preview: {
         headers: { 'Content-Security-Policy': CSP, 'Permissions-Policy': PERMISSIONS_POLICY },

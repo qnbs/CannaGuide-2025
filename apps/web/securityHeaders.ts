@@ -8,7 +8,7 @@
  *   - public/_headers (if used)
  */
 
-export const CSP = `${[
+const CSP_DIRECTIVES: readonly string[] = [
     "default-src 'self'",
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -16,11 +16,19 @@ export const CSP = `${[
     "img-src 'self' data: blob: https:",
     "connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs.hf.co https://huggingfaceusercontent.com",
     "worker-src 'self' blob:",
+    "manifest-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     'upgrade-insecure-requests',
-].join('; ')};`
+]
+
+export const CSP = `${CSP_DIRECTIVES.join('; ')};`
+
+// Relaxed CSP for Vite dev server -- allows inline scripts required by HMR preamble
+export const DEV_CSP = `${CSP_DIRECTIVES.map((d) =>
+    d.startsWith('script-src') ? d.replace("'self'", "'self' 'unsafe-inline'") : d,
+).join('; ')};`
 
 export const PERMISSIONS_POLICY = [
     'accelerometer=()',

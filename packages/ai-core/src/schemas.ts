@@ -7,6 +7,8 @@ import { z } from 'zod'
 export const AIResponseSchema = z.object({
     title: z.string().min(1).max(200),
     content: z.string().min(1).max(8000),
+    /** Optional confidence score (0-1). Responses below 0.7 should be flagged. */
+    confidence: z.number().min(0).max(1).optional(),
 })
 
 export const PlantDiagnosisResponseSchema = z.object({

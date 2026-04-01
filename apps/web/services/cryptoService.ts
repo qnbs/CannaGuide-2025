@@ -240,3 +240,56 @@ export async function ensureEncrypted(
     const encrypted = await encrypt(value)
     return { payload: encrypted, migrated: true }
 }
+
+/**
+ * Rotate the encryption key: generate a new AES-256-GCM key and re-encrypt
+ * all provided encrypted payloads with the new key.
+ *
+ * Returns an array of re-encrypted payloads in the same order as the input.
+ * Callers are responsible for persisting the re-encrypted values.
+ */
+export async function rotateEncryptionKey(
+    encryptedPayloads: string[],
+): Promise<{ reEncrypted: string[] }> {
+    // 1. Decrypt all payloads with the current key
+    const decrypted: string[] = []
+    for (const payload of encryptedPayloads) {
+        decrypted.push(await decrypt(payload))
+    }
+
+    // 2. Generate a new key and persist it (replaces old key)
+    const newKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+        'encrypt',
+        'decrypt',
+    ])
+    await persistEncryptionKey(newKey)
+
+    // 3. Re-encrypt all values with the new key
+    const reEncrypted: string[] = []
+    for (const plain of decrypted) {
+        reEncrypted.push(await encrypt(plain))
+    }
+
+    return { reEncrypted }
+}
+
+/**
+ * Emergency key deletion: wipe the encryption key and close the secure DB.
+ * After calling this, all encrypted data becomes irrecoverable.
+ */
+export async function deleteEncryptionKey(): Promise<void> {
+    cachedEncryptionKey = null
+    try {
+        const db = await openSecureDb()
+        const transaction = db.transaction(SECURE_STORE, 'readwrite')
+        const store = transaction.objectStore(SECURE_STORE)
+        await requestToPromise(store.delete(SECURE_KEY_ID))
+    } catch {
+        // Best-effort: if DB is already gone, that is fine.
+    }
+    try {
+        localStorage.removeItem(CRYPTO_KEY_STORAGE)
+    } catch {
+        // Ignore cleanup failures.
+    }
+}

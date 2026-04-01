@@ -160,35 +160,80 @@ class GrowLogRagService {
         }
     }
 
-    public retrieveRelevantContext(plants: Plant[], query: string, limit = 6): string {
+    /**
+     * Calculate dynamic top-K based on journal size.
+     * Scales from a minimum of 6 to ~15% of total chunks, capped at 20.
+     */
+    private dynamicLimit(chunkCount: number, requestedLimit: number | undefined): number {
+        if (requestedLimit !== undefined) return requestedLimit
+        return Math.min(20, Math.max(6, Math.round(chunkCount * 0.15)))
+    }
+
+    /**
+     * Sliding-window retrieval: combines the most recent entries (recency)
+     * with semantically relevant entries (relevance), deduplicated.
+     */
+    private async slidingWindowRetrieve(
+        chunks: LogChunk[],
+        query: string,
+        limit: number,
+    ): Promise<string> {
+        const RECENCY_WINDOW = 3
+
+        // Recent entries (always included for continuity)
+        const sortedByTime = chunks.toSorted((a, b) => b.createdAt - a.createdAt)
+        const recentChunks = sortedByTime.slice(0, RECENCY_WINDOW)
+        const recentTexts = recentChunks.map((c) => formatContextLine(c))
+
+        // Semantic entries (excluding already-selected recent ones)
+        const recentIds = new Set(recentChunks.map((c) => `${c.plantId}:${c.createdAt}`))
+        const remainingChunks = chunks.filter((c) => !recentIds.has(`${c.plantId}:${c.createdAt}`))
+
+        const semanticLimit = Math.max(1, limit - RECENCY_WINDOW)
+        let semanticTexts: string[] = []
+
+        if (remainingChunks.length > 0 && isEmbeddingModelReady()) {
+            try {
+                const raw = await this.semanticRetrieve(remainingChunks, query, semanticLimit)
+                semanticTexts = raw.split('\n').filter((l) => l.trim().length > 0)
+            } catch {
+                const raw = this.keywordRetrieve(remainingChunks, query, semanticLimit)
+                semanticTexts = raw.split('\n').filter((l) => l.trim().length > 0)
+            }
+        } else if (remainingChunks.length > 0) {
+            const raw = this.keywordRetrieve(remainingChunks, query, semanticLimit)
+            semanticTexts = raw.split('\n').filter((l) => l.trim().length > 0)
+        }
+
+        return [...recentTexts, ...semanticTexts].join('\n')
+    }
+
+    public retrieveRelevantContext(plants: Plant[], query: string, limit?: number): string {
         const chunks = this.buildChunks(plants)
         if (chunks.length === 0) {
             return 'No grow log entries found.'
         }
 
-        // Use keyword scoring for synchronous callers
-        return this.keywordRetrieve(chunks, query, limit)
+        const effectiveLimit = this.dynamicLimit(chunks.length, limit)
+        return this.keywordRetrieve(chunks, query, effectiveLimit)
     }
 
     /**
-     * Async context retrieval using semantic embeddings when available.
+     * Async context retrieval using sliding-window (recency + semantic relevance).
      * Falls back to keyword scoring transparently.
      */
     public async retrieveSemanticContext(
         plants: Plant[],
         query: string,
-        limit = 6,
+        limit?: number,
     ): Promise<string> {
         const chunks = this.buildChunks(plants)
         if (chunks.length === 0) {
             return 'No grow log entries found.'
         }
 
-        if (isEmbeddingModelReady()) {
-            return this.semanticRetrieve(chunks, query, limit)
-        }
-
-        return this.keywordRetrieve(chunks, query, limit)
+        const effectiveLimit = this.dynamicLimit(chunks.length, limit)
+        return this.slidingWindowRetrieve(chunks, query, effectiveLimit)
     }
 }
 

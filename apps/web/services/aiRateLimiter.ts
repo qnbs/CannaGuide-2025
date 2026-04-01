@@ -67,7 +67,7 @@ function getRemainingRequests(): number {
 // ---------------------------------------------------------------------------
 
 interface DayCost {
-    date: string          // ISO date string (YYYY-MM-DD)
+    date: string // ISO date string (YYYY-MM-DD)
     totalTokens: number
     requestCount: number
 }
@@ -95,7 +95,7 @@ function loadCostState(): CostTrackerState {
         const cutoff = new Date()
         cutoff.setDate(cutoff.getDate() - 30)
         const cutoffStr = cutoff.toISOString().slice(0, 10)
-        parsed.days = parsed.days.filter(d => d.date >= cutoffStr)
+        parsed.days = parsed.days.filter((d) => d.date >= cutoffStr)
         return parsed
     } catch {
         return { days: [] }
@@ -105,7 +105,9 @@ function loadCostState(): CostTrackerState {
 function saveCostState(state: CostTrackerState): void {
     try {
         localStorage.setItem(COST_TRACKER_STORAGE_KEY, JSON.stringify(state))
-    } catch { /* quota exceeded — non-critical */ }
+    } catch {
+        /* quota exceeded — non-critical */
+    }
 }
 
 /** Record estimated token usage for an endpoint. */
@@ -113,7 +115,7 @@ function trackTokenUsage(endpoint: string): void {
     const tokens = TOKEN_ESTIMATES[endpoint] ?? 1500
     const state = loadCostState()
     const today = todayKey()
-    const existing = state.days.find(d => d.date === today)
+    const existing = state.days.find((d) => d.date === today)
     if (existing) {
         existing.totalTokens += tokens
         existing.requestCount += 1
@@ -127,7 +129,9 @@ function trackTokenUsage(endpoint: string): void {
 function getTodayUsage(): DayCost {
     const state = loadCostState()
     const today = todayKey()
-    return state.days.find(d => d.date === today) ?? { date: today, totalTokens: 0, requestCount: 0 }
+    return (
+        state.days.find((d) => d.date === today) ?? { date: today, totalTokens: 0, requestCount: 0 }
+    )
 }
 
 /** Get usage for the last N days. */
@@ -148,7 +152,10 @@ function loadAuditLog(): AuditLogEntry[] {
         const parsed = JSON.parse(raw) as AuditLogEntry[]
         if (!Array.isArray(parsed)) return []
         return parsed
-            .filter((entry) => typeof entry.timestamp === 'number' && typeof entry.endpoint === 'string')
+            .filter(
+                (entry) =>
+                    typeof entry.timestamp === 'number' && typeof entry.endpoint === 'string',
+            )
             .slice(0, AUDIT_LOG_LIMIT)
     } catch {
         return []
@@ -157,7 +164,10 @@ function loadAuditLog(): AuditLogEntry[] {
 
 function saveAuditLog(entries: AuditLogEntry[]): void {
     try {
-        localStorage.setItem(AUDIT_LOG_STORAGE_KEY, JSON.stringify(entries.slice(0, AUDIT_LOG_LIMIT)))
+        localStorage.setItem(
+            AUDIT_LOG_STORAGE_KEY,
+            JSON.stringify(entries.slice(0, AUDIT_LOG_LIMIT)),
+        )
     } catch {
         // Ignore quota failures for best-effort audit logging.
     }
@@ -182,14 +192,97 @@ function resetForTests(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Monthly Token Budget
+// ---------------------------------------------------------------------------
+
+const BUDGET_STORAGE_KEY = 'cg.ai.monthlyBudget'
+
+interface MonthlyBudget {
+    /** Max tokens per month (0 = unlimited). */
+    limit: number
+    /** Current month key (YYYY-MM). */
+    month: string
+    /** Tokens spent this month. */
+    spent: number
+}
+
+function currentMonthKey(): string {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
+function loadBudget(): MonthlyBudget {
+    try {
+        const raw = localStorage.getItem(BUDGET_STORAGE_KEY)
+        if (!raw) return { limit: 0, month: currentMonthKey(), spent: 0 }
+        const parsed = JSON.parse(raw) as MonthlyBudget
+        // Reset if month rolled over
+        if (parsed.month !== currentMonthKey()) {
+            return { limit: parsed.limit, month: currentMonthKey(), spent: 0 }
+        }
+        return parsed
+    } catch {
+        return { limit: 0, month: currentMonthKey(), spent: 0 }
+    }
+}
+
+function saveBudget(budget: MonthlyBudget): void {
+    try {
+        localStorage.setItem(BUDGET_STORAGE_KEY, JSON.stringify(budget))
+    } catch {
+        /* best-effort */
+    }
+}
+
+/** Set the monthly token budget limit (0 = unlimited). */
+function setMonthlyBudgetLimit(limit: number): void {
+    const budget = loadBudget()
+    budget.limit = limit
+    saveBudget(budget)
+}
+
+/** Get current budget state. */
+function getMonthlyBudget(): MonthlyBudget {
+    return loadBudget()
+}
+
+/** Check if budget is exceeded. Returns null if unlimited, otherwise usage percentage. */
+function getBudgetUsagePercent(): number | null {
+    const budget = loadBudget()
+    if (budget.limit <= 0) return null
+    return Math.min(100, Math.round((budget.spent / budget.limit) * 100))
+}
+
+/** Track tokens against monthly budget. */
+function trackBudgetUsage(tokens: number): void {
+    const budget = loadBudget()
+    budget.spent += tokens
+    saveBudget(budget)
+}
+
+/** Get estimated cost for an endpoint (in estimated tokens). */
+function getEstimatedTokens(endpoint: string): number {
+    return TOKEN_ESTIMATES[endpoint] ?? 1500
+}
+
+// ---------------------------------------------------------------------------
 // Combined guard: check rate limit, record request, track cost
 // ---------------------------------------------------------------------------
 
-/** Call before every AI API request. Throws on rate limit. */
+/** Call before every AI API request. Throws on rate limit or budget exceeded. */
 function acquireSlot(endpoint: string): void {
     checkRateLimit()
+
+    // Check monthly budget before allowing request
+    const budget = loadBudget()
+    if (budget.limit > 0 && budget.spent >= budget.limit) {
+        throw new Error('ai.error.budgetExceeded')
+    }
+
     recordRequest()
+    const tokens = TOKEN_ESTIMATES[endpoint] ?? 1500
     trackTokenUsage(endpoint)
+    trackBudgetUsage(tokens)
     recordAuditEntry(endpoint)
 }
 
@@ -205,4 +298,9 @@ export const aiRateLimiter = {
     getAuditLog,
     clearAuditLog,
     resetForTests,
+    // Monthly budget
+    setMonthlyBudgetLimit,
+    getMonthlyBudget,
+    getBudgetUsagePercent,
+    getEstimatedTokens,
 }

@@ -57,6 +57,12 @@ export const common = {
     swUpdateReload: 'Jetzt neu laden',
     offlineWarning:
         'Du bist derzeit offline. Einige Funktionen sind möglicherweise nicht verfügbar.',
+    aiDisclaimer: 'KI-generiert -- keine Garantie fuer Korrektheit.',
+    aiLowConfidence: 'Unsicher -- bitte manuell verifizieren.',
+    aiQualityCloud: 'Cloud',
+    aiQualityLocalGpu: 'Lokal-GPU',
+    aiQualityLocalCpu: 'Lokal-CPU',
+    aiQualityHeuristic: 'Heuristik',
     preparingGuide: 'Dein Guide wird vorbereitet...',
     error: 'Fehler',
     deepDive: 'Deep Dive',

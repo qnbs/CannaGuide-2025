@@ -58,6 +58,19 @@ export const settingsView = {
         auditLog: 'Lokales KI-Auditprotokoll',
         auditLogEmpty: 'Bisher wurden keine KI-Anfragen protokolliert.',
         clearAuditLog: 'Auditprotokoll löschen',
+        panicButton: 'Notfall-Key-Löschung',
+        panicButtonDesc:
+            'Sofortiges Löschen ALLER gespeicherten API-Keys und des Verschlüsselungs-Keys von diesem Gerät. Dies kann nicht rückgängig gemacht werden.',
+        panicButtonConfirm: 'Alle Keys löschen',
+        panicButtonSuccess: 'Alle API-Keys und der Verschlüsselungs-Key wurden gelöscht.',
+        encryptionNotice: 'Verschlüsselungs-Transparenz',
+        encryptionNoticeDesc:
+            'API-Keys werden mit AES-256-GCM unter Verwendung eines nicht-exportierbaren Schlüssels in IndexedDB verschlüsselt. Dies schützt vor Gelegenheits-Browsing und einfachen XSS-Angriffen, kann aber nicht vor einem entschlossenen Angreifer mit vollem Browser-Zugriff schützen. Entferne Keys nach jeder Sitzung auf geteilten Geräten.',
+        providerConsent: 'Datenübermittlungs-Einwilligung',
+        providerConsentPrompt:
+            'Sie sind dabei, Pflanzendaten (einschließlich Fotos) an {{provider}} zu senden. Stimmen Sie zu?',
+        providerConsentRemember: 'Meine Wahl für diesen Anbieter merken',
+        providerDpaLink: 'Auftragsverarbeitungsvertrag anzeigen',
     },
     aiMode: {
         title: 'KI-Ausführungsmodus',
@@ -528,6 +541,8 @@ export const settingsView = {
             connected: 'Mit Gist verbunden',
             blockedByLocalOnly:
                 'Cloud-Sync ist deaktiviert, solange der Nur-Lokal-Modus aktiv ist. Deaktiviere den Nur-Lokal-Modus unter Privatsphäre & Sicherheit, um Cloud-Sync zu nutzen.',
+            gistSecurityWarning:
+                'Deine Daten werden in einem nicht gelisteten GitHub Gist gespeichert. Auch wenn verschlüsselt, ist die Gist-URL öffentlich zugänglich, wenn sie bekannt ist. Aktiviere E2EE unten für Schutz.',
             encryptionKeyRequired:
                 'Dieses Backup ist verschlüsselt. Bitte gib den Verschlüsselungsschlüssel an, um es wiederherzustellen.',
             e2ee: {

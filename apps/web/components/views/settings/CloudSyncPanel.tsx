@@ -192,6 +192,14 @@ const CloudSyncPanel: React.FC = () => {
 
                 {isSyncEnabled && (
                     <div className="space-y-4">
+                        {/* Gist Security Warning */}
+                        <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300">
+                            <PhosphorIcons.Warning className="h-4 w-4 shrink-0" />
+                            {t(
+                                'settingsView.data.sync.gistSecurityWarning',
+                                'Your data is stored in an unlisted GitHub Gist. While encrypted, the Gist URL is publicly accessible if known. Enable E2EE below for protection.',
+                            )}
+                        </div>
                         {/* E2EE Encryption */}
                         <div className="rounded-lg border border-primary-500/20 bg-primary-900/10 p-3 space-y-3">
                             <div className="flex items-center gap-2">

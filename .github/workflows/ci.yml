@@ -192,12 +192,14 @@ jobs:
                   path: apps/web/dist/
 
             - name: Run E2E tests
-              run: npm run test:e2e -- --grep-invert "Visual Regression"
+              working-directory: apps/web
+              run: npx playwright test -c playwright.config.ts --grep-invert "Visual Regression"
 
             - name: Run visual regression (snapshot baseline)
               if: always() && steps.playwright-cache.outcome != 'failure'
               continue-on-error: true
-              run: npm run test:e2e -- --grep "Visual Regression" --update-snapshots
+              working-directory: apps/web
+              run: npx playwright test -c playwright.config.ts --grep "Visual Regression" --update-snapshots
 
             - name: Upload visual regression snapshots
               if: always()

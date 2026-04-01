@@ -22,7 +22,7 @@ jobs:
             security-events: write
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Initialize CodeQL
               uses: github/codeql-action/init@c10b8064de6f491fea524254123dbe5e09572f13
@@ -35,7 +35,7 @@ jobs:
                           - coverage
 
             - name: Setup Node
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -56,10 +56,10 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Setup Node
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -77,7 +77,7 @@ jobs:
         timeout-minutes: 20
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
@@ -97,7 +97,7 @@ jobs:
             security-events: write
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Run Grype filesystem scan
               uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
@@ -126,7 +126,7 @@ jobs:
             image: semgrep/semgrep
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Run Semgrep
               run: semgrep scan --config auto --metrics=off --sarif -o semgrep-results.sarif
@@ -143,10 +143,10 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Setup Node
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -168,7 +168,7 @@ jobs:
             actions: read
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 

@@ -48,7 +48,7 @@ jobs:
                   egress-policy: audit
 
             - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 2 # needed for lint:changed (HEAD~1 diff)
 
@@ -140,7 +140,7 @@ jobs:
         continue-on-error: true
         steps:
             - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -150,7 +150,7 @@ jobs:
             # Cache Playwright browser binaries (~200 MB) -- key on Playwright version
             - name: Cache Playwright Chromium
               id: playwright-cache
-              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+              uses: actions/cache@v4
               with:
                   path: ~/.cache/ms-playwright
                   key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -171,7 +171,7 @@ jobs:
 
             - name: Upload Playwright traces on failure
               if: failure()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+              uses: actions/upload-artifact@v4
               with:
                   name: playwright-traces-${{ github.run_id }}
                   path: apps/web/test-results/
@@ -186,7 +186,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -209,7 +209,7 @@ jobs:
 
             - name: Upload Lighthouse report
               if: always()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+              uses: actions/upload-artifact@v4
               with:
                   name: lighthouse-report-${{ github.run_id }}
                   path: .lighthouseci/

@@ -18,10 +18,10 @@ jobs:
         timeout-minutes: 30
         steps:
             - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -52,7 +52,7 @@ jobs:
                   ./gradlew assembleRelease
 
             - name: Upload Android APK
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+              uses: actions/upload-artifact@v4
               with:
                   name: android-apk
                   path: android/app/build/outputs/apk/release/*.apk
@@ -64,10 +64,10 @@ jobs:
         timeout-minutes: 30
         steps:
             - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
 
             - name: Setup Node ${{ env.NODE_VERSION }}
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -98,7 +98,7 @@ jobs:
                     build
 
             - name: Upload iOS build
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+              uses: actions/upload-artifact@v4
               with:
                   name: ios-build
                   path: ios/App/build/Build/Products/Release-iphonesimulator/*.app

@@ -25,12 +25,12 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
             - name: Setup Node
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
@@ -47,7 +47,7 @@ jobs:
               run: npm run strains:check-new-duplicates
 
             - name: Upload merge report
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+              uses: actions/upload-artifact@v4
               with:
                   name: strain-merge-report
                   path: artifacts/strain-merge-report.json

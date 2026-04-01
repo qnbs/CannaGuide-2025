@@ -18,12 +18,12 @@ jobs:
         timeout-minutes: 45
         steps:
             - name: Checkout repository
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
             - name: Setup Node
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm

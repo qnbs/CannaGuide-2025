@@ -26,7 +26,7 @@ test.describe('Strains Critical Path', () => {
     test('navigates to Strains view and renders strain list', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const strainsNavButton = page.locator('[data-view-id="Strains"]')
+        const strainsNavButton = page.locator('[data-view-id="strains"]')
         await expect(strainsNavButton.first()).toBeVisible({ timeout: 10_000 })
         await strainsNavButton.first().click()
 
@@ -42,7 +42,7 @@ test.describe('Strains Critical Path', () => {
     })
 
     test('strain search filters results', async ({ page }) => {
-        const strainsNavButton = page.locator('[data-view-id="Strains"]')
+        const strainsNavButton = page.locator('[data-view-id="strains"]')
         await strainsNavButton.first().click()
         await page.waitForTimeout(2_000)
 
@@ -67,7 +67,7 @@ test.describe('Strains Critical Path', () => {
     test('Strains view handles rapid tab switching without crash', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const strainsNavButton = page.locator('[data-view-id="Strains"]')
+        const strainsNavButton = page.locator('[data-view-id="strains"]')
         await strainsNavButton.first().click()
         await page.waitForTimeout(2_000)
 
@@ -91,7 +91,7 @@ test.describe('Strains Critical Path', () => {
     test('Strains view renders without runtime errors', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const strainsNavButton = page.locator('[data-view-id="Strains"]')
+        const strainsNavButton = page.locator('[data-view-id="strains"]')
         await strainsNavButton.first().click()
         await page.waitForTimeout(3_000)
 

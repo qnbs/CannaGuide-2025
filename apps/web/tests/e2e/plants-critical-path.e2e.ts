@@ -26,7 +26,7 @@ test.describe('Plants Critical Path', () => {
     test('navigates to Plants view via side/bottom nav', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const plantsNavButton = page.locator('[data-view-id="Plants"]')
+        const plantsNavButton = page.locator('[data-view-id="plants"]')
         await expect(plantsNavButton.first()).toBeVisible({ timeout: 10_000 })
         await plantsNavButton.first().click()
 
@@ -39,7 +39,7 @@ test.describe('Plants Critical Path', () => {
     })
 
     test('shows empty state or plant slots in Plants view', async ({ page }) => {
-        const plantsNavButton = page.locator('[data-view-id="Plants"]')
+        const plantsNavButton = page.locator('[data-view-id="plants"]')
         await plantsNavButton.first().click()
 
         // Either empty state text or plant slot cards should be visible
@@ -63,7 +63,7 @@ test.describe('Plants Critical Path', () => {
     test('can open add-plant dialog', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const plantsNavButton = page.locator('[data-view-id="Plants"]')
+        const plantsNavButton = page.locator('[data-view-id="plants"]')
         await plantsNavButton.first().click()
         await page.waitForTimeout(1_000)
 
@@ -95,7 +95,7 @@ test.describe('Plants Critical Path', () => {
     test('Plants view renders without runtime errors', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const plantsNavButton = page.locator('[data-view-id="Plants"]')
+        const plantsNavButton = page.locator('[data-view-id="plants"]')
         await plantsNavButton.first().click()
 
         await page.waitForTimeout(3_000)

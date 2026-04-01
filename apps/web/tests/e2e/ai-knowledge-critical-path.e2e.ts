@@ -92,8 +92,10 @@ test.describe('AI Knowledge Critical Path', () => {
     test('AI Settings accessible from Settings view', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const settingsNavButton = page.locator('[data-view-id="settings"]')
-        await settingsNavButton.first().click()
+        // Settings is not in mainNavViews -- it lives in the Header
+        const settingsButton = page.getByRole('button', { name: /^settings$/i })
+        await expect(settingsButton.first()).toBeVisible({ timeout: 15_000 })
+        await settingsButton.first().click()
         await page.waitForTimeout(2_000)
 
         // Settings should render

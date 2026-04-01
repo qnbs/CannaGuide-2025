@@ -140,12 +140,57 @@ self.addEventListener('activate', (event) => {
                         }),
                 )
             })
+            .then(() => pruneIfOverQuota())
             .then(() => {
                 console.debug('[SW] New service worker activated, claiming clients.')
                 return self.clients.claim()
             }),
     )
 })
+
+/**
+ * Cache quota management: prune oldest cache entries when storage exceeds 200 MB.
+ * Uses navigator.storage.estimate() and iteratively deletes old entries from
+ * the main cache until usage drops below the threshold.
+ */
+const QUOTA_LIMIT_BYTES = 200 * 1024 * 1024 // 200 MB
+async function pruneIfOverQuota() {
+    if (!navigator.storage || !navigator.storage.estimate) return
+    try {
+        const estimate = await navigator.storage.estimate()
+        const usage = estimate.usage || 0
+        if (usage <= QUOTA_LIMIT_BYTES) return
+
+        console.debug(
+            `[SW] Storage usage ${Math.round(usage / 1024 / 1024)} MB exceeds 200 MB limit. Pruning caches.`,
+        )
+
+        // Prune image cache first (largest)
+        const imageCache = await caches.open(IMAGE_CACHE_NAME)
+        const imageKeys = await imageCache.keys()
+        const deleteCount = Math.min(imageKeys.length, Math.ceil(imageKeys.length * 0.5))
+        for (let i = 0; i < deleteCount; i++) {
+            await imageCache.delete(imageKeys[i])
+        }
+
+        // If still over, prune main cache (non-app-shell entries)
+        const postPrune = await navigator.storage.estimate()
+        if ((postPrune.usage || 0) > QUOTA_LIMIT_BYTES) {
+            const mainCache = await caches.open(CACHE_NAME)
+            const mainKeys = await mainCache.keys()
+            const appShellSet = new Set(
+                APP_SHELL_URLS.map((u) => new URL(u, self.location.origin).href),
+            )
+            const prunable = mainKeys.filter((k) => !appShellSet.has(k.url))
+            const mainDeleteCount = Math.min(prunable.length, Math.ceil(prunable.length * 0.3))
+            for (let i = 0; i < mainDeleteCount; i++) {
+                await mainCache.delete(prunable[i])
+            }
+        }
+    } catch (err) {
+        console.debug('[SW] Quota pruning failed:', err)
+    }
+}
 
 self.addEventListener('fetch', (event) => {
     const { request } = event

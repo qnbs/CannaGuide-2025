@@ -115,7 +115,10 @@ const ALLOWED_INPUT_CHARS = /[^a-zA-Z0-9\s.,;:!?'"()\-/@#%&*+=\n\u00C0-\u00FF\u0
  * control characters) so the blocklist patterns can match reliably.
  */
 const normalizeInputStructure = (input: string): string => {
-    let s = input
+    // NFC normalization: canonicalise combining characters before any matching
+    let s = input.normalize('NFC')
+    // Homoglyph normalization: map common Cyrillic/Greek/special look-alikes to ASCII
+    s = normalizeHomoglyphs(s)
     // Strip zero-width and invisible Unicode (ZWJ, ZWNJ, ZWSP, BOM, soft-hyphen, etc.)
     s = s.replace(/[\u200B-\u200F\u2028-\u202F\uFEFF\u00AD\u180E]/g, '')
     // Collapse multiple whitespace / control chars to single space
@@ -125,6 +128,89 @@ const normalizeInputStructure = (input: string): string => {
     s = s.replace(/\n{4,}/g, '\n\n')
     return s
 }
+
+/**
+ * Map visually similar characters (homoglyphs) from Cyrillic, Greek, and
+ * other scripts to their ASCII equivalents.  This defeats simple substitution
+ * attacks that try to bypass the allowlist/blocklist by using look-alike chars.
+ */
+const HOMOGLYPH_MAP: Record<string, string> = {
+    // Cyrillic -> ASCII
+    '\u0410': 'A',
+    '\u0430': 'a', // A
+    '\u0412': 'B',
+    '\u0432': 'b', // B (Ve)
+    '\u0421': 'C',
+    '\u0441': 'c', // C (Es)
+    '\u0415': 'E',
+    '\u0435': 'e', // E (Ye)
+    '\u041D': 'H',
+    '\u043D': 'h', // H (En)
+    '\u041A': 'K',
+    '\u043A': 'k', // K (Ka)
+    '\u041C': 'M',
+    '\u043C': 'm', // M (Em)
+    '\u041E': 'O',
+    '\u043E': 'o', // O
+    '\u0420': 'P',
+    '\u0440': 'p', // P (Er)
+    '\u0422': 'T',
+    '\u0442': 't', // T (Te)
+    '\u0425': 'X',
+    '\u0445': 'x', // X (Kha)
+    '\u0423': 'Y',
+    '\u0443': 'y', // Y (U)
+    // Greek -> ASCII
+    '\u0391': 'A',
+    '\u03B1': 'a', // Alpha
+    '\u0392': 'B',
+    '\u03B2': 'b', // Beta
+    '\u0395': 'E',
+    '\u03B5': 'e', // Epsilon
+    '\u0397': 'H',
+    '\u03B7': 'h', // Eta
+    '\u0399': 'I',
+    '\u03B9': 'i', // Iota
+    '\u039A': 'K',
+    '\u03BA': 'k', // Kappa
+    '\u039C': 'M',
+    '\u03BC': 'm', // Mu
+    '\u039D': 'N',
+    '\u03BD': 'n', // Nu
+    '\u039F': 'O',
+    '\u03BF': 'o', // Omicron
+    '\u03A1': 'P',
+    '\u03C1': 'p', // Rho
+    '\u03A4': 'T',
+    '\u03C4': 't', // Tau
+    '\u03A7': 'X',
+    '\u03C7': 'x', // Chi
+    // Special Unicode look-alikes
+    '\uFF21': 'A',
+    '\uFF41': 'a', // Fullwidth
+    '\uFF25': 'E',
+    '\uFF45': 'e',
+    '\uFF29': 'I',
+    '\uFF49': 'i',
+    '\uFF2F': 'O',
+    '\uFF4F': 'o',
+    '\uFF35': 'U',
+    '\uFF55': 'u',
+    '\u2010': '-',
+    '\u2011': '-',
+    '\u2012': '-',
+    '\u2013': '-',
+    '\u2014': '-', // Dashes
+    '\u2018': "'",
+    '\u2019': "'",
+    '\u201C': '"',
+    '\u201D': '"', // Quotes
+}
+
+const HOMOGLYPH_REGEX = new RegExp('[' + Object.keys(HOMOGLYPH_MAP).join('') + ']', 'g')
+
+const normalizeHomoglyphs = (input: string): string =>
+    input.replace(HOMOGLYPH_REGEX, (ch) => HOMOGLYPH_MAP[ch] ?? ch)
 
 /**
  * Patterns that could be used to hijack or escape the LLM system prompt.

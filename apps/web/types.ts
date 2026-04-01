@@ -773,6 +773,8 @@ export interface PlantDiagnosisResponse {
 export interface AIResponse {
     title: string
     content: string
+    /** Optional confidence score (0-1). Responses below 0.7 should be flagged as uncertain. */
+    confidence?: number | undefined
 }
 
 export interface YieldPredictionResult {

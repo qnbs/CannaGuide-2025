@@ -280,6 +280,19 @@ export const classifyDevice = (): DeviceClass => {
     return 'unknown'
 }
 
+/**
+ * Determine if the device should skip WebLLM and Transformers.js entirely
+ * and fall back directly to heuristics. This prevents OOM on low-end devices.
+ *
+ * Criteria: deviceMemory < 4GB OR device class is 'low-end'.
+ */
+export const shouldForceHeuristics = (): boolean => {
+    if (typeof navigator === 'undefined') return true
+    const memoryGB = (navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0
+    if (memoryGB > 0 && memoryGB < 4) return true
+    return classifyDevice() === 'low-end'
+}
+
 // ─── Adaptive Model Selection ────────────────────────────────────────────────
 
 /**

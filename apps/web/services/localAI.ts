@@ -96,8 +96,11 @@ const setCached = (prompt: string, value: string): void => {
 }
 
 const MAX_RETRIES = 2
-/** Timeout for any single inference call (60 seconds). */
-const INFERENCE_TIMEOUT_MS = 60_000
+/** Per-layer timeout for inference calls. WebLLM gets more time due to model loading. */
+const WEBLLM_TIMEOUT_MS = 20_000
+const TRANSFORMERS_TIMEOUT_MS = 15_000
+/** Legacy single timeout kept for non-layer-specific calls. */
+const INFERENCE_TIMEOUT_MS = 20_000
 
 /** Allow external callers (settings, tests) to flush the inference cache. */
 export const clearInferenceCache = (): void => {
@@ -161,7 +164,7 @@ class LocalAiService implements BaseAIProvider {
         createInferenceTimer,
         persistGeneratedText: (prompt, content, model) =>
             this.persistGeneratedText(prompt, content, model),
-        timeoutMs: INFERENCE_TIMEOUT_MS,
+        timeoutMs: WEBLLM_TIMEOUT_MS,
     }
 
     private async loadTextPipeline(): Promise<LocalAiPipeline> {
@@ -243,9 +246,9 @@ class LocalAiService implements BaseAIProvider {
                                 return_full_text: false,
                             },
                             priority: 'normal',
-                            timeoutMs: INFERENCE_TIMEOUT_MS,
+                            timeoutMs: TRANSFORMERS_TIMEOUT_MS,
                         }),
-                        INFERENCE_TIMEOUT_MS,
+                        TRANSFORMERS_TIMEOUT_MS,
                     )
                     generated = extractGeneratedText(workerResult)
                 } catch (workerError) {
@@ -265,7 +268,7 @@ class LocalAiService implements BaseAIProvider {
                         temperature: 0.6,
                         return_full_text: false,
                     }),
-                    INFERENCE_TIMEOUT_MS,
+                    TRANSFORMERS_TIMEOUT_MS,
                 )
                 generated = extractGeneratedText(output)
             }

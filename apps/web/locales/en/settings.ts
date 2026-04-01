@@ -55,6 +55,19 @@ export const settingsView = {
         auditLog: 'Local AI audit log',
         auditLogEmpty: 'No AI requests have been recorded yet.',
         clearAuditLog: 'Clear audit log',
+        panicButton: 'Emergency Key Wipe',
+        panicButtonDesc:
+            'Immediately delete ALL stored API keys and the encryption key from this device. This cannot be undone.',
+        panicButtonConfirm: 'Wipe All Keys',
+        panicButtonSuccess: 'All API keys and encryption key have been deleted.',
+        encryptionNotice: 'Encryption Transparency',
+        encryptionNoticeDesc:
+            'API keys are encrypted with AES-256-GCM using a non-exportable key stored in IndexedDB. This protects against casual browsing and basic XSS attacks, but cannot protect against a determined attacker with full browser access. For maximum security, remove keys after each session on shared devices.',
+        providerConsent: 'Data Transmission Consent',
+        providerConsentPrompt:
+            'You are about to send plant data (including photos) to {{provider}}. Do you consent?',
+        providerConsentRemember: 'Remember my choice for this provider',
+        providerDpaLink: 'View Data Processing Agreement',
     },
     aiMode: {
         title: 'AI Execution Mode',
@@ -515,6 +528,8 @@ export const settingsView = {
             connected: 'Connected to Gist',
             blockedByLocalOnly:
                 'Cloud sync is disabled while Local-Only Mode is active. Disable Local-Only Mode in Privacy & Security to use cloud sync.',
+            gistSecurityWarning:
+                'Your data is stored in an unlisted GitHub Gist. While encrypted, the Gist URL is publicly accessible if known. Enable E2EE below for protection.',
             encryptionKeyRequired:
                 'This backup is encrypted. Please provide the encryption key to restore it.',
             e2ee: {

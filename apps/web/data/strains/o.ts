@@ -462,4 +462,29 @@ export const strainsO: Strain[] = [
         "aromas": ["Orange", "Sweet", "Creamy", "Citrus"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     }),
+    createStrainObject({
+        id: 'original-oreoz',
+        name: 'Original Oreoz',
+        type: StrainType.Indica,
+        typeDetails: 'Indica 90% / Sativa 10%',
+        genetics: 'Cookies phenotype',
+        floweringType: 'Photoperiod',
+        thc: 33,
+        cbd: 0,
+        thcRange: '28-37%',
+        cbdRange: '<1%',
+        floweringTime: 9,
+        floweringTimeRange: '8-10',
+        description:
+            'Original Oreoz has garnered massive attention as the ultimate ultra-potency strain, with lab tests confirming exorbitant THC levels up to 37%. The profound aroma is reminiscent of dark chocolate, damp earth, and freshly roasted nuts. As a near-pure indica, it forces consumers into an extremely deep, long-lasting physical rest phase and excels in pain therapy.',
+        agronomic: {
+            difficulty: 'Hard',
+            yield: 'Medium',
+            height: 'Medium',
+            yieldDetails: { indoor: 'Variable', outdoor: 'Variable' },
+            heightDetails: { indoor: '90-130 cm', outdoor: '120-160 cm' },
+        },
+        aromas: ['Chocolate', 'Sweet', 'Earthy', 'Roasted', 'Vanilla'],
+        dominantTerpenes: ['Caryophyllene', 'Myrcene', 'Limonene'],
+    }),
 ];

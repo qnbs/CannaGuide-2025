@@ -13,6 +13,7 @@ module.exports = {
         './data/**/*.{ts,tsx}',
         './utils/**/*.{ts,tsx}',
         './lib/**/*.{ts,tsx}',
+        '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
     ],
     plugins: [require('@tailwindcss/typography')],
 }

@@ -11,7 +11,7 @@ import {
 //
 // Validates the strains browsing flow:
 // - Navigation to Strains view
-// - Strain list/grid rendering (700+ strains)
+// - Strain list/grid rendering (800+ strains)
 // - Search functionality
 // - Strain detail navigation
 // - Tab switching (Genetics, Terpenes, etc.)

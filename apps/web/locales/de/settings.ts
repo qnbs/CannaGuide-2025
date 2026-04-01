@@ -752,7 +752,7 @@ export const settingsView = {
             </ul>
             <h4>2. Die Sorten-Enzyklopädie (<code>Sorten</code>-Ansicht)</h4>
             <ul>
-                <li><strong>Riesige Bibliothek</strong>: Greifen Sie auf detaillierte Informationen zu <strong>700+ Cannabissorten</strong> zu.</li>
+                <li><strong>Riesige Bibliothek</strong>: Greifen Sie auf detaillierte Informationen zu <strong>800+ Cannabissorten</strong> zu.</li>
                 <li><strong>Interaktiver Stammbaum</strong>: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte.</li>
                 <li><strong>KI-Anbau-Tipps</strong>: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte.</li>
             </ul>

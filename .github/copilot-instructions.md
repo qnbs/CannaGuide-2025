@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (975+ tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (978 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -50,8 +50,8 @@ apps/
     components/          # React components: common/, icons/, navigation/, ui/, views/
     stores/              # Redux: slices/, selectors/, middleware, store config
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
-    hooks/               # Custom React hooks (17)
-    data/                # Static data: 775+ strains, FAQ, lexicon, guides
+    hooks/               # Custom React hooks (18)
+    data/                # Static data: 800+ strains, FAQ, lexicon, guides
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
     utils/               # Shared utilities
@@ -217,7 +217,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 975+ tests, 0 failures
+- Baseline: 978 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes

@@ -80,11 +80,11 @@ apps/web/                 Main PWA (@cannaguide/web)
     sentryService.ts      Sentry error tracking
     consentService.ts     GDPR consent cookie management
 
-  data/                   Static data: 700+ strains, FAQ, lexicon, guides
+  data/                   Static data: 800+ strains, FAQ, lexicon, guides
   locales/                i18n translations: en/, de/, es/, fr/, nl/
-  hooks/                  17 custom React hooks
+  hooks/                  18 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
-  services/workerBus.ts   Centralized promise-based WorkerBus (7 workers, timeout, messageId)
+  services/workerBus.ts   Centralized promise-based WorkerBus (8 workers, timeout, messageId)
   utils/                  Shared utilities (secureRandom, etc.)
   types/                  Zod schemas for AI response validation
   lib/                    cn() utility, VPD calculation library

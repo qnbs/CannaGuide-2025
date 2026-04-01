@@ -407,7 +407,7 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 | S6.1 | Three.js 3D Plant Visualization                  | v1.3    | Visualization | High |
 | S6.2 | Real-time ESP32 Dashboard + WebSocket            | v1.3    | IoT           | High |
 | S6.3 | Advanced Analytics Dashboard                     | v1.3    | Analytics     | High |
-| S6.4 | Strain DB 700+ → 2.000+ (Ingestion Pipeline)     | v1.4    | Data          | High |
+| S6.4 | Strain DB 800+ → 2.000+ (Ingestion Pipeline)     | v1.4    | Data          | High |
 | S6.5 | Discovery Feed (infinite scroll + offline cache) | v1.4    | UX            | High |
 | S6.6 | Scholarly Knowledge Graph + Citation Layer       | v1.5    | Knowledge     | High |
 | S6.7 | AR/VR Overlays (WebXR) + Digital Twin            | v2.0    | Platform      | Low  |

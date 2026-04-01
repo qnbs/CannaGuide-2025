@@ -7,6 +7,7 @@ export const equipmentView = {
         calculators: 'Calculators',
         growShops: 'Grow Shops',
         seedbanks: 'Zaadbanken',
+        growTech: 'Grow Tech 2026',
     },
     configurator: {
         title: 'AI Apparatuur Configurator',

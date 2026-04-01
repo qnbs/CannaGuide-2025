@@ -32,19 +32,9 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
             icon: <PhosphorIcons.Archive />,
         },
         {
-            id: KnowledgeViewTab.Breeding,
-            label: t('knowledgeView.tabs.breeding'),
-            icon: <PhosphorIcons.TestTube />,
-        },
-        {
             id: KnowledgeViewTab.Sandbox,
             label: t('knowledgeView.tabs.sandbox'),
             icon: <PhosphorIcons.Flask />,
-        },
-        {
-            id: KnowledgeViewTab.GrowTech,
-            label: t('knowledgeView.tabs.growTech'),
-            icon: <PhosphorIcons.Lightning />,
         },
     ]
 

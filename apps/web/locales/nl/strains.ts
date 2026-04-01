@@ -106,6 +106,13 @@ export const strainsView = {
             yield: 'Opbrengst',
             difficulty: 'Moeilijkheid',
         },
+        tabs: {
+            genetics: 'Genetica',
+            seeds: 'Zaden',
+            ar: 'AR-voorbeeld',
+        },
+        arNoResult: 'Geen nakomeling om te bekijken',
+        arNoResultHint: 'Kruis eerst soorten in het tabblad Genetica of Zaden.',
     },
     emptyStates: {
         noResults: {

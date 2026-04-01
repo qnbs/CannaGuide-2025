@@ -7,6 +7,7 @@ export const equipmentView = {
         calculators: 'Rechner',
         growShops: 'Grow Shops',
         seedbanks: 'Saatgut',
+        growTech: 'Grow Tech 2026',
     },
     configurator: {
         title: 'KI-Setup-Konfigurator',

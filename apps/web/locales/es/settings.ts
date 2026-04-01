@@ -873,4 +873,17 @@ export const settingsView = {
             critical: 'Critico',
         },
     },
+    pwa: {
+        installBannerTitle: 'Instalar CannaGuide',
+        installBannerDesc:
+            'Agrega CannaGuide a tu pantalla de inicio para acceso sin conexion y una experiencia nativa.',
+        installNow: 'Instalar ahora',
+        later: 'Mas tarde',
+        dontShowAgain: 'No mostrar de nuevo',
+        offlineNotice: 'Estas sin conexion -- algunas funciones pueden estar limitadas.',
+        updateAvailable: 'Una nueva version esta disponible!',
+        updateNow: 'Actualizar ahora',
+        installed: 'App instalada',
+        notAvailable: 'Instalacion no disponible en este navegador',
+    },
 }

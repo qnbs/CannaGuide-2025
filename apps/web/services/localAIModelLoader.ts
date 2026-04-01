@@ -35,6 +35,11 @@ export const setVramInsufficientOverride = (insufficient: boolean): void => {
 export const detectOnnxBackend = (): OnnxBackend => {
     if (forceWasmOverride || vramInsufficientOverride) return 'wasm'
     if (detectedBackend) return detectedBackend
+    // Mobile devices default to WASM for stability and battery savings
+    if (typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        detectedBackend = 'wasm'
+        return detectedBackend
+    }
     detectedBackend = typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm'
     return detectedBackend
 }

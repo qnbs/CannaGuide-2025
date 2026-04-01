@@ -174,6 +174,33 @@ export const localAiPreloadService = {
         return status.state === 'ready' || (status.state === 'partial' && status.textModelReady)
     },
 
+    /**
+     * Schedule preloading during browser idle time via requestIdleCallback.
+     * Falls back to setTimeout(5000) if requestIdleCallback is unavailable.
+     * No-op if models are already preloaded.
+     */
+    scheduleIdlePreload(onProgress?: (loaded: number, total: number, label: string) => void): void {
+        const current = readStatus()
+        if (current.state === 'ready' || current.state === 'preloading') return
+
+        const startPreload = () => {
+            this.preloadOfflineModels(onProgress).catch((err) => {
+                console.debug('[LocalAI] Idle preload failed:', err)
+            })
+        }
+
+        if (typeof requestIdleCallback === 'function') {
+            requestIdleCallback(
+                () => {
+                    startPreload()
+                },
+                { timeout: 10_000 },
+            )
+        } else {
+            setTimeout(startPreload, 5_000)
+        }
+    },
+
     async preloadOfflineModels(
         onProgress?: (loaded: number, total: number, label: string) => void,
     ): Promise<LocalAiPreloadStatus> {

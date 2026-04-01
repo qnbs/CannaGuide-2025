@@ -97,10 +97,10 @@ const setCached = (prompt: string, value: string): void => {
 
 const MAX_RETRIES = 2
 /** Per-layer timeout for inference calls. WebLLM gets more time due to model loading. */
-const WEBLLM_TIMEOUT_MS = 20_000
+const WEBLLM_TIMEOUT_MS = 45_000
 const TRANSFORMERS_TIMEOUT_MS = 15_000
 /** Legacy single timeout kept for non-layer-specific calls. */
-const INFERENCE_TIMEOUT_MS = 20_000
+const INFERENCE_TIMEOUT_MS = 30_000
 
 /** Allow external callers (settings, tests) to flush the inference cache. */
 export const clearInferenceCache = (): void => {

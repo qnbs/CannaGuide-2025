@@ -106,6 +106,13 @@ export const strainsView = {
             yield: 'Rendimiento',
             difficulty: 'Dificultad',
         },
+        tabs: {
+            genetics: 'Genetica',
+            seeds: 'Semillas',
+            ar: 'Vista previa AR',
+        },
+        arNoResult: 'No hay descendencia para previsualizar',
+        arNoResultHint: 'Cruza primero las cepas en la pestana Genetica o Semillas.',
     },
     emptyStates: {
         noResults: {

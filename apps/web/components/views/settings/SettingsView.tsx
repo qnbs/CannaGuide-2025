@@ -1059,28 +1059,38 @@ const GeneralSettingsTab: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            {/* PWA Install Card */}
-            {deferredPrompt && !isInstalled && (
-                <Card className="border border-primary-500/30 bg-primary-900/10">
-                    <div className="flex items-start gap-4">
-                        <div className="mt-1 rounded-full bg-primary-500/20 p-3">
-                            <PhosphorIcons.DownloadSimple className="h-6 w-6 text-primary-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-bold text-primary-300">
-                                {t('settingsView.general.installApp')}
-                            </h3>
-                            <p className="text-sm text-slate-300 mt-1">
-                                {t('settingsView.general.installAppDesc')}
-                            </p>
-                            <Button onClick={handleInstallClick} className="mt-3">
-                                <PhosphorIcons.DownloadSimple className="mr-2" />
-                                {t('settingsView.general.installApp')}
-                            </Button>
-                        </div>
+            {/* PWA Status Card */}
+            <Card className="border border-primary-500/30 bg-primary-900/10">
+                <div className="flex items-start gap-4">
+                    <div className="mt-1 rounded-full bg-primary-500/20 p-3">
+                        <PhosphorIcons.DownloadSimple className="h-6 w-6 text-primary-400" />
                     </div>
-                </Card>
-            )}
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-primary-300">
+                            {t('settingsView.general.installApp')}
+                        </h3>
+                        {isInstalled ? (
+                            <p className="text-sm text-green-400 mt-1 font-semibold">
+                                {t('settings.pwa.installed')}
+                            </p>
+                        ) : deferredPrompt ? (
+                            <>
+                                <p className="text-sm text-slate-300 mt-1">
+                                    {t('settingsView.general.installAppDesc')}
+                                </p>
+                                <Button onClick={handleInstallClick} className="mt-3">
+                                    <PhosphorIcons.DownloadSimple className="mr-2" />
+                                    {t('settings.pwa.installNow')}
+                                </Button>
+                            </>
+                        ) : (
+                            <p className="text-sm text-slate-400 mt-1">
+                                {t('settings.pwa.notAvailable')}
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </Card>
 
             <Card>
                 <FormSection

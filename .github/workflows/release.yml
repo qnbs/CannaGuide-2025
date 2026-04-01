@@ -29,5 +29,6 @@ jobs:
               id: release
               uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4
               with:
-                  release-type: node
+                  config-file: release-please-config.json
+                  manifest-file: .release-please-manifest.json
                   target-branch: main

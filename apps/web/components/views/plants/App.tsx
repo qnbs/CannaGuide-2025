@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, lazy, Suspense, useState, useCallback } from 'react'
 import { View } from '@/types'
 import { useTranslation } from 'react-i18next'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { ReloadPrompt } from '@/components/common/ReloadPrompt'
 import { Header } from '@/components/navigation/Header'
 import { BottomNav } from '@/components/navigation/BottomNav'
 import { SideNav } from '@/components/navigation/SideNav'
@@ -19,7 +21,6 @@ import { useUIStore } from '@/stores/useUIStore'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { clearArchives } from '@/stores/slices/archivesSlice'
 import { ToastContainer } from '@/components/common/Toast'
-import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/common/Button'
 import { Input } from '@/components/ui/input'
 import { AgeGateModal, useAgeGate } from '@/components/common/AgeGateModal'
@@ -280,19 +281,47 @@ export const App: React.FC = () => {
     const renderContent = () => {
         switch (activeView) {
             case View.Strains:
-                return <StrainsView />
+                return (
+                    <ErrorBoundary>
+                        <StrainsView />
+                    </ErrorBoundary>
+                )
             case View.Plants:
-                return <PlantsView />
+                return (
+                    <ErrorBoundary>
+                        <PlantsView />
+                    </ErrorBoundary>
+                )
             case View.Equipment:
-                return <EquipmentView />
+                return (
+                    <ErrorBoundary>
+                        <EquipmentView />
+                    </ErrorBoundary>
+                )
             case View.Knowledge:
-                return <KnowledgeView />
+                return (
+                    <ErrorBoundary>
+                        <KnowledgeView />
+                    </ErrorBoundary>
+                )
             case View.Settings:
-                return <SettingsView />
+                return (
+                    <ErrorBoundary>
+                        <SettingsView />
+                    </ErrorBoundary>
+                )
             case View.Help:
-                return <HelpView />
+                return (
+                    <ErrorBoundary>
+                        <HelpView />
+                    </ErrorBoundary>
+                )
             default:
-                return <PlantsView />
+                return (
+                    <ErrorBoundary>
+                        <PlantsView />
+                    </ErrorBoundary>
+                )
         }
     }
 
@@ -391,6 +420,7 @@ export const App: React.FC = () => {
                 <SaveSetupModalContainer />
             </Suspense>
             {showGeoLegal && <GeoLegalBanner onDismiss={dismissGeoLegal} />}
+            <ReloadPrompt />
             <PrivacyPolicyModal
                 isOpen={showPrivacyPolicy}
                 onClose={() => setShowPrivacyPolicy(false)}

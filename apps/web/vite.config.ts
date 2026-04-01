@@ -113,7 +113,7 @@ export default defineConfig({
             srcDir: 'public',
             filename: 'sw.js',
             manifest: false,
-            registerType: 'autoUpdate',
+            registerType: 'prompt',
             showMaximumFileSizeToCacheInBytesWarning: false,
             injectManifest: {
                 globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],

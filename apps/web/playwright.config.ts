@@ -5,7 +5,7 @@ export default defineConfig({
     testMatch: ['*.e2e.ts'],
     timeout: 60_000,
     expect: { timeout: 10_000 },
-    retries: 1,
+    retries: process.env.CI ? 2 : 0,
     reporter: [['list']],
     use: {
         baseURL: 'http://localhost:4173',

@@ -56,9 +56,11 @@ jobs:
               uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               with:
                   path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}-${{ github.sha }}
                   restore-keys: |
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}-
                       turbo-${{ runner.os }}-
+                  save-always: true
 
             - name: Lint changed files
               env:
@@ -190,7 +192,21 @@ jobs:
                   path: apps/web/dist/
 
             - name: Run E2E tests
-              run: npm run test:e2e
+              run: npm run test:e2e -- --grep-invert "Visual Regression"
+
+            - name: Run visual regression (snapshot baseline)
+              if: always() && steps.playwright-cache.outcome != 'failure'
+              continue-on-error: true
+              run: npm run test:e2e -- --grep "Visual Regression" --update-snapshots
+
+            - name: Upload visual regression snapshots
+              if: always()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: e2e-snapshots-${{ github.run_id }}
+                  path: apps/web/tests/e2e/__screenshots__/
+                  retention-days: 30
+                  if-no-files-found: ignore
 
             - name: Upload Playwright traces on failure
               if: failure()

@@ -5,7 +5,14 @@ export default defineConfig({
     testMatch: ['*.e2e.ts'],
     testIgnore: ['*.deploy.e2e.ts'],
     timeout: 60_000,
-    expect: { timeout: 10_000 },
+    expect: {
+        timeout: 10_000,
+        toHaveScreenshot: {
+            maxDiffPixelRatio: 0.01,
+            animations: 'disabled',
+        },
+    },
+    snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
     retries: process.env.CI ? 2 : 0,
     reporter: [['list']],
     use: {

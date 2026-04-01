@@ -221,6 +221,8 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
+- **Visual Regression:** `tests/e2e/visual-regression.e2e.ts` uses `expect(page).toHaveScreenshot()` for Plants, Strains, Knowledge views across themes. Snapshots stored in `tests/e2e/__screenshots__/`. Generate/update baselines: `npx playwright test --grep "Visual Regression" --update-snapshots`. CI runs visual regression with `--update-snapshots` (non-blocking); snapshots uploaded as artifacts for diff review.
+- **Mutation Testing:** Stryker Mutator (`stryker.conf.json`) targets `apps/web/stores/slices/**/*.ts`. Run: `npm run test:mutate`. Break threshold: 50% mutation score. Reports in `reports/mutation/`.
 
 ### Git
 
@@ -270,6 +272,7 @@ npm run -w @cannaguide/web test      # Vitest unit/integration
 npm run -w @cannaguide/web test:e2e  # Playwright E2E (requires build)
 npm run -w @cannaguide/web test:ct   # Playwright Component tests
 npm run -w @cannaguide/web typecheck # tsc --noEmit (TS2719 filtered)
+npm run test:mutate                  # Stryker mutation testing (Redux slices)
 ```
 
 ---
@@ -340,6 +343,7 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `packages/ui/src/tokens.css`                           | 9 cannabis theme CSS custom properties (RGB triplets)         |
 | `packages/ui/src/tailwind-preset.cjs`                  | Shared Tailwind preset (colors, keyframes, animations)        |
 | `lighthouserc.json`                                    | Lighthouse CI config + performance budget assertions          |
+| `stryker.conf.json`                                    | Stryker mutation testing config (Redux slices, 50% break)     |
 | `scripts/typecheck-filter.mjs`                         | Typecheck with RTK TS2719 filter (known upstream bug)         |
 | `scripts/generate-service-map.mjs`                     | AI service Mermaid dependency map generator                   |
 | `scripts/github/pr-push.mjs`                           | Automated PR workflow (branch -> PR -> auto-merge -> cleanup) |

@@ -16,7 +16,10 @@ if (result.status === 0) {
 }
 
 const lines = output.split('\n')
-const unknownErrors = lines.filter((l) => l.includes('error TS') && !l.includes('TS2719'))
+// Only filter TS2719 in store.ts (known RTK upstream bug: redux-toolkit#4392).
+// Any TS2719 in other files is treated as a real error.
+const isKnownRtkError = (l) => l.includes('TS2719') && l.includes('store.ts')
+const unknownErrors = lines.filter((l) => l.includes('error TS') && !isKnownRtkError(l))
 
 if (unknownErrors.length > 0) {
     // Print full output so developers see all context
@@ -24,5 +27,5 @@ if (unknownErrors.length > 0) {
     process.exit(1)
 }
 
-const filtered = lines.filter((l) => l.includes('TS2719')).length
-console.log(`[OK] Typecheck passed (${filtered} known RTK TS2719 filtered)`)
+const filtered = lines.filter((l) => isKnownRtkError(l)).length
+console.log(`[OK] Typecheck passed (${filtered} known RTK TS2719 in store.ts filtered)`)

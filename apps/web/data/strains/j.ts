@@ -442,4 +442,29 @@ export const strainsJ: Strain[] = [
         "aromas": ["Tropical", "Sweet", "Fruity", "Berry"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     })
+,
+    createStrainObject({
+        "id": "jet-fuel-g6",
+        "name": "Jet Fuel G6",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Aspen OG x High Country Diesel",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 0.3,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Jet Fuel G6 (also known as G6 or Jet Fuel OG) by 303 Seeds is a potent sativa-dominant hybrid with a pungent diesel aroma. It delivers an energetic, euphoric cerebral buzz ideal for daytime use. Known for its fast onset and long-lasting effects.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "450-550 g/m2", "outdoor": "500-650 g/plant" },
+            "heightDetails": { "indoor": "120-170 cm", "outdoor": "170-230 cm" }
+        },
+        "aromas": ["Diesel", "Pungent", "Earthy", "Pine"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+    }),
 ];

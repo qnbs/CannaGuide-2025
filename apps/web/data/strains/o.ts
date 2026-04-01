@@ -437,4 +437,29 @@ export const strainsO: Strain[] = [
         "aromas": ["Orange", "Citrus", "Sweet", "Tangy"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Linalool"]
     })
+,
+    createStrainObject({
+        "id": "orange-push-pop",
+        "name": "Orange Push Pop",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Triangle Kush x Orange Cookies",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 0.3,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Orange Push Pop captures the nostalgic flavor of the classic frozen treat. This indica-leaning hybrid delivers a wave of creamy, citrus sweetness with every hit. The effects are relaxing and euphoric, making it perfect for unwinding after a long day.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m2", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-140 cm", "outdoor": "140-180 cm" }
+        },
+        "aromas": ["Orange", "Sweet", "Creamy", "Citrus"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
 ];

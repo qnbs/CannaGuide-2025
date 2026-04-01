@@ -370,4 +370,29 @@ export const strainsE: Strain[] = [
         "aromas": ["Diesel", "Chocolate", "Earthy", "Pine"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
     }),
+
+    createStrainObject({
+        "id": "emperor-og",
+        "name": "Emperor OG",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "OG Kush x Unknown Indica",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 0.5,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Emperor OG is a heavy-hitting indica bred from OG Kush genetics. Known as a powerful nighttime strain, it delivers a sedating full-body effect perfect for alleviating insomnia and chronic pain. Dense, frosty nugs with an earthy, pine, and fuel aroma.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m2", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "90-130 cm", "outdoor": "120-170 cm" }
+        },
+        "aromas": ["Earthy", "Pine", "Diesel", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
 ];

@@ -1301,4 +1301,29 @@ export const strainsS: Strain[] = [
         "aromas": ["Haze", "Skunky", "Sweet", "Spicy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
     }),
+    createStrainObject({
+        id: 'spritzer',
+        name: 'Spritzer',
+        type: StrainType.Hybrid,
+        typeDetails: 'Hybrid 50% Sativa / 50% Indica',
+        genetics: 'Runtz x Grape Pie x MAC',
+        floweringType: 'Photoperiod',
+        thc: 25,
+        cbd: 0,
+        thcRange: '23-28%',
+        cbdRange: '<1%',
+        floweringTime: 9,
+        floweringTimeRange: '8-10',
+        description:
+            'Cannarado Genetics\' Spritzer unites three of the most iconic breeding lines into an uncompromising candy experience. The extremely volatile terpenes create a pure sugar taste completely free of earthy or heavy gasoline notes. The strain has a strongly stimulating, motivating effect ideal for creative work, hikes, or daydreaming.',
+        agronomic: {
+            difficulty: 'Medium',
+            yield: 'Medium',
+            height: 'Medium',
+            yieldDetails: { indoor: '400-500 g/m2', outdoor: '450-550 g/plant' },
+            heightDetails: { indoor: '100-150 cm', outdoor: '120-170 cm' },
+        },
+        aromas: ['Sweet', 'Candy', 'Sugar', 'Fruity'],
+        dominantTerpenes: ['Caryophyllene', 'Limonene', 'Linalool'],
+    }),
 ];

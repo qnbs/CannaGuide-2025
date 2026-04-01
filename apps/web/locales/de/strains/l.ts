@@ -133,5 +133,51 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Sunset Sherbet x Unbekannte Indica",
     "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+  },
+  "la-reunion": {
+    "description": "La Reunion ist eine reine Sativa-Landrasse von der Insel Réunion im Indischen Ozean. Sie ist bekannt für ihre klassischen, lang blühenden Sativa-Eigenschaften und ein starkes, energetisches und langanhaltendes zerebrales High. Ihr Aroma ist typischerweise würzig und haschig. Sie ist ein Schlüssel-Elternteil bei der Züchtung der berühmten Sorte Queen Mother."
+  },
+  "lebanese-landrace": {
+    "description": "Eine reine Indica-Landrasse aus dem Libanon, die traditionell für die Herstellung des berühmten roten und blonden libanesischen Haschischs verwendet wird. Sie ist robust und harzig und bietet eine klare, entspannende Wirkung."
+  },
+  "legend-og": {
+    "description": "Ein hoch angesehener Phänotyp von OG Kush, bekannt für sein starkes, erdiges und blumiges Aroma. Legend OG liefert eine potente, entspannende Wirkung, die sowohl den Körper als auch den Geist beruhigt, was sie zu einem wichtigen Elternteil für Sorten wie Legend Orange Apricot macht."
+  },
+  "lemon-alien-dawg": {
+    "description": "Eine ausgewogene Hybride, die das saure, chemische Aroma von Alien Dawg mit der frischen Zitrusnote von Lemon Kush kombiniert. Die Wirkung ist sowohl erhebend als auch entspannend."
+  },
+  "lemon-cooler": {
+    "description": "Eine Sativa-dominante Hybride, die für ihr erfrischendes und lebhaftes Zitrusprofil bekannt ist und an ein kühles Zitronengetränk an einem heißen Tag erinnert. Sie bietet typischerweise eine energetisierende und erhebende Wirkung, die Kreativität und Konzentration fördert, was sie zu einer ausgezeichneten Wahl für den Tagesgebrauch macht.",
+    "typeDetails": "Sativa 60% / Indica 40%",
+    "genetics": "Lemon Tree x Cookies and Cream"
+  },
+  "lemon-joy": {
+    "description": "Lemon Joy ist eine sativa-dominante Hybride, die für ihre lebhafte und erhebende Wirkung sowie ihr süßes, spritziges Zitronenaroma bekannt ist. Sie sorgt für ein fröhliches und energetisches High, was sie zu einem wichtigen Elternteil bei der Züchtung von Lemon Kush macht."
+  },
+  "lemon-kush": {
+    "description": "Lemon Kush ist eine ausgewogene Hybride, die für ihr starkes Zitronen- und Zitrusaroma gefeiert wird. Sie liefert ein erhebendes und kreatives zerebrales High, begleitet von einem entspannenden Körpergefühl. Ihr erfrischendes Terpenprofil und ihre vielseitigen Effekte machen sie zu einer beliebten Wahl."
+  },
+  "lemon-og": {
+    "description": "Eine ausgewogene Hybride, die für ihr starkes Zitronen- und Kush-Aroma bekannt ist. Lemon OG liefert eine schnell einsetzende Wirkung, die sowohl eine starke körperliche Entspannung als auch eine erhebende zerebrale Euphorie bietet. Sie ist ein Elternteil von Lemonnade."
+  },
+  "lemon-pebbles": {
+    "description": "Eine ausgewogene Hybride, die für ihr köstliches Geschmacksprofil bekannt ist, das die süßen, fruchtigen Noten von Fruity Pebbles OG mit einem scharfen, pikanten Zitronenkick kombiniert. Die Wirkung ist fröhlich, erhebend und kreativ und bietet eine sanfte Körperentspannung, die sie für den Tagesgebrauch geeignet macht.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Fruity Pebbles OG x Lemon Kush"
+  },
+  "lemon-skunk": {
+    "description": "Eine preisgekrönte Hybride, die für ihr extrem starkes, süßes und skunkiges Zitronenaroma bekannt ist. Die Wirkung ist erhebend, energetisierend und fröhlich, was sie zu einer ausgezeichneten Wahl für den Tagesgebrauch macht. Sie ist ein Elternteil von Lemon Haze und Lemon Tree."
+  },
+  "lemonnade": {
+    "description": "Lemonnade, manchmal auch Lemonade geschrieben, ist eine sativa-dominante Hybride, die für ihren überwältigend süßen und spritzigen Zitronengeschmack bekannt ist. Sie liefert ein energetisches, erhebendes und fröhliches High, das sich perfekt für den Tagesgebrauch und kreative Aktivitäten eignet. Sie ist ein Elternteil der beliebten Sorte Lemonchello."
+  },
+  "lilly": {
+    "description": "Lilly ist eine reine Sativa-Sorte, die für ihr extrem süßes und fruchtiges Aromaprofil bekannt ist, das an Ananas und andere tropische Früchte erinnert. Sie ist eine Kreuzung aus den afrikanischen Sativas Queen Mother und Congo. Die Wirkung ist schnell einsetzend, stark zerebral, euphorisch und energetisierend, was sie zu einer ausgezeichneten Wahl für den Tagesgebrauch und kreative Aktivitäten macht."
+  },
+  "lowryder-1": {
+    "description": "Die ursprüngliche Autoflowering-Sorte, die die Welt des Cannabisanbaus revolutionierte. Sie ist klein, schnell und diskret, mit einer milden, entspannenden Wirkung. Ihre Genetik ist die Grundlage für eine große Anzahl moderner Autoflowers."
+  },
+  "lucifer-og": {
+    "description": "Lucifer OG ist eine potente, indica-dominante Hybridsorte, die für ihre starke und langanhaltende Wirkung bekannt ist. Sie kombiniert die Genetik von Hell's OG mit einer stabilisierten 'In-Bred Line' (IBL) von SFV OG. Die Wirkung ist tief entspannend und sedierend, ideal für erfahrene Konsumenten zur Linderung von Schmerzen und Schlaflosigkeit. Das Aroma ist ein klassisches OG-Profil mit dominanten Noten von Zitrone, Kiefer und Diesel."
   }
 };

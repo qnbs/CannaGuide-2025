@@ -101,5 +101,14 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "White Widow x Trainwreck",
         "yieldDetails": { "indoor": "500-600 g/m²" },
         "heightDetails": { "indoor": "150-200 cm" }
-    }
+    },
+  "west-coast-dog": {
+    "description": "West Coast Dog, auch bekannt als WCD, ist eine potente Hybridsorte, die als vermuteter Elternteil der berühmten Pre-98 Bubba Kush gilt. Sie ist eine Kreuzung aus Chemdawg und einer OG-Variante aus Humboldt County. Die Wirkung ist stark und ausgewogen, mit einer zerebralen Euphorie, die von einer tiefen körperlichen Entspannung begleitet wird. Das Aroma ist intensiv und kombiniert die scharfen Diesel-Noten von Chemdawg mit den erdigen Kiefern-Noten von OG."
+  },
+  "williams-wonder": {
+    "description": "Eine klassische, old-school Indica, bekannt für ihre hohen Erträge, schnelle Blütezeit und potente, entspannende Wirkung. Sie hat ein süßes, zitrusartiges und blumiges Aroma. Sie ist ein wichtiger Elternteil der ursprünglichen Lowryder."
+  },
+  "wookie-15": {
+    "description": "Wookie #15 ist eine potente indica-dominante Hybride, berühmt für ihr einzigartiges Aromaprofil, das Lavendel, Minze und Diesel mischt. Sie sorgt für ein glückliches, entspannendes High, das den Körper beruhigt, während der Geist euphorisch bleibt. Sie ist ein Elternteil von Monkey Glue."
+  }
 };

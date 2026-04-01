@@ -45,5 +45,6 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "exodus-cheese": {
     "description": "The original Cheese phenotype, known for its extremely pungent, cheese-like aroma. The effect is strong, euphoric, and physically relaxing.",
-  }
+  },
+  "emerald-headband": {}
 };

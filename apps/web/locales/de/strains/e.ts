@@ -99,5 +99,8 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Skunk #1 (Phänotyp)",
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+  },
+  "emerald-headband": {
+    "description": "Eine Sativa-dominante Hybride, die den zerebralen 'Headband'-Effekt mit klassischer OG-Potenz kombiniert. Sie ist bekannt für ein erhebendes und kreatives High und ist ein Elternteil von Black Dawg."
   }
 };

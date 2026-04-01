@@ -95,5 +95,23 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "afghani-bullrider": {
     "description": "Eine potente Indica-Sorte, die als Phänotyp einer afghanischen Landrasse gilt. Sie liefert ein tief entspannendes, fast narkotisches Körper-High, das Schmerzen und Stress dahinschmelzen lässt, was sie ideal für den nächtlichen Gebrauch macht. Ihr Aroma ist eine klassische Mischung aus erdigen, süßen und scharfen Noten. Sie ist ein Elternteil von Ray Charles."
+  },
+  "rainbow-chip": {
+    "description": "Eine ausgewogene Hybride mit einem komplexen Aroma von süßen Früchten, Schokolade und Minze. Die Wirkung ist erhebend und entspannend, ideal für jede Tageszeit. Sie ist ein Elternteil von Scotty 2 Hotty."
+  },
+  "red-river-delta": {
+    "description": "Red River Delta ist eine seltene, reine Indica-Landrasse, die aus der Region des Roten Flussdeltas in Vietnam stammt. Sie ist bekannt für ihre schnelle Blütezeit, ihre hohen Erträge und ihre oft rötlich-violetten Farbtöne. Die Wirkung ist tief entspannend und beruhigend, was sie zu einem Elternteil der Sorte Ayahuasca Purple macht. Das Aroma ist süß und fruchtig mit erdigen und blumigen Noten."
+  },
+  "respect": {
+    "description": "Eine CBD-reiche Sorte mit einem 1:1 THC:CBD-Verhältnis, bekannt für ihre klaren und therapeutischen Effekte. Sie hat ein fruchtiges und haziges Aroma."
+  },
+  "rock-candy-kush": {
+    "description": "Eine potente indica-dominante Sorte mit einem süßen, bonbonartigen Geschmacksprofil, ergänzt durch saure und erdige Noten. Die Wirkung ist stark entspannend und sedierend, ideal zur Linderung von Schmerzen, Stress und Schlaflosigkeit am Ende des Tages. Auch bekannt als Alien Rock Candy."
+  },
+  "royal-kush": {
+    "description": "Royal Kush ist eine potente indica-dominante Hybride, die für ihre langanhaltende, entspannende Wirkung bekannt ist. Das Aroma ist eine klassische Mischung aus erdigen, skunkigen und kiefernartigen Noten. Sie ist ein Elternteil von Queen's Sangria."
+  },
+  "roze": {
+    "description": "Roze ist eine reine Indica-Sorte, die für ihr einzigartiges und intensives blumiges Aroma gefeiert wird, das stark an frische Rosen erinnert. Sie bietet ein beruhigendes und entspannendes High, perfekt zum Entspannen. Sie ist einer der Elternteile der optisch atemberaubenden California Black Rose."
   }
 };

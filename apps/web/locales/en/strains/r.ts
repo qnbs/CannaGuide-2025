@@ -54,5 +54,24 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "runtz-muffin": {
     "description": "A potent indica-dominant hybrid from Barney's Farm, Runtz Muffin combines the candy-like sweetness of Zkittlez and Gelato with a creamy, orange-vanilla finish from Orange Punch. The effect is profoundly relaxing and long-lasting, washing over the user with a wave of euphoria that soothes stress and tension, eventually leading to a state of deep calm."
+  },
+  "rainbow-chip": {
+    "description": "A balanced hybrid with a complex aroma of sweet fruit, chocolate, and mint. The effect is uplifting and relaxing, great for any time of day. It is a parent of Scotty 2 Hotty."
+  },
+  "red-river-delta": {
+    "description": "Red River Delta is a rare, pure indica landrace originating from the Red River Delta region of Vietnam. It is known for its fast flowering time, high yields, and often reddish-purple hues. The effect is deeply relaxing and calming, making it a parent of the strain Ayahuasca Purple. The aroma is sweet and fruity with earthy and floral notes."
+  },
+  "respect": {
+    "description": "A CBD-rich strain with a 1:1 THC:CBD ratio, known for its clear-headed and therapeutic effects. It has a fruity and hazy aroma. It is a parent of Painkiller XL."
+  },
+  "rock-candy-kush": {},
+  "rockbud": {
+    "description": "An indica-dominant hybrid known for its dense, rock-hard buds and relaxing effects. It has a pungent, skunky aroma with earthy undertones. It is one of the parents of Rockstar."
+  },
+  "royal-kush": {
+    "description": "Royal Kush is a potent indica-dominant hybrid known for its long-lasting, relaxing effects. The aroma is a classic blend of earthy, skunky, and piney notes. It's a parent of Queen's Sangria."
+  },
+  "roze": {
+    "description": "Roze is a pure indica strain celebrated for its unique and intense floral aroma, strongly reminiscent of fresh roses. It provides a calming and relaxing high, perfect for unwinding. It is one of the parents of the visually stunning California Black Rose."
   }
 };

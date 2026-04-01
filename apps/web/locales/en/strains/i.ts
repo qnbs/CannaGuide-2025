@@ -30,5 +30,6 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "island-sweet-skunk": {
     "description": "A sativa-dominant strain with a sweet, skunky, and tropical aroma. The effect is uplifting, energizing, and creative, ideal for daytime use.",
-  }
+  },
+  "indian-indica": {}
 };

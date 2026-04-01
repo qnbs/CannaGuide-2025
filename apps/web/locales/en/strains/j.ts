@@ -65,5 +65,11 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "juicy-fruit": {
     "description": "A classic hybrid from the 1970s, also known as Fruity Juice. It is famous for its sweet, fruity aroma reminiscent of tropical punch and berries. The effect is uplifting and euphoric, with a gentle body buzz. It is a parent of Orange Cream Sicle."
+  },
+  "jamaican-landrace": {
+    "description": "A pure sativa landrace from Jamaica, famous for its uplifting, energetic, and often described as cerebral high. It's known for a sweet, tropical, and earthy aroma."
+  },
+  "jet-fuel-gelato": {
+    "description": "Jet Fuel Gelato is a potent sativa-dominant hybrid known for its uplifting and energizing effects. It has a complex aroma of sweet diesel and floral notes. This strain provides a focused and euphoric high, making it a parent to popular strains like Horchata."
   }
 };

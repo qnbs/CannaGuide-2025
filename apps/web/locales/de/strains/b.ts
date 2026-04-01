@@ -323,5 +323,59 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Indiana Bubblegum",
         "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-    }
+    },
+  "banana": {
+    "description": "Eine Sorte unbekannter Herkunft, berühmt für ihr ausgeprägtes Bananenaroma und ihren Geschmack, den sie an ihre Nachkommen wie Banana OG weitergibt."
+  },
+  "bangi-haze": {
+    "description": "Eine klassische Sativa von ACE Seeds, bekannt für ihre Widerstandsfähigkeit gegen Kälte und Schimmel. Sie liefert ein klares, energetisches und fokussiertes zerebrales High ohne Paranoia. Das Aroma ist süß und blumig mit Anklängen von Anis und Zitrone.",
+    "typeDetails": "Sativa 70% / Indica 30%",
+    "genetics": "Kongolesische Sativa x Nepalesische Indica"
+  },
+  "bay-11": {
+    "description": "Eine preisgekrönte (High Times Cannabis Cup 2011) Sativa-Sorte, bekannt für ihre dichten, kristallüberzogenen Knospen. Sie bietet ein potentes, erhebendes und kreatives High, das sich hervorragend für den Tagesgebrauch eignet. Das Aroma ist süß und kiefernartig mit erdigen Untertönen.",
+    "typeDetails": "Sativa 80% / Indica 20%",
+    "genetics": "Appalachia (Green Crack x Tres Dawg)"
+  },
+  "bc-hashplant": {
+    "description": "Eine Hash-Plant-Variante aus British Columbia, Kanada. Bekannt für ihre hohe Harzproduktion und ihre klassische Indica-Wirkung."
+  },
+  "big-skunk-korean": {
+    "description": "Eine potente Hybride, die die massiven Erträge von Big Bud mit der Schärfe von Skunk #1 und der Widerstandsfähigkeit einer koreanischen Sativa kombiniert. Sie ist ein Schlüssel-Elternteil für Sorten wie Lavender und Somango und trägt zu deren komplexem Aroma und entspannender Wirkung bei."
+  },
+  "biker-kush": {
+    "description": "Eine potente indica-dominante Sorte von Karma Genetics. Sie liefert ein schweres, entspannendes Körper-High, das sich hervorragend zur Schmerzlinderung und bei Schlaflosigkeit eignet. Das Aroma ist ein klassisches OG-Profil mit scharfen Noten von Zitrone, Kiefer und Dieselkraftstoff.",
+    "typeDetails": "Indica 85% / Sativa 15%",
+    "genetics": "Hell's OG x Lucifer OG"
+  },
+  "black-banana": {
+    "description": "Eine potente indica-dominante Hybride, die das Ergebnis der Kreuzung von Banana Fire Cookies und Black Dawg ist. Sie liefert ein starkes, entspannendes High mit einem süßen Bananen- und Dieselaroma. Perfekt für den Abendgebrauch.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Banana Fire Cookies x Black Dawg"
+  },
+  "blood-wreck": {
+    "description": "Eine potente Sativa-dominante Hybride, bekannt für ihre intensiven, langanhaltenden zerebralen Effekte. Sie sorgt für einen Schub an Energie und Euphorie. Das Aroma ist eine komplexe Mischung aus süßen, sauren und erdigen Noten. Sie ist ein Elternteil von Timewreck."
+  },
+  "blue-mammoth-auto": {
+    "description": "Von Barney's Farm stammend, ist Blue Mammoth Auto eine robuste und ertragreiche Autoflowering-Sorte. Sie kombiniert Blueberry Skunk mit Lowryder-Genetik für einen schnellen und einfachen Anbau. Die Wirkung ist tief entspannend und beruhigend, typisch für eine starke Indica. Ihr Aroma ist eine köstliche Mischung aus fruchtigen, süßen Beeren mit einer skunkigen Note."
+  },
+  "blue-monster": {
+    "description": "Eine potente indica-dominante Sorte, bekannt für ihre großen, harzigen Knospen und ihren süßen Beerengeschmack. Sie bietet ein langanhaltendes, tief entspannendes Körper-High, das zum Couch-Lock führen kann, was sie ideal für den Abendgebrauch macht.",
+    "typeDetails": "Indica 80% / Sativa 20%",
+    "genetics": "G13 x Blueberry x Northern Lights #5 x Mexikanische Sativa"
+  },
+  "blue-moonshine": {
+    "description": "Ein Indica-dominanter Phänotyp von Blueberry, der für seinen süßen Blaubeergeschmack und seine schnelle Blütezeit bekannt ist. Die Wirkung ist entspannend und sedierend, was sie ideal für den Abendgebrauch macht.",
+    "typeDetails": "Indica 100%",
+    "genetics": "Blueberry Phänotyp",
+  },
+  "blueberry-skunk": {
+    "description": "Eine Indica-dominante Hybride, die die süßen Beerenaromen von Blueberry mit der scharfen, potenten Wirkung von Skunk #1 kombiniert. Sie liefert ein entspannendes Körper-High, begleitet von einem glücklichen, erhebenden Geisteszustand."
+  },
+  "burmese-kush": {
+    "description": "Eine indica-dominante Hybride, bekannt für ihre entspannende und dennoch klare Wirkung. Das Aroma ist süß und erdig mit kiefernartigen Untertönen."
+  },
+  "burmese-landrace": {
+    "description": "Eine reine Sativa-Landrasse aus Südostasien, bekannt für ihre erhebenden, energetischen und klaren Effekte. Das Aroma ist typischerweise süß, fruchtig und erdig. Sie ist ein Elternteil von Burmese Kush."
+  }
 }

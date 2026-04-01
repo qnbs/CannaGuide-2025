@@ -182,5 +182,54 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Jamaikanische Landrasse x Maple Leaf Indica",
     "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
     "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
+  },
+  "malana": {
+    "description": "Eine reine Indica-Landrasse aus dem Malana-Tal in Indien, berühmt für die Herstellung des hochgeschätzten 'Malana Cream' Charas (Haschisch). Sie ist bekannt für ihre hohe Harzproduktion und ein entspannendes, zerebrales High. Das Aroma ist süß, fruchtig und haschartig."
+  },
+  "malawian-landrace": {
+    "description": "Eine reine Sativa-Landrasse aus Malawi in Südostafrika. Sie ist bekannt für ihre langen, harzigen Blüten und eine stark energetisierende, erhebende und langanhaltende zerebrale Wirkung."
+  },
+  "mandarin-sunset": {
+    "description": "Eine indica-dominante Hybride, bekannt für ihr lebhaftes Orangen-Zitrus-Aroma. Sie liefert ein entspannendes und euphorisches High, das Stress dahinschmelzen lässt und sich hervorragend für Abende eignet. Elternteil von Mandarin Cookies."
+  },
+  "mango": {
+    "description": "Eine klassische Indica-dominante Hybride, die für ihren ausgeprägten Geschmack und Geruch nach frischen Mangos berühmt ist. Die Wirkung ist entspannend und euphorisch, ideal zum Stressabbau."
+  },
+  "maple-leaf": {
+    "description": "Eine klassische, reine Indica-Sorte, die von afghanischen Landrassen abstammt. Sie ist bekannt für ihre schnelle Blütezeit, hohe Harzproduktion und ein tief entspannendes, sedierendes Körper-High. Das Aroma ist süß und erdig mit einem Hauch von Zitrus und Gewürzen."
+  },
+  "maple-leaf-indica": {
+    "description": "Eine klassische, reine Indica-Sorte, die von afghanischen Landrassen abstammt. Sie ist bekannt für ihre schnelle Blütezeit, hohe Harzproduktion und ein tief entspannendes, sedierendes Körper-High. Das Aroma ist süß und erdig mit einem Hauch von Zitrus und Gewürzen. Sie ist ein Elternteil von Marley's Collie."
+  },
+  "martian-mean-green": {
+    "description": "Eine sativa-dominante Hybride von DNA Genetics, bekannt für ihr potentes, energetisches und kreatives High. Das Aroma ist eine komplexe Mischung aus würzigen, blumigen und erdigen Noten. Elternteil von Cosmic Charlie."
+  },
+  "master-widow": {
+    "description": "Eine Kreuzung aus White Widow und Master Kush. Diese Hybride kombiniert die Harzproduktion von Widow mit der entspannenden Kraft von Kush."
+  },
+  "matanuska-valley-sativa": {
+    "description": "Matanuska Valley Sativa ist eine legendäre Landrassensorte aus dem Matanuska-Tal in Alaska, die als ursprünglicher Elternteil von Alaskan Thunder Fuck (ATF) gilt. Sie ist bekannt für ihre Anpassungsfähigkeit an kühlere Klimazonen und ihre starke, erhebende Wirkung. Das High ist typischerweise euphorisch, energetisierend und fördert die Kreativität. Das Aroma ist eine komplexe Mischung aus Kiefer, Zitrone, Menthol und Skunk."
+  },
+  "meatloaf": {
+    "description": "Meatloaf ist eine potente und seltene indica-dominante Sorte, bekannt als einer der Elternteile von Meat Breath. Sie trägt die schwere, entspannende Genetik von Mendo Breath und ist für ein einzigartiges, herzhaftes und scharfes Aroma bekannt. Die Wirkung ist typischerweise ein schweres Körper-High, das tief beruhigend und sedierend ist."
+  },
+  "mendo-montage": {
+    "description": "Eine Indica-dominante Hybride von Gage Green Genetics, die ein Elternteil von Mendo Breath ist. Sie ist bekannt für ihr komplexes Aroma von süßen Trauben und Karamell mit erdigen Untertönen. Die Wirkung ist tief entspannend und beruhigend, perfekt zum Entspannen.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Mendo Purps x Crystal Locomotive F1",
+  },
+  "mexican": {
+    "description": "Ein Begriff für verschiedene Sativa-Landrassen aus Mexiko. Diese Sorten sind bekannt für ihre erhebenden, energetischen und zerebralen Effekte. Sie haben oft ein süßes und erdiges Aroma. Mexikanische Sativas, wie Acapulco Gold, sind eine wichtige genetische Komponente in vielen berühmten Hybriden, einschließlich Skunk #1."
+  },
+  "mochi-gelato": {
+    "description": "Auch bekannt als Mochi. Dies ist eine ausgewogene Hybridsorte mit einem süßen, fruchtigen und cremigen Aroma. Die Wirkung ist entspannend und glücklich, ideal für den Abend. Sie ist ein Elternteil von Horchata."
+  },
+  "monkey-glue": {
+    "description": "Monkey Glue ist eine ausgewogene Hybride, die die extreme Harzigkeit von GG4 mit der komplexen Aromatik von Wookie kombiniert. Die Wirkung ist potent und langanhaltend, beginnend mit einem euphorischen Kopf-High, das in eine komfortable, aber nicht überwältigende körperliche Entspannung übergeht.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Gorilla Glue #4 x Wookie #15"
+  },
+  "moroccan-landrace": {
+    "description": "Eine reine Indica-Landrasse aus den Bergregionen Marokkos, die traditionell für die Haschischproduktion (Kif) angebaut wird. Diese Pflanzen sind typischerweise kurz, harzig und schnell blühend, angepasst an aride Klimazonen. Die Wirkung ist im Allgemeinen mild, entspannend und klar im Kopf."
   }
 };

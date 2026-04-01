@@ -111,5 +111,20 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Mochi Gelato x Jet Fuel Gelato",
         "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
         "heightDetails": { "indoor": "100-160 cm", "outdoor": "150-200 cm" },
-    }
+    },
+  "harmony": {
+    "description": "Eine CBD-reiche Sorte, die für ihre therapeutischen Eigenschaften ohne starke psychoaktive Wirkung gezüchtet wurde. Ein Elternteil von Night Nurse."
+  },
+  "hawaiian": {
+    "description": "Eine klassische Sativa-Landrasse aus den vulkanischen Böden Hawaiis. Sie liefert ein typisches Sativa-High: energetisch, kreativ und glücklich, perfekt für Tagesaktivitäten. Das Aroma ist eine süße und tropische Mischung aus Ananas und Zitrus."
+  },
+  "high-octane-og": {
+    "description": "High Octane OG ist eine potente, reine Indica-Sorte, die für ihr extrem gasartiges und scharfes Aroma bekannt ist. Als Phänotyp von OG Kush liefert sie ein starkes, schnell wirkendes High, das tief entspannend und sedierend ist, was sie zu einem Favoriten für den Abendgebrauch und zur Behandlung von Schmerzen und Schlaflosigkeit macht."
+  },
+  "highland-oaxacan-gold": {
+    "description": "Eine klassische Landrassen-Sativa aus den Oaxacan-Hochebenen Mexikos. Sie war in den 1960er und 70er Jahren beliebt für ihr energetisches, kreatives und erhebendes High. Das Aroma ist süß, würzig und erdig. Sie ist ein Elternteil von Purple Thai."
+  },
+  "humboldt-og": {
+    "description": "Ein potenter OG Kush-Phänotyp aus Humboldt County, Kalifornien. Er weist das klassische OG-Aroma von Kiefer, Erde und Diesel auf. Die Wirkung ist stark, körperlich entspannend und langanhaltend, was sie zu einem Favoriten für den Abendgebrauch macht."
+  }
 };

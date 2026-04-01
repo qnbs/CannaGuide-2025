@@ -76,5 +76,35 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "God Bud x Shishkaberry",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+  },
+  "naran-j": {
+    "description": "Eine sativa-dominante Sorte, die für ihr intensives Orangen- und Zitrusaroma bekannt ist. Sie liefert ein energetisches und erhebendes High. Elternteil von Naranchup."
+  },
+  "nepalese-sativa": {
+    "description": "Nepalese Sativa ist eine reine Landrassensorte aus den Bergregionen Nepals. Sie ist bekannt für ihre hohe Harzproduktion, die traditionell zur Herstellung von hochwertigem Charas (Haschisch) genutzt wird. Die Wirkung ist klar, zerebral und erhebend, oft als meditativ und kreativitätsfördernd beschrieben. Das Aroma ist typischerweise süß und kräuterartig mit würzigen und erdigen Noten. Sie ist eine der vermuteten Vorfahren der legendären Chemdawg-Linie."
+  },
+  "nepali": {
+    "description": "Eine reine Indica-Landrasse aus Nepal, bekannt für ihre hohe Harzproduktion und ihre entspannende, klare Wirkung. Sie hat ein süßes und kräuterartiges Aroma. Sie ist einer der Elternteile von Sweet Tooth."
+  },
+  "nevilles-a5-haze": {
+    "description": "Eine legendäre und potente Sativa-dominante Hybride, Neville's A5 Haze ist ein spezifischer Phänotyp von Neville's Haze. Sie ist bekannt für ihr starkes, fast psychedelisches zerebrales High, das langanhaltend und energetisierend ist. Das Aroma ist eine komplexe Mischung aus würzigen, weihrauchartigen und kiefernartigen Noten. Sie ist ein Elternteil von Tangerine Dream."
+  },
+  "new-england-rock-candy": {
+    "description": "Eine indicadominierte Hybride mit einem süßen, bonbonartigen Aroma. Sie bietet entspannende Wirkungen und ist ein Elternteil von Naran J."
+  },
+  "nicole-kush": {
+    "description": "Eine indica-dominante Hybride, die für ihr süßes Beerenaroma und ihre entspannende, euphorische Wirkung bekannt ist. Ein Elternteil von N13 Kush."
+  },
+  "north-american-indica": {
+    "description": "Ein allgemeiner Begriff für Indica-Sorten, die in Nordamerika akklimatisiert oder gezüchtet wurden, oft mit afghanischen Wurzeln. Ein genetischer Baustein für Sorten wie Romulan und Mendocino Purps."
+  },
+  "northern-lights-1": {
+    "description": "Einer der ursprünglichen, grundlegenden Phänotypen der Northern-Lights-Linie. Eine reine, schnell blühende Indica, bekannt für ihre hohe Harzproduktion und tief entspannende Wirkung. Ihre Genetik ist ein Grundpfeiler vieler moderner Hybriden."
+  },
+  "northern-lights-2": {
+    "description": "Ein schnell blühender und sehr widerstandsfähiger Phänotyp der Northern-Lights-Linie. Er ist bekannt für seine starke Indica-Wirkung und sein kiefernartiges, erdiges Aroma. Er ist ein Elternteil der ursprünglichen Lowryder."
+  },
+  "northern-lights-5": {
+    "description": "Ein berühmter und hoch angesehener Phänotyp von Northern Lights. Bekannt für seine Stabilität, Potenz und schnelle Blütezeit."
   }
 };

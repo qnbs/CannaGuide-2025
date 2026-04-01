@@ -170,5 +170,11 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Unknown (possibly Haze x Northern Lights)",
     "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/plant" },
     "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8m)" }
+  },
+  "dabney-blue": {
+    "description": "Dabney Blue is a classic indica-dominant hybrid known for its rich blueberry flavor and relaxing effects. As a descendant of DJ Short's Blueberry, it delivers a happy and uplifting euphoria that gently fades into a calm body high. It is one of the parent strains of Lemon Berry."
+  },
+  "dj-short-blueberry": {
+    "description": "This is the original Blueberry line developed by breeder DJ Short. It's a legendary indica known for its sweet blueberry aroma and relaxing effects."
   }
 }

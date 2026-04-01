@@ -42,5 +42,11 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "wu-5": {
         "description": "A CBD-rich strain with an earthy, herbal, and sweet aroma. The effect is mild, clear, and functional, ideal for medical users."
-    }
+    },
+  "west-coast-dog": {
+    "description": "West Coast Dog, also known as WCD, is a potent hybrid strain considered the likely parent of the famous Pre-98 Bubba Kush. It is a cross of Chemdawg and an OG variety from Humboldt County. The effect is strong and balanced, with a cerebral euphoria accompanied by deep physical relaxation. The aroma is intense and combines the sharp diesel notes of Chemdawg with the earthy pine notes of OG."
+  },
+  "williams-wonder": {
+    "description": "A classic, old-school indica known for its high yields, fast flowering time, and potent, relaxing effects. It has a sweet, citrusy, and floral aroma. It's a key parent of the original Lowryder."
+  }
 };

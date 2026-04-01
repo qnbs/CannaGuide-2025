@@ -42,5 +42,8 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Hindu Kush x Malana",
         "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
         "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
-    }
+    },
+  "vortex": {
+    "description": "Eine sativa-dominante Hybride von Subcool's The Dank, bekannt für ihr intensives, fast psychedelisches zerebrales High. Sie hat ein süß-saures Aroma von Zitrone und tropischen Früchten. Sie ist ein Elternteil von Timewreck."
+  }
 };

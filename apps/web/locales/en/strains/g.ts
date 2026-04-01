@@ -51,5 +51,29 @@ export const strains: Record<string, StrainTranslationData> = {
   "green-gummy": {},
   "guava-cake": {},
   "gummibears": {},
-  "gusher": {}
+  "gusher": {},
+  "g13-hashplant": {
+    "description": "A cross of two legendary indicas, G13 and Hash Plant. This strain is known for its extreme resin production and a powerful, sedating effect."
+  },
+  "gelato-45": {
+    "description": "Gelato #45 is a popular indica-dominant phenotype of the Gelato line. It is known for its strong, relaxing effects and a sweet, earthy aroma with hints of lavender and citrus. This strain is a parent to Project 4516 and Tiramisu, passing on its potent effects and complex flavor profile."
+  },
+  "gelatti": {
+    "description": "Gelatti is a balanced hybrid strain known for its potent effects and unique gassy, sweet flavor profile. A cross between Gelato and Biscotti, it delivers a powerful high that is both relaxing and uplifting. It is a parent to modern popular strains like Apples and Bananas and Georgia Pie."
+  },
+  "gooberry": {
+    "description": "Gooberry is a potent indica-dominant hybrid, famous for its sedating effects and its role as a parent to the heavy-hitting 9 Pound Hammer. It combines the resinous nature of Afgoo with the sweet flavor of Blueberry. The aroma is a mix of berries, nuts, and earth, while the high is deeply relaxing and often leads to sleep."
+  },
+  "gorilla-butter": {
+    "description": "Gorilla Butter is a potent, indica-dominant hybrid strain known for its strong effects and complex, earthy aroma. It is the parent of the White Truffle phenotype. The effect is strongly relaxing and calming, often with a euphoric onset that transitions into deep physical relaxation. The aroma is a mix of nutty, earthy, and diesel notes with a hint of chocolate."
+  },
+  "gorilla-haze": {
+    "description": "A potent sativa-dominant hybrid that combines the extreme resin production of Gorilla Glue with the uplifting, cerebral effects of Amnesia Haze. The result is a strain with an intense citrus, haze, and diesel aroma and a powerful, energizing effect."
+  },
+  "grateful-breath": {
+    "description": "A potent indica-dominant hybrid with a complex aroma of earth, fruit, and spice. It delivers a deeply relaxing and euphoric high that is said to induce a state of gratitude and calm."
+  },
+  "green-ribbon": {
+    "description": "A balanced hybrid known for a floral, earthy aroma and an uplifting, energetic high that's not overwhelming, making it suitable for daytime."
+  }
 };

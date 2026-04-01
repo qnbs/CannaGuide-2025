@@ -91,5 +91,20 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Sunset Sherbet x Triangle Kush",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
     "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+  },
+  "kc-33": {
+    "description": "Eine robuste und zuverlässige Sativa-dominante Hybride, die für den Anbau im Freien in kühleren Klimazonen gezüchtet wurde. Sie bietet eine ausgewogene Wirkung und ist ein Elternteil von Mango."
+  },
+  "kenyan-landrace": {
+    "description": "Eine reine Sativa-Landrasse aus Kenia, bekannt für ihre energetisierende und zerebrale Wirkung. Sie ist eine Elternsorte von Kilimanjaro und vererbt ihr erhebendes High sowie ihre Widerstandsfähigkeit gegen warme Klimazonen. Das Aroma ist typischerweise erdig und süß mit einem Hauch von Zitrus."
+  },
+  "killer-new-haven": {
+    "description": "Killer New Haven ist eine seltene, reine Indica-Sorte, die als 'Heirloom' (Erbstück) aus der Region Connecticut, USA, stammt. Sie ist einer der Elternteile der potenten Sorte Herijuana. Ihre Wirkung ist stark sedierend und körperlich entspannend, typisch für eine klassische Indica. Das Aroma ist tief erdig, scharf und würzig, oft mit Noten, die an traditionelles Haschisch erinnern."
+  },
+  "kish": {
+    "description": "Kish, oft bekannt als Shishkaberry, ist eine potente indica-dominante Hybride. Sie liefert ein glückliches, glückseliges High, das mit einem zerebralen Auftrieb beginnt, bevor es in eine Ganzkörperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Beeren und erdigen Noten."
+  },
+  "korean-sativa": {
+    "description": "Eine Sativa-Landrasse aus Korea, die für ihre Widerstandsfähigkeit und ihr einzigartiges Terpenprofil geschätzt wird. Sie sorgt für ein klares, energetisches High und ist ein Elternteil von Big Skunk Korean."
   }
 };

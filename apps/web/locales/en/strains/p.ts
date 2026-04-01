@@ -141,5 +141,50 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "purple-urkle": {
     "description": "A classic California Indica, known for its deep purple colors and grape-like aroma. The effect is strongly relaxing and ideal for pain and insomnia."
+  },
+  "panama-creature": {
+    "description": "A potent and rare indica-dominant strain known for its resinous buds and strong, relaxing effects. It is a key parent in the breeding of PCS1 (Panama Creature S1) and subsequently Cake Bomb."
+  },
+  "panamanian-landrace": {
+    "description": "A pure Sativa landrace from Panama, famous for its long flowering time and its energizing, cerebral, and almost psychedelic effect. A classic from the 1960s."
+  },
+  "petrolia-headstash": {
+    "description": "Petrolia Headstash is a classic indica strain developed in the 1970s in Humboldt County, California, from Afghani landrace seeds. It is one of the parents of the potent strain Herijuana. Its name derives from its strong, diesel and petroleum-like aroma. The effect is heavily sedating, physically relaxing, and pain-relieving, making it a strain for experienced consumers."
+  },
+  "peyote-purple": {
+    "description": "A pure Indica selected from Bubba Kush, known for its vibrant purple colors and a sweet, earthy, and coffee-like aroma. The effect is deeply relaxing and almost psychedelic."
+  },
+  "pina-acai": {
+    "description": "A sativa-dominant hybrid known for its exotic tropical fruit aroma, blending pineapple and acai berries. It delivers an uplifting, energetic, and happy high, making it a parent of Red Velvet."
+  },
+  "pine-tar-kush": {
+    "description": "A pure indica landrace from Pakistan, known for its extremely sticky resin and a classic, pungent pine and skunk aroma. It provides a deeply relaxing and sedative body high."
+  },
+  "pineapple-trainwreck": {
+    "description": "A potent sativa-dominant hybrid that combines the tropical flavor of Pineapple Express with the hard-hitting effects of Trainwreck. The result is an energetic, creative, and euphoric high."
+  },
+  "platinum-puff": {
+    "description": "A potent hybrid known for its frosty appearance and a sweet, earthy aroma. The effect is strong, euphoric, and relaxing. It is a parent of Project 4516."
+  },
+  "pluton": {
+    "description": "Pluton is a rare, pure sativa landrace strain that was popular in the 1970s. It is known for its energetic and uplifting effects. Its aroma is typically earthy and spicy. It is a parent of The Cleaner."
+  },
+  "pollyanna": {
+    "description": "Pollyanna is a sativa-dominant hybrid known for its uplifting, optimistic, and happy effects, reminiscent of its namesake. It offers a sweet, tropical, and fruity aroma. As a parent of Early Pearl, it contributes to its sativa characteristics and pleasant effects."
+  },
+  "princess": {
+    "description": "Princess is a highly regarded, sativa-dominant hybrid considered to be a phenotype of the legendary Jack Herer. It is known for its strong, uplifting cerebral high that promotes creativity and euphoria. Its aroma is spicy and piney, typical of Haze varieties. It is a key parent for strains like Cinderella 99 and Pollyanna."
+  },
+  "pure-power-plant": {
+    "description": "A fast-flowering sativa known for its uplifting and energetic effects, as well as its massive yields. It has a sweet and skunky aroma with citrus undertones. It is a parent of THC Bomb."
+  },
+  "purple-1": {
+    "description": "A classic outdoor strain from Dutch Passion, bred for its resilience and beautiful purple colors. It offers a balanced, uplifting high. It's a parent of Shaman."
+  },
+  "purple-afghani": {
+    "description": "A pure indica known for its deep purple coloration and classic Afghani effects. It provides a deeply relaxing and sedating body high, with a sweet and earthy aroma. It is a parent of Purple Kush."
+  },
+  "purple-thai": {
+    "description": "A classic sativa landrace cross known for its energetic, euphoric effects and beautiful purple hues. It delivers a creative and uplifting high. It is a key parent of Purple Haze."
   }
 };

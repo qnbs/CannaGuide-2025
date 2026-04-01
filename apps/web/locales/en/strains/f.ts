@@ -42,5 +42,11 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "future-1": {
     "description": "An extremely potent hybrid known for its incredibly high THC content. The effect is strong, psychedelic, and long-lasting, recommended only for experienced consumers.",
+  },
+  "f1-hybrid": {
+    "description": "This is a placeholder representing the concept of an 'F1 Hybrid,' which is the first filial generation cross between two distinct parent strains. F1 hybrids are prized for their 'hybrid vigor' (heterosis), often resulting in increased growth, yield, and stability. This entry serves as a genealogical placeholder."
+  },
+  "fire-alien-kush": {
+    "description": "An indica-dominant hybrid with a complex aroma of lemon, spice, and diesel. The effect is strong, starting with a cerebral rush that evolves into a deep, relaxing body high."
   }
 };

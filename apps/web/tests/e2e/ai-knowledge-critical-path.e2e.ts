@@ -26,7 +26,7 @@ test.describe('AI Knowledge Critical Path', () => {
     test('navigates to Knowledge view with Mentor tab', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const knowledgeNavButton = page.locator('[data-view-id="Knowledge"]')
+        const knowledgeNavButton = page.locator('[data-view-id="knowledge"]')
         await expect(knowledgeNavButton.first()).toBeVisible({ timeout: 10_000 })
         await knowledgeNavButton.first().click()
 
@@ -38,7 +38,7 @@ test.describe('AI Knowledge Critical Path', () => {
     })
 
     test('Knowledge view has tabs (Mentor, Guide, etc.)', async ({ page }) => {
-        const knowledgeNavButton = page.locator('[data-view-id="Knowledge"]')
+        const knowledgeNavButton = page.locator('[data-view-id="knowledge"]')
         await knowledgeNavButton.first().click()
         await page.waitForTimeout(2_000)
 
@@ -59,7 +59,7 @@ test.describe('AI Knowledge Critical Path', () => {
     test('Mentor chat area renders without crash', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const knowledgeNavButton = page.locator('[data-view-id="Knowledge"]')
+        const knowledgeNavButton = page.locator('[data-view-id="knowledge"]')
         await knowledgeNavButton.first().click()
         await page.waitForTimeout(1_500)
 
@@ -92,7 +92,7 @@ test.describe('AI Knowledge Critical Path', () => {
     test('AI Settings accessible from Settings view', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const settingsNavButton = page.locator('[data-view-id="Settings"]')
+        const settingsNavButton = page.locator('[data-view-id="settings"]')
         await settingsNavButton.first().click()
         await page.waitForTimeout(2_000)
 
@@ -112,7 +112,7 @@ test.describe('AI Knowledge Critical Path', () => {
     test('Knowledge view handles tab switching without errors', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 
-        const knowledgeNavButton = page.locator('[data-view-id="Knowledge"]')
+        const knowledgeNavButton = page.locator('[data-view-id="knowledge"]')
         await knowledgeNavButton.first().click()
         await page.waitForTimeout(2_000)
 

@@ -47,6 +47,9 @@ export const detectEcoCondition = async (): Promise<boolean> => {
 
     const lowMemory = typeof nav.deviceMemory === 'number' && nav.deviceMemory < 4
 
+    // Mobile devices default to eco mode for battery savings and stability
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
     let lowBattery = false
     try {
         const battery = await nav.getBattery?.()
@@ -57,7 +60,7 @@ export const detectEcoCondition = async (): Promise<boolean> => {
         // Battery API unavailable — ignore
     }
 
-    return lowMemory || lowBattery
+    return lowMemory || lowBattery || isMobile
 }
 
 /**

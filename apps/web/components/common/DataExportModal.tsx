@@ -118,7 +118,8 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
                             <Button variant="secondary" onClick={() => setPendingFormat(null)}>
                                 {t('common.cancel')}
                             </Button>
-                            <Button variant="secondary" onClick={handleConfirmExport}>
+                            <Button onClick={handleConfirmExport}>
+                                <PhosphorIcons.DownloadSimple className="mr-2 h-4 w-4" />
                                 {t('common.export')}
                             </Button>
                         </div>

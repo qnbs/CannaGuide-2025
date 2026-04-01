@@ -21,6 +21,7 @@ const GrowShopsView = lazy(() =>
     import('./GrowShopsView').then((m) => ({ default: m.GrowShopsView })),
 )
 const SeedbanksView = lazy(() => import('./SeedbanksView'))
+const GrowTechView = lazy(() => import('./GrowTechView'))
 
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslation()
@@ -55,6 +56,9 @@ export const EquipmentView: React.FC = () => {
             [EquipmentViewTab.Seedbanks]: (
                 <PhosphorIcons.Cannabis className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-green-400" />
             ),
+            [EquipmentViewTab.GrowTech]: (
+                <PhosphorIcons.Lightning className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-yellow-400" />
+            ),
         }),
         [],
     )
@@ -66,6 +70,7 @@ export const EquipmentView: React.FC = () => {
             [EquipmentViewTab.Calculators]: t('equipmentView.tabs.calculators'),
             [EquipmentViewTab.GrowShops]: t('equipmentView.tabs.growShops'),
             [EquipmentViewTab.Seedbanks]: t('equipmentView.tabs.seedbanks'),
+            [EquipmentViewTab.GrowTech]: t('equipmentView.tabs.growTech'),
         }),
         [t],
     )
@@ -98,6 +103,8 @@ export const EquipmentView: React.FC = () => {
                 return <GrowShopsView />
             case EquipmentViewTab.Seedbanks:
                 return <SeedbanksView />
+            case EquipmentViewTab.GrowTech:
+                return <GrowTechView />
             default:
                 return null
         }

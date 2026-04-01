@@ -856,4 +856,17 @@ export const settingsView = {
             critical: 'Kritiek',
         },
     },
+    pwa: {
+        installBannerTitle: 'CannaGuide installeren',
+        installBannerDesc:
+            'Voeg CannaGuide toe aan je startscherm voor offline toegang en een native app-ervaring.',
+        installNow: 'Nu installeren',
+        later: 'Later',
+        dontShowAgain: 'Niet meer tonen',
+        offlineNotice: 'Je bent offline -- sommige functies zijn mogelijk beperkt.',
+        updateAvailable: 'Er is een nieuwe versie beschikbaar!',
+        updateNow: 'Nu bijwerken',
+        installed: 'App geinstalleerd',
+        notAvailable: 'Installatie niet beschikbaar in deze browser',
+    },
 }

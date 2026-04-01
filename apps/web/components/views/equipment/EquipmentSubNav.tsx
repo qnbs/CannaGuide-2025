@@ -41,11 +41,12 @@ export const EquipmentSubNav: React.FC<EquipmentSubNavProps> = ({ activeTab, onT
             label: t('equipmentView.tabs.seedbanks'),
             icon: <PhosphorIcons.Cannabis />,
         },
+        {
+            id: EquipmentViewTab.GrowTech,
+            label: t('equipmentView.tabs.growTech'),
+            icon: <PhosphorIcons.Lightning />,
+        },
     ]
-
-    if (navItems.length === 5) {
-        navItems.push({ id: 'placeholder', icon: <div />, label: '' })
-    }
 
     return (
         <nav className="grid grid-cols-3 gap-2 sm:gap-4">

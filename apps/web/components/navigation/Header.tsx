@@ -87,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
                         {!isInstalled && deferredPrompt && (
                             <Button
                                 variant="ghost"
-                                className="hidden rounded-xl !p-2 sm:flex"
+                                className="rounded-xl !p-2 flex"
                                 onClick={onInstallClick}
                                 aria-label={t('common.installPwa')}
                             >

@@ -106,6 +106,13 @@ export const strainsView = {
             yield: 'Ertrag',
             difficulty: 'Schwierigkeit',
         },
+        tabs: {
+            genetics: 'Genetik',
+            seeds: 'Samen',
+            ar: 'AR-Vorschau',
+        },
+        arNoResult: 'Kein Nachkomme zum Anzeigen',
+        arNoResultHint: 'Kreuze zuerst Sorten im Genetik- oder Samen-Tab.',
     },
     emptyStates: {
         noResults: {

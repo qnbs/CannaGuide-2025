@@ -106,6 +106,13 @@ export const strainsView = {
             yield: 'Rendement',
             difficulty: 'Difficulte',
         },
+        tabs: {
+            genetics: 'Genetique',
+            seeds: 'Graines',
+            ar: 'Apercu AR',
+        },
+        arNoResult: 'Aucun descendant a afficher',
+        arNoResultHint: "Croisez d'abord des varietes dans l'onglet Genetique ou Graines.",
     },
     emptyStates: {
         noResults: {

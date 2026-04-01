@@ -359,15 +359,14 @@ export enum EquipmentViewTab {
     Calculators = 'calculators',
     GrowShops = 'growShops',
     Seedbanks = 'seedbanks',
+    GrowTech = 'growTech',
 }
 
 export enum KnowledgeViewTab {
     Mentor = 'mentor',
     Guide = 'guide',
     Archive = 'archive',
-    Breeding = 'breeding',
     Sandbox = 'sandbox',
-    GrowTech = 'growTech',
 }
 
 export enum StrainViewTab {

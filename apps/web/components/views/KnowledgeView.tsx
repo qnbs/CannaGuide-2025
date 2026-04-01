@@ -15,9 +15,7 @@ const MentorChatView = lazy(() =>
 const MentorView = lazy(() => import('./knowledge/MentorView'))
 const GuideView = lazy(() => import('./knowledge/GuideView'))
 const ArchiveView = lazy(() => import('./knowledge/ArchiveView'))
-const BreedingView = lazy(() => import('./knowledge/BreedingView'))
 const SandboxView = lazy(() => import('./knowledge/SandboxView'))
-const GrowTechView = lazy(() => import('./knowledge/GrowTechView'))
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation()
@@ -47,14 +45,8 @@ export const KnowledgeView: React.FC = () => {
             [KnowledgeViewTab.Archive]: (
                 <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-amber-400" />
             ),
-            [KnowledgeViewTab.Breeding]: (
-                <PhosphorIcons.TestTube className="w-16 h-16 mx-auto text-green-400" />
-            ),
             [KnowledgeViewTab.Sandbox]: (
                 <PhosphorIcons.Flask className="w-16 h-16 mx-auto text-rose-400" />
-            ),
-            [KnowledgeViewTab.GrowTech]: (
-                <PhosphorIcons.Lightning className="w-16 h-16 mx-auto text-yellow-400" />
             ),
         }),
         [],
@@ -65,9 +57,7 @@ export const KnowledgeView: React.FC = () => {
             [KnowledgeViewTab.Mentor]: t('knowledgeView.tabs.mentor'),
             [KnowledgeViewTab.Guide]: t('knowledgeView.tabs.guide'),
             [KnowledgeViewTab.Archive]: t('knowledgeView.tabs.archive'),
-            [KnowledgeViewTab.Breeding]: t('knowledgeView.tabs.breeding'),
             [KnowledgeViewTab.Sandbox]: t('knowledgeView.tabs.sandbox'),
-            [KnowledgeViewTab.GrowTech]: t('knowledgeView.tabs.growTech'),
         }),
         [t],
     )
@@ -98,12 +88,8 @@ export const KnowledgeView: React.FC = () => {
                 return <GuideView />
             case KnowledgeViewTab.Archive:
                 return <ArchiveView />
-            case KnowledgeViewTab.Breeding:
-                return <BreedingView />
             case KnowledgeViewTab.Sandbox:
                 return <SandboxView />
-            case KnowledgeViewTab.GrowTech:
-                return <GrowTechView />
             default:
                 return <MentorView />
         }

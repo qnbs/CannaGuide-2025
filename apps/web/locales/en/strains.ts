@@ -106,6 +106,13 @@ export const strainsView = {
             yield: 'Yield',
             difficulty: 'Difficulty',
         },
+        tabs: {
+            genetics: 'Genetics',
+            seeds: 'Seeds',
+            ar: 'AR Preview',
+        },
+        arNoResult: 'No offspring to preview',
+        arNoResultHint: 'Cross strains in the Genetics or Seeds tab first.',
     },
     emptyStates: {
         noResults: {

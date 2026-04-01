@@ -10,6 +10,7 @@ import { OnboardingModal } from '@/components/common/OnboardingModal'
 import { CommandPalette } from '@/components/common/CommandPalette'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
+import { useBadgeApi } from '@/hooks/useBadgeApi'
 import { TTSControls } from '@/components/common/TTSControls'
 import { useDocumentEffects } from '@/hooks/useDocumentEffects'
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
@@ -26,6 +27,8 @@ import { Input } from '@/components/ui/input'
 import { AgeGateModal, useAgeGate } from '@/components/common/AgeGateModal'
 import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalBanner'
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
+import { PwaInstallBanner } from '@/components/common/PwaInstallBanner'
+import { OfflineIndicator } from '@/components/common/OfflineIndicator'
 
 const CLEAR_AI_HISTORY_ON_EXIT_KEY = 'cg.ai.clear-on-exit.pending'
 
@@ -160,6 +163,7 @@ export const App: React.FC = () => {
     const { t } = useTranslation()
     const isOffline = useOnlineStatus()
     const { deferredPrompt, isInstalled, handleInstallClick } = usePwaInstall()
+    useBadgeApi()
 
     // Legal gates
     const { isVerified: isAgeVerified, verify: verifyAge } = useAgeGate()
@@ -393,6 +397,12 @@ export const App: React.FC = () => {
             )}
             <ToastManager />
             <TTSControls />
+            <OfflineIndicator />
+            <PwaInstallBanner
+                deferredPrompt={deferredPrompt}
+                isInstalled={isInstalled}
+                onInstallClick={handleInstallClick}
+            />
             <CommandPalette
                 isOpen={isCommandPaletteOpen}
                 onClose={() => useUIStore.getState().setIsCommandPaletteOpen(false)}

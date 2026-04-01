@@ -303,6 +303,10 @@ const mountHydratedApp = async () => {
         const { requestNotificationPermission } = await import('@/services/nativeBridgeService')
         void requestNotificationPermission()
 
+        // Schedule local AI model preloading during browser idle time
+        const { localAiPreloadService } = await import('@/services/localAiPreloadService')
+        localAiPreloadService.scheduleIdlePreload()
+
         // 6. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)
     } catch (error) {

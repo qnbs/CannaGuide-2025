@@ -54,6 +54,9 @@
         }
     ],
     "categories": ["education", "lifestyle", "tools", "health_and_fitness"],
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    },
     "shortcuts": [
         {
             "name": "My Plants",

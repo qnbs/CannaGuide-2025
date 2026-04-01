@@ -387,20 +387,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
                 },
                 keywords: 'archive history conversations saved',
             },
-            {
-                id: 'know_tab_breeding',
-                title: t('commandPalette.commands.switchTab', {
-                    view: t('nav.knowledge'),
-                    tab: t('knowledgeView.tabs.breeding'),
-                }),
-                group: 'Knowledge',
-                icon: PhosphorIcons.Flask,
-                action: () => {
-                    getUISnapshot().setActiveView(View.Knowledge)
-                    getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Breeding)
-                },
-                keywords: 'breeding genetics knowledge',
-            },
+
             {
                 id: 'know_tab_sandbox',
                 title: t('commandPalette.commands.switchTab', {

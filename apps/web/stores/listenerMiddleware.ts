@@ -24,7 +24,6 @@ import {
     addSetup,
     updateSetup,
     deleteSetup,
-    addExport,
 } from './slices/savedItemsSlice'
 import { addArchivedMentorResponse, clearArchives } from './slices/archivesSlice'
 import { addMultipleToFavorites, removeMultipleFromFavorites } from './slices/favoritesSlice'
@@ -505,20 +504,6 @@ startAppListening({
         const t = getT()
         getUISnapshot().addNotification({
             message: t('knowledgeView.archive.saveSuccess'),
-            type: 'success',
-        })
-    },
-})
-
-startAppListening({
-    actionCreator: addExport,
-    effect: (action) => {
-        const t = getT()
-        getUISnapshot().addNotification({
-            message: t('common.successfullyExported_other', {
-                count: action.payload.strainIds.length,
-                format: action.payload.format.toUpperCase(),
-            }),
             type: 'success',
         })
     },

@@ -2,7 +2,40 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-01, Session 13) -- Testing, CI/CD, DevEx & Documentation Audit
+## Latest Session (2026-04-01, Session 14) -- IoT Deep-Dive-Audit & Roadmap
+
+**Status: v1.2.0-alpha. Comprehensive IoT audit completed. New `docs/IoT-Roadmap.md` with 32-point action plan, ESPHome templates, MLX90614 integration, MQTT protocol deepening, security hardening, and 5-milestone timeline. No code changes -- documentation only. 960+ tests.**
+
+### What Was Done (Session 14)
+
+1. **IoT Deep-Dive-Audit** -- Full code audit of all 13 IoT-related files (~2007 LOC): 5 services, 2 stores, 2 UI components, 2 mocks, 2 test files
+2. **IoT-Roadmap.md** -- Created comprehensive roadmap (`docs/IoT-Roadmap.md`, ~700 lines) covering current state analysis, 32-point action catalog (7 categories, H/M/L priorities), ESP32 hardware integration, ESPHome YAML templates (VPD-Pro with Tetens formula), MLX90614 IR leaf-temp, MQTT 5.0 upgrade path, security hardening checklist, performance optimization plan, and sprint timeline
+3. **Session Review** -- Created `docs/session-activity-review-2026-04-01-s14.md` with audit findings and ratings per area (IoT overall: 6.8/10, target: 9.0/10)
+
+### IoT Audit Key Findings
+
+| Area                     | Current Rating | Target |
+| ------------------------ | -------------- | ------ |
+| IoT Overall              | 6.8/10         | 9.0/10 |
+| MQTT Implementation      | 7.4/10         | 9.0/10 |
+| ESP32 Hardware-Readiness | 5.9/10         | 9.0/10 |
+| Security (IoT)           | 5.5/10         | 9.0/10 |
+| AI-Coach Integration     | 8.5/10         | 9.5/10 |
+
+### Next Steps (Morning Priorities -- Sprint 1)
+
+1. **MQTT Reconnect + Backoff** (#1) -- Exponential backoff + auto-reSubscribe in `mqttSensorService.ts`
+2. **WSS-Force** (#4) -- UI warning when `ws://` used instead of `wss://`
+3. **Zod-Schema Validation** (#3) -- Replace inline clamp with Zod schemas for sensor payloads
+4. **Credentials Encryption** (#6) -- Use existing `cryptoService` AES-256-GCM for broker credentials
+5. **Error-Boundary + Toast** (#2) -- Connection-fail and payload-error notifications
+6. **CI IoT-Mock stabilize** (#5) -- Pin Node version in docker/esp32-mock
+
+**Reference:** Full plan in `docs/IoT-Roadmap.md` Section 7 (32-Point Action Catalog) and Section 14 (Timeline)
+
+---
+
+## Previous Session (2026-04-01, Session 13) -- Testing, CI/CD, DevEx & Documentation Audit
 
 **Status: v1.2.0-alpha. E2E coverage expanded (Plants, Strains, AI critical paths). SEO meta tags (OG, Twitter, canonical). CHANGELOG automation. Typedoc. Good-first-issues. Accessibility statement. Production build green. 960+ tests.**
 

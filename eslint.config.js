@@ -94,6 +94,19 @@ export default [
             // React Hooks
             'react-hooks/rules-of-hooks': 'error',
             'react-hooks/exhaustive-deps': 'warn',
+            // Package boundary enforcement (K-01)
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['**/packages/*/src/*'],
+                            message:
+                                'Import from package entry point (e.g. @cannaguide/ai-core) instead of deep src/ paths.',
+                        },
+                    ],
+                },
+            ],
         },
     },
 

@@ -33,11 +33,11 @@ export const UpdateBanner: React.FC<UpdateBannerProps> = ({ updateAvailable }) =
                     <PhosphorIcons.ArrowClockwise className="w-6 h-6 text-blue-300 flex-shrink-0" />
                     <div className="flex-grow min-w-0">
                         <p className="text-sm font-semibold text-slate-100">
-                            {t('settings.pwa.updateAvailable')}
+                            {t('settingsView.pwa.updateAvailable')}
                         </p>
                     </div>
                     <Button size="sm" onClick={handleUpdate}>
-                        {t('settings.pwa.updateNow')}
+                        {t('settingsView.pwa.updateNow')}
                     </Button>
                 </div>
             </div>

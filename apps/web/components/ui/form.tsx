@@ -110,7 +110,7 @@ export const FormSection: React.FC<{
 }> = ({ title, children, defaultOpen = false, icon }) => (
     <details
         open={defaultOpen}
-        className="group rounded-xl bg-slate-800/30 p-4 ring-1 ring-inset ring-white/20"
+        className="group rounded-xl bg-slate-800/30 p-4 ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200"
     >
         <summary className="mb-3 flex list-none items-center justify-between text-lg font-semibold text-primary-400 cursor-pointer">
             <div className="flex items-center gap-2">

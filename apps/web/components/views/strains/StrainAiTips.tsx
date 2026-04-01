@@ -106,55 +106,57 @@ const ImageGenerationControls: React.FC<{
     ).map((k) => ({ value: k, label: t(`strainsView.tips.form.imageMoodOptions.${k}`) }))
 
     return (
-        <details className="group bg-slate-800/30 rounded-lg p-3 mt-4">
-            <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center gap-2">
+        <details className="group bg-slate-800 rounded-lg ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200 mt-4">
+            <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center gap-2 p-3 select-none">
                 <PhosphorIcons.Camera className="w-4 h-4" />{' '}
                 {t('strainsView.tips.form.imageCriteria')}
-                <PhosphorIcons.ChevronDown className="w-4 h-4 transition-transform duration-200 group-open:rotate-180 ml-auto" />
+                <PhosphorIcons.ChevronDown className="w-4 h-4 transition-transform duration-300 group-open:rotate-180 ml-auto" />
             </summary>
-            <p className="text-xs text-slate-400 mt-2 mb-2">
-                {t('strainsView.tips.form.imageCriteriaNote')}
-            </p>
-            <div className="pt-4 space-y-4">
-                <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-1">
-                        {t('strainsView.tips.form.imageStyle')}
-                    </label>
-                    <SegmentedControl
-                        value={[style]}
-                        onToggle={(v) => setStyle(v as string)}
-                        options={styleOptions}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-1">
-                        {t('strainsView.tips.form.imageFocus')}
-                    </label>
-                    <SegmentedControl
-                        value={[criteria.focus]}
-                        onToggle={(v) => setCriteria({ ...criteria, focus: v as string })}
-                        options={focusOptions}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-1">
-                        {t('strainsView.tips.form.imageComposition')}
-                    </label>
-                    <SegmentedControl
-                        value={[criteria.composition]}
-                        onToggle={(v) => setCriteria({ ...criteria, composition: v as string })}
-                        options={compositionOptions}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-1">
-                        {t('strainsView.tips.form.imageMood')}
-                    </label>
-                    <SegmentedControl
-                        value={[criteria.mood]}
-                        onToggle={(v) => setCriteria({ ...criteria, mood: v as string })}
-                        options={moodOptions}
-                    />
+            <div className="px-3 pb-3 border-t border-slate-700/50 animate-fade-in">
+                <p className="text-xs text-slate-400 mt-2 mb-2">
+                    {t('strainsView.tips.form.imageCriteriaNote')}
+                </p>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-300 mb-1">
+                            {t('strainsView.tips.form.imageStyle')}
+                        </label>
+                        <SegmentedControl
+                            value={[style]}
+                            onToggle={(v) => setStyle(v as string)}
+                            options={styleOptions}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-300 mb-1">
+                            {t('strainsView.tips.form.imageFocus')}
+                        </label>
+                        <SegmentedControl
+                            value={[criteria.focus]}
+                            onToggle={(v) => setCriteria({ ...criteria, focus: v as string })}
+                            options={focusOptions}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-300 mb-1">
+                            {t('strainsView.tips.form.imageComposition')}
+                        </label>
+                        <SegmentedControl
+                            value={[criteria.composition]}
+                            onToggle={(v) => setCriteria({ ...criteria, composition: v as string })}
+                            options={compositionOptions}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-300 mb-1">
+                            {t('strainsView.tips.form.imageMood')}
+                        </label>
+                        <SegmentedControl
+                            value={[criteria.mood]}
+                            onToggle={(v) => setCriteria({ ...criteria, mood: v as string })}
+                            options={moodOptions}
+                        />
+                    </div>
                 </div>
             </div>
         </details>

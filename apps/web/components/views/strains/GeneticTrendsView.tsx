@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import type { GeneticTrendCategory } from '@/types'
@@ -27,11 +27,6 @@ const categoryIcons = {
 
 export const GeneticTrendsView: React.FC = () => {
     const { t } = useTranslation()
-    const [openId, setOpenId] = useState<GeneticTrendCategory | null>(null)
-
-    const toggle = (id: GeneticTrendCategory): void => {
-        setOpenId((prev) => (prev === id ? null : id))
-    }
 
     const categories = useMemo(
         () =>
@@ -73,18 +68,12 @@ export const GeneticTrendsView: React.FC = () => {
             <div className="space-y-3">
                 {categories.map((cat) => {
                     const Icon = categoryIcons[cat.iconKey]
-                    const isOpen = openId === cat.id
                     return (
-                        <div
+                        <details
                             key={cat.id}
-                            className="rounded-lg border border-slate-700/50 bg-slate-800/60 overflow-hidden"
+                            className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200"
                         >
-                            <button
-                                type="button"
-                                onClick={() => toggle(cat.id)}
-                                className="flex items-center w-full gap-3 p-4 text-left transition-colors hover:bg-slate-700/40"
-                                aria-expanded={isOpen}
-                            >
+                            <summary className="list-none flex items-center w-full gap-3 p-4 cursor-pointer select-none">
                                 <Icon className={`w-6 h-6 flex-shrink-0 ${cat.color}`} />
                                 <div className="flex-1 min-w-0">
                                     <span className="font-semibold text-slate-100">
@@ -94,31 +83,27 @@ export const GeneticTrendsView: React.FC = () => {
                                         {cat.tagline}
                                     </span>
                                 </div>
-                                <PhosphorIcons.ChevronDown
-                                    className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                                />
-                            </button>
-                            {isOpen && (
-                                <div className="px-4 pb-4 space-y-3 border-t border-slate-700 pt-3">
-                                    <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
-                                        {cat.content}
-                                    </p>
-                                    <div className="p-3 rounded-md bg-slate-900/60 border border-slate-700">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                                            {t('strainsView.geneticTrends.examplesLabel')}
-                                        </h4>
-                                        <p className="text-sm text-slate-300">{cat.examples}</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 p-2 rounded bg-primary-900/30 border border-primary-800/50">
-                                        <PhosphorIcons.ChartLineUp className="w-4 h-4 text-primary-400 flex-shrink-0" />
-                                        <span className="text-xs text-primary-300">
-                                            {t('strainsView.geneticTrends.relevanceLabel')}:{' '}
-                                            {cat.relevance}
-                                        </span>
-                                    </div>
+                                <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 group-open:rotate-180" />
+                            </summary>
+                            <div className="px-4 pb-4 space-y-3 border-t border-slate-700/50 pt-3 animate-fade-in">
+                                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                                    {cat.content}
+                                </p>
+                                <div className="p-3 rounded-md bg-slate-900/60 border border-slate-700">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                                        {t('strainsView.geneticTrends.examplesLabel')}
+                                    </h4>
+                                    <p className="text-sm text-slate-300">{cat.examples}</p>
                                 </div>
-                            )}
-                        </div>
+                                <div className="flex items-center gap-2 p-2 rounded bg-primary-900/30 border border-primary-800/50">
+                                    <PhosphorIcons.ChartLineUp className="w-4 h-4 text-primary-400 flex-shrink-0" />
+                                    <span className="text-xs text-primary-300">
+                                        {t('strainsView.geneticTrends.relevanceLabel')}:{' '}
+                                        {cat.relevance}
+                                    </span>
+                                </div>
+                            </div>
+                        </details>
                     )
                 })}
             </div>

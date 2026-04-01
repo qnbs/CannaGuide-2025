@@ -481,7 +481,7 @@ const ManualSection: React.FC = memo(() => {
             <details
                 key={sectionKey}
                 open={false}
-                className={`group bg-slate-900 rounded-lg ring-1 ring-inset ring-white/10 hover:ring-white/20 transition-all duration-200 border-l-2 ${parentColor}`}
+                className={`group bg-slate-900 rounded-lg ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200 border-l-2 ${parentColor}`}
             >
                 <summary className="list-none flex items-center gap-2 cursor-pointer p-3 text-md font-semibold text-primary-300 select-none">
                     <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-300 group-open:rotate-180 flex-shrink-0" />
@@ -514,7 +514,7 @@ const ManualSection: React.FC = memo(() => {
                 key={sectionKey}
                 id={`manual-section-${sectionKey}`}
                 open={index === 0}
-                className={`group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-white/10 hover:ring-white/20 transition-all duration-200 scroll-mt-4 border-l-3 ${colorClass}`}
+                className={`group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200 scroll-mt-4 border-l-3 ${colorClass}`}
             >
                 <summary className="list-none flex justify-between items-center p-4 cursor-pointer font-bold text-slate-100 select-none">
                     <div className="flex items-center gap-3">
@@ -557,7 +557,7 @@ const ManualSection: React.FC = memo(() => {
     return (
         <div className="space-y-4">
             {/* Table of Contents */}
-            <Card className="bg-slate-800/40 ring-1 ring-inset ring-white/5">
+            <Card className="bg-slate-800/40 ring-1 ring-inset ring-slate-700/50">
                 <div className="flex items-center gap-2 mb-3">
                     <PhosphorIcons.ListBullets className="w-5 h-5 text-primary-400" />
                     <h4 className="text-sm font-semibold text-slate-300">

@@ -2,7 +2,67 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-01, Session 15) -- README/Docs Comprehensive Audit & Cleanup
+## Latest Session (2026-04-01, Session 17) -- i18n Fixes, Accordion Consistency, Audit Execution
+
+**Status: v1.2.0-alpha. Fixed all 12 broken PWA translation keys (settings.pwa._ -> settingsView.pwa._). Unified all accordion/collapsible components to consistent design system (ring-slate-700/50, hover:ring-primary-500/30, ChevronDown with group-open:rotate-180, animate-fade-in). GeneticTrendsView migrated from state-driven to native details/summary. Package boundary ESLint rule (K-01) enforced. Audit docs updated. 978 tests.**
+
+### What Was Done (Session 17)
+
+1. **i18n Key Fix** -- All 12 usages of `settings.pwa.*` corrected to `settingsView.pwa.*` across PwaInstallBanner, OfflineIndicator, UpdateBanner, SettingsView. This was the root cause of "missing translation key" in the deployed PWA settings box.
+2. **Accordion Design Consistency** -- Unified all collapsible/accordion patterns across the app:
+    - HelpView Manual sections: `ring-white/10` -> `ring-slate-700/50`, added `hover:ring-primary-500/30`
+    - HelpView Manual sub-sections: same ring harmonization
+    - GeneticTrendsView: migrated from state-driven `button` + `isOpen` to native `<details>/<summary>` (removed useState)
+    - StrainImageGenerator settings: `bg-slate-800/30` -> `bg-slate-800`, added ring/hover/border-t/animate-fade-in
+    - StrainAiTips image criteria: same pattern upgrade
+    - StrainTipsView strain groups: `ring-white/20` -> `ring-slate-700/50`
+    - FormSection: `ring-white/20` -> `ring-slate-700/50` + hover
+    - All now share: `ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200`
+3. **Package Boundary Enforcement (K-01)** -- Added `no-restricted-imports` ESLint rule blocking deep `packages/*/src/*` imports
+4. **Audit Doc Updates** -- Marked C-01, K-01 as Done in PRIORITY_ROADMAP.md and AUDIT_BACKLOG.md
+
+### Next Steps (Priority Order)
+
+1. **IoT Sprint 1** -- MQTT reconnect + backoff (IoT-#1), WSS enforcement (IoT-#4), Zod payload validation (IoT-#3)
+2. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
+3. **AI Response Validation** (A-01) -- Consistent Zod validation across all AI endpoints
+4. **Streaming Generalization** (R-01) -- Extend SSE streaming beyond Mentor to Advisor/Diagnosis
+5. **Bundle Size Budget** (P-02) -- Enforce gzip limits in CI via check-bundle-budget.mjs
+6. **Native Translations** -- ES/FR/NL need native speaker review (currently machine-translated)
+7. **Visual Regression Testing** (T-03) -- Playwright screenshot baseline comparison
+8. **Mutation Testing** (T-01) -- Stryker for Redux slice coverage (config exists, needs execution)
+
+### Verified Repo Metrics (Actual)
+
+| Metric          | Value                            |
+| --------------- | -------------------------------- |
+| Tests           | 978 (100 test files, 0 failures) |
+| Strains         | 779                              |
+| Services        | 78                               |
+| Custom Hooks    | 17                               |
+| Web Workers     | 8                                |
+| Redux Slices    | 12                               |
+| Zustand Stores  | 7                                |
+| i18n Namespaces | 12                               |
+| CI Workflows    | 21                               |
+
+---
+
+## Previous Session (2026-04-01, Session 16) -- Daily Strains, Equipment Shoppification, Nav Reorder
+
+**Status: v1.2.0-alpha. Daily Strains discovery tab with SeedFinder API integration. Equipment shoppification with vendor product links. Navigation reorder (Plants first). Plants page grow slots above dashboard. 978 tests.**
+
+### What Was Done (Session 16)
+
+1. **Daily Strains Discovery** -- New DailyStrains tab in Strains view. GH Actions daily cron workflow (scripts/fetch-daily-strains.mjs). Service layer with CORS proxy cascade, 30-min cache, dismiss/add. SeedFinder API search integration.
+2. **Equipment Shoppification** -- equipmentProductService.ts with vendor catalog pattern matching (Mars Hydro, Spider Farmer, AC Infinity, BioBizz, etc.). Inline product link badges in SetupConfigurator recommendation cards. Vendor-colored badges with external link icons.
+3. **Navigation Reorder** -- Plants -> Strains -> Equipment -> Knowledge (BottomNav + SideNav). View enum reordered.
+4. **Plants Layout** -- Grow slots grid moved above DashboardSummary for prominence.
+5. **i18n** -- dailyStrains keys for all 5 locales. StrainViewTab.DailyStrains enum value.
+
+---
+
+## Previous Session (2026-04-01, Session 15) -- README/Docs Comprehensive Audit & Cleanup
 
 **Status: v1.2.0-alpha. Full README.md audit against actual app state. All stale metrics fixed (tests 975+, strains 775+, namespaces 12, workers 8). copilot-instructions.md synced. 19 obsolete docs/ files deleted. Q1 roadmap items migrated to PRIORITY_ROADMAP. 978 tests.**
 

@@ -259,5 +259,38 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "aspen-og": {
     "description": "Aspen OG ist eine sativa-dominante Hybride, die für ihr saures, dieselartiges Aroma und ihre erhebende, energetische Wirkung bekannt ist. Durch die Kombination der Genetik von Sour Cream (einem Sour Diesel-Abkömmling) und OG Kush entsteht eine Sorte, die ein starkes, zerebrales High liefert, das Kreativität und Euphorie fördert. Ihre genetische Bedeutung liegt in ihrer Rolle als Elternteil von Jet Fuel (auch bekannt als G6), wo sie die charakteristischen 'Treibstoff'-Noten und die schnell einsetzende, energetisierende Wirkung mit einbringt."
+  },
+  "afghan-landrace": {
+    "description": "Eine reine Indica-Landrasse aus Afghanistan, die das genetische Rückgrat unzähliger moderner Indica-Sorten bildet. Bekannt für hohe Harzproduktion und tief entspannende Wirkung."
+  },
+  "afghani-bullrider": {
+    "description": "Eine potente Indica-Sorte, die als Phänotyp einer afghanischen Landrasse gilt. Sie liefert ein tief entspannendes, fast narkotisches Körper-High, das Schmerzen und Stress dahinschmelzen lässt, was sie ideal für den nächtlichen Gebrauch macht. Ihr Aroma ist eine klassische Mischung aus erdigen, süßen und scharfen Noten. Sie ist ein Elternteil von Ray Charles."
+  },
+  "afghani-hash-plant": {
+    "description": "Eine klassische, reine Indica-Sorte, die für ihre unglaubliche Harzproduktion selektiert wurde, was sie ideal für Haschisch macht. Sie bietet ein tief entspannendes, fast narkotisches Körper-High. Das Aroma ist reichhaltig, erdig und würzig."
+  },
+  "afghani-hawaiian": {
+    "description": "Eine Hybride, die die tief entspannende Wirkung einer afghanischen Indica mit dem süßen, tropischen Aroma einer hawaiianischen Sativa kombiniert. Das Ergebnis ist ein ausgewogenes High, das sowohl beruhigend als auch erhebend ist. Sie ist ein Elternteil von Lavender."
+  },
+  "african-sativa": {
+    "description": "Ein allgemeiner Begriff für Sativa-Landrassen aus Afrika, bekannt für ihre erhebenden, energetischen und zerebralen Effekte. Sie sind oft widerstandsfähig und an warme Klimazonen angepasst."
+  },
+  "alien-tahoe-og": {
+    "description": "Eine Indica-dominante Hybride mit einem starken OG-Aroma von Erde, Kiefer und Zitrone. Sie bietet eine stark entspannende Wirkung und ist ein Elternteil von Starfighter."
+  },
+  "alpha-og": {
+    "description": "Ein potenter Phänotyp von OG Kush, bekannt für seine starke, entspannende Wirkung, die sowohl euphorisch als auch beruhigend ist. Es ist eine der Elternsorten des mächtigen Godfather OG. Das Aroma ist klassisch OG: erdig, kiefernartig und scharf."
+  },
+  "american-haze": {
+    "description": "Ein amerikanischer Phänotyp der klassischen Haze-Sorte, der für seine erhebende und zerebrale Wirkung bekannt ist. Ein Elternteil von Nebula."
+  },
+  "american-sativa": {
+    "description": "Ein Begriff für frühe Sativa-Hybriden, die in den USA entwickelt wurden, oft aus zentral- und südamerikanischen Genetiken. Bekannt für erhebende und energetische Effekte. Sie ist ein Elternteil von Nebula."
+  },
+  "appalachia": {
+    "description": "Eine potente Hybride mit einem erdigen, süßen und leicht würzigen Aroma. Sie bietet eine ausgewogene Wirkung und ist der Elternteil von Bay 11."
+  },
+  "apricot-helix": {
+    "description": "Gezüchtet von Exotic Genetix, ist Apricot Helix eine indica-dominante Hybride, die für ihr süßes und fruchtiges Aprikosenaroma mit erdigen Untertönen bekannt ist. Sie liefert ein tief entspannendes und euphorisches High, das sich hervorragend zum Entspannen eignet. Sie ist eine Elternsorte der beliebten Sorte Orange Apricot."
   }
 }

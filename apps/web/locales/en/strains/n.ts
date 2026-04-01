@@ -42,5 +42,35 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "nuken": {
     "description": "A Canadian indica-dominant strain with a sweet, earthy, and marshmallow-like aroma. It delivers a strong, relaxing body high that calms pain and stress without complete sedation."
+  },
+  "naran-j": {
+    "description": "A sativa-dominant strain known for its intense orange and citrus aroma. It delivers an energetic and uplifting high. Parent of Naranchup."
+  },
+  "nepalese-sativa": {
+    "description": "Nepalese Sativa is a pure landrace strain from the mountainous regions of Nepal. It is known for its high resin production, traditionally used for making high-quality charas (hashish). The effect is clear, cerebral, and uplifting, often described as meditative and creativity-enhancing. The aroma is typically sweet and herbal with spicy and earthy notes. It is one of the presumed ancestors of the legendary Chemdawg line."
+  },
+  "nepali": {
+    "description": "A pure indica landrace from Nepal, known for its high resin production and relaxing, clear-headed effects. It has a sweet and herbal aroma. It is one of the parents of Sweet Tooth."
+  },
+  "nevilles-a5-haze": {
+    "description": "A legendary and potent sativa-dominant hybrid, Neville's A5 Haze is a specific phenotype of Neville's Haze. It is renowned for its powerful, almost psychedelic cerebral high that is long-lasting and energizing. The aroma is a complex mix of spicy, incense-like, and piney notes. It is a parent of Tangerine Dream."
+  },
+  "new-england-rock-candy": {
+    "description": "An indica-dominant hybrid with a sweet, candy-like aroma. It offers relaxing effects and is a parent of Naran J."
+  },
+  "nicole-kush": {
+    "description": "An indica-dominant hybrid known for its sweet berry aroma and relaxing, euphoric effects. A parent of N13 Kush."
+  },
+  "north-american-indica": {
+    "description": "A general term for indica strains acclimated or bred in North America, often with Afghani roots. A genetic building block for strains like Romulan and Mendocino Purps."
+  },
+  "northern-lights-1": {
+    "description": "One of the original, foundational phenotypes of the Northern Lights line. A pure, fast-flowering indica known for its high resin production and deeply relaxing effects. Its genetics are a cornerstone of many modern hybrids."
+  },
+  "northern-lights-2": {
+    "description": "A fast-flowering and highly resilient phenotype of the Northern Lights line. It is known for its strong indica effects and piney, earthy aroma. It is a parent of the original Lowryder."
+  },
+  "northern-lights-5": {
+    "description": "A famous and highly regarded phenotype of Northern Lights. Known for its stability, potency, and fast flowering time."
   }
 };

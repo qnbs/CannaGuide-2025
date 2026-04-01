@@ -18,5 +18,6 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "violator-kush": {
         "description": "A pure Indica with an earthy, spicy, and pungent aroma. The effect is strong, physically relaxing, and sedating, ideal for pain and insomnia."
-    }
+    },
+  "vortex": {}
 };

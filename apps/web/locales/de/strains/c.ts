@@ -315,5 +315,79 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Unbekannte CBD-Kreuzung",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-    }
+    },
+  "california-black-rose": {
+    "description": "Eine preisgekrönte Indica-Sorte, bekannt für ihre schnelle Blütezeit und ihr einzigartiges blumiges, rosenartiges Aroma mit fruchtigen Untertönen. Sie bietet eine entspannende und beruhigende Wirkung, perfekt zum Entspannen. Ihre wunderschöne dunkelviolette bis schwarze Färbung macht sie optisch atemberaubend.",
+    "typeDetails": "Indica 100%",
+    "genetics": "Roze x OG Eddy"
+  },
+  "california-indica": {
+    "description": "Eine klassische Sorte von Sensi Seeds, die eine kalifornische Orangensorte mit einer afghanischen Haschischpflanze kreuzt. Sie bietet ein entspannendes, sonniges High und ein süßes Orangen-Aroma. Sie ist ein Elternteil von LA Confidential."
+  },
+  "california-orange-cbd": {
+    "description": "Eine CBD-reiche Version der klassischen California Orange. Sie bietet ein Verhältnis von ~1:2 THC zu CBD und sorgt für eine milde, erhebende und funktionale Wirkung mit erheblichen therapeutischen Vorteilen. Das Aroma ist ein süßer und spritziger Ausbruch von frischen Orangen und Zitrusfrüchten.",
+    "typeDetails": "Hybrid 50% / 50% (CBD Dominant)",
+    "genetics": "Cali-O (California Orange) x eine CBD-reiche Sorte"
+  },
+  "cambodian-landrace": {
+    "description": "Eine reine Sativa aus Kambodscha, bekannt für ihr klares, energetisches zerebrales High. Sie ist ein Elternteil von Raspberry Cough."
+  },
+  "champagne": {
+    "description": "Champagne Kush, oft einfach als Champagne bezeichnet, ist eine Indica-dominante Hybride, die für ihre erhebende, 'prickelnde' Wirkung bekannt ist, die an den gleichnamigen Sekt erinnert. Sie bietet ein glückliches, geselliges High, das sich in eine sanfte Körperentspannung verwandelt. Das Aroma ist typischerweise süß und traubenartig mit blumigen und erdigen Untertönen. Sie ist ein Elternteil von Rainbow Sherbet."
+  },
+  "cheese-quake": {
+    "description": "Eine Indica-dominante Sorte mit einem scharfen Käse- und süßen Traubenaroma. Die Wirkung ist tief entspannend und beruhigend. Sie ist ein Elternteil von Secret Weapon."
+  },
+  "chemdawg-4": {
+    "description": "Bekannt als der 'Chem #4'-Schnitt, ist dies ein eher Indica-lastiger Phänotyp der legendären Chemdawg. Er liefert ein potentes, entspannendes Körper-High mit einem zerebralen, euphorischen Auftakt. Das Aroma ist eine klassische Mischung aus Diesel, Kiefer und Zitrone. Er ist ein Elternteil von Stardawg."
+  },
+  "chemdawg-sour-diesel": {
+    "description": "Chemdawg Sour Diesel ist ein Phänotyp, der die potentesten Eigenschaften seiner Elternstämme hervorhebt. Er ist bekannt für sein extrem scharfes Diesel- und saures Zitrusaroma. Diese Sativa-dominante Sorte liefert einen schnell wirkenden, energetischen und traumhaften zerebralen Rausch, der sich perfekt für den Tagesgebrauch eignet, um Kreativität und Konzentration zu fördern. Sie ist ein Elternteil von Grape Stomper."
+  },
+  "chems-sister": {
+    "description": "Auch als 'Chem Sis' bekannt, ist dies ein berühmter Phänotyp der legendären Chemdawg-Linie. Diese sativa-dominante Hybride liefert ein starkes, erhebendes zerebrales High, das Kreativität und Energie steigert. Ihr Aroma ist unverkennbar scharf und chemisch, mit starken Noten von Diesel und Erde.",
+    "typeDetails": "Sativa 70% / Indica 30%",
+    "genetics": "Chemdawg (phenotype)"
+  },
+  "cherry-cookies": {
+    "description": "Eine indica-dominante Hybride, die Cherry Pie mit Girl Scout Cookies kreuzt. Sie liefert ein potentes, euphorisches Kopf-High, das in eine tiefe Körperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Kirschen und erdigen, teigigen Noten ihrer Cookies-Abstammung, was sie zu einer geschmackvollen Wahl zum Entspannen macht.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Cherry Pie x GSC"
+  },
+  "cherry-wine": {
+    "description": "Eine Sorte mit hohem CBD-Gehalt, bekannt für ihr süßes Kirsch- und schwarzes Pfeffer-Aroma. Sie erzeugt beruhigende und entspannende Effekte ohne psychoaktives High, was sie beliebt für therapeutische Zwecke macht. Sie ist ein Elternteil von Trophy Wife."
+  },
+  "chimera-2": {
+    "description": "Chimera #2 ist eine hochpotente und begehrte Hybridsorte von BeLeaf Cannabis. Bekannt für ihr komplexes Aromaprofil, das Portwein, Zitrusfrüchte und gasartige Noten vereint. Die Wirkung ist potent und bietet ein euphorisches und kreatives High, das in eine angenehme Körperentspannung übergeht. Sie ist ein Elternteil von Permanent Chimera."
+  },
+  "chocolate-diesel": {
+    "description": "Chocolate Diesel ist eine potente Sativa-dominante Hybride, berühmt für ihr einzigartiges und komplexes Aromaprofil, das scharfen Diesel mit reichen Noten von Kaffee und dunkler Schokolade mischt. Diese Sorte ist ein genetischer Elternteil des legendären Original Glue (GG4). Sie liefert ein starkes, schnell einsetzendes zerebrales High, das erhebend, energetisch und euphorisch ist, was sie zu einer großartigen Wahl für den Tagesgebrauch zur Bekämpfung von Müdigkeit und zur Anregung der Kreativität macht. Aufgrund ihrer starken Wirkung ist sie am besten für erfahrene Konsumenten geeignet."
+  },
+  "chocolate-kush": {
+    "description": "Eine Indica-dominante Hybride mit einem köstlichen Aroma von süßer Schokolade, Kaffee und Erde. Die Wirkung ist tief entspannend und beruhigend, was sie zu einer großartigen Wahl für den Abendgebrauch macht. Sie ist ein Elternteil von Truffle Butter."
+  },
+  "citral-13": {
+    "description": "Ein potenter Phänotyp der Citral-Sorte, bekannt für sein starkes Zitrus- und Skunk-Aroma. Die Wirkung ist entspannend und euphorisch."
+  },
+  "clementine": {
+    "description": "Eine erfrischende sativa-dominante Hybride mit einem süßen und spritzigen Zitrusaroma, das an reife Clementinen erinnert. Sie liefert ein energetisches, fokussiertes und glückliches High."
+  },
+  "congo-3": {
+    "description": "Congo #3 ist ein spezifischer Phänotyp einer kongolesischen Landrasse, der wahrscheinlich für bestimmte wünschenswerte Merkmale selektiert wurde. Er ist einer der Elternteile der Sorte Congo. Er bietet ein klassisches Sativa-High: klar, energetisch und erhebend mit einem würzigen, fruchtigen Aroma."
+  },
+  "congo-pointe-noire": {
+    "description": "Eine reine Sativa-Landrasse aus der Region Pointe-Noire in der Republik Kongo. Bekannt für ihr energetisches, langanhaltendes zerebrales High, das die Kreativität anregt. Sie hat ein fruchtiges, würziges und erdiges Aroma und ist ein Elternteil der Sorte Congo."
+  },
+  "cookie-monster": {
+    "description": "Eine preisgekrönte Indica-dominante Hybride. Sie liefert ein starkes, entspannendes und schläfriges High, das ihrer OG- und Cookies-Abstammung treu bleibt. Das Aroma ist süß und minzig mit holzigen, erdigen Untertönen. Sie ist ein Elternteil von Pineapple Upside Down Cake."
+  },
+  "cookies-kush": {
+    "description": "Eine preisgekrönte indica-dominante Hybride von Barney's Farm. Sie kombiniert den süßen Minzgeschmack von GSC mit der potenten Wirkung von OG Kush. Die Wirkung ist stark, entspannend und glücklich."
+  },
+  "crystal-locomotive": {
+    "description": "Crystal Locomotive ist eine sativa-dominante Hybride, die zwei legendäre Sorten kreuzt, Trainwreck und White Widow. Sie ist eine Elternsorte von Mendo Montage. Das Ergebnis ist eine potente Sorte mit einem erhebenden, kreativen und energetischen High. Ihr Aroma ist eine komplexe Mischung aus erdigen, kiefernartigen und würzigen Noten, die ihrem Erbe treu bleibt."
+  },
+  "crystal-locomotive-f1": {
+    "description": "Crystal Locomotive F1 ist eine sativa-dominante Hybride, die zwei legendäre Sorten kreuzt, Trainwreck und White Widow. Sie ist eine Elternsorte von Mendo Montage. Das Ergebnis ist eine potente Sorte mit einem erhebenden, kreativen und energetischen High."
+  }
 }

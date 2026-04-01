@@ -78,5 +78,53 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "maui-wowie": {
     "description": "A classic Sativa landrace from Hawaii. It is known for its tropical pineapple and citrus aromas and an uplifting, energizing effect that relieves stress."
+  },
+  "malana": {
+    "description": "A pure indica landrace from the Malana Valley in India, famous for producing the highly prized 'Malana Cream' charas (hashish). It is known for its high resin production and a relaxing, cerebral high. The aroma is sweet, fruity, and hashy."
+  },
+  "malawian-landrace": {
+    "description": "A pure sativa landrace from Malawi in southeastern Africa. It is known for its long, resinous flowers and a highly energetic, uplifting, and long-lasting cerebral high."
+  },
+  "mandarin-sunset": {
+    "description": "An indica-dominant hybrid known for its vibrant orange citrus aroma. It delivers a relaxing and euphoric high that melts away stress, making it great for evenings. Parent of Mandarin Cookies."
+  },
+  "mango": {
+    "description": "A classic indica-dominant hybrid famous for its distinct taste and smell of fresh mangoes. The effect is relaxing and euphoric, great for stress relief."
+  },
+  "maple-leaf": {
+    "description": "A classic, pure indica strain descended from Afghani landraces. It's known for its fast flowering time, high resin production, and a deeply relaxing, sedative body high. The aroma is sweet and earthy with hints of citrus and spice."
+  },
+  "maple-leaf-indica": {
+    "description": "A classic, pure indica strain descended from Afghani landraces. It's known for its fast flowering time, high resin production, and a deeply relaxing, sedative body high. The aroma is sweet and earthy with hints of citrus and spice. It is a parent of Marley's Collie."
+  },
+  "martian-mean-green": {
+    "description": "A sativa-dominant hybrid from DNA Genetics, known for its potent, energetic, and creative high. The aroma is a complex mix of spicy, floral, and earthy notes. Parent of Cosmic Charlie."
+  },
+  "master-widow": {
+    "description": "A cross of White Widow and Master Kush. This hybrid combines the resin production of Widow with the relaxing power of Kush."
+  },
+  "matanuska-valley-sativa": {
+    "description": "Matanuska Valley Sativa is a legendary landrace strain from the Matanuska Valley in Alaska, considered the original parent of Alaskan Thunder Fuck (ATF). It is known for its adaptability to cooler climates and its strong, uplifting effects. The high is typically euphoric, energizing, and promotes creativity. The aroma is a complex mix of pine, lemon, menthol, and skunk."
+  },
+  "meatloaf": {
+    "description": "Meatloaf is a potent and rare indica-dominant strain, known as one of the parents of Meat Breath. It carries the heavy, relaxing genetics of Mendo Breath and is known for a unique, savory, and pungent aroma. The effect is typically a heavy body high that is deeply calming and sedating."
+  },
+  "mendo-montage": {
+    "description": "An indica-dominant hybrid from Gage Green Genetics that is a parent to Mendo Breath. It's known for its complex aroma of sweet grapes and caramel with earthy undertones. The effect is deeply relaxing and calming, perfect for unwinding."
+  },
+  "mexican": {
+    "description": "A term for various Sativa landraces from Mexico. These strains are known for their uplifting, energetic, and cerebral effects. They often have a sweet and earthy aroma. Mexican sativas, like Acapulco Gold, are a key genetic component in many famous hybrids, including Skunk #1."
+  },
+  "mochi-gelato": {
+    "description": "Also known as Mochi, this is a balanced hybrid strain with a sweet, fruity, and creamy aroma. The effect is relaxing and happy, ideal for the evening. It's a parent of Horchata."
+  },
+  "monkey-glue": {
+    description:
+    'Monkey Glue is a balanced hybrid that combines the extreme resinousness of GG4 with the complex aromatics of Wookie. The effect is potent and long-lasting, beginning with a euphoric head high that transitions into a comfortable but not overwhelming physical relaxation.',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Gorilla Glue #4 x Wookie #15',
+  },
+  "moroccan-landrace": {
+    "description": "A pure indica landrace from the mountainous regions of Morocco, traditionally cultivated for hashish (kif) production. These plants are typically short, resinous, and fast-flowering, adapted to arid climates. The effect is generally mild, relaxing, and clear-headed."
   }
 };

@@ -141,5 +141,32 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Mazar-I-Sharif x Skunk #1",
         "yieldDetails": { "indoor": "600-700 g/m²", "outdoor": "700-800 g/plant" },
         "heightDetails": { "indoor": "90-100 cm", "outdoor": "100-150 cm" }
-    }
+    },
+  "lebanese-landrace": {
+    "description": "A pure indica landrace from Lebanon, traditionally used for making the famous red and blonde Lebanese hash. It is robust and resinous, offering a clear, relaxing effect."
+  },
+  "legend-og": {
+    "description": "A highly regarded phenotype of OG Kush, known for its strong, earthy, and floral aroma. Legend OG delivers a potent, relaxing effect that calms both the body and mind, making it a key parent for strains like Legend Orange Apricot."
+  },
+  "lemon-alien-dawg": {
+    "description": "A balanced hybrid that combines the sour, chemical aroma of Alien Dawg with the fresh citrus of Lemon Kush. The effect is both uplifting and relaxing."
+  },
+  "lemon-kush": {
+    "description": "Lemon Kush is a balanced hybrid celebrated for its strong lemon and citrus aroma. It delivers an uplifting and creative cerebral high, accompanied by a relaxing body buzz. Its refreshing terpene profile and versatile effects make it a popular choice."
+  },
+  "lemon-og": {
+    "description": "A balanced hybrid known for its strong lemon and Kush aroma. Lemon OG delivers a fast-acting effect that provides both strong physical relaxation and an uplifting cerebral euphoria. It is a parent of Lemonnade."
+  },
+  "lemon-skunk": {
+    "description": "An award-winning hybrid known for its extremely strong, sweet, and skunky lemon aroma. The effect is uplifting, energetic, and happy, making it an excellent choice for daytime use. It is a parent of Lemon Haze and Lemon Tree."
+  },
+  "lilly": {
+    "description": "Lilly is a pure sativa strain known for its extremely sweet and fruity aroma profile, reminiscent of pineapple and other tropical fruits. It is a cross of the African sativas Queen Mother and Congo. The effect is fast-acting, strongly cerebral, euphoric, and energizing, making it an excellent choice for daytime use and creative activities."
+  },
+  "lowryder-1": {
+    "description": "The original autoflowering strain that revolutionized cannabis cultivation. It is small, fast, and discreet, with a mild, relaxing effect. Its genetics are the foundation for a vast number of modern autoflowers."
+  },
+  "lucifer-og": {
+    "description": "Lucifer OG is a potent, indica-dominant hybrid strain known for its strong and long-lasting effects. It combines the genetics of Hell's OG with a stabilized 'In-Bred Line' (IBL) of SFV OG. The effect is deeply relaxing and sedating, ideal for experienced consumers for pain relief and insomnia. The aroma is a classic OG profile with dominant notes of lemon, pine, and diesel."
+  }
 };

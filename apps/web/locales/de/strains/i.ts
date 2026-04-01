@@ -63,5 +63,11 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Skunk #1 (Phänotyp)",
     "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
     "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+  },
+  "ice-2": {
+    "description": "Ice #2 ist ein ausgewählter indica-dominanter Phänotyp, der für seine starke Harzproduktion und entspannende Wirkung bekannt ist. Er ist eine entscheidende Elternsorte für Papaya und trägt sein süßes, erdiges Aroma und sein beruhigendes High bei."
+  },
+  "indian-indica": {
+    "description": "Ein allgemeiner Begriff für Indica-Landrassen aus Indien, oft aus Bergregionen. Bekannt für hohe Harzproduktion und entspannende Effekte. Sie ist ein Elternteil von Early Girl."
   }
 };

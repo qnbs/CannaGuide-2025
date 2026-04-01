@@ -308,5 +308,38 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "DJ Short Blueberry x Afghani",
     "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
     "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+  },
+  "sharksbreath": {
+    "description": "Eine potente Indica-dominante Hybride mit einem süßen und skunkigen Aroma. Sie ist bekannt für ihre hohe Harzproduktion und ihre stark entspannende Wirkung."
+  },
+  "sherb-bx": {
+    "description": "Eine Rückkreuzung des berühmten Sunset Sherbet, gezüchtet, um dessen wünschenswerte Eigenschaften zu stabilisieren. Sie hat ein süßes, fruchtiges und cremiges Aroma. Die Wirkung ist entspannend und glücklich."
+  },
+  "silver-haze": {
+    "description": "Eine legendäre Hybride von Sensi Seeds, die die zerebrale Wirkung von Haze mit der kürzeren Blütezeit und der Harzproduktion von Northern Lights kombiniert. Sie liefert ein starkes, erhebendes und langanhaltendes Kopf-High und ist ein wichtiger Elternteil für viele moderne Haze-Sorten, einschließlich Lemon Haze."
+  },
+  "snow-lotus": {
+    "description": "Eine Indica-dominante Hybride mit einem komplexen Aroma von Erde, Kirsche und Haschisch. Die Wirkung ist potent und tief entspannend. Sie ist ein Elternteil von Space Cake."
+  },
+  "sour-bubble": {
+    "description": "Eine potente Indica, bekannt für ihr süßes und saures bonbonartiges Aroma. Die Wirkung ist stark entspannend und sedierend. Sie ist ein Elternteil von Sour Dubble."
+  },
+  "sour-cream": {
+    "description": "Sour Cream ist eine sativa-dominante Hybride mit einem einzigartigen Aroma, das sauren Diesel mit cremigen, käsigen Noten kombiniert. Sie bietet ein starkes, energetisches und fokussiertes High, das sich hervorragend für kreative Aufgaben und Tagesaktivitäten eignet. Sie ist ein Elternteil von Aspen OG."
+  },
+  "starfighter": {
+    "description": "Starfighter ist eine potente Indica-dominante Hybride, die für ihre entspannende und euphorische Wirkung bekannt ist. Sie hat ein süßes und erdiges Aroma mit einem Hauch von Zitrone und ist ein wichtiger Elternteil für Sorten wie MAC."
+  },
+  "strawberry-fields": {
+    "description": "Eine Indica-Sorte aus Vermont, bekannt für ihr intensiv süßes Erdbeeraroma und ihren Geschmack. Die Wirkung ist entspannend und glücklich. Sie ist der Schlüssel-Elternteil von Strawberry Cough."
+  },
+  "swazi-landrace": {
+    "description": "Eine reine Sativa-Landrasse aus Eswatini (ehemals Swasiland). Sie ist die genetische Grundlage für Swazi Gold und bekannt für ihre widerstandsfähige Natur und ein erhebendes, energetisches High."
+  },
+  "sweet-irish-kush": {
+    "description": "Eine Indica-dominante Hybride, die für ihr süßes Aroma und ihre entspannende Wirkung bekannt ist. Sie ist einer der Elternteile von Mickey Kush."
+  },
+  "sweet-skunk": {
+    "description": "Sweet Skunk ist eine indica-dominante Hybridsorte, die für ihr besonders süßes und fruchtiges Skunk-Aroma bekannt ist. Sie ist der Elternteil der Sorte Wappa. Die Wirkung ist typischerweise stark entspannend und euphorisch, was sie zu einer guten Wahl für den Abendgebrauch macht. Sie ist pflegeleicht im Anbau und liefert zuverlässige Erträge."
   }
 };

@@ -90,5 +90,11 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Gorilla Glue #4 x Starfighter",
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+  },
+  "f1-hybrid": {
+    "description": "Dies ist ein Platzhalter, der das Konzept eines 'F1-Hybriden' darstellt, also die erste Filialgeneration einer Kreuzung zwischen zwei unterschiedlichen Elternsorten. F1-Hybriden werden für ihre 'Hybridvitalität' (Heterosis) geschätzt, die oft zu gesteigertem Wachstum, Ertrag und Stabilität führt. Dieser Eintrag dient als genealogischer Platzhalter."
+  },
+  "fire-alien-kush": {
+    "description": "Eine indica-dominante Hybride mit einem komplexen Aroma von Zitrone, Gewürzen und Diesel. Die Wirkung ist stark und beginnt mit einem zerebralen Rausch, der sich in ein tiefes, entspannendes Körper-High entwickelt."
   }
 };

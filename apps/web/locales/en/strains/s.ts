@@ -129,5 +129,41 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "sweet-tooth": {
     "description": "An indica-dominant strain with a sweet, berry-like, and fruity aroma. The effect is relaxing and happy."
+  },
+  "sharksbreath": {
+    "description": "A potent indica-dominant hybrid with a sweet and skunky aroma. It is known for its heavy resin production and its strongly relaxing effects."
+  },
+  "sherb-bx": {
+    "description": "A backcross of the famous Sunset Sherbet, bred to stabilize and enhance its desirable traits. It has a sweet, fruity, and creamy aroma. The effect is relaxing and happy. Parent of Permanent Marker."
+  },
+  "shishkaberry": {
+    "description": "Also known as 'Kish', Shishkaberry is a potent indica-dominant hybrid. It delivers a happy, blissful high that starts with a cerebral uplift before settling into a full-body relaxation."
+  },
+  "silver-haze": {
+    "description": "A legendary hybrid from Sensi Seeds that combines the cerebral effects of Haze with the shorter flowering time and resin production of Northern Lights. It delivers a strong, uplifting, and long-lasting head high and is a key parent for many modern Haze strains, including Lemon Haze."
+  },
+  "snow-lotus": {
+    "description": "An indica-dominant hybrid with a complex aroma of earth, cherry, and hash. The effect is potent and deeply relaxing. It is a parent of Space Cake."
+  },
+  "sour-bubble": {
+    "description": "A potent indica known for its sweet and sour candy-like aroma. The effect is strongly relaxing and sedative. It is a parent of Sour Dubble."
+  },
+  "sour-cream": {
+    "description": "Sour Cream is a sativa-dominant hybrid with a unique aroma combining sour diesel with creamy, cheesy notes. It provides a powerful, energetic, and focused high that is great for creative tasks and daytime activities. It is a parent of Aspen OG."
+  },
+  "starfighter": {
+    "description": "Starfighter is a potent indica-dominant hybrid known for its relaxing and euphoric effects. It has a sweet and earthy aroma with a hint of lemon and is a key parent to strains like MAC."
+  },
+  "strawberry-fields": {
+    "description": "An indica strain from Vermont known for its intensely sweet strawberry aroma and flavor. The effect is relaxing and happy. It is the key parent of Strawberry Cough."
+  },
+  "swazi-landrace": {
+    "description": "A pure sativa landrace from Eswatini (formerly Swaziland). It is the genetic basis for Swazi Gold and is known for its resilient nature and an uplifting, energetic high."
+  },
+  "sweet-irish-kush": {
+    "description": "An indica-dominant hybrid known for its sweet aroma and relaxing effects. It's one of the parents of Mickey Kush."
+  },
+  "sweet-skunk": {
+    "description": "Sweet Skunk is an indica-dominant hybrid strain known for its particularly sweet and fruity Skunk aroma. It is the parent of the strain Wappa. The effect is typically strongly relaxing and euphoric, making it a good choice for evening use. It is easy to grow and provides reliable yields."
   }
 };

@@ -315,5 +315,60 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Mendocino Purps Phänotyp",
     "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "350-450 g/Pflanze" },
     "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+  },
+  "panama-creature": {
+    "description": "Eine potente und seltene indica-dominante Sorte, bekannt für ihre harzigen Knospen und ihre starke, entspannende Wirkung. Sie ist ein wichtiger Elternteil bei der Züchtung von PCS1 (Panama Creature S1) und anschließend von Cake Bomb."
+  },
+  "panamanian-landrace": {
+    "description": "Eine reine Sativa-Landrasse aus Panama, berühmt für ihre lange Blütezeit und ihre energetisierende, zerebrale und fast psychedelische Wirkung."
+  },
+  "pcs1-panama-creature-s1": {
+    "description": "Ein S1-Backcross der seltenen Panama Creature, dieser Phänotyp ist ein Schlüssel-Elternteil von Cake Bomb. Es handelt sich um eine potente Indica-dominante Sorte, die für ihre hohe Harzproduktion und ihr scharfes, chemisches und erdiges Aroma bekannt ist.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Panama Creature (Selbstbestäubt)",
+  },
+  "petrolia-headstash": {
+    "description": "Petrolia Headstash ist eine klassische Indica-Sorte, die in den 1970er Jahren in Humboldt County, Kalifornien, aus afghanischen Landrassen-Samen entwickelt wurde. Sie ist einer der Elternteile der potenten Sorte Herijuana. Ihr Name leitet sich von ihrem starken, diesel- und erdölartigen Aroma ab. Die Wirkung ist stark sedierend, körperlich entspannend und schmerzlindernd, was sie zu einer Sorte für erfahrene Konsumenten macht."
+  },
+  "peyote-purple": {
+    "description": "Eine reine Indica, selektiert aus Bubba Kush, bekannt für ihre leuchtend violetten Farben und ein süßes, erdiges und kaffeeartiges Aroma. Die Wirkung ist tief entspannend und fast psychedelisch."
+  },
+  "pina-acai": {
+    "description": "Eine sativa-dominante Hybride, bekannt für ihr exotisches tropisches Fruchtaroma, das Ananas und Acai-Beeren mischt. Sie liefert ein erhebendes, energetisches und glückliches High."
+  },
+  "pine-tar-kush": {
+    "description": "Eine reine Indica-Landrasse aus Pakistan, bekannt für ihr extrem klebriges Harz und ein klassisches, scharfes Kiefern- und Skunk-Aroma. Sie bietet ein tief entspannendes und sedierendes Körper-High."
+  },
+  "pineapple-trainwreck": {
+    "description": "Eine potente sativa-dominante Hybride, die den tropischen Geschmack von Pineapple Express mit der knallharten Wirkung von Trainwreck kombiniert. Das Ergebnis ist ein energetisches, kreatives und euphorisches High."
+  },
+  "platinum-puff": {
+    "description": "Eine potente Hybride, bekannt für ihr frostiges Aussehen und ein süßes, erdiges Aroma. Die Wirkung ist stark, euphorisch und entspannend."
+  },
+  "pluton": {
+    "description": "Pluton ist eine seltene, reine Sativa-Landrasse, die in den 1970er Jahren populär war. Sie ist bekannt für ihre energetische und erhebende Wirkung. Ihr Aroma ist typischerweise erdig und würzig. Sie ist ein Elternteil von The Cleaner."
+  },
+  "pollyanna": {
+    "description": "Pollyanna ist eine Sativa-dominante Hybride, die für ihre erhebende, optimistische und fröhliche Wirkung bekannt ist, die an ihre Namensgeberin erinnert. Sie bietet ein süßes, tropisches und fruchtiges Aroma. Als Elternteil von Early Pearl trägt sie zu deren Sativa-Eigenschaften und angenehmen Effekten bei."
+  },
+  "princess": {
+    "description": "Princess ist eine hoch angesehene, sativa-dominante Hybride, die als Phänotyp des legendären Jack Herer gilt. Sie ist bekannt für ihr starkes, erhebendes zerebrales High, das Kreativität und Euphorie fördert. Ihr Aroma ist würzig und kiefernartig, typisch für Haze-Sorten. Sie ist ein Schlüssel-Elternteil für Sorten wie Cinderella 99 und Pollyanna."
+  },
+  "pure-power-plant": {
+    "description": "Eine schnell blühende Sativa, bekannt für ihre erhebende und energetische Wirkung sowie ihre massiven Erträge. Sie hat ein süßes und skunkiges Aroma mit Zitrus-Untertönen. Sie ist ein Elternteil von THC Bomb."
+  },
+  "purple-1": {
+    "description": "Eine klassische Outdoor-Sorte von Dutch Passion, gezüchtet für ihre Widerstandsfähigkeit und wunderschönen violetten Farben. Sie bietet ein ausgewogenes, erhebendes High. Sie ist ein Elternteil von Shaman."
+  },
+  "purple-afghani": {
+    "description": "Eine reine Indica, bekannt für ihre tiefviolette Färbung und klassische Afghani-Effekte. Sie bietet ein tief entspannendes und sedierendes Körper-High, mit einem süßen und erdigen Aroma."
+  },
+  "purple-elephant": {
+    "description": "Eine Indica-dominante Hybride und Elternteil von Grape Stomper. Bekannt für ihr starkes Traubenaroma und ihre entspannende Wirkung, die Stress und Schmerzen bekämpft.",
+    "typeDetails": "Indica 85% / Sativa 15%",
+    "genetics": "Purple Urkle (vermutlich)",
+  },
+  "purple-thai": {
+    "description": "Eine klassische Sativa-Landrassenkreuzung, bekannt für ihre energetische, euphorische Wirkung und schöne violette Farbtöne. Sie liefert ein kreatives und erhebendes High."
   }
 };

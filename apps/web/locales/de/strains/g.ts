@@ -303,5 +303,29 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Gelato #41 x Triangle Kush",
         "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-    }
+    },
+  "g13-hashplant": {
+    "description": "Eine Kreuzung aus zwei legendären Indicas, G13 und Hash Plant. Diese Sorte ist bekannt für ihre extreme Harzproduktion und eine starke, sedierende Wirkung."
+  },
+  "gelato-45": {
+    "description": "Gelato #45 ist ein beliebter Indica-dominanter Phänotyp der Gelato-Linie. Er ist bekannt für seine starke, entspannende Wirkung und ein süßes, erdiges Aroma mit Noten von Lavendel und Zitrus. Diese Sorte ist ein Elternteil von Project 4516 und Tiramisu und vererbt ihre potente Wirkung und ihr komplexes Geschmacksprofil."
+  },
+  "gelatti": {
+    "description": "Gelatti ist eine ausgewogene Hybridsorte, die für ihre potente Wirkung und ihr einzigartiges, gasartiges, süßes Geschmacksprofil bekannt ist. Als Kreuzung aus Gelato und Biscotti liefert sie ein starkes High, das sowohl entspannend als auch erhebend ist. Sie ist ein Elternteil moderner populärer Sorten wie Apples and Bananas und Georgia Pie."
+  },
+  "gooberry": {
+    "description": "Gooberry ist eine potente indica-dominante Hybride, berühmt für ihre sedierende Wirkung und ihre Rolle als Elternteil des schlagkräftigen 9 Pound Hammer. Sie kombiniert die harzige Natur von Afgoo mit dem süßen Geschmack von Blueberry. Das Aroma ist eine Mischung aus Beeren, Nüssen und Erde, während das High tief entspannend ist und oft zum Schlaf führt."
+  },
+  "gorilla-butter": {
+    "description": "Gorilla Butter ist eine potente, indica-dominante Hybridsorte, die für ihre starke Wirkung und ihr komplexes, erdiges Aroma bekannt ist. Sie ist der Elternteil des Phänotyps White Truffle. Die Wirkung ist stark entspannend und beruhigend, oft mit einem euphorischen Auftakt, der in eine tiefe körperliche Entspannung übergeht. Das Aroma ist eine Mischung aus nussigen, erdigen und dieselartigen Noten mit einem Hauch von Schokolade."
+  },
+  "gorilla-haze": {
+    "description": "Eine potente sativa-dominante Hybride, die die extreme Harzproduktion von Gorilla Glue mit der erhebenden, zerebralen Wirkung von Amnesia Haze kombiniert. Das Ergebnis ist eine Sorte mit einem intensiven Zitrus-, Haze- und Dieselaroma und einer starken, energetisierenden Wirkung."
+  },
+  "grateful-breath": {
+    "description": "Eine potente indica-dominante Hybride mit einem komplexen Aroma von Erde, Früchten und Gewürzen. Sie liefert ein tief entspannendes und euphorisches High, das einen Zustand der Dankbarkeit und Ruhe hervorrufen soll."
+  },
+  "green-ribbon": {
+    "description": "Eine ausgewogene Hybride, die für ihr blumiges, erdiges Aroma und ein erhebendes, energetisches High bekannt ist, das nicht überwältigend ist und sich daher für den Tagesgebrauch eignet."
+  }
 }

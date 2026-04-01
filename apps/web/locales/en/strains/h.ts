@@ -77,5 +77,15 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "A balanced hybrid with a unique flavor profile of peppery earth and sweet vanilla. It offers a calming and euphoric high that is perfect for relaxing without being overly sedating.",
         "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
         "heightDetails": { "indoor": "100-160 cm", "outdoor": "150-200 cm" },
-    }
+    },
+  "harmony": {
+    "description": "A CBD-rich strain bred for its therapeutic properties without strong psychoactive effects. A parent of Night Nurse."
+  },
+  "high-octane-og": {
+    "description": "High Octane OG is a potent, pure indica strain known for its extremely gassy and pungent aroma. As a phenotype of OG Kush, it delivers a powerful, fast-acting high that is deeply relaxing and sedating, making it a favorite for evening use and for treating pain and insomnia."
+  },
+  "highland-oaxacan-gold": {},
+  "humboldt-og": {
+    "description": "A potent OG Kush phenotype from Humboldt County, California. It features the classic OG aroma of pine, earth, and diesel. The effect is strong, physically relaxing, and long-lasting, making it a favorite for evening use."
+  }
 };

@@ -9,5 +9,6 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "xeno": {
         "description": "A balanced hybrid with a sweet, fruity, and minty aroma. The effect is strong, euphoric, and relaxing."
-    }
+    },
+  "xxx-og": {}
 };

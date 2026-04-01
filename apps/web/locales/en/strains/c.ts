@@ -165,5 +165,39 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "colombian": {
         "description": "A classic Sativa landrace from the mountains of Santa Marta in Colombia. It is one of the parents of Skunk #1 and is known for its uplifting, energizing, and clear-headed effects without paranoia. The aroma is a sweet mix of citrus, lime, and skunk."
-    }
+    },
+  "california-indica": {
+    "description": "A classic strain from Sensi Seeds that crosses a California Orange variety with an Afghani hash plant. It provides a relaxing, sunny high and a sweet orange aroma. It is a parent of LA Confidential."
+  },
+  "cambodian-landrace": {
+    "description": "A pure sativa landrace from Cambodia, known for its clear, energetic, and long-lasting cerebral high. The aroma is often sweet and fruity with earthy undertones. It is a parent of Raspberry Cough."
+  },
+  "cheese-quake": {
+    "description": "An indica-dominant strain with a pungent cheese and sweet grape aroma. The effect is deeply relaxing and calming. It is a parent of Secret Weapon."
+  },
+  "chemdawg-4": {
+    "description": "Known as the 'Chem #4' cut, this is a more indica-leaning phenotype of the legendary Chemdawg. It delivers a potent, relaxing body high with a cerebral, euphoric onset. The aroma is a classic mix of diesel, pine, and lemon. It is a parent of Stardawg."
+  },
+  "chems-sister": {
+    "description": "Also known as 'Chem Sis', this is a famous phenotype of the legendary Chemdawg line. This sativa-dominant hybrid delivers a powerful, uplifting cerebral high that boosts creativity and energy. Its aroma is unmistakably pungent and chemical, with strong notes of diesel and earth."
+  },
+  "cherry-wine": {},
+  "chocolate-kush": {
+    "description": "An indica-dominant hybrid with a delicious aroma of sweet chocolate, coffee, and earth. The effect is deeply relaxing and calming, making it a great choice for evening use. It is a parent of Truffle Butter."
+  },
+  "citral-13": {
+    "description": "A potent phenotype of the Citral strain, known for its strong citrus and skunky aroma. The effect is relaxing and euphoric. It is a parent of Papaya."
+  },
+  "clementine": {
+    "description": "A refreshing sativa-dominant hybrid with a sweet and tangy citrus aroma, reminiscent of ripe clementines. It delivers an energetic, focused, and happy high."
+  },
+  "cookies-kush": {
+    "description": "An award-winning indica-dominant hybrid from Barney's Farm. It combines the sweet minty flavor of GSC with the potent effects of OG Kush. The effect is strong, relaxing, and happy."
+  },
+  "crystal-locomotive": {
+    "description": "Crystal Locomotive is a sativa-dominant hybrid that crosses two legendary strains, Trainwreck and White Widow. It is a parent of Mendo Montage. The result is a powerful strain with an uplifting, creative, and energetic high. Its aroma is a complex mix of earthy, piney, and spicy notes, true to its heritage."
+  },
+  "crystal-locomotive-f1": {
+    "description": "Crystal Locomotive F1 is a sativa-dominant hybrid that crosses two legendary strains, Trainwreck and White Widow. It is a parent of Mendo Montage. The result is a powerful strain with an uplifting, creative, and energetic high."
+  }
 }

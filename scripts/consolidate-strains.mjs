@@ -9,7 +9,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-const STRAINS_DIR = path.resolve(import.meta.dirname, '..', 'data', 'strains')
+const STRAINS_DIR = path.resolve(import.meta.dirname, '..', 'apps', 'web', 'data', 'strains')
 
 // --- Helpers -----------------------------------------------
 function getLetterBucket(strainName) {

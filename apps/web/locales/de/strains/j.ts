@@ -98,5 +98,20 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Orange Velvet x Space Queen",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+  },
+  "jamaican-landrace": {
+    "description": "Eine reine Sativa-Landrasse aus Jamaika, berühmt für ihr erhebendes, energetisches und oft als zerebral beschriebenes High. Sie ist bekannt für ein süßes, tropisches und erdiges Aroma."
+  },
+  "jet-fuel-gelato": {
+    "description": "Jet Fuel Gelato ist eine potente sativa-dominante Hybride, die für ihre erhebende und energetisierende Wirkung bekannt ist. Sie hat ein komplexes Aroma aus süßem Diesel und blumigen Noten. Diese Sorte sorgt für ein fokussiertes und euphorisches High und ist ein Elternteil von beliebten Sorten wie Horchata."
+  },
+  "joseph-og": {
+    "description": "Joseph OG ist ein potenter indica-dominanter Phänotyp von OG Kush, bekannt für seine starke Harzproduktion und sein klassisches OG-Aroma. Er liefert ein kraftvolles, entspannendes Körper-High mit einem euphorischen zerebralen Rausch. Er ist eine der Elternsorten von Grateful Breath."
+  },
+  "juanita-la-lagrimosa": {
+    "description": "Eine wegweisende CBD-reiche Sorte aus Spanien, oft mit einem 1:1 THC:CBD-Verhältnis. 'Juanita die Weinende' bietet eine klare, funktionale Wirkung mit erheblichen therapeutischen Vorteilen, was sie ideal zur Behandlung von Angstzuständen und Schmerzen ohne starkes High macht. Ihr Aroma ist zitrusartig und hazig. Sie ist ein Elternteil von Dance World."
+  },
+  "juicy-fruit": {
+    "description": "Eine klassische Hybride aus den 1970er Jahren, auch bekannt als Fruity Juice. Sie ist berühmt für ihr süßes, fruchtiges Aroma, das an tropischen Punsch und Beeren erinnert. Die Wirkung ist erhebend und euphorisch, mit einem sanften Körper-Summen. Sie ist ein Elternteil von Orange Cream Sicle."
   }
 };

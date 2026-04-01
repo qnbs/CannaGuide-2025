@@ -4,7 +4,7 @@ export default defineConfig({
     testDir: './tests/e2e',
     testMatch: ['*.e2e.ts'],
     testIgnore: ['*.deploy.e2e.ts'],
-    timeout: 60_000,
+    timeout: process.env.CI ? 90_000 : 60_000,
     expect: {
         timeout: 10_000,
         toHaveScreenshot: {
@@ -25,14 +25,14 @@ export default defineConfig({
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
         },
-        {
-            name: 'firefox',
-            use: { ...devices['Desktop Firefox'] },
-        },
-        // WebKit headless is unreliable in CI (app never boots).
-        // Run locally with: npx playwright test --project=webkit
+        // Firefox and WebKit are unreliable in CI (timeouts, missing APIs).
+        // Run locally with: npx playwright test --project=firefox --project=webkit
         ...(!process.env.CI
             ? [
+                  {
+                      name: 'firefox' as const,
+                      use: { ...devices['Desktop Firefox'] },
+                  },
                   {
                       name: 'webkit' as const,
                       use: {

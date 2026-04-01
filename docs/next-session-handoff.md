@@ -2,7 +2,61 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-03-30, Session 11) -- i18n Sync, QA Deep-Audit & End-of-Day Sweep
+## Latest Session (2026-04-01, Session 13) -- Testing, CI/CD, DevEx & Documentation Audit
+
+**Status: v1.2.0-alpha. E2E coverage expanded (Plants, Strains, AI critical paths). SEO meta tags (OG, Twitter, canonical). CHANGELOG automation. Typedoc. Good-first-issues. Accessibility statement. Production build green. 960+ tests.**
+
+### What Was Done (Session 13)
+
+1. **E2E Critical Path Tests** -- 3 new Playwright E2E test files:
+    - `plants-critical-path.e2e.ts`: Navigation, empty state, add-plant dialog, runtime error checks
+    - `strains-critical-path.e2e.ts`: Navigation, search filtering, rapid tab switching, runtime errors
+    - `ai-knowledge-critical-path.e2e.ts`: Knowledge tabs, Mentor chat UI, AI settings access, tab switching
+2. **SEO Meta Tags** -- Added to `index.html`: canonical URL, Open Graph (type, title, description, url, image, locale), Twitter Card (summary), locale alternates (en_US, de_DE)
+3. **CHANGELOG Automation** -- Installed `conventional-changelog-cli`. New scripts: `npm run changelog` (full rebuild), `npm run changelog:latest` (append latest)
+4. **API Docs** -- Installed `typedoc`. New script: `npm run docs:ai-core` (generates HTML docs from ai-core package)
+5. **CONTRIBUTING.md** -- Added Good First Issues section (translations, component tests, strain data, a11y, docs, themes). Updated release process to reference `npm run changelog:latest`
+6. **Accessibility Statement** -- Created `docs/ACCESSIBILITY.md` (WCAG 2.1 AA target, current state table, testing approach, known limitations, feedback process)
+
+### Repo State (End of Session)
+
+| Check            | Result                                                      |
+| ---------------- | ----------------------------------------------------------- |
+| TypeScript       | 0 errors                                                    |
+| ESLint           | 0 errors                                                    |
+| Vitest           | 960+ pass                                                   |
+| Production Build | Green                                                       |
+| E2E Coverage     | PWA, IoT, Onboarding, AI Vision, Plants, Strains, Knowledge |
+| i18n Coverage    | EN/DE complete, ES/FR/NL synced (EN fallback)               |
+
+### Next Steps (Morning Priorities)
+
+1. **Visual Regression Testing** -- Integrate Playwright screenshot comparison or Percy for visual regression
+2. **Mutation Testing** -- Configure Stryker for Redux slice mutation coverage
+3. **Cloudflare CDN** -- Add Cloudflare in front of GitHub Pages for edge performance
+4. **Tauri Auto-Update** -- Configure tauri-plugin-updater with signed releases (Windows/Mac/Linux)
+5. **Capacitor Store-Ready** -- Generate proper app icons, screenshots, store metadata for iOS/Android
+6. **Strain DB Scraping** -- Expand `strains-daily-update.yml` with human-review PR workflow
+7. **AI RAG Feedback Loop** -- Wire user journal corrections back into RAG retrieval ranking
+8. **Native translations** -- ES/FR/NL still use EN fallback strings
+9. **Bundle splitting** -- de.js chunk 538KB gzipped; consider splitting large DE locale
+
+---
+
+## Previous Session (2026-04-01, Session 12) -- v1.2.0 Audit Measures
+
+**Status: v1.2.0-alpha. All security/AI/perf/offline/CI audit measures implemented. 960/960 tests green. Committed ec6b233.**
+
+### What Was Done (Session 12)
+
+1. **Security**: Key rotation + panic button (cryptoService), NFC + 50 homoglyph mappings (geminiService), per-provider GDPR consent (aiConsentService), Gist security warning (CloudSyncPanel)
+2. **AI**: Per-layer timeouts (WebLLM 20s, Transformers 15s), RAM gate for low-end devices, dynamic Top-K RAG (6-20) + sliding window, confidence scores in AI responses, monthly token budget with 80%/100% thresholds
+3. **Offline**: SW cache quota management (200MB + auto-prune)
+4. **CI**: CSP consistency checker, i18n completeness checker
+
+---
+
+## Previous Session (2026-03-30, Session 11) -- i18n Sync, QA Deep-Audit & End-of-Day Sweep
 
 **Status: v1.2.0-alpha. All i18n placeholders resolved for ES/FR/NL. Security fix (DOMPurify). Production build green. 928 tests pass. 0 lint errors. 0 type errors.**
 

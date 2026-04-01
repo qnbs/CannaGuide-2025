@@ -294,13 +294,30 @@ When proposing significant changes, please follow these guidelines:
 ## Release Process
 
 1. Maintainer bumps version in `package.json`.
-2. Update `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/).
+2. Generate CHANGELOG: `npm run changelog:latest` (or `npm run changelog` for full rebuild).
 3. Create a tag: `git tag v1.x.0 && git push --tags`.
 4. GitHub Actions automatically:
     - Deploys to GitHub Pages and Netlify.
     - Builds Tauri desktop apps (Windows/macOS/Linux).
     - Builds Docker images.
 5. Create a GitHub Release with the CHANGELOG excerpt.
+
+---
+
+## Good First Issues
+
+Looking for a place to start? Here are some beginner-friendly task areas:
+
+| Area                | Description                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| **Translations**    | Add or improve ES/FR/NL translations in `apps/web/locales/` (EN/DE are the reference)    |
+| **Component Tests** | Add Playwright component tests in `tests/ct/` -- only Button, Card, Input covered so far |
+| **Strain Data**     | Enrich strain entries with missing terpene or flavonoid data in `apps/web/data/strains/` |
+| **Accessibility**   | Improve ARIA labels, keyboard nav, or screen reader support in UI components             |
+| **Documentation**   | Fix typos, improve README sections, or add JSDoc to public service functions             |
+| **Theme Variants**  | Create new cannabis theme CSS in `packages/ui/src/tokens.css` (9 themes exist)           |
+
+Look for issues labeled `good first issue` or `help wanted` on the [Issues page](https://github.com/qnbs/CannaGuide-2025/issues).
 
 ---
 

@@ -764,7 +764,7 @@ export const strainsView = {
             quality:
                 'Choose terpene-rich genetics for better flavor and effect -- quality beats quantity.',
             cannaGuide:
-                'CannaGuide tracks these trends with 700+ strains, chemovar classification, terpene and cannabinoid profiles -- perfect for your next breeding plan.',
+                'CannaGuide tracks these trends with 800+ strains, chemovar classification, terpene and cannabinoid profiles -- perfect for your next breeding plan.',
         },
         conclusion:
             'Genetics in 2026 are more precise, functional and diverse -- away from hype, toward real plant perfection. Complex terps, balanced hybrids, strong autos and polyploid lines deliver massive gains in quality, yield and consistency.',

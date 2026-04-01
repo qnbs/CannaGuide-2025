@@ -2,24 +2,28 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-01, Session 17) -- i18n Fixes, Accordion Consistency, Audit Execution
+## Latest Session (2026-04-01, Session 18) -- Full Docs Audit & Metrics Sync
 
-**Status: v1.2.0-alpha. Fixed all 12 broken PWA translation keys (settings.pwa._ -> settingsView.pwa._). Unified all accordion/collapsible components to consistent design system (ring-slate-700/50, hover:ring-primary-500/30, ChevronDown with group-open:rotate-180, animate-fade-in). GeneticTrendsView migrated from state-driven to native details/summary. Package boundary ESLint rule (K-01) enforced. Audit docs updated. 978 tests.**
+**Status: v1.2.0-alpha. Comprehensive audit of README.md, copilot-instructions.md, ARCHITECTURE.md, ROADMAP.md, monorepo-architecture.md, audit-roadmap-2026-q2.md, and all locale/HTML/manifest files against actual repo state. All stale metrics corrected: tests 975+->978, strains 700+/775+->800+ (actual 806), services 78->80, hooks 17->18, WorkerBus worker list deduplicated. 978 tests.**
 
-### What Was Done (Session 17)
+### What Was Done (Session 18)
 
-1. **i18n Key Fix** -- All 12 usages of `settings.pwa.*` corrected to `settingsView.pwa.*` across PwaInstallBanner, OfflineIndicator, UpdateBanner, SettingsView. This was the root cause of "missing translation key" in the deployed PWA settings box.
-2. **Accordion Design Consistency** -- Unified all collapsible/accordion patterns across the app:
-    - HelpView Manual sections: `ring-white/10` -> `ring-slate-700/50`, added `hover:ring-primary-500/30`
-    - HelpView Manual sub-sections: same ring harmonization
-    - GeneticTrendsView: migrated from state-driven `button` + `isOpen` to native `<details>/<summary>` (removed useState)
-    - StrainImageGenerator settings: `bg-slate-800/30` -> `bg-slate-800`, added ring/hover/border-t/animate-fade-in
-    - StrainAiTips image criteria: same pattern upgrade
-    - StrainTipsView strain groups: `ring-white/20` -> `ring-slate-700/50`
-    - FormSection: `ring-white/20` -> `ring-slate-700/50` + hover
-    - All now share: `ring-1 ring-inset ring-slate-700/50 hover:ring-primary-500/30 transition-[box-shadow,color] duration-200`
-3. **Package Boundary Enforcement (K-01)** -- Added `no-restricted-imports` ESLint rule blocking deep `packages/*/src/*` imports
-4. **Audit Doc Updates** -- Marked C-01, K-01 as Done in PRIORITY_ROADMAP.md and AUDIT_BACKLOG.md
+1. **README.md Full Audit** -- 29 corrections across EN+DE sections:
+    - Tests badge: 975+ -> 978 (EN+DE)
+    - Strain count: 775+ -> 800+ in descriptions, key numbers, architecture, monorepo, roadmap, strategic expansion (EN+DE)
+    - Services: 78 -> 80 in architecture, monorepo (EN+DE)
+    - Hooks: 17 -> 18 in key numbers, architecture, monorepo (EN+DE)
+    - WorkerBus: "VPD simulation, VPD simulation worker" -> "VPD simulation, plant simulation" (EN), "VPD-Sim, VPD-Sim-Worker" -> "VPD-Simulation, Pflanzen-Simulation" (DE)
+    - Tech stack testing row, CI quality gates, commands, dev journey -- all synced
+2. **copilot-instructions.md** -- Fixed 4 stale values: tests 975+->978, strains 775+->800+, hooks 17->18 (2x)
+3. **ARCHITECTURE.md** -- Fixed strains 700+->800+, hooks 17->18, WorkerBus count 7->8 workers
+4. **ROADMAP.md** -- Fixed strain counts 700+->800+ (2 instances)
+5. **monorepo-architecture.md** -- Fixed strains 700+->800+
+6. **audit-roadmap-2026-q2.md** -- Fixed strain DB reference 700+->800+
+7. **All locale files** -- Updated "700+ strains" to "800+ strains" across en/, de/, es/, fr/, nl/ (onboarding, common, strains, seedbanks, settings)
+8. **index.html** -- Updated meta descriptions (3x) from 700+ to 800+
+9. **manifest.json** -- Updated PWA description from 700+ to 800+
+10. **package.json** -- Updated root description from 700+ to 800+
 
 ### Next Steps (Priority Order)
 

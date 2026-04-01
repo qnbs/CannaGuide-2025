@@ -699,7 +699,7 @@ export const settingsView = {
             </ul>
             <h4>2. De Rassenencyclopedie (<code>Strains</code> Weergave)</h4>
             <ul>
-                <li><strong>Uitgebreide Bibliotheek</strong>: Toegang tot gedetailleerde informatie over <strong>700+ cannabisrassen</strong>.</li>
+                <li><strong>Uitgebreide Bibliotheek</strong>: Toegang tot gedetailleerde informatie over <strong>800+ cannabisrassen</strong>.</li>
                 <li><strong>Interactieve Genealogieboom</strong>: Visualiseer de volledige genetische afstamming van elk ras.</li>
                 <li><strong>AI Kweektips</strong>: Genereer unieke, AI-aangedreven teeltadviezen voor elk ras.</li>
             </ul>

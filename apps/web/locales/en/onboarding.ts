@@ -5,7 +5,7 @@ export const onboarding = {
   english: 'English',
   step1: {
     title: '🧬 Strain Encyclopedia',
-    text: 'Discover 700+ strains with detailed filters, explore their genetic lineage in an interactive tree, or add your own. Get AI-powered cultivation tips.'
+    text: 'Discover 800+ strains with detailed filters, explore their genetic lineage in an interactive tree, or add your own. Get AI-powered cultivation tips.'
   },
   step2: {
     title: '🌿 The Digital Grow Room',

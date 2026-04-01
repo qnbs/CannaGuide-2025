@@ -417,6 +417,6 @@ export const seedbanks = {
             },
         },
         recommendation:
-            'Bei der Saatgutwahl 2026 sollte genetische Vielfalt, Terpen-Komplexitaet und bewaehrte Zuchtprogramme ueber reine THC-Zahlen priorisiert werden. Die CannaGuide-Sorten-Bibliothek trackt all diese Attribute fuer 700+ Kultivare.',
+            'Bei der Saatgutwahl 2026 sollte genetische Vielfalt, Terpen-Komplexitaet und bewaehrte Zuchtprogramme ueber reine THC-Zahlen priorisiert werden. Die CannaGuide-Sorten-Bibliothek trackt all diese Attribute fuer 800+ Kultivare.',
     },
 }

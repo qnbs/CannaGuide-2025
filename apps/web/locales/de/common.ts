@@ -180,7 +180,7 @@ export const common = {
         invalidActionData: 'Ungültige Daten für Aktion übermittelt: {{action}}.',
     },
     metadataDescription:
-        'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.<ul><li>Verfolgen Sie Pflanzen</li><li>Erkunden Sie 700+ Sorten</li><li>Erhalten Sie KI-Ausrüstungsberatung</li><li>Meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.</li></ul>',
+        'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.<ul><li>Verfolgen Sie Pflanzen</li><li>Erkunden Sie 800+ Sorten</li><li>Erhalten Sie KI-Ausrüstungsberatung</li><li>Meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.</li></ul>',
     voiceControl: {
         listening: 'Höre zu...',
         processing: 'Verarbeite: "{{transcript}}"',

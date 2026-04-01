@@ -417,6 +417,6 @@ export const seedbanks = {
             },
         },
         recommendation:
-            'When selecting seeds in 2026, prioritize genetic diversity, terpene complexity, and proven breeding programs over pure THC numbers. The CannaGuide strain library tracks all these attributes for 700+ cultivars.',
+            'When selecting seeds in 2026, prioritize genetic diversity, terpene complexity, and proven breeding programs over pure THC numbers. The CannaGuide strain library tracks all these attributes for 800+ cultivars.',
     },
 }

@@ -771,7 +771,7 @@ export const strainsView = {
             quality:
                 'Waehle terpen-reiche Genetik fuer besseren Geschmack und Effekt -- Qualitaet schlaegt Quantitaet.',
             cannaGuide:
-                'CannaGuide trackt diese Trends mit 700+ Sorten, Chemovar-Klassifikation, Terpen- und Cannabinoid-Profilen -- perfekt fuer deine naechste Zuchtplanung.',
+                'CannaGuide trackt diese Trends mit 800+ Sorten, Chemovar-Klassifikation, Terpen- und Cannabinoid-Profilen -- perfekt fuer deine naechste Zuchtplanung.',
         },
         conclusion:
             'Genetik wird 2026 praeziser, funktionaler und vielfaeltiger -- weg vom Hype, hin zu echter Pflanzen-Perfektion. Komplexe Terps, ausgewogene Hybride, starke Autos und polyploide Linien bringen massive Gewinne bei Qualitaet, Ertrag und Konsistenz.',

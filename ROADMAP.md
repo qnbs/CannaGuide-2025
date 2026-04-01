@@ -24,7 +24,7 @@ Released: **2026-07-07**
 
 | Feature                                                        | Category     | Status |
 | -------------------------------------------------------------- | ------------ | ------ |
-| 700+ strain encyclopedia with genealogy tracking               | Core         | ✅     |
+| 800+ strain encyclopedia with genealogy tracking               | Core         | ✅     |
 | VPD-based plant simulation engine (Web Worker)                 | Core         | ✅     |
 | Multi-provider AI integration (Gemini, OpenAI, xAI, Anthropic) | AI           | ✅     |
 | RAG-powered grow log journal search                            | AI           | ✅     |
@@ -176,7 +176,7 @@ Target: **2026-Q4**
 
 | Feature                                                             | Category   | Priority | Issue |
 | ------------------------------------------------------------------- | ---------- | -------- | ----- |
-| Strain database growth program (700+ → 2,000+ curated entries)      | Strains    | High     | —     |
+| Strain database growth program (800+ → 2,000+ curated entries)      | Strains    | High     | —     |
 | Strain ingestion pipeline with dedupe/provenance/quality scoring    | Data       | High     | —     |
 | Infinite discovery feed (news, HD galleries, educational snippets)  | UX         | High     | —     |
 | Content taxonomy and moderation rules for feed categories           | Governance | High     | —     |

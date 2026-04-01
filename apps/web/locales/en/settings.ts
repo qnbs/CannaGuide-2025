@@ -737,7 +737,7 @@ export const settingsView = {
             </ul>
             <h4>2. The Strain Encyclopedia (<code>Strains</code> View)</h4>
             <ul>
-                <li><strong>Vast Library</strong>: Access detailed information on <strong>700+ cannabis strains</strong>.</li>
+                <li><strong>Vast Library</strong>: Access detailed information on <strong>800+ cannabis strains</strong>.</li>
                 <li><strong>Interactive Genealogy Tree</strong>: Visualize the complete genetic lineage of any strain.</li>
                 <li><strong>AI Grow Tips</strong>: Generate unique, AI-powered cultivation advice for any strain.</li>
             </ul>

@@ -176,7 +176,7 @@ export const common = {
         invalidActionData: 'Invalid data submitted for action: {{action}}.',
     },
     metadataDescription:
-        'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore 700+ strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
+        'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore 800+ strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
     voiceControl: {
         listening: 'Listening...',
         processing: 'Processing: "{{transcript}}"',
@@ -203,7 +203,7 @@ export const common = {
         safeRecovery: 'Try Safe Recovery',
     },
     appShortDescription:
-        'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.',
+        'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 800+ strains, get AI equipment advice, and master your grow with an interactive guide.',
     imageResizeFailed: 'Image resizing failed, using original.',
     offlineQueued: 'Offline. Action queued for sync.',
     failedToSave: 'Failed to save setup.',

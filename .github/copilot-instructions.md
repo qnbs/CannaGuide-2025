@@ -218,6 +218,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
 - Baseline: 960+ tests, 0 failures
+- **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
 
@@ -258,6 +259,9 @@ npm run format           # Prettier format
 npm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
 git push origin main     # Direct push (admin bypass)
 npm run pr:push          # CI-gated push via automated PR workflow (optional)
+npm run changelog        # Generate full CHANGELOG from conventional commits
+npm run changelog:latest # Append latest release to CHANGELOG
+npm run docs:ai-core     # Generate Typedoc API docs for ai-core package
 
 # Web app (from apps/web/ or via workspace flag)
 npm run -w @cannaguide/web dev       # Vite dev server (localhost:5173)
@@ -346,3 +350,6 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `.devcontainer/setup.sh`                               | postCreateCommand (workspace-filtered install, no ML)         |
 | `.devcontainer/start.sh`                               | postStartCommand (IoT mock servers)                           |
 | `.github/workflows/config-guard.yml`                   | CI scan for RCE patterns in config files                      |
+| `docs/ACCESSIBILITY.md`                                | WCAG 2.1 AA accessibility statement                           |
+| `scripts/security/check-csp-consistency.mjs`           | CI: CSP consistency across securityHeaders/index.html/netlify |
+| `scripts/check-i18n-completeness.mjs`                  | CI: i18n key coverage checker across all languages            |

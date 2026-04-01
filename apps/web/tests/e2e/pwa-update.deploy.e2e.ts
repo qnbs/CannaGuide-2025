@@ -34,6 +34,12 @@ test('pwa update: service worker registers with GitHub Pages subpath scope', asy
 
   await page.waitForFunction(() => 'serviceWorker' in navigator)
 
+  // Wait for at least one SW registration to appear (async registration may take time in CI)
+  await page.waitForFunction(async () => {
+    const entries = await navigator.serviceWorker.getRegistrations()
+    return entries.length > 0
+  }, { timeout: 15_000 })
+
   const registrations = await page.evaluate(async () => {
     const entries = await navigator.serviceWorker.getRegistrations()
 

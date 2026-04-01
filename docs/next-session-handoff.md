@@ -2,9 +2,53 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-01, Session 14) -- IoT Deep-Dive-Audit & Roadmap
+## Latest Session (2026-04-01, Session 15) -- README/Docs Comprehensive Audit & Cleanup
 
-**Status: v1.2.0-alpha. Comprehensive IoT audit completed. New `docs/IoT-Roadmap.md` with 32-point action plan, ESPHome templates, MLX90614 integration, MQTT protocol deepening, security hardening, and 5-milestone timeline. No code changes -- documentation only. 960+ tests.**
+**Status: v1.2.0-alpha. Full README.md audit against actual app state. All stale metrics fixed (tests 975+, strains 775+, namespaces 12, workers 8). copilot-instructions.md synced. 19 obsolete docs/ files deleted. Q1 roadmap items migrated to PRIORITY_ROADMAP. 978 tests.**
+
+### What Was Done (Session 15)
+
+1. **README.md Audit** -- Verified all metrics against actual repo state. Fixed in both EN + DE sections:
+    - Test count: 960+ -> 975+ (badges, key numbers, CI tables, roadmap, dev journey)
+    - Strain count: 700+ -> 775+ (descriptions, features, monorepo, roadmap, strategic expansion)
+    - Namespace count: 13 -> 12 (tech stack tables, monorepo directory trees)
+    - Worker list: expanded to all 8 (VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene)
+2. **copilot-instructions.md** -- Fixed 6 stale values: 13->12 namespaces (3x), 960->975+ tests (2x), 700->775+ strains (1x)
+3. **docs/ Cleanup** -- Deleted 19 obsolete files:
+    - 12 session-activity-review files (2026-03-22 through 2026-04-01-s14)
+    - 5 session-activity-todo files (2026-03-22 through 2026-03-28)
+    - sonar-handoff-2026-03-21.md (stale references to non-existent files)
+    - refactor-roadmap-2026-q1.md (Q1 over, items migrated)
+4. **PRIORITY_ROADMAP.md** -- Added 3 open Q1 items (R-01 Streaming generalization, R-02 GPU resource manager v2, R-03 WebLLM preload UX) + 3 resolved (R-04 Local AI service extraction, R-05 Redux scope reduction, R-06 Worker consolidation)
+
+### Verified Repo Metrics (Actual)
+
+| Metric          | Value                            |
+| --------------- | -------------------------------- |
+| Tests           | 978 (100 test files, 0 failures) |
+| Strains         | 779                              |
+| Services        | 78                               |
+| Custom Hooks    | 17                               |
+| Web Workers     | 8                                |
+| Redux Slices    | 12                               |
+| Zustand Stores  | 7                                |
+| i18n Namespaces | 12                               |
+| CI Workflows    | 21                               |
+
+### Next Steps (Morning Priorities)
+
+1. **IoT Sprint 1** -- MQTT reconnect + backoff, WSS-force, Zod validation (from IoT-Roadmap.md)
+2. **Streaming generalization** (R-01) -- Extend token streaming beyond Mentor to Advisor/Diagnosis
+3. **Visual Regression Testing** (T-03) -- Playwright screenshot comparison
+4. **Mutation Testing** (T-01) -- Stryker for Redux slice coverage
+5. **Native translations** -- ES/FR/NL need native translations (currently EN fallback)
+6. **Bundle splitting** -- de.js chunk still large; consider splitting
+
+---
+
+## Previous Session (2026-04-01, Session 14) -- IoT Deep-Dive-Audit & Roadmap
+
+**Status: v1.2.0-alpha. Comprehensive IoT audit completed. New `docs/IoT-Roadmap.md` with 32-point action plan, ESPHome templates, MLX90614 integration, MQTT protocol deepening, security hardening, and 5-milestone timeline. No code changes -- documentation only. 975+ tests.**
 
 ### What Was Done (Session 14)
 

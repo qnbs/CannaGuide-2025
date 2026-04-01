@@ -29,15 +29,18 @@
 
 ## Medium-term (Sprint 3)
 
-| ID   | Finding                     | Effort | Status |
-| ---- | --------------------------- | ------ | ------ |
-| T-01 | Mutation testing pilot      | High   | Open   |
-| T-03 | Visual regression testing   | Medium | Open   |
-| T-05 | AI contract tests           | Medium | Open   |
-| A-02 | Local AI model versioning   | Medium | Open   |
-| P-03 | Image optimization pipeline | Medium | Open   |
-| F-05 | Multi-grow management       | High   | Open   |
-| D-01 | API documentation           | High   | Open   |
+| ID   | Finding                               | Effort | Status |
+| ---- | ------------------------------------- | ------ | ------ |
+| T-01 | Mutation testing pilot                | High   | Open   |
+| T-03 | Visual regression testing             | Medium | Open   |
+| T-05 | AI contract tests                     | Medium | Open   |
+| A-02 | Local AI model versioning             | Medium | Open   |
+| P-03 | Image optimization pipeline           | Medium | Open   |
+| F-05 | Multi-grow management                 | High   | Open   |
+| D-01 | API documentation                     | High   | Open   |
+| R-01 | Streaming generalization              | Medium | Open   |
+| R-02 | GPU resource manager v2 (N consumers) | Medium | Open   |
+| R-03 | WebLLM preload UX (progress bar)      | Low    | Open   |
 
 ## Long-term (Backlog)
 
@@ -52,14 +55,17 @@
 
 ## Already Resolved
 
-| ID   | Finding                       | Resolution                                    |
-| ---- | ----------------------------- | --------------------------------------------- |
-| S-02 | Tailwind CDN                  | PostCSS build-time compilation already active |
-| P-01 | Tailwind CDN (duplicate)      | Same as S-02                                  |
-| T-02 | Coverage thresholds           | v8 provider + thresholds in vite.config.ts    |
-| C-02 | Release workflow              | release-please in release.yml                 |
-| K-02 | Lazy hydration                | React.lazy + Suspense + shell pattern         |
-| S-06 | Dependency pinning            | All CI actions use pinned SHA hashes          |
-| D-03 | Architecture Decision Records | ADR template + ADR-0001 in docs/adr/          |
-| F-01 | iCal export                   | Implemented                                   |
-| F-03 | Push notifications            | Wave 5/6: proactiveCoach + nativeBridge       |
+| ID   | Finding                           | Resolution                                    |
+| ---- | --------------------------------- | --------------------------------------------- |
+| S-02 | Tailwind CDN                      | PostCSS build-time compilation already active |
+| P-01 | Tailwind CDN (duplicate)          | Same as S-02                                  |
+| T-02 | Coverage thresholds               | v8 provider + thresholds in vite.config.ts    |
+| C-02 | Release workflow                  | release-please in release.yml                 |
+| K-02 | Lazy hydration                    | React.lazy + Suspense + shell pattern         |
+| S-06 | Dependency pinning                | All CI actions use pinned SHA hashes          |
+| D-03 | Architecture Decision Records     | ADR template + ADR-0001 in docs/adr/          |
+| F-01 | iCal export                       | Implemented                                   |
+| F-03 | Push notifications                | Wave 5/6: proactiveCoach + nativeBridge       |
+| R-04 | Local AI service extraction       | Decomposed into 15 service modules            |
+| R-05 | Redux scope reduction             | Zustand stores for all transient UI state     |
+| R-06 | Worker architecture consolidation | workerBus with 8 typed workers                |

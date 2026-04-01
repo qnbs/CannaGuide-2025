@@ -65,6 +65,7 @@ const BreedingLabView = lazy(() =>
 const GeneticTrendsView = lazy(() =>
     import('./GeneticTrendsView').then((m) => ({ default: m.GeneticTrendsView })),
 )
+const DailyStrains = lazy(() => import('./DailyStrains').then((m) => ({ default: m.DailyStrains })))
 
 const DEFAULT_AGRONOMIC = {
     difficulty: 'Medium',
@@ -184,6 +185,9 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.Favorites]: (
                 <PhosphorIcons.Heart weight="fill" className="w-16 h-16 mx-auto text-red-400" />
             ),
+            [StrainViewTab.DailyStrains]: (
+                <PhosphorIcons.BellSimple className="w-16 h-16 mx-auto text-cyan-400" />
+            ),
             [StrainViewTab.Genealogy]: (
                 <PhosphorIcons.TreeStructure className="w-16 h-16 mx-auto text-purple-400" />
             ),
@@ -208,6 +212,7 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.All]: t('strainsView.tabs.allStrains'),
             [StrainViewTab.MyStrains]: t('strainsView.tabs.myStrains'),
             [StrainViewTab.Favorites]: t('strainsView.tabs.favorites'),
+            [StrainViewTab.DailyStrains]: t('strainsView.tabs.dailyStrains'),
             [StrainViewTab.Genealogy]: t('strainsView.tabs.genealogy'),
             [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab'),
             [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
@@ -627,6 +632,14 @@ export const StrainsView: React.FC = () => {
                             {/* key erzwingt vollständiges Remount bei Strain-Wechsel –
                                 verhindert stale d3-State nach 50+ Wechseln */}
                             <GenealogyView allStrains={allStrains} onNodeClick={handleSelect} />
+                        </Suspense>
+                    </ErrorBoundary>
+                )
+            case StrainViewTab.DailyStrains:
+                return (
+                    <ErrorBoundary>
+                        <Suspense fallback={<SkeletonLoader count={3} />}>
+                            <DailyStrains />
                         </Suspense>
                     </ErrorBoundary>
                 )

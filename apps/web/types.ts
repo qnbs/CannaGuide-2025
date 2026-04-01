@@ -4,8 +4,8 @@ import type { SimulationPoint } from '@/types/simulation.types'
 
 // Enums and String Literal Types
 export enum View {
-    Strains = 'strains',
     Plants = 'plants',
+    Strains = 'strains',
     Equipment = 'equipment',
     Knowledge = 'knowledge',
     Settings = 'settings',
@@ -373,6 +373,7 @@ export enum StrainViewTab {
     All = 'all',
     MyStrains = 'my-strains',
     Favorites = 'favorites',
+    DailyStrains = 'daily-strains',
     Genealogy = 'genealogy',
     BreedingLab = 'breeding-lab',
     Exports = 'exports',
@@ -742,11 +743,21 @@ export interface SimulationState {
 }
 
 // AI related types
+export interface ProductLink {
+    vendor: string
+    url: string
+    price?: number | undefined
+    currency?: string | undefined
+    inStock?: boolean | undefined
+}
+
 export interface RecommendationItem {
     name: string
     price: number
     rationale: string
     watts?: number | undefined
+    manufacturer?: string | undefined
+    productLinks?: ProductLink[] | undefined
 }
 export type RecommendationCategory =
     | 'tent'

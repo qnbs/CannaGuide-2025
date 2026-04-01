@@ -43,7 +43,7 @@ jobs:
                   egress-policy: audit
 
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
               with:
                   fetch-depth: 0
 
@@ -53,7 +53,7 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Restore Turbo cache
-              uses: actions/cache@v4
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               with:
                   path: .turbo
                   key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
@@ -90,7 +90,7 @@ jobs:
 
             - name: Upload coverage
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: coverage-report
                   path: apps/web/coverage/
@@ -103,7 +103,7 @@ jobs:
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 
             - name: Upload build artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: dist
                   path: apps/web/dist/
@@ -123,7 +123,7 @@ jobs:
                   egress-policy: audit
 
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
               with:
                   fetch-depth: 0
 
@@ -163,7 +163,7 @@ jobs:
                   egress-policy: audit
 
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -172,7 +172,7 @@ jobs:
 
             - name: Cache Playwright browsers
               id: playwright-cache
-              uses: actions/cache@v4
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               with:
                   path: ~/.cache/ms-playwright
                   key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -184,7 +184,7 @@ jobs:
               run: npm run test:e2e:install:ci
 
             - name: Download build artifact
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
               with:
                   name: dist
                   path: apps/web/dist/
@@ -194,7 +194,7 @@ jobs:
 
             - name: Upload Playwright traces on failure
               if: failure()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: e2e-traces-${{ github.run_id }}
                   path: apps/web/test-results/

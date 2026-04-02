@@ -1,6 +1,11 @@
 {
     "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker/master/packages/core/schema/stryker-core.schema.json",
-    "mutate": ["apps/web/stores/slices/**/*.ts", "!apps/web/stores/slices/**/*.test.ts"],
+    "mutate": [
+        "apps/web/stores/slices/**/*.ts",
+        "apps/web/stores/useIotStore.ts",
+        "!apps/web/stores/slices/**/*.test.ts",
+        "!apps/web/stores/**/*.test.ts"
+    ],
     "testRunner": "vitest",
     "checkers": ["typescript"],
     "tsconfigFile": "apps/web/tsconfig.json",

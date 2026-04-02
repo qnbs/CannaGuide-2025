@@ -1,0 +1,50 @@
+name: Mutation Testing
+
+on:
+    schedule:
+        # Weekly on Sunday 03:00 UTC
+        - cron: '0 3 * * 0'
+    workflow_dispatch:
+
+concurrency:
+    group: mutation-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: '20'
+    TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+    stryker:
+        name: Stryker Mutation Testing
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Run Stryker
+              working-directory: apps/web
+              run: npx stryker run ../../stryker.conf.json
+
+            - name: Upload mutation report
+              if: always()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: mutation-report-${{ github.run_id }}
+                  path: reports/mutation/
+                  retention-days: 30
+                  if-no-files-found: ignore

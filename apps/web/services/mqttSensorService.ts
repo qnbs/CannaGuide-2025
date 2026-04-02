@@ -2,20 +2,36 @@ import mqtt from 'mqtt'
 import type { SensorReading } from './webBluetoothSensorService'
 import { getT } from '@/i18n'
 import { sensorStore } from '@/stores/sensorStore'
+import {
+    singleValuePayloadSchema,
+    envPayloadSchema,
+    temperatureSchema,
+    humiditySchema,
+    phSchema,
+    INITIAL_TELEMETRY,
+    type MqttTelemetryMetrics,
+} from '@/types/iotSchemas'
 
 // ---------------------------------------------------------------------------
-// MQTT Sensor Service — connects to a local MQTT broker (e.g. Mosquitto)
+// MQTT Sensor Service -- connects to a local MQTT broker (e.g. Mosquitto)
 // via WebSocket and subscribes to ESP32 sensor topics.
 //
-// Default topic structure:
-//   cannaguide/sensors/<deviceId>/temperature  → { value: number }
-//   cannaguide/sensors/<deviceId>/humidity     → { value: number }
-//   cannaguide/sensors/<deviceId>/ph           → { value: number }
-//   cannaguide/sensors/<deviceId>/env          → { temperature, humidity, ph? }
+// Features:
+//   - Exponential backoff reconnect (1s -> 2s -> 4s ... 60s cap)
+//   - WSS-force: warns when using unencrypted ws:// with credentials
+//   - Zod-validated payloads (replaces inline validation)
+//   - Ping/pong keepalive (30s interval)
+//   - Telemetry metrics (latency, uptime, errors, reconnects)
+//
+// Topic structure:
+//   cannaguide/sensors/<deviceId>/temperature  -> { value: number }
+//   cannaguide/sensors/<deviceId>/humidity     -> { value: number }
+//   cannaguide/sensors/<deviceId>/ph           -> { value: number }
+//   cannaguide/sensors/<deviceId>/env          -> { temperature, humidity, ph? }
 // ---------------------------------------------------------------------------
 
 export interface MqttSensorConfig {
-    /** WebSocket URL of the MQTT broker, e.g. "ws://localhost:9001" */
+    /** WebSocket URL of the MQTT broker, e.g. "wss://localhost:9001" */
     brokerUrl: string
     /** Base topic prefix. Default: "cannaguide/sensors" */
     topicPrefix: string
@@ -32,26 +48,29 @@ export type MqttConnectionState = 'disconnected' | 'connecting' | 'connected' | 
 export type SensorUpdateCallback = (reading: SensorReading) => void
 export type ConnectionStateCallback = (state: MqttConnectionState) => void
 
+/** Callback for IoT toast/error events surfaced to the UI. */
+export type IoTEventCallback = (event: IoTEvent) => void
+
+export interface IoTEvent {
+    type: 'connection_lost' | 'connection_restored' | 'validation_error' | 'wss_warning'
+    message: string
+    timestamp: number
+}
+
 const DEFAULT_CONFIG: MqttSensorConfig = {
-    brokerUrl: 'ws://localhost:9001',
+    brokerUrl: 'wss://localhost:9001',
     topicPrefix: 'cannaguide/sensors',
     deviceId: 'esp32',
 }
 
-const RECONNECT_PERIOD_MS = 5000
-const CONNECT_TIMEOUT_MS = 10000
+// --- Reconnect with exponential backoff ---
+const INITIAL_RECONNECT_MS = 1000
+const MAX_RECONNECT_MS = 60_000
+const BACKOFF_MULTIPLIER = 2
+const CONNECT_TIMEOUT_MS = 10_000
+const KEEPALIVE_SECONDS = 30
 /** Maximum allowed MQTT payload size (64 KB) to prevent memory abuse. */
 const MAX_PAYLOAD_SIZE = 65_536
-/** Sensor value plausibility range. */
-const SENSOR_RANGE = { tempMin: -40, tempMax: 80, humMin: 0, humMax: 100, phMin: 0, phMax: 14 }
-
-/** Validate a numeric sensor value falls within a plausible range. */
-const clampSensorValue = (value: unknown, min: number, max: number): number | null => {
-    if (typeof value !== 'number' || !Number.isFinite(value)) return null
-    if (value < min || value > max) return null
-    return value
-}
-
 /** Only allow WebSocket URLs to prevent SSRF / protocol confusion. */
 const isValidBrokerUrl = (url: string): boolean => {
     try {
@@ -73,6 +92,7 @@ class MqttSensorService {
 
     private readonly sensorCallbacks: Set<SensorUpdateCallback> = new Set()
     private readonly stateCallbacks: Set<ConnectionStateCallback> = new Set()
+    private readonly eventCallbacks: Set<IoTEventCallback> = new Set()
 
     // Partial values accumulate until a full reading is assembled
     private partialTemp: number | null = null
@@ -80,6 +100,17 @@ class MqttSensorService {
     private partialPh: number | null = null
 
     private connectTimeoutHandle: ReturnType<typeof setTimeout> | null = null
+
+    // --- Exponential backoff state ---
+    private currentReconnectMs = INITIAL_RECONNECT_MS
+    private reconnectHandle: ReturnType<typeof setTimeout> | null = null
+    private intentionalDisconnect = false
+
+    // --- Telemetry ---
+    private telemetry: MqttTelemetryMetrics = { ...INITIAL_TELEMETRY }
+    private connectedSince: number | null = null
+    private latencySum = 0
+    private latencyCount = 0
 
     getConnectionState(): MqttConnectionState {
         return this.connectionState
@@ -89,9 +120,28 @@ class MqttSensorService {
         return this.lastReading
     }
 
+    getTelemetry(): MqttTelemetryMetrics {
+        return {
+            ...this.telemetry,
+            uptimeMs: this.connectedSince ? Date.now() - this.connectedSince : 0,
+            avgLatencyMs:
+                this.latencyCount > 0 ? Math.round(this.latencySum / this.latencyCount) : 0,
+        }
+    }
+
+    /** Check if broker URL uses unencrypted ws:// with credentials configured. */
+    isInsecureWithCredentials(): boolean {
+        try {
+            const parsed = new URL(this.config.brokerUrl)
+            return parsed.protocol === 'ws:' && (!!this.config.username || !!this.config.password)
+        } catch {
+            return false
+        }
+    }
+
     configure(config: Partial<MqttSensorConfig>): void {
         if (config.brokerUrl !== undefined && !isValidBrokerUrl(config.brokerUrl)) {
-            throw new Error('Invalid broker URL — must start with ws:// or wss://')
+            throw new Error('Invalid broker URL -- must start with ws:// or wss://')
         }
         this.config = { ...this.config, ...config }
     }
@@ -110,12 +160,31 @@ class MqttSensorService {
         }
     }
 
+    /** Subscribe to IoT events (connection loss, restore, validation errors, WSS warnings). */
+    onIoTEvent(callback: IoTEventCallback): () => void {
+        this.eventCallbacks.add(callback)
+        return () => {
+            this.eventCallbacks.delete(callback)
+        }
+    }
+
     connect(): void {
         if (this.client) {
             this.disconnect()
         }
 
+        this.intentionalDisconnect = false
+        this.currentReconnectMs = INITIAL_RECONNECT_MS
         this.setConnectionState('connecting')
+
+        // WSS warning
+        if (this.isInsecureWithCredentials()) {
+            this.emitEvent({
+                type: 'wss_warning',
+                message: 'Credentials sent over unencrypted ws:// -- use wss:// for security',
+                timestamp: Date.now(),
+            })
+        }
 
         const { brokerUrl, username, password } = this.config
 
@@ -127,14 +196,16 @@ class MqttSensorService {
                     this.client.end(true)
                     this.client = null
                 }
+                this.scheduleReconnect()
             }
         }, CONNECT_TIMEOUT_MS)
 
         this.client = mqtt.connect(brokerUrl, {
             ...(username != null ? { username } : {}),
             ...(password != null ? { password } : {}),
-            reconnectPeriod: RECONNECT_PERIOD_MS,
+            reconnectPeriod: 0, // We handle reconnect ourselves with backoff
             connectTimeout: CONNECT_TIMEOUT_MS,
+            keepalive: KEEPALIVE_SECONDS,
             protocolVersion: 5,
             clean: true,
             clientId: `cannaguide_${Date.now().toString(36)}`,
@@ -145,8 +216,20 @@ class MqttSensorService {
                 clearTimeout(this.connectTimeoutHandle)
                 this.connectTimeoutHandle = null
             }
+            // Reset backoff on successful connect
+            this.currentReconnectMs = INITIAL_RECONNECT_MS
+            this.connectedSince = Date.now()
             this.setConnectionState('connected')
             this.subscribeToTopics()
+
+            // Emit restore event if this was a reconnect
+            if (this.telemetry.reconnectAttempts > 0) {
+                this.emitEvent({
+                    type: 'connection_restored',
+                    message: 'MQTT connection restored',
+                    timestamp: Date.now(),
+                })
+            }
         })
 
         this.client.on('message', (_topic: string, payload: Buffer) => {
@@ -163,36 +246,71 @@ class MqttSensorService {
         })
 
         this.client.on('close', () => {
-            if (this.connectionState !== 'error') {
-                this.setConnectionState('disconnected')
+            if (this.connectionState === 'connected') {
+                this.emitEvent({
+                    type: 'connection_lost',
+                    message: 'MQTT connection lost',
+                    timestamp: Date.now(),
+                })
             }
-        })
-
-        this.client.on('reconnect', () => {
-            this.setConnectionState('connecting')
+            if (!this.intentionalDisconnect) {
+                this.setConnectionState('disconnected')
+                this.scheduleReconnect()
+            }
         })
     }
 
+    /** Schedule a reconnect with exponential backoff. */
+    private scheduleReconnect(): void {
+        if (this.intentionalDisconnect || this.reconnectHandle) return
+        this.telemetry.reconnectAttempts += 1
+        const delay = this.currentReconnectMs
+        console.debug(
+            `[MQTT] Reconnecting in ${delay}ms (attempt ${this.telemetry.reconnectAttempts})`,
+        )
+        this.reconnectHandle = setTimeout(() => {
+            this.reconnectHandle = null
+            if (!this.intentionalDisconnect) {
+                this.connect()
+            }
+        }, delay)
+        // Exponential backoff with cap
+        this.currentReconnectMs = Math.min(
+            this.currentReconnectMs * BACKOFF_MULTIPLIER,
+            MAX_RECONNECT_MS,
+        )
+    }
+
     disconnect(): void {
+        this.intentionalDisconnect = true
         if (this.connectTimeoutHandle) {
             clearTimeout(this.connectTimeoutHandle)
             this.connectTimeoutHandle = null
+        }
+        if (this.reconnectHandle) {
+            clearTimeout(this.reconnectHandle)
+            this.reconnectHandle = null
         }
         if (this.client) {
             this.client.end(true)
             this.client = null
         }
+        this.connectedSince = null
         this.setConnectionState('disconnected')
         this.partialTemp = null
         this.partialHumidity = null
         this.partialPh = null
     }
 
-    /** Fully dispose the service — clears all callbacks and disconnects. */
+    /** Fully dispose the service -- clears all callbacks and disconnects. */
     dispose(): void {
         this.disconnect()
         this.sensorCallbacks.clear()
         this.stateCallbacks.clear()
+        this.eventCallbacks.clear()
+        this.telemetry = { ...INITIAL_TELEMETRY }
+        this.latencySum = 0
+        this.latencyCount = 0
     }
 
     /** Publish a command to the sensor device (e.g. calibration trigger). */
@@ -238,49 +356,79 @@ class MqttSensorService {
         const data = this.parsePayload(payload)
         if (!data) return
 
+        this.telemetry.messagesReceived += 1
+        this.telemetry.lastMessageAt = Date.now()
+
         const suffix = topic.split('/').pop()
 
         switch (suffix) {
-            case 'temperature':
-                this.partialTemp = clampSensorValue(
-                    data.value,
-                    SENSOR_RANGE.tempMin,
-                    SENSOR_RANGE.tempMax,
-                )
+            case 'temperature': {
+                const parsed = singleValuePayloadSchema.safeParse(data)
+                if (!parsed.success) {
+                    this.trackValidationError('temperature payload invalid')
+                    return
+                }
+                this.partialTemp = temperatureSchema.safeParse(parsed.data.value).success
+                    ? parsed.data.value
+                    : null
                 break
-            case 'humidity':
-                this.partialHumidity = clampSensorValue(
-                    data.value,
-                    SENSOR_RANGE.humMin,
-                    SENSOR_RANGE.humMax,
-                )
+            }
+            case 'humidity': {
+                const parsed = singleValuePayloadSchema.safeParse(data)
+                if (!parsed.success) {
+                    this.trackValidationError('humidity payload invalid')
+                    return
+                }
+                this.partialHumidity = humiditySchema.safeParse(parsed.data.value).success
+                    ? parsed.data.value
+                    : null
                 break
-            case 'ph':
-                this.partialPh = clampSensorValue(
-                    data.value,
-                    SENSOR_RANGE.phMin,
-                    SENSOR_RANGE.phMax,
-                )
+            }
+            case 'ph': {
+                const parsed = singleValuePayloadSchema.safeParse(data)
+                if (!parsed.success) {
+                    this.trackValidationError('ph payload invalid')
+                    return
+                }
+                this.partialPh = phSchema.safeParse(parsed.data.value).success
+                    ? parsed.data.value
+                    : null
                 break
+            }
             case 'env': {
-                // Combined payload — validate & emit immediately
-                const temp = clampSensorValue(
-                    data.temperature,
-                    SENSOR_RANGE.tempMin,
-                    SENSOR_RANGE.tempMax,
-                )
-                const hum = clampSensorValue(
-                    data.humidity,
-                    SENSOR_RANGE.humMin,
-                    SENSOR_RANGE.humMax,
-                )
+                // Combined payload -- validate & emit immediately
+                const parsed = envPayloadSchema.safeParse(data)
+                if (!parsed.success) {
+                    this.trackValidationError('env payload invalid')
+                    return
+                }
+                const temp = temperatureSchema.safeParse(parsed.data.temperature).success
+                    ? parsed.data.temperature
+                    : null
+                const hum = humiditySchema.safeParse(parsed.data.humidity).success
+                    ? parsed.data.humidity
+                    : null
                 if (temp !== null && hum !== null) {
+                    const ph =
+                        parsed.data.ph !== undefined
+                            ? phSchema.safeParse(parsed.data.ph).success
+                                ? parsed.data.ph
+                                : null
+                            : null
                     this.emitReading({
                         temperatureC: temp,
                         humidityPercent: hum,
-                        ph: clampSensorValue(data.ph, SENSOR_RANGE.phMin, SENSOR_RANGE.phMax),
+                        ph,
                         receivedAt: Date.now(),
                     })
+                }
+                // Track latency if device sends a timestamp
+                if (
+                    'timestamp' in data &&
+                    typeof (data as Record<string, unknown>)['timestamp'] === 'number'
+                ) {
+                    const deviceTs = (data as Record<string, unknown>)['timestamp'] as number
+                    this.trackLatency(deviceTs)
                 }
                 return
             }
@@ -297,6 +445,23 @@ class MqttSensorService {
             this.partialTemp = null
             this.partialHumidity = null
             this.partialPh = null
+        }
+    }
+
+    private trackValidationError(detail: string): void {
+        this.telemetry.validationErrors += 1
+        this.emitEvent({
+            type: 'validation_error',
+            message: `Sensor payload validation failed: ${detail}`,
+            timestamp: Date.now(),
+        })
+    }
+
+    private trackLatency(deviceTimestamp: number): void {
+        const latency = Date.now() - deviceTimestamp
+        if (latency >= 0 && latency < 300_000) {
+            this.latencySum += latency
+            this.latencyCount += 1
         }
     }
 
@@ -354,6 +519,43 @@ class MqttSensorService {
             }
         }
     }
+
+    private emitEvent(event: IoTEvent): void {
+        for (const callback of this.eventCallbacks) {
+            try {
+                callback(event)
+            } catch (e) {
+                console.debug('[MQTT] Event callback error:', e)
+            }
+        }
+    }
 }
 
 export const mqttSensorService = new MqttSensorService()
+
+// ---------------------------------------------------------------------------
+// Bridge: IoT events -> sensorStore toast queue + telemetry sync
+// ---------------------------------------------------------------------------
+
+mqttSensorService.onIoTEvent((event) => {
+    sensorStore.getState().pushToastEvent({
+        type: event.type,
+        message: event.message,
+        timestamp: event.timestamp,
+    })
+})
+
+/** Sync telemetry metrics from MQTT service to sensorStore every 5s while connected. */
+let telemetrySyncInterval: ReturnType<typeof setInterval> | null = null
+mqttSensorService.onConnectionStateChange((state) => {
+    if (state === 'connected' && !telemetrySyncInterval) {
+        telemetrySyncInterval = setInterval(() => {
+            sensorStore.getState().setTelemetry(mqttSensorService.getTelemetry())
+        }, 5000)
+    } else if (state !== 'connected' && telemetrySyncInterval) {
+        clearInterval(telemetrySyncInterval)
+        telemetrySyncInterval = null
+        // Final sync
+        sensorStore.getState().setTelemetry(mqttSensorService.getTelemetry())
+    }
+})

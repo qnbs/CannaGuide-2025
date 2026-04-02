@@ -4,27 +4,17 @@ import { useIotStore } from '@/stores/useIotStore'
 import { addJournalEntry } from '@/stores/slices/simulationSlice'
 import { JournalEntryType } from '@/types'
 import type { AppStore } from '@/stores/store'
+import { mqttJournalPayloadSchema, type MqttJournalPayload } from '@/types/iotSchemas'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-interface SensorPayload {
-    temperature?: number | undefined
-    humidity?: number | undefined
-    ec?: number | undefined
-    ph?: number | undefined
-    lightPpfd?: number | undefined
-    waterVolumeMl?: number | undefined
-    plantId?: string | undefined
-    timestamp?: number | undefined
-}
+// (SensorPayload replaced by Zod schema: mqttJournalPayloadSchema)
 
 // ---------------------------------------------------------------------------
 // Validation helpers
 // ---------------------------------------------------------------------------
-
-const isFiniteNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
 
 const isValidBrokerUrl = (url: string): boolean => {
     try {
@@ -35,32 +25,21 @@ const isValidBrokerUrl = (url: string): boolean => {
     }
 }
 
-const sanitizePayload = (raw: unknown): SensorPayload | null => {
-    if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) return null
-    const obj = raw as Record<string, unknown>
-
-    // At least one sensor value must be present
-    const hasValue =
-        isFiniteNumber(obj['temperature']) ||
-        isFiniteNumber(obj['humidity']) ||
-        isFiniteNumber(obj['ec']) ||
-        isFiniteNumber(obj['ph']) ||
-        isFiniteNumber(obj['lightPpfd']) ||
-        isFiniteNumber(obj['waterVolumeMl'])
-
-    if (!hasValue) return null
-
-    return {
-        temperature: isFiniteNumber(obj['temperature']) ? obj['temperature'] : undefined,
-        humidity: isFiniteNumber(obj['humidity']) ? obj['humidity'] : undefined,
-        ec: isFiniteNumber(obj['ec']) ? obj['ec'] : undefined,
-        ph: isFiniteNumber(obj['ph']) ? obj['ph'] : undefined,
-        lightPpfd: isFiniteNumber(obj['lightPpfd']) ? obj['lightPpfd'] : undefined,
-        waterVolumeMl: isFiniteNumber(obj['waterVolumeMl']) ? obj['waterVolumeMl'] : undefined,
-        plantId: typeof obj['plantId'] === 'string' ? obj['plantId'] : undefined,
-        timestamp: isFiniteNumber(obj['timestamp']) ? obj['timestamp'] : undefined,
+/** Validate sensor payload via Zod schema (replaces inline sanitizePayload). */
+const validatePayload = (raw: unknown): MqttJournalPayload | null => {
+    const result = mqttJournalPayloadSchema.safeParse(raw)
+    if (!result.success) {
+        console.debug('[MQTT] Payload validation failed:', result.error.issues[0]?.message)
+        return null
     }
+    return result.data
 }
+
+// --- Reconnect with exponential backoff ---
+const INITIAL_RECONNECT_MS = 1000
+const MAX_RECONNECT_MS = 60_000
+const BACKOFF_MULTIPLIER = 2
+const KEEPALIVE_SECONDS = 30
 
 // ---------------------------------------------------------------------------
 // Singleton Service
@@ -71,6 +50,9 @@ class MqttClientService {
     private store: AppStore | null = null
     private unsubscribeStore: (() => void) | null = null
     private currentTopic: string | null = null
+    private currentReconnectMs = INITIAL_RECONNECT_MS
+    private reconnectHandle: ReturnType<typeof setTimeout> | null = null
+    private intentionalDisconnect = false
 
     /** Bootstrap the service. Call once after store creation. */
     init(store: AppStore): void {
@@ -107,6 +89,8 @@ class MqttClientService {
     private connect(): void {
         // Tear down any existing connection first
         this.disconnectClient()
+        this.intentionalDisconnect = false
+        this.currentReconnectMs = INITIAL_RECONNECT_MS
 
         const { brokerUrl, username, password, topicPrefix } = useIotStore.getState()
         if (!isValidBrokerUrl(brokerUrl)) {
@@ -114,11 +98,24 @@ class MqttClientService {
             return
         }
 
+        // WSS warning: credentials over unencrypted ws://
+        try {
+            const parsed = new URL(brokerUrl)
+            if (parsed.protocol === 'ws:' && (username || password)) {
+                console.debug(
+                    '[MQTT] WARNING: credentials sent over unencrypted ws:// -- use wss://',
+                )
+            }
+        } catch {
+            // URL validation already handled above
+        }
+
         useIotStore.getState().setConnectionStatus('connecting')
 
         const opts: IClientOptions = {
-            reconnectPeriod: 5000,
+            reconnectPeriod: 0, // We handle reconnect ourselves with exponential backoff
             connectTimeout: 10_000,
+            keepalive: KEEPALIVE_SECONDS,
         }
         if (username) opts.username = username
         if (password) opts.password = password
@@ -149,8 +146,9 @@ class MqttClientService {
 
         this.client.on('close', () => {
             // Only set disconnected if we still have a client (not during intentional teardown)
-            if (this.client) {
+            if (this.client && !this.intentionalDisconnect) {
                 useIotStore.getState().setConnectionStatus('disconnected')
+                this.scheduleReconnect()
             }
         })
 
@@ -159,7 +157,29 @@ class MqttClientService {
         })
     }
 
+    /** Schedule a reconnect with exponential backoff. */
+    private scheduleReconnect(): void {
+        if (this.intentionalDisconnect || this.reconnectHandle) return
+        const delay = this.currentReconnectMs
+        console.debug(`[MQTT-Client] Reconnecting in ${delay}ms`)
+        this.reconnectHandle = setTimeout(() => {
+            this.reconnectHandle = null
+            if (!this.intentionalDisconnect && useIotStore.getState().isEnabled) {
+                this.connect()
+            }
+        }, delay)
+        this.currentReconnectMs = Math.min(
+            this.currentReconnectMs * BACKOFF_MULTIPLIER,
+            MAX_RECONNECT_MS,
+        )
+    }
+
     private disconnect(): void {
+        this.intentionalDisconnect = true
+        if (this.reconnectHandle) {
+            clearTimeout(this.reconnectHandle)
+            this.reconnectHandle = null
+        }
         this.disconnectClient()
         useIotStore.getState().setConnectionStatus('disconnected')
     }
@@ -190,7 +210,7 @@ class MqttClientService {
             return
         }
 
-        const payload = sanitizePayload(raw)
+        const payload = validatePayload(raw)
         if (!payload) return
 
         // Determine target plant -- fall back to first active plant
@@ -227,6 +247,11 @@ class MqttClientService {
     // -----------------------------------------------------------------------
 
     dispose(): void {
+        this.intentionalDisconnect = true
+        if (this.reconnectHandle) {
+            clearTimeout(this.reconnectHandle)
+            this.reconnectHandle = null
+        }
         this.disconnectClient()
         this.unsubscribeStore?.()
         this.unsubscribeStore = null

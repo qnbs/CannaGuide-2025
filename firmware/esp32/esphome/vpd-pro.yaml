@@ -1,0 +1,178 @@
+# CannaGuide ESP32 VPD Pro -- ESPHome Template with MLX90614 Leaf Temp
+#
+# Hardware: ESP32-S3 + BME680 + MLX90614 IR + Capacitive Soil + BH1750
+# Features: Real leaf temperature VPD, air quality (VOC), light PAR
+#
+# The MLX90614 IR sensor measures actual leaf surface temperature for
+# precise VPD calculation instead of the +3C static offset.
+#
+# Usage:
+#   1. Install ESPHome: pip install esphome
+#   2. Copy secrets.yaml.example -> secrets.yaml, fill in values
+#   3. Flash: esphome run vpd-pro.yaml
+
+esphome:
+    name: cannaguide-vpd-pro
+    friendly_name: CannaGuide VPD Pro
+    platform: ESP32
+    board: esp32-s3-devkitc-1
+
+wifi:
+    ssid: !secret wifi_ssid
+    password: !secret wifi_password
+    ap:
+        ssid: 'cannaguide-vpd-fallback'
+
+mqtt:
+    broker: !secret mqtt_broker
+    username: !secret mqtt_user
+    password: !secret mqtt_pass
+    client_id: cannaguide-vpd-pro
+    birth_message:
+        topic: 'cannaguide/status/cannaguide-vpd-pro'
+        payload: 'online'
+        qos: 1
+        retain: true
+    will_message:
+        topic: 'cannaguide/status/cannaguide-vpd-pro'
+        payload: 'offline'
+        qos: 1
+        retain: true
+    keepalive: 60s
+
+time:
+    - platform: sntp
+      id: sntp_time
+      timezone: Europe/Berlin
+
+# --- I2C Bus (BME680 + MLX90614 + BH1750) ---
+
+i2c:
+    sda: GPIO21
+    scl: GPIO22
+    scan: true
+
+sensor:
+    # BME680: Temperature + Humidity + Pressure + Gas (VOC)
+    - platform: bme680
+      temperature:
+          id: air_temp
+          name: 'Air Temperature'
+          unit_of_measurement: 'C'
+          accuracy_decimals: 1
+      humidity:
+          id: air_humidity
+          name: 'Air Humidity'
+          unit_of_measurement: '%'
+          accuracy_decimals: 0
+      pressure:
+          id: air_pressure
+          name: 'Air Pressure'
+          unit_of_measurement: 'hPa'
+      gas_resistance:
+          id: gas_resistance
+          name: 'Gas Resistance'
+          unit_of_measurement: 'Ohm'
+      address: 0x76
+      update_interval: 10s
+
+    # MLX90614 IR: Leaf surface temperature (contactless)
+    # Mount 5-15cm from the largest fan leaf, pointing at the upper surface.
+    - platform: mlx90614
+      ambient:
+          id: mlx_ambient
+          name: 'MLX Ambient Temperature'
+      object:
+          id: leaf_temp
+          name: 'Leaf Temperature'
+          unit_of_measurement: 'C'
+          accuracy_decimals: 1
+      address: 0x5A
+      update_interval: 10s
+
+    # BH1750: Light intensity (lux -> approximate PPFD)
+    - platform: bh1750
+      id: light_lux
+      name: 'Light Intensity'
+      unit_of_measurement: 'lx'
+      address: 0x23
+      update_interval: 30s
+
+    # Approximate PPFD from lux (factor varies by light type)
+    # LED grow lights: ~0.015 umol/J per lux (rough approximation)
+    - platform: template
+      id: ppfd_approx
+      name: 'PPFD (approx)'
+      unit_of_measurement: 'umol/m2/s'
+      accuracy_decimals: 0
+      update_interval: 30s
+      lambda: |-
+          float lux = id(light_lux).state;
+          if (isnan(lux)) return NAN;
+          return lux * 0.015f;
+
+    # VPD with REAL leaf temperature from MLX90614
+    - platform: template
+      id: vpd_sensor
+      name: 'VPD (Leaf-Temp)'
+      unit_of_measurement: 'kPa'
+      accuracy_decimals: 2
+      update_interval: 10s
+      lambda: |-
+          float t = id(air_temp).state;
+          float rh = id(air_humidity).state;
+          float lt = id(leaf_temp).state;
+          if (isnan(t) || isnan(rh) || isnan(lt)) return NAN;
+          float svp_air = 0.61078f * expf(17.2694f * t / (t + 238.3f));
+          float svp_leaf = 0.61078f * expf(17.2694f * lt / (lt + 238.3f));
+          float vpd = svp_leaf - (svp_air * (rh / 100.0f));
+          return (vpd < 0.0f) ? 0.0f : vpd;
+
+    # Capacitive soil moisture
+    - platform: adc
+      id: soil_moisture
+      name: 'Soil Moisture'
+      pin: GPIO34
+      unit_of_measurement: '%'
+      accuracy_decimals: 0
+      update_interval: 30s
+      filters:
+          - calibrate_linear:
+                - 2.8 -> 0
+                - 1.2 -> 100
+
+    # Battery voltage
+    - platform: adc
+      id: battery_sensor
+      name: 'Battery Voltage'
+      pin: GPIO35
+      unit_of_measurement: 'V'
+      accuracy_decimals: 2
+      update_interval: 60s
+
+# --- Telemetry (every 10s) ---
+
+interval:
+    - interval: 10s
+      then:
+          - mqtt.publish_json:
+                topic: 'cannaguide/sensors/cannaguide-vpd-pro/env'
+                qos: 1
+                retain: false
+                payload: |-
+                    root["temperature"] = id(air_temp).state;
+                    root["humidity"] = id(air_humidity).state;
+                    root["leafTemp"] = id(leaf_temp).state;
+                    root["vpd"] = id(vpd_sensor).state;
+                    root["soilMoisture"] = id(soil_moisture).state;
+                    root["lightPpfd"] = id(ppfd_approx).state;
+                    root["battery"] = id(battery_sensor).state;
+                    root["gasResistance"] = id(gas_resistance).state;
+                    root["timestamp"] = id(sntp_time).now().timestamp;
+
+ota:
+    - platform: esphome
+      password: !secret ota_password
+
+logger:
+    level: WARN

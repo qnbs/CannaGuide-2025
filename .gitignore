@@ -28,3 +28,6 @@ benchmark-metrics.json
 *.sw?
 test-results/
 .turbo/
+
+# ESPHome secrets (user-specific, never commit)
+firmware/**/secrets.yaml

@@ -13,7 +13,7 @@ Last updated: 2026-04-02
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
 | High     | 10    | 5    | 5    |
-| Medium   | 10    | 2    | 8    |
+| Medium   | 10    | 3    | 7    |
 | Low      | 4     | 0    | 4    |
 
 ---
@@ -126,11 +126,13 @@ Last updated: 2026-04-02
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Deferred**      |
 
-**Finding:** While `unsafe-inline` is removed from script-src for Tauri, the PWA deployment on GitHub Pages still allows inline scripts via the meta tag CSP.
+**Finding:** `strict-dynamic` was implemented in commit `4ae8f37` but blocked all script loading in the static Vite PWA (no nonce plugin). Reverted in `e2d5165` to `'self' 'unsafe-inline' 'wasm-unsafe-eval'` across all 5 CSP sources.
 
-**Action:** Implement CSP nonce generation for any remaining inline scripts. Evaluate `strict-dynamic` for script loading.
+**Action:** Implement `vite-plugin-csp-nonce` (or equivalent) to enable `strict-dynamic` with build-time nonce injection. Until then, the current policy is the practical choice for static PWA builds.
+
+**Resolution (partial):** CSP is consistent across all 5 delivery paths (securityHeaders.ts, index.html, netlify.toml, nginx.conf, tauri.conf.json). `check-csp-consistency.mjs` validates in CI.
 
 ---
 

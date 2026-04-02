@@ -222,7 +222,7 @@ Defense-in-depth across multiple layers:
 | **Input Sanitization**      | DOMPurify v3 on all `dangerouslySetInnerHTML`, ALLOWED_TAGS/ATTR config                         |
 | **Prompt Injection**        | 30+ regex patterns in `sanitizeForPrompt` blocking SQL, XSS, command, path traversal, jailbreak |
 | **API Key Encryption**      | AES-256-GCM via Web Crypto API with random 96-bit IV (`cryptoService.ts`)                       |
-| **Content Security Policy** | Hardened CSP across 4 delivery paths (Vite, index.html, Netlify, Tauri)                         |
+| **Content Security Policy** | Hardened CSP across 5 delivery paths (`'self' 'unsafe-inline' 'wasm-unsafe-eval'`, no `eval`)   |
 | **EXIF Stripping**          | Canvas re-encode removes GPS/metadata before AI transmission                                    |
 | **Access Gates**            | Age verification (KCanG §1), optional PIN lock, DSGVO consent                                   |
 | **SAST**                    | CodeQL (security-and-quality), Grype vulnerability scan, trojan-source scanner                  |
@@ -652,7 +652,7 @@ Defense-in-Depth über mehrere Schichten:
 | **Eingabe-Sanitisierung**   | DOMPurify v3 auf allen `dangerouslySetInnerHTML`, ALLOWED_TAGS/ATTR-Konfig                     |
 | **Prompt-Injection**        | 30+ Regex-Patterns in `sanitizeForPrompt` blocken SQL, XSS, Command, Pfad-Traversal, Jailbreak |
 | **API-Key-Verschlüsselung** | AES-256-GCM via Web Crypto API mit zufälligem 96-Bit IV (`cryptoService.ts`)                   |
-| **Content Security Policy** | Gehärtete CSP über 4 Delivery-Pfade (Vite, index.html, Netlify, Tauri)                         |
+| **Content Security Policy** | Gehärtete CSP über 5 Delivery-Pfade (`'self' 'unsafe-inline' 'wasm-unsafe-eval'`, kein `eval`) |
 | **EXIF-Stripping**          | Canvas-Re-Encode entfernt GPS/Metadaten vor KI-Übertragung                                     |
 | **Zugangs-Gates**           | Altersverifikation (KCanG §1), optionale PIN-Sperre, DSGVO-Einwilligung                        |
 | **SAST**                    | CodeQL (Security-and-Quality), Grype-Vulnerability-Scan, Trojan-Source-Scanner                 |

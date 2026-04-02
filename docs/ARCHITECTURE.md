@@ -221,7 +221,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 | API Key Storage  | AES-256-GCM encryption at rest (cryptoService.ts)                    |
 | Image Privacy    | EXIF/GPS stripping before AI transmission                            |
 | Prompt Injection | 30+ regex patterns block injection attempts                          |
-| CSP              | Hardened across 4 delivery paths                                     |
+| CSP              | Hardened across 5 paths (`'self' 'unsafe-inline' 'wasm-unsafe-eval') |
 | Local-Only Mode  | All outbound services check `isLocalOnlyMode()`                      |
 | Randomness       | `secureRandom()` via Web Crypto (no Math.random)                     |
 | GDPR             | Full data export (Art. 20) + erasure (Art. 17) via privacyService.ts |

@@ -133,7 +133,7 @@ jobs:
               shell: bash
 
             - name: Install Tauri CLI
-              run: npm install --no-save @tauri-apps/cli@2.10.1
+              run: npm install --no-save @tauri-apps/cli@2.10.1 --ignore-scripts
 
             - name: Build Tauri app
               uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5

@@ -35,18 +35,20 @@ const formatStrain = (strain) => {
     const lines = []
     lines.push('    createStrainObject({')
 
+    /** Escape a string for embedding in a single-quoted JS literal. */
+    const escapeStr = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+
     const addField = (key, value) => {
         if (value === undefined || value === null) return
 
         if (typeof value === 'string') {
-            // Escape single quotes in value
-            const escaped = value.replace(/'/g, "\\'")
+            const escaped = escapeStr(value)
             lines.push(`        ${key}: '${escaped}',`)
         } else if (typeof value === 'number') {
             lines.push(`        ${key}: ${value},`)
         } else if (Array.isArray(value)) {
             const items = value.map((v) => {
-                const escaped = String(v).replace(/'/g, "\\'")
+                const escaped = escapeStr(v)
                 return `'${escaped}'`
             })
             if (items.join(', ').length < 80) {
@@ -109,11 +111,13 @@ const formatObject = (obj, indent) => {
     // Check if all values are simple (strings/numbers) for inline format
     const allSimple = entries.every(([, v]) => typeof v === 'string' || typeof v === 'number')
 
+    /** Escape a string for embedding in a single-quoted JS literal. */
+    const esc = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+
     if (allSimple && entries.length <= 3) {
         const parts = entries.map(([k, v]) => {
             if (typeof v === 'string') {
-                const escaped = v.replace(/'/g, "\\'")
-                return `${k}: '${escaped}'`
+                return `${k}: '${esc(v)}'`
             }
             return `${k}: ${v}`
         })
@@ -123,8 +127,7 @@ const formatObject = (obj, indent) => {
     const lines = ['{']
     for (const [key, value] of entries) {
         if (typeof value === 'string') {
-            const escaped = value.replace(/'/g, "\\'")
-            lines.push(`${innerPad}${key}: '${escaped}',`)
+            lines.push(`${innerPad}${key}: '${esc(value)}',`)
         } else if (typeof value === 'number') {
             lines.push(`${innerPad}${key}: ${value},`)
         } else if (typeof value === 'object' && value !== null) {

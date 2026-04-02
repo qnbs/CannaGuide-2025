@@ -6,6 +6,7 @@ import {
     rankStrainsByRelevance,
     resolveDiscoveredToStrain,
 } from '@/services/dailyStrainsService'
+import { StrainLookupSection } from './StrainLookupSection'
 import type {
     DiscoveredStrain,
     DailyStrainsFeed,
@@ -295,6 +296,9 @@ export const DailyStrains: React.FC = () => {
 
     return (
         <div className="space-y-6">
+            {/* Strain Intelligence Lookup -- prominently at the top */}
+            <StrainLookupSection />
+
             {/* Header -- 4:20 Daily Drop branding */}
             <div className="text-center">
                 <h2 className="text-2xl font-bold text-slate-100">

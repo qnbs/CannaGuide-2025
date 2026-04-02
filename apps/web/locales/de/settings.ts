@@ -22,6 +22,8 @@ export const settingsView = {
         title: 'KI-Sicherheit (Multi-Model BYOK)',
         warning:
             'Dein API-Key wird nur auf diesem Gerät in IndexedDB gespeichert. Teile den Key niemals und entferne ihn auf gemeinsam genutzten Geräten.',
+        geminiFreeNote:
+            'Tipp: Der Gemini API-Key von Google AI Studio ist kostenlos mit einem Google-Konto erh\u00e4ltlich unter aistudio.google.com.',
         provider: 'KI-Anbieter',
         providerDesc: 'Wähle den KI-Modellanbieter. Jeder Anbieter benötigt einen eigenen API-Key.',
         apiKey: 'API-Key',

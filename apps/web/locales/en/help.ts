@@ -6,18 +6,21 @@ export const helpView = {
         guides: 'Visual Guides',
         lexicon: 'Lexicon',
         manual: 'User Manual',
+        screenshots: 'Screenshots',
         faqDescription: 'Quick answers to the most common questions about the app and growing.',
         guidesDescription:
             'Step-by-step visual walkthroughs for training techniques and app workflows.',
         lexiconDescription:
             'A comprehensive glossary of cannabinoids, terpenes, flavonoids, and grow terms.',
         manualDescription: 'The complete user manual covering every feature of the app in detail.',
+        screenshotsDescription: 'Screenshots of every app screen in desktop and mobile viewports.',
     },
     itemCount: '{{count}} items',
     termCount: '{{count}} terms',
     sectionCount: '{{count}} sections',
     subSectionCount: '{{count}} sub-sections',
     guideCount: '{{count}} guides',
+    screenshotCount: '{{count}} screenshots',
     faq: {
         title: 'Frequently Asked Questions',
         subtitle: 'Split into app operations, AI/offline support, and cultivation topics.',
@@ -322,6 +325,27 @@ export const helpView = {
             },
         },
     },
+    screenshots: {
+        title: 'Screenshots',
+        subtitle: 'Browse all app screens in desktop and mobile viewports.',
+        allCategories: 'All',
+        noResults: 'No screenshots found.',
+        lightboxLabel: 'Screenshot preview',
+        resultCount: '{{count}} of {{total}} screenshots',
+        categories: {
+            plants: 'Plants',
+            strains: 'Strains',
+            equipment: 'Equipment',
+            knowledge: 'Knowledge',
+            settings: 'Settings',
+            help: 'Help',
+        },
+        viewport: {
+            all: 'All',
+            desktop: 'Desktop',
+            mobile: 'Mobile',
+        },
+    },
     manual: {
         title: 'User Manual',
         toc: 'Jump to Section',
@@ -480,6 +504,61 @@ export const helpView = {
                 title: 'Grow Tech 2026',
                 content:
                     'Explore the latest cannabis cultivation technologies for 2026 -- from dynamic LED spectra and AI-powered controllers to digital twins, aeroponics, tissue culture, and smart grow boxes. Each technology section includes key benefits, practical tips, and integration points with CannaGuide features already available in the app.',
+            },
+        },
+        settings: {
+            title: 'Settings',
+            content:
+                'Customize every aspect of the app to your needs. Settings are organized into 11 tabs.',
+            general: {
+                title: 'General & UI',
+                content:
+                    'Choose from 9 cannabis themes, change language (EN/DE/ES/FR/NL), set units (metric/imperial), enable dyslexia-friendly font, reduced motion, or color vision filters. Also find the local AI model preload toggle and Force-WASM switch here.',
+            },
+            ai: {
+                title: 'AI Configuration',
+                content:
+                    'Manage API keys for up to four cloud AI providers: Google Gemini, OpenAI, Anthropic, and xAI/Grok. Select AI mode (Cloud/Local/Hybrid/Eco). All keys are encrypted at rest with AES-256-GCM. <strong>Tip: The Gemini API key from Google AI Studio is free with a Google account.</strong>',
+            },
+            tts: {
+                title: 'Text-to-Speech (TTS)',
+                content:
+                    'Enable text-to-speech, choose the voice and speaking rate. Have AI advice, guides, and strain descriptions read aloud.',
+            },
+            strains: {
+                title: 'Strain Settings',
+                content:
+                    'Configure the strain data source and enable or disable automatic strain catalog updates.',
+            },
+            plants: {
+                title: 'Plants & Simulation',
+                content:
+                    'Set the maximum number of plant slots (up to 6), choose between beginner and expert simulation profiles, and configure default light cycle and pot size.',
+            },
+            notifications: {
+                title: 'Notifications',
+                content:
+                    'Enable proactive Smart Coach notifications that alert you when environment values (temperature, humidity, VPD, pH, EC) exceed critical thresholds.',
+            },
+            privacy: {
+                title: 'Privacy & Security',
+                content:
+                    'Protect the app with a PIN lock, manage data export/import, and configure one-tap cloud sync via GitHub Gist. Wipe all app data if needed.',
+            },
+            iot: {
+                title: 'IoT Settings',
+                content:
+                    'Configure connection to ESP32 sensors for real-time environment monitoring (temperature, humidity, CO2, soil moisture). Manage device addresses and polling intervals.',
+            },
+            dataManagement: {
+                title: 'Data Management',
+                content:
+                    'Export and import your entire app state as JSON. Use GitHub Gist sync for cross-device backups. Clear IndexedDB caches and reset the app if needed.',
+            },
+            about: {
+                title: 'About',
+                content:
+                    'Shows the current app version, build information, open-source licenses used, and links to source code and documentation.',
             },
         },
     },

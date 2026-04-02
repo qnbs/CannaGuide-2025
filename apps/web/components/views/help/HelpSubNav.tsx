@@ -10,7 +10,7 @@ interface HelpSubNavProps {
     onTabChange: (tab: string) => void
 }
 
-const TAB_IDS = ['manual', 'lexicon', 'guides', 'faq'] as const
+const TAB_IDS = ['manual', 'lexicon', 'guides', 'faq', 'screenshots'] as const
 
 export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }) => {
     const { t } = useTranslation()
@@ -40,6 +40,12 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
             label: t('helpView.tabs.faq'),
             icon: <PhosphorIcons.Question />,
             count: faqData.length,
+        },
+        {
+            id: 'screenshots',
+            label: t('helpView.tabs.screenshots'),
+            icon: <PhosphorIcons.Camera />,
+            count: 60,
         },
     ]
 
@@ -74,7 +80,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
     return (
         <nav
             ref={navRef}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3"
             aria-label={t('common.accessibility.helpNavigation')}
         >
             {navItems.map((item) => {

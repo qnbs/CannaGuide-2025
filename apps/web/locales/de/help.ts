@@ -6,6 +6,7 @@ export const helpView = {
         guides: 'Visuelle Anleitungen',
         lexicon: 'Lexikon',
         manual: 'Bedienungsanleitung',
+        screenshots: 'Bildschirmfotos',
         faqDescription: 'Schnelle Antworten auf die häufigsten Fragen zur App und zum Anbau.',
         guidesDescription:
             'Schritt-für-Schritt visuelle Anleitungen für Trainingstechniken und App-Abläufe.',
@@ -13,12 +14,14 @@ export const helpView = {
             'Ein umfassendes Glossar zu Cannabinoiden, Terpenen, Flavonoiden und Anbaubegriffen.',
         manualDescription:
             'Das vollständige Benutzerhandbuch mit allen Funktionen der App im Detail.',
+        screenshotsDescription: 'Bildschirmfotos aller App-Bereiche in Desktop- und Mobilansicht.',
     },
     itemCount: '{{count}} Einträge',
     termCount: '{{count}} Begriffe',
     sectionCount: '{{count}} Abschnitte',
     subSectionCount: '{{count}} Unterabschnitte',
     guideCount: '{{count}} Anleitungen',
+    screenshotCount: '{{count}} Bildschirmfotos',
     faq: {
         title: 'Häufig gestellte Fragen',
         subtitle: 'Getrennt nach App-Bedienung, KI/Offline-Hilfe und Anbauthemen gegliedert.',
@@ -325,6 +328,27 @@ export const helpView = {
             },
         },
     },
+    screenshots: {
+        title: 'Bildschirmfotos',
+        subtitle: 'Alle Bereiche der App als Desktop- und Mobilansicht im Ueberblick.',
+        allCategories: 'Alle',
+        noResults: 'Keine Bildschirmfotos gefunden.',
+        lightboxLabel: 'Bildschirmfoto-Vorschau',
+        resultCount: '{{count}} von {{total}} Bildschirmfotos',
+        categories: {
+            plants: 'Pflanzen',
+            strains: 'Sorten',
+            equipment: 'Ausstattung',
+            knowledge: 'Wissen',
+            settings: 'Einstellungen',
+            help: 'Hilfe',
+        },
+        viewport: {
+            all: 'Alle',
+            desktop: 'Desktop',
+            mobile: 'Mobil',
+        },
+    },
     manual: {
         title: 'Benutzerhandbuch',
         toc: 'Zum Abschnitt springen',
@@ -482,6 +506,61 @@ export const helpView = {
                 title: 'Grow Tech 2026',
                 content:
                     'Entdecken Sie die neuesten Cannabis-Anbau-Technologien fuer 2026 -- von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins, Aeroponik, Gewebekultur und smarten Grow-Boxen. Jeder Technologiebereich enthaelt Hauptvorteile, praktische Tipps und Integrationspunkte mit bereits in der App verfuegbaren CannaGuide-Funktionen.',
+            },
+        },
+        settings: {
+            title: 'Einstellungen',
+            content:
+                'Passen Sie jeden Aspekt der App an Ihre Beduerfnisse an. Die Einstellungen sind in 11 Tabs organisiert.',
+            general: {
+                title: 'Allgemein & UI',
+                content:
+                    'Waehlen Sie aus 9 Cannabis-Themes, aendern Sie die Sprache (DE/EN/ES/FR/NL), setzen Sie Masseinheiten (metrisch/imperial), aktivieren Sie die legasthenikerfreundliche Schriftart, reduzierte Bewegungen oder Farbfehlsichtigkeitsfilter. Hier finden Sie auch den Schalter zum Vorladen lokaler KI-Modelle und den Force-WASM-Schalter.',
+            },
+            ai: {
+                title: 'KI-Konfiguration',
+                content:
+                    'Verwalten Sie Ihre API-Schluessel fuer bis zu vier Cloud-KI-Anbieter: Google Gemini, OpenAI, Anthropic und xAI/Grok. Waehlen Sie den KI-Modus (Cloud/Lokal/Hybrid/Eco). Alle Schluessel werden mit AES-256-GCM verschluesselt gespeichert. <strong>Tipp: Der Gemini API-Schluessel von Google AI Studio ist kostenlos mit einem Google-Konto.</strong>',
+            },
+            tts: {
+                title: 'Sprachausgabe (TTS)',
+                content:
+                    'Aktivieren Sie Text-zu-Sprache, waehlen Sie die Stimme und Sprechgeschwindigkeit. Lassen Sie sich KI-Ratschlaege, Anleitungen und Sortenbeschreibungen vorlesen.',
+            },
+            strains: {
+                title: 'Sorten-Einstellungen',
+                content:
+                    'Konfigurieren Sie die Sorten-Datenquelle und aktivieren oder deaktivieren Sie die automatische Aktualisierung des Sortenkatalogs.',
+            },
+            plants: {
+                title: 'Pflanzen & Simulation',
+                content:
+                    'Stellen Sie die maximale Anzahl Pflanzenslots ein (bis zu 6), waehlen Sie zwischen Anfaenger- und Expertenprofil fuer die Simulation, und konfigurieren Sie Standard-Lichtzyklus und Topfgroesse.',
+            },
+            notifications: {
+                title: 'Benachrichtigungen',
+                content:
+                    'Aktivieren Sie proaktive Smart-Coach-Benachrichtigungen, die Sie warnen, wenn Umgebungswerte (Temperatur, Luftfeuchtigkeit, VPD, pH, EC) kritische Schwellwerte ueberschreiten.',
+            },
+            privacy: {
+                title: 'Datenschutz & Sicherheit',
+                content:
+                    'Schuetzen Sie die App mit einer PIN-Sperre, verwalten Sie den Datenexport/-import und konfigurieren Sie die Ein-Tipp Cloud-Synchronisation via GitHub Gist. Loeschen Sie bei Bedarf alle App-Daten.',
+            },
+            iot: {
+                title: 'IoT-Einstellungen',
+                content:
+                    'Konfigurieren Sie die Verbindung zu ESP32-Sensoren fuer Echtzeit-Umgebungsueberwachung (Temperatur, Luftfeuchtigkeit, CO2, Bodenfeuchte). Verwalten Sie Geraeteadressen und Polling-Intervalle.',
+            },
+            dataManagement: {
+                title: 'Datenverwaltung',
+                content:
+                    'Exportieren und importieren Sie Ihren gesamten App-Zustand als JSON. Nutzen Sie die GitHub-Gist-Synchronisation fuer geraetuebergreifende Backups. Loeschen Sie IndexedDB-Caches und setzen Sie die App bei Bedarf zurueck.',
+            },
+            about: {
+                title: 'Info / About',
+                content:
+                    'Zeigt die aktuelle App-Version, Build-Informationen, verwendete Open-Source-Lizenzen und Links zum Quellcode und zur Dokumentation.',
             },
         },
     },

@@ -670,15 +670,15 @@ export const settingsView = {
         projectInfo: 'Projekt-Infos & README',
         version: 'Version',
         whatsNew: {
-            title: 'Was ist neu in v1.1',
+            title: 'Was ist neu in v1.2',
             items: {
                 simulation:
-                    'Mobil sichere UI-Struktur: Schnellere Ansichten, robustere Offline-Stabilität und sauberere Abstände über der unteren Navigation.',
+                    'IoT-Echtzeit-Dashboard mit Sparkline-Diagrammen, Gauge-Karten und Telemetrie-Panel fuer Live-Sensor-Monitoring.',
                 strains:
-                    'Abgesicherte Sortenbibliothek: Alte oder unvollständige Sortenfelder fallen jetzt sicher zurück, statt die Seite abstürzen zu lassen.',
-                help: 'Neu gegliederte Hilfe: FAQ und visuelle Anleitungen sind nach App- und Anbauthemen getrennt, damit du schneller findest, was du brauchst.',
+                    'Taegliche Sorten jetzt mit personalisiertem Empfehlungs-Scoring und Match-Prozent-Badges basierend auf deiner Bibliothek.',
+                help: '3D-GrowRoom-Visualisierung mit interaktiven OrbitControls, Auto-Orbit-Kamera und Live-IoT-Sensor-Badge-Overlay.',
                 settings:
-                    'Über-App- und README-Aktualisierung: Aktualisierte Release-Infos, aktueller Funktionsumfang und klarere Projektdokumentation.',
+                    'E2E-Test-Optimierung: Hard-Waits durch Sichtbarkeits-Assertions ersetzt fuer schnellere, zuverlaessigere Testausfuehrung.',
             },
         },
         techStack: {
@@ -830,7 +830,7 @@ export const settingsView = {
             <ol>
                 <li><strong>Prototyping</strong>: App-Grundgerüst und initiales Feature-Set mit <strong>Google Gemini 2.5 Pro & 3.1 Pro</strong> in <strong>Google AI Studio</strong> erstellt, dann nach GitHub exportiert.</li>
                 <li><strong>Evaluation & Beratung</strong>: Kontinuierliche Architektur-Review, Sicherheitsberatung und Qualitätsführung durch <strong>xAI Grok 4.20</strong> über den gesamten Prozess.</li>
-                <li><strong>Kernentwicklung</strong>: Primäre Iteration in <strong>GitHub Codespaces</strong> mit <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — der Großteil der Feature-Verfeinerung, Security-Hardening, 643+ Tests, CI/CD und lokaler KI-Stack.</li>
+                <li><strong>Kernentwicklung</strong>: Primäre Iteration in <strong>GitHub Codespaces</strong> mit <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — der Großteil der Feature-Verfeinerung, Security-Hardening, 1000 Tests, CI/CD und lokaler KI-Stack.</li>
                 <li><strong>Deployment</strong>: Produktion via GitHub Pages, Netlify, Docker, Tauri v2 und Capacitor.</li>
             </ol>
             <p><em>Minimale Beiträge von GPT-4 Mini und GPT-5.3 Codex.</em></p>

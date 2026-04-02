@@ -655,15 +655,15 @@ export const settingsView = {
         projectInfo: 'Project Info & README',
         version: 'Version',
         whatsNew: {
-            title: "What's New in v1.1",
+            title: "What's New in v1.2",
             items: {
                 simulation:
-                    'Mobile-safe simulation shell: Faster view transitions, stronger offline resilience, and cleaner bottom spacing across the app.',
+                    'IoT real-time dashboard with sparkline charts, gauge cards, and telemetry panel for live sensor monitoring.',
                 strains:
-                    'Strain library hardening: Missing legacy strain fields now fall back safely instead of crashing the page.',
-                help: 'Help center structure: FAQ and visual guides are separated into app and grow topics for faster navigation.',
+                    'Daily Strains now feature personalized recommendation scoring with match percentage badges based on your library preferences.',
+                help: '3D GrowRoom visualization with interactive OrbitControls, auto-orbit camera, and live IoT sensor badge overlay.',
                 settings:
-                    'About & README refresh: Updated release info, current app scope, and clearer project documentation.',
+                    'E2E test optimization: replaced hard waits with proper visibility assertions for faster, more reliable test execution.',
             },
         },
         techStack: {
@@ -815,7 +815,7 @@ export const settingsView = {
             <ol>
                 <li><strong>Prototyping</strong>: Initial app scaffolding and feature set built with <strong>Google Gemini 2.5 Pro & 3.1 Pro</strong> in <strong>Google AI Studio</strong>, then exported to GitHub.</li>
                 <li><strong>Evaluation & Advisory</strong>: Continuous architecture review, security consulting, and quality guidance by <strong>xAI Grok 4.20</strong> throughout the entire process.</li>
-                <li><strong>Core Development</strong>: Primary iteration in <strong>GitHub Codespaces</strong> with <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — the majority of feature refinement, security hardening, 643+ tests, CI/CD, and the local AI stack.</li>
+                <li><strong>Core Development</strong>: Primary iteration in <strong>GitHub Codespaces</strong> with <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — the majority of feature refinement, security hardening, 1000 tests, CI/CD, and the local AI stack.</li>
                 <li><strong>Deployment</strong>: Production via GitHub Pages, Netlify, Docker, Tauri v2, and Capacitor.</li>
             </ol>
             <p><em>Minor contributions by GPT-4 Mini and GPT-5.3 Codex.</em></p>

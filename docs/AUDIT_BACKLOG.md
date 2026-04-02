@@ -3,7 +3,7 @@
 > Living document tracking all findings from the Deep Audit (2026-Q2).
 > Status: **Open** | **In Progress** | **Done** | **Won't Fix**
 
-Last updated: 2026-Q2
+Last updated: 2026-04-02
 
 ---
 
@@ -11,7 +11,7 @@ Last updated: 2026-Q2
 
 | Severity | Total | Done | Open |
 | -------- | ----- | ---- | ---- |
-| Critical | 3     | 1    | 2    |
+| Critical | 3     | 3    | 0    |
 | High     | 10    | 5    | 5    |
 | Medium   | 10    | 2    | 8    |
 | Low      | 4     | 0    | 4    |

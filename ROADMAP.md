@@ -11,7 +11,7 @@
 | **v1.0** | 2026-07-07 | ✅ Released    | Foundation — Full-featured cultivation PWA                  |
 | **v1.1** | 2026-Q1    | ✅ Released    | DevOps & Quality — Error tracking, testing, deployment      |
 | **v1.2** | 2026-Q2    | 🔄 In Progress | Community & Automation — Languages, scheduling, marketplace |
-| **v1.3** | 2026-Q3    | 📋 Planned     | Analytics & Visualization — IoT, 3D, dashboards             |
+| **v1.3** | 2026-Q3    | � In Progress  | Analytics & Visualization — IoT, 3D, dashboards             |
 | **v1.4** | 2026-Q4    | 📋 Planned     | Discovery & Knowledge Scale — Feeds, media, expanded corpus |
 | **v1.5** | 2027-Q1    | 📋 Planned     | Scholarly Expansion — Encyclopedia, curation, source graph  |
 | **v2.0** | 2027-Q2    | 📋 Planned     | Digital Twin Platform — AR/VR overlays + advanced sandbox   |
@@ -126,6 +126,18 @@ Target: **2026-Q2** | Status: **In Progress**
 | Biome toolchain removal (ESLint + Prettier only)             | DevOps       | done   | --    |
 | 912+ tests across 94 files                                   | Testing      | done   | --    |
 
+### v1.2 Recently Added (2026-04-01/02)
+
+| Feature                                      | Category      | Status | Issue |
+| -------------------------------------------- | ------------- | ------ | ----- |
+| Daily Strains discovery tab (SeedFinder API) | Core          | done   | --    |
+| Equipment shoppification with vendor links   | UX            | done   | --    |
+| Navigation reorder (Plants first)            | UX            | done   | --    |
+| IoT MQTT reconnect with exponential backoff  | IoT           | done   | --    |
+| IoT Zod schema validation for sensor data    | Quality       | done   | --    |
+| IoT telemetry metrics                        | Observability | done   | --    |
+| 1000 tests across 102 files                  | Testing       | done   | --    |
+
 ### Remaining
 
 | Feature                                            | Category  | Priority | Issue |
@@ -138,19 +150,31 @@ Target: **2026-Q2** | Status: **In Progress**
 
 ---
 
-## v1.3 — Analytics & Visualization 📋
+## v1.3 — Analytics & Visualization �
 
-Target: **2026-Q3**
+Target: **2026-Q3** | Status: **In Progress**
 
-| Feature                                                 | Category      | Priority | Issue |
-| ------------------------------------------------------- | ------------- | -------- | ----- |
-| Three.js 3D plant visualization                         | Visualization | High     | —     |
-| Advanced analytics dashboard                            | Analytics     | High     | —     |
-| Time-lapse photo journal                                | Core          | Medium   | —     |
-| Real-time ESP32 sensor dashboard (WebSocket)            | IoT           | High     | —     |
-| Integration with additional IoT sensors (BME680, SCD40) | IoT           | Medium   | —     |
-| Historical VPD/environment trend charts                 | Analytics     | Medium   | —     |
-| Cost-per-gram analysis                                  | Analytics     | Low      | —     |
+### Completed (v1.3.0-alpha)
+
+| Feature                                                 | Category      | Status | Issue |
+| ------------------------------------------------------- | ------------- | ------ | ----- |
+| IoT real-time dashboard (sparklines, gauges, telemetry) | IoT           | done   | —     |
+| Three.js 3D OrbitControls with auto-orbit camera        | Visualization | done   | —     |
+| IoT live sensor badge in 3D view                        | IoT           | done   | —     |
+| Daily Strains recommendation scoring (match % badge)    | AI/UX         | done   | —     |
+| E2E test debloat (visibility assertions, no hard waits) | Testing       | done   | —     |
+| Lodash security fix (4.17.23 -> 4.18.1 via override)    | Security      | done   | —     |
+| 1000 tests across 102 files                             | Testing       | done   | —     |
+
+### Remaining
+
+| Feature                                                 | Category  | Priority | Issue |
+| ------------------------------------------------------- | --------- | -------- | ----- |
+| Advanced analytics dashboard                            | Analytics | High     | —     |
+| Time-lapse photo journal                                | Core      | Medium   | —     |
+| Integration with additional IoT sensors (BME680, SCD40) | IoT       | Medium   | —     |
+| Historical VPD/environment trend charts                 | Analytics | Medium   | —     |
+| Cost-per-gram analysis                                  | Analytics | Low      | —     |
 
 ---
 

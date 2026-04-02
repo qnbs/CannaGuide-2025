@@ -2,73 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-01, Session 18) -- Full Docs Audit & Metrics Sync
+## Latest Session (2026-04-02, Session 19) -- Feature Expansion, IoT Dashboard, E2E Optimization & Docs Sync
 
-**Status: v1.2.0-alpha. Comprehensive audit of README.md, copilot-instructions.md, ARCHITECTURE.md, ROADMAP.md, monorepo-architecture.md, audit-roadmap-2026-q2.md, and all locale/HTML/manifest files against actual repo state. All stale metrics corrected: tests 975+->978, strains 700+/775+->800+ (actual 806), services 78->80, hooks 17->18, WorkerBus worker list deduplicated. 978 tests.**
+**Status: v1.3.0-alpha. IoT real-time dashboard with sparklines/gauges/telemetry. 3D OrbitControls + IoT sensor badge in GrowRoom3D. Daily Strains recommendation scoring (match % badge). E2E tests debloated (hard waits -> visibility assertions). Lodash CVE fixed (4.18.1 via npm override). Full docs/README/About audit synced to actual repo state. 1000 tests.**
 
-### What Was Done (Session 18)
+### What Was Done (Session 19)
 
-1. **README.md Full Audit** -- 29 corrections across EN+DE sections:
-    - Tests badge: 975+ -> 978 (EN+DE)
-    - Strain count: 775+ -> 800+ in descriptions, key numbers, architecture, monorepo, roadmap, strategic expansion (EN+DE)
-    - Services: 78 -> 80 in architecture, monorepo (EN+DE)
-    - Hooks: 17 -> 18 in key numbers, architecture, monorepo (EN+DE)
-    - WorkerBus: "VPD simulation, VPD simulation worker" -> "VPD simulation, plant simulation" (EN), "VPD-Sim, VPD-Sim-Worker" -> "VPD-Simulation, Pflanzen-Simulation" (DE)
-    - Tech stack testing row, CI quality gates, commands, dev journey -- all synced
-2. **copilot-instructions.md** -- Fixed 4 stale values: tests 975+->978, strains 775+->800+, hooks 17->18 (2x)
-3. **ARCHITECTURE.md** -- Fixed strains 700+->800+, hooks 17->18, WorkerBus count 7->8 workers
-4. **ROADMAP.md** -- Fixed strain counts 700+->800+ (2 instances)
-5. **monorepo-architecture.md** -- Fixed strains 700+->800+
-6. **audit-roadmap-2026-q2.md** -- Fixed strain DB reference 700+->800+
-7. **All locale files** -- Updated "700+ strains" to "800+ strains" across en/, de/, es/, fr/, nl/ (onboarding, common, strains, seedbanks, settings)
-8. **index.html** -- Updated meta descriptions (3x) from 700+ to 800+
-9. **manifest.json** -- Updated PWA description from 700+ to 800+
-10. **package.json** -- Updated root description from 700+ to 800+
+1. **IoT Dashboard View** -- New `IotDashboardView.tsx` in Equipment with sparkline charts, gauge cards (temp/humidity/VPD/CO2/light/pH/EC), connection status badge with pulse animation, and telemetry panel (messages/valid rate/latency/errors). Wired via lazy import in EquipmentView. New `EquipmentViewTab.IotDashboard` enum value. i18n keys for EN+DE.
+2. **3D OrbitControls** -- GrowRoom3D.tsx: interactive OrbitControls (damping=0.08, zoom 2-10, no pan). Auto-orbit by default, stops on user interaction. IoT live sensor badge overlay showing real-time temp/humidity from sensorStore.
+3. **Daily Strains Recommendation Scoring** -- `dailyStrainsService.ts`: `buildUserProfile()` analyzes user library strains (type preference, avg THC/CBD). `scoreStrain()` produces 0-100 relevance score. `rankStrainsByRelevance()` sorts feed. DailyStrains.tsx shows "XX% match" badge on cards with score >= 65.
+4. **E2E Test Optimization** -- Replaced ~15 `waitForTimeout()` hard waits with proper `expect().toBeVisible({ timeout })` assertions across 5 test files. Boot helper changed from `networkidle` to `domcontentloaded` + `load`. Onboarding wizard polling reduced by 66%.
+5. **Lodash Security Fix** -- npm override `"lodash": ">=4.18.0"` resolves Dependabot #32/#33. All transitive lodash deps now at 4.18.1.
+6. **TypeScript Fixes** -- Removed unused imports (Button, SensorReading), fixed WifiSlash->WifiHigh, added OrbitControls type declaration to `three.d.ts`, fixed exactOptionalPropertyTypes in DailyStrains.tsx.
+7. **Full Docs & App Info Audit** -- Updated all docs, README, ARCHITECTURE, ROADMAP, PRIORITY_ROADMAP, monorepo-architecture, AUDIT_BACKLOG, constants, i18n About/whatsNew, and copilot-instructions with current metrics (1000 tests, 806 strains, 80 services, 19 hooks, 8 Zustand stores, 22 CI workflows). Created ADRs for IoT Dashboard and 3D OrbitControls decisions.
 
 ### Next Steps (Priority Order)
 
-1. **IoT Sprint 1** -- MQTT reconnect + backoff (IoT-#1), WSS enforcement (IoT-#4), Zod payload validation (IoT-#3)
-2. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
-3. **AI Response Validation** (A-01) -- Consistent Zod validation across all AI endpoints
-4. **Streaming Generalization** (R-01) -- Extend SSE streaming beyond Mentor to Advisor/Diagnosis
-5. **Bundle Size Budget** (P-02) -- Enforce gzip limits in CI via check-bundle-budget.mjs
-6. **Native Translations** -- ES/FR/NL need native speaker review (currently machine-translated)
-7. **Visual Regression Testing** (T-03) -- Playwright screenshot baseline comparison
-8. **Mutation Testing** (T-01) -- Stryker for Redux slice coverage (config exists, needs execution)
+1. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
+2. **AI Response Validation** (A-01) -- Consistent Zod validation across all AI endpoints
+3. **Bundle Size Budget** (P-02) -- Enforce gzip limits in CI via check-bundle-budget.mjs
+4. **Native Translations** -- ES/FR/NL need native speaker review (currently machine-translated)
+5. **Visual Regression Testing** (T-03) -- Playwright screenshot baseline comparison
+6. **Mutation Testing** (T-01) -- Stryker for Redux slice coverage (config exists, needs execution)
+7. **IoT Sprint 2** -- Credentials encryption (#6), CI IoT-Mock stabilize (#5), sensor history charts
+8. **Strain Comparison** -- Side-by-side strain comparison tool (v1.2 remaining)
 
 ### Verified Repo Metrics (Actual)
 
-| Metric          | Value                            |
-| --------------- | -------------------------------- |
-| Tests           | 978 (100 test files, 0 failures) |
-| Strains         | 779                              |
-| Services        | 78                               |
-| Custom Hooks    | 17                               |
-| Web Workers     | 8                                |
-| Redux Slices    | 12                               |
-| Zustand Stores  | 7                                |
-| i18n Namespaces | 12                               |
-| CI Workflows    | 21                               |
+| Metric          | Value                             |
+| --------------- | --------------------------------- |
+| Tests           | 1000 (102 test files, 0 failures) |
+| Strains         | 806                               |
+| Services        | 80                                |
+| Custom Hooks    | 19                                |
+| Web Workers     | 8                                 |
+| Redux Slices    | 12                                |
+| Zustand Stores  | 7                                 |
+| i18n Namespaces | 12                                |
+| CI Workflows    | 22                                |
+
+---
+
+## Previous Session (2026-04-01, Session 18) -- Full Docs Audit & Metrics Sync
+
+**Status: v1.2.0-alpha. Comprehensive audit of README.md, copilot-instructions.md, ARCHITECTURE.md, ROADMAP.md, monorepo-architecture.md, audit-roadmap-2026-q2.md, and all locale/HTML/manifest files against actual repo state. All stale metrics corrected: tests 975+->978, strains 700+/775+->800+ (actual 806), services 78->80, hooks 17->18, WorkerBus worker list deduplicated. 978 tests.**
 
 ---
 
 ## Previous Session (2026-04-01, Session 16) -- Daily Strains, Equipment Shoppification, Nav Reorder
 
 **Status: v1.2.0-alpha. Daily Strains discovery tab with SeedFinder API integration. Equipment shoppification with vendor product links. Navigation reorder (Plants first). Plants page grow slots above dashboard. 978 tests.**
-
-### What Was Done (Session 16)
-
-1. **Daily Strains Discovery** -- New DailyStrains tab in Strains view. GH Actions daily cron workflow (scripts/fetch-daily-strains.mjs). Service layer with CORS proxy cascade, 30-min cache, dismiss/add. SeedFinder API search integration.
-2. **Equipment Shoppification** -- equipmentProductService.ts with vendor catalog pattern matching (Mars Hydro, Spider Farmer, AC Infinity, BioBizz, etc.). Inline product link badges in SetupConfigurator recommendation cards. Vendor-colored badges with external link icons.
-3. **Navigation Reorder** -- Plants -> Strains -> Equipment -> Knowledge (BottomNav + SideNav). View enum reordered.
-4. **Plants Layout** -- Grow slots grid moved above DashboardSummary for prominence.
-5. **i18n** -- dailyStrains keys for all 5 locales. StrainViewTab.DailyStrains enum value.
-
----
-
-## Previous Session (2026-04-01, Session 15) -- README/Docs Comprehensive Audit & Cleanup
-
-**Status: v1.2.0-alpha. Full README.md audit against actual app state. All stale metrics fixed (tests 975+, strains 775+, namespaces 12, workers 8). copilot-instructions.md synced. 19 obsolete docs/ files deleted. Q1 roadmap items migrated to PRIORITY_ROADMAP. 978 tests.**
 
 ### What Was Done (Session 15)
 
@@ -84,29 +67,6 @@
     - sonar-handoff-2026-03-21.md (stale references to non-existent files)
     - refactor-roadmap-2026-q1.md (Q1 over, items migrated)
 4. **PRIORITY_ROADMAP.md** -- Added 3 open Q1 items (R-01 Streaming generalization, R-02 GPU resource manager v2, R-03 WebLLM preload UX) + 3 resolved (R-04 Local AI service extraction, R-05 Redux scope reduction, R-06 Worker consolidation)
-
-### Verified Repo Metrics (Actual)
-
-| Metric          | Value                            |
-| --------------- | -------------------------------- |
-| Tests           | 978 (100 test files, 0 failures) |
-| Strains         | 779                              |
-| Services        | 78                               |
-| Custom Hooks    | 17                               |
-| Web Workers     | 8                                |
-| Redux Slices    | 12                               |
-| Zustand Stores  | 7                                |
-| i18n Namespaces | 12                               |
-| CI Workflows    | 21                               |
-
-### Next Steps (Morning Priorities)
-
-1. **IoT Sprint 1** -- MQTT reconnect + backoff, WSS-force, Zod validation (from IoT-Roadmap.md)
-2. **Streaming generalization** (R-01) -- Extend token streaming beyond Mentor to Advisor/Diagnosis
-3. **Visual Regression Testing** (T-03) -- Playwright screenshot comparison
-4. **Mutation Testing** (T-01) -- Stryker for Redux slice coverage
-5. **Native translations** -- ES/FR/NL need native translations (currently EN fallback)
-6. **Bundle splitting** -- de.js chunk still large; consider splitting
 
 ---
 

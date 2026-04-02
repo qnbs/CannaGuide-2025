@@ -55,17 +55,20 @@
 
 ## Already Resolved
 
-| ID   | Finding                           | Resolution                                    |
-| ---- | --------------------------------- | --------------------------------------------- |
-| S-02 | Tailwind CDN                      | PostCSS build-time compilation already active |
-| P-01 | Tailwind CDN (duplicate)          | Same as S-02                                  |
-| T-02 | Coverage thresholds               | v8 provider + thresholds in vite.config.ts    |
-| C-02 | Release workflow                  | release-please in release.yml                 |
-| K-02 | Lazy hydration                    | React.lazy + Suspense + shell pattern         |
-| S-06 | Dependency pinning                | All CI actions use pinned SHA hashes          |
-| D-03 | Architecture Decision Records     | ADR template + ADR-0001 in docs/adr/          |
-| F-01 | iCal export                       | Implemented                                   |
-| F-03 | Push notifications                | Wave 5/6: proactiveCoach + nativeBridge       |
-| R-04 | Local AI service extraction       | Decomposed into 15 service modules            |
-| R-05 | Redux scope reduction             | Zustand stores for all transient UI state     |
-| R-06 | Worker architecture consolidation | workerBus with 8 typed workers                |
+| ID    | Finding                           | Resolution                                        |
+| ----- | --------------------------------- | ------------------------------------------------- |
+| S-02  | Tailwind CDN                      | PostCSS build-time compilation already active     |
+| P-01  | Tailwind CDN (duplicate)          | Same as S-02                                      |
+| T-02  | Coverage thresholds               | v8 provider + thresholds in vite.config.ts        |
+| C-02  | Release workflow                  | release-please in release.yml                     |
+| K-02  | Lazy hydration                    | React.lazy + Suspense + shell pattern             |
+| S-06  | Dependency pinning                | All CI actions use pinned SHA hashes              |
+| D-03  | Architecture Decision Records     | ADR template + ADR-0001 in docs/adr/              |
+| F-01  | iCal export                       | Implemented                                       |
+| F-03  | Push notifications                | Wave 5/6: proactiveCoach + nativeBridge           |
+| R-04  | Local AI service extraction       | Decomposed into 15 service modules                |
+| R-05  | Redux scope reduction             | Zustand stores for all transient UI state         |
+| R-06  | Worker architecture consolidation | workerBus with 8 typed workers                    |
+| IoT-1 | IoT real-time dashboard           | IotDashboardView with sparklines/gauges/telemetry |
+| V-01  | 3D interactive OrbitControls      | GrowRoom3D with auto-orbit + IoT badge            |
+| AI-R1 | Strain recommendation scoring     | Daily Strains match % badge (0-100 relevance)     |

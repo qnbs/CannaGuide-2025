@@ -64,6 +64,8 @@ export const strainsView = {
         lastUpdated: 'Laatst bijgewerkt: {{date}}',
         dismiss: 'Verwijderen',
         addToLibrary: 'Toevoegen aan Bibliotheek',
+        editAndAdd: 'Bewerken voor toevoegen',
+        inLibrary: 'In Bibliotheek',
         addedHint: '{{name}} genoteerd -- vind het in de soortencatalogus!',
         genetics: 'Genetica',
         match: 'match',

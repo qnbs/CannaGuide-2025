@@ -64,6 +64,8 @@ export const strainsView = {
         lastUpdated: 'Last updated: {{date}}',
         dismiss: 'Dismiss',
         addToLibrary: 'Add to Library',
+        editAndAdd: 'Edit before adding',
+        inLibrary: 'In Library',
         addedHint: '{{name}} noted -- find it in the strain catalog!',
         genetics: 'Genetics',
         match: 'match',

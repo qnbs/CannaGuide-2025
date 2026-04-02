@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { dailyStrainsService } from '@/services/dailyStrainsService'
-import { buildUserProfile, rankStrainsByRelevance } from '@/services/dailyStrainsService'
+import {
+    buildUserProfile,
+    rankStrainsByRelevance,
+    resolveDiscoveredToStrain,
+} from '@/services/dailyStrainsService'
 import type {
     DiscoveredStrain,
     DailyStrainsFeed,
@@ -13,8 +17,9 @@ import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { getUISnapshot } from '@/stores/useUIStore'
-import { useAppSelector } from '@/stores/store'
+import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { selectUserStrains } from '@/stores/selectors'
+import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice'
 
 // ---------------------------------------------------------------------------
 // CategoryBadge
@@ -50,11 +55,13 @@ const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category }) => {
 interface DiscoveryCardProps {
     strain: DiscoveredStrain | ScoredStrain
     onDismiss: (id: string) => void
-    onAddToLibrary: (strain: DiscoveredStrain) => void
+    onQuickAdd: (strain: DiscoveredStrain) => void
+    onEditAndAdd: (strain: DiscoveredStrain) => void
+    isInLibrary: boolean
 }
 
 const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
-    ({ strain, onDismiss, onAddToLibrary }) => {
+    ({ strain, onDismiss, onQuickAdd, onEditAndAdd, isInLibrary }) => {
         const { t } = useTranslation()
         const relevanceScore = 'relevanceScore' in strain ? strain.relevanceScore : null
 
@@ -150,10 +157,28 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                         >
                             <PhosphorIcons.X className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" onClick={() => onAddToLibrary(strain)}>
-                            <PhosphorIcons.Plus className="w-4 h-4 mr-1" />
-                            {t('strainsView.dailyStrains.addToLibrary')}
-                        </Button>
+                        {isInLibrary ? (
+                            <span className="text-xs text-emerald-400 flex items-center gap-1 px-2">
+                                <PhosphorIcons.CheckCircle className="w-4 h-4" />
+                                {t('strainsView.dailyStrains.inLibrary')}
+                            </span>
+                        ) : (
+                            <>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => onEditAndAdd(strain)}
+                                    aria-label={t('strainsView.dailyStrains.editAndAdd')}
+                                    title={t('strainsView.dailyStrains.editAndAdd')}
+                                >
+                                    <PhosphorIcons.PencilSimple className="w-4 h-4" />
+                                </Button>
+                                <Button size="sm" onClick={() => onQuickAdd(strain)}>
+                                    <PhosphorIcons.Plus className="w-4 h-4 mr-1" />
+                                    {t('strainsView.dailyStrains.addToLibrary')}
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
             </Card>
@@ -168,6 +193,7 @@ DiscoveryCard.displayName = 'DiscoveryCard'
 
 export const DailyStrains: React.FC = () => {
     const { t } = useTranslation()
+    const dispatch = useAppDispatch()
     const [status, setStatus] = useState<FeedStatus>('idle')
     const [feed, setFeed] = useState<DailyStrainsFeed | null>(null)
     const [discoveries, setDiscoveries] = useState<DiscoveredStrain[]>([])
@@ -191,6 +217,12 @@ export const DailyStrains: React.FC = () => {
         [userStrains],
     )
 
+    // Set of user strain IDs for "already in library" badge
+    const userStrainIds = useMemo(
+        () => new Set((userStrains ?? []).map((s) => s.id)),
+        [userStrains],
+    )
+
     // Load feed on mount
     useEffect(() => {
         setStatus('loading')
@@ -209,18 +241,23 @@ export const DailyStrains: React.FC = () => {
         setDiscoveries((prev) => prev.filter((d) => d.id !== id))
     }, [])
 
-    const handleAddToLibrary = useCallback(
-        (strain: DiscoveredStrain) => {
-            const { addNotification } = getUISnapshot()
-            addNotification({
-                message: t('strainsView.dailyStrains.addedHint', { name: strain.name }),
-                type: 'info',
-            })
-            dailyStrainsService.dismiss(strain.id)
-            setDiscoveries((prev) => prev.filter((d) => d.id !== strain.id))
+    /** Quick-add: resolve to full Strain and dispatch to Redux. */
+    const handleQuickAdd = useCallback(
+        (discovered: DiscoveredStrain) => {
+            const fullStrain = resolveDiscoveredToStrain(discovered)
+            void dispatch(addUserStrainWithValidation(fullStrain))
+            dailyStrainsService.dismiss(discovered.id)
+            setDiscoveries((prev) => prev.filter((d) => d.id !== discovered.id))
+            setSearchResults((prev) => prev.filter((d) => d.id !== discovered.id))
         },
-        [t],
+        [dispatch],
     )
+
+    /** Edit-and-add: resolve to full Strain, open AddStrainModal pre-filled. */
+    const handleEditAndAdd = useCallback((discovered: DiscoveredStrain) => {
+        const fullStrain = resolveDiscoveredToStrain(discovered)
+        getUISnapshot().openAddModal(fullStrain)
+    }, [])
 
     const handleSearch = useCallback(async () => {
         if (!searchQuery.trim() || searchQuery.length < 2) return
@@ -364,7 +401,9 @@ export const DailyStrains: React.FC = () => {
                         key={strain.id}
                         strain={strain}
                         onDismiss={handleDismiss}
-                        onAddToLibrary={handleAddToLibrary}
+                        onQuickAdd={handleQuickAdd}
+                        onEditAndAdd={handleEditAndAdd}
+                        isInLibrary={userStrainIds.has(strain.id)}
                     />
                 ))}
             </div>

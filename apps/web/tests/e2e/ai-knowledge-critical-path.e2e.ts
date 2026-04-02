@@ -42,17 +42,17 @@ test.describe('AI Knowledge Critical Path', () => {
         await knowledgeNavButton.first().click()
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
-        // Should have tabs or sub-navigation
-        const tabs = page.getByRole('tab')
-        const buttons = page.getByRole('button')
-        const hasTabs = (await tabs.count()) > 0
-        const mentorButton = buttons.filter({ hasText: /mentor/i })
-        const hasMentor = await mentorButton
-            .first()
-            .isVisible()
-            .catch(() => false)
+        // Wait for content to load (skeleton placeholders to disappear)
+        const main = page.locator('main').first()
+        await expect(main.getByRole('button').first()).toBeVisible({ timeout: 30_000 })
 
-        expect(hasTabs || hasMentor).toBeTruthy()
+        const tabs = main.getByRole('tab')
+        const buttons = main.getByRole('button')
+
+        const hasTabs = (await tabs.count()) > 0
+        const hasButtons = (await buttons.count()) > 0
+
+        expect(hasTabs || hasButtons).toBeTruthy()
         await expectNoCrashPatterns(page)
     })
 

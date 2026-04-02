@@ -98,6 +98,11 @@ export const seedPostOnboardingState = async (page: Page) => {
         },
         { reduxStateKey: REDUX_STATE_KEY, state: persistedState },
     )
+
+    // Dismiss geo-legal banner via localStorage so it does not block tests
+    await page.evaluate(() => {
+        localStorage.setItem('cg.geoLegal.dismissed.v1', '1')
+    })
 }
 
 export const bootFreshAppWithLegalGates = async (page: Page) => {
@@ -119,8 +124,22 @@ export const bootFreshAppPastOnboarding = async (page: Page) => {
 
 export const expectShellVisible = async (page: Page) => {
     await closeOnboardingIfVisible(page)
+    await closeLegalNoticeIfVisible(page)
     await expect(page.locator('main').first()).toBeVisible({ timeout: 30_000 })
-    await expect(page.locator('nav').first()).toBeVisible({ timeout: 30_000 })
+    // Desktop sidebar nav is hidden on mobile viewports
+    const vw = page.viewportSize()?.width ?? 1280
+    if (vw >= 768) {
+        await expect(page.locator('nav').first()).toBeVisible({ timeout: 30_000 })
+    }
+}
+
+export const closeLegalNoticeIfVisible = async (page: Page) => {
+    const btn = page.getByRole('button', { name: /I understand/i })
+    const visible = await btn.isVisible().catch(() => false)
+    if (visible) {
+        await btn.click()
+        await page.waitForTimeout(300)
+    }
 }
 
 export const closeOnboardingIfVisible = async (page: Page) => {

@@ -2,36 +2,31 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-02, Session 22) -- 4:20 Daily Drop, Security Fixes & Full Documentation Audit
+## Latest Session (2026-04-02, Session 23) -- Add-to-Library System, i18n Fixes & Documentation Update
 
-**Status: v1.3.0-beta. 4:20 Daily Drop feature implemented (seeded PRNG daily picks engine). 5 security alerts fixed (CodeQL #268-271, Scorecard #267). All SeedFinder references removed from codebase and documentation. Full documentation audit: README, ARCHITECTURE, ROADMAP, copilot-instructions all corrected to match actual repo state. 1013 tests passing.**
+**Status: v1.3.0-beta. Complete add-to-library system for Daily Drop (resolveDiscoveredToStrain, quick-add + edit-and-add, in-library badge). i18n fixes (dynamic catalog count, localized pick reasons, corrected addedHint). Scorecard #267 fully resolved (tauri CLI pinned via lockfile). 1016 tests passing.**
 
-### What Was Done (Session 22)
+### What Was Done (Session 23)
 
-1. **Security Fixes** -- Fixed 5 security alerts:
-    - CodeQL #268-271: Incomplete string escaping in `generate-strain-files.mjs` (4 locations) -- added `escapeStr`/`esc` helpers that escape backslashes before quotes
-    - Scorecard #267: Added `--ignore-scripts` to `npm install @tauri-apps/cli` in `tauri-build.yml`
+1. **Add-to-Library System** (Daily Drop + Meine Sorten):
+    - `resolveDiscoveredToStrain()` -- catalog lookup for daily-pick/local-catalog sources, `createStrainObject` factory fallback for AI-lookup sources
+    - Quick-add button: 1-click conversion + `addUserStrainWithValidation` Redux dispatch with duplicate checking
+    - Edit-and-add button (pencil icon): opens `AddStrainModal` pre-filled with full strain data for refinement before adding
+    - In-library badge: green CheckCircle indicator when strain already exists in user collection
+    - 3 new tests for resolveDiscoveredToStrain (catalog resolve, AI resolve, edge cases)
 
-2. **4:20 Daily Drop Feature** -- Complete overhaul of Daily Strains:
-    - Rewrote `dailyStrainsService.ts` with seeded PRNG (Mulberry32) generating 5 deterministic daily picks from 778-strain catalog
-    - 7 diversity categories with daily rotation (high-thc, balanced-cbd, autoflower, classic-indica, classic-sativa, beginner-friendly, terpene-rich)
-    - Rewrote `DailyStrains.tsx` with category badges, pick reasons ("Why today"), match scores
-    - AI strain search preserved (local catalog + cloud AI fallback)
-    - Updated i18n for all 5 languages (en/de/es/fr/nl) with category translations
-    - 15 new unit tests for PRNG, daily picks, scoring engine
+2. **i18n Quality Fixes** across all 5 languages:
+    - Dynamic `{{count}}` interpolation for catalog size in subtitle (was hardcoded "778")
+    - `pickReasons` localization keys for all 7 categories (were hardcoded English strings)
+    - Corrected misleading `addedHint` notification text
+    - New keys: `inLibrary`, `editAndAdd`
 
-3. **SeedFinder Cleanup** -- Removed all SeedFinder.eu references from:
-    - All 5 locale files (strains + settings namespaces)
-    - Provider lists and credits/acknowledgment sections
-    - README (EN + DE), ROADMAP, ARCHITECTURE, copilot-instructions
+3. **Scorecard #267 Final Fix**:
+    - Removed `npm install --no-save @tauri-apps/cli` from `tauri-build.yml`
+    - Added `@tauri-apps/cli@2.10.1` as devDependency in `apps/desktop/package.json`
+    - CLI now installed via `npm ci` from lockfile (hash-pinned)
 
-4. **Full Documentation Audit** -- Corrected all stale numbers across documentation:
-    - Strain count: 800+/806 -> 778 everywhere
-    - Test count: 1000 -> 1013 everywhere
-    - Test files: 102 -> 103
-    - Data providers: 9 -> 8 (SeedFinder removed)
-    - Added 4:20 Daily Drop feature description to Strains sections
-    - Updated seedbankService description (deterministic mock, not API)
+4. **Documentation Audit** -- Updated all docs to reflect 1016 tests and new features
 
 ### Next Steps (Priority Order)
 
@@ -45,7 +40,7 @@
 
 | Metric          | Value                             |
 | --------------- | --------------------------------- |
-| Tests           | 1013 (103 test files, 0 failures) |
+| Tests           | 1016 (103 test files, 0 failures) |
 | Strains         | 778                               |
 | Services        | 80                                |
 | Custom Hooks    | 19                                |

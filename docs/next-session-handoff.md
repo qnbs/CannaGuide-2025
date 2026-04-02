@@ -2,15 +2,36 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-02, Session 21) -- Version Bump, Tauri CI Fix & Full Audit
+## Latest Session (2026-04-02, Session 22) -- 4:20 Daily Drop, Security Fixes & Full Documentation Audit
 
-**Status: v1.3.0-beta. Version bumped from alpha to beta across package.json + README badges. Tauri CI build fix applied. Full README audit confirmed all metrics accurate.**
+**Status: v1.3.0-beta. 4:20 Daily Drop feature implemented (seeded PRNG daily picks engine). 5 security alerts fixed (CodeQL #268-271, Scorecard #267). All SeedFinder references removed from codebase and documentation. Full documentation audit: README, ARCHITECTURE, ROADMAP, copilot-instructions all corrected to match actual repo state. 1013 tests passing.**
 
-### What Was Done (Session 21)
+### What Was Done (Session 22)
 
-1. **Version Bump** -- Updated `package.json` version and both README release badges from `v1.3.0-alpha` to `v1.3.0-beta` to match the existing git tag.
-2. **Tauri CI Fix** -- `@tauri-apps/cli` was not in any `package.json`, causing `npx tauri build` to fail with "could not determine executable to run" on all 4 platforms. Added explicit `npm install --no-save @tauri-apps/cli@latest` step in `.github/workflows/tauri-build.yml` before the build step.
-3. **Full README Audit** -- Verified all metrics in README (EN+DE) against actual repo state. All correct: 806 strains, 1000 tests, 80 services, 19 hooks, 7 Zustand stores, 12 Redux slices, 22 CI workflows, 9 themes, 12 i18n namespaces.
+1. **Security Fixes** -- Fixed 5 security alerts:
+    - CodeQL #268-271: Incomplete string escaping in `generate-strain-files.mjs` (4 locations) -- added `escapeStr`/`esc` helpers that escape backslashes before quotes
+    - Scorecard #267: Added `--ignore-scripts` to `npm install @tauri-apps/cli` in `tauri-build.yml`
+
+2. **4:20 Daily Drop Feature** -- Complete overhaul of Daily Strains:
+    - Rewrote `dailyStrainsService.ts` with seeded PRNG (Mulberry32) generating 5 deterministic daily picks from 778-strain catalog
+    - 7 diversity categories with daily rotation (high-thc, balanced-cbd, autoflower, classic-indica, classic-sativa, beginner-friendly, terpene-rich)
+    - Rewrote `DailyStrains.tsx` with category badges, pick reasons ("Why today"), match scores
+    - AI strain search preserved (local catalog + cloud AI fallback)
+    - Updated i18n for all 5 languages (en/de/es/fr/nl) with category translations
+    - 15 new unit tests for PRNG, daily picks, scoring engine
+
+3. **SeedFinder Cleanup** -- Removed all SeedFinder.eu references from:
+    - All 5 locale files (strains + settings namespaces)
+    - Provider lists and credits/acknowledgment sections
+    - README (EN + DE), ROADMAP, ARCHITECTURE, copilot-instructions
+
+4. **Full Documentation Audit** -- Corrected all stale numbers across documentation:
+    - Strain count: 800+/806 -> 778 everywhere
+    - Test count: 1000 -> 1013 everywhere
+    - Test files: 102 -> 103
+    - Data providers: 9 -> 8 (SeedFinder removed)
+    - Added 4:20 Daily Drop feature description to Strains sections
+    - Updated seedbankService description (deterministic mock, not API)
 
 ### Next Steps (Priority Order)
 
@@ -24,8 +45,8 @@
 
 | Metric          | Value                             |
 | --------------- | --------------------------------- |
-| Tests           | 1000 (102 test files, 0 failures) |
-| Strains         | 806                               |
+| Tests           | 1013 (103 test files, 0 failures) |
+| Strains         | 778                               |
 | Services        | 80                                |
 | Custom Hooks    | 19                                |
 | Web Workers     | 8                                 |
@@ -33,10 +54,11 @@
 | Zustand Stores  | 7                                 |
 | i18n Namespaces | 12                                |
 | CI Workflows    | 22                                |
+| Version         | 1.3.0-beta                        |
 
 ---
 
-## Previous Session (2026-04-02, Session 20) -- CSP Fix & Full Audit Completion
+## Previous Session (2026-04-02, Session 21) -- Version Bump, Tauri CI Fix & Full Audit
 
 **Status: v1.3.0-beta (tagged `133cf80`). CSP strict-dynamic reverted to workable static-PWA policy. All 26 E2E tests unblocked. CI green. Full-scale deep audit 100% complete and released.**
 

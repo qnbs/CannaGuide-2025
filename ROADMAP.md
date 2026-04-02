@@ -24,7 +24,7 @@ Released: **2026-07-07**
 
 | Feature                                                        | Category     | Status |
 | -------------------------------------------------------------- | ------------ | ------ |
-| 800+ strain encyclopedia with genealogy tracking               | Core         | ✅     |
+| 778-strain encyclopedia with genealogy tracking                | Core         | ✅     |
 | VPD-based plant simulation engine (Web Worker)                 | Core         | ✅     |
 | Multi-provider AI integration (Gemini, OpenAI, xAI, Anthropic) | AI           | ✅     |
 | RAG-powered grow log journal search                            | AI           | ✅     |
@@ -128,15 +128,15 @@ Target: **2026-Q2** | Status: **In Progress**
 
 ### v1.2 Recently Added (2026-04-01/02)
 
-| Feature                                      | Category      | Status | Issue |
-| -------------------------------------------- | ------------- | ------ | ----- |
-| Daily Strains discovery tab (SeedFinder API) | Core          | done   | --    |
-| Equipment shoppification with vendor links   | UX            | done   | --    |
-| Navigation reorder (Plants first)            | UX            | done   | --    |
-| IoT MQTT reconnect with exponential backoff  | IoT           | done   | --    |
-| IoT Zod schema validation for sensor data    | Quality       | done   | --    |
-| IoT telemetry metrics                        | Observability | done   | --    |
-| 1000 tests across 102 files                  | Testing       | done   | --    |
+| Feature                                           | Category      | Status | Issue |
+| ------------------------------------------------- | ------------- | ------ | ----- |
+| Daily Strains 4:20 Daily Drop (seeded PRNG picks) | Core          | done   | --    |
+| Equipment shoppification with vendor links        | UX            | done   | --    |
+| Navigation reorder (Plants first)                 | UX            | done   | --    |
+| IoT MQTT reconnect with exponential backoff       | IoT           | done   | --    |
+| IoT Zod schema validation for sensor data         | Quality       | done   | --    |
+| IoT telemetry metrics                             | Observability | done   | --    |
+| 1013 tests across 103 files                       | Testing       | done   | --    |
 
 ### Remaining
 
@@ -165,7 +165,7 @@ Target: **2026-Q3** | Status: **In Progress**
 | E2E test debloat (visibility assertions, no hard waits) | Testing       | done   | —     |
 | Lodash security fix (4.17.23 -> 4.18.1 via override)    | Security      | done   | —     |
 | CSP fix: strict-dynamic reverted to workable static-PWA | Security      | done   | —     |
-| 1000 tests across 102 files                             | Testing       | done   | —     |
+| 1013 tests across 103 files                             | Testing       | done   | —     |
 
 ### Remaining
 
@@ -201,7 +201,7 @@ Target: **2026-Q4**
 
 | Feature                                                             | Category   | Priority | Issue |
 | ------------------------------------------------------------------- | ---------- | -------- | ----- |
-| Strain database growth program (800+ → 2,000+ curated entries)      | Strains    | High     | —     |
+| Strain database growth program (778 → 2,000+ curated entries)       | Strains    | High     | —     |
 | Strain ingestion pipeline with dedupe/provenance/quality scoring    | Data       | High     | —     |
 | Infinite discovery feed (news, HD galleries, educational snippets)  | UX         | High     | —     |
 | Content taxonomy and moderation rules for feed categories           | Governance | High     | —     |

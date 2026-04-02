@@ -260,6 +260,9 @@ const GeminiSecurityCard: React.FC = () => {
                     <p className="text-sm text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md p-3">
                         {t('settingsView.security.warning')}
                     </p>
+                    <p className="text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-md p-3">
+                        {t('settingsView.security.geminiFreeNote')}
+                    </p>
                     <SettingsRow
                         label={t('settingsView.security.provider')}
                         description={t('settingsView.security.providerDesc')}

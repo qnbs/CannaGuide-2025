@@ -12,6 +12,7 @@ import { Speakable } from '@/components/common/Speakable'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { HelpSubNav } from './help/HelpSubNav'
+import { ScreenshotGallery } from './help/ScreenshotGallery'
 
 type ManualSectionData = {
     title?: string
@@ -431,7 +432,15 @@ const ManualSection: React.FC = memo(() => {
     >
 
     const sectionOrder = useMemo(
-        () => ['introduction', 'general', 'strains', 'plants', 'equipment', 'knowledge'],
+        () => [
+            'introduction',
+            'general',
+            'strains',
+            'plants',
+            'equipment',
+            'knowledge',
+            'settings',
+        ],
         [],
     )
 
@@ -442,6 +451,7 @@ const ManualSection: React.FC = memo(() => {
             plants: <PhosphorIcons.Plant className="w-6 h-6" />,
             equipment: <PhosphorIcons.Wrench className="w-6 h-6" />,
             knowledge: <PhosphorIcons.BookBookmark className="w-6 h-6" />,
+            settings: <PhosphorIcons.Gear className="w-6 h-6" />,
             general: <PhosphorIcons.Cube className="w-6 h-6" />,
         }),
         [],
@@ -455,6 +465,7 @@ const ManualSection: React.FC = memo(() => {
             plants: 'border-l-emerald-500',
             equipment: 'border-l-amber-500',
             knowledge: 'border-l-violet-500',
+            settings: 'border-l-sky-500',
         }),
         [],
     )
@@ -643,6 +654,15 @@ export const HelpView: React.FC = () => {
                 count: faqData.length,
                 countLabel: t('helpView.itemCount', { count: faqData.length }),
             },
+            screenshots: {
+                icon: (
+                    <PhosphorIcons.Camera className="w-14 h-14 mx-auto text-pink-400 drop-shadow-[0_0_12px_rgba(244,114,182,0.3)]" />
+                ),
+                title: t('helpView.tabs.screenshots'),
+                description: t('helpView.tabs.screenshotsDescription'),
+                count: 60,
+                countLabel: t('helpView.screenshotCount', { count: 60 }),
+            },
         }),
         [t],
     )
@@ -659,6 +679,8 @@ export const HelpView: React.FC = () => {
                 return <VisualGuidesSection />
             case 'faq':
                 return <FAQSection />
+            case 'screenshots':
+                return <ScreenshotGallery />
             default:
                 return null
         }

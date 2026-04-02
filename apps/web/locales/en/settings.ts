@@ -22,6 +22,8 @@ export const settingsView = {
         title: 'AI Security (Multi-Model BYOK)',
         warning:
             'Your API key is stored only on this device in IndexedDB. Never share your key and remove it on shared devices.',
+        geminiFreeNote:
+            'Tip: The Gemini API key from Google AI Studio is free with a Google account at aistudio.google.com.',
         provider: 'AI Provider',
         providerDesc: 'Select the AI model provider. Each provider requires its own API key.',
         apiKey: 'API Key',

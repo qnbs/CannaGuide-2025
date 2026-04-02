@@ -136,7 +136,7 @@ Target: **2026-Q2** | Status: **In Progress**
 | IoT MQTT reconnect with exponential backoff       | IoT           | done   | --    |
 | IoT Zod schema validation for sensor data         | Quality       | done   | --    |
 | IoT telemetry metrics                             | Observability | done   | --    |
-| 1013 tests across 103 files                       | Testing       | done   | --    |
+| 1016 tests across 103 files                       | Testing       | done   | --    |
 
 ### Remaining
 
@@ -165,7 +165,7 @@ Target: **2026-Q3** | Status: **In Progress**
 | E2E test debloat (visibility assertions, no hard waits) | Testing       | done   | —     |
 | Lodash security fix (4.17.23 -> 4.18.1 via override)    | Security      | done   | —     |
 | CSP fix: strict-dynamic reverted to workable static-PWA | Security      | done   | —     |
-| 1013 tests across 103 files                             | Testing       | done   | —     |
+| 1016 tests across 103 files                             | Testing       | done   | —     |
 
 ### Remaining
 

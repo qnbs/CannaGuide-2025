@@ -7,8 +7,13 @@ WORKDIR /app
 # Patch OS-level vulnerabilities (e.g. zlib CVEs) before installing deps
 RUN apk update && apk upgrade --no-cache
 
+# Copy all package manifests for workspace resolution, then install
 COPY package*.json ./
-RUN npm ci
+COPY apps/web/package.json apps/web/package.json
+COPY apps/desktop/package.json apps/desktop/package.json
+COPY packages/ai-core/package.json packages/ai-core/package.json
+COPY packages/ui/package.json packages/ui/package.json
+RUN npm ci --ignore-scripts
 
 COPY . .
 

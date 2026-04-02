@@ -55,6 +55,7 @@ export const settingsView = {
             'Rota las claves almacenadas regularmente y eliminalas inmediatamente despues de usarlas en dispositivos compartidos.',
         rotationDue:
             'Esta clave ha superado la ventana de rotacion de 90 dias y debe ser reemplazada antes de que las solicitudes AI funcionen de nuevo.',
+        rotationBadge: 'Rotar ahora',
         auditLog: 'Registro de auditoria AI local',
         auditLogEmpty: 'Aun no se han registrado solicitudes AI.',
         clearAuditLog: 'Borrar registro de auditoria',

@@ -10,7 +10,7 @@
 
 const CSP_DIRECTIVES: readonly string[] = [
     "default-src 'self'",
-    "script-src 'self'",
+    "script-src 'self' 'strict-dynamic'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",

@@ -53,6 +53,7 @@ export const settingsView = {
             'Roteer opgeslagen sleutels regelmatig en verwijder ze onmiddellijk na gebruik op gedeelde apparaten.',
         rotationDue:
             'Deze sleutel is voorbij het 90-dagen rotatievenster en moet worden vervangen voordat AI-verzoeken weer werken.',
+        rotationBadge: 'Nu roteren',
         auditLog: 'Lokaal AI-auditlogboek',
         auditLogEmpty: 'Er zijn nog geen AI-verzoeken geregistreerd.',
         clearAuditLog: 'Auditlogboek wissen',

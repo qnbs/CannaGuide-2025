@@ -258,7 +258,8 @@ const INJECTION_PATTERNS: RegExp[] = [
  * 2. Normalises invisible/control characters (structural allowlist)
  * 3. Strips characters outside the permitted character-class allowlist
  * 4. Removes known prompt-injection patterns (blocklist defence-in-depth)
- * 5. Truncates to `maxLength` characters
+ * 5. Validates topic relevance against cannabis cultivation allow-list (S-01)
+ * 6. Truncates to `maxLength` characters
  */
 const sanitizeForPrompt = (input: string, maxLength = 500): string => {
     // Layer 1: Strip HTML
@@ -272,6 +273,44 @@ const sanitizeForPrompt = (input: string, maxLength = 500): string => {
         clean = clean.replace(pattern, '[redacted]')
     }
     return clean.slice(0, maxLength).trim()
+}
+
+/**
+ * Topic-scoped allow-list for AI prompt validation (S-01).
+ * Validates that user-supplied prompts relate to cannabis cultivation domains.
+ * Returns true if the input matches at least one allowed topic pattern.
+ * Used as a positive guard in addition to the deny-list (defence-in-depth).
+ */
+const ALLOWED_TOPIC_PATTERNS: RegExp[] = [
+    // Cannabis cultivation core
+    /\b(cannabis|marijuana|hemp|weed|grow|plant|seed|strain|bud|flower|trichome)\b/i,
+    // Growth stages
+    /\b(seedling|vegetative|veg|flowering|bloom|harvest|clone|cutting|germination|curing|drying)\b/i,
+    // Growing environment
+    /\b(light|led|hps|cfl|temperature|temp|humidity|vpd|co2|ventilation|fan|air|soil|coco|hydro|perlite|medium|substrate|indoor|outdoor|greenhouse|tent)\b/i,
+    // Nutrients and feeding
+    /\b(nutrient|fertilizer|npk|nitrogen|phosphorus|potassium|calcium|magnesium|iron|ph|ec|ppm|feed|water|flush|compost|organic|amendment)\b/i,
+    // Plant health
+    /\b(pest|mold|mildew|rot|deficiency|toxicity|overwater|underwater|stress|lollipop|top|prune|train|lst|hst|scrog|sog|defoliat)\b/i,
+    // Strain attributes
+    /\b(indica|sativa|hybrid|autoflower|photoperiod|thc|cbd|terpene|yield|potency|aroma|flavor|breeder|genetics|phenotype)\b/i,
+    // Equipment
+    /\b(pot|container|fabric|timer|pump|reservoir|dripper|trellis|net|filter|carbon|exhaust|intake|ballast|driver|dimmer|sensor|meter|scope)\b/i,
+    // General plant care / gardening
+    /\b(root|leaf|leaves|stem|branch|node|internode|pistil|calyx|resin|trichome|amber|milky|clear)\b/i,
+    // Greeting / help requests (always allowed)
+    /\b(hello|hi|help|what|how|why|when|where|which|can|should|recommend|suggest|advice|tip|guide|best|compare)\b/i,
+]
+
+/**
+ * Check whether user input is topically relevant to cannabis cultivation.
+ * Returns true if the input matches any allowed topic or is short enough
+ * to be a greeting/question (under 20 chars). This is a soft guard --
+ * off-topic prompts get a system-injected redirect, not a hard block.
+ */
+export const isTopicRelevant = (input: string): boolean => {
+    if (input.length < 20) return true
+    return ALLOWED_TOPIC_PATTERNS.some((pattern) => pattern.test(input))
 }
 
 const MAX_PROMPT_CHARS = 12000
@@ -1287,8 +1326,13 @@ PLANT CONTEXT:
         const ragContext = growLogRagService.retrieveRelevantContext([plant], query)
         const sanitizedQuery = sanitizeForPrompt(query, 600)
 
+        // S-01: Topic-scoped allow-list -- redirect off-topic queries
+        const topicGuard = isTopicRelevant(sanitizedQuery)
+            ? ''
+            : '\nIMPORTANT: The user query may be off-topic. Politely redirect them to cannabis cultivation topics.\n'
+
         const prompt = t('ai.prompts.mentor.main', {
-            context: `${plantContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}`,
+            context: `${plantContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}${topicGuard}`,
             query: sanitizedQuery,
         })
 
@@ -1367,7 +1411,11 @@ PLANT CONTEXT:
     private buildGrowLogRagPrompt(plants: Plant[], query: string): string {
         const ragContext = growLogRagService.retrieveRelevantContext(plants, query)
         const safeQuery = sanitizeForPrompt(query, 600)
-        return `Answer the question using only the provided grow-log context.\n\nQuestion:\n${safeQuery}\n\nGrow-log context:\n${ragContext}\n\nIf information is uncertain, explicitly say so.`
+        // S-01: Topic-scoped allow-list
+        const topicGuard = isTopicRelevant(safeQuery)
+            ? ''
+            : '\nNote: The query may be off-topic for cannabis cultivation. Politely redirect.\n'
+        return `Answer the question using only the provided grow-log context.\n\nQuestion:\n${safeQuery}\n\nGrow-log context:\n${ragContext}${topicGuard}\n\nIf information is uncertain, explicitly say so.`
     }
 
     private mapDynamicLoadingMessages(messagesResult: unknown): string[] {

@@ -52,6 +52,7 @@ export const settingsView = {
             'Rotate stored keys regularly and remove them immediately after use on shared devices.',
         rotationDue:
             'This key is past the 90-day rotation window and must be replaced before AI requests will work again.',
+        rotationBadge: 'Rotate Now',
         auditLog: 'Local AI audit log',
         auditLogEmpty: 'No AI requests have been recorded yet.',
         clearAuditLog: 'Clear audit log',

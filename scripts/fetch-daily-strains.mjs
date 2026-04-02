@@ -57,8 +57,9 @@ async function fetchJson(url) {
 async function fetchSeedFinderList(listType) {
     const keyParam = API_KEY ? `&ac=${API_KEY}` : ''
     const url = `${SEEDFINDER_BASE}/lst/${listType}/?lang=en${keyParam}`
-    const safeUrl = API_KEY ? url.replace(API_KEY, '***') : url
-    console.log(`[fetch] ${listType}: ${safeUrl}`)
+    console.log(
+        `[fetch] ${listType}: ${SEEDFINDER_BASE}/lst/${listType}/?lang=en${API_KEY ? '&ac=***' : ''}`,
+    )
     return fetchJson(url)
 }
 

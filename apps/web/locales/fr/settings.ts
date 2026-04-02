@@ -55,6 +55,7 @@ export const settingsView = {
             'Changez regulierement les cles stockees et supprimez-les immediatement apres utilisation sur les appareils partages.',
         rotationDue:
             'Cette cle a depasse la fenetre de rotation de 90 jours et doit etre remplacee avant que les requetes IA ne fonctionnent a nouveau.',
+        rotationBadge: 'Pivoter maintenant',
         auditLog: "Journal d'audit IA local",
         auditLogEmpty: "Aucune requete IA n'a encore ete enregistree.",
         clearAuditLog: "Effacer le journal d'audit",

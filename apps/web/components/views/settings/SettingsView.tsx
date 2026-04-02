@@ -296,7 +296,14 @@ const GeminiSecurityCard: React.FC = () => {
                         </p>
                         <p>{t('settingsView.security.rotationAdvice')}</p>
                         {keyRotationDue && (
-                            <p className="text-red-300">{t('settingsView.security.rotationDue')}</p>
+                            <div className="flex items-center gap-2 mt-2 rounded-md border border-red-500/40 bg-red-500/10 p-2">
+                                <span className="inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                                    {t('settingsView.security.rotationBadge')}
+                                </span>
+                                <p className="text-red-300 text-xs">
+                                    {t('settingsView.security.rotationDue')}
+                                </p>
+                            </div>
                         )}
                     </div>
                     <div className="flex flex-wrap gap-2">

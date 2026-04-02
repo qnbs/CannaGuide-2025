@@ -1,7 +1,9 @@
 # Audit Backlog -- CannaGuide 2025
 
 > Living document tracking all findings from the Deep Audit (2026-Q2).
-> Status: **Open** | **In Progress** | **Done** | **Won't Fix**
+> Status: **Open** | **In Progress** | **Done** | **Deferred** | **Won't Fix**
+>
+> Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
 Last updated: 2026-04-02
 

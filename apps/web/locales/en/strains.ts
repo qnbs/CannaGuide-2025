@@ -792,3 +792,37 @@ export const strainsView = {
             'Genetics in 2026 are more precise, functional and diverse -- away from hype, toward real plant perfection. Complex terps, balanced hybrids, strong autos and polyploid lines deliver massive gains in quality, yield and consistency.',
     },
 }
+
+export const strainLookup = {
+    sectionLabel: 'Strain Intelligence Lookup',
+    sectionHint:
+        'Local catalog + Cannlytics lab data + Open Cannabis APIs + AI -- multi-layer lookup',
+    placeholder: 'New strain discovered? Enter name (e.g. Gorilla Pie, Lemon Cherry Gelato...)',
+    analyze: 'Analyze',
+    clear: 'Clear',
+    searching: 'Searching all sources...',
+    notFound: 'No data found for "{{name}}". Try a different spelling.',
+    lookupError: 'Lookup failed. Please try again.',
+    addToDB: 'Add to Library',
+    addedSuccess: '{{name}} added to your library!',
+    inLibrary: 'In Library',
+    favorite: 'Favorites',
+    unfavorite: 'Remove from Favorites',
+    breedingLab: 'Breeding Lab',
+    findSimilar: 'Similar',
+    source: 'Source',
+    match: 'match',
+    other: 'Other',
+    cannabinoidBalance: 'Cannabinoid Balance',
+    terpeneProfile: 'Terpene Profile',
+    terpenes: 'Terpenes',
+    cannabinoids: 'Cannabinoids',
+    genetics: 'Genetics',
+    whyMatters: 'Why this strain matters',
+    confidenceSources: {
+        local: 'Local Catalog',
+        cannlytics: 'Cannlytics Labs',
+        otreeba: 'Otreeba',
+        ai: 'AI Generated',
+    },
+}

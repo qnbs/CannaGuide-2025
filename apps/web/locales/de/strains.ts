@@ -689,7 +689,7 @@ export const strainsView = {
         poor: 'Mangelhaft',
     },
     providers: {
-otreeba: 'Otreeba',
+        otreeba: 'Otreeba',
         cannlytics: 'Cannlytics',
         strainapi: 'The Strain API',
         cannseek: 'CannSeek',
@@ -798,5 +798,39 @@ otreeba: 'Otreeba',
         },
         conclusion:
             'Genetik wird 2026 praeziser, funktionaler und vielfaeltiger -- weg vom Hype, hin zu echter Pflanzen-Perfektion. Komplexe Terps, ausgewogene Hybride, starke Autos und polyploide Linien bringen massive Gewinne bei Qualitaet, Ertrag und Konsistenz.',
+    },
+}
+
+export const strainLookup = {
+    sectionLabel: 'Sorten-Intelligenz-Suche',
+    sectionHint:
+        'Lokaler Katalog + Cannlytics Lab-Daten + Open Cannabis APIs + KI -- mehrschichtige Suche',
+    placeholder: 'Neue Sorte entdeckt? Namen eingeben (z. B. Gorilla Pie, Lemon Cherry Gelato...)',
+    analyze: 'Analysieren',
+    clear: 'Loeschen',
+    searching: 'Alle Quellen werden durchsucht...',
+    notFound: 'Keine Daten fuer "{{name}}" gefunden. Versuche eine andere Schreibweise.',
+    lookupError: 'Suche fehlgeschlagen. Bitte erneut versuchen.',
+    addToDB: 'Zur Bibliothek hinzufuegen',
+    addedSuccess: '{{name}} wurde deiner Bibliothek hinzugefuegt!',
+    inLibrary: 'In Bibliothek',
+    favorite: 'Favoriten',
+    unfavorite: 'Aus Favoriten entfernen',
+    breedingLab: 'Zucht-Labor',
+    findSimilar: 'Aehnliche',
+    source: 'Quelle',
+    match: 'Match',
+    other: 'Andere',
+    cannabinoidBalance: 'Cannabinoid-Balance',
+    terpeneProfile: 'Terpenprofil',
+    terpenes: 'Terpene',
+    cannabinoids: 'Cannabinoide',
+    genetics: 'Genetik',
+    whyMatters: 'Warum diese Sorte besonders ist',
+    confidenceSources: {
+        local: 'Lokaler Katalog',
+        cannlytics: 'Cannlytics Labs',
+        otreeba: 'Otreeba',
+        ai: 'KI-generiert',
     },
 }

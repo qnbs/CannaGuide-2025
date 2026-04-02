@@ -6,7 +6,7 @@ import { knowledgeView, tipOfTheDay } from './knowledge'
 import { onboarding } from './onboarding'
 import { plantsView } from './plants'
 import { settingsView } from './settings'
-import { strainsView } from './strains'
+import { strainsView, strainLookup } from './strains'
 import { strainsData } from './strainsData'
 import { legal } from './legal'
 
@@ -26,6 +26,7 @@ export const de = {
     plantsView,
     settingsView,
     strainsView,
+    strainLookup,
     strainsData,
     tipOfTheDay,
     legal,

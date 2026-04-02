@@ -186,8 +186,8 @@ export const ScreenshotGallery: React.FC = memo(() => {
     const grouped = useMemo(() => {
         const groups: Record<string, ScreenshotEntry[]> = {}
         for (const item of filtered) {
-            if (!groups[item.category]) groups[item.category] = []
-            groups[item.category].push(item)
+            const list = groups[item.category] ?? (groups[item.category] = [])
+            list.push(item)
         }
         return groups
     }, [filtered])

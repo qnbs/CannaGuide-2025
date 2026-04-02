@@ -3,7 +3,7 @@
  * Captures every main screen of CannaGuide in desktop and mobile viewports.
  * Run: npx playwright test screenshots.e2e.ts --project=chromium
  */
-import { test, expect, Page } from '@playwright/test'
+import { test, Page } from '@playwright/test'
 
 const DESKTOP = { width: 1280, height: 800 }
 const MOBILE = { width: 375, height: 812 }

@@ -13,7 +13,7 @@ export default defineConfig({
         },
     },
     snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
-    retries: process.env.CI ? 2 : 0,
+    retries: process.env.CI ? 1 : 0,
     reporter: [['list']],
     use: {
         baseURL: 'http://localhost:4173',

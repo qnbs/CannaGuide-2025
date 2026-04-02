@@ -51,7 +51,8 @@ export const strainsView = {
     },
     dailyStrains: {
         title: '4:20 Daily Drop',
-        subtitle: '5 varietes selectionnees chaque jour -- de votre catalogue de 778 varietes',
+        subtitle:
+            '5 varietes selectionnees chaque jour -- de votre catalogue de {{count}} varietes',
         picksCount: '{{count}} selections du jour',
         categoriesCount: '{{count}} categories',
         catalogSize: '{{count}} dans le catalogue',
@@ -60,11 +61,12 @@ export const strainsView = {
         searchResultCount: '{{count}} resultats trouves',
         clearSearch: 'Effacer la recherche',
         noSearchResults: 'Aucun resultat trouve pour votre recherche.',
-        allDismissed: 'Vous avez vu toutes les selections du jour. Revenez demain pour de nouveaux drops!',
+        allDismissed:
+            'Vous avez vu toutes les selections du jour. Revenez demain pour de nouveaux drops!',
         lastUpdated: 'Derniere mise a jour: {{date}}',
         dismiss: 'Ignorer',
         addToLibrary: 'Ajouter a la Bibliotheque',
-        addedHint: '{{name}} ajoutee a votre bibliotheque de varietes!',
+        addedHint: '{{name}} notee -- retrouvez-la dans le catalogue de varietes!',
         genetics: 'Genetique',
         match: 'correspondance',
         whyToday: "Pourquoi aujourd'hui",
@@ -78,6 +80,15 @@ export const strainsView = {
             'classic-sativa': 'Sativa Classique',
             'beginner-friendly': 'Debutant',
             'terpene-rich': 'Riche en Terpenes',
+        },
+        pickReasons: {
+            'high-thc': 'Puissance haut THC',
+            'balanced-cbd': 'Equilibre CBD pour le bien-etre',
+            autoflower: 'Culture autofloraison facile',
+            'classic-indica': 'Relaxation Indica classique',
+            'classic-sativa': 'Energie Sativa stimulante',
+            'beginner-friendly': 'Parfait pour les debutants',
+            'terpene-rich': 'Profil terpenes riche',
         },
     },
     filters: {

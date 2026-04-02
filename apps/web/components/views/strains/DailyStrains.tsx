@@ -93,9 +93,13 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                 </div>
 
                 {/* Pick reason */}
-                {strain.pickReason && (
+                {strain.pickCategory && (
                     <p className="text-xs text-primary-400 font-medium">
-                        {t('strainsView.dailyStrains.whyToday')}: {strain.pickReason}
+                        {t('strainsView.dailyStrains.whyToday')}:{' '}
+                        {t(
+                            `strainsView.dailyStrains.pickReasons.${strain.pickCategory}`,
+                            strain.pickReason ?? '',
+                        )}
                     </p>
                 )}
 
@@ -260,7 +264,9 @@ export const DailyStrains: React.FC = () => {
                     {t('strainsView.dailyStrains.title')}
                 </h2>
                 <p className="text-sm text-slate-400 mt-1">
-                    {t('strainsView.dailyStrains.subtitle')}
+                    {t('strainsView.dailyStrains.subtitle', {
+                        count: feed?.stats.existingCatalogSize ?? 778,
+                    })}
                 </p>
             </div>
 

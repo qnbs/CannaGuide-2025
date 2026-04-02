@@ -51,7 +51,7 @@ export const strainsView = {
     },
     dailyStrains: {
         title: '4:20 Daily Drop',
-        subtitle: '5 hand-picked strains every day -- powered by your 778-strain catalog',
+        subtitle: '5 hand-picked strains every day -- powered by your {{count}}-strain catalog',
         picksCount: '{{count}} picks today',
         categoriesCount: '{{count}} categories',
         catalogSize: '{{count}} in catalog',
@@ -64,7 +64,7 @@ export const strainsView = {
         lastUpdated: 'Last updated: {{date}}',
         dismiss: 'Dismiss',
         addToLibrary: 'Add to Library',
-        addedHint: '{{name}} added to your strain library!',
+        addedHint: '{{name}} noted -- find it in the strain catalog!',
         genetics: 'Genetics',
         match: 'match',
         whyToday: 'Why today',
@@ -78,6 +78,15 @@ export const strainsView = {
             'classic-sativa': 'Classic Sativa',
             'beginner-friendly': 'Beginner',
             'terpene-rich': 'Terpene Rich',
+        },
+        pickReasons: {
+            'high-thc': 'High THC powerhouse',
+            'balanced-cbd': 'CBD-balanced for wellness',
+            autoflower: 'Easy autoflower grow',
+            'classic-indica': 'Classic Indica relaxation',
+            'classic-sativa': 'Uplifting Sativa energy',
+            'beginner-friendly': 'Perfect for beginners',
+            'terpene-rich': 'Rich terpene profile',
         },
     },
     filters: {

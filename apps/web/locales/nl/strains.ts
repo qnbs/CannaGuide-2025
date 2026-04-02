@@ -51,7 +51,7 @@ export const strainsView = {
     },
     dailyStrains: {
         title: '4:20 Daily Drop',
-        subtitle: '5 handgekozen soorten elke dag -- uit je catalogus van 778 soorten',
+        subtitle: '5 handgekozen soorten elke dag -- uit je catalogus van {{count}} soorten',
         picksCount: '{{count}} picks vandaag',
         categoriesCount: '{{count}} categorieen',
         catalogSize: '{{count}} in catalogus',
@@ -64,7 +64,7 @@ export const strainsView = {
         lastUpdated: 'Laatst bijgewerkt: {{date}}',
         dismiss: 'Verwijderen',
         addToLibrary: 'Toevoegen aan Bibliotheek',
-        addedHint: '{{name}} toegevoegd aan je soorten-bibliotheek!',
+        addedHint: '{{name}} genoteerd -- vind het in de soortencatalogus!',
         genetics: 'Genetica',
         match: 'match',
         whyToday: 'Waarom vandaag',
@@ -78,6 +78,15 @@ export const strainsView = {
             'classic-sativa': 'Klassiek Sativa',
             'beginner-friendly': 'Beginner',
             'terpene-rich': 'Terpeenrijk',
+        },
+        pickReasons: {
+            'high-thc': 'Hoog THC krachtpatser',
+            'balanced-cbd': 'CBD-gebalanceerd voor welzijn',
+            autoflower: 'Makkelijke autoflower kweek',
+            'classic-indica': 'Klassieke Indica ontspanning',
+            'classic-sativa': 'Opbeurende Sativa energie',
+            'beginner-friendly': 'Perfect voor beginners',
+            'terpene-rich': 'Rijk terpeenprofiel',
         },
     },
     filters: {

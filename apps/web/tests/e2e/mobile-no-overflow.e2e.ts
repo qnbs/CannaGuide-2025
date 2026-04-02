@@ -50,7 +50,7 @@ for (const viewport of MOBILE_VIEWPORTS) {
                 // Exclude decorative orbs and accessibility skip-links (intentionally off-screen)
                 const IGNORE_PATTERNS = ['app-shell__orb', 'skip-link']
                 const overflowingElements = await page.evaluate(
-                    ({ vwThreshold, ignorePatterns }) => {
+                    ({ ignorePatterns }) => {
                         const vw = document.documentElement.clientWidth
                         const elements = document.querySelectorAll('*')
                         const overflowing: string[] = []
@@ -74,7 +74,7 @@ for (const viewport of MOBILE_VIEWPORTS) {
                         }
                         return overflowing.slice(0, 5)
                     },
-                    { vwThreshold: 1, ignorePatterns: IGNORE_PATTERNS },
+                    { ignorePatterns: IGNORE_PATTERNS },
                 )
                 expect(
                     overflowingElements,

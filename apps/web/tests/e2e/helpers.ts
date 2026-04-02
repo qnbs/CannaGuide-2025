@@ -113,8 +113,8 @@ export const bootFreshAppPastOnboarding = async (page: Page) => {
     await page.goto('/')
     await deleteAppDatabases(page)
     await seedPostOnboardingState(page)
-    await page.reload({ waitUntil: 'networkidle' })
-    await page.waitForLoadState('networkidle')
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.waitForLoadState('load')
     await closeOnboardingIfVisible(page)
 }
 
@@ -128,8 +128,8 @@ export const closeOnboardingIfVisible = async (page: Page) => {
     const onboardingDialog = page.getByRole('dialog')
     let isVisible = await onboardingDialog.isVisible().catch(() => false)
 
-    for (let attempt = 0; attempt < 60 && !isVisible; attempt += 1) {
-        await page.waitForTimeout(250)
+    for (let attempt = 0; attempt < 20 && !isVisible; attempt += 1) {
+        await page.waitForTimeout(200)
         isVisible = await onboardingDialog.isVisible().catch(() => false)
     }
 
@@ -141,12 +141,12 @@ export const closeOnboardingIfVisible = async (page: Page) => {
     const englishButton = onboardingDialog.getByRole('button', { name: /^English$/i })
     if (await englishButton.isVisible().catch(() => false)) {
         await englishButton.click()
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(300)
     } else {
         const germanButton = onboardingDialog.getByRole('button', { name: /^Deutsch$/i })
         if (await germanButton.isVisible().catch(() => false)) {
             await germanButton.click()
-            await page.waitForTimeout(500)
+            await page.waitForTimeout(300)
         }
     }
 
@@ -161,7 +161,7 @@ export const closeOnboardingIfVisible = async (page: Page) => {
         if (await actionButton.isVisible().catch(() => false)) {
             await actionButton.click()
         }
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(300)
     }
 }
 

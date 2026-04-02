@@ -54,3 +54,22 @@ declare module 'three/examples/jsm/webxr/ARButton.js' {
         createButton(renderer: unknown, options?: Record<string, unknown>): HTMLButtonElement
     }
 }
+
+declare module 'three/examples/jsm/controls/OrbitControls.js' {
+    import type { Camera, EventDispatcher } from 'three'
+    export class OrbitControls extends EventDispatcher {
+        constructor(camera: Camera, domElement?: HTMLElement)
+        enabled: boolean
+        enableDamping: boolean
+        dampingFactor: number
+        enablePan: boolean
+        target: import('three').Vector3
+        minDistance: number
+        maxDistance: number
+        maxPolarAngle: number
+        update(): void
+        dispose(): void
+        addEventListener(type: string, listener: () => void): void
+        removeEventListener(type: string, listener: () => void): void
+    }
+}

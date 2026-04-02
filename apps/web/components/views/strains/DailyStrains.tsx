@@ -1,19 +1,27 @@
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { dailyStrainsService } from '@/services/dailyStrainsService'
-import type { DiscoveredStrain, DailyStrainsFeed, FeedStatus } from '@/services/dailyStrainsService'
+import { buildUserProfile, rankStrainsByRelevance } from '@/services/dailyStrainsService'
+import type {
+    DiscoveredStrain,
+    DailyStrainsFeed,
+    FeedStatus,
+    ScoredStrain,
+} from '@/services/dailyStrainsService'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { getUISnapshot } from '@/stores/useUIStore'
+import { useAppSelector } from '@/stores/store'
+import { selectUserStrains } from '@/stores/selectors'
 
 // ---------------------------------------------------------------------------
 // DiscoveryCard -- single strain discovery entry
 // ---------------------------------------------------------------------------
 
 interface DiscoveryCardProps {
-    strain: DiscoveredStrain
+    strain: DiscoveredStrain | ScoredStrain
     onDismiss: (id: string) => void
     onAddToLibrary: (strain: DiscoveredStrain) => void
 }
@@ -21,6 +29,7 @@ interface DiscoveryCardProps {
 const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
     ({ strain, onDismiss, onAddToLibrary }) => {
         const { t } = useTranslation()
+        const relevanceScore = 'relevanceScore' in strain ? strain.relevanceScore : null
 
         const typeColor =
             strain.type === 'Indica'
@@ -45,6 +54,11 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                         {strain.floweringType === 'Autoflower' && (
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-cyan-400 bg-cyan-400/10">
                                 Auto
+                            </span>
+                        )}
+                        {relevanceScore !== null && relevanceScore >= 65 && (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-amber-400 bg-amber-400/10">
+                                {relevanceScore}% match
                             </span>
                         )}
                     </div>
@@ -120,6 +134,22 @@ export const DailyStrains: React.FC = () => {
     const [searchResults, setSearchResults] = useState<DiscoveredStrain[]>([])
     const [isSearching, setIsSearching] = useState(false)
 
+    // Build user preference profile for recommendation scoring
+    const userStrains = useAppSelector(selectUserStrains)
+    const userProfile = useMemo(
+        () =>
+            buildUserProfile(
+                (userStrains ?? []).map((s) => {
+                    const entry: { type?: string; thc?: number; cbd?: number } = {}
+                    if (typeof s.type === 'string') entry.type = s.type
+                    if (typeof s.thc === 'number') entry.thc = s.thc
+                    if (typeof s.cbd === 'number') entry.cbd = s.cbd
+                    return entry
+                }),
+            ),
+        [userStrains],
+    )
+
     // Load feed on mount
     useEffect(() => {
         setStatus('loading')
@@ -186,9 +216,12 @@ export const DailyStrains: React.FC = () => {
     )
 
     const allItems = useMemo(() => {
-        if (searchResults.length > 0) return searchResults
-        return discoveries
-    }, [discoveries, searchResults])
+        const base = searchResults.length > 0 ? searchResults : discoveries
+        if (userProfile.strainCount > 0) {
+            return rankStrainsByRelevance(base, userProfile)
+        }
+        return base
+    }, [discoveries, searchResults, userProfile])
 
     if (status === 'loading') {
         return <SkeletonLoader count={4} />

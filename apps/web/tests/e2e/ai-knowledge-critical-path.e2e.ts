@@ -40,7 +40,7 @@ test.describe('AI Knowledge Critical Path', () => {
     test('Knowledge view has tabs (Mentor, Guide, etc.)', async ({ page }) => {
         const knowledgeNavButton = page.locator('[data-view-id="knowledge"]')
         await knowledgeNavButton.first().click()
-        await page.waitForTimeout(2_000)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Should have tabs or sub-navigation
         const tabs = page.getByRole('tab')
@@ -61,13 +61,13 @@ test.describe('AI Knowledge Critical Path', () => {
 
         const knowledgeNavButton = page.locator('[data-view-id="knowledge"]')
         await knowledgeNavButton.first().click()
-        await page.waitForTimeout(1_500)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Try to navigate to Mentor if it is a tab
         const mentorTab = page.getByRole('tab', { name: /mentor/i })
         if (await mentorTab.isVisible().catch(() => false)) {
             await mentorTab.click()
-            await page.waitForTimeout(1_000)
+            await page.waitForTimeout(500)
         }
 
         // Mentor should show some form of chat interface or input
@@ -96,9 +96,6 @@ test.describe('AI Knowledge Critical Path', () => {
         const settingsButton = page.getByRole('button', { name: /^settings$/i })
         await expect(settingsButton.first()).toBeVisible({ timeout: 15_000 })
         await settingsButton.first().click()
-        await page.waitForTimeout(2_000)
-
-        // Settings should render
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Look for AI-related settings content
@@ -116,7 +113,7 @@ test.describe('AI Knowledge Critical Path', () => {
 
         const knowledgeNavButton = page.locator('[data-view-id="knowledge"]')
         await knowledgeNavButton.first().click()
-        await page.waitForTimeout(2_000)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Switch through available tabs
         const tabs = page.getByRole('tab')

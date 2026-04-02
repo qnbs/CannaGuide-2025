@@ -198,6 +198,94 @@ function normalizeType(genotype: unknown): 'Indica' | 'Sativa' | 'Hybrid' {
 }
 
 // ---------------------------------------------------------------------------
+// Recommendation scoring -- rank discoveries by similarity to user library
+// ---------------------------------------------------------------------------
+
+export interface ScoredStrain extends DiscoveredStrain {
+    /** 0-100 relevance score based on user preferences. */
+    relevanceScore: number
+}
+
+export interface UserStrainProfile {
+    favoriteTypes: Record<string, number>
+    avgThc: number
+    avgCbd: number
+    strainCount: number
+}
+
+/**
+ * Build a preference profile from the user's favorite/library strains.
+ */
+export function buildUserProfile(
+    strains: Array<{ type?: string; thc?: number; cbd?: number }>,
+): UserStrainProfile {
+    const favoriteTypes: Record<string, number> = {}
+    let thcSum = 0
+    let cbdSum = 0
+    let count = 0
+
+    for (const s of strains) {
+        if (s.type) {
+            favoriteTypes[s.type] = (favoriteTypes[s.type] ?? 0) + 1
+        }
+        thcSum += s.thc ?? 0
+        cbdSum += s.cbd ?? 0
+        count++
+    }
+
+    return {
+        favoriteTypes,
+        avgThc: count > 0 ? thcSum / count : 15,
+        avgCbd: count > 0 ? cbdSum / count : 0.5,
+        strainCount: count,
+    }
+}
+
+/**
+ * Score a discovered strain against the user's preference profile.
+ * Returns 0-100 relevance score.
+ */
+function scoreStrain(strain: DiscoveredStrain, profile: UserStrainProfile): number {
+    if (profile.strainCount === 0) return 50 // No data -- neutral score
+
+    let score = 50
+
+    // Type preference match (max +25)
+    const totalTyped = Object.values(profile.favoriteTypes).reduce((a, b) => a + b, 0)
+    if (totalTyped > 0) {
+        const typeRatio = (profile.favoriteTypes[strain.type] ?? 0) / totalTyped
+        score += typeRatio * 25
+    }
+
+    // THC similarity (max +15) -- closer to user's avg = higher score
+    if (strain.thc > 0 && profile.avgThc > 0) {
+        const thcDiff = Math.abs(strain.thc - profile.avgThc)
+        score += Math.max(0, 15 - thcDiff)
+    }
+
+    // CBD match bonus (max +10)
+    if (strain.cbd > 0 && profile.avgCbd > 0) {
+        const cbdDiff = Math.abs(strain.cbd - profile.avgCbd)
+        score += Math.max(0, 10 - cbdDiff * 5)
+    }
+
+    return Math.min(100, Math.max(0, Math.round(score)))
+}
+
+/**
+ * Rank discovered strains by relevance to user preferences.
+ * Strains are sorted by score descending.
+ */
+export function rankStrainsByRelevance(
+    strains: DiscoveredStrain[],
+    profile: UserStrainProfile,
+): ScoredStrain[] {
+    return strains
+        .map((s) => ({ ...s, relevanceScore: scoreStrain(s, profile) }))
+        .sort((a, b) => b.relevanceScore - a.relevanceScore)
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 

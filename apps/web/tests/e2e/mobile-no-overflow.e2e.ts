@@ -30,7 +30,7 @@ for (const viewport of MOBILE_VIEWPORTS) {
                 const navButton = page.locator(`[data-view-id="${viewId}"]`)
                 if ((await navButton.count()) > 0) {
                     await navButton.first().click()
-                    await page.waitForTimeout(500)
+                    await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
                 }
 
                 // Assert no horizontal scrollbar (body scrollWidth <= clientWidth)

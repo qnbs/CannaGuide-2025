@@ -81,7 +81,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     sentryService.ts      Sentry error tracking
     consentService.ts     GDPR consent cookie management
 
-  data/                   Static data: 800+ strains, FAQ, lexicon, guides
+  data/                   Static data: 778 strains, FAQ, lexicon, guides
   locales/                i18n translations: en/, de/, es/, fr/, nl/
   hooks/                  19 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene

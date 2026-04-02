@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1000 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1013 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -51,7 +51,7 @@ apps/
     stores/              # Redux: slices/, selectors/, middleware, store config
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
     hooks/               # Custom React hooks (18)
-    data/                # Static data: 800+ strains, FAQ, lexicon, guides
+    data/                # Static data: 778 strains, FAQ, lexicon, guides
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
     utils/               # Shared utilities
@@ -124,7 +124,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, and pagehide teardown. All 7 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene) use this bus. See `docs/worker-bus.md`.
 
-9. **Seedbank API:** `seedbankService.ts` fetches from SeedFinder.eu via CORS proxy cascade (allorigins -> corsproxy.io). 5-min in-memory TTL cache. `isLocalOnlyMode()` guard. Deterministic mock fallback when API unavailable or `VITE_SEEDFINDER_API_KEY` not set.
+9. **Seedbank API:** `seedbankService.ts` provides deterministic mock seed pricing/availability. SeedFinder.eu API permanently removed (dead since mid-2024). 5 hardcoded seedbanks with hash-based availability. 5-min in-memory TTL cache. `isLocalOnlyMode()` guard.
 
 10. **Proactive Smart Coach:** `proactiveCoachService.ts` subscribes to the Redux store and monitors plant environment values (temperature, humidity, VPD, pH, EC) against safe thresholds. When a metric breaches limits, the service requests plant-specific advice via `aiFacade.aiService.getPlantAdvice()` and pushes a `SmartAlert` into `useAlertsStore` (Zustand). 2-hour per-metric per-plant cooldown prevents alert spam. Initialised in `index.tsx` after store hydration. `ProactiveAlertBanner.tsx` renders active alerts in `DetailedPlantView`. Native OS push notifications dispatched via `nativeBridgeService`.
 
@@ -217,7 +217,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1000 tests, 0 failures
+- Baseline: 1013 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
@@ -325,8 +325,9 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/services/sentryService.ts`                   | Sentry error tracking initialization                          |
 | `apps/web/services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)                      |
 | `apps/web/services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)                |
-| `apps/web/services/seedbankService.ts`                 | SeedFinder.eu API + CORS proxy cascade + mock fallback        |
+| `apps/web/services/seedbankService.ts`                 | Deterministic mock seed pricing (SeedFinder removed)          |
 | `apps/web/services/imageGenerationService.ts`          | SD-Turbo text-to-image (WebGPU, worker-offloaded)             |
+| `apps/web/services/dailyStrainsService.ts`             | 4:20 Daily Drop: seeded PRNG daily picks + AI strain search   |
 | `apps/web/services/workerBus.ts`                       | Promise-based worker communication bus (7 workers)            |
 | `apps/web/services/proactiveCoachService.ts`           | Smart coach: threshold monitoring + AI advice + cooldown      |
 | `apps/web/services/nativeBridgeService.ts`             | Unified native notification dispatch (Tauri/Capacitor/Web)    |

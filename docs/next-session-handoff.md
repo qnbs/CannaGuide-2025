@@ -4,7 +4,7 @@
 
 ## Latest Session (2026-04-02, Session 20) -- CSP Fix & Full Audit Completion
 
-**Status: v1.3.0-alpha. CSP strict-dynamic reverted to workable static-PWA policy. All 26 E2E tests unblocked. Full-scale deep audit 100% complete. Pending CI confirmation on commit e2d5165.**
+**Status: v1.3.0-beta (tagged `133cf80`). CSP strict-dynamic reverted to workable static-PWA policy. All 26 E2E tests unblocked. CI green. Full-scale deep audit 100% complete and released.**
 
 ### What Was Done (Session 20)
 

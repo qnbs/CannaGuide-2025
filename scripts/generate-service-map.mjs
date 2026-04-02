@@ -132,3 +132,75 @@ const edgeCount = edgeSet.size
 console.debug(
     `[OK] Service map: ${nodeCount} nodes, ${edgeCount} edges -> ${relative(process.cwd(), OUTPUT_FILE)}`,
 )
+
+// ---------------------------------------------------------------------------
+// Acyclic enforcement (K-03) -- DFS-based cycle detection
+// ---------------------------------------------------------------------------
+
+function detectCycles(nodeSet, edges) {
+    const adj = new Map()
+    for (const id of nodeSet) adj.set(id, [])
+    for (const [a, b] of edges) {
+        if (adj.has(a)) adj.get(a).push(b)
+    }
+
+    const WHITE = 0,
+        GRAY = 1,
+        BLACK = 2
+    const color = new Map()
+    for (const id of nodeSet) color.set(id, WHITE)
+    const cycles = []
+
+    function dfs(node, path) {
+        color.set(node, GRAY)
+        path.push(node)
+        for (const neighbor of adj.get(node) ?? []) {
+            if (color.get(neighbor) === GRAY) {
+                const cycleStart = path.indexOf(neighbor)
+                cycles.push([...path.slice(cycleStart), neighbor])
+            } else if (color.get(neighbor) === WHITE) {
+                dfs(neighbor, path)
+            }
+        }
+        path.pop()
+        color.set(node, BLACK)
+    }
+
+    for (const id of nodeSet) {
+        if (color.get(id) === WHITE) dfs(id, [])
+    }
+    return cycles
+}
+
+const cycles = detectCycles(nodeSet, edges)
+
+// Known cycles that are accepted (lazy-loaded, no runtime issue)
+const KNOWN_CYCLES = new Set([
+    'LocalAIInfrastructure -> localAiPreloadService -> localAI -> localAiInfrastructureService -> LocalAIInfrastructure',
+    'localAiPreloadService -> localAI -> localAiInfrastructureService -> localAiPreloadService',
+])
+
+const unknownCycles = cycles.filter((c) => !KNOWN_CYCLES.has(c.join(' -> ')))
+
+if (cycles.length > 0) {
+    const knownCount = cycles.length - unknownCycles.length
+    if (knownCount > 0) {
+        console.debug(
+            `[INFO] ${knownCount} known circular dependency cycle(s) (lazy-loaded, accepted).`,
+        )
+    }
+}
+
+const strict = process.argv.includes('--strict')
+if (unknownCycles.length > 0) {
+    console.error(`[FAIL] ${unknownCycles.length} NEW circular dependency cycle(s) detected:`)
+    for (const cycle of unknownCycles) {
+        console.error(`  ${cycle.join(' -> ')}`)
+    }
+    process.exit(1)
+} else if (strict && cycles.length > 0) {
+    console.error(`[FAIL] --strict: ${cycles.length} cycle(s) exist (including known).`)
+    process.exit(1)
+} else {
+    console.debug('[OK] No new circular dependencies detected.')
+}

@@ -22,7 +22,7 @@ const MAIN_BUDGET_KB = 300
 const VENDOR_BUDGET_KB = 500
 
 // Chunks exempt from budget enforcement (lazy-loaded, not in critical path)
-const EXEMPT_CHUNKS = ['ai-runtime', 'strains-data', 'three']
+const EXEMPT_CHUNKS = ['ai-runtime', 'strains-data', 'three', 'locale-']
 
 async function getJsFiles(dir) {
     try {

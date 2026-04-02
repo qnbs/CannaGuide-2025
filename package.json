@@ -118,6 +118,7 @@
     },
     "overrides": {
         "serialize-javascript": "7.0.4",
-        "tmp": "0.2.5"
+        "tmp": "0.2.5",
+        "lodash-es": "4.18.1"
     }
 }

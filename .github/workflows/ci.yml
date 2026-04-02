@@ -104,6 +104,9 @@ jobs:
             - name: Bundle budget check
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 
+            - name: Service dependency acyclic check
+              run: node scripts/generate-service-map.mjs
+
             - name: Upload build artifact
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:

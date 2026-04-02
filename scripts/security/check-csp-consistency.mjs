@@ -11,7 +11,7 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const ROOT = resolve(__dirname, '..')
+const ROOT = resolve(__dirname, '..', '..')
 
 /**
  * Parse a CSP string into a sorted map of directive -> sorted values.
@@ -77,16 +77,36 @@ function extractFromTauri() {
 
 /**
  * Extract CSP from securityHeaders.ts (the single source of truth).
+ * Parses the CSP_DIRECTIVES array and joins them like the runtime does.
  */
 function extractFromSecurityHeaders() {
     const ts = readFileSync(resolve(ROOT, 'apps/web/securityHeaders.ts'), 'utf-8')
-    // Match: export const CSP = `...` or export const CSP = '...'
-    const match = ts.match(/export\s+const\s+CSP\s*=\s*[`'"]([^`'"]+)[`'"]/s)
-    if (!match) {
-        console.error('[FAIL] Could not find CSP export in securityHeaders.ts')
+    // Extract individual directive strings from the CSP_DIRECTIVES array
+    const arrayMatch = ts.match(/const\s+CSP_DIRECTIVES[\s\S]*?=\s*\[([\s\S]*?)\]/m)
+    if (!arrayMatch) {
+        console.error('[FAIL] Could not find CSP_DIRECTIVES array in securityHeaders.ts')
         process.exit(1)
     }
-    return match[1].replace(/\n/g, ' ')
+    const directiveStrings = []
+    // Match double-quoted strings (directives use double quotes in the TS array)
+    // or single-quoted strings that contain a CSP directive name
+    const stringPattern = /"([^"]+)"/g
+    let m
+    while ((m = stringPattern.exec(arrayMatch[1])) !== null) {
+        directiveStrings.push(m[1])
+    }
+    // Fallback: try single-quoted if no double-quoted found
+    if (directiveStrings.length === 0) {
+        const singlePattern = /'([^']+)'/g
+        while ((m = singlePattern.exec(arrayMatch[1])) !== null) {
+            directiveStrings.push(m[1])
+        }
+    }
+    if (directiveStrings.length === 0) {
+        console.error('[FAIL] Could not parse any directives from CSP_DIRECTIVES')
+        process.exit(1)
+    }
+    return directiveStrings.join('; ') + ';'
 }
 
 // ---------------------------------------------------------------------------

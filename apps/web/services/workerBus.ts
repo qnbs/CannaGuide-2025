@@ -18,6 +18,7 @@
  */
 
 import type { WorkerRequest, WorkerResponse } from '@/types/workerBus.types'
+import { WorkerErrorCode, WorkerBusError } from '@/types/workerBus.types'
 
 // ---------------------------------------------------------------------------
 // Internal types
@@ -205,7 +206,9 @@ class WorkerBusImpl {
         timeoutOrOptions?: number | DispatchOptions,
     ): Promise<TResponse> {
         if (this.disposed) {
-            return Promise.reject(new Error('[WorkerBus] Bus has been disposed'))
+            return Promise.reject(
+                new WorkerBusError('Bus has been disposed', WorkerErrorCode.DISPOSED, workerName),
+            )
         }
 
         const opts =
@@ -320,7 +323,11 @@ class WorkerBusImpl {
         const worker = this.workers.get(workerName)
         if (!worker) {
             return Promise.reject(
-                new Error(`[WorkerBus] No worker registered with name "${workerName}"`),
+                new WorkerBusError(
+                    `No worker registered with name "${workerName}"`,
+                    WorkerErrorCode.NOT_REGISTERED,
+                    workerName,
+                ),
             )
         }
 
@@ -337,8 +344,10 @@ class WorkerBusImpl {
                 }
                 if (queue.length >= DEFAULT_MAX_QUEUE_SIZE) {
                     reject(
-                        new Error(
-                            `[WorkerBus] Queue full for "${workerName}" (${DEFAULT_MAX_QUEUE_SIZE} pending)`,
+                        new WorkerBusError(
+                            `Queue full for "${workerName}" (${DEFAULT_MAX_QUEUE_SIZE} pending)`,
+                            WorkerErrorCode.QUEUE_FULL,
+                            workerName,
                         ),
                     )
                     return
@@ -375,8 +384,10 @@ class WorkerBusImpl {
                 tel.totalTimeouts++
                 this.decrementActive(workerName)
                 reject(
-                    new Error(
-                        `[WorkerBus] Request to "${workerName}" timed out after ${timeoutMs}ms`,
+                    new WorkerBusError(
+                        `Request to "${workerName}" timed out after ${timeoutMs}ms`,
+                        WorkerErrorCode.TIMEOUT,
+                        workerName,
                     ),
                 )
             }, timeoutMs)
@@ -440,7 +451,16 @@ class WorkerBusImpl {
             } catch (err) {
                 lastError = err instanceof Error ? err : new Error(String(err))
                 // Do not retry if worker is missing, bus disposed, or queue full
-                if (NON_RETRYABLE.some((marker) => lastError?.message.includes(marker))) {
+                if (lastError instanceof WorkerBusError) {
+                    const nonRetryableCodes: WorkerErrorCode[] = [
+                        WorkerErrorCode.NOT_REGISTERED,
+                        WorkerErrorCode.DISPOSED,
+                        WorkerErrorCode.QUEUE_FULL,
+                    ]
+                    if (nonRetryableCodes.includes(lastError.code)) {
+                        throw lastError
+                    }
+                } else if (NON_RETRYABLE.some((marker) => lastError?.message.includes(marker))) {
                     throw lastError
                 }
                 if (attempt < retries) {
@@ -474,7 +494,13 @@ class WorkerBusImpl {
 
         if (data.error) {
             tel.totalErrors++
-            entry.reject(new Error(data.error))
+            entry.reject(
+                new WorkerBusError(
+                    data.error,
+                    data.errorCode ?? WorkerErrorCode.EXECUTION_ERROR,
+                    entry.workerName,
+                ),
+            )
         } else {
             entry.resolve(data.data)
         }

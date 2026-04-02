@@ -6,6 +6,7 @@
 ```mermaid
 flowchart TD
     LocalAIInfrastructure["LocalAIInfrastructure"]
+    aiConsentService["aiConsentService"]
     aiEcoModeService["aiEcoModeService"]
     aiFacade["aiFacade"]
     aiLoadingMessages["aiLoadingMessages"]

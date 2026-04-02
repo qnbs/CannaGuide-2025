@@ -106,6 +106,9 @@ const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
 
 function resolveManualChunk(id: string): string | undefined {
     if (id.includes('/data/strains/') && !id.endsWith('index.ts')) return 'strains-data'
+    // Split locale bundles into per-language chunks (de.js, es.js, fr.js, nl.js)
+    const localeMatch = id.match(/\/locales\/(de|es|fr|nl)\//)
+    if (localeMatch) return `locale-${localeMatch[1]}`
     if (!id.includes('node_modules')) return undefined
     for (const group of CHUNK_GROUPS) {
         if (group.patterns.some((p) => id.includes(p))) return group.name

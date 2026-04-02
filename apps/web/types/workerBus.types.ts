@@ -34,6 +34,52 @@ export interface WorkerResponse<TData = unknown> {
     data?: TData
     /** Human-readable error string on failure. */
     error?: string
+    /** Typed error code for programmatic handling (K-04). */
+    errorCode?: WorkerErrorCode
+}
+
+// ---------------------------------------------------------------------------
+// Typed Worker Error Codes (K-04)
+// ---------------------------------------------------------------------------
+
+/** Exhaustive error codes for worker failures. Enables typed error handling. */
+export enum WorkerErrorCode {
+    /** Generic / uncategorised failure. */
+    UNKNOWN = 'UNKNOWN',
+    /** Request exceeded the configured timeout. */
+    TIMEOUT = 'TIMEOUT',
+    /** Worker is not registered with the bus. */
+    NOT_REGISTERED = 'NOT_REGISTERED',
+    /** Bus or worker has been disposed / torn down. */
+    DISPOSED = 'DISPOSED',
+    /** Backpressure queue is full. */
+    QUEUE_FULL = 'QUEUE_FULL',
+    /** Worker threw during execution. */
+    EXECUTION_ERROR = 'EXECUTION_ERROR',
+    /** Invalid payload or message format. */
+    INVALID_PAYLOAD = 'INVALID_PAYLOAD',
+    /** Model or resource not available. */
+    RESOURCE_UNAVAILABLE = 'RESOURCE_UNAVAILABLE',
+    /** Out of memory / allocation failure. */
+    OUT_OF_MEMORY = 'OUT_OF_MEMORY',
+    /** Operation was cancelled (e.g. AbortController). */
+    CANCELLED = 'CANCELLED',
+}
+
+/**
+ * Structured error thrown by WorkerBus dispatch.
+ * Carries a typed `code` for programmatic error handling.
+ */
+export class WorkerBusError extends Error {
+    readonly code: WorkerErrorCode
+    readonly workerName: string
+
+    constructor(message: string, code: WorkerErrorCode, workerName: string) {
+        super(message)
+        this.name = 'WorkerBusError'
+        this.code = code
+        this.workerName = workerName
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -50,6 +96,10 @@ export function workerOk<T>(messageId: string, data: T): WorkerResponse<T> {
 /**
  * Build an error response that satisfies `WorkerResponse`.
  */
-export function workerErr(messageId: string, error: string): WorkerResponse<never> {
-    return { messageId, success: false, error }
+export function workerErr(
+    messageId: string,
+    error: string,
+    errorCode: WorkerErrorCode = WorkerErrorCode.EXECUTION_ERROR,
+): WorkerResponse<never> {
+    return { messageId, success: false, error, errorCode }
 }

@@ -35,7 +35,9 @@ for (const viewport of MOBILE_VIEWPORTS) {
 
                 // Assert no horizontal scrollbar (body scrollWidth <= clientWidth)
                 const hasOverflow = await page.evaluate(() => {
-                    return document.documentElement.scrollWidth > document.documentElement.clientWidth
+                    return (
+                        document.documentElement.scrollWidth > document.documentElement.clientWidth
+                    )
                 })
                 expect(hasOverflow).toBe(false)
 

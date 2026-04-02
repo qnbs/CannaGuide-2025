@@ -113,8 +113,7 @@ export const bootFreshAppPastOnboarding = async (page: Page) => {
     await page.goto('/')
     await deleteAppDatabases(page)
     await seedPostOnboardingState(page)
-    await page.reload({ waitUntil: 'domcontentloaded' })
-    await page.waitForLoadState('load')
+    await page.reload({ waitUntil: 'networkidle' })
     await closeOnboardingIfVisible(page)
 }
 

@@ -13,8 +13,8 @@ import {
 } from '@/services/strainDataProviderRegistry'
 
 describe('PROVIDER_CONFIGS', () => {
-    it('contains 9 providers', () => {
-        expect(Object.keys(PROVIDER_CONFIGS)).toHaveLength(9)
+    it('contains 8 providers', () => {
+        expect(Object.keys(PROVIDER_CONFIGS)).toHaveLength(8)
     })
 
     it('all providers have required config fields', () => {
@@ -32,7 +32,7 @@ describe('PROVIDER_CONFIGS', () => {
 
 describe('getProviderStatus', () => {
     it('returns status string for known provider', () => {
-        const status = getProviderStatus('seedfinder')
+        const status = getProviderStatus('otreeba')
         expect(typeof status).toBe('string')
         expect(['available', 'unavailable', 'rate-limited', 'no-key']).toContain(status)
     })
@@ -81,9 +81,9 @@ describe('getProvidersByQuality', () => {
 
 describe('buildProvenance', () => {
     it('creates a provenance record', () => {
-        const prov = buildProvenance('seedfinder', 'sf-123', true)
-        expect(prov.provider).toBe('seedfinder')
-        expect(prov.externalId).toBe('sf-123')
+        const prov = buildProvenance('otreeba', 'ot-123', true)
+        expect(prov.provider).toBe('otreeba')
+        expect(prov.externalId).toBe('ot-123')
         expect(prov.labVerified).toBe(true)
         expect(prov.fetchedAt).toBeTruthy()
         expect(prov.confidence).toBeGreaterThan(0)

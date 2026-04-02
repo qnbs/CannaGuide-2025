@@ -24,7 +24,6 @@ const heightSchema = z.enum(['Short', 'Medium', 'Tall', 'Very Tall'])
 const strainApiProviderSchema = z.enum([
     'otreeba',
     'cannlytics',
-    'seedfinder',
     'strainapi',
     'cannseek',
     'openthc',
@@ -173,43 +172,6 @@ export const externalStrainDataSchema = z.object({
 export type ValidatedExternalStrainData = z.infer<typeof externalStrainDataSchema>
 
 // ---------------------------------------------------------------------------
-// Seedfinder-specific response schemas
-// ---------------------------------------------------------------------------
-
-export const seedfinderStrainSchema = z.object({
-    id: z.string().max(256).optional(),
-    name: z
-        .string()
-        .min(1)
-        .max(256)
-        .transform((s) => s.trim()),
-    breedby: z.string().max(256).optional(),
-    type: z.string().max(64).optional(),
-    flowering: z
-        .object({
-            auto: z.boolean().optional(),
-            days: z.number().int().min(1).max(365).optional(),
-            info: z.string().max(256).optional(),
-        })
-        .optional(),
-    parents: z
-        .record(
-            z.string(),
-            z.object({
-                name: z.string().max(256).optional(),
-                id: z.string().max(256).optional(),
-            }),
-        )
-        .optional(),
-    genotype: z.string().max(256).optional(),
-    thc: z.string().max(32).optional(),
-    cbd: z.string().max(32).optional(),
-    description: z.string().max(10_000).optional(),
-    url: z.string().url().max(2048).optional(),
-})
-
-export type ValidatedSeedfinderStrain = z.infer<typeof seedfinderStrainSchema>
-
 // ---------------------------------------------------------------------------
 // Otreeba-specific response schema
 // ---------------------------------------------------------------------------

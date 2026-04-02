@@ -3,7 +3,7 @@
 //
 // Manages the in-app strain news feed. Sources:
 //   1. Pending strains from the daily GH Actions bot (static JSON import)
-//   2. On-demand SeedFinder API searches (user-initiated)
+//   2. AI-powered strain lookup (replaces dead SeedFinder API)
 //   3. RSS-like discovery feed rendering
 // ---------------------------------------------------------------------------
 
@@ -121,73 +121,160 @@ async function loadPendingStrains(): Promise<DiscoveredStrain[]> {
 }
 
 // ---------------------------------------------------------------------------
-// SeedFinder on-demand search (user-initiated)
+// AI-powered strain lookup (replaces dead SeedFinder API)
 // ---------------------------------------------------------------------------
 
-const SEEDFINDER_BASE = 'https://en.seedfinder.eu/api/json'
-const CORS_PROXIES = [
-    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-] as const
-
-async function fetchViaProxy(directUrl: string): Promise<unknown> {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 10_000)
-    try {
-        for (const proxyFn of CORS_PROXIES) {
-            try {
-                const res = await fetch(proxyFn(directUrl), {
-                    signal: controller.signal,
-                    headers: { Accept: 'application/json' },
-                })
-                if (res.ok) return await res.json()
-            } catch {
-                /* try next */
-            }
-        }
-    } finally {
-        clearTimeout(timer)
-    }
-    return null
-}
-
-export async function searchSeedFinder(query: string): Promise<DiscoveredStrain[]> {
-    if (isLocalOnlyMode()) return []
+/**
+ * Search for cannabis strains using AI.
+ * Uses the AI facade to get structured strain information.
+ * Falls back to local catalog search when AI is unavailable.
+ */
+export async function searchStrainsWithAI(query: string): Promise<DiscoveredStrain[]> {
     if (!query || query.length < 2) return []
 
-    const encoded = encodeURIComponent(query.trim())
-    const url = `${SEEDFINDER_BASE}/strain-search/${encoded}/?lang=en`
-    const data = await fetchViaProxy(url)
+    // Always search local catalog first
+    const localResults = await searchLocalCatalog(query)
 
-    if (!data || typeof data !== 'object') return []
+    // In local-only mode, return local results only
+    if (isLocalOnlyMode()) return localResults
 
-    const results: DiscoveredStrain[] = []
-    const entries = Object.entries(data as Record<string, unknown>)
+    // Try AI-powered lookup for additional results
+    try {
+        const { aiService, getAiMode } = await import('@/services/aiFacade')
+        const mode = getAiMode()
 
-    for (const [breederId, strains] of entries) {
-        if (!strains || typeof strains !== 'object') continue
-        for (const [strainId, info] of Object.entries(strains as Record<string, unknown>)) {
-            if (!info || typeof info !== 'object') continue
-            const raw = info as Record<string, unknown>
-            results.push({
-                id: `sf-${breederId}-${strainId}`,
-                name: String(raw.name ?? raw.strainname ?? strainId),
-                breeder: String(raw.breedername ?? breederId),
-                type: normalizeType(raw.genotype),
-                floweringType: raw.auto ? 'Autoflower' : 'Photoperiod',
-                thc: parseFloat(String(raw.thc ?? 0)) || 0,
-                cbd: parseFloat(String(raw.cbd ?? 0)) || 0,
-                description: String(raw.descr ?? '').slice(0, 300),
-                genetics: String(raw.genetics ?? ''),
-                source: 'seedfinder-search',
-                sourceUrl: `https://en.seedfinder.eu/strain-info/${strainId}/${breederId}/`,
-                discoveredAt: new Date().toISOString(),
-                discoverySource: 'user-search',
-            })
+        // Skip AI call in eco mode or if no provider configured
+        if (mode === 'eco') return localResults
+
+        const lang = (document.documentElement.lang as 'en' | 'de') || 'en'
+
+        // Use a minimal plant stub for the mentor API
+        const plantStub = { id: 'strain-lookup', name: query } as Parameters<
+            typeof aiService.getMentorResponse
+        >[0]
+        const response = await aiService.getMentorResponse(
+            plantStub,
+            buildStrainLookupPrompt(query, lang),
+            lang,
+        )
+
+        if (response?.content) {
+            const aiStrains = parseAIStrainResponse(response.content)
+            // Merge: local results first, then AI results (deduplicated)
+            const seenIds = new Set(localResults.map((s) => s.id))
+            const merged = [...localResults]
+            for (const strain of aiStrains) {
+                if (!seenIds.has(strain.id)) {
+                    seenIds.add(strain.id)
+                    merged.push(strain)
+                }
+            }
+            return merged.slice(0, 30)
         }
+    } catch {
+        // AI unavailable -- return local results
     }
 
-    return results.slice(0, 30)
+    return localResults
+}
+
+function buildStrainLookupPrompt(query: string, lang: string): string {
+    const isDE = lang === 'de'
+    return isDE
+        ? `Ich suche Informationen ueber die Cannabis-Sorte "${query}". ` +
+              'Bitte gib mir fuer jede passende Sorte (maximal 5) folgende Daten im JSON-Array-Format: ' +
+              '[{"name": "...", "breeder": "...", "type": "Indica|Sativa|Hybrid", ' +
+              '"floweringType": "Photoperiod|Autoflower", "thc": <number>, "cbd": <number>, ' +
+              '"description": "...", "genetics": "Parent1 x Parent2"}]. ' +
+              'Nur echte, verifizierte Sorten. Keine erfundenen Daten.'
+        : `I am looking for information about the cannabis strain "${query}". ` +
+              'Please provide for each matching strain (max 5) the following data in JSON array format: ' +
+              '[{"name": "...", "breeder": "...", "type": "Indica|Sativa|Hybrid", ' +
+              '"floweringType": "Photoperiod|Autoflower", "thc": <number>, "cbd": <number>, ' +
+              '"description": "...", "genetics": "Parent1 x Parent2"}]. ' +
+              'Only real, verified strains. No fabricated data.'
+}
+
+function parseAIStrainResponse(text: string): DiscoveredStrain[] {
+    const results: DiscoveredStrain[] = []
+
+    // Try to extract JSON array from AI response
+    const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
+    if (!jsonMatch) return results
+
+    try {
+        const parsed = JSON.parse(jsonMatch) as Array<Record<string, unknown>>
+        if (!Array.isArray(parsed)) return results
+
+        for (const item of parsed) {
+            if (!item || typeof item !== 'object') continue
+            const name = String(item.name ?? '').trim()
+            if (!name) continue
+
+            const id = `ai-${name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/-+$/, '')}`
+            results.push({
+                id,
+                name,
+                breeder: String(item.breeder ?? 'Unknown'),
+                type: normalizeType(item.type),
+                floweringType:
+                    String(item.floweringType ?? '') === 'Autoflower'
+                        ? 'Autoflower'
+                        : 'Photoperiod',
+                thc: parseFloat(String(item.thc ?? 0)) || 0,
+                cbd: parseFloat(String(item.cbd ?? 0)) || 0,
+                description: String(item.description ?? '').slice(0, 300),
+                genetics: String(item.genetics ?? ''),
+                source: 'ai-lookup',
+                sourceUrl: '',
+                discoveredAt: new Date().toISOString(),
+                discoverySource: 'ai-search',
+            })
+        }
+    } catch {
+        // JSON parse failed -- ignore
+    }
+
+    return results
+}
+
+/**
+ * Search the local strain catalog for matches.
+ */
+async function searchLocalCatalog(query: string): Promise<DiscoveredStrain[]> {
+    try {
+        const { allStrainsData } = await import('@/data/strains/index')
+        const q = query.toLowerCase()
+        const matches = allStrainsData
+            .filter(
+                (s) =>
+                    s.name.toLowerCase().includes(q) ||
+                    (s.genetics?.toLowerCase().includes(q) ?? false) ||
+                    (s.description?.toLowerCase().includes(q) ?? false),
+            )
+            .slice(0, 20)
+            .map((s) => ({
+                id: s.id,
+                name: s.name,
+                breeder: 'Catalog',
+                type: (s.type ?? 'Hybrid') as 'Indica' | 'Sativa' | 'Hybrid',
+                floweringType: (s.floweringType ?? 'Photoperiod') as 'Photoperiod' | 'Autoflower',
+                thc: s.thc ?? 0,
+                cbd: s.cbd ?? 0,
+                description: s.description ?? '',
+                genetics: s.genetics ?? '',
+                source: 'local-catalog',
+                sourceUrl: '',
+                discoveredAt: new Date().toISOString(),
+                discoverySource: 'catalog-search',
+            }))
+        return matches
+    } catch {
+        return []
+    }
 }
 
 function normalizeType(genotype: unknown): 'Indica' | 'Sativa' | 'Hybrid' {
@@ -351,8 +438,8 @@ export const dailyStrainsService = {
         dismissStrainId(strainId)
     },
 
-    /** User-initiated SeedFinder search. */
-    search: searchSeedFinder,
+    /** AI-powered strain search (replaces SeedFinder). */
+    search: searchStrainsWithAI,
 
     /** Invalidate cache to force re-fetch. */
     invalidate(): void {

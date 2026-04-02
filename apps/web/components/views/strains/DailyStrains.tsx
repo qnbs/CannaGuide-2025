@@ -89,15 +89,11 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                 <div className="flex items-center justify-between pt-2 border-t border-white/5">
                     <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span>{new Date(strain.discoveredAt).toLocaleDateString()}</span>
-                        {strain.sourceUrl && (
-                            <a
-                                href={strain.sourceUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary-400 hover:text-primary-300 underline"
-                            >
-                                SeedFinder
-                            </a>
+                        {strain.source === 'ai-lookup' && (
+                            <span className="text-primary-400">AI</span>
+                        )}
+                        {strain.source === 'local-catalog' && (
+                            <span className="text-emerald-400">Catalog</span>
                         )}
                     </div>
                     <div className="flex gap-2">

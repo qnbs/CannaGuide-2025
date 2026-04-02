@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // ---------------------------------------------------------------------------
-// fetch-daily-strains.mjs -- Automated daily strain discovery
+// fetch-daily-strains.mjs -- DEPRECATED (SeedFinder API dead since mid-2024)
 //
-// Fetches new/updated strain data from SeedFinder.eu API and writes
-// discovery results to `artifacts/daily-strains-feed.json`.
-// This file is consumed by the in-app DailyStrains service.
+// This script was used to fetch new strain data from SeedFinder.eu API.
+// It has been replaced by the strains:extract / strains:generate pipeline.
+// Kept for historical reference only.
 //
 // Usage: node scripts/fetch-daily-strains.mjs
 // Env:   VITE_SEEDFINDER_API_KEY (optional -- uses public endpoints)

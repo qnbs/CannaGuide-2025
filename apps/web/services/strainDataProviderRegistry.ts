@@ -140,20 +140,6 @@ const checkRateLimit = (providerId: string, limitPerMin: number): boolean => {
 // ---------------------------------------------------------------------------
 
 export const PROVIDER_CONFIGS: Record<StrainApiProvider, ProviderConfig> = {
-    seedfinder: {
-        id: 'seedfinder',
-        name: 'Seedfinder.eu',
-        baseUrl: 'https://en.seedfinder.eu/api/json',
-        requiresApiKey: true,
-        apiKeyEnvVar: 'VITE_SEEDFINDER_API_KEY',
-        capabilities: ['search', 'strain-detail', 'lineage', 'breeder-info'],
-        rateLimitPerMin: 30,
-        needsCorsProxy: true,
-        hasStaticDataset: false,
-        qualityTier: 2,
-        region: 'eu',
-        description: 'Premier genetic lineage database with 40,000+ strains and breeder data',
-    },
     otreeba: {
         id: 'otreeba',
         name: 'Otreeba',
@@ -438,21 +424,6 @@ const providerFetchers: Partial<
         (query: string, config: ProviderConfig) => Promise<Record<string, unknown>[]>
     >
 > = {
-    seedfinder: async (query, config) => {
-        const apiKey = import.meta.env.VITE_SEEDFINDER_API_KEY
-        if (!apiKey) return []
-        const url = `${config.baseUrl}/strain/${encodeURIComponent(query)}?ac=${apiKey}&lng=en`
-        try {
-            const res = await fetchWithCorsProxy(url)
-            const data = await res.json()
-            if (!data || data.error) return []
-            // Normalize to our format
-            return [normalizeSeedfinderResult(data, query)]
-        } catch {
-            return []
-        }
-    },
-
     otreeba: async (query, config) => {
         const url = `${config.baseUrl}/strains?sort=-name&page[limit]=10&filter[name]=${encodeURIComponent(query)}`
         try {
@@ -513,35 +484,6 @@ const providerFetchers: Partial<
 // ---------------------------------------------------------------------------
 // Normalization helpers
 // ---------------------------------------------------------------------------
-
-const normalizeSeedfinderResult = (
-    data: Record<string, unknown>,
-    query: string,
-): Record<string, unknown> => {
-    const parents = data.parents as Record<string, { name?: string; id?: string }> | undefined
-    const parentList = parents
-        ? Object.values(parents).map((p) => ({ name: p.name ?? 'Unknown', id: p.id }))
-        : []
-
-    const flowering = data.flowering as { auto?: boolean; days?: number } | undefined
-
-    return {
-        provider: 'seedfinder',
-        name: (data.name as string) ?? query,
-        type: mapSeedfinderType(data.genotype as string | undefined),
-        genetics: data.genotype as string | undefined,
-        description: data.description as string | undefined,
-        thc: parsePercentString(data.thc as string | undefined),
-        cbd: parsePercentString(data.cbd as string | undefined),
-        floweringType: flowering?.auto ? 'Autoflowering' : 'Photoperiod',
-        floweringTime: flowering?.days,
-        lineage: {
-            parents: parentList,
-            breeder: data.breedby as string | undefined,
-        },
-        sourceUrl: data.url as string | undefined,
-    }
-}
 
 const normalizeOtreebaResult = (data: Record<string, unknown>): Record<string, unknown> => {
     const genetics = data.genetics as { names?: string } | undefined
@@ -670,21 +612,7 @@ const mapCansativaType = (
 // Utility helpers
 // ---------------------------------------------------------------------------
 
-const mapSeedfinderType = (
-    genotype: string | undefined,
-): 'Sativa' | 'Indica' | 'Hybrid' | undefined => {
-    if (!genotype) return undefined
-    const lower = genotype.toLowerCase()
-    if (lower.includes('sativa') && !lower.includes('indica')) return 'Sativa'
-    if (lower.includes('indica') && !lower.includes('sativa')) return 'Indica'
-    return 'Hybrid'
-}
-
-const parsePercentString = (value: string | undefined): number | undefined => {
-    if (!value) return undefined
-    const match = value.match(/(\d+(?:\.\d+)?)/)
-    return match?.[1] ? Number.parseFloat(match[1]) : undefined
-}
+// (removed unused parsePercentString -- was only used by seedfinder)
 
 const computeRelevance = (query: string, data: ValidatedExternalStrainData): number => {
     const q = query.toLowerCase()

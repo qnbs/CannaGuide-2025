@@ -2,7 +2,7 @@
 // equipmentProductService.ts -- Product link resolution for equipment items
 //
 // Maps equipment product names to vendor purchase links and prices.
-// Sources: Static catalog + dynamic SeedFinder/shop API lookups.
+// Sources: Static catalog + vendor links.
 // ---------------------------------------------------------------------------
 
 import type { ProductLink, RecommendationCategory } from '@/types'

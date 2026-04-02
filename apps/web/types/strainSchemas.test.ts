@@ -5,7 +5,6 @@
 import { describe, it, expect } from 'vitest'
 import {
     externalStrainDataSchema,
-    seedfinderStrainSchema,
     otreebaStrainSchema,
     kushyStrainSchema,
     dataProvenanceSchema,
@@ -22,8 +21,8 @@ describe('externalStrainDataSchema', () => {
     it('validates minimal external strain data', () => {
         const result = externalStrainDataSchema.safeParse({
             name: 'OG Kush',
-            provider: 'seedfinder',
-            externalId: 'sf-123',
+            provider: 'otreeba',
+            externalId: 'ot-123',
         })
         expect(result.success).toBe(true)
     })
@@ -49,8 +48,8 @@ describe('externalStrainDataSchema', () => {
 
     it('rejects missing name', () => {
         const result = externalStrainDataSchema.safeParse({
-            provider: 'seedfinder',
-            externalId: 'sf-123',
+            provider: 'otreeba',
+            externalId: 'ot-123',
         })
         expect(result.success).toBe(false)
     })
@@ -67,7 +66,7 @@ describe('externalStrainDataSchema', () => {
     it('clamps THC to valid range', () => {
         const result = externalStrainDataSchema.safeParse({
             name: 'Test',
-            provider: 'seedfinder',
+            provider: 'otreeba',
             externalId: 'x',
             thc: -5,
         })
@@ -75,32 +74,6 @@ describe('externalStrainDataSchema', () => {
         if (result.success) {
             expect(result.data.thc).toBeGreaterThanOrEqual(0)
         }
-    })
-})
-
-// ---------------------------------------------------------------------------
-// seedfinderStrainSchema
-// ---------------------------------------------------------------------------
-
-describe('seedfinderStrainSchema', () => {
-    it('validates a seedfinder strain response', () => {
-        const result = seedfinderStrainSchema.safeParse({
-            id: 'sf-123',
-            name: 'OG Kush',
-            breeder: 'Reserva Privada',
-            type: 'mostly_indica',
-            cbd: 'low',
-            flowering: { indoor: 56, outdoor: 70 },
-        })
-        expect(result.success).toBe(true)
-    })
-
-    it('accepts minimal seedfinder data', () => {
-        const result = seedfinderStrainSchema.safeParse({
-            id: 'sf-1',
-            name: 'Test Strain',
-        })
-        expect(result.success).toBe(true)
     })
 })
 
@@ -144,19 +117,19 @@ describe('kushyStrainSchema', () => {
 describe('dataProvenanceSchema', () => {
     it('validates a full provenance record', () => {
         const result = dataProvenanceSchema.safeParse({
-            provider: 'seedfinder',
+            provider: 'otreeba',
             fetchedAt: '2024-06-15T10:30:00Z',
-            externalId: 'sf-123',
+            externalId: 'ot-123',
             labVerified: true,
             confidence: 0.85,
-            sourceUrl: 'https://en.seedfinder.eu/strain-info/OG_Kush/',
+            sourceUrl: 'https://otreeba.com/strains/og-kush',
         })
         expect(result.success).toBe(true)
     })
 
     it('rejects confidence > 1', () => {
         const result = dataProvenanceSchema.safeParse({
-            provider: 'seedfinder',
+            provider: 'otreeba',
             fetchedAt: '2024-06-15T10:30:00Z',
             confidence: 1.5,
         })

@@ -51,7 +51,7 @@ const makeExternal = (
 ): ValidatedExternalStrainData =>
     ({
         name: 'OG Kush',
-        provider: 'seedfinder',
+        provider: 'otreeba',
         externalId: 'sf-123',
         thc: 24,
         cbd: 0.2,
@@ -131,7 +131,7 @@ describe('assessDataQuality', () => {
             ],
             dataProvenance: [
                 {
-                    provider: 'seedfinder',
+                    provider: 'otreeba',
                     fetchedAt: '2024-01-01',
                     confidence: 0.8,
                     labVerified: true,
@@ -224,7 +224,7 @@ describe('mergeExternalIntoStrain', () => {
         const ext = makeExternal()
         const merged = mergeExternalIntoStrain(strain, ext)
         expect(merged.dataProvenance).toHaveLength(1)
-        expect(merged.dataProvenance?.[0]?.provider).toBe('seedfinder')
+        expect(merged.dataProvenance?.[0]?.provider).toBe('otreeba')
     })
 
     it('computes data quality after merge', () => {
@@ -263,7 +263,7 @@ describe('importStrainBatch', () => {
     it('merges matching strains and counts correctly', () => {
         const existing = [makeStrain({ name: 'OG Kush' })]
         const external = [makeExternal({ name: 'OG Kush', description: 'Updated description.' })]
-        const { updatedStrains, result } = importStrainBatch(existing, external, 'seedfinder')
+        const { updatedStrains, result } = importStrainBatch(existing, external, 'otreeba')
         expect(result.total).toBe(1)
         expect(result.merged).toBe(1)
         expect(result.added).toBe(0)
@@ -274,7 +274,7 @@ describe('importStrainBatch', () => {
     it('counts new strains as added', () => {
         const existing = [makeStrain({ name: 'OG Kush' })]
         const external = [makeExternal({ name: 'Blue Dream' })]
-        const { result } = importStrainBatch(existing, external, 'seedfinder')
+        const { result } = importStrainBatch(existing, external, 'otreeba')
         expect(result.added).toBe(1)
         expect(result.merged).toBe(0)
     })

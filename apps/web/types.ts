@@ -183,7 +183,6 @@ export interface TerpeneSimilarityResult {
 export type StrainApiProvider =
     | 'otreeba'
     | 'cannlytics'
-    | 'seedfinder'
     | 'strainapi'
     | 'cannseek'
     | 'openthc'

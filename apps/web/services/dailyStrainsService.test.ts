@@ -5,6 +5,7 @@ import {
     generateDailyPicks,
     buildUserProfile,
     rankStrainsByRelevance,
+    resolveDiscoveredToStrain,
 } from '@/services/dailyStrainsService'
 import type { DiscoveredStrain } from '@/services/dailyStrainsService'
 
@@ -148,6 +149,65 @@ describe('dailyStrainsService', () => {
             const strains = [makeStrain({ id: 'a' })]
             const ranked = rankStrainsByRelevance(strains, profile)
             expect(ranked[0]!.relevanceScore).toBe(50)
+        })
+    })
+
+    describe('resolveDiscoveredToStrain', () => {
+        it('resolves a daily-pick to a full Strain from the catalog', () => {
+            const picks = generateDailyPicks('2025-06-15')
+            const pick = picks[0]!
+            const strain = resolveDiscoveredToStrain(pick)
+            expect(strain.id).toBe(pick.id)
+            expect(strain.name).toBe(pick.name)
+            // Catalog strains have agronomic and geneticModifiers
+            expect(strain.agronomic).toBeDefined()
+            expect(strain.geneticModifiers).toBeDefined()
+            expect(strain.floweringTime).toBeGreaterThan(0)
+        })
+
+        it('resolves an AI-lookup strain via createStrainObject', () => {
+            const aiStrain: DiscoveredStrain = {
+                id: 'ai-test-strain',
+                name: 'AI Test Strain',
+                breeder: 'Test Breeder',
+                type: 'Indica',
+                floweringType: 'Autoflower',
+                thc: 22,
+                cbd: 1.5,
+                description: 'A test strain from AI',
+                genetics: 'Parent A x Parent B',
+                source: 'ai-lookup',
+                sourceUrl: '',
+                discoveredAt: new Date().toISOString(),
+            }
+            const strain = resolveDiscoveredToStrain(aiStrain)
+            expect(strain.id).toBe('ai-test-strain')
+            expect(strain.name).toBe('AI Test Strain')
+            expect(strain.type).toBe('Indica')
+            expect(strain.floweringType).toBe('Autoflower')
+            expect(strain.thc).toBe(22)
+            expect(strain.cbd).toBe(1.5)
+            expect(strain.agronomic).toBeDefined()
+            expect(strain.geneticModifiers).toBeDefined()
+            expect(strain.lineage?.breeder).toBe('Test Breeder')
+        })
+
+        it('handles missing breeder gracefully', () => {
+            const strain = resolveDiscoveredToStrain({
+                id: 'ai-no-breeder',
+                name: 'No Breeder',
+                breeder: '',
+                type: 'Hybrid',
+                floweringType: 'Photoperiod',
+                thc: 15,
+                cbd: 0,
+                description: '',
+                genetics: '',
+                source: 'ai-lookup',
+                sourceUrl: '',
+                discoveredAt: new Date().toISOString(),
+            })
+            expect(strain.lineage).toBeUndefined()
         })
     })
 })

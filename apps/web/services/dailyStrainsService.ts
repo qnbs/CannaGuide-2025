@@ -9,7 +9,8 @@
 
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { allStrainsData } from '@/data/strains/index'
-import type { Strain } from '@/types'
+import { createStrainObject } from '@/services/strainFactory'
+import type { Strain, StrainType } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -559,4 +560,39 @@ export const dailyStrainsService = {
     invalidate(): void {
         cachedFeed = null
     },
+}
+
+// ---------------------------------------------------------------------------
+// DiscoveredStrain -> Strain conversion
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve a DiscoveredStrain to a full Strain object.
+ *
+ * - For daily-pick and local-catalog sources, look up the original from
+ *   allStrainsData (has all fields including agronomics, terpenes, etc.).
+ * - For ai-lookup sources, build a Strain via createStrainObject with
+ *   sensible defaults for the fields the AI did not provide.
+ */
+export function resolveDiscoveredToStrain(discovered: DiscoveredStrain): Strain {
+    // Try direct catalog lookup first (daily-pick and local-catalog share IDs)
+    const catalogMatch = allStrainsData.find((s) => s.id === discovered.id)
+    if (catalogMatch) {
+        return catalogMatch
+    }
+
+    // AI-lookup or unknown source -- build from partial data via factory
+    return createStrainObject({
+        id: discovered.id,
+        name: discovered.name,
+        type: discovered.type as StrainType,
+        floweringType: discovered.floweringType as Strain['floweringType'],
+        thc: discovered.thc,
+        cbd: discovered.cbd,
+        description: discovered.description || undefined,
+        genetics: discovered.genetics || undefined,
+        lineage: discovered.breeder
+            ? { parents: [], breeder: discovered.breeder }
+            : undefined,
+    })
 }

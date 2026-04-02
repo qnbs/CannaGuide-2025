@@ -66,6 +66,8 @@ export const strainsView = {
         lastUpdated: 'Derniere mise a jour: {{date}}',
         dismiss: 'Ignorer',
         addToLibrary: 'Ajouter a la Bibliotheque',
+        editAndAdd: 'Modifier avant ajout',
+        inLibrary: 'Dans la Bibliotheque',
         addedHint: '{{name}} notee -- retrouvez-la dans le catalogue de varietes!',
         genetics: 'Genetique',
         match: 'correspondance',

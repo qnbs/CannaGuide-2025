@@ -360,6 +360,7 @@ export enum EquipmentViewTab {
     GrowShops = 'growShops',
     Seedbanks = 'seedbanks',
     GrowTech = 'growTech',
+    IotDashboard = 'iotDashboard',
 }
 
 export enum KnowledgeViewTab {

@@ -31,7 +31,6 @@ test.describe('Strains Critical Path', () => {
         await strainsNavButton.first().click()
 
         // Wait for strain list to render
-        await page.waitForTimeout(2_000)
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Should have visible strain items (list or grid)
@@ -44,7 +43,7 @@ test.describe('Strains Critical Path', () => {
     test('strain search filters results', async ({ page }) => {
         const strainsNavButton = page.locator('[data-view-id="strains"]')
         await strainsNavButton.first().click()
-        await page.waitForTimeout(2_000)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Find search input
         const searchInput = page
@@ -69,7 +68,7 @@ test.describe('Strains Critical Path', () => {
 
         const strainsNavButton = page.locator('[data-view-id="strains"]')
         await strainsNavButton.first().click()
-        await page.waitForTimeout(2_000)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Find tabs if they exist (Library, Genealogy, Breeding, etc.)
         const tabs = page.getByRole('tab')
@@ -93,7 +92,7 @@ test.describe('Strains Critical Path', () => {
 
         const strainsNavButton = page.locator('[data-view-id="strains"]')
         await strainsNavButton.first().click()
-        await page.waitForTimeout(3_000)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         await expectNoCrashPatterns(page)
         tracker.detach()

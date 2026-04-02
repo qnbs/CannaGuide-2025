@@ -8,6 +8,7 @@ export const equipmentView = {
         growShops: 'Grow Shops',
         seedbanks: 'Seed Banks',
         growTech: 'Grow Tech 2026',
+        iotDashboard: 'IoT Dashboard',
     },
     configurator: {
         title: 'AI Setup Configurator',

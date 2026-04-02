@@ -65,7 +65,7 @@ test.describe('Plants Critical Path', () => {
 
         const plantsNavButton = page.locator('[data-view-id="plants"]')
         await plantsNavButton.first().click()
-        await page.waitForTimeout(1_000)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         // Look for an add/create/start-grow button (empty slot or action button)
         const addButton = page.getByRole('button', {
@@ -109,7 +109,7 @@ test.describe('Plants Critical Path', () => {
         const plantsNavButton = page.locator('[data-view-id="plants"]')
         await plantsNavButton.first().click()
 
-        await page.waitForTimeout(3_000)
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
         await expectNoCrashPatterns(page)
 
         tracker.detach()

@@ -1,7 +1,17 @@
 const browserWindow = typeof window === 'undefined' ? null : window
-import React, { memo, useEffect, useRef, useMemo, useState, useCallback } from 'react'
+import React, {
+    memo,
+    useEffect,
+    useRef,
+    useMemo,
+    useState,
+    useCallback,
+    useSyncExternalStore,
+} from 'react'
 import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { useTranslation } from 'react-i18next'
+import { sensorStore } from '@/stores/sensorStore'
 import { Card } from '@/components/common/Card'
 import { useAppSelector } from '@/stores/store'
 import { selectActivePlants, selectGardenHealthMetrics, selectSettings } from '@/stores/selectors'
@@ -305,6 +315,8 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
     const sceneRef = useRef<THREE.Scene | null>(null)
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
+    const controlsRef = useRef<OrbitControls | null>(null)
+    const userInteractedRef = useRef(false)
     const frameRef = useRef(0)
     const cancelledRef = useRef(false)
     const animatingRef = useRef(false)
@@ -335,6 +347,18 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
             return { label: t('plantsView.growRoom3d.vpdSlightlyHigh'), color: 'text-yellow-400' }
         return { label: t('plantsView.growRoom3d.vpdHigh'), color: 'text-red-400' }
     }, [vpdValue, t])
+
+    // Live IoT sensor data overlay
+    const sensorSubscribe = useCallback((cb: () => void) => sensorStore.subscribe(cb), [])
+    const iotConnectionState = useSyncExternalStore(
+        sensorSubscribe,
+        () => sensorStore.getState().connectionState,
+    )
+    const iotReading = useSyncExternalStore(
+        sensorSubscribe,
+        () => sensorStore.getState().currentReading,
+    )
+    const isIotLive = iotConnectionState === 'connected' && iotReading !== null
 
     const toggleFullscreen = useCallback(() => {
         setIsFullscreen((prev) => !prev)
@@ -413,6 +437,23 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         renderer.toneMapping = THREE.ACESFilmicToneMapping
         renderer.toneMappingExposure = 1.1
         rendererRef.current = renderer
+
+        // OrbitControls for interactive camera
+        const controls = new OrbitControls(camera, canvas)
+        controls.enableDamping = true
+        controls.dampingFactor = 0.08
+        controls.target.set(0, 0.5, 0)
+        controls.minDistance = 2
+        controls.maxDistance = 10
+        controls.maxPolarAngle = Math.PI * 0.85
+        controls.enablePan = false
+        controlsRef.current = controls
+
+        // Track user interaction to stop auto-orbit
+        const handleControlStart = (): void => {
+            userInteractedRef.current = true
+        }
+        controls.addEventListener('start', handleControlStart)
 
         // Lighting
         const ambient = new THREE.AmbientLight(0x404060, 0.5)
@@ -501,10 +542,16 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
 
                 if (!reducedMotionRef.current) {
                     const time = performance.now() * 0.0003
-                    camera.position.x = Math.cos(time) * 4.5
-                    camera.position.z = Math.sin(time) * 4.0
-                    camera.position.y = 2.4 + Math.sin(time * 0.5) * 0.3
-                    camera.lookAt(0, 0.5, 0)
+
+                    // Only auto-orbit when user is not interacting
+                    if (!controls.enabled || !userInteractedRef.current) {
+                        camera.position.x = Math.cos(time) * 4.5
+                        camera.position.z = Math.sin(time) * 4.0
+                        camera.position.y = 2.4 + Math.sin(time * 0.5) * 0.3
+                        camera.lookAt(0, 0.5, 0)
+                    }
+
+                    controls.update()
 
                     const positions = particles.geometry.attributes.position
                     if (positions) {
@@ -545,6 +592,9 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
             canvas.removeEventListener('webglcontextlost', handleContextLost)
             canvas.removeEventListener('webglcontextrestored', handleContextRestored)
             resizeObserver.disconnect()
+            controls.removeEventListener('start', handleControlStart)
+            controls.dispose()
+            controlsRef.current = null
             disposeScene(scene, renderer)
             sceneRef.current = null
             rendererRef.current = null
@@ -579,6 +629,15 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                     {t('plantsView.growRoom3d.title')}
                 </h3>
                 <div className="flex items-center gap-2">
+                    {isIotLive && (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-900/30 border border-emerald-500/20 text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                            </span>
+                            IoT Live
+                        </span>
+                    )}
                     <button
                         type="button"
                         onClick={toggleFullscreen}

@@ -17,7 +17,34 @@ import { useAppSelector } from '@/stores/store'
 import { selectUserStrains } from '@/stores/selectors'
 
 // ---------------------------------------------------------------------------
-// DiscoveryCard -- single strain discovery entry
+// CategoryBadge
+// ---------------------------------------------------------------------------
+
+interface CategoryBadgeProps {
+    category: string
+}
+
+const categoryStyles: Record<string, string> = {
+    'high-thc': 'text-red-400 bg-red-400/10',
+    'balanced-cbd': 'text-blue-400 bg-blue-400/10',
+    autoflower: 'text-cyan-400 bg-cyan-400/10',
+    'classic-indica': 'text-purple-400 bg-purple-400/10',
+    'classic-sativa': 'text-orange-400 bg-orange-400/10',
+    'beginner-friendly': 'text-emerald-400 bg-emerald-400/10',
+    'terpene-rich': 'text-amber-400 bg-amber-400/10',
+}
+
+const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category }) => {
+    const { t } = useTranslation()
+    const style = categoryStyles[category] ?? 'text-slate-400 bg-slate-400/10'
+    const label = t(`strainsView.dailyStrains.categories.${category}`, category)
+    return (
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${style}`}>{label}</span>
+    )
+}
+
+// ---------------------------------------------------------------------------
+// DiscoveryCard -- single daily pick
 // ---------------------------------------------------------------------------
 
 interface DiscoveryCardProps {
@@ -45,7 +72,7 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                         <h3 className="text-lg font-bold text-slate-100 truncate">{strain.name}</h3>
                         <p className="text-sm text-slate-400">{strain.breeder}</p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                         <span
                             className={`text-xs font-semibold px-2 py-0.5 rounded-full ${typeColor}`}
                         >
@@ -56,13 +83,21 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                                 Auto
                             </span>
                         )}
+                        {strain.pickCategory && <CategoryBadge category={strain.pickCategory} />}
                         {relevanceScore !== null && relevanceScore >= 65 && (
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-amber-400 bg-amber-400/10">
-                                {relevanceScore}% match
+                                {relevanceScore}% {t('strainsView.dailyStrains.match')}
                             </span>
                         )}
                     </div>
                 </div>
+
+                {/* Pick reason */}
+                {strain.pickReason && (
+                    <p className="text-xs text-primary-400 font-medium">
+                        {t('strainsView.dailyStrains.whyToday')}: {strain.pickReason}
+                    </p>
+                )}
 
                 {strain.genetics && (
                     <p className="text-xs text-slate-500">
@@ -88,12 +123,18 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
 
                 <div className="flex items-center justify-between pt-2 border-t border-white/5">
                     <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span>{new Date(strain.discoveredAt).toLocaleDateString()}</span>
                         {strain.source === 'ai-lookup' && (
                             <span className="text-primary-400">AI</span>
                         )}
                         {strain.source === 'local-catalog' && (
-                            <span className="text-emerald-400">Catalog</span>
+                            <span className="text-emerald-400">
+                                {t('strainsView.dailyStrains.catalog')}
+                            </span>
+                        )}
+                        {strain.source === 'daily-pick' && (
+                            <span className="text-amber-400">
+                                {t('strainsView.dailyStrains.dailyPick')}
+                            </span>
                         )}
                     </div>
                     <div className="flex gap-2">
@@ -118,7 +159,7 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
 DiscoveryCard.displayName = 'DiscoveryCard'
 
 // ---------------------------------------------------------------------------
-// DailyStrains view
+// DailyStrains view -- 4:20 Daily Drop
 // ---------------------------------------------------------------------------
 
 export const DailyStrains: React.FC = () => {
@@ -149,27 +190,15 @@ export const DailyStrains: React.FC = () => {
     // Load feed on mount
     useEffect(() => {
         setStatus('loading')
-        dailyStrainsService
-            .loadFeed()
-            .then((loadedFeed) => {
-                setFeed(loadedFeed)
-                setStatus('loaded')
-            })
-            .catch(() => {
-                setStatus('error')
-            })
+        try {
+            const loadedFeed = dailyStrainsService.loadFeed()
+            setFeed(loadedFeed)
+            setDiscoveries(dailyStrainsService.getNewDiscoveries())
+            setStatus('loaded')
+        } catch {
+            setStatus('error')
+        }
     }, [])
-
-    // Load non-dismissed discoveries
-    useEffect(() => {
-        if (status !== 'loaded') return
-        dailyStrainsService
-            .getNewDiscoveries()
-            .then(setDiscoveries)
-            .catch(() => {
-                // fallback to empty
-            })
-    }, [status])
 
     const handleDismiss = useCallback((id: string) => {
         dailyStrainsService.dismiss(id)
@@ -225,7 +254,7 @@ export const DailyStrains: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
+            {/* Header -- 4:20 Daily Drop branding */}
             <div className="text-center">
                 <h2 className="text-2xl font-bold text-slate-100">
                     {t('strainsView.dailyStrains.title')}
@@ -237,13 +266,15 @@ export const DailyStrains: React.FC = () => {
 
             {/* Stats bar */}
             {feed && (
-                <div className="flex justify-center gap-6 text-sm">
+                <div className="flex justify-center gap-6 text-sm flex-wrap">
                     <span className="text-emerald-400">
-                        {t('strainsView.dailyStrains.newCount', { count: feed.stats.newStrains })}
+                        {t('strainsView.dailyStrains.picksCount', {
+                            count: feed.stats.totalPicks,
+                        })}
                     </span>
                     <span className="text-blue-400">
-                        {t('strainsView.dailyStrains.updatedCount', {
-                            count: feed.stats.updatedStrains,
+                        {t('strainsView.dailyStrains.categoriesCount', {
+                            count: feed.stats.categories.length,
                         })}
                     </span>
                     <span className="text-slate-500">
@@ -251,6 +282,15 @@ export const DailyStrains: React.FC = () => {
                             count: feed.stats.existingCatalogSize,
                         })}
                     </span>
+                </div>
+            )}
+
+            {/* Category pills */}
+            {feed && feed.stats.categories.length > 0 && (
+                <div className="flex justify-center gap-2 flex-wrap">
+                    {feed.stats.categories.map((cat) => (
+                        <CategoryBadge key={cat} category={cat} />
+                    ))}
                 </div>
             )}
 
@@ -307,7 +347,7 @@ export const DailyStrains: React.FC = () => {
                     <p className="text-slate-400">
                         {searchQuery
                             ? t('strainsView.dailyStrains.noSearchResults')
-                            : t('strainsView.dailyStrains.noDiscoveries')}
+                            : t('strainsView.dailyStrains.allDismissed')}
                     </p>
                 </Card>
             )}

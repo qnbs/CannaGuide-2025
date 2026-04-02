@@ -1,13 +1,15 @@
 // ---------------------------------------------------------------------------
-// dailyStrainsService.ts -- Daily Strain Discovery Feed
+// dailyStrainsService.ts -- 4:20 Daily Drop
 //
-// Manages the in-app strain news feed. Sources:
-//   1. Pending strains from the daily GH Actions bot (static JSON import)
-//   2. AI-powered strain lookup (replaces dead SeedFinder API)
-//   3. RSS-like discovery feed rendering
+// Smart daily strain picks from the 778-strain local catalog.
+// Uses a seeded PRNG (date-based) so every user sees the same daily drop.
+// Diversity scoring ensures category rotation across days.
+// AI search supplements local catalog results.
 // ---------------------------------------------------------------------------
 
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { allStrainsData } from '@/data/strains/index'
+import type { Strain } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,44 +19,228 @@ export interface DiscoveredStrain {
     id: string
     name: string
     breeder: string
-    type: 'Indica' | 'Sativa' | 'Hybrid'
-    floweringType: 'Photoperiod' | 'Autoflower'
+    type: string
+    floweringType: string
     thc: number
     cbd: number
     description: string
     genetics: string
-    source: string
+    source: 'daily-pick' | 'ai-lookup' | 'local-catalog'
     sourceUrl: string
     discoveredAt: string
-    discoverySource?: string
-    updateType?: string
+    /** Why this strain was picked today */
+    pickReason?: string | undefined
+    /** Category tag for diversity rotation */
+    pickCategory?: string | undefined
 }
 
 export interface DailyStrainsFeed {
-    version: number
     generatedAt: string
+    dateKey: string
     stats: {
-        newStrains: number
-        updatedStrains: number
-        errors: number
+        totalPicks: number
+        categories: string[]
         existingCatalogSize: number
     }
-    discoveries: DiscoveredStrain[]
-    updates: DiscoveredStrain[]
+    strains: DiscoveredStrain[]
 }
 
 export type FeedStatus = 'idle' | 'loading' | 'loaded' | 'error'
 
+export interface ScoredStrain extends DiscoveredStrain {
+    /** 0-100 relevance score based on user preferences. */
+    relevanceScore: number
+}
+
+export interface UserStrainProfile {
+    strainCount: number
+    preferredTypes: Record<string, number>
+    avgThc: number
+    avgCbd: number
+}
+
 // ---------------------------------------------------------------------------
-// In-memory cache
+// Constants
 // ---------------------------------------------------------------------------
 
-const CACHE_TTL_MS = 30 * 60 * 1000 // 30 minutes
-const STORAGE_KEY = 'cg.daily-strains.feed'
-const DISMISSED_KEY = 'cg.daily-strains.dismissed'
+const DAILY_PICK_COUNT = 5
+const STORAGE_KEY = 'cg.daily-drop.feed'
+const DISMISSED_KEY = 'cg.daily-drop.dismissed'
 
-let cachedFeed: DailyStrainsFeed | null = null
-let cacheTimestamp = 0
+/** Categories for diversity rotation. Each day emphasises a different one. */
+const PICK_CATEGORIES = [
+    'high-thc',
+    'balanced-cbd',
+    'autoflower',
+    'classic-indica',
+    'classic-sativa',
+    'beginner-friendly',
+    'terpene-rich',
+] as const
+
+type PickCategory = (typeof PICK_CATEGORIES)[number]
+
+// ---------------------------------------------------------------------------
+// Seeded PRNG (Mulberry32) -- deterministic daily picks
+// ---------------------------------------------------------------------------
+
+/** Create a seeded PRNG from a date string like '2025-01-15'. */
+export function createSeededRng(dateKey: string): () => number {
+    let h = 0
+    for (let i = 0; i < dateKey.length; i++) {
+        h = Math.imul(31, h) + dateKey.charCodeAt(i)
+        h |= 0
+    }
+    // Mulberry32
+    return (): number => {
+        h |= 0
+        h = (h + 0x6d2b79f5) | 0
+        let t = Math.imul(h ^ (h >>> 15), 1 | h)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 0x100000000
+    }
+}
+
+/** Get today's date key in YYYY-MM-DD format. */
+export function getTodayKey(): string {
+    const d = new Date()
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
+}
+
+// ---------------------------------------------------------------------------
+// Category filters
+// ---------------------------------------------------------------------------
+
+function matchesCategory(strain: Strain, category: PickCategory): boolean {
+    switch (category) {
+        case 'high-thc':
+            return strain.thc >= 20
+        case 'balanced-cbd':
+            return strain.cbd >= 1
+        case 'autoflower':
+            return strain.floweringType === 'Autoflower'
+        case 'classic-indica':
+            return strain.type === 'Indica' && strain.floweringType === 'Photoperiod'
+        case 'classic-sativa':
+            return strain.type === 'Sativa' && strain.floweringType === 'Photoperiod'
+        case 'beginner-friendly':
+            return strain.agronomic.difficulty === 'Easy'
+        case 'terpene-rich':
+            return (strain.dominantTerpenes?.length ?? 0) >= 2
+    }
+}
+
+function getPickReason(category: PickCategory): string {
+    switch (category) {
+        case 'high-thc':
+            return 'High THC powerhouse'
+        case 'balanced-cbd':
+            return 'CBD-balanced for wellness'
+        case 'autoflower':
+            return 'Easy autoflower grow'
+        case 'classic-indica':
+            return 'Classic Indica relaxation'
+        case 'classic-sativa':
+            return 'Uplifting Sativa energy'
+        case 'beginner-friendly':
+            return 'Perfect for beginners'
+        case 'terpene-rich':
+            return 'Rich terpene profile'
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Daily pick engine
+// ---------------------------------------------------------------------------
+
+function strainToDiscovered(strain: Strain, category: PickCategory): DiscoveredStrain {
+    return {
+        id: strain.id,
+        name: strain.name,
+        breeder: strain.lineage?.breeder ?? 'Community',
+        type: strain.type,
+        floweringType: strain.floweringType,
+        thc: strain.thc,
+        cbd: strain.cbd,
+        description: strain.description ?? '',
+        genetics: strain.genetics ?? '',
+        source: 'daily-pick',
+        sourceUrl: '',
+        discoveredAt: new Date().toISOString(),
+        pickReason: getPickReason(category),
+        pickCategory: category,
+    }
+}
+
+/**
+ * Generate deterministic daily picks from the local catalog.
+ * Uses seeded PRNG so all users see the same strains on the same day.
+ * Rotates through categories for diversity.
+ */
+export function generateDailyPicks(dateKey?: string): DiscoveredStrain[] {
+    const key = dateKey ?? getTodayKey()
+    const rng = createSeededRng(key)
+
+    // Pick today's primary category based on day-of-year
+    const parts = key.split('-').map(Number)
+    const dayOfYear = Math.floor(
+        (Date.UTC(parts[0]!, parts[1]! - 1, parts[2]!) - Date.UTC(parts[0]!, 0, 0)) / 86400000,
+    )
+    const primaryCategoryIndex = dayOfYear % PICK_CATEGORIES.length
+    const picks: DiscoveredStrain[] = []
+    const usedIds = new Set<string>()
+
+    // 2 picks from primary category
+    const primaryCategory = PICK_CATEGORIES[primaryCategoryIndex]!
+    const primaryPool = allStrainsData.filter((s) => matchesCategory(s, primaryCategory))
+    pickFromPool(primaryPool, 2, primaryCategory, rng, picks, usedIds)
+
+    // 1 pick each from 3 other rotating categories
+    for (let i = 1; i <= 3; i++) {
+        const catIndex = (primaryCategoryIndex + i) % PICK_CATEGORIES.length
+        const cat = PICK_CATEGORIES[catIndex]!
+        const pool = allStrainsData.filter((s) => matchesCategory(s, cat))
+        pickFromPool(pool, 1, cat, rng, picks, usedIds)
+    }
+
+    // Fill remaining slots with random picks
+    if (picks.length < DAILY_PICK_COUNT) {
+        const remaining = allStrainsData.filter((s) => !usedIds.has(s.id))
+        const needed = DAILY_PICK_COUNT - picks.length
+        for (let i = 0; i < needed && remaining.length > 0; i++) {
+            const idx = Math.floor(rng() * remaining.length)
+            const strain = remaining.splice(idx, 1)[0]!
+            usedIds.add(strain.id)
+            picks.push(strainToDiscovered(strain, primaryCategory))
+        }
+    }
+
+    return picks
+}
+
+function pickFromPool(
+    pool: Strain[],
+    count: number,
+    category: PickCategory,
+    rng: () => number,
+    picks: DiscoveredStrain[],
+    usedIds: Set<string>,
+): void {
+    const available = pool.filter((s) => !usedIds.has(s.id))
+    // Fisher-Yates partial shuffle
+    const arr = [...available]
+    const n = Math.min(count, arr.length)
+    for (let i = 0; i < n; i++) {
+        const j = i + Math.floor(rng() * (arr.length - i))
+        ;[arr[i], arr[j]] = [arr[j]!, arr[i]!]
+        const strain = arr[i]!
+        usedIds.add(strain.id)
+        picks.push(strainToDiscovered(strain, category))
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Local storage persistence
@@ -102,53 +288,24 @@ function dismissStrainId(id: string): void {
 }
 
 // ---------------------------------------------------------------------------
-// Pending strains loader (from GH Actions bot output)
+// AI-powered strain search
 // ---------------------------------------------------------------------------
 
-async function loadPendingStrains(): Promise<DiscoveredStrain[]> {
-    try {
-        // Dynamic import of the pending strains JSON generated by the daily bot
-        const module = await import('@/data/strains/pending/pending-strains.json')
-        const data = module.default as unknown
-        if (Array.isArray(data)) {
-            return data as DiscoveredStrain[]
-        }
-        return []
-    } catch {
-        // File may not exist yet if the bot hasn't run
-        return []
-    }
-}
-
-// ---------------------------------------------------------------------------
-// AI-powered strain lookup (replaces dead SeedFinder API)
-// ---------------------------------------------------------------------------
-
-/**
- * Search for cannabis strains using AI.
- * Uses the AI facade to get structured strain information.
- * Falls back to local catalog search when AI is unavailable.
- */
 export async function searchStrainsWithAI(query: string): Promise<DiscoveredStrain[]> {
     if (!query || query.length < 2) return []
 
     // Always search local catalog first
-    const localResults = await searchLocalCatalog(query)
+    const localResults = searchLocalCatalog(query)
 
     // In local-only mode, return local results only
     if (isLocalOnlyMode()) return localResults
 
-    // Try AI-powered lookup for additional results
     try {
         const { aiService, getAiMode } = await import('@/services/aiFacade')
         const mode = getAiMode()
-
-        // Skip AI call in eco mode or if no provider configured
         if (mode === 'eco') return localResults
 
         const lang = (document.documentElement.lang as 'en' | 'de') || 'en'
-
-        // Use a minimal plant stub for the mentor API
         const plantStub = { id: 'strain-lookup', name: query } as Parameters<
             typeof aiService.getMentorResponse
         >[0]
@@ -160,7 +317,6 @@ export async function searchStrainsWithAI(query: string): Promise<DiscoveredStra
 
         if (response?.content) {
             const aiStrains = parseAIStrainResponse(response.content)
-            // Merge: local results first, then AI results (deduplicated)
             const seenIds = new Set(localResults.map((s) => s.id))
             const merged = [...localResults]
             for (const strain of aiStrains) {
@@ -172,10 +328,36 @@ export async function searchStrainsWithAI(query: string): Promise<DiscoveredStra
             return merged.slice(0, 30)
         }
     } catch {
-        // AI unavailable -- return local results
+        // AI unavailable
     }
 
     return localResults
+}
+
+function searchLocalCatalog(query: string): DiscoveredStrain[] {
+    const q = query.toLowerCase()
+    return allStrainsData
+        .filter(
+            (s) =>
+                s.name.toLowerCase().includes(q) ||
+                (s.genetics?.toLowerCase().includes(q) ?? false) ||
+                (s.description?.toLowerCase().includes(q) ?? false),
+        )
+        .slice(0, 20)
+        .map((s) => ({
+            id: s.id,
+            name: s.name,
+            breeder: s.lineage?.breeder ?? 'Catalog',
+            type: s.type,
+            floweringType: s.floweringType,
+            thc: s.thc,
+            cbd: s.cbd,
+            description: s.description ?? '',
+            genetics: s.genetics ?? '',
+            source: 'local-catalog' as const,
+            sourceUrl: '',
+            discoveredAt: new Date().toISOString(),
+        }))
 }
 
 function buildStrainLookupPrompt(query: string, lang: string): string {
@@ -197,8 +379,6 @@ function buildStrainLookupPrompt(query: string, lang: string): string {
 
 function parseAIStrainResponse(text: string): DiscoveredStrain[] {
     const results: DiscoveredStrain[] = []
-
-    // Try to extract JSON array from AI response
     const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
     if (!jsonMatch) return results
 
@@ -215,11 +395,18 @@ function parseAIStrainResponse(text: string): DiscoveredStrain[] {
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/-+$/, '')}`
+            const rawType = String(item.type ?? '').toLowerCase()
+            const type = rawType.includes('indica')
+                ? 'Indica'
+                : rawType.includes('sativa')
+                  ? 'Sativa'
+                  : 'Hybrid'
+
             results.push({
                 id,
                 name,
                 breeder: String(item.breeder ?? 'Unknown'),
-                type: normalizeType(item.type),
+                type,
                 floweringType:
                     String(item.floweringType ?? '') === 'Autoflower'
                         ? 'Autoflower'
@@ -231,89 +418,33 @@ function parseAIStrainResponse(text: string): DiscoveredStrain[] {
                 source: 'ai-lookup',
                 sourceUrl: '',
                 discoveredAt: new Date().toISOString(),
-                discoverySource: 'ai-search',
             })
         }
     } catch {
-        // JSON parse failed -- ignore
+        // JSON parse failed
     }
 
     return results
 }
 
-/**
- * Search the local strain catalog for matches.
- */
-async function searchLocalCatalog(query: string): Promise<DiscoveredStrain[]> {
-    try {
-        const { allStrainsData } = await import('@/data/strains/index')
-        const q = query.toLowerCase()
-        const matches = allStrainsData
-            .filter(
-                (s) =>
-                    s.name.toLowerCase().includes(q) ||
-                    (s.genetics?.toLowerCase().includes(q) ?? false) ||
-                    (s.description?.toLowerCase().includes(q) ?? false),
-            )
-            .slice(0, 20)
-            .map((s) => ({
-                id: s.id,
-                name: s.name,
-                breeder: 'Catalog',
-                type: (s.type ?? 'Hybrid') as 'Indica' | 'Sativa' | 'Hybrid',
-                floweringType: (s.floweringType ?? 'Photoperiod') as 'Photoperiod' | 'Autoflower',
-                thc: s.thc ?? 0,
-                cbd: s.cbd ?? 0,
-                description: s.description ?? '',
-                genetics: s.genetics ?? '',
-                source: 'local-catalog',
-                sourceUrl: '',
-                discoveredAt: new Date().toISOString(),
-                discoverySource: 'catalog-search',
-            }))
-        return matches
-    } catch {
-        return []
-    }
-}
-
-function normalizeType(genotype: unknown): 'Indica' | 'Sativa' | 'Hybrid' {
-    const s = String(genotype ?? '').toLowerCase()
-    if (s.includes('indica')) return 'Indica'
-    if (s.includes('sativa')) return 'Sativa'
-    return 'Hybrid'
-}
-
 // ---------------------------------------------------------------------------
-// Recommendation scoring -- rank discoveries by similarity to user library
+// Recommendation scoring
 // ---------------------------------------------------------------------------
 
-export interface ScoredStrain extends DiscoveredStrain {
-    /** 0-100 relevance score based on user preferences. */
-    relevanceScore: number
-}
-
-export interface UserStrainProfile {
-    favoriteTypes: Record<string, number>
-    avgThc: number
-    avgCbd: number
-    strainCount: number
-}
-
 /**
- * Build a preference profile from the user's favorite/library strains.
+ * Build a preference profile from the user's library strains.
  */
 export function buildUserProfile(
     strains: Array<{ type?: string; thc?: number; cbd?: number }>,
 ): UserStrainProfile {
-    const favoriteTypes: Record<string, number> = {}
+    const preferredTypes: Record<string, number> = {}
     let thcSum = 0
     let cbdSum = 0
     let count = 0
 
     for (const s of strains) {
         if (s.type) {
-            favoriteTypes[s.type] = (favoriteTypes[s.type] ?? 0) + 1
+            preferredTypes[s.type] = (preferredTypes[s.type] ?? 0) + 1
         }
         thcSum += s.thc ?? 0
         cbdSum += s.cbd ?? 0
@@ -321,36 +452,29 @@ export function buildUserProfile(
     }
 
     return {
-        favoriteTypes,
+        preferredTypes,
         avgThc: count > 0 ? thcSum / count : 15,
         avgCbd: count > 0 ? cbdSum / count : 0.5,
         strainCount: count,
     }
 }
 
-/**
- * Score a discovered strain against the user's preference profile.
- * Returns 0-100 relevance score.
- */
 function scoreStrain(strain: DiscoveredStrain, profile: UserStrainProfile): number {
-    if (profile.strainCount === 0) return 50 // No data -- neutral score
+    if (profile.strainCount === 0) return 50
 
     let score = 50
 
-    // Type preference match (max +25)
-    const totalTyped = Object.values(profile.favoriteTypes).reduce((a, b) => a + b, 0)
+    const totalTyped = Object.values(profile.preferredTypes).reduce((a, b) => a + b, 0)
     if (totalTyped > 0) {
-        const typeRatio = (profile.favoriteTypes[strain.type] ?? 0) / totalTyped
+        const typeRatio = (profile.preferredTypes[strain.type] ?? 0) / totalTyped
         score += typeRatio * 25
     }
 
-    // THC similarity (max +15) -- closer to user's avg = higher score
     if (strain.thc > 0 && profile.avgThc > 0) {
         const thcDiff = Math.abs(strain.thc - profile.avgThc)
         score += Math.max(0, 15 - thcDiff)
     }
 
-    // CBD match bonus (max +10)
     if (strain.cbd > 0 && profile.avgCbd > 0) {
         const cbdDiff = Math.abs(strain.cbd - profile.avgCbd)
         score += Math.max(0, 10 - cbdDiff * 5)
@@ -359,10 +483,6 @@ function scoreStrain(strain: DiscoveredStrain, profile: UserStrainProfile): numb
     return Math.min(100, Math.max(0, Math.round(score)))
 }
 
-/**
- * Rank discovered strains by relevance to user preferences.
- * Strains are sorted by score descending.
- */
 export function rankStrainsByRelevance(
     strains: DiscoveredStrain[],
     profile: UserStrainProfile,
@@ -376,74 +496,67 @@ export function rankStrainsByRelevance(
 // Public API
 // ---------------------------------------------------------------------------
 
+let cachedFeed: DailyStrainsFeed | null = null
+
 export const dailyStrainsService = {
-    /** Load the daily feed (pending bot discoveries + cached searches). */
-    async loadFeed(): Promise<DailyStrainsFeed> {
-        // Return cached if fresh
-        if (cachedFeed && Date.now() - cacheTimestamp < CACHE_TTL_MS) {
+    /** Load today's 4:20 Daily Drop feed. */
+    loadFeed(): DailyStrainsFeed {
+        const todayKey = getTodayKey()
+
+        // Return cached if same day
+        if (cachedFeed?.dateKey === todayKey) {
             return cachedFeed
         }
 
-        // Try localStorage first
+        // Try localStorage
         const stored = loadFeedFromStorage()
-        const pending = await loadPendingStrains()
-
-        const feed: DailyStrainsFeed = stored ?? {
-            version: 1,
-            generatedAt: new Date().toISOString(),
-            stats: {
-                newStrains: 0,
-                updatedStrains: 0,
-                errors: 0,
-                existingCatalogSize: 0,
-            },
-            discoveries: [],
-            updates: [],
+        if (stored?.dateKey === todayKey) {
+            cachedFeed = stored
+            return stored
         }
 
-        // Merge pending strains into discoveries (deduplicate)
-        if (pending.length > 0) {
-            const existingIds = new Set(feed.discoveries.map((d) => d.id))
-            for (const strain of pending) {
-                if (!existingIds.has(strain.id)) {
-                    feed.discoveries.push(strain)
-                    existingIds.add(strain.id)
-                }
-            }
-            feed.stats.newStrains = feed.discoveries.length
+        // Generate fresh daily picks
+        const strains = generateDailyPicks(todayKey)
+        const categories = [...new Set(strains.map((s) => s.pickCategory).filter(Boolean))]
+
+        const feed: DailyStrainsFeed = {
+            generatedAt: new Date().toISOString(),
+            dateKey: todayKey,
+            stats: {
+                totalPicks: strains.length,
+                categories: categories as string[],
+                existingCatalogSize: allStrainsData.length,
+            },
+            strains,
         }
 
         cachedFeed = feed
-        cacheTimestamp = Date.now()
         saveFeedToStorage(feed)
-
         return feed
     },
 
-    /** Get only non-dismissed discoveries. */
-    async getNewDiscoveries(): Promise<DiscoveredStrain[]> {
-        const feed = await this.loadFeed()
+    /** Get non-dismissed daily picks. */
+    getNewDiscoveries(): DiscoveredStrain[] {
+        const feed = this.loadFeed()
         const dismissed = getDismissedIds()
-        return feed.discoveries.filter((d) => !dismissed.has(d.id))
+        return feed.strains.filter((d) => !dismissed.has(d.id))
     },
 
-    /** Get count of new (non-dismissed) discoveries for badge display. */
-    async getNewCount(): Promise<number> {
-        const discoveries = await this.getNewDiscoveries()
-        return discoveries.length
+    /** Get count of non-dismissed picks for badge display. */
+    getNewCount(): number {
+        return this.getNewDiscoveries().length
     },
 
-    /** Dismiss a strain (user reviewed it). */
+    /** Dismiss a strain. */
     dismiss(strainId: string): void {
         dismissStrainId(strainId)
     },
 
-    /** AI-powered strain search (replaces SeedFinder). */
+    /** AI-powered strain search. */
     search: searchStrainsWithAI,
 
-    /** Invalidate cache to force re-fetch. */
+    /** Invalidate cache to force regeneration. */
     invalidate(): void {
         cachedFeed = null
-        cacheTimestamp = 0
     },
 }

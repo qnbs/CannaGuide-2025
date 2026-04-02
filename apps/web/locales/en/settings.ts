@@ -678,7 +678,6 @@ export const settingsView = {
         credits: {
             title: 'Acknowledgements & Links',
             phosphor: 'Icons provided by Phosphor Icons.',
-            seedfinder: 'Strain and seedbank data from SeedFinder.eu.',
             strainProviders:
                 'Strain enrichment via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, and Kushy.',
             corsProxies: 'CORS proxy relay by allorigins.win and corsproxy.io.',

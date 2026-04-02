@@ -170,7 +170,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **AES-256-GCM** encryption for API keys at rest (cryptoService.ts)
 - **EXIF/GPS stripping** before image AI transmission
 - **30+ regex patterns** block prompt injection in AI prompts
-- **CSP hardened** across 4 delivery paths (no `unsafe-inline` in script-src for Tauri)
+- **CSP hardened** across 5 delivery paths (`securityHeaders.ts`, `index.html`, `netlify.toml`, `nginx.conf`, `tauri.conf.json`) with `'self' 'unsafe-inline' 'wasm-unsafe-eval'` (static Vite PWA -- nonce plugin deferred to S-03)
 - **Tauri v2 capabilities**: Minimal permission set in `src-tauri/capabilities/default.json`
 - **Local-only mode guard**: All outbound network services must check `isLocalOnlyMode()` before fetch
 - **No `console.log`** in production — use `console.debug` (stripped) or `console.warn`/`console.error`

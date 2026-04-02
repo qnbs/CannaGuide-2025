@@ -44,14 +44,14 @@
 
 ## Long-term (Backlog)
 
-| ID   | Finding                          | Effort | Status |
-| ---- | -------------------------------- | ------ | ------ |
-| S-03 | CSP nonce implementation         | Medium | Open   |
-| C-04 | Deployment preview validation    | Medium | Open   |
-| F-02 | Social sharing                   | Medium | Open   |
-| F-06 | Offline sync conflict resolution | High   | Open   |
-| I-02 | RTL language preparation         | Medium | Open   |
-| A-03 | AI cost tracking                 | Medium | Open   |
+| ID   | Finding                          | Effort | Status                                     |
+| ---- | -------------------------------- | ------ | ------------------------------------------ |
+| S-03 | CSP nonce implementation         | Medium | Deferred (strict-dynamic reverted e2d5165) |
+| C-04 | Deployment preview validation    | Medium | Open                                       |
+| F-02 | Social sharing                   | Medium | Open                                       |
+| F-06 | Offline sync conflict resolution | High   | Open                                       |
+| I-02 | RTL language preparation         | Medium | Open                                       |
+| A-03 | AI cost tracking                 | Medium | Open                                       |
 
 ## Already Resolved
 

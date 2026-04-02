@@ -164,6 +164,7 @@ Target: **2026-Q3** | Status: **In Progress**
 | Daily Strains recommendation scoring (match % badge)    | AI/UX         | done   | —     |
 | E2E test debloat (visibility assertions, no hard waits) | Testing       | done   | —     |
 | Lodash security fix (4.17.23 -> 4.18.1 via override)    | Security      | done   | —     |
+| CSP fix: strict-dynamic reverted to workable static-PWA | Security      | done   | —     |
 | 1000 tests across 102 files                             | Testing       | done   | —     |
 
 ### Remaining

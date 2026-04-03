@@ -225,6 +225,8 @@ export const strainsView = {
             duplicate: 'Er bestaat al een soort met de naam "{{name}}".',
             deleteConfirm:
                 'Weet je zeker dat je de soort "{{name}}" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
+            deletedCount_one: '1 soort verwijderd.',
+            deletedCount_other: '{{count}} soorten verwijderd.',
         },
         autoflower: 'Autoflower',
     },

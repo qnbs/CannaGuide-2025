@@ -37,12 +37,6 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
         }
 
         dispatch(userStrainsSlice.actions.addUserStrain(strain))
-        getUISnapshot().addNotification({
-            message: t('strainsView.addStrainModal.validation.addSuccess', {
-                name: strain.name,
-            }),
-            type: 'success',
-        })
         getUISnapshot().closeAddModal()
     },
 )
@@ -50,14 +44,7 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
 export const updateUserStrainAndCloseModal = createAsyncThunk<void, Strain, { state: RootState }>(
     'userStrains/updateUserStrainAndCloseModal',
     (strain, { dispatch }) => {
-        const t = getT()
         dispatch(userStrainsSlice.actions.updateUserStrain(strain))
-        getUISnapshot().addNotification({
-            message: t('strainsView.addStrainModal.validation.updateSuccess', {
-                name: strain.name,
-            }),
-            type: 'success',
-        })
         getUISnapshot().closeAddModal()
     },
 )
@@ -71,10 +58,18 @@ const userStrainsSlice = createSlice({
             userStrainsAdapter.updateOne(state, { id: action.payload.id, changes: action.payload })
         },
         deleteUserStrain: userStrainsAdapter.removeOne,
+        deleteMultipleUserStrains: (state, action: PayloadAction<string[]>) => {
+            userStrainsAdapter.removeMany(state, action.payload)
+        },
         setUserStrains: userStrainsAdapter.setAll,
     },
 })
 
-export const { addUserStrain, updateUserStrain, deleteUserStrain, setUserStrains } =
-    userStrainsSlice.actions
+export const {
+    addUserStrain,
+    updateUserStrain,
+    deleteUserStrain,
+    deleteMultipleUserStrains,
+    setUserStrains,
+} = userStrainsSlice.actions
 export default userStrainsSlice.reducer

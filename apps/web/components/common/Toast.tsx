@@ -40,10 +40,9 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
         }
     }, [notification.id, onClose])
 
-    // Use a key on the message div to force re-render and re-trigger animation on new toasts.
+    // The parent ToastContainer uses key={n.id} to trigger re-mount + animation on new toasts.
     return (
         <div
-            key={notification.id}
             className={`toast ${status} bg-[rgb(var(--color-bg-component))] flex items-center gap-3 w-full max-w-xs p-4 rounded-lg shadow-lg border border-white/20`}
             role="alert"
         >

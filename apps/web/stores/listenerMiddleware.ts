@@ -16,7 +16,12 @@ import { urlService } from '@/services/urlService'
 import { ttsService } from '@/services/ttsService'
 
 // Import actions to listen for
-import { addUserStrain, updateUserStrain, deleteUserStrain } from './slices/userStrainsSlice'
+import {
+    addUserStrain,
+    updateUserStrain,
+    deleteUserStrain,
+    deleteMultipleUserStrains,
+} from './slices/userStrainsSlice'
 import {
     addStrainTip,
     updateStrainTip,
@@ -433,12 +438,22 @@ startAppListening({
 
 startAppListening({
     matcher: isAnyOf(deleteSetup, deleteStrainTip, deleteUserStrain),
+    effect: () => {
+        const t = getT()
+        getUISnapshot().addNotification({ message: t('common.itemRemoved'), type: 'info' })
+    },
+})
+
+startAppListening({
+    actionCreator: deleteMultipleUserStrains,
     effect: (action) => {
         const t = getT()
-        let message = 'Item removed.'
-        if (action.type.includes('Export')) message = t('strainsView.exportsManager.exportRemoved')
-        // Add more specific messages if needed for other types
-        getUISnapshot().addNotification({ message, type: 'info' })
+        getUISnapshot().addNotification({
+            message: t('strainsView.addStrainModal.validation.deletedCount', {
+                count: action.payload.length,
+            }),
+            type: 'info',
+        })
     },
 })
 
@@ -453,11 +468,11 @@ startAppListening({
             title?: string
         }
         const payload = p.changes ?? p
-        const name = payload.name || payload.title
-        let message = `Item "${name}" updated.`
-        if (action.type.includes('Export'))
-            message = t('strainsView.exportsManager.updateExportSuccess', { name })
-        getUISnapshot().addNotification({ message, type: 'success' })
+        const name = payload.name ?? payload.title
+        getUISnapshot().addNotification({
+            message: t('common.itemUpdated', { name }),
+            type: 'success',
+        })
     },
 })
 

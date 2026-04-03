@@ -225,6 +225,8 @@ export const strainsView = {
             duplicate: 'Ya existe una variedad con el nombre "{{name}}".',
             deleteConfirm:
                 'Estas seguro de que deseas eliminar la variedad "{{name}}"? Esta accion no se puede deshacer.',
+            deletedCount_one: '1 variedad eliminada.',
+            deletedCount_other: '{{count}} variedades eliminadas.',
         },
         autoflower: 'Autofloreciente',
     },

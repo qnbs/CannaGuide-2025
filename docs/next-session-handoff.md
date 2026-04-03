@@ -2,7 +2,71 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-07, Session 35) -- Full Quality Audit Pass 2: useUnitSystem dead code, TimerSchedule a11y, STAGE_DEFAULTS export, ES/FR/NL knowledge i18n
+## Latest Session (2026-04-03, Session 36) -- Comprehensive Notification & UI/UX Audit: 9 bugs fixed, PWA install singleton, ConfirmModal
+
+**Status: v1.3.0-beta. 9 bugs fixed across notification system, PWA install, UI/UX. 1228 tests passing. TypeScript clean.**
+
+### What Was Done (Session 36)
+
+1. **Fixed double notification on every strain add/update (Critical)**:
+    - `addUserStrainWithValidation` and `updateUserStrainAndCloseModal` thunks both fired `addNotification` directly AND the listenerMiddleware ALSO listened for `addUserStrain`/`updateUserStrain` -> duplicate toast
+    - Fix: removed `addNotification` calls from both thunks; listenerMiddleware is single source of truth
+
+2. **Fixed bulk import in CommunitySharePanel firing 2N+1 notifications (Critical)**:
+    - Previous: dispatched `addUserStrainWithValidation` per strain (each triggered listener toast) + own aggregate toast
+    - Fix: pre-filter duplicates via `Set`, dispatch raw `addUserStrain` in loop (no per-strain listener toast), one aggregate success notification
+
+3. **Fixed PWA install button always non-functional in SettingsView (Critical)**:
+    - Root cause: `usePwaInstall` used `useState` per-instance; `beforeinstallprompt` fires before lazy `SettingsView` mounts
+    - Fix: refactored `usePwaInstall.ts` to module-level singleton (`_deferredPrompt`, `_isInstalled`, `_updateAvailable` + subscriber pattern)
+    - Event listeners registered ONCE at module load time; all hook instances share state via `forceUpdate` subscribers
+    - Eliminates Bug 4 (duplicate `swUpdate`/`appinstalled` notifications from two instances) as well
+
+4. **Fixed AddStrainModal validation toast on every keystroke (Medium)**:
+    - Removed `useEffect` that fired `addNotification` on every `errors` state change (fires on every validation pass)
+    - Removed unused `useAppDispatch` + `getUISnapshot` imports from AddStrainModal
+    - Inline `<ErrorText>` components already provide sufficient per-field feedback
+
+5. **Fixed dead code branches and untranslated strings in listenerMiddleware (Medium)**:
+    - `deleteSetup/deleteStrainTip/deleteUserStrain` listener: replaced hardcoded `'Item removed.'` with `t('common.itemRemoved')`
+    - `updateSetup/updateStrainTip` listener: removed dead `includes('Export')` branch, replaced template literal with `t('common.itemUpdated', { name })`
+    - Added `itemRemoved`/`itemUpdated` keys to all 5 locale `common.ts` files (EN/DE/ES/FR/NL)
+
+6. **Fixed bulk delete firing N notifications for N selected strains (High)**:
+    - Added `deleteMultipleUserStrains` reducer to `userStrainsSlice.ts` (uses `removeMany`)
+    - Added new listener in listenerMiddleware for `deleteMultipleUserStrains` -> single notification with count
+    - Added `deletedCount_one`/`deletedCount_other` plural keys to all 5 locale `strains.ts` files
+
+7. **Replaced `window.confirm` with custom `ConfirmModal` in StrainsView (Medium)**:
+    - Created `apps/web/components/common/ConfirmModal.tsx` (reusable, accessible, styled, memo-wrapped)
+    - `handleDeleteUserStrain`: opens `<ConfirmModal>` with strain name instead of `window.confirm`
+    - `handleBulkDelete`: dispatches `deleteMultipleUserStrains` via `<ConfirmModal>` instead of `window.confirm`
+    - Both confirm dialogs respect current theme and are accessible
+
+8. **Fixed dead `key` prop inside `Toast` render root (Low)**:
+    - Removed `key={notification.id}` from the `<div>` inside `Toast` component
+    - `key` on a component's own render root is silently ignored; the parent `ToastContainer` correctly uses `key={n.id}`
+
+9. **Removed redundant `setAddedFeedback` inline success UI from StrainLookupSection (Low)**:
+    - Removed `addedFeedback` state, `setAddedFeedback` calls (3 sites), and the inline green checkmark feedback div
+    - The toast from `listenerMiddleware` already provides sufficient feedback
+
+### Verified Metrics (Session 36)
+
+- Tests: **1228 passing, 0 failures** (114 test files)
+- TypeScript: **clean** (only known RTK TS2719 filtered)
+- Build: **successful** (149 precache entries)
+- All 5 locales: complete with new `itemRemoved`, `itemUpdated`, `deletedCount_one/other` keys
+
+### Planned Executions
+
+No mandatory follow-up executions. Optional candidates:
+
+- Replace remaining `window.confirm` patterns if any found in other views
+- Add `ConfirmModal` to other destructive actions (tip delete, setup delete)
+- Consider adding animation/transition to toast stacking
+
+## Previous Session (2026-04-07, Session 35) -- Full Quality Audit Pass 2: useUnitSystem dead code, TimerSchedule a11y, STAGE_DEFAULTS export, ES/FR/NL knowledge i18n
 
 **Status: v1.3.0-beta. 4 bugs fixed, 3 locales completed (ES/FR/NL knowledge lexikon+atlas+lernpfad). 1228 tests passing. TypeScript clean.**
 

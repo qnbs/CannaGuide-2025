@@ -55,6 +55,8 @@ export const common = {
     installPwaDismissed: 'Installation abgelehnt.',
     swUpdateAvailable: 'Eine neue Version ist verfügbar. Seite neu laden zum Aktualisieren.',
     swUpdateReload: 'Jetzt neu laden',
+    itemRemoved: 'Element entfernt.',
+    itemUpdated: '"{{name}}" aktualisiert.',
     offlineWarning:
         'Du bist derzeit offline. Einige Funktionen sind möglicherweise nicht verfügbar.',
     aiDisclaimer: 'KI-generiert -- keine Garantie für Korrektheit.',

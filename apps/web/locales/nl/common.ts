@@ -47,6 +47,8 @@ export const common = {
     installPwaDismissed: 'Installatie afgebroken.',
     swUpdateAvailable: 'Een nieuwe versie is beschikbaar. Herlaad om bij te werken.',
     swUpdateReload: 'Nu herladen',
+    itemRemoved: 'Item verwijderd.',
+    itemUpdated: '"{{name}}" bijgewerkt.',
     offlineWarning: 'Je bent momenteel offline. Sommige functies zijn mogelijk niet beschikbaar.',
     preparingGuide: 'Je gids wordt voorbereid...',
     error: 'Fout',

@@ -4,8 +4,6 @@ import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
 import { useForm } from '@/hooks/useForm'
 import { Modal } from '@/components/common/Modal'
-import { useAppDispatch } from '@/stores/store'
-import { getUISnapshot } from '@/stores/useUIStore'
 import { Input, FormSection } from '@/components/ui/form'
 import { createStrainObject } from '@/services/strainFactory'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
@@ -102,7 +100,6 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
     ...props
 }) => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
     const isEditMode = !!strainToEdit
     const formInitialValues = useMemo(
         () => (isEditMode && strainToEdit ? strainToFormValues(strainToEdit) : defaultStrainValues),
@@ -179,15 +176,6 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
             resetForm(formInitialValues)
         }
     }, [formInitialValues, isOpen, resetForm])
-
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            getUISnapshot().addNotification({
-                message: Object.values(errors).join(' '),
-                type: 'error',
-            })
-        }
-    }, [errors, dispatch])
 
     const parsedAromas = useMemo(
         () => parseCommaSeparatedTokens(values.aromasString),

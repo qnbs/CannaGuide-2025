@@ -2,7 +2,51 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-04, Session 25) -- Entourage Effect Science & Documentation Audit
+## Latest Session (2026-04-04, Session 26) -- CI TypeScript Fix & Documentation Audit
+
+**Status: v1.3.0-beta. Fixed CI-blocking TypeScript errors (TS2375, TS2379) from entourage science implementation: exactOptionalPropertyTypes violations in StrainLookupSection.tsx and strainLookupService.ts resolved with conditional spreads. Comprehensive documentation audit: all stale metrics corrected. 1049 tests, typecheck clean.**
+
+### What Was Done (Session 26)
+
+1. **CI TypeScript Fix** -- Resolved 2 `exactOptionalPropertyTypes` violations introduced by Session 25 entourage science:
+    - `StrainLookupSection.tsx` (L726): `diversity={result.terpeneDiversity}` would explicitly pass `undefined` to an optional prop. Fixed with conditional spread: `{...(result.terpeneDiversity !== undefined && { diversity: result.terpeneDiversity })}`
+    - `strainLookupService.ts` (L916): `profile?.score` and `profile?.interactions` would set optional properties to `undefined`. Fixed with `...(profile !== undefined && { entourageScore: profile.score, cannabinoidInteractions: profile.interactions })`
+
+2. **Documentation Audit (Session 25+26)**:
+    - `README.md` (EN+DE): fixed tests 1016->1049, services 81->82, local AI 15->18, Zustand stores 8->7 (EN), roadmap v1.2 at Released, v1.3 updated with entourage science
+    - `CHANGELOG.md`: Session 25 entourage science entries added
+    - `apps/web/package.json`: version aligned 1.2.0-alpha -> 1.3.0-beta
+    - `copilot-instructions.md`: all counts updated, 18 local AI services listed, new Important Files entries
+
+### Verified Repo Metrics (Actual)
+
+| Metric          | Value                             |
+| --------------- | --------------------------------- |
+| Tests           | 1049 (104 test files, 0 failures) |
+| Strains         | 778                               |
+| Services        | 82                                |
+| Custom Hooks    | 19                                |
+| Web Workers     | 8                                 |
+| Redux Slices    | 12                                |
+| Zustand Stores  | 7                                 |
+| i18n Namespaces | 12                                |
+| CI Workflows    | 22                                |
+| Version         | 1.3.0-beta                        |
+| Typecheck       | OK (1 known RTK TS2719 filtered)  |
+
+### Next Steps (Priority Order)
+
+1. **S-03 CSP nonce** -- Implement `vite-plugin-csp-nonce` for `strict-dynamic` support (deferred)
+2. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
+3. **A-01 AI Response Validation** -- Consistent Zod validation across all AI endpoints
+4. **P-02 Bundle Size Budget** -- Enforce gzip limits in CI
+5. **IndexedDB Monitor UI** -- Surface `monitorStorageHealth()` results in Settings > Data Management
+6. **IoT Sprint 2** -- Sensor history charts, real MQTT connect/disconnect
+7. **Entourage Science Extension** -- Real scientific references for FLAVONOID_PROFILES, expand TERPENE_SYNERGIES
+
+---
+
+## Previous Session (2026-04-04, Session 25) -- Entourage Effect Science & Documentation Audit
 
 **Status: v1.3.0-beta. Entourage effect science fully implemented in Strain Intelligence Lookup (terpene/cannabinoid/flavonoid enrichment, EntourageScore ring, FlavonoidBar chart, TerpeneDetailList). Comprehensive docs audit completed: all stale metrics corrected across README.md (EN+DE), copilot-instructions.md, CHANGELOG.md, and apps/web/package.json. 1049 tests passing.**
 

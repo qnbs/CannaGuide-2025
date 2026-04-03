@@ -240,6 +240,77 @@ export const equipmentView = {
                 history: 'Historique',
             },
         },
+        co2: {
+            title: 'Calculateur CO2',
+            description:
+                'Calcule le volume de CO2 necessaire pour enrichir votre espace de culture et le taux de maintien contre les pertes de ventilation.',
+            roomVolume: 'Volume de la Piece',
+            roomVolumeTooltip:
+                'Largeur x Profondeur x Hauteur de votre espace de culture en metres cubes.',
+            ach: 'Renouvellements d air',
+            achUnit: '/h',
+            achTooltip: 'Combien de fois par heure l air frais remplace l air de la piece.',
+            currentPpm: 'CO2 Actuel',
+            targetPpm: 'CO2 Cible',
+            targetPpmTooltip:
+                'Enrichissement optimal: 1000-1500 ppm. Au-dessus de 2000 ppm peut etre dangereux.',
+            initialBoost: 'Injection Initiale',
+            initialBoostGrams: 'Poids CO2',
+            maintenanceRate: 'Taux de Maintenance',
+            targetMustExceedCurrent: 'Le CO2 cible doit etre superieur au niveau actuel.',
+            safetyNote:
+                'Securite: Le CO2 au-dessus de 5000 ppm est dangereux. Assurez toujours une ventilation adequate.',
+            status: {
+                ambient: 'Aucun enrichissement necessaire (niveau ambiant)',
+                enrichment: 'Enrichissement actif recommande',
+                excess: 'Avertissement: La cible depasse la limite de securite de 2000 ppm',
+            },
+        },
+        humidityDeficit: {
+            title: 'Calculateur de Deficit d Humidite',
+            description:
+                'Calcule le deficit d humidite absolue (HD) a partir de la temperature et de l humidite relative de l air.',
+            stage: 'Stade de Croissance',
+            temperature: 'Temperature de l Air',
+            temperatureTooltip: 'Temperature au niveau de la canopee (formule SVP Buck 1981).',
+            humidity: 'Humidite Relative',
+            result: 'Deficit d Humidite (HD)',
+            ahSat: 'AH Max. Saturation',
+            ahActual: 'AH Reelle',
+            optimalRange: 'Plage optimale pour ce stade: {{min}}-{{max}} g/m3',
+            status: {
+                low: 'HD trop faible -- risque de moisissures',
+                optimal: 'HD optimal pour le stade de croissance',
+                high: 'HD trop eleve -- transpiration excessive',
+            },
+        },
+        lightHanging: {
+            title: 'Calculateur de Hauteur d Eclairage',
+            description:
+                'Determine la distance optimale entre la lampe et la canopee en utilisant la loi du carre inverse.',
+            lightType: 'Type d Eclairage',
+            wattage: 'Puissance de la Lampe',
+            wattageTooltip: 'Facteur d efficacite pour ce type de lampe: {{eff}} umol/s par W.',
+            targetPpfd: 'PPFD Cible',
+            ppfdTooltip:
+                'PPFD en umol/m2/s. Plantule: 200-400. Vegetatif: 400-700. Floraison: 600-1000.',
+            recommended: 'Hauteur Recommandee',
+            min: 'Min. Securite',
+            ppfdActual: 'PPFD Reel',
+            dli: 'DLI (18 h)',
+            note: 'Les valeurs sont des estimations. Verifiez toujours avec un capteur PPFD.',
+            type: {
+                led: 'LED',
+                hps: 'HPS / MH',
+                cmh: 'CMH / LEC',
+                t5: 'T5 Fluorescent',
+            },
+            status: {
+                close: 'Lampe trop proche -- risque de brulures',
+                optimal: 'Hauteur dans la plage optimale',
+                far: 'Lampe trop eloignee -- PPFD insuffisant',
+            },
+        },
     },
     growShops: {
         region: {

@@ -235,6 +235,77 @@ export const equipmentView = {
                 history: 'Historial',
             },
         },
+        co2: {
+            title: 'Calculadora de CO2',
+            description:
+                'Calcula el volumen de CO2 necesario para enriquecer tu espacio de cultivo y la tasa de mantenimiento contra las perdidas de ventilacion.',
+            roomVolume: 'Volumen del Espacio',
+            roomVolumeTooltip:
+                'Ancho x Profundidad x Altura de tu espacio de cultivo en metros cubicos.',
+            ach: 'Cambios de Aire',
+            achUnit: '/h',
+            achTooltip: 'Cuantas veces por hora el aire fresco reemplaza el aire del espacio.',
+            currentPpm: 'CO2 Actual',
+            targetPpm: 'CO2 Objetivo',
+            targetPpmTooltip:
+                'Enriquecimiento optimo: 1000-1500 ppm. Por encima de 2000 ppm puede ser peligroso.',
+            initialBoost: 'Carga Inicial',
+            initialBoostGrams: 'Peso CO2',
+            maintenanceRate: 'Tasa de Mantenimiento',
+            targetMustExceedCurrent: 'El CO2 objetivo debe ser mayor que el nivel actual.',
+            safetyNote:
+                'Seguridad: El CO2 por encima de 5000 ppm es peligroso. Asegura siempre ventilacion adecuada.',
+            status: {
+                ambient: 'Sin enriquecimiento necesario (nivel ambiente)',
+                enrichment: 'Enriquecimiento activo recomendado',
+                excess: 'Advertencia: Objetivo supera el limite seguro de 2000 ppm',
+            },
+        },
+        humidityDeficit: {
+            title: 'Calculadora de Deficit de Humedad',
+            description:
+                'Calcula el deficit de humedad absoluta (HD) a partir de la temperatura y la humedad relativa del aire.',
+            stage: 'Fase de Crecimiento',
+            temperature: 'Temperatura del Aire',
+            temperatureTooltip: 'Temperatura a nivel del dosel (formula SVP Buck 1981).',
+            humidity: 'Humedad Relativa',
+            result: 'Deficit de Humedad (HD)',
+            ahSat: 'AH Max. Saturacion',
+            ahActual: 'AH Real',
+            optimalRange: 'Rango optimo para esta fase: {{min}}-{{max}} g/m3',
+            status: {
+                low: 'HD demasiado bajo -- riesgo de moho',
+                optimal: 'HD optimo para la fase de crecimiento',
+                high: 'HD demasiado alto -- transpiracion excesiva',
+            },
+        },
+        lightHanging: {
+            title: 'Calculadora de Altura de Iluminacion',
+            description:
+                'Determina la distancia optima entre la luz y el dosel usando la ley del cuadrado inverso.',
+            lightType: 'Tipo de Luz',
+            wattage: 'Potencia de la Luz',
+            wattageTooltip: 'Factor de eficiencia para este tipo de luz: {{eff}} umol/s por W.',
+            targetPpfd: 'PPFD Objetivo',
+            ppfdTooltip:
+                'PPFD en umol/m2/s. Plantula: 200-400. Crecimiento: 400-700. Floracion: 600-1000.',
+            recommended: 'Altura Recomendada',
+            min: 'Min. Seguro',
+            ppfdActual: 'PPFD Real',
+            dli: 'DLI (18 h)',
+            note: 'Los valores son estimaciones. Verifica siempre con un medidor de PPFD.',
+            type: {
+                led: 'LED',
+                hps: 'HPS / MH',
+                cmh: 'CMH / LEC',
+                t5: 'T5 Fluorescente',
+            },
+            status: {
+                close: 'Luz demasiado cerca -- riesgo de quemaduras',
+                optimal: 'Altura en rango optimo',
+                far: 'Luz demasiado lejos -- PPFD insuficiente',
+            },
+        },
     },
     growShops: {
         region: {

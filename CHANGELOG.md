@@ -8,6 +8,20 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Features
 
+- **equipment:** equipmentCalculatorService.ts -- new pure-formula service with Zod-validated schemas for CO2 enrichment, Humidity Deficit (Buck 1981 SVP), and Light Hanging Height (inverse-square law) calculations
+- **equipment:** Co2Calculator -- CO2 enrichment calculator with one-time boost + steady-state maintenance rate, safety note, status badges (enrichment/ambient/excess)
+- **equipment:** HumidityDeficitCalculator -- absolute HD calculator using Buck SVP formula; growth-stage-aware optimal ranges; status: low/optimal/high
+- **equipment:** LightHangingCalculator -- light hanging height via inverse-square law with LED/HPS/CMH/T5 efficiency coefficients; DLI at 18 h included
+- **equipment:** Calculators.tsx -- extended CalculatorType union and calculatorList with 3 new entries (CloudArrowUp, Thermometer, Ruler icons)
+- **i18n:** full EN/DE/ES/FR/NL translations for all 3 new equipment calculators (co2, humidityDeficit, lightHanging)
+- **ui(plants):** PlantsView mobile-first layout reordering (order-1..7 CSS grid for optimal mobile UX)
+- **docs(ci):** copilot-instructions.md -- added 4-phase Plan Execution Workflow (Plan Mode -> Agent Mode) section
+
+### Tests
+
+- 40 new unit tests for equipmentCalculatorService (CO2, HD, LHH formulas + Zod schemas)
+- Total: 1108 tests passing (was 1049)
+
 - **knowledge:** expand KnowledgeViewTab from 4 to 8 tabs (lexikon, atlas, rechner, lernpfad added to existing mentor/guide/archive/sandbox)
 - **knowledge:** LexikonView -- searchable 89-term glossary sub-view with 6-category filter (General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease) and animated cards
 - **knowledge:** DiseaseAtlasView -- 22-entry plant disease diagnostic atlas with urgency filter (low/medium/high/critical), severity badge, and detail modal (symptoms/causes/treatment/prevention)

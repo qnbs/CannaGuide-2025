@@ -236,6 +236,77 @@ export const equipmentView = {
                 history: 'History',
             },
         },
+        co2: {
+            title: 'CO2 Enrichment Calculator',
+            description:
+                'Calculate the CO2 volume needed to enrich your grow room and the steady-state maintenance rate against ventilation losses.',
+            roomVolume: 'Room Volume',
+            roomVolumeTooltip: 'Width x Depth x Height of your grow space in cubic metres.',
+            ach: 'Air Changes',
+            achUnit: '/h',
+            achTooltip:
+                'How many times per hour fresh air replaces the room air (determines steady-state loss).',
+            currentPpm: 'Current CO2',
+            targetPpm: 'Target CO2',
+            targetPpmTooltip:
+                'Optimal enrichment: 1000-1500 ppm. Above 2000 ppm may be harmful to humans.',
+            initialBoost: 'One-Time Boost',
+            initialBoostGrams: 'CO2 Weight',
+            maintenanceRate: 'Maintenance Rate',
+            targetMustExceedCurrent: 'Target CO2 must be higher than current CO2 level.',
+            safetyNote:
+                'Safety: CO2 above 5000 ppm is dangerous. Always ensure adequate ventilation when entering the grow room.',
+            status: {
+                ambient: 'No enrichment needed (ambient level)',
+                enrichment: 'Active enrichment recommended',
+                excess: 'Warning: Target exceeds safe limit of 2000 ppm',
+            },
+        },
+        humidityDeficit: {
+            title: 'Humidity Deficit Calculator',
+            description:
+                'Calculate the absolute humidity deficit (HD) from air temperature and relative humidity. Optimal HD prevents both mould and excessive transpiration.',
+            stage: 'Growth Stage',
+            temperature: 'Air Temperature',
+            temperatureTooltip: 'Temperature at canopy level (Buck 1981 SVP formula).',
+            humidity: 'Relative Humidity',
+            result: 'Humidity Deficit (HD)',
+            ahSat: 'Max. AH Saturation',
+            ahActual: 'Actual AH',
+            optimalRange: 'Optimal range for this stage: {{min}}-{{max}} g/m3',
+            status: {
+                low: 'HD too low -- risk of mould and disease',
+                optimal: 'HD optimal for growth stage',
+                high: 'HD too high -- plants transpire excessively',
+            },
+        },
+        lightHanging: {
+            title: 'Light Hanging Height Calculator',
+            description:
+                'Determine the optimal distance between your light and the canopy using the inverse-square law and light-type efficiency coefficients.',
+            lightType: 'Light Type',
+            wattage: 'Light Wattage',
+            wattageTooltip: 'Efficiency factor for this light type: {{eff}} umol/s per W.',
+            targetPpfd: 'Target PPFD',
+            ppfdTooltip:
+                'PPFD (Photosynthetic Photon Flux Density) in umol/m2/s. Seedling: 200-400. Veg: 400-700. Flower: 600-1000.',
+            recommended: 'Recommended Height',
+            min: 'Min. Safe',
+            ppfdActual: 'Actual PPFD',
+            dli: 'DLI (18 h)',
+            note: 'Values are estimates based on inverse-square law. Always verify with a PPFD meter.',
+            type: {
+                led: 'LED',
+                hps: 'HPS / MH',
+                cmh: 'CMH / LEC',
+                t5: 'T5 Fluorescent',
+            },
+            status: {
+                close: 'Light is too close -- risk of light burn',
+                optimal: 'Height is in the optimal range',
+                far: 'Light is too far -- insufficient PPFD',
+            },
+        },
     },
     growShops: {
         region: {

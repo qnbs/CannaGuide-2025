@@ -745,122 +745,129 @@ export const knowledgeView = {
         },
     },
     growTech: {
-        title: 'Cannabis Grow Technologies 2026',
-        subtitle: 'Precision, automation, AI, and sustainability -- the future of cultivation.',
-        badge2026: '2026 Tech Overview',
-        intro: 'The cannabis cultivation technology landscape in 2026 is defined by data-driven, scalable systems that maximize yield, quality, and efficiency.',
-        keyBenefits: 'Key Benefits',
+        title: 'Tecnolog\u00edas de Cultivo de Cannabis 2026',
+        subtitle:
+            'Precisi\u00f3n, automatizaci\u00f3n, IA y sostenibilidad -- el futuro del cultivo.',
+        badge2026: 'Resumen Tecnol\u00f3gico 2026',
+        intro: 'El panorama tecnol\u00f3gico del cultivo de cannabis en 2026 est\u00e1 definido por sistemas escalables basados en datos que maximizan el rendimiento, la calidad y la eficiencia.',
+        keyBenefits: 'Beneficios Clave',
         categories: {
             dynamicLighting: {
-                title: 'Dynamic LED Lighting',
-                tagline: 'Full-spectrum LEDs with adaptive spectra for each growth phase',
+                title: 'Iluminaci\u00f3n LED Din\u00e1mica',
+                tagline:
+                    'LEDs de espectro completo con espectros adaptativos para cada fase de crecimiento',
                 content:
-                    'High-efficiency full-spectrum LEDs with strong red emphasis reach >2.8 umol/J efficiency and reduce power consumption by up to 40% versus legacy HPS lamps.',
+                    'Los LEDs de espectro completo de alta eficiencia con fuerte \u00e9nfasis en rojo alcanzan una eficiencia &gt;2,8 umol/J y reducen el consumo el\u00e9ctrico hasta un 40% frente a las l\u00e1mparas HPS tradicionales.',
                 benefits:
-                    '<ul><li>20-40% higher yield with optimized spectra</li><li>Up to 40% lower electricity costs</li><li>Better THC production through targeted wavelengths</li></ul>',
-                tip: 'A 350-600W LED panel in a 1.2 x 1.2m tent covers 4-6 plants.',
+                    '<ul><li>20-40% m\u00e1s de rendimiento con espectros optimizados</li><li>Hasta un 40% menos en costes el\u00e9ctricos</li><li>Mejor producci\u00f3n de THC gracias a longitudes de onda dirigidas</li></ul>',
+                tip: 'Un panel LED de 350-600W en una carpa de 1,2 x 1,2m cubre 4-6 plantas.',
             },
             sensorsIoT: {
-                title: 'Sensors, IoT & VPD Optimization',
-                tagline: 'Wireless environmental monitoring with AI-driven control loops',
+                title: 'Sensores, IoT y Optimizaci\u00f3n VPD',
+                tagline:
+                    'Monitorizaci\u00f3n ambiental inal\u00e1mbrica con bucles de control impulsados por IA',
                 content:
-                    'Wireless sensors for temperature, humidity, VPD, EC, pH, PAR/PPFD, CO2, and soil moisture form the backbone of precision cultivation.',
+                    'Sensores inal\u00e1mbricos de temperatura, humedad, VPD, EC, pH, PAR/PPFD, CO2 y humedad del suelo forman la columna vertebral del cultivo de precisi\u00f3n.',
                 benefits:
-                    '<ul><li>Real-time VPD optimization</li><li>Predictive environmental adjustments</li><li>Integration with CannaGuide via MQTT and BLE</li></ul>',
-                tip: 'VPD is the "invisible killer" -- wrong values cause stress, mold, or low trichome production.',
+                    '<ul><li>Optimizaci\u00f3n VPD en tiempo real</li><li>Ajustes ambientales predictivos</li><li>Integraci\u00f3n con CannaGuide v\u00eda MQTT y BLE</li></ul>',
+                tip: 'El VPD es el "asesino invisible" -- valores incorrectos causan estr\u00e9s, moho o baja producci\u00f3n de tricomas.',
             },
             aiAutomation: {
-                title: 'AI & Automation',
-                tagline: 'AI platforms that detect problems before visible symptoms appear',
+                title: 'IA y Automatizaci\u00f3n',
+                tagline:
+                    'Plataformas de IA que detectan problemas antes de que aparezcan s\u00edntomas visibles',
                 content:
-                    'AI platforms analyze real-time sensor data, detect pests and deficiencies before visible symptoms, and automatically optimize nutrient, light, and irrigation schedules.',
+                    'Las plataformas de IA analizan datos de sensores en tiempo real, detectan plagas y deficiencias antes de que aparezcan s\u00edntomas visibles, y optimizan autom\u00e1ticamente los calendarios de nutrientes, luz y riego.',
                 benefits:
-                    '<ul><li>Proactive pest and deficiency detection</li><li>Automated nutrient and irrigation scheduling</li><li>Data-driven compliance logging</li></ul>',
-                tip: 'CannaGuide already includes AI-powered plant diagnostics, proactive advisor, and local AI fallback -- all working offline.',
+                    '<ul><li>Detecci\u00f3n proactiva de plagas y deficiencias</li><li>Programaci\u00f3n automatizada de nutrientes y riego</li><li>Registro de cumplimiento basado en datos</li></ul>',
+                tip: 'CannaGuide ya incluye diagn\u00f3stico vegetal con IA, asesor proactivo y fallback de IA local -- todo funcionando sin conexi\u00f3n.',
             },
             digitalTwin: {
-                title: 'Digital Twin Simulation',
-                tagline: 'Virtual grow room replicas for risk-free experimentation',
+                title: 'Simulaci\u00f3n de Gemelo Digital',
+                tagline:
+                    'R\u00e9plicas virtuales del cuarto de cultivo para experimentaci\u00f3n sin riesgos',
                 content:
-                    'A Digital Twin creates a virtual replica of your grow environment using sensor data and CFD models.',
+                    'Un Gemelo Digital crea una r\u00e9plica virtual de tu entorno de cultivo usando datos de sensores y modelos CFD.',
                 benefits:
-                    '<ul><li>Zero-risk experimentation</li><li>Predictive yield modeling</li><li>Optimize HVAC and lighting virtually</li></ul>',
-                tip: 'CannaGuide Sandbox already offers what-if experiments on cloned plants.',
+                    '<ul><li>Experimentaci\u00f3n sin riesgo</li><li>Modelado predictivo del rendimiento</li><li>Optimizaci\u00f3n virtual de HVAC e iluminaci\u00f3n</li></ul>',
+                tip: 'CannaGuide Sandbox ya ofrece experimentos hipot\u00e9ticos en plantas clonadas.',
             },
             hydroAero: {
-                title: 'Hydroponics & Aeroponics',
-                tagline: 'Soilless systems with up to 30% faster growth and 90% less water',
+                title: 'Hidropon\u00eda y Aeropon\u00eda',
+                tagline:
+                    'Sistemas sin suelo con hasta un 30% de crecimiento m\u00e1s r\u00e1pido y un 90% menos de agua',
                 content:
-                    'Aeroponics suspends roots in air and delivers nutrients via fine mist -- achieving up to 30% faster growth with 90% less water usage.',
+                    'La aeropon\u00eda suspende las ra\u00edces en el aire y suministra nutrientes mediante niebla fina -- logrando hasta un 30% de crecimiento m\u00e1s r\u00e1pido con un 90% menos de consumo de agua.',
                 benefits:
-                    '<ul><li>Dramatically faster growth cycles</li><li>90% water reduction</li><li>Precise nutrient control</li></ul>',
-                tip: 'CannaGuide supports Soil, Coco, Hydro, and Aeroponics as grow media.',
+                    '<ul><li>Ciclos de crecimiento dr\u00e1sticamente m\u00e1s r\u00e1pidos</li><li>Reducci\u00f3n del 90% en el consumo de agua</li><li>Control preciso de nutrientes</li></ul>',
+                tip: 'CannaGuide es compatible con Tierra, Coco, Hidro y Aeropon\u00eda como sustratos.',
             },
             tissueCulture: {
-                title: 'Tissue Culture & Micropropagation',
-                tagline: 'Virus-free cloning of elite genetics at scale',
+                title: 'Cultivo de Tejidos y Micropropagaci\u00f3n',
+                tagline: 'Clonaci\u00f3n libre de virus de gen\u00e9tica elite a escala',
                 content:
-                    'Home-lab kits and professional tissue culture systems enable virus-free propagation of elite genetics.',
+                    'Los kits de laboratorio casero y los sistemas profesionales de cultivo de tejidos permiten la propagaci\u00f3n libre de virus de gen\u00e9tica elite.',
                 benefits:
-                    '<ul><li>100% genetic consistency</li><li>Virus and pathogen elimination</li><li>Faster scaling of prized phenotypes</li></ul>',
-                tip: 'Track your phenotypes in CannaGuide Breeding Lab and Genealogy Explorer.',
+                    '<ul><li>100% de consistencia gen\u00e9tica</li><li>Eliminaci\u00f3n de virus y pat\u00f3genos</li><li>Escalado m\u00e1s r\u00e1pido de fenotipos valiosos</li></ul>',
+                tip: 'Registra tus fenotipos en CannaGuide Breeding Lab y Genealogy Explorer.',
             },
             smartGrowBoxes: {
-                title: 'All-in-One Smart Grow Boxes',
-                tagline: 'Integrated systems with LEDs, fans, sensors, and app control',
+                title: 'Grow Boxes Inteligentes Todo-en-Uno',
+                tagline: 'Sistemas integrados con LEDs, ventiladores, sensores y control por app',
                 content:
-                    'Complete systems integrate LEDs, ventilation fans, sensors, and app control into a single unit.',
+                    'Los sistemas completos integran LEDs, ventiladores, sensores y control por app en una sola unidad.',
                 benefits:
-                    '<ul><li>Zero setup complexity</li><li>Integrated environmental control</li><li>App-based monitoring</li></ul>',
-                tip: 'Even with an all-in-one box, use CannaGuide to track your grow journal and get AI advice.',
+                    '<ul><li>Cero complejidad de configuraci\u00f3n</li><li>Control ambiental integrado</li><li>Monitorizaci\u00f3n desde la app</li></ul>',
+                tip: 'Incluso con una caja todo-en-uno, usa CannaGuide para llevar tu diario de cultivo y obtener consejos de IA.',
             },
             sustainability: {
-                title: 'Sustainability & Post-Harvest Tech',
-                tagline: 'Energy savings, regenerative soils, and precision curing',
+                title: 'Sostenibilidad y Tecnolog\u00eda Post-Cosecha',
+                tagline: 'Ahorro energ\u00e9tico, suelos regenerativos y curado de precisi\u00f3n',
                 content:
-                    'LED + HVAC optimization dramatically reduces energy and water consumption. Regenerative soil practices maximize terpene retention.',
+                    'La optimizaci\u00f3n LED + HVAC reduce dr\u00e1sticamente el consumo de energ\u00eda y agua. Las pr\u00e1cticas de suelo regenerativo maximizan la retenci\u00f3n de terpenos.',
                 benefits:
-                    '<ul><li>30-50% reduction in energy costs</li><li>Superior terpene preservation</li><li>Sustainable practices</li></ul>',
-                tip: 'CannaGuide post-harvest simulation tracks jar humidity, chlorophyll breakdown, terpene retention, and mold risk.',
+                    '<ul><li>Reducci\u00f3n del 30-50% en costes energ\u00e9ticos</li><li>Preservaci\u00f3n superior de terpenos</li><li>Pr\u00e1cticas sostenibles</li></ul>',
+                tip: 'La simulaci\u00f3n post-cosecha de CannaGuide registra la humedad del tarro, la degradaci\u00f3n de clorofila, la retenci\u00f3n de terpenos y el riesgo de moho.',
             },
         },
         impact: {
-            title: 'Technology Impact Matrix',
+            title: 'Matriz de Impacto Tecnol\u00f3gico',
             headers: {
-                area: 'Technology',
-                homeGrower: 'Home Grower Advantage',
-                commercial: 'Commercial Advantage',
-                effort: 'Setup Effort',
+                area: 'Tecnolog\u00eda',
+                homeGrower: 'Ventaja para el Cultivador Casero',
+                commercial: 'Ventaja Comercial',
+                effort: 'Esfuerzo de Configuraci\u00f3n',
             },
             areas: {
-                ledSensors: 'LED + Sensors',
-                aiAutomation: 'AI / Automation',
-                aeroponics: 'Aeroponics',
-                digitalTwin: 'Digital Twin',
+                ledSensors: 'LED + Sensores',
+                aiAutomation: 'IA / Automatizaci\u00f3n',
+                aeroponics: 'Aeropon\u00eda',
+                digitalTwin: 'Gemelo Digital',
             },
             home: {
-                ledSensors: '20-40% more yield, lower power bills',
-                aiAutomation: 'Less daily work, proactive alerts',
-                aeroponics: 'Faster growth, space-saving',
-                digitalTwin: 'Risk-free experimentation',
+                ledSensors:
+                    '20-40% m\u00e1s de rendimiento, facturas el\u00e9ctricas m\u00e1s bajas',
+                aiAutomation: 'Menos trabajo diario, alertas proactivas',
+                aeroponics: 'Crecimiento m\u00e1s r\u00e1pido, ahorro de espacio',
+                digitalTwin: 'Experimentaci\u00f3n sin riesgo',
             },
             commercial: {
-                ledSensors: 'Cost savings, consistent quality',
-                aiAutomation: 'Scalability, data compliance',
-                aeroponics: 'Maximum efficiency at scale',
-                digitalTwin: 'Predictive planning, optimization',
+                ledSensors: 'Ahorro de costes, calidad consistente',
+                aiAutomation: 'Escalabilidad, cumplimiento de datos',
+                aeroponics: 'M\u00e1xima eficiencia a escala',
+                digitalTwin: 'Planificaci\u00f3n predictiva, optimizaci\u00f3n',
             },
             effort: {
-                medium: 'Medium',
-                high: 'High',
-                highInitial: 'High (initial)',
-                mediumHigh: 'Medium-High',
+                medium: 'Medio',
+                high: 'Alto',
+                highInitial: 'Alto (inicial)',
+                mediumHigh: 'Medio-Alto',
             },
         },
         cannaGuideIntegration: {
-            title: 'Already in CannaGuide',
+            title: 'Ya en CannaGuide',
             content:
-                'CannaGuide integrates many of these 2026 technologies: real-time VPD simulation, AI-powered diagnostics, what-if sandbox experiments, IoT sensor integration, and a 3-layer local AI fallback for fully offline operation.',
+                'CannaGuide integra muchas de estas tecnolog\u00edas de 2026: simulaci\u00f3n VPD en tiempo real, diagn\u00f3sticos impulsados por IA, experimentos hipot\u00e9ticos en sandbox, integraci\u00f3n de sensores IoT y un fallback de IA local de 3 capas para operaci\u00f3n completamente sin conexi\u00f3n.',
         },
     },
     rechner: {

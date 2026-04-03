@@ -2,6 +2,68 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (2026-04-04, Session 37) -- Genetic Trends & Grow Tech Phase 2-3: Interactive Filter, Match-to-My-Grow, AI Analysis
+
+**Status: v1.3.0-beta. Phase 2+3 of Genetic Trends / Grow Tech audit complete. 1243 tests passing. TypeScript clean. Build succeeds.**
+
+### What Was Done (Session 37)
+
+1. **New types in `types.ts`**: Added `TrendMatchScore` and `TrendFilterState` interfaces after `GrowTechCategory`.
+
+2. **New service `trendsEcosystemService.ts`**:
+    - `calculateGeneticTrendMatchScore(category, plant)`: heuristic 0-100 score per plant state (medium, stage, floweringType)
+    - `calculateGrowTechMatchScore(category, setup)`: heuristic score per grow setup (medium, lightType, dynamicLighting)
+    - `getRelatedGrowTechForGenetic(genetic)` and `getRelatedGeneticForGrowTech(tech)`: static cross-hub relationship maps
+    - 5-minute in-memory cache per category+key combination
+
+3. **New AI methods in `geminiService.ts`**: Added `getTrendAnalysis(prompt, title, lang)` public method that calls private `generateText` for cloud, falls back to local `getEquipmentRecommendation` adapting `proTip` to `AIResponse`.
+
+4. **New AI methods in `aiService.ts`**:
+    - `getGeneticTrendAnalysis(category, lang)`: build DE/EN prompt, delegate to `geminiService.getTrendAnalysis`, graceful fallback
+    - `getGrowTechRecommendation(setup, lang)`: same pattern with setup-aware prompt; imports `GeneticTrendCategory`, `GrowSetup`
+
+5. **GeneticTrendsView.tsx full update**:
+    - Search filter input (uses `common.clearSearch`, `strainsView.geneticTrends.searchPlaceholder`)
+    - `filteredCategories` memoized derivative of categories
+    - Match-score badge (color-coded: green >= 80, amber >= 60, slate < 60) per category when active plant is selected
+    - Related Grow Tech cross-hub tags in expanded panel
+    - AI Analysis button per category with loading state and inline AI insight display
+    - Imports: `useAppSelector`, `selectSelectedPlantId`, `selectPlantById`, `selectLanguage`, `trendsEcosystemService`, `aiService`
+
+6. **GrowTechView.tsx full update** (also fixed bugs from Session 36):
+    - Fixed double `React.memo(React.memo(...))` wrapping (was `React.memo(React.memo(() => {`)
+    - Fixed `G)rowTechView.displayName` syntax error -> `GrowTechView.displayName`
+    - Added `filteredCategories` useMemo with search filter
+    - Added match-score badge per category using `growSetup` from settings
+    - Added global "AI Recommendation" button at top (applies to full setup, not per-category)
+    - Related genetic trends cross-hub tags in expanded panel
+    - Imports: `useAppSelector`, `selectSettings`, `selectLanguage`, `trendsEcosystemService`, `aiService`
+
+7. **i18n additions**:
+    - EN + DE `strains.ts`: `searchPlaceholder`, `matchToGrow`, `matchScore`, `noMatchResults`, `aiAnalyze`, `aiAnalyzing`, `aiInsightLabel`, `noPlantSelected`
+    - EN + DE `knowledge.ts` (growTech block): same keys plus `noSetupAvailable`
+
+8. **New test files** (15 tests total):
+    - `GeneticTrendsView.test.tsx` (8 tests): render, search filter, expand/collapse, no-results, clear, match-score badge
+    - `GrowTechView.test.tsx` (7 tests): render, search, AI button, expand, no-results, clear, match-score badge
+
+### Verified Metrics (Session 37)
+
+- Tests: 1243 passing, 0 failures
+- TypeScript: clean (RTK TS2719 filtered)
+- Build: succeeds (dist/)
+
+### Next Steps
+
+- Phase 4: Annual refresh mechanism -- add metadata to trends data (year, confidence, source) and a `refreshTrendsData()` service method
+- Phase 5: PDF export of Genetic Trends overview using `jsPDF` (or markdown export for offline use)
+- FR/NL knowledge.ts growTech translations (currently EN fallback)
+- Add `trendsSlice.ts` Redux slice for persisting user's trend notes/bookmarks (optional enhancement)
+- Update `docs/ARCHITECTURE.md` with `trendsEcosystemService.ts` and new AI methods
+- Update README.md service count (now 19 services with `trendsEcosystemService`)
+
+---
+
 ## Latest Session (2026-04-03, Session 36) -- Comprehensive Notification & UI/UX Audit: 9 bugs fixed, PWA install singleton, ConfirmModal
 
 **Status: v1.3.0-beta. 9 bugs fixed across notification system, PWA install, UI/UX. 1228 tests passing. TypeScript clean.**

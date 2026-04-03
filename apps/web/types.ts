@@ -541,6 +541,17 @@ export type GrowTechCategory =
     | 'smartGrowBoxes'
     | 'sustainability'
 
+export interface TrendMatchScore {
+    category: GeneticTrendCategory | GrowTechCategory
+    score: number
+    reason: string
+}
+
+export interface TrendFilterState {
+    query: string
+    showMatchedOnly: boolean
+}
+
 export interface PlantEnvironment {
     internalTemperature: number
     internalHumidity: number

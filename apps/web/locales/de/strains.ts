@@ -801,6 +801,15 @@ export const strainsView = {
         },
         conclusion:
             'Genetik wird 2026 präziser, funktionaler und vielfältiger -- weg vom Hype, hin zu echter Pflanzen-Perfektion. Komplexe Terps, ausgewogene Hybride, starke Autos und polyploide Linien bringen massive Gewinne bei Qualität, Ertrag und Konsistenz.',
+        searchPlaceholder: 'Trends filtern...',
+        matchToGrow: 'Passt zu meinem Grow',
+        matchScore: 'Match-Score',
+        noMatchResults: 'Kein Trend entspricht deiner Suche.',
+        aiAnalyze: 'KI-Analyse',
+        aiAnalyzing: 'Analysiere...',
+        aiInsightLabel: 'KI-Einblick',
+        noPlantSelected:
+            'W\u00e4hle eine Pflanze, um deinen pers\u00f6nlichen Match-Score zu sehen.',
     },
 }
 

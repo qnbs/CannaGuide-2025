@@ -15,6 +15,8 @@ import {
     DeepDiveGuide,
     MentorMessage,
     AiMode,
+    GeneticTrendCategory,
+    GrowSetup,
 } from '@/types'
 
 const DYNAMIC_IMPORT_TIMEOUT_MS = 15_000
@@ -571,6 +573,56 @@ export const aiService = {
             return quickHealthCheck()
         } catch {
             return { status: 'unknown', memoryPressure: false, modelsReady: false }
+        }
+    },
+
+    /** Analyse a specific Genetic Trend category using AI. */
+    async getGeneticTrendAnalysis(
+        category: GeneticTrendCategory,
+        lang: Language,
+    ): Promise<AIResponse> {
+        const isDE = lang === 'de'
+        const prompt = isDE
+            ? `Erklaere den Cannabis-Genetik-Trend 2026 "${category}" in 3-4 Saetzen. Fokus: praktischer Mehrwert fuer Heimanbauer, neue Zuchtfortschritte und welche Sorten am staerksten betroffen sind. Antwort auf Deutsch.`
+            : `Explain the 2026 cannabis genetic trend "${category}" in 3-4 sentences. Focus on practical value for home growers, recent breeding advances, and which strain types are most affected.`
+        const title = isDE ? `Genetik-Trend: ${category}` : `Genetic Trend: ${category}`
+        const fallback: AIResponse = {
+            title,
+            content: isDE
+                ? `${category} ist ein zentraler Genetik-Trend 2026 -- aktuelle Zuechtungen optimieren Terpen- und Cannabinoid-Profile fuer home growers.`
+                : `${category} is a key 2026 genetic trend -- modern breeding refines terpene and cannabinoid profiles for home growers.`,
+            confidence: 0.5,
+        }
+        try {
+            const gemini = await getGeminiService()
+            return await gemini.getTrendAnalysis(prompt, title, lang)
+        } catch {
+            return fallback
+        }
+    },
+
+    /** Recommend grow technology based on current grow setup. */
+    async getGrowTechRecommendation(setup: GrowSetup, lang: Language): Promise<AIResponse> {
+        const isDE = lang === 'de'
+        const setupDesc = isDE
+            ? `Medium: ${setup.medium}, Beleuchtung: ${setup.lightType} (${setup.lightWattage}W), dynamisch: ${setup.dynamicLighting ? 'ja' : 'nein'}`
+            : `Medium: ${setup.medium}, Light: ${setup.lightType} (${setup.lightWattage}W), dynamic: ${setup.dynamicLighting ? 'yes' : 'no'}`
+        const prompt = isDE
+            ? `Empfehle die beste Cannabis-Grow-Technologie 2026 fuer dieses Setup: ${setupDesc}. Erklaere in 3-4 Saetzen welche Technologien den groessten Mehrwert bringen und warum.`
+            : `Recommend the best 2026 cannabis grow technology for this setup: ${setupDesc}. Explain in 3-4 sentences which technologies provide the most value and why.`
+        const title = isDE ? 'Grow-Tech-Empfehlung 2026' : 'Grow Tech Recommendation 2026'
+        const fallback: AIResponse = {
+            title,
+            content: isDE
+                ? `Fuer dein Setup empfehlen sich IoT-Sensoren zur Echtzeitkontrolle und -- bei LED -- dynamisches Spektrum-Scheduling fuer maximale Effizienz in 2026.`
+                : `For your setup, IoT sensors for real-time monitoring and -- with LED -- dynamic spectrum scheduling offer the best 2026 efficiency gains.`,
+            confidence: 0.5,
+        }
+        try {
+            const gemini = await getGeminiService()
+            return await gemini.getTrendAnalysis(prompt, title, lang)
+        } catch {
+            return fallback
         }
     },
 }

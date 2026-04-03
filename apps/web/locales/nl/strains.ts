@@ -604,83 +604,86 @@ export const strainsView = {
         poor: 'Poor',
     },
     geneticTrends: {
-        badge2026: 'Genetics 2026',
-        title: 'Cannabis Genetic Trends 2026',
+        badge2026: 'Genetica 2026',
+        title: 'Cannabis Genetische Trends 2026',
         subtitle:
-            'Precision, complexity, functionality and sustainability -- the new standard in cannabis breeding.',
-        intro: 'The cannabis genetics industry is experiencing a renaissance in 2026. After years of pure THC chasing and candy-flavored crosses, breeders and consumers now demand terpene-rich, balanced, high-yielding and adaptable genetics.',
-        examplesLabel: 'Key Examples',
-        relevanceLabel: 'Relevance 2026',
+            'Precisie, complexiteit, functionaliteit en duurzaamheid -- de nieuwe standaard in cannabis-rassenteelt.',
+        intro: 'De cannabisgenetica-industrie beleeft in 2026 een renaissance. Na jaren van pure THC-jacht en snoepachtige kruisingen eisen kwekers en consumenten nu terpeenrijke, gebalanceerde, hoogopbrengende en aanpasbare genetica -- van ultra-snelle autoflowers tot polyploide superplanten en landrace-revivals. Meer dan 1.200 nieuw geregistreerde rassen in 2026 alleen al markeren de verschuiving naar precisieteelt.',
+        examplesLabel: 'Kernvoorbeelden',
+        relevanceLabel: 'Relevantie 2026',
         categories: {
             terpeneDiversity: {
-                title: 'Terpene Diversity',
-                tagline: 'Complex, savory and gassy aromas replace candy profiles',
+                title: 'Terpeendiversiteit',
+                tagline: "Complexe, hartige en gassige aroma's vervangen snoepprofielen",
                 content:
-                    'The big shift in 2026: Away from sweet candy-gas profiles toward dark, deep, funky and multi-layered terpenes.',
-                examples: 'Whitethorn Rose, Lantz, Pave-Candy variants (Compound Genetics)',
-                relevance: 'High',
+                    'De grote verschuiving van 2026: weg van zoete candy-gas-profielen (Gelato/Zkittlez-nakomelingen) naar donkere, diepe, funky en meerlagige terpenen. Paars candy-gas blijft sterk maar rijper (donkere kers, vanillewafeltje, petroleum). Gassige OG\'s en hartige terpen maken een comeback met citroen-den-brandstof, kaasrevivals en aardse/kruidige/kruidachtige noten gedomineerd door beta-caryofylleen en humuleen. Functionele terpenen zoals THCV ("dieethennep") voor energie zonder honger winnen aan terrein.',
+                examples:
+                    'Whitethorn Rose (Paradise Punch x Lemon OG), Lantz (Green Lantern x Ridgeline Runtz), Pave-Candy varianten (Compound Genetics), Bubble Tea (Z-Terp)',
+                relevance: 'Hoog',
             },
             ultraPotency: {
-                title: 'Ultra-High Potency & Full-Spectrum',
-                tagline: '33-37% THC with terpene synergy and minor cannabinoids',
+                title: 'Ultra-Hoge Potentie en Volledig Spectrum',
+                tagline: '33-37% THC met terpeensynergie en kleine cannabino\u00efden',
                 content:
-                    'THC values continue to explode with new records at 33-37%. Focus shifts to terpene synergy plus minor cannabinoids.',
-                examples: 'Hyper Za (35%), Puff Pastry (33%), Future #1 by Anesia Seeds (37%)',
-                relevance: 'High',
+                    'THC-waarden blijven records breken met 33-37%. Maar de focus verschuift van puur THC naar terpeensynergie plus kleine cannabino\u00efden (CBG, CBN, THCV) voor gerichte effecten zoals slaap, pijnverlichting, concentratie en microdosering. Hash-dumper-genetica (5%+ harsopbrengst) domineert onder kwekers die maximale harsproductie nastreven.',
+                examples:
+                    'Hyper Za (35%, gassig-zoet, paars, berijpt), Puff Pastry (33% sativa-dominant, chocolade-kaneel-citrus), Future #1 van Anesia Seeds (37%)',
+                relevance: 'Hoog',
             },
             balancedHybrids: {
-                title: 'Balanced Hybrids',
-                tagline: 'Calm focus without sedation or jitters -- intentional consumption',
+                title: 'Gebalanceerde Hybriden',
+                tagline: 'Rustige focus zonder sedatie of nervositeit -- intentioneel gebruik',
                 content:
-                    'Hybrids dominate in 2026 with balanced effects for everyday use and intentional consumption.',
+                    'Hybriden domineren in 2026 met gebalanceerde effecten voor dagelijks gebruik, sociale situaties en intentioneel verbruik. Sativa-gerichte hybriden worden "helderder", indica-gerichte "dieper". Consumenten zoeken cultivars die specifieke functionele effecten leveren in plaats van alleen maximale potentie.',
                 examples:
-                    'Durban Z (energy focus), Lemon Cherry Gelato, balanced 1:1 CBD:THC cultivars',
-                relevance: 'Very High',
+                    'Durban Z (energieke focus), Lemon Cherry Gelato (uplift + lichamelijke smelt), gebalanceerde 1:1 CBD:THC cultivars voor therapeutisch gebruik',
+                relevance: 'Zeer Hoog',
             },
             autofloweringRevolution: {
-                title: 'Autoflowering Revolution',
-                tagline: 'Photoperiod quality in 75-90 days -- no longer a compromise',
+                title: 'Autoflower Revolutie',
+                tagline: 'Fotoperiodekwaliteit in 75-90 dagen -- niet langer een compromis',
                 content:
-                    'Modern autoflowers are no longer a compromise in 2026. Advanced backcrossing techniques make them more potent and terpene-rich.',
-                examples: 'Royal Gorilla Auto, Blueberry x Big Bud Auto, Pluto Cut Auto',
-                relevance: 'Very High',
+                    'Moderne autoflowers zijn in 2026 geen compromis meer. Geavanceerde terugkruistechnieken maken hen potenter, met hogere opbrengst en terpeenrijker. Met cycli van 75-90 dagen kunnen kwekers 2-3 oogsten per jaar realiseren. Ze zijn beginnersvriendelijk, veerkrachtig en ideaal voor thuiskwekers die snel resultaten willen.',
+                examples:
+                    'Royal Gorilla Auto, Blueberry x Big Bud Auto, Pluto Cut Auto -- alle met authentieke fotoperiodekwaliteitsresultaten',
+                relevance: 'Zeer Hoog',
             },
             advancedBreeding: {
-                title: 'Advanced Breeding & Polyploidy',
+                title: 'Geavanceerde Teelt en Polyploidie',
                 tagline:
-                    'Triploid, tetraploid and hexaploid plants with up to 65% more cannabinoids',
+                    'Triploide, tetraploide en hexaploide planten met tot 65% meer cannabino\u00efden',
                 content:
-                    'The absolute game-changer: Polyploid plants deliver up to 65% more cannabinoids, higher biomass, and better resistance.',
+                    'Polyploide planten (triploide, tetraploide, hexaploide) gecre\u00eberd via colchicinebehandeling of Tesoro Genetics leveren tot 65% meer cannabino\u00efden, hogere biomassa (+60% hoogte, 2,7x bloemopbrengst) en betere weerstand. Triploiden zijn pollensteriel, waardoor zaden in kweekruimtes worden voorkomen. Aanvullende trends zijn F1-hybriden, markerhulp-selectie en genomische kartering voor stabiele, IP-beveiligde genetica.',
                 examples:
-                    'Tesoro Triploids, F1 hybrid programs, marker-assisted breeding pipelines',
+                    "Tesoro Triploiden, F1-hybrideprogramma's, marker-geassisteerde teeltpipelines, klimaatbestendige landrace-kruisingen",
                 relevance: 'Game-Changer',
             },
             landraceRevival: {
                 title: 'Landrace Revival',
-                tagline: 'Authentic, functional genetics from original growing regions',
+                tagline: "Authentieke, functionele genetica uit originele teeltregio's",
                 content:
-                    'A growing movement to preserve and revitalize original landrace genetics from Afghanistan, Morocco, Colombia, Thailand, and South Africa.',
+                    "Een groeiende beweging om originele landrace-genetica te bewaren en te revitaliseren uit regio's als Afghanistan, Marokko, Colombia, Thailand en Zuid-Afrika. Deze oude cultivars bieden unieke terpeenprofielen, natuurlijke plaagweerstand en functionele effecten die zelden voorkomen in moderne hybriden. Kwekers kruisen ze met moderne genetica om klimaatbestendige, terpeenrijke hybriden te cre\u00ebren die hun erfgoed eren.",
                 examples:
-                    'Afghan landrace x modern indica, Thai sativa revivals, Colombian Gold preservation',
-                relevance: 'Medium-High',
+                    'Afghaanse landrace x moderne indica, Thaise sativa revivals, Marokkaanse hasjplantskruisingen, Colombian Gold-conservering',
+                relevance: 'Gemiddeld-Hoog',
             },
         },
         table: {
             trend: 'Trend',
-            description: 'Description',
-            examples: 'Examples',
-            relevance: 'Relevance 2026',
+            description: 'Beschrijving',
+            examples: 'Voorbeelden',
+            relevance: 'Relevantie 2026',
         },
         implications: {
-            title: 'What This Means for Growers',
+            title: 'Wat Dit Betekent voor Kwekers',
             homeGrow:
-                'Start with stable autoflowers or polyploid seeds for maximum yields with minimal effort.',
+                'Begin met stabiele autoflowers of polyploide zaden voor maximale opbrengsten met minimale inspanning.',
             quality:
-                'Choose terpene-rich genetics for better flavor and effect -- quality beats quantity.',
+                'Kies terpeenrijke genetica voor betere smaak en effect -- kwaliteit wint van kwantiteit.',
             cannaGuide:
-                'CannaGuide tracks these trends with 800+ strains, chemovar classification, terpene and cannabinoid profiles.',
+                'CannaGuide volgt deze trends met 800+ rassen, chemovar-classificatie, terpeen- en cannabino\u00efdenprofielen -- perfect voor je volgende teeltplan.',
         },
         conclusion:
-            'Genetics in 2026 are more precise, functional and diverse -- away from hype, toward real plant perfection.',
+            'Genetica in 2026 is nauwkeuriger, functioneler en diverser -- weg van hype, naar echte plantperfectie. Complexe terpen, gebalanceerde hybriden, sterke autoflowers en polyploide lijnen leveren enorme winsten in kwaliteit, opbrengst en consistentie.',
     },
 }

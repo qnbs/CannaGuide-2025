@@ -305,6 +305,84 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ---
 
+## Plan Execution Workflow (Plan Mode -> Agent Mode)
+
+When Copilot receives a **plan-mode prompt** (typically a keyword-based plan structure sketch), execute the following strict 4-phase workflow:
+
+### Phase 1 -- Plan Elaboration (Plan Mode)
+
+1. **Parse the plan sketch:** Extract all features, changes, and goals from the keyword prompt.
+2. **Elaborate the full execution plan** for the current session:
+    - Scope: affected files, components, services, slices, types, i18n keys, tests, data files
+    - Dependency order: which changes must happen first (types -> data -> slices -> services -> components -> tests)
+    - Risk assessment: breaking changes, migration steps, fallback strategies
+    - Acceptance criteria: what "done" looks like (tests pass, typecheck clean, build succeeds)
+3. **Define follow-up executions** for subsequent prompts/sessions:
+    - Number each follow-up as `Execution N+1`, `N+2`, etc.
+    - Per follow-up: scope summary, prerequisites, estimated complexity
+    - Mark dependencies between executions explicitly
+4. **Present the complete plan** to the user for confirmation before proceeding.
+
+### Phase 2 -- Implementation (Agent Mode)
+
+Switch to Agent Mode and execute the approved plan:
+
+1. **Create a todo list** (`manage_todo_list`) with all implementation steps.
+2. **Implement changes** in dependency order, marking todos in-progress/completed as you go.
+3. **Run validation** after each logical group of changes:
+    - `npm run -w @cannaguide/web typecheck` (must be clean)
+    - `npm run -w @cannaguide/web test` (must pass, 0 failures)
+    - `npm run -w @cannaguide/web build` (must succeed)
+4. **Fix any errors** immediately before proceeding to the next step.
+
+### Phase 3 -- Documentation Update (Agent Mode)
+
+After implementation is complete with all validations passing, update **all affected documentation** in a single pass:
+
+| File                              | Update Scope                                                                            |
+| --------------------------------- | --------------------------------------------------------------------------------------- |
+| `README.md`                       | Metrics (test count, service count), feature descriptions, badges if applicable         |
+| `docs/next-session-handoff.md`    | New session entry at top: What Was Done, Verified Metrics, Next Steps                   |
+| `docs/ARCHITECTURE.md`            | New services, slices, components, data files, workers if added                          |
+| `.github/copilot-instructions.md` | Important Files table, Architecture section, Key Patterns, Coding Standards if affected |
+| `CHANGELOG.md`                    | New entry following Conventional Commits format                                         |
+| `docs/PRIORITY_ROADMAP.md`        | Mark completed items, update priorities                                                 |
+| `docs/audit-roadmap-2026-q2.md`   | Mark completed audit items if applicable                                                |
+| `ROADMAP.md`                      | Update feature status if applicable                                                     |
+
+**Rules for documentation updates:**
+
+- Keep updates **concise and factual** -- no filler prose
+- Use verified metrics only (run tests/typecheck and count actual values)
+- `next-session-handoff.md` must always list **Next Steps** for following sessions
+- Future executions from Phase 1 must be written into `next-session-handoff.md` under a clear `### Planned Executions` heading
+
+### Phase 4 -- Commit and Push (Agent Mode)
+
+1. **Stage all changes:** `git add -A`
+2. **Commit** with Conventional Commits format:
+
+    ```
+    <type>(<scope>): <description>
+
+    - bullet summary of key changes
+    - updated docs: README, handoff, architecture, copilot-instructions
+    - tests: <count> passing, 0 failures
+    ```
+
+3. **Push:** `git push origin main`
+
+### Plan Mode Rules
+
+- **Never skip Phase 1.** Even for small plans, write the full execution plan first.
+- **Never skip Phase 3.** Every implementation must update all affected docs.
+- **Atomic sessions:** Each plan execution must leave the repo in a clean, buildable, documented state.
+- **Handoff continuity:** The `next-session-handoff.md` must always be current so any future session can resume without context loss.
+- **Metrics must be verified:** Never copy old metrics -- always re-run `npm test`, `typecheck`, `build` and report actual counts.
+- **Follow-up executions are binding:** Plans written into `next-session-handoff.md` define the scope for subsequent sessions. Deviations require a new plan-mode prompt.
+
+---
+
 ## Important Files
 
 | File                                                        | Purpose                                                                                         |

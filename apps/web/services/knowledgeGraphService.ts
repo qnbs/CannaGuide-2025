@@ -14,7 +14,8 @@
 import { diseaseAtlas } from '@/data/diseases'
 import { lexiconData } from '@/data/lexicon'
 import { learningPaths } from '@/data/learningPaths'
-import type { Plant, PlantStage, Strain, KnowledgeViewTab, View } from '@/types'
+import { PlantStage, View, KnowledgeViewTab } from '@/types'
+import type { Plant, Strain } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Graph Node & Edge Types
@@ -317,15 +318,15 @@ class KnowledgeGraph {
 
     private indexStages(): void {
         const stages: PlantStage[] = [
-            'SEED' as PlantStage,
-            'GERMINATION' as PlantStage,
-            'SEEDLING' as PlantStage,
-            'VEGETATIVE' as PlantStage,
-            'FLOWERING' as PlantStage,
-            'HARVEST' as PlantStage,
-            'DRYING' as PlantStage,
-            'CURING' as PlantStage,
-            'FINISHED' as PlantStage,
+            PlantStage.Seed,
+            PlantStage.Germination,
+            PlantStage.Seedling,
+            PlantStage.Vegetative,
+            PlantStage.Flowering,
+            PlantStage.Harvest,
+            PlantStage.Drying,
+            PlantStage.Curing,
+            PlantStage.Finished,
         ]
         for (const s of stages) {
             this.addNode({ id: `stage:${s}`, type: 'stage', label: s, meta: {} })
@@ -718,15 +719,15 @@ export interface QueryContext {
 // ---------------------------------------------------------------------------
 
 const tagToStageMap: Record<string, PlantStage> = {
-    setup: 'SEED' as PlantStage,
-    germination: 'GERMINATION' as PlantStage,
-    seedling: 'SEEDLING' as PlantStage,
-    vegetative: 'VEGETATIVE' as PlantStage,
-    basics: 'SEEDLING' as PlantStage,
-    flowering: 'FLOWERING' as PlantStage,
-    harvest: 'HARVEST' as PlantStage,
-    curing: 'CURING' as PlantStage,
-    watering: 'VEGETATIVE' as PlantStage,
+    setup: PlantStage.Seed,
+    germination: PlantStage.Germination,
+    seedling: PlantStage.Seedling,
+    vegetative: PlantStage.Vegetative,
+    basics: PlantStage.Seedling,
+    flowering: PlantStage.Flowering,
+    harvest: PlantStage.Harvest,
+    curing: PlantStage.Curing,
+    watering: PlantStage.Vegetative,
 }
 
 function calculateRecency(timestamp: number): number {
@@ -753,19 +754,19 @@ function nodeToLink(node: GraphNode, weight: number, path: string): CrossModuleL
 
 const nodeTypeToViewMapping: Record<
     GraphNodeType,
-    { view: View; tab?: KnowledgeViewTab | string } | undefined
+    { view: View; tab?: KnowledgeViewTab } | undefined
 > = {
-    disease: { view: 'knowledge' as View, tab: 'Atlas' },
-    lexicon: { view: 'knowledge' as View, tab: 'Lexikon' },
-    guide: { view: 'knowledge' as View, tab: 'Guide' },
-    learningPath: { view: 'knowledge' as View, tab: 'Lernpfad' },
-    calculator: { view: 'knowledge' as View, tab: 'Rechner' },
-    plant: { view: 'plants' as View },
-    journal: { view: 'plants' as View },
-    strain: { view: 'strains' as View },
+    disease: { view: View.Knowledge, tab: KnowledgeViewTab.Atlas },
+    lexicon: { view: View.Knowledge, tab: KnowledgeViewTab.Lexikon },
+    guide: { view: View.Knowledge, tab: KnowledgeViewTab.Guide },
+    learningPath: { view: View.Knowledge, tab: KnowledgeViewTab.Lernpfad },
+    calculator: { view: View.Knowledge, tab: KnowledgeViewTab.Rechner },
+    plant: { view: View.Plants },
+    journal: { view: View.Plants },
+    strain: { view: View.Strains },
     stage: undefined,
-    nutrient: { view: 'knowledge' as View, tab: 'Lexikon' },
-    terpene: { view: 'knowledge' as View, tab: 'Lexikon' },
+    nutrient: { view: View.Knowledge, tab: KnowledgeViewTab.Lexikon },
+    terpene: { view: View.Knowledge, tab: KnowledgeViewTab.Lexikon },
 }
 
 // ---------------------------------------------------------------------------

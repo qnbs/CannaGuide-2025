@@ -14,7 +14,7 @@ function makePlant(overrides: Partial<Plant> = {}): Plant {
         stage: PlantStage.Vegetative,
         age: 30,
         health: 80,
-        strain: 'Test Strain',
+        strain: { name: 'Test Strain' } as never,
         environment: {
             internalTemperature: 24,
             internalHumidity: 55,
@@ -88,7 +88,9 @@ describe('analyticsService', () => {
         const plants = [
             makePlant({
                 health: 30,
-                problems: [{ type: 'nutrient', severity: 8, suggestion: 'Fix it' }] as never[],
+                problems: [
+                    { type: 'nutrient', severity: 8, onsetDay: 1, status: 'active' },
+                ] as never[],
             }),
         ]
         const result = analyticsService.compute(plants)

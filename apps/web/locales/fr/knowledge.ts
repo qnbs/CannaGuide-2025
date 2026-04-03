@@ -8,6 +8,11 @@ export const knowledgeView = {
         breeding: 'Laboratoire de Croisement',
         sandbox: 'Sandbox',
         growTech: 'Grow Tech 2026',
+        lexikon: 'Lexique',
+        atlas: 'Atlas des Maladies',
+        rechner: 'Calculateur',
+        lernpfad: "Parcours d'Apprentissage",
+        analytik: 'Analytique',
     },
     hub: {
         selectPlant: 'Selectionner une Plante',

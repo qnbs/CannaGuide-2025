@@ -15,7 +15,8 @@
 // ---------------------------------------------------------------------------
 
 import { knowledgeGraph, type QueryContext, type CrossModuleLink } from './knowledgeGraphService'
-import type { Plant, PlantStage, View, KnowledgeViewTab, AppSettings } from '@/types'
+import { View, KnowledgeViewTab } from '@/types'
+import type { Plant, PlantStage, AppSettings } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Context Snapshot -- immutable snapshot of current app context
@@ -224,8 +225,8 @@ class ContextBridge {
                 type: 'navigate',
                 label: `${prob.plantName}: ${prob.type}`,
                 description: 'Open Disease Atlas for diagnosis help',
-                targetView: 'knowledge' as View,
-                targetTab: 'Atlas',
+                targetView: View.Knowledge,
+                targetTab: KnowledgeViewTab.Atlas,
                 priority: prob.severity >= 7 ? 'high' : 'medium',
             })
         }

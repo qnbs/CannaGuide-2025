@@ -922,3 +922,40 @@ export const tipOfTheDay = {
         'Fabric pots are a great choice for beginners as they make overwatering almost impossible and provide oxygen to the roots.',
     ],
 }
+
+export const analytics = {
+    gardenScore: 'Garden Score',
+    avgHealth: 'Avg Health',
+    envStability: 'Env Stability',
+    activePlants: 'Active Plants',
+    stageDistribution: 'Stage Distribution',
+    riskFactors: 'Risk Factors',
+    strainPerformance: 'Strain Performance',
+    recommendations: 'Recommendations',
+    nextMilestone: 'Next Milestone',
+    daysAway: 'days away',
+    analyticsEmpty: 'Add plants to see analytics',
+    strain: 'Strain',
+    health: 'Health',
+    plants: 'Plants',
+    avgAge: 'Avg Age',
+    relatedKnowledge: 'Related Knowledge',
+    milestoneType: {
+        flip: 'Flip to Flower',
+        harvest: 'Harvest Ready',
+        curing_done: 'Curing Complete',
+        transplant: 'Transplant',
+    },
+    'analytics.recommendations.adjustVpd': 'Adjust VPD',
+    'analytics.recommendations.adjustVpdDesc':
+        'VPD is outside the optimal range. Adjust temperature or humidity.',
+    'analytics.recommendations.considerTraining': 'Consider Training',
+    'analytics.recommendations.considerTrainingDesc':
+        'Plant is in late vegetative stage. LST or topping could improve yield.',
+    'analytics.recommendations.checkTrichomes': 'Check Trichomes',
+    'analytics.recommendations.checkTrichomesDesc':
+        'Plant is in late flowering. Monitor trichomes for harvest timing.',
+    'analytics.recommendations.improveHealth': 'Improve Plant Health',
+    'analytics.recommendations.improveHealthDesc':
+        'Plant health is below optimal. Check nutrients, pH, and environment.',
+}

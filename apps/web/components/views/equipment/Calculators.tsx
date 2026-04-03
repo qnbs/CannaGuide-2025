@@ -8,6 +8,9 @@ import { ConverterCalculator } from './calculators/ConverterCalculator'
 import { YieldCalculator } from './calculators/YieldCalculator'
 import { ChemotypeCalculator } from './calculators/ChemotypeCalculator'
 import { EcPhPlannerCalculator } from './calculators/EcPhPlannerCalculator'
+import { Co2Calculator } from './calculators/Co2Calculator'
+import { HumidityDeficitCalculator } from './calculators/HumidityDeficitCalculator'
+import { LightHangingCalculator } from './calculators/LightHangingCalculator'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 type CalculatorType =
@@ -19,6 +22,9 @@ type CalculatorType =
     | 'converter'
     | 'yield'
     | 'chemotype'
+    | 'co2'
+    | 'humidityDeficit'
+    | 'lightHanging'
 
 const calculatorList: {
     id: CalculatorType
@@ -73,6 +79,24 @@ const calculatorList: {
         Component: ChemotypeCalculator,
         icon: <PhosphorIcons.Flask />,
         titleKey: 'equipmentView.calculators.chemotype.title',
+    },
+    {
+        id: 'co2',
+        Component: Co2Calculator,
+        icon: <PhosphorIcons.CloudArrowUp />,
+        titleKey: 'equipmentView.calculators.co2.title',
+    },
+    {
+        id: 'humidityDeficit',
+        Component: HumidityDeficitCalculator,
+        icon: <PhosphorIcons.Thermometer />,
+        titleKey: 'equipmentView.calculators.humidityDeficit.title',
+    },
+    {
+        id: 'lightHanging',
+        Component: LightHangingCalculator,
+        icon: <PhosphorIcons.Ruler />,
+        titleKey: 'equipmentView.calculators.lightHanging.title',
     },
 ]
 

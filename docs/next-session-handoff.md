@@ -2,7 +2,94 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-05, Session 27) -- Knowledge Section Overhaul (Wissen)
+## Latest Session (2026-04-03, Session 28) -- Equipment Calculator Suite Expansion
+
+**Status: v1.3.0-beta. Equipment Calculator Suite erweitert: 3 neue spezialisierte Calculator (CO2-Anreicherung, Luftfeuchte-Defizit, Lampenhoehe), neuer equipmentCalculatorService mit Zod-Schemas, 40 neue Unit-Tests. TypeScript clean. 1108 Tests passing.**
+
+### What Was Done (Session 28)
+
+1. **Plan Execution Workflow** (`.github/copilot-instructions.md`):
+    - Added 4-phase Plan Mode -> Agent Mode workflow section
+    - Phase 1: Plan elaboration, Phase 2: Implementation, Phase 3: Docs, Phase 4: Commit+Push
+
+2. **New Service** (`services/equipmentCalculatorService.ts`):
+    - Pure-formula service, offline-first, deterministic
+    - CO2 Enrichment: initial boost (L) + steady-state maintenance rate (L/h) + CO2 weight (g), status badges
+    - Humidity Deficit: Buck (1981) SVP formula + ideal gas AH derivation, 4 growth-stage optimal ranges
+    - Light Hanging Height: inverse-square law + LED/HPS/CMH/T5 efficiency coefficients, DLI at 18h
+    - Zod schemas: `Co2InputSchema`, `HumidityDeficitInputSchema`, `LightHangingInputSchema`
+
+3. **New Calculator Components** (3 components):
+    - `Co2Calculator.tsx`: room volume + ACH + current/target ppm inputs; two result panels (initial boost + maintenance)
+    - `HumidityDeficitCalculator.tsx`: growth-stage selector + temp + RH; HD + AH sat/actual panels
+    - `LightHangingCalculator.tsx`: light type (LED/HPS/CMH/T5) + wattage + target PPFD; 3 result panels (height + PPFD actual + DLI)
+
+4. **Orchestrator** (`Calculators.tsx`):
+    - Extended `CalculatorType` union with `'co2' | 'humidityDeficit' | 'lightHanging'`
+    - 3 new entries in `calculatorList` with `CloudArrowUp`, `Thermometer`, `Ruler` icons
+
+5. **i18n** (all 5 languages: EN, DE, ES, FR, NL):
+    - Full translation trees for `co2`, `humidityDeficit`, `lightHanging` in all 5 locale files
+    - Status badge keys, tooltip texts, unit labels, safety notes
+
+6. **Unit Tests** (`services/equipmentCalculatorService.test.ts`):
+    - 40 tests: CO2 (13), Humidity Deficit (16), Light Hanging (11)
+    - Covers Zod schema validation, formula correctness, edge cases, status logic
+
+7. **PlantsView Mobile Layout** (`components/views/PlantsView.tsx`):
+    - Mobile-first CSS grid reordering (`order-1..7`) for optimal mobile UX
+
+### Verified Repo Metrics (Actual)
+
+| Metric      | Value                                    |
+| ----------- | ---------------------------------------- |
+| Tests       | 1108 passing, 0 failures                 |
+| TypeScript  | Clean (1 known RTK TS2719 filtered)      |
+| Build       | Success (Vite 7, PWA precache OK)        |
+| Services    | 83 total (+1 equipmentCalculatorService) |
+| Calculators | 11 Equipment + 3 Knowledge = 14 total    |
+
+### Next Steps (Priority)
+
+**Execution 2 -- Equipment Suite: What-If-Sandbox + Unit-Toggle (medium complexity)**
+
+- Shared `unitSystem` preference in equipmentSlice (metric | imperial)
+- All existing + new calculators consume unit-toggle
+- What-If-Sandbox: single Slider for room size -> all calculators update simultaneously
+- Visual Regression tests for Slider UI
+- Lighthouse A assertion for Equipment view
+
+**Execution 3 -- Knowledge Hub: Terpene-Entourage + Cannabinoid-Ratio-Optimizer**
+
+- `TerpeneEntourageCalculator.tsx` in CalculatorHubView (reuse `strainLookupService` entourage data)
+- `CannabinoidRatioOptimizer.tsx` -- THC:CBD:CBG target ratio input -> strain search integration
+- RAG-integration: calculator inputs -> personalized AI explanation via `aiFacade.aiService`
+- WorkerBus migration for VPD calculation (off main thread)
+- i18n EN/DE for scientific terms
+
+**Execution 4 -- Equipment Suite: PDF Export + AI-Configurator Deep Link**
+
+- Equipment-Plan-2026 PDF export (all calculator results in single document)
+- AI-Configurator integration: calculator results -> shopping list recommendation
+
+**Execution 5 -- Knowledge Hub: D3 Dynamic Simulation + Light Spectrum**
+
+- Transpiration Rate Calculator
+- Light Spectrum Efficiency (PAR/PPFD -> terpene production correlation)
+- D3 real-time curves over 7-day simulation window
+
+### Planned Executions Summary
+
+| Execution   | Scope                                        | Complexity | Prerequisites    |
+| ----------- | -------------------------------------------- | ---------- | ---------------- |
+| Execution 2 | Equipment: Unit-Toggle + What-If-Sandbox     | medium     | Session 28 done  |
+| Execution 3 | Knowledge: Entourage + Cannabinoid Optimizer | high       | Execution 2 done |
+| Execution 4 | Equipment: PDF + AI Deep Link                | medium     | Execution 2 done |
+| Execution 5 | Knowledge: D3 Simulation + Spectrum          | high       | Execution 3 done |
+
+---
+
+## Previous Session (2026-04-05, Session 27) -- Knowledge Section Overhaul (Wissen)
 
 **Status: v1.3.0-beta. Complete Knowledge section overhaul: KnowledgeViewTab expanded from 4 to 8 tabs, 4 new sub-views (LexikonView, DiseaseAtlasView, CalculatorHubView, LearningPathView), GuideView enhanced with search + read-progress + 2 new article groups, lexicon expanded from 39 to 89 entries, 22-entry Disease Atlas, 5 Learning Paths with Redux-tracked progress. TypeScript clean. 1049 tests passing.**
 

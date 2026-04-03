@@ -235,6 +235,75 @@ export const equipmentView = {
                 history: 'Geschiedenis',
             },
         },
+        co2: {
+            title: 'CO2-Verrijkingscalculator',
+            description:
+                'Bereken het benodigde CO2-volume voor je kweekruimte en het onderhoudsverbruik tegen ventilatieverlies.',
+            roomVolume: 'Ruimtevolume',
+            roomVolumeTooltip: 'Breedte x Diepte x Hoogte van je kweekruimte in kubieke meter.',
+            ach: 'Luchtverversingen',
+            achUnit: '/u',
+            achTooltip: 'Hoe vaak per uur verse lucht de ruimtelucht vervangt.',
+            currentPpm: 'Huidig CO2',
+            targetPpm: 'Doel-CO2',
+            targetPpmTooltip:
+                'Optimale verrijking: 1000-1500 ppm. Boven 2000 ppm kan gevaarlijk zijn.',
+            initialBoost: 'Eenmalige Startinjectie',
+            initialBoostGrams: 'CO2-gewicht',
+            maintenanceRate: 'Onderhoudsrate',
+            targetMustExceedCurrent: 'Doel-CO2 moet hoger zijn dan het huidige CO2-niveau.',
+            safetyNote:
+                'Veiligheid: CO2 boven 5000 ppm is gevaarlijk. Zorg altijd voor voldoende ventilatie.',
+            status: {
+                ambient: 'Geen verrijking nodig (omgevingsniveau)',
+                enrichment: 'Actieve verrijking aanbevolen',
+                excess: 'Waarschuwing: Doel overschrijdt veilige limiet van 2000 ppm',
+            },
+        },
+        humidityDeficit: {
+            title: 'Vochttekort-calculator',
+            description:
+                'Bereken het absolute vochttekort (HD) uit luchttemperatuur en relatieve luchtvochtigheid.',
+            stage: 'Groeifase',
+            temperature: 'Luchttemperatuur',
+            temperatureTooltip: 'Temperatuur op knoophoogte (Buck 1981 SVP-formule).',
+            humidity: 'Relatieve Luchtvochtigheid',
+            result: 'Vochttekort (HD)',
+            ahSat: 'Max. AH Verzadiging',
+            ahActual: 'Werkelijke AH',
+            optimalRange: 'Optimaal bereik voor deze fase: {{min}}-{{max}} g/m3',
+            status: {
+                low: 'HD te laag -- risico op schimmel',
+                optimal: 'HD optimaal voor groeifase',
+                high: 'HD te hoog -- overmatige verdamping',
+            },
+        },
+        lightHanging: {
+            title: 'Lichtophoogte-calculator',
+            description:
+                'Bepaal de optimale afstand tussen lamp en bladerdak via de omgekeerde kwadraatswet.',
+            lightType: 'Lichttype',
+            wattage: 'Lampvermogen',
+            wattageTooltip: 'Efficientiecoefficient voor dit lichttype: {{eff}} umol/s per W.',
+            targetPpfd: 'Doel-PPFD',
+            ppfdTooltip: 'PPFD in umol/m2/s. Zaailing: 200-400. Groei: 400-700. Bloei: 600-1000.',
+            recommended: 'Aanbevolen Hoogte',
+            min: 'Min. Veilig',
+            ppfdActual: 'Werkelijke PPFD',
+            dli: 'DLI (18 u)',
+            note: 'Waarden zijn schattingen op basis van de omgekeerde kwadraatswet. Controleer altijd met een PPFD-meter.',
+            type: {
+                led: 'LED',
+                hps: 'HPS / MH',
+                cmh: 'CMH / LEC',
+                t5: 'T5 tl-lamp',
+            },
+            status: {
+                close: 'Lamp te dichtbij -- risico op verbranding',
+                optimal: 'Hoogte in optimaal bereik',
+                far: 'Lamp te ver weg -- onvoldoende PPFD',
+            },
+        },
     },
     growShops: {
         region: {

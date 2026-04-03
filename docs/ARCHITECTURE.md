@@ -86,6 +86,7 @@ apps/web/                 Main PWA (@cannaguide/web)
   hooks/                  19 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
   services/workerBus.ts   Centralized promise-based WorkerBus (8 workers, timeout, messageId)
+  services/equipmentCalculatorService.ts  Pure-formula service: CO2, Humidity Deficit, Light Hanging Height (Zod-validated)
   utils/                  Shared utilities (secureRandom, etc.)
   types/                  Zod schemas for AI response validation
   lib/                    cn() utility, VPD calculation library

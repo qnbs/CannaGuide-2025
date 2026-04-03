@@ -385,68 +385,69 @@ After implementation is complete with all validations passing, update **all affe
 
 ## Important Files
 
-| File                                                        | Purpose                                                                                         |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `apps/web/index.tsx`                                        | App bootstrap, SW registration, safe recovery                                                   |
-| `apps/web/vite.config.ts`                                   | Build config + optionalMlPlugin() for ML stub fallback                                          |
-| `apps/web/stores/store.ts`                                  | Redux store creation, IndexedDB hydration                                                       |
-| `apps/web/services/geminiService.ts`                        | Gemini API abstraction (all AI features)                                                        |
-| `apps/web/services/aiProviderService.ts`                    | Multi-provider AI routing                                                                       |
-| `apps/web/services/aiFacade.ts`                             | Public AI facade (re-exports aiService + provider + infra)                                      |
-| `apps/web/services/aiService.ts`                            | Unified AI service (cloud + local routing)                                                      |
-| `apps/web/services/LocalAIInfrastructure.ts`                | Unified cache + telemetry + preload class                                                       |
-| `apps/web/services/localAI.ts`                              | Core local AI orchestration                                                                     |
-| `apps/web/services/localAIModelLoader.ts`                   | ONNX pipeline loader (WebGPU/WASM, concurrency guard)                                           |
-| `apps/web/services/localAiNlpService.ts`                    | NLP pipelines (sentiment, summarization, zero-shot)                                             |
-| `apps/web/services/localAiEmbeddingService.ts`              | MiniLM embeddings, semantic ranking                                                             |
-| `apps/web/services/localAiFallbackService.ts`               | Heuristic fallback for all AI features                                                          |
-| `apps/web/services/localAiLanguageDetectionService.ts`      | On-device EN/DE language detection                                                              |
-| `apps/web/services/localAiImageSimilarityService.ts`        | CLIP image comparison, growth tracking                                                          |
-| `apps/web/services/localAiHealthService.ts`                 | Device classification, health monitoring                                                        |
-| `apps/web/services/sentryService.ts`                        | Sentry error tracking initialization                                                            |
-| `apps/web/services/tauriIpcService.ts`                      | Tauri binary IPC bridge (image + sensor)                                                        |
-| `apps/web/services/pluginService.ts`                        | Plugin architecture (nutrient, hardware, grow)                                                  |
-| `apps/web/services/seedbankService.ts`                      | Deterministic mock seed pricing (SeedFinder removed)                                            |
-| `apps/web/services/imageGenerationService.ts`               | SD-Turbo text-to-image (WebGPU, worker-offloaded)                                               |
-| `apps/web/services/dailyStrainsService.ts`                  | 4:20 Daily Drop: seeded PRNG daily picks, AI search, resolveDiscoveredToStrain                  |
-| `apps/web/services/workerBus.ts`                            | Promise-based worker communication bus (7 workers)                                              |
-| `apps/web/services/proactiveCoachService.ts`                | Smart coach: threshold monitoring + AI advice + cooldown                                        |
-| `apps/web/services/nativeBridgeService.ts`                  | Unified native notification dispatch (Tauri/Capacitor/Web)                                      |
-| `apps/web/services/strainLookupService.ts`                  | 5-source Strain Intelligence Lookup cascade + entourage effect science                          |
-| `apps/web/services/indexedDbMonitorService.ts`              | IndexedDB quota inspection, per-store entry counts, health warnings                             |
-| `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                  |
-| `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                 |
-| `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                  |
-| `apps/web/simulation.worker.ts`                             | VPD simulation Web Worker                                                                       |
-| `apps/web/data/diseases.ts`                                 | 22 DiseaseEntry objects (deficiency/toxicity/environmental/pest/disease)                        |
-| `apps/web/data/learningPaths.ts`                            | 5 LearningPath objects with step-by-step grow education programs                                |
-| `apps/web/data/lexicon.ts`                                  | 89-entry grower glossary (6 categories: General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease) |
-| `apps/web/components/views/knowledge/LexikonView.tsx`       | Searchable 89-term Knowledge glossary sub-view                                                  |
-| `apps/web/components/views/knowledge/DiseaseAtlasView.tsx`  | 22-entry plant disease diagnostic atlas sub-view                                                |
-| `apps/web/components/views/knowledge/CalculatorHubView.tsx` | VPD + Nutrient Ratio + pH/EC calculator hub sub-view                                            |
-| `apps/web/components/views/knowledge/LearningPathView.tsx`  | 5-path grow education learning paths sub-view (Redux progress)                                  |
-| `apps/web/utils/random.ts`                                  | `secureRandom()` -- Web Crypto replacement for Math.random                                      |
-| `apps/web/constants.ts`                                     | App-wide constants                                                                              |
-| `apps/web/types.ts`                                         | Core TypeScript types                                                                           |
-| `apps/web/i18n.ts`                                          | i18next initialization                                                                          |
-| `packages/ai-core/src/providers.ts`                         | PROVIDER_CONFIGS map + key rotation/validation functions                                        |
-| `packages/ai-core/src/schemas.ts`                           | Zod schemas for AI response validation                                                          |
-| `packages/ai-core/src/ml.ts`                                | Lazy ML loaders (transformers, web-llm, genai)                                                  |
-| `packages/ai-core/package.json`                             | ML optionalDependencies isolation                                                               |
-| `packages/ui/src/tokens.css`                                | 9 cannabis theme CSS custom properties (RGB triplets)                                           |
-| `packages/ui/src/tailwind-preset.cjs`                       | Shared Tailwind preset (colors, keyframes, animations)                                          |
-| `lighthouserc.json`                                         | Lighthouse CI config + performance budget assertions                                            |
-| `stryker.conf.json`                                         | Stryker mutation testing config (Redux slices, 50% break)                                       |
-| `scripts/typecheck-filter.mjs`                              | Typecheck with RTK TS2719 filter (known upstream bug)                                           |
-| `scripts/generate-service-map.mjs`                          | AI service Mermaid dependency map generator                                                     |
-| `scripts/github/pr-push.mjs`                                | Automated PR workflow (branch -> PR -> auto-merge -> cleanup)                                   |
-| `src-tauri/capabilities/default.json`                       | Tauri v2 capability permissions (minimal set)                                                   |
-| `apps/desktop/src/ipc.rs`                                   | Tauri Rust IPC commands (image, sensor, sysinfo)                                                |
-| `.devcontainer/devcontainer.json`                           | DevContainer config (Dockerfile build, ports, extensions)                                       |
-| `.devcontainer/Dockerfile`                                  | Dev container image (Playwright + system deps)                                                  |
-| `.devcontainer/setup.sh`                                    | postCreateCommand (workspace-filtered install, no ML)                                           |
-| `.devcontainer/start.sh`                                    | postStartCommand (IoT mock servers)                                                             |
-| `.github/workflows/config-guard.yml`                        | CI scan for RCE patterns in config files                                                        |
-| `docs/ACCESSIBILITY.md`                                     | WCAG 2.1 AA accessibility statement                                                             |
-| `scripts/security/check-csp-consistency.mjs`                | CI: CSP consistency across securityHeaders/index.html/netlify                                   |
-| `scripts/check-i18n-completeness.mjs`                       | CI: i18n key coverage checker across all languages                                              |
+| File                                                        | Purpose                                                                                                            |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `apps/web/index.tsx`                                        | App bootstrap, SW registration, safe recovery                                                                      |
+| `apps/web/vite.config.ts`                                   | Build config + optionalMlPlugin() for ML stub fallback                                                             |
+| `apps/web/stores/store.ts`                                  | Redux store creation, IndexedDB hydration                                                                          |
+| `apps/web/services/geminiService.ts`                        | Gemini API abstraction (all AI features)                                                                           |
+| `apps/web/services/aiProviderService.ts`                    | Multi-provider AI routing                                                                                          |
+| `apps/web/services/aiFacade.ts`                             | Public AI facade (re-exports aiService + provider + infra)                                                         |
+| `apps/web/services/aiService.ts`                            | Unified AI service (cloud + local routing)                                                                         |
+| `apps/web/services/LocalAIInfrastructure.ts`                | Unified cache + telemetry + preload class                                                                          |
+| `apps/web/services/localAI.ts`                              | Core local AI orchestration                                                                                        |
+| `apps/web/services/localAIModelLoader.ts`                   | ONNX pipeline loader (WebGPU/WASM, concurrency guard)                                                              |
+| `apps/web/services/localAiNlpService.ts`                    | NLP pipelines (sentiment, summarization, zero-shot)                                                                |
+| `apps/web/services/localAiEmbeddingService.ts`              | MiniLM embeddings, semantic ranking                                                                                |
+| `apps/web/services/localAiFallbackService.ts`               | Heuristic fallback for all AI features                                                                             |
+| `apps/web/services/localAiLanguageDetectionService.ts`      | On-device EN/DE language detection                                                                                 |
+| `apps/web/services/localAiImageSimilarityService.ts`        | CLIP image comparison, growth tracking                                                                             |
+| `apps/web/services/localAiHealthService.ts`                 | Device classification, health monitoring                                                                           |
+| `apps/web/services/equipmentCalculatorService.ts`           | Pure-formula calculator service: CO2 enrichment, Humidity Deficit (Buck SVP), Light Hanging Height (Zod-validated) |
+| `apps/web/services/sentryService.ts`                        | Sentry error tracking initialization                                                                               |
+| `apps/web/services/tauriIpcService.ts`                      | Tauri binary IPC bridge (image + sensor)                                                                           |
+| `apps/web/services/pluginService.ts`                        | Plugin architecture (nutrient, hardware, grow)                                                                     |
+| `apps/web/services/seedbankService.ts`                      | Deterministic mock seed pricing (SeedFinder removed)                                                               |
+| `apps/web/services/imageGenerationService.ts`               | SD-Turbo text-to-image (WebGPU, worker-offloaded)                                                                  |
+| `apps/web/services/dailyStrainsService.ts`                  | 4:20 Daily Drop: seeded PRNG daily picks, AI search, resolveDiscoveredToStrain                                     |
+| `apps/web/services/workerBus.ts`                            | Promise-based worker communication bus (7 workers)                                                                 |
+| `apps/web/services/proactiveCoachService.ts`                | Smart coach: threshold monitoring + AI advice + cooldown                                                           |
+| `apps/web/services/nativeBridgeService.ts`                  | Unified native notification dispatch (Tauri/Capacitor/Web)                                                         |
+| `apps/web/services/strainLookupService.ts`                  | 5-source Strain Intelligence Lookup cascade + entourage effect science                                             |
+| `apps/web/services/indexedDbMonitorService.ts`              | IndexedDB quota inspection, per-store entry counts, health warnings                                                |
+| `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                                     |
+| `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                                    |
+| `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                                     |
+| `apps/web/simulation.worker.ts`                             | VPD simulation Web Worker                                                                                          |
+| `apps/web/data/diseases.ts`                                 | 22 DiseaseEntry objects (deficiency/toxicity/environmental/pest/disease)                                           |
+| `apps/web/data/learningPaths.ts`                            | 5 LearningPath objects with step-by-step grow education programs                                                   |
+| `apps/web/data/lexicon.ts`                                  | 89-entry grower glossary (6 categories: General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease)                    |
+| `apps/web/components/views/knowledge/LexikonView.tsx`       | Searchable 89-term Knowledge glossary sub-view                                                                     |
+| `apps/web/components/views/knowledge/DiseaseAtlasView.tsx`  | 22-entry plant disease diagnostic atlas sub-view                                                                   |
+| `apps/web/components/views/knowledge/CalculatorHubView.tsx` | VPD + Nutrient Ratio + pH/EC calculator hub sub-view                                                               |
+| `apps/web/components/views/knowledge/LearningPathView.tsx`  | 5-path grow education learning paths sub-view (Redux progress)                                                     |
+| `apps/web/utils/random.ts`                                  | `secureRandom()` -- Web Crypto replacement for Math.random                                                         |
+| `apps/web/constants.ts`                                     | App-wide constants                                                                                                 |
+| `apps/web/types.ts`                                         | Core TypeScript types                                                                                              |
+| `apps/web/i18n.ts`                                          | i18next initialization                                                                                             |
+| `packages/ai-core/src/providers.ts`                         | PROVIDER_CONFIGS map + key rotation/validation functions                                                           |
+| `packages/ai-core/src/schemas.ts`                           | Zod schemas for AI response validation                                                                             |
+| `packages/ai-core/src/ml.ts`                                | Lazy ML loaders (transformers, web-llm, genai)                                                                     |
+| `packages/ai-core/package.json`                             | ML optionalDependencies isolation                                                                                  |
+| `packages/ui/src/tokens.css`                                | 9 cannabis theme CSS custom properties (RGB triplets)                                                              |
+| `packages/ui/src/tailwind-preset.cjs`                       | Shared Tailwind preset (colors, keyframes, animations)                                                             |
+| `lighthouserc.json`                                         | Lighthouse CI config + performance budget assertions                                                               |
+| `stryker.conf.json`                                         | Stryker mutation testing config (Redux slices, 50% break)                                                          |
+| `scripts/typecheck-filter.mjs`                              | Typecheck with RTK TS2719 filter (known upstream bug)                                                              |
+| `scripts/generate-service-map.mjs`                          | AI service Mermaid dependency map generator                                                                        |
+| `scripts/github/pr-push.mjs`                                | Automated PR workflow (branch -> PR -> auto-merge -> cleanup)                                                      |
+| `src-tauri/capabilities/default.json`                       | Tauri v2 capability permissions (minimal set)                                                                      |
+| `apps/desktop/src/ipc.rs`                                   | Tauri Rust IPC commands (image, sensor, sysinfo)                                                                   |
+| `.devcontainer/devcontainer.json`                           | DevContainer config (Dockerfile build, ports, extensions)                                                          |
+| `.devcontainer/Dockerfile`                                  | Dev container image (Playwright + system deps)                                                                     |
+| `.devcontainer/setup.sh`                                    | postCreateCommand (workspace-filtered install, no ML)                                                              |
+| `.devcontainer/start.sh`                                    | postStartCommand (IoT mock servers)                                                                                |
+| `.github/workflows/config-guard.yml`                        | CI scan for RCE patterns in config files                                                                           |
+| `docs/ACCESSIBILITY.md`                                     | WCAG 2.1 AA accessibility statement                                                                                |
+| `scripts/security/check-csp-consistency.mjs`                | CI: CSP consistency across securityHeaders/index.html/netlify                                                      |
+| `scripts/check-i18n-completeness.mjs`                       | CI: i18n key coverage checker across all languages                                                                 |

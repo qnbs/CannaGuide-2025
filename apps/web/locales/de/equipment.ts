@@ -240,6 +240,77 @@ export const equipmentView = {
                 history: 'Verlauf',
             },
         },
+        co2: {
+            title: 'CO2-Anreicherungsrechner',
+            description:
+                'Berechne das benötigte CO2-Volumen zur Anreicherung deines Anbaubereichs und die stationäre Erhaltungsrate gegen Lüftungsverluste.',
+            roomVolume: 'Raumvolumen',
+            roomVolumeTooltip: 'Breite x Tiefe x Höhe deines Anbaubereichs in Kubikmetern.',
+            ach: 'Luftwechsel',
+            achUnit: '/h',
+            achTooltip:
+                'Wie oft pro Stunde die Raumluft durch Frischluft ersetzt wird (bestimmt den stationären Verlust).',
+            currentPpm: 'Aktuelles CO2',
+            targetPpm: 'Ziel-CO2',
+            targetPpmTooltip:
+                'Optimale Anreicherung: 1000-1500 ppm. Über 2000 ppm kann für Menschen schädlich sein.',
+            initialBoost: 'Einmalige Erstbefüllung',
+            initialBoostGrams: 'CO2-Gewicht',
+            maintenanceRate: 'Erhaltungsrate',
+            targetMustExceedCurrent: 'Ziel-CO2 muss höher sein als der aktuelle CO2-Wert.',
+            safetyNote:
+                'Sicherheit: CO2 über 5000 ppm ist gefährlich. Immer für ausreichende Belüftung sorgen, bevor du den Anbaubereich betrittst.',
+            status: {
+                ambient: 'Keine Anreicherung nötig (Umgebungslevel)',
+                enrichment: 'Aktive Anreicherung empfohlen',
+                excess: 'Warnung: Zielwert überschreitet sicheres Limit von 2000 ppm',
+            },
+        },
+        humidityDeficit: {
+            title: 'Luftfeuchte-Defizit-Rechner',
+            description:
+                'Berechne das absolute Luftfeuchte-Defizit (HD) aus Lufttemperatur und relativer Luftfeuchtigkeit. Optimales HD verhindert Schimmel und übermäßige Transpiration.',
+            stage: 'Wachstumsphase',
+            temperature: 'Lufttemperatur',
+            temperatureTooltip: 'Temperatur auf Kronenhöhe (Buck 1981 SVP-Formel).',
+            humidity: 'Relative Luftfeuchtigkeit',
+            result: 'Luftfeuchte-Defizit (HD)',
+            ahSat: 'Max. AH Sättigung',
+            ahActual: 'Tatsächliche AH',
+            optimalRange: 'Optimaler Bereich für diese Phase: {{min}}-{{max}} g/m3',
+            status: {
+                low: 'HD zu niedrig -- Schimmel- und Krankheitsrisiko',
+                optimal: 'HD optimal für die Wachstumsphase',
+                high: 'HD zu hoch -- Pflanzen transpirieren übermäßig',
+            },
+        },
+        lightHanging: {
+            title: 'Lampenh\u00f6hen-Rechner',
+            description:
+                'Bestimme den optimalen Abstand zwischen Lampe und Pflanzenkrone anhand des Abstandsquadratgesetzes und lichttyp-spezifischer Effizienzkoeffizienten.',
+            lightType: 'Lampentyp',
+            wattage: 'Lampenleistung',
+            wattageTooltip: 'Effizienzfaktor für diesen Lampentyp: {{eff}} umol/s pro W.',
+            targetPpfd: 'Ziel-PPFD',
+            ppfdTooltip:
+                'PPFD (Photosynthetische Photonenflussdichte) in umol/m2/s. Keimling: 200-400. Wachstum: 400-700. Blüte: 600-1000.',
+            recommended: 'Empfohlene Höhe',
+            min: 'Mind. Abstand',
+            ppfdActual: 'Tatsächlicher PPFD',
+            dli: 'DLI (18 h)',
+            note: 'Werte sind Schätzungen basierend auf dem Abstandsquadratgesetz. Immer mit einem PPFD-Messgerät überprüfen.',
+            type: {
+                led: 'LED',
+                hps: 'HPS / MH',
+                cmh: 'CMH / LEC',
+                t5: 'T5 Leuchtstofflampe',
+            },
+            status: {
+                close: 'Lampe zu nah -- Verbrennungsgefahr',
+                optimal: 'Höhe im optimalen Bereich',
+                far: 'Lampe zu weit -- unzureichender PPFD',
+            },
+        },
     },
     growShops: {
         region: {

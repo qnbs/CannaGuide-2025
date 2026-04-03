@@ -13,6 +13,7 @@ export const knowledgeView = {
         rechner: 'Rekenmachine',
         lernpfad: 'Leerpaden',
         analytik: 'Analyse',
+        navLabel: 'Kennissecties',
     },
     hub: {
         selectPlant: 'Plant Selecteren',
@@ -350,4 +351,42 @@ export const tipOfTheDay = {
         'Let op de kleur van je bladeren. Gezond groen is goed. Te donker groen kan te veel stikstof betekenen.',
         'Stoffen potten zijn ideaal voor beginners omdat ze overbewatering bijna onmogelijk maken.',
     ],
+}
+
+export const analytics = {
+    gardenScore: 'Tuinscore',
+    avgHealth: 'Gem. Gezondheid',
+    envStability: 'Omgevingsstabiliteit',
+    activePlants: 'Actieve Planten',
+    stageDistribution: 'Faseverdeling',
+    riskFactors: 'Risicofactoren',
+    strainPerformance: 'Soortprestaties',
+    nextMilestone: 'Volgende Mijlpaal',
+    daysAway: 'dagen te gaan',
+    analyticsEmpty: 'Voeg planten toe om analyses te zien',
+    strain: 'Soort',
+    health: 'Gezondheid',
+    plants: 'Planten',
+    avgAge: 'Gem. Leeftijd',
+    relatedKnowledge: 'Gerelateerde Kennis',
+    milestoneType: {
+        flip: 'Overschakelen naar Bloei',
+        harvest: 'Klaar voor Oogst',
+        curing_done: 'Droging Voltooid',
+        transplant: 'Verpotten',
+    },
+    recommendations: {
+        title: 'Aanbevelingen',
+        adjustVpd: 'VPD Aanpassen',
+        adjustVpdDesc:
+            'VPD is buiten het optimale bereik. Pas temperatuur of luchtvochtigheid aan.',
+        considerTraining: 'Training Overwegen',
+        considerTrainingDesc:
+            'Plant is in late vegetatieve fase. LST of topping kan de opbrengst verbeteren.',
+        checkTrichomes: 'Trichomen Controleren',
+        checkTrichomesDesc: 'Plant is in late bloeifase. Monitor trichomen voor het oogstmoment.',
+        improveHealth: 'Plantgezondheid Verbeteren',
+        improveHealthDesc:
+            'Plantgezondheid is onder optimaal. Controleer voedingsstoffen, pH en omgeving.',
+    },
 }

@@ -229,6 +229,7 @@ export const common = {
     on: 'On',
     exportPdf: 'Export PDF',
     exporting: 'Exporting...',
+    exportGrowBible: 'Export Grow Bible',
     exportFormats: {
         pdfHint: 'Portable export for sharing and archiving.',
         txtHint: 'Lean plaintext output for copy, diff and tooling.',

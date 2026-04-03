@@ -13,6 +13,7 @@ export const knowledgeView = {
         rechner: 'Calculateur',
         lernpfad: "Parcours d'Apprentissage",
         analytik: 'Analytique',
+        navLabel: 'Sections de connaissances',
     },
     hub: {
         selectPlant: 'Selectionner une Plante',
@@ -352,4 +353,43 @@ export const tipOfTheDay = {
         "Observez la couleur de vos feuilles. Un vert riche et sain est bon. Un vert trop fonce peut indiquer un exces d'azote.",
         "Les pots en tissu sont un excellent choix pour les debutants car ils rendent l'arrosage excessif presque impossible.",
     ],
+}
+
+export const analytics = {
+    gardenScore: 'Score du Jardin',
+    avgHealth: 'Sante Moyenne',
+    envStability: 'Stabilite Environnementale',
+    activePlants: 'Plantes Actives',
+    stageDistribution: 'Repartition par Phase',
+    riskFactors: 'Facteurs de Risque',
+    strainPerformance: 'Performance par Variete',
+    nextMilestone: 'Prochain Jalon',
+    daysAway: 'jours restants',
+    analyticsEmpty: 'Ajoutez des plantes pour voir les analyses',
+    strain: 'Variete',
+    health: 'Sante',
+    plants: 'Plantes',
+    avgAge: 'Age Moyen',
+    relatedKnowledge: 'Connaissances Associees',
+    milestoneType: {
+        flip: 'Passage en Floraison',
+        harvest: 'Pret pour la Recolte',
+        curing_done: 'Sechage Termine',
+        transplant: 'Transplantation',
+    },
+    recommendations: {
+        title: 'Recommandations',
+        adjustVpd: 'Ajuster le VPD',
+        adjustVpdDesc:
+            "Le VPD est en dehors de la plage optimale. Ajustez la temperature ou l'humidite.",
+        considerTraining: "Envisager l'Entrainement",
+        considerTrainingDesc:
+            'Plante en phase vegetative tardive. Le LST ou le topping pourrait ameliorer le rendement.',
+        checkTrichomes: 'Verifier les Trichomes',
+        checkTrichomesDesc:
+            'Plante en floraison tardive. Surveillez les trichomes pour le moment de la recolte.',
+        improveHealth: 'Ameliorer la Sante de la Plante',
+        improveHealthDesc:
+            "La sante de la plante est en dessous de l'optimal. Verifiez les nutriments, le pH et l'environnement.",
+    },
 }

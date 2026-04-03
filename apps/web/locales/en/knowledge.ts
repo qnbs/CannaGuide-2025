@@ -539,6 +539,12 @@ export const knowledgeView = {
             rangeVeg: 'Vegetative',
             rangeFlower: 'Flowering',
             rangeLateFlower: 'Late Flower',
+            simulate: 'Simulate 7 days',
+            simulationTitle: '7-Day VPD Curve',
+            explainAi: 'Explain with AI',
+            aiExplanationTitle: 'AI Explanation',
+            aiLoading: 'Generating explanation...',
+            deepDive: 'Deep dive: Learning Path ->',
         },
         nutrient: {
             growStage: 'Growth Stage',
@@ -574,6 +580,10 @@ export const knowledgeView = {
             profile: 'Profile',
             synergyMatrix: 'Synergy Pairs',
             learnMore: 'Learn more about terpene science ->',
+            explainAi: 'Explain with AI',
+            aiExplanationTitle: 'AI Explanation',
+            aiLoading: 'Generating explanation...',
+            deepDive: 'Deep dive: Learning Path ->',
         },
         transpiration: {
             description:
@@ -586,6 +596,12 @@ export const knowledgeView = {
             canopyRate: 'Canopy Transpiration',
             dailyWater: 'Daily Water Use',
             learnMore: 'Learn more about plant water management ->',
+            simulate: 'Simulate 7 days',
+            simulationTitle: '7-Day Projection',
+            explainAi: 'Explain with AI',
+            aiExplanationTitle: 'AI Explanation',
+            aiLoading: 'Generating explanation...',
+            deepDive: 'Deep dive: Learning Path ->',
         },
         ecTds: {
             description:
@@ -598,6 +614,12 @@ export const knowledgeView = {
             drift: 'pH Drift',
             prediction: 'Day 7 Projection',
             learnMore: 'Learn more about EC, TDS, and pH management ->',
+            simulate: 'Simulate 7 days',
+            simulationTitle: '7-Day EC Drift',
+            explainAi: 'Explain with AI',
+            aiExplanationTitle: 'AI Explanation',
+            aiLoading: 'Generating explanation...',
+            deepDive: 'Deep dive: Learning Path ->',
         },
         lightSpectrum: {
             description:
@@ -612,6 +634,12 @@ export const knowledgeView = {
             terpeneBoost: 'Terpene Boost',
             recommended: 'Recommended Ratio',
             learnMore: 'Learn more about light spectrum and terpene production ->',
+            simulate: 'Simulate 7 days',
+            simulationTitle: '7-Day DLI Curve',
+            explainAi: 'Explain with AI',
+            aiExplanationTitle: 'AI Explanation',
+            aiLoading: 'Generating explanation...',
+            deepDive: 'Deep dive: Learning Path ->',
         },
         cannabinoidRatio: {
             description: 'Analyze THC:CBD:CBG ratios, profile type, and entourage harmony score.',
@@ -619,6 +647,10 @@ export const knowledgeView = {
             profile: 'Profile Type',
             harmony: 'Harmony Score',
             learnMore: 'Learn more about cannabinoid profiles ->',
+            explainAi: 'Explain with AI',
+            aiExplanationTitle: 'AI Explanation',
+            aiLoading: 'Generating explanation...',
+            deepDive: 'Deep dive: Learning Path ->',
         },
     },
     lernpfad: {

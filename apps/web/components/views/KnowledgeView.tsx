@@ -20,6 +20,11 @@ const LexikonView = lazy(() => import('./knowledge/LexikonView'))
 const DiseaseAtlasView = lazy(() => import('./knowledge/DiseaseAtlasView'))
 const CalculatorHubView = lazy(() => import('./knowledge/CalculatorHubView'))
 const LearningPathView = lazy(() => import('./knowledge/LearningPathView'))
+const AnalyticsDashboardView = lazy(() =>
+    import('./knowledge/AnalyticsDashboardView').then((m) => ({
+        default: m.AnalyticsDashboardView,
+    })),
+)
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation()
@@ -58,6 +63,9 @@ export const KnowledgeView: React.FC = () => {
             [KnowledgeViewTab.Lernpfad]: (
                 <PhosphorIcons.GraduationCap className="w-16 h-16 mx-auto text-amber-400" />
             ),
+            [KnowledgeViewTab.Analytik]: (
+                <PhosphorIcons.ChartLineUp className="w-16 h-16 mx-auto text-emerald-400" />
+            ),
             [KnowledgeViewTab.Archive]: (
                 <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-amber-400" />
             ),
@@ -76,6 +84,7 @@ export const KnowledgeView: React.FC = () => {
             [KnowledgeViewTab.Atlas]: t('knowledgeView.tabs.atlas'),
             [KnowledgeViewTab.Rechner]: t('knowledgeView.tabs.rechner'),
             [KnowledgeViewTab.Lernpfad]: t('knowledgeView.tabs.lernpfad'),
+            [KnowledgeViewTab.Analytik]: t('knowledgeView.tabs.analytik'),
             [KnowledgeViewTab.Archive]: t('knowledgeView.tabs.archive'),
             [KnowledgeViewTab.Sandbox]: t('knowledgeView.tabs.sandbox'),
         }),
@@ -114,6 +123,8 @@ export const KnowledgeView: React.FC = () => {
                 return <CalculatorHubView />
             case KnowledgeViewTab.Lernpfad:
                 return <LearningPathView />
+            case KnowledgeViewTab.Analytik:
+                return <AnalyticsDashboardView />
             case KnowledgeViewTab.Archive:
                 return <ArchiveView />
             case KnowledgeViewTab.Sandbox:

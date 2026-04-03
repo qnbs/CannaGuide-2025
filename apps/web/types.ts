@@ -369,6 +369,7 @@ export enum KnowledgeViewTab {
     Atlas = 'atlas',
     Rechner = 'rechner',
     Lernpfad = 'lernpfad',
+    Analytik = 'analytik',
     Archive = 'archive',
     Sandbox = 'sandbox',
 }

@@ -47,6 +47,11 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
             icon: <PhosphorIcons.GraduationCap />,
         },
         {
+            id: KnowledgeViewTab.Analytik,
+            label: t('knowledgeView.tabs.analytik'),
+            icon: <PhosphorIcons.ChartLineUp />,
+        },
+        {
             id: KnowledgeViewTab.Archive,
             label: t('knowledgeView.tabs.archive'),
             icon: <PhosphorIcons.Archive />,
@@ -60,7 +65,7 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
 
     return (
         <nav
-            className="grid grid-cols-4 gap-2 sm:gap-3"
+            className="grid grid-cols-5 gap-2 sm:gap-3"
             aria-label={t('knowledgeView.tabs.navLabel')}
         >
             {navItems.map((item) => (

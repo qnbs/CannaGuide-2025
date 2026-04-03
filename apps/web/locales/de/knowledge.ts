@@ -12,6 +12,7 @@ export const knowledgeView = {
         atlas: 'Krankheitsatlas',
         rechner: 'Rechner',
         lernpfad: 'Lernpfade',
+        analytik: 'Analytik',
         navLabel: 'Wissensbereiche',
     },
     hub: {

@@ -3,6 +3,9 @@
     "mutate": [
         "apps/web/stores/slices/**/*.ts",
         "apps/web/stores/useIotStore.ts",
+        "apps/web/services/equipmentCalculatorService.ts",
+        "apps/web/services/knowledgeCalculatorService.ts",
+        "apps/web/services/knowledgeRagService.ts",
         "!apps/web/stores/slices/**/*.test.ts",
         "!apps/web/stores/**/*.test.ts"
     ],

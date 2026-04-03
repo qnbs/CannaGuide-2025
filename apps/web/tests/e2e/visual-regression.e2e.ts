@@ -65,5 +65,51 @@ for (const theme of themes) {
                 fullPage: false,
             })
         })
+
+        test(`Calculator Hub (VPD tab) -- ${theme}`, async ({ page }) => {
+            const knowledgeNav = page.locator('[data-view-id="knowledge"]')
+            await expect(knowledgeNav.first()).toBeVisible({ timeout: 10_000 })
+            await knowledgeNav.first().click()
+            await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
+
+            // Navigate to Calculator sub-tab via aria-label
+            const rechnerTab = page.getByRole('button', { name: /calculator/i })
+            await expect(rechnerTab.first()).toBeVisible({ timeout: 10_000 })
+            await rechnerTab.first().click()
+            await page.waitForTimeout(1_500)
+
+            await expect(page).toHaveScreenshot(`calculator-hub-vpd-${theme}.png`, {
+                fullPage: false,
+            })
+        })
+
+        test(`Calculator Hub (Transpiration tab) -- ${theme}`, async ({ page }) => {
+            const knowledgeNav = page.locator('[data-view-id="knowledge"]')
+            await expect(knowledgeNav.first()).toBeVisible({ timeout: 10_000 })
+            await knowledgeNav.first().click()
+            await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
+
+            // Navigate to Calculator sub-tab
+            const rechnerTab = page.getByRole('button', { name: /calculator/i })
+            await expect(rechnerTab.first()).toBeVisible({ timeout: 10_000 })
+            await rechnerTab.first().click()
+            await page.waitForTimeout(1_000)
+
+            // Switch to Transpiration tab inside CalculatorHub
+            const transpirationTab = page.getByRole('button', { name: /transpiration/i })
+            if (
+                await transpirationTab
+                    .first()
+                    .isVisible()
+                    .catch(() => false)
+            ) {
+                await transpirationTab.first().click()
+                await page.waitForTimeout(1_000)
+            }
+
+            await expect(page).toHaveScreenshot(`calculator-hub-transpiration-${theme}.png`, {
+                fullPage: false,
+            })
+        })
     })
 }

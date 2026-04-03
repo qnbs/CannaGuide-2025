@@ -161,7 +161,7 @@ const IotSettingsTab: React.FC = () => {
                                 id="iot-password"
                                 type="password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) => void setPassword(e.target.value)}
                                 placeholder="********"
                                 autoComplete="current-password"
                                 disabled={!isEnabled}

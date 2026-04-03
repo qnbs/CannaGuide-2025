@@ -2,7 +2,68 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-02, Session 23) -- Add-to-Library System, i18n Fixes & Documentation Update
+## Latest Session (2026-04-03, Session 24) -- Multi-API Strain Lookup Extension, IoT Security & IndexedDB Monitoring
+
+**Status: v1.3.0-beta. Extended strain lookup pipeline to 5 API sources. AES-256-GCM added to IoT credential storage. IndexedDB monitoring utility created. Web Share API integrated. 1016 tests passing.**
+
+### What Was Done (Session 24)
+
+1. **Extended Strain Intelligence Lookup Pipeline** (`strainLookupService.ts`):
+    - Added **The Cannabis API** as a 4th external source (confidence 65%, dual-endpoint fallback: `the-cannabis-api.vercel.app` + `api.cannabis.wiki`)
+    - Improved **Otreeba** with two-endpoint variant fallback (`api.otreeba.com` + `otreeba.com/api`) and handles both `{items:[]}` and `{data:[]}` shapes
+    - `ConfidenceSource` type extended: `'local' | 'cannlytics' | 'otreeba' | 'cannabis-api' | 'ai'`
+    - New 6-step lookup pipeline: local(95%) -> Cannlytics(88%) -> Otreeba(72%) -> Cannabis API(65%) -> AI(60%)
+
+2. **StrainLookupSection UI Improvements** (`StrainLookupSection.tsx`):
+    - Added `'cannabis-api'` entry to `CONFIDENCE_META` (violet color scheme)
+    - Loading progress bar now shows all 5 sources with color-coded animated badges
+    - **Web Share API** button added to ResultCard actions (conditionally rendered via `'share' in navigator`)
+    - `handleShare()` callback formats strain name, type, cannabinoids and description for native share sheet
+
+3. **AES-256-GCM IoT Credential Encryption** (`useIotStore.ts`):
+    - `setPassword()` is now `async` -- encrypts via `cryptoService.encrypt()`, stores ciphertext in `encryptedPassword` field
+    - Raw `password` is **never persisted** to localStorage (excluded from `partialize`)
+    - `loadPersistedPassword()` decrypts on app startup; called from `index.tsx` after MQTT init
+    - `IotSettingsTab.tsx` updated: `void setPassword(...)` to handle async without blocking the event loop
+    - Test updated to `await setPassword(...)` in happy path
+
+4. **IndexedDB Monitoring Utility** (`indexedDbMonitorService.ts`):
+    - `getDbStats()` -- entry counts per store across all 3 CannaGuide databases
+    - `getQuotaInfo()` -- StorageManager API quota/usage with graceful degradation
+    - `requestPersistentStorage()` -- requests persistent-storage grant
+    - `monitorStorageHealth()` -- composite health check with `warnings[]` for 70%/90% thresholds
+    - `formatBytes()` -- human-readable byte formatting helper
+
+5. **Bootstrap Integration** (`index.tsx`):
+    - `loadPersistedPassword()` called after `mqttClientService.init()` to restore decrypted IoT password on hydration
+
+### Next Steps (Priority Order)
+
+1. **S-03 CSP nonce** -- Implement `vite-plugin-csp-nonce` for `strict-dynamic` support (deferred)
+2. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
+3. **A-01 AI Response Validation** -- Consistent Zod validation across all AI endpoints
+4. **P-02 Bundle Size Budget** -- Enforce gzip limits in CI
+5. **IndexedDB Monitor UI** -- Surface `monitorStorageHealth()` results in Settings > Data Management
+6. **IoT Sprint 2 Remaining** -- Sensor history charts, real MQTT connect/disconnect
+
+### Verified Repo Metrics (Actual)
+
+| Metric          | Value                             |
+| --------------- | --------------------------------- |
+| Tests           | 1016 (103 test files, 0 failures) |
+| Strains         | 778                               |
+| Services        | 81                                |
+| Custom Hooks    | 19                                |
+| Web Workers     | 8                                 |
+| Redux Slices    | 12                                |
+| Zustand Stores  | 7                                 |
+| i18n Namespaces | 12                                |
+| CI Workflows    | 22                                |
+| Version         | 1.3.0-beta                        |
+
+---
+
+## Previous Session (2026-04-02, Session 23) -- Add-to-Library System, i18n Fixes & Documentation Update
 
 **Status: v1.3.0-beta. Complete add-to-library system for Daily Drop (resolveDiscoveredToStrain, quick-add + edit-and-add, in-library badge). i18n fixes (dynamic catalog count, localized pick reasons, corrected addedHint). Scorecard #267 fully resolved (tauri CLI pinned via lockfile). 1016 tests passing.**
 

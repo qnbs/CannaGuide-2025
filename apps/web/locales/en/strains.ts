@@ -501,6 +501,7 @@ export const strainsView = {
         addToFavorites: 'Add {{name}} to favorites',
         removeFromFavorites: 'Remove {{name}} from favorites',
     },
+    matchScore: '{{score}}% Match',
     genealogyView: {
         title: 'Genealogy Explorer',
         description: 'Select a strain to visualize and analyze its genetic lineage.',

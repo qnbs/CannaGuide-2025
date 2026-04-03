@@ -418,6 +418,7 @@ export const strainsView = {
         addToFavorites: '{{name}} toevoegen aan favorieten',
         removeFromFavorites: '{{name}} verwijderen uit favorieten',
     },
+    matchScore: '{{score}}% Overeenkomst',
     genealogyView: {
         title: 'Genealogie-verkenner',
         description:

@@ -55,6 +55,7 @@
         "strains:extract": "node ./scripts/extract-strains-to-json.mjs",
         "strains:generate": "node ./scripts/generate-strain-files.mjs",
         "strains:sync": "node ./scripts/extract-strains-to-json.mjs && node ./scripts/generate-strain-files.mjs",
+        "strains:enrich-provenance": "node ./scripts/enrich-provenance.mjs",
         "depcheck": "depcheck --ignore-dirs=dist,coverage,node_modules,test-results,artifacts,.lighthouseci --ignores=@capacitor/cli,@lhci/cli,@testing-library/user-event,@vitest/coverage-v8,autoprefixer,babel-plugin-react-compiler,depcheck,postcss,prettier,source-map-explorer,onnxruntime-web,@aikidosec/safe-chain,@commitlint/cli,@commitlint/config-conventional,@socketsecurity/cli,@types/d3-hierarchy,anti-trojan-source,husky,lint-staged,snyk --specials=typescript,eslint,postcss,webpack",
         "prepare": "husky",
         "lighthouse:ci": "lhci autorun",

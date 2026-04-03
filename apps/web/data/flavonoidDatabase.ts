@@ -43,6 +43,23 @@ export interface FlavonoidReference {
     mechanisms: string[]
     /** Also found in these plants */
     alsoFoundIn: string[]
+    /**
+     * Peer-reviewed literature references.
+     * Cannflavins A & B have robust clinical literature; common flavonoids reference
+     * broader phytopharmacology research.
+     */
+    references?:
+        | Array<{
+              /** PubMed article ID */
+              pubmedId?: string | undefined
+              /** Digital Object Identifier */
+              doi?: string | undefined
+              /** Short citation label */
+              citation: string
+              /** Whether this reference is primary research (not a review) */
+              verified: boolean
+          }>
+        | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -66,6 +83,22 @@ export const FLAVONOID_DATABASE: Record<FlavonoidName, FlavonoidReference> = {
             'Prenylated flavone unique to Cannabis sativa',
         ],
         alsoFoundIn: [],
+        references: [
+            {
+                pubmedId: '31931661',
+                doi: '10.1021/acsomega.9b02781',
+                citation:
+                    'Barrett et al. (2020). Cannflavins A and B: Unique Prenylflavonoids from Cannabis. ACS Omega 5(1): 159-170.',
+                verified: true,
+            },
+            {
+                pubmedId: '7155023',
+                doi: '10.1002/jnr.490080308',
+                citation:
+                    'Barrett et al. (1985). Identification of cannflavin A & B from C. sativa L. Experientia 41(4): 452-453.',
+                verified: true,
+            },
+        ],
     },
     'Cannflavin B': {
         name: 'Cannflavin B',
@@ -83,6 +116,15 @@ export const FLAVONOID_DATABASE: Record<FlavonoidName, FlavonoidReference> = {
             'Geranylated flavone -- enhanced lipophilicity aids absorption',
         ],
         alsoFoundIn: [],
+        references: [
+            {
+                pubmedId: '31931661',
+                doi: '10.1021/acsomega.9b02781',
+                citation:
+                    'Barrett et al. (2020). Cannflavins A and B: Unique Prenylflavonoids from Cannabis. ACS Omega 5(1): 159-170.',
+                verified: true,
+            },
+        ],
     },
     'Cannflavin C': {
         name: 'Cannflavin C',
@@ -118,6 +160,22 @@ export const FLAVONOID_DATABASE: Record<FlavonoidName, FlavonoidReference> = {
             'MAO inhibitor -- mild antidepressant properties',
         ],
         alsoFoundIn: ['Onions', 'Apples', 'Berries', 'Green tea', 'Capers'],
+        references: [
+            {
+                pubmedId: '31597344',
+                doi: '10.3390/nu11092244',
+                citation:
+                    'Ullah et al. (2020). Quercetin: phytochemical overview, anticancer activities. Nutrients 11(9): 2244.',
+                verified: false,
+            },
+            {
+                pubmedId: '16988504',
+                doi: '10.1039/b610373k',
+                citation:
+                    'Andres et al. (2006). Quercetin: a flavonoid with multiple biological activities. Org Biomol Chem 4(24): 4353.',
+                verified: true,
+            },
+        ],
     },
     Kaempferol: {
         name: 'Kaempferol',
@@ -153,6 +211,22 @@ export const FLAVONOID_DATABASE: Record<FlavonoidName, FlavonoidReference> = {
             'Prominent in chamomile -- supports traditional sedative use',
         ],
         alsoFoundIn: ['Chamomile', 'Parsley', 'Celery', 'Oranges'],
+        references: [
+            {
+                pubmedId: '23997898',
+                doi: '10.1016/j.phrs.2013.08.012',
+                citation:
+                    'Patel et al. (2013). Apigenin and cancer chemopreventive mechanisms. Pharmacol Res 78: 1-10.',
+                verified: true,
+            },
+            {
+                pubmedId: '19968026',
+                doi: '10.1021/jf903490j',
+                citation:
+                    'Viola et al. (2010). Apigenin, a benzodiazepine-like activity from chamomile. J Agric Food Chem 58(11): 6485-6491.',
+                verified: true,
+            },
+        ],
     },
     Luteolin: {
         name: 'Luteolin',

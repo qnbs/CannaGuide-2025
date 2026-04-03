@@ -419,6 +419,7 @@ export const strainsView = {
         addToFavorites: 'Agregar {{name}} a favoritos',
         removeFromFavorites: 'Quitar {{name}} de favoritos',
     },
+    matchScore: '{{score}}% Coincidencia',
     genealogyView: {
         title: 'Explorador de Genealogia',
         description: 'Selecciona una variedad para visualizar y analizar su linaje genetico.',

@@ -8,6 +8,31 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Features
 
+- **knowledge:** expand KnowledgeViewTab from 4 to 8 tabs (lexikon, atlas, rechner, lernpfad added to existing mentor/guide/archive/sandbox)
+- **knowledge:** LexikonView -- searchable 89-term glossary sub-view with 6-category filter (General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease) and animated cards
+- **knowledge:** DiseaseAtlasView -- 22-entry plant disease diagnostic atlas with urgency filter (low/medium/high/critical), severity badge, and detail modal (symptoms/causes/treatment/prevention)
+- **knowledge:** CalculatorHubView -- unified VPD, Nutrient Ratio, and pH/EC calculator hub in a single tabbed sub-view
+- **knowledge:** LearningPathView -- 5 curated grow education learning paths (Beginner First Grow, Environment Mastery, Nutrient Mastery, Pest & Disease Control, Advanced Training) with Redux-backed per-step progress tracking
+- **knowledge:** KnowledgeSubNav -- replaced fixed grid-cols-3 with horizontal scrollable flex bar supporting all 8 tabs with snap scrolling
+- **knowledge:** GuideView -- full-text article search, article read-progress tracking (Redux + badge), GrowTech 2026 article group, Genetics article group (3 articles each)
+- **data:** data/diseases.ts -- 22 DiseaseEntry objects across 5 categories (deficiency x8, toxicity x2, environmental x4, pest x4, disease x3)
+- **data:** data/learningPaths.ts -- 5 LearningPath objects with step-by-step program definitions
+- **data:** data/lexicon.ts -- expanded from 39 to 89 entries; added Nutrient category (16 entries), Disease category (13 entries), 22+ additional General entries
+- **knowledge,redux:** knowledgeSlice -- added learningPathProgress state; new actions completeLearningStep, resetLearningPath, setLearningPathProgress
+- **knowledge,redux:** selectors.ts -- added selectLearningPathProgress
+- **help:** HelpView + LexiconCard -- added Nutrient and Disease categories with green/red color tokens to LexiconCategory type
+- **i18n:** knowledge namespace (EN+DE) -- full new key trees for tabs.lexikon/atlas/rechner/lernpfad/navLabel, guide.growTech/genetics/searchPlaceholder/noResults/readProgress, lexikon._, atlas._, rechner._, lernpfad._ including all 22 disease entries localized in both languages
+- **i18n:** help namespace (EN+DE) -- added nutrients (16 terms) and diseases (13 terms) sections to helpView.lexicon; extended categories
+
+### Tests
+
+- knowledgeSlice.test.ts: updated fixtures with learningPathProgress initial state
+- Total: 1049 tests across 104 test files (unchanged -- no new test files in this session)
+
+---
+
+### Features (Session 25-26 Entourage Science)
+
 - **strains:** entourage effect science -- terpene/cannabinoid/flavonoid interaction enrichment (TerpeneInteraction, FlavonoidDataPoint types; TERPENE_SYNERGIES map for 12 terpenes, FLAVONOID_PROFILES for 6 flavonoids, TYPE_FLAVONOIDS)
 - **strains:** enrichTerpeneDataPoints(), buildFlavonoidDataPoints(), calculateEntourageScore(), shannonDiversity() in strainLookupService
 - **strains:** EntourageScore SVG ring chart, FlavonoidBar recharts chart, TerpeneDetailList with interaction badges in StrainLookupSection

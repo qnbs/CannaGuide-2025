@@ -2,7 +2,88 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-04, Session 26) -- CI TypeScript Fix & Documentation Audit
+## Latest Session (2026-04-05, Session 27) -- Knowledge Section Overhaul (Wissen)
+
+**Status: v1.3.0-beta. Complete Knowledge section overhaul: KnowledgeViewTab expanded from 4 to 8 tabs, 4 new sub-views (LexikonView, DiseaseAtlasView, CalculatorHubView, LearningPathView), GuideView enhanced with search + read-progress + 2 new article groups, lexicon expanded from 39 to 89 entries, 22-entry Disease Atlas, 5 Learning Paths with Redux-tracked progress. TypeScript clean. 1049 tests passing.**
+
+### What Was Done (Session 27)
+
+1. **KnowledgeViewTab Expansion** (`types.ts`):
+    - Added 4 new tab values: `lexikon`, `atlas`, `rechner`, `lernpfad`
+    - `KnowledgeSubNav.tsx`: replaced fixed grid-cols-3 with horizontal scrollable flex bar (snap scrolling, 8 tabs total)
+
+2. **New Data Files**:
+    - `data/diseases.ts`: 22 `DiseaseEntry` objects across 5 categories (deficiency x8, toxicity x2, environmental x4, pest x4, disease x3), each with `urgency` level, `symptoms[]`, `causes[]`, `treatment[]`, `prevention[]`
+    - `data/learningPaths.ts`: 5 `LearningPath` objects (beginner-first-grow/6 steps, environment-mastery/4, nutrient-mastery/5, pest-disease-control/3, advanced-training/3)
+    - `data/lexicon.ts`: expanded from 39 to 89 entries; added Nutrient category (16 entries), Disease category (13 entries), 22+ new General entries
+
+3. **New Redux State** (`knowledgeSlice.ts`):
+    - `learningPathProgress: LearningPathProgress` state
+    - New actions: `completeLearningStep`, `resetLearningPath`, `setLearningPathProgress`
+    - New selector: `selectLearningPathProgress` in `selectors.ts`
+
+4. **New Knowledge Sub-Views**:
+    - `LexikonView.tsx`: searchable 89-term glossary, 6-category filter (General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease), animated cards
+    - `DiseaseAtlasView.tsx`: 22-entry diagnostic reference, urgency filter (low/medium/high/critical), severity badge, detail modal with full symptom/treatment/prevention info
+    - `CalculatorHubView.tsx`: VPD calculator, Nutrient Ratio calculator, pH/EC calculator sub-tabs
+    - `LearningPathView.tsx`: 5 curated grow education paths with step-by-step progress, Redux-backed completion tracking
+    - `KnowledgeView.tsx`: all 4 new sub-views added via `React.lazy` + `Suspense`
+
+5. **GuideView Enhancement** (`GuideView.tsx`):
+    - Full-text article search with `searchQuery` state + filtered display with "no results" state
+    - Article read-progress tracking stored in Redux (`markGuideArticleRead` + `guideReadProgress`)
+    - New article groups: **GrowTech 2026** and **Genetics** with 3 articles each
+    - Visual read-progress badge on article cards
+
+6. **HelpView + LexiconCard** (`HelpView.tsx`, `LexiconCard.tsx`):
+    - Added `'Nutrient'` and `'Disease'` to `LexiconCategory` type
+    - Green/red color tokens for the two new categories
+
+7. **i18n EN + DE** (`locales/en/knowledge.ts`, `locales/de/knowledge.ts`):
+    - All new tab keys: `tabs.lexikon`, `tabs.atlas`, `tabs.rechner`, `tabs.lernpfad`, `tabs.navLabel`
+    - Guide keys: `guide.growTech`, `guide.genetics`, `guide.searchPlaceholder`, `guide.noResults`, `guide.readProgress`
+    - Full `lexikon.*`, `atlas.*`, `rechner.*`, `lernpfad.*` key trees
+    - All 22 disease entries with `symptoms`, `causes`, `treatment`, `prevention` in both EN + DE
+
+8. **i18n EN + DE** (`locales/en/help.ts`, `locales/de/help.ts`):
+    - Added `helpView.lexicon.nutrients` (16 terms) and `helpView.lexicon.diseases` (13 terms)
+    - Extended `helpView.lexicon.categories` to include `nutrient` and `disease`
+
+9. **TypeScript Fixes**:
+    - `HelpView.tsx` + `LexiconCard.tsx`: `LexiconCategory` now includes `'Nutrient' | 'Disease'`
+    - `CalculatorHubView.tsx`: removed unused `baseEc` and `PhCalcResult` vars
+    - `knowledgeSlice.test.ts`: fixtures updated with `learningPathProgress` initial state
+
+### Verified Repo Metrics (Actual)
+
+| Metric          | Value                                                            |
+| --------------- | ---------------------------------------------------------------- |
+| Tests           | 1049 (104 test files, 0 failures)                                |
+| Strains         | 778                                                              |
+| Services        | 82                                                               |
+| Custom Hooks    | 19                                                               |
+| Web Workers     | 8                                                                |
+| Redux Slices    | 12                                                               |
+| Zustand Stores  | 7                                                                |
+| i18n Namespaces | 12                                                               |
+| CI Workflows    | 22                                                               |
+| Version         | 1.3.0-beta                                                       |
+| HEAD commit     | 020fef0 (feat(knowledge): wissen-bereich vollstaendig ausgebaut) |
+| Typecheck       | OK (1 known RTK TS2719 filtered)                                 |
+
+### Next Steps (Priority Order)
+
+1. **Knowledge Test Coverage** -- Add Vitest unit tests for LexikonView, DiseaseAtlasView, CalculatorHubView, LearningPathView
+2. **S-03 CSP nonce** -- Implement `vite-plugin-csp-nonce` for `strict-dynamic` support (deferred)
+3. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
+4. **A-01 AI Response Validation** -- Consistent Zod validation across all AI endpoints
+5. **P-02 Bundle Size Budget** -- Enforce gzip limits in CI
+6. **IndexedDB Monitor UI** -- Surface `monitorStorageHealth()` results in Settings > Data Management
+7. **IoT Sprint 2** -- Sensor history charts, real MQTT connect/disconnect
+
+---
+
+## Previous Session (2026-04-04, Session 26) -- CI TypeScript Fix & Documentation Audit
 
 **Status: v1.3.0-beta. Fixed CI-blocking TypeScript errors (TS2375, TS2379) from entourage science implementation: exactOptionalPropertyTypes violations in StrainLookupSection.tsx and strainLookupService.ts resolved with conditional spreads. Comprehensive documentation audit: all stale metrics corrected. 1049 tests, typecheck clean.**
 

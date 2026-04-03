@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                 |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                       |
 | Workers      | WorkerBus (promise-based, 8 workers, messageId correlation, auto-timeout)           |
-| Testing      | Vitest 1000 unit tests, Playwright E2E + Component tests                            |
+| Testing      | Vitest 1049 unit tests, Playwright E2E + Component tests                            |
 | Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                    |
 
 ---
@@ -81,7 +81,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     sentryService.ts      Sentry error tracking
     consentService.ts     GDPR consent cookie management
 
-  data/                   Static data: 778 strains, FAQ, lexicon, guides
+  data/                   Static data: 778 strains, FAQ, lexicon (89 entries, 6 categories), guides, diseases (22 entries), learningPaths (5 paths)
   locales/                i18n translations: en/, de/, es/, fr/, nl/
   hooks/                  19 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
@@ -123,7 +123,7 @@ The app uses a **dual-store architecture** with clear separation of concerns:
 **Redux Toolkit (12 slices, persisted in IndexedDB):**
 Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner. Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
 
-**Zustand (8 stores, transient/never persisted):**
+**Zustand (7 stores, transient/never persisted):**
 `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts).
 
 **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.

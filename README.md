@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1016%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1049%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- AI Development Stack -->
 
@@ -58,9 +58,9 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Overview
 
-CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with an 15-service local AI fallback stack for fully offline inference.
+CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with an 18-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 778 strains -- 1016 tests -- 81 services -- 12 Redux slices + 7 Zustand stores -- 19 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
+**Key numbers:** 778 strains -- 1049 tests -- 82 services -- 12 Redux slices + 7 Zustand stores -- 19 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
 
 ---
 
@@ -75,7 +75,7 @@ Three-tier client-side architecture with offline-first design:
 │  6 Views: Plants│Strains│Equipment│Knowledge│Settings│Help│
 ├─────────────────────────────────────────────────────────┤
 │  Business Logic Layer                                   │
-│  81 Services · 19 Hooks · 8 Web Workers                 │
+│  82 Services · 19 Hooks · 8 Web Workers                 │
 │  VPD Simulation · AI Providers · Genetics · RAG         │
 ├─────────────────────────────────────────────────────────┤
 │  State & Persistence Layer                              │
@@ -109,14 +109,14 @@ Three-tier client-side architecture with offline-first design:
 | **State**          | Redux Toolkit 2.11 + Zustand 5       | 12 Redux slices + 7 Zustand stores                         |
 | **API Cache**      | RTK Query                            | AI API caching + data fetching                             |
 | **AI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction                            |
-| **AI (Local)**     | Transformers.js, WebLLM, TF.js, ONNX | 15 services, 8 ML models, 3-layer fallback                 |
+| **AI (Local)**     | Transformers.js, WebLLM, TF.js, ONNX | 18 services, 8 ML models, 3-layer fallback                 |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 cannabis themes via CSS custom properties                |
 | **Visualization**  | D3.js 7, Recharts                    | Genealogy trees, VPD charts                                |
 | **Validation**     | Zod 3.25                             | Runtime schema validation for AI + imports                 |
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1000 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1049 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 | **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                                     |
 | **Mobile**         | Capacitor                            | iOS/Android wrapper                                        |
@@ -166,27 +166,30 @@ All calls route through `aiFacade.ts` -> `aiService.ts` -> `aiProviderService.ts
 
 All providers are unified through `aiProviderService.ts` (which imports `PROVIDER_CONFIGS` and key validation from `@cannaguide/ai-core`) with provider-specific API endpoints and key management.
 
-### Local AI Stack (15 Services)
+### Local AI Stack (18 Services)
 
 Fully offline inference with 3-layer fallback: WebLLM → Transformers.js → Heuristics.
 
-| Service                              | Purpose                                                     |
-| ------------------------------------ | ----------------------------------------------------------- |
-| `localAI.ts`                         | Core orchestration (text gen, vision, diagnosis)            |
-| `localAIModelLoader.ts`              | ONNX backend detection, pipeline loading (max 3 concurrent) |
-| `localAiNlpService.ts`               | Sentiment, summarization, zero-shot classification          |
-| `localAiEmbeddingService.ts`         | MiniLM-L6 embeddings, semantic ranking                      |
-| `localAiFallbackService.ts`          | Heuristic fallback when models unavailable                  |
-| `localAiLanguageDetectionService.ts` | EN/DE detection (model + heuristic)                         |
-| `localAiImageSimilarityService.ts`   | CLIP feature extraction, growth tracking                    |
-| `localAiHealthService.ts`            | Device classification, adaptive model selection             |
-| `localAiPreloadService.ts`           | Model preload state (localStorage)                          |
-| `localAiTelemetryService.ts`         | Inference latency/success tracking                          |
-| `localAiCacheService.ts`             | IndexedDB inference cache (256 entries, 7d TTL)             |
-| `localAiStreamingService.ts`         | SSE-style streaming for local text generation               |
-| `localAiDiagnosisService.ts`         | Plant health diagnosis pipeline                             |
-| `localAiPromptHandlers.ts`           | Prompt formatting for all AI features                       |
-| `localAiWebLlmService.ts`            | WebLLM lifecycle, model loading, progress tracking          |
+| Service                              | Purpose                                                         |
+| ------------------------------------ | --------------------------------------------------------------- |
+| `localAI.ts`                         | Core orchestration (text gen, vision, diagnosis)                |
+| `localAIModelLoader.ts`              | ONNX backend detection, pipeline loading (max 3 concurrent)     |
+| `localAiNlpService.ts`               | Sentiment, summarization, zero-shot classification              |
+| `localAiEmbeddingService.ts`         | MiniLM-L6 embeddings, semantic ranking                          |
+| `localAiFallbackService.ts`          | Heuristic fallback when models unavailable                      |
+| `localAiLanguageDetectionService.ts` | EN/DE detection (model + heuristic)                             |
+| `localAiImageSimilarityService.ts`   | CLIP feature extraction, growth tracking                        |
+| `localAiHealthService.ts`            | Device classification, adaptive model selection                 |
+| `localAiPreloadService.ts`           | Model preload state (localStorage)                              |
+| `localAiTelemetryService.ts`         | Inference latency/success tracking                              |
+| `localAiCacheService.ts`             | IndexedDB inference cache (256 entries, 7d TTL)                 |
+| `localAiStreamingService.ts`         | SSE-style streaming for local text generation                   |
+| `localAiDiagnosisService.ts`         | Plant health diagnosis pipeline                                 |
+| `localAiPromptHandlers.ts`           | Prompt formatting for all AI features                           |
+| `localAiWebLlmService.ts`            | WebLLM lifecycle, model loading, progress tracking              |
+| `LocalAIInfrastructure.ts`           | Unified cache + telemetry + preload class                       |
+| `localAiInfrastructureService.ts`    | Backward-compatible barrel re-export for LocalAIInfrastructure  |
+| `localAiWebGpuService.ts`            | Centralized WebGPU adapter, device lifecycle, feature detection |
 
 ### Prompt Engineering & RAG
 
@@ -257,7 +260,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- runs across all workspaces)
 npm run dev              # turbo run dev (Vite dev server on localhost:5173)
 npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest, 1016 tests)
+npm test                 # turbo run test (Vitest, 1049 tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -282,8 +285,8 @@ tsconfig.json              References-only (apps/web, apps/desktop, packages/*)
 apps/
   web/                     Main PWA (@cannaguide/web)
     components/             React components (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux (12 slices) + Zustand (8 stores), selectors, middleware
-    services/               81 service modules (AI, simulation, DB, crypto, IoT)
+    stores/                 Redux (12 slices) + Zustand (7 stores), selectors, middleware
+    services/               82 service modules (AI, simulation, DB, crypto, IoT)
     hooks/                  19 custom hooks
     data/                   Static data: 778 strains, FAQ, lexicon, guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
@@ -315,7 +318,7 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 
 | Job                     | Description                                                                 |
 | ----------------------- | --------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 1016 tests, production build |
+| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 1049 tests, production build |
 | 🛡 Security             | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
 | 🎭 E2E Tests            | Playwright Chromium (needs quality artifact)                                |
 | 🐳 Docker Compose + IoT | ESP32-mock + Tauri-mock healthcheck, sensor endpoint validation             |
@@ -375,15 +378,15 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 > Full details: [ROADMAP.md](ROADMAP.md) | Audit-driven priorities: [docs/PRIORITY_ROADMAP.md](docs/PRIORITY_ROADMAP.md) | Audit backlog: [docs/AUDIT_BACKLOG.md](docs/AUDIT_BACKLOG.md) | ADRs: [docs/adr/](docs/adr/)
 
-| Version  | Status         | Highlights                                                                                                                                                                                                                               |
-| -------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Released    | 778 strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                                                                                                   |
-| **v1.1** | ✅ Released    | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1016 tests, Tauri v2, Docker IoT mocks, CodeQL, Grype                                                                               |
-| **v1.2** | 🔄 In Progress | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data integration (9 providers), strain curation service, data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
-| **v1.3** | � In Progress  | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                                          |
-| **v1.4** | 📋 Planned     | Strain-scale program (2,000+ mid-term), infinite discovery feed (news, HD galleries), expanded practical guides and extraction education                                                                                                 |
-| **v1.5** | 📋 Planned     | Curated DE/EN video hub, scholarly lexicon expansion (endocannabinoid system, pharmacology, botany, genetics), source transparency layer                                                                                                 |
-| **v2.0** | 📋 Planned     | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                                                 |
+| Version  | Status        | Highlights                                                                                                                                                                                                             |
+| -------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Released   | 778 strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                                                                                 |
+| **v1.1** | ✅ Released   | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1049 tests, Tauri v2, Docker IoT mocks, CodeQL, Grype                                                             |
+| **v1.2** | ✅ Released   | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data integration (8 providers), strain data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
+| **v1.3** | � In Progress | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                        |
+| **v1.4** | 📋 Planned    | Strain-scale program (2,000+ mid-term), infinite discovery feed (news, HD galleries), expanded practical guides and extraction education                                                                               |
+| **v1.5** | 📋 Planned    | Curated DE/EN video hub, scholarly lexicon expansion (endocannabinoid system, pharmacology, botany, genetics), source transparency layer                                                                               |
+| **v2.0** | 📋 Planned    | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                               |
 
 ### Strategic Expansion Focus (2026-2028)
 
@@ -401,12 +404,12 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 CannaGuide 2025 was built iteratively through an AI-assisted development process spanning four distinct phases:
 
-| Phase                            | Tools                                                 | Role                                                                                                                         | Period       |
-| -------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                            | v0.1 → v1.0  |
-| **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                      | Throughout   |
-| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine — feature refinement, security hardening, 1016 tests, CI/CD pipeline, local AI stack, documentation | v1.0 → v1.3+ |
-| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Production deployment, PR previews, desktop/mobile distribution, OpenSSF compliance                                          | Continuous   |
+| Phase                            | Tools                                                 | Role                                                                                                                          | Period        |
+| -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                             | v0.1 → v1.0   |
+| **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                       | Throughout    |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1049 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.3+ |
+| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Production deployment, PR previews, desktop/mobile distribution, OpenSSF compliance                                           | Continuous    |
 
 > **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
 
@@ -451,7 +454,7 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-1016%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-1049%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 
@@ -489,9 +492,9 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 ## Überblick
 
-CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 15-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
+CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 18-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 778 Sorten -- 1016 Tests -- 81 Services -- 12 Redux Slices + 7 Zustand Stores -- 19 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
+**Kennzahlen:** 778 Sorten -- 1049 Tests -- 82 Services -- 12 Redux Slices + 7 Zustand Stores -- 19 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
 
 ---
 
@@ -506,7 +509,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 │  6 Views: Pflanzen│Sorten│Ausrüstung│Wissen│Settings│Hilfe│
 ├─────────────────────────────────────────────────────────┤
 │  Business-Logik-Schicht                                 │
-│  81 Services · 19 Hooks · 8 Web Workers                 │
+│  82 Services · 19 Hooks · 8 Web Workers                 │
 │  VPD-Simulation · KI-Provider · Genetik · RAG           │
 ├─────────────────────────────────────────────────────────┤
 │  State- & Persistenzschicht                             │
@@ -539,14 +542,14 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Schnelles HMR, InjectManifest SW              |
 | **State**          | Redux Toolkit 2.11 + Zustand 5       | 12 Redux Slices + 7 Zustand Stores            |
 | **KI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
-| **KI (Lokal)**     | Transformers.js, WebLLM, TF.js, ONNX | 15 Services, 8 ML-Modelle, 3-Schicht-Fallback |
+| **KI (Lokal)**     | Transformers.js, WebLLM, TF.js, ONNX | 18 Services, 8 ML-Modelle, 3-Schicht-Fallback |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 Cannabis-Themes via CSS Custom Properties   |
 | **Visualisierung** | D3.js 7, Recharts                    | Stammbaum-Bäume, VPD-Diagramme                |
 | **Validierung**    | Zod 3.25                             | Runtime-Schema-Validierung für KI + Imports   |
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 Namensräume                |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1000 Unit-, E2E-, Komponenten-Tests           |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1049 Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 | **Desktop**        | Tauri v2 (Rust)                      | Nativer Desktop-Wrapper                       |
 | **Mobil**          | Capacitor                            | iOS/Android-Wrapper                           |
@@ -596,27 +599,30 @@ Alle Aufrufe routen über `aiProviderService.ts` → Provider-spezifische Servic
 
 Alle Anbieter sind über `aiProviderService.ts` mit Provider-spezifischen API-Endpunkten und Key-Management vereinheitlicht.
 
-### Lokaler KI-Stack (15 Services)
+### Lokaler KI-Stack (18 Services)
 
 Vollständig offline Inferenz mit 3-Schicht-Fallback: WebLLM → Transformers.js → Heuristiken.
 
-| Service                              | Zweck                                                   |
-| ------------------------------------ | ------------------------------------------------------- |
-| `localAI.ts`                         | Kernorchestrierung (Textgen, Vision, Diagnose)          |
-| `localAIModelLoader.ts`              | ONNX-Backend-Erkennung, Pipeline-Laden (max 3 parallel) |
-| `localAiNlpService.ts`               | Sentiment, Zusammenfassung, Zero-Shot-Klassifikation    |
-| `localAiEmbeddingService.ts`         | MiniLM-L6 Embeddings, semantisches Ranking              |
-| `localAiFallbackService.ts`          | Heuristik-Fallback wenn Modelle nicht verfügbar         |
-| `localAiLanguageDetectionService.ts` | EN/DE-Erkennung (Modell + Heuristik)                    |
-| `localAiImageSimilarityService.ts`   | CLIP-Feature-Extraktion, Wachstumstracking              |
-| `localAiHealthService.ts`            | Geräteklassifikation, adaptive Modellauswahl            |
-| `localAiPreloadService.ts`           | Modell-Preload-State (localStorage)                     |
-| `localAiTelemetryService.ts`         | Inferenz-Latenz/Erfolgs-Tracking                        |
-| `localAiCacheService.ts`             | IndexedDB-Inferenz-Cache (256 Einträge, 7d TTL)         |
-| `localAiStreamingService.ts`         | SSE-Streaming für lokale Textgenerierung                |
-| `localAiDiagnosisService.ts`         | Pflanzengesundheits-Diagnose-Pipeline                   |
-| `localAiPromptHandlers.ts`           | Prompt-Formatierung für alle KI-Features                |
-| `localAiWebLlmService.ts`            | WebLLM-Lebenszyklus, Modell-Laden, Fortschritt          |
+| Service                              | Zweck                                                             |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| `localAI.ts`                         | Kernorchestrierung (Textgen, Vision, Diagnose)                    |
+| `localAIModelLoader.ts`              | ONNX-Backend-Erkennung, Pipeline-Laden (max 3 parallel)           |
+| `localAiNlpService.ts`               | Sentiment, Zusammenfassung, Zero-Shot-Klassifikation              |
+| `localAiEmbeddingService.ts`         | MiniLM-L6 Embeddings, semantisches Ranking                        |
+| `localAiFallbackService.ts`          | Heuristik-Fallback wenn Modelle nicht verfügbar                   |
+| `localAiLanguageDetectionService.ts` | EN/DE-Erkennung (Modell + Heuristik)                              |
+| `localAiImageSimilarityService.ts`   | CLIP-Feature-Extraktion, Wachstumstracking                        |
+| `localAiHealthService.ts`            | Geräteklassifikation, adaptive Modellauswahl                      |
+| `localAiPreloadService.ts`           | Modell-Preload-State (localStorage)                               |
+| `localAiTelemetryService.ts`         | Inferenz-Latenz/Erfolgs-Tracking                                  |
+| `localAiCacheService.ts`             | IndexedDB-Inferenz-Cache (256 Einträge, 7d TTL)                   |
+| `localAiStreamingService.ts`         | SSE-Streaming für lokale Textgenerierung                          |
+| `localAiDiagnosisService.ts`         | Pflanzengesundheits-Diagnose-Pipeline                             |
+| `localAiPromptHandlers.ts`           | Prompt-Formatierung für alle KI-Features                          |
+| `localAiWebLlmService.ts`            | WebLLM-Lebenszyklus, Modell-Laden, Fortschritt                    |
+| `LocalAIInfrastructure.ts`           | Einheitliche Cache + Telemetrie + Preload-Klasse                  |
+| `localAiInfrastructureService.ts`    | Rueckwaertskompatibles Barrel-Export fuer LocalAIInfrastructure   |
+| `localAiWebGpuService.ts`            | Zentraler WebGPU-Adapter, Geraete-Lebenszyklus, Feature-Erkennung |
 
 ### Prompt Engineering & RAG (DE)
 
@@ -687,7 +693,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- laeuft ueber alle Workspaces)
 npm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 npm run build            # turbo run build (alle Workspaces)
-npm test                 # turbo run test (Vitest, 1016 Tests)
+npm test                 # turbo run test (Vitest, 1049 Tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -713,7 +719,7 @@ apps/
   web/                     Haupt-PWA (@cannaguide/web)
     components/             React-Komponenten (common/, icons/, navigation/, ui/, views/)
     stores/                 Redux: 12 Slices, 7 Zustand Stores, Selektoren, Middleware
-    services/               81 Service-Module (KI, Simulation, DB, Krypto, IoT)
+    services/               82 Service-Module (KI, Simulation, DB, Krypto, IoT)
     hooks/                  19 Custom Hooks
     data/                   Statische Daten: 778 Sorten, FAQ, Lexikon, Guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (je 12 Namensräume)
@@ -745,7 +751,7 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 
 | Job                     | Beschreibung                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 1016 Tests, Produktions-Build |
+| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 1049 Tests, Produktions-Build |
 | 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
 | 🎭 E2E Tests            | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🐳 Docker Compose + IoT | ESP32-Mock + Tauri-Mock Healthcheck, Sensor-Endpunkt-Validierung             |
@@ -805,15 +811,15 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 
 > Vollständige Details: [ROADMAP.md](ROADMAP.md)
 
-| Version  | Status            | Highlights                                                                                                                                                                                                                                        |
-| -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Veröffentlicht | 778 Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                               |
-| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1016 Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype                                                                                       |
-| **v1.2** | 🔄 In Arbeit      | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (9 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
-| **v1.3** | 🔄 In Arbeit      | IoT-Echtzeit-Dashboard, 3D-OrbitControls, Sorten-Empfehlungs-Scoring, E2E-Test-Optimierung                                                                                                                                                        |
-| **v1.4** | 📋 Geplant        | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen                                                                                              |
-| **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                       |
-| **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                       |
+| Version  | Status              | Highlights                                                                                                                                                                                                                                                                                                                   |
+| -------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Veröffentlicht   | 778 Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                                                                                                          |
+| **v1.1** | ✅ Veröffentlicht   | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype                                                                                                                                                                  |
+| **v1.2** | ✅ Veröffentlicht   | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie)                                                                            |
+| **v1.3** | 🔄 In Arbeit (Beta) | Strain Intelligence Lookup (5-Quellen-Kaskade: lokal + Cannlytics + Otreeba + Cannabis API + KI), Entourage-Effekt-Wissenschaft (Terpen/Cannabinoid/Flavonoid-Anreicherung, EntourageScore-Ring, FlavonoidBar-Diagramm), AES-256-GCM IoT-Zugangsdaten-Verschluesselung, IndexedDB-Monitor-Service, Web Share API, 1049 Tests |
+| **v1.4** | 📋 Geplant          | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen                                                                                                                                                                         |
+| **v1.5** | 📋 Geplant          | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                                                                                                  |
+| **v2.0** | 📋 Geplant          | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                                                                                                  |
 
 ### Strategische Ausbau-Schwerpunkte (2026-2028)
 
@@ -831,12 +837,12 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 
 CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über vier Phasen aufgebaut:
 
-| Phase                            | Werkzeuge                                             | Rolle                                                                                                                             | Zeitraum       |
-| -------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                            | v0.1 → v1.0    |
-| **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                    | Durchgehend    |
-| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primäre Iterations-Engine — Feature-Verfeinerung, Security-Hardening, 1016 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 → v1.3+   |
-| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Produktions-Deployment, PR-Previews, Desktop-/Mobil-Distribution, OpenSSF-Compliance                                              | Kontinuierlich |
+| Phase                            | Werkzeuge                                             | Rolle                                                                                                                               | Zeitraum       |
+| -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                              | v0.1 → v1.0    |
+| **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                      | Durchgehend    |
+| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1049 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.3+  |
+| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Produktions-Deployment, PR-Previews, Desktop-/Mobil-Distribution, OpenSSF-Compliance                                                | Kontinuierlich |
 
 > **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.
 

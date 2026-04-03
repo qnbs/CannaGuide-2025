@@ -5,7 +5,7 @@
 CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for cannabis cultivation management. Built with React 19, TypeScript (strict), Redux Toolkit, and Google Gemini AI. The app is 100% offline-first with dual IndexedDB persistence.
 
 **Live:** https://qnbs.github.io/CannaGuide-2025/
-**Version:** 1.2.0-alpha
+**Version:** 1.3.0-beta
 
 ---
 
@@ -16,12 +16,12 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Frontend:** React 19 + TypeScript (strict mode, zero `any`)
 - **State:** Redux Toolkit (persisted app-state) + Zustand (transient UI-state) + RTK Query (AI API caching)
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
-- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 15 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
+- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 18 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1016 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1049 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -50,7 +50,7 @@ apps/
     components/          # React components: common/, icons/, navigation/, ui/, views/
     stores/              # Redux: slices/, selectors/, middleware, store config
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
-    hooks/               # Custom React hooks (18)
+    hooks/               # Custom React hooks (19)
     data/                # Static data: 778 strains, FAQ, lexicon, guides
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
@@ -81,7 +81,7 @@ src-tauri/               # Tauri v2 desktop config (Rust backend + capabilities)
 scripts/                 # Build/lint/merge scripts
 docker/                  # nginx config, esp32-mock, tauri-mock
 docs/                    # Developer guides, roadmap
-.github/                 # 20 CI/CD workflows, issue templates
+.github/                 # 22 CI/CD workflows, issue templates
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
 
@@ -105,22 +105,25 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 6. **Archive Capping:** Mentor: 100 entries, Advisor: 50/plant, FIFO culling.
 
-7. **Local AI Stack:** 15 service modules orchestrate on-device ML:
-    - `localAI.ts` — Core orchestration (text gen, vision, diagnosis, preload)
-    - `localAIModelLoader.ts` — ONNX backend detection, pipeline loading (max 3 concurrent), cache
-    - `localAiNlpService.ts` — Sentiment analysis, summarization, zero-shot classification
-    - `localAiEmbeddingService.ts` — MiniLM-L6 embeddings, semantic ranking, batch processing
-    - `localAiFallbackService.ts` — Heuristic fallback when models unavailable
-    - `localAiLanguageDetectionService.ts` — EN/DE detection (model + heuristic)
-    - `localAiImageSimilarityService.ts` — CLIP feature extraction, photo comparison, growth tracking
-    - `localAiHealthService.ts` — Device classification, memory monitoring, adaptive model selection
-    - `localAiPreloadService.ts` — Model preload state (localStorage persistence)
-    - `localAiTelemetryService.ts` — Inference latency/success tracking
-    - `localAiCacheService.ts` — IndexedDB inference cache (256 entries, 7d TTL)
-    - `localAiStreamingService.ts` — SSE-style streaming for local text generation
-    - `localAiDiagnosisService.ts` — Plant health diagnosis pipeline
-    - `localAiPromptHandlers.ts` — Prompt formatting for all AI features
-    - `localAiWebLlmService.ts` — WebLLM lifecycle, model loading, progress tracking
+7. **Local AI Stack:** 18 service modules orchestrate on-device ML:
+    - `localAI.ts` -- Core orchestration (text gen, vision, diagnosis, preload)
+    - `localAIModelLoader.ts` -- ONNX backend detection, pipeline loading (max 3 concurrent), cache
+    - `localAiNlpService.ts` -- Sentiment analysis, summarization, zero-shot classification
+    - `localAiEmbeddingService.ts` -- MiniLM-L6 embeddings, semantic ranking, batch processing
+    - `localAiFallbackService.ts` -- Heuristic fallback when models unavailable
+    - `localAiLanguageDetectionService.ts` -- EN/DE detection (model + heuristic)
+    - `localAiImageSimilarityService.ts` -- CLIP feature extraction, photo comparison, growth tracking
+    - `localAiHealthService.ts` -- Device classification, memory monitoring, adaptive model selection
+    - `localAiPreloadService.ts` -- Model preload state (localStorage persistence)
+    - `localAiTelemetryService.ts` -- Inference latency/success tracking
+    - `localAiCacheService.ts` -- IndexedDB inference cache (256 entries, 7d TTL)
+    - `localAiStreamingService.ts` -- SSE-style streaming for local text generation
+    - `localAiDiagnosisService.ts` -- Plant health diagnosis pipeline
+    - `localAiPromptHandlers.ts` -- Prompt formatting for all AI features
+    - `localAiWebLlmService.ts` -- WebLLM lifecycle, model loading, progress tracking
+    - `LocalAIInfrastructure.ts` -- Unified cache + telemetry + preload class
+    - `localAiInfrastructureService.ts` -- Backward-compatible barrel re-export for LocalAIInfrastructure
+    - `localAiWebGpuService.ts` -- Centralized WebGPU adapter, shared device lifecycle, feature detection
 
 8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, and pagehide teardown. All 7 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene) use this bus. See `docs/worker-bus.md`.
 
@@ -217,7 +220,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1016 tests, 0 failures
+- Baseline: 1049 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
@@ -331,6 +334,10 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `apps/web/services/workerBus.ts`                       | Promise-based worker communication bus (7 workers)                             |
 | `apps/web/services/proactiveCoachService.ts`           | Smart coach: threshold monitoring + AI advice + cooldown                       |
 | `apps/web/services/nativeBridgeService.ts`             | Unified native notification dispatch (Tauri/Capacitor/Web)                     |
+| `apps/web/services/strainLookupService.ts`             | 5-source Strain Intelligence Lookup cascade + entourage effect science         |
+| `apps/web/services/indexedDbMonitorService.ts`         | IndexedDB quota inspection, per-store entry counts, health warnings            |
+| `apps/web/services/localAiInfrastructureService.ts`    | Backward-compatible barrel re-export for LocalAIInfrastructure                 |
+| `apps/web/services/localAiWebGpuService.ts`            | Centralized WebGPU adapter, device lifecycle, feature detection                |
 | `apps/web/stores/useAlertsStore.ts`                    | Zustand store for transient smart coach alerts                                 |
 | `apps/web/simulation.worker.ts`                        | VPD simulation Web Worker                                                      |
 | `apps/web/utils/random.ts`                             | `secureRandom()` -- Web Crypto replacement for Math.random                     |

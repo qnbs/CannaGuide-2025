@@ -5,6 +5,8 @@ import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { Button } from '@/components/ui/button'
+import { scoreStrain, getScoreBadgeClass } from '@/services/strainRecommendationService'
+import type { RecommendationContext } from '@/services/strainRecommendationService'
 
 interface StrainGridItemProps {
     strain: Strain
@@ -15,6 +17,8 @@ interface StrainGridItemProps {
     index: number
     isFavorite: boolean
     onToggleFavorite: (id: string) => void
+    /** Optional recommendation context -- if provided, a match-score badge is shown */
+    recommendationContext?: RecommendationContext | undefined
 }
 
 const typeIcons: Record<StrainType, React.ReactNode> = {
@@ -47,6 +51,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
         index,
         isFavorite,
         onToggleFavorite,
+        recommendationContext,
     }) => {
         const { t } = useTranslation()
 
@@ -69,6 +74,11 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
         const handleSelect = useCallback(() => {
             onSelect(strain)
         }, [onSelect, strain])
+
+        const matchScore =
+            recommendationContext !== undefined
+                ? scoreStrain(strain, recommendationContext)
+                : undefined
         const cardClassName = `flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`
         const favoriteButtonClassName = `favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`
 
@@ -113,6 +123,17 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                     {safeName}
                 </h3>
                 <p className="text-xs text-slate-400 mb-2 pointer-events-none">{safeType}</p>
+
+                {matchScore !== undefined && (
+                    <div className="pointer-events-none mb-1">
+                        <span
+                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide ${getScoreBadgeClass(matchScore.score)}`}
+                            title={t('strainsView.matchScore', { score: matchScore.score })}
+                        >
+                            {matchScore.score}% {matchScore.label}
+                        </span>
+                    </div>
+                )}
 
                 <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono pointer-events-none">
                     <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">

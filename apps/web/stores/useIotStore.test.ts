@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useIotStore, type IotConnectionStatus } from '@/stores/useIotStore'
 
 // ---------------------------------------------------------------------------
@@ -84,16 +84,28 @@ describe('useIotStore', () => {
     })
 
     describe('testConnection', () => {
+        beforeEach(() => {
+            vi.useFakeTimers()
+        })
+
+        afterEach(() => {
+            vi.useRealTimers()
+        })
+
         it('succeeds with valid wss:// URL', async () => {
             useIotStore.getState().setBrokerUrl('wss://broker.example.com:8883')
-            const result = await useIotStore.getState().testConnection()
+            const promise = useIotStore.getState().testConnection()
+            await vi.runAllTimersAsync()
+            const result = await promise
             expect(result).toBe(true)
             expect(useIotStore.getState().connectionStatus).toBe('connected')
         })
 
         it('succeeds with valid ws:// URL', async () => {
             useIotStore.getState().setBrokerUrl('ws://localhost:1883')
-            const result = await useIotStore.getState().testConnection()
+            const promise = useIotStore.getState().testConnection()
+            await vi.runAllTimersAsync()
+            const result = await promise
             expect(result).toBe(true)
         })
 
@@ -127,7 +139,9 @@ describe('useIotStore', () => {
                 (status) => states.push(status),
             )
             useIotStore.getState().setBrokerUrl('wss://broker.example.com:8883')
-            await useIotStore.getState().testConnection()
+            const promise = useIotStore.getState().testConnection()
+            await vi.runAllTimersAsync()
+            await promise
             unsub()
             expect(states).toContain('connecting')
             expect(states).toContain('connected')

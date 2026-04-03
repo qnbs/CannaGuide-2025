@@ -39,6 +39,8 @@ jobs:
               run: npm ci --prefer-offline
 
             - name: Merge static strain catalog
+              env:
+                  STRICT_STRAIN_MERGE: '1'
               run: npm run strains:merge
 
             - name: Check for newly introduced duplicate IDs

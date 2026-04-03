@@ -507,6 +507,7 @@ export const strainsView = {
         addToFavorites: '{{name}} zu Favoriten hinzufügen',
         removeFromFavorites: '{{name}} aus Favoriten entfernen',
     },
+    matchScore: '{{score}}% Treffer',
     genealogyView: {
         title: 'Stammbaum-Explorer',
         description:

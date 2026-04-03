@@ -259,7 +259,14 @@ export const PlantsView: React.FC = () => {
                         </div>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 space-y-6">
+                        {/* Mobile: Live-Umgebung first */}
+                        <div className="order-1 lg:order-none lg:col-span-2">
+                            <DashboardSummary />
+                        </div>
+
+                        {/* Mobile: Garten-Kommandozentrale (hero stats already above) */}
+                        {/* Mobile: Grow Slots */}
+                        <div className="order-2 lg:order-none lg:col-span-2 space-y-6">
                             {showGrowFromStrainBanner && (
                                 <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
                                     <div className="flex-grow">
@@ -289,21 +296,48 @@ export const PlantsView: React.FC = () => {
                                     )}
                                 </div>
                             )}
-                            <DashboardSummary />
+                        </div>
+
+                        {/* Mobile: 3D Grow Room */}
+                        <div className="order-3 lg:order-none lg:col-span-2">
                             <ErrorBoundary>
                                 <Suspense fallback={null}>
                                     <GrowRoom3D />
                                 </Suspense>
                             </ErrorBoundary>
-                            <GrowStatsDashboard />
-                            <TipOfTheDay />
                         </div>
-                        <div className="lg:col-span-1 space-y-6">
+
+                        {/* Mobile: ESP32 Sensor Hub */}
+                        <div className="order-4 lg:order-none lg:col-span-1">
                             <Suspense fallback={null}>
-                                <GrowReminderPanel />
                                 <SensorIntegrationPanel />
                             </Suspense>
+                        </div>
+
+                        {/* Mobile: Grow-Erinnerungen */}
+                        <div className="order-5 lg:order-none lg:col-span-1">
+                            <Suspense fallback={null}>
+                                <GrowReminderPanel />
+                            </Suspense>
+                        </div>
+
+                        {/* Mobile: Tipp des Tages */}
+                        <div className="order-6 lg:order-none lg:col-span-2">
+                            <TipOfTheDay />
+                        </div>
+
+                        {/* Mobile: Anbau-Statistik */}
+                        <div className="order-7 lg:order-none lg:col-span-2">
+                            <GrowStatsDashboard />
+                        </div>
+
+                        {/* Mobile: Aufgaben + Warnungen */}
+                        <div className="order-8 lg:order-none lg:col-span-1">
                             <TasksAndWarnings tasks={tasks} problems={problems} />
+                        </div>
+
+                        {/* Mobile: Berater-Archiv */}
+                        <div className="order-9 lg:order-none lg:col-span-1">
                             <Suspense fallback={null}>
                                 <GlobalAdvisorArchiveView />
                             </Suspense>

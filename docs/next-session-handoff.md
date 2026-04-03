@@ -2,7 +2,72 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-03, Session 24) -- Multi-API Strain Lookup Extension, IoT Security & IndexedDB Monitoring
+## Latest Session (2026-04-04, Session 25) -- Entourage Effect Science & Documentation Audit
+
+**Status: v1.3.0-beta. Entourage effect science fully implemented in Strain Intelligence Lookup (terpene/cannabinoid/flavonoid enrichment, EntourageScore ring, FlavonoidBar chart, TerpeneDetailList). Comprehensive docs audit completed: all stale metrics corrected across README.md (EN+DE), copilot-instructions.md, CHANGELOG.md, and apps/web/package.json. 1049 tests passing.**
+
+### What Was Done (Session 25)
+
+1. **Entourage Effect Science** (`strainLookupService.ts`):
+    - New types: `TerpeneInteraction`, `FlavonoidDataPoint` (with `interactionStrength`, `aromaNotes`, `primaryEffects`, `cannabinoidInteractions`, `entourageScore` fields on `TerpeneDataPoint`)
+    - `TERPENE_SYNERGIES` map: 12 terpenes with synergy/antagonism interaction data
+    - `FLAVONOID_PROFILES` map: 6 flavonoids (apigenin, cannflavin-a, cannflavin-b, kaempferol, luteolin, quercetin) with bioactivity scores
+    - `TYPE_FLAVONOIDS` map: type-specific flavonoid distribution (sativa/indica/hybrid/auto)
+    - New functions: `enrichTerpeneDataPoints()`, `buildFlavonoidDataPoints()`, `calculateEntourageScore()`, `shannonDiversity()`
+    - `LookupStrainResult` extended: `flavonoids`, `totalEntourageScore`, `terpeneDiversity`
+
+2. **StrainLookupSection UI** (`StrainLookupSection.tsx`):
+    - `EntourageScore`: SVG ring chart with color-coded score (green/yellow/red), tooltip overlay
+    - `FlavonoidBar`: horizontal Recharts bar chart with 6 flavonoids and bioactivity reference line
+    - `TerpeneDetailList`: expanded terpene table with interaction badges (synergy/antagonism icons)
+
+3. **Zod Schemas** (`types/strainSchemas.ts`):
+    - `terpeneInteractionSchema`, `enhancedTerpeneSchema`, `flavonoidInteractionSchema`, `entourageInsightSchema`
+
+4. **i18n** (EN + DE `locales/*/strains.json`):
+    - New keys: `entourage.title`, `entourage.excellent`, `entourage.moderate`, `entourage.low`
+    - New keys: `flavonoids`, `terpeneDetails`, `share`
+
+5. **Tests**:
+    - `strainLookupService.test.ts`: 33 new tests (terpene enrichment, flavonoid building, entourage score, diversity)
+    - `strainSchemas.test.ts`: 16 new tests (new Zod schema validation)
+    - Total: 1049 tests across 104 test files (all passing)
+
+6. **Documentation Audit**:
+    - `README.md` (EN + DE): fixed tests (1016->1049), services (81->82), local AI services (15->18), Zustand stores (8->7 in EN), roadmap v1.2 (Released), v1.3 (updated highlights), dev journey tables, commands, quality gates
+    - `CHANGELOG.md`: added Session 25 entourage science entries above previous unreleased items
+    - `.github/copilot-instructions.md`: version (1.2.0-alpha->1.3.0-beta), service counts, hooks count, CI workflows, local AI stack (18 services), new Important Files entries
+    - `apps/web/package.json`: version 1.2.0-alpha -> 1.3.0-beta
+
+### Verified Repo Metrics (Actual)
+
+| Metric          | Value                             |
+| --------------- | --------------------------------- |
+| Tests           | 1049 (104 test files, 0 failures) |
+| Strains         | 778                               |
+| Services        | 82                                |
+| Custom Hooks    | 19                                |
+| Web Workers     | 8                                 |
+| Redux Slices    | 12                                |
+| Zustand Stores  | 7                                 |
+| i18n Namespaces | 12                                |
+| CI Workflows    | 22                                |
+| Version         | 1.3.0-beta                        |
+| HEAD commit     | docs audit commit (after 6941ded) |
+
+### Next Steps (Priority Order)
+
+1. **S-03 CSP nonce** -- Implement `vite-plugin-csp-nonce` for `strict-dynamic` support (deferred)
+2. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
+3. **A-01 AI Response Validation** -- Consistent Zod validation across all AI endpoints
+4. **P-02 Bundle Size Budget** -- Enforce gzip limits in CI
+5. **IndexedDB Monitor UI** -- Surface `monitorStorageHealth()` results in Settings > Data Management
+6. **IoT Sprint 2 Remaining** -- Sensor history charts, real MQTT connect/disconnect
+7. **Entourage Science Extension** -- Real scientific references for FLAVONOID_PROFILES, expand TERPENE_SYNERGIES with more interaction data
+
+---
+
+## Previous Session (2026-04-03, Session 24) -- Multi-API Strain Lookup Extension, IoT Security & IndexedDB Monitoring
 
 **Status: v1.3.0-beta. Extended strain lookup pipeline to 5 API sources. AES-256-GCM added to IoT credential storage. IndexedDB monitoring utility created. Web Share API integrated. 1016 tests passing.**
 
@@ -25,45 +90,12 @@
     - Raw `password` is **never persisted** to localStorage (excluded from `partialize`)
     - `loadPersistedPassword()` decrypts on app startup; called from `index.tsx` after MQTT init
     - `IotSettingsTab.tsx` updated: `void setPassword(...)` to handle async without blocking the event loop
-    - Test updated to `await setPassword(...)` in happy path
 
 4. **IndexedDB Monitoring Utility** (`indexedDbMonitorService.ts`):
     - `getDbStats()` -- entry counts per store across all 3 CannaGuide databases
     - `getQuotaInfo()` -- StorageManager API quota/usage with graceful degradation
     - `requestPersistentStorage()` -- requests persistent-storage grant
     - `monitorStorageHealth()` -- composite health check with `warnings[]` for 70%/90% thresholds
-    - `formatBytes()` -- human-readable byte formatting helper
-
-5. **Bootstrap Integration** (`index.tsx`):
-    - `loadPersistedPassword()` called after `mqttClientService.init()` to restore decrypted IoT password on hydration
-
-### Next Steps (Priority Order)
-
-1. **S-03 CSP nonce** -- Implement `vite-plugin-csp-nonce` for `strict-dynamic` support (deferred)
-2. **A11y Audit** (U-01/U-02) -- Keyboard navigation + screen reader testing
-3. **A-01 AI Response Validation** -- Consistent Zod validation across all AI endpoints
-4. **P-02 Bundle Size Budget** -- Enforce gzip limits in CI
-5. **IndexedDB Monitor UI** -- Surface `monitorStorageHealth()` results in Settings > Data Management
-6. **IoT Sprint 2 Remaining** -- Sensor history charts, real MQTT connect/disconnect
-
-### Verified Repo Metrics (Actual)
-
-| Metric          | Value                             |
-| --------------- | --------------------------------- |
-| Tests           | 1016 (103 test files, 0 failures) |
-| Strains         | 778                               |
-| Services        | 81                                |
-| Custom Hooks    | 19                                |
-| Web Workers     | 8                                 |
-| Redux Slices    | 12                                |
-| Zustand Stores  | 7                                 |
-| i18n Namespaces | 12                                |
-| CI Workflows    | 22                                |
-| Version         | 1.3.0-beta                        |
-
----
-
-## Previous Session (2026-04-02, Session 23) -- Add-to-Library System, i18n Fixes & Documentation Update
 
 **Status: v1.3.0-beta. Complete add-to-library system for Daily Drop (resolveDiscoveredToStrain, quick-add + edit-and-add, in-library badge). i18n fixes (dynamic catalog count, localized pick reasons, corrected addedHint). Scorecard #267 fully resolved (tauri CLI pinned via lockfile). 1016 tests passing.**
 

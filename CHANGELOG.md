@@ -8,6 +8,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Features
 
+- **strains:** entourage effect science -- terpene/cannabinoid/flavonoid interaction enrichment (TerpeneInteraction, FlavonoidDataPoint types; TERPENE_SYNERGIES map for 12 terpenes, FLAVONOID_PROFILES for 6 flavonoids, TYPE_FLAVONOIDS)
+- **strains:** enrichTerpeneDataPoints(), buildFlavonoidDataPoints(), calculateEntourageScore(), shannonDiversity() in strainLookupService
+- **strains:** EntourageScore SVG ring chart, FlavonoidBar recharts chart, TerpeneDetailList with interaction badges in StrainLookupSection
+- **schemas:** terpeneInteractionSchema, enhancedTerpeneSchema, flavonoidInteractionSchema, entourageInsightSchema (Zod) in strainSchemas.ts
+- **i18n:** entourage, flavonoids, terpeneDetails keys added to EN + DE strains namespace
 - **strains:** extend multi-API lookup pipeline with The Cannabis API as 5th source (confidence 65%, dual-endpoint fallback)
 - **strains:** improve Otreeba integration with dual-endpoint variant + dual response-shape parsing
 - **strains:** add Web Share API button to StrainLookupSection ResultCard
@@ -15,6 +20,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **security:** AES-256-GCM encryption for IoT MQTT password via cryptoService (useIotStore)
 - **security:** IoT raw password no longer persisted to localStorage; loadPersistedPassword() decrypts on boot
 - **services:** add indexedDbMonitorService with quota inspection, per-store entry counts, and health warnings
+
+### Tests
+
+- 33 new tests in strainLookupService.test.ts (entourage science, terpene enrichment, diversity calculation)
+- 16 new tests in strainSchemas.test.ts (new Zod schemas validation)
+- Total: 1049 tests across 104 test files (all passing)
 
 ### Bug Fixes
 

@@ -35,7 +35,7 @@ function severityBadge(severity: string): string {
 // -- Component -------------------------------------------------------------
 
 export const AnalyticsDashboardView: React.FC = memo(() => {
-    const { t } = useTranslation('knowledge')
+    const { t } = useTranslation()
     const plants = useActivePlants()
     const analytics = useAnalytics()
 
@@ -117,9 +117,11 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                     severityBadge(risk.severity),
                                 )}
                             >
-                                <span className="font-medium">{risk.type}</span>
+                                <span className="font-medium">
+                                    {t(`analytics.riskType.${risk.type}`, risk.type)}
+                                </span>
                                 {' -- '}
-                                {risk.description}
+                                {t(risk.descriptionKey, risk.descriptionParams ?? {})}
                             </li>
                         ))}
                     </ul>

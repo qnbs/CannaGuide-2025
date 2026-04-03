@@ -51,7 +51,8 @@ export interface MilestoneEstimate {
 export interface RiskFactor {
     readonly type: 'health' | 'environment' | 'nutrient' | 'pest' | 'overdue_task'
     readonly severity: 'low' | 'medium' | 'high'
-    readonly description: string
+    readonly descriptionKey: string
+    readonly descriptionParams?: Record<string, string | number> | undefined
     readonly plantName?: string | undefined
 }
 
@@ -251,7 +252,8 @@ class AnalyticsEngine {
                 risks.push({
                     type: 'health',
                     severity: plant.health < 30 ? 'high' : 'medium',
-                    description: `${plant.name} health is critically low at ${plant.health}%`,
+                    descriptionKey: 'analytics.risks.healthCritical',
+                    descriptionParams: { name: plant.name, health: plant.health },
                     plantName: plant.name,
                 })
             }
@@ -267,7 +269,8 @@ class AnalyticsEngine {
                         plant.environment.vpd < 0.2 || plant.environment.vpd > 2.0
                             ? 'high'
                             : 'medium',
-                    description: `${plant.name} VPD out of range: ${plant.environment.vpd.toFixed(2)} kPa`,
+                    descriptionKey: 'analytics.risks.vpdOutOfRange',
+                    descriptionParams: { name: plant.name, vpd: plant.environment.vpd.toFixed(2) },
                     plantName: plant.name,
                 })
             }
@@ -279,7 +282,12 @@ class AnalyticsEngine {
                         risks.push({
                             type: 'pest',
                             severity: 'high',
-                            description: `${plant.name}: ${prob.type} (severity ${prob.severity}/10)`,
+                            descriptionKey: 'analytics.risks.severeProblem',
+                            descriptionParams: {
+                                name: plant.name,
+                                problem: prob.type,
+                                severity: prob.severity,
+                            },
                             plantName: plant.name,
                         })
                     }
@@ -293,7 +301,8 @@ class AnalyticsEngine {
                         risks.push({
                             type: 'overdue_task',
                             severity: 'medium',
-                            description: `${plant.name}: Overdue task - ${task.title}`,
+                            descriptionKey: 'analytics.risks.overdueTask',
+                            descriptionParams: { name: plant.name, task: task.title },
                             plantName: plant.name,
                         })
                     }

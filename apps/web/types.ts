@@ -365,6 +365,10 @@ export enum EquipmentViewTab {
 export enum KnowledgeViewTab {
     Mentor = 'mentor',
     Guide = 'guide',
+    Lexikon = 'lexikon',
+    Atlas = 'atlas',
+    Rechner = 'rechner',
+    Lernpfad = 'lernpfad',
     Archive = 'archive',
     Sandbox = 'sandbox',
 }
@@ -979,7 +983,47 @@ export interface BeforeInstallPromptEvent extends Event {
 export interface LexiconEntry {
     id?: string | undefined
     key: string
-    category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General'
+    category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General' | 'Nutrient' | 'Disease'
+}
+
+/** Disease/deficiency/pest category */
+export type DiseaseCategory = 'deficiency' | 'toxicity' | 'environmental' | 'pest' | 'disease'
+
+/** Urgency level for taking action */
+export type DiseaseUrgency = 'monitor' | 'act_soon' | 'act_immediately'
+
+/** Disease atlas entry -- metadata only; text content lives in i18n */
+export interface DiseaseEntry {
+    id: string
+    nameKey: string
+    category: DiseaseCategory
+    severity: 'low' | 'medium' | 'high' | 'critical'
+    affectedStages: PlantStage[]
+    urgency: DiseaseUrgency
+    relatedLexiconKeys: string[]
+    relatedArticleIds: string[]
+    /** A Tailwind color token name (e.g. 'amber', 'red') used for visual badges */
+    colorToken: string
+}
+
+/** A single step in a learning path */
+export interface LearningStep {
+    id: string
+    titleKey: string
+    descriptionKey: string
+    type: 'article' | 'calculator' | 'quiz' | 'practice'
+    referenceId: string
+}
+
+/** A curated learning path for guided knowledge acquisition */
+export interface LearningPath {
+    id: string
+    titleKey: string
+    descriptionKey: string
+    targetLevel: 'beginner' | 'intermediate' | 'expert'
+    estimatedMinutes: number
+    tags: string[]
+    steps: LearningStep[]
 }
 
 export interface VisualGuide {
@@ -1091,6 +1135,11 @@ export interface SpeechQueueItem {
 
 export interface KnowledgeProgress {
     [sectionId: string]: string[]
+}
+
+/** Per-path completion: map of stepId -> completed */
+export interface LearningPathProgress {
+    [pathId: string]: string[]
 }
 
 export interface Seed {

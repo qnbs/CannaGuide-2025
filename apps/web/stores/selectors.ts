@@ -242,6 +242,10 @@ export const selectGardenHealthMetrics = createSelector(
 
 // --- Knowledge & Breeding Selectors ---
 export const selectKnowledgeProgress = createSelector([selectKnowledge], (k) => k.knowledgeProgress)
+export const selectLearningPathProgress = createSelector(
+    [selectKnowledge],
+    (k) => k.learningPathProgress,
+)
 export const selectCollectedSeeds = createSelector(
     [selectBreeding],
     (b: BreedingState): Seed[] => b.collectedSeeds,

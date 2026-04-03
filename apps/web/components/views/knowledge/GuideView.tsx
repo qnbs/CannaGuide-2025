@@ -5,10 +5,16 @@ import { KnowledgeArticle } from '@/types'
 import { knowledgeBase } from '@/data/knowledgebase'
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
+import { updateKnowledgeProgress } from '@/stores/slices/knowledgeSlice'
+import { selectKnowledgeProgress } from '@/stores/selectors'
+import { useDispatch, useSelector } from 'react-redux'
 
 const GuideViewComponent: React.FC = () => {
     const { t } = useTranslation()
+    const dispatch = useDispatch()
+    const progress = useSelector(selectKnowledgeProgress)
     const [activeSection, setActiveSection] = useState<string>('')
+    const [searchQuery, setSearchQuery] = useState('')
     const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
     const getGroupInfo = (
@@ -35,6 +41,20 @@ const GuideViewComponent: React.FC = () => {
                 accentColor: 'border-accent-500',
             }
         }
+        if (groupName === 'GrowTech') {
+            return {
+                icon: <PhosphorIcons.LightbulbFilament />,
+                color: 'text-yellow-400',
+                accentColor: 'border-yellow-500',
+            }
+        }
+        if (groupName === 'Genetics') {
+            return {
+                icon: <PhosphorIcons.TreeStructure />,
+                color: 'text-emerald-400',
+                accentColor: 'border-emerald-500',
+            }
+        }
         return {
             icon: <PhosphorIcons.BookOpenText />,
             color: 'text-slate-400',
@@ -58,15 +78,29 @@ const GuideViewComponent: React.FC = () => {
                 name: t('knowledgeView.guide.troubleshooting'),
                 articles: [],
             },
+            GrowTech: {
+                order: 4,
+                name: t('knowledgeView.guide.growTech'),
+                articles: [],
+            },
+            Genetics: {
+                order: 5,
+                name: t('knowledgeView.guide.genetics'),
+                articles: [],
+            },
         }
 
         const groupNameMapping: Record<string, keyof typeof groups> = {
             phase: 'Phases',
             fix: 'Troubleshooting',
             concept: 'Core Concepts',
+            growtech: 'GrowTech',
+            genetics: 'Genetics',
         }
-        const articleIdPrefixPattern = /^(phase|fix|concept)/
+        const articleIdPrefixPattern = /^(phase|fix|concept|growtech|genetics)/
         const phaseNumberPattern = /\d+/
+
+        const q = searchQuery.toLowerCase().trim()
 
         knowledgeBase.forEach((article) => {
             const groupMatch = articleIdPrefixPattern.exec(article.id)
@@ -84,6 +118,15 @@ const GuideViewComponent: React.FC = () => {
                 return
             }
 
+            if (q) {
+                const title = t(article.titleKey).toLowerCase()
+                const content = t(article.contentKey).toLowerCase()
+                const tags = article.tags.join(' ').toLowerCase()
+                if (!title.includes(q) && !content.includes(q) && !tags.includes(q)) {
+                    return
+                }
+            }
+
             group.articles.push(article)
         })
 
@@ -99,7 +142,7 @@ const GuideViewComponent: React.FC = () => {
         return Object.entries(groups)
             .filter(([, groupData]) => groupData.articles.length > 0)
             .toSorted((a, b) => a[1].order - b[1].order)
-    }, [t])
+    }, [t, searchQuery])
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -138,85 +181,142 @@ const GuideViewComponent: React.FC = () => {
         sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
 
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <aside className="hidden md:block md:col-span-4 lg:col-span-3">
-                <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] space-y-2">
-                    <h3 className="px-3 text-sm font-semibold text-slate-400 uppercase tracking-wider">
-                        {t('knowledgeView.tabs.guide')}
-                    </h3>
-                    <nav>
-                        {groupedArticles.map(([groupKey, groupData]) => {
-                            const { icon, color } = getGroupInfo(groupKey)
-                            const isActive = activeSection === groupKey
-                            const itemClassName = isActive
-                                ? `bg-slate-800 ${color}`
-                                : 'text-slate-300 hover:bg-slate-800/50 hover:text-slate-100'
-                            return (
-                                <button
-                                    type="button"
-                                    key={groupKey}
-                                    onClick={() => scrollToSection(groupKey)}
-                                    aria-label={groupData.name}
-                                    aria-current={isActive ? 'location' : undefined}
-                                    className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${itemClassName}`}
-                                >
-                                    <div className="w-5 h-5">{icon}</div>
-                                    <span>{groupData.name}</span>
-                                </button>
-                            )
-                        })}
-                    </nav>
-                </div>
-            </aside>
+    const totalArticles = knowledgeBase.length
+    const readArticles = Object.values(progress).flat().length
 
-            <section className="md:col-span-8 lg:col-span-9 space-y-12">
-                {groupedArticles.map(([groupKey, groupData]) => {
-                    const { icon, color, accentColor } = getGroupInfo(groupKey)
-                    return (
-                        <section
-                            key={groupKey}
-                            id={groupKey}
-                            ref={(el) => {
-                                sectionRefs.current[groupKey] = el
-                            }}
-                            className="scroll-mt-20"
-                        >
-                            <h2
-                                className={`text-2xl font-bold font-display flex items-center gap-3 mb-4 ${color} border-b ${accentColor} pb-2`}
-                            >
-                                {icon} {groupData.name}
-                            </h2>
-                            <div className="space-y-3">
-                                {groupData.articles.map((article, index) => (
-                                    <details
-                                        key={article.id}
-                                        className="group bg-slate-800/50 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20"
-                                        open={index === 0}
+    return (
+        <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="relative flex-1">
+                    <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                        type="search"
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value)
+                        }}
+                        placeholder={t('knowledgeView.guide.searchPlaceholder')}
+                        className="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                        aria-label={t('knowledgeView.guide.searchPlaceholder')}
+                    />
+                </div>
+                <span className="text-xs text-slate-400 whitespace-nowrap">
+                    {t('knowledgeView.guide.readProgress', {
+                        read: readArticles,
+                        total: totalArticles,
+                    })}
+                </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <aside className="hidden md:block md:col-span-4 lg:col-span-3">
+                    <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] space-y-2">
+                        <h3 className="px-3 text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                            {t('knowledgeView.tabs.guide')}
+                        </h3>
+                        <nav>
+                            {groupedArticles.map(([groupKey, groupData]) => {
+                                const { icon, color } = getGroupInfo(groupKey)
+                                const isActive = activeSection === groupKey
+                                const itemClassName = isActive
+                                    ? `bg-slate-800 ${color}`
+                                    : 'text-slate-300 hover:bg-slate-800/50 hover:text-slate-100'
+                                return (
+                                    <button
+                                        type="button"
+                                        key={groupKey}
+                                        onClick={() => scrollToSection(groupKey)}
+                                        aria-label={groupData.name}
+                                        aria-current={isActive ? 'location' : undefined}
+                                        className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${itemClassName}`}
                                     >
-                                        <summary
-                                            className={`list-none flex justify-between items-center p-4 cursor-pointer border-l-4 ${accentColor}`}
-                                        >
-                                            <h4 className="font-semibold text-slate-100">
-                                                {t(article.titleKey)}
-                                            </h4>
-                                            <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
-                                        </summary>
-                                        <Speakable elementId={`guide-${article.id}`}>
-                                            <div className="p-4 border-t border-slate-700/50">
-                                                <SafeHtml
-                                                    className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1"
-                                                    html={t(article.contentKey)}
-                                                />
-                                            </div>
-                                        </Speakable>
-                                    </details>
-                                ))}
-                            </div>
-                        </section>
-                    )
-                })}
-            </section>
+                                        <div className="w-5 h-5">{icon}</div>
+                                        <span>{groupData.name}</span>
+                                        <span className="ml-auto text-xs text-slate-500">
+                                            {groupData.articles.length}
+                                        </span>
+                                    </button>
+                                )
+                            })}
+                        </nav>
+                    </div>
+                </aside>
+
+                <section className="md:col-span-8 lg:col-span-9 space-y-12">
+                    {groupedArticles.length === 0 && (
+                        <p className="text-slate-400 text-sm text-center py-8">
+                            {t('knowledgeView.guide.noResults', { term: searchQuery })}
+                        </p>
+                    )}
+                    {groupedArticles.map(([groupKey, groupData]) => {
+                        const { icon, color, accentColor } = getGroupInfo(groupKey)
+                        return (
+                            <section
+                                key={groupKey}
+                                id={groupKey}
+                                ref={(el) => {
+                                    sectionRefs.current[groupKey] = el
+                                }}
+                                className="scroll-mt-20"
+                            >
+                                <h2
+                                    className={`text-2xl font-bold font-display flex items-center gap-3 mb-4 ${color} border-b ${accentColor} pb-2`}
+                                >
+                                    {icon} {groupData.name}
+                                </h2>
+                                <div className="space-y-3">
+                                    {groupData.articles.map((article, index) => {
+                                        const isRead =
+                                            progress[groupKey]?.includes(article.id) ?? false
+                                        return (
+                                            <details
+                                                key={article.id}
+                                                className="group bg-slate-800/50 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20"
+                                                open={index === 0}
+                                                onToggle={(e) => {
+                                                    if (
+                                                        (e.target as HTMLDetailsElement).open &&
+                                                        !isRead
+                                                    ) {
+                                                        dispatch(
+                                                            updateKnowledgeProgress({
+                                                                sectionId: groupKey,
+                                                                itemId: article.id,
+                                                            }),
+                                                        )
+                                                    }
+                                                }}
+                                            >
+                                                <summary
+                                                    className={`list-none flex justify-between items-center p-4 cursor-pointer border-l-4 ${accentColor}`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        {isRead && (
+                                                            <PhosphorIcons.CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                                                        )}
+                                                        <h4 className="font-semibold text-slate-100">
+                                                            {t(article.titleKey)}
+                                                        </h4>
+                                                    </div>
+                                                    <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 shrink-0" />
+                                                </summary>
+                                                <Speakable elementId={`guide-${article.id}`}>
+                                                    <div className="p-4 border-t border-slate-700/50">
+                                                        <SafeHtml
+                                                            className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1"
+                                                            html={t(article.contentKey)}
+                                                        />
+                                                    </div>
+                                                </Speakable>
+                                            </details>
+                                        )
+                                    })}
+                                </div>
+                            </section>
+                        )
+                    })}
+                </section>
+            </div>
         </div>
     )
 }

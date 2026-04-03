@@ -16,6 +16,10 @@ const MentorView = lazy(() => import('./knowledge/MentorView'))
 const GuideView = lazy(() => import('./knowledge/GuideView'))
 const ArchiveView = lazy(() => import('./knowledge/ArchiveView'))
 const SandboxView = lazy(() => import('./knowledge/SandboxView'))
+const LexikonView = lazy(() => import('./knowledge/LexikonView'))
+const DiseaseAtlasView = lazy(() => import('./knowledge/DiseaseAtlasView'))
+const CalculatorHubView = lazy(() => import('./knowledge/CalculatorHubView'))
+const LearningPathView = lazy(() => import('./knowledge/LearningPathView'))
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation()
@@ -42,6 +46,18 @@ export const KnowledgeView: React.FC = () => {
             [KnowledgeViewTab.Guide]: (
                 <PhosphorIcons.Book className="w-16 h-16 mx-auto text-blue-400" />
             ),
+            [KnowledgeViewTab.Lexikon]: (
+                <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-teal-400" />
+            ),
+            [KnowledgeViewTab.Atlas]: (
+                <PhosphorIcons.FirstAidKit className="w-16 h-16 mx-auto text-rose-400" />
+            ),
+            [KnowledgeViewTab.Rechner]: (
+                <PhosphorIcons.Calculator className="w-16 h-16 mx-auto text-sky-400" />
+            ),
+            [KnowledgeViewTab.Lernpfad]: (
+                <PhosphorIcons.GraduationCap className="w-16 h-16 mx-auto text-amber-400" />
+            ),
             [KnowledgeViewTab.Archive]: (
                 <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-amber-400" />
             ),
@@ -56,6 +72,10 @@ export const KnowledgeView: React.FC = () => {
         () => ({
             [KnowledgeViewTab.Mentor]: t('knowledgeView.tabs.mentor'),
             [KnowledgeViewTab.Guide]: t('knowledgeView.tabs.guide'),
+            [KnowledgeViewTab.Lexikon]: t('knowledgeView.tabs.lexikon'),
+            [KnowledgeViewTab.Atlas]: t('knowledgeView.tabs.atlas'),
+            [KnowledgeViewTab.Rechner]: t('knowledgeView.tabs.rechner'),
+            [KnowledgeViewTab.Lernpfad]: t('knowledgeView.tabs.lernpfad'),
             [KnowledgeViewTab.Archive]: t('knowledgeView.tabs.archive'),
             [KnowledgeViewTab.Sandbox]: t('knowledgeView.tabs.sandbox'),
         }),
@@ -86,6 +106,14 @@ export const KnowledgeView: React.FC = () => {
                 return <MentorView />
             case KnowledgeViewTab.Guide:
                 return <GuideView />
+            case KnowledgeViewTab.Lexikon:
+                return <LexikonView />
+            case KnowledgeViewTab.Atlas:
+                return <DiseaseAtlasView />
+            case KnowledgeViewTab.Rechner:
+                return <CalculatorHubView />
+            case KnowledgeViewTab.Lernpfad:
+                return <LearningPathView />
             case KnowledgeViewTab.Archive:
                 return <ArchiveView />
             case KnowledgeViewTab.Sandbox:

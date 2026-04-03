@@ -163,7 +163,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
             {analytics.recommendations.length > 0 && (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
-                        {t('analytics.recommendations', 'Recommendations')}
+                        {t('analytics.recommendations.title', 'Recommendations')}
                     </h3>
                     <ul className="space-y-2">
                         {analytics.recommendations.map((rec, i) => (

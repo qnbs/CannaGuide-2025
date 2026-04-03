@@ -2,11 +2,11 @@ import { common, nav, plantStages, problemMessages, ai } from './de/common'
 import { commandPalette } from './de/commandPalette'
 import { equipmentView } from './de/equipment'
 import { helpView, visualGuides, faq } from './de/help'
-import { knowledgeView, tipOfTheDay } from './de/knowledge'
+import { knowledgeView, tipOfTheDay, analytics } from './de/knowledge'
 import { onboarding } from './de/onboarding'
 import { plantsView } from './de/plants'
 import { settingsView } from './de/settings'
-import { strainsView } from './de/strains'
+import { strainsView, strainLookup } from './de/strains'
 import { strainsData } from './de/strainsData'
 import { legal } from './de/legal'
 import { seedbanks } from './de/seedbanks'
@@ -27,8 +27,10 @@ export const de = {
     plantsView,
     settingsView,
     strainsView,
+    strainLookup,
     strainsData,
     tipOfTheDay,
+    analytics,
     legal,
     seedbanks,
 }

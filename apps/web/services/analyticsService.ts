@@ -342,8 +342,8 @@ class AnalyticsEngine {
                     id: `vpd-${plant.id}`,
                     category: 'environment',
                     priority: 'high',
-                    titleKey: 'analytics.recommendations.adjustVpd',
-                    descriptionKey: 'analytics.recommendations.adjustVpdDesc',
+                    titleKey: 'recommendations.adjustVpd',
+                    descriptionKey: 'recommendations.adjustVpdDesc',
                     relatedPlantId: plant.id,
                 })
             }
@@ -354,8 +354,8 @@ class AnalyticsEngine {
                     id: `train-${plant.id}`,
                     category: 'training',
                     priority: 'medium',
-                    titleKey: 'analytics.recommendations.considerTraining',
-                    descriptionKey: 'analytics.recommendations.considerTrainingDesc',
+                    titleKey: 'recommendations.considerTraining',
+                    descriptionKey: 'recommendations.considerTrainingDesc',
                     relatedPlantId: plant.id,
                 })
             }
@@ -366,8 +366,8 @@ class AnalyticsEngine {
                     id: `harvest-${plant.id}`,
                     category: 'harvest',
                     priority: 'high',
-                    titleKey: 'analytics.recommendations.checkTrichomes',
-                    descriptionKey: 'analytics.recommendations.checkTrichomesDesc',
+                    titleKey: 'recommendations.checkTrichomes',
+                    descriptionKey: 'recommendations.checkTrichomesDesc',
                     relatedPlantId: plant.id,
                 })
             }
@@ -378,8 +378,8 @@ class AnalyticsEngine {
                     id: `health-${plant.id}`,
                     category: 'general',
                     priority: plant.health < 50 ? 'high' : 'medium',
-                    titleKey: 'analytics.recommendations.improveHealth',
-                    descriptionKey: 'analytics.recommendations.improveHealthDesc',
+                    titleKey: 'recommendations.improveHealth',
+                    descriptionKey: 'recommendations.improveHealthDesc',
                     relatedPlantId: plant.id,
                 })
             }

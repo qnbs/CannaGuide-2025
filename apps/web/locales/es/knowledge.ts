@@ -13,6 +13,7 @@ export const knowledgeView = {
         rechner: 'Calculadora',
         lernpfad: 'Rutas de Aprendizaje',
         analytik: 'Analitica',
+        navLabel: 'Secciones de conocimiento',
     },
     hub: {
         selectPlant: 'Seleccionar Planta',
@@ -357,4 +358,42 @@ export const tipOfTheDay = {
         'Observa el color de tus hojas. Un verde rico y saludable es bueno. Verde demasiado oscuro puede indicar exceso de nitrogeno, mientras que verde palido o amarillo sugiere una deficiencia.',
         'Las macetas de tela son una gran opcion para principiantes ya que hacen el riego excesivo casi imposible y proporcionan oxigeno a las raices.',
     ],
+}
+
+export const analytics = {
+    gardenScore: 'Puntuacion del Jardin',
+    avgHealth: 'Salud Promedio',
+    envStability: 'Estabilidad Ambiental',
+    activePlants: 'Plantas Activas',
+    stageDistribution: 'Distribucion por Fase',
+    riskFactors: 'Factores de Riesgo',
+    strainPerformance: 'Rendimiento por Variedad',
+    nextMilestone: 'Proximo Hito',
+    daysAway: 'dias restantes',
+    analyticsEmpty: 'Agrega plantas para ver analiticas',
+    strain: 'Variedad',
+    health: 'Salud',
+    plants: 'Plantas',
+    avgAge: 'Edad Promedio',
+    relatedKnowledge: 'Conocimiento Relacionado',
+    milestoneType: {
+        flip: 'Cambio a Floracion',
+        harvest: 'Listo para Cosecha',
+        curing_done: 'Curado Completo',
+        transplant: 'Trasplante',
+    },
+    recommendations: {
+        title: 'Recomendaciones',
+        adjustVpd: 'Ajustar VPD',
+        adjustVpdDesc: 'VPD esta fuera del rango optimo. Ajusta temperatura o humedad.',
+        considerTraining: 'Considerar Entrenamiento',
+        considerTrainingDesc:
+            'Planta en fase vegetativa tardia. LST o topping podria mejorar el rendimiento.',
+        checkTrichomes: 'Revisar Tricomas',
+        checkTrichomesDesc:
+            'Planta en floracion tardia. Monitorea tricomas para el momento de cosecha.',
+        improveHealth: 'Mejorar Salud de Planta',
+        improveHealthDesc:
+            'Salud de la planta por debajo del optimo. Revisa nutrientes, pH y ambiente.',
+    },
 }

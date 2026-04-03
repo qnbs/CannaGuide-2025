@@ -949,7 +949,6 @@ export const analytics = {
     stageDistribution: 'Phasenverteilung',
     riskFactors: 'Risikofaktoren',
     strainPerformance: 'Sorten-Performance',
-    recommendations: 'Empfehlungen',
     nextMilestone: 'Naechster Meilenstein',
     daysAway: 'Tage entfernt',
     analyticsEmpty: 'Fuege Pflanzen hinzu, um Analysen zu sehen',
@@ -964,16 +963,19 @@ export const analytics = {
         curing_done: 'Fermentierung abgeschlossen',
         transplant: 'Umtopfen',
     },
-    'analytics.recommendations.adjustVpd': 'VPD anpassen',
-    'analytics.recommendations.adjustVpdDesc':
-        'VPD liegt ausserhalb des optimalen Bereichs. Temperatur oder Luftfeuchtigkeit anpassen.',
-    'analytics.recommendations.considerTraining': 'Training in Betracht ziehen',
-    'analytics.recommendations.considerTrainingDesc':
-        'Pflanze ist in spaeter vegetativer Phase. LST oder Topping koennte den Ertrag verbessern.',
-    'analytics.recommendations.checkTrichomes': 'Trichome pruefen',
-    'analytics.recommendations.checkTrichomesDesc':
-        'Pflanze ist in spaeter Bluetephase. Trichome fuer den Erntezeitpunkt beobachten.',
-    'analytics.recommendations.improveHealth': 'Pflanzengesundheit verbessern',
-    'analytics.recommendations.improveHealthDesc':
-        'Pflanzengesundheit liegt unter dem Optimum. Naehrstoffe, pH und Umgebung pruefen.',
+    recommendations: {
+        title: 'Empfehlungen',
+        adjustVpd: 'VPD anpassen',
+        adjustVpdDesc:
+            'VPD liegt ausserhalb des optimalen Bereichs. Temperatur oder Luftfeuchtigkeit anpassen.',
+        considerTraining: 'Training in Betracht ziehen',
+        considerTrainingDesc:
+            'Pflanze ist in spaeter vegetativer Phase. LST oder Topping koennte den Ertrag verbessern.',
+        checkTrichomes: 'Trichome pruefen',
+        checkTrichomesDesc:
+            'Pflanze ist in spaeter Bluetephase. Trichome fuer den Erntezeitpunkt beobachten.',
+        improveHealth: 'Pflanzengesundheit verbessern',
+        improveHealthDesc:
+            'Pflanzengesundheit liegt unter dem Optimum. Naehrstoffe, pH und Umgebung pruefen.',
+    },
 }

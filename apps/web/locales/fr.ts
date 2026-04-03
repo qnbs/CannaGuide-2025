@@ -7,6 +7,7 @@ import {
     faq,
     knowledgeView,
     tipOfTheDay,
+    analytics,
     onboarding,
     plantsView,
     settingsView,
@@ -34,6 +35,7 @@ export const fr = {
     strainsView,
     strainsData,
     tipOfTheDay,
+    analytics,
     legal,
     seedbanks,
 }

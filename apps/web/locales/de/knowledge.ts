@@ -721,6 +721,90 @@ export const knowledgeView = {
                     },
                 },
             },
+            firstGrow: {
+                title: 'Dein erster Grow',
+                description:
+                    'Alles was du für eine erfolgreiche erste Ernte brauchst, Schritt für Schritt.',
+                step1Title: 'Setup & Ausrüstung',
+                step1Desc:
+                    'Lerne was du zum Starten brauchst: Zelt, Licht, Lüfter, Töpfe und Medium.',
+                step2Title: 'Keimung',
+                step2Desc:
+                    'Wie man Samen zuverlässig keimen lässt -- Küchenpapier-Methode oder Direktaussaat im Medium.',
+                step3Title: 'Vegetatives Wachstum',
+                step3Desc:
+                    'Den Keimling zu einer kräftigen vegetativen Pflanze aufziehen. Gießen, Nährstoffe und Licht-Grundlagen.',
+                step4Title: 'Blüte',
+                step4Desc:
+                    'Die Blütephase einleiten und managen. Lichtplan, Nährstoffwechsel und Knospenentwicklung.',
+                step5Title: 'Ernte & Reifung',
+                step5Desc:
+                    'Trichome ablesen, den richtigen Erntezeitpunkt bestimmen und der wichtige Trocknungs- und Reifeprozess.',
+                step6Title: 'VPD Praxis',
+                step6Desc:
+                    'Den VPD-Rechner nutzen um zu verstehen wie Temperatur und Luftfeuchtigkeit deine Pflanze beeinflussen.',
+            },
+            environment: {
+                title: 'Umgebungsmeisterschaft',
+                description:
+                    'Tieftauchgang in Temperatur, Luftfeuchtigkeit, VPD, CO2 und Luftstrom.',
+                step1Title: 'Temp. & Luftfeuchtigkeits-Grundlagen',
+                step1Desc:
+                    'Optimale Bereiche für jede Wachstumsphase und wie man sie kontrolliert.',
+                step2Title: 'VPD Tieftauchgang',
+                step2Desc:
+                    'Das Dampfdruckdefizit verstehen und nutzen um Pflanzengesundheit und Ertrag zu maximieren.',
+                step3Title: 'Luftstrom & CO2',
+                step3Desc:
+                    'Warum Luftstrom wichtig ist, wie man Zirkulations- und Abluftlüfter einrichtet und CO2-Grundlagen.',
+                step4Title: 'Rechner-Praxis',
+                step4Desc:
+                    'Den VPD-Rechner in verschiedenen Phasen nutzen um ein Gefühl für ideale Bedingungen zu entwickeln.',
+            },
+            nutrients: {
+                title: 'Nährstoff-Meisterschaft',
+                description: 'Makro- und Mikronährstoffe, EC, pH und Mangeldiagnose meistern.',
+                step1Title: 'pH-Leitfaden',
+                step1Desc: 'pH verstehen und kontrollieren für optimale Nährstoffaufnahme.',
+                step2Title: 'Nährstoffrechner',
+                step2Desc:
+                    'Den Nährstoffverhältnis-Rechner nutzen um Düngungen nach Wachstumsphase zu planen.',
+                step3Title: 'Kalziummangel',
+                step3Desc:
+                    'Kalziummangel erkennen und behandeln -- eines der häufigsten Grow-Probleme.',
+                step4Title: 'Nährstoffverbrennung',
+                step4Desc: 'Überdüngung erkennen und die Pflanze davon erholen lassen.',
+                step5Title: 'Krankheitsatlas-Praxis',
+                step5Desc:
+                    'Den Krankheitsatlas durchsuchen um nährstoffbedingte Probleme zu identifizieren und zu behandeln.',
+            },
+            pests: {
+                title: 'Schädlings- & Krankheitsbekämpfung',
+                description:
+                    'Die häufigsten Schädlinge und Krankheiten erkennen, behandeln und vorbeugen.',
+                step1Title: 'Schädlingsbekämpfungs-Leitfaden',
+                step1Desc:
+                    'Integrierte Schädlingsbekämpfungsstrategien um den Grow schädlingsfrei zu halten.',
+                step2Title: 'Spinnmilben',
+                step2Desc:
+                    'Spinnmilben erkennen und behandeln -- der destruktivste Grow-Schädling.',
+                step3Title: 'Echter Mehltau',
+                step3Desc: 'Echten Mehltau erkennen und behandeln bevor er den Anbau zerstört.',
+            },
+            training: {
+                title: 'Fortgeschrittenes Pflanzentraining',
+                description:
+                    'LST, Topping, Super Cropping, SCROG und Manifolding für maximalen Ertrag.',
+                step1Title: 'Training-Grundlagen',
+                step1Desc:
+                    'Die Prinzipien des Pflanzentrainings verstehen und LST und Topping anwenden.',
+                step2Title: 'Topping vs. LST',
+                step2Desc:
+                    'Topping und Low-Stress-Training vergleichen und den besten Ansatz für deinen Grow finden.',
+                step3Title: 'Überwässerung beheben',
+                step3Desc:
+                    'Überwässerung erkennen und beheben -- ein häufiges Problem beim Training dichter Kronen.',
+            },
         },
     },
     growTech: {

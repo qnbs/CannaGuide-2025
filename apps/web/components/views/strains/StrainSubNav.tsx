@@ -88,3 +88,5 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
         </nav>
     )
 }
+
+StrainSubNav.displayName = 'StrainSubNav'

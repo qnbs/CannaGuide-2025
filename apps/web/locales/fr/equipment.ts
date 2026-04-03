@@ -311,6 +311,25 @@ export const equipmentView = {
                 far: 'Lampe trop eloignee -- PPFD insuffisant',
             },
         },
+        sandbox: {
+            title: 'Bac a Sable Hypothetique',
+            collapseHint: 'Cliquer pour developper',
+            description:
+                "Ajustez les dimensions de la salle et la puissance de l'eclairage. Les modifications se propagent instantanement aux calculateurs de ventilation, CO2 et hauteur de lampe.",
+            width: 'Largeur',
+            depth: 'Profondeur',
+            height: 'Hauteur',
+            lightWattage: 'Puissance de la lampe',
+            propagateNote:
+                'Modifier les dimensions dans les calculateurs individuels met egalement a jour le Bac a Sable.',
+            reset: 'Valeurs par defaut',
+        },
+        history: {
+            title: 'Historique des calculs',
+            noEntries: "Aucun calcul enregistre pour l'instant.",
+            clear: 'Effacer',
+            save: 'Enregistrer ce resultat',
+        },
     },
     growShops: {
         region: {

@@ -60,7 +60,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with an 18-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 778 strains -- 1108 tests -- 83 services -- 12 Redux slices + 7 Zustand stores -- 19 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
+**Key numbers:** 778 strains -- 1119 tests -- 83 services -- 12 Redux slices + 8 Zustand stores -- 19 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
 
 ---
 
@@ -106,7 +106,7 @@ Three-tier client-side architecture with offline-first design:
 | ------------------ | ------------------------------------ | ---------------------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Component UI with zero `any`, `exactOptionalPropertyTypes` |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Fast HMR, InjectManifest SW                                |
-| **State**          | Redux Toolkit 2.11 + Zustand 5       | 12 Redux slices + 7 Zustand stores                         |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | 12 Redux slices + 8 Zustand stores                         |
 | **API Cache**      | RTK Query                            | AI API caching + data fetching                             |
 | **AI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction                            |
 | **AI (Local)**     | Transformers.js, WebLLM, TF.js, ONNX | 18 services, 8 ML models, 3-layer fallback                 |
@@ -116,7 +116,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1108 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1119 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 | **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                                     |
 | **Mobile**         | Capacitor                            | iOS/Android wrapper                                        |
@@ -260,7 +260,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- runs across all workspaces)
 npm run dev              # turbo run dev (Vite dev server on localhost:5173)
 npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest, 1108 tests)
+npm test                 # turbo run test (Vitest, 1119 tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -318,7 +318,7 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 
 | Job                     | Description                                                                 |
 | ----------------------- | --------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 1108 tests, production build |
+| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 1119 tests, production build |
 | 🛡 Security             | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
 | 🎭 E2E Tests            | Playwright Chromium (needs quality artifact)                                |
 | 🐳 Docker Compose + IoT | ESP32-mock + Tauri-mock healthcheck, sensor endpoint validation             |
@@ -494,7 +494,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 18-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 778 Sorten -- 1108 Tests -- 83 Services -- 12 Redux Slices + 7 Zustand Stores -- 19 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
+**Kennzahlen:** 778 Sorten -- 1119 Tests -- 83 Services -- 12 Redux Slices + 8 Zustand Stores -- 19 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
 
 ---
 
@@ -540,7 +540,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | ------------------ | ------------------------------------ | --------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Komponenten-UI mit null `any`                 |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Schnelles HMR, InjectManifest SW              |
-| **State**          | Redux Toolkit 2.11 + Zustand 5       | 12 Redux Slices + 7 Zustand Stores            |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | 12 Redux Slices + 8 Zustand Stores            |
 | **KI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
 | **KI (Lokal)**     | Transformers.js, WebLLM, TF.js, ONNX | 18 Services, 8 ML-Modelle, 3-Schicht-Fallback |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 Cannabis-Themes via CSS Custom Properties   |
@@ -549,7 +549,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 Namensräume                |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1108 Unit-, E2E-, Komponenten-Tests           |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1119 Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 | **Desktop**        | Tauri v2 (Rust)                      | Nativer Desktop-Wrapper                       |
 | **Mobil**          | Capacitor                            | iOS/Android-Wrapper                           |
@@ -693,7 +693,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- laeuft ueber alle Workspaces)
 npm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 npm run build            # turbo run build (alle Workspaces)
-npm test                 # turbo run test (Vitest, 1108 Tests)
+npm test                 # turbo run test (Vitest, 1119 Tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -718,7 +718,7 @@ tsconfig.json              Nur Referenzen (apps/web, apps/desktop, packages/*)
 apps/
   web/                     Haupt-PWA (@cannaguide/web)
     components/             React-Komponenten (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux: 12 Slices, 7 Zustand Stores, Selektoren, Middleware
+    stores/                 Redux: 12 Slices, 8 Zustand Stores, Selektoren, Middleware
     services/               82 Service-Module (KI, Simulation, DB, Krypto, IoT)
     hooks/                  19 Custom Hooks
     data/                   Statische Daten: 778 Sorten, FAQ, Lexikon, Guides
@@ -751,7 +751,7 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 
 | Job                     | Beschreibung                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 1108 Tests, Produktions-Build |
+| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 1119 Tests, Produktions-Build |
 | 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
 | 🎭 E2E Tests            | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🐳 Docker Compose + IoT | ESP32-Mock + Tauri-Mock Healthcheck, Sensor-Endpunkt-Validierung             |

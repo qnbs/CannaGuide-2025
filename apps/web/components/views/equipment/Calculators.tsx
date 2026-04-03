@@ -11,6 +11,7 @@ import { EcPhPlannerCalculator } from './calculators/EcPhPlannerCalculator'
 import { Co2Calculator } from './calculators/Co2Calculator'
 import { HumidityDeficitCalculator } from './calculators/HumidityDeficitCalculator'
 import { LightHangingCalculator } from './calculators/LightHangingCalculator'
+import { WhatIfSandbox } from './WhatIfSandbox'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 type CalculatorType =
@@ -105,6 +106,7 @@ export const Calculators: React.FC = () => {
 
     return (
         <div className="space-y-3">
+            <WhatIfSandbox />
             {calculatorList.map((calc, index) => (
                 <details
                     key={calc.id}

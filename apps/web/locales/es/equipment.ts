@@ -306,6 +306,25 @@ export const equipmentView = {
                 far: 'Luz demasiado lejos -- PPFD insuficiente',
             },
         },
+        sandbox: {
+            title: 'Sandbox Que-Pasa-Si',
+            collapseHint: 'Clic para ampliar',
+            description:
+                'Ajusta las dimensiones de la sala y la potencia luminosa. Los cambios se propagan al instante a las calculadoras de ventilacion, CO2 y altura de luz.',
+            width: 'Ancho',
+            depth: 'Profundidad',
+            height: 'Altura',
+            lightWattage: 'Potencia de la lampara',
+            propagateNote:
+                'Editar las dimensiones en calculadoras individuales tambien actualiza el Sandbox.',
+            reset: 'Valores predeterminados',
+        },
+        history: {
+            title: 'Historial de calculos',
+            noEntries: 'Aun no hay calculos guardados.',
+            clear: 'Borrar',
+            save: 'Guardar este resultado',
+        },
     },
     growShops: {
         region: {

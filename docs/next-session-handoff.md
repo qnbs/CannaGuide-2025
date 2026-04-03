@@ -2,9 +2,62 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-03, Session 28) -- Equipment Calculator Suite Expansion
+## Latest Session (2026-04-04, Session 29) -- What-If Sandbox + Calculator History (Execution 2)
 
-**Status: v1.3.0-beta. Equipment Calculator Suite erweitert: 3 neue spezialisierte Calculator (CO2-Anreicherung, Luftfeuchte-Defizit, Lampenhoehe), neuer equipmentCalculatorService mit Zod-Schemas, 40 neue Unit-Tests. TypeScript clean. 1108 Tests passing.**
+**Status: v1.3.0-beta. What-If Sandbox + Calculator History integrated into Equipment Calculator Suite. useCalculatorSessionStore (Zustand, transient) propagates shared room dimensions + light wattage to Ventilation/CO2/LightHanging calculators. Calculator History (IndexedDB, 20-entry FIFO) with CalculatorHistoryPanel and Save buttons in CO2 + LightHanging calculators. DB migrated to version 5. 1119 tests passing. TypeScript clean.**
+
+### What Was Done (Session 29)
+
+1. **IndexedDB Migration** (`constants.ts`, `services/dbService.ts`):
+    - Added `CALCULATOR_HISTORY_STORE = 'calculator_history'` constant
+    - Bumped `DB_VERSION` 4 -> 5 with v5 migration creating the new object store
+    - Added `CalculatorHistoryEntry` interface (exported) and 3 new methods on `dbService`: `saveCalculatorHistoryEntry`, `getCalculatorHistory`, `clearCalculatorHistory`
+    - FIFO cap: max 20 entries per calculator, oldest evicted automatically
+
+2. **Zustand Session Store** (`stores/useCalculatorSessionStore.ts`):
+    - Transient, NOT persisted -- session-lifetime shared state only
+    - Shared `roomDimensions: { width, depth, height }` (cm) + `sharedLightWattage` (W)
+    - Defaults: 120x120x220 cm, 400 W
+    - `setRoomDimensions` + `setSharedLightWattage` actions
+
+3. **WhatIfSandbox component** (`components/views/equipment/WhatIfSandbox.tsx`):
+    - Collapsible `<details>` panel with range sliders for Width/Depth/Height/LightWattage
+    - Shows derived room volume (m3) and current wattage in the collapsed summary
+    - Reset button restores defaults
+    - Rendered at the TOP of `Calculators.tsx` before the accordion list
+    - i18n key: `equipmentView.calculators.sandbox.*` (EN/DE/ES/FR/NL)
+
+4. **Connected Calculators** (bidirectional shared state):
+    - `VentilationCalculator.tsx`: roomDimensions + sharedLightWattage from store (read+write, editing in calculator updates Sandbox)
+    - `Co2Calculator.tsx`: roomVolume derived from store dimensions (auto-computed, no manual override); history save button + CalculatorHistoryPanel
+    - `LightHangingCalculator.tsx`: sharedLightWattage from store (read+write); history save button + CalculatorHistoryPanel
+
+5. **CalculatorHistoryPanel** (`components/views/equipment/calculators/CalculatorHistoryPanel.tsx`):
+    - Accepts `calculatorId` + `refreshToken` (incremented after save)
+    - Loads history from IndexedDB on mount and on each save
+    - Collapsible panel, max 48px scrollable list, shows timestamp + inputs + result
+    - Clear button, empty-state message
+    - i18n key: `equipmentView.calculators.history.*` (EN/DE/ES/FR/NL)
+
+6. **i18n** (all 5 languages: EN, DE, ES, FR, NL):
+    - `sandbox.*`: title, collapseHint, description, width, depth, height, lightWattage, propagateNote, reset
+    - `history.*`: title, noEntries, clear, save
+
+7. **Unit Tests** (2 new test files, 11 tests):
+    - `services/calculatorHistory.test.ts` (7 tests): CRUD, filtering, sorting, FIFO cap, overwrite
+    - `stores/useCalculatorSessionStore.test.ts` (4 tests): defaults, dimension update, wattage update, partial update
+
+### Verified Metrics (Session 29)
+
+- **Tests:** 1119 passing, 0 failures (was 1108 after Session 28)
+- **TypeScript:** clean (`typecheck-filter.mjs` -- only known RTK TS2719 filtered)
+- **Build:** success (37s)
+- **New files:** `stores/useCalculatorSessionStore.ts`, `components/views/equipment/WhatIfSandbox.tsx`, `components/views/equipment/calculators/CalculatorHistoryPanel.tsx`, `services/calculatorHistory.test.ts`, `stores/useCalculatorSessionStore.test.ts`
+- **Modified files:** `constants.ts`, `services/dbService.ts`, `Calculators.tsx`, `VentilationCalculator.tsx`, `Co2Calculator.tsx`, `LightHangingCalculator.tsx`, 5x locale equipment files
+
+---
+
+## Previous Session (2026-04-03, Session 28) -- Equipment Calculator Suite Expansion
 
 ### What Was Done (Session 28)
 

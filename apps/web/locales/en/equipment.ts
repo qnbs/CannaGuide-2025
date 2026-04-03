@@ -307,6 +307,24 @@ export const equipmentView = {
                 far: 'Light is too far -- insufficient PPFD',
             },
         },
+        sandbox: {
+            title: 'What-If Sandbox',
+            collapseHint: 'Click to expand',
+            description:
+                'Adjust room dimensions and light wattage here. Changes propagate instantly to the Ventilation, CO2, and Light Hanging calculators.',
+            width: 'Width',
+            depth: 'Depth',
+            height: 'Height',
+            lightWattage: 'Light Wattage',
+            propagateNote: 'Editing dimensions in individual calculators also updates the Sandbox.',
+            reset: 'Reset defaults',
+        },
+        history: {
+            title: 'Calculation History',
+            noEntries: 'No saved calculations yet.',
+            clear: 'Clear',
+            save: 'Save this result',
+        },
     },
     growShops: {
         region: {

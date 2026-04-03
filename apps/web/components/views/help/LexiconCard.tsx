@@ -21,6 +21,16 @@ const CATEGORY_STYLE: Record<string, { pill: string; border: string; icon: React
         border: 'hover:ring-fuchsia-500/30',
         icon: <PhosphorIcons.Sparkle className="w-3 h-3" />,
     },
+    Nutrient: {
+        pill: 'bg-green-500/10 text-green-400 ring-green-500/20',
+        border: 'hover:ring-green-500/30',
+        icon: <PhosphorIcons.Drop className="w-3 h-3" />,
+    },
+    Disease: {
+        pill: 'bg-red-500/10 text-red-400 ring-red-500/20',
+        border: 'hover:ring-red-500/30',
+        icon: <PhosphorIcons.FirstAidKit className="w-3 h-3" />,
+    },
     General: {
         pill: 'bg-sky-500/10 text-sky-400 ring-sky-500/20',
         border: 'hover:ring-sky-500/30',
@@ -28,9 +38,11 @@ const CATEGORY_STYLE: Record<string, { pill: string; border: string; icon: React
     },
 }
 
-const getCategoryKey = (category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General') => {
-    const lower = category.toLowerCase()
-    return lower === 'general' ? 'general' : `${lower}s`
+const getCategoryKey = (
+    category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'Nutrient' | 'Disease' | 'General',
+) => {
+    if (category === 'General') return 'general'
+    return `${category.toLowerCase()}s`
 }
 
 export const LexiconCard: React.FC<{ entry: LexiconEntry }> = memo(({ entry }) => {

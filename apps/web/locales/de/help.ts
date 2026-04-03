@@ -52,6 +52,8 @@ export const helpView = {
             cannabinoid: 'Cannabinoide',
             terpene: 'Terpene',
             flavonoid: 'Flavonoide',
+            nutrient: 'Naehrstoffe',
+            disease: 'Krankheiten',
             general: 'Allgemein',
         },
         cannabinoids: {
@@ -325,6 +327,155 @@ export const helpView = {
                 term: 'F1-Hybrid',
                 definition:
                     'Erste Filialgeneration-Kreuzung zwischen zwei genetisch unterschiedlichen, stabilen Elternlinien. F1-Hybride zeigen Hybridvigeur (Heterosis) mit einheitlichem Wachstum, hoeheren Ertraegen und konsistenten Cannabinoid-Profilen.',
+            },
+        },
+        nutrients: {
+            nitrogen: {
+                term: 'Stickstoff (N)',
+                definition:
+                    'Das primaere Makronaehrstoff verantwortlich fuer gruenes Blattwachstum, Chlorophyllproduktion und Proteinsynthese. Hoher Bedarf in der vegetativen Phase, reduziert in der Spaetbluete.',
+            },
+            phosphorus: {
+                term: 'Phosphor (P)',
+                definition:
+                    'Ein primaeres Makronaehrstoff unverzichtbar fuer Wurzelentwicklung, Energieuebertragung (ATP) und Bluete/Fruchtbildung. Bedarf steigt deutlich in der Bluetephase.',
+            },
+            potassium: {
+                term: 'Kalium (K)',
+                definition:
+                    'Ein primaeres Makronaehrstoff beteiligt an Wasserregulierung, Enzymaktivierung und Naehrstofftransport. Kritisch fuer allgemeine Pflanzengesundheit und Bluetenqualitaet.',
+            },
+            calcium: {
+                term: 'Kalzium (Ca)',
+                definition:
+                    'Ein sekundaeres Makronaehrstoff fuer Zellwandstruktur und -stabilitaet. In der Pflanze immobil, daher zeigt Mangel sich stets am Neuwachstum. Cal-Mag-Ergaenzungen helfen.',
+            },
+            magnesium: {
+                term: 'Magnesium (Mg)',
+                definition:
+                    'Ein sekundaeres Makronaehrstoff und das Zentralatom des Chlorophyllmolekuels. Mangel verursacht intervenoese Chlorose (Vergil bung zwischen den Blattadern) an aelteren Blaettern.',
+            },
+            sulfur: {
+                term: 'Schwefel (S)',
+                definition:
+                    'Ein sekundaeres Makronaehrstoff notwendig fuer Aminosaeuren- und Proteinsynthese. Mangel zeigt sich als Vergil bung des Neuwachstums.',
+            },
+            iron: {
+                term: 'Eisen (Fe)',
+                definition:
+                    'Ein essenzielles Mikronaehrstoff fuer Chlorophyllsynthese und Enzymfunktion. Mangel (intervenoese Chlorose an neuen Blaettern) wird am haeufigsten durch hohe pH-Werte verursacht.',
+            },
+            zinc: {
+                term: 'Zink (Zn)',
+                definition:
+                    'Ein Mikronaehrstoff beteiligt an Enzymfunktion und Wachstumshormonproduktion. Mangel verursacht verstauchte neue Blaetter mit intervenoesen Chlorosen.',
+            },
+            manganese: {
+                term: 'Mangan (Mn)',
+                definition:
+                    'Ein Mikronaehrstoff beteiligt an Photosynthese und Stickstoffstoffwechsel. Mangel aehnelt Eisenmangel, erscheint aber etwas weiter unten an der Pflanze.',
+            },
+            boron: {
+                term: 'Bor (B)',
+                definition:
+                    'Ein Mikronaehrstoff essenziell fuer Zellwandbildung und Pollenlebensfaehigkeit. Mangel verursacht abnormales, verzerrtes Neuwachstum.',
+            },
+            copper: {
+                term: 'Kupfer (Cu)',
+                definition:
+                    'Ein Mikronaehrstoff erforderlich fuer Photosynthese und Atmung. Mangel ist selten, verursacht aber dunkel blaugruene, welkende Blaetter mit Abwaertskrauellung.',
+            },
+            molybdenum: {
+                term: 'Molybdaen (Mo)',
+                definition:
+                    'Ein Mikronaehrstoff benoetigt fuer Stickstoffstoffwechsel. Mangel verursacht Schalenbildung und blassgelbe Verfaerbung, beginnend mit aelteren Blaettern.',
+            },
+            silica: {
+                term: 'Kieselsaeure (SiO2)',
+                definition:
+                    'Ein nuetzliches Mineral, das Zellwaende staerkt, Hitze- und Trockenheitstoleranz verbessert und die Widerstandsfaehigkeit gegen Schaedlinge und Krankheitserreger erhoht. Nicht technisch essenziell, aber sehr vorteilhaft.',
+            },
+            calMag: {
+                term: 'Cal-Mag-Ergaenzung',
+                definition:
+                    'Eine kombinierte Kalzium- und Magnesiumergaenzung, die verbreitet mit Umkehrosmose-/destilliertem Wasser und Coco Coir verwendet wird, wo diese Elemente natuerlich mangelhaft oder nicht verfuegbar sind.',
+            },
+            npk: {
+                term: 'NPK-Verhaeltnis',
+                definition:
+                    'Das standardisierte Verhaeltnis von Stickstoff (N), Phosphor (P) und Kalium (K) in einem Duenger. z.B. 3-1-2 fuer Vegetativ, 1-3-2 fuer Bluete.',
+            },
+            micronutrients: {
+                term: 'Mikronaehrstoffe (Spurenelemente)',
+                definition:
+                    'Naehrstoffe, die in sehr kleinen Mengen benoetigt werden, darunter Eisen, Zink, Mangan, Bor, Kupfer, Molybdaen und Chlor. Oft in chelatisierter Form in hochwertigen Naehrloesungsformeln enthalten.',
+            },
+        },
+        diseases: {
+            nutrientBurn: {
+                term: 'Naehrstoffverbrennung',
+                definition:
+                    'Tritt auf, wenn die EC/PPM der Naehrloesung zu hoch ist, was knusprig braune Blattspitzen und Aufwaertskruellung verursacht. Behandlung durch Spaelen des Mediums und Reduzierung der Duengungsstaerke.',
+            },
+            nutrientDeficiency: {
+                term: 'Naehrstoffmangel',
+                definition:
+                    'Ein Zustand, bei dem der Pflanze ein oder mehrere essentielle Naehrstoffe fehlen, was charakteristische Symptome verursacht. Wird haeufiger durch falschen pH-Wert als durch tatsaechliches Fehlen von Naehrstoffen ausgeloest.',
+            },
+            powderyMildew: {
+                term: 'Echter Mehltau',
+                definition:
+                    'Eine Pilzkrankheit, die als weisse pudrige Flecken auf Blaettern erscheint. Gedeiht bei hoher Luftfeuchtigkeit und schlechter Luftzirkulation. Behandlung mit Kaliumbicarbonat oder Neemoal.',
+            },
+            botrytis: {
+                term: 'Botrytis (Bluetengraufaeal)',
+                definition:
+                    'Ein verheerender Grauschimmelpilz, der in dichten Bluetenknospegen bei feuchten Bedingungen angreift. Sofortige Entfernung des befallenen Materials ist entscheidend um die Ausbreitung zu verhindern.',
+            },
+            rootRot: {
+                term: 'Wurzelfaule (Pythium)',
+                definition:
+                    'Ein Wasserschimmelpilz, der Wurzeln braun, schleimig und uebel riechend werden laesst. Ausgeloest durch Ueberwaesserung, schlechte Drainagen oder warme Hydro-Reservoirtemperaturen.',
+            },
+            spiderMites: {
+                term: 'Spinnmilben',
+                definition:
+                    'Winzige Spinnentiere, die Stechfraessschaeden an Blaettern und feines Gespinst erzeugen. Gedeihen in heissen, trockenen Bedingungen. Behandlung mit Neemoal oder Insektizidseife.',
+            },
+            fungusGnats: {
+                term: 'Trauermucken',
+                definition:
+                    'Kleine Fliegen, deren Larven Wurzeln in feuchter Erde schaedigen. Ein Zeichen von Ueberwaesserung. Erdoberflaeche trocknen lassen und gelbe Klebefallen gegen Erwachsene einsetzen.',
+            },
+            aphids: {
+                term: 'Blaetlaeuse',
+                definition:
+                    'Weichkoerprige Insekten, die sich am Neuwachstum ansiedeln und klebrigen Honigtau absondern. Behandlung mit Insektizidseife, Neemoal oder nuetzlichen Raubinsekten.',
+            },
+            thrips: {
+                term: 'Thripse',
+                definition:
+                    'Winzige Insekten, die Silberstreifen-Fressspuren auf Blaettern hinterlassen. Behandlung mit Spinosad oder Raubmilben. Strenge Quarantaene bei neuen Stecklingen verhindert die Einschleppung.',
+            },
+            heatStress: {
+                term: 'Hitzestress',
+                definition:
+                    'Tritt auf, wenn Blattdach-Temperaturen 28-30 Grad C ueberschreiten, was Blattrandsaufwaaertskruellung (Taco-Effekt) verursacht. Belueftung verbessern, Lichter hochhaengen und ggf. Klimaanlage verwenden.',
+            },
+            lightBurn: {
+                term: 'Lichtverbrennung',
+                definition:
+                    'Ausgebleichte weisse oder gelbe Flecken auf den obersten Blaettern, verursacht durch zu nah haengende Lichter oder excessive PPFD. Licht hochhaengen um das Problem zu beheben.',
+            },
+            phLockout: {
+                term: 'pH-Blockade',
+                definition:
+                    'Mehrere gleichzeitig auftretende Maengel, verursacht durch einen ausserhalb des optimalen Bereichs liegenden pH-Wert in der Wurzelzone. Spaelen und pH zuruecksetzen um das Problem zu loesen. Die haeufigste Ursache scheinbarer Naehrstoffmaengel.',
+            },
+            septoria: {
+                term: 'Septoria (Gelber Blattflecken)',
+                definition:
+                    'Eine Pilzkrankheit, die kleine gelbe oder braune kreisrunde Flecken an unteren Blaettern verursacht. Breitet sich aufwaerts aus. Luftzirkulation verbessern, befallene Blaetter entfernen und Benetzung der Blattoberflaehe vermeiden.',
             },
         },
     },

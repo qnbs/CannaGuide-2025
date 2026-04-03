@@ -20,12 +20,21 @@ type ManualSectionData = {
     [key: string]: ManualSectionData | string | undefined
 }
 
-type LexiconCategory = 'All' | 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General'
+type LexiconCategory =
+    | 'All'
+    | 'Cannabinoid'
+    | 'Terpene'
+    | 'Flavonoid'
+    | 'Nutrient'
+    | 'Disease'
+    | 'General'
 
 const CATEGORY_COLORS: Record<string, { ring: string; text: string; bg: string }> = {
     Cannabinoid: { ring: 'ring-emerald-500/30', text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
     Terpene: { ring: 'ring-amber-500/30', text: 'text-amber-400', bg: 'bg-amber-500/10' },
     Flavonoid: { ring: 'ring-fuchsia-500/30', text: 'text-fuchsia-400', bg: 'bg-fuchsia-500/10' },
+    Nutrient: { ring: 'ring-green-500/30', text: 'text-green-400', bg: 'bg-green-500/10' },
+    Disease: { ring: 'ring-red-500/30', text: 'text-red-400', bg: 'bg-red-500/10' },
     General: { ring: 'ring-sky-500/30', text: 'text-sky-400', bg: 'bg-sky-500/10' },
 }
 
@@ -224,9 +233,11 @@ const LexiconSection: React.FC = memo(() => {
     const [searchTerm, setSearchTerm] = useState('')
     const [activeCategory, setActiveCategory] = useState<LexiconCategory>('All')
 
-    const getCategoryKey = (category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General') => {
-        const lower = category.toLowerCase()
-        return lower === 'general' ? 'general' : `${lower}s`
+    const getCategoryKey = (
+        category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'Nutrient' | 'Disease' | 'General',
+    ) => {
+        if (category === 'General') return 'general'
+        return `${category.toLowerCase()}s`
     }
 
     const augmentedLexicon = useMemo(
@@ -292,13 +303,23 @@ const LexiconSection: React.FC = memo(() => {
         return groups
     }, [filteredLexicon])
 
-    const categories: LexiconCategory[] = ['All', 'Cannabinoid', 'Terpene', 'Flavonoid', 'General']
+    const categories: LexiconCategory[] = [
+        'All',
+        'Cannabinoid',
+        'Terpene',
+        'Flavonoid',
+        'Nutrient',
+        'Disease',
+        'General',
+    ]
 
     const categoryIcons: Record<LexiconCategory, React.ReactNode> = {
         All: <PhosphorIcons.GridFour className="w-3.5 h-3.5" />,
         Cannabinoid: <PhosphorIcons.Flask className="w-3.5 h-3.5" />,
         Terpene: <PhosphorIcons.Drop className="w-3.5 h-3.5" />,
         Flavonoid: <PhosphorIcons.Sparkle className="w-3.5 h-3.5" />,
+        Nutrient: <PhosphorIcons.Drop className="w-3.5 h-3.5" />,
+        Disease: <PhosphorIcons.FirstAidKit className="w-3.5 h-3.5" />,
         General: <PhosphorIcons.BookOpenText className="w-3.5 h-3.5" />,
     }
 

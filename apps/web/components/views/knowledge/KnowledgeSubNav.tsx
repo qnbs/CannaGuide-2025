@@ -12,7 +12,7 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
     const { t } = useTranslation()
 
     const navItems: Array<{
-        id: KnowledgeViewTab | 'placeholder'
+        id: KnowledgeViewTab
         label: string
         icon: React.ReactNode
     }> = [
@@ -27,6 +27,26 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
             icon: <PhosphorIcons.Book />,
         },
         {
+            id: KnowledgeViewTab.Lexikon,
+            label: t('knowledgeView.tabs.lexikon'),
+            icon: <PhosphorIcons.BookOpenText />,
+        },
+        {
+            id: KnowledgeViewTab.Atlas,
+            label: t('knowledgeView.tabs.atlas'),
+            icon: <PhosphorIcons.FirstAidKit />,
+        },
+        {
+            id: KnowledgeViewTab.Rechner,
+            label: t('knowledgeView.tabs.rechner'),
+            icon: <PhosphorIcons.Calculator />,
+        },
+        {
+            id: KnowledgeViewTab.Lernpfad,
+            label: t('knowledgeView.tabs.lernpfad'),
+            icon: <PhosphorIcons.GraduationCap />,
+        },
+        {
             id: KnowledgeViewTab.Archive,
             label: t('knowledgeView.tabs.archive'),
             icon: <PhosphorIcons.Archive />,
@@ -39,30 +59,30 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
     ]
 
     return (
-        <nav className="grid grid-cols-3 gap-2 sm:gap-4">
-            {navItems.map((item) => {
-                if (item.id === 'placeholder') {
-                    return <div key={item.id} className="hidden sm:block"></div>
-                }
-                return (
-                    <button
-                        type="button"
-                        key={item.id}
-                        onClick={() => onTabChange(item.id as KnowledgeViewTab)}
-                        className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
-                            ${
-                                activeTab === item.id
-                                    ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
-                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                            }`}
-                        aria-label={item.label}
-                        aria-current={activeTab === item.id ? 'page' : undefined}
-                    >
-                        <div className="w-6 h-6">{item.icon}</div>
-                        <span className="text-xs font-semibold text-center">{item.label}</span>
-                    </button>
-                )
-            })}
+        <nav
+            className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scroll-smooth snap-x"
+            aria-label={t('knowledgeView.tabs.navLabel')}
+        >
+            {navItems.map((item) => (
+                <button
+                    type="button"
+                    key={item.id}
+                    onClick={() => onTabChange(item.id)}
+                    className={`flex flex-col items-center justify-center gap-1 px-3 py-2.5 rounded-lg transition-all duration-200 snap-start shrink-0 min-w-[4.5rem]
+                        ${
+                            activeTab === item.id
+                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
+                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                        }`}
+                    aria-label={item.label}
+                    aria-current={activeTab === item.id ? 'page' : undefined}
+                >
+                    <div className="w-5 h-5">{item.icon}</div>
+                    <span className="text-[10px] font-semibold text-center leading-tight">
+                        {item.label}
+                    </span>
+                </button>
+            ))}
         </nav>
     )
 }

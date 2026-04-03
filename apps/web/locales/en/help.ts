@@ -51,6 +51,8 @@ export const helpView = {
             cannabinoid: 'Cannabinoids',
             terpene: 'Terpenes',
             flavonoid: 'Flavonoids',
+            nutrient: 'Nutrients',
+            disease: 'Diseases',
             general: 'General',
         },
         cannabinoids: {
@@ -322,6 +324,155 @@ export const helpView = {
                 term: 'F1 Hybrid',
                 definition:
                     'First filial generation cross between two genetically distinct, stable parent lines. F1 hybrids exhibit hybrid vigor (heterosis) with uniform growth, higher yields, and consistent cannabinoid profiles.',
+            },
+        },
+        nutrients: {
+            nitrogen: {
+                term: 'Nitrogen (N)',
+                definition:
+                    'The primary macronutrient responsible for leafy green growth, chlorophyll production, and protein synthesis. High demand during vegetative stage, reduced in late flower.',
+            },
+            phosphorus: {
+                term: 'Phosphorus (P)',
+                definition:
+                    'A primary macronutrient essential for root development, energy transfer (ATP), and flowering/fruiting. Demand increases significantly during the bloom phase.',
+            },
+            potassium: {
+                term: 'Potassium (K)',
+                definition:
+                    'A primary macronutrient involved in water regulation, enzyme activation, and nutrient transport. Critical for overall plant health and quality bud development.',
+            },
+            calcium: {
+                term: 'Calcium (Ca)',
+                definition:
+                    'A secondary macronutrient needed for cell wall structure and stability. Immobile in the plant, so deficiency always shows on new growth. Cal-Mag supplements address this.',
+            },
+            magnesium: {
+                term: 'Magnesium (Mg)',
+                definition:
+                    'A secondary macronutrient and the central atom of chlorophyll molecules. Deficiency causes interveinal chlorosis (yellowing between veins) on older leaves.',
+            },
+            sulfur: {
+                term: 'Sulfur (S)',
+                definition:
+                    'A secondary macronutrient required for amino acid and protein synthesis. Deficiency shows as yellowing of new growth.',
+            },
+            iron: {
+                term: 'Iron (Fe)',
+                definition:
+                    'An essential micronutrient for chlorophyll synthesis and enzyme function. Deficiency (interveinal chlorosis on new leaves) is most commonly caused by high pH.',
+            },
+            zinc: {
+                term: 'Zinc (Zn)',
+                definition:
+                    'A micronutrient involved in enzyme function and growth hormone production. Deficiency causes stunted new leaves with interveinal chlorosis.',
+            },
+            manganese: {
+                term: 'Manganese (Mn)',
+                definition:
+                    'A micronutrient involved in photosynthesis and nitrogen metabolism. Deficiency looks similar to iron deficiency but appears slightly further down the plant.',
+            },
+            boron: {
+                term: 'Boron (B)',
+                definition:
+                    'A micronutrient essential for cell wall formation and pollen viability. Deficiency causes abnormal, distorted new growth.',
+            },
+            copper: {
+                term: 'Copper (Cu)',
+                definition:
+                    'A micronutrient required for photosynthesis and respiration. Deficiency is rare but causes dark blue-green, wilting leaves with downward curl.',
+            },
+            molybdenum: {
+                term: 'Molybdenum (Mo)',
+                definition:
+                    'A micronutrient needed for nitrogen metabolism. Deficiency causes cupping and pale yellow discoloration, starting with older leaves.',
+            },
+            silica: {
+                term: 'Silica (SiO2)',
+                definition:
+                    'A beneficial mineral that strengthens cell walls, improves heat and drought tolerance, and increases resistance to pests and pathogens. Not technically essential but highly beneficial.',
+            },
+            calMag: {
+                term: 'Cal-Mag Supplement',
+                definition:
+                    'A combined Calcium and Magnesium supplement widely used with RO/distilled water and coco coir, where these elements are naturally deficient or unavailable.',
+            },
+            npk: {
+                term: 'NPK Ratio',
+                definition:
+                    'The standardized ratio of Nitrogen (N), Phosphorus (P), and Potassium (K) in a fertilizer. e.g., 3-1-2 for veg, 1-3-2 for bloom.',
+            },
+            micronutrients: {
+                term: 'Micronutrients (Trace Elements)',
+                definition:
+                    'Nutrients required in very small amounts including Iron, Zinc, Manganese, Boron, Copper, Molybdenum, and Chlorine. Often included in chelated form in quality nutrient formulas.',
+            },
+        },
+        diseases: {
+            nutrientBurn: {
+                term: 'Nutrient Burn',
+                definition:
+                    'Occurs when the nutrient solution EC/PPM is too high, causing crispy brown leaf tips and an upward curl. Treat by flushing the medium and reducing feed strength.',
+            },
+            nutrientDeficiency: {
+                term: 'Nutrient Deficiency',
+                definition:
+                    'A condition where the plant lacks one or more essential nutrients, causing characteristic symptoms. Often caused by incorrect pH rather than actual nutrient absence.',
+            },
+            powderyMildew: {
+                term: 'Powdery Mildew (PM)',
+                definition:
+                    'A fungal disease appearing as white powdery spots on leaves. Thrives in high humidity and poor airflow. Treat with potassium bicarbonate or neem oil.',
+            },
+            botrytis: {
+                term: 'Botrytis (Bud Rot)',
+                definition:
+                    'A devastating grey mold fungus that attacks inside dense buds in humid conditions. Immediate removal of affected material is critical to prevent spread.',
+            },
+            rootRot: {
+                term: 'Root Rot (Pythium)',
+                definition:
+                    'A water mold causing roots to turn brown, slimy, and foul-smelling. Caused by overwatering, poor drainage, or warm hydroponic reservoir temperatures.',
+            },
+            spiderMites: {
+                term: 'Spider Mites',
+                definition:
+                    'Tiny arachnid pests that create stippling damage on leaves and fine webbing. Thrive in hot, dry conditions. Treat with neem oil or insecticidal soap.',
+            },
+            fungusGnats: {
+                term: 'Fungus Gnats',
+                definition:
+                    'Small flies whose larvae damage roots in moist soil. A sign of overwatering. Allow soil surface to dry and use yellow sticky traps to manage adults.',
+            },
+            aphids: {
+                term: 'Aphids',
+                definition:
+                    'Soft-bodied insects that cluster on new growth and secrete sticky honeydew. Treat with insecticidal soap, neem oil, or beneficial predatory insects.',
+            },
+            thrips: {
+                term: 'Thrips',
+                definition:
+                    'Tiny insects that leave silver streak feeding scars on leaves. Treat with spinosad or predatory mites. Strict quarantine on new clones prevents introduction.',
+            },
+            heatStress: {
+                term: 'Heat Stress',
+                definition:
+                    'Occurs when canopy temperatures exceed 28-30C, causing leaf edge curl (taco-ing). Improve ventilation, raise lights, and consider air conditioning.',
+            },
+            lightBurn: {
+                term: 'Light Burn',
+                definition:
+                    'Bleached white or yellow patches on the uppermost leaves caused by lights being too close or having excessive PPFD. Raise the light to fix.',
+            },
+            phLockout: {
+                term: 'pH Lockout',
+                definition:
+                    'Multiple simultaneous deficiencies caused by the root zone pH being outside the optimal range. Flush and reset pH to fix. The most common cause of apparent deficiencies.',
+            },
+            septoria: {
+                term: 'Septoria (Yellow Leaf Spot)',
+                definition:
+                    'A fungal disease causing small yellow or brown circular spots on lower leaves. Spreads upward. Improve airflow, remove affected leaves, and avoid wetting foliage.',
             },
         },
     },

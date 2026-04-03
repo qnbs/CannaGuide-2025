@@ -8,6 +8,11 @@ export const knowledgeView = {
         breeding: 'Breeding Lab',
         sandbox: 'Sandbox',
         growTech: 'Grow Tech 2026',
+        lexikon: 'Lexicon',
+        atlas: 'Disease Atlas',
+        rechner: 'Calculator',
+        lernpfad: 'Learning Paths',
+        navLabel: 'Knowledge sections',
     },
     hub: {
         selectPlant: 'Select Plant',
@@ -229,6 +234,11 @@ export const knowledgeView = {
         phases: 'Phases',
         coreConcepts: 'Core Concepts',
         troubleshooting: 'Troubleshooting',
+        growTech: 'Grow Tech 2026',
+        genetics: 'Genetics',
+        searchPlaceholder: 'Search guides...',
+        noResults: 'No articles found for "{{term}}"',
+        readProgress: '{{read}} of {{total}} articles read',
     },
     growLog: {
         title: 'Grow-Log RAG',
@@ -238,6 +248,467 @@ export const knowledgeView = {
         analyzing: 'Analyzing...',
         startAnalysis: 'Start RAG Analysis',
         activeCorpus: 'Active plants in RAG corpus: {{count}}',
+    },
+    lexikon: {
+        searchPlaceholder: 'Search terms...',
+        filterLabel: 'Filter by category',
+        all: 'All',
+        categories: {
+            cannabinoid: 'Cannabinoids',
+            terpene: 'Terpenes',
+            flavonoid: 'Flavonoids',
+            nutrient: 'Nutrients',
+            disease: 'Diseases',
+            general: 'General',
+        },
+        noResults: 'No results for "{{term}}"',
+        resultCount: '{{count}} of {{total}} terms',
+        totalCount: '{{count}} terms',
+        noDefinition: 'No definition available.',
+    },
+    atlas: {
+        searchPlaceholder: 'Search diagnoses...',
+        allCategories: 'All categories',
+        allUrgencies: 'All urgencies',
+        noResults: 'No entries found.',
+        filterByCategory: 'Filter by category',
+        filterByUrgency: 'Filter by urgency',
+        entryCount: '{{count}} entries',
+        close: 'Close',
+        category: {
+            deficiency: 'Deficiency',
+            toxicity: 'Toxicity',
+            environmental: 'Environmental',
+            pest: 'Pests',
+            disease: 'Disease',
+        },
+        severity: {
+            low: 'Low',
+            medium: 'Medium',
+            high: 'High',
+            critical: 'Critical',
+        },
+        urgency: {
+            monitor: 'Monitor',
+            act_soon: 'Act Soon',
+            act_immediately: 'Act Immediately',
+        },
+        detail: {
+            symptoms: 'Symptoms',
+            causes: 'Causes',
+            treatment: 'Treatment',
+            prevention: 'Prevention',
+            relatedTerms: 'Related Terms',
+        },
+        diseases: {
+            'nitrogen-deficiency': {
+                name: 'Nitrogen Deficiency',
+                symptoms:
+                    'Yellowing starts on older lower leaves and progresses upward. Leaves turn pale yellow-green then fully yellow. Stunted growth.',
+                causes: 'Over-watering, low pH (locks out N), insufficient nitrogen in nutrient solution, root damage.',
+                treatment:
+                    'Flush medium with pH-correct water, then feed a nitrogen-rich nutrient solution. Correct pH to 6.0-7.0 (soil) or 5.5-6.5 (hydro).',
+                prevention: 'Monitor pH consistently, use balanced nutrients, avoid overwatering.',
+            },
+            'phosphorus-deficiency': {
+                name: 'Phosphorus Deficiency',
+                symptoms:
+                    'Purple or reddish discoloration on the undersides of leaves and stems. Dark green leaves that may curl downward. Slow growth.',
+                causes: 'Low pH (below 6.0 in soil), cold root zone temperatures (below 15C), low phosphorus in solution.',
+                treatment:
+                    'Raise pH if needed, increase grow-room temperature, supplement with phosphorus-rich bloom nutrient.',
+                prevention:
+                    'Keep root zone above 18C, maintain correct pH, use bloom nutrients when entering flower.',
+            },
+            'potassium-deficiency': {
+                name: 'Potassium Deficiency',
+                symptoms:
+                    'Crispy brown leaf edges and tips, starting on older leaves. Yellowing between the veins. Weak stems.',
+                causes: 'High pH (locks out K), excessive calcium or magnesium competing for uptake, low potassium in solution.',
+                treatment:
+                    'Check and correct pH, reduce competing nutrients if excessive, supplement potassium.',
+                prevention:
+                    'Use a complete nutrient formula with adequate potassium, especially during late flowering.',
+            },
+            'calcium-deficiency': {
+                name: 'Calcium Deficiency',
+                symptoms:
+                    'Small brown or rust-colored spots on new leaves. Twisted or crinkled new growth. Weak stems.',
+                causes: 'Low pH reducing calcium availability, use of RO/distilled water without remineralization, coco coir without buffering.',
+                treatment: 'Correct pH to 6.2-7.0, add Cal-Mag supplement, buffer coco before use.',
+                prevention: 'Buffer coco coir, use Cal-Mag with RO water, maintain correct pH.',
+            },
+            'magnesium-deficiency': {
+                name: 'Magnesium Deficiency',
+                symptoms:
+                    'Yellowing between the veins (interveinal chlorosis) on mid-to-older leaves while veins remain green. Leaves may curl upward.',
+                causes: 'Low pH, high potassium competing with magnesium uptake, insufficient magnesium in solution.',
+                treatment:
+                    'Correct pH, reduce potassium if excessive, add Cal-Mag or Epsom salt (MgSO4) -- 1 tsp/gallon foliar spray for fast results.',
+                prevention:
+                    'Use a balanced nutrient formula, include Cal-Mag supplement, maintain correct pH.',
+            },
+            'iron-deficiency': {
+                name: 'Iron Deficiency',
+                symptoms:
+                    'Bright yellow (chlorotic) leaves on very new growth, while veins remain green. Classic interveinal chlorosis pattern.',
+                causes: 'High pH (most common, especially above 7.0), waterlogged roots, excessive phosphorus or manganese competing.',
+                treatment: 'Lower pH to 6.0-6.5, improve drainage, use chelated iron supplement.',
+                prevention:
+                    'Maintain proper pH, avoid overwatering, use chelated micronutrient package.',
+            },
+            'zinc-deficiency': {
+                name: 'Zinc Deficiency',
+                symptoms:
+                    'Yellowing of new leaf tissue between veins. Leaves may appear mottled or distorted. Short internodal spacing.',
+                causes: 'High pH, excessive phosphorus inhibiting zinc uptake, low zinc in medium or solution.',
+                treatment:
+                    'Correct pH to optimal range, reduce phosphorus if excessive, supplement with zinc.',
+                prevention: 'Use a complete micronutrient formula, maintain correct pH.',
+            },
+            'sulfur-deficiency': {
+                name: 'Sulfur Deficiency',
+                symptoms:
+                    'New leaves turn uniformly pale yellow to white. Unlike nitrogen deficiency, it starts on young/new growth.',
+                causes: 'Low sulfur in nutrient solution, very high pH, recently transplanted or flushed plants.',
+                treatment:
+                    'Add a sulfur-containing nutrient (many base nutrients include it), check pH.',
+                prevention: 'Use a complete nutrient formula, avoid extreme pH.',
+            },
+            'nutrient-burn': {
+                name: 'Nutrient Burn (Toxicity)',
+                symptoms:
+                    'Leaf tips turn brown and crispy, then progress inward. Tips may curl upward. Dark glossy green coloration on leaves.',
+                causes: 'Nutrient solution EC/PPM too high, feeding too frequently, highly amended hot soil.',
+                treatment:
+                    'Flush medium with 3x the pot volume of plain pH-adjusted water. Reduce next feeding to 50% strength.',
+                prevention:
+                    'Start low with nutrients, increase gradually, measure EC/PPM regularly.',
+            },
+            'nitrogen-toxicity': {
+                name: 'Nitrogen Toxicity',
+                symptoms:
+                    'Very dark glossy green leaves. Tips may claw downward (the "claw"). Excessive leafy growth, reduced flower density.',
+                causes: 'Too much nitrogen, especially during flowering when N demand drops.',
+                treatment:
+                    'Stop nitrogen feeding, flush with plain pH-correct water, switch to bloom-ratio nutrients.',
+                prevention:
+                    'Reduce nitrogen when switching to flowering, use bloom-specific nutrients.',
+            },
+            overwatering: {
+                name: 'Overwatering',
+                symptoms:
+                    'Entire plant droops. Leaves feel firm but droop down with rounded curl. Soil stays wet for many days. Yellowing.',
+                causes: 'Watering too frequently, poor drainage, pots without holes, growing medium too dense.',
+                treatment:
+                    'Stop watering completely until pot is very light. Improve aeration around pot. Consider repotting into a better-draining mix.',
+                prevention:
+                    'Lift pots to feel weight -- water only when noticeably lighter. Use containers with good drainage holes. Allow medium to partially dry.',
+            },
+            underwatering: {
+                name: 'Underwatering',
+                symptoms:
+                    'Entire plant wilts and droops. Leaves feel thin and papery with a slight inward curl. Pot is very light.',
+                causes: 'Watering too infrequently, dry climate, fast-draining medium, large plant in small pot.',
+                treatment:
+                    'Water thoroughly until runoff drains from the bottom. Plant should recover within hours.',
+                prevention: 'Check pot weight regularly. Water when the top inch of medium is dry.',
+            },
+            'heat-stress': {
+                name: 'Heat Stress',
+                symptoms:
+                    'Leaf edges and tips curl upward like tacos. Bleached or burned patches where leaves are closest to light. Wilting despite adequate water.',
+                causes: 'Grow room temperature above 30C, lights too close to canopy, poor ventilation, hotspots.',
+                treatment:
+                    'Improve ventilation, raise lights, add air conditioning or cooler AC unit. Mist leaves in the short term.',
+                prevention:
+                    'Keep canopy temperature below 28C. Ensure adequate airflow above canopy.',
+            },
+            'light-burn': {
+                name: 'Light Burn',
+                symptoms:
+                    'Bleached white or yellow patches on uppermost leaves nearest the light. Leaves directly below the light appear bleached despite adequate nutrients.',
+                causes: 'Grow light too close to the canopy, excessive light intensity (PPFD too high).',
+                treatment:
+                    'Raise light immediately. The bleached areas will not recover, but new growth will be healthy.',
+                prevention:
+                    'Follow manufacturer minimum hanging distance guidelines, monitor PPFD.',
+            },
+            'ph-lockout': {
+                name: 'pH Lockout',
+                symptoms:
+                    'Multiple deficiency symptoms appearing simultaneously despite adequate nutrients. Plant appears generally unwell.',
+                causes: 'Nutrient solution or growing medium pH is outside the optimal absorption range for key nutrients.',
+                treatment:
+                    'Test root zone pH (runoff test). Flush medium with correctly pH-adjusted water. Resume feeding at correct pH.',
+                prevention: 'Always pH your water and nutrient solution. Test runoff pH weekly.',
+            },
+            'spider-mites': {
+                name: 'Spider Mites',
+                symptoms:
+                    'Tiny white/yellow stippling dots on leaf surfaces. Fine silky webbing between leaves and stems. Tiny moving dots visible with a loupe.',
+                causes: 'Dry, hot conditions. Infected clones or growing medium. Poor airflow.',
+                treatment:
+                    'Spray all leaf surfaces (especially undersides) with neem oil, insecticidal soap, or spinosad. Increase humidity. Repeat every 3 days for 2 weeks.',
+                prevention:
+                    'Maintain 50-60% humidity, ensure airflow, inspect new plants before introducing to grow room.',
+            },
+            'fungus-gnats': {
+                name: 'Fungus Gnats',
+                symptoms:
+                    'Small black flies around the soil surface. Wilting seedlings due to root damage from larvae. Tiny white larvae visible in soil.',
+                causes: 'Overwatering keeping soil surface moist, allowing adults to lay eggs. Peat-heavy mixes.',
+                treatment:
+                    'Let top 2 inches of soil dry completely. Use yellow sticky traps for adults. Apply beneficial nematodes or Bacillus thuringiensis israelensis (Bti) to soil.',
+                prevention:
+                    'Avoid overwatering, allow soil surface to dry, use a layer of perlite on top of soil.',
+            },
+            aphids: {
+                name: 'Aphids',
+                symptoms:
+                    'Clusters of small, soft-bodied insects on new growth and leaf undersides. Sticky honeydew residue on leaves. Curling or distorted new leaves.',
+                causes: 'Open grow space, contaminated clones, or outdoor exposure.',
+                treatment:
+                    'Blast with water, apply insecticidal soap or neem oil, introduce beneficial insects (ladybugs, lacewings).',
+                prevention: 'Maintain closed grow environment, inspect all new plants.',
+            },
+            thrips: {
+                name: 'Thrips',
+                symptoms:
+                    'Silver-white streaks or patches on leaves (feeding scars). Black fecal dots on leaf surfaces. Leaves may become bronzed.',
+                causes: 'Contaminated plants or soil, open grow environment.',
+                treatment:
+                    'Apply spinosad, neem oil, or predatory insects (Amblyseius cucumeris). Repeat regularly.',
+                prevention: 'Strict quarantine on new clones, use sticky yellow traps early.',
+            },
+            'powdery-mildew': {
+                name: 'Powdery Mildew (PM)',
+                symptoms:
+                    'White powdery spots on leaf surfaces, stems, and buds. Spots spread rapidly. Affected tissue may turn yellow and die.',
+                causes: 'High humidity (above 60%) combined with poor airflow and moderate temperatures (15-27C). Overcrowded plants.',
+                treatment:
+                    'Remove heavily affected leaves. Apply potassium bicarbonate, neem oil, or dilute hydrogen peroxide spray. Increase airflow and reduce humidity urgently.',
+                prevention:
+                    'Keep humidity below 50% in flower. Ensure strong airflow through the canopy. Avoid overcrowding.',
+            },
+            botrytis: {
+                name: 'Botrytis (Bud Rot / Grey Mold)',
+                symptoms:
+                    'Grey fuzzy mold appearing inside dense buds. Brown mushy patches in the center of colas. Grey spores visible.',
+                causes: 'High humidity (above 50% in flower), poor airflow, dense buds, temperatures below 20C with high RH.',
+                treatment:
+                    'Immediately remove and bag all affected material. Do not shake buds -- spores spread. Increase airflow and lower humidity drastically.',
+                prevention:
+                    'Keep flowering humidity 40-50%. Defoliate dense canopy for airflow. Harvest on time.',
+            },
+            'root-rot': {
+                name: 'Root Rot (Pythium/Phytophthora)',
+                symptoms:
+                    'Roots turn brown/grey and slimy instead of white and firm. Foul smell from the root zone. Plant wilts despite adequate water. In hydro: discolored nutrient solution.',
+                causes: 'Overwatering or poor drainage. Anaerobic conditions in root zone. Water temperatures above 22C in hydro. Lack of beneficial microbes.',
+                treatment:
+                    'In soil: reduce watering, improve drainage, apply beneficial bacteria/mycorrhizae. In hydro: change reservoir, lower water temp, dose with hydrogen peroxide or beneficial bacteria.',
+                prevention:
+                    'Avoid overwatering. Keep hydro reservoir below 68F/20C. Use air stones. Inoculate with beneficial microbes.',
+            },
+        },
+    },
+    rechner: {
+        title: 'Calculator Hub',
+        vpdTab: 'VPD',
+        nutrientTab: 'Nutrients',
+        phTab: 'pH / EC',
+        equipmentLink: 'For advanced calculators, see the Equipment section.',
+        vpd: {
+            temperature: 'Air Temperature',
+            humidity: 'Relative Humidity',
+            leafOffset: 'Leaf Temp. Offset',
+            celsius: '°C',
+            result: 'VPD Result',
+            statusLow: 'VPD too low -- risk of mold and slow growth.',
+            statusOk: 'VPD optimal -- ideal transpiration.',
+            statusHigh: 'VPD too high -- risk of heat stress and wilting.',
+            refTitle: 'VPD Reference Ranges',
+            rangeSeedling: 'Seedling',
+            rangeVeg: 'Vegetative',
+            rangeFlower: 'Flowering',
+            rangeLateFlower: 'Late Flower',
+        },
+        nutrient: {
+            growStage: 'Growth Stage',
+            volume: 'Water Volume (L)',
+            seedling: 'Seedling',
+            veg: 'Vegetative',
+            earlyFlower: 'Early Flower',
+            lateFlower: 'Late Flower',
+            seedlingDesc: 'Light nutrition, high N for root and leaf development.',
+            vegDesc: 'Strong N, moderate P/K for vigorous vegetative growth.',
+            earlyFlowerDesc: 'Reduce N, increase P/K as buds begin to form.',
+            lateFlowerDesc: 'Minimal N -- ripening stage, focus on P/K and flushable minerals.',
+            targetEc: 'Target EC (mS/cm)',
+            dosage: 'Approximate Dosage',
+            disclaimer: 'Values are guidelines only. Always measure EC and pH after mixing.',
+        },
+        ph: {
+            intro: 'Ideal pH and EC ranges vary by growing medium. Keeping within these ranges ensures optimal nutrient availability.',
+            medium: 'Medium',
+            phRange: 'pH Range',
+            ecRange: 'EC Range (mS/cm)',
+            note: 'Always pH your water and nutrient solution after every mix. Use a calibrated pH meter.',
+        },
+    },
+    lernpfad: {
+        title: 'Learning Paths',
+        progress: '{{done}} of {{total}} steps completed',
+        filterByLevel: 'Filter by level',
+        allLevels: 'All levels',
+        completed: 'Completed',
+        markDone: 'Mark as done',
+        resetPath: 'Reset progress',
+        noPaths: 'No learning paths available.',
+        level: {
+            beginner: 'Beginner',
+            intermediate: 'Intermediate',
+            expert: 'Expert',
+        },
+        paths: {
+            'beginner-first-grow': {
+                title: 'Your First Grow',
+                description: 'Everything you need for a successful first harvest, step by step.',
+                steps: {
+                    'step-setup': {
+                        title: 'Setup & Equipment',
+                        description:
+                            'Learn what you need to get started: tent, light, fan, pots, and medium.',
+                    },
+                    'step-germination': {
+                        title: 'Germination',
+                        description:
+                            'How to germinate seeds reliably using the paper towel method or direct-in-medium planting.',
+                    },
+                    'step-veg': {
+                        title: 'Vegetative Growth',
+                        description:
+                            'Nurturing your seedling into a strong vegetative plant. Watering, nutrients, and light basics.',
+                    },
+                    'step-flower': {
+                        title: 'Flowering',
+                        description:
+                            'Triggering and managing the flowering phase. Light schedule, nutrient switch, and bud development.',
+                    },
+                    'step-harvest': {
+                        title: 'Harvest & Cure',
+                        description:
+                            'Reading trichomes, timing your harvest, and the crucial drying and curing process.',
+                    },
+                    'step-vpd-practice': {
+                        title: 'Practice VPD',
+                        description:
+                            'Use the VPD Calculator to understand how temperature and humidity affect your plant.',
+                    },
+                },
+            },
+            'environment-mastery': {
+                title: 'Environment Mastery',
+                description: 'Deep dive into temperature, humidity, VPD, CO2, and airflow.',
+                steps: {
+                    'step-env-basics': {
+                        title: 'Temperature & Humidity Basics',
+                        description:
+                            'Optimal ranges for each growth stage and how to control them.',
+                    },
+                    'step-vpd-deep': {
+                        title: 'VPD Deep Dive',
+                        description:
+                            'Understanding Vapor Pressure Deficit and using it to maximize plant health and yield.',
+                    },
+                    'step-airflow': {
+                        title: 'Airflow & CO2',
+                        description:
+                            'Why airflow matters, how to set up circulation and exhaust fans, and CO2 basics.',
+                    },
+                    'step-env-calc': {
+                        title: 'Calculator Practice',
+                        description:
+                            'Run the VPD calculator across different stages to build intuition for ideal conditions.',
+                    },
+                },
+            },
+            'nutrient-mastery': {
+                title: 'Nutrient Mastery',
+                description: 'Master macro and micronutrients, EC, pH, and deficiency diagnosis.',
+                steps: {
+                    'step-macros': {
+                        title: 'Macro Nutrients (N-P-K)',
+                        description:
+                            'The role of Nitrogen, Phosphorus, and Potassium through all growth stages.',
+                    },
+                    'step-micros': {
+                        title: 'Secondary & Micro Nutrients',
+                        description:
+                            'Calcium, Magnesium, Sulfur, Iron, Zinc and their deficiency symptoms.',
+                    },
+                    'step-ec-ph': {
+                        title: 'EC, PPM & pH',
+                        description:
+                            'How to measure and control the strength and pH of your nutrient solution.',
+                    },
+                    'step-deficiency-atlas': {
+                        title: 'Deficiency Atlas',
+                        description:
+                            'Browse the Disease Atlas to identify and treat nutrient deficiencies.',
+                    },
+                    'step-nutrient-calc': {
+                        title: 'Nutrient Calculator',
+                        description:
+                            'Use the Nutrient Ratio calculator to plan your feeds by growth stage.',
+                    },
+                },
+            },
+            'pest-disease-control': {
+                title: 'Pest & Disease Control',
+                description: 'Identify, treat, and prevent the most common pests and diseases.',
+                steps: {
+                    'step-plant-hygiene': {
+                        title: 'Plant Hygiene & Prevention',
+                        description:
+                            'Cleaning protocols, quarantine for new plants, and environmental prevention.',
+                    },
+                    'step-pest-id': {
+                        title: 'Pest Identification',
+                        description:
+                            'Learn to identify spider mites, fungus gnats, aphids, and thrips early.',
+                    },
+                    'step-disease-id': {
+                        title: 'Disease Identification',
+                        description:
+                            'Recognizing powdery mildew, botrytis, and root rot before they destroy a harvest.',
+                    },
+                },
+            },
+            'advanced-training': {
+                title: 'Advanced Plant Training',
+                description:
+                    'LST, topping, super cropping, SCROG, and manifolding for maximum yield.',
+                steps: {
+                    'step-why-train': {
+                        title: 'Why Train Plants?',
+                        description:
+                            'Understanding apical dominance and how training breaks it for better yields.',
+                    },
+                    'step-lst-topping': {
+                        title: 'LST & Topping',
+                        description:
+                            'Low-Stress Training and topping fundamentals with timing and technique details.',
+                    },
+                    'step-scrog-manifold': {
+                        title: 'SCROG & Manifolding',
+                        description:
+                            'Advanced techniques for creating a perfectly even canopy with maximum bud sites.',
+                    },
+                },
+            },
+        },
     },
     growTech: {
         title: 'Cannabis Grow Technologies 2026',

@@ -4,7 +4,7 @@ import knowledgeReducer, {
     setKnowledgeProgress,
 } from '@/stores/slices/knowledgeSlice'
 
-const initial = { knowledgeProgress: {} }
+const initial = { knowledgeProgress: {}, learningPathProgress: {} }
 
 describe('knowledgeSlice', () => {
     it('returns initial state', () => {

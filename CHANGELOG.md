@@ -8,14 +8,23 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Features
 
+- **equipment:** `TimerScheduleCalculator` -- 13th calculator; optimal on/off photoperiod per growth stage (seedling/veg/flower/autoflower); optional PPFD + DLI inputs; DLI status color-coding; history save; i18n EN/DE/ES/FR/NL
+- **equipment:** `calculateTimerSchedule` added to `equipmentCalculatorService.ts` -- stage defaults (18/6, 12/12, 20/4), DLI-driven override formula, dliStatus classification
+- **utils:** `unitConversion.ts` -- 18 pure Metric<->Imperial conversion functions (temperature, length, volume, pressure, illuminance, flow, mass); `UnitSystem = 'metric' | 'imperial'`
+- **hooks:** `useUnitSystem.ts` -- Returns `UnitSystem` from Redux language setting (framework for future imperial support)
+- **types:** `calculatorTypes.ts` -- Re-exports all schemas and types from both calculator services + `UnitSystem`
+- **i18n:** `timerSchedule` block added to all 5 locales (`en/de/es/fr/nl/equipment.ts`) -- 16 keys each
+- **fix(i18n):** NL `knowledge.ts` -- 4 occurrences of `'Arpeen'` corrected to `'Terpeen'` (terpeneEntourage + lightSpectrum keys)
 - **i18n:** ES/FR/NL full `knowledgeView.rechner.*` section -- all 8 calculator sub-namespaces (vpd, transpiration, ecTds, lightDli, cannabinoid, terpeneEntourage, waterActivity, leafConductance) with per-calculator labels, units, status, simulate, explainAi, deepDive keys
 - **testing:** Stryker mutation config extended to cover `equipmentCalculatorService.ts`, `knowledgeCalculatorService.ts`, `knowledgeRagService.ts` in addition to Redux slices
 
 ### Tests
 
+- **unitConversion.test.ts** -- 27 tests covering all 18 conversion functions with round-trip validation
+- **equipmentCalculatorService.test.ts** -- 15 new TimerSchedule tests (schema, defaults, DLI, status, clamping)
 - **SparklineChart.ct.tsx** -- 11 Playwright Component Tests: SVG role/label, polyline, empty-state, showArea, showDots, highlightLast, custom color/height, single point, x-axis labels
 - **visual-regression.e2e.ts** -- 2 new screenshot tests per theme: `calculator-hub-vpd-{theme}.png`, `calculator-hub-transpiration-{theme}.png` (4 new baselines total)
-- Total: **1182 tests passing** (113 test files)
+- Total: **1228 tests passing** (114 test files)
 
 ---
 

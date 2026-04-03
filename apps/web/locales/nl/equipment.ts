@@ -336,6 +336,34 @@ export const equipmentView = {
             total: 'Totaal budget',
             currency: 'EUR',
         },
+        timerSchedule: {
+            title: 'Licht Timer Schema Calculator',
+            description:
+                'Bereken het aanbevolen aan/uit-rooster voor elke groeifase. Voer optioneel PPFD en een doel-DLI in om de optimale lichturen per dag te berekenen.',
+            growthStage: 'Groeifase',
+            stages: {
+                seedling: 'Zaailing',
+                veg: 'Vegetatief',
+                flower: 'Bloei',
+                autoflower: 'Autoflower',
+            },
+            ppfd: 'PPFD op het bladerdak',
+            targetDli: 'Doel-DLI',
+            optional: 'optioneel',
+            recommended: 'Aanbevolen schema',
+            onHours: 'Licht aan',
+            offHours: 'Donkerperiode',
+            hoursUnit: 'u/dag',
+            dli: 'Berekende DLI',
+            dliStatus: 'DLI-status',
+            dliStatuses: {
+                low: 'Onder optimaal bereik',
+                optimal: 'Binnen optimaal bereik',
+                high: 'Boven optimaal bereik',
+                unknown: '--',
+            },
+            dliRangeNote: 'Aanbevolen DLI-bereik voor deze fase: {{min}}-{{max}} mol/m2/dag.',
+        },
         aiPanel: {
             title: 'Snelle AI-aanbeveling',
             description:

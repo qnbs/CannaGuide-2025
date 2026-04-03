@@ -2,9 +2,71 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-07, Session 33) -- i18n ES/FR/NL Calculator Keys, Stryker Mutation Coverage, Playwright CT + VR (Execution 6)
+## Latest Session (2026-04-07, Session 34) -- Quality Audit: TimerScheduleCalculator, unitConversion utils, NL typos (Execution 7)
 
-**Status: v1.3.0-beta. Execution 6 complete (final planned execution). i18n ES/FR/NL rechner sections added, Stryker extended to calculator services, SparklineChart CT + CalculatorHub VR tests added. 1182 tests passing. TypeScript clean.**
+**Status: v1.3.0-beta. Comprehensive quality review of all 6 prior executions. 7 deficiencies identified and fixed. 1228 tests passing. TypeScript clean.**
+
+### What Was Done (Session 34)
+
+1. **Identified all deficiencies** from 6-execution Calculator Suite plan:
+    - 3 missing infrastructure files (`unitConversion.ts`, `useUnitSystem.ts`, `calculatorTypes.ts`)
+    - Missing TimerScheduleCalculator (4th Execution-1 calculator)
+    - No timerSchedule formula in `equipmentCalculatorService.ts`
+    - No timerSchedule i18n in any of the 5 locale files
+    - NL `knowledge.ts` had `'Arpeen'` typo in 4 places (should be `'Terpeen'`)
+
+2. **Created `apps/web/utils/unitConversion.ts`**:
+    - `UnitSystem = 'metric' | 'imperial'`
+    - 18 pure conversion functions: temperature (C/F), length (cm/in, m/ft), volume (m3/ft3, l/gal), pressure (kPa/psi), illuminance (lux/fc), flow (m3h/cfm), mass (g/oz)
+    - 27 unit tests in `unitConversion.test.ts`
+
+3. **Created `apps/web/hooks/useUnitSystem.ts`**:
+    - Returns `UnitSystem` based on Redux language setting
+    - Framework for future imperial unit support
+
+4. **Created `apps/web/types/calculatorTypes.ts`**:
+    - Re-exports all schemas and types from both calculator services + `UnitSystem`
+    - Single import point for all calculator-related types
+
+5. **Added `calculateTimerSchedule` to `equipmentCalculatorService.ts`**:
+    - `TimerGrowthStage`, `TimerScheduleInputSchema` (Zod), `TimerScheduleResult`
+    - `STAGE_DEFAULTS`: seedling 18/6 (DLI 10-20), veg 18/6 (DLI 20-40), flower 12/12 (DLI 30-55), autoflower 20/4 (DLI 25-45)
+    - DLI-driven override: `onHours = targetDLI * 1e6 / (PPFD * 3600)` clamped to [1,24]
+    - 15 new timer tests covering all paths
+
+6. **Created `TimerScheduleCalculator.tsx`** (`apps/web/components/views/equipment/calculators/`):
+    - Stage select, optional PPFD + DLI inputs
+    - Schedule card (big on/off display), DLI with color-coded status, history save
+
+7. **Updated `Calculators.tsx`** to 13 calculators (added timerSchedule with Sun icon, before budget)
+
+8. **Added `timerSchedule` i18n block to all 5 locales** (`locales/{en,de,es,fr,nl}/equipment.ts`):
+    - 16 keys per locale: title, description, growthStage, stages.{4}, ppfd, targetDli, optional, recommended, onHours, offHours, hoursUnit, dli, dliStatus, dliStatuses.{4}, dliRangeNote
+
+9. **Fixed NL `locales/nl/knowledge.ts`** (4 occurrences of `'Arpeen'` -> `'Terpeen'`):
+    - `terpeneName`, `addTerpene`, `learnMore`, `terpeneBoost`
+
+### Verified Metrics (Session 34)
+
+- Tests: **1228 passing, 0 failures** (114 test files)
+- TypeScript: **clean** (only known RTK TS2719 filtered)
+- Total calculators: Equipment 13 (was 12), Knowledge 8 (unchanged)
+- All 5 locales have complete timerSchedule i18n
+
+### Planned Executions
+
+All 6 original executions are now fully complete with all deficiencies resolved. No further mandatory executions.
+
+Optional follow-up candidates:
+
+- Generate Stryker mutation report and tune thresholds per service
+- Add ES/FR/NL translations to remaining namespaces (settings, strains, help: ~100 keys each)
+- Add Lighthouse CI budget for Equipment view via `lighthouserc.json` custom path assertion
+- Add Playwright CT tests for `TimerScheduleCalculator`
+
+---
+
+## Previous Session (2026-04-07, Session 33) -- i18n ES/FR/NL Calculator Keys, Stryker Mutation Coverage, Playwright CT + VR (Execution 6)
 
 ### What Was Done (Session 33)
 

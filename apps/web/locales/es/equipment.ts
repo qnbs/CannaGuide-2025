@@ -340,6 +340,34 @@ export const equipmentView = {
             total: 'Presupuesto total',
             currency: 'EUR',
         },
+        timerSchedule: {
+            title: 'Calculadora de Horario de Luz',
+            description:
+                'Obtiene el horario encendido/apagado recomendado para cada etapa de crecimiento. Opcionalmente ingresa PPFD y un DLI objetivo para calcular las horas de luz optimas.',
+            growthStage: 'Etapa de Crecimiento',
+            stages: {
+                seedling: 'Semillero',
+                veg: 'Vegetativo',
+                flower: 'Floracion',
+                autoflower: 'Autofloreciente',
+            },
+            ppfd: 'PPFD en el dosel',
+            targetDli: 'DLI objetivo',
+            optional: 'opcional',
+            recommended: 'Horario recomendado',
+            onHours: 'Luz encendida',
+            offHours: 'Periodo oscuro',
+            hoursUnit: 'h/dia',
+            dli: 'DLI calculado',
+            dliStatus: 'Estado DLI',
+            dliStatuses: {
+                low: 'Por debajo del rango optimo',
+                optimal: 'Dentro del rango optimo',
+                high: 'Por encima del rango optimo',
+                unknown: '--',
+            },
+            dliRangeNote: 'Rango DLI recomendado para esta etapa: {{min}}-{{max}} mol/m2/dia.',
+        },
         aiPanel: {
             title: 'Recomendacion rapida IA',
             description:

@@ -339,6 +339,34 @@ export const equipmentView = {
             total: 'Total Budget',
             currency: 'EUR',
         },
+        timerSchedule: {
+            title: 'Light Timer Schedule Calculator',
+            description:
+                'Get the recommended on/off photoperiod for each growth stage. Optionally enter PPFD and a target DLI to compute the optimal daily light hours.',
+            growthStage: 'Growth Stage',
+            stages: {
+                seedling: 'Seedling',
+                veg: 'Vegetative',
+                flower: 'Flowering',
+                autoflower: 'Autoflower',
+            },
+            ppfd: 'PPFD at Canopy',
+            targetDli: 'Target DLI',
+            optional: 'optional',
+            recommended: 'Recommended Schedule',
+            onHours: 'Light On',
+            offHours: 'Dark Period',
+            hoursUnit: 'h/day',
+            dli: 'Computed DLI',
+            dliStatus: 'DLI Status',
+            dliStatuses: {
+                low: 'Below optimal range',
+                optimal: 'Within optimal range',
+                high: 'Above optimal range',
+                unknown: '--',
+            },
+            dliRangeNote: 'Recommended DLI range for this stage: {{min}}-{{max}} mol/m2/day.',
+        },
         aiPanel: {
             title: 'AI Quick Recommendation',
             description:

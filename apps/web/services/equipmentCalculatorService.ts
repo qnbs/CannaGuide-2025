@@ -234,3 +234,88 @@ export function calculateLightHanging(input: LightHangingInput): LightHangingRes
 
     return { recommendedCm, minCm, maxCm, ppfdAtRecommended, dli18h, status }
 }
+
+// ---------------------------------------------------------------------------
+// Timer Schedule Calculator
+// ---------------------------------------------------------------------------
+
+export type TimerGrowthStage = 'seedling' | 'veg' | 'flower' | 'autoflower'
+
+export const TimerScheduleInputSchema = z.object({
+    growthStage: z.enum(['seedling', 'veg', 'flower', 'autoflower']),
+    /** Optional DLI target (mol/m2/day) -- when combined with ppfd, computes optimal on-hours */
+    targetDliMolPerM2: z.number().min(1).max(80).optional(),
+    /** PPFD at canopy (umol/m2/s) -- required for DLI-driven calculation */
+    ppfd: z.number().min(50).max(2000).optional(),
+})
+
+export type TimerScheduleInput = z.infer<typeof TimerScheduleInputSchema>
+
+/** Stage-default schedules (onHours, offHours, recommendedDliMin, recommendedDliMax) */
+const STAGE_DEFAULTS: Record<
+    TimerGrowthStage,
+    { onHours: number; offHours: number; dliMin: number; dliMax: number }
+> = {
+    seedling: { onHours: 18, offHours: 6, dliMin: 10, dliMax: 20 },
+    veg: { onHours: 18, offHours: 6, dliMin: 20, dliMax: 40 },
+    flower: { onHours: 12, offHours: 12, dliMin: 30, dliMax: 55 },
+    autoflower: { onHours: 20, offHours: 4, dliMin: 25, dliMax: 45 },
+}
+
+export interface TimerScheduleResult {
+    /** Light-on hours per day */
+    onHours: number
+    /** Dark hours per day */
+    offHours: number
+    /** Computed DLI at given PPFD, or null if PPFD not provided */
+    dli: number | null
+    /** Human-readable schedule string, e.g. "18/6 (18h on / 6h off)" */
+    schedule: string
+    /** Whether DLI falls within the stage-optimal range */
+    dliStatus: 'low' | 'optimal' | 'high' | 'unknown'
+    /** Recommended DLI range for the given growth stage */
+    recommendedDliRange: { min: number; max: number }
+}
+
+export function calculateTimerSchedule(input: TimerScheduleInput): TimerScheduleResult {
+    const validated = TimerScheduleInputSchema.parse(input)
+    const { growthStage, targetDliMolPerM2, ppfd } = validated
+
+    const stageDefaults = STAGE_DEFAULTS[growthStage]
+    let onHours = stageDefaults.onHours
+    let offHours = stageDefaults.offHours
+
+    // DLI-driven override when both arguments are provided
+    if (targetDliMolPerM2 !== undefined && ppfd !== undefined && ppfd > 0) {
+        // Solve: DLI = PPFD * onHours * 3600 / 1_000_000
+        //   =>  onHours = DLI * 1_000_000 / (PPFD * 3600)
+        const computed = Math.round((targetDliMolPerM2 * 1_000_000) / (ppfd * 3600))
+        onHours = Math.min(24, Math.max(1, computed))
+        offHours = 24 - onHours
+    }
+
+    const dli =
+        ppfd !== undefined ? Math.round(((ppfd * onHours * 3600) / 1_000_000) * 100) / 100 : null
+
+    const schedule = `${onHours}/${offHours} (${onHours}h on / ${offHours}h off)`
+
+    let dliStatus: TimerScheduleResult['dliStatus']
+    if (dli === null) {
+        dliStatus = 'unknown'
+    } else if (dli < stageDefaults.dliMin) {
+        dliStatus = 'low'
+    } else if (dli > stageDefaults.dliMax) {
+        dliStatus = 'high'
+    } else {
+        dliStatus = 'optimal'
+    }
+
+    return {
+        onHours,
+        offHours,
+        dli,
+        schedule,
+        dliStatus,
+        recommendedDliRange: { min: stageDefaults.dliMin, max: stageDefaults.dliMax },
+    }
+}

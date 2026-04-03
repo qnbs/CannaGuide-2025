@@ -11,6 +11,7 @@ import { EcPhPlannerCalculator } from './calculators/EcPhPlannerCalculator'
 import { Co2Calculator } from './calculators/Co2Calculator'
 import { HumidityDeficitCalculator } from './calculators/HumidityDeficitCalculator'
 import { LightHangingCalculator } from './calculators/LightHangingCalculator'
+import { TimerScheduleCalculator } from './calculators/TimerScheduleCalculator'
 import { BudgetCalculator } from './calculators/BudgetCalculator'
 import { WhatIfSandbox } from './WhatIfSandbox'
 import { AiEquipmentPanel } from './AiEquipmentPanel'
@@ -28,6 +29,7 @@ type CalculatorType =
     | 'co2'
     | 'humidityDeficit'
     | 'lightHanging'
+    | 'timerSchedule'
     | 'budget'
 
 const calculatorList: {
@@ -101,6 +103,12 @@ const calculatorList: {
         Component: LightHangingCalculator,
         icon: <PhosphorIcons.Ruler />,
         titleKey: 'equipmentView.calculators.lightHanging.title',
+    },
+    {
+        id: 'timerSchedule',
+        Component: TimerScheduleCalculator,
+        icon: <PhosphorIcons.Sun />,
+        titleKey: 'equipmentView.calculators.timerSchedule.title',
     },
     {
         id: 'budget',

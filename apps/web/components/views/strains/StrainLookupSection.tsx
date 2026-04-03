@@ -31,6 +31,8 @@ import {
     getFuzzySuggestions,
     type LookupStrainResult,
     type ConfidenceSource,
+    type FlavonoidDataPoint,
+    type TerpeneDataPoint,
 } from '@/services/strainLookupService'
 
 // ---------------------------------------------------------------------------
@@ -295,6 +297,243 @@ const CannabinoidBar: React.FC<CannabinoidBarProps> = memo(({ cannabinoids }) =>
 CannabinoidBar.displayName = 'CannabinoidBar'
 
 // ---------------------------------------------------------------------------
+// Entourage score ring
+// ---------------------------------------------------------------------------
+
+interface EntourageScoreProps {
+    score: number
+    diversity?: number
+}
+
+const EntourageScore: React.FC<EntourageScoreProps> = memo(({ score, diversity }) => {
+    const { t } = useTranslation()
+    const clampedScore = Math.max(0, Math.min(100, score))
+    const ringColor = clampedScore >= 70 ? '#10b981' : clampedScore >= 45 ? '#f59e0b' : '#ef4444'
+    const dashArray = 2 * Math.PI * 22 // circumference of r=22
+    const dashOffset = dashArray * (1 - clampedScore / 100)
+    const label =
+        clampedScore >= 70
+            ? t('strainLookup.entourage.excellent', 'Excellent')
+            : clampedScore >= 45
+              ? t('strainLookup.entourage.moderate', 'Moderate')
+              : t('strainLookup.entourage.low', 'Low')
+
+    return (
+        <div className="flex flex-col items-center gap-1">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                {t('strainLookup.entourage.title', 'Entourage Score')}
+            </p>
+            <div className="relative w-16 h-16">
+                <svg viewBox="0 0 52 52" className="w-full h-full -rotate-90">
+                    <circle
+                        cx="26"
+                        cy="26"
+                        r="22"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.05)"
+                        strokeWidth="5"
+                    />
+                    <circle
+                        cx="26"
+                        cy="26"
+                        r="22"
+                        fill="none"
+                        stroke={ringColor}
+                        strokeWidth="5"
+                        strokeDasharray={dashArray}
+                        strokeDashoffset={dashOffset}
+                        strokeLinecap="round"
+                        style={{ transition: 'stroke-dashoffset 0.7s ease' }}
+                    />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-slate-100">
+                    {clampedScore}
+                </span>
+            </div>
+            <span className="text-xs font-semibold" style={{ color: ringColor }}>
+                {label}
+            </span>
+            {diversity !== undefined && diversity > 0 && (
+                <span className="text-[10px] text-slate-500">H={diversity.toFixed(2)}</span>
+            )}
+        </div>
+    )
+})
+EntourageScore.displayName = 'EntourageScore'
+
+// ---------------------------------------------------------------------------
+// Flavonoid bar chart
+// ---------------------------------------------------------------------------
+
+interface FlavonoidBarProps {
+    flavonoids: FlavonoidDataPoint[]
+}
+
+const FLAVONOID_COLORS: Record<string, string> = {
+    'Cannflavin A': '#f59e0b',
+    'Cannflavin B': '#f97316',
+    Quercetin: '#84cc16',
+    Apigenin: '#22d3ee',
+    Luteolin: '#a78bfa',
+    Kaempferol: '#fb7185',
+}
+
+const FlavonoidBar: React.FC<FlavonoidBarProps> = memo(({ flavonoids }) => {
+    const { t } = useTranslation()
+    if (flavonoids.length === 0) return null
+
+    const data = flavonoids.map((f) => ({
+        name: f.name.replace('Cannflavin ', 'CF-'),
+        fullName: f.name,
+        score: f.entourageScore ?? 0,
+    }))
+
+    return (
+        <div className="flex flex-col">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                {t('strainLookup.flavonoids', 'Flavonoids')}
+            </p>
+            <ResponsiveContainer width="100%" height={Math.max(80, data.length * 28)}>
+                <BarChart
+                    data={data}
+                    layout="vertical"
+                    margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
+                >
+                    <XAxis
+                        type="number"
+                        domain={[0, 10]}
+                        tick={{ fill: '#64748b', fontSize: 10 }}
+                        tickFormatter={(v: number) => v.toFixed(0)}
+                    />
+                    <YAxis
+                        type="category"
+                        dataKey="name"
+                        tick={{ fill: '#94a3b8', fontSize: 11 }}
+                        width={52}
+                    />
+                    <Tooltip
+                        formatter={(
+                            value: unknown,
+                            _name: unknown,
+                            props: { payload?: { fullName?: string } },
+                        ) => {
+                            const v = typeof value === 'number' ? value : 0
+                            const fname = props.payload?.fullName ?? ''
+                            return [`${v.toFixed(1)} / 10`, fname]
+                        }}
+                        contentStyle={{
+                            background: '#1e293b',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 8,
+                            fontSize: 12,
+                        }}
+                    />
+                    <Bar dataKey="score" radius={[0, 4, 4, 0]}>
+                        {data.map((d, i) => (
+                            <Cell key={i} fill={FLAVONOID_COLORS[d.fullName] ?? '#6366f1'} />
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    )
+})
+FlavonoidBar.displayName = 'FlavonoidBar'
+
+// ---------------------------------------------------------------------------
+// Terpene detail list (aromaNotes + interactions)
+// ---------------------------------------------------------------------------
+
+interface TerpeneDetailListProps {
+    terpenes: TerpeneDataPoint[]
+}
+
+const TerpeneDetailList: React.FC<TerpeneDetailListProps> = memo(({ terpenes }) => {
+    const { t } = useTranslation()
+    const dominant = terpenes
+        .filter((tp) => tp.role === 'dominant' || tp.role === 'secondary')
+        .slice(0, 3)
+    if (dominant.length === 0) return null
+
+    return (
+        <div className="space-y-2">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                {t('strainLookup.terpeneDetails', 'Terpene Insights')}
+            </p>
+            {dominant.map((tp) => (
+                <div
+                    key={tp.name}
+                    className="rounded-lg bg-slate-800/60 border border-white/5 p-3 space-y-1.5"
+                >
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-slate-200">{tp.name}</span>
+                        <div className="flex items-center gap-1.5">
+                            {tp.role && (
+                                <span
+                                    className={cn(
+                                        'text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
+                                        tp.role === 'dominant'
+                                            ? 'text-emerald-400 bg-emerald-400/10'
+                                            : 'text-slate-400 bg-slate-400/10',
+                                    )}
+                                >
+                                    {tp.role}
+                                </span>
+                            )}
+                            {tp.entourageScore !== undefined && (
+                                <span className="text-[10px] text-amber-400 font-semibold">
+                                    EES {tp.entourageScore}/10
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    {tp.aromaNotes && tp.aromaNotes.length > 0 && (
+                        <p className="text-xs text-slate-400">{tp.aromaNotes.join(', ')}</p>
+                    )}
+                    {tp.primaryEffects && tp.primaryEffects.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                            {tp.primaryEffects.map((eff) => (
+                                <span
+                                    key={eff}
+                                    className="text-[10px] px-1.5 py-0.5 rounded bg-primary-500/10 text-primary-400 border border-primary-500/15"
+                                >
+                                    {eff}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                    {tp.cannabinoidInteractions && tp.cannabinoidInteractions.length > 0 && (
+                        <div className="space-y-0.5 pt-1 border-t border-white/5">
+                            {tp.cannabinoidInteractions.slice(0, 2).map((ix, i) => (
+                                <div
+                                    key={i}
+                                    className="flex items-start gap-1.5 text-[10px] text-slate-400"
+                                >
+                                    <span
+                                        className={cn(
+                                            'shrink-0 font-semibold',
+                                            ix.strength === 'high'
+                                                ? 'text-emerald-400'
+                                                : ix.strength === 'medium'
+                                                  ? 'text-amber-400'
+                                                  : 'text-slate-500',
+                                        )}
+                                    >
+                                        {ix.cannabinoid}
+                                    </span>
+                                    <span>{ix.effect}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+    )
+})
+TerpeneDetailList.displayName = 'TerpeneDetailList'
+
+// ---------------------------------------------------------------------------
 // Genetics tree (simple parent display)
 // ---------------------------------------------------------------------------
 
@@ -478,10 +717,35 @@ const ResultCard: React.FC<ResultCardProps> = memo(
                         </div>
                     )}
 
+                    {/* Entourage score + flavonoid row */}
+                    {(result.totalEntourageScore !== undefined ||
+                        (result.flavonoids && result.flavonoids.length > 0)) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-white/5 pt-4 items-start">
+                            {result.totalEntourageScore !== undefined && (
+                                <div className="flex justify-center sm:justify-start">
+                                    <EntourageScore
+                                        score={result.totalEntourageScore}
+                                        diversity={result.terpeneDiversity}
+                                    />
+                                </div>
+                            )}
+                            {result.flavonoids && result.flavonoids.length > 0 && (
+                                <div className="sm:col-span-2">
+                                    <FlavonoidBar flavonoids={result.flavonoids} />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Terpene detail insights */}
+                    {hasTerpenes &&
+                        result.terpenes.some((tp) => tp.aromaNotes && tp.aromaNotes.length > 0) && (
+                            <TerpeneDetailList terpenes={result.terpenes} />
+                        )}
+
                     {/* Genetics */}
                     {result.genetics && <GeneticsTree genetics={result.genetics} />}
 
-                    {/* Action buttons */}
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
                         {isInLibrary ? (
                             <span className="text-sm text-emerald-400 flex items-center gap-1.5 px-3">

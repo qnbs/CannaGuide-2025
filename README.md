@@ -139,7 +139,7 @@ AI equipment configurator recommending optimal setups based on grow parameters. 
 
 ### Knowledge
 
-AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials. **Grow Tech 2026** hub covering dynamic LED lighting, sensor/IoT/VPD automation, AI digital twins, aeroponics, tissue culture, smart grow boxes, and sustainability/post-harvest innovations.
+AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials. **Grow Tech 2026** hub covering dynamic LED lighting, sensor/IoT/VPD automation, AI digital twins, aeroponics, tissue culture, smart grow boxes, and sustainability/post-harvest innovations. **Lexikon 2.0**: searchable 89-term glossary across 6 categories (General, Cannabinoid, Terpene, Flavonoid, Nutrient, Disease). **Disease Atlas**: 22-entry plant diagnostic reference covering deficiencies, toxicities, pests, and diseases, each with urgency classification, symptoms, causes, treatment, and prevention guides. **Calculator Hub**: VPD, Nutrient Ratio, and pH/EC calculators in a unified tabbed view. **Learning Paths**: 5 curated step-by-step grow education programs (Beginner First Grow, Environment Mastery, Nutrient Mastery, Pest & Disease Control, Advanced Training) with Redux-tracked per-step progress.
 
 ### Settings
 
@@ -147,7 +147,7 @@ AI Mentor chat with RAG (retrieval-augmented generation) pulling context from th
 
 ### Help
 
-Searchable FAQ, grower's lexicon (200+ terms), visual growing guides, user manual, legal information. All bilingual EN/DE.
+Searchable FAQ, grower's lexicon (200+ terms covering cannabinoids, terpenes, flavonoids, nutrients, diseases), visual growing guides, user manual, legal information. All bilingual EN/DE.
 
 ---
 
@@ -572,7 +572,7 @@ KI-Ausrüstungskonfigurator mit optimalen Setup-Empfehlungen basierend auf Grow-
 
 ### Wissen
 
-KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials. **Grow Tech 2026** Hub mit dynamischer LED-Beleuchtung, Sensor/IoT/VPD-Automatisierung, KI-Digital-Twins, Aeroponik, Gewebekultur, Smart Grow Boxes und Nachhaltigkeit/Post-Harvest-Innovationen.
+KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials. **Grow Tech 2026** Hub mit dynamischer LED-Beleuchtung, Sensor/IoT/VPD-Automatisierung, KI-Digital-Twins, Aeroponik, Gewebekultur, Smart Grow Boxes und Nachhaltigkeit/Post-Harvest-Innovationen. **Lexikon 2.0**: Durchsuchbares 89-Begriffe-Glossar in 6 Kategorien (Allgemein, Cannabinoide, Terpene, Flavonoide, Naehrstoffe, Krankheiten). **Krankheits-Atlas**: 22-Eintrag Pflanzendiagnose-Referenz (Maengel, Toxizitaeten, Schaedlinge, Krankheiten) mit Dringlichkeitsklassifikation, Symptomen, Ursachen, Behandlung und Praevention. **Rechner-Hub**: VPD-, Naehrstoffverhaeltnis- und pH/EC-Rechner in einer einheitlichen Ansicht. **Lernpfade**: 5 strukturierte Schritt-fuer-Schritt-Bildungsprogramme (Erstes Grow, Umgebungsbeherrschung, Naehrstoffbeherrschung, Schaedlings- und Krankheitskontrolle, Fortgeschrittenes Training) mit Redux-gesichertem Fortschritt.
 
 ### Einstellungen
 
@@ -580,7 +580,7 @@ KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Gr
 
 ### Hilfe
 
-Durchsuchbare FAQ, Grower-Lexikon (200+ Begriffe), visuelle Anbauguides, Benutzerhandbuch, Rechtsinformationen. Alles bilingual EN/DE.
+Durchsuchbare FAQ, Grower-Lexikon (200+ Begriffe fuer Cannabinoide, Terpene, Flavonoide, Naehrstoffe, Krankheiten), visuelle Anbauguides, Benutzerhandbuch, Rechtsinformationen. Alles bilingual EN/DE.
 
 ---
 

@@ -156,16 +156,26 @@ Target: **2026-Q3** | Status: **In Progress**
 
 ### Completed (v1.3.0-alpha)
 
-| Feature                                                 | Category      | Status | Issue |
-| ------------------------------------------------------- | ------------- | ------ | ----- |
-| IoT real-time dashboard (sparklines, gauges, telemetry) | IoT           | done   | —     |
-| Three.js 3D OrbitControls with auto-orbit camera        | Visualization | done   | —     |
-| IoT live sensor badge in 3D view                        | IoT           | done   | —     |
-| Daily Strains recommendation scoring (match % badge)    | AI/UX         | done   | —     |
-| E2E test debloat (visibility assertions, no hard waits) | Testing       | done   | —     |
-| Lodash security fix (4.17.23 -> 4.18.1 via override)    | Security      | done   | —     |
-| CSP fix: strict-dynamic reverted to workable static-PWA | Security      | done   | —     |
-| 1016 tests across 103 files                             | Testing       | done   | —     |
+| Feature                                                                   | Category      | Status | Issue |
+| ------------------------------------------------------------------------- | ------------- | ------ | ----- |
+| IoT real-time dashboard (sparklines, gauges, telemetry)                   | IoT           | done   | —     |
+| Three.js 3D OrbitControls with auto-orbit camera                          | Visualization | done   | —     |
+| IoT live sensor badge in 3D view                                          | IoT           | done   | —     |
+| Daily Strains recommendation scoring (match % badge)                      | AI/UX         | done   | —     |
+| E2E test debloat (visibility assertions, no hard waits)                   | Testing       | done   | —     |
+| Lodash security fix (4.17.23 -> 4.18.1 via override)                      | Security      | done   | —     |
+| CSP fix: strict-dynamic reverted to workable static-PWA                   | Security      | done   | —     |
+| Multi-source strain lookup (5 APIs, entourage science, flavonoid charts)  | Strains       | done   | —     |
+| AES-256-GCM IoT credential encryption + IndexedDB monitor service         | Security      | done   | —     |
+| Entourage score SVG ring, FlavonoidBar chart, TerpeneDetailList           | Strains/UI    | done   | —     |
+| Knowledge Lexikon 2.0 (89-term searchable glossary, 6 categories)         | Knowledge     | done   | —     |
+| Knowledge Disease Atlas (22 entries, urgency filter, detail modal)        | Knowledge     | done   | —     |
+| Knowledge Calculator Hub (VPD + Nutrient Ratio + pH/EC sub-tabs)          | Knowledge     | done   | —     |
+| Knowledge Learning Paths (5 paths, Redux progress tracking)               | Knowledge     | done   | —     |
+| GuideView: search, read-progress, GrowTech 2026 + Genetics article groups | Knowledge     | done   | —     |
+| data/diseases.ts (22 DiseaseEntry); data/learningPaths.ts (5 paths)       | Data          | done   | —     |
+| i18n EN+DE: full coverage for all new Knowledge + Help lexicon keys       | i18n          | done   | —     |
+| 1049 tests across 104 files                                               | Testing       | done   | —     |
 
 ### Remaining
 

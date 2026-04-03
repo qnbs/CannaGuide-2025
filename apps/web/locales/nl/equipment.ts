@@ -304,6 +304,24 @@ export const equipmentView = {
                 far: 'Lamp te ver weg -- onvoldoende PPFD',
             },
         },
+        sandbox: {
+            title: 'Wat-Als Sandbox',
+            collapseHint: 'Klik om uit te vouwen',
+            description:
+                'Pas de afmetingen van de kamer en het lampvermogen hier aan. Wijzigingen worden direct doorgegeven aan de ventilatie-, CO2- en lamphoogterekenaars.',
+            width: 'Breedte',
+            depth: 'Diepte',
+            height: 'Hoogte',
+            lightWattage: 'Lampvermogen',
+            propagateNote: 'Afmetingen bewerken in individuele rekenaars werkt ook de Sandbox bij.',
+            reset: 'Standaardwaarden',
+        },
+        history: {
+            title: 'Berekeningsgeschiedenis',
+            noEntries: 'Nog geen opgeslagen berekeningen.',
+            clear: 'Wissen',
+            save: 'Dit resultaat opslaan',
+        },
     },
     growShops: {
         region: {

@@ -1,27 +1,32 @@
-import React, { useState, useMemo, memo, useId } from 'react'
+import React, { useMemo, memo, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CalculatorSection, Input, ResultDisplay } from './common'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { useCalculatorSessionStore } from '@/stores/useCalculatorSessionStore'
 
 export const VentilationCalculator: React.FC = memo(() => {
     const { t } = useTranslation()
     const tooltipId = useId()
-    const [dimensions, setDimensions] = useState({ width: 80, depth: 80, height: 180 })
-    const [wattage, setWattage] = useState(150)
-    const [hasFilter, setHasFilter] = useState(true)
+    const roomDimensions = useCalculatorSessionStore((s) => s.roomDimensions)
+    const setRoomDimensions = useCalculatorSessionStore((s) => s.setRoomDimensions)
+    const sharedLightWattage = useCalculatorSessionStore((s) => s.sharedLightWattage)
+    const setSharedLightWattage = useCalculatorSessionStore((s) => s.setSharedLightWattage)
+    const [hasFilter, setHasFilter] = React.useState(true)
     const filterEnabledVariant = hasFilter ? 'primary' : 'secondary'
     const filterDisabledVariant = hasFilter ? 'secondary' : 'primary'
 
     const result = useMemo(() => {
         const volume =
-            (dimensions.width / 100) * (dimensions.depth / 100) * (dimensions.height / 100)
+            (roomDimensions.width / 100) *
+            (roomDimensions.depth / 100) *
+            (roomDimensions.height / 100)
         if (volume <= 0) return 0
 
         const airChangesPerHour = 60
         let baseM3h = volume * airChangesPerHour
 
-        const heatFactor = 1 + wattage / 1000
+        const heatFactor = 1 + sharedLightWattage / 1000
         baseM3h *= heatFactor
 
         if (hasFilter) {
@@ -29,7 +34,7 @@ export const VentilationCalculator: React.FC = memo(() => {
         }
 
         return Math.ceil(baseM3h)
-    }, [dimensions, wattage, hasFilter])
+    }, [roomDimensions, sharedLightWattage, hasFilter])
 
     return (
         <CalculatorSection
@@ -41,27 +46,27 @@ export const VentilationCalculator: React.FC = memo(() => {
                     label={t('equipmentView.calculators.ventilation.width')}
                     type="number"
                     unit="cm"
-                    value={dimensions.width}
+                    value={roomDimensions.width}
                     onChange={(e) =>
-                        setDimensions((d) => ({ ...d, width: Number(e.target.value) }))
+                        setRoomDimensions({ ...roomDimensions, width: Number(e.target.value) })
                     }
                 />
                 <Input
                     label={t('equipmentView.calculators.ventilation.depth')}
                     type="number"
                     unit="cm"
-                    value={dimensions.depth}
+                    value={roomDimensions.depth}
                     onChange={(e) =>
-                        setDimensions((d) => ({ ...d, depth: Number(e.target.value) }))
+                        setRoomDimensions({ ...roomDimensions, depth: Number(e.target.value) })
                     }
                 />
                 <Input
                     label={t('equipmentView.calculators.ventilation.height')}
                     type="number"
                     unit="cm"
-                    value={dimensions.height}
+                    value={roomDimensions.height}
                     onChange={(e) =>
-                        setDimensions((d) => ({ ...d, height: Number(e.target.value) }))
+                        setRoomDimensions({ ...roomDimensions, height: Number(e.target.value) })
                     }
                 />
             </div>
@@ -69,8 +74,8 @@ export const VentilationCalculator: React.FC = memo(() => {
                 label={t('equipmentView.calculators.ventilation.lightWattage')}
                 type="number"
                 unit="W"
-                value={wattage}
-                onChange={(e) => setWattage(Number(e.target.value))}
+                value={sharedLightWattage}
+                onChange={(e) => setSharedLightWattage(Number(e.target.value))}
                 tooltip={t('equipmentView.calculators.ventilation.lightWattageTooltip')}
             />
             <div>

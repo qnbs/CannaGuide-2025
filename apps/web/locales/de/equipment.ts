@@ -311,6 +311,25 @@ export const equipmentView = {
                 far: 'Lampe zu weit -- unzureichender PPFD',
             },
         },
+        sandbox: {
+            title: 'Was-wäre-wenn-Sandbox',
+            collapseHint: 'Zum Ausklappen klicken',
+            description:
+                'Raummaße und Lichtleistung hier anpassen. Änderungen werden sofort an die Belüftungs-, CO2- und Lichtaufhängungsrechner weitergegeben.',
+            width: 'Breite',
+            depth: 'Tiefe',
+            height: 'Höhe',
+            lightWattage: 'Lampenleistung',
+            propagateNote:
+                'Das Bearbeiten der Maße in einzelnen Rechnern aktualisiert auch die Sandbox.',
+            reset: 'Standardwerte',
+        },
+        history: {
+            title: 'Berechnungsverlauf',
+            noEntries: 'Noch keine gespeicherten Berechnungen.',
+            clear: 'Löschen',
+            save: 'Ergebnis speichern',
+        },
     },
     growShops: {
         region: {

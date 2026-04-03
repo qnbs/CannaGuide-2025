@@ -1,4 +1,4 @@
-import React, { useState, useMemo, memo } from 'react'
+import React, { useState, useMemo, memo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CalculatorSection, Input, Select, ResultDisplay } from './common'
 import {
@@ -8,14 +8,20 @@ import {
     type LightHangingInput,
     type LightType,
 } from '@/services/equipmentCalculatorService'
+import { useCalculatorSessionStore } from '@/stores/useCalculatorSessionStore'
+import { dbService } from '@/services/dbService'
+import { CalculatorHistoryPanel } from './CalculatorHistoryPanel'
 
 const LIGHT_TYPES: LightType[] = ['led', 'hps', 'cmh', 't5']
 
 export const LightHangingCalculator: React.FC = memo(() => {
     const { t } = useTranslation()
-    const [wattage, setWattage] = useState(400)
+    const sharedLightWattage = useCalculatorSessionStore((s) => s.sharedLightWattage)
+    const setSharedLightWattage = useCalculatorSessionStore((s) => s.setSharedLightWattage)
     const [lightType, setLightType] = useState<LightType>('led')
     const [targetPpfd, setTargetPpfd] = useState(600)
+    const [historyToken, setHistoryToken] = useState(0)
+    const savedResultRef = useRef<string | null>(null)
 
     const lightTypeOptions = LIGHT_TYPES.map((lt) => ({
         value: lt,
@@ -25,11 +31,38 @@ export const LightHangingCalculator: React.FC = memo(() => {
     const efficiencyLabel = LIGHT_EFFICIENCY[lightType].toFixed(1)
 
     const result = useMemo(() => {
-        const input: LightHangingInput = { wattage, lightType, targetPpfd }
+        const input: LightHangingInput = { wattage: sharedLightWattage, lightType, targetPpfd }
         const parsed = LightHangingInputSchema.safeParse(input)
         if (!parsed.success) return null
         return calculateLightHanging(parsed.data)
-    }, [wattage, lightType, targetPpfd])
+    }, [sharedLightWattage, lightType, targetPpfd])
+
+    const handleSave = useCallback(() => {
+        if (!result) return
+        const key = JSON.stringify({ sharedLightWattage, lightType, targetPpfd, result })
+        if (savedResultRef.current === key) return
+        savedResultRef.current = key
+        const entry = {
+            id: `lightHanging-${Date.now()}`,
+            calculatorId: 'lightHanging',
+            inputs: { wattage: sharedLightWattage, lightType, targetPpfd },
+            result: {
+                recommendedCm: result.recommendedCm,
+                ppfdActual: result.ppfdAtRecommended,
+                dli18h: result.dli18h,
+                status: result.status,
+            },
+            timestamp: Date.now(),
+        }
+        dbService
+            .saveCalculatorHistoryEntry(entry)
+            .then(() => {
+                setHistoryToken((n) => n + 1)
+            })
+            .catch((err: unknown) => {
+                console.debug('[LightHangingCalculator] history save error', err)
+            })
+    }, [result, sharedLightWattage, lightType, targetPpfd])
 
     const statusColor =
         result?.status === 'optimal'
@@ -54,11 +87,11 @@ export const LightHangingCalculator: React.FC = memo(() => {
                     label={t('equipmentView.calculators.lightHanging.wattage')}
                     type="number"
                     unit="W"
-                    value={wattage}
+                    value={sharedLightWattage}
                     min={10}
                     max={10000}
                     step={50}
-                    onChange={(e) => setWattage(Number(e.target.value))}
+                    onChange={(e) => setSharedLightWattage(Number(e.target.value))}
                     tooltip={t('equipmentView.calculators.lightHanging.wattageTooltip', {
                         eff: efficiencyLabel,
                     })}
@@ -109,6 +142,16 @@ export const LightHangingCalculator: React.FC = memo(() => {
                     </p>
                 </div>
             )}
+            {result && (
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    className="mt-2 w-full rounded py-1.5 text-xs font-medium text-primary-400 border border-primary-700/40 hover:bg-primary-900/30 transition-colors"
+                >
+                    {t('equipmentView.calculators.history.save')}
+                </button>
+            )}
+            <CalculatorHistoryPanel calculatorId="lightHanging" refreshToken={historyToken} />
         </CalculatorSection>
     )
 })

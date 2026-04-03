@@ -1,19 +1,25 @@
-import React, { useState, useMemo, memo } from 'react'
+import React, { useState, useMemo, memo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CalculatorSection, Input, ResultDisplay } from './common'
 import { calculateCo2, Co2InputSchema, type Co2Input } from '@/services/equipmentCalculatorService'
+import { useCalculatorSessionStore } from '@/stores/useCalculatorSessionStore'
+import { dbService } from '@/services/dbService'
+import { CalculatorHistoryPanel } from './CalculatorHistoryPanel'
 
-const ROOM_VOLUME_MIN = 0.1
-const ROOM_VOLUME_MAX = 500
 const PPM_MIN = 300
 const PPM_MAX = 5000
 
 export const Co2Calculator: React.FC = memo(() => {
     const { t } = useTranslation()
-    const [roomVolume, setRoomVolume] = useState(4)
+    const roomDimensions = useCalculatorSessionStore((s) => s.roomDimensions)
     const [currentPpm, setCurrentPpm] = useState(400)
     const [targetPpm, setTargetPpm] = useState(1200)
     const [ach, setAch] = useState(1)
+    const [historyToken, setHistoryToken] = useState(0)
+    const savedResultRef = useRef<string | null>(null)
+
+    const roomVolume =
+        (roomDimensions.width / 100) * (roomDimensions.depth / 100) * (roomDimensions.height / 100)
 
     const result = useMemo(() => {
         const input: Co2Input = { roomVolume, currentPpm, targetPpm, ach }
@@ -22,6 +28,32 @@ export const Co2Calculator: React.FC = memo(() => {
         if (targetPpm <= currentPpm) return null
         return calculateCo2(parsed.data)
     }, [roomVolume, currentPpm, targetPpm, ach])
+
+    const handleSave = useCallback(() => {
+        if (!result) return
+        const key = JSON.stringify({ roomVolume, currentPpm, targetPpm, ach, result })
+        if (savedResultRef.current === key) return
+        savedResultRef.current = key
+        const entry = {
+            id: `co2-${Date.now()}`,
+            calculatorId: 'co2',
+            inputs: { roomVolume, currentPpm, targetPpm, ach },
+            result: {
+                initialBoostL: result.initialBoostLiters,
+                maintenanceL_h: result.maintenanceRatePerHour,
+                status: result.status,
+            },
+            timestamp: Date.now(),
+        }
+        dbService
+            .saveCalculatorHistoryEntry(entry)
+            .then(() => {
+                setHistoryToken((n) => n + 1)
+            })
+            .catch((err: unknown) => {
+                console.debug('[Co2Calculator] history save error', err)
+            })
+    }, [result, roomVolume, currentPpm, targetPpm, ach])
 
     const statusColor =
         result?.status === 'enrichment'
@@ -36,16 +68,10 @@ export const Co2Calculator: React.FC = memo(() => {
             description={t('equipmentView.calculators.co2.description')}
         >
             <div className="grid grid-cols-2 gap-4">
-                <Input
+                <ResultDisplay
                     label={t('equipmentView.calculators.co2.roomVolume')}
-                    type="number"
+                    value={roomVolume.toFixed(2)}
                     unit="m3"
-                    value={roomVolume}
-                    min={ROOM_VOLUME_MIN}
-                    max={ROOM_VOLUME_MAX}
-                    step={0.1}
-                    onChange={(e) => setRoomVolume(Number(e.target.value))}
-                    tooltip={t('equipmentView.calculators.co2.roomVolumeTooltip')}
                 />
                 <Input
                     label={t('equipmentView.calculators.co2.ach')}
@@ -115,6 +141,16 @@ export const Co2Calculator: React.FC = memo(() => {
                     {t('equipmentView.calculators.co2.targetMustExceedCurrent')}
                 </p>
             )}
+            {result && (
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    className="mt-2 w-full rounded py-1.5 text-xs font-medium text-primary-400 border border-primary-700/40 hover:bg-primary-900/30 transition-colors"
+                >
+                    {t('equipmentView.calculators.history.save')}
+                </button>
+            )}
+            <CalculatorHistoryPanel calculatorId="co2" refreshToken={historyToken} />
         </CalculatorSection>
     )
 })

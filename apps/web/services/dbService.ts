@@ -19,6 +19,7 @@ import {
     METADATA_STORE,
     STRAIN_SEARCH_INDEX_STORE,
     OFFLINE_ACTIONS_STORE,
+    CALCULATOR_HISTORY_STORE,
     STRAIN_INDEX_TYPE,
     STRAIN_INDEX_THC,
     STRAIN_INDEX_CBD,
@@ -43,6 +44,18 @@ interface StorageEstimateSnapshot {
 }
 
 type ArchivedJournalMap = Record<string, JournalEntry[]>
+
+/** A single calculator computation saved to IndexedDB for history recall. */
+export interface CalculatorHistoryEntry {
+    id: string
+    calculatorId: string
+    inputs: Record<string, number | string>
+    result: Record<string, number | string>
+    timestamp: number
+    label?: string
+}
+
+const MAX_CALCULATOR_HISTORY_PER_CALCULATOR = 20
 
 const ARCHIVED_LOGS_METADATA_KEY = 'archived_plant_logs_v1'
 const STORAGE_USAGE_WARNING_RATIO = 0.78
@@ -148,6 +161,10 @@ const runMigrations = (
 
     if (oldVersion < 4) {
         ensureOfflineActionsStore(dbInstance)
+    }
+
+    if (oldVersion < 5) {
+        ensureObjectStore(dbInstance, CALCULATOR_HISTORY_STORE, 'id')
     }
 }
 
@@ -766,5 +783,52 @@ export const dbService = {
         const archive =
             (await this.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {}
         return archive[plantId] ?? []
+    },
+
+    // --- Calculator History Store ---
+
+    async saveCalculatorHistoryEntry(entry: CalculatorHistoryEntry): Promise<void> {
+        await performTx<IDBValidKey>(CALCULATOR_HISTORY_STORE, 'readwrite', (store) =>
+            store.put(entry),
+        )
+
+        // Enforce FIFO cap of MAX_CALCULATOR_HISTORY_PER_CALCULATOR
+        const all = await this.getCalculatorHistory(entry.calculatorId)
+        if (all.length > MAX_CALCULATOR_HISTORY_PER_CALCULATOR) {
+            const toDelete = all
+                .sort((a, b) => a.timestamp - b.timestamp)
+                .slice(0, all.length - MAX_CALCULATOR_HISTORY_PER_CALCULATOR)
+            for (const old of toDelete) {
+                await performTx(CALCULATOR_HISTORY_STORE, 'readwrite', (store) =>
+                    store.delete(old.id),
+                )
+            }
+        }
+    },
+
+    async getCalculatorHistory(calculatorId: string): Promise<CalculatorHistoryEntry[]> {
+        const conn = await openDB()
+        return new Promise<CalculatorHistoryEntry[]>((resolve, reject) => {
+            const transaction = conn.transaction(CALCULATOR_HISTORY_STORE, 'readonly')
+            const store = transaction.objectStore(CALCULATOR_HISTORY_STORE)
+            const request = store.getAll()
+            transaction.onerror = () => reject(transaction.error)
+            request.onsuccess = () => {
+                const all = (request.result as CalculatorHistoryEntry[]).filter(
+                    (e) => e.calculatorId === calculatorId,
+                )
+                all.sort((a, b) => b.timestamp - a.timestamp)
+                resolve(all)
+            }
+        })
+    },
+
+    async clearCalculatorHistory(calculatorId: string): Promise<void> {
+        const entries = await this.getCalculatorHistory(calculatorId)
+        for (const entry of entries) {
+            await performTx(CALCULATOR_HISTORY_STORE, 'readwrite', (store) =>
+                store.delete(entry.id),
+            )
+        }
     },
 }

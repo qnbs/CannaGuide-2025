@@ -8,6 +8,13 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Features
 
+- **equipment:** What-If Sandbox (WhatIfSandbox.tsx) -- collapsible panel with range sliders for room width/depth/height and light wattage; propagates instantly to Ventilation, CO2, and Light Hanging calculators; reset to defaults button; i18n EN/DE/ES/FR/NL
+- **equipment:** useCalculatorSessionStore -- transient Zustand store (no persist) for shared room dimensions and light wattage; bidirectional sync between Sandbox and connected calculators
+- **equipment:** CalculatorHistory -- IndexedDB-backed (CannaGuideDB v5, new 'calculator_history' object store); FIFO cap 20 entries per calculator; save/load/clear CRUD on dbService
+- **equipment:** CalculatorHistoryPanel -- collapsible history panel showing last 20 results per calculator; save button in Co2Calculator and LightHangingCalculator
+- **equipment:** VentilationCalculator -- room dimensions and light wattage now read/write from shared useCalculatorSessionStore (editing in calculator also updates Sandbox)
+- **equipment:** Co2Calculator -- roomVolume auto-derived from shared dimensions (no manual override); save-to-history button + CalculatorHistoryPanel
+- **equipment:** LightHangingCalculator -- wattage now read/write from sharedLightWattage in session store; save-to-history button + CalculatorHistoryPanel
 - **equipment:** equipmentCalculatorService.ts -- new pure-formula service with Zod-validated schemas for CO2 enrichment, Humidity Deficit (Buck 1981 SVP), and Light Hanging Height (inverse-square law) calculations
 - **equipment:** Co2Calculator -- CO2 enrichment calculator with one-time boost + steady-state maintenance rate, safety note, status badges (enrichment/ambient/excess)
 - **equipment:** HumidityDeficitCalculator -- absolute HD calculator using Buck SVP formula; growth-stage-aware optimal ranges; status: low/optimal/high

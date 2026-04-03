@@ -2,7 +2,67 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-06, Session 31) -- 5 Specialized Knowledge Calculators (Execution 4)
+## Latest Session (2026-04-07, Session 32) -- RAG Explanations, 7-Day Simulations, SVG Charts (Execution 5)
+
+**Status: v1.3.0-beta. Execution 5 complete. CalculatorHub expanded with WorkerBus-backed 7-day simulations, RAG AI explanations, and SparklineChart SVG rendering. 1182 tests passing. TypeScript clean.**
+
+### What Was Done (Session 32)
+
+1. **calculation.worker.ts** (`apps/web/workers/calculation.worker.ts`):
+    - New WebWorker offloading 7-day simulation math from main thread
+    - 4 commands: `SIMULATE_VPD`, `SIMULATE_TRANSPIRATION`, `SIMULATE_EC_DRIFT`, `SIMULATE_LIGHT_SPECTRUM`
+    - All return `DayPoint[] = { day: number; value: number }[]` arrays for day 0-6
+    - Follows established `workerOk`/`workerErr` protocol + `isTrustedWorkerMessage` guard
+
+2. **SparklineChart.tsx** (`apps/web/components/common/SparklineChart.tsx`):
+    - Zero-dependency pure SVG chart component (no D3, no external libs)
+    - Props: `points`, `label`, `color`, `unit`, `height`, `showDots`, `showArea`, `highlightLast`
+    - Features: gradient area fill, y-axis labels, x-axis day labels, highlight last point
+
+3. **knowledgeRagService.ts** (`apps/web/services/knowledgeRagService.ts`):
+    - RAG-backed AI explanations for calculator inputs
+    - `knowledgeRagService.explain(calculator, values, plants)` -> `KnowledgeRagResult`
+    - Builds structured prompts per calculator type, enriched with grow log journal context
+    - Uses `growLogRagService.retrieveRelevantContext()` when plants are provided
+    - Routes through `aiService.getGrowLogRagAnswer()` for AI generation
+    - 60-second per-calculator rate limiter, `isLocalOnlyMode()` guard, DOMPurify on string inputs
+    - Maps calculators to learning path IDs: environment-mastery, nutrient-mastery, advanced-training
+
+4. **knowledgeRagService.test.ts** (`apps/web/services/knowledgeRagService.test.ts`):
+    - 10 unit tests: local-only mode guard, learning path mapping (5 calculators), journal context, AI response, truncation, error handling
+
+5. **CalculatorHubView.tsx** (extended with simulation + RAG panels):
+    - Lazy WorkerBus registration: `ensureCalcWorker()` pattern (NOT in index.tsx)
+    - New shared sub-components: `RagExplainBox` + `SimulationPanel`
+    - VPD panel: SimulationPanel (SIMULATE_VPD) + RagExplainBox
+    - Transpiration panel: SimulationPanel (SIMULATE_TRANSPIRATION) + RagExplainBox
+    - EC/TDS panel: SimulationPanel (SIMULATE_EC_DRIFT) + RagExplainBox
+    - Light Spectrum panel: SimulationPanel (SIMULATE_LIGHT_SPECTRUM) + RagExplainBox
+    - Terpene Entourage panel: RagExplainBox (no simulation)
+    - Cannabinoid Ratio panel: RagExplainBox
+    - Cross-hub links: each AI explanation box has a "Deep dive: Learning Path ->" link to lernpfad tab
+
+6. **i18n EN + DE** (extended):
+    - New keys per calculator: `simulate`, `simulationTitle`, `explainAi`, `aiExplanationTitle`, `aiLoading`, `deepDive`
+    - Merged into existing `vpd` block (no duplicate keys)
+
+### Verified Metrics (Session 32)
+
+- Tests: **1182 passing, 0 failures** (113 test files)
+- TypeScript: **clean** (only known RTK TS2719 filtered)
+
+### Planned Executions
+
+#### Execution 6 (Next)
+
+- Cross-view deep links (GuideView article links from calculator results)
+- FR/ES/NL translations for new simulation/RAG keys
+- Playwright component tests for SparklineChart + SimulationPanel
+- Worker lifecycle: terminate calculation worker on component unmount
+
+---
+
+## Previous Sessions (Session 31) -- 5 Specialized Knowledge Calculators (Execution 4)
 
 **Status: v1.3.0-beta. Execution 4 complete. Knowledge CalculatorHub expanded from 3 to 8 tabs. 5 new science-based calculators added. 1172 tests passing. TypeScript clean.**
 

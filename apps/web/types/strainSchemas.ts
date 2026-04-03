@@ -263,3 +263,48 @@ export interface StrainImportResult {
     /** Timestamp of import */
     importedAt: string
 }
+
+// ---------------------------------------------------------------------------
+// Entourage effect schemas (terpene x cannabinoid x flavonoid interactions)
+// Based on Russo (2011) + Booth & Bohlmann (2019)
+// ---------------------------------------------------------------------------
+
+/** Directional interaction between a terpene/flavonoid and a cannabinoid */
+export const terpeneInteractionSchema = z.object({
+    cannabinoid: z.string().min(1).max(32),
+    effect: z.string().min(1).max(256),
+    strength: z.enum(['low', 'medium', 'high']),
+})
+
+/** Enhanced terpene data point with full entourage metadata */
+export const enhancedTerpeneSchema = z.object({
+    name: z.string().min(1).max(64),
+    percentage: z.number().min(0).max(100),
+    role: z.enum(['dominant', 'secondary', 'trace']).optional(),
+    aromaNotes: z.array(z.string().max(64)).max(10).default([]),
+    primaryEffects: z.array(z.string().max(64)).max(8).default([]),
+    cannabinoidInteractions: z.array(terpeneInteractionSchema).max(10).default([]),
+    entourageScore: z.number().min(0).max(10).optional(),
+})
+
+export type EnhancedTerpenePoint = z.infer<typeof enhancedTerpeneSchema>
+
+/** Flavonoid data point with cannabinoid interaction metadata */
+export const flavonoidInteractionSchema = z.object({
+    name: z.string().min(1).max(64),
+    percentage: z.number().min(0).max(100).optional(),
+    role: z.enum(['dominant', 'secondary', 'trace']).optional(),
+    cannabinoidInteractions: z.array(terpeneInteractionSchema).max(10).default([]),
+    entourageScore: z.number().min(0).max(10).optional(),
+})
+
+export type FlavonoidInteractionPoint = z.infer<typeof flavonoidInteractionSchema>
+
+/** Overall entourage effect insight for a strain result */
+export const entourageInsightSchema = z.object({
+    totalScore: z.number().min(0).max(100),
+    terpeneDiversity: z.number().min(0).max(5).optional(),
+    dominantSynergy: z.string().max(256).optional(),
+    flavonoidContribution: z.number().min(0).max(10).optional(),
+    summary: z.string().max(512).optional(),
+})

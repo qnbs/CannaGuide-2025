@@ -10,6 +10,7 @@
 // ---------------------------------------------------------------------------
 
 import { allStrainsData } from '@/data/strains/index'
+import { TERPENE_DATABASE } from '@/data/terpeneDatabase'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import type { Strain } from '@/types'
 
@@ -17,16 +18,47 @@ import type { Strain } from '@/types'
 // Types
 // ---------------------------------------------------------------------------
 
+/** A directional interaction between a terpene (or flavonoid) and a cannabinoid */
+export interface TerpeneInteraction {
+    cannabinoid: string
+    effect: string
+    strength: 'low' | 'medium' | 'high'
+}
+
 export interface TerpeneDataPoint {
     name: string
     /** Percentage value, e.g. 25.4 means 25.4% */
     percentage: number
+    /** Relative prominence in the terpene profile */
+    role?: 'dominant' | 'secondary' | 'trace'
+    /** Primary aroma descriptors for this terpene */
+    aromaNotes?: string[]
+    /** Therapeutic / consumer effects */
+    primaryEffects?: string[]
+    /** Known synergies with cannabinoids */
+    cannabinoidInteractions?: TerpeneInteraction[]
+    /** Weighted contribution to entourage score (0-10) */
+    entourageScore?: number
 }
 
 export interface CannabinoidDataPoint {
     name: string
     /** Percentage value, e.g. 22.0 means 22% THC */
     percentage: number
+    /** Typical lab-reported range for this strain class */
+    range?: [number, number]
+    /** Role in the cannabinoid profile */
+    role?: 'primary' | 'secondary' | 'trace'
+}
+
+export interface FlavonoidDataPoint {
+    name: string
+    percentage?: number
+    role?: 'dominant' | 'secondary' | 'trace'
+    /** Synergies with cannabinoids (e.g. Cannflavin A + CB2) */
+    cannabinoidInteractions?: TerpeneInteraction[]
+    /** Weighted contribution to entourage score (0-10) */
+    entourageScore?: number
 }
 
 /** Confidence source ordering: local > cannlytics > otreeba > cannabis-api > ai */
@@ -46,6 +78,8 @@ export interface LookupStrainResult {
     genetics: string
     terpenes: TerpeneDataPoint[]
     cannabinoids: CannabinoidDataPoint[]
+    /** Estimated flavonoid profile (derived from type + terpene data) */
+    flavonoids?: FlavonoidDataPoint[]
     /** KI-generated insight text about this strain */
     aiSummary: string
     /** 0-100 relevance match to user profile */
@@ -55,8 +89,288 @@ export interface LookupStrainResult {
     confidenceSource: ConfidenceSource
     discoveredAt: string
     sourceUrl: string
+    /** Overall entourage effect score (0-100) */
+    totalEntourageScore?: number
+    /** Shannon diversity index of the terpene profile (0-5) */
+    terpeneDiversity?: number
     /** Full Strain object if found in local catalog */
     fullStrain?: Strain | undefined
+}
+
+// ---------------------------------------------------------------------------
+// Entourage effect science -- known terpene x cannabinoid synergies
+// Based on Russo (2011) "Taming THC" + Booth & Bohlmann (2019)
+// ---------------------------------------------------------------------------
+
+const TERPENE_SYNERGIES: Record<string, TerpeneInteraction[]> = {
+    Myrcene: [
+        { cannabinoid: 'THC', effect: 'Enhanced sedation + BBB permeability', strength: 'high' },
+        { cannabinoid: 'CBD', effect: 'Amplified anti-inflammatory', strength: 'medium' },
+    ],
+    Limonene: [
+        { cannabinoid: 'THC', effect: 'Anxiety reduction + mood elevation', strength: 'high' },
+        { cannabinoid: 'CBD', effect: 'Improved oral bioavailability', strength: 'medium' },
+    ],
+    Caryophyllene: [
+        { cannabinoid: 'CBD', effect: 'Synergistic anti-inflammatory via CB2', strength: 'high' },
+        {
+            cannabinoid: 'THC',
+            effect: 'Reduced psychoactivity + neuroprotection',
+            strength: 'medium',
+        },
+    ],
+    Linalool: [
+        { cannabinoid: 'THC', effect: 'Calming + enhanced analgesic effect', strength: 'high' },
+        { cannabinoid: 'CBD', effect: 'Anti-anxiety amplification (GABA)', strength: 'high' },
+    ],
+    Pinene: [
+        { cannabinoid: 'THC', effect: 'Memory retention (AChE inhibition)', strength: 'medium' },
+        {
+            cannabinoid: 'CBD',
+            effect: 'Bronchodilation + synergistic anti-inflammatory',
+            strength: 'low',
+        },
+    ],
+    Terpinolene: [
+        { cannabinoid: 'THC', effect: 'Uplifting + energy enhancement', strength: 'medium' },
+        { cannabinoid: 'CBG', effect: 'Mild antibacterial synergy', strength: 'low' },
+    ],
+    Humulene: [
+        {
+            cannabinoid: 'CBD',
+            effect: 'Appetite suppression + anti-inflammatory',
+            strength: 'medium',
+        },
+        { cannabinoid: 'THC', effect: 'Anti-inflammatory (COX-1/2)', strength: 'medium' },
+    ],
+    Ocimene: [
+        { cannabinoid: 'CBD', effect: 'Antifungal + antiviral synergy', strength: 'low' },
+        { cannabinoid: 'THC', effect: 'Mood uplift + decongestant', strength: 'low' },
+    ],
+    Bisabolol: [
+        { cannabinoid: 'CBD', effect: 'Skin permeability + soothing', strength: 'medium' },
+        { cannabinoid: 'THC', effect: 'Analgesic potentiation', strength: 'low' },
+    ],
+    Nerolidol: [
+        { cannabinoid: 'THC', effect: 'Sedation + antiparasitic', strength: 'medium' },
+        { cannabinoid: 'CBD', effect: 'Antioxidant synergy', strength: 'low' },
+    ],
+    Valencene: [
+        { cannabinoid: 'THC', effect: 'Anti-allergic + mood brightening', strength: 'low' },
+        { cannabinoid: 'CBD', effect: 'Mild skin-protective synergy', strength: 'low' },
+    ],
+    Geraniol: [
+        { cannabinoid: 'CBD', effect: 'Neuroprotective + antioxidant', strength: 'medium' },
+        { cannabinoid: 'THC', effect: 'Mood-lifting + antifungal', strength: 'low' },
+    ],
+}
+
+// Known flavonoids with estimated entourage contributions
+const FLAVONOID_PROFILES: Record<string, { interactions: TerpeneInteraction[]; score: number }> = {
+    'Cannflavin A': {
+        interactions: [
+            {
+                cannabinoid: 'CBD',
+                effect: 'Potent anti-inflammatory (30x stronger than aspirin)',
+                strength: 'high',
+            },
+            { cannabinoid: 'THC', effect: 'Analgesic potentiation', strength: 'medium' },
+        ],
+        score: 8.5,
+    },
+    'Cannflavin B': {
+        interactions: [
+            {
+                cannabinoid: 'CBD',
+                effect: 'Anti-inflammatory via COX-2 inhibition',
+                strength: 'high',
+            },
+        ],
+        score: 7.5,
+    },
+    Quercetin: {
+        interactions: [
+            {
+                cannabinoid: 'CBD',
+                effect: 'Antioxidant + neuroprotective synergy',
+                strength: 'medium',
+            },
+            { cannabinoid: 'CBG', effect: 'Anticancer + antibacterial', strength: 'medium' },
+        ],
+        score: 6.5,
+    },
+    Apigenin: {
+        interactions: [
+            { cannabinoid: 'CBD', effect: 'Anxiolytic + mild estrogenic', strength: 'medium' },
+            { cannabinoid: 'THC', effect: 'Sedation enhancement', strength: 'low' },
+        ],
+        score: 6.0,
+    },
+    Luteolin: {
+        interactions: [
+            {
+                cannabinoid: 'CBD',
+                effect: 'Anti-inflammatory + cognitive support',
+                strength: 'medium',
+            },
+        ],
+        score: 5.5,
+    },
+    Kaempferol: {
+        interactions: [
+            { cannabinoid: 'THC', effect: 'Neuroprotective co-activity', strength: 'low' },
+            { cannabinoid: 'CBD', effect: 'Antioxidant amplification', strength: 'low' },
+        ],
+        score: 5.0,
+    },
+}
+
+// Typical flavonoid presence by strain type
+const TYPE_FLAVONOIDS: Record<string, FlavonoidDataPoint[]> = {
+    Indica: [
+        {
+            name: 'Cannflavin A',
+            role: 'dominant',
+            entourageScore: 8.5,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Cannflavin A']!.interactions,
+        },
+        {
+            name: 'Quercetin',
+            role: 'secondary',
+            entourageScore: 6.5,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin']!.interactions,
+        },
+        {
+            name: 'Apigenin',
+            role: 'trace',
+            entourageScore: 6.0,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Apigenin']!.interactions,
+        },
+    ],
+    Sativa: [
+        {
+            name: 'Luteolin',
+            role: 'dominant',
+            entourageScore: 5.5,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Luteolin']!.interactions,
+        },
+        {
+            name: 'Apigenin',
+            role: 'secondary',
+            entourageScore: 6.0,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Apigenin']!.interactions,
+        },
+        {
+            name: 'Quercetin',
+            role: 'trace',
+            entourageScore: 6.5,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin']!.interactions,
+        },
+    ],
+    Hybrid: [
+        {
+            name: 'Cannflavin B',
+            role: 'dominant',
+            entourageScore: 7.5,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Cannflavin B']!.interactions,
+        },
+        {
+            name: 'Quercetin',
+            role: 'secondary',
+            entourageScore: 6.5,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin']!.interactions,
+        },
+        {
+            name: 'Kaempferol',
+            role: 'trace',
+            entourageScore: 5.0,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Kaempferol']!.interactions,
+        },
+    ],
+}
+
+// ---------------------------------------------------------------------------
+// Enrichment helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Enrich raw TerpeneDataPoint[] with aromaNotes, effects, interactions, roles,
+ * and entourage scores sourced from TERPENE_DATABASE and synergy data.
+ */
+function enrichTerpeneDataPoints(terpenes: TerpeneDataPoint[]): TerpeneDataPoint[] {
+    return terpenes.map((tp, idx) => {
+        const ref = TERPENE_DATABASE[tp.name as keyof typeof TERPENE_DATABASE]
+        const synergies = TERPENE_SYNERGIES[tp.name]
+        const role: TerpeneDataPoint['role'] =
+            idx === 0 ? 'dominant' : idx <= 2 ? 'secondary' : 'trace'
+        // Entourage score: base 3, +2 per terpene-database match, +1 per high-strength synergy
+        const highSynergies = synergies?.filter((s) => s.strength === 'high').length ?? 0
+        const medSynergies = synergies?.filter((s) => s.strength === 'medium').length ?? 0
+        const entourageScore = Math.min(
+            10,
+            3 + (ref ? 2 : 0) + highSynergies * 1.5 + medSynergies * 0.75,
+        )
+        return {
+            ...tp,
+            role,
+            aromaNotes: ref?.aromas ?? [],
+            primaryEffects: (ref?.effects?.slice(0, 4) as string[]) ?? [],
+            cannabinoidInteractions: synergies ?? [],
+            entourageScore: Math.round(entourageScore * 10) / 10,
+        }
+    })
+}
+
+/**
+ * Return estimated flavonoid profile based on strain type.
+ * Falls back to Hybrid profile for unknown types.
+ */
+function buildFlavonoidDataPoints(strainType: string): FlavonoidDataPoint[] {
+    return TYPE_FLAVONOIDS[strainType] ?? TYPE_FLAVONOIDS['Hybrid']!
+}
+
+/**
+ * Compute an overall entourage effect score (0-100).
+ * Accounts for terpene diversity, terpene-cannabinoid synergies, flavonoid contributions,
+ * and cannabinoid ratio balance.
+ */
+function calculateEntourageScore(
+    terpenes: TerpeneDataPoint[],
+    thc: number,
+    cbd: number,
+    flavonoids: FlavonoidDataPoint[],
+): number {
+    // Terpene contribution (up to 50 pts)
+    const terpeneSum = terpenes.reduce((acc, t) => acc + (t.entourageScore ?? 3), 0)
+    const terpenePts = Math.min(50, (terpeneSum / Math.max(1, terpenes.length)) * 7)
+
+    // Flavonoid contribution (up to 20 pts)
+    const flavoSum = flavonoids.reduce((acc, f) => acc + (f.entourageScore ?? 3), 0)
+    const flavoPts = Math.min(20, (flavoSum / Math.max(1, flavonoids.length)) * 3)
+
+    // Cannabinoid balance bonus (up to 20 pts): THC:CBD ratio closer to 1:1 = higher score
+    const total = thc + cbd
+    const ratio = total > 0 ? Math.min(thc, cbd) / Math.max(thc, cbd) : 0
+    const cannabinoidPts = ratio * 20
+
+    // Terpene diversity bonus (up to 10 pts)
+    const diversityPts = Math.min(10, terpenes.length * 1.8)
+
+    return Math.round(terpenePts + flavoPts + cannabinoidPts + diversityPts)
+}
+
+/**
+ * Shannon diversity index for a terpene profile.
+ * Higher values (closer to ln(n)) indicate a more diverse aromatic profile.
+ */
+function shannonDiversity(terpenes: TerpeneDataPoint[]): number {
+    const total = terpenes.reduce((s, t) => s + t.percentage, 0)
+    if (total === 0) return 0
+    const h = terpenes.reduce((acc, t) => {
+        const p = t.percentage / total
+        return p > 0 ? acc - p * Math.log(p) : acc
+    }, 0)
+    return Math.round(h * 100) / 100
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +466,7 @@ export function getFuzzySuggestions(query: string, limit = 8): string[] {
 // ---------------------------------------------------------------------------
 
 function buildTerpeneDataPoints(strain: Strain): TerpeneDataPoint[] {
+    let raw: TerpeneDataPoint[] = []
     // Prefer structured terpene profile if available
     if (strain.terpeneProfile && typeof strain.terpeneProfile === 'object') {
         const entries = Object.entries(strain.terpeneProfile as Record<string, unknown>)
@@ -159,14 +474,17 @@ function buildTerpeneDataPoints(strain: Strain): TerpeneDataPoint[] {
             .map(([name, v]) => ({ name, percentage: v as number }))
             .sort((a, b) => b.percentage - a.percentage)
             .slice(0, 6)
-        if (entries.length > 0) return entries
+        if (entries.length > 0) raw = entries
     }
     // Fall back to dominant terpene list with estimated values
-    const dominant = strain.dominantTerpenes ?? []
-    return dominant.slice(0, 6).map((name, i) => ({
-        name,
-        percentage: (TERPENE_ESTIMATE[name] ?? 10) * (1 - i * 0.08),
-    }))
+    if (raw.length === 0) {
+        const dominant = strain.dominantTerpenes ?? []
+        raw = dominant.slice(0, 6).map((name, i) => ({
+            name,
+            percentage: (TERPENE_ESTIMATE[name] ?? 10) * (1 - i * 0.08),
+        }))
+    }
+    return enrichTerpeneDataPoints(raw)
 }
 
 function buildCannabinoidDataPoints(strain: Strain): CannabinoidDataPoint[] {
@@ -195,6 +513,12 @@ function lookupLocalCatalog(name: string): LookupStrainResult | null {
         allStrainsData.find((s) => s.name.toLowerCase().includes(q))
     if (!hit) return null
 
+    const terpenes = buildTerpeneDataPoints(hit)
+    const cannabinoids = buildCannabinoidDataPoints(hit)
+    const flavonoids = buildFlavonoidDataPoints(hit.type)
+    const totalEntourageScore = calculateEntourageScore(terpenes, hit.thc, hit.cbd, flavonoids)
+    const terpeneDiversity = shannonDiversity(terpenes)
+
     return {
         id: hit.id,
         name: hit.name,
@@ -207,14 +531,17 @@ function lookupLocalCatalog(name: string): LookupStrainResult | null {
         thcv: hit.thcv ?? 0,
         description: hit.description ?? '',
         genetics: hit.genetics ?? '',
-        terpenes: buildTerpeneDataPoints(hit),
-        cannabinoids: buildCannabinoidDataPoints(hit),
+        terpenes,
+        cannabinoids,
+        flavonoids,
         aiSummary: '',
         matchScore: 0,
         confidenceScore: 95,
         confidenceSource: 'local',
         discoveredAt: new Date().toISOString(),
         sourceUrl: '',
+        totalEntourageScore,
+        terpeneDiversity,
         fullStrain: hit,
     }
 }
@@ -535,9 +862,9 @@ async function lookupWithAI(name: string): Promise<LookupStrainResult | null> {
         const prompt =
             lang === 'de'
                 ? `Gib mir detaillierte Informationen zur Cannabis-Sorte "${name}" als JSON (kein Begleittext):
-{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"summary":"Kurze Einschaetzung (2-3 Saetze)."}`
+{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Kurze Einschaetzung (2-3 Saetze)."}`
                 : `Provide detailed information about cannabis strain "${name}" as JSON only (no surrounding text):
-{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"summary":"Short assessment of why this strain is notable (2-3 sentences)."}`
+{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Short assessment of why this strain is notable (2-3 sentences)."}`
 
         const plantStub = { id: 'strain-lookup', name } as Parameters<
             typeof aiService.getMentorResponse
@@ -576,11 +903,34 @@ async function lookupWithAI(name: string): Promise<LookupStrainResult | null> {
                 }
             }
         }
+        const enrichedTerpenes = enrichTerpeneDataPoints(terpenes)
+
+        const rawFlavonoids = parsed['flavonoids']
+        const aiFlavonoids: FlavonoidDataPoint[] = []
+        if (Array.isArray(rawFlavonoids)) {
+            for (const f of rawFlavonoids.slice(0, 4)) {
+                if (f && typeof f === 'object' && 'name' in f) {
+                    const rec = f as Record<string, unknown>
+                    const fname = String(rec['name'])
+                    const profile = FLAVONOID_PROFILES[fname]
+                    aiFlavonoids.push({
+                        name: fname,
+                        role: (rec['role'] as FlavonoidDataPoint['role']) ?? 'secondary',
+                        entourageScore: profile?.score,
+                        cannabinoidInteractions: profile?.interactions,
+                    })
+                }
+            }
+        }
+        const flavonoids = aiFlavonoids.length > 0 ? aiFlavonoids : buildFlavonoidDataPoints(type)
 
         const cannabinoids: CannabinoidDataPoint[] = []
-        if (thc > 0) cannabinoids.push({ name: 'THC', percentage: thc })
-        if (cbd > 0) cannabinoids.push({ name: 'CBD', percentage: cbd })
-        if (cbg > 0) cannabinoids.push({ name: 'CBG', percentage: cbg })
+        if (thc > 0) cannabinoids.push({ name: 'THC', percentage: thc, role: 'primary' })
+        if (cbd > 0) cannabinoids.push({ name: 'CBD', percentage: cbd, role: 'secondary' })
+        if (cbg > 0) cannabinoids.push({ name: 'CBG', percentage: cbg, role: 'trace' })
+
+        const totalEntourageScore = calculateEntourageScore(enrichedTerpenes, thc, cbd, flavonoids)
+        const terpeneDiversity = shannonDiversity(enrichedTerpenes)
 
         return {
             id: `ai-${strainName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
@@ -597,14 +947,17 @@ async function lookupWithAI(name: string): Promise<LookupStrainResult | null> {
             thcv: 0,
             description: String(parsed['description'] ?? '').slice(0, 500),
             genetics: String(parsed['genetics'] ?? ''),
-            terpenes,
+            terpenes: enrichedTerpenes,
             cannabinoids,
+            flavonoids,
             aiSummary: String(parsed['summary'] ?? ''),
             matchScore: 0,
             confidenceScore: 60,
             confidenceSource: 'ai',
             discoveredAt: new Date().toISOString(),
             sourceUrl: '',
+            totalEntourageScore,
+            terpeneDiversity,
         }
     } catch {
         return null

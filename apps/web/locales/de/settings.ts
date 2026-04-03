@@ -128,15 +128,15 @@ export const settingsView = {
         offlineHint: 'Bringe die App online, damit der Modell-Cache vorab gefüllt werden kann.',
         forceWasm: 'WASM-Backend erzwingen',
         forceWasmHint:
-            'WebGPU-Erkennung uebersteuern und immer das WASM-Backend verwenden. Nuetzlich zur Fehlersuche.',
+            'WebGPU-Erkennung übersteuern und immer das WASM-Backend verwenden. Nützlich zur Fehlersuche.',
         enableWebGpu: 'WebGPU-Beschleunigung aktivieren',
         enableWebGpuHint:
-            'GPU fuer lokale KI-Inferenz nutzen, wenn verfuegbar. Liefert 3-8x schnellere Inferenz auf unterstuetzten Geraeten. Deaktivieren fuer reinen CPU-Modus.',
+            'GPU für lokale KI-Inferenz nutzen, wenn verfügbar. Liefert 3-8x schnellere Inferenz auf unterstützten Geräten. Deaktivieren für reinen CPU-Modus.',
         webGpuTier: 'GPU-Stufe: {{value}}',
         webGpuVram: 'GPU-VRAM: {{value}} MB',
         webGpuVendor: 'GPU: {{value}}',
         webGpuBatteryGated:
-            'WebGPU pausiert -- Akku unter 15%. Ladegeraet anschliessen, um GPU-Beschleunigung zu reaktivieren.',
+            'WebGPU pausiert -- Akku unter 15%. Ladegerät anschließen, um GPU-Beschleunigung zu reaktivieren.',
         webGpuFeatureF16: 'shader-f16: {{value}}',
         webGpuDeviceCleanup:
             'GPU-Speicher wird automatisch freigegeben, wenn der Tab 30 Sekunden verborgen ist.',
@@ -173,7 +173,7 @@ export const settingsView = {
         // Eco Mode
         ecoMode: 'Eco-Modus',
         ecoModeHint:
-            'WASM-Backend und kleinste Modelle erzwingen, um CPU-/GPU-Auslastung um bis zu 70% zu reduzieren. Ideal fuer schwache Geraete oder Akkusparen.',
+            'WASM-Backend und kleinste Modelle erzwingen, um CPU-/GPU-Auslastung um bis zu 70% zu reduzieren. Ideal für schwache Geräte oder Akkusparen.',
         // Persistent Cache
         enablePersistentCache: 'Persistenter Inferenz-Cache',
         enablePersistentCacheHint:
@@ -293,8 +293,8 @@ export const settingsView = {
         en: 'Englisch',
         de: 'Deutsch',
         es: 'Spanisch',
-        fr: 'Franzoesisch',
-        nl: 'Niederlaendisch',
+        fr: 'Französisch',
+        nl: 'Niederländisch',
     },
     tts: {
         title: 'Sprache & Stimme',
@@ -446,13 +446,13 @@ export const settingsView = {
         growTech2026: '2026 Grow-Technologien',
         dynamicLighting: 'Dynamische Beleuchtung',
         dynamicLightingDesc:
-            'Aktiviert spektrumadaptive Beleuchtung, die die LED-Ausgabe automatisch an die aktuelle Wachstumsphase und VPD anpasst (blau fuer Wuchs, rot fuer Bluete).',
+            'Aktiviert spektrumadaptive Beleuchtung, die die LED-Ausgabe automatisch an die aktuelle Wachstumsphase und VPD anpasst (blau für Wuchs, rot für Blüte).',
         enableAeroponics: 'Aeroponik-Modus',
         enableAeroponicsDesc:
-            'Aktiviert aeroponik-spezifische Simulationsparameter: schnellere Naehrstoffaufnahme, reduziertes Wasserverbrauchsmodell und Nebel-Zyklus-Timing.',
+            'Aktiviert aeroponik-spezifische Simulationsparameter: schnellere Nährstoffaufnahme, reduziertes Wasserverbrauchsmodell und Nebel-Zyklus-Timing.',
         co2Enrichment: 'CO2-Anreicherungs-Simulation',
         co2EnrichmentDesc:
-            'Aktiviert CO2-Anreicherungseffekte in der Simulations-Engine. Lege den Ziel-ppm-Wert fuer Ertragsberechnungen fest.',
+            'Aktiviert CO2-Anreicherungseffekte in der Simulations-Engine. Lege den Ziel-ppm-Wert für Ertragsberechnungen fest.',
         co2TargetPpm: 'CO2-Ziel (ppm)',
         smartFertigationAlerts: 'Smart-Fertigation-Alarme',
         smartFertigationAlertsDesc:
@@ -588,10 +588,10 @@ export const settingsView = {
         clearArchivesSuccess: 'Alle KI-Archive wurden geleert.',
         runCleanup: 'Speicherbereinigung jetzt starten',
         runCleanupDesc:
-            'Archiviert automatisch alte Grow-Logs und entfernt aeltere gespeicherte Fotos, um Speicherplatz freizugeben.',
+            'Archiviert automatisch alte Grow-Logs und entfernt ältere gespeicherte Fotos, um Speicherplatz freizugeben.',
         cleanupRunning: 'Speicher wird bereinigt...',
         cleanupSuccess:
-            'Speicherbereinigung abgeschlossen. {{count}} alte Fotos entfernt und aeltere Logs archiviert.',
+            'Speicherbereinigung abgeschlossen. {{count}} alte Fotos entfernt und ältere Logs archiviert.',
         cleanupError: 'Speicherbereinigung fehlgeschlagen. Bitte erneut versuchen.',
         storageWarningTitle: 'Speicher wird knapp.',
         storageWarningBody: 'Starte bald eine Bereinigung, um Speicherfehler zu vermeiden.',
@@ -630,20 +630,20 @@ export const settingsView = {
         },
         gdprTitle: 'Datenschutz (DSGVO)',
         gdprExport: 'Alle personenbezogenen Daten exportieren',
-        gdprExportDesc: 'Eine vollstaendige Kopie aller Daten herunterladen (Art. 20 DSGVO).',
-        gdprErase: 'Alle Daten loeschen',
+        gdprExportDesc: 'Eine vollständige Kopie aller Daten herunterladen (Art. 20 DSGVO).',
+        gdprErase: 'Alle Daten löschen',
         gdprEraseDesc:
-            'Alle Daten auf diesem Geraet unwiderruflich loeschen (Art. 17 DSGVO). Dies kann nicht rueckgaengig gemacht werden.',
-        gdprSelectiveTitle: 'Selektive Datenbank-Loeschung',
+            'Alle Daten auf diesem Gerät unwiderruflich löschen (Art. 17 DSGVO). Dies kann nicht rückgängig gemacht werden.',
+        gdprSelectiveTitle: 'Selektive Datenbank-Löschung',
         gdprSelectiveDesc:
-            'Einzelne Datenbanken loeschen statt alle Daten auf einmal (Art. 17 DSGVO Teilloeschung).',
-        gdprSelectiveDelete: 'Loeschen',
+            'Einzelne Datenbanken löschen statt alle Daten auf einmal (Art. 17 DSGVO Teillöschung).',
+        gdprSelectiveDelete: 'Löschen',
         gdprSelectiveConfirm:
-            'Sind Sie sicher, dass Sie die Datenbank "{{name}}" loeschen moechten? Dies kann nicht rueckgaengig gemacht werden.',
-        gdprSelectiveSuccess: 'Datenbank "{{name}}" erfolgreich geloescht.',
-        gdprSelectiveError: 'Loeschen der Datenbank "{{name}}" fehlgeschlagen.',
+            'Sind Sie sicher, dass Sie die Datenbank "{{name}}" löschen möchten? Dies kann nicht rückgängig gemacht werden.',
+        gdprSelectiveSuccess: 'Datenbank "{{name}}" erfolgreich gelöscht.',
+        gdprSelectiveError: 'Löschen der Datenbank "{{name}}" fehlgeschlagen.',
         gdprEraseWarning:
-            'Dies loescht unwiderruflich ALLE Datenbanken, lokalen Speicher, Caches und Service Worker. Tippe DELETE ALL zur Bestaetigung.',
+            'Dies löscht unwiderruflich ALLE Datenbanken, lokalen Speicher, Caches und Service Worker. Tippe DELETE ALL zur Bestätigung.',
     },
     privacy: {
         title: 'Privatsphäre & Sicherheit',
@@ -675,12 +675,12 @@ export const settingsView = {
             title: 'Was ist neu in v1.2',
             items: {
                 simulation:
-                    'IoT-Echtzeit-Dashboard mit Sparkline-Diagrammen, Gauge-Karten und Telemetrie-Panel fuer Live-Sensor-Monitoring.',
+                    'IoT-Echtzeit-Dashboard mit Sparkline-Diagrammen, Gauge-Karten und Telemetrie-Panel für Live-Sensor-Monitoring.',
                 strains:
-                    'Taegliche Sorten jetzt mit personalisiertem Empfehlungs-Scoring und Match-Prozent-Badges basierend auf deiner Bibliothek.',
+                    'Tägliche Sorten jetzt mit personalisiertem Empfehlungs-Scoring und Match-Prozent-Badges basierend auf deiner Bibliothek.',
                 help: '3D-GrowRoom-Visualisierung mit interaktiven OrbitControls, Auto-Orbit-Kamera und Live-IoT-Sensor-Badge-Overlay.',
                 settings:
-                    'E2E-Test-Optimierung: Hard-Waits durch Sichtbarkeits-Assertions ersetzt fuer schnellere, zuverlaessigere Testausfuehrung.',
+                    'E2E-Test-Optimierung: Hard-Waits durch Sichtbarkeits-Assertions ersetzt für schnellere, zuverlässigere Testausführung.',
             },
         },
         techStack: {
@@ -915,14 +915,14 @@ export const settingsView = {
     pwa: {
         installBannerTitle: 'CannaGuide installieren',
         installBannerDesc:
-            'Fuege CannaGuide zu deinem Startbildschirm hinzu fuer Offline-Zugriff und ein natives App-Erlebnis.',
+            'Füge CannaGuide zu deinem Startbildschirm hinzu für Offline-Zugriff und ein natives App-Erlebnis.',
         installNow: 'Jetzt installieren',
-        later: 'Spaeter',
+        later: 'Später',
         dontShowAgain: 'Nicht mehr anzeigen',
-        offlineNotice: 'Du bist offline -- einige Funktionen sind moeglicherweise eingeschraenkt.',
-        updateAvailable: 'Eine neue Version ist verfuegbar!',
+        offlineNotice: 'Du bist offline -- einige Funktionen sind möglicherweise eingeschränkt.',
+        updateAvailable: 'Eine neue Version ist verfügbar!',
         updateNow: 'Jetzt aktualisieren',
         installed: 'App installiert',
-        notAvailable: 'Installation in diesem Browser nicht verfuegbar',
+        notAvailable: 'Installation in diesem Browser nicht verfügbar',
     },
 }

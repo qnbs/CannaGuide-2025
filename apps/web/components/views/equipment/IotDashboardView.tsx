@@ -174,23 +174,31 @@ const TelemetryPanel: React.FC<{ telemetry: MqttTelemetryMetrics }> = memo(({ te
                     <div className="text-lg font-bold text-slate-100">
                         {telemetry.messagesReceived}
                     </div>
-                    <div className="text-[10px] uppercase text-slate-500">Messages</div>
+                    <div className="text-[10px] uppercase text-slate-500">
+                        {t('settingsView.iot.messages', { defaultValue: 'Messages' })}
+                    </div>
                 </div>
                 <div>
                     <div className="text-lg font-bold text-emerald-400">{uptimePercent}%</div>
-                    <div className="text-[10px] uppercase text-slate-500">Valid Rate</div>
+                    <div className="text-[10px] uppercase text-slate-500">
+                        {t('settingsView.iot.validRate', { defaultValue: 'Valid Rate' })}
+                    </div>
                 </div>
                 <div>
                     <div className="text-lg font-bold text-cyan-400">
                         {telemetry.avgLatencyMs.toFixed(0)}
                     </div>
-                    <div className="text-[10px] uppercase text-slate-500">Latency (ms)</div>
+                    <div className="text-[10px] uppercase text-slate-500">
+                        {t('settingsView.iot.latencyMs', { defaultValue: 'Latency (ms)' })}
+                    </div>
                 </div>
                 <div>
                     <div className="text-lg font-bold text-red-400">
                         {telemetry.validationErrors}
                     </div>
-                    <div className="text-[10px] uppercase text-slate-500">Errors</div>
+                    <div className="text-[10px] uppercase text-slate-500">
+                        {t('settingsView.iot.errors', { defaultValue: 'Errors' })}
+                    </div>
                 </div>
             </div>
         </Card>

@@ -69,6 +69,7 @@ export const strainsView = {
         addedHint: '{{name}} noted -- find it in the strain catalog!',
         genetics: 'Genetics',
         match: 'match',
+        auto: 'Auto',
         whyToday: 'Why today',
         dailyPick: 'Daily Pick',
         catalog: 'Catalog',

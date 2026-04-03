@@ -10,16 +10,16 @@ export const common = {
     downloadAgain: 'Erneut herunterladen',
     all: 'Alle',
     none: 'Keine',
-    outOfStock: 'Nicht vorraetig',
+    outOfStock: 'Nicht vorrätig',
     imageGenCapability: {
         webgpuRequired:
-            'WebGPU wird fuer die Bildgenerierung benoetigt. Dieses Geraet unterstuetzt nur WASM.',
-        deviceInsufficient: 'Die Geraete-Kapazitaeten sind fuer die Bildgenerierung unzureichend.',
+            'WebGPU wird für die Bildgenerierung benötigt. Dieses Gerät unterstützt nur WASM.',
+        deviceInsufficient: 'Die Geräte-Kapazitäten sind für die Bildgenerierung unzureichend.',
         insufficientVram:
-            'Unzureichender VRAM ({{vram}}MB). Mindestens 4096MB fuer die Bildgenerierung erforderlich.',
+            'Unzureichender VRAM ({{vram}}MB). Mindestens 4096MB für die Bildgenerierung erforderlich.',
         alreadyInProgress:
-            'Bildgenerierung laeuft bereits. Bitte warten Sie auf die aktuelle Aufgabe.',
-        serviceUnavailable: 'Bildgenerierungsdienst nicht verfuegbar.',
+            'Bildgenerierung läuft bereits. Bitte warten Sie auf die aktuelle Aufgabe.',
+        serviceUnavailable: 'Bildgenerierungsdienst nicht verfügbar.',
     },
     name: 'Name',
     type: 'Typ',
@@ -57,7 +57,7 @@ export const common = {
     swUpdateReload: 'Jetzt neu laden',
     offlineWarning:
         'Du bist derzeit offline. Einige Funktionen sind möglicherweise nicht verfügbar.',
-    aiDisclaimer: 'KI-generiert -- keine Garantie fuer Korrektheit.',
+    aiDisclaimer: 'KI-generiert -- keine Garantie für Korrektheit.',
     aiLowConfidence: 'Unsicher -- bitte manuell verifizieren.',
     aiQualityCloud: 'Cloud',
     aiQualityLocalGpu: 'Lokal-GPU',

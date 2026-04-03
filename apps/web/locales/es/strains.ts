@@ -69,6 +69,7 @@ export const strainsView = {
         addedHint: '{{name}} anotada -- encuentrala en el catalogo de variedades!',
         genetics: 'Genetica',
         match: 'coincidencia',
+        auto: 'Auto',
         whyToday: 'Por que hoy',
         dailyPick: 'Seleccion Diaria',
         catalog: 'Catalogo',

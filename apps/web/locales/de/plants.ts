@@ -563,9 +563,9 @@ export const plantsView = {
         logButton: 'Messwerte speichern',
         vpdZone: {
             tooLow: 'Zu niedrig',
-            seedling: 'Saemling',
+            seedling: 'Sämling',
             vegetative: 'Vegetativ',
-            flowering: 'Bluete',
+            flowering: 'Blüte',
             tooHigh: 'Zu hoch',
         },
     },

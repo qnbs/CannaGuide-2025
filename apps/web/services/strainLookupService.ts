@@ -916,8 +916,10 @@ async function lookupWithAI(name: string): Promise<LookupStrainResult | null> {
                     aiFlavonoids.push({
                         name: fname,
                         role: (rec['role'] as FlavonoidDataPoint['role']) ?? 'secondary',
-                        entourageScore: profile?.score,
-                        cannabinoidInteractions: profile?.interactions,
+                        ...(profile !== undefined && {
+                            entourageScore: profile.score,
+                            cannabinoidInteractions: profile.interactions,
+                        }),
                     })
                 }
             }

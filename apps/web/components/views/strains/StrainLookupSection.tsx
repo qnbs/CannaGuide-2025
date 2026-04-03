@@ -725,7 +725,9 @@ const ResultCard: React.FC<ResultCardProps> = memo(
                                 <div className="flex justify-center sm:justify-start">
                                     <EntourageScore
                                         score={result.totalEntourageScore}
-                                        diversity={result.terpeneDiversity}
+                                        {...(result.terpeneDiversity !== undefined && {
+                                            diversity: result.terpeneDiversity,
+                                        })}
                                     />
                                 </div>
                             )}

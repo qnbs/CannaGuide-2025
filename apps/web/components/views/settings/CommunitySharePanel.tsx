@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectUserStrains } from '@/stores/selectors'
 import { communityShareService } from '@/services/communityShareService'
-import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice'
+import { addUserStrain } from '@/stores/slices/userStrainsSlice'
 import { getUISnapshot } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
@@ -23,12 +23,18 @@ const CommunitySharePanelComponent: React.FC = () => {
         try {
             const gist = await communityShareService.exportStrainsToAnonymousGist(userStrains)
             setLastGistUrl(gist.url)
-            getUISnapshot().addNotification({ message: t('settingsView.communityShare.exportSuccess'), type: 'success' })
+            getUISnapshot().addNotification({
+                message: t('settingsView.communityShare.exportSuccess'),
+                type: 'success',
+            })
         } catch (error) {
             getUISnapshot().addNotification({
-                    message: error instanceof Error ? error.message : t('settingsView.communityShare.exportError'),
-                    type: 'error',
-                })
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : t('settingsView.communityShare.exportError'),
+                type: 'error',
+            })
         } finally {
             setIsBusy(false)
         }
@@ -39,16 +45,26 @@ const CommunitySharePanelComponent: React.FC = () => {
         setIsBusy(true)
         try {
             const imported = await communityShareService.importStrainsFromGist(gistInput.trim())
-            imported.forEach((strain) => {
-                dispatch(addUserStrainWithValidation(strain))
+            // Pre-filter duplicates so no per-strain listener toast fires;
+            // dispatch raw addUserStrain to skip the validation thunk.
+            const existingNames = new Set(userStrains.map((s) => s.name.toLowerCase()))
+            const newStrains = imported.filter((s) => !existingNames.has(s.name.toLowerCase()))
+            newStrains.forEach((strain) => dispatch(addUserStrain(strain)))
+            getUISnapshot().addNotification({
+                message: t('settingsView.communityShare.importSuccess_other', {
+                    count: newStrains.length,
+                }),
+                type: 'success',
             })
-            getUISnapshot().addNotification({ message: t('settingsView.communityShare.importSuccess_other', { count: imported.length }), type: 'success' })
             setGistInput('')
         } catch (error) {
             getUISnapshot().addNotification({
-                    message: error instanceof Error ? error.message : t('settingsView.communityShare.importError'),
-                    type: 'error',
-                })
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : t('settingsView.communityShare.importError'),
+                type: 'error',
+            })
         } finally {
             setIsBusy(false)
         }
@@ -63,7 +79,11 @@ const CommunitySharePanelComponent: React.FC = () => {
                 {t('settingsView.communityShare.description')}
             </p>
             <div className="space-y-3">
-                <Button onClick={handleExport} disabled={isBusy || userStrains.length === 0} className="w-full">
+                <Button
+                    onClick={handleExport}
+                    disabled={isBusy || userStrains.length === 0}
+                    className="w-full"
+                >
                     <PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />
                     {t('settingsView.communityShare.exportButton')}
                 </Button>
@@ -82,7 +102,12 @@ const CommunitySharePanelComponent: React.FC = () => {
                     onChange={(e) => setGistInput(e.target.value)}
                     placeholder={t('settingsView.communityShare.gistPlaceholder')}
                 />
-                <Button onClick={handleImport} variant="secondary" disabled={isBusy || !gistInput.trim()} className="w-full">
+                <Button
+                    onClick={handleImport}
+                    variant="secondary"
+                    disabled={isBusy || !gistInput.trim()}
+                    className="w-full"
+                >
                     <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2" />
                     {t('settingsView.communityShare.importButton')}
                 </Button>

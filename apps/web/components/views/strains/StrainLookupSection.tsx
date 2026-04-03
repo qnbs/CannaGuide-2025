@@ -843,8 +843,6 @@ export const StrainLookupSection: React.FC = memo(() => {
     const [isLoading, setIsLoading] = useState(false)
     const [result, setResult] = useState<LookupStrainResult | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [addedFeedback, setAddedFeedback] = useState<string | null>(null)
-
     const inputRef = useRef<HTMLInputElement>(null)
     const suggestionsRef = useRef<HTMLDivElement>(null)
 
@@ -914,7 +912,6 @@ export const StrainLookupSection: React.FC = memo(() => {
             setError(null)
             setResult(null)
             setShowSuggestions(false)
-            setAddedFeedback(null)
             try {
                 const found = await lookupStrain(q)
                 if (found) {
@@ -978,12 +975,6 @@ export const StrainLookupSection: React.FC = memo(() => {
             }
             const fullStrain = r.fullStrain ?? resolveDiscoveredToStrain(discovered)
             void dispatch(addUserStrainWithValidation(fullStrain))
-            setAddedFeedback(
-                t('strainLookup.addedSuccess', '{{name}} added to your library!', {
-                    name: r.name,
-                }),
-            )
-            setTimeout(() => setAddedFeedback(null), 3500)
         },
         [dispatch, t],
     )
@@ -1036,7 +1027,6 @@ export const StrainLookupSection: React.FC = memo(() => {
         setQuery('')
         setResult(null)
         setError(null)
-        setAddedFeedback(null)
         inputRef.current?.focus()
     }, [])
 
@@ -1190,14 +1180,6 @@ export const StrainLookupSection: React.FC = memo(() => {
                             <span className="text-xs text-slate-500">
                                 {t('strainLookup.searching', 'Searching all sources...')}
                             </span>
-                        </div>
-                    )}
-
-                    {/* Success feedback */}
-                    {addedFeedback && (
-                        <div className="flex items-center gap-2 text-emerald-400 text-sm py-1">
-                            <PhosphorIcons.CheckCircle className="w-4 h-4" />
-                            {addedFeedback}
                         </div>
                     )}
 

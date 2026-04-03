@@ -26,7 +26,9 @@ import {
     addUserStrainWithValidation,
     updateUserStrainAndCloseModal,
     deleteUserStrain,
+    deleteMultipleUserStrains,
 } from '@/stores/slices/userStrainsSlice'
+import { ConfirmModal } from '@/components/common/ConfirmModal'
 import { StrainDetailView } from './StrainDetailView'
 import { AddStrainModal } from './AddStrainModal'
 import {
@@ -123,6 +125,8 @@ export const StrainsView: React.FC = () => {
     const [loadError, setLoadError] = useState<string | null>(null)
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const [_currentPage, setCurrentPage] = useState(1)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+    const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
 
     const settings = useAppSelector(selectSettings)
     const strainsViewState = useStrainsViewStore()
@@ -444,36 +448,15 @@ export const StrainsView: React.FC = () => {
         [dispatch],
     )
 
-    const handleDeleteUserStrain = useCallback(
-        (id: string) => {
-            const strainToDelete = userStrains.find((s) => s.id === id)
-            if (
-                strainToDelete &&
-                window.confirm(
-                    t('strainsView.addStrainModal.validation.deleteConfirm', {
-                        name: strainToDelete.name,
-                    }),
-                )
-            ) {
-                dispatch(deleteUserStrain(id))
-            }
-        },
-        [dispatch, userStrains, t],
-    )
+    const handleDeleteUserStrain = useCallback((id: string) => {
+        setConfirmDeleteId(id)
+    }, [])
 
     const handleBulkDelete = useCallback(() => {
-        if (
-            strainsViewTab === StrainViewTab.MyStrains &&
-            window.confirm(
-                t('strainsView.exportsManager.deleteConfirmPlural_other', {
-                    count: selectedIdsSet.size,
-                }),
-            )
-        ) {
-            selectedIdsSet.forEach((id) => dispatch(deleteUserStrain(id)))
-            strainsViewState.clearStrainSelection()
+        if (strainsViewTab === StrainViewTab.MyStrains && selectedIdsSet.size > 0) {
+            setConfirmBulkDelete(true)
         }
-    }, [strainsViewTab, selectedIdsSet, t, dispatch, strainsViewState])
+    }, [strainsViewTab, selectedIdsSet.size])
 
     const handleToggleFavorite = useCallback(
         (id: string) => {
@@ -708,6 +691,29 @@ export const StrainsView: React.FC = () => {
                     strainToEdit={strainToEdit}
                 />
             )}
+            <ConfirmModal
+                isOpen={confirmDeleteId !== null}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={() => {
+                    if (confirmDeleteId) dispatch(deleteUserStrain(confirmDeleteId))
+                }}
+                title={t('common.delete')}
+                message={t('strainsView.addStrainModal.validation.deleteConfirm', {
+                    name: userStrains.find((s) => s.id === confirmDeleteId)?.name ?? '',
+                })}
+            />
+            <ConfirmModal
+                isOpen={confirmBulkDelete}
+                onClose={() => setConfirmBulkDelete(false)}
+                onConfirm={() => {
+                    dispatch(deleteMultipleUserStrains(Array.from(selectedIdsSet)))
+                    strainsViewState.clearStrainSelection()
+                }}
+                title={t('common.delete')}
+                message={t('strainsView.exportsManager.deleteConfirmPlural_other', {
+                    count: selectedIdsSet.size,
+                })}
+            />
             {isExportModalOpen && (
                 <DataExportModal
                     isOpen={true}

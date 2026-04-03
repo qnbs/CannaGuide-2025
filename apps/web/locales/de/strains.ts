@@ -228,7 +228,9 @@ export const strainsView = {
             updateSuccess: 'Sorte "{{name}}" erfolgreich aktualisiert!',
             duplicate: 'Eine Sorte mit dem Namen "{{name}}" existiert bereits.',
             deleteConfirm:
-                'Möchtest du die Sorte "{{name}}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+                'Möchtest du die Sorte "{{name}}" wirklich löschen? Diese Aktion kann nicht rükgängig gemacht werden.',
+            deletedCount_one: '1 Sorte gelöscht.',
+            deletedCount_other: '{{count}} Sorten gelöscht.',
         },
         autoflower: 'Autoflower',
     },

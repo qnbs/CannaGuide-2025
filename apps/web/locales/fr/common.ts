@@ -48,6 +48,8 @@ export const common = {
     installPwaDismissed: 'Installation annulee.',
     swUpdateAvailable: 'Une nouvelle version est disponible. Rechargez pour mettre a jour.',
     swUpdateReload: 'Recharger maintenant',
+    itemRemoved: 'Element supprime.',
+    itemUpdated: '"{{name}}" mis a jour.',
     offlineWarning:
         'Vous etes actuellement hors ligne. Certaines fonctionnalites peuvent etre indisponibles.',
     preparingGuide: 'Preparation de votre guide...',

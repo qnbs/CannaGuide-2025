@@ -2,7 +2,51 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-07, Session 32) -- RAG Explanations, 7-Day Simulations, SVG Charts (Execution 5)
+## Latest Session (2026-04-07, Session 33) -- i18n ES/FR/NL Calculator Keys, Stryker Mutation Coverage, Playwright CT + VR (Execution 6)
+
+**Status: v1.3.0-beta. Execution 6 complete (final planned execution). i18n ES/FR/NL rechner sections added, Stryker extended to calculator services, SparklineChart CT + CalculatorHub VR tests added. 1182 tests passing. TypeScript clean.**
+
+### What Was Done (Session 33)
+
+1. **i18n ES/FR/NL rechner blocks** (full `knowledgeView.rechner.*` section in Spanish, French, Dutch):
+    - 8 calculator sub-namespaces per language: vpd, transpiration, ecTds, lightDli, cannabinoid, terpeneEntourage, waterActivity, leafConductance
+    - Keys per calculator: title, description, labels, units, statusLow/Ok/High, simulate, explainAi, aiExplanationTitle, aiLoading, deepDive
+    - Inserted as peer of `lexikon:`, `atlas:`, `lernpfad:` blocks inside `knowledgeView`
+
+2. **Stryker mutation config extended** (`stryker.conf.json`):
+    - Added `apps/web/services/equipmentCalculatorService.ts` to `mutate` array
+    - Added `apps/web/services/knowledgeCalculatorService.ts` to `mutate` array
+    - Added `apps/web/services/knowledgeRagService.ts` to `mutate` array
+    - thresholds unchanged: high=80, low=60, break=50
+
+3. **SparklineChart.ct.tsx** (`apps/web/tests/ct/SparklineChart.ct.tsx`):
+    - 11 Playwright CT tests: SVG role/label, polyline rendering, empty-state, showArea, showDots, highlightLast, custom color/height, single point, x-axis labels
+
+4. **visual-regression.e2e.ts extended** (`apps/web/tests/e2e/visual-regression.e2e.ts`):
+    - 2 new screenshot tests per theme: `calculator-hub-vpd-{theme}.png`, `calculator-hub-transpiration-{theme}.png`
+    - Navigation: knowledge nav -> Calculator button (aria-label) -> optional transpiration tab click
+    - Baselines generated with `--update-snapshots` on first CI run
+
+### Verified Metrics (Session 33)
+
+- Tests: **1182 passing, 0 failures** (113 test files)
+- TypeScript: **clean** (only known RTK TS2719 filtered)
+- i18n: ES/FR/NL knowledge calculator keys complete
+- Stryker: now covers calculator services + Redux slices
+
+### Planned Executions
+
+Execution 6 was the final planned execution of the overall plan. No further mandatory executions defined.
+
+Optional follow-up candidates:
+
+- Generate Stryker mutation report and tune thresholds per service
+- Add ES/FR/NL translations to remaining namespaces (settings, strains, help: ~100 keys each)
+- Add Lighthouse CI budget for Equipment view via `lighthouserc.json` custom path assertion
+
+---
+
+## Previous Session (2026-04-07, Session 32) -- RAG Explanations, 7-Day Simulations, SVG Charts (Execution 5)
 
 **Status: v1.3.0-beta. Execution 5 complete. CalculatorHub expanded with WorkerBus-backed 7-day simulations, RAG AI explanations, and SparklineChart SVG rendering. 1182 tests passing. TypeScript clean.**
 

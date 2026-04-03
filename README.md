@@ -116,7 +116,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1119 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1182 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 | **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                                     |
 | **Mobile**         | Capacitor                            | iOS/Android wrapper                                        |

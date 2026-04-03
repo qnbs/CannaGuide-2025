@@ -7,7 +7,8 @@
 // All computation is synchronous / in-memory -- no external dependencies.
 // ---------------------------------------------------------------------------
 
-import type { Plant, PlantStage } from '@/types'
+import { PlantStage } from '@/types'
+import type { Plant } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -348,7 +349,7 @@ class AnalyticsEngine {
             }
 
             // Vegetative stage -> suggest training
-            if (plant.stage === ('VEGETATIVE' as PlantStage) && plant.age && plant.age > 21) {
+            if (plant.stage === PlantStage.Vegetative && plant.age && plant.age > 21) {
                 recs.push({
                     id: `train-${plant.id}`,
                     category: 'training',
@@ -360,7 +361,7 @@ class AnalyticsEngine {
             }
 
             // Flowering late stage -> harvest timing
-            if (plant.stage === ('FLOWERING' as PlantStage) && plant.age && plant.age > 60) {
+            if (plant.stage === PlantStage.Flowering && plant.age && plant.age > 60) {
                 recs.push({
                     id: `harvest-${plant.id}`,
                     category: 'harvest',
@@ -401,35 +402,35 @@ class AnalyticsEngine {
 // ---------------------------------------------------------------------------
 
 function isFinishedStage(stage: PlantStage): boolean {
-    return stage === ('FINISHED' as PlantStage)
+    return stage === PlantStage.Finished
 }
 
 function estimateMilestoneForPlant(plant: Plant): MilestoneEstimate | undefined {
     const age = plant.age ?? 0
 
     switch (plant.stage) {
-        case 'VEGETATIVE' as PlantStage:
+        case PlantStage.Vegetative:
             // Typical flip at ~30 days vegetative
             return {
                 type: 'flip',
                 plantName: plant.name,
                 estimatedDays: Math.max(1, 30 - age),
             }
-        case 'FLOWERING' as PlantStage:
+        case PlantStage.Flowering:
             // Typical harvest at ~60-70 days flowering
             return {
                 type: 'harvest',
                 plantName: plant.name,
                 estimatedDays: Math.max(1, 65 - age),
             }
-        case 'DRYING' as PlantStage:
+        case PlantStage.Drying:
             // Typical drying ~10 days
             return {
                 type: 'curing_done',
                 plantName: plant.name,
                 estimatedDays: Math.max(1, 10 - age),
             }
-        case 'SEEDLING' as PlantStage:
+        case PlantStage.Seedling:
             // Transplant at ~14 days
             return {
                 type: 'transplant',

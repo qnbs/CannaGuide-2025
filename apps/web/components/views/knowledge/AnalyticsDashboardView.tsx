@@ -42,7 +42,9 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
     if (plants.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-16 text-center text-white/60">
-                <p className="text-lg">{t('analyticsEmpty', 'Add plants to see analytics')}</p>
+                <p className="text-lg">
+                    {t('analytics.analyticsEmpty', 'Add plants to see analytics')}
+                </p>
             </div>
         )
     }
@@ -51,7 +53,9 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
         <div className="space-y-6">
             {/* -- Garden Score Hero ----------------------------------------- */}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-sm">
-                <p className="mb-2 text-sm text-white/60">{t('gardenScore', 'Garden Score')}</p>
+                <p className="mb-2 text-sm text-white/60">
+                    {t('analytics.gardenScore', 'Garden Score')}
+                </p>
                 <p className={cn('text-5xl font-bold', scoreColor(analytics.gardenScore))}>
                     {analytics.gardenScore}
                 </p>
@@ -62,19 +66,19 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                         <span className="block text-lg font-semibold text-white/90">
                             {analytics.avgHealth}
                         </span>
-                        <span>{t('avgHealth', 'Avg Health')}</span>
+                        <span>{t('analytics.avgHealth', 'Avg Health')}</span>
                     </div>
                     <div>
                         <span className="block text-lg font-semibold text-white/90">
                             {analytics.environmentStability}
                         </span>
-                        <span>{t('envStability', 'Env Stability')}</span>
+                        <span>{t('analytics.envStability', 'Env Stability')}</span>
                     </div>
                     <div>
                         <span className="block text-lg font-semibold text-white/90">
                             {plants.length}
                         </span>
-                        <span>{t('activePlants', 'Active Plants')}</span>
+                        <span>{t('analytics.activePlants', 'Active Plants')}</span>
                     </div>
                 </div>
             </div>
@@ -83,7 +87,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
             {Object.keys(analytics.stageDistribution).length > 0 && (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
-                        {t('stageDistribution', 'Stage Distribution')}
+                        {t('analytics.stageDistribution', 'Stage Distribution')}
                     </h3>
                     <div className="flex flex-wrap gap-2">
                         {Object.entries(analytics.stageDistribution).map(([stage, count]) => (
@@ -102,7 +106,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
             {analytics.riskFactors.length > 0 && (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
-                        {t('riskFactors', 'Risk Factors')}
+                        {t('analytics.riskFactors', 'Risk Factors')}
                     </h3>
                     <ul className="space-y-2">
                         {analytics.riskFactors.map((risk, i) => (
@@ -126,16 +130,16 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
             {analytics.strainPerformance.length > 0 && (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
-                        {t('strainPerformance', 'Strain Performance')}
+                        {t('analytics.strainPerformance', 'Strain Performance')}
                     </h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-white/80">
                             <thead className="border-b border-white/10 text-xs text-white/50">
                                 <tr>
-                                    <th className="pb-2 pr-4">{t('strain', 'Strain')}</th>
-                                    <th className="pb-2 pr-4">{t('health', 'Health')}</th>
-                                    <th className="pb-2 pr-4">{t('plants', 'Plants')}</th>
-                                    <th className="pb-2">{t('avgAge', 'Avg Age')}</th>
+                                    <th className="pb-2 pr-4">{t('analytics.strain', 'Strain')}</th>
+                                    <th className="pb-2 pr-4">{t('analytics.health', 'Health')}</th>
+                                    <th className="pb-2 pr-4">{t('analytics.plants', 'Plants')}</th>
+                                    <th className="pb-2">{t('analytics.avgAge', 'Avg Age')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -159,7 +163,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
             {analytics.recommendations.length > 0 && (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
-                        {t('recommendations', 'Recommendations')}
+                        {t('analytics.recommendations', 'Recommendations')}
                     </h3>
                     <ul className="space-y-2">
                         {analytics.recommendations.map((rec, i) => (
@@ -167,8 +171,12 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 key={`rec-${i}`}
                                 className="rounded-lg bg-white/5 px-3 py-2 text-sm text-white/80"
                             >
-                                <span className="font-medium text-white/90">{rec.titleKey}</span>
-                                <p className="mt-0.5 text-xs text-white/60">{rec.descriptionKey}</p>
+                                <span className="font-medium text-white/90">
+                                    {t(`analytics.${rec.titleKey}`, rec.titleKey)}
+                                </span>
+                                <p className="mt-0.5 text-xs text-white/60">
+                                    {t(`analytics.${rec.descriptionKey}`, rec.descriptionKey)}
+                                </p>
                             </li>
                         ))}
                     </ul>
@@ -178,12 +186,19 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
             {/* -- Next Milestone ------------------------------------------- */}
             {analytics.nextMilestone !== undefined && (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-sm">
-                    <p className="text-sm text-white/60">{t('nextMilestone', 'Next Milestone')}</p>
+                    <p className="text-sm text-white/60">
+                        {t('analytics.nextMilestone', 'Next Milestone')}
+                    </p>
                     <p className="mt-1 text-lg font-semibold text-white/90">
-                        {analytics.nextMilestone.plantName} -- {analytics.nextMilestone.type}
+                        {analytics.nextMilestone.plantName} --{' '}
+                        {t(
+                            `analytics.milestoneType.${analytics.nextMilestone.type}`,
+                            analytics.nextMilestone.type,
+                        )}
                     </p>
                     <p className="text-xs text-white/50">
-                        ~{analytics.nextMilestone.estimatedDays} {t('daysAway', 'days away')}
+                        ~{analytics.nextMilestone.estimatedDays}{' '}
+                        {t('analytics.daysAway', 'days away')}
                     </p>
                 </div>
             )}

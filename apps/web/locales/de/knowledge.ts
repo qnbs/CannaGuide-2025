@@ -940,3 +940,40 @@ export const tipOfTheDay = {
         'Stofftöpfe sind eine großartige Wahl für Anfänger, da sie eine Überwässerung fast unmöglich machen und die Wurzeln mit Sauerstoff versorgen.',
     ],
 }
+
+export const analytics = {
+    gardenScore: 'Garten-Score',
+    avgHealth: 'Durchschn. Gesundheit',
+    envStability: 'Umweltstabilitaet',
+    activePlants: 'Aktive Pflanzen',
+    stageDistribution: 'Phasenverteilung',
+    riskFactors: 'Risikofaktoren',
+    strainPerformance: 'Sorten-Performance',
+    recommendations: 'Empfehlungen',
+    nextMilestone: 'Naechster Meilenstein',
+    daysAway: 'Tage entfernt',
+    analyticsEmpty: 'Fuege Pflanzen hinzu, um Analysen zu sehen',
+    strain: 'Sorte',
+    health: 'Gesundheit',
+    plants: 'Pflanzen',
+    avgAge: 'Durchschn. Alter',
+    relatedKnowledge: 'Verwandtes Wissen',
+    milestoneType: {
+        flip: 'Umstellung auf Bluete',
+        harvest: 'Erntereif',
+        curing_done: 'Fermentierung abgeschlossen',
+        transplant: 'Umtopfen',
+    },
+    'analytics.recommendations.adjustVpd': 'VPD anpassen',
+    'analytics.recommendations.adjustVpdDesc':
+        'VPD liegt ausserhalb des optimalen Bereichs. Temperatur oder Luftfeuchtigkeit anpassen.',
+    'analytics.recommendations.considerTraining': 'Training in Betracht ziehen',
+    'analytics.recommendations.considerTrainingDesc':
+        'Pflanze ist in spaeter vegetativer Phase. LST oder Topping koennte den Ertrag verbessern.',
+    'analytics.recommendations.checkTrichomes': 'Trichome pruefen',
+    'analytics.recommendations.checkTrichomesDesc':
+        'Pflanze ist in spaeter Bluetephase. Trichome fuer den Erntezeitpunkt beobachten.',
+    'analytics.recommendations.improveHealth': 'Pflanzengesundheit verbessern',
+    'analytics.recommendations.improveHealthDesc':
+        'Pflanzengesundheit liegt unter dem Optimum. Naehrstoffe, pH und Umgebung pruefen.',
+}

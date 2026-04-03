@@ -344,6 +344,34 @@ export const equipmentView = {
             total: 'Budget total',
             currency: 'EUR',
         },
+        timerSchedule: {
+            title: 'Calculateur de Minuterie Lumineuse',
+            description:
+                'Obtenez la photoperiode allumagee/extinction recommandee pour chaque stade de croissance. Entrez optionnellement le PPFD et un DLI cible pour calculer les heures de lumiere optimales.',
+            growthStage: 'Stade de Croissance',
+            stages: {
+                seedling: 'Semis',
+                veg: 'Vegetatif',
+                flower: 'Floraison',
+                autoflower: 'Autofloraison',
+            },
+            ppfd: 'PPFD au niveau de la canopee',
+            targetDli: 'DLI cible',
+            optional: 'optionnel',
+            recommended: 'Calendrier recommande',
+            onHours: 'Lumiere allumee',
+            offHours: 'Periode nocturne',
+            hoursUnit: 'h/jour',
+            dli: 'DLI calcule',
+            dliStatus: 'Statut DLI',
+            dliStatuses: {
+                low: 'En dessous de la plage optimale',
+                optimal: 'Dans la plage optimale',
+                high: 'Au-dessus de la plage optimale',
+                unknown: '--',
+            },
+            dliRangeNote: 'Plage DLI recommandee pour ce stade: {{min}}-{{max}} mol/m2/jour.',
+        },
         aiPanel: {
             title: 'Recommandation rapide IA',
             description:

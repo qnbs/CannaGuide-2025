@@ -344,8 +344,35 @@ export const equipmentView = {
             total: 'Gesamtbudget',
             currency: 'EUR',
         },
+        timerSchedule: {
+            title: 'Licht-Timer-Rechner',
+            description:
+                'Ermittle den empfohlenen Ein/Aus-Zeitplan (Photoperiode) fur jede Wachstumsphase. Optional: PPFD und Ziel-DLI eingeben, um die optimalen taglichen Lichtstunden zu berechnen.',
+            growthStage: 'Wachstumsphase',
+            stages: {
+                seedling: 'Keimling',
+                veg: 'Vegetativ',
+                flower: 'Blute',
+                autoflower: 'Autoflower',
+            },
+            ppfd: 'PPFD am Baldachin',
+            targetDli: 'Ziel-DLI',
+            optional: 'optional',
+            recommended: 'Empfohlener Zeitplan',
+            onHours: 'Licht an',
+            offHours: 'Dunkelphase',
+            hoursUnit: 'h/Tag',
+            dli: 'Berechnetes DLI',
+            dliStatus: 'DLI-Status',
+            dliStatuses: {
+                low: 'Unterhalb des optimalen Bereichs',
+                optimal: 'Innerhalb des optimalen Bereichs',
+                high: 'Oberhalb des optimalen Bereichs',
+                unknown: '--',
+            },
+            dliRangeNote: 'Empfohlener DLI-Bereich fur diese Phase: {{min}}-{{max}} mol/m2/Tag.',
+        },
         aiPanel: {
-            title: 'KI-Schnellempfehlung',
             description:
                 'Einkaufsliste aus deinen aktuellen Raummaßen und der Lichtwattleistung generieren.',
             generate: 'Einkaufsliste generieren',

@@ -343,3 +343,143 @@ describe('Light Hanging Height Calculator', () => {
         })
     })
 })
+
+// ---------------------------------------------------------------------------
+// Timer Schedule Calculator
+// ---------------------------------------------------------------------------
+
+import {
+    calculateTimerSchedule,
+    TimerScheduleInputSchema,
+} from '@/services/equipmentCalculatorService'
+
+describe('Timer Schedule Calculator', () => {
+    describe('TimerScheduleInputSchema', () => {
+        it('accepts valid seedling input', () => {
+            expect(TimerScheduleInputSchema.safeParse({ growthStage: 'seedling' }).success).toBe(
+                true,
+            )
+        })
+
+        it('accepts DLI-driven input', () => {
+            expect(
+                TimerScheduleInputSchema.safeParse({
+                    growthStage: 'veg',
+                    targetDliMolPerM2: 30,
+                    ppfd: 600,
+                }).success,
+            ).toBe(true)
+        })
+
+        it('rejects invalid growth stage', () => {
+            expect(TimerScheduleInputSchema.safeParse({ growthStage: 'clone' }).success).toBe(false)
+        })
+
+        it('rejects targetDli above 80', () => {
+            expect(
+                TimerScheduleInputSchema.safeParse({
+                    growthStage: 'veg',
+                    targetDliMolPerM2: 90,
+                }).success,
+            ).toBe(false)
+        })
+    })
+
+    describe('calculateTimerSchedule', () => {
+        it('veg stage defaults to 18/6', () => {
+            const result = calculateTimerSchedule({ growthStage: 'veg' })
+            expect(result.onHours).toBe(18)
+            expect(result.offHours).toBe(6)
+        })
+
+        it('flower stage defaults to 12/12', () => {
+            const result = calculateTimerSchedule({ growthStage: 'flower' })
+            expect(result.onHours).toBe(12)
+            expect(result.offHours).toBe(12)
+        })
+
+        it('autoflower stage defaults to 20/4', () => {
+            const result = calculateTimerSchedule({ growthStage: 'autoflower' })
+            expect(result.onHours).toBe(20)
+            expect(result.offHours).toBe(4)
+        })
+
+        it('seedling stage defaults to 18/6', () => {
+            const result = calculateTimerSchedule({ growthStage: 'seedling' })
+            expect(result.onHours).toBe(18)
+            expect(result.offHours).toBe(6)
+        })
+
+        it('onHours + offHours always equals 24', () => {
+            const stages: Array<'seedling' | 'veg' | 'flower' | 'autoflower'> = [
+                'seedling',
+                'veg',
+                'flower',
+                'autoflower',
+            ]
+            stages.forEach((stage) => {
+                const result = calculateTimerSchedule({ growthStage: stage })
+                expect(result.onHours + result.offHours).toBe(24)
+            })
+        })
+
+        it('DLI is null when ppfd is not provided', () => {
+            const result = calculateTimerSchedule({ growthStage: 'veg' })
+            expect(result.dli).toBeNull()
+            expect(result.dliStatus).toBe('unknown')
+        })
+
+        it('computes DLI correctly from ppfd and onHours', () => {
+            // 600 umol/m2/s * 18h * 3600s / 1e6 = 38.88 mol/m2/day
+            const result = calculateTimerSchedule({ growthStage: 'veg', ppfd: 600 })
+            expect(result.dli).toBeCloseTo(38.88, 0)
+        })
+
+        it('dliStatus is optimal for veg stage at 600 PPFD / 18h', () => {
+            const result = calculateTimerSchedule({ growthStage: 'veg', ppfd: 600 })
+            // DLI ~38.88 is within veg optimal range 20-40
+            expect(result.dliStatus).toBe('optimal')
+        })
+
+        it('dliStatus is low for low PPFD veg', () => {
+            // 100 umol/m2/s * 18h * 3600s / 1e6 = 6.48 mol/m2/day < min 20
+            const result = calculateTimerSchedule({ growthStage: 'veg', ppfd: 100 })
+            expect(result.dliStatus).toBe('low')
+        })
+
+        it('DLI-driven mode: overrides default onHours', () => {
+            // Target 30 mol/m2/day at 600 PPFD:
+            // onHours = 30 * 1e6 / (600 * 3600) = 13.9 -> 14 hours
+            const result = calculateTimerSchedule({
+                growthStage: 'flower',
+                targetDliMolPerM2: 30,
+                ppfd: 600,
+            })
+            expect(result.onHours).toBe(14)
+            expect(result.offHours).toBe(10)
+        })
+
+        it('DLI-driven mode: clamps onHours to [1, 24]', () => {
+            // Extremely high target DLI
+            const result = calculateTimerSchedule({
+                growthStage: 'veg',
+                targetDliMolPerM2: 80,
+                ppfd: 100,
+            })
+            expect(result.onHours).toBeLessThanOrEqual(24)
+            expect(result.onHours).toBeGreaterThanOrEqual(1)
+        })
+
+        it('schedule string includes on/off hours', () => {
+            const result = calculateTimerSchedule({ growthStage: 'flower' })
+            expect(result.schedule).toContain('12')
+            expect(result.schedule).toMatch(/\d+h on/)
+        })
+
+        it('recommendedDliRange is provided for each stage', () => {
+            const result = calculateTimerSchedule({ growthStage: 'flower' })
+            expect(result.recommendedDliRange.min).toBeGreaterThan(0)
+            expect(result.recommendedDliRange.max).toBeGreaterThan(result.recommendedDliRange.min)
+        })
+    })
+})

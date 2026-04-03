@@ -15,6 +15,7 @@ import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
 import { EnvironmentDashboard } from './analytics/EnvironmentDashboard'
 import { ProactiveAlertBanner } from './ProactiveAlertBanner'
+import { RelatedKnowledgePanel } from '@/components/common/RelatedKnowledgePanel'
 import { calculateVPD } from '@/lib/vpd/calculator'
 
 interface DetailedPlantViewProps {
@@ -255,6 +256,13 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
             {header}
 
             <ProactiveAlertBanner plantId={plant.id} />
+
+            <RelatedKnowledgePanel
+                plantId={plant.id}
+                currentStage={plant.stage}
+                maxResults={4}
+                compact
+            />
 
             <div
                 ref={tabListRef}

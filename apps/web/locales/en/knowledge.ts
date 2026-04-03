@@ -12,6 +12,7 @@ export const knowledgeView = {
         atlas: 'Disease Atlas',
         rechner: 'Calculator',
         lernpfad: 'Learning Paths',
+        analytik: 'Analytics',
         navLabel: 'Knowledge sections',
     },
     hub: {

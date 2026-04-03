@@ -710,7 +710,7 @@ class GeminiService implements BaseAIProvider {
                 },
             })
         } catch (error) {
-            console.error('Gemini API Error:', error)
+            console.debug('Gemini API Error:', error)
             this.rethrowKnownError(error, 'ai.error.generic')
         }
     }
@@ -955,9 +955,9 @@ class GeminiService implements BaseAIProvider {
             return await this.getEquipmentRecommendationFromGemini(prompt, lang)
         } catch (error) {
             const isAlternateProviderError = this.isAlternateProvider()
-            console.error('Gemini getEquipmentRecommendation Error:', error)
+            console.debug('Gemini getEquipmentRecommendation Error:', error)
             if (isAlternateProviderError) {
-                console.error('Alt-provider getEquipmentRecommendation Error:', error)
+                console.debug('Alt-provider getEquipmentRecommendation Error:', error)
             }
             this.rethrowKnownError(error, 'ai.error.equipment')
         }
@@ -1463,7 +1463,7 @@ PLANT CONTEXT:
         try {
             return await this.diagnosePlantViaGemini(base64Image, mimeType, localizedPrompt)
         } catch (error) {
-            console.error('Gemini diagnosePlant Error:', error)
+            console.debug('Gemini diagnosePlant Error:', error)
             if (this.shouldUseLocalFallback(error)) {
                 const localAiService = await getLocalAiService()
                 return localAiService.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
@@ -1509,7 +1509,7 @@ PLANT CONTEXT:
 
             return await this.getMentorResponseFromGemini(prompt, lang)
         } catch (error) {
-            console.error('Gemini getMentorResponse Error:', error)
+            console.debug('Gemini getMentorResponse Error:', error)
             if (this.shouldUseLocalFallback(error)) {
                 const localAiService = await getLocalAiService()
                 return localAiService.getMentorResponse(plant, query, lang, ragContext)
@@ -1532,7 +1532,7 @@ PLANT CONTEXT:
 
             return await this.getStrainTipsFromGemini(localizedPrompt)
         } catch (e) {
-            console.error('Gemini getStrainTips Error:', e)
+            console.debug('Gemini getStrainTips Error:', e)
             if (this.shouldUseLocalFallback(e)) {
                 const localAiService = await getLocalAiService()
                 return localAiService.getStrainTips(strain, context, lang)
@@ -1570,7 +1570,7 @@ PLANT CONTEXT:
 
             return this.extractGeneratedImageDataOrThrow(response)
         } catch (error) {
-            console.error('Gemini generateStrainImage Error:', error)
+            console.debug('Gemini generateStrainImage Error:', error)
             this.rethrowKnownError(error, 'ai.error.generic')
         }
     }
@@ -1593,7 +1593,7 @@ PLANT CONTEXT:
 
             return await this.generateDeepDiveFromGemini(localizedPrompt)
         } catch (e) {
-            console.error('Gemini generateDeepDive Error:', e)
+            console.debug('Gemini generateDeepDive Error:', e)
             if (this.shouldUseLocalFallback(e)) {
                 const localAiService = await getLocalAiService()
                 return localAiService.generateDeepDive(topic, plant, lang)

@@ -5,7 +5,7 @@ export type LocalAiPipeline = (
     options?: Record<string, unknown>,
 ) => Promise<unknown>
 
-/** Detected best ONNX execution provider: webgpu → wasm. */
+/** Detected best ONNX execution provider: webgpu -> wasm. */
 export type OnnxBackend = 'webgpu' | 'wasm'
 
 let transformersModulePromise: Promise<TransformersModule> | null = null
@@ -380,7 +380,7 @@ export const resolveModelProfile = (vramMB: number | null = null): ModelProfile 
         cachedProfile = buildProfile(
             'q4f16',
             '1.5B',
-            `WebGPU + high VRAM (${vramMB} MB) + ${memoryGB} GB RAM → q4f16 1.5B premium tier.`,
+            `WebGPU + high VRAM (${vramMB} MB) + ${memoryGB} GB RAM -> q4f16 1.5B premium tier.`,
         )
         return cachedProfile
     }
@@ -397,7 +397,7 @@ export const resolveModelProfile = (vramMB: number | null = null): ModelProfile 
     cachedProfile = buildProfile(
         'q4',
         '0.5B',
-        `${reasonParts.join(', ')} → 0.5B q4 standard tier (~70 % savings).`,
+        `${reasonParts.join(', ')} -> 0.5B q4 standard tier (~70 % savings).`,
     )
     return cachedProfile
 }

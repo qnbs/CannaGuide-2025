@@ -43,7 +43,7 @@ export const useStorageEstimate = () => {
             const images = await dbService.getAllImages()
             newEstimates.images = images.reduce((acc, img) => acc + img.data.length * 0.75, 0)
         } catch (error) {
-            console.error('Could not estimate image size:', error)
+            console.debug('Could not estimate image size:', error)
             newEstimates.images = 0
         }
 

@@ -6,8 +6,8 @@
  *
  * Flow:
  *   1. Consumer calls `acquireGpu('webllm' | 'image-gen')`
- *   2. If another consumer holds the lock → queue, wait for release
- *   3. If WebLLM holds the lock and image-gen requests it → evict WebLLM first
+ *   2. If another consumer holds the lock -> queue, wait for release
+ *   3. If WebLLM holds the lock and image-gen requests it -> evict WebLLM first
  *   4. On release, next queued consumer is granted the lock
  */
 
@@ -87,7 +87,7 @@ export const acquireGpu = async (consumer: GpuConsumer): Promise<void> => {
         return
     }
 
-    // Image-gen needs the GPU but WebLLM holds it → evict WebLLM
+    // Image-gen needs the GPU but WebLLM holds it -> evict WebLLM
     if (consumer === 'image-gen' && currentHolder === 'webllm' && evictWebLlmHook) {
         console.debug('[GpuMutex] Evicting WebLLM to free VRAM for image generation')
         try {

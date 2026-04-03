@@ -220,7 +220,7 @@ export const initVoiceCommandSubscription = (
                     )
                     getUISnapshot().setVoiceStatusMessage(response.content)
                 } catch (error) {
-                    console.error('Voice assistant response failed:', error)
+                    console.debug('Voice assistant response failed:', error)
                     getUISnapshot().setVoiceStatusMessage(t('voiceControl.errors.assistantFailed'))
                     setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 5000)
                 }
@@ -534,7 +534,7 @@ startAppListening({
                     })
                 }
             } catch (err) {
-                console.error('Background sync registration failed:', err)
+                console.debug('Background sync registration failed:', err)
             }
         }
     },

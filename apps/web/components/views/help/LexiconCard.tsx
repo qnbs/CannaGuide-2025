@@ -82,7 +82,7 @@ export const LexiconCard: React.FC<{ entry: LexiconEntry }> = memo(({ entry }) =
                 <details className="mt-3 pt-3 border-t border-slate-700/50 group">
                     <summary className="list-none cursor-pointer text-xs font-semibold text-slate-400 hover:text-slate-300 flex items-center gap-1 select-none">
                         <PhosphorIcons.ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-open:rotate-180" />
-                        Details
+                        {t('helpView.lexicon.detailsLabel', { defaultValue: 'Details' })}
                     </summary>
                     <div className="mt-2 text-xs text-slate-400 space-y-1 animate-fade-in">
                         {Object.entries(detailsObject).map(([key, value]) => (

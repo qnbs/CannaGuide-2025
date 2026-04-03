@@ -1,4 +1,5 @@
 export const plantsView = {
+    unknownStrain: 'Variete Inconnue',
     emptySlot: {
         title: 'Demarrer une Nouvelle Culture',
         subtitle: 'Cliquez pour selectionner une variete',

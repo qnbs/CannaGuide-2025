@@ -68,7 +68,7 @@ const StorageInfo: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) =>
                     setIsLoading(false)
                 })
                 .catch((err) => {
-                    console.error('[DataManagementTab] Storage estimate failed:', err)
+                    console.debug('[DataManagementTab] Storage estimate failed:', err)
                     setIsLoading(false)
                 })
         } else {
@@ -283,7 +283,7 @@ const DataManagementTab: React.FC = () => {
                 message: String(t('settingsView.data.cleanupSuccess', { count: deletedImages })),
             })
         } catch (error) {
-            console.error('[DataManagement] Storage cleanup failed:', error)
+            console.debug('[DataManagement] Storage cleanup failed:', error)
             getUISnapshot().addNotification({
                 type: 'error',
                 message: String(t('settingsView.data.cleanupError')),

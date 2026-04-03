@@ -43,6 +43,7 @@ export const helpView = {
         title: "Grower's Lexicon",
         subtitle:
             'Explore the science behind cannabinoids, terpenes, flavonoids, and essential grow terminology.',
+        detailsLabel: 'Details',
         searchPlaceholder: 'Search terms...',
         noResults: 'No terms found for "{{term}}".',
         resultCount: 'Showing {{count}} of {{total}} terms',

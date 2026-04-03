@@ -1,4 +1,5 @@
 export const plantsView = {
+    unknownStrain: 'Onbekend Ras',
     emptySlot: {
         title: 'Nieuwe Kweek Starten',
         subtitle: 'Klik om een varieteit te selecteren',

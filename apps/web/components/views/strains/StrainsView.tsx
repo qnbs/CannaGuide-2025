@@ -231,7 +231,7 @@ export const StrainsView: React.FC = () => {
                 setIsLoading(false)
             })
             .catch((error: unknown) => {
-                console.error('[StrainsView] Failed to load strains.', error)
+                console.debug('[StrainsView] Failed to load strains.', error)
                 setLoadError(t('strainsView.loadError'))
                 setIsLoading(false)
             })

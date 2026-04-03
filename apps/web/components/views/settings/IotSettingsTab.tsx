@@ -7,25 +7,34 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/common/Card'
 import { SettingsRow } from './SettingsShared'
 
-const STATUS_STYLES: Record<IotConnectionStatus, { dot: string; label: string }> = {
-    disconnected: { dot: 'bg-slate-500', label: 'Disconnected' },
-    connecting: { dot: 'bg-amber-400 animate-pulse', label: 'Connecting...' },
-    connected: { dot: 'bg-emerald-400', label: 'Connected' },
-    error: { dot: 'bg-red-500', label: 'Error' },
+const STATUS_DOT: Record<IotConnectionStatus, string> = {
+    disconnected: 'bg-slate-500',
+    connecting: 'bg-amber-400 animate-pulse',
+    connected: 'bg-emerald-400',
+    error: 'bg-red-500',
+}
+
+const STATUS_LABEL_KEYS: Record<IotConnectionStatus, string> = {
+    disconnected: 'settingsView.iot.statusDisconnected',
+    connecting: 'settingsView.iot.statusConnecting',
+    connected: 'settingsView.iot.statusConnected',
+    error: 'settingsView.iot.statusError',
 }
 
 const ConnectionStatusBadge: React.FC<{
     status: IotConnectionStatus
     lastError: string | null
 }> = memo(({ status, lastError }) => {
-    const style = STATUS_STYLES[status]
+    const { t } = useTranslation()
     return (
         <div className="flex items-center gap-2">
             <span
-                className={`inline-block h-2.5 w-2.5 rounded-full ${style.dot}`}
+                className={`inline-block h-2.5 w-2.5 rounded-full ${STATUS_DOT[status]}`}
                 aria-hidden="true"
             />
-            <span className="text-sm text-slate-300">{style.label}</span>
+            <span className="text-sm text-slate-300">
+                {t(STATUS_LABEL_KEYS[status], { defaultValue: status })}
+            </span>
             {status === 'error' && lastError && (
                 <span className="text-xs text-red-400 ml-1">-- {lastError}</span>
             )}

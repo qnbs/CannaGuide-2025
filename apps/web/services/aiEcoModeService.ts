@@ -22,7 +22,7 @@ export const setEcoModeExplicit = (active: boolean): void => {
 
 /**
  * Register getters/setters for the AI mode from aiService.
- * This avoids a circular dependency between aiService ↔ preloadService.
+ * This avoids a circular dependency between aiService <-> preloadService.
  */
 export const registerModeAccessors = (
     getter: () => string,

@@ -202,7 +202,7 @@ const openTsDb = (): Promise<IDBDatabase> => {
 
         request.onerror = (event) => {
             tsDbPromise = null
-            console.error(
+            console.debug(
                 '[timeSeriesService] IndexedDB error:',
                 (event.target as IDBOpenDBRequest).error,
             )
@@ -467,8 +467,8 @@ export const timeSeriesService = {
 
     /**
      * Run the two-phase compaction:
-     *   1. Raw readings older than 24 h → hourly averages
-     *   2. Hourly entries older than 7 days → daily averages
+     *   1. Raw readings older than 24 h -> hourly averages
+     *   2. Hourly entries older than 7 days -> daily averages
      */
     async runCompaction(): Promise<{ aggregatedHourly: number; aggregatedDaily: number }> {
         const now = Date.now()

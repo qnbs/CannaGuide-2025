@@ -119,7 +119,7 @@ class StrainService {
             }
             this.isInitialized = true
         } catch (error) {
-            console.error(
+            console.debug(
                 '[StrainService] Failed to initialize. Falling back to in-memory data.',
                 error,
             )

@@ -153,7 +153,7 @@ export const getMemoryInfo = (): MemoryInfo => {
 
 let cachedVramInfo: VramInfo | null = null
 
-/** Minimum VRAM in MB to allow WebGPU model loading. Below this → force WASM/quantized. */
+/** Minimum VRAM in MB to allow WebGPU model loading. Below this -> force WASM/quantized. */
 const MIN_VRAM_FOR_WEBGPU_MB = 4096
 
 /**

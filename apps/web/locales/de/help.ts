@@ -44,6 +44,7 @@ export const helpView = {
         title: 'Grower-Lexikon',
         subtitle:
             'Entdecke die Wissenschaft hinter Cannabinoiden, Terpenen, Flavonoiden und essentiellen Anbaubegriffen.',
+        detailsLabel: 'Details',
         searchPlaceholder: 'Begriffe durchsuchen...',
         noResults: 'Keine Begriffe für "{{term}}" gefunden.',
         resultCount: '{{count}} von {{total}} Begriffen angezeigt',

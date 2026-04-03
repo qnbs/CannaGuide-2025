@@ -16,7 +16,7 @@ export const storageService = {
             const item = window.localStorage.getItem(`${STORAGE_PREFIX}${key}`);
             return item ? JSON.parse(item) : defaultValue;
         } catch (error) {
-            console.error(`Error reading from localStorage key “${key}”:`, error);
+            console.debug(`Error reading from localStorage key “${key}”:`, error);
             return defaultValue;
         }
     },
@@ -31,7 +31,7 @@ export const storageService = {
             const serializedValue = JSON.stringify(value);
             window.localStorage.setItem(`${STORAGE_PREFIX}${key}`, serializedValue);
         } catch (error) {
-            console.error(`Error writing to localStorage key “${key}”:`, error);
+            console.debug(`Error writing to localStorage key “${key}”:`, error);
         }
     },
 
@@ -43,7 +43,7 @@ export const storageService = {
         try {
             window.localStorage.removeItem(`${STORAGE_PREFIX}${key}`);
         } catch (error) {
-            console.error(`Error removing from localStorage key “${key}”:`, error);
+            console.debug(`Error removing from localStorage key “${key}”:`, error);
         }
     },
 
@@ -56,7 +56,7 @@ export const storageService = {
          try {
             window.localStorage.clear();
          } catch (error) {
-             console.error('Error clearing localStorage:', error);
+             console.debug('Error clearing localStorage:', error);
          }
     }
 };

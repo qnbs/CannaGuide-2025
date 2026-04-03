@@ -2,59 +2,49 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-05, Session 30) -- AI Configurator + Budget Calculator + IoT Feed + PDF Export (Execution 3)
+## Latest Session (2026-04-06, Session 31) -- 5 Specialized Knowledge Calculators (Execution 4)
 
-**Status: v1.3.0-beta. Execution 3 complete. BudgetCalculator (EUR per category + total + history), AiEquipmentPanel (quick AI shopping list from session store dimensions, PDF export), IoT sync in HumidityDeficitCalculator (temperature + humidity from sensorStore), equipmentPlanExportService (jsPDF + autotable). 1123 tests passing. TypeScript clean.**
+**Status: v1.3.0-beta. Execution 4 complete. Knowledge CalculatorHub expanded from 3 to 8 tabs. 5 new science-based calculators added. 1172 tests passing. TypeScript clean.**
 
-### What Was Done (Session 30)
+### What Was Done (Session 31)
 
-1. **BudgetCalculator** (`components/views/equipment/calculators/BudgetCalculator.tsx`):
-    - 8 EUR price inputs (tent, light, ventilation, circulationFan, pots, soil, nutrients, extras)
-    - Computes total in real-time with `useMemo`
-    - Save-to-History button (`calculatorId="budget"`) + `CalculatorHistoryPanel`
-    - i18n: `equipmentView.calculators.budget.*` (EN/DE/ES/FR/NL)
+1. **knowledgeCalculatorService.ts** (`apps/web/services/knowledgeCalculatorService.ts`):
+    - 5 pure formula functions with Zod input validation (same pattern as equipmentCalculatorService)
+    - `calculateTerpeneEntourage` -- entourage score 0-100, synergy matrix, profile type, Shannon diversity
+    - `calculateTranspiration` -- Penman-Monteith approximation: leaf + canopy rate (mmol/m2/s), daily water use
+    - `calculateEcTds` -- EC/TDS 500/640/700 conversions + OLS pH drift predictor -> day-7 projection
+    - `calculateLightSpectrum` -- DLI, photosynthetic efficiency (Michaelis-Menten PPFD saturation), terpene boost
+    - `calculateCannabinoidRatio` -- THC:CBD:CBG ratio label, profile type, harmony score 0-100
 
-2. **equipmentPlanExportService** (`services/equipmentPlanExportService.ts`):
-    - Pure function `exportEquipmentPlanPdf(data, lang)` using jsPDF + jspdf-autotable
-    - 3 optional sections: Room Setup table, Budget table, AI Shopping List table + proTip
-    - Triggers browser download with date-stamped filename
-    - Unit tested in `services/equipmentPlanExportService.test.ts` (4 tests)
+2. **knowledgeCalculatorService.test.ts** (`apps/web/services/knowledgeCalculatorService.test.ts`):
+    - 49 unit tests covering all 5 calculators (edge cases, validation, formula results, schema smoke tests)
 
-3. **AiEquipmentPanel** (`components/views/equipment/AiEquipmentPanel.tsx`):
-    - Lightweight "quick recommendation" panel rendered at bottom of Calculators tab
-    - Reads `roomDimensions + sharedLightWattage` from `useCalculatorSessionStore`
-    - Uses `useGetEquipmentRecommendationMutation` (RTK Query, consistent with SetupConfigurator)
-    - Renders Recommendation as a sortable table with category, product, price, rationale
-    - Export PDF button calls `exportEquipmentPlanPdf` with room + recommendation data
-    - i18n: `equipmentView.calculators.aiPanel.*` (EN/DE/ES/FR/NL)
+3. **CalculatorHubView.tsx** (extended):
+    - `TabId` extended to 8 values: `vpd | nutrient | ph | terpeneEntourage | transpiration | ecTds | lightSpectrum | cannabinoidRatio`
+    - 5 new React panel components: `TerpeneEntouragePanel`, `TranspirationPanel`, `EcTdsPanel`, `LightSpectrumPanel`, `CannabinoidRatioPanel`
+    - Icons: MagicWand (entourage), Fan (transpiration), Flask (EC/TDS), Sun (light), ChartPieSlice (cannabinoids)
+    - All panels reactive with live results, status colors, and inline input validation
 
-4. **IoT Sync in HumidityDeficitCalculator** (`calculators/HumidityDeficitCalculator.tsx`):
-    - "Use Sensor Data" button reads `sensorStore.getState().currentReading`
-    - Syncs `tempC` + `rhPercent` from `SensorReading.temperatureC` + `humidityPercent`
-    - Live IoT badge shown after sync; resets on manual edit
-    - Note: `SensorReading` has no `co2ppm` so only HD calculator gets IoT sync
-
-5. **Calculators.tsx updated**:
-    - BudgetCalculator added to accordion list (icon: Sparkle, id: `'budget'`)
-    - AiEquipmentPanel rendered below all accordions
-    - CalculatorType union extended to `| 'budget'`
-
-6. **i18n** (EN/DE/ES/FR/NL): `budget.*`, `aiPanel.*`, `iot.*` keys added to all 5 locales
+4. **i18n EN + DE updated** (`locales/en/knowledge.ts`, `locales/de/knowledge.ts`):
+    - 5 new tab keys: `terpeneEntourageTab`, `transpirationTab`, `ecTdsTab`, `lightSpectrumTab`, `cannabinoidRatioTab`
+    - Complete sub-namespaces: `terpeneEntourage.*`, `transpiration.*`, `ecTds.*`, `lightSpectrum.*`, `cannabinoidRatio.*`
 
 ### Verified Metrics
 
-- Tests: **1123 passing, 0 failures** (111 test files)
+- Tests: **1172 passing, 0 failures** (112 test files, 49 new)
 - TypeScript: **clean** (1 known RTK TS2719 filtered)
-- New files: `BudgetCalculator.tsx`, `equipmentPlanExportService.ts`, `AiEquipmentPanel.tsx`, `equipmentPlanExportService.test.ts`
+- New files: `knowledgeCalculatorService.ts`, `knowledgeCalculatorService.test.ts`
+- Modified: `CalculatorHubView.tsx`, `locales/en/knowledge.ts`, `locales/de/knowledge.ts`
 
 ### Planned Executions
 
-#### Execution 4 (next): Polish + Advanced IoT
+#### Execution 5 (next): i18n completeness + ES/FR/NL for 5 new calculators + Execution 4 polish
 
+- Add the 5 new calculator i18n keys to ES, FR, NL locales (EN/DE done)
+- Add "Learn more" deeplinks to LearningPaths (environment-mastery for transpiration/VPD, nutrient-mastery for EC/TDS)
 - Real-time sensor subscription in HumidityDeficitCalculator (subscribe to sensorStore for live updates)
 - IoT widget badge with "live" indicator when data is fresh (< 5 min)
 - Export PDF button in BudgetCalculator (include budget table in export)
-- Strain compatibility in BudgetCalculator (show strain-specific nutrient cost tip)
 
 **Status: v1.3.0-beta. What-If Sandbox + Calculator History integrated into Equipment Calculator Suite. useCalculatorSessionStore (Zustand, transient) propagates shared room dimensions + light wattage to Ventilation/CO2/LightHanging calculators. Calculator History (IndexedDB, 20-entry FIFO) with CalculatorHistoryPanel and Save buttons in CO2 + LightHanging calculators. DB migrated to version 5. 1119 tests passing. TypeScript clean.**
 

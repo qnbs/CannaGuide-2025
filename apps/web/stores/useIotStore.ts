@@ -1,12 +1,16 @@
 import { create } from 'zustand'
 import { subscribeWithSelector, persist, createJSONStorage } from 'zustand/middleware'
+import { encrypt, decrypt } from '@/services/cryptoService'
 
 export type IotConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error'
 
 export interface IotSettings {
     brokerUrl: string
     username: string
+    /** Runtime-only plaintext password. Never persisted to localStorage. */
     password: string
+    /** AES-256-GCM encrypted password stored persistently. */
+    encryptedPassword: string
     topicPrefix: string
     isEnabled: boolean
     connectionStatus: IotConnectionStatus
@@ -16,11 +20,13 @@ export interface IotSettings {
 interface IotActions {
     setBrokerUrl: (url: string) => void
     setUsername: (username: string) => void
-    setPassword: (password: string) => void
+    setPassword: (password: string) => Promise<void>
     setTopicPrefix: (prefix: string) => void
     setEnabled: (enabled: boolean) => void
     setConnectionStatus: (status: IotConnectionStatus, error?: string) => void
     testConnection: () => Promise<boolean>
+    /** Decrypt persisted encryptedPassword and load it into the runtime password field. */
+    loadPersistedPassword: () => Promise<void>
 }
 
 export type IotState = IotSettings & IotActions
@@ -37,6 +43,7 @@ export const useIotStore = create<IotState>()(
                 brokerUrl: DEFAULT_BROKER_URL,
                 username: '',
                 password: '',
+                encryptedPassword: '',
                 topicPrefix: DEFAULT_TOPIC_PREFIX,
                 isEnabled: false,
                 connectionStatus: 'disconnected' as IotConnectionStatus,
@@ -45,7 +52,15 @@ export const useIotStore = create<IotState>()(
                 // Actions
                 setBrokerUrl: (url: string) => set({ brokerUrl: url }),
                 setUsername: (username: string) => set({ username }),
-                setPassword: (password: string) => set({ password }),
+                setPassword: async (password: string): Promise<void> => {
+                    try {
+                        const encryptedPassword = await encrypt(password)
+                        set({ password, encryptedPassword })
+                    } catch {
+                        // Crypto unavailable (e.g. test env): store plaintext only
+                        set({ password, encryptedPassword: '' })
+                    }
+                },
                 setTopicPrefix: (prefix: string) => set({ topicPrefix: prefix }),
                 setEnabled: (enabled: boolean) => {
                     if (!enabled) {
@@ -91,6 +106,18 @@ export const useIotStore = create<IotState>()(
                         return false
                     }
                 },
+
+                loadPersistedPassword: async (): Promise<void> => {
+                    const { encryptedPassword } = get()
+                    if (!encryptedPassword) return
+                    try {
+                        const password = await decrypt(encryptedPassword)
+                        set({ password })
+                    } catch {
+                        // Decryption failed (key rotated or corrupted) -- clear stored credential
+                        set({ password: '', encryptedPassword: '' })
+                    }
+                },
             }),
             {
                 name: 'cannaguide-iot-settings',
@@ -98,7 +125,7 @@ export const useIotStore = create<IotState>()(
                 partialize: (state) => ({
                     brokerUrl: state.brokerUrl,
                     username: state.username,
-                    password: state.password,
+                    encryptedPassword: state.encryptedPassword,
                     topicPrefix: state.topicPrefix,
                     isEnabled: state.isEnabled,
                 }),

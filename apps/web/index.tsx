@@ -295,6 +295,10 @@ const mountHydratedApp = async () => {
         const { mqttClientService } = await import('@/services/mqttClientService')
         mqttClientService.init(hydratedStore)
 
+        // Decrypt and load persisted IoT password into runtime state
+        const { useIotStore } = await import('@/stores/useIotStore')
+        await useIotStore.getState().loadPersistedPassword()
+
         // Initialize proactive smart coach (monitors sensor thresholds -> AI advice)
         const { proactiveCoachService } = await import('@/services/proactiveCoachService')
         proactiveCoachService.init(hydratedStore)

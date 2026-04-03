@@ -65,6 +65,11 @@ const CONFIDENCE_META: Record<ConfidenceSource, { label: string; labelDe: string
             color: 'text-blue-400 bg-blue-400/10',
         },
         otreeba: { label: 'Otreeba', labelDe: 'Otreeba', color: 'text-cyan-400 bg-cyan-400/10' },
+        'cannabis-api': {
+            label: 'Cannabis API',
+            labelDe: 'Cannabis API',
+            color: 'text-violet-400 bg-violet-400/10',
+        },
         ai: {
             label: 'AI Generated',
             labelDe: 'KI-generiert',
@@ -348,6 +353,7 @@ interface ResultCardProps {
     onToggleFavorite: (result: LookupStrainResult) => void
     onFindSimilar: (result: LookupStrainResult) => void
     onOpenBreeding: (result: LookupStrainResult) => void
+    onShare: (result: LookupStrainResult) => void
     isInLibrary: boolean
     isFavorited: boolean
 }
@@ -360,6 +366,7 @@ const ResultCard: React.FC<ResultCardProps> = memo(
         onToggleFavorite,
         onFindSimilar,
         onOpenBreeding,
+        onShare,
         isInLibrary,
         isFavorited,
     }) => {
@@ -526,6 +533,17 @@ const ResultCard: React.FC<ResultCardProps> = memo(
                             <PhosphorIcons.GridFour className="w-4 h-4" />
                             {t('strainLookup.findSimilar', 'Similar')}
                         </Button>
+                        {'share' in navigator && (
+                            <Button
+                                variant="ghost"
+                                onClick={() => onShare(result)}
+                                className="flex items-center gap-1.5"
+                                title={t('strainLookup.share', 'Share Strain')}
+                            >
+                                <PhosphorIcons.ShareNetwork className="w-4 h-4" />
+                                {t('strainLookup.share', 'Share')}
+                            </Button>
+                        )}
                         {result.sourceUrl && (
                             <a
                                 href={result.sourceUrl}
@@ -729,6 +747,25 @@ export const StrainLookupSection: React.FC = memo(() => {
         }
     }, [])
 
+    const handleShare = useCallback((r: LookupStrainResult) => {
+        const lines: string[] = [
+            r.name,
+            r.type !== 'Unknown' ? r.type : '',
+            r.thc > 0 ? `THC ${r.thc.toFixed(1)}%` : '',
+            r.cbd > 0 ? `CBD ${r.cbd.toFixed(1)}%` : '',
+            r.description ?? '',
+        ].filter(Boolean)
+        void navigator
+            .share({
+                title: r.name,
+                text: lines.join(' | '),
+                url: r.sourceUrl ?? window.location.href,
+            })
+            .catch(() => {
+                // user cancelled or share not supported -- silently ignore
+            })
+    }, [])
+
     const handleClear = useCallback(() => {
         setQuery('')
         setResult(null)
@@ -856,7 +893,13 @@ export const StrainLookupSection: React.FC = memo(() => {
                         <div className="flex items-center gap-3 py-2">
                             <div className="flex gap-1">
                                 {(
-                                    ['local', 'cannlytics', 'otreeba', 'ai'] as ConfidenceSource[]
+                                    [
+                                        'local',
+                                        'cannlytics',
+                                        'otreeba',
+                                        'cannabis-api',
+                                        'ai',
+                                    ] as ConfidenceSource[]
                                 ).map((src, i) => (
                                     <span
                                         key={src}
@@ -868,7 +911,9 @@ export const StrainLookupSection: React.FC = memo(() => {
                                                   ? 'text-blue-400 border-blue-500/30 bg-blue-500/5'
                                                   : i === 2
                                                     ? 'text-cyan-400 border-cyan-500/30 bg-cyan-500/5'
-                                                    : 'text-amber-400 border-amber-500/30 bg-amber-500/5',
+                                                    : i === 3
+                                                      ? 'text-violet-400 border-violet-500/30 bg-violet-500/5'
+                                                      : 'text-amber-400 border-amber-500/30 bg-amber-500/5',
                                         )}
                                         style={{ animationDelay: `${i * 0.15}s` }}
                                     >
@@ -909,6 +954,7 @@ export const StrainLookupSection: React.FC = memo(() => {
                     onToggleFavorite={handleToggleFavorite}
                     onFindSimilar={handleFindSimilar}
                     onOpenBreeding={handleOpenBreeding}
+                    onShare={handleShare}
                     isInLibrary={isInLibrary}
                     isFavorited={isFavorited}
                 />

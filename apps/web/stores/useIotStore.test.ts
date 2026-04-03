@@ -9,12 +9,12 @@ import { useIotStore, type IotConnectionStatus } from '@/stores/useIotStore'
 // ---------------------------------------------------------------------------
 
 describe('useIotStore', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         // Reset store to defaults
         const store = useIotStore.getState()
         store.setBrokerUrl('wss://test.mosquitto.org:8081')
         store.setUsername('')
-        store.setPassword('')
+        await store.setPassword('')
         store.setTopicPrefix('cannaguide/sensors')
         store.setEnabled(false)
         store.setConnectionStatus('disconnected')
@@ -31,8 +31,8 @@ describe('useIotStore', () => {
             expect(useIotStore.getState().username).toBe('admin')
         })
 
-        it('setPassword updates password', () => {
-            useIotStore.getState().setPassword('secret')
+        it('setPassword updates password', async () => {
+            await useIotStore.getState().setPassword('secret')
             expect(useIotStore.getState().password).toBe('secret')
         })
 

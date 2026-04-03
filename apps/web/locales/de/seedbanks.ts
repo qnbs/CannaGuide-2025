@@ -38,7 +38,7 @@ export const seedbanks = {
         profile: {
             title: 'Unternehmensprofil und Reputation',
             content:
-                'Dutch Passion wurde 1987 gegründet und ist ein Pionier in der Entwicklung feminisierter Samen. Sie sind bekannt für ihre Innovationen und ein breites Sortiment an hochwertigen feminisierten und autoflowering Sorten. Ihre Sorten wie Blueberry und Mazar sind weltberühmt.',
+                'Dutch Passion wurde 1987 gegründet und ist ein Pionier in der Entwicklung feminisierter Samen. Sie sind bekannt für ihre Innovationen und ein breites Sortiment an hochwertigen feminisierten und autoflowering Sorten. Ihre Sorten wie Blüberry und Mazar sind weltberühmt.',
         },
         policies: {
             title: 'Betriebliche Richtlinien',
@@ -388,35 +388,35 @@ export const seedbanks = {
     },
     geneticTrends2026: {
         title: '2026 Genetik-Trends -- Worauf bei Saatgutbanken achten',
-        intro: 'Die Cannabis-Genetik-Landschaft hat sich 2026 dramatisch verschoben. Bei der Wahl einer Saatgutbank sollten diese Schluesselindikatoren eines zukunftsorientierten Anbieters beachtet werden.',
+        intro: 'Die Cannabis-Genetik-Landschaft hat sich 2026 dramatisch verschoben. Bei der Wahl einer Saatgutbank sollten diese Schlüsselindikatoren eines zukunftsorientierten Anbieters beachtet werden.',
         criteria: {
             terpeneFocus: {
                 title: 'Terpen-orientierte Auswahl',
                 content:
-                    'Top-Saatgutbanken kuratieren jetzt fuer komplexe Terpen-Profile (herzhaft, gassig, erdig) statt nur THC-Zahlen. Achte auf Banken, die detaillierte Terpen-Daten und Chemovar-Klassifikationen bereitstellen.',
+                    'Top-Saatgutbanken kuratieren jetzt für komplexe Terpen-Profile (herzhaft, gassig, erdig) statt nur THC-Zahlen. Achte auf Banken, die detaillierte Terpen-Daten und Chemovar-Klassifikationen bereitstellen.',
             },
             autoflowerPrograms: {
                 title: 'Next-Gen Autoflower-Programme',
                 content:
-                    'Fuehrende Zuechter bieten Autoflower-Linien an, die mit Photoperiod-Qualitaet konkurrieren. Saatgutbanken, die diese fuehren (Royal Gorilla Auto, Pluto Cut Auto), zeigen Bewusstsein fuer den 2026-Markt.',
+                    'Führende Züchter bieten Autoflower-Linien an, die mit Photoperiod-Qualität konkurrieren. Saatgutbanken, die diese führen (Royal Gorilla Auto, Pluto Cut Auto), zeigen Bewusstsein für den 2026-Markt.',
             },
             polyploidAvailability: {
                 title: 'Polyploide und F1-Hybrid-Seeds',
                 content:
-                    'Die innovativsten Saatgutbanken fuehren triploide oder F1-Hybrid-Seeds von Zuechtern wie Tesoro Genetics. Diese repraesentieren die Spitze der Cannabis-Zuechtertechnologie.',
+                    'Die innovativsten Saatgutbanken führen triploide oder F1-Hybrid-Seeds von Züchtern wie Tesoro Genetics. Diese repräsentieren die Spitze der Cannabis-Züchtertechnologie.',
             },
             landracePreservation: {
                 title: 'Landrace- und Heritage-Genetik',
                 content:
-                    'Banken, die Landrace-Genetik aus den Ursprungsregionen bewahren und anbieten, zeigen Engagement fuer genetische Vielfalt und die langfristige Gesundheit des Cannabis-Genpools.',
+                    'Banken, die Landrace-Genetik aus den Ursprungsregionen bewahren und anbieten, zeigen Engagement für genetische Vielfalt und die langfristige Gesundheit des Cannabis-Genpools.',
             },
             balancedCultivars: {
                 title: 'Ausgewogene und funktionale Kultivare',
                 content:
-                    'Die besten 2026-Saatgutbanken bieten ausgewogene Hybride, 1:1 CBD:THC-Linien und High-THCV-Kultivare fuer bewussten Konsum -- nicht nur maximales THC.',
+                    'Die besten 2026-Saatgutbanken bieten ausgewogene Hybride, 1:1 CBD:THC-Linien und High-THCV-Kultivare für bewussten Konsum -- nicht nur maximales THC.',
             },
         },
         recommendation:
-            'Bei der Saatgutwahl 2026 sollte genetische Vielfalt, Terpen-Komplexitaet und bewaehrte Zuchtprogramme ueber reine THC-Zahlen priorisiert werden. Die CannaGuide-Sorten-Bibliothek trackt all diese Attribute fuer 800+ Kultivare.',
+            'Bei der Saatgutwahl 2026 sollte genetische Vielfalt, Terpen-Komplexität und bewährte Zuchtprogramme über reine THC-Zahlen priorisiert werden. Die CannaGuide-Sorten-Bibliothek trackt all diese Attribute für 800+ Kultivare.',
     },
 }

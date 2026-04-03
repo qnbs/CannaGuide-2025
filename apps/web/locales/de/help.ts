@@ -52,7 +52,7 @@ export const helpView = {
             cannabinoid: 'Cannabinoide',
             terpene: 'Terpene',
             flavonoid: 'Flavonoide',
-            nutrient: 'Naehrstoffe',
+            nutrient: 'Nährstoffe',
             disease: 'Krankheiten',
             general: 'Allgemein',
         },
@@ -167,7 +167,7 @@ export const helpView = {
                     'Ein Flavonoid, das in vielen Früchten und Gemüsen vorkommt. Es ist ein starkes Antioxidans mit antiviralen Eigenschaften.',
             },
             kaempferol: {
-                term: 'Kaempferol',
+                term: 'Kämpferol',
                 definition:
                     'Ein Flavonoid mit starken antioxidativen Eigenschaften, das helfen kann, oxidativem Stress vorzubeugen.',
             },
@@ -276,47 +276,47 @@ export const helpView = {
             dynamicLighting: {
                 term: 'Dynamische Beleuchtung',
                 definition:
-                    'LED-Beleuchtungssysteme, die ihre Spektralausgabe automatisch an die Pflanzenwachstumsphase und Umgebungsbedingungen (VPD) anpassen. Blau-dominant fuer vegetatives Wachstum, rot-dominant fuer die Bluete.',
+                    'LED-Beleuchtungssysteme, die ihre Spektralausgabe automatisch an die Pflanzenwachstumsphase und Umgebungsbedingungen (VPD) anpassen. Blau-dominant für vegetatives Wachstum, rot-dominant für die Blüte.',
             },
             digitalTwin: {
                 term: 'Digital Twin',
                 definition:
-                    'Ein virtuelles Abbild einer Grow-Umgebung, das aus Echtzeit-Sensordaten erstellt wird. Wird verwendet, um Was-waere-wenn-Szenarien (CO2-Aenderungen, Temperaturanpassungen) zu simulieren und deren Auswirkungen auf den Ertrag vorherzusagen.',
+                    'Ein virtuelles Abbild einer Grow-Umgebung, das aus Echtzeit-Sensordaten erstellt wird. Wird verwendet, um Was-wäre-wenn-Szenarien (CO2-Änderungen, Temperaturanpassungen) zu simulieren und deren Auswirkungen auf den Ertrag vorherzusagen.',
             },
             aeroponics: {
                 term: 'Aeroponik',
                 definition:
-                    'Eine erdlose Anbaumethode, bei der Pflanzenwurzeln in der Luft haengen und Naehrstoffe ueber feinen Nebel zugestellt werden. Erreicht bis zu 30% schnelleres Wachstum bei 90% weniger Wasser als traditionelle Erdmethoden.',
+                    'Eine erdlose Anbaumethode, bei der Pflanzenwurzeln in der Luft hängen und Nährstoffe über feinen Nebel zugestellt werden. Erreicht bis zu 30% schnelleres Wachstum bei 90% weniger Wasser als traditionelle Erdmethoden.',
             },
             smartFertigation: {
                 term: 'Smart Fertigation',
                 definition:
-                    'Ein automatisiertes System, das Bewaesserung mit Praezisions-Naehrstoffdosierung kombiniert und EC/pH-Sensoren sowie geschlossene Regelkreise nutzt, um optimale Naehrstoffwerte in Echtzeit aufrechtzuerhalten.',
+                    'Ein automatisiertes System, das Bewässerung mit Präzisions-Nährstoffdosierung kombiniert und EC/pH-Sensoren sowie geschlossene Regelkreise nutzt, um optimale Nährstoffwerte in Echtzeit aufrechtzuerhalten.',
             },
             tissueCulture: {
                 term: 'Gewebekultur',
                 definition:
-                    'Eine sterile Labortechnik (Mikrovermehrung) zur Herstellung virusfreier, genetisch identischer Klone aus winzigen Pflanzengewebeproben, die eine massive Skalierung von Elite-Genetik ermoeglicht.',
+                    'Eine sterile Labortechnik (Mikrovermehrung) zur Herstellung virusfreier, genetisch identischer Klone aus winzigen Pflanzengewebeproben, die eine massive Skalierung von Elite-Genetik ermöglicht.',
             },
             ppfd: {
                 term: 'PPFD (Photosynthetische Photonenflussdichte)',
                 definition:
-                    'Ein Mass fuer die Menge an photosynthetisch aktiver Strahlung (PAR), die pro Sekunde eine Oberflaeche erreicht, gemessen in umol/m2/s. Die Schluesselmetrik zur Bewertung der Grow-Light-Leistung.',
+                    'Ein Mass für die Menge an photosynthetisch aktiver Strahlung (PAR), die pro Sekunde eine Oberfläche erreicht, gemessen in umol/m2/s. Die Schlüsselmetrik zur Bewertung der Grow-Light-Leistung.',
             },
             dli: {
-                term: 'DLI (Taegliches Lichtintegral)',
+                term: 'DLI (Tägliches Lichtintegral)',
                 definition:
-                    'Die Gesamtmenge photosynthetisch aktiver Photonen, die einer Oberflaeche ueber einen 24-Stunden-Zeitraum zugestellt werden, gemessen in mol/m2/Tag. Kombiniert PPFD und Photoperiode zur Quantifizierung der gesamten Lichtenergie.',
+                    'Die Gesamtmenge photosynthetisch aktiver Photonen, die einer Oberfläche über einen 24-Stunden-Zeitraum zugestellt werden, gemessen in mol/m2/Tag. Kombiniert PPFD und Photoperiode zur Quantifizierung der gesamten Lichtenergie.',
             },
             polyploidy: {
                 term: 'Polyploidie',
                 definition:
-                    'Ein Zustand, bei dem Organismen mehr als zwei vollstaendige Chromosomensaetze besitzen. Bei Cannabis koennen triploide (3n), tetraploide (4n) und hexaploide (6n) Pflanzen bis zu 65% mehr Cannabinoide und hoehere Biomasse produzieren. Triploide sind pollen-steril.',
+                    'Ein Zustand, bei dem Organismen mehr als zwei vollständige Chromosomensätze besitzen. Bei Cannabis können triploide (3n), tetraploide (4n) und hexaploide (6n) Pflanzen bis zu 65% mehr Cannabinoide und höhere Biomasse produzieren. Triploide sind pollen-steril.',
             },
             autoflowering: {
                 term: 'Autoflowering',
                 definition:
-                    'Cannabis-Genetik mit Ruderalis-Merkmalen, die basierend auf dem Alter statt auf Lichtzyklusaenderungen blueht. Moderne Autoflower (2026) erreichen Photoperiod-Qualitaet in Potenz und Terpen-Reichtum mit 75-90-Tage Samen-bis-Ernte-Zyklen.',
+                    'Cannabis-Genetik mit Ruderalis-Merkmalen, die basierend auf dem Alter statt auf Lichtzyklusänderungen blüht. Moderne Autoflower (2026) erreichen Photoperiod-Qualität in Potenz und Terpen-Reichtum mit 75-90-Tage Samen-bis-Ernte-Zyklen.',
             },
             chemovar: {
                 term: 'Chemovar',
@@ -326,162 +326,162 @@ export const helpView = {
             f1Hybrid: {
                 term: 'F1-Hybrid',
                 definition:
-                    'Erste Filialgeneration-Kreuzung zwischen zwei genetisch unterschiedlichen, stabilen Elternlinien. F1-Hybride zeigen Hybridvigeur (Heterosis) mit einheitlichem Wachstum, hoeheren Ertraegen und konsistenten Cannabinoid-Profilen.',
+                    'Erste Filialgeneration-Kreuzung zwischen zwei genetisch unterschiedlichen, stabilen Elternlinien. F1-Hybride zeigen Hybridvigeur (Heterosis) mit einheitlichem Wachstum, höheren Erträgen und konsistenten Cannabinoid-Profilen.',
             },
         },
         nutrients: {
             nitrogen: {
                 term: 'Stickstoff (N)',
                 definition:
-                    'Das primaere Makronaehrstoff verantwortlich fuer gruenes Blattwachstum, Chlorophyllproduktion und Proteinsynthese. Hoher Bedarf in der vegetativen Phase, reduziert in der Spaetbluete.',
+                    'Das primäre Makronährstoff verantwortlich für grünes Blattwachstum, Chlorophyllproduktion und Proteinsynthese. Hoher Bedarf in der vegetativen Phase, reduziert in der Spätblüte.',
             },
             phosphorus: {
                 term: 'Phosphor (P)',
                 definition:
-                    'Ein primaeres Makronaehrstoff unverzichtbar fuer Wurzelentwicklung, Energieuebertragung (ATP) und Bluete/Fruchtbildung. Bedarf steigt deutlich in der Bluetephase.',
+                    'Ein primäres Makronährstoff unverzichtbar für Wurzelentwicklung, Energieübertragung (ATP) und Blüte/Fruchtbildung. Bedarf steigt deutlich in der Blütephase.',
             },
             potassium: {
                 term: 'Kalium (K)',
                 definition:
-                    'Ein primaeres Makronaehrstoff beteiligt an Wasserregulierung, Enzymaktivierung und Naehrstofftransport. Kritisch fuer allgemeine Pflanzengesundheit und Bluetenqualitaet.',
+                    'Ein primäres Makronährstoff beteiligt an Wasserregulierung, Enzymaktivierung und Nährstofftransport. Kritisch für allgemeine Pflanzengesundheit und Blütenqualität.',
             },
             calcium: {
                 term: 'Kalzium (Ca)',
                 definition:
-                    'Ein sekundaeres Makronaehrstoff fuer Zellwandstruktur und -stabilitaet. In der Pflanze immobil, daher zeigt Mangel sich stets am Neuwachstum. Cal-Mag-Ergaenzungen helfen.',
+                    'Ein sekundäres Makronährstoff für Zellwandstruktur und -stabilität. In der Pflanze immobil, daher zeigt Mangel sich stets am Neuwachstum. Cal-Mag-Ergänzungen helfen.',
             },
             magnesium: {
                 term: 'Magnesium (Mg)',
                 definition:
-                    'Ein sekundaeres Makronaehrstoff und das Zentralatom des Chlorophyllmolekuels. Mangel verursacht intervenoese Chlorose (Vergil bung zwischen den Blattadern) an aelteren Blaettern.',
+                    'Ein sekundäres Makronährstoff und das Zentralatom des Chlorophyllmoleküls. Mangel verursacht intervenöse Chlorose (Vergilbung zwischen den Blattadern) an älteren Blättern.',
             },
             sulfur: {
                 term: 'Schwefel (S)',
                 definition:
-                    'Ein sekundaeres Makronaehrstoff notwendig fuer Aminosaeuren- und Proteinsynthese. Mangel zeigt sich als Vergil bung des Neuwachstums.',
+                    'Ein sekundäres Makronährstoff notwendig für Aminosäuren- und Proteinsynthese. Mangel zeigt sich als Vergilbung des Neuwachstums.',
             },
             iron: {
                 term: 'Eisen (Fe)',
                 definition:
-                    'Ein essenzielles Mikronaehrstoff fuer Chlorophyllsynthese und Enzymfunktion. Mangel (intervenoese Chlorose an neuen Blaettern) wird am haeufigsten durch hohe pH-Werte verursacht.',
+                    'Ein essenzielles Mikronährstoff für Chlorophyllsynthese und Enzymfunktion. Mangel (intervenöse Chlorose an neuen Blättern) wird am häufigsten durch hohe pH-Werte verursacht.',
             },
             zinc: {
                 term: 'Zink (Zn)',
                 definition:
-                    'Ein Mikronaehrstoff beteiligt an Enzymfunktion und Wachstumshormonproduktion. Mangel verursacht verstauchte neue Blaetter mit intervenoesen Chlorosen.',
+                    'Ein Mikronährstoff beteiligt an Enzymfunktion und Wachstumshormonproduktion. Mangel verursacht verstauchte neue Blätter mit intervenösen Chlorosen.',
             },
             manganese: {
                 term: 'Mangan (Mn)',
                 definition:
-                    'Ein Mikronaehrstoff beteiligt an Photosynthese und Stickstoffstoffwechsel. Mangel aehnelt Eisenmangel, erscheint aber etwas weiter unten an der Pflanze.',
+                    'Ein Mikronährstoff beteiligt an Photosynthese und Stickstoffstoffwechsel. Mangel ähnelt Eisenmangel, erscheint aber etwas weiter unten an der Pflanze.',
             },
             boron: {
                 term: 'Bor (B)',
                 definition:
-                    'Ein Mikronaehrstoff essenziell fuer Zellwandbildung und Pollenlebensfaehigkeit. Mangel verursacht abnormales, verzerrtes Neuwachstum.',
+                    'Ein Mikronährstoff essenziell für Zellwandbildung und Pollenlebensfähigkeit. Mangel verursacht abnormales, verzerrtes Neuwachstum.',
             },
             copper: {
                 term: 'Kupfer (Cu)',
                 definition:
-                    'Ein Mikronaehrstoff erforderlich fuer Photosynthese und Atmung. Mangel ist selten, verursacht aber dunkel blaugruene, welkende Blaetter mit Abwaertskrauellung.',
+                    'Ein Mikronährstoff erforderlich für Photosynthese und Atmung. Mangel ist selten, verursacht aber dunkel blaugrüne, welkende Blätter mit Abwärtskräusellung.',
             },
             molybdenum: {
-                term: 'Molybdaen (Mo)',
+                term: 'Molybdän (Mo)',
                 definition:
-                    'Ein Mikronaehrstoff benoetigt fuer Stickstoffstoffwechsel. Mangel verursacht Schalenbildung und blassgelbe Verfaerbung, beginnend mit aelteren Blaettern.',
+                    'Ein Mikronährstoff benötigt für Stickstoffstoffwechsel. Mangel verursacht Schalenbildung und blassgelbe Verfärbung, beginnend mit älteren Blättern.',
             },
             silica: {
-                term: 'Kieselsaeure (SiO2)',
+                term: 'Kieselsäure (SiO2)',
                 definition:
-                    'Ein nuetzliches Mineral, das Zellwaende staerkt, Hitze- und Trockenheitstoleranz verbessert und die Widerstandsfaehigkeit gegen Schaedlinge und Krankheitserreger erhoht. Nicht technisch essenziell, aber sehr vorteilhaft.',
+                    'Ein nützliches Mineral, das Zellwände stärkt, Hitze- und Trockenheitstoleranz verbessert und die Widerstandsfähigkeit gegen Schädlinge und Krankheitserreger erhoht. Nicht technisch essenziell, aber sehr vorteilhaft.',
             },
             calMag: {
-                term: 'Cal-Mag-Ergaenzung',
+                term: 'Cal-Mag-Ergänzung',
                 definition:
-                    'Eine kombinierte Kalzium- und Magnesiumergaenzung, die verbreitet mit Umkehrosmose-/destilliertem Wasser und Coco Coir verwendet wird, wo diese Elemente natuerlich mangelhaft oder nicht verfuegbar sind.',
+                    'Eine kombinierte Kalzium- und Magnesiumergänzung, die verbreitet mit Umkehrosmose-/destilliertem Wasser und Coco Coir verwendet wird, wo diese Elemente natürlich mangelhaft oder nicht verfügbar sind.',
             },
             npk: {
-                term: 'NPK-Verhaeltnis',
+                term: 'NPK-Verhältnis',
                 definition:
-                    'Das standardisierte Verhaeltnis von Stickstoff (N), Phosphor (P) und Kalium (K) in einem Duenger. z.B. 3-1-2 fuer Vegetativ, 1-3-2 fuer Bluete.',
+                    'Das standardisierte Verhältnis von Stickstoff (N), Phosphor (P) und Kalium (K) in einem Dünger. z.B. 3-1-2 für Vegetativ, 1-3-2 für Blüte.',
             },
             micronutrients: {
-                term: 'Mikronaehrstoffe (Spurenelemente)',
+                term: 'Mikronährstoffe (Spurenelemente)',
                 definition:
-                    'Naehrstoffe, die in sehr kleinen Mengen benoetigt werden, darunter Eisen, Zink, Mangan, Bor, Kupfer, Molybdaen und Chlor. Oft in chelatisierter Form in hochwertigen Naehrloesungsformeln enthalten.',
+                    'Nährstoffe, die in sehr kleinen Mengen benötigt werden, darunter Eisen, Zink, Mangan, Bor, Kupfer, Molybdän und Chlor. Oft in chelatisierter Form in hochwertigen Nährlösungsformeln enthalten.',
             },
         },
         diseases: {
             nutrientBurn: {
-                term: 'Naehrstoffverbrennung',
+                term: 'Nährstoffverbrennung',
                 definition:
-                    'Tritt auf, wenn die EC/PPM der Naehrloesung zu hoch ist, was knusprig braune Blattspitzen und Aufwaertskruellung verursacht. Behandlung durch Spaelen des Mediums und Reduzierung der Duengungsstaerke.',
+                    'Tritt auf, wenn die EC/PPM der Nährlösung zu hoch ist, was knusprig braune Blattspitzen und Aufwärtskrüsellung verursacht. Behandlung durch Spülen des Mediums und Reduzierung der Düngungsstärke.',
             },
             nutrientDeficiency: {
-                term: 'Naehrstoffmangel',
+                term: 'Nährstoffmangel',
                 definition:
-                    'Ein Zustand, bei dem der Pflanze ein oder mehrere essentielle Naehrstoffe fehlen, was charakteristische Symptome verursacht. Wird haeufiger durch falschen pH-Wert als durch tatsaechliches Fehlen von Naehrstoffen ausgeloest.',
+                    'Ein Zustand, bei dem der Pflanze ein oder mehrere essentielle Nährstoffe fehlen, was charakteristische Symptome verursacht. Wird häufiger durch falschen pH-Wert als durch tatsächliches Fehlen von Nährstoffen ausgelöst.',
             },
             powderyMildew: {
                 term: 'Echter Mehltau',
                 definition:
-                    'Eine Pilzkrankheit, die als weisse pudrige Flecken auf Blaettern erscheint. Gedeiht bei hoher Luftfeuchtigkeit und schlechter Luftzirkulation. Behandlung mit Kaliumbicarbonat oder Neemoal.',
+                    'Eine Pilzkrankheit, die als weiße pudrige Flecken auf Blättern erscheint. Gedeiht bei hoher Luftfeuchtigkeit und schlechter Luftzirkulation. Behandlung mit Kaliumbicarbonat oder Neemöl.',
             },
             botrytis: {
-                term: 'Botrytis (Bluetengraufaeal)',
+                term: 'Botrytis (Blütengraufäule)',
                 definition:
-                    'Ein verheerender Grauschimmelpilz, der in dichten Bluetenknospegen bei feuchten Bedingungen angreift. Sofortige Entfernung des befallenen Materials ist entscheidend um die Ausbreitung zu verhindern.',
+                    'Ein verheerender Grauschimmelpilz, der in dichten Blütenknospegen bei feuchten Bedingungen angreift. Sofortige Entfernung des befallenen Materials ist entscheidend um die Ausbreitung zu verhindern.',
             },
             rootRot: {
                 term: 'Wurzelfaule (Pythium)',
                 definition:
-                    'Ein Wasserschimmelpilz, der Wurzeln braun, schleimig und uebel riechend werden laesst. Ausgeloest durch Ueberwaesserung, schlechte Drainagen oder warme Hydro-Reservoirtemperaturen.',
+                    'Ein Wasserschimmelpilz, der Wurzeln braun, schleimig und übel riechend werden lässt. Ausgelöst durch Überwässerung, schlechte Drainagen oder warme Hydro-Reservoirtemperaturen.',
             },
             spiderMites: {
                 term: 'Spinnmilben',
                 definition:
-                    'Winzige Spinnentiere, die Stechfraessschaeden an Blaettern und feines Gespinst erzeugen. Gedeihen in heissen, trockenen Bedingungen. Behandlung mit Neemoal oder Insektizidseife.',
+                    'Winzige Spinnentiere, die Stechfraßschäden an Blättern und feines Gespinst erzeugen. Gedeihen in heissen, trockenen Bedingungen. Behandlung mit Neemöl oder Insektizidseife.',
             },
             fungusGnats: {
-                term: 'Trauermucken',
+                term: 'Trauermücken',
                 definition:
-                    'Kleine Fliegen, deren Larven Wurzeln in feuchter Erde schaedigen. Ein Zeichen von Ueberwaesserung. Erdoberflaeche trocknen lassen und gelbe Klebefallen gegen Erwachsene einsetzen.',
+                    'Kleine Fliegen, deren Larven Wurzeln in feuchter Erde schädigen. Ein Zeichen von Überwässerung. Erdoberfläche trocknen lassen und gelbe Klebefallen gegen Erwachsene einsetzen.',
             },
             aphids: {
-                term: 'Blaetlaeuse',
+                term: 'Blattläuse',
                 definition:
-                    'Weichkoerprige Insekten, die sich am Neuwachstum ansiedeln und klebrigen Honigtau absondern. Behandlung mit Insektizidseife, Neemoal oder nuetzlichen Raubinsekten.',
+                    'Weichkörprige Insekten, die sich am Neuwachstum ansiedeln und klebrigen Honigtau absondern. Behandlung mit Insektizidseife, Neemöl oder nützlichen Raubinsekten.',
             },
             thrips: {
                 term: 'Thripse',
                 definition:
-                    'Winzige Insekten, die Silberstreifen-Fressspuren auf Blaettern hinterlassen. Behandlung mit Spinosad oder Raubmilben. Strenge Quarantaene bei neuen Stecklingen verhindert die Einschleppung.',
+                    'Winzige Insekten, die Silberstreifen-Fressspuren auf Blättern hinterlassen. Behandlung mit Spinosad oder Raubmilben. Strenge Quarantäne bei neuen Stecklingen verhindert die Einschleppung.',
             },
             heatStress: {
                 term: 'Hitzestress',
                 definition:
-                    'Tritt auf, wenn Blattdach-Temperaturen 28-30 Grad C ueberschreiten, was Blattrandsaufwaaertskruellung (Taco-Effekt) verursacht. Belueftung verbessern, Lichter hochhaengen und ggf. Klimaanlage verwenden.',
+                    'Tritt auf, wenn Blattdach-Temperaturen 28-30 °C überschreiten, was Blattrandsaufwärtskrüsellung (Taco-Effekt) verursacht. Belüftung verbessern, Lichter hochhängen und ggf. Klimaanlage verwenden.',
             },
             lightBurn: {
                 term: 'Lichtverbrennung',
                 definition:
-                    'Ausgebleichte weisse oder gelbe Flecken auf den obersten Blaettern, verursacht durch zu nah haengende Lichter oder excessive PPFD. Licht hochhaengen um das Problem zu beheben.',
+                    'Ausgebleichte weiße oder gelbe Flecken auf den obersten Blättern, verursacht durch zu nah hängende Lichter oder excessive PPFD. Licht hochhängen um das Problem zu beheben.',
             },
             phLockout: {
                 term: 'pH-Blockade',
                 definition:
-                    'Mehrere gleichzeitig auftretende Maengel, verursacht durch einen ausserhalb des optimalen Bereichs liegenden pH-Wert in der Wurzelzone. Spaelen und pH zuruecksetzen um das Problem zu loesen. Die haeufigste Ursache scheinbarer Naehrstoffmaengel.',
+                    'Mehrere gleichzeitig auftretende Mängel, verursacht durch einen außerhalb des optimalen Bereichs liegenden pH-Wert in der Wurzelzone. Spülen und pH zurücksetzen um das Problem zu lösen. Die häufigste Ursache scheinbarer Nährstoffmängel.',
             },
             septoria: {
                 term: 'Septoria (Gelber Blattflecken)',
                 definition:
-                    'Eine Pilzkrankheit, die kleine gelbe oder braune kreisrunde Flecken an unteren Blaettern verursacht. Breitet sich aufwaerts aus. Luftzirkulation verbessern, befallene Blaetter entfernen und Benetzung der Blattoberflaehe vermeiden.',
+                    'Eine Pilzkrankheit, die kleine gelbe oder braune kreisrunde Flecken an unteren Blättern verursacht. Breitet sich aufwärts aus. Luftzirkulation verbessern, befallene Blätter entfernen und Benetzung der Blattoberfläche vermeiden.',
             },
         },
     },
     screenshots: {
         title: 'Bildschirmfotos',
-        subtitle: 'Alle Bereiche der App als Desktop- und Mobilansicht im Ueberblick.',
+        subtitle: 'Alle Bereiche der App als Desktop- und Mobilansicht im Überblick.',
         allCategories: 'Alle',
         noResults: 'Keine Bildschirmfotos gefunden.',
         lightboxLabel: 'Bildschirmfoto-Vorschau',
@@ -583,7 +583,7 @@ export const helpView = {
             geneticTrends: {
                 title: 'Genetik 2026 Trends',
                 content:
-                    'Entdecken Sie die neuesten Cannabis-Genetik-Trends fuer 2026 in einem eigenen Tab. Umfasst Terpen-Diversitaet (herzhafte/gassige Aromen), ultra-hohe Potenz mit Full-Spectrum-Effekten, ausgewogene Hybride fuer bewussten Konsum, die Autoflowering-Revolution, fortgeschrittene Zuechtertechniken (Polyploidie, F1-Hybride, Marker-gestuetzte Selektion) und die Landrace-Revival-Bewegung. Jeder Trend beinhaltet detaillierte Beschreibungen, Schluesselbeispiele und Relevanz-Bewertungen.',
+                    'Entdecken Sie die neuesten Cannabis-Genetik-Trends für 2026 in einem eigenen Tab. Umfasst Terpen-Diversität (herzhafte/gassige Aromen), ultra-hohe Potenz mit Full-Spectrum-Effekten, ausgewogene Hybride für bewussten Konsum, die Autoflowering-Revolution, fortgeschrittene Züchtertechniken (Polyploidie, F1-Hybride, Marker-gestützte Selektion) und die Landrace-Revival-Bewegung. Jeder Trend beinhaltet detaillierte Beschreibungen, Schlüsselbeispiele und Relevanz-Bewertungen.',
             },
         },
         plants: {
@@ -656,27 +656,27 @@ export const helpView = {
             growTech: {
                 title: 'Grow Tech 2026',
                 content:
-                    'Entdecken Sie die neuesten Cannabis-Anbau-Technologien fuer 2026 -- von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins, Aeroponik, Gewebekultur und smarten Grow-Boxen. Jeder Technologiebereich enthaelt Hauptvorteile, praktische Tipps und Integrationspunkte mit bereits in der App verfuegbaren CannaGuide-Funktionen.',
+                    'Entdecken Sie die neuesten Cannabis-Anbau-Technologien für 2026 -- von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins, Aeroponik, Gewebekultur und smarten Grow-Boxen. Jeder Technologiebereich enthält Hauptvorteile, praktische Tipps und Integrationspunkte mit bereits in der App verfügbaren CannaGuide-Funktionen.',
             },
         },
         settings: {
             title: 'Einstellungen',
             content:
-                'Passen Sie jeden Aspekt der App an Ihre Beduerfnisse an. Die Einstellungen sind in 11 Tabs organisiert.',
+                'Passen Sie jeden Aspekt der App an Ihre Bedürfnisse an. Die Einstellungen sind in 11 Tabs organisiert.',
             general: {
                 title: 'Allgemein & UI',
                 content:
-                    'Waehlen Sie aus 9 Cannabis-Themes, aendern Sie die Sprache (DE/EN/ES/FR/NL), setzen Sie Masseinheiten (metrisch/imperial), aktivieren Sie die legasthenikerfreundliche Schriftart, reduzierte Bewegungen oder Farbfehlsichtigkeitsfilter. Hier finden Sie auch den Schalter zum Vorladen lokaler KI-Modelle und den Force-WASM-Schalter.',
+                    'Wählen Sie aus 9 Cannabis-Themes, ändern Sie die Sprache (DE/EN/ES/FR/NL), setzen Sie Masseinheiten (metrisch/imperial), aktivieren Sie die legasthenikerfreundliche Schriftart, reduzierte Bewegungen oder Farbfehlsichtigkeitsfilter. Hier finden Sie auch den Schalter zum Vorladen lokaler KI-Modelle und den Force-WASM-Schalter.',
             },
             ai: {
                 title: 'KI-Konfiguration',
                 content:
-                    'Verwalten Sie Ihre API-Schluessel fuer bis zu vier Cloud-KI-Anbieter: Google Gemini, OpenAI, Anthropic und xAI/Grok. Waehlen Sie den KI-Modus (Cloud/Lokal/Hybrid/Eco). Alle Schluessel werden mit AES-256-GCM verschluesselt gespeichert. <strong>Tipp: Der Gemini API-Schluessel von Google AI Studio ist kostenlos mit einem Google-Konto.</strong>',
+                    'Verwalten Sie Ihre API-Schlüssel für bis zu vier Cloud-KI-Anbieter: Google Gemini, OpenAI, Anthropic und xAI/Grok. Wählen Sie den KI-Modus (Cloud/Lokal/Hybrid/Eco). Alle Schlüssel werden mit AES-256-GCM verschlüsselt gespeichert. <strong>Tipp: Der Gemini API-Schlüssel von Google AI Studio ist kostenlos mit einem Google-Konto.</strong>',
             },
             tts: {
                 title: 'Sprachausgabe (TTS)',
                 content:
-                    'Aktivieren Sie Text-zu-Sprache, waehlen Sie die Stimme und Sprechgeschwindigkeit. Lassen Sie sich KI-Ratschlaege, Anleitungen und Sortenbeschreibungen vorlesen.',
+                    'Aktivieren Sie Text-zu-Sprache, wählen Sie die Stimme und Sprechgeschwindigkeit. Lassen Sie sich KI-Ratschläge, Anleitungen und Sortenbeschreibungen vorlesen.',
             },
             strains: {
                 title: 'Sorten-Einstellungen',
@@ -686,27 +686,27 @@ export const helpView = {
             plants: {
                 title: 'Pflanzen & Simulation',
                 content:
-                    'Stellen Sie die maximale Anzahl Pflanzenslots ein (bis zu 6), waehlen Sie zwischen Anfaenger- und Expertenprofil fuer die Simulation, und konfigurieren Sie Standard-Lichtzyklus und Topfgroesse.',
+                    'Stellen Sie die maximale Anzahl Pflanzenslots ein (bis zu 6), wählen Sie zwischen Anfänger- und Expertenprofil für die Simulation, und konfigurieren Sie Standard-Lichtzyklus und Topfgröße.',
             },
             notifications: {
                 title: 'Benachrichtigungen',
                 content:
-                    'Aktivieren Sie proaktive Smart-Coach-Benachrichtigungen, die Sie warnen, wenn Umgebungswerte (Temperatur, Luftfeuchtigkeit, VPD, pH, EC) kritische Schwellwerte ueberschreiten.',
+                    'Aktivieren Sie proaktive Smart-Coach-Benachrichtigungen, die Sie warnen, wenn Umgebungswerte (Temperatur, Luftfeuchtigkeit, VPD, pH, EC) kritische Schwellwerte überschreiten.',
             },
             privacy: {
                 title: 'Datenschutz & Sicherheit',
                 content:
-                    'Schuetzen Sie die App mit einer PIN-Sperre, verwalten Sie den Datenexport/-import und konfigurieren Sie die Ein-Tipp Cloud-Synchronisation via GitHub Gist. Loeschen Sie bei Bedarf alle App-Daten.',
+                    'Schützen Sie die App mit einer PIN-Sperre, verwalten Sie den Datenexport/-import und konfigurieren Sie die Ein-Tipp Cloud-Synchronisation via GitHub Gist. Löschen Sie bei Bedarf alle App-Daten.',
             },
             iot: {
                 title: 'IoT-Einstellungen',
                 content:
-                    'Konfigurieren Sie die Verbindung zu ESP32-Sensoren fuer Echtzeit-Umgebungsueberwachung (Temperatur, Luftfeuchtigkeit, CO2, Bodenfeuchte). Verwalten Sie Geraeteadressen und Polling-Intervalle.',
+                    'Konfigurieren Sie die Verbindung zu ESP32-Sensoren für Echtzeit-Umgebungsüberwachung (Temperatur, Luftfeuchtigkeit, CO2, Bodenfeuchte). Verwalten Sie Geräteadressen und Polling-Intervalle.',
             },
             dataManagement: {
                 title: 'Datenverwaltung',
                 content:
-                    'Exportieren und importieren Sie Ihren gesamten App-Zustand als JSON. Nutzen Sie die GitHub-Gist-Synchronisation fuer geraetuebergreifende Backups. Loeschen Sie IndexedDB-Caches und setzen Sie die App bei Bedarf zurueck.',
+                    'Exportieren und importieren Sie Ihren gesamten App-Zustand als JSON. Nutzen Sie die GitHub-Gist-Synchronisation für gerätübergreifende Backups. Löschen Sie IndexedDB-Caches und setzen Sie die App bei Bedarf zurück.',
             },
             about: {
                 title: 'Info / About',
@@ -895,54 +895,54 @@ export const faq = {
     },
     dynamicLighting: {
         question: 'Was ist dynamische Beleuchtung und wie hilft sie?',
-        answer: 'Dynamische Beleuchtung nutzt LEDs, die ihr Spektrum automatisch an die Wachstumsphase und VPD-Bedingungen anpassen. Blaue Spektren foerdern kompaktes vegetatives Wachstum, waehrend rotdominante Spektren die Bluetendichte und THC-Produktion waehrend der Bluete steigern. Moderne Panels erreichen >2,8 umol/J Effizienz und reduzieren den Stromverbrauch um bis zu 40% gegenueber alten HPS-Lampen.',
+        answer: 'Dynamische Beleuchtung nutzt LEDs, die ihr Spektrum automatisch an die Wachstumsphase und VPD-Bedingungen anpassen. Blaue Spektren fördern kompaktes vegetatives Wachstum, während rotdominante Spektren die Blütendichte und THC-Produktion während der Blüte steigern. Moderne Panels erreichen >2,8 umol/J Effizienz und reduzieren den Stromverbrauch um bis zu 40% gegenüber alten HPS-Lampen.',
     },
     aeroponicsBasics: {
-        question: 'Was ist Aeroponik und eignet sie sich fuer den Heimanbau?',
-        answer: 'Aeroponik haengt Pflanzenwurzeln in die Luft und liefert Naehrstoffe ueber einen feinen Nebel. Sie kann bis zu 30% schnelleres Wachstum bei 90% weniger Wasser als Erde erreichen. Obwohl sie mehr anfaengliche Einrichtung erfordert, wird sie mit kompakten Systemen zunehmend fuer Heimanbauer zugaenglich. CannaGuide unterstuetzt Aeroponik als Anbaumedium mit angepassten EC/pH-Zielwerten.',
+        question: 'Was ist Aeroponik und eignet sie sich für den Heimanbau?',
+        answer: 'Aeroponik hängt Pflanzenwurzeln in die Luft und liefert Nährstoffe über einen feinen Nebel. Sie kann bis zu 30% schnelleres Wachstum bei 90% weniger Wasser als Erde erreichen. Obwohl sie mehr anfängliche Einrichtung erfordert, wird sie mit kompakten Systemen zunehmend für Heimanbauer zugänglich. CannaGuide unterstützt Aeroponik als Anbaumedium mit angepassten EC/pH-Zielwerten.',
     },
     digitalTwin: {
         question: 'Was ist ein Digital Twin im Cannabis-Anbau?',
-        answer: 'Ein Digital Twin ist ein virtuelles Abbild deiner Grow-Umgebung, das aus Sensordaten erstellt wird. Es ermoeglicht die Simulation von "Was-waere-wenn"-Szenarien -- wie das Hinzufuegen von CO2 oder das Aendern von Lichtplaenen -- und zeigt die prognostizierte Ertragsauswirkung, bevor du reale Aenderungen vornimmst. CannaGuides Sandbox bietet bereits grundlegende Digital-Twin-Experimente (Topping vs. LST, Temperatur +2C).',
+        answer: 'Ein Digital Twin ist ein virtuelles Abbild deiner Grow-Umgebung, das aus Sensordaten erstellt wird. Es ermöglicht die Simulation von "Was-wäre-wenn"-Szenarien -- wie das Hinzufügen von CO2 oder das Ändern von Lichtplänen -- und zeigt die prognostizierte Ertragsauswirkung, bevor du reale Änderungen vornimmst. CannaGuides Sandbox bietet bereits grundlegende Digital-Twin-Experimente (Topping vs. LST, Temperatur +2C).',
     },
     tissueCulture: {
-        question: 'Was ist Gewebekultur fuer Cannabis?',
-        answer: 'Gewebekultur (Mikrovermehrung) ist eine sterile Labortechnik zur Herstellung virusfreier, genetisch identischer Klone aus winzigen Pflanzengewebeproben. Sie eliminiert die Notwendigkeit von Mutterpflanzen und ermoeglicht massive Skalierung von Elite-Genetik. Home-Lab-Kits sind jetzt fuer fortgeschrittene Anbauer erhaeltlich.',
+        question: 'Was ist Gewebekultur für Cannabis?',
+        answer: 'Gewebekultur (Mikrovermehrung) ist eine sterile Labortechnik zur Herstellung virusfreier, genetisch identischer Klone aus winzigen Pflanzengewebeproben. Sie eliminiert die Notwendigkeit von Mutterpflanzen und ermöglicht massive Skalierung von Elite-Genetik. Home-Lab-Kits sind jetzt für fortgeschrittene Anbauer erhältlich.',
     },
     smartGrowBox: {
         question: 'Lohnen sich All-in-One Smart Grow-Boxen?',
-        answer: 'Smarte Grow-Boxen wie Hey Abby GrowMate integrieren LEDs, Belueftung, Sensoren und App-Steuerung in einer einzigen Einheit. Sie sind ideal fuer Anfaenger und Stadt-Grower, die minimale Einrichtungskomplexitaet wuenschen. Selbst mit einer Smart-Box bietet die Nutzung von CannaGuide fuer Tagebuch, KI-Beratung und VPD-Simulation einen erheblichen Mehrwert.',
+        answer: 'Smarte Grow-Boxen wie Hey Abby GrowMate integrieren LEDs, Belüftung, Sensoren und App-Steuerung in einer einzigen Einheit. Sie sind ideal für Anfänger und Stadt-Grower, die minimale Einrichtungskomplexität wünschen. Selbst mit einer Smart-Box bietet die Nutzung von CannaGuide für Tagebuch, KI-Beratung und VPD-Simulation einen erheblichen Mehrwert.',
     },
     co2Enrichment: {
-        question: 'Wann sollte ich meinem Grow-Room CO2 hinzufuegen?',
-        answer: 'CO2-Anreicherung (typischerweise 800-1500 ppm) ist waehrend der vegetativen und fruehen Bluetephase am effektivsten, wenn sie mit Hochleistungsbeleuchtung (>600 PPFD) kombiniert wird. Sie kann die Ertraege um 20-30% steigern, erfordert aber einen abgedichteten Raum und geeignete Sicherheitsausruestung. Ohne ausreichend Licht bietet zusaetzliches CO2 keinen Vorteil.',
+        question: 'Wann sollte ich meinem Grow-Room CO2 hinzufügen?',
+        answer: 'CO2-Anreicherung (typischerweise 800-1500 ppm) ist während der vegetativen und frühen Blütephase am effektivsten, wenn sie mit Hochleistungsbeleuchtung (>600 PPFD) kombiniert wird. Sie kann die Erträge um 20-30% steigern, erfordert aber einen abgedichteten Raum und geeignete Sicherheitsausrüstung. Ohne ausreichend Licht bietet zusätzliches CO2 keinen Vorteil.',
     },
     smartFertigation: {
         question: 'Was ist Smart Fertigation?',
-        answer: 'Smart Fertigation kombiniert automatisierte Bewaesserung mit Praezisions-Naehrstoffdosierung unter Verwendung von EC/pH-Sensoren und geschlossenen Regelkreissystemen. Es passt die Naehrstoffkonzentration und den pH-Wert automatisch in Echtzeit basierend auf Drainageablesungen an, eliminiert manuelles Mischen und reduziert Verschwendung. Dies ist der Standard in modernen hydroponischen und aeroponischen Setups.',
+        answer: 'Smart Fertigation kombiniert automatisierte Bewässerung mit Präzisions-Nährstoffdosierung unter Verwendung von EC/pH-Sensoren und geschlossenen Regelkreissystemen. Es passt die Nährstoffkonzentration und den pH-Wert automatisch in Echtzeit basierend auf Drainageablesungen an, eliminiert manuelles Mischen und reduziert Verschwendung. Dies ist der Standard in modernen hydroponischen und aeroponischen Setups.',
     },
     terpeneTrends: {
         question: 'Was sind die Terpen-Trends 2026?',
-        answer: 'Der Markt verschiebt sich 2026 weg von suessen Candy-Gas-Profilen hin zu komplexen, herzhaften und gassigen Aromen. Dunkle Kirsche, Vanille-Petrol, Lemon-Pine-Fuel, Cheese-Revivals und erdige/wuerzige Noten dominiert von Beta-Caryophyllen und Humulen sind das neue Premium. Funktionale Terpene wie THCV fuer Energie ohne Hunger gewinnen ebenfalls an Popularitaet.',
+        answer: 'Der Markt verschiebt sich 2026 weg von süßen Candy-Gas-Profilen hin zu komplexen, herzhaften und gassigen Aromen. Dunkle Kirsche, Vanille-Petrol, Lemon-Pine-Fuel, Cheese-Revivals und erdige/würzige Noten dominiert von Beta-Caryophyllen und Humulen sind das neue Premium. Funktionale Terpene wie THCV für Energie ohne Hunger gewinnen ebenfalls an Popularität.',
     },
     autoflowerQuality: {
         question: 'Sind Autoflower jetzt so gut wie Photoperiod-Sorten?',
-        answer: 'Ja, 2026 haben moderne Autoflower die Luecke geschlossen. Fortgeschrittene Backcrossing-Techniken produzieren Autoflower-Genetik, die Photoperiod-Sorten in Potenz, Terpen-Reichtum und Ertrag gleichkommt. Mit 75-90-Tage-Zyklen koennen Grower 2-3 Ernten pro Jahr erzielen. Sie sind ideal fuer Anfaenger und schnelle Turnarounds.',
+        answer: 'Ja, 2026 haben moderne Autoflower die Lücke geschlossen. Fortgeschrittene Backcrossing-Techniken produzieren Autoflower-Genetik, die Photoperiod-Sorten in Potenz, Terpen-Reichtum und Ertrag gleichkommt. Mit 75-90-Tage-Zyklen können Grower 2-3 Ernten pro Jahr erzielen. Sie sind ideal für Anfänger und schnelle Turnarounds.',
     },
     polyploidyBasics: {
         question: 'Was ist Polyploidie bei Cannabis?',
-        answer: 'Polyploidie bezeichnet Pflanzen mit mehr als zwei Chromosomensaetzen. Triploide (3n), tetraploide (4n) und hexaploide (6n) Cannabis-Pflanzen koennen bis zu 65% mehr Cannabinoide, hoehere Biomasse und bessere Schaedlingsresistenz produzieren. Triploide sind pollen-steril und verhindern versehentliche Bestaeubung. Dies ist die fortschrittlichste Zuechtertechnologie 2026.',
+        answer: 'Polyploidie bezeichnet Pflanzen mit mehr als zwei Chromosomensätzen. Triploide (3n), tetraploide (4n) und hexaploide (6n) Cannabis-Pflanzen können bis zu 65% mehr Cannabinoide, höhere Biomasse und bessere Schädlingsresistenz produzieren. Triploide sind pollen-steril und verhindern versehentliche Bestäubung. Dies ist die fortschrittlichste Züchtertechnologie 2026.',
     },
     balancedHybrids: {
         question: 'Warum liegen ausgewogene Hybride 2026 im Trend?',
-        answer: 'Konsumenten suchen zunehmend Kultivare, die spezifische funktionale Effekte liefern -- ruhiger Fokus ohne Sedierung, sozialer Uplift ohne Angst oder therapeutische Linderung ohne starke Berauschung. Ausgewogene Hybride mit moderatem THC und reichen Terpen-Profilen erfuellen diese Nachfrage nach bewusstem, alltaeglichem Konsum.',
+        answer: 'Konsumenten suchen zunehmend Kultivare, die spezifische funktionale Effekte liefern -- ruhiger Fokus ohne Sedierung, sozialer Uplift ohne Angst oder therapeutische Linderung ohne starke Berauschung. Ausgewogene Hybride mit moderatem THC und reichen Terpen-Profilen erfüllen diese Nachfrage nach bewusstem, alltäglichem Konsum.',
     },
     landraceGenetics: {
         question: 'Was ist die Landrace-Revival-Bewegung?',
-        answer: 'Das Landrace-Revival bewahrt und revitalisiert urspruengliche Cannabis-Genetik aus Regionen wie Afghanistan, Marokko, Thailand und Suedafrika. Diese alten Kultivare bieten einzigartige Terpen-Profile, natuerliche Schaedlingsresistenz und Effekte, die in modernen Hybriden selten zu finden sind. Zuechter kreuzen sie mit moderner Genetik fuer klimaresistente, traditionshonorierende Sorten.',
+        answer: 'Das Landrace-Revival bewahrt und revitalisiert ursprüngliche Cannabis-Genetik aus Regionen wie Afghanistan, Marokko, Thailand und Südafrika. Diese alten Kultivare bieten einzigartige Terpen-Profile, natürliche Schädlingsresistenz und Effekte, die in modernen Hybriden selten zu finden sind. Züchter kreuzen sie mit moderner Genetik für klimaresistente, traditionshonorierende Sorten.',
     },
     ultraThcStrains: {
         question: 'Sind Ultra-High-THC-Sorten (33%+) sicher zum Anbauen?',
-        answer: 'Ultra-High-THC-Sorten (33-37%) sind sicher zum Anbauen, erfordern aber praezise Umgebungskontrolle. Sie benoetigen oft genaues VPD-Management, starke Beleuchtung (>800 PPFD) und Naehrstoff-Praezision, um ihr volles Potenzial zu erreichen. Diese Kultivare passen am besten zu erfahrenen Growern, die die CannaGuide-Simulations- und Diagnose-Tools nutzen koennen.',
+        answer: 'Ultra-High-THC-Sorten (33-37%) sind sicher zum Anbauen, erfordern aber präzise Umgebungskontrolle. Sie benötigen oft genaues VPD-Management, starke Beleuchtung (>800 PPFD) und Nährstoff-Präzision, um ihr volles Potenzial zu erreichen. Diese Kultivare passen am besten zu erfahrenen Growern, die die CannaGuide-Simulations- und Diagnose-Tools nutzen können.',
     },
 }

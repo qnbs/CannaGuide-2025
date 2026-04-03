@@ -372,6 +372,10 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     }, [allStrains])
 
     // ── Mount-Check: korrupten persisted State zurücksetzen ──────────
+    // Only run on initial mount -- not on every state change, because
+    // status='loading' is a valid runtime state but would be flagged
+    // as corrupt if checked mid-flight (e.g. after navigation from
+    // strain detail view).
     useEffect(() => {
         if (wasReset) {
             return
@@ -394,7 +398,8 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             }
             setWasReset(true)
         }
-    }, [dispatch, genealogyState, wasReset])
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only check on mount
+    }, [])
 
     // ── Tree aus computedTrees ableiten (sicher) ─────────────────────
     const tree = useMemo(() => {

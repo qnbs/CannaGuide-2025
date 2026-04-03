@@ -213,6 +213,11 @@ export const knowledgeView = {
         phases: 'Phases',
         coreConcepts: 'Concepts Cles',
         troubleshooting: 'Depannage',
+        growTech: 'Grow Tech 2026',
+        genetics: 'Genetique',
+        searchPlaceholder: 'Rechercher des guides...',
+        noResults: 'Aucun article trouve pour "{{term}}"',
+        readProgress: '{{read}} sur {{total}} articles lus',
     },
     growLog: {
         title: 'Grow-Log RAG',

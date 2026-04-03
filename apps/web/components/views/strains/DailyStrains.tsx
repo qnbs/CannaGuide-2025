@@ -88,7 +88,7 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                         </span>
                         {strain.floweringType === 'Autoflower' && (
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-cyan-400 bg-cyan-400/10">
-                                Auto
+                                {t('strainsView.dailyStrains.auto')}
                             </span>
                         )}
                         {strain.pickCategory && <CategoryBadge category={strain.pickCategory} />}

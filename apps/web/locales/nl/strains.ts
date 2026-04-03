@@ -69,6 +69,7 @@ export const strainsView = {
         addedHint: '{{name}} genoteerd -- vind het in de soortencatalogus!',
         genetics: 'Genetica',
         match: 'match',
+        auto: 'Auto',
         whyToday: 'Waarom vandaag',
         dailyPick: 'Dagelijkse Pick',
         catalog: 'Catalogus',

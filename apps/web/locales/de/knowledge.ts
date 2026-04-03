@@ -242,7 +242,7 @@ export const knowledgeView = {
         growTech: 'Grow Tech 2026',
         genetics: 'Genetik',
         searchPlaceholder: 'Anleitungen durchsuchen...',
-        noResults: 'Keine Artikel gefunden fuer "{{term}}"',
+        noResults: 'Keine Artikel gefunden für "{{term}}"',
         readProgress: '{{read}} von {{total}} Artikeln gelesen',
     },
     growLog: {
@@ -262,29 +262,29 @@ export const knowledgeView = {
             cannabinoid: 'Cannabinoide',
             terpene: 'Terpene',
             flavonoid: 'Flavonoide',
-            nutrient: 'Naehrstoffe',
+            nutrient: 'Nährstoffe',
             disease: 'Krankheiten',
             general: 'Allgemein',
         },
-        noResults: 'Keine Ergebnisse fuer "{{term}}"',
+        noResults: 'Keine Ergebnisse für "{{term}}"',
         resultCount: '{{count}} von {{total}} Begriffen',
         totalCount: '{{count}} Begriffe',
-        noDefinition: 'Keine Definition verfuegbar.',
+        noDefinition: 'Keine Definition verfügbar.',
     },
     atlas: {
         searchPlaceholder: 'Diagnosen suchen...',
         allCategories: 'Alle Kategorien',
         allUrgencies: 'Alle Dringlichkeiten',
-        noResults: 'Keine Eintraege gefunden.',
+        noResults: 'Keine Einträge gefunden.',
         filterByCategory: 'Nach Kategorie filtern',
         filterByUrgency: 'Nach Dringlichkeit filtern',
-        entryCount: '{{count}} Eintraege',
-        close: 'Schliessen',
+        entryCount: '{{count}} Einträge',
+        close: 'Schließen',
         category: {
             deficiency: 'Mangel',
-            toxicity: 'Toxizitaet',
+            toxicity: 'Toxizität',
             environmental: 'Umwelt',
-            pest: 'Schaedlinge',
+            pest: 'Schädlinge',
             disease: 'Krankheit',
         },
         severity: {
@@ -309,227 +309,227 @@ export const knowledgeView = {
             'nitrogen-deficiency': {
                 name: 'Stickstoffmangel',
                 symptoms:
-                    'Vergil bung beginnt an aelteren unteren Blaettern und schreitet aufwaerts fort. Blaetter werden blassgelb-gruen, dann vollstaendig gelb. Gehemmtes Wachstum.',
-                causes: 'Ueberwaesserung, niedrige pH-Wert (sperrt N aus), ungenuegend Stickstoff in der Naehrloesung, Wurzelschaeden.',
+                    'Vergilbung beginnt an älteren unteren Blättern und schreitet aufwärts fort. Blätter werden blassgelb-grün, dann vollständig gelb. Gehemmtes Wachstum.',
+                causes: 'Überwässerung, niedrige pH-Wert (sperrt N aus), ungenügend Stickstoff in der Nährlösung, Wurzelschäden.',
                 treatment:
-                    'Medium mit pH-korrigiertem Wasser spaelen, dann mit einer stickstoffreichen Naehrloesung duengen. pH auf 6,0-7,0 (Erde) bzw. 5,5-6,5 (Hydro) korrigieren.',
+                    'Medium mit pH-korrigiertem Wasser spülen, dann mit einer stickstoffreichen Nährlösung düngen. pH auf 6,0-7,0 (Erde) bzw. 5,5-6,5 (Hydro) korrigieren.',
                 prevention:
-                    'pH konsequent ueberwachen, ausgewogene Naehrstoffe verwenden, Ueberwaesserung vermeiden.',
+                    'pH konsequent überwachen, ausgewogene Nährstoffe verwenden, Überwässerung vermeiden.',
             },
             'phosphorus-deficiency': {
                 name: 'Phosphormangel',
                 symptoms:
-                    'Lila oder roetliche Verfaerbungen an den Unterseiten der Blaetter und Staengel. Dunkelgruene Blaetter, die sich nach unten krollen koennen. Langsames Wachstum.',
-                causes: 'Niedriger pH-Wert (unter 6,0 in Erde), kalte Wurzelzone (unter 15 Grad C), wenig Phosphor in der Loesung.',
+                    'Lila oder rötliche Verfärbungen an den Unterseiten der Blätter und Stängel. Dunkelgrüne Blätter, die sich nach unten kräuseln können. Langsames Wachstum.',
+                causes: 'Niedriger pH-Wert (unter 6,0 in Erde), kalte Wurzelzone (unter 15 °C), wenig Phosphor in der Lösung.',
                 treatment:
-                    'pH erhoehen, Raumtemperatur steigern, phosphorreiche Blueteduenger ergaenzen.',
+                    'pH erhöhen, Raumtemperatur steigern, phosphorreiche Blütedünger ergänzen.',
                 prevention:
-                    'Wurzelzone ueber 18 Grad C halten, korrekten pH einhalten, Blueteduenger bei Bluetebeginn verwenden.',
+                    'Wurzelzone über 18 °C halten, korrekten pH einhalten, Blütedünger bei Blütebeginn verwenden.',
             },
             'potassium-deficiency': {
                 name: 'Kaliummangel',
                 symptoms:
-                    'Knusprige braune Rander und Spitzen an Blaettern, beginnend an aelteren Blaettern. Vergil bung zwischen den Blattadern. Schwache Staengel.',
-                causes: 'Hoher pH-Wert (sperrt K aus), ueberschuessiges Kalzium oder Magnesium konkurrieren um Aufnahme, wenig Kalium in der Loesung.',
+                    'Knusprige braune Ränder und Spitzen an Blättern, beginnend an älteren Blättern. Vergilbung zwischen den Blattadern. Schwache Stängel.',
+                causes: 'Hoher pH-Wert (sperrt K aus), überschüssiges Kalzium oder Magnesium konkurrieren um Aufnahme, wenig Kalium in der Lösung.',
                 treatment:
-                    'pH pruefen und korrigieren, konkurrierende Naehrstoffe reduzieren, Kalium erganzen.',
+                    'pH prüfen und korrigieren, konkurrierende Nährstoffe reduzieren, Kalium erganzen.',
                 prevention:
-                    'Vollstaendige Naehrformel mit ausreichend Kalium verwenden, besonders in der Spaetbluete.',
+                    'Vollständige Nährformel mit ausreichend Kalium verwenden, besonders in der Spätblüte.',
             },
             'calcium-deficiency': {
                 name: 'Kalziummangel',
                 symptoms:
-                    'Kleine braune oder rostfarbene Flecken auf neuen Blaettern. Verdrehtes oder geknittertes Neuwachstum. Schwache Staengel.',
-                causes: 'Niedriger pH reduziert Kalziumverfuegbarkeit, Einsatz von Umkehrosmose-/destilliertem Wasser ohne Remineralisierung, Coco Coir ohne Pufferung.',
+                    'Kleine braune oder rostfarbene Flecken auf neuen Blättern. Verdrehtes oder geknittertes Neuwachstum. Schwache Stängel.',
+                causes: 'Niedriger pH reduziert Kalziumverfügbarkeit, Einsatz von Umkehrosmose-/destilliertem Wasser ohne Remineralisierung, Coco Coir ohne Pufferung.',
                 treatment:
-                    'pH auf 6,2-7,0 korrigieren, Cal-Mag-Ergaenzung hinzufuegen, Coco vor Gebrauch puffern.',
+                    'pH auf 6,2-7,0 korrigieren, Cal-Mag-Ergänzung hinzufügen, Coco vor Gebrauch puffern.',
                 prevention:
                     'Coco Coir puffern, Cal-Mag mit Umkehrosmose-Wasser verwenden, korrekten pH einhalten.',
             },
             'magnesium-deficiency': {
                 name: 'Magnesiummangel',
                 symptoms:
-                    'Vergil bung zwischen den Blattadern (intervenoese Chlorose) auf mittleren bis aelteren Blaettern waehrend die Adern gruen bleiben. Blaetter koennen sich nach oben rollen.',
-                causes: 'Niedriger pH-Wert, hohes Kalium konkurriert mit Magnesiumaufnahme, ungenuegend Magnesium in der Loesung.',
+                    'Vergilbung zwischen den Blattadern (intervenöse Chlorose) auf mittleren bis älteren Blättern während die Adern grün bleiben. Blätter können sich nach oben rollen.',
+                causes: 'Niedriger pH-Wert, hohes Kalium konkurriert mit Magnesiumaufnahme, ungenügend Magnesium in der Lösung.',
                 treatment:
-                    'pH korrigieren, Kalium bei Ueberschuss reduzieren, Cal-Mag oder Bittersalz (MgSO4) hinzufuegen -- 1 TL/Liter als Blattspray fuer schnelle Ergebnisse.',
+                    'pH korrigieren, Kalium bei Überschuss reduzieren, Cal-Mag oder Bittersalz (MgSO4) hinzufügen -- 1 TL/Liter als Blattspray für schnelle Ergebnisse.',
                 prevention:
-                    'Ausgeglichene Naehrformel verwenden, Cal-Mag-Ergaenzung einschliessen, korrekten pH einhalten.',
+                    'Ausgeglichene Nährformel verwenden, Cal-Mag-Ergänzung einschließen, korrekten pH einhalten.',
             },
             'iron-deficiency': {
                 name: 'Eisenmangel',
                 symptoms:
-                    'Hellgelbe (chlorotische) Blaetter bei sehr neuem Wachstum, waehrend die Adern gruen bleiben. Klassisches intervenoeses Chlorosemuster.',
-                causes: 'Hoher pH-Wert (haeufigste Ursache, besonders ueber 7,0), staunasse Wurzeln, ueberschuessiger Phosphor oder Mangan als Konkurrenz.',
+                    'Hellgelbe (chlorotische) Blätter bei sehr neuem Wachstum, während die Adern grün bleiben. Klassisches intervenöses Chlorosemuster.',
+                causes: 'Hoher pH-Wert (häufigste Ursache, besonders über 7,0), staunasse Wurzeln, überschüssiger Phosphor oder Mangan als Konkurrenz.',
                 treatment:
-                    'pH auf 6,0-6,5 senken, Drainageverbessern, chelatierten Eisenduenger verwenden.',
+                    'pH auf 6,0-6,5 senken, Drainage verbessern, chelatierten Eisendünger verwenden.',
                 prevention:
-                    'Korrekten pH einhalten, Ueberwaesserung vermeiden, Chelat-Mikronaetstoffpaket verwenden.',
+                    'Korrekten pH einhalten, Überwässerung vermeiden, Chelat-Mikronährstoffpaket verwenden.',
             },
             'zinc-deficiency': {
                 name: 'Zinkmangel',
                 symptoms:
-                    'Vergil bung des neuen Blattgewebes zwischen den Adern. Blaetter koennen gefleckt oder verzerrt erscheinen. Kurze Internodienabstaende.',
-                causes: 'Hoher pH-Wert, ueberschuessiger Phosphor hemmt Zinkaufnahme, wenig Zink im Medium oder der Loesung.',
+                    'Vergilbung des neuen Blattgewebes zwischen den Adern. Blätter können gefleckt oder verzerrt erscheinen. Kurze Internodienabstände.',
+                causes: 'Hoher pH-Wert, überschüssiger Phosphor hemmt Zinkaufnahme, wenig Zink im Medium oder der Lösung.',
                 treatment:
-                    'pH auf optimalen Bereich korrigieren, bei Ueberschuss Phosphor reduzieren, Zink ergaenzen.',
-                prevention: 'Vollstaendige Mikronaetstoffformel verwenden, korrekten pH einhalten.',
+                    'pH auf optimalen Bereich korrigieren, bei Überschuss Phosphor reduzieren, Zink ergänzen.',
+                prevention: 'Vollständige Mikronährstoffformel verwenden, korrekten pH einhalten.',
             },
             'sulfur-deficiency': {
                 name: 'Schwefelmangel',
                 symptoms:
-                    'Neue Blaetter werden gleichmaessig blassgelb bis weiss. Im Gegensatz zu Stickstoffmangel beginnt es beim jungen/neuen Wachstum.',
-                causes: 'Wenig Schwefel in der Naehrloesung, sehr hoher pH-Wert, kuerzlich umpflanzte oder gespaelte Pflanzen.',
+                    'Neue Blätter werden gleichmäßig blassgelb bis weiss. Im Gegensatz zu Stickstoffmangel beginnt es beim jungen/neuen Wachstum.',
+                causes: 'Wenig Schwefel in der Nährlösung, sehr hoher pH-Wert, kürzlich umpflanzte oder gespälte Pflanzen.',
                 treatment:
-                    'Schwefelhaltigen Duenger hinzufuegen (viele Basis-Naehrstoffe enthalten ihn), pH pruefen.',
-                prevention: 'Vollstaendige Naehrformel verwenden, extremen pH vermeiden.',
+                    'Schwefelhaltigen Dünger hinzufügen (viele Basis-Nährstoffe enthalten ihn), pH prüfen.',
+                prevention: 'Vollständige Nährformel verwenden, extremen pH vermeiden.',
             },
             'nutrient-burn': {
-                name: 'Naehrstoffverbrennung (Toxizitaet)',
+                name: 'Nährstoffverbrennung (Toxizität)',
                 symptoms:
-                    'Blattspitzen werden braun und krisprig, dann schreitet die Vergil bung einwaerts fort. Spitzen koennen sich nach oben krollen. Dunkelglaenzend gruene Blattfaerbung.',
-                causes: 'Naehrloesung EC/PPM zu hoch, zu haeufige Duengung, stark angereicherte harte Erde.',
+                    'Blattspitzen werden braun und krisprig, dann schreitet die Vergilbung einwärts fort. Spitzen können sich nach oben kräuseln. Dunkelglänzend grüne Blattfärbung.',
+                causes: 'Nährlösung EC/PPM zu hoch, zu häufige Düngung, stark angereicherte harte Erde.',
                 treatment:
-                    'Medium mit dem 3-fachen Topfvolumen an pH-korrigiertem Wasser spaelen. Naechste Duengung auf 50 % Staerke reduzieren.',
+                    'Medium mit dem 3-fachen Topfvolumen an pH-korrigiertem Wasser spülen. Nächste Düngung auf 50 % Stärke reduzieren.',
                 prevention:
-                    'Mit Naehrstoffen niedrig beginnen, langsam erhoehen, EC/PPM regelmaessig messen.',
+                    'Mit Nährstoffen niedrig beginnen, langsam erhöhen, EC/PPM regelmäßig messen.',
             },
             'nitrogen-toxicity': {
-                name: 'Stickstofftoxizitaet',
+                name: 'Stickstofftoxizität',
                 symptoms:
-                    'Sehr dunkelglaenzend gruene Blaetter. Spitzen koennen sich nach unten krallen (die "Klaue"). Uebertriebenes Blattwachstum, reduzierte Bluetendichte.',
-                causes: 'Zu viel Stickstoff, besonders waehrend der Bluete, wenn der N-Bedarf sinkt.',
+                    'Sehr dunkelglänzend grüne Blätter. Spitzen können sich nach unten krallen (die "Klaue"). Übertriebenes Blattwachstum, reduzierte Blütendichte.',
+                causes: 'Zu viel Stickstoff, besonders während der Blüte, wenn der N-Bedarf sinkt.',
                 treatment:
-                    'Stickstoffduengung stoppen, mit pH-korrigiertem Wasser spaelen, zu Blueteverhaeltnis-Naehrstoffen wechseln.',
+                    'Stickstoffdüngung stoppen, mit pH-korrigiertem Wasser spülen, zu Blüteverhältnis-Nährstoffen wechseln.',
                 prevention:
-                    'Stickstoff beim Wechsel zur Bluete reduzieren, bluetespezifische Naehrstoffe verwenden.',
+                    'Stickstoff beim Wechsel zur Blüte reduzieren, blütespezifische Nährstoffe verwenden.',
             },
             overwatering: {
-                name: 'Ueberwaesserung',
+                name: 'Überwässerung',
                 symptoms:
-                    'Gesamte Pflanze haengt durch. Blaetter fuehlensich fest an, haengen aber mit runder Wellung nach unten. Erde bleibt viele Tage nass. Vergil bung.',
-                causes: 'Zu haeufiges Giessen, schlechte Drainagen, Toepfe ohne Locher, zu dichtes Anzuchtmedium.',
+                    'Gesamte Pflanze hängt durch. Blätter fühlensich fest an, hängen aber mit runder Wellung nach unten. Erde bleibt viele Tage nass. Vergilbung.',
+                causes: 'Zu häufiges Gießen, schlechte Drainagen, Töpfe ohne Locher, zu dichtes Anzuchtmedium.',
                 treatment:
-                    'Giessen voellig einstellen bis Topf sehr leicht ist. Belueftung rund um den Topf verbessern. Ggf. in besser drainierendes Medium umpflanzen.',
+                    'Gießen völlig einstellen bis Topf sehr leicht ist. Belüftung rund um den Topf verbessern. Ggf. in besser drainierendes Medium umpflanzen.',
                 prevention:
-                    'Topfgewicht pruefen -- erst giessen wenn deutlich leichter. Behaelter mit guten Drainageloechern verwenden. Medium teilweise trocknen lassen.',
+                    'Topfgewicht prüfen -- erst gießen wenn deutlich leichter. Behälter mit guten Drainagelöchern verwenden. Medium teilweise trocknen lassen.',
             },
             underwatering: {
-                name: 'Unterwaesserung',
+                name: 'Unterwässerung',
                 symptoms:
-                    'Gesamte Pflanze welkt und haengt durch. Blaetter fuehlen sich duenn und papierartig mit leichter Einwaertskruellung an. Topf ist sehr leicht.',
-                causes: 'Zu seltenes Giessen, trockenes Klima, schnell drainierendes Medium, grosse Pflanze in kleinem Topf.',
+                    'Gesamte Pflanze welkt und hängt durch. Blätter fühlen sich dünn und papierartig mit leichter Einwärtskrüsellung an. Topf ist sehr leicht.',
+                causes: 'Zu seltenes Gießen, trockenes Klima, schnell drainierendes Medium, grosse Pflanze in kleinem Topf.',
                 treatment:
-                    'Gruendlich giessen bis Abfluss aus dem Boden laeuft. Pflanze sollte sich innerhalb von Stunden erholen.',
+                    'Gründlich gießen bis Abfluss aus dem Boden läuft. Pflanze sollte sich innerhalb von Stunden erholen.',
                 prevention:
-                    'Topfgewicht regelmaessig pruefen. Giessen wenn die oberste Schicht des Mediums trocken ist.',
+                    'Topfgewicht regelmäßig prüfen. Gießen wenn die oberste Schicht des Mediums trocken ist.',
             },
             'heat-stress': {
                 name: 'Hitzestress',
                 symptoms:
-                    'Blaenderraender und -spitzen rollen sich nach oben wie Taco-Schalen. Ausgebleichte oder verbrannte Flecken wo Blaetter am naechsten an der Lichtquelle sind. Welken trotz ausreichend Wasser.',
-                causes: 'Growroom-Temperatur ueber 30 Grad C, Lichter zu nah am Blattdach, schlechte Belueftung, Hitzepunkte.',
+                    'Bländerränder und -spitzen rollen sich nach oben wie Taco-Schalen. Ausgebleichte oder verbrannte Flecken wo Blätter am nächsten an der Lichtquelle sind. Welken trotz ausreichend Wasser.',
+                causes: 'Growroom-Temperatur über 30 °C, Lichter zu nah am Blattdach, schlechte Belüftung, Hitzepunkte.',
                 treatment:
-                    'Belueftung verbessern, Lichter hochhaengen, Klimaanlage hinzufuegen. Kurzzeitig Blaetter mit Wasser bespruehn.',
+                    'Belüftung verbessern, Lichter hochhängen, Klimaanlage hinzufügen. Kurzzeitig Blätter mit Wasser besprühen.',
                 prevention:
-                    'Blattdach-Temperatur unter 28 Grad C halten. Ausreichenden Luftstrom ueber dem Blattdach sicherstellen.',
+                    'Blattdach-Temperatur unter 28 °C halten. Ausreichenden Luftstrom über dem Blattdach sicherstellen.',
             },
             'light-burn': {
                 name: 'Lichtverbrennung',
                 symptoms:
-                    'Ausgebleichte weisse oder gelbe Flecken auf obersten Blaettern am naechsten zur Lichtquelle. Blaetter direkt unter dem Licht erscheinen trotz ausreichender Naehrstoffe gebleicht.',
-                causes: 'Grow-Licht zu nah am Blattdach, uebermassige Lichtintensitaet (PPFD zu hoch).',
+                    'Ausgebleichte weiße oder gelbe Flecken auf obersten Blättern am nächsten zur Lichtquelle. Blätter direkt unter dem Licht erscheinen trotz ausreichender Nährstoffe gebleicht.',
+                causes: 'Grow-Licht zu nah am Blattdach, übermassige Lichtintensität (PPFD zu hoch).',
                 treatment:
-                    'Licht sofort hochhaengen. Die ausgebleichten Bereiche erholen sich nicht, aber neues Wachstum wird gesund sein.',
+                    'Licht sofort hochhängen. Die ausgebleichten Bereiche erholen sich nicht, aber neues Wachstum wird gesund sein.',
                 prevention:
-                    'Mindest-Haegeabstandsempfehlungen des Herstellers befolgen, PPFD ueberwachen.',
+                    'Mindest-Hägeabstandsempfehlungen des Herstellers befolgen, PPFD überwachen.',
             },
             'ph-lockout': {
                 name: 'pH-Blockade',
                 symptoms:
-                    'Mehrere Mangelsymptome erscheinen gleichzeitig trotz ausreichender Naehrstoffe. Pflanze erscheint allgemein krank.',
-                causes: 'Naehrloesung oder Anzuchtmedium pH liegt ausserhalb des optimalen Aufnahmebereichs fuer Schluesselnaehrstoffe.',
+                    'Mehrere Mangelsymptome erscheinen gleichzeitig trotz ausreichender Nährstoffe. Pflanze erscheint allgemein krank.',
+                causes: 'Nährlösung oder Anzuchtmedium pH liegt außerhalb des optimalen Aufnahmebereichs für Schlüsselnährstoffe.',
                 treatment:
-                    'Wurzelzonen-pH testen (Abflusstest). Medium mit korrekt pH-eingestelltem Wasser spaelen. Duengung bei korrektem pH wieder aufnehmen.',
-                prevention: 'Wasser und Naehrloesung immer pH-en. Abfluss-pH woechentlich testen.',
+                    'Wurzelzonen-pH testen (Abflusstest). Medium mit korrekt pH-eingestelltem Wasser spülen. Düngung bei korrektem pH wieder aufnehmen.',
+                prevention: 'Wasser und Nährlösung immer pH-en. Abfluss-pH wöchentlich testen.',
             },
             'spider-mites': {
                 name: 'Spinnmilben',
                 symptoms:
-                    'Winzige weisse/gelbe Tupfen auf Blattoberflaechen. Feines seidiges Gespinst zwischen Blaettern und Staengeln. Winzige sich bewegende Punkte mit Lupe sichtbar.',
+                    'Winzige weiße/gelbe Tupfen auf Blattoberflächen. Feines seidiges Gespinst zwischen Blättern und Stängeln. Winzige sich bewegende Punkte mit Lupe sichtbar.',
                 causes: 'Trockene, heisse Bedingungen. Infizierte Stecklinge oder Anzuchtmedium. Schlechter Luftstrom.',
                 treatment:
-                    'Alle Blattoberflaechen (besonders Unterseiten) mit Neemoal-Loesung, Insektizidseife oder Spinosad bespruehn. Luftfeuchtigkeit erhoehen. Alle 3 Tage 2 Wochen lang wiederholen.',
+                    'Alle Blattoberflächen (besonders Unterseiten) mit Neemöl-Lösung, Insektizidseife oder Spinosad besprühen. Luftfeuchtigkeit erhöhen. Alle 3 Tage 2 Wochen lang wiederholen.',
                 prevention:
-                    '50-60 % Luftfeuchtigkeit einhalten, Luftstrom sicherstellen, neue Pflanzen vor Einfuehren in den Growroom pruefen.',
+                    '50-60 % Luftfeuchtigkeit einhalten, Luftstrom sicherstellen, neue Pflanzen vor Einführen in den Growroom prüfen.',
             },
             'fungus-gnats': {
-                name: 'Trauermucken',
+                name: 'Trauermücken',
                 symptoms:
-                    'Kleine schwarze Fliegen um die Erdoberflaeche. Welkende Keimpflanzen durch Larvenwurzelsschaeden. Winzige weisse Larven in der Erde sichtbar.',
-                causes: 'Ueberwaesserung haelt Erdoberflaeche feucht und ermoelicht Eiablage. Torfbasierte Mischungen.',
+                    'Kleine schwarze Fliegen um die Erdoberfläche. Welkende Keimpflanzen durch Larvenwurzelsschäden. Winzige weiße Larven in der Erde sichtbar.',
+                causes: 'Überwässerung hält Erdoberfläche feucht und ermöglicht Eiablage. Torfbasierte Mischungen.',
                 treatment:
-                    'Obere 5 cm der Erde voellig austrocknen lassen. Gelbe Klebefallen fuer Erwachsene verwenden. Nutzinsekten (Nematoden) oder Bacillus thuringiensis israelensis (Bti) auftragen.',
+                    'Obere 5 cm der Erde völlig austrocknen lassen. Gelbe Klebefallen für Erwachsene verwenden. Nutzinsekten (Nematoden) oder Bacillus thuringiensis israelensis (Bti) auftragen.',
                 prevention:
-                    'Ueberwaesserung vermeiden, Erdoberflaeche trocknen lassen, Perliteschicht auf Erde verwenden.',
+                    'Überwässerung vermeiden, Erdoberfläche trocknen lassen, Perliteschicht auf Erde verwenden.',
             },
             aphids: {
-                name: 'Blaetlaeuse',
+                name: 'Blattläuse',
                 symptoms:
-                    'Gruppen kleiner weichkoerpiger Insekten auf Neuwachstum und Blattunterseiten. Klebriger Honigtau auf Blaettern. Gekraeuseltes oder verzerrtes Neuwachstum.',
+                    'Gruppen kleiner weichkörpiger Insekten auf Neuwachstum und Blattunterseiten. Klebriger Honigtau auf Blättern. Gekräuseltes oder verzerrtes Neuwachstum.',
                 causes: 'Offener Growraum, kontaminierte Stecklinge oder Freilandkontakt.',
                 treatment:
-                    'Mit Wasser abspritzen, Insektizidseife oder Neemoal anwenden, Nuetzlinge einfuehren (Marienkaefer, Florfliegen).',
-                prevention: 'Geschlossene Growumgebung einhalten, alle neuen Pflanzen pruefen.',
+                    'Mit Wasser abspritzen, Insektizidseife oder Neemöl anwenden, Nützlinge einführen (Marienkäfer, Florfliegen).',
+                prevention: 'Geschlossene Growumgebung einhalten, alle neuen Pflanzen prüfen.',
             },
             thrips: {
                 name: 'Thripse',
                 symptoms:
-                    'Silber-weisse Streifen oder Flecken auf Blaettern (Fressspuren). Schwarze Kotpunkte auf Blattoberflaechen. Blaetter koennen bronzefartig werden.',
+                    'Silber-weiße Streifen oder Flecken auf Blättern (Fressspuren). Schwarze Kotpunkte auf Blattoberflächen. Blätter können bronzefartig werden.',
                 causes: 'Kontaminierte Pflanzen oder Erde, offene Growumgebung.',
                 treatment:
-                    'Spinosad, Neemoal oder Raubinsekten (Amblyseius cucumeris) einsetzen. Regelmaessig wiederholen.',
+                    'Spinosad, Neemöl oder Raubinsekten (Amblyseius cucumeris) einsetzen. Regelmäßig wiederholen.',
                 prevention:
-                    'Strenge Quarantaene fuer neue Stecklinge, fruehzeitig gelbe Klebefallen einsetzen.',
+                    'Strenge Quarantäne für neue Stecklinge, frühzeitig gelbe Klebefallen einsetzen.',
             },
             'powdery-mildew': {
                 name: 'Echter Mehltau',
                 symptoms:
-                    'Weisse, pudrige Flecken auf Blattoberflaechen, Staengeln und Blueten. Flecken breiten sich schnell aus. Betroffenes Gewebe kann sich gelb verfaerben und absterben.',
-                causes: 'Hohe Luftfeuchtigkeit (ueber 60 %) kombiniert mit schlechtem Luftstrom und gemaessigten Temperaturen (15-27 Grad C). Ueberfuellte Pflanzen.',
+                    'Weiße, pudrige Flecken auf Blattoberflächen, Stängeln und Blüten. Flecken breiten sich schnell aus. Betroffenes Gewebe kann sich gelb verfärben und absterben.',
+                causes: 'Hohe Luftfeuchtigkeit (über 60 %) kombiniert mit schlechtem Luftstrom und gemäßigten Temperaturen (15-27 °C). Überfuellte Pflanzen.',
                 treatment:
-                    'Stark befallene Blaetter entfernen. Kaliumbicarbonat, Neemoal oder verduenntes Wasserstoffperoxid auftragen. Luftstrom erhoehen und Luftfeuchtigkeit dringend reduzieren.',
+                    'Stark befallene Blätter entfernen. Kaliumbicarbonat, Neemöl oder verdünntes Wasserstoffperoxid auftragen. Luftstrom erhöhen und Luftfeuchtigkeit dringend reduzieren.',
                 prevention:
-                    'Luftfeuchtigkeit in der Bluete unter 50 % halten. Starken Luftstrom durch das Blattdach sicherstellen. Ueberfluellung vermeiden.',
+                    'Luftfeuchtigkeit in der Blüte unter 50 % halten. Starken Luftstrom durch das Blattdach sicherstellen. Überfüllung vermeiden.',
             },
             botrytis: {
-                name: 'Botrytis (Bluetengraufaez / Grauschimmel)',
+                name: 'Botrytis (Blütengraufäule / Grauschimmel)',
                 symptoms:
-                    'Grauer flaumiger Schimmel in dichten Blueten. Braune matschige Stellen in der Mitte der Kolas. Graue Sporen sichtbar.',
-                causes: 'Hohe Luftfeuchtigkeit (ueber 50 % in der Bluete), schlechter Luftstrom, dichte Blueten, Temperaturen unter 20 Grad C bei hoher Luftfeuchtigkeit.',
+                    'Grauer flaumiger Schimmel in dichten Blüten. Braune matschige Stellen in der Mitte der Kolas. Graue Sporen sichtbar.',
+                causes: 'Hohe Luftfeuchtigkeit (über 50 % in der Blüte), schlechter Luftstrom, dichte Blüten, Temperaturen unter 20 °C bei hoher Luftfeuchtigkeit.',
                 treatment:
-                    'Sofort alle befallenen Teile entfernen und eintueten. Blueten nicht schuetteln -- Sporen verbreiten sich. Luftstrom drastisch erhoehen und Luftfeuchtigkeit senken.',
+                    'Sofort alle befallenen Teile entfernen und eintüten. Blüten nicht schütteln -- Sporen verbreiten sich. Luftstrom drastisch erhöhen und Luftfeuchtigkeit senken.',
                 prevention:
-                    'Bluete-Luftfeuchtigkeit bei 40-50 % halten. Dichtes Blattdach entblaettern fuer Luftstrom. Rechtzeitig ernten.',
+                    'Blüte-Luftfeuchtigkeit bei 40-50 % halten. Dichtes Blattdach entblättern für Luftstrom. Rechtzeitig ernten.',
             },
             'root-rot': {
                 name: 'Wurzelfaule (Pythium/Phytophthora)',
                 symptoms:
-                    'Wurzeln werden braun/grau und schleimig statt weiss und fest. Fauler Geruch aus der Wurzelzone. Pflanze welkt trotz ausreichend Wasser. In Hydro: verfaerbte Naehrloesung.',
-                causes: 'Ueberwaesserung oder schlechte Drainagen. Anaerobe Bedingungen in der Wurzelzone. Wassertemperaturen ueber 22 Grad C in Hydro. Fehlende Nutzorganismen.',
+                    'Wurzeln werden braun/grau und schleimig statt weiss und fest. Fauler Geruch aus der Wurzelzone. Pflanze welkt trotz ausreichend Wasser. In Hydro: verfärbte Nährlösung.',
+                causes: 'Überwässerung oder schlechte Drainagen. Anaerobe Bedingungen in der Wurzelzone. Wassertemperaturen über 22 °C in Hydro. Fehlende Nutzorganismen.',
                 treatment:
-                    'In Erde: Giessen reduzieren, Drainage verbessern, Nutzorganismen/Mykorrhiza anwenden. In Hydro: Reservoir wechseln, Wassertemperatur senken, mit Wasserstoffperoxid oder Nutzorganismen behandeln.',
+                    'In Erde: Gießen reduzieren, Drainage verbessern, Nutzorganismen/Mykorrhiza anwenden. In Hydro: Reservoir wechseln, Wassertemperatur senken, mit Wasserstoffperoxid oder Nutzorganismen behandeln.',
                 prevention:
-                    'Ueberwaesserung vermeiden. Hydro-Reservoir unter 20 Grad C halten. Druckluftstein verwenden. Mit Nutzorganismen inokulieren.',
+                    'Überwässerung vermeiden. Hydro-Reservoir unter 20 °C halten. Druckluftstein verwenden. Mit Nutzorganismen inokulieren.',
             },
         },
     },
     rechner: {
         title: 'Rechner-Hub',
         vpdTab: 'VPD',
-        nutrientTab: 'Naehrstoffe',
+        nutrientTab: 'Nährstoffe',
         phTab: 'pH / EC',
-        equipmentLink: 'Fuer erweiterte Rechner, sieh den Ausruestungsbereich.',
+        equipmentLink: 'Für erweiterte Rechner, sieh den Ausrüstungsbereich.',
         vpd: {
             temperature: 'Lufttemperatur',
             humidity: 'Relative Luftfeuchtigkeit',
@@ -542,30 +542,30 @@ export const knowledgeView = {
             refTitle: 'VPD-Referenzbereiche',
             rangeSeedling: 'Keimling',
             rangeVeg: 'Vegetativ',
-            rangeFlower: 'Bluete',
-            rangeLateFlower: 'Spaetbluete',
+            rangeFlower: 'Blüte',
+            rangeLateFlower: 'Spätblüte',
         },
         nutrient: {
             growStage: 'Wachstumsphase',
             volume: 'Wasservolumen (L)',
             seedling: 'Keimling',
             veg: 'Vegetativ',
-            earlyFlower: 'Fruehbluete',
-            lateFlower: 'Spaetbluete',
-            seedlingDesc: 'Leichte Ernaehrung, hoher N-Anteil fuer Wurzel- und Blattentwicklung.',
-            vegDesc: 'Starker N-Anteil, moderates P/K fuer kraeftiges vegetatives Wachstum.',
-            earlyFlowerDesc: 'N reduzieren, P/K erhoehen waehrend sich Knospen bilden.',
-            lateFlowerDesc: 'Minimales N -- Reifungsphase, Fokus auf P/K und spuelbare Mineralien.',
+            earlyFlower: 'Frühblüte',
+            lateFlower: 'Spätblüte',
+            seedlingDesc: 'Leichte Ernährung, hoher N-Anteil für Wurzel- und Blattentwicklung.',
+            vegDesc: 'Starker N-Anteil, moderates P/K für kräftiges vegetatives Wachstum.',
+            earlyFlowerDesc: 'N reduzieren, P/K erhöhen während sich Knospen bilden.',
+            lateFlowerDesc: 'Minimales N -- Reifungsphase, Fokus auf P/K und spülbare Mineralien.',
             targetEc: 'Ziel-EC (mS/cm)',
-            dosage: 'Ungefaehre Dosierung',
+            dosage: 'Ungefähre Dosierung',
             disclaimer: 'Werte sind nur Richtwerte. Immer EC und pH nach dem Mischen messen.',
         },
         ph: {
-            intro: 'Ideale pH- und EC-Bereiche variieren je nach Anzuchtmedium. Die Einhaltung dieser Bereiche gewaehrleistet optimale Naehrstoffverfuegbarkeit.',
+            intro: 'Ideale pH- und EC-Bereiche variieren je nach Anzuchtmedium. Die Einhaltung dieser Bereiche gewährleistet optimale Nährstoffverfügbarkeit.',
             medium: 'Medium',
             phRange: 'pH-Bereich',
             ecRange: 'EC-Bereich (mS/cm)',
-            note: 'Wasser und Naehrloesung nach jedem Mischen immer pH-en. Kalibrierten pH-Meter verwenden.',
+            note: 'Wasser und Nährlösung nach jedem Mischen immer pH-en. Kalibrierten pH-Meter verwenden.',
         },
     },
     lernpfad: {
@@ -575,8 +575,8 @@ export const knowledgeView = {
         allLevels: 'Alle Level',
         completed: 'Abgeschlossen',
         markDone: 'Als erledigt markieren',
-        resetPath: 'Fortschritt zuruecksetzen',
-        noPaths: 'Keine Lernpfade verfuegbar.',
+        resetPath: 'Fortschritt zurücksetzen',
+        noPaths: 'Keine Lernpfade verfügbar.',
         level: {
             beginner: 'Einsteiger',
             intermediate: 'Fortgeschritten',
@@ -586,27 +586,27 @@ export const knowledgeView = {
             'beginner-first-grow': {
                 title: 'Dein erster Grow',
                 description:
-                    'Alles was du fuer eine erfolgreiche erste Ernte brauchst, Schritt fuer Schritt.',
+                    'Alles was du für eine erfolgreiche erste Ernte brauchst, Schritt für Schritt.',
                 steps: {
                     'step-setup': {
-                        title: 'Setup & Ausruestung',
+                        title: 'Setup & Ausrüstung',
                         description:
-                            'Lerne was du zum Starten brauchst: Zelt, Licht, Luefter, Toepfe und Medium.',
+                            'Lerne was du zum Starten brauchst: Zelt, Licht, Lüfter, Töpfe und Medium.',
                     },
                     'step-germination': {
                         title: 'Keimung',
                         description:
-                            'Wie man Samen zuverlaessig keimen laesst - Kuechenpapier-Methode oder Direktaussaat im Medium.',
+                            'Wie man Samen zuverlässig keimen lässt - Küchenpapier-Methode oder Direktaussaat im Medium.',
                     },
                     'step-veg': {
                         title: 'Vegetatives Wachstum',
                         description:
-                            'Den Keimling zu einer kraeftigen vegetativen Pflanze aufziehen. Giessen, Naehrstoffe und Licht-Grundlagen.',
+                            'Den Keimling zu einer kräftigen vegetativen Pflanze aufziehen. Gießen, Nährstoffe und Licht-Grundlagen.',
                     },
                     'step-flower': {
-                        title: 'Bluete',
+                        title: 'Blüte',
                         description:
-                            'Die Bluetephase einleiten und managen. Lichtplan, Naehrstoffwechsel und Knospenentwicklung.',
+                            'Die Blütephase einleiten und managen. Lichtplan, Nährstoffwechsel und Knospenentwicklung.',
                     },
                     'step-harvest': {
                         title: 'Ernte & Reifung',
@@ -628,7 +628,7 @@ export const knowledgeView = {
                     'step-env-basics': {
                         title: 'Temp. & Luftfeuchtigkeits-Grundlagen',
                         description:
-                            'Optimale Bereiche fuer jede Wachstumsphase und wie man sie kontrolliert.',
+                            'Optimale Bereiche für jede Wachstumsphase und wie man sie kontrolliert.',
                     },
                     'step-vpd-deep': {
                         title: 'VPD Tieftauchgang',
@@ -638,77 +638,77 @@ export const knowledgeView = {
                     'step-airflow': {
                         title: 'Luftstrom & CO2',
                         description:
-                            'Warum Luftstrom wichtig ist, wie man Zirkulations- und Abluftluefter einrichtet und CO2-Grundlagen.',
+                            'Warum Luftstrom wichtig ist, wie man Zirkulations- und Abluftlüfter einrichtet und CO2-Grundlagen.',
                     },
                     'step-env-calc': {
                         title: 'Rechner-Praxis',
                         description:
-                            'Den VPD-Rechner in verschiedenen Phasen nutzen um ein Gefuehl fuer ideale Bedingungen zu entwickeln.',
+                            'Den VPD-Rechner in verschiedenen Phasen nutzen um ein Gefühl für ideale Bedingungen zu entwickeln.',
                     },
                 },
             },
             'nutrient-mastery': {
-                title: 'Naehrstoff-Meisterschaft',
-                description: 'Makro- und Mikronaehrstoffe, EC, pH und Mangeldiagnose meistern.',
+                title: 'Nährstoff-Meisterschaft',
+                description: 'Makro- und Mikronährstoffe, EC, pH und Mangeldiagnose meistern.',
                 steps: {
                     'step-macros': {
-                        title: 'Makronaehrstoffe (N-P-K)',
+                        title: 'Makronährstoffe (N-P-K)',
                         description:
                             'Die Rolle von Stickstoff, Phosphor und Kalium in allen Wachstumsphasen.',
                     },
                     'step-micros': {
-                        title: 'Sekundaer- und Mikronaehrstoffe',
+                        title: 'Sekundär- und Mikronährstoffe',
                         description:
                             'Kalzium, Magnesium, Schwefel, Eisen, Zink und ihre Mangelsymptome.',
                     },
                     'step-ec-ph': {
                         title: 'EC, PPM & pH',
                         description:
-                            'Wie man die Staerke und den pH-Wert der Naehrloesung misst und kontrolliert.',
+                            'Wie man die Stärke und den pH-Wert der Nährlösung misst und kontrolliert.',
                     },
                     'step-deficiency-atlas': {
                         title: 'Mangelatlas',
                         description:
-                            'Den Krankheitsatlas durchsuchen um Naehrstoffmaengel zu erkennen und zu behandeln.',
+                            'Den Krankheitsatlas durchsuchen um Nährstoffmängel zu erkennen und zu behandeln.',
                     },
                     'step-nutrient-calc': {
-                        title: 'Naehrstoffrechner',
+                        title: 'Nährstoffrechner',
                         description:
-                            'Den Naehrstoffverhaeltnis-Rechner nutzen um Duengungen nach Wachstumsphase zu planen.',
+                            'Den Nährstoffverhältnis-Rechner nutzen um Düngungen nach Wachstumsphase zu planen.',
                     },
                 },
             },
             'pest-disease-control': {
-                title: 'Schaedlings- & Krankheitsbekaempfung',
+                title: 'Schädlings- & Krankheitsbekämpfung',
                 description:
-                    'Die haeufigsten Schaedlinge und Krankheiten erkennen, behandeln und vorbeugen.',
+                    'Die häufigsten Schädlinge und Krankheiten erkennen, behandeln und vorbeugen.',
                 steps: {
                     'step-plant-hygiene': {
                         title: 'Pflanzenhygiene & Vorbeugung',
                         description:
-                            'Reinigungsprotokolle, Quarantaene fuer neue Pflanzen und Umweltpraevention.',
+                            'Reinigungsprotokolle, Quarantäne für neue Pflanzen und Umweltprävention.',
                     },
                     'step-pest-id': {
-                        title: 'Schaedlingserkennung',
+                        title: 'Schädlingserkennung',
                         description:
-                            'Spinnmilben, Trauermucken, Blaetlaeuse und Thripse fruehzeitig erkennen.',
+                            'Spinnmilben, Trauermücken, Blattläuse und Thripse frühzeitig erkennen.',
                     },
                     'step-disease-id': {
                         title: 'Krankheitserkennung',
                         description:
-                            'Echten Mehltau, Botrytis und Wurzelfaule erkennen bevor sie eine Ernte zerstoeren.',
+                            'Echten Mehltau, Botrytis und Wurzelfaule erkennen bevor sie eine Ernte zerstören.',
                     },
                 },
             },
             'advanced-training': {
                 title: 'Fortgeschrittenes Pflanzentraining',
                 description:
-                    'LST, Topping, Super Cropping, SCROG und Manifolding fuer maximalen Ertrag.',
+                    'LST, Topping, Super Cropping, SCROG und Manifolding für maximalen Ertrag.',
                 steps: {
                     'step-why-train': {
                         title: 'Warum Pflanzen trainieren?',
                         description:
-                            'Apikale Dominanz verstehen und wie Training sie fuer bessere Ertraege bricht.',
+                            'Apikale Dominanz verstehen und wie Training sie für bessere Erträge bricht.',
                     },
                     'step-lst-topping': {
                         title: 'LST & Topping',
@@ -718,7 +718,7 @@ export const knowledgeView = {
                     'step-scrog-manifold': {
                         title: 'SCROG & Manifolding',
                         description:
-                            'Fortgeschrittene Techniken fuer ein perfekt gleichmaessiges Blattdach mit maximalen Knospenplaetzen.',
+                            'Fortgeschrittene Techniken für ein perfekt gleichmäßiges Blattdach mit maximalen Knospenplätzen.',
                     },
                 },
             },
@@ -810,82 +810,82 @@ export const knowledgeView = {
     },
     growTech: {
         title: 'Cannabis Grow-Technologien 2026',
-        subtitle: 'Praezision, Automatisierung, KI und Nachhaltigkeit -- die Zukunft des Anbaus.',
-        badge2026: '2026 Tech-Ueberblick',
-        intro: 'Die Cannabis-Anbau-Technologie 2026 steht ganz im Zeichen von datengetriebenen, skalierbaren Systemen, die Ertrag, Qualitaet (THC, Terpene, Cannabinoide) und Effizienz maximieren. Von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins und Aeroponik -- diese Technologien profitieren sowohl professionelle als auch Home-Grower.',
+        subtitle: 'Präzision, Automatisierung, KI und Nachhaltigkeit -- die Zukunft des Anbaus.',
+        badge2026: '2026 Tech-Überblick',
+        intro: 'Die Cannabis-Anbau-Technologie 2026 steht ganz im Zeichen von datengetriebenen, skalierbaren Systemen, die Ertrag, Qualität (THC, Terpene, Cannabinoide) und Effizienz maximieren. Von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins und Aeroponik -- diese Technologien profitieren sowohl professionelle als auch Home-Grower.',
         keyBenefits: 'Vorteile',
         categories: {
             dynamicLighting: {
                 title: 'Dynamische LED-Beleuchtung',
-                tagline: 'Vollspektrum-LEDs mit adaptiven Spektren fuer jede Wachstumsphase',
+                tagline: 'Vollspektrum-LEDs mit adaptiven Spektren für jede Wachstumsphase',
                 content:
-                    'Hoch-effiziente Vollspektrum-LEDs mit starkem Rot-Anteil erreichen >2,8 umol/J Effizienz und senken den Stromverbrauch um bis zu 40% gegenueber alten HPS-Lampen. Modelle wie HLG 350R oder AC Infinity-Systeme liefern ueberlegene Lichtgleichmaessigkeit und weniger Hitze.<br><br><strong>Dynamische Beleuchtung:</strong> Fortschrittliche Controller passen das Lichtspektrum automatisch an die Wachstumsphase und VPD-Bedingungen an -- blau-lastig fuer vegetatives Wachstum, rot-dominant fuer dichte Bluete.',
+                    'Hoch-effiziente Vollspektrum-LEDs mit starkem Rot-Anteil erreichen >2,8 umol/J Effizienz und senken den Stromverbrauch um bis zu 40% gegenüber alten HPS-Lampen. Modelle wie HLG 350R oder AC Infinity-Systeme liefern überlegene Lichtgleichmäßigkeit und weniger Hitze.<br><br><strong>Dynamische Beleuchtung:</strong> Fortschrittliche Controller passen das Lichtspektrum automatisch an die Wachstumsphase und VPD-Bedingungen an -- blau-lastig für vegetatives Wachstum, rot-dominant für dichte Blüte.',
                 benefits:
-                    '<ul><li>20-40% hoeherer Ertrag mit optimierten Spektren</li><li>Bis zu 40% niedrigere Stromkosten</li><li>Bessere THC-Produktion durch gezielte Rot-/Dunkelrot-Wellenlaengen</li><li>Reduzierte Hitzestress am Kronendach</li></ul>',
-                tip: 'Ein 350-600W LED-Panel in einem 1,2 x 1,2m Zelt reicht fuer 4-6 Pflanzen. Achte auf Modelle mit >2,5 umol/J Effizienz fuer den besten ROI in 1-2 Erntezyklen.',
+                    '<ul><li>20-40% höherer Ertrag mit optimierten Spektren</li><li>Bis zu 40% niedrigere Stromkosten</li><li>Bessere THC-Produktion durch gezielte Rot-/Dunkelrot-Wellenlängen</li><li>Reduzierte Hitzestress am Kronendach</li></ul>',
+                tip: 'Ein 350-600W LED-Panel in einem 1,2 x 1,2m Zelt reicht für 4-6 Pflanzen. Achte auf Modelle mit >2,5 umol/J Effizienz für den besten ROI in 1-2 Erntezyklen.',
             },
             sensorsIoT: {
                 title: 'Sensoren, IoT & VPD-Optimierung',
-                tagline: 'Drahtlose Umgebungsueberwachung mit KI-gesteuerten Regelkreisen',
+                tagline: 'Drahtlose Umgebungsüberwachung mit KI-gesteuerten Regelkreisen',
                 content:
-                    'Drahtlose Sensoren fuer Temperatur, Luftfeuchtigkeit, VPD, EC, pH, PAR/PPFD, CO2 und Bodenfeuchte bilden das Rueckgrat der Praezisionslandwirtschaft. KI-gesteuerte Controller wie der AC Infinity Controller AI+ sagen Temperaturschwankungen vorher und regeln automatisch Heizung, Lueftung und Feuchtigkeit fuer perfekten VPD (0,8-1,2 kPa in der Bluete).',
+                    'Drahtlose Sensoren für Temperatur, Luftfeuchtigkeit, VPD, EC, pH, PAR/PPFD, CO2 und Bodenfeuchte bilden das Rückgrat der Präzisionslandwirtschaft. KI-gesteuerte Controller wie der AC Infinity Controller AI+ sagen Temperaturschwankungen vorher und regeln automatisch Heizung, Lüftung und Feuchtigkeit für perfekten VPD (0,8-1,2 kPa in der Blüte).',
                 benefits:
-                    '<ul><li>Echtzeit-VPD-Optimierung verhindert Stress, Schimmel und geringe Harzproduktion</li><li>Vorausschauende Umgebungsanpassungen reduzieren manuellen Aufwand</li><li>Kontinuierliche Datenprotokollierung ermeoglicht Trendanalyse und Fruehwarnung</li><li>Integration mit CannaGuide ueber MQTT und BLE-Sensoren</li></ul>',
-                tip: 'VPD ist der "unsichtbare Killer" -- falsche Werte verursachen Stress, Schimmel oder geringe Trichom-Produktion. CannaGuide berechnet bereits Echtzeit-VPD mit Hoehenkorrektur.',
+                    '<ul><li>Echtzeit-VPD-Optimierung verhindert Stress, Schimmel und geringe Harzproduktion</li><li>Vorausschauende Umgebungsanpassungen reduzieren manuellen Aufwand</li><li>Kontinuierliche Datenprotokollierung ermeoglicht Trendanalyse und Frühwarnung</li><li>Integration mit CannaGuide über MQTT und BLE-Sensoren</li></ul>',
+                tip: 'VPD ist der "unsichtbare Killer" -- falsche Werte verursachen Stress, Schimmel oder geringe Trichom-Produktion. CannaGuide berechnet bereits Echtzeit-VPD mit Höhenkorrektur.',
             },
             aiAutomation: {
                 title: 'KI & Automatisierung',
                 tagline: 'KI-Plattformen erkennen Probleme vor sichtbaren Symptomen',
                 content:
-                    'KI-Plattformen analysieren Echtzeit-Sensordaten, erkennen Schaedlinge und Maengel vor sichtbaren Symptomen und optimieren automatisch Naehrstoff-, Licht- und Bewaesserungsplaene. Systeme wie Spectron AI-Kameras (4K + Timelapse) oder Hey Abby GrowMate bieten Smartphone-gesteuerten Praezisionsanbau.',
+                    'KI-Plattformen analysieren Echtzeit-Sensordaten, erkennen Schädlinge und Mängel vor sichtbaren Symptomen und optimieren automatisch Nährstoff-, Licht- und Bewässerungspläne. Systeme wie Spectron AI-Kameras (4K + Timelapse) oder Hey Abby GrowMate bieten Smartphone-gesteuerten Präzisionsanbau.',
                 benefits:
-                    '<ul><li>Proaktive Schaedlings- und Mangelfrueherkennung rettet ganze Ernten</li><li>Automatisierte Naehrstoff- und Bewaesserungsplanung reduziert den taeglichen Aufwand</li><li>Datengetriebene Compliance-Protokollierung fuer kommerzielle Betriebe</li><li>Skalierbar vom Einzelzelt bis zur Multi-Raum-Anlage</li></ul>',
-                tip: 'CannaGuide bietet bereits KI-gestuetzte Pflanzendiagnostik (Foto + Daten-basiert), proaktiven Berater und lokalen KI-Fallback -- alles offline nutzbar.',
+                    '<ul><li>Proaktive Schädlings- und Mangelfrüherkennung rettet ganze Ernten</li><li>Automatisierte Nährstoff- und Bewässerungsplanung reduziert den täglichen Aufwand</li><li>Datengetriebene Compliance-Protokollierung für kommerzielle Betriebe</li><li>Skalierbar vom Einzelzelt bis zur Multi-Raum-Anlage</li></ul>',
+                tip: 'CannaGuide bietet bereits KI-gestützte Pflanzendiagnostik (Foto + Daten-basiert), proaktiven Berater und lokalen KI-Fallback -- alles offline nutzbar.',
             },
             digitalTwin: {
                 title: 'Digital-Twin-Simulation',
-                tagline: 'Virtuelle Grow-Room-Repliken fuer risikofreies Experimentieren',
+                tagline: 'Virtuelle Grow-Room-Repliken für risikofreies Experimentieren',
                 content:
-                    'Ein Digital Twin erstellt ein virtuelles Abbild deiner Grow-Umgebung mittels Sensordaten und CFD-Modellen (Computational Fluid Dynamics). Du simulierst "Was-waere-wenn"-Szenarien -- wie z. B. +200 ppm CO2 oder geaenderte Lichtplaene -- und siehst den Ertragseffekt, bevor du reale Aenderungen vornimmst.',
+                    'Ein Digital Twin erstellt ein virtuelles Abbild deiner Grow-Umgebung mittels Sensordaten und CFD-Modellen (Computational Fluid Dynamics). Du simulierst "Was-wäre-wenn"-Szenarien -- wie z. B. +200 ppm CO2 oder geänderte Lichtpläne -- und siehst den Ertragseffekt, bevor du reale Änderungen vornimmst.',
                 benefits:
-                    '<ul><li>Risikofreies Experimentieren mit Umgebungseinstellungen</li><li>Vorausschauende Ertrags- und Qualitaetsmodellierung</li><li>Virtuelle Optimierung von HVAC und Beleuchtungsplatzierung</li><li>Drastische Reduzierung von Trial-and-Error-Zyklen</li></ul>',
-                tip: 'CannaGuides Sandbox bietet bereits Was-waere-wenn-Experimente (Topping vs. LST, Temperatur +2C) an geklonten Pflanzen -- der erste Schritt zum vollstaendigen Digital Twin.',
+                    '<ul><li>Risikofreies Experimentieren mit Umgebungseinstellungen</li><li>Vorausschauende Ertrags- und Qualitätsmodellierung</li><li>Virtuelle Optimierung von HVAC und Beleuchtungsplatzierung</li><li>Drastische Reduzierung von Trial-and-Error-Zyklen</li></ul>',
+                tip: 'CannaGuides Sandbox bietet bereits Was-wäre-wenn-Experimente (Topping vs. LST, Temperatur +2C) an geklonten Pflanzen -- der erste Schritt zum vollständigen Digital Twin.',
             },
             hydroAero: {
                 title: 'Hydroponik & Aeroponik',
                 tagline:
                     'Erdlose Systeme mit bis zu 30% schnellerem Wachstum und 90% weniger Wasser',
                 content:
-                    'Aeroponik haengt Wurzeln in die Luft und liefert Naehrstoffe ueber feinen Nebel -- bis zu 30% schnelleres Wachstum bei 90% weniger Wasserverbrauch. Rezirkulierende Hydroponiksysteme mit Smart Fertigation nutzen geschlossene Kreislaeufe, automatische pH/EC-Anpassung und Praezisionsdosierung ueber Substratsensoren.',
+                    'Aeroponik hängt Wurzeln in die Luft und liefert Nährstoffe über feinen Nebel -- bis zu 30% schnelleres Wachstum bei 90% weniger Wasserverbrauch. Rezirkulierende Hydroponiksysteme mit Smart Fertigation nutzen geschlossene Kreisläufe, automatische pH/EC-Anpassung und Präzisionsdosierung über Substratsensoren.',
                 benefits:
-                    '<ul><li>Deutlich schnellere Wachstumszyklen</li><li>90% Wasserreduktion gegenueber Erdanbau</li><li>Praezise Naehrstoffkontrolle eliminiert Verschwendung</li><li>Ideal fuer Vertical Farming und platzbeschraenkte Setups</li></ul>',
-                tip: 'CannaGuide unterstuetzt Erde, Kokos, Hydro und Aeroponik als Anbaumedien. Der Naehrstoffplaner passt EC/pH-Zielwerte automatisch je Medium an.',
+                    '<ul><li>Deutlich schnellere Wachstumszyklen</li><li>90% Wasserreduktion gegenüber Erdanbau</li><li>Präzise Nährstoffkontrolle eliminiert Verschwendung</li><li>Ideal für Vertical Farming und platzbeschränkte Setups</li></ul>',
+                tip: 'CannaGuide unterstützt Erde, Kokos, Hydro und Aeroponik als Anbaumedien. Der Nährstoffplaner passt EC/pH-Zielwerte automatisch je Medium an.',
             },
             tissueCulture: {
                 title: 'Gewebekultur & Mikrovermehrung',
                 tagline: 'Virusfreies Klonen von Elite-Genetik in grossem Massstab',
                 content:
-                    'Home-Lab-Kits und professionelle Gewebenkultursysteme ermeoglichen die virusfreie Vermehrung von Elite-Genetik. Dies produziert genetisch identische Klone ohne Mutterpflanzenerhaltung -- und ermoeglicht massive Skalierung mit stabiler Genetik und hoeherer Krankheitsresistenz.',
+                    'Home-Lab-Kits und professionelle Gewebenkultursysteme ermeoglichen die virusfreie Vermehrung von Elite-Genetik. Dies produziert genetisch identische Klone ohne Mutterpflanzenerhaltung -- und ermöglicht massive Skalierung mit stabiler Genetik und höherer Krankheitsresistenz.',
                 benefits:
-                    '<ul><li>100% genetische Konsistenz ueber alle Klone</li><li>Viren- und Pathogeneliminierung</li><li>Keine Mutterpflanzenpflege noetig</li><li>Schnellere Skalierung preisgekroenter Phaenotypen</li></ul>',
-                tip: 'Verfolge deine Phaenotypen und genetische Abstammung in CannaGuides Zuchtlabor und Genealogie-Explorer, um Elite-Kandidaten fuer die Gewebekultur zu identifizieren.',
+                    '<ul><li>100% genetische Konsistenz über alle Klone</li><li>Viren- und Pathogeneliminierung</li><li>Keine Mutterpflanzenpflege nötig</li><li>Schnellere Skalierung preisgekrönter Phänotypen</li></ul>',
+                tip: 'Verfolge deine Phänotypen und genetische Abstammung in CannaGuides Zuchtlabor und Genealogie-Explorer, um Elite-Kandidaten für die Gewebekultur zu identifizieren.',
             },
             smartGrowBoxes: {
                 title: 'All-in-One Smart Grow-Boxen',
-                tagline: 'Integrierte Systeme mit LEDs, Lueftern, Sensoren und App-Steuerung',
+                tagline: 'Integrierte Systeme mit LEDs, Lüftern, Sensoren und App-Steuerung',
                 content:
-                    'Komplettsysteme wie Hey Abby GrowMate oder Mars Hydro Smart Tents integrieren LEDs, Belueftung, Sensoren und App-Steuerung in einer einzigen Einheit. "Einrichten und vergessen" -- perfekt fuer Einsteiger und Stadt-Grower mit wenig Platz.',
+                    'Komplettsysteme wie Hey Abby GrowMate oder Mars Hydro Smart Tents integrieren LEDs, Belüftung, Sensoren und App-Steuerung in einer einzigen Einheit. "Einrichten und vergessen" -- perfekt für Einsteiger und Stadt-Grower mit wenig Platz.',
                 benefits:
-                    '<ul><li>Null Einrichtungskomplexitaet fuer Anfaenger</li><li>Integrierte Umgebungskontrolle</li><li>Kompakter Platzbedarf fuer Wohnungsanbau</li><li>App-basiertes Monitoring und Alarme</li></ul>',
-                tip: 'Selbst mit einer All-in-One-Box: Nutze CannaGuide fuer dein Grow-Tagebuch, KI-Beratung und die VPD-Simulation fuer optimale Ergebnisse.',
+                    '<ul><li>Null Einrichtungskomplexität für Anfänger</li><li>Integrierte Umgebungskontrolle</li><li>Kompakter Platzbedarf für Wohnungsanbau</li><li>App-basiertes Monitoring und Alarme</li></ul>',
+                tip: 'Selbst mit einer All-in-One-Box: Nutze CannaGuide für dein Grow-Tagebuch, KI-Beratung und die VPD-Simulation für optimale Ergebnisse.',
             },
             sustainability: {
                 title: 'Nachhaltigkeit & Post-Harvest-Tech',
-                tagline: 'Energieeinsparung, regenerative Boeden und Praezisions-Curing',
+                tagline: 'Energieeinsparung, regenerative Böden und Präzisions-Curing',
                 content:
-                    'LED- und HVAC-Optimierung reduzieren den Energie- und Wasserverbrauch drastisch. Regenerative Bodenpraktiken, CO2-Anreicherung und Praezisions-Trocknungs-/Curing-Systeme (wie Cannatrol) maximieren die Terpenerhaltung und die Endproduktqualitaet. Post-Harvest-Technologie wird zunehmend als ebenso wichtig wie der Anbau selbst anerkannt.',
+                    'LED- und HVAC-Optimierung reduzieren den Energie- und Wasserverbrauch drastisch. Regenerative Bodenpraktiken, CO2-Anreicherung und Präzisions-Trocknungs-/Curing-Systeme (wie Cannatrol) maximieren die Terpenerhaltung und die Endproduktqualität. Post-Harvest-Technologie wird zunehmend als ebenso wichtig wie der Anbau selbst anerkannt.',
                 benefits:
-                    '<ul><li>30-50% Reduzierung der Energiekosten mit modernen LEDs + HVAC</li><li>Ueberlegene Terpen- und Cannabinoid-Konservierung</li><li>Regenerative Boeden verbessern die Qualitaet ueber mehrere Zyklen</li><li>Nachhaltige Praktiken erfuellen wachsende regulatorische Anforderungen</li></ul>',
+                    '<ul><li>30-50% Reduzierung der Energiekosten mit modernen LEDs + HVAC</li><li>Überlegene Terpen- und Cannabinoid-Konservierung</li><li>Regenerative Böden verbessern die Qualität über mehrere Zyklen</li><li>Nachhaltige Praktiken erfüllen wachsende regulatorische Anforderungen</li></ul>',
                 tip: 'CannaGuides Post-Harvest-Simulation (Trocknungs- + Curing-Phasen) verfolgt Glasfeuchtigkeit, Chlorophyllabbau, Terpenerhaltung und Schimmelrisiko.',
             },
         },
@@ -905,12 +905,12 @@ export const knowledgeView = {
             },
             home: {
                 ledSensors: '20-40% mehr Ertrag, weniger Strom',
-                aiAutomation: 'Weniger taegliche Arbeit, proaktive Warnungen',
+                aiAutomation: 'Weniger tägliche Arbeit, proaktive Warnungen',
                 aeroponics: 'Schnelleres Wachstum, platzsparend',
                 digitalTwin: 'Risikofreies Experimentieren',
             },
             commercial: {
-                ledSensors: 'Kosteneinsparung, gleichbleibende Qualitaet',
+                ledSensors: 'Kosteneinsparung, gleichbleibende Qualität',
                 aiAutomation: 'Skalierbarkeit, Daten-Compliance',
                 aeroponics: 'Maximale Effizienz im grossen Massstab',
                 digitalTwin: 'Vorausschauende Planung, Optimierung',
@@ -925,7 +925,7 @@ export const knowledgeView = {
         cannaGuideIntegration: {
             title: 'Bereits in CannaGuide',
             content:
-                'CannaGuide integriert bereits viele dieser 2026-Technologien: Echtzeit-VPD-Simulation mit Hoehenkorrektur, KI-gestuetzte Diagnostik (Cloud + Lokal), Was-waere-wenn-Sandbox-Experimente, IoT-Sensorintegration (MQTT + BLE), dynamische Spektrumserkennung im Lichtrechner, Aeroponik als Anbaumedium, Post-Harvest-Simulation mit Terpen-Tracking und einen 3-Schicht-lokalen KI-Fallback fuer vollstaendig offline Betrieb.',
+                'CannaGuide integriert bereits viele dieser 2026-Technologien: Echtzeit-VPD-Simulation mit Höhenkorrektur, KI-gestützte Diagnostik (Cloud + Lokal), Was-wäre-wenn-Sandbox-Experimente, IoT-Sensorintegration (MQTT + BLE), dynamische Spektrumserkennung im Lichtrechner, Aeroponik als Anbaumedium, Post-Harvest-Simulation mit Terpen-Tracking und einen 3-Schicht-lokalen KI-Fallback für vollständig offline Betrieb.',
         },
     },
 }
@@ -944,21 +944,21 @@ export const tipOfTheDay = {
 export const analytics = {
     gardenScore: 'Garten-Score',
     avgHealth: 'Durchschn. Gesundheit',
-    envStability: 'Umweltstabilitaet',
+    envStability: 'Umweltstabilität',
     activePlants: 'Aktive Pflanzen',
     stageDistribution: 'Phasenverteilung',
     riskFactors: 'Risikofaktoren',
     strainPerformance: 'Sorten-Performance',
-    nextMilestone: 'Naechster Meilenstein',
+    nextMilestone: 'Nächster Meilenstein',
     daysAway: 'Tage entfernt',
-    analyticsEmpty: 'Fuege Pflanzen hinzu, um Analysen zu sehen',
+    analyticsEmpty: 'Füge Pflanzen hinzu, um Analysen zu sehen',
     strain: 'Sorte',
     health: 'Gesundheit',
     plants: 'Pflanzen',
     avgAge: 'Durchschn. Alter',
     relatedKnowledge: 'Verwandtes Wissen',
     milestoneType: {
-        flip: 'Umstellung auf Bluete',
+        flip: 'Umstellung auf Blüte',
         harvest: 'Erntereif',
         curing_done: 'Fermentierung abgeschlossen',
         transplant: 'Umtopfen',
@@ -967,29 +967,29 @@ export const analytics = {
         title: 'Empfehlungen',
         adjustVpd: 'VPD anpassen',
         adjustVpdDesc:
-            'VPD liegt ausserhalb des optimalen Bereichs. Temperatur oder Luftfeuchtigkeit anpassen.',
+            'VPD liegt außerhalb des optimalen Bereichs. Temperatur oder Luftfeuchtigkeit anpassen.',
         considerTraining: 'Training in Betracht ziehen',
         considerTrainingDesc:
-            'Pflanze ist in spaeter vegetativer Phase. LST oder Topping koennte den Ertrag verbessern.',
-        checkTrichomes: 'Trichome pruefen',
+            'Pflanze ist in später vegetativer Phase. LST oder Topping könnte den Ertrag verbessern.',
+        checkTrichomes: 'Trichome prüfen',
         checkTrichomesDesc:
-            'Pflanze ist in spaeter Bluetephase. Trichome fuer den Erntezeitpunkt beobachten.',
+            'Pflanze ist in später Blütephase. Trichome für den Erntezeitpunkt beobachten.',
         improveHealth: 'Pflanzengesundheit verbessern',
         improveHealthDesc:
-            'Pflanzengesundheit liegt unter dem Optimum. Naehrstoffe, pH und Umgebung pruefen.',
+            'Pflanzengesundheit liegt unter dem Optimum. Nährstoffe, pH und Umgebung prüfen.',
     },
     riskType: {
         health: 'Gesundheit',
         environment: 'Umgebung',
-        nutrient: 'Naehrstoff',
-        pest: 'Schaedling/Krankheit',
-        overdue_task: 'Ueberfaellige Aufgabe',
+        nutrient: 'Nährstoff',
+        pest: 'Schädling/Krankheit',
+        overdue_task: 'Überfällige Aufgabe',
     },
     risks: {
         healthCritical: '{{name}} Gesundheit ist kritisch niedrig bei {{health}}%',
-        vpdOutOfRange: '{{name}} VPD ausserhalb des Bereichs: {{vpd}} kPa',
+        vpdOutOfRange: '{{name}} VPD außerhalb des Bereichs: {{vpd}} kPa',
         severeProblem: '{{name}}: {{problem}} (Schweregrad {{severity}}/10)',
-        overdueTask: '{{name}}: Ueberfaellige Aufgabe -- {{task}}',
+        overdueTask: '{{name}}: Überfällige Aufgabe -- {{task}}',
     },
 }
 
@@ -1022,6 +1022,6 @@ export const growBible = {
     harvestData: 'Erntedaten',
     wetWeight: 'Nassgewicht',
     dryWeight: 'Trockengewicht',
-    quality: 'Qualitaet',
+    quality: 'Qualität',
     count: 'Anzahl',
 }

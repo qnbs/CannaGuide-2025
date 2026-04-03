@@ -1,6 +1,6 @@
 import React, { useState, useMemo, memo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CalculatorSection, ResultDisplay, Select } from './common'
+import { CalculatorSection, Input, ResultDisplay, Select } from './common'
 import {
     calculateTimerSchedule,
     TimerScheduleInputSchema,
@@ -92,44 +92,28 @@ export const TimerScheduleCalculator: React.FC = memo(() => {
             />
 
             <div className="grid grid-cols-2 gap-4 mt-2">
-                <div>
-                    <label className="block text-xs text-slate-400 mb-1">
-                        {t('equipmentView.calculators.timerSchedule.ppfd')}
-                        <span className="ml-1 text-slate-500">
-                            ({t('equipmentView.calculators.timerSchedule.optional')})
-                        </span>
-                    </label>
-                    <input
-                        type="number"
-                        className="w-full bg-slate-700 text-slate-100 rounded px-2 py-1.5 text-sm"
-                        placeholder="e.g. 600"
-                        value={ppfdValue}
-                        min={50}
-                        max={2000}
-                        step={10}
-                        onChange={(e) => setPpfdValue(e.target.value)}
-                    />
-                    <span className="text-xs text-slate-500">umol/m2/s</span>
-                </div>
-                <div>
-                    <label className="block text-xs text-slate-400 mb-1">
-                        {t('equipmentView.calculators.timerSchedule.targetDli')}
-                        <span className="ml-1 text-slate-500">
-                            ({t('equipmentView.calculators.timerSchedule.optional')})
-                        </span>
-                    </label>
-                    <input
-                        type="number"
-                        className="w-full bg-slate-700 text-slate-100 rounded px-2 py-1.5 text-sm"
-                        placeholder="e.g. 30"
-                        value={targetDliValue}
-                        min={1}
-                        max={80}
-                        step={1}
-                        onChange={(e) => setTargetDliValue(e.target.value)}
-                    />
-                    <span className="text-xs text-slate-500">mol/m2/day</span>
-                </div>
+                <Input
+                    label={`${t('equipmentView.calculators.timerSchedule.ppfd')} (${t('equipmentView.calculators.timerSchedule.optional')})`}
+                    type="number"
+                    unit="umol/m2/s"
+                    value={ppfdValue}
+                    placeholder="e.g. 600"
+                    min={50}
+                    max={2000}
+                    step={10}
+                    onChange={(e) => setPpfdValue(e.target.value)}
+                />
+                <Input
+                    label={`${t('equipmentView.calculators.timerSchedule.targetDli')} (${t('equipmentView.calculators.timerSchedule.optional')})`}
+                    type="number"
+                    unit="mol/m2/day"
+                    value={targetDliValue}
+                    placeholder="e.g. 30"
+                    min={1}
+                    max={80}
+                    step={1}
+                    onChange={(e) => setTargetDliValue(e.target.value)}
+                />
             </div>
 
             {result && (

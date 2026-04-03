@@ -252,7 +252,7 @@ export const TimerScheduleInputSchema = z.object({
 export type TimerScheduleInput = z.infer<typeof TimerScheduleInputSchema>
 
 /** Stage-default schedules (onHours, offHours, recommendedDliMin, recommendedDliMax) */
-const STAGE_DEFAULTS: Record<
+export const STAGE_DEFAULTS: Record<
     TimerGrowthStage,
     { onHours: number; offHours: number; dliMin: number; dliMax: number }
 > = {

@@ -19,6 +19,7 @@ export {
     TimerScheduleInputSchema,
     HD_OPTIMAL_RANGES,
     LIGHT_EFFICIENCY,
+    STAGE_DEFAULTS,
 } from '@/services/equipmentCalculatorService'
 
 export type {

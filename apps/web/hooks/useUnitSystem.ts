@@ -20,7 +20,7 @@ const IMPERIAL_LANGUAGES = new Set(['en'])
 export function useUnitSystem(): UnitSystem {
     const language = useAppSelector(selectLanguage)
     return useMemo<UnitSystem>(
-        () => (IMPERIAL_LANGUAGES.has(language) ? 'metric' : 'metric'),
+        () => (IMPERIAL_LANGUAGES.has(language) ? 'imperial' : 'metric'),
         [language],
     )
 }

@@ -233,6 +233,517 @@ export const knowledgeView = {
         startAnalysis: 'Iniciar Analisis RAG',
         activeCorpus: 'Plantas activas en el corpus RAG: {{count}}',
     },
+    lexikon: {
+        searchPlaceholder: 'Buscar terminos...',
+        filterLabel: 'Filtrar por categoria',
+        all: 'Todos',
+        categories: {
+            cannabinoid: 'Cannabinoides',
+            terpene: 'Terpenos',
+            flavonoid: 'Flavonoides',
+            nutrient: 'Nutrientes',
+            disease: 'Enfermedades',
+            general: 'General',
+        },
+        noResults: 'Sin resultados para "{{term}}"',
+        resultCount: '{{count}} de {{total}} terminos',
+        totalCount: '{{count}} terminos',
+        noDefinition: 'Sin definicion disponible.',
+    },
+    atlas: {
+        searchPlaceholder: 'Buscar diagnosticos...',
+        allCategories: 'Todas las categorias',
+        allUrgencies: 'Todas las urgencias',
+        noResults: 'No se encontraron entradas.',
+        filterByCategory: 'Filtrar por categoria',
+        filterByUrgency: 'Filtrar por urgencia',
+        entryCount: '{{count}} entradas',
+        close: 'Cerrar',
+        category: {
+            deficiency: 'Deficiencia',
+            toxicity: 'Toxicidad',
+            environmental: 'Ambiental',
+            pest: 'Plagas',
+            disease: 'Enfermedad',
+        },
+        severity: {
+            low: 'Bajo',
+            medium: 'Medio',
+            high: 'Alto',
+            critical: 'Critico',
+        },
+        urgency: {
+            monitor: 'Monitorear',
+            act_soon: 'Actuar pronto',
+            act_immediately: 'Actuar de inmediato',
+        },
+        detail: {
+            symptoms: 'Sintomas',
+            causes: 'Causas',
+            treatment: 'Tratamiento',
+            prevention: 'Prevencion',
+            relatedTerms: 'Terminos relacionados',
+        },
+        diseases: {
+            'nitrogen-deficiency': {
+                name: 'Deficiencia de Nitrogeno',
+                symptoms:
+                    'El amarillamiento comienza en las hojas inferiores mas viejas y avanza hacia arriba. Las hojas se tornan amarillo palido y luego completamente amarillas. Crecimiento lento.',
+                causes: 'Riego excesivo, pH bajo (bloquea N), nitrogeno insuficiente en la solucion nutritiva, dano a las raices.',
+                treatment:
+                    'Lavar el sustrato con agua ajustada al pH correcto, luego alimentar con solucion rica en nitrogeno. Corregir el pH a 6,0-7,0 (tierra) o 5,5-6,5 (hidro).',
+                prevention:
+                    'Monitorear el pH constantemente, usar nutrientes equilibrados, evitar el exceso de riego.',
+            },
+            'phosphorus-deficiency': {
+                name: 'Deficiencia de Fosforo',
+                symptoms:
+                    'Decoloracion purpura o rojiza en el envez de las hojas y tallos. Hojas verde oscuro que pueden curvarse hacia abajo. Crecimiento lento.',
+                causes: 'pH bajo (menos de 6,0 en tierra), bajas temperaturas en la zona radicular (menos de 15 C), poco fosforo en la solucion.',
+                treatment:
+                    'Aumentar el pH si es necesario, elevar la temperatura del cultivo, suplementar con nutriente de floracion rico en fosforo.',
+                prevention:
+                    'Mantener la zona radicular por encima de 18 C, conservar el pH correcto, usar nutrientes de floracion al entrar en la fase de flores.',
+            },
+            'potassium-deficiency': {
+                name: 'Deficiencia de Potasio',
+                symptoms:
+                    'Bordes y puntas de hojas marrones y crujientes, comenzando en las hojas mas viejas. Amarillamiento entre las nervaduras. Tallos debiles.',
+                causes: 'pH alto (bloquea K), exceso de calcio o magnesio compitiendo por la absorcion, poco potasio en la solucion.',
+                treatment:
+                    'Verificar y corregir el pH, reducir nutrientes competidores si son excesivos, suplementar potasio.',
+                prevention:
+                    'Usar formula nutritiva completa con potasio adecuado, especialmente al final de la floracion.',
+            },
+            'calcium-deficiency': {
+                name: 'Deficiencia de Calcio',
+                symptoms:
+                    'Manchas marrones o de color oxido en hojas nuevas. Nuevo crecimiento retorcido o arrugado. Tallos debiles.',
+                causes: 'pH bajo reduciendo la disponibilidad de calcio, uso de agua osmotizada/destilada sin remineralizacion, fibra de coco sin preacondicionar.',
+                treatment:
+                    'Corregir el pH a 6,2-7,0, anadir suplemento Cal-Mag, acondicionar la fibra de coco antes de usarla.',
+                prevention:
+                    'Acondicionar la fibra de coco, usar Cal-Mag con agua osmotizada, mantener el pH correcto.',
+            },
+            'magnesium-deficiency': {
+                name: 'Deficiencia de Magnesio',
+                symptoms:
+                    'Amarillamiento entre las nervaduras (clorosis intervenal) en hojas medias o viejas mientras las nervaduras permanecen verdes. Las hojas pueden curvarse hacia arriba.',
+                causes: 'pH bajo, potasio alto compitiendo con la absorcion de magnesio, magnesio insuficiente en la solucion.',
+                treatment:
+                    'Corregir el pH, reducir el potasio si es excesivo, anadir Cal-Mag o sal de Epsom (MgSO4) -- 1 cucharadita/litro en spray foliar para resultados rapidos.',
+                prevention:
+                    'Usar formula nutritiva equilibrada, incluir suplemento Cal-Mag, mantener el pH correcto.',
+            },
+            'iron-deficiency': {
+                name: 'Deficiencia de Hierro',
+                symptoms:
+                    'Hojas de color amarillo brillante (cloroticas) en el crecimiento muy nuevo, mientras las nervaduras permanecen verdes. Patron clasico de clorosis intervenal.',
+                causes: 'pH alto (mas frecuente, especialmente por encima de 7,0), raices encharcadas, exceso de fosforo o manganeso compitiendo.',
+                treatment:
+                    'Bajar el pH a 6,0-6,5, mejorar el drenaje, usar suplemento de hierro quelado.',
+                prevention:
+                    'Mantener el pH adecuado, evitar el exceso de riego, usar paquete de micronutrientes quelados.',
+            },
+            'zinc-deficiency': {
+                name: 'Deficiencia de Zinc',
+                symptoms:
+                    'Amarillamiento del tejido foliar nuevo entre las nervaduras. Las hojas pueden parecer moteadas o distorsionadas. Espaciado corto entre nudos.',
+                causes: 'pH alto, exceso de fosforo inhibiendo la absorcion de zinc, poco zinc en el sustrato o la solucion.',
+                treatment:
+                    'Corregir el pH al rango optimo, reducir el fosforo si es excesivo, suplementar zinc.',
+                prevention: 'Usar formula completa de micronutrientes, mantener el pH correcto.',
+            },
+            'sulfur-deficiency': {
+                name: 'Deficiencia de Azufre',
+                symptoms:
+                    'Las hojas nuevas se tornan uniformemente amarillo palido a blancas. A diferencia de la deficiencia de nitrogeno, comienza en el crecimiento joven/nuevo.',
+                causes: 'Poco azufre en la solucion nutritiva, pH muy alto, plantas recien trasplantadas o lavadas.',
+                treatment:
+                    'Anadir nutriente que contenga azufre (muchos nutrientes base lo incluyen), verificar el pH.',
+                prevention: 'Usar formula nutritiva completa, evitar pH extremo.',
+            },
+            'nutrient-burn': {
+                name: 'Quemadura por Nutrientes (Toxicidad)',
+                symptoms:
+                    'Las puntas de las hojas se tornan marrones y crujientes, luego avanzan hacia el interior. Las puntas pueden curvarse hacia arriba. Coloracion verde oscuro brillante en las hojas.',
+                causes: 'EC/PPM de la solucion nutritiva demasiado alto, fertilizacion demasiado frecuente, tierra muy enriquecida.',
+                treatment:
+                    'Lavar el sustrato con 3 veces el volumen de la maceta con agua ajustada al pH. Reducir la siguiente fertilizacion al 50% de concentracion.',
+                prevention:
+                    'Comenzar con nutrientes en dosis bajas, aumentar gradualmente, medir EC/PPM regularmente.',
+            },
+            'nitrogen-toxicity': {
+                name: 'Toxicidad por Nitrogeno',
+                symptoms:
+                    'Hojas verde oscuro brillante. Las puntas pueden curvarse hacia abajo (la "garra"). Crecimiento foliar excesivo, menor densidad de flores.',
+                causes: 'Demasiado nitrogeno, especialmente durante la floracion cuando la demanda de N disminuye.',
+                treatment:
+                    'Detener la fertilizacion nitrogenada, lavar con agua ajustada al pH, cambiar a nutrientes de floracion.',
+                prevention:
+                    'Reducir el nitrogeno al cambiar a la floracion, usar nutrientes especificos para floracion.',
+            },
+            overwatering: {
+                name: 'Riego Excesivo',
+                symptoms:
+                    'La planta entera se cae. Las hojas se sienten firmes pero caen con curva redondeada. La tierra permanece humeda por muchos dias. Amarillamiento.',
+                causes: 'Riego demasiado frecuente, mal drenaje, macetas sin agujeros, sustrato demasiado denso.',
+                treatment:
+                    'Dejar de regar completamente hasta que la maceta este muy ligera. Mejorar la aireacion alrededor de la maceta. Considerar trasplantar a una mezcla con mejor drenaje.',
+                prevention:
+                    'Levantar las macetas para sentir el peso -- regar solo cuando esten notablemente mas ligeras. Usar recipientes con buenos agujeros de drenaje. Dejar que el sustrato se seque parcialmente.',
+            },
+            underwatering: {
+                name: 'Riego Insuficiente',
+                symptoms:
+                    'La planta entera se marchita y cae. Las hojas se sienten delgadas y como papel con una leve curva hacia adentro. La maceta esta muy ligera.',
+                causes: 'Riego demasiado infrecuente, clima seco, sustrato de drenaje rapido, planta grande en maceta pequena.',
+                treatment:
+                    'Regar abundantemente hasta que el drenaje salga por abajo. La planta deberia recuperarse en pocas horas.',
+                prevention:
+                    'Verificar el peso de la maceta regularmente. Regar cuando la primera capa del sustrato este seca.',
+            },
+            'heat-stress': {
+                name: 'Estres por Calor',
+                symptoms:
+                    'Los bordes y puntas de las hojas se curvan hacia arriba como tacos. Manchas blanqueadas o quemadas donde las hojas estan mas cerca de la luz. Marchitamiento a pesar de riego adecuado.',
+                causes: 'Temperatura del cultivo por encima de 30 C, luces demasiado cerca del dosel, mala ventilacion, puntos calientes.',
+                treatment:
+                    'Mejorar la ventilacion, elevar las luces, anadir climatizacion. Pulverizar las hojas a corto plazo.',
+                prevention:
+                    'Mantener la temperatura del dosel por debajo de 28 C. Asegurar un flujo de aire adecuado sobre el dosel.',
+            },
+            'light-burn': {
+                name: 'Quemadura por Luz',
+                symptoms:
+                    'Manchas blancas o amarillas blanqueadas en las hojas superiores mas cercanas a la luz. Las hojas directamente bajo la luz parecen blanqueadas a pesar de nutrientes adecuados.',
+                causes: 'La lampara de cultivo esta demasiado cerca del dosel, intensidad de luz excesiva (PPFD demasiado alto).',
+                treatment:
+                    'Elevar la luz inmediatamente. Las areas blanqueadas no se recuperaran, pero el nuevo crecimiento sera saludable.',
+                prevention:
+                    'Seguir las distancias minimas de colgado recomendadas por el fabricante, monitorear el PPFD.',
+            },
+            'ph-lockout': {
+                name: 'Bloqueo de pH',
+                symptoms:
+                    'Multiples sintomas de deficiencia apareciendo simultaneamente a pesar de nutrientes adecuados. La planta parece generalmente enferma.',
+                causes: 'El pH de la solucion nutritiva o el sustrato esta fuera del rango optimo de absorcion para nutrientes clave.',
+                treatment:
+                    'Probar el pH de la zona radicular (prueba de escorrentia). Lavar el sustrato con agua ajustada al pH correcto. Reanudar la fertilizacion con el pH correcto.',
+                prevention:
+                    'Siempre ajustar el pH del agua y la solucion nutritiva. Probar el pH de escorrentia semanalmente.',
+            },
+            'spider-mites': {
+                name: 'Acaros Arana',
+                symptoms:
+                    'Pequenos puntos blancos/amarillos en la superficie de las hojas. Telaranas finas y sedosas entre hojas y tallos. Pequenos puntos en movimiento visibles con lupa.',
+                causes: 'Condiciones secas y calientes. Esquejes o sustrato infectado. Mal flujo de aire.',
+                treatment:
+                    'Pulverizar todas las superficies de las hojas (especialmente el envez) con aceite de neem, jabon insecticida o spinosad. Aumentar la humedad. Repetir cada 3 dias durante 2 semanas.',
+                prevention:
+                    'Mantener 50-60% de humedad, asegurar flujo de aire, inspeccionar nuevas plantas antes de introducirlas al cultivo.',
+            },
+            'fungus-gnats': {
+                name: 'Mosquitos de Hongos',
+                symptoms:
+                    'Pequenas moscas negras alrededor de la superficie del sustrato. Plantulas marchitas por dano de larvas en las raices. Pequenas larvas blancas visibles en el sustrato.',
+                causes: 'Riego excesivo manteniendo la superficie humeda, permitiendo que los adultos pongan huevos. Mezclas ricas en turba.',
+                treatment:
+                    'Dejar que las 5 cm superiores del sustrato se sequen completamente. Usar trampas amarillas pegajosas para adultos. Aplicar nematodos beneficos o Bacillus thuringiensis israelensis (Bti).',
+                prevention:
+                    'Evitar el exceso de riego, dejar que la superficie del sustrato se seque, usar una capa de perlita sobre el sustrato.',
+            },
+            aphids: {
+                name: 'Pulgones',
+                symptoms:
+                    'Grupos de pequenos insectos de cuerpo blando en el crecimiento nuevo y el envez de las hojas. Residuo pegajoso de mielecilla en las hojas. Nuevas hojas rizadas o distorsionadas.',
+                causes: 'Espacio de cultivo abierto, esquejes contaminados o exposicion al exterior.',
+                treatment:
+                    'Eliminar con agua, aplicar jabon insecticida o aceite de neem, introducir insectos beneficos (mariquitas, crisopas).',
+                prevention:
+                    'Mantener el entorno de cultivo cerrado, inspeccionar todas las plantas nuevas.',
+            },
+            thrips: {
+                name: 'Trips',
+                symptoms:
+                    'Rayas o manchas plateadas/blancas en las hojas (marcas de alimentacion). Puntos de heces negros en la superficie de las hojas. Las hojas pueden broncearse.',
+                causes: 'Plantas o sustrato contaminados, entorno de cultivo abierto.',
+                treatment:
+                    'Aplicar spinosad, aceite de neem o insectos depredadores (Amblyseius cucumeris). Repetir regularmente.',
+                prevention:
+                    'Cuarentena estricta para nuevos esquejes, usar trampas amarillas pegajosas desde el principio.',
+            },
+            'powdery-mildew': {
+                name: 'Oidio (Mildiu Polvoriento)',
+                symptoms:
+                    'Manchas blancas polvorientas en la superficie de las hojas, tallos y flores. Las manchas se extienden rapidamente. El tejido afectado puede amarillarse y morir.',
+                causes: 'Alta humedad (superior al 60%) combinada con mal flujo de aire y temperaturas moderadas (15-27 C). Plantas apinanadas.',
+                treatment:
+                    'Quitar las hojas muy afectadas. Aplicar bicarbonato de potasio, aceite de neem o spray de peroxido de hidrogeno diluido. Aumentar el flujo de aire y reducir la humedad urgentemente.',
+                prevention:
+                    'Mantener la humedad por debajo del 50% en floracion. Asegurar un flujo de aire fuerte a traves del dosel. Evitar la saturacion.',
+            },
+            botrytis: {
+                name: 'Botrytis (Podredumbre de Flores / Moho Gris)',
+                symptoms:
+                    'Moho gris y esponjoso apareciendo dentro de los cogollos densos. Manchas marrones blandas en el centro de las colas. Esporas grises visibles.',
+                causes: 'Alta humedad (superior al 50% en floracion), mal flujo de aire, cogollos densos, temperaturas por debajo de 20 C con alta humedad relativa.',
+                treatment:
+                    'Eliminar y embolsar inmediatamente todo el material afectado. No agitar los cogollos -- las esporas se dispersan. Aumentar el flujo de aire y bajar la humedad drasticamente.',
+                prevention:
+                    'Mantener la humedad de floracion en 40-50%. Desfoliar el dosel denso para el flujo de aire. Cosechar a tiempo.',
+            },
+            'root-rot': {
+                name: 'Podredumbre de Raices (Pythium/Phytophthora)',
+                symptoms:
+                    'Las raices se tornan marrones/grises y viscosas en lugar de blancas y firmes. Olor desagradable de la zona radicular. La planta se marchita a pesar del riego adecuado. En hidro: solucion nutritiva descolorida.',
+                causes: 'Exceso de riego o mal drenaje. Condiciones anaerobias en la zona radicular. Temperatura del agua superior a 22 C en hidro. Falta de microorganismos beneficos.',
+                treatment:
+                    'En tierra: reducir el riego, mejorar el drenaje, aplicar bacterias beneficas/micorrizas. En hidro: cambiar el deposito, bajar la temperatura del agua, tratar con peroxido de hidrogeno o bacterias beneficas.',
+                prevention:
+                    'Evitar el exceso de riego. Mantener el deposito hidro por debajo de 20 C. Usar piedras de aire. Inocular con microorganismos beneficos.',
+            },
+        },
+    },
+    lernpfad: {
+        title: 'Rutas de Aprendizaje',
+        progress: '{{done}} de {{total}} pasos completados',
+        filterByLevel: 'Filtrar por nivel',
+        allLevels: 'Todos los niveles',
+        completed: 'Completado',
+        markDone: 'Marcar como hecho',
+        resetPath: 'Reiniciar progreso',
+        noPaths: 'No hay rutas de aprendizaje disponibles.',
+        level: {
+            beginner: 'Principiante',
+            intermediate: 'Intermedio',
+            expert: 'Experto',
+        },
+        paths: {
+            'beginner-first-grow': {
+                title: 'Tu Primer Cultivo',
+                description: 'Todo lo que necesitas para una primera cosecha exitosa, paso a paso.',
+                steps: {
+                    'step-setup': {
+                        title: 'Configuracion y Equipamiento',
+                        description:
+                            'Aprende que necesitas para comenzar: tienda, lampara, ventilador, macetas y sustrato.',
+                    },
+                    'step-germination': {
+                        title: 'Germinacion',
+                        description:
+                            'Como germinar semillas de forma fiable usando el metodo de papel de cocina o directamente en el sustrato.',
+                    },
+                    'step-veg': {
+                        title: 'Crecimiento Vegetativo',
+                        description:
+                            'Nutrir tu plantula hasta convertirla en una planta vegetativa fuerte. Basicos de riego, nutrientes y luz.',
+                    },
+                    'step-flower': {
+                        title: 'Floracion',
+                        description:
+                            'Desencadenar y gestionar la fase de floracion. Horario de luz, cambio de nutrientes y desarrollo de cogollos.',
+                    },
+                    'step-harvest': {
+                        title: 'Cosecha y Curacion',
+                        description:
+                            'Leer los tricomas, elegir el momento de cosecha y el crucial proceso de secado y curacion.',
+                    },
+                    'step-vpd-practice': {
+                        title: 'Practica VPD',
+                        description:
+                            'Usar la calculadora VPD para entender como la temperatura y la humedad afectan a tu planta.',
+                    },
+                },
+            },
+            'environment-mastery': {
+                title: 'Dominio del Ambiente',
+                description:
+                    'Inmersion profunda en temperatura, humedad, VPD, CO2 y flujo de aire.',
+                steps: {
+                    'step-env-basics': {
+                        title: 'Conceptos Basicos de Temp. y Humedad',
+                        description:
+                            'Rangos optimos para cada fase de crecimiento y como controlarlos.',
+                    },
+                    'step-vpd-deep': {
+                        title: 'VPD en Profundidad',
+                        description:
+                            'Entender y usar el deficit de presion de vapor para maximizar la salud y el rendimiento de las plantas.',
+                    },
+                    'step-airflow': {
+                        title: 'Flujo de Aire y CO2',
+                        description:
+                            'Por que es importante el flujo de aire, como configurar ventiladores de circulacion y extraccion y conceptos basicos de CO2.',
+                    },
+                    'step-env-calc': {
+                        title: 'Practica con Calculadoras',
+                        description:
+                            'Usar la calculadora VPD en diferentes fases para desarrollar una intuicion de las condiciones ideales.',
+                    },
+                },
+            },
+            'nutrient-mastery': {
+                title: 'Dominio de Nutrientes',
+                description:
+                    'Dominar macro y micronutrientes, EC, pH y diagnostico de deficiencias.',
+                steps: {
+                    'step-macros': {
+                        title: 'Macronutrientes (N-P-K)',
+                        description:
+                            'El papel del nitrogeno, fosforo y potasio en todas las fases de crecimiento.',
+                    },
+                    'step-micros': {
+                        title: 'Micro y Secundarios',
+                        description:
+                            'Calcio, magnesio, azufre, hierro, zinc y sus sintomas de deficiencia.',
+                    },
+                    'step-ec-ph': {
+                        title: 'EC, PPM y pH',
+                        description:
+                            'Como medir y controlar la fuerza y el pH de la solucion nutritiva.',
+                    },
+                    'step-deficiency-atlas': {
+                        title: 'Atlas de Deficiencias',
+                        description:
+                            'Usar el Atlas de Enfermedades para identificar y tratar deficiencias de nutrientes.',
+                    },
+                    'step-nutrient-calc': {
+                        title: 'Calculadora de Nutrientes',
+                        description:
+                            'Usar la calculadora de ratios de nutrientes para planificar las fertilizaciones por fase de crecimiento.',
+                    },
+                },
+            },
+            'pest-disease-control': {
+                title: 'Control de Plagas y Enfermedades',
+                description:
+                    'Identificar, tratar y prevenir las plagas y enfermedades mas comunes.',
+                steps: {
+                    'step-plant-hygiene': {
+                        title: 'Higiene y Prevencion',
+                        description:
+                            'Protocolos de limpieza, cuarentena para plantas nuevas y prevencion ambiental.',
+                    },
+                    'step-pest-id': {
+                        title: 'Identificacion de Plagas',
+                        description:
+                            'Detectar acaros arana, mosquitos de hongos, pulgones y trips a tiempo.',
+                    },
+                    'step-disease-id': {
+                        title: 'Identificacion de Enfermedades',
+                        description:
+                            'Reconocer oidio, botrytis y podredumbre de raices antes de que destruyan una cosecha.',
+                    },
+                },
+            },
+            'advanced-training': {
+                title: 'Entrenamiento Avanzado de Plantas',
+                description:
+                    'LST, topping, super cropping, SCROG y manifolding para el maximo rendimiento.',
+                steps: {
+                    'step-why-train': {
+                        title: 'Por Que Entrenar Plantas?',
+                        description:
+                            'Entender la dominancia apical y como el entrenamiento la rompe para obtener mejores rendimientos.',
+                    },
+                    'step-lst-topping': {
+                        title: 'LST y Topping',
+                        description:
+                            'Fundamentos de entrenamiento de bajo estres y topping con detalles de tiempo y tecnica.',
+                    },
+                    'step-scrog-manifold': {
+                        title: 'SCROG y Manifolding',
+                        description:
+                            'Tecnicas avanzadas para un dosel perfectamente uniforme con el maximo numero de puntos de brotes.',
+                    },
+                },
+            },
+            firstGrow: {
+                title: 'Tu Primer Cultivo',
+                description: 'Todo lo que necesitas para una primera cosecha exitosa, paso a paso.',
+                step1Title: 'Configuracion y Equipamiento',
+                step1Desc:
+                    'Aprende que necesitas para comenzar: tienda, lampara, ventilador, macetas y sustrato.',
+                step2Title: 'Germinacion',
+                step2Desc:
+                    'Como germinar semillas de forma fiable -- metodo papel de cocina o directamente en el sustrato.',
+                step3Title: 'Crecimiento Vegetativo',
+                step3Desc:
+                    'Nutrir tu plantula hasta convertirla en una planta vegetativa fuerte. Basicos de riego, nutrientes y luz.',
+                step4Title: 'Floracion',
+                step4Desc:
+                    'Desencadenar y gestionar la fase de floracion. Horario de luz, cambio de nutrientes y desarrollo de cogollos.',
+                step5Title: 'Cosecha y Curacion',
+                step5Desc:
+                    'Leer los tricomas, elegir el momento de cosecha y el crucial proceso de secado y curacion.',
+                step6Title: 'Practica VPD',
+                step6Desc:
+                    'Usar la calculadora VPD para entender como la temperatura y la humedad afectan a tu planta.',
+            },
+            environment: {
+                title: 'Dominio del Ambiente',
+                description:
+                    'Inmersion profunda en temperatura, humedad, VPD, CO2 y flujo de aire.',
+                step1Title: 'Conceptos Basicos de Temp. y Humedad',
+                step1Desc: 'Rangos optimos para cada fase de crecimiento y como controlarlos.',
+                step2Title: 'VPD en Profundidad',
+                step2Desc:
+                    'Entender y usar el deficit de presion de vapor para maximizar la salud de las plantas.',
+                step3Title: 'Flujo de Aire y CO2',
+                step3Desc: 'Por que es importante el flujo de aire y como configurar ventiladores.',
+                step4Title: 'Practica con Calculadoras',
+                step4Desc:
+                    'Usar la calculadora VPD en diferentes fases para desarrollar una intuicion de las condiciones ideales.',
+            },
+            nutrients: {
+                title: 'Dominio de Nutrientes',
+                description:
+                    'Dominar macro y micronutrientes, EC, pH y diagnostico de deficiencias.',
+                step1Title: 'Guia de pH',
+                step1Desc: 'Entender y controlar el pH para una absorcion optima de nutrientes.',
+                step2Title: 'Calculadora de Nutrientes',
+                step2Desc:
+                    'Usar la calculadora de ratios de nutrientes para planificar fertilizaciones por fase.',
+                step3Title: 'Deficiencia de Calcio',
+                step3Desc:
+                    'Reconocer y tratar la deficiencia de calcio -- uno de los problemas mas comunes.',
+                step4Title: 'Quemadura por Nutrientes',
+                step4Desc:
+                    'Reconocer la sobredosis de nutrientes y ayudar a la planta a recuperarse.',
+                step5Title: 'Practica con el Atlas',
+                step5Desc:
+                    'Usar el Atlas de Enfermedades para identificar y tratar problemas nutricionales.',
+            },
+            pests: {
+                title: 'Control de Plagas y Enfermedades',
+                description:
+                    'Identificar, tratar y prevenir las plagas y enfermedades mas comunes.',
+                step1Title: 'Guia de Control de Plagas',
+                step1Desc:
+                    'Estrategias integradas de control de plagas para mantener el cultivo libre de plagas.',
+                step2Title: 'Acaros Arana',
+                step2Desc:
+                    'Detectar y tratar los acaros arana -- la plaga mas destructiva del cultivo.',
+                step3Title: 'Oidio',
+                step3Desc: 'Reconocer y tratar el oidio antes de que destruya el cultivo.',
+            },
+            training: {
+                title: 'Entrenamiento Avanzado de Plantas',
+                description:
+                    'LST, topping, super cropping, SCROG y manifolding para el maximo rendimiento.',
+                step1Title: 'Fundamentos del Entrenamiento',
+                step1Desc:
+                    'Entender los principios del entrenamiento de plantas y aplicar LST y topping.',
+                step2Title: 'Topping vs. LST',
+                step2Desc:
+                    'Comparar topping y entrenamiento de bajo estres y encontrar el mejor enfoque para tu cultivo.',
+                step3Title: 'Solucion al Riego Excesivo',
+                step3Desc:
+                    'Reconocer y solucionar el riego excesivo -- un problema comun al entrenar doseles densos.',
+            },
+        },
+    },
     growTech: {
         title: 'Cannabis Grow Technologies 2026',
         subtitle: 'Precision, automation, AI, and sustainability -- the future of cultivation.',

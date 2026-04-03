@@ -2,7 +2,45 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-07, Session 34) -- Quality Audit: TimerScheduleCalculator, unitConversion utils, NL typos (Execution 7)
+## Latest Session (2026-04-07, Session 35) -- Full Quality Audit Pass 2: useUnitSystem dead code, TimerSchedule a11y, STAGE_DEFAULTS export, ES/FR/NL knowledge i18n
+
+**Status: v1.3.0-beta. 4 bugs fixed, 3 locales completed (ES/FR/NL knowledge lexikon+atlas+lernpfad). 1228 tests passing. TypeScript clean.**
+
+### What Was Done (Session 35)
+
+1. **Fixed `useUnitSystem.ts` critical dead code** (both ternary branches returned `'metric'`):
+    - `IMPERIAL_LANGUAGES.has(language) ? 'metric' : 'metric'` -> `'imperial' : 'metric'`
+    - Unit system now correctly returns `'imperial'` for English locale
+
+2. **Fixed `TimerScheduleCalculator.tsx` a11y regression** (raw `<input>` instead of accessible `Input` from common):
+    - Added `Input` to imports from `./common`
+    - Replaced two raw `<input type="number">` elements with `<Input label= unit= .../>` (uses `useId()` + `htmlFor`)
+    - Consistent with all 12 other calculators
+
+3. **Exported `STAGE_DEFAULTS` from `equipmentCalculatorService.ts`**:
+    - Added `export` keyword to `const STAGE_DEFAULTS`
+    - Added `STAGE_DEFAULTS` to `calculatorTypes.ts` barrel exports
+
+4. **Completed ES/FR/NL knowledge.ts i18n** (lexikon + atlas + lernpfad):
+    - All 3 locales previously missing ~500 lines of `knowledgeView.lexikon`, `knowledgeView.atlas`, `knowledgeView.lernpfad`
+    - Inserted full Spanish, French, Dutch translations including:
+        - `lexikon`: 16 UI keys
+        - `atlas`: 27 UI keys + 22 disease entries (name/symptoms/causes/treatment/prevention each)
+        - `lernpfad`: 9 UI keys + level.{3} + 5 learning paths in nested + flat format
+    - i18n checker confirms: no knowledge warnings for ES, FR, or NL
+
+### Verified Metrics (Session 35)
+
+- Tests: **1228 passing, 0 failures** (114 test files)
+- TypeScript: **clean** (only known RTK TS2719 filtered)
+- i18n: No knowledge namespace warnings for any locale
+- All 5 locales: complete lexikon + atlas + lernpfad
+
+### Planned Executions
+
+No mandatory follow-up executions. Optional candidates:
+
+## Previous Session (2026-04-07, Session 34) -- Quality Audit: TimerScheduleCalculator, unitConversion utils, NL typos (Execution 7)
 
 **Status: v1.3.0-beta. Comprehensive quality review of all 6 prior executions. 7 deficiencies identified and fixed. 1228 tests passing. TypeScript clean.**
 

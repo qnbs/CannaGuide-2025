@@ -228,6 +228,522 @@ export const knowledgeView = {
         startAnalysis: "Lancer l'Analyse RAG",
         activeCorpus: 'Plantes actives dans le corpus RAG : {{count}}',
     },
+    lexikon: {
+        searchPlaceholder: 'Rechercher des termes...',
+        filterLabel: 'Filtrer par categorie',
+        all: 'Tous',
+        categories: {
+            cannabinoid: 'Cannabinoides',
+            terpene: 'Terpenes',
+            flavonoid: 'Flavonoides',
+            nutrient: 'Nutriments',
+            disease: 'Maladies',
+            general: 'General',
+        },
+        noResults: 'Aucun resultat pour "{{term}}"',
+        resultCount: '{{count}} sur {{total}} termes',
+        totalCount: '{{count}} termes',
+        noDefinition: 'Aucune definition disponible.',
+    },
+    atlas: {
+        searchPlaceholder: 'Rechercher des diagnostics...',
+        allCategories: 'Toutes les categories',
+        allUrgencies: 'Toutes les urgences',
+        noResults: 'Aucune entree trouvee.',
+        filterByCategory: 'Filtrer par categorie',
+        filterByUrgency: 'Filtrer par urgence',
+        entryCount: '{{count}} entrees',
+        close: 'Fermer',
+        category: {
+            deficiency: 'Carence',
+            toxicity: 'Toxicite',
+            environmental: 'Environnemental',
+            pest: 'Ravageurs',
+            disease: 'Maladie',
+        },
+        severity: {
+            low: 'Faible',
+            medium: 'Moyen',
+            high: 'Eleve',
+            critical: 'Critique',
+        },
+        urgency: {
+            monitor: 'Surveiller',
+            act_soon: 'Agir bientot',
+            act_immediately: 'Agir immediatement',
+        },
+        detail: {
+            symptoms: 'Symptomes',
+            causes: 'Causes',
+            treatment: 'Traitement',
+            prevention: 'Prevention',
+            relatedTerms: 'Termes associes',
+        },
+        diseases: {
+            'nitrogen-deficiency': {
+                name: 'Carence en Azote',
+                symptoms:
+                    'Le jaunissement commence sur les feuilles inferieures plus vieilles et progresse vers le haut. Les feuilles virent au jaune pale puis completement jaune. Croissance ralentie.',
+                causes: "Arrosage excessif, pH bas (bloque l'N), azote insuffisant dans la solution nutritive, dommages aux racines.",
+                treatment:
+                    "Rincer le substrat avec de l'eau ajustee au pH correct, puis nourrir avec une solution riche en azote. Corriger le pH a 6,0-7,0 (terre) ou 5,5-6,5 (hydro).",
+                prevention:
+                    "Surveiller le pH en permanence, utiliser des nutriments equilibres, eviter l'arrosage excessif.",
+            },
+            'phosphorus-deficiency': {
+                name: 'Carence en Phosphore',
+                symptoms:
+                    "Decoloration violette ou rougeatre sur la face inferieure des feuilles et des tiges. Feuilles vert fonce pouvant s'enrouler vers le bas. Croissance lente.",
+                causes: 'pH bas (en dessous de 6,0 en terre), basses temperatures dans la zone racinaire (sous 15 C), peu de phosphore dans la solution.',
+                treatment:
+                    'Augmenter le pH si necessaire, elever la temperature de la salle, supplementer avec un nutriment de floraison riche en phosphore.',
+                prevention:
+                    'Maintenir la zone racinaire au-dessus de 18 C, conserver le pH correct, utiliser des nutriments de floraison au debut de la phase florale.',
+            },
+            'potassium-deficiency': {
+                name: 'Carence en Potassium',
+                symptoms:
+                    'Bords et pointes de feuilles bruns et croustillants, debutant sur les feuilles les plus vieilles. Jaunissement entre les nervures. Tiges faibles.',
+                causes: "pH eleve (bloque le K), exces de calcium ou de magnesium en competition d'absorption, peu de potassium dans la solution.",
+                treatment:
+                    'Verifier et corriger le pH, reduire les nutriments en competition si excessifs, supplementer en potassium.',
+                prevention:
+                    'Utiliser une formule nutritive complete avec potassium adequat, surtout en fin de floraison.',
+            },
+            'calcium-deficiency': {
+                name: 'Carence en Calcium',
+                symptoms:
+                    'Petites taches brunes ou rouille sur les nouvelles feuilles. Nouvelle croissance tordue ou frippee. Tiges faibles.',
+                causes: "pH bas reduisant la disponibilite du calcium, utilisation d'eau osmosee/distillee sans remineralisation, coco sans pre-buffering.",
+                treatment:
+                    'Corriger le pH a 6,2-7,0, ajouter un supplement Cal-Mag, pre-buffer le coco avant utilisation.',
+                prevention:
+                    "Pre-buffer le coco, utiliser Cal-Mag avec l'eau osmosee, maintenir le pH correct.",
+            },
+            'magnesium-deficiency': {
+                name: 'Carence en Magnesium',
+                symptoms:
+                    "Jaunissement entre les nervures (chlorose internervaire) sur les feuilles intermediaires a vieilles tandis que les nervures restent vertes. Les feuilles peuvent s'enrouler vers le haut.",
+                causes: "pH bas, potassium eleve en competition avec l'absorption de magnesium, magnesium insuffisant dans la solution.",
+                treatment:
+                    "Corriger le pH, reduire le potassium si excessif, ajouter Cal-Mag ou sel d'Epsom (MgSO4) -- 1 c. a c./litre en pulverisation foliaire pour des resultats rapides.",
+                prevention:
+                    'Utiliser une formule nutritive equilibree, inclure un supplement Cal-Mag, maintenir le pH correct.',
+            },
+            'iron-deficiency': {
+                name: 'Carence en Fer',
+                symptoms:
+                    'Feuilles de couleur jaune vif (chlorotiques) sur la toute nouvelle croissance, les nervures restant vertes. Schema classique de chlorose internervaire.',
+                causes: "pH eleve (cause la plus frequente, notamment au-dessus de 7,0), racines gorgees d'eau, exces de phosphore ou de manganese en competition.",
+                treatment:
+                    'Abaisser le pH a 6,0-6,5, ameliorer le drainage, utiliser un supplement de fer chelate.',
+                prevention:
+                    'Maintenir le pH correct, eviter le sur-arrosage, utiliser un pack de micronutriments chelates.',
+            },
+            'zinc-deficiency': {
+                name: 'Carence en Zinc',
+                symptoms:
+                    'Jaunissement du tissu foliaire neuf entre les nervures. Les feuilles peuvent apparaitre tachetees ou distordues. Espacement internodal court.',
+                causes: "pH eleve, exces de phosphore inhibant l'absorption du zinc, peu de zinc dans le substrat ou la solution.",
+                treatment:
+                    'Corriger le pH a la plage optimale, reduire le phosphore si excessif, supplementer en zinc.',
+                prevention:
+                    'Utiliser une formule complete de micronutriments, maintenir le pH correct.',
+            },
+            'sulfur-deficiency': {
+                name: 'Carence en Soufre',
+                symptoms:
+                    'Les nouvelles feuilles virent uniformement au jaune pale au blanc. Contrairement a la carence en azote, elle commence sur le jeune/nouveau feuillage.',
+                causes: 'Peu de soufre dans la solution nutritive, pH tres eleve, plantes recemment transplantees ou rincees.',
+                treatment:
+                    'Ajouter un nutriment contenant du soufre (de nombreux nutriments de base en contiennent), verifier le pH.',
+                prevention: 'Utiliser une formule nutritive complete, eviter les pH extremes.',
+            },
+            'nutrient-burn': {
+                name: 'Brulure par Nutriments (Toxicite)',
+                symptoms:
+                    "Les pointes des feuilles brunissent et deviennent croustillantes, puis progressent vers l'interieur. Les pointes peuvent s'enrouler vers le haut. Coloration vert fonce brillant.",
+                causes: 'EC/PPM de la solution nutritive trop eleve, fertilisation trop frequente, terre tres enrichie.',
+                treatment:
+                    'Rincer le substrat avec 3 fois le volume du pot en eau adjustee au pH. Reduire la prochaine fertilisation a 50% de concentration.',
+                prevention:
+                    'Commencer avec des doses faibles de nutriments, augmenter progressivement, mesurer EC/PPM regulierement.',
+            },
+            'nitrogen-toxicity': {
+                name: "Toxicite a l'Azote",
+                symptoms:
+                    'Feuilles vert fonce brillant. Les pointes peuvent s\'enrouler vers le bas (la "griffe"). Croissance foliaire excessive, densite de fleurs reduite.',
+                causes: "Trop d'azote, notamment pendant la floraison quand la demande en N diminue.",
+                treatment:
+                    "Arreter la fertilisation azotee, rincer avec de l'eau ajustee au pH, passer aux nutriments de floraison.",
+                prevention:
+                    "Reduire l'azote lors du passage a la floraison, utiliser des nutriments specifiques a la floraison.",
+            },
+            overwatering: {
+                name: 'Sur-Arrosage',
+                symptoms:
+                    "Toute la plante s'affaisse. Les feuilles semblent fermes mais pendent avec une courbe arrondie. La terre reste humide pendant de nombreux jours. Jaunissement.",
+                causes: 'Arrosage trop frequent, mauvais drainage, pots sans trous, substrat trop dense.',
+                treatment:
+                    "Arreter completement l'arrosage jusqu'a ce que le pot soit tres leger. Ameliorer l'aeration autour du pot. Envisager un rempotage dans un melange mieux drainant.",
+                prevention:
+                    'Soulever les pots pour sentir le poids -- arroser seulement quand notablement plus legers. Utiliser des recipients avec de bons trous de drainage. Laisser le substrat secher partiellement.',
+            },
+            underwatering: {
+                name: 'Sous-Arrosage',
+                symptoms:
+                    "Toute la plante se fane et s'affaisse. Les feuilles semblent fines et comme du papier avec une legere courbe vers l'interieur. Le pot est tres leger.",
+                causes: 'Arrosage trop peu frequent, climat sec, substrat a drainage rapide, grande plante dans un petit pot.',
+                treatment:
+                    "Arroser abondamment jusqu'a ce que le drainage sorte par le bas. La plante devrait se remettre en quelques heures.",
+                prevention:
+                    'Verifier regulierement le poids du pot. Arroser quand la premiere couche du substrat est seche.',
+            },
+            'heat-stress': {
+                name: 'Stress Thermique',
+                symptoms:
+                    'Les bords et pointes des feuilles se recourbent vers le haut comme des tacos. Taches blanchies ou brulees la ou les feuilles sont les plus proches de la lumiere. Fanaison malgre un arrosage adequat.',
+                causes: 'Temperature de la salle au-dessus de 30 C, lumieres trop pres de la canopee, mauvaise ventilation, points chauds.',
+                treatment:
+                    'Ameliorer la ventilation, surtoiser les lumieres, ajouter la climatisation. Pulveriser les feuilles a court terme.',
+                prevention:
+                    "Maintenir la temperature de la canopee en dessous de 28 C. Assurer un flux d'air adequat au-dessus de la canopee.",
+            },
+            'light-burn': {
+                name: 'Brulure par la Lumiere',
+                symptoms:
+                    'Taches blanches ou jaunes blanchies sur les feuilles superieures les plus proches de la lumiere. Les feuilles directement sous la lumiere paraissent blanchies malgre des nutriments adequats.',
+                causes: 'Lampe de culture trop pres de la canopee, intensite lumineuse excessive (PPFD trop eleve).',
+                treatment:
+                    'Surtoiser la lampe immediatement. Les zones blanchies ne se recupereront pas, mais la nouvelle croissance sera saine.',
+                prevention:
+                    'Respecter les distances minimales de suspension recommandees par le fabricant, surveiller le PPFD.',
+            },
+            'ph-lockout': {
+                name: 'Blocage de pH',
+                symptoms:
+                    'Multiples symptomes de carence apparaissant simultanement malgre des nutriments adequats. La plante semble generalement malade.',
+                causes: "Le pH de la solution nutritive ou du substrat est hors de la plage d'absorption optimale pour les nutriments cles.",
+                treatment:
+                    "Tester le pH de la zone racinaire (test de drainage). Rincer le substrat avec de l'eau correctement ajustee au pH. Reprendre la fertilisation au pH correct.",
+                prevention:
+                    "Toujours ajuster le pH de l'eau et de la solution nutritive. Tester le pH du drainage hebdomadairement.",
+            },
+            'spider-mites': {
+                name: 'Acariens',
+                symptoms:
+                    'Minuscules points blancs/jaunes sur la surface des feuilles. Fine toile de soie entre les feuilles et les tiges. Minuscules points en mouvement visibles a la loupe.',
+                causes: "Conditions seches et chaudes. Boutures ou substrat infectes. Mauvais flux d'air.",
+                treatment:
+                    "Pulveriser toutes les surfaces des feuilles (surtout le dessous) avec de l'huile de neem, du savon insecticide ou du spinosad. Augmenter l'humidite. Repeter tous les 3 jours pendant 2 semaines.",
+                prevention:
+                    "Maintenir 50-60% d'humidite, assurer le flux d'air, inspecter les nouvelles plantes avant de les introduire dans la salle.",
+            },
+            'fungus-gnats': {
+                name: 'Mouches des Terreaux',
+                symptoms:
+                    'Petites mouches noires autour de la surface du substrat. Jeunes plants fanes par des dommages de larves aux racines. Petites larves blanches visibles dans le substrat.',
+                causes: 'Sur-arrosage maintenant la surface humide, permettant aux adultes de pondre. Melanges riches en tourbe.',
+                treatment:
+                    'Laisser les 5 cm superieurs du substrat se secher completement. Utiliser des pieges jaunes collants pour les adultes. Appliquer des nematodes benefiques ou Bacillus thuringiensis israelensis (Bti).',
+                prevention:
+                    'Eviter le sur-arrosage, laisser la surface du substrat secher, utiliser une couche de perlite sur le substrat.',
+            },
+            aphids: {
+                name: 'Pucerons',
+                symptoms:
+                    'Groupes de petits insectes a corps mou sur la nouvelle croissance et le dessous des feuilles. Residus de miellat collant sur les feuilles. Nouvelles feuilles recourbees ou distordues.',
+                causes: "Espace de culture ouvert, boutures contaminees ou exposition a l'exterieur.",
+                treatment:
+                    "Eliminer avec de l'eau, appliquer du savon insecticide ou de l'huile de neem, introduire des insectes benefiques (coccinelles, chrysopes).",
+                prevention:
+                    "Maintenir l'environnement de culture ferme, inspecter toutes les nouvelles plantes.",
+            },
+            thrips: {
+                name: 'Thrips',
+                symptoms:
+                    "Stries ou taches argentees/blanches sur les feuilles (marques d'alimentation). Points de feces noirs sur la surface des feuilles. Les feuilles peuvent prendre une teinte bronzee.",
+                causes: 'Plantes ou substrat contamines, environnement de culture ouvert.',
+                treatment:
+                    "Appliquer du spinosad, de l'huile de neem ou des insectes predateurs (Amblyseius cucumeris). Repeter regulierement.",
+                prevention:
+                    'Quarantaine stricte pour les nouvelles boutures, utiliser des pieges jaunes collants tot.',
+            },
+            'powdery-mildew': {
+                name: 'Oidium (Mildiou Poudreux)',
+                symptoms:
+                    'Taches poudreuses blanches sur la surface des feuilles, les tiges et les fleurs. Les taches se repandent rapidement. Les tissus affectes peuvent jaunir et mourrir.',
+                causes: "Forte humidite (superieure a 60%) combinee a un mauvais flux d'air et des temperatures moderees (15-27 C). Plantes surpeuplees.",
+                treatment:
+                    "Retirer les feuilles tres affectees. Appliquer du bicarbonate de potassium, de l'huile de neem ou du peroxyde d'hydrogene dilue. Augmenter le flux d'air et reduire l'humidite d'urgence.",
+                prevention:
+                    "Maintenir l'humidite en dessous de 50% en floraison. Assurer un fort flux d'air a travers la canopee. Eviter la surpopulation.",
+            },
+            botrytis: {
+                name: 'Botrytis (Pourriture des Fleurs / Moisissure Grise)',
+                symptoms:
+                    "Moisissure grise et duvetense apparaissant a l'interieur des fleurs denses. Taches brunes molles au centre des colas. Spores grises visibles.",
+                causes: "Forte humidite (superieure a 50% en floraison), mauvais flux d'air, fleurs denses, temperatures sous 20 C avec humidite elevee.",
+                treatment:
+                    "Retirer et mettre en sac immediatement tous les materiaux affectes. Ne pas agiter les fleurs -- les spores se repandent. Augmenter le flux d'air et baisser l'humidite drastiquement.",
+                prevention:
+                    "Maintenir l'humidite de floraison a 40-50%. Defolier la canopee dense pour le flux d'air. Recolter a temps.",
+            },
+            'root-rot': {
+                name: 'Pourriture des Racines (Pythium/Phytophthora)',
+                symptoms:
+                    "Les racines deviennent brunes/grises et visqueuses au lieu d'etre blanches et fermes. Mauvaise odeur de la zone racinaire. La plante se fane malgre un arrosage adequat. En hydro : solution nutritive decoloree.",
+                causes: "Sur-arrosage ou mauvais drainage. Conditions anaerobies dans la zone racinaire. Temperatures de l'eau au-dessus de 22 C en hydro. Manque de micro-organismes benefiques.",
+                treatment:
+                    "En terre : reduire l'arrosage, ameliorer le drainage, appliquer des bacteries benefiques/mycorhizes. En hydro : changer le reservoir, baisser la temperature de l'eau, traiter au peroxyde d'hydrogene ou bacteries benefiques.",
+                prevention:
+                    "Eviter le sur-arrosage. Maintenir le reservoir hydro sous 20 C. Utiliser des pierres d'air. Inoculer avec des micro-organismes benefiques.",
+            },
+        },
+    },
+    lernpfad: {
+        title: "Parcours d'Apprentissage",
+        progress: '{{done}} sur {{total}} etapes completees',
+        filterByLevel: 'Filtrer par niveau',
+        allLevels: 'Tous les niveaux',
+        completed: 'Termine',
+        markDone: 'Marquer comme fait',
+        resetPath: 'Reinitialiser la progression',
+        noPaths: "Aucun parcours d'apprentissage disponible.",
+        level: {
+            beginner: 'Debutant',
+            intermediate: 'Intermediaire',
+            expert: 'Expert',
+        },
+        paths: {
+            'beginner-first-grow': {
+                title: 'Votre Premiere Culture',
+                description:
+                    'Tout ce dont vous avez besoin pour une premiere recolte reussie, etape par etape.',
+                steps: {
+                    'step-setup': {
+                        title: 'Configuration et Equipement',
+                        description:
+                            'Apprenez ce dont vous avez besoin pour commencer : tente, eclairage, ventilateur, pots et substrat.',
+                    },
+                    'step-germination': {
+                        title: 'Germination',
+                        description:
+                            'Comment faire germer les graines de maniere fiable avec la methode du papier essuie-tout ou directement dans le substrat.',
+                    },
+                    'step-veg': {
+                        title: 'Croissance Vegetative',
+                        description:
+                            "Nourrir votre plantule jusqu'a en faire une plante vegetative robuste. Bases de l'arrosage, des nutriments et de la lumiere.",
+                    },
+                    'step-flower': {
+                        title: 'Floraison',
+                        description:
+                            'Declencher et gerer la phase de floraison. Calendrier lumineux, changement de nutriments et developpement des bourgeons.',
+                    },
+                    'step-harvest': {
+                        title: 'Recolte et Sechage',
+                        description:
+                            'Lire les trichomes, choisir le bon moment de recolte et le processus crucial de sechage et de maturation.',
+                    },
+                    'step-vpd-practice': {
+                        title: 'Pratique VPD',
+                        description:
+                            "Utiliser la calculatrice VPD pour comprendre comment la temperature et l'humidite affectent votre plante.",
+                    },
+                },
+            },
+            'environment-mastery': {
+                title: "Maitrise de l'Environnement",
+                description:
+                    "Plongee en profondeur dans la temperature, l'humidite, le VPD, le CO2 et le flux d'air.",
+                steps: {
+                    'step-env-basics': {
+                        title: "Bases de Temp. et d'Humidite",
+                        description:
+                            'Plages optimales pour chaque phase de croissance et comment les controler.',
+                    },
+                    'step-vpd-deep': {
+                        title: 'VPD en Profondeur',
+                        description:
+                            'Comprendre et utiliser le deficit de pression de vapeur pour maximiser la sante et le rendement des plantes.',
+                    },
+                    'step-airflow': {
+                        title: "Flux d'Air et CO2",
+                        description:
+                            "Pourquoi le flux d'air est important, comment configurer les ventilateurs de circulation et d'extraction et bases du CO2.",
+                    },
+                    'step-env-calc': {
+                        title: 'Pratique avec les Calculatrices',
+                        description:
+                            'Utiliser la calculatrice VPD dans differentes phases pour developper une intuition des conditions ideales.',
+                    },
+                },
+            },
+            'nutrient-mastery': {
+                title: 'Maitrise des Nutriments',
+                description:
+                    'Maitriser les macro et micronutriments, EC, pH et diagnostic des carences.',
+                steps: {
+                    'step-macros': {
+                        title: 'Macronutriments (N-P-K)',
+                        description:
+                            "Le role de l'azote, du phosphore et du potassium dans toutes les phases de croissance.",
+                    },
+                    'step-micros': {
+                        title: 'Micro et Secondaires',
+                        description:
+                            'Calcium, magnesium, soufre, fer, zinc et leurs symptomes de carence.',
+                    },
+                    'step-ec-ph': {
+                        title: 'EC, PPM et pH',
+                        description:
+                            'Comment mesurer et controler la force et le pH de la solution nutritive.',
+                    },
+                    'step-deficiency-atlas': {
+                        title: 'Atlas des Carences',
+                        description:
+                            "Utiliser l'Atlas des Maladies pour identifier et traiter les carences en nutriments.",
+                    },
+                    'step-nutrient-calc': {
+                        title: 'Calculatrice de Nutriments',
+                        description:
+                            'Utiliser la calculatrice de ratios de nutriments pour planifier les fertilisations par phase de croissance.',
+                    },
+                },
+            },
+            'pest-disease-control': {
+                title: 'Controle des Ravageurs et Maladies',
+                description:
+                    'Identifier, traiter et prevenir les ravageurs et maladies les plus courants.',
+                steps: {
+                    'step-plant-hygiene': {
+                        title: 'Hygiene et Prevention',
+                        description:
+                            'Protocoles de nettoyage, quarantaine pour les nouvelles plantes et prevention environnementale.',
+                    },
+                    'step-pest-id': {
+                        title: 'Identification des Ravageurs',
+                        description:
+                            'Detecter les acariens, les mouches des terreaux, les pucerons et les thrips a temps.',
+                    },
+                    'step-disease-id': {
+                        title: 'Identification des Maladies',
+                        description:
+                            "Reconnaitre l'oidium, la botrytis et la pourriture des racines avant qu'elles ne detruisent une recolte.",
+                    },
+                },
+            },
+            'advanced-training': {
+                title: 'Formation Avancee des Plantes',
+                description:
+                    'LST, topping, super cropping, SCROG et manifolding pour un rendement maximal.',
+                steps: {
+                    'step-why-train': {
+                        title: 'Pourquoi Former les Plantes ?',
+                        description:
+                            'Comprendre la dominance apicale et comment la formation la brise pour de meilleurs rendements.',
+                    },
+                    'step-lst-topping': {
+                        title: 'LST et Topping',
+                        description:
+                            'Bases de la formation a basse contrainte et du topping avec details de timing et de technique.',
+                    },
+                    'step-scrog-manifold': {
+                        title: 'SCROG et Manifolding',
+                        description:
+                            'Techniques avancees pour une canopee parfaitement uniforme avec le nombre maximal de points de bourgeons.',
+                    },
+                },
+            },
+            firstGrow: {
+                title: 'Votre Premiere Culture',
+                description:
+                    'Tout ce dont vous avez besoin pour une premiere recolte reussie, etape par etape.',
+                step1Title: 'Configuration et Equipement',
+                step1Desc:
+                    'Apprenez ce dont vous avez besoin pour commencer : tente, eclairage, ventilateur, pots et substrat.',
+                step2Title: 'Germination',
+                step2Desc:
+                    'Comment germer des graines de maniere fiable -- methode du papier essuie-tout ou directement dans le substrat.',
+                step3Title: 'Croissance Vegetative',
+                step3Desc:
+                    "Nourrir votre plantule jusqu'a une plante vegetative robuste. Bases de l'arrosage, des nutriments et de la lumiere.",
+                step4Title: 'Floraison',
+                step4Desc:
+                    'Declencher et gerer la phase de floraison. Calendrier lumineux, changement de nutriments et developpement des bourgeons.',
+                step5Title: 'Recolte et Sechage',
+                step5Desc:
+                    'Lire les trichomes, choisir le bon moment de recolte et le processus crucial de sechage et de maturation.',
+                step6Title: 'Pratique VPD',
+                step6Desc:
+                    "Utiliser la calculatrice VPD pour comprendre comment la temperature et l'humidite affectent votre plante.",
+            },
+            environment: {
+                title: "Maitrise de l'Environnement",
+                description:
+                    "Plongee en profondeur dans la temperature, l'humidite, le VPD, le CO2 et le flux d'air.",
+                step1Title: "Bases de Temp. et d'Humidite",
+                step1Desc:
+                    'Plages optimales pour chaque phase de croissance et comment les controler.',
+                step2Title: 'VPD en Profondeur',
+                step2Desc:
+                    'Comprendre et utiliser le deficit de pression de vapeur pour maximiser la sante des plantes.',
+                step3Title: "Flux d'Air et CO2",
+                step3Desc:
+                    "Pourquoi le flux d'air est important et comment configurer les ventilateurs.",
+                step4Title: 'Pratique avec les Calculatrices',
+                step4Desc:
+                    'Utiliser la calculatrice VPD dans differentes phases pour developper une intuition des conditions ideales.',
+            },
+            nutrients: {
+                title: 'Maitrise des Nutriments',
+                description:
+                    'Maitriser les macro et micronutriments, EC, pH et diagnostic des carences.',
+                step1Title: 'Guide pH',
+                step1Desc:
+                    'Comprendre et controler le pH pour une absorption optimale des nutriments.',
+                step2Title: 'Calculatrice de Nutriments',
+                step2Desc:
+                    'Utiliser la calculatrice de ratios pour planifier les fertilisations par phase.',
+                step3Title: 'Carence en Calcium',
+                step3Desc:
+                    "Reconnaitre et traiter la carence en calcium -- l'un des problemes les plus courants.",
+                step4Title: 'Brulure par Nutriments',
+                step4Desc:
+                    'Reconnaitre la surdose de nutriments et aider la plante a se recuperer.',
+                step5Title: "Pratique avec l'Atlas",
+                step5Desc:
+                    "Utiliser l'Atlas des Maladies pour identifier et traiter les problemes nutritionnels.",
+            },
+            pests: {
+                title: 'Controle des Ravageurs et Maladies',
+                description:
+                    'Identifier, traiter et prevenir les ravageurs et maladies les plus courants.',
+                step1Title: 'Guide de Lutte Antiparasitaire',
+                step1Desc:
+                    'Strategies integrees de lutte antiparasitaire pour garder la culture sans parasites.',
+                step2Title: 'Acariens',
+                step2Desc: 'Detecter et traiter les acariens -- le ravageur le plus destructeur.',
+                step3Title: 'Oidium',
+                step3Desc: "Reconnaitre et traiter l'oidium avant qu'il ne detruise la culture.",
+            },
+            training: {
+                title: 'Formation Avancee des Plantes',
+                description:
+                    'LST, topping, super cropping, SCROG et manifolding pour un rendement maximal.',
+                step1Title: 'Fondamentaux de la Formation',
+                step1Desc:
+                    'Comprendre les principes de la formation des plantes et appliquer LST et topping.',
+                step2Title: 'Topping vs. LST',
+                step2Desc:
+                    'Comparer topping et formation a basse contrainte et trouver la meilleure approche.',
+                step3Title: 'Solution au Sur-Arrosage',
+                step3Desc:
+                    'Reconnaitre et resoudre le sur-arrosage -- un probleme courant lors de la formation.',
+            },
+        },
+    },
     growTech: {
         title: 'Cannabis Grow Technologies 2026',
         subtitle: 'Precision, automation, AI, and sustainability -- the future of cultivation.',

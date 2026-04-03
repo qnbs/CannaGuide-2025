@@ -8,6 +8,7 @@ import {
     knowledgeView,
     tipOfTheDay,
     analytics,
+    growBible,
     onboarding,
     plantsView,
     settingsView,
@@ -36,6 +37,7 @@ export const fr = {
     strainsData,
     tipOfTheDay,
     analytics,
+    growBible,
     legal,
     seedbanks,
 }

@@ -1,7 +1,7 @@
 export { commandPalette } from './commandPalette'
 export { equipmentView } from './equipment'
 export { helpView, visualGuides, faq } from './help'
-export { knowledgeView, tipOfTheDay, analytics } from './knowledge'
+export { knowledgeView, tipOfTheDay, analytics, growBible } from './knowledge'
 export { onboarding } from './onboarding'
 export { plantsView } from './plants'
 export { settingsView } from './settings'

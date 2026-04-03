@@ -153,5 +153,3 @@ export const KnowledgeView: React.FC = () => {
         </div>
     )
 }
-
-export default KnowledgeView

@@ -105,7 +105,9 @@ const EquipmentView = lazy(() =>
         default: module.EquipmentView,
     })),
 )
-const KnowledgeView = lazy(() => import('@/components/views/KnowledgeView'))
+const KnowledgeView = lazy(() =>
+    import('@/components/views/KnowledgeView').then((m) => ({ default: m.KnowledgeView })),
+)
 const SettingsView = lazy(() => import('@/components/views/settings/SettingsView'))
 const HelpView = lazy(() => import('@/components/views/HelpView'))
 const browserWindow = typeof window === 'undefined' ? null : window

@@ -2,7 +2,7 @@ import { common, nav, plantStages, problemMessages, ai } from './de/common'
 import { commandPalette } from './de/commandPalette'
 import { equipmentView } from './de/equipment'
 import { helpView, visualGuides, faq } from './de/help'
-import { knowledgeView, tipOfTheDay, analytics } from './de/knowledge'
+import { knowledgeView, tipOfTheDay, analytics, growBible } from './de/knowledge'
 import { onboarding } from './de/onboarding'
 import { plantsView } from './de/plants'
 import { settingsView } from './de/settings'
@@ -31,6 +31,7 @@ export const de = {
     strainsData,
     tipOfTheDay,
     analytics,
+    growBible,
     legal,
     seedbanks,
 }

@@ -187,7 +187,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                             const resizedImage = await resizeImage(dataUrl)
                             setImage(resizedImage)
                         } catch (err) {
-                            console.error('Image resizing failed:', err)
+                            console.debug('[LogActionModal] Image resizing failed:', err)
                             setImage(dataUrl) // fallback to original
                             getUISnapshot().addNotification({
                                 message: t('common.imageResizeFailed'),
@@ -321,7 +321,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                                     const resizedImage = await resizeImage(dataUrl)
                                                     setImage(resizedImage)
                                                 } catch (err) {
-                                                    console.error('Image resizing failed:', err)
+                                                    console.debug(
+                                                        '[LogActionModal] Image resizing failed:',
+                                                        err,
+                                                    )
                                                     setImage(dataUrl)
                                                     getUISnapshot().addNotification({
                                                         message: t('common.imageResizeFailed'),

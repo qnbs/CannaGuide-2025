@@ -326,10 +326,10 @@ const ensureSimulationShape = (state: PersistedState): void => {
  * data from interrupted fetches or schema changes never reaches the renderer.
  *
  * Key invariants enforced:
- *  - status: 'loading'  → reset to 'idle'          (app crashed mid-fetch)
- *  - _version mismatch  → wipe computedTrees cache  (schema changed)
- *  - corrupt node       → silently dropped           (re-fetched on demand)
- *  - invalid zoomTransform → zeroed out
+ *  - status: 'loading'  -> reset to 'idle'          (app crashed mid-fetch)
+ *  - _version mismatch  -> wipe computedTrees cache  (schema changed)
+ *  - corrupt node       -> silently dropped           (re-fetched on demand)
+ *  - invalid zoomTransform -> zeroed out
  */
 // GENEALOGY_STATE_VERSION is now imported from @/constants (single source of truth)
 const VALID_STRAIN_TYPES = new Set<string>(Object.values(StrainType))
@@ -596,14 +596,14 @@ const sanitizeGenealogyMetadata = (g: Record<string, unknown>): void => {
 
 const ensureGenealogyShape = (state: PersistedState): void => {
     if (!state.genealogy || typeof state.genealogy !== 'object') {
-        // No genealogy key → supply clean initial state
+        // No genealogy key -> supply clean initial state
         ;(state as Record<string, unknown>).genealogy = createGenealogyMigrationState()
         return
     }
 
     const g = state.genealogy as unknown as Record<string, unknown>
 
-    // Version mismatch → wipe cache, preserve user preferences
+    // Version mismatch -> wipe cache, preserve user preferences
     if (g._version !== GENEALOGY_STATE_VERSION) {
         console.debug(
             `[MigrationLogic] Genealogy state version mismatch (stored: ${g._version}, expected: ${GENEALOGY_STATE_VERSION}) – wiping computedTrees.`,
@@ -784,7 +784,7 @@ export const mergeStrainCatalogForUpdate = (
 }
 
 /**
- * V3→V4 migration.
+ * V3->V4 migration.
  * - Stamps per-slice schema versions (_sliceVersions) so future migrations can
  *   detect and auto-reset individual stale slices without nuking everything.
  * - Deep-merges settings to absorb any new defaults.
@@ -806,7 +806,7 @@ const migrateV3ToV4 = (state: PersistedState): PersistedState => {
 }
 
 /**
- * V4→V5 migration.
+ * V4->V5 migration.
  * Keeps the persisted shape intact but stamps the new version so recovery can
  * distinguish V5 snapshots and snapshot diffs can be logged deterministically.
  */

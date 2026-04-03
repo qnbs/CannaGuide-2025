@@ -166,7 +166,7 @@ const savedItemsSlice = createSlice({
                 !tip.environmentalTip ||
                 !tip.proTip
             ) {
-                console.error(
+                console.debug(
                     '[savedItemsSlice] Attempted to save an empty or invalid structured strain tip. Aborted.',
                 )
                 return

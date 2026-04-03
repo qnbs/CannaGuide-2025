@@ -86,7 +86,7 @@ const CloudSyncPanel: React.FC = () => {
                 message: String(t('settingsView.data.sync.pushSuccess')),
             })
         } catch (error) {
-            console.error('[CloudSync] Push failed:', error)
+            console.debug('[CloudSync] Push failed:', error)
             getUISnapshot().addNotification({
                 type: 'error',
                 message:
@@ -117,7 +117,7 @@ const CloudSyncPanel: React.FC = () => {
                 setTimeout(() => browserWindow.location.reload(), 1000)
             }
         } catch (error) {
-            console.error('[CloudSync] Pull failed:', error)
+            console.debug('[CloudSync] Pull failed:', error)
             getUISnapshot().addNotification({
                 type: 'error',
                 message:

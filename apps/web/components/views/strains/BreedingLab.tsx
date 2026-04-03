@@ -57,7 +57,7 @@ function inferGenotype(strain: Strain, traitKey: string): Genotype {
         case 'phenotype':
             if (strain.type === StrainType.Indica) return ['1', '1']
             if (strain.type === StrainType.Sativa) return ['0', '0']
-            // Hybrid → heterozygous
+            // Hybrid -> heterozygous
             return ['1', '0']
         case 'autoflowering':
             return strain.floweringType === 'Autoflower' ? ['0', '0'] : ['1', '1']

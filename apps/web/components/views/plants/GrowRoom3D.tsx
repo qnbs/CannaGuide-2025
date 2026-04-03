@@ -65,8 +65,8 @@ const vpdToColor = (vpd: number): THREE.Color => {
 }
 
 const healthToLeafGreen = (health: number): THREE.Color => {
-    // health 0-100 → sick (yellow-brown) to healthy (vibrant green)
-    const hue = 0.22 + (health / 100) * 0.12 // 0.22 (yellow)→0.34 (green)
+    // health 0-100 -> sick (yellow-brown) to healthy (vibrant green)
+    const hue = 0.22 + (health / 100) * 0.12 // 0.22 (yellow)->0.34 (green)
     const sat = 0.4 + (health / 100) * 0.3
     const light = 0.25 + (health / 100) * 0.2
     return new THREE.Color().setHSL(hue, sat, light)

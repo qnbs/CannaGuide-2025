@@ -163,7 +163,7 @@ const AnalysisPanel = React.memo<{
             })
             .catch((err) => {
                 if (!cancelled) {
-                    console.error('[AnalysisPanel] worker error:', err)
+                    console.debug('[AnalysisPanel] worker error:', err)
                     setContributions([])
                 }
             })
@@ -300,9 +300,9 @@ AnalysisPanel.displayName = 'GenealogyAnalysisPanel'
 //
 // Design-Prinzipien:
 //   1. KEIN synchroner d3-Aufruf im Render-Pfad.
-//      d3.hierarchy + d3.tree laufen in useEffect → State (layoutNodes/layoutLinks).
+//      d3.hierarchy + d3.tree laufen in useEffect -> State (layoutNodes/layoutLinks).
 //   2. JEDER potenziell fehlerhafter Block ist in try/catch gewrappt.
-//      Bei Fehler → setLocalError → nur Error-Fallback-UI.
+//      Bei Fehler -> setLocalError -> nur Error-Fallback-UI.
 //   3. Optional chaining (.?) an JEDER Stelle wo Daten aus State kommen.
 //   4. key-Prop auf JEDEM map() und conditional Render.
 //   5. Debug-Logging am Mount für Diagnose.
@@ -390,7 +390,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 setWasReset(true)
             }
         } catch (err) {
-            console.error('[GenealogyView] Corruption check itself failed:', err)
+            console.debug('[GenealogyView] Corruption check itself failed:', err)
             try {
                 dispatch(resetGenealogy())
             } catch {
@@ -408,7 +408,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             const cached = computedTrees?.[selectedStrainId]
             return cached ?? null
         } catch (err) {
-            console.error('[GenealogyView] tree derivation error:', err)
+            console.debug('[GenealogyView] tree derivation error:', err)
             return null
         }
     }, [computedTrees, selectedStrainId])
@@ -421,7 +421,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 dispatch(fetchAndBuildGenealogy({ strainId: selectedStrainId, allStrains }))
             }
         } catch (err) {
-            console.error('[GenealogyView] fetchAndBuildGenealogy dispatch error:', err)
+            console.debug('[GenealogyView] fetchAndBuildGenealogy dispatch error:', err)
             setLocalError(t('strainsView.genealogyView.errorLoadingTree'))
         }
     }, [selectedStrainId, allStrains, dataReady, computedTrees, dispatch, t])
@@ -455,7 +455,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             })
             .catch((err) => {
                 if (!cancelled) {
-                    console.error('[GenealogyView] worker error:', err)
+                    console.debug('[GenealogyView] worker error:', err)
                     setLocalError(t('strainsView.genealogyView.errorCalculatingTree'))
                     setLayoutNodes([])
                     setLayoutLinks([])
@@ -476,7 +476,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 const strain = allStrains?.find((s) => s?.id === nodeData?.id)
                 if (strain) onNodeClick(strain)
             } catch (err) {
-                console.error('[GenealogyView] handleNodeClick error:', err)
+                console.debug('[GenealogyView] handleNodeClick error:', err)
             }
         },
         [allStrains, onNodeClick],
@@ -521,7 +521,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     .ease(d3.easeCubicInOut)
                     .call(zoomRef.current.transform, d3.zoomIdentity.translate(tx, ty).scale(scale))
             } catch (err) {
-                console.error('[GenealogyView] handleNodeFocus error:', err)
+                console.debug('[GenealogyView] handleNodeFocus error:', err)
             }
         },
         [getLayoutPosition, layoutNodes],
@@ -534,7 +534,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     dispatch(toggleGenealogyNode({ strainId: selectedStrainId, nodeId }))
                 }
             } catch (err) {
-                console.error('[GenealogyView] handleToggle error:', err)
+                console.debug('[GenealogyView] handleToggle error:', err)
             }
         },
         [dispatch, selectedStrainId],
@@ -546,7 +546,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 const selectedValue = toSelectedStrainId(e?.target?.value)
                 dispatch(setSelectedGenealogyStrain(selectedValue))
             } catch (err) {
-                console.error('[GenealogyView] handleSelectChange error:', err)
+                console.debug('[GenealogyView] handleSelectChange error:', err)
             }
         },
         [dispatch],
@@ -556,7 +556,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         try {
             dispatch(setGenealogyLayout(getNextLayoutOrientation(layoutOrientation)))
         } catch (err) {
-            console.error('[GenealogyView] layout toggle error:', err)
+            console.debug('[GenealogyView] layout toggle error:', err)
         }
     }, [dispatch, layoutOrientation])
 
@@ -564,7 +564,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         try {
             dispatch(resetGenealogyCache())
         } catch (err) {
-            console.error('[GenealogyView] resetGenealogyCache error:', err)
+            console.debug('[GenealogyView] resetGenealogyCache error:', err)
         }
     }, [dispatch])
 
@@ -574,7 +574,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             const data = geneticsService.findDescendants(selectedStrainId, allStrains ?? [])
             setDescendants(data ?? null)
         } catch (err) {
-            console.error('[GenealogyView] findDescendants error:', err)
+            console.debug('[GenealogyView] findDescendants error:', err)
         }
     }, [selectedStrainId, allStrains])
 
@@ -584,7 +584,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 setDescendants(null)
                 onNodeClick(strain)
             } catch (err) {
-                console.error('[GenealogyView] handleDescendantClick error:', err)
+                console.debug('[GenealogyView] handleDescendantClick error:', err)
             }
         },
         [onNodeClick],
@@ -684,7 +684,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     .call(zoomBehavior.transform, d3.zoomIdentity.translate(ix, iy))
             }
         } catch (err) {
-            console.error('[GenealogyView] d3 zoom setup error:', err)
+            console.debug('[GenealogyView] d3 zoom setup error:', err)
             setLocalError(t('strainsView.genealogyView.errorInitZoom'))
         }
 
@@ -739,7 +739,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 .duration(750)
                 .call(zoomRef.current.transform, d3.zoomIdentity.translate(ix, iy))
         } catch (err) {
-            console.error('[GenealogyView] handleResetZoom error:', err)
+            console.debug('[GenealogyView] handleResetZoom error:', err)
         }
     }, [getInitialZoomOffset])
 
@@ -803,7 +803,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     }
                 })
         } catch (err) {
-            console.error('[GenealogyView] renderLinks error:', err)
+            console.debug('[GenealogyView] renderLinks error:', err)
             return null
         }
     }
@@ -844,13 +844,13 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 }
             })
         } catch (err) {
-            console.error('[GenealogyView] renderNodes error:', err)
+            console.debug('[GenealogyView] renderNodes error:', err)
             return null
         }
     }
 
     // ── RENDER ────────────────────────────────────────────────────────
-    // Priorität 1: Lokaler Fehler → nur Error-Fallback zeigen
+    // Priorität 1: Lokaler Fehler -> nur Error-Fallback zeigen
     if (localError) {
         return <GenealogyError message={localError} onReset={handleResetError} />
     }

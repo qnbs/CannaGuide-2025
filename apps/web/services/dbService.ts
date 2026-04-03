@@ -77,7 +77,7 @@ const withRetry = async <T>(
         } catch (error) {
             const isLastAttempt = attempt === retries - 1
             if (isLastAttempt) {
-                console.error(`[dbService] ${context} failed after ${retries} attempts:`, error)
+                console.debug(`[dbService] ${context} failed after ${retries} attempts:`, error)
                 throw error
             }
             const delay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt)
@@ -188,7 +188,7 @@ const openDB = (): Promise<IDBDatabase> => {
         request.onerror = (event) => {
             dbPromise = null
             const idbError = (event.target as IDBOpenDBRequest).error
-            console.error('[dbService] IndexedDB connection error:', idbError)
+            console.debug('[dbService] IndexedDB connection error:', idbError)
             reject(toIndexedDbError(idbError, '[dbService] Failed to open IndexedDB connection.'))
         }
     })
@@ -220,7 +220,7 @@ const performTx = async <T>(
             let requestResult: T
 
             transaction.onerror = () => {
-                console.error(`[dbService] Transaction error on ${storeName}:`, transaction.error)
+                console.debug(`[dbService] Transaction error on ${storeName}:`, transaction.error)
                 reject(
                     toIndexedDbError(
                         transaction.error,
@@ -336,7 +336,7 @@ const replaceStoreAtomically = async (
 
             const clearRequest = store.clear()
             clearRequest.onerror = () => {
-                console.error(clearErrorMessage, clearRequest.error)
+                console.debug(clearErrorMessage, clearRequest.error)
                 transaction.abort()
             }
 
@@ -375,7 +375,7 @@ const collectIdsForToken = (
     }
 
     request.onerror = () => {
-        console.error(`[dbService] Search index request failed for token: ${token}`)
+        console.debug(`[dbService] Search index request failed for token: ${token}`)
         onComplete(new Set())
     }
 }
@@ -428,7 +428,7 @@ export const dbService = {
                 strains.forEach((strain) => {
                     const putRequest = store.put(strain)
                     putRequest.onerror = () => {
-                        console.error(
+                        console.debug(
                             `[dbService] Failed to add strain "${strain.name}" during bulk operation. Aborting transaction.`,
                             putRequest.error,
                         )
@@ -632,7 +632,7 @@ export const dbService = {
                 Object.entries(index).forEach(([word, ids]) => {
                     const putRequest = store.put({ word, ids })
                     putRequest.onerror = () => {
-                        console.error(
+                        console.debug(
                             `[dbService] Failed to add index for word "${word}". Aborting.`,
                             putRequest.error,
                         )

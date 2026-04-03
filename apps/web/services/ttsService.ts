@@ -55,7 +55,7 @@ class TTSService {
         }
 
         utterance.onerror = (event) => {
-            console.error('SpeechSynthesisUtterance.onerror', event)
+            console.debug('SpeechSynthesisUtterance.onerror', event)
             if (this.onEndCallback) {
                 this.onEndCallback() // Also advance queue on error
             }
@@ -80,7 +80,7 @@ class TTSService {
             this.synth.speak(utterance)
         } catch (speakError) {
             // Firefox/Android: speak() can throw synchronously (e.g. no audio focus, API not ready)
-            console.error('SpeechSynthesis.speak() threw synchronously:', speakError)
+            console.debug('SpeechSynthesis.speak() threw synchronously:', speakError)
             onEnd()
         }
     }

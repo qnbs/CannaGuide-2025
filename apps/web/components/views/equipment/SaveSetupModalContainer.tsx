@@ -19,7 +19,7 @@ export const SaveSetupModalContainer: React.FC = () => {
                     useUIStore.getState().setEquipmentViewTab(EquipmentViewTab.Setups)
                 })
                 .catch((err) => {
-                    console.error('[SaveSetupModal] Failed to save setup:', err)
+                    console.debug('[SaveSetupModal] Failed to save setup:', err)
                 })
         }
     }

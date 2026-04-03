@@ -50,7 +50,7 @@ const AlertBadge: React.FC<{ type: string }> = memo(({ type }) => {
     const isHigh = type.includes('high')
     const isEc = type.includes('ec')
     const metricLabel = isEc ? 'EC' : 'pH'
-    const directionLabel = isHigh ? '↑' : '↓'
+    const directionLabel = isHigh ? 'High' : 'Low'
     return (
         <span
             className={cn(

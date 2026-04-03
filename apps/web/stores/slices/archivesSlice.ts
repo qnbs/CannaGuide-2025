@@ -30,7 +30,7 @@ const archivesSlice = createSlice({
                 typeof response.content !== 'string' ||
                 !response.content.trim()
             ) {
-                console.error(
+                console.debug(
                     '[ArchivesSlice] Attempted to add an invalid mentor response. Data was discarded.',
                     response,
                 )
@@ -71,7 +71,7 @@ const archivesSlice = createSlice({
                 typeof response.content !== 'string' ||
                 !response.content.trim()
             ) {
-                console.error(
+                console.debug(
                     '[ArchivesSlice] Attempted to add an invalid advisor response. Data was discarded.',
                     { plant, response },
                 )

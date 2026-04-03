@@ -190,7 +190,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         {t('commandPalette.title')}
                     </h2>
                 </div>
-                <KbdBadge keys={['⌘', 'K']} />
+                <KbdBadge keys={['Cmd', 'K']} />
             </div>
 
             {/* ── Search ──────────────────────────────────────────── */}
@@ -301,11 +301,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
             <div className="flex items-center justify-between border-t border-white/10 px-4 py-2">
                 <div className="flex items-center gap-4 text-[10px] text-slate-500">
                     <span className="flex items-center gap-1">
-                        <KbdBadge keys={['↑', '↓']} />
+                        <KbdBadge keys={['Up', 'Down']} />
                         {t('commandPalette.footer.navigate')}
                     </span>
                     <span className="flex items-center gap-1">
-                        <KbdBadge keys={['↵']} />
+                        <KbdBadge keys={['Enter']} />
                         {t('commandPalette.footer.select')}
                     </span>
                     <span className="flex items-center gap-1">

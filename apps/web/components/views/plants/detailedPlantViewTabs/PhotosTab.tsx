@@ -31,7 +31,7 @@ const PhotoItem: React.FC<{
                     if (isMounted && storedImage) setImageUrl(storedImage.data)
                 })
                 .catch((err) => {
-                    console.error('[PhotosTab] Failed to load image:', err)
+                    console.debug('[PhotosTab] Failed to load image:', err)
                 })
                 .finally(() => {
                     if (isMounted) setIsLoading(false)

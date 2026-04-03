@@ -123,7 +123,7 @@ export const createAppStore = async (): Promise<AppStore> => {
             preloadedState = hydratePersistedState(persistedString)
         }
     } catch (e) {
-        console.error(
+        console.debug(
             "Could not load or migrate state from IndexedDB, starting fresh. A backup may be available at key '" +
                 REDUX_STATE_KEY +
                 "-backup'.",

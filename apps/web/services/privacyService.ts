@@ -120,7 +120,7 @@ export const eraseAllData = async (): Promise<boolean> => {
         return true
     } catch (error) {
         Sentry.captureException(error)
-        console.error('[privacyService] eraseAllData failed:', error)
+        console.debug('[privacyService] eraseAllData failed:', error)
         return false
     }
 }

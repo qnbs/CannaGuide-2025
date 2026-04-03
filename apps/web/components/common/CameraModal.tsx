@@ -63,7 +63,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({
                         videoRef.current.srcObject = mediaStream
                     }
                 } catch (err) {
-                    console.error('Camera access error:', err)
+                    console.debug('Camera access error:', err)
                     setError(t('plantsView.aiDiagnostics.cameraError'))
                 }
             }

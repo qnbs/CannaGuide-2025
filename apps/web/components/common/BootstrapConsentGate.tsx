@@ -21,7 +21,7 @@ export const BootstrapConsentGate: React.FC<BootstrapConsentGateProps> = ({ onAc
         try {
             await onAccept()
         } catch (error) {
-            console.error('[ConsentBootstrap] Could not continue after consent.', error)
+            console.debug('[ConsentBootstrap] Could not continue after consent.', error)
             setIsApplyingConsent(false)
         }
     }

@@ -82,7 +82,7 @@ export const VoiceControl: React.FC = () => {
 
     const handleError = useCallback(
         (event: WSpeechRecognitionErrorEvent) => {
-            console.error('Speech recognition error:', event.error)
+            console.debug('Speech recognition error:', event.error)
             let errorMessageKey = 'voiceControl.errors.generic'
             if (event.error === 'no-speech') {
                 errorMessageKey = 'voiceControl.errors.noSpeech'
@@ -142,7 +142,7 @@ export const VoiceControl: React.FC = () => {
                 setVoiceListening(true)
                 setVoiceStatusMessage(t('voiceControl.listening'))
             } catch (e) {
-                console.error('Error starting recognition:', e)
+                console.debug('Error starting recognition:', e)
                 // This can happen if recognition is already started, so we defensively stop it.
                 try {
                     recognitionRef.current.stop()

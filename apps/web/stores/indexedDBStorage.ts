@@ -43,7 +43,7 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onerror = (event) => {
             dbPromise = null
-            console.error('IndexedDB error:', (event.target as IDBOpenDBRequest).error)
+            console.debug('IndexedDB error:', (event.target as IDBOpenDBRequest).error)
             reject((event.target as IDBOpenDBRequest).error)
         }
     })

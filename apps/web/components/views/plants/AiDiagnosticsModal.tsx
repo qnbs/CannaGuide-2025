@@ -65,7 +65,7 @@ ${response.prevention}
                 })
                 journalDetails.imageId = imageId
             } catch (error) {
-                console.error('Failed to save diagnosis image to DB', error)
+                console.debug('[AiDiagnosticsModal] Failed to save diagnosis image to DB', error)
                 getUISnapshot().addNotification({
                     message: t('plantsView.aiDiagnostics.saveImageError'),
                     type: 'error',
@@ -213,11 +213,11 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             const reader = new FileReader()
             reader.onload = async () => {
                 try {
-                    // browser-image-compression re-encodes via canvas → strips EXIF/GPS metadata
+                    // browser-image-compression re-encodes via canvas -> strips EXIF/GPS metadata
                     const resizedImage = await resizeImage(reader.result as string)
                     setImage(resizedImage)
                 } catch (err) {
-                    console.error('Image resizing failed:', err)
+                    console.debug('[AiDiagnosticsModal] Image resizing failed:', err)
                     setImage(reader.result as string) // fallback to original
                     getUISnapshot().addNotification({
                         message: t('common.imageResizeFailed'),
@@ -263,7 +263,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             const resizedImage = await resizeImage(dataUrl)
             setImage(resizedImage)
         } catch (err) {
-            console.error('Image resizing failed:', err)
+            console.debug('[AiDiagnosticsModal] Image resizing failed:', err)
             setImage(dataUrl) // fallback to original
             getUISnapshot().addNotification({
                 message: t('common.imageResizeFailed'),

@@ -87,7 +87,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(
                                     className="text-[10px] text-slate-500 mt-0.5"
                                     title={`${t('plantsView.vpd.leafTemp')}: ${leafTemp.toFixed(1)}°C`}
                                 >
-                                    🍃 {leafTemp.toFixed(1)}°
+                                    {leafTemp.toFixed(1)}°
                                 </p>
                             )}
                             {altitudeM > 0 && (
@@ -95,7 +95,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(
                                     className="text-[10px] text-slate-500 mt-0.5"
                                     title={`${t('plantsView.vpd.altitudeCorrection')} ×${altitudeCorrectionFactor(altitudeM).toFixed(2)} @ ${altitudeM} m`}
                                 >
-                                    ⛰ {altitudeM} m
+                                    {altitudeM} m
                                 </p>
                             )}
                         </div>

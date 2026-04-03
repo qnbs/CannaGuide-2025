@@ -179,7 +179,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
                 setIsLoading(false)
             })
             .catch((error: unknown) => {
-                console.error('[InlineStrainSelector] Failed to load strains.', error)
+                console.debug('[InlineStrainSelector] Failed to load strains.', error)
                 setLoadError(t('strainsView.inlineSelector.loadError'))
                 setIsLoading(false)
             })

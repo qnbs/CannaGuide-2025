@@ -57,7 +57,7 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
                 }
             })
             .catch((err) => {
-                console.error('[VPDChart] runDailyVPD error:', err)
+                console.debug('[VPDChart] runDailyVPD error:', err)
                 if (mounted) setError(true)
             })
 

@@ -98,35 +98,39 @@ const GrowReminderPanelComponent: React.FC = () => {
                 </span>
             </div>
 
-            <div className="mt-4 flex flex-col sm:flex-row gap-3">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <Button
                     onClick={handleEnable}
                     disabled={isEnabling}
                     variant={permission === 'granted' ? 'secondary' : 'primary'}
-                    className="w-full"
+                    className="w-full min-w-0"
                 >
-                    <PhosphorIcons.Bell className="w-5 h-5 mr-2" />
-                    {permission === 'granted'
-                        ? t('plantsView.growReminderPanel.enabledBtn')
-                        : t('plantsView.growReminderPanel.enableBtn')}
+                    <PhosphorIcons.Bell className="w-5 h-5 mr-2 shrink-0" />
+                    <span className="truncate">
+                        {permission === 'granted'
+                            ? t('plantsView.growReminderPanel.enabledBtn')
+                            : t('plantsView.growReminderPanel.enableBtn')}
+                    </span>
                 </Button>
                 <Button
                     onClick={handleCheckNow}
                     variant="secondary"
-                    className="w-full"
+                    className="w-full min-w-0"
                     disabled={permission !== 'granted'}
                 >
-                    <PhosphorIcons.Lightning className="w-5 h-5 mr-2" />
-                    {t('plantsView.growReminderPanel.checkNowBtn')}
+                    <PhosphorIcons.Lightning className="w-5 h-5 mr-2 shrink-0" />
+                    <span className="truncate">
+                        {t('plantsView.growReminderPanel.checkNowBtn')}
+                    </span>
                 </Button>
                 <Button
                     onClick={() => downloadICalFile(reminders)}
                     variant="secondary"
-                    className="w-full"
+                    className="w-full min-w-0"
                     disabled={reminders.length === 0}
                 >
-                    <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2" />
-                    {t('plantsView.growReminderPanel.exportIcal')}
+                    <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2 shrink-0" />
+                    <span className="truncate">{t('plantsView.growReminderPanel.exportIcal')}</span>
                 </Button>
             </div>
 

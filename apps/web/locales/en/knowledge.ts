@@ -708,6 +708,86 @@ export const knowledgeView = {
                     },
                 },
             },
+            firstGrow: {
+                title: 'Your First Grow',
+                description: 'Everything you need for a successful first harvest, step by step.',
+                step1Title: 'Setup & Equipment',
+                step1Desc:
+                    'Learn what you need to get started: tent, light, fan, pots, and medium.',
+                step2Title: 'Germination',
+                step2Desc:
+                    'How to germinate seeds reliably using the paper towel method or direct-in-medium planting.',
+                step3Title: 'Vegetative Growth',
+                step3Desc:
+                    'Nurturing your seedling into a strong vegetative plant. Watering, nutrients, and light basics.',
+                step4Title: 'Flowering',
+                step4Desc:
+                    'Triggering and managing the flowering phase. Light schedule, nutrient switch, and bud development.',
+                step5Title: 'Harvest & Cure',
+                step5Desc:
+                    'Reading trichomes, timing your harvest, and the crucial drying and curing process.',
+                step6Title: 'Practice VPD',
+                step6Desc:
+                    'Use the VPD Calculator to understand how temperature and humidity affect your plant.',
+            },
+            environment: {
+                title: 'Environment Mastery',
+                description: 'Deep dive into temperature, humidity, VPD, CO2, and airflow.',
+                step1Title: 'Temperature & Humidity Basics',
+                step1Desc: 'Optimal ranges for each growth stage and how to control them.',
+                step2Title: 'VPD Deep Dive',
+                step2Desc:
+                    'Understanding Vapor Pressure Deficit and using it to maximize plant health and yield.',
+                step3Title: 'Airflow & CO2',
+                step3Desc:
+                    'Why airflow matters, how to set up circulation and exhaust fans, and CO2 basics.',
+                step4Title: 'Calculator Practice',
+                step4Desc:
+                    'Run the VPD calculator across different stages to build intuition for ideal conditions.',
+            },
+            nutrients: {
+                title: 'Nutrient Mastery',
+                description: 'Master macro and micronutrients, EC, pH, and deficiency diagnosis.',
+                step1Title: 'pH Guide',
+                step1Desc: 'Understanding pH and how to control it for optimal nutrient uptake.',
+                step2Title: 'Nutrient Calculator',
+                step2Desc:
+                    'Use the nutrient ratio calculator to plan your feed schedule by growth stage.',
+                step3Title: 'Calcium Deficiency',
+                step3Desc:
+                    'Identify and treat calcium deficiency -- one of the most common grow problems.',
+                step4Title: 'Nutrient Burn',
+                step4Desc:
+                    'Recognize and recover from overfeeding your plants with too many nutrients.',
+                step5Title: 'Disease Atlas Practice',
+                step5Desc:
+                    'Browse the disease atlas to identify nutrient-related issues and find treatments.',
+            },
+            pests: {
+                title: 'Pest & Disease Control',
+                description: 'Identify, treat, and prevent the most common pests and diseases.',
+                step1Title: 'Pest Management Guide',
+                step1Desc:
+                    'Learn integrated pest management strategies to keep your grow free from pests.',
+                step2Title: 'Spider Mites',
+                step2Desc: 'Identify and treat spider mites -- the most destructive grow pest.',
+                step3Title: 'Powdery Mildew',
+                step3Desc: 'Recognize and treat powdery mildew before it destroys your crop.',
+            },
+            training: {
+                title: 'Advanced Plant Training',
+                description:
+                    'LST, topping, super cropping, SCROG, and manifolding for maximum yield.',
+                step1Title: 'Training Fundamentals',
+                step1Desc:
+                    'Learn the principles of plant training and how to apply LST and topping techniques.',
+                step2Title: 'Topping vs. LST',
+                step2Desc:
+                    'Compare topping and low-stress training to find the best approach for your grow.',
+                step3Title: 'Overwatering Recovery',
+                step3Desc:
+                    'Recognize and fix overwatering -- a common issue when training dense canopies.',
+            },
         },
     },
     growTech: {

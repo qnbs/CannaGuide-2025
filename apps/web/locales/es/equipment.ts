@@ -325,6 +325,42 @@ export const equipmentView = {
             clear: 'Borrar',
             save: 'Guardar este resultado',
         },
+        budget: {
+            title: 'Calculadora de presupuesto de equipos',
+            description:
+                'Estima los costes totales de compra para todas las categorias de equipos.',
+            tent: 'Carpa de cultivo',
+            light: 'Iluminacion',
+            ventilation: 'Ventilacion',
+            circulationFan: 'Ventilador de circulacion',
+            pots: 'Macetas',
+            soil: 'Sustrato / Tierra',
+            nutrients: 'Nutrientes',
+            extras: 'Extras y monitoreo',
+            total: 'Presupuesto total',
+            currency: 'EUR',
+        },
+        aiPanel: {
+            title: 'Recomendacion rapida IA',
+            description:
+                'Genera una lista de compras a partir de las dimensiones y la potencia de luz actuales.',
+            generate: 'Generar lista de compras',
+            generating: 'Generando...',
+            error: 'No se pudo generar la recomendacion. Intentalo de nuevo.',
+            exportError: 'La exportacion a PDF fallo. Intentalo de nuevo.',
+            exportPdf: 'Exportar PDF',
+            proTip: 'Consejo profesional',
+            category: 'Categoria',
+            product: 'Producto',
+            price: 'Precio',
+            rationale: 'Justificacion',
+            total: 'Total',
+        },
+        iot: {
+            syncButton: 'Usar datos del sensor',
+            synced: 'IoT en vivo',
+            noData: 'No hay datos del sensor disponibles',
+        },
     },
     growShops: {
         region: {

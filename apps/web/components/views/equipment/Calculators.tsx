@@ -11,7 +11,9 @@ import { EcPhPlannerCalculator } from './calculators/EcPhPlannerCalculator'
 import { Co2Calculator } from './calculators/Co2Calculator'
 import { HumidityDeficitCalculator } from './calculators/HumidityDeficitCalculator'
 import { LightHangingCalculator } from './calculators/LightHangingCalculator'
+import { BudgetCalculator } from './calculators/BudgetCalculator'
 import { WhatIfSandbox } from './WhatIfSandbox'
+import { AiEquipmentPanel } from './AiEquipmentPanel'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 type CalculatorType =
@@ -26,6 +28,7 @@ type CalculatorType =
     | 'co2'
     | 'humidityDeficit'
     | 'lightHanging'
+    | 'budget'
 
 const calculatorList: {
     id: CalculatorType
@@ -99,6 +102,12 @@ const calculatorList: {
         icon: <PhosphorIcons.Ruler />,
         titleKey: 'equipmentView.calculators.lightHanging.title',
     },
+    {
+        id: 'budget',
+        Component: BudgetCalculator,
+        icon: <PhosphorIcons.Sparkle />,
+        titleKey: 'equipmentView.calculators.budget.title',
+    },
 ]
 
 export const Calculators: React.FC = () => {
@@ -125,6 +134,7 @@ export const Calculators: React.FC = () => {
                     </div>
                 </details>
             ))}
+            <AiEquipmentPanel />
         </div>
     )
 }

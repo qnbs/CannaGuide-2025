@@ -1,4 +1,4 @@
-import React, { useState, useMemo, memo } from 'react'
+import React, { useState, useMemo, memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CalculatorSection, Input, Select, ResultDisplay } from './common'
 import {
@@ -8,6 +8,8 @@ import {
     type HumidityDeficitInput,
     type HdGrowthStage,
 } from '@/services/equipmentCalculatorService'
+import { sensorStore } from '@/stores/sensorStore'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 const STAGES: HdGrowthStage[] = ['seedling', 'vegetative', 'earlyFlower', 'lateFlower']
 
@@ -16,11 +18,21 @@ export const HumidityDeficitCalculator: React.FC = memo(() => {
     const [tempC, setTempC] = useState(25)
     const [rhPercent, setRhPercent] = useState(60)
     const [stage, setStage] = useState<HdGrowthStage>('vegetative')
+    const [iotSynced, setIotSynced] = useState(false)
 
     const stageOptions = STAGES.map((s) => ({
         value: s,
         label: t(`plants.stage.${s}`),
     }))
+
+    const handleIotSync = useCallback(() => {
+        const reading = sensorStore.getState().currentReading
+        if (reading) {
+            setTempC(Math.round(reading.temperatureC * 10) / 10)
+            setRhPercent(Math.round(reading.humidityPercent))
+            setIotSynced(true)
+        }
+    }, [])
 
     const result = useMemo(() => {
         const input: HumidityDeficitInput = { tempC, rhPercent }
@@ -49,6 +61,23 @@ export const HumidityDeficitCalculator: React.FC = memo(() => {
                 value={stage}
                 onChange={(e) => setStage(e.target.value as HdGrowthStage)}
             />
+            <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-400">
+                    {t('equipmentView.calculators.humidityDeficit.temperature')} /{' '}
+                    {t('equipmentView.calculators.humidityDeficit.humidity')}
+                </span>
+                <button
+                    type="button"
+                    onClick={handleIotSync}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-700/60 hover:bg-slate-600/60 text-xs text-slate-300 transition-colors ring-1 ring-inset ring-white/10"
+                    title={t('equipmentView.calculators.iot.syncButton')}
+                >
+                    <PhosphorIcons.WifiHigh className="w-3.5 h-3.5" />
+                    {iotSynced
+                        ? t('equipmentView.calculators.iot.synced')
+                        : t('equipmentView.calculators.iot.syncButton')}
+                </button>
+            </div>
             <div className="grid grid-cols-2 gap-4">
                 <Input
                     label={t('equipmentView.calculators.humidityDeficit.temperature')}
@@ -58,7 +87,10 @@ export const HumidityDeficitCalculator: React.FC = memo(() => {
                     min={-10}
                     max={50}
                     step={0.5}
-                    onChange={(e) => setTempC(Number(e.target.value))}
+                    onChange={(e) => {
+                        setIotSynced(false)
+                        setTempC(Number(e.target.value))
+                    }}
                     tooltip={t('equipmentView.calculators.humidityDeficit.temperatureTooltip')}
                 />
                 <Input
@@ -69,7 +101,10 @@ export const HumidityDeficitCalculator: React.FC = memo(() => {
                     min={1}
                     max={100}
                     step={1}
-                    onChange={(e) => setRhPercent(Number(e.target.value))}
+                    onChange={(e) => {
+                        setIotSynced(false)
+                        setRhPercent(Number(e.target.value))
+                    }}
                 />
             </div>
 

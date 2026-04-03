@@ -1023,6 +1023,15 @@ export const knowledgeView = {
             content:
                 'CannaGuide integriert bereits viele dieser 2026-Technologien: Echtzeit-VPD-Simulation mit Höhenkorrektur, KI-gestützte Diagnostik (Cloud + Lokal), Was-wäre-wenn-Sandbox-Experimente, IoT-Sensorintegration (MQTT + BLE), dynamische Spektrumserkennung im Lichtrechner, Aeroponik als Anbaumedium, Post-Harvest-Simulation mit Terpen-Tracking und einen 3-Schicht-lokalen KI-Fallback für vollständig offline Betrieb.',
         },
+        searchPlaceholder: 'Technologien filtern...',
+        matchToGrow: 'Passt zu meinem Setup',
+        matchScore: 'Match-Score',
+        noMatchResults: 'Keine Technologie entspricht deiner Suche.',
+        aiAnalyze: 'KI-Empfehlung',
+        aiAnalyzing: 'Analysiere...',
+        aiInsightLabel: 'KI-Einblick',
+        noSetupAvailable:
+            'Konfiguriere dein Grow-Setup in den Einstellungen, um deinen persönlichen Match-Score zu sehen.',
     },
 }
 

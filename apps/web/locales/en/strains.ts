@@ -793,6 +793,14 @@ export const strainsView = {
         },
         conclusion:
             'Genetics in 2026 are more precise, functional and diverse -- away from hype, toward real plant perfection. Complex terps, balanced hybrids, strong autos and polyploid lines deliver massive gains in quality, yield and consistency.',
+        searchPlaceholder: 'Filter trends...',
+        matchToGrow: 'Match to My Grow',
+        matchScore: 'Match Score',
+        noMatchResults: 'No trends match your search.',
+        aiAnalyze: 'AI Analysis',
+        aiAnalyzing: 'Analyzing...',
+        aiInsightLabel: 'AI Insight',
+        noPlantSelected: 'Select a plant to see your personal match score.',
     },
 }
 

@@ -1660,6 +1660,19 @@ PLANT CONTEXT:
 
         return this.generateText(prompt, lang, 'getNutrientRecommendation')
     }
+
+    async getTrendAnalysis(prompt: string, title: string, lang: Language): Promise<AIResponse> {
+        return this.runWithLocalFallback<AIResponse>(
+            async () => {
+                const text = await this.generateText(prompt, lang, 'getTrendAnalysis')
+                return { title, content: text }
+            },
+            async (localAiService) => {
+                const rec = await localAiService.getEquipmentRecommendation(prompt, lang)
+                return { title, content: rec.proTip, confidence: 0.7 }
+            },
+        )
+    }
 }
 
 export const geminiService = new GeminiService()

@@ -1,8 +1,15 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import DOMPurify from 'dompurify'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import type { GrowTechCategory } from '@/types'
+import type { AIResponse, GrowTechCategory } from '@/types'
+import { useAppSelector } from '@/stores/store'
+import { selectSettings, selectLanguage } from '@/stores/selectors'
+import {
+    calculateGrowTechMatchScore,
+    getRelatedGeneticForGrowTech,
+} from '@/services/trendsEcosystemService'
+import { aiService } from '@/services/aiFacade'
 
 const CATEGORIES: Array<{
     id: GrowTechCategory
@@ -30,13 +37,32 @@ const categoryIcons = {
     sustainability: PhosphorIcons.Leafy,
 }
 
-export const GrowTechView: React.FC = () => {
+export const GrowTechView: React.FC = React.memo(() => {
     const { t } = useTranslation()
     const [expandedCategory, setExpandedCategory] = useState<GrowTechCategory | null>(null)
+    const [filterQuery, setFilterQuery] = useState('')
+    const [aiResult, setAiResult] = useState<AIResponse | null>(null)
+    const [aiLoading, setAiLoading] = useState(false)
+
+    const settings = useAppSelector(selectSettings)
+    const growSetup = settings.defaults.growSetup
+    const lang = useAppSelector(selectLanguage)
 
     const toggleCategory = (id: GrowTechCategory) => {
         setExpandedCategory((prev) => (prev === id ? null : id))
+        setAiResult(null)
     }
+
+    const handleAiAnalyze = useCallback(async (): Promise<void> => {
+        setAiLoading(true)
+        setAiResult(null)
+        try {
+            const result = await aiService.getGrowTechRecommendation(growSetup, lang)
+            setAiResult(result)
+        } finally {
+            setAiLoading(false)
+        }
+    }, [growSetup, lang])
 
     const impactData = useMemo(
         () => [
@@ -68,6 +94,16 @@ export const GrowTechView: React.FC = () => {
         [t],
     )
 
+    const filteredCategories = useMemo(() => {
+        const q = filterQuery.trim().toLowerCase()
+        if (!q) return CATEGORIES
+        return CATEGORIES.filter(
+            (c) =>
+                t(`knowledgeView.growTech.categories.${c.id}.title`).toLowerCase().includes(q) ||
+                t(`knowledgeView.growTech.categories.${c.id}.tagline`).toLowerCase().includes(q),
+        )
+    }, [filterQuery, t])
+
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Header */}
@@ -91,23 +127,85 @@ export const GrowTechView: React.FC = () => {
                 {t('knowledgeView.growTech.intro')}
             </div>
 
+            {/* Search filter */}
+            <div className="relative">
+                <PhosphorIcons.MagnifyingGlass
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                    aria-hidden="true"
+                />
+                <input
+                    type="search"
+                    value={filterQuery}
+                    onChange={(e) => setFilterQuery(e.target.value)}
+                    placeholder={t('knowledgeView.growTech.searchPlaceholder')}
+                    className="w-full pl-9 pr-9 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    aria-label={t('knowledgeView.growTech.searchPlaceholder')}
+                />
+                {filterQuery && (
+                    <button
+                        type="button"
+                        onClick={() => setFilterQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                        aria-label={t('common.clearSearch')}
+                    >
+                        <PhosphorIcons.X className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                )}
+            </div>
+
+            {/* AI Setup Recommendation button */}
+            <div>
+                <button
+                    type="button"
+                    onClick={() => void handleAiAnalyze()}
+                    disabled={aiLoading}
+                    className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    <PhosphorIcons.Sparkle className="w-4 h-4" aria-hidden="true" />
+                    {aiLoading
+                        ? t('knowledgeView.growTech.aiAnalyzing')
+                        : t('knowledgeView.growTech.aiAnalyze')}
+                </button>
+                {aiResult !== null && (
+                    <div className="mt-2 p-3 rounded-lg bg-purple-950/30 border border-purple-800/30 text-sm text-purple-200 leading-relaxed">
+                        <span className="font-semibold block mb-1">
+                            {t('knowledgeView.growTech.aiInsightLabel')}
+                        </span>
+                        {aiResult.content}
+                    </div>
+                )}
+            </div>
+
             {/* Technology Categories */}
-            <div className="space-y-3">
-                {CATEGORIES.map((cat) => {
+            <div className="space-y-3" role="list" aria-label={t('knowledgeView.growTech.title')}>
+                {filteredCategories.length === 0 && (
+                    <p className="text-sm text-slate-400 text-center py-4">
+                        {t('knowledgeView.growTech.noMatchResults')}
+                    </p>
+                )}
+                {filteredCategories.map((cat) => {
                     const Icon = categoryIcons[cat.iconKey]
                     const isExpanded = expandedCategory === cat.id
+                    const panelId = `grow-tech-panel-${cat.id}`
+                    const triggerId = `grow-tech-trigger-${cat.id}`
                     return (
                         <div
                             key={cat.id}
+                            role="listitem"
                             className="bg-slate-800/60 rounded-lg border border-slate-700/50 overflow-hidden"
                         >
                             <button
+                                id={triggerId}
                                 type="button"
                                 onClick={() => toggleCategory(cat.id)}
                                 className="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-slate-700/30 transition-colors"
                                 aria-expanded={isExpanded}
+                                aria-controls={panelId}
                             >
-                                <Icon className={`w-6 h-6 flex-shrink-0 ${cat.color}`} />
+                                <Icon
+                                    className={`w-6 h-6 flex-shrink-0 ${cat.color}`}
+                                    aria-hidden="true"
+                                />
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-sm font-semibold text-slate-100">
                                         {t(`knowledgeView.growTech.categories.${cat.id}.title`)}
@@ -116,14 +214,37 @@ export const GrowTechView: React.FC = () => {
                                         {t(`knowledgeView.growTech.categories.${cat.id}.tagline`)}
                                     </p>
                                 </div>
+                                {(() => {
+                                    const match = calculateGrowTechMatchScore(cat.id, growSetup)
+                                    const matchColor =
+                                        match.score >= 80
+                                            ? 'bg-emerald-900/50 text-emerald-300 border-emerald-700/50'
+                                            : match.score >= 60
+                                              ? 'bg-amber-900/50 text-amber-300 border-amber-700/50'
+                                              : 'bg-slate-700/50 text-slate-400 border-slate-600/50'
+                                    return (
+                                        <span
+                                            className={`text-xs px-2 py-0.5 rounded border font-mono shrink-0 ${matchColor}`}
+                                            title={`${t('knowledgeView.growTech.matchScore')}: ${match.score}% -- ${match.reason}`}
+                                        >
+                                            {match.score}%
+                                        </span>
+                                    )
+                                })()}
                                 <PhosphorIcons.ChevronDown
                                     className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${
                                         isExpanded ? 'rotate-180' : ''
                                     }`}
+                                    aria-hidden="true"
                                 />
                             </button>
                             {isExpanded && (
-                                <div className="px-3 sm:px-4 pb-4 space-y-3 animate-fade-in">
+                                <div
+                                    id={panelId}
+                                    role="region"
+                                    aria-labelledby={triggerId}
+                                    className="px-3 sm:px-4 pb-4 space-y-3 animate-fade-in"
+                                >
                                     <p
                                         className="text-sm text-slate-300 leading-relaxed"
                                         dangerouslySetInnerHTML={{
@@ -152,11 +273,27 @@ export const GrowTechView: React.FC = () => {
                                     </div>
                                     {/* Pro Tip */}
                                     <div className="flex items-start gap-2 bg-primary-600/10 border border-primary-500/20 rounded-md p-3">
-                                        <PhosphorIcons.LightbulbFilament className="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0" />
+                                        <PhosphorIcons.LightbulbFilament
+                                            className="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0"
+                                            aria-hidden="true"
+                                        />
                                         <p className="text-xs text-primary-300">
                                             {t(`knowledgeView.growTech.categories.${cat.id}.tip`)}
                                         </p>
                                     </div>
+                                    {/* Related genetic trends */}
+                                    {getRelatedGeneticForGrowTech(cat.id).length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {getRelatedGeneticForGrowTech(cat.id).map((genetic) => (
+                                                <span
+                                                    key={genetic}
+                                                    className="text-xs px-2 py-0.5 rounded-full bg-pink-900/40 border border-pink-700/40 text-pink-300"
+                                                >
+                                                    {genetic}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -210,7 +347,10 @@ export const GrowTechView: React.FC = () => {
             {/* CannaGuide integration note */}
             <div className="bg-gradient-to-r from-primary-600/10 to-purple-600/10 border border-primary-500/20 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                    <PhosphorIcons.Sparkle className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
+                    <PhosphorIcons.Sparkle
+                        className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0"
+                        aria-hidden="true"
+                    />
                     <div>
                         <h4 className="text-sm font-bold text-primary-300 mb-1">
                             {t('knowledgeView.growTech.cannaGuideIntegration.title')}
@@ -223,7 +363,7 @@ export const GrowTechView: React.FC = () => {
             </div>
         </div>
     )
-}
+})
 
 GrowTechView.displayName = 'GrowTechView'
 

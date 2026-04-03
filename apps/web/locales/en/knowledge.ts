@@ -1004,6 +1004,14 @@ export const knowledgeView = {
             content:
                 'CannaGuide integrates many of these 2026 technologies: real-time VPD simulation with altitude correction, AI-powered diagnostics (cloud + local), what-if sandbox experiments, IoT sensor integration (MQTT + BLE), dynamic spectrum awareness in the lighting calculator, aeroponics as a grow medium, post-harvest simulation with terpene tracking, and a 3-layer local AI fallback for fully offline operation.',
         },
+        searchPlaceholder: 'Filter technologies...',
+        matchToGrow: 'Match to My Setup',
+        matchScore: 'Match Score',
+        noMatchResults: 'No technologies match your search.',
+        aiAnalyze: 'AI Recommendation',
+        aiAnalyzing: 'Analyzing...',
+        aiInsightLabel: 'AI Insight',
+        noSetupAvailable: 'Configure your grow setup in Settings to see your personal match score.',
     },
 }
 

@@ -415,6 +415,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/nativeBridgeService.ts`                  | Unified native notification dispatch (Tauri/Capacitor/Web)                                                         |
 | `apps/web/services/strainLookupService.ts`                  | 5-source Strain Intelligence Lookup cascade + entourage effect science                                             |
 | `apps/web/services/indexedDbMonitorService.ts`              | IndexedDB quota inspection, per-store entry counts, health warnings                                                |
+| `apps/web/services/trendsEcosystemService.ts`               | Cross-hub match scores (genetic trends <-> grow tech), 5-min cache, static relationship maps                       |
 | `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                                     |
 | `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                                    |
 | `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                                     |

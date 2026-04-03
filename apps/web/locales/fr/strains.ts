@@ -606,83 +606,89 @@ export const strainsView = {
         poor: 'Poor',
     },
     geneticTrends: {
-        badge2026: 'Genetics 2026',
-        title: 'Cannabis Genetic Trends 2026',
+        badge2026: 'G\u00e9n\u00e9tique 2026',
+        title: 'Tendances G\u00e9n\u00e9tiques du Cannabis 2026',
         subtitle:
-            'Precision, complexity, functionality and sustainability -- the new standard in cannabis breeding.',
-        intro: 'The cannabis genetics industry is experiencing a renaissance in 2026. After years of pure THC chasing and candy-flavored crosses, breeders and consumers now demand terpene-rich, balanced, high-yielding and adaptable genetics.',
-        examplesLabel: 'Key Examples',
-        relevanceLabel: 'Relevance 2026',
+            'Pr\u00e9cision, complexit\u00e9, fonctionnalit\u00e9 et durabilit\u00e9 -- le nouveau standard en s\u00e9lection de cannabis.',
+        intro: "L'industrie de la g\u00e9n\u00e9tique du cannabis conna\u00eet une v\u00e9ritable renaissance en 2026. Apr\u00e8s des ann\u00e9es de course au THC maximum et aux croisements aux saveurs sucr\u00e9es, les cultivateurs et les consommateurs exigent d\u00e9sormais une g\u00e9n\u00e9tique riche en terp\u00e8nes, \u00e9quilibr\u00e9e, \u00e0 haut rendement et adaptable -- des autofloraisons ultra-rapides aux super-plantes polyploides et aux revivals de landraces. Plus de 1 200 nouvelles vari\u00e9t\u00e9s enregistr\u00e9es en 2026 seulement marquent le tournant vers la s\u00e9lection de pr\u00e9cision.",
+        examplesLabel: 'Exemples Cl\u00e9s',
+        relevanceLabel: 'Pertinence 2026',
         categories: {
             terpeneDiversity: {
-                title: 'Terpene Diversity',
-                tagline: 'Complex, savory and gassy aromas replace candy profiles',
+                title: 'Diversit\u00e9 des Terp\u00e8nes',
+                tagline:
+                    'Des ar\u00f4mes complexes, savoureux et gazeux remplacent les profils sucr\u00e9s',
                 content:
-                    'The big shift in 2026: Away from sweet candy-gas profiles toward dark, deep, funky and multi-layered terpenes.',
-                examples: 'Whitethorn Rose, Lantz, Pave-Candy variants (Compound Genetics)',
-                relevance: 'High',
+                    'Le grand changement de 2026 : loin des profils candy-gas sucr\u00e9s (descendants Gelato/Zkittlez) vers des terp\u00e8nes sombres, profonds, funky et multicouches. Le candy-gas violet reste fort mais plus mature (cerise noire, gaufre \u00e0 la vanille, p\u00e9trole). Les OG gazeux et les terp\u00e8nes savoureux font leur retour avec citron-pin-carburant, les revivals de fromage et les notes terreuses/\u00e9pic\u00e9es/herbales domin\u00e9es par le b\u00e9ta-caryophyll\u00e8ne et l\'humulene. Les terp\u00e8nes fonctionnels comme le THCV ("herbe r\u00e9gime") pour l\'\u00e9nergie sans faim gagnent du terrain.',
+                examples:
+                    'Whitethorn Rose (Paradise Punch x Lemon OG), Lantz (Green Lantern x Ridgeline Runtz), variantes Pave-Candy (Compound Genetics), Bubble Tea (Z-Terp)',
+                relevance: '\u00c9lev\u00e9e',
             },
             ultraPotency: {
-                title: 'Ultra-High Potency & Full-Spectrum',
-                tagline: '33-37% THC with terpene synergy and minor cannabinoids',
+                title: 'Ultra-Haute Puissance et Spectre Complet',
+                tagline: '33-37% THC avec synergie de terp\u00e8nes et cannaibino\u00efdes mineurs',
                 content:
-                    'THC values continue to explode with new records at 33-37%. Focus shifts to terpene synergy plus minor cannabinoids.',
-                examples: 'Hyper Za (35%), Puff Pastry (33%), Future #1 by Anesia Seeds (37%)',
-                relevance: 'High',
+                    "Les valeurs de THC continuent d'exploser avec de nouveaux records \u00e0 33-37%. Mais le focus se d\u00e9place du THC pur vers la synergie de terp\u00e8nes plus les cannabino\u00efdes mineurs (CBG, CBN, THCV) pour des effets cibl\u00e9s comme le sommeil, le soulagement de la douleur, la concentration et le microdosage. Les g\u00e9n\u00e9tiques hash-dumper (5%+ de rendement en r\u00e9sine) dominent chez les cultivateurs recherchant une production maximale de r\u00e9sine.",
+                examples:
+                    'Hyper Za (35%, gazeux-sucr\u00e9, violet, givr\u00e9), Puff Pastry (33% sativa-dominant, chocolat-cannelle-agrumes), Future #1 par Anesia Seeds (37%)',
+                relevance: '\u00c9lev\u00e9e',
             },
             balancedHybrids: {
-                title: 'Balanced Hybrids',
-                tagline: 'Calm focus without sedation or jitters -- intentional consumption',
+                title: 'Hybrides \u00c9quilibr\u00e9s',
+                tagline:
+                    'Concentration calme sans s\u00e9dation ni nervosit\u00e9 -- consommation intentionnelle',
                 content:
-                    'Hybrids dominate in 2026 with balanced effects for everyday use and intentional consumption.',
+                    'Les hybrides dominent en 2026 avec des effets \u00e9quilibr\u00e9s pour un usage quotidien, les situations sociales et la consommation intentionnelle. Les hybrides \u00e0 tendance sativa deviennent "plus lumineux", les indica-dominants "plus profonds". Les consommateurs recherchent des cultivars qui offrent des effets fonctionnels sp\u00e9cifiques plut\u00f4t que la puissance maximale.',
                 examples:
-                    'Durban Z (energy focus), Lemon Cherry Gelato, balanced 1:1 CBD:THC cultivars',
-                relevance: 'Very High',
+                    'Durban Z (focus \u00e9nerg\u00e9tique), Lemon Cherry Gelato (\u00e9l\u00e9vation + fusion corporelle), cultivars \u00e9quilibr\u00e9s 1:1 CBD:THC pour usage th\u00e9rapeutique',
+                relevance: 'Tr\u00e8s \u00c9lev\u00e9e',
             },
             autofloweringRevolution: {
-                title: 'Autoflowering Revolution',
-                tagline: 'Photoperiod quality in 75-90 days -- no longer a compromise',
+                title: 'R\u00e9volution des Autofloraisons',
+                tagline: 'Qualit\u00e9 photop\u00e9riode en 75-90 jours -- plus un compromis',
                 content:
-                    'Modern autoflowers are no longer a compromise in 2026. Advanced backcrossing techniques make them more potent and terpene-rich.',
-                examples: 'Royal Gorilla Auto, Blueberry x Big Bud Auto, Pluto Cut Auto',
-                relevance: 'Very High',
+                    'Les autofloraisons modernes ne sont plus un compromis en 2026. Les techniques avanc\u00e9es de r\u00e9tro-croisement les rendent plus puissantes, plus productives et riches en terp\u00e8nes. Avec des cycles de 75-90 jours, les cultivateurs peuvent r\u00e9aliser 2-3 r\u00e9coltes par an. Elles conviennent parfaitement aux d\u00e9butants, sont r\u00e9sistantes et id\u00e9ales pour les cultivateurs amateurs cherchant des r\u00e9sultats rapides.',
+                examples:
+                    'Royal Gorilla Auto, Blueberry x Big Bud Auto, Pluto Cut Auto -- tous avec des r\u00e9sultats authentiques de qualit\u00e9 photop\u00e9riode',
+                relevance: 'Tr\u00e8s \u00c9lev\u00e9e',
             },
             advancedBreeding: {
-                title: 'Advanced Breeding & Polyploidy',
+                title: 'S\u00e9lection Avanc\u00e9e et Polyploid\u00ede',
                 tagline:
-                    'Triploid, tetraploid and hexaploid plants with up to 65% more cannabinoids',
+                    "Plantes triploides, t\u00e9traploides et hexaploides avec jusqu'\u00e0 65% plus de cannabino\u00efdes",
                 content:
-                    'The absolute game-changer: Polyploid plants deliver up to 65% more cannabinoids, higher biomass, and better resistance.',
+                    "Le v\u00e9ritable game-changer : les plantes polyploides (triploides, t\u00e9traploides, hexaploides) cr\u00e9\u00e9es par traitement \u00e0 la colchicine ou par Tesoro Genetics apportent jusqu'\u00e0 65% de cannabino\u00efdes suppl\u00e9mentaires, une biomasse plus \u00e9lev\u00e9e (+60% de hauteur, 2,7x de rendement floral) et une meilleure r\u00e9sistance. Les triploides sont st\u00e9riles au pollen, emp\u00eachant les graines dans les salles de culture. Parmi les autres tendances : hybrides F1, s\u00e9lection assist\u00e9e par marqueurs et cartographie g\u00e9nomique pour des g\u00e9n\u00e9tiques stables et prot\u00e9geables.",
                 examples:
-                    'Tesoro Triploids, F1 hybrid programs, marker-assisted breeding pipelines',
+                    "Triploides Tesoro, programmes d'hybrides F1, pipelines de s\u00e9lection assist\u00e9e par marqueurs, croisements landraces adapt\u00e9s au climat",
                 relevance: 'Game-Changer',
             },
             landraceRevival: {
-                title: 'Landrace Revival',
-                tagline: 'Authentic, functional genetics from original growing regions',
+                title: 'Revival des Landraces',
+                tagline:
+                    "G\u00e9n\u00e9tique authentique et fonctionnelle des r\u00e9gions d'origine",
                 content:
-                    'A growing movement to preserve and revitalize original landrace genetics from Afghanistan, Morocco, Colombia, Thailand, and South Africa.',
+                    "Un mouvement croissant pour pr\u00e9server et revitaliser la g\u00e9n\u00e9tique originale des landraces des r\u00e9gions comme l'Afghanistan, le Maroc, la Colombie, la Tha\u00eflande et l'Afrique du Sud. Ces cultivars ancestraux offrent des profils de terp\u00e8nes uniques, une r\u00e9sistance naturelle aux nuisibles et des effets fonctionnels rarement trouv\u00e9s dans les hybrides modernes. Les s\u00e9lectionneurs les croisent avec de la g\u00e9n\u00e9tique moderne pour cr\u00e9er des hybrides r\u00e9sistants au climat et riches en terp\u00e8nes.",
                 examples:
-                    'Afghan landrace x modern indica, Thai sativa revivals, Colombian Gold preservation',
-                relevance: 'Medium-High',
+                    'Landrace afghan x indica moderne, revivals de sativa tha\u00ef, croisements de plante de haschich marocaine, pr\u00e9servation de Colombian Gold',
+                relevance: 'Moyenne-\u00c9lev\u00e9e',
             },
         },
         table: {
-            trend: 'Trend',
+            trend: 'Tendance',
             description: 'Description',
-            examples: 'Examples',
-            relevance: 'Relevance 2026',
+            examples: 'Exemples',
+            relevance: 'Pertinence 2026',
         },
         implications: {
-            title: 'What This Means for Growers',
+            title: 'Ce que Cela Signifie pour les Cultivateurs',
             homeGrow:
-                'Start with stable autoflowers or polyploid seeds for maximum yields with minimal effort.',
+                "Commencez avec des autofloraisons stables ou des graines polyploides pour des rendements maximaux avec un minimum d'effort.",
             quality:
-                'Choose terpene-rich genetics for better flavor and effect -- quality beats quantity.',
+                "Choisissez une g\u00e9n\u00e9tique riche en terp\u00e8nes pour plus de saveur et d'effet -- la qualit\u00e9 surpasse la quantit\u00e9.",
             cannaGuide:
-                'CannaGuide tracks these trends with 800+ strains, chemovar classification, terpene and cannabinoid profiles.',
+                'CannaGuide suit ces tendances avec 800+ vari\u00e9t\u00e9s, classification chemovar, profils de terp\u00e8nes et de cannabino\u00efdes -- parfait pour votre prochain plan de s\u00e9lection.',
         },
         conclusion:
-            'Genetics in 2026 are more precise, functional and diverse -- away from hype, toward real plant perfection.',
+            "La g\u00e9n\u00e9tique en 2026 est plus pr\u00e9cise, fonctionnelle et diverse -- loin du hype, vers la vraie perfection v\u00e9g\u00e9tale. Des terp\u00e8nes complexes, des hybrides \u00e9quilibr\u00e9s, de solides autofloraisons et des lign\u00e9es polyploides offrent d'\u00e9normes gains en qualit\u00e9, rendement et consistance.",
     },
 }

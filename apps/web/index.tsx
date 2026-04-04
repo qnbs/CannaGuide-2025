@@ -299,6 +299,12 @@ const mountHydratedApp = async () => {
         const { useIotStore } = await import('@/stores/useIotStore')
         await useIotStore.getState().loadPersistedPassword()
 
+        // Initialize WorkerBus state-sync and telemetry
+        const { initWorkerStateSync } = await import('@/services/workerStateSyncService')
+        const { initWorkerTelemetry } = await import('@/services/workerTelemetryService')
+        initWorkerStateSync()
+        initWorkerTelemetry(hydratedStore.dispatch)
+
         // Initialize proactive smart coach (monitors sensor thresholds -> AI advice)
         const { proactiveCoachService } = await import('@/services/proactiveCoachService')
         proactiveCoachService.init(hydratedStore)

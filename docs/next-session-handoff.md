@@ -2,6 +2,79 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 44) -- Voice Sprint Part 2: Hotword + Dictation + Tests + Dead Code Cleanup
+
+**Status: v1.3.0-beta. V-03/V-04/V-05 complete. 1346 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 44)
+
+1. **Phase 0 -- Dead Code Cleanup**:
+    - Deleted `services/strainCurationService.ts` (412 lines) -- never invoked at runtime
+    - Deleted `workers/strainHydration.worker.ts` (201 lines) -- never invoked at runtime
+    - Deleted `services/strainCurationService.test.ts` -- test for removed service
+    - Confirmed `localAiDiagnosisService.ts` IS used (imported by `localAI.ts` line 45) -- kept
+
+2. **V-03 Hotword Wake Detection** (`VoiceControl.tsx`):
+    - Second continuous `SpeechRecognition` instance (`hotwordRecRef`) runs in background
+    - Regex `/hey\s+canna(guide)?/i` on transcripts triggers 5-second activation window
+    - `hotwordActive` state flag; timer auto-resets after 5s
+    - `requestMicrophonePermission()` called before mic activation
+    - `aria-live="polite"` on status span; `aria-label` and `aria-pressed` on mic button
+    - Guard: `settings.voiceControl.hotwordEnabled` (default `false`)
+
+3. **V-04 Grow-Log Dictation** (`useDictation.ts` + `LogActionModal.tsx`):
+    - New `hooks/useDictation.ts`: `{ isListening, transcript, error, start, stop, reset }`
+    - `getSpeechRecognitionAPI()` reads `window.SpeechRecognition` lazily (not module-level)
+    - Typed errors: `'notAllowed'` / `'noSpeech'` / `'generic'`
+    - `LogActionModal.tsx`: microphone icon button beside Notes textarea; live transcript overlaid; `plants.voiceDictation.*` keys consumed
+
+4. **V-05 Voice Tests**:
+    - New `services/voiceCommandRegistry.test.ts` (33 tests): two-pass matcher, EN+DE aliases, fuzzy scoring, edge cases -- all green
+    - New `hooks/useDictation.test.ts` (15 tests): class-based constructable `MockSpeechRecognition`, lifecycle, transcript, error, reset/stop -- all green
+
+5. **i18n** (all 5 locales):
+    - `common.ts` (EN/DE): `voiceControl.hotwordDetected`
+    - `plants.ts` (EN/DE/ES/FR/NL): `voiceDictation.{startDictation,stopDictation,dictating,dictationError,dictationUnsupported}`
+
+6. **Native Bridge** (`nativeBridgeService.ts`):
+    - New `requestMicrophonePermission(): Promise<boolean>` with Tauri/Capacitor/Browser routing
+    - `src-tauri/capabilities/default.json` extended with `microphone:default`
+
+### Verified Metrics (Session 44)
+
+- Tests: 1346 passing, 0 failures (1323 baseline + 33 voiceCommandRegistry + 15 useDictation - 25 strainCuration)
+- TypeScript: clean (RTK TS2719 filtered)
+- Build: clean (152 precached entries)
+- V-03: Done, V-04: Done, V-05: Done
+
+### Next Steps (Session 45 -- Wire-up Sprint)
+
+- **IndexedDB Monitor UI**: Wire `indexedDbMonitorService` into Settings view (quota bar + per-store counts)
+- **I-01 i18n CI gate**: Add `check-i18n-completeness.mjs` as a CI step (`ci-i18n.yml` or into existing `ci.yml`)
+- **Rate-limiter UX toast**: When AI rate limit hit, show user-facing toast (currently silent 429 drop)
+- **Fix vi.mock warnings**: Move nested `vi.mock()` calls in `voiceCommandRegistry.test.ts` to top level (Vitest deprecation warning)
+- **V-06 (deferred)**: Full offline TTS/STT ONNX pipeline -- remains deferred to v2.0
+
+### Planned Executions
+
+#### Execution 45: Wire-up Sprint (IndexedDB Monitor UI + i18n CI + rate-limiter toast)
+
+- Scope: `SettingsView.tsx` or new tab for storage quota, `ci-i18n.yml` workflow, `geminiService.ts`/`aiProviderService.ts` 429 toast via `useAlertsStore`, `voiceCommandRegistry.test.ts` mock hoisting fix
+- Prerequisites: Session 44 merged
+- Estimated complexity: Medium (3 independent sub-tasks)
+
+#### Execution 46: R-02 GPU Manager v2 + R-01 Streaming Generalization
+
+- Scope: `localAiWebGpuService.ts` -- CLIP as 3rd consumer; `localAiStreamingService.ts` -- generalize to all local text calls
+- Prerequisites: Session 45 merged
+
+#### Execution 47: GitHub Release Version Sync + Capacitor Decision
+
+- Scope: `.release-please-manifest.json` sync to `1.3.0-beta`; Capacitor mobile build decision (keep/drop workflow)
+- Note: `.release-please-manifest.json` shows `1.3.0-alpha`, `package.json` shows `1.3.0-beta` -- gap to resolve
+
+---
+
 ## Latest Session (2026-04-06, Session 43) -- Voice CommandPalette Bridge + TTS Mentor Wiring
 
 **Status: v1.3.0-beta. Voice system P1 gaps closed. 23 voice commands live. TTS auto-reads Mentor responses. 1323 tests passing. TypeScript clean.**

@@ -524,4 +524,10 @@ export const plantsView = {
     advisorArchive: {
         searchPlaceholder: 'Zoek antwoorden van adviseur...',
     },
+    voiceDictation: {
+        start: 'Spraakdictaat starten',
+        stop: 'Spraakdictaat stoppen',
+        listening: 'Dicteren... spreek nu.',
+        inserted: 'Spraakinvoer ingevoegd.',
+    },
 }

@@ -575,4 +575,10 @@ export const plantsView = {
     advisorArchive: {
         searchPlaceholder: 'Berater-Antworten suchen...',
     },
+    voiceDictation: {
+        start: 'Spracheingabe starten',
+        stop: 'Spracheingabe stoppen',
+        listening: 'Diktat aktiv... bitte sprechen.',
+        inserted: 'Spracheingabe eingefügt.',
+    },
 }

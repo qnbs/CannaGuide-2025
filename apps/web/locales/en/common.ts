@@ -184,6 +184,7 @@ export const common = {
         processing: 'Processing: "{{transcript}}"',
         toggle: 'Toggle Voice Control',
         assistantThinking: 'Thinking...',
+        hotwordDetected: 'Hotword detected -- speak now.',
         noPlantContext: 'No active plant context is available for the voice assistant.',
         assistantFailed: 'Voice assistant request failed.',
         errors: {

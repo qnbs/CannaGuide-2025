@@ -30,6 +30,7 @@ import { getUISnapshot } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { resizeImage } from '@/services/imageService'
 import { photoTimelineService } from '@/services/photoTimelineService'
+import { useDictation, isDictationSupported } from '@/hooks/useDictation'
 
 interface LogActionModalProps {
     plant: Plant
@@ -51,6 +52,14 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
     const [image, setImage] = useState<string | null>(null)
     const [isCameraOpen, setIsCameraOpen] = useState(false)
     const cameraButtonRef = useRef<HTMLButtonElement>(null)
+
+    const {
+        isListening: isDictating,
+        transcript,
+        error: dictError,
+        start: startDictation,
+        stop: stopDictation,
+    } = useDictation((text) => setNotes(text))
 
     const handleSubmit = async () => {
         let entryType: JournalEntryType
@@ -348,14 +357,51 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         </>
                     )}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-300 mb-1">
-                            {t('common.notes')}
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-sm font-semibold text-slate-300">
+                                {t('common.notes')}
+                            </label>
+                            {isDictationSupported && (
+                                <Button
+                                    variant="ghost"
+                                    className={`!p-1.5 rounded-full transition-colors duration-200 ${
+                                        isDictating
+                                            ? 'text-red-400 animate-pulse bg-red-500/20'
+                                            : 'text-slate-400 hover:text-slate-200'
+                                    }`}
+                                    onClick={isDictating ? stopDictation : startDictation}
+                                    aria-label={
+                                        isDictating
+                                            ? t('plants.voiceDictation.stop')
+                                            : t('plants.voiceDictation.start')
+                                    }
+                                    title={
+                                        isDictating
+                                            ? t('plants.voiceDictation.stop')
+                                            : t('plants.voiceDictation.start')
+                                    }
+                                    aria-pressed={isDictating}
+                                >
+                                    <PhosphorIcons.Microphone className="w-4 h-4" />
+                                </Button>
+                            )}
+                        </div>
+                        {dictError && (
+                            <p className="text-xs text-red-400 mb-1">
+                                {t(`voiceControl.errors.${dictError}`)}
+                            </p>
+                        )}
                         <Textarea
-                            value={notes}
+                            value={isDictating && transcript ? transcript : notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            className="min-h-[120px]"
+                            className={`min-h-[120px] ${isDictating ? 'border-red-400/60' : ''}`}
+                            aria-label={t('common.notes')}
                         />
+                        {isDictating && (
+                            <p className="text-xs text-red-400 mt-1">
+                                {t('plants.voiceDictation.listening')}
+                            </p>
+                        )}
                     </div>
                 </div>
             </Modal>

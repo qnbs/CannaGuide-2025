@@ -11,10 +11,16 @@
  * - Telemetry hooks (latency, pending count, error tracking)
  * - Configurable default timeout
  * - Safe dispose with resource-leak prevention
+ * - AbortController support (signal option) -- cancel in-flight requests
+ * - Transferable Object support -- zero-copy ArrayBuffer/ImageBitmap transfers
+ * - onDispatchComplete hook -- automatic Redux/Zustand state sync via workerStateSyncService
  *
  * Usage:
  *   workerBus.register('genealogy', new Worker(...))
  *   const result = await workerBus.dispatch<LayoutResult>('genealogy', 'LAYOUT', payload)
+ *   // With abort:
+ *   const ctrl = new AbortController()
+ *   await workerBus.dispatch('inference', 'CLASSIFY', data, { signal: ctrl.signal })
  */
 
 import type { WorkerRequest, WorkerResponse } from '@/types/workerBus.types'
@@ -30,6 +36,10 @@ interface PendingRequest<T = unknown> {
     timer: ReturnType<typeof setTimeout>
     startedAt: number
     workerName: string
+    /** Message type stored for hook events and telemetry. */
+    type: string
+    /** Removes the AbortSignal listener when the request settles. */
+    abortCleanup?: (() => void) | undefined
 }
 
 interface QueuedDispatch {
@@ -37,6 +47,8 @@ interface QueuedDispatch {
     type: string
     payload: unknown
     timeoutMs: number
+    signal?: AbortSignal | undefined
+    transferable?: Transferable[] | undefined
     resolve: (value: unknown) => void
     reject: (reason: unknown) => void
 }
@@ -49,6 +61,32 @@ export interface DispatchOptions {
     retries?: number
     /** Base delay for exponential backoff in ms (default: 500). */
     retryDelayMs?: number
+    /**
+     * AbortSignal to cancel the in-flight request before or during execution.
+     * Rejects with WorkerErrorCode.CANCELLED when the signal fires.
+     */
+    signal?: AbortSignal | undefined
+    /**
+     * Transferable objects whose ownership is moved to the worker thread,
+     * avoiding a structured-clone memory copy (e.g. ArrayBuffer, ImageBitmap).
+     */
+    transferable?: Transferable[] | undefined
+}
+
+/**
+ * Event emitted after every WorkerBus dispatch settles (success or failure).
+ * Subscribe via workerBus.onDispatchComplete() to wire results to Redux/Zustand
+ * without manual "await then dispatch" patterns in calling code.
+ */
+export interface DispatchCompleteEvent {
+    workerName: string
+    type: string
+    latencyMs: number
+    success: boolean
+    /** Present on success -- the resolved data value. */
+    data?: unknown
+    /** Present on failure -- human-readable error description. */
+    error?: string | undefined
 }
 
 /** Telemetry snapshot for a single worker. */
@@ -106,6 +144,7 @@ class WorkerBusImpl {
     private readonly activeCount = new Map<string, number>()
     private readonly queues = new Map<string, QueuedDispatch[]>()
     private readonly concurrencyLimits = new Map<string, number>()
+    private readonly dispatchHooks: Array<(event: DispatchCompleteEvent) => void> = []
     private defaultTimeoutMs = DEFAULT_TIMEOUT_MS
     private disposed = false
 
@@ -131,6 +170,21 @@ class WorkerBusImpl {
     }
 
     /**
+     * Subscribe to all dispatch completion events (success and failure).
+     * Returns a cleanup function -- call it to unsubscribe.
+     *
+     * Used by workerStateSyncService and workerTelemetryService to automatically
+     * route worker results to Redux/Zustand without manual dispatch-after-await.
+     */
+    onDispatchComplete(handler: (event: DispatchCompleteEvent) => void): () => void {
+        this.dispatchHooks.push(handler)
+        return () => {
+            const idx = this.dispatchHooks.indexOf(handler)
+            if (idx !== -1) this.dispatchHooks.splice(idx, 1)
+        }
+    }
+
+    /**
      * Register a named worker instance. If a worker with the same name already
      * exists, it is terminated and replaced.
      */
@@ -152,8 +206,17 @@ class WorkerBusImpl {
             for (const [id, entry] of this.pending) {
                 if (entry.workerName === name) {
                     clearTimeout(entry.timer)
+                    entry.abortCleanup?.()
                     tel.totalErrors++
-                    entry.reject(new Error(`[WorkerBus] Worker "${name}" error: ${event.message}`))
+                    const errMsg = `[WorkerBus] Worker "${name}" error: ${event.message}`
+                    this.fireDispatchHooks({
+                        workerName: name,
+                        type: entry.type,
+                        latencyMs: performance.now() - entry.startedAt,
+                        success: false,
+                        error: errMsg,
+                    })
+                    entry.reject(new Error(errMsg))
                     this.pending.delete(id)
                 }
             }
@@ -177,6 +240,7 @@ class WorkerBusImpl {
         for (const [id, entry] of this.pending) {
             if (entry.workerName === name) {
                 clearTimeout(entry.timer)
+                entry.abortCleanup?.()
                 entry.reject(new Error(`[WorkerBus] Worker "${name}" unregistered`))
                 this.pending.delete(id)
             }
@@ -219,6 +283,8 @@ class WorkerBusImpl {
         const timeoutMs = opts.timeoutMs ?? this.defaultTimeoutMs
         const retries = opts.retries ?? 0
         const retryDelayMs = opts.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS
+        const signal = opts.signal
+        const transferable = opts.transferable
 
         if (retries > 0) {
             return this.dispatchWithRetry<TResponse>(
@@ -228,9 +294,18 @@ class WorkerBusImpl {
                 timeoutMs,
                 retries,
                 retryDelayMs,
+                signal,
+                transferable,
             )
         }
-        return this.dispatchOnce<TResponse>(workerName, type, payload, timeoutMs)
+        return this.dispatchOnce<TResponse>(
+            workerName,
+            type,
+            payload,
+            timeoutMs,
+            signal,
+            transferable,
+        )
     }
 
     /**
@@ -300,6 +375,7 @@ class WorkerBusImpl {
             this.unregister(name)
         }
         telemetryMap.clear()
+        this.dispatchHooks.splice(0)
     }
 
     /**
@@ -319,7 +395,20 @@ class WorkerBusImpl {
         type: string,
         payload: unknown,
         timeoutMs: number,
+        signal?: AbortSignal | undefined,
+        transferable?: Transferable[] | undefined,
     ): Promise<TResponse> {
+        // Pre-flight abort check -- reject immediately if already aborted
+        if (signal?.aborted) {
+            return Promise.reject(
+                new WorkerBusError(
+                    `Request to "${workerName}" was cancelled before dispatch`,
+                    WorkerErrorCode.CANCELLED,
+                    workerName,
+                ),
+            )
+        }
+
         const worker = this.workers.get(workerName)
         if (!worker) {
             return Promise.reject(
@@ -335,7 +424,7 @@ class WorkerBusImpl {
         const active = this.activeCount.get(workerName) ?? 0
 
         if (active >= limit) {
-            // Queue the request (backpressure)
+            // Queue the request (backpressure) -- preserve signal and transferable
             return new Promise<TResponse>((resolve, reject) => {
                 let queue = this.queues.get(workerName)
                 if (!queue) {
@@ -357,13 +446,23 @@ class WorkerBusImpl {
                     type,
                     payload,
                     timeoutMs,
+                    signal,
+                    transferable,
                     resolve: resolve as (v: unknown) => void,
                     reject,
                 })
             })
         }
 
-        return this.sendToWorker<TResponse>(worker, workerName, type, payload, timeoutMs)
+        return this.sendToWorker<TResponse>(
+            worker,
+            workerName,
+            type,
+            payload,
+            timeoutMs,
+            signal,
+            transferable,
+        )
     }
 
     private sendToWorker<TResponse>(
@@ -372,18 +471,35 @@ class WorkerBusImpl {
         type: string,
         payload: unknown,
         timeoutMs: number,
+        signal?: AbortSignal | undefined,
+        transferable?: Transferable[] | undefined,
     ): Promise<TResponse> {
         const messageId = `${workerName}:${crypto.randomUUID()}`
         const tel = getTelemetry(workerName)
         tel.totalDispatches++
         this.activeCount.set(workerName, (this.activeCount.get(workerName) ?? 0) + 1)
+        const startedAt = performance.now()
 
         return new Promise<TResponse>((resolve, reject) => {
-            const timer = setTimeout(() => {
+            const settleReject = (err: unknown): void => {
+                clearTimeout(timer)
                 this.pending.delete(messageId)
-                tel.totalTimeouts++
+                pendingEntry.abortCleanup?.()
+                const errMsg = err instanceof Error ? err.message : String(err)
+                this.fireDispatchHooks({
+                    workerName,
+                    type,
+                    latencyMs: performance.now() - startedAt,
+                    success: false,
+                    error: errMsg,
+                })
                 this.decrementActive(workerName)
-                reject(
+                reject(err)
+            }
+
+            const timer = setTimeout(() => {
+                tel.totalTimeouts++
+                settleReject(
                     new WorkerBusError(
                         `Request to "${workerName}" timed out after ${timeoutMs}ms`,
                         WorkerErrorCode.TIMEOUT,
@@ -392,16 +508,39 @@ class WorkerBusImpl {
                 )
             }, timeoutMs)
 
-            this.pending.set(messageId, {
+            // AbortSignal handler -- cancel on abort
+            let abortCleanup: (() => void) | undefined
+            if (signal !== undefined) {
+                const onAbort = (): void => {
+                    settleReject(
+                        new WorkerBusError(
+                            `Request to "${workerName}" was cancelled`,
+                            WorkerErrorCode.CANCELLED,
+                            workerName,
+                        ),
+                    )
+                }
+                signal.addEventListener('abort', onAbort, { once: true })
+                abortCleanup = () => signal.removeEventListener('abort', onAbort)
+            }
+
+            const pendingEntry: PendingRequest = {
                 resolve: resolve as (v: unknown) => void,
                 reject,
                 timer,
-                startedAt: performance.now(),
+                startedAt,
                 workerName,
-            })
+                type,
+                abortCleanup,
+            }
+            this.pending.set(messageId, pendingEntry)
 
             const request: WorkerRequest = { messageId, type, payload }
-            worker.postMessage(request)
+            if (transferable !== undefined && transferable.length > 0) {
+                worker.postMessage(request, transferable)
+            } else {
+                worker.postMessage(request)
+            }
         })
     }
 
@@ -424,13 +563,33 @@ class WorkerBusImpl {
             const item = queue.shift()
             if (!item) break
 
+            // Pre-flight abort check for queued items
+            if (item.signal?.aborted) {
+                item.reject(
+                    new WorkerBusError(
+                        `Request to "${workerName}" was cancelled while queued`,
+                        WorkerErrorCode.CANCELLED,
+                        workerName,
+                    ),
+                )
+                continue
+            }
+
             const worker = this.workers.get(workerName)
             if (!worker) {
                 item.reject(new Error(`[WorkerBus] No worker registered with name "${workerName}"`))
                 continue
             }
 
-            this.sendToWorker(worker, workerName, item.type, item.payload, item.timeoutMs)
+            this.sendToWorker(
+                worker,
+                workerName,
+                item.type,
+                item.payload,
+                item.timeoutMs,
+                item.signal,
+                item.transferable,
+            )
                 .then(item.resolve)
                 .catch(item.reject)
         }
@@ -443,19 +602,37 @@ class WorkerBusImpl {
         timeoutMs: number,
         retries: number,
         retryDelayMs: number,
+        signal?: AbortSignal | undefined,
+        transferable?: Transferable[] | undefined,
     ): Promise<TResponse> {
         let lastError: Error | undefined
         for (let attempt = 0; attempt <= retries; attempt++) {
+            // Abort check before each attempt
+            if (signal?.aborted) {
+                throw new WorkerBusError(
+                    `Request to "${workerName}" was cancelled`,
+                    WorkerErrorCode.CANCELLED,
+                    workerName,
+                )
+            }
             try {
-                return await this.dispatchOnce<TResponse>(workerName, type, payload, timeoutMs)
+                return await this.dispatchOnce<TResponse>(
+                    workerName,
+                    type,
+                    payload,
+                    timeoutMs,
+                    signal,
+                    transferable,
+                )
             } catch (err) {
                 lastError = err instanceof Error ? err : new Error(String(err))
-                // Do not retry if worker is missing, bus disposed, or queue full
+                // Do not retry if worker is missing, bus disposed, queue full, or cancelled
                 if (lastError instanceof WorkerBusError) {
                     const nonRetryableCodes: WorkerErrorCode[] = [
                         WorkerErrorCode.NOT_REGISTERED,
                         WorkerErrorCode.DISPOSED,
                         WorkerErrorCode.QUEUE_FULL,
+                        WorkerErrorCode.CANCELLED,
                     ]
                     if (nonRetryableCodes.includes(lastError.code)) {
                         throw lastError
@@ -484,16 +661,24 @@ class WorkerBusImpl {
         }
         this.pending.delete(data.messageId)
         clearTimeout(entry.timer)
+        entry.abortCleanup?.()
 
         const tel = getTelemetry(entry.workerName)
-        const latency = performance.now() - entry.startedAt
-        tel.latencySum += latency
+        const latencyMs = performance.now() - entry.startedAt
+        tel.latencySum += latencyMs
         tel.latencyCount++
 
         this.decrementActive(entry.workerName)
 
         if (data.error) {
             tel.totalErrors++
+            this.fireDispatchHooks({
+                workerName: entry.workerName,
+                type: entry.type,
+                latencyMs,
+                success: false,
+                error: data.error,
+            })
             entry.reject(
                 new WorkerBusError(
                     data.error,
@@ -502,7 +687,24 @@ class WorkerBusImpl {
                 ),
             )
         } else {
+            this.fireDispatchHooks({
+                workerName: entry.workerName,
+                type: entry.type,
+                latencyMs,
+                success: true,
+                data: data.data,
+            })
             entry.resolve(data.data)
+        }
+    }
+
+    private fireDispatchHooks(event: DispatchCompleteEvent): void {
+        for (const hook of this.dispatchHooks) {
+            try {
+                hook(event)
+            } catch (err) {
+                console.debug('[WorkerBus] onDispatchComplete hook threw:', err)
+            }
         }
     }
 }

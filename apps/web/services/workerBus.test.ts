@@ -420,3 +420,157 @@ describe('WorkerBus', () => {
         }
     })
 })
+
+// ---------------------------------------------------------------------------
+// New P1 features
+// ---------------------------------------------------------------------------
+
+describe('WorkerBus -- onDispatchComplete hook', () => {
+    let w: MockWorker
+
+    beforeEach(() => {
+        w = new MockWorker()
+        try {
+            workerBus.unregister('hook-worker')
+        } catch {
+            /* ignore */
+        }
+        workerBus.register('hook-worker', w as unknown as Worker)
+    })
+
+    afterEach(() => {
+        try {
+            workerBus.unregister('hook-worker')
+        } catch {
+            /* ignore */
+        }
+    })
+
+    it('fires with success=true and correct fields after resolve', async () => {
+        const events: import('./workerBus').DispatchCompleteEvent[] = []
+        const cleanup = workerBus.onDispatchComplete((e) => events.push(e))
+        const p = workerBus.dispatch<string>('hook-worker', 'PING', {})
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'pong')
+        const result = await p
+        expect(result).toBe('pong')
+        expect(events).toHaveLength(1)
+        expect(events[0]?.success).toBe(true)
+        expect(events[0]?.workerName).toBe('hook-worker')
+        expect(events[0]?.type).toBe('PING')
+        expect(events[0]?.data).toBe('pong')
+        expect(typeof events[0]?.latencyMs).toBe('number')
+        cleanup()
+    })
+
+    it('fires with success=false on worker error response', async () => {
+        const events: import('./workerBus').DispatchCompleteEvent[] = []
+        const cleanup = workerBus.onDispatchComplete((e) => events.push(e))
+        const p = workerBus.dispatch('hook-worker', 'FAIL', {}).catch(() => undefined)
+        w.respondError((w.lastMessage as { messageId: string }).messageId, 'boom')
+        await p
+        expect(events[0]?.success).toBe(false)
+        expect(events[0]?.error).toBe('boom')
+        cleanup()
+    })
+
+    it('cleanup removes the hook before dispatch', async () => {
+        const events: import('./workerBus').DispatchCompleteEvent[] = []
+        const cleanup = workerBus.onDispatchComplete((e) => events.push(e))
+        cleanup()
+        const p = workerBus.dispatch<number>('hook-worker', 'NUM', {})
+        w.respond((w.lastMessage as { messageId: string }).messageId, 7)
+        await p
+        expect(events).toHaveLength(0)
+    })
+})
+
+describe('WorkerBus -- AbortController', () => {
+    let w: MockWorker
+
+    beforeEach(() => {
+        w = new MockWorker()
+        try {
+            workerBus.unregister('abort-worker')
+        } catch {
+            /* ignore */
+        }
+        workerBus.register('abort-worker', w as unknown as Worker)
+    })
+
+    afterEach(() => {
+        try {
+            workerBus.unregister('abort-worker')
+        } catch {
+            /* ignore */
+        }
+    })
+
+    it('rejects with CANCELLED when signal already aborted', async () => {
+        const { WorkerErrorCode } = await import('@/types/workerBus.types')
+        const ctrl = new AbortController()
+        ctrl.abort()
+        await expect(
+            workerBus.dispatch('abort-worker', 'OP', {}, { signal: ctrl.signal }),
+        ).rejects.toMatchObject({ code: WorkerErrorCode.CANCELLED })
+    })
+
+    it('rejects with CANCELLED when signal aborts mid-flight', async () => {
+        const { WorkerErrorCode } = await import('@/types/workerBus.types')
+        const ctrl = new AbortController()
+        const p = workerBus.dispatch(
+            'abort-worker',
+            'SLOW',
+            {},
+            {
+                signal: ctrl.signal,
+                timeoutMs: 30_000,
+            },
+        )
+        ctrl.abort()
+        await expect(p).rejects.toMatchObject({ code: WorkerErrorCode.CANCELLED })
+    })
+
+    it('resolves normally when signal aborts after settlement', async () => {
+        const ctrl = new AbortController()
+        const p = workerBus.dispatch<string>('abort-worker', 'FAST', {}, { signal: ctrl.signal })
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+        const result = await p
+        ctrl.abort()
+        expect(result).toBe('done')
+    })
+})
+
+describe('WorkerBus -- Transferable objects', () => {
+    let w: MockWorker
+
+    beforeEach(() => {
+        w = new MockWorker()
+        try {
+            workerBus.unregister('transfer-worker')
+        } catch {
+            /* ignore */
+        }
+        workerBus.register('transfer-worker', w as unknown as Worker)
+    })
+
+    afterEach(() => {
+        try {
+            workerBus.unregister('transfer-worker')
+        } catch {
+            /* ignore */
+        }
+    })
+
+    it('calls postMessage with transferable array when provided', async () => {
+        const buffer = new ArrayBuffer(16)
+        const spy = vi.spyOn(w, 'postMessage')
+        const p = workerBus.dispatch('transfer-worker', 'MOVE', buffer, { transferable: [buffer] })
+        const rawCall = spy.mock.calls[0] as unknown
+        const callArgs = rawCall as [unknown, Transferable[]]
+        expect(Array.isArray(callArgs[1])).toBe(true)
+        expect(callArgs[1]).toContain(buffer)
+        // Settle
+        w.respond((w.lastMessage as { messageId: string }).messageId, null)
+        await p
+    })
+})

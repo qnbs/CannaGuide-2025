@@ -14,6 +14,7 @@ import breedingReducer from './slices/breedingSlice'
 import sandboxReducer from './slices/sandboxSlice'
 import genealogyReducer from './slices/genealogySlice'
 import nutrientPlannerReducer from './slices/nutrientPlannerSlice'
+import workerMetricsReducer from './slices/workerMetricsSlice'
 import { geminiApi } from './api'
 import {
     listenerMiddleware,
@@ -40,6 +41,8 @@ const rootReducer = combineReducers({
     sandbox: sandboxReducer,
     genealogy: genealogyReducer,
     nutrientPlanner: nutrientPlannerReducer,
+    // Runtime-only -- excluded from stateToSave in indexedDBStorage
+    workerMetrics: workerMetricsReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,
 })
 
@@ -52,7 +55,7 @@ const makeStore = (preloadedState?: Partial<RootState> | undefined) =>
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {
-                    ignoredPaths: ['geminiApi'],
+                    ignoredPaths: ['geminiApi', 'workerMetrics'],
                 },
             })
                 .concat(geminiApi.middleware)

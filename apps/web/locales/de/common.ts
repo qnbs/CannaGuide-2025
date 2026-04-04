@@ -188,6 +188,7 @@ export const common = {
         processing: 'Verarbeite: "{{transcript}}"',
         toggle: 'Sprachsteuerung umschalten',
         assistantThinking: 'Denke nach...',
+        hotwordDetected: 'Aktivierungswort erkannt -- bitte sprechen.',
         noPlantContext: 'Für den Sprachassistenten ist kein aktiver Pflanzenkontext verfügbar.',
         assistantFailed: 'Sprachassistent-Anfrage fehlgeschlagen.',
         errors: {

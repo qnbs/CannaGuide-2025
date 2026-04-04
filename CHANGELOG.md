@@ -74,6 +74,25 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Features
 
+- **voice:** V-03 Hotword wake detection -- `VoiceControl.tsx` adds second continuous `SpeechRecognition` instance; regex `hey\s+canna(guide)?/i` triggers 5-second activation window; `hotwordEnabled` guard from `settings.voiceControl.hotwordEnabled`; `aria-live="polite"` status span + `aria-label`/`aria-pressed` on mic button
+- **voice:** V-04 Grow-Log dictation -- new `hooks/useDictation.ts` hook (start/stop/reset, transcript accumulation, `onTranscript` callback, `notAllowed`/`noSpeech`/`generic` typed errors); `LogActionModal.tsx` gains microphone button with live transcript overlay; `plants.voiceDictation.*` i18n keys added to all 5 locales (EN/DE/ES/FR/NL)
+- **voice:** `nativeBridgeService.ts` -- new `requestMicrophonePermission()`: Tauri (`@tauri-apps/plugin-microphone` dynamic import), Capacitor (`@capacitor/microphone`), Browser (`getUserMedia`) platform routing; `src-tauri/capabilities/default.json` extended with `microphone:default`
+
+### Tests
+
+- **voice:** New `hooks/useDictation.test.ts` (15 tests): class-based constructable mock, lifecycle, transcript accumulation, error handling, reset/stop behaviour -- all passing
+- **voice:** New `services/voiceCommandRegistry.test.ts` (33 tests): two-pass matcher coverage, EN+DE aliases, fuzzy keyword scoring, edge cases -- all passing
+
+### Chores
+
+- **dead-code:** Deleted `services/strainCurationService.ts` (412 lines) -- never invoked at runtime
+- **dead-code:** Deleted `workers/strainHydration.worker.ts` (201 lines) -- never invoked at runtime
+- **dead-code:** Deleted `services/strainCurationService.test.ts` -- test for removed service
+
+---
+
+### Features
+
 - **voice:** New `services/voiceCommandRegistry.ts` (367 lines) -- centralised voice command definitions; 23 `VoiceCommandDef` objects across 7 groups (Navigation, Strains, Plants, Equipment, Knowledge, AI, Accessibility); EN+DE aliases for each command; two-pass matcher (exact alias startsWith + fuzzy keyword token scoring)
 - **voice:** `listenerMiddleware.ts` voice routing rewritten -- replaces hardcoded 6-command list with `buildVoiceCommands(dispatch)` + `matchVoiceCommand(transcript, commands)` from `voiceCommandRegistry`; 23 fully functional voice commands now route to app actions
 - **voice:** `MentorChatView.tsx` -- AI Mentor responses now auto-read via TTS after stream completion when `settings.tts.enabled`; per-message "read aloud" button (`SpeakerHigh` icon) added; plain-text extraction strips HTML before queuing

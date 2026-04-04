@@ -153,11 +153,53 @@ export async function sendNotification(options: NativeNotificationOptions): Prom
 }
 
 // ---------------------------------------------------------------------------
+// Microphone permission
+// ---------------------------------------------------------------------------
+
+/**
+ * Request microphone access for the current platform.
+ * On web this uses the getUserMedia API; on Tauri and Capacitor the OS-level
+ * dialog is triggered through the native plugin where available.
+ * Returns true if microphone access is granted.
+ */
+export async function requestMicrophonePermission(): Promise<boolean> {
+    const platform = detectPlatform()
+
+    try {
+        if (platform === 'tauri') {
+            // Tauri v2: microphone access is gated by the OS -- probe via getUserMedia
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            stream.getTracks().forEach((t) => t.stop())
+            return true
+        }
+
+        if (platform === 'capacitor') {
+            // Capacitor: use underlying getUserMedia (plugin-free fallback)
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            stream.getTracks().forEach((t) => t.stop())
+            return true
+        }
+
+        // Browser
+        if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            stream.getTracks().forEach((t) => t.stop())
+            return true
+        }
+    } catch {
+        console.debug('[NativeBridge] Microphone permission request failed')
+    }
+
+    return false
+}
+
+// ---------------------------------------------------------------------------
 // Public facade
 // ---------------------------------------------------------------------------
 
 export const nativeBridgeService = {
     detectPlatform,
     requestNotificationPermission,
+    requestMicrophonePermission,
     sendNotification,
 }

@@ -474,6 +474,11 @@ export const settingsView = {
     data: {
         title: 'Data Management',
         storageInsights: 'Storage Insights',
+        dbStore: {
+            title: 'IndexedDB Store Details',
+            loading: 'Loading store data...',
+            empty: 'Store information unavailable.',
+        },
         backupAndRestore: 'Backup & Restore',
         dangerZone: 'Danger Zone',
         importData: 'Import Data',

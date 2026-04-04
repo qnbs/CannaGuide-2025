@@ -500,6 +500,7 @@ export const knowledgeView = {
     lernpfad: {
         title: 'Leerpaden',
         progress: '{{done}} van {{total}} stappen voltooid',
+        progressLabel: '{{done}} van {{total}} stappen',
         filterByLevel: 'Filteren op niveau',
         allLevels: 'Alle niveaus',
         completed: 'Voltooid',

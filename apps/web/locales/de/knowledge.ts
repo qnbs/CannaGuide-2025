@@ -667,6 +667,7 @@ export const knowledgeView = {
     lernpfad: {
         title: 'Lernpfade',
         progress: '{{done}} von {{total}} Schritten abgeschlossen',
+        progressLabel: '{{done}} von {{total}} Schritten',
         filterByLevel: 'Nach Level filtern',
         allLevels: 'Alle Level',
         completed: 'Abgeschlossen',

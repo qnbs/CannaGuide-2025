@@ -517,6 +517,11 @@ export const plantsView = {
             vegetative: 'Vegetatief',
             flowering: 'Bloei',
             tooHigh: 'Te hoog',
+            optimal: 'Optimaal',
+            danger: 'Gevaar',
         },
+    },
+    advisorArchive: {
+        searchPlaceholder: 'Zoek antwoorden van adviseur...',
     },
 }

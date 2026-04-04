@@ -28,10 +28,16 @@ const formatTime = (ts: number): string => {
 const formatTooltipLabel = (label: ReactNode): ReactNode =>
     typeof label === 'number' ? formatTime(label) : String(label ?? '')
 
-const VPD_ZONES = {
-    low: { min: 0, max: 0.4, color: 'rgba(59,130,246,0.08)', label: 'Too Low' },
-    optimal: { min: 0.8, max: 1.2, color: 'rgba(34,197,94,0.10)', label: 'Optimal' },
-    high: { min: 1.6, max: 2.5, color: 'rgba(239,68,68,0.10)', label: 'Danger' },
+const VPD_ZONE_COLORS = {
+    low: 'rgba(59,130,246,0.08)',
+    optimal: 'rgba(34,197,94,0.10)',
+    high: 'rgba(239,68,68,0.10)',
+} as const
+
+const VPD_ZONE_RANGES = {
+    low: { min: 0, max: 0.4 },
+    optimal: { min: 0.8, max: 1.2 },
+    high: { min: 1.6, max: 2.5 },
 } as const
 
 const CHART_MARGIN = { top: 8, right: 12, left: 0, bottom: 0 } as const
@@ -125,8 +131,17 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
 TemperatureHumidityChart.displayName = 'TemperatureHumidityChart'
 
 const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
-    const { t } = useTranslation()
+    const { t } = useTranslation('plants')
     const filtered = useMemo(() => data.filter((d) => d.vpd != null), [data])
+
+    const vpdZoneLabels = useMemo(
+        () => ({
+            low: t('plantsView.environment.vpdZone.tooLow', { defaultValue: 'Too Low' }),
+            optimal: t('plantsView.environment.vpdZone.optimal', { defaultValue: 'Optimal' }),
+            high: t('plantsView.environment.vpdZone.danger', { defaultValue: 'Danger' }),
+        }),
+        [t],
+    )
 
     if (filtered.length === 0) return null
 
@@ -150,34 +165,34 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     {/* VPD zone backgrounds */}
                     <ReferenceArea
-                        y1={VPD_ZONES.low.min}
-                        y2={VPD_ZONES.low.max}
-                        fill={VPD_ZONES.low.color}
+                        y1={VPD_ZONE_RANGES.low.min}
+                        y2={VPD_ZONE_RANGES.low.max}
+                        fill={VPD_ZONE_COLORS.low}
                         fillOpacity={1}
                         label={{
-                            value: VPD_ZONES.low.label,
+                            value: vpdZoneLabels.low,
                             position: 'insideTopLeft',
                             style: { fill: '#60a5fa', fontSize: 10, opacity: 0.7 },
                         }}
                     />
                     <ReferenceArea
-                        y1={VPD_ZONES.optimal.min}
-                        y2={VPD_ZONES.optimal.max}
-                        fill={VPD_ZONES.optimal.color}
+                        y1={VPD_ZONE_RANGES.optimal.min}
+                        y2={VPD_ZONE_RANGES.optimal.max}
+                        fill={VPD_ZONE_COLORS.optimal}
                         fillOpacity={1}
                         label={{
-                            value: VPD_ZONES.optimal.label,
+                            value: vpdZoneLabels.optimal,
                             position: 'insideTopLeft',
                             style: { fill: '#22c55e', fontSize: 10, opacity: 0.7 },
                         }}
                     />
                     <ReferenceArea
-                        y1={VPD_ZONES.high.min}
-                        y2={Math.min(VPD_ZONES.high.max, maxVpd)}
-                        fill={VPD_ZONES.high.color}
+                        y1={VPD_ZONE_RANGES.high.min}
+                        y2={Math.min(VPD_ZONE_RANGES.high.max, maxVpd)}
+                        fill={VPD_ZONE_COLORS.high}
                         fillOpacity={1}
                         label={{
-                            value: VPD_ZONES.high.label,
+                            value: vpdZoneLabels.high,
                             position: 'insideTopLeft',
                             style: { fill: '#ef4444', fontSize: 10, opacity: 0.7 },
                         }}

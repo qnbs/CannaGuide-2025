@@ -525,6 +525,11 @@ export const plantsView = {
             vegetative: 'Vegetatif',
             flowering: 'Floraison',
             tooHigh: 'Trop eleve',
+            optimal: 'Optimal',
+            danger: 'Danger',
         },
+    },
+    advisorArchive: {
+        searchPlaceholder: 'Rechercher les reponses...',
     },
 }

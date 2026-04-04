@@ -13,7 +13,7 @@ import { subscribeWithSelector, devtools } from 'zustand/middleware'
 // Types
 // ---------------------------------------------------------------------------
 
-export type AlertMetric = 'temperature' | 'humidity' | 'vpd' | 'ph' | 'ec'
+export type AlertMetric = 'temperature' | 'humidity' | 'vpd' | 'ph' | 'ec' | 'co2' | 'moisture'
 
 export interface SmartAlert {
     id: string

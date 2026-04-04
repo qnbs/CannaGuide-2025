@@ -191,7 +191,10 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
             setHistory((prev) => prev.map((msg) => (msg.id === streamMsgId ? modelMessage : msg)))
             dispatch(addArchivedMentorResponse({ query: trimmedInput, ...response }))
             if (settingsRef.current.tts.enabled) {
-                const plainText = modelMessage.content.replace(/<[^>]*>/g, '').slice(0, 600)
+                const plainText =
+                    new DOMParser()
+                        .parseFromString(modelMessage.content, 'text/html')
+                        .body.textContent?.slice(0, 600) ?? ''
                 useTtsStore
                     .getState()
                     .addToTtsQueue({ id: modelMessage.id ?? `tts-${Date.now()}`, text: plainText })
@@ -213,13 +216,14 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                 setHistory((prev) => [...removeEmptyModelPlaceholders(prev), modelMessage])
                 dispatch(addArchivedMentorResponse({ query: trimmedInput, ...response }))
                 if (settingsRef.current.tts.enabled) {
-                    const plainText = modelMessage.content.replace(/<[^>]*>/g, '').slice(0, 600)
-                    useTtsStore
-                        .getState()
-                        .addToTtsQueue({
-                            id: modelMessage.id ?? `tts-${Date.now()}`,
-                            text: plainText,
-                        })
+                    const plainText =
+                        new DOMParser()
+                            .parseFromString(modelMessage.content, 'text/html')
+                            .body.textContent?.slice(0, 600) ?? ''
+                    useTtsStore.getState().addToTtsQueue({
+                        id: modelMessage.id ?? `tts-${Date.now()}`,
+                        text: plainText,
+                    })
                     useTtsStore.getState().play(settingsRef.current)
                 }
             } catch (fallbackError) {

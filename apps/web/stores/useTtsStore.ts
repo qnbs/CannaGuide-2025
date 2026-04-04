@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 import { SpeechQueueItem, AppSettings } from '@/types'
 import { ttsService } from '@/services/ttsService'
 
@@ -36,7 +37,8 @@ const initialState: TtsState = {
 // Store
 // ---------------------------------------------------------------------------
 
-export const useTtsStore = create<TtsState & TtsActions>()((set, get) => {
+export const useTtsStore = create<TtsState & TtsActions>()(
+    devtools((set, get) => {
     const startNextInQueue = (settings: AppSettings): void => {
         const state = get()
 
@@ -99,7 +101,10 @@ export const useTtsStore = create<TtsState & TtsActions>()((set, get) => {
             // The onEnd callback from the current utterance will trigger startNextInQueue
         },
     }
-})
+    },
+    { name: 'tts', enabled: import.meta.env.DEV },
+    ),
+)
 
 // Re-export initial state for test resets
 export const getInitialTtsState = (): TtsState => ({ ...initialState })

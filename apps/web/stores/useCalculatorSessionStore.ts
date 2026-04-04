@@ -7,6 +7,7 @@
  */
 
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 
 export interface RoomDimensions {
     /** Width in centimetres */
@@ -27,9 +28,14 @@ interface CalculatorSessionState {
 export const DEFAULT_ROOM_DIMENSIONS: RoomDimensions = { width: 120, depth: 120, height: 220 }
 export const DEFAULT_SHARED_LIGHT_WATTAGE = 400
 
-export const useCalculatorSessionStore = create<CalculatorSessionState>()((set) => ({
-    roomDimensions: DEFAULT_ROOM_DIMENSIONS,
-    sharedLightWattage: DEFAULT_SHARED_LIGHT_WATTAGE,
-    setRoomDimensions: (dimensions) => set({ roomDimensions: dimensions }),
-    setSharedLightWattage: (wattage) => set({ sharedLightWattage: wattage }),
-}))
+export const useCalculatorSessionStore = create<CalculatorSessionState>()(
+    devtools(
+        (set) => ({
+            roomDimensions: DEFAULT_ROOM_DIMENSIONS,
+            sharedLightWattage: DEFAULT_SHARED_LIGHT_WATTAGE,
+            setRoomDimensions: (dimensions) => set({ roomDimensions: dimensions }),
+            setSharedLightWattage: (wattage) => set({ sharedLightWattage: wattage }),
+        }),
+        { name: 'calculatorSession', enabled: import.meta.env.DEV },
+    ),
+)

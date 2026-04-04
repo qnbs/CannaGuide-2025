@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { subscribeWithSelector, persist, createJSONStorage } from 'zustand/middleware'
+import { subscribeWithSelector, persist, createJSONStorage, devtools } from 'zustand/middleware'
 import { encrypt, decrypt } from '@/services/cryptoService'
 
 export type IotConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error'
@@ -36,6 +36,7 @@ const DEFAULT_TOPIC_PREFIX = 'cannaguide/sensors'
 const TEST_CONNECTION_TIMEOUT_MS = 3000
 
 export const useIotStore = create<IotState>()(
+    devtools(
     subscribeWithSelector(
         persist(
             (set, get) => ({
@@ -131,5 +132,7 @@ export const useIotStore = create<IotState>()(
                 }),
             },
         ),
+    ),
+    { name: 'iot', enabled: import.meta.env.DEV },
     ),
 )

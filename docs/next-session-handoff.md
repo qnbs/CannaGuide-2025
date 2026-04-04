@@ -2,6 +2,70 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (2026-04-04, Session 39) -- Zustand State Management Optimization
+
+**Status: v1.3.0-beta. 8 Zustand stores standardized. uiStateBridge.ts created. useStateHealthCheck added. 1288 tests passing. TypeScript clean.**
+
+### What Was Done (Session 39)
+
+1. **devtools middleware on all 8 Zustand stores**: All stores now expose named slices in Redux DevTools Extension (`ui`, `alerts`, `filters`, `tts`, `iot`, `strainsView`, `sensor`, `calculatorSession`). All wrapped with `enabled: import.meta.env.DEV` to avoid production overhead.
+    - `useUIStore.ts`: `devtools(subscribeWithSelector(...), {name: 'ui', enabled: DEV})`
+    - `useAlertsStore.ts`: same pattern
+    - `useFiltersStore.ts`: same pattern
+    - `useTtsStore.ts`: `devtools((set, get) => {...}, {name: 'tts', enabled: DEV})`
+    - `useIotStore.ts`: `devtools(subscribeWithSelector(persist(...)), {name: 'iot', enabled: DEV})`
+    - `useStrainsViewStore.ts`: `devtools(subscribeWithSelector(...), {name: 'strainsView', enabled: DEV})`
+    - `sensorStore.ts` (vanilla): `devtools(subscribeWithSelector(...), {name: 'sensor', enabled: DEV})`
+    - `useCalculatorSessionStore.ts`: `devtools((set) => ({...}), {name: 'calculatorSession', enabled: DEV})`
+
+2. **New service `apps/web/services/uiStateBridge.ts`**:
+    - `initUIStateBridgeFull(getState, dispatch, subscribe)` -- single init call in `store.ts`; accepts full store reference for reactive subscriptions
+    - `initUIStateBridge(getState, dispatch)` -- lightweight init without subscribe (for contexts where only read/dispatch is needed)
+    - `getReduxSnapshot<T>(selector)` -- synchronous Redux read from Zustand actions or plain services
+    - `subscribeToRedux<T>(selector, handler)` -- reactive subscription; returns cleanup function; all subscriptions auto-cleared on re-init
+    - `dispatchToRedux(action)` -- explicit Redux dispatch from Zustand context
+
+3. **Refactored `apps/web/stores/useUIStore.ts`**:
+    - Removed `_getReduxState` singleton, `ReduxBridgeState` interface and `initUIStoreReduxBridge` export
+    - `initiateGrowFromStrainList` now calls `getReduxSnapshot((s) => s.simulation.plantSlots)` from `uiStateBridge`
+    - Added `import { getReduxSnapshot } from '@/services/uiStateBridge'`
+
+4. **Updated `apps/web/stores/store.ts`**:
+    - Replaced `initUIStoreReduxBridge(() => store.getState())` with `initUIStateBridgeFull(store.getState, store.dispatch, store.subscribe)`
+
+5. **New hook `apps/web/hooks/useStateHealthCheck.ts`**:
+    - Dev-only (completely tree-shaken in production via `import.meta.env.DEV` guard)
+    - Checks `onboardingStep` (Zustand) vs `onboardingCompleted` (Redux) for consistency
+    - Issues `console.warn` on detected inconsistency; no `console.error`, no Sentry
+    - Zero runtime overhead in production
+
+6. **New test file `apps/web/services/uiStateBridge.test.ts`** (10 tests):
+    - `initUIStateBridge` init without error
+    - `getReduxSnapshot`: returns selector value, reflects live state updates
+    - `dispatchToRedux`: calls dispatch, supports multiple calls
+    - `subscribeToRedux`: fires on value change, skips on unchanged, unsub stops future calls, re-init clears all subscriptions
+
+### Verified Metrics (Session 39)
+
+- Tests: 1288 passing, 0 failures (10 new tests for uiStateBridge)
+- TypeScript: clean (RTK TS2719 filtered)
+
+### Next Steps
+
+- **Genetic Trends Phase 4**: Annual refresh mechanism -- `year`/`confidence`/`source` metadata, `refreshTrendsData()` service method
+- **FR/NL knowledge.ts growTech**: add missing translations (currently EN fallback)
+- **trendsSlice.ts**: optional Redux slice for persisting user trend notes/bookmarks
+- **Workers priority queue**: high-priority lane for VPD alerts (mid-term WorkerBus roadmap)
+- **docs/ARCHITECTURE.md**: verify and update service list, add uiStateBridge entry
+
+### Planned Executions
+
+- Execution N+1: Genetic Trends Phase 4 (refresh mechanism + source metadata)
+- Execution N+2: PDF/Markdown export for Trends overview
+- Execution N+3: Missing FR/NL translations audit + completion
+
+---
+
 ## Latest Session (2026-04-04, Session 38) -- WorkerBus P1 Implementation + Full App Audit + Doc Sync
 
 **Status: v1.3.0-beta. WorkerBus P1 complete. Full audit + doc sync complete. 1278 tests passing. TypeScript clean. Build succeeds.**

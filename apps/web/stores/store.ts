@@ -25,7 +25,8 @@ import {
 import { indexedDBStorage } from './indexedDBStorage'
 import { migrateState } from '../services/migrationLogic'
 import { REDUX_STATE_KEY } from '@/constants'
-import { getUISnapshot, initialUIState, initUIStoreReduxBridge } from './useUIStore'
+import { getUISnapshot, initialUIState } from './useUIStore'
+import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
 
 const rootReducer = combineReducers({
@@ -141,7 +142,11 @@ export const createAppStore = async (): Promise<AppStore> => {
     const store = makeStore(preloadedState)
 
     // Wire up Zustand <-> Redux bridges
-    initUIStoreReduxBridge(() => store.getState())
+    initUIStateBridgeFull(
+        () => store.getState(),
+        store.dispatch,
+        store.subscribe,
+    )
     initFilterUrlSync()
     initVoiceCommandSubscription(store.dispatch, () => store.getState())
     initOnboardingSubscription(() => store.getState())

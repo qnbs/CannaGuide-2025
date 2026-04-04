@@ -135,7 +135,8 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 12. **State Management Split:**
     - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner. RTK Query for AI API caching (9 endpoints). `workerMetrics` is a runtime-only slice (not persisted) for WorkerBus telemetry visibility in Redux DevTools.
-    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts). No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
+    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite). All 8 stores have `devtools` middleware (`enabled: import.meta.env.DEV`). No Zustand IndexedDB persist -- persistence is exclusively Redux + IndexedDB.
+    - **Redux <-> Zustand Bridge:** `services/uiStateBridge.ts` -- single init call `initUIStateBridgeFull(getState, dispatch, subscribe)` from `store.ts`; `getReduxSnapshot(selector)` for synchronous reads from Zustand actions; `subscribeToRedux(selector, handler)` for reactive subscriptions; `dispatchToRedux(action)` for dispatch from Zustand context.
     - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. Components must import AI services from `aiFacade`, not from individual service files.
 
 ---
@@ -420,8 +421,10 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/trendsEcosystemService.ts`               | Cross-hub match scores (genetic trends <-> grow tech), 5-min cache, static relationship maps                       |
 | `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                                     |
 | `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                                    |
+| `apps/web/services/uiStateBridge.ts`                        | Central Redux<->Zustand bridge: `initUIStateBridgeFull`, `getReduxSnapshot`, `subscribeToRedux`, `dispatchToRedux` |
 | `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                                     |
 | `apps/web/stores/slices/workerMetricsSlice.ts`              | Runtime-only RTK slice for WorkerBus telemetry (DevTools visibility, not persisted to IndexedDB)                   |
+| `apps/web/hooks/useStateHealthCheck.ts`                     | Dev-only hook: detects Redux<->Zustand state inconsistencies; zero production overhead (tree-shaken)               |
 | `apps/web/simulation.worker.ts`                             | VPD simulation Web Worker                                                                                          |
 | `apps/web/data/diseases.ts`                                 | 22 DiseaseEntry objects (deficiency/toxicity/environmental/pest/disease)                                           |
 | `apps/web/data/learningPaths.ts`                            | 5 LearningPath objects with step-by-step grow education programs                                                   |

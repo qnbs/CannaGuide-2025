@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-04-05
+Last updated: 2026-04-06
 
 ---
 
@@ -14,9 +14,9 @@ Last updated: 2026-04-05
 | Severity | Total | Done | Open |
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
-| High     | 10    | 5    | 5    |
-| Medium   | 10    | 3    | 7    |
-| Low      | 4     | 0    | 4    |
+| High     | 12    | 7    | 5    |
+| Medium   | 13    | 3    | 10   |
+| Low      | 6     | 0    | 6    |
 
 ---
 
@@ -686,9 +686,106 @@ Last updated: 2026-04-05
 
 ---
 
+---
+
+## Voice System (V)
+
+### V-01 -- TTS-Mentor-Streaming-Verdrahtung
+
+| Field    | Value       |
+| -------- | ----------- |
+| Severity | High        |
+| Effort   | Low (1 day) |
+| Status   | **Done**    |
+
+**Finding:** `MentorChatView.tsx` streamed AI responses visually only. `addToTtsQueue` was never called after stream completion, so voice-enabled users heard nothing from the AI Mentor.
+
+**Resolution:** `MentorChatView.tsx` now calls `useTtsStore.getState().addToTtsQueue()` after each completed stream response when `settings.tts.enabled` is true. A per-message read-aloud button (`PhosphorIcons.SpeakerHigh`) was added. Implemented in Session 43.
+
+---
+
+### V-02 -- Voice-CommandPalette-Bridge
+
+| Field    | Value       |
+| -------- | ----------- |
+| Severity | High        |
+| Effort   | Low (1 day) |
+| Status   | **Done**    |
+
+**Finding:** `listenerMiddleware.ts` processed voice transcripts against a hardcoded 6-command list that was stale and disconnected from the 55-command `CommandPalette`. Voice commands for navigation, strain search, AI mode, accessibility, and equipment were completely absent.
+
+**Resolution:** New `services/voiceCommandRegistry.ts` (367 lines) defines 23 `VoiceCommandDef` objects across 7 groups (Navigation, Strains, Plants, Equipment, Knowledge, AI, Accessibility) with EN+DE aliases and fuzzy keyword matching. `listenerMiddleware.ts` now imports `buildVoiceCommands` + `matchVoiceCommand` from the registry. `VoiceSettingsTab.tsx` commands section now renders the live registry list grouped by category, replacing the orphaned static display. Implemented in Session 43.
+
+---
+
+### V-03 -- Hotword / Wake-Word Detection
+
+| Field    | Value       |
+| -------- | ----------- |
+| Severity | Medium      |
+| Effort   | Low (1 day) |
+| Status   | **Open**    |
+
+**Finding:** `settings.voiceControl.hotwordEnabled` toggle exists in Settings UI but has zero effect -- no wake-word detection code exists. Users must manually press the microphone button each time.
+
+**Action:** Add a second continuous `SpeechRecognition` instance in `VoiceControl.tsx` that activates when `hotwordEnabled` is true. Detect "hey cannaguide" / "hey canna" via regex. On match, activate main recognition for 5 seconds with visual feedback.
+
+---
+
+### V-04 -- Grow-Log Voice Dictation
+
+| Field    | Value       |
+| -------- | ----------- |
+| Severity | Medium      |
+| Effort   | Low (1 day) |
+| Status   | **Open**    |
+
+**Finding:** Growers cannot dictate grow log entries hands-free. `LogActionModal.tsx` only has a text textarea with no microphone input option, breaking the "hands-free companion" use case during active grows.
+
+**Action:** Add a microphone toggle button next to the Notes `Textarea` in `LogActionModal.tsx`. Extract a reusable `useDictation.ts` hook (SpeechRecognition, appends transcript to state, error handling). Add `plants.voiceDictation.*` i18n keys (EN/DE/ES/FR/NL).
+
+---
+
+### V-05 -- Voice System Test Coverage
+
+| Field    | Value           |
+| -------- | --------------- |
+| Severity | Medium          |
+| Effort   | Medium (2 days) |
+| Status   | **Open**        |
+
+**Finding:** Zero tests exist for `VoiceControl.tsx`, `voiceCommandRegistry.ts`, voice command routing in `listenerMiddleware`, or the new TTS-Mentor wiring. SpeechSynthesis and SpeechRecognition APIs require vitest mocks.
+
+**Action:** Add `VoiceControl.test.tsx` (SpeechRecognition mocks, transcript routing, error states), `voiceCommandRegistry.test.ts` (alias matching, fuzzy fallback, all 23 commands), `listenerMiddleware voice routing` section tests, and `MentorChatView TTS auto-read` integration test.
+
+---
+
+### V-06 -- Offline / Local AI Voice (ONNX TTS + STT)
+
+| Field    | Value          |
+| -------- | -------------- |
+| Severity | Low            |
+| Effort   | High (5+ days) |
+| Status   | **Open**       |
+
+**Finding:** TTS and STT are entirely dependent on browser-native APIs (`SpeechSynthesis`, `SpeechRecognition`). No offline fallback exists. On Chrome Android, `SpeechRecognition` requires internet connection (Google servers). `SpeechSynthesis` voice quality varies wildly by platform.
+
+**Action (P3/v1.5):** Integrate ONNX speech models via existing `inference.worker.ts` / `LocalAIInfrastructure`. Candidates: Kokoro (TTS, ONNX, high quality), Whisper-Tiny (STT, `@xenova/transformers`). Follow ML isolation pattern in `packages/ai-core`.
+
+---
+
 ## Priority Queue
 
 Recommended implementation order based on impact and effort:
+
+### Voice Sprint (v1.4)
+
+- [x] V-01 -- TTS Mentor streaming wiring (Done, Session 43)
+- [x] V-02 -- Voice CommandPalette bridge (Done, Session 43)
+- [ ] V-03 -- Hotword wake-word detection
+- [ ] V-04 -- Grow-log voice dictation
+- [ ] V-05 -- Voice test coverage
+- [ ] V-06 -- Offline ONNX TTS/STT (deferred v1.5)
 
 ### Sprint 1 (Immediate)
 

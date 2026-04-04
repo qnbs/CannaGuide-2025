@@ -9,10 +9,11 @@ import { ModelLoadingProgress } from '@/components/common/ModelLoadingProgress'
 import { Textarea } from '@/components/ui/textarea'
 import { useGetMentorResponseMutation } from '@/stores/api'
 import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice'
-import { selectLanguage } from '@/stores/selectors'
+import { selectLanguage, selectSettings } from '@/stores/selectors'
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { useTtsStore } from '@/stores/useTtsStore'
 import type { TFunction } from 'i18next'
 
 interface MentorChatViewProps {
@@ -121,6 +122,11 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const lang = useAppSelector(selectLanguage)
+    const settings = useAppSelector(selectSettings)
+    const settingsRef = useRef(settings)
+    useEffect(() => {
+        settingsRef.current = settings
+    }, [settings])
     const [getMentorResponse, { isLoading: isMutationLoading }] = useGetMentorResponseMutation()
     const [history, setHistory] = useState<MentorMessage[]>([])
     const [isStreaming, setIsStreaming] = useState(false)
@@ -184,6 +190,13 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
             }
             setHistory((prev) => prev.map((msg) => (msg.id === streamMsgId ? modelMessage : msg)))
             dispatch(addArchivedMentorResponse({ query: trimmedInput, ...response }))
+            if (settingsRef.current.tts.enabled) {
+                const plainText = modelMessage.content.replace(/<[^>]*>/g, '').slice(0, 600)
+                useTtsStore
+                    .getState()
+                    .addToTtsQueue({ id: modelMessage.id ?? `tts-${Date.now()}`, text: plainText })
+                useTtsStore.getState().play(settingsRef.current)
+            }
         } catch (streamError) {
             try {
                 const response = await getMentorResponse({
@@ -199,6 +212,16 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                 }
                 setHistory((prev) => [...removeEmptyModelPlaceholders(prev), modelMessage])
                 dispatch(addArchivedMentorResponse({ query: trimmedInput, ...response }))
+                if (settingsRef.current.tts.enabled) {
+                    const plainText = modelMessage.content.replace(/<[^>]*>/g, '').slice(0, 600)
+                    useTtsStore
+                        .getState()
+                        .addToTtsQueue({
+                            id: modelMessage.id ?? `tts-${Date.now()}`,
+                            text: plainText,
+                        })
+                    useTtsStore.getState().play(settingsRef.current)
+                }
             } catch (fallbackError) {
                 const errorMessage: MentorMessage = {
                     id: `msg-error-${Date.now()}`,

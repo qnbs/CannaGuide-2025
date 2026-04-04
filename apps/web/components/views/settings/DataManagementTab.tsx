@@ -238,9 +238,10 @@ const DataManagementTab: React.FC = () => {
     const handleEraseSingleDb = useCallback(
         async (dbName: string) => {
             const ok = await eraseSingleDatabase(dbName)
-            Sentry.captureMessage(`gdpr.single_db_delete`, {
-                level: 'info',
-                tags: { database: dbName, success: String(ok) },
+            Sentry.withScope((scope) => {
+                scope.setTag('database', dbName)
+                scope.setTag('success', String(ok))
+                Sentry.captureMessage('gdpr.single_db_delete', 'info')
             })
             if (ok) {
                 getUISnapshot().addNotification({

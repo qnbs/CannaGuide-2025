@@ -4,7 +4,7 @@
 
 ## Overview
 
-`workerBus.ts` is the centralized, promise-based Web Worker communication dispatcher for CannaGuide 2025. It manages all 7 application workers through a single singleton instance, providing type-safe request/response messaging with automatic timeout, backpressure, retry, and telemetry.
+`workerBus.ts` is the centralized, promise-based Web Worker communication dispatcher for CannaGuide 2025. It manages all 8 application workers through a single singleton instance, providing type-safe request/response messaging with automatic timeout, backpressure, retry, AbortController support, Transferable zero-copy transfers, and dispatch-complete hooks.
 
 **Location:** `apps/web/services/workerBus.ts`
 **Types:** `apps/web/types/workerBus.types.ts`
@@ -21,9 +21,15 @@ Main Thread                              Worker Threads
                     |-- timeout guard     [Image Generation]
                     |-- backpressure      [Strain Hydration]
                     |-- retry logic       [Terpene Analysis]
+                    |-- AbortSignal       [Calculation]
                     v
               [Pending Map]
-              messageId -> {resolve, reject, timer}
+              messageId -> {resolve, reject, timer, abortCleanup}
+                    |
+                    v
+          [onDispatchComplete hooks]
+          --> workerStateSyncService
+          --> workerTelemetryService
 ```
 
 ## Message Protocol
@@ -43,19 +49,24 @@ interface WorkerResponse {
     messageId: string // Must match request messageId
     data?: unknown // Result payload
     error?: string // Error message (mutually exclusive with data)
+    errorCode?: WorkerErrorCode // Structured error code for retry/cancel logic
 }
 ```
 
+`WorkerErrorCode` values: `UNKNOWN`, `TIMEOUT`, `NOT_REGISTERED`, `DISPOSED`, `QUEUE_FULL`, `EXECUTION_ERROR`, `INVALID_PAYLOAD`, `RESOURCE_UNAVAILABLE`, `OUT_OF_MEMORY`, `CANCELLED`.
+
 ## Managed Workers
 
-| Worker      | File                                | Purpose                    | Concurrency |
-| ----------- | ----------------------------------- | -------------------------- | ----------- |
-| `vpd-sim`   | `simulation.worker.ts`              | VPD environment simulation | Default (8) |
-| `genealogy` | `workers/genealogy.worker.ts`       | Strain family tree layout  | Default (8) |
-| `scenario`  | `workers/scenario.worker.ts`        | Grow scenario planning     | Default (8) |
-| `inference` | `workers/inference.worker.ts`       | Local ML inference (ONNX)  | Default (8) |
-| `image-gen` | `workers/imageGeneration.worker.ts` | SD-Turbo text-to-image     | Default (8) |
-| `vpd-chart` | `workers/vpdChart.worker.ts`        | VPD chart data processing  | Default (8) |
+| Worker           | File                                | Purpose                    | Concurrency |
+| ---------------- | ----------------------------------- | -------------------------- | ----------- |
+| `vpd-sim`        | `simulation.worker.ts`              | VPD environment simulation | Default (8) |
+| `genealogy`      | `workers/genealogy.worker.ts`       | Strain family tree layout  | Default (8) |
+| `scenario`       | `workers/scenario.worker.ts`        | Grow scenario planning     | Default (8) |
+| `inference`      | `workers/inference.worker.ts`       | Local ML inference (ONNX)  | Default (8) |
+| `image-gen`      | `workers/imageGeneration.worker.ts` | SD-Turbo text-to-image     | Default (8) |
+| `strain-hydrate` | `workers/strainHydration.worker.ts` | Strain data hydration      | Default (8) |
+| `terpene`        | `workers/terpene.worker.ts`         | Terpene profile analysis   | Default (8) |
+| `calculation`    | `workers/calculation.worker.ts`     | VPD/EC/light math offload  | Default (8) |
 
 ## API Reference
 
@@ -67,11 +78,13 @@ Register a named Worker instance. Replaces existing worker with same name (termi
 
 Send a request and get a Promise back. Options:
 
-| Option         | Default | Description                         |
-| -------------- | ------- | ----------------------------------- |
-| `timeoutMs`    | 30000   | Per-request timeout override        |
-| `retries`      | 0       | Retry attempts on transient failure |
-| `retryDelayMs` | 500     | Base delay for exponential backoff  |
+| Option         | Default | Description                                             |
+| -------------- | ------- | ------------------------------------------------------- |
+| `timeoutMs`    | 30000   | Per-request timeout override                            |
+| `retries`      | 0       | Retry attempts on transient failure                     |
+| `retryDelayMs` | 500     | Base delay for exponential backoff                      |
+| `signal`       | --      | `AbortSignal` to cancel the request (rejects CANCELLED) |
+| `transferable` | --      | `Transferable[]` for zero-copy ArrayBuffer/ImageBitmap  |
 
 ### `workerBus.unregister(name)`
 
@@ -116,6 +129,81 @@ await workerBus.dispatch('inference', 'CLASSIFY', data, {
 
 Non-retryable errors (worker missing, bus disposed, queue full) fail immediately without retry.
 
+## P1 Features (v1.3.0)
+
+### AbortController Support
+
+Cancel in-flight or queued requests via `AbortSignal`:
+
+```typescript
+const ctrl = new AbortController()
+
+// Start a long-running dispatch
+const promise = workerBus.dispatch('inference', 'CLASSIFY', data, {
+    signal: ctrl.signal,
+    timeoutMs: 60_000,
+})
+
+// Cancel at any time -- rejects with WorkerErrorCode.CANCELLED
+ctrl.abort()
+await promise.catch((err) => console.debug(err.code)) // 'CANCELLED'
+```
+
+Pre-flight abort (signal already aborted when `dispatch` is called) rejects synchronously. Mid-flight abort is handled via `addEventListener('abort', ..., { once: true })` with cleanup on settlement.
+
+### Transferable Objects
+
+Move ArrayBuffer/ImageBitmap ownership into the worker thread to avoid expensive structured-clone copies:
+
+```typescript
+const buffer = new ArrayBuffer(4 * 1024 * 1024) // 4 MB image data
+const result = await workerBus.dispatch('image-gen', 'PROCESS', buffer, {
+    transferable: [buffer],
+})
+// buffer is now detached (owned by worker thread)
+```
+
+### onDispatchComplete Hook
+
+Subscribe to every settled dispatch (success or failure) for side-effects without touching the call site:
+
+```typescript
+// Returns a cleanup function
+const cleanup = workerBus.onDispatchComplete((event) => {
+    console.debug(event.workerName, event.type, event.latencyMs, event.success)
+})
+
+// Remove the hook later
+cleanup()
+```
+
+`DispatchCompleteEvent` fields: `workerName`, `type`, `latencyMs`, `success`, `data?`, `error?`.
+
+### workerStateSyncService
+
+`services/workerStateSyncService.ts` provides a framework-agnostic handler registry that connects WorkerBus results to Redux/Zustand without manual `await then dispatch` patterns:
+
+```typescript
+// Register once in a feature initializer:
+registerWorkerResultHandler('vpd-sim', 'SIMULATE', (data, ctx) => {
+    reduxDispatch(updateSimulationResult(data))
+})
+
+// Now every workerBus.dispatch('vpd-sim', 'SIMULATE', ...) automatically
+// calls the handler -- no extra code at the call site.
+```
+
+Initialized via `initWorkerStateSync()` in `index.tsx` after store hydration.
+
+### workerTelemetryService + workerMetricsSlice
+
+`services/workerTelemetryService.ts` connects WorkerBus dispatch-complete events to:
+
+1. **Redux DevTools** -- debounced 5s metrics snapshot via `workerMetricsSlice`
+2. **Sentry** -- alert when any worker error rate exceeds 10%
+
+`stores/slices/workerMetricsSlice.ts` is runtime-only (not persisted to IndexedDB).
+
 ## Teardown / Cleanup
 
 - `workerBus.dispose()` is called on `pagehide` event (registered in `index.tsx`)
@@ -150,26 +238,21 @@ sequenceDiagram
 
 ### Current Limitations
 
-- No Transferable Objects support yet -- large ML tensors / image buffers are copied (structured clone) instead of transferred. Could add overhead for image diagnosis and generation payloads.
 - No per-worker-type rate limiting (e.g., inference max 3 req/s)
 - No priority queue -- all dispatches are FIFO regardless of urgency
-- No AbortController integration -- cannot cancel in-flight requests
-- Telemetry is in-memory only (console/Sentry) -- no metric export interface
+- Telemetry snapshots are Redux DevTools only -- no external metric export
 - No cross-worker communication (inference cannot query VPD data without main-thread hop)
 
 ### Planned Improvements
 
-**Short-term (v1.2.0 stable):**
+**Short-term:**
 
-- SonarCloud review of workerBus.ts + all .worker.ts files
 - Unit test coverage >95% for backpressure queue, retry edge cases, concurrent load
-- Transferable Objects for ArrayBuffer/ImageBitmap payloads
-
-**Mid-term (v1.3 -- Q2 2026):**
-
-- AbortController + Priority Queue (high priority for VPD alerts)
-- Dedicated workerTelemetry.ts export (Redux DevTools integration)
 - Generic `WorkerMessage<T, R>` types for zero-runtime type checks
+
+**Mid-term (v1.4+):**
+
+- Priority Queue (high priority for VPD alerts)
 - Event emitter for real-time IoT sensor streaming
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
 - Cross-worker communication channel (SharedArrayBuffer or MessageChannel)
@@ -180,4 +263,3 @@ sequenceDiagram
 - WebGPU worker support + advanced ONNX Runtime integration
 - AR/VR extension (Three.js + WorkerBus for real-time 3D plant rendering)
 - Eco-Mode: Auto-throttle retry/backpressure on low-power devices
-- Lighthouse CI assertion: TTI < 2s with 6 active workers

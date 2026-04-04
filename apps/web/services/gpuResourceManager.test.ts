@@ -130,4 +130,63 @@ describe('gpuResourceManager', () => {
 
         expect(getGpuLockState()).toEqual({ locked: false, holder: null, queueLength: 0 })
     })
+
+    // ─── onnx-webgpu consumer (R-02) ──────────────────────────────────
+
+    it('onnx-webgpu can acquire when GPU is free', async () => {
+        await acquireGpu('onnx-webgpu')
+        expect(isGpuHeldBy('onnx-webgpu')).toBe(true)
+    })
+
+    it('onnx-webgpu releases correctly', async () => {
+        await acquireGpu('onnx-webgpu')
+        releaseGpu('onnx-webgpu')
+        expect(getGpuLockState()).toEqual({ locked: false, holder: null, queueLength: 0 })
+    })
+
+    it('onnx-webgpu queues behind webllm', async () => {
+        await acquireGpu('webllm')
+
+        let onnxAcquired = false
+        const pending = acquireGpu('onnx-webgpu').then(() => {
+            onnxAcquired = true
+            return undefined
+        })
+
+        await new Promise((resolve) => setTimeout(resolve, 10))
+        expect(onnxAcquired).toBe(false)
+        expect(getGpuLockState().queueLength).toBe(1)
+
+        releaseGpu('webllm')
+        await pending
+        expect(onnxAcquired).toBe(true)
+        expect(isGpuHeldBy('onnx-webgpu')).toBe(true)
+    })
+
+    it('webllm queues behind onnx-webgpu', async () => {
+        await acquireGpu('onnx-webgpu')
+
+        let webllmAcquired = false
+        const pending = acquireGpu('webllm').then(() => {
+            webllmAcquired = true
+            return undefined
+        })
+
+        await new Promise((resolve) => setTimeout(resolve, 10))
+        expect(webllmAcquired).toBe(false)
+
+        releaseGpu('onnx-webgpu')
+        await pending
+        expect(webllmAcquired).toBe(true)
+        expect(isGpuHeldBy('webllm')).toBe(true)
+    })
+
+    it('onnx-webgpu is re-entrant', async () => {
+        await acquireGpu('onnx-webgpu')
+        await acquireGpu('onnx-webgpu')
+        expect(isGpuHeldBy('onnx-webgpu')).toBe(true)
+        // Only one release needed
+        releaseGpu('onnx-webgpu')
+        expect(getGpuLockState().locked).toBe(false)
+    })
 })

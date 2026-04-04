@@ -167,6 +167,11 @@ export const loadWebLlmEngine = (): Promise<LocalWebLlmEngine | null> => {
 /** Whether the WebLLM engine was evicted by the GPU mutex (for re-init detection). */
 export const isWebLlmEvicted = (): boolean => evicted
 
+/** Whether an error indicates the underlying GPU device was lost. */
+const isDeviceLostError = (error: unknown): boolean =>
+    error instanceof Error &&
+    /device\s*lost|gpu.*lost|lost.*gpu|webgpu.*invalid/i.test(error.message)
+
 /** Generate text via WebLLM chat completions (single-shot, non-streaming). */
 export const generateWithWebLlm = async (
     prompt: string,
@@ -205,6 +210,16 @@ export const generateWithWebLlm = async (
             stage: 'inference',
             retryAttempt: attempt,
         })
+        // If the GPU device was lost, release the mutex immediately to prevent deadlock.
+        // Without this, all subsequent acquireGpu('webllm') calls would queue forever
+        // because releaseGpu is never invoked through the normal dispose/evict paths.
+        if (isDeviceLostError(error)) {
+            console.debug(
+                '[WebLLM] GPU device lost during inference -- releasing mutex to prevent deadlock',
+            )
+            enginePromise = null
+            releaseGpu('webllm')
+        }
         return null
     }
 }

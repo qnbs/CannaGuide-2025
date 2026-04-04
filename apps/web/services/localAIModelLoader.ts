@@ -1,4 +1,5 @@
 type TransformersModule = typeof import('@xenova/transformers')
+import { acquireGpu, releaseGpu } from './gpuResourceManager'
 
 export type LocalAiPipeline = (
     input: unknown,
@@ -209,12 +210,20 @@ export const loadTransformersPipeline = async (
     const promise = (async () => {
         checkMemoryPressure()
         await acquireLoadSlot()
+        const backend = detectOnnxBackend()
+        // Acquire GPU mutex when using Weber backend to prevent VRAM collision with WebLLM
+        const usingWebGpu = backend === 'webgpu'
+        if (usingWebGpu) {
+            await acquireGpu('onnx-webgpu')
+        }
         try {
             const { pipeline } = await getTransformersModule()
-            const backend = detectOnnxBackend()
             const mergedOptions = buildPipelineOptions(modelId, backend, options)
             return executePipelineLoad(pipeline, task, modelId, mergedOptions)
         } finally {
+            if (usingWebGpu) {
+                releaseGpu('onnx-webgpu')
+            }
             releaseLoadSlot()
         }
     })()

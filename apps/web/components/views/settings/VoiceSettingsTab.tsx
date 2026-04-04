@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { useAvailableVoices } from '@/hooks/useAvailableVoices'
+import { useCommandPalette } from '@/hooks/useCommandPalette'
 import { Card } from '@/components/common/Card'
 import { FormSection } from '@/components/ui/form'
 import { Switch } from '@/components/common/Switch'
@@ -20,10 +21,19 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SettingsRow } from './SettingsShared'
 
-const CommandItem: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
+const CommandItem: React.FC<{
+    icon: React.ReactNode
+    title: string
+    group: string
+    onTry: () => void
+}> = ({ icon, title, group, onTry }) => (
     <div className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-md">
         <div className="w-5 h-5 text-primary-300 flex-shrink-0">{icon}</div>
-        <code className="text-sm text-slate-300">{text}</code>
+        <code className="text-sm text-slate-300 flex-grow">{title}</code>
+        <span className="text-xs text-slate-500 shrink-0">{group}</span>
+        <Button size="sm" variant="ghost" onClick={onTry} className="shrink-0 h-6 px-2 text-xs">
+            <PhosphorIcons.Play className="w-3 h-3" />
+        </Button>
     </div>
 )
 
@@ -91,51 +101,24 @@ const VoiceSettingsTab: React.FC = () => {
         synth.speak(utterance)
     }
 
-    const allCommands = useMemo(
-        () => [
-            {
-                group: 'navigation',
-                icon: <PhosphorIcons.Plant />,
-                text: t('settingsView.tts.commands.goTo', { view: t('nav.plants') }),
-            },
-            {
-                group: 'navigation',
-                icon: <PhosphorIcons.Leafy />,
-                text: t('settingsView.tts.commands.goTo', { view: t('nav.strains') }),
-            },
-            {
-                group: 'strains',
-                icon: <PhosphorIcons.MagnifyingGlass />,
-                text: t('settingsView.tts.commands.searchFor'),
-            },
-            {
-                group: 'strains',
-                icon: <PhosphorIcons.FunnelSimple />,
-                text: t('settingsView.tts.commands.resetFilters'),
-            },
-            {
-                group: 'strains',
-                icon: <PhosphorIcons.Heart />,
-                text: t('settingsView.tts.commands.showFavorites'),
-            },
-            {
-                group: 'plants',
-                icon: <PhosphorIcons.Drop />,
-                text: t('settingsView.tts.commands.waterAll'),
-            },
-        ],
-        [t],
+    const { allCommands: paletteCommands } = useCommandPalette()
+
+    // Exclude theme commands (9 items, too many for voice reference) and section headers
+    const voiceCommands = useMemo(
+        () => paletteCommands.filter((cmd) => !cmd.id.startsWith('theme_') && !cmd.isHeader),
+        [paletteCommands],
     )
 
     const filteredCommands = useMemo(() => {
-        if (!commandSearch) return allCommands
+        if (!commandSearch) return voiceCommands
         const lowerCaseSearch = commandSearch.toLowerCase()
-        return allCommands.filter(
+        return voiceCommands.filter(
             (cmd) =>
-                cmd.text.toLowerCase().includes(lowerCaseSearch) ||
-                cmd.group.toLowerCase().includes(lowerCaseSearch),
+                cmd.title.toLowerCase().includes(lowerCaseSearch) ||
+                cmd.group.toLowerCase().includes(lowerCaseSearch) ||
+                (cmd.keywords ?? '').toLowerCase().includes(lowerCaseSearch),
         )
-    }, [allCommands, commandSearch])
+    }, [voiceCommands, commandSearch])
 
     return (
         <div className="space-y-6">
@@ -298,7 +281,13 @@ const VoiceSettingsTab: React.FC = () => {
                         />
                         <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                             {filteredCommands.map((cmd) => (
-                                <CommandItem key={cmd.text} icon={cmd.icon} text={cmd.text} />
+                                <CommandItem
+                                    key={cmd.id}
+                                    icon={<cmd.icon />}
+                                    title={cmd.title}
+                                    group={cmd.group}
+                                    onTry={cmd.action}
+                                />
                             ))}
                         </div>
                     </div>

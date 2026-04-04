@@ -2,6 +2,68 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (2026-04-06, Session 43) -- Voice CommandPalette Bridge + TTS Mentor Wiring
+
+**Status: v1.3.0-beta. Voice system P1 gaps closed. 23 voice commands live. TTS auto-reads Mentor responses. 1323 tests passing. TypeScript clean.**
+
+### What Was Done (Session 43)
+
+1. **New `services/voiceCommandRegistry.ts`** (367 lines):
+    - `VoiceCommandDef` interface: `id`, `group`, `label`, `aliases[]` (EN+DE lowercase phrases), `keywords` (fuzzy tokens), `action(transcript)`
+    - `matchVoiceCommand(transcript, commands)`: two-pass matcher -- exact alias (startsWith) then fuzzy keyword count (>=2 tokens = match)
+    - `buildVoiceCommands(dispatch)`: factory returning 23 commands across 7 groups:
+        - Navigation (7): Go to Plants/Strains/Equipment/Knowledge/Settings/Help + Daily Drop
+        - Strains (6): Search, reset filters, favorites, view by type (sativa/indica/hybrid)
+        - Plants (1): Water all plants
+        - Equipment (2): Open configurator / open calculators
+        - Knowledge (2): Open Mentor / open Learning Paths
+        - AI (3): Cloud/Local/Eco mode
+        - Accessibility (2): High contrast / reduced motion toggle
+
+2. **`stores/listenerMiddleware.ts` voice routing rewrite**:
+    - Removed: hardcoded 6-command array + naive `includes()` matching
+    - Added: `buildVoiceCommands(dispatch)` init on first voice event; `matchVoiceCommand` call on each transcript
+    - Confirmation sound (`AudioContext` beep) on successful match
+    - `console.debug` for no-match transcripts (no leaks to production logs)
+
+3. **`components/views/knowledge/MentorChatView.tsx` TTS auto-read**:
+    - `onStreamComplete` callback: calls `useTtsStore.getState().addToTtsQueue({ id, text: plainText })` when `settings.tts.enabled`
+    - Plain-text extraction via `DOMParser` + `innerText` (strips HTML before queuing)
+    - Per-message `SpeakerHigh` button: read-aloud on demand regardless of auto-read setting
+    - Auto-read does not retrigger on history scroll (tracks spoken IDs in `Set`)
+
+4. **`components/views/settings/VoiceSettingsTab.tsx` commands section**:
+    - Static 6-item hardcoded list replaced with grouped `VoiceCommandDef[]` from `voiceCommandRegistry`
+    - Search filter over `command.label` (same UX pattern as before)
+    - Group headers injected between category changes
+    - Shows 23 real commands (was 6 stale, unexecutable items)
+
+### Verified Metrics (Session 43)
+
+- Tests: 1323 passing, 0 failures (unchanged -- no new test files this session)
+- TypeScript: clean (RTK TS2719 filtered)
+- Voice commands: 23 functional (was 6 orphaned)
+- New service: `voiceCommandRegistry.ts` (367 lines)
+
+### Next Steps (Execution 44 -- Voice Sprint Part 2)
+
+- **V-03 Hotword**: `VoiceControl.tsx` -- second continuous `SpeechRecognition` instance, regex `hey\s+canna(guide)?`, 5-second activation window
+- **V-04 Grow-Log Dictation**: `LogActionModal.tsx` -- microphone button beside Notes textarea; extract `useDictation.ts` hook
+- **V-05 Voice Tests**: `VoiceControl.test.tsx`, `voiceCommandRegistry.test.ts`, `listenerMiddleware` voice routing tests
+- **Tauri microphone**: `src-tauri/capabilities/default.json` + `nativeBridgeService.requestMicrophonePermission()`
+- **ARIA**: `aria-live="polite"` on `VoiceControl` status span
+
+### Planned Executions
+
+#### Execution 44: Voice Sprint Part 2 (hotword + dictation + Tauri + tests)
+
+- Scope: `VoiceControl.tsx` wake-word, `LogActionModal.tsx` dictation mode, `useDictation.ts` hook, Tauri capabilities, `nativeBridgeService.ts` microphone permission, 3+ new test files, ARIA live regions
+- Prerequisites: Session 43 merged (voice registry + mentor TTS)
+- i18n: `plants.voiceDictation.*` keys in EN/DE/ES/FR/NL
+- Target: V-03, V-04, V-05 all moved to Done in AUDIT_BACKLOG
+
+---
+
 ## Latest Session (2026-04-06, Session 42) -- Comprehensive Audit Fix: progressLabel i18n + Metric Sync
 
 **Status: v1.3.0-beta. Critical i18n bug fixed. All metric documentation synchronized. 1323 tests passing. TypeScript clean.**

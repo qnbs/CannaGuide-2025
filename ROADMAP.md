@@ -193,15 +193,15 @@ Target: **2026-Q3** | Status: **In Progress**
 
 Target: **2027-Q2**
 
-| Feature                                         | Category      | Priority | Issue |
-| ----------------------------------------------- | ------------- | -------- | ----- |
-| Mobile-native experience (Capacitor production) | Platform      | High     | —     |
-| Tauri desktop production release                | Platform      | High     | —     |
-| Real-time multi-device sync (CRDTs)             | Sync          | High     | —     |
-| Plugin/extension system                         | Architecture  | Medium   | —     |
-| Grow community forums & profiles                | Community     | Medium   | —     |
-| Voice assistant deep integration                | UX            | Low      | —     |
-| AR plant overlay (WebXR)                        | Visualization | Low      | —     |
+| Feature                                                       | Category      | Priority | Issue |
+| ------------------------------------------------------------- | ------------- | -------- | ----- |
+| Mobile-native experience (Capacitor production)               | Platform      | High     | —     |
+| Tauri desktop production release                              | Platform      | High     | —     |
+| Real-time multi-device sync (CRDTs)                           | Sync          | High     | —     |
+| Plugin/extension system                                       | Architecture  | Medium   | —     |
+| Grow community forums & profiles                              | Community     | Medium   | —     |
+| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium   | —     |
+| AR plant overlay (WebXR)                                      | Visualization | Low      | —     |
 
 ---
 
@@ -213,6 +213,9 @@ Target: **2026-Q4**
 | ------------------------------------------------------------------- | ---------- | -------- | ----- |
 | Strain database growth program (778 → 2,000+ curated entries)       | Strains    | High     | —     |
 | Strain ingestion pipeline with dedupe/provenance/quality scoring    | Data       | High     | —     |
+| Voice Sprint: Hotword wake-word detection (V-03)                    | Voice/UX   | High     | —     |
+| Voice Sprint: Grow-log voice dictation (V-04)                       | Voice/UX   | High     | —     |
+| Voice Sprint: Voice system test coverage (V-05)                     | Testing    | High     | —     |
 | Infinite discovery feed (news, HD galleries, educational snippets)  | UX         | High     | —     |
 | Content taxonomy and moderation rules for feed categories           | Governance | High     | —     |
 | Practical extraction knowledge pack (static hash, workflow safety)  | Knowledge  | High     | —     |

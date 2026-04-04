@@ -8,6 +8,20 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Features
 
+- **voice:** New `services/voiceCommandRegistry.ts` (367 lines) -- centralised voice command definitions; 23 `VoiceCommandDef` objects across 7 groups (Navigation, Strains, Plants, Equipment, Knowledge, AI, Accessibility); EN+DE aliases for each command; two-pass matcher (exact alias startsWith + fuzzy keyword token scoring)
+- **voice:** `listenerMiddleware.ts` voice routing rewritten -- replaces hardcoded 6-command list with `buildVoiceCommands(dispatch)` + `matchVoiceCommand(transcript, commands)` from `voiceCommandRegistry`; 23 fully functional voice commands now route to app actions
+- **voice:** `MentorChatView.tsx` -- AI Mentor responses now auto-read via TTS after stream completion when `settings.tts.enabled`; per-message "read aloud" button (`SpeakerHigh` icon) added; plain-text extraction strips HTML before queuing
+- **voice:** `VoiceSettingsTab.tsx` commands section -- replaced static 6-item display with live registry list from `voiceCommandRegistry`; commands grouped by category, searchable by label; no longer orphaned UI
+
+### Documentation
+
+- **docs/AUDIT_BACKLOG.md:** Voice System (V) section added -- V-01 (Done), V-02 (Done), V-03..V-05 (Open), V-06 (Deferred); summary counts updated
+- **ROADMAP.md:** Voice Sprint V-03/V-04/V-05 added to v1.4 High-Priority; v2.0 ONNX TTS/STT entry updated to Medium
+
+---
+
+### Features
+
 - **state:** `devtools` middleware added to all 8 Zustand stores -- `useUIStore`, `useAlertsStore`, `useFiltersStore`, `useTtsStore`, `useIotStore`, `useStrainsViewStore`, `sensorStore`, `useCalculatorSessionStore` -- each with a unique name; `enabled: import.meta.env.DEV` for zero production overhead; all stores now visible in Redux DevTools Extension as named slices
 - **state:** New `services/uiStateBridge.ts` -- central Redux<->Zustand bridge; `initUIStateBridgeFull(getState, dispatch, subscribe)` replaces the private `initUIStoreReduxBridge`; exposes `getReduxSnapshot(selector)` for synchronous reads, `subscribeToRedux(selector, handler)` for reactive subscriptions with cleanup, `dispatchToRedux(action)` for dispatch from Zustand context; all subscriptions auto-cleared on re-init
 - **state:** New `hooks/useStateHealthCheck.ts` -- dev-only hook; checks `onboardingStep` (Zustand) vs `onboardingCompleted` (Redux) consistency; `console.warn` on inconsistency; zero production overhead (tree-shaken)

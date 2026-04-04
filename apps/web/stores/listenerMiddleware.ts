@@ -8,12 +8,12 @@ import {
     plantStateUpdated,
     resetPlants,
     addJournalEntry,
-    waterAllPlants,
 } from './slices/simulationSlice'
 import { getUISnapshot, useUIStore } from './useUIStore'
 import { useFiltersStore, getFiltersSnapshot } from './useFiltersStore'
 import { urlService } from '@/services/urlService'
 import { ttsService } from '@/services/ttsService'
+import { buildVoiceCommands, matchVoiceCommand } from '@/services/voiceCommandRegistry'
 
 // Import actions to listen for
 import {
@@ -233,127 +233,18 @@ export const initVoiceCommandSubscription = (
                 return
             }
 
-            // --- Define Voice Commands ---
-            const commands = [
-                // Navigation
-                {
-                    match: [t('nav.plants').toLowerCase(), 'show garden', 'gehe zu pflanzen'],
-                    action: () => getUISnapshot().setActiveView(View.Plants),
-                },
-                {
-                    match: [
-                        'open yield predictor',
-                        'yield predictor öffnen',
-                        'yield prognose öffnen',
-                    ],
-                    action: () => getUISnapshot().setActiveView(View.Plants),
-                },
-                {
-                    match: ['open ar preview', 'ar vorschau öffnen', 'breeding preview öffnen'],
-                    action: () => getUISnapshot().setActiveView(View.Knowledge),
-                },
-                {
-                    match: [t('nav.strains').toLowerCase(), 'show strains', 'gehe zu sorten'],
-                    action: () => getUISnapshot().setActiveView(View.Strains),
-                },
-                {
-                    match: [t('nav.equipment').toLowerCase(), 'gehe zu ausrüstung'],
-                    action: () => getUISnapshot().setActiveView(View.Equipment),
-                },
-                {
-                    match: [t('nav.knowledge').toLowerCase(), 'show knowledge', 'gehe zu wissen'],
-                    action: () => getUISnapshot().setActiveView(View.Knowledge),
-                },
-                {
-                    match: [
-                        t('nav.settings').toLowerCase(),
-                        'show settings',
-                        'gehe zu einstellungen',
-                    ],
-                    action: () => getUISnapshot().setActiveView(View.Settings),
-                },
-                {
-                    match: ['open settings', 'settings öffnen', 'settings offnen'],
-                    action: () => getUISnapshot().setActiveView(View.Settings),
-                },
-                {
-                    match: [t('nav.help').toLowerCase(), 'show help', 'gehe zu hilfe'],
-                    action: () => getUISnapshot().setActiveView(View.Help),
-                },
-                {
-                    match: ['open help', 'hilfe öffnen', 'hilfe offnen'],
-                    action: () => getUISnapshot().setActiveView(View.Help),
-                },
-                {
-                    match: ['read sensors', 'sensoren lesen', 'sensor hub öffnen'],
-                    action: () => getUISnapshot().setActiveView(View.Plants),
-                },
+            // --- Route to registry commands (covers all CommandPalette actions) ---
+            const commands = buildVoiceCommands(reduxDispatch)
+            const matched = matchVoiceCommand(lowered, commands)
 
-                // Strain Actions
-                {
-                    match: [
-                        `${t('common.search', { lng: 'en' }).toLowerCase()} for`,
-                        `${t('common.search', { lng: 'de' }).toLowerCase()} nach`,
-                    ],
-                    action: () => {
-                        const searchTerm = lowered.split(/search for|suche nach/i)[1]?.trim()
-                        if (searchTerm) {
-                            getUISnapshot().setActiveView(View.Strains)
-                            useFiltersStore.getState().setSearchTerm(searchTerm)
-                        }
-                    },
-                },
-                {
-                    match: [t('strainsView.resetFilters').toLowerCase(), 'filter zurücksetzen'],
-                    action: () => useFiltersStore.getState().resetAllFilters(),
-                },
-                {
-                    match: [
-                        t('strainsView.tabs.favorites').toLowerCase(),
-                        'show favorites',
-                        'zeige favoriten',
-                    ],
-                    action: () => {
-                        getUISnapshot().setActiveView(View.Strains)
-                        useFiltersStore.getState().setShowFavoritesOnly(true)
-                    },
-                },
-
-                // Plant Actions
-                {
-                    match: [t('plantsView.summary.waterAll').toLowerCase(), 'alle pflanzen gießen'],
-                    action: () => reduxDispatch(waterAllPlants()),
-                },
-                {
-                    match: ['water all plants', 'water all'],
-                    action: () => reduxDispatch(waterAllPlants()),
-                },
-
-                // UI Control
-                {
-                    match: ['go back', 'zurück'],
-                    action: () => {
-                        const { activeView, lastActiveView } = getUISnapshot()
-                        if (activeView !== lastActiveView) {
-                            getUISnapshot().setActiveView(lastActiveView)
-                        }
-                    },
-                },
-            ]
-
-            let commandFound = false
-            for (const cmd of commands) {
-                if (cmd.match.some((keyword) => lowered.startsWith(keyword))) {
-                    cmd.action()
-                    commandFound = true
-                    if (reduxGetState().settings.settings.voiceControl.confirmationSound) {
-                        playConfirmationSound()
-                    }
-                    break
+            if (matched) {
+                matched.action(lowered)
+                if (reduxGetState().settings.settings.voiceControl.confirmationSound) {
+                    playConfirmationSound()
                 }
-            }
-
-            if (!commandFound) {
+                getUISnapshot().setVoiceStatusMessage(matched.label)
+                setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 3000)
+            } else {
                 getUISnapshot().setVoiceStatusMessage(`Unknown command: "${transcript}"`)
                 setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 4000)
             }

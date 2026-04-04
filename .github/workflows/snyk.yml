@@ -3,6 +3,8 @@ name: Snyk Security
 # Runs on PRs (advisory) and weekly for continuous monitoring.
 # Requires SNYK_TOKEN secret from Snyk App integration.
 on:
+    push:
+        branches: [main]
     pull_request:
         branches: [main]
     schedule:

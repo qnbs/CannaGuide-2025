@@ -13,7 +13,7 @@
 import type { AppStore, RootState } from '@/stores/store'
 import { useAlertsStore, type AlertMetric } from '@/stores/useAlertsStore'
 import { secureRandom } from '@/utils/random'
-import type { Plant } from '@/types'
+import { PlantStage, type Plant } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Threshold configuration
@@ -24,22 +24,62 @@ interface ThresholdRange {
     max: number
 }
 
+/** Global fallback thresholds (all stages). */
 const THRESHOLDS: Record<AlertMetric, ThresholdRange> = {
     temperature: { min: 16, max: 30 },
     humidity: { min: 30, max: 75 },
     vpd: { min: 0.4, max: 1.6 },
     ph: { min: 5.5, max: 7.0 },
     ec: { min: 0.5, max: 3.0 },
+    co2: { min: 300, max: 1500 },
+    moisture: { min: 20, max: 90 },
 }
+
+/**
+ * Stage-specific overrides for metrics that vary significantly across growth
+ * phases. Any metric not listed here falls back to THRESHOLDS.
+ * VPD optimums: seedling 0.4-0.8, vegetative 0.8-1.2, flowering 1.0-1.6.
+ */
+const STAGE_THRESHOLDS: Partial<Record<PlantStage, Partial<Record<AlertMetric, ThresholdRange>>>> =
+    {
+        [PlantStage.Seed]: {
+            vpd: { min: 0.4, max: 0.8 },
+            temperature: { min: 20, max: 28 },
+            humidity: { min: 60, max: 80 },
+        },
+        [PlantStage.Germination]: {
+            vpd: { min: 0.4, max: 0.8 },
+            temperature: { min: 20, max: 28 },
+            humidity: { min: 60, max: 80 },
+        },
+        [PlantStage.Seedling]: {
+            vpd: { min: 0.4, max: 0.8 },
+            temperature: { min: 20, max: 28 },
+            humidity: { min: 60, max: 75 },
+        },
+        [PlantStage.Vegetative]: {
+            vpd: { min: 0.8, max: 1.2 },
+            temperature: { min: 18, max: 28 },
+            humidity: { min: 40, max: 70 },
+        },
+        [PlantStage.Flowering]: {
+            vpd: { min: 1.0, max: 1.6 },
+            temperature: { min: 17, max: 27 },
+            humidity: { min: 30, max: 50 },
+        },
+    }
 
 /** Cooldown per metric per plant in milliseconds (2 hours). */
 const COOLDOWN_MS = 2 * 60 * 60 * 1000
+
+/** sessionStorage key prefix for persistent cooldown entries. */
+const COOLDOWN_SESSION_KEY = 'cannaguide_coach_cooldown'
 
 // ---------------------------------------------------------------------------
 // Internal state
 // ---------------------------------------------------------------------------
 
-/** Map of `${plantId}:${metric}` -> last alert timestamp. */
+/** In-memory mirror of sessionStorage cooldown (faster lookup). */
 const cooldownMap = new Map<string, number>()
 
 /** Prevents concurrent AI calls from stacking up. */
@@ -49,11 +89,43 @@ const MAX_CONCURRENT_CALLS = 2
 let unsubscribe: (() => void) | null = null
 
 // ---------------------------------------------------------------------------
+// Stage-aware threshold resolution
+// ---------------------------------------------------------------------------
+
+function resolveThreshold(stage: PlantStage, metric: AlertMetric): ThresholdRange {
+    const stageOverride = STAGE_THRESHOLDS[stage]
+    return stageOverride?.[metric] ?? THRESHOLDS[metric]
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function generateAlertId(): string {
     return `coach_${Date.now()}_${Math.floor(secureRandom() * 1e9)}`
+}
+
+function loadCooldownFromSession(): void {
+    try {
+        const raw = sessionStorage.getItem(COOLDOWN_SESSION_KEY)
+        if (!raw) return
+        const map = JSON.parse(raw) as Record<string, number>
+        for (const [k, v] of Object.entries(map)) {
+            cooldownMap.set(k, v)
+        }
+    } catch {
+        // sessionStorage unavailable or corrupted -- proceed without persistence
+    }
+}
+
+function saveCooldownToSession(): void {
+    try {
+        const obj: Record<string, number> = {}
+        cooldownMap.forEach((v, k) => { obj[k] = v })
+        sessionStorage.setItem(COOLDOWN_SESSION_KEY, JSON.stringify(obj))
+    } catch {
+        // sessionStorage write failure is non-critical
+    }
 }
 
 function isCooldownActive(plantId: string, metric: AlertMetric): boolean {
@@ -65,6 +137,7 @@ function isCooldownActive(plantId: string, metric: AlertMetric): boolean {
 
 function setCooldown(plantId: string, metric: AlertMetric): void {
     cooldownMap.set(`${plantId}:${metric}`, Date.now())
+    saveCooldownToSession()
 }
 
 interface Breach {
@@ -76,35 +149,27 @@ function detectBreaches(plant: Plant): Breach[] {
     const breaches: Breach[] = []
     const env = plant.environment
     const med = plant.medium
+    const stage: PlantStage = (plant.stage as PlantStage) ?? PlantStage.Vegetative
 
-    const temp = env.internalTemperature
-    const tRange = THRESHOLDS.temperature
-    if (temp < tRange.min || temp > tRange.max) {
-        breaches.push({ metric: 'temperature', value: temp })
+    const check = (metric: AlertMetric, value: number): void => {
+        const range = resolveThreshold(stage, metric)
+        if (value < range.min || value > range.max) {
+            breaches.push({ metric, value })
+        }
     }
 
-    const hum = env.internalHumidity
-    const hRange = THRESHOLDS.humidity
-    if (hum < hRange.min || hum > hRange.max) {
-        breaches.push({ metric: 'humidity', value: hum })
+    check('temperature', env.internalTemperature)
+    check('humidity', env.internalHumidity)
+    check('vpd', env.vpd)
+    check('ph', med.ph)
+    check('ec', med.ec)
+
+    if (env.co2Level !== undefined) {
+        check('co2', env.co2Level)
     }
 
-    const vpd = env.vpd
-    const vRange = THRESHOLDS.vpd
-    if (vpd < vRange.min || vpd > vRange.max) {
-        breaches.push({ metric: 'vpd', value: vpd })
-    }
-
-    const ph = med.ph
-    const pRange = THRESHOLDS.ph
-    if (ph < pRange.min || ph > pRange.max) {
-        breaches.push({ metric: 'ph', value: ph })
-    }
-
-    const ec = med.ec
-    const eRange = THRESHOLDS.ec
-    if (ec < eRange.min || ec > eRange.max) {
-        breaches.push({ metric: 'ec', value: ec })
+    if (med.moisture !== undefined) {
+        check('moisture', med.moisture)
     }
 
     return breaches
@@ -168,6 +233,8 @@ async function requestAiAdvice(plant: Plant, breach: Breach): Promise<void> {
                 vpd: 'VPD',
                 ph: 'pH',
                 ec: 'EC',
+                co2: 'CO2',
+                moisture: 'Moisture',
             }
             void sendNotification({
                 title: `${plant.name}: ${metricLabels[breach.metric]} critical`,
@@ -220,6 +287,8 @@ export const proactiveCoachService = {
      */
     init(store: AppStore): void {
         if (unsubscribe) return // Already initialised
+
+        loadCooldownFromSession()
 
         // Debounce: only evaluate after 2 seconds of no state changes to
         // avoid thrashing during rapid simulation ticks.

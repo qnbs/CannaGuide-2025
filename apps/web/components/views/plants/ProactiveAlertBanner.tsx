@@ -19,6 +19,12 @@ function metricUnit(metric: AlertMetric): string {
             return ''
         case 'ec':
             return ' mS/cm'
+        case 'co2':
+            return ' ppm'
+        case 'moisture':
+            return '%'
+        default:
+            return ''
     }
 }
 
@@ -28,6 +34,8 @@ const METRIC_I18N_KEY: Record<AlertMetric, string | undefined> = {
     vpd: undefined,
     ph: undefined,
     ec: undefined,
+    co2: undefined,
+    moisture: undefined,
 }
 
 const METRIC_FALLBACK: Record<AlertMetric, string> = {
@@ -36,6 +44,8 @@ const METRIC_FALLBACK: Record<AlertMetric, string> = {
     vpd: 'VPD',
     ph: 'pH',
     ec: 'EC',
+    co2: 'CO2',
+    moisture: 'Moisture',
 }
 
 function formatValue(metric: AlertMetric, value: number): string {

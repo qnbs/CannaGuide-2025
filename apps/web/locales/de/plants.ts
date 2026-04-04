@@ -568,6 +568,11 @@ export const plantsView = {
             vegetative: 'Vegetativ',
             flowering: 'Blüte',
             tooHigh: 'Zu hoch',
+            optimal: 'Optimal',
+            danger: 'Gefahr',
         },
+    },
+    advisorArchive: {
+        searchPlaceholder: 'Berater-Antworten suchen...',
     },
 }

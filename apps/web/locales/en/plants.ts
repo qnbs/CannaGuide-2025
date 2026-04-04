@@ -556,6 +556,11 @@ export const plantsView = {
             vegetative: 'Vegetative',
             flowering: 'Flowering',
             tooHigh: 'Too High',
+            optimal: 'Optimal',
+            danger: 'Danger',
         },
+    },
+    advisorArchive: {
+        searchPlaceholder: 'Search advisor responses...',
     },
 }

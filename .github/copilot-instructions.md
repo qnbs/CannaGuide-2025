@@ -272,7 +272,7 @@ npm run docs:ai-core     # Generate Typedoc API docs for ai-core package
 # Web app (from apps/web/ or via workspace flag)
 npm run -w @cannaguide/web dev       # Vite dev server (localhost:5173)
 npm run -w @cannaguide/web build     # Production build
-npm run -w @cannaguide/web test      # Vitest unit/integration
+npm run -w @cannaguide/web test -- --run  # Vitest unit/integration (--run required -- no --run = watch mode hangs)
 npm run -w @cannaguide/web test:e2e  # Playwright E2E (requires build)
 npm run -w @cannaguide/web test:ct   # Playwright Component tests
 npm run -w @cannaguide/web typecheck # tsc --noEmit (TS2719 filtered)
@@ -332,7 +332,7 @@ Switch to Agent Mode and execute the approved plan:
 2. **Implement changes** in dependency order, marking todos in-progress/completed as you go.
 3. **Run validation** after each logical group of changes:
     - `npm run -w @cannaguide/web typecheck` (must be clean)
-    - `npm run -w @cannaguide/web test` (must pass, 0 failures)
+    - `npm run -w @cannaguide/web test -- --run` (must pass, 0 failures -- `--run` is mandatory, omitting it starts watch mode and hangs indefinitely)
     - `npm run -w @cannaguide/web build` (must succeed)
 4. **Fix any errors** immediately before proceeding to the next step.
 

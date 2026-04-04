@@ -4,6 +4,72 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.4.0-alpha](https://github.com/qnbs/CannaGuide-2025/compare/cannaguide-2025-v1.3.0-alpha...cannaguide-2025-v1.4.0-alpha) (2026-04-04)
+
+
+### Features
+
+* **equipment:** add CO2, Humidity Deficit, Light Hanging Height calculators ([0d7a282](https://github.com/qnbs/CannaGuide-2025/commit/0d7a282b74d79791826eb62c6e8f227ca32680a5))
+* **equipment:** ai configurator panel, budget calculator, IoT feed, pdf export (execution 3) ([dcb2a29](https://github.com/qnbs/CannaGuide-2025/commit/dcb2a295fbf599cd1ac65b21c46da1f34f13326d))
+* **equipment:** timer schedule calculator + unit conversion utils ([7359abb](https://github.com/qnbs/CannaGuide-2025/commit/7359abb081dedf6255ebbb84e6a0837c0aba1cfb))
+* **equipment:** what-if sandbox + calculator history (execution 2) ([a2b048d](https://github.com/qnbs/CannaGuide-2025/commit/a2b048d7212f3ddc605fd36670eee9dc5207b84a))
+* **help:** add screenshot gallery, update manual, add Gemini free note ([0e74aae](https://github.com/qnbs/CannaGuide-2025/commit/0e74aaeb21d48de89737c8209d2f77a476e4bbf5))
+* **iot:** mqtt reconnect with exponential backoff, zod validation, telemetry, esphome templates ([12ce12c](https://github.com/qnbs/CannaGuide-2025/commit/12ce12c4c1e5676c6223b4069675bfc9b5648fa2))
+* **knowledge,ci:** a11y focus-trap + progressbar label + 4 view unit tests + eslint no-cycle ([c8b62ea](https://github.com/qnbs/CannaGuide-2025/commit/c8b62ea9ff91752a4303524763ee49b46095d4d2))
+* **knowledge:** 5 new hub calculators (execution 4) ([8777aac](https://github.com/qnbs/CannaGuide-2025/commit/8777aacd00dae4bdd1335fca8a5317a46c54fa1b))
+* **knowledge:** add cross-module ecosystem services and analytics dashboard ([0c8b74e](https://github.com/qnbs/CannaGuide-2025/commit/0c8b74ea95125f51698ffd24c1c550cd3a8142f2))
+* **knowledge:** i18n ES/FR/NL calculator, stryker + playwright CT/VR (exec 6) ([d6ab026](https://github.com/qnbs/CannaGuide-2025/commit/d6ab0269ce872b343ce4ec136d1cb69a4cc2c01f))
+* **knowledge:** rag explanations, 7-day simulation curves, svg sparkline charts (execution 5) ([f65fd48](https://github.com/qnbs/CannaGuide-2025/commit/f65fd48dbf2593e13f2914dba2ef822df4975685))
+* **knowledge:** wissen-bereich vollstaendig ausgebaut ([020fef0](https://github.com/qnbs/CannaGuide-2025/commit/020fef08d69f64617b90755e0f8de70174842f4d))
+* **plants:** stage-aware coach thresholds + co2/moisture alerts + vpd i18n ([b38df6d](https://github.com/qnbs/CannaGuide-2025/commit/b38df6df64321fa9ee35aec5bf32fb2fe1a45515))
+* **security,perf:** acyclic enforcement, typed worker errors, lodash-es fix ([a0cd284](https://github.com/qnbs/CannaGuide-2025/commit/a0cd284980108dc557c5af47f0ae234a98a9150e))
+* **state:** zustand devtools on all 8 stores + uiStateBridge + health check ([4291f62](https://github.com/qnbs/CannaGuide-2025/commit/4291f626116bc4fa3784b94d974e8ff4ff33d575))
+* **strains,security:** extend multi-API lookup, AES-256-GCM IoT creds, IndexedDB monitor ([308dd08](https://github.com/qnbs/CannaGuide-2025/commit/308dd08428e221e4671b19b905139eecf7c67edc))
+* **strains:** 4:20 Daily Drop -- smart daily picks engine ([91695f6](https://github.com/qnbs/CannaGuide-2025/commit/91695f6e585977981e46ae76f706d0b386e6c99d))
+* **strains:** add AI strain intelligence lookup with multi-API strategy ([7f179f7](https://github.com/qnbs/CannaGuide-2025/commit/7f179f745391d52dc44dea0fdf353ce7c2381877))
+* **strains:** add-to-library system for Daily Drop with catalog resolve ([e7b0864](https://github.com/qnbs/CannaGuide-2025/commit/e7b086468291e07d76a03c27cf2cdf85952f672e))
+* **strains:** entourage effect science -- terpene/cannabinoid/flavonoid interaction enrichment ([6941ded](https://github.com/qnbs/CannaGuide-2025/commit/6941ded39127bf4de2d2e5ebfcac78ef419445a5))
+* **strains:** p1 -- provenance layer, recommendation scoring, academic refs, CI gate ([f23f8ed](https://github.com/qnbs/CannaGuide-2025/commit/f23f8ed0a7d24291bfe443ad84878daf7bd29583))
+* **trends:** phase 2+3 -- interactive filter, match-to-grow scores, AI analysis ([4d69c70](https://github.com/qnbs/CannaGuide-2025/commit/4d69c7031d81d7d2b69593eac944f86b7b92d39a))
+* **ui:** consolidate breeding lab, fix export popup, enhance PWA, improve local AI ([37698af](https://github.com/qnbs/CannaGuide-2025/commit/37698afc6c553684b158ee20193c697172f1ed69))
+* **ui:** daily strain discoveries, equipment shoppification, nav reorder, plants layout ([e1c8286](https://github.com/qnbs/CannaGuide-2025/commit/e1c8286a989a14d67ca4c0ea51ca5b0200a234cf))
+* **ui:** iot dashboard, 3d controls, strain scoring, e2e fixes ([ca36b6e](https://github.com/qnbs/CannaGuide-2025/commit/ca36b6e027b3b15d5b0b9c016deb2ab3522403e2))
+* **voice:** commandPalette bridge + TTS mentor wiring (session 43) ([64b09e5](https://github.com/qnbs/CannaGuide-2025/commit/64b09e5504f01431ef26c03cc6a34cd73c48a4c0))
+* **workerbus:** p1 -- abortcontroller, transferable, dispatch hooks, state sync ([6530d62](https://github.com/qnbs/CannaGuide-2025/commit/6530d627efc9da82931e4c4be929c3092210d9ac))
+
+
+### Bug Fixes
+
+* **ci:** pin @tauri-apps/cli to 2.10.1 (Scorecard [#267](https://github.com/qnbs/CannaGuide-2025/issues/267)) ([f3c727b](https://github.com/qnbs/CannaGuide-2025/commit/f3c727be0b7386dd0c4c58c5115a04180381e909))
+* **ci:** stabilize E2E suite -- drop Firefox from CI, fix selectors, skip hardware tests ([d881a35](https://github.com/qnbs/CannaGuide-2025/commit/d881a350b53dcab259df2136229a734369d81035))
+* **ci:** stabilize E2E tests, fix Tauri CI, bump to v1.3.0-beta ([d2705c7](https://github.com/qnbs/CannaGuide-2025/commit/d2705c75736e074dc388342a07bdb1f57ca71f18))
+* **ci:** use direct npx playwright in e2e steps to fix arg passing ([783cb9b](https://github.com/qnbs/CannaGuide-2025/commit/783cb9bbad560e0370387f34f8b9f6b7c57678e0))
+* **docker:** copy workspace package.json files before npm ci ([20e257e](https://github.com/qnbs/CannaGuide-2025/commit/20e257e878963d09e5c376e99e7c206f323df6ea))
+* **help:** resolve CI typecheck failures in ScreenshotGallery and screenshots test ([bab86aa](https://github.com/qnbs/CannaGuide-2025/commit/bab86aad1491ceb896268264620c0908e3870909))
+* **i18n,docs:** progressLabel all 5 locales + metric sync across all docs ([87f3901](https://github.com/qnbs/CannaGuide-2025/commit/87f3901186d966f0a94f891bd64036588dba1c4c))
+* **i18n,pwa:** deep audit -- icon, theme-color, analytics i18n all 5 langs ([66a7876](https://github.com/qnbs/CannaGuide-2025/commit/66a78765c9a0b8ec45edd1473675ec46a5821dac))
+* **i18n,ui:** comprehensive regression audit and i18n completeness ([29c87ed](https://github.com/qnbs/CannaGuide-2025/commit/29c87ed138d35182a0758ea6b13a798366549600))
+* **i18n:** complete ES/FR/NL knowledge namespace ([3ecbee1](https://github.com/qnbs/CannaGuide-2025/commit/3ecbee119c62ab11cddc23a9ebd43d4304960213))
+* **i18n:** correct 12 broken PWA translation keys, unify accordion design system ([5b664c0](https://github.com/qnbs/CannaGuide-2025/commit/5b664c0fb284c05527184c95cabcf72c9cff36dc))
+* **i18n:** dynamic catalog count, localized pick reasons ([ee940eb](https://github.com/qnbs/CannaGuide-2025/commit/ee940ebc08a5b7fcd29d37569dd0172b13c266ec))
+* **i18n:** restore German umlauts, fix GenealogyView race condition, add missing i18n keys ([c2a1858](https://github.com/qnbs/CannaGuide-2025/commit/c2a1858ca95403132f93ab69e9b1a6777ade4aa8))
+* **knowledge:** audit and fix ecosystem infrastructure ([22d5a74](https://github.com/qnbs/CannaGuide-2025/commit/22d5a745917f84fc8c50320968db56a17a04a4f6))
+* move [@import](https://github.com/import) '@cannaguide/ui/tokens.css' before [@tailwind](https://github.com/tailwind) directives. ([e26dc82](https://github.com/qnbs/CannaGuide-2025/commit/e26dc82ca95a6a868750909bd361fce97692f33b))
+* **security:** escape backslashes in strain generator, pin tauri CLI ([9f06250](https://github.com/qnbs/CannaGuide-2025/commit/9f06250cd22a47081a5658a66a943ea616baa069))
+* **security:** replace CSP strict-dynamic with workable static-PWA policy ([e2d5165](https://github.com/qnbs/CannaGuide-2025/commit/e2d51656195e8e65e409b378d2dac7c4bd2f3355))
+* **security:** resolve CodeQL [#266](https://github.com/qnbs/CannaGuide-2025/issues/266), CSP strict-dynamic, prompt allow-list, a11y ([4ae8f37](https://github.com/qnbs/CannaGuide-2025/commit/4ae8f374e536268d9e860e26cacb343a15105a75))
+* **security:** resolve CodeQL alerts [#264](https://github.com/qnbs/CannaGuide-2025/issues/264) and [#265](https://github.com/qnbs/CannaGuide-2025/issues/265) ([a0ebf06](https://github.com/qnbs/CannaGuide-2025/commit/a0ebf062d29be34ddf160117d275171aecce1221))
+* **strains:** resolve exactOptionalPropertyTypes TS2375/TS2379 CI failures ([a7e2590](https://github.com/qnbs/CannaGuide-2025/commit/a7e2590c77e615cb4f7d7ae0fa62908542296815))
+* **test:** remove unused vwThreshold param in mobile E2E ([8c4eb47](https://github.com/qnbs/CannaGuide-2025/commit/8c4eb47e412e179f0d20aa5ca779fc3ca0e0565b))
+* **test:** use lowercase data-view-id selectors matching View enum values ([537a8fa](https://github.com/qnbs/CannaGuide-2025/commit/537a8fa26bde2ebb170a8ecd00ce80fc5d6a044e))
+* **ui,strains:** bump strain data version to 5, unify section-hero animations ([1ab1209](https://github.com/qnbs/CannaGuide-2025/commit/1ab12091c327c47b52b9a1b17359a5917cf5dfdb))
+* **ui:** comprehensive audit -- i18n, ASCII compliance, console.debug ([e2c9609](https://github.com/qnbs/CannaGuide-2025/commit/e2c96092125d0ccbadb33660142b6acc137f89c6))
+* **ui:** comprehensive notifications, PWA install singleton, UI/UX audit ([a111866](https://github.com/qnbs/CannaGuide-2025/commit/a11186615b8b6fa2d7ac1d3c99b581e4db1ebe19))
+* **ui:** restore critical css imports, fix token paths and hardcode html dark mode ([6bee49f](https://github.com/qnbs/CannaGuide-2025/commit/6bee49f97aeaf9bdb5ed3c0b6458e27602415804))
+* **ui:** restore theme colors by fixing CSS import order in styles.css ([e26dc82](https://github.com/qnbs/CannaGuide-2025/commit/e26dc82ca95a6a868750909bd361fce97692f33b))
+* **ui:** unify sub-nav grid layout and fix learning path i18n ([961da61](https://github.com/qnbs/CannaGuide-2025/commit/961da61b9779ffd3488a04a254bd9cf9e2b3da9e))
+* **workerbus:** audit -- timer leak, sentry api, mockworker type ([5aeb1d5](https://github.com/qnbs/CannaGuide-2025/commit/5aeb1d53932be7f3bc596ec6c232953ba02e6dff))
+
 ## [Unreleased]
 
 ### Features

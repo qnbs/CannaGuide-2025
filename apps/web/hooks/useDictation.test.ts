@@ -28,6 +28,8 @@ vi.mock('@/stores/selectors', () => ({
 
 type ListenerFn = (event?: unknown) => void
 
+type WindowWithSpeech = Window & { SpeechRecognition?: unknown }
+
 type MockRecInstance = {
     continuous: boolean
     interimResults: boolean
@@ -56,8 +58,9 @@ function installMockSpeechRecognition() {
         addEventListener(type: string, fn: ListenerFn) {
             this._listeners[type] = fn
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        removeEventListener(_type: string, _fn: ListenerFn) { /* no-op */ }
+        removeEventListener(_type: string, _fn: ListenerFn) {
+            /* no-op */
+        }
         start = vi.fn()
         stop = vi.fn()
         abort = vi.fn()
@@ -67,15 +70,15 @@ function installMockSpeechRecognition() {
         }
 
         constructor() {
-            mockInstances.push(this as unknown as MockRecInstance)
+            mockInstances.push(this as MockRecInstance)
         }
     }
 
-    ;(window as unknown as Record<string, unknown>).SpeechRecognition = MockSpeechRecognition
+    ;(window as WindowWithSpeech).SpeechRecognition = MockSpeechRecognition
 }
 
 function uninstallMockSpeechRecognition() {
-    delete (window as unknown as Record<string, unknown>).SpeechRecognition
+    delete (window as WindowWithSpeech).SpeechRecognition
     mockInstances.length = 0
 }
 
@@ -111,31 +114,48 @@ describe('useDictation -- initial state', () => {
     it('reset() is safe to call on fresh hook', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        expect(() => act(() => { result.current.reset() })).not.toThrow()
+        expect(() =>
+            act(() => {
+                result.current.reset()
+            }),
+        ).not.toThrow()
     })
 
     it('stop() is safe to call when not started', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        expect(() => act(() => { result.current.stop() })).not.toThrow()
+        expect(() =>
+            act(() => {
+                result.current.stop()
+            }),
+        ).not.toThrow()
     })
 })
 
 describe('useDictation -- with SpeechRecognition mock', () => {
-    beforeEach(() => { installMockSpeechRecognition() })
-    afterEach(() => { uninstallMockSpeechRecognition(); vi.clearAllMocks() })
+    beforeEach(() => {
+        installMockSpeechRecognition()
+    })
+    afterEach(() => {
+        uninstallMockSpeechRecognition()
+        vi.clearAllMocks()
+    })
 
     it('sets isListening=true after start()', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
         expect(result.current.isListening).toBe(true)
     })
 
     it('accumulates transcript from result events', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
 
         const rec = mockInstances[0]
         expect(rec).toBeDefined()
@@ -144,7 +164,11 @@ describe('useDictation -- with SpeechRecognition mock', () => {
             rec!.fire('result', {
                 results: {
                     length: 1,
-                    0: { isFinal: false, length: 1, 0: { transcript: 'hello world', confidence: 0.9 } },
+                    0: {
+                        isFinal: false,
+                        length: 1,
+                        0: { transcript: 'hello world', confidence: 0.9 },
+                    },
                 },
             })
         })
@@ -155,14 +179,20 @@ describe('useDictation -- with SpeechRecognition mock', () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const onTranscript = vi.fn()
         const { result } = renderHook(() => useDictation(onTranscript))
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
 
         const rec = mockInstances[0]
         act(() => {
             rec!.fire('result', {
                 results: {
                     length: 1,
-                    0: { isFinal: true, length: 1, 0: { transcript: 'final text', confidence: 0.9 } },
+                    0: {
+                        isFinal: true,
+                        length: 1,
+                        0: { transcript: 'final text', confidence: 0.9 },
+                    },
                 },
             })
         })
@@ -172,19 +202,27 @@ describe('useDictation -- with SpeechRecognition mock', () => {
     it('sets isListening=false on end event', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
         expect(result.current.isListening).toBe(true)
         const rec = mockInstances[0]
-        act(() => { rec!.fire('end') })
+        act(() => {
+            rec!.fire('end')
+        })
         expect(result.current.isListening).toBe(false)
     })
 
     it('sets error=notAllowed on not-allowed error', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
         const rec = mockInstances[0]
-        act(() => { rec!.fire('error', { error: 'not-allowed' }) })
+        act(() => {
+            rec!.fire('error', { error: 'not-allowed' })
+        })
         expect(result.current.error).toBe('notAllowed')
         expect(result.current.isListening).toBe(false)
     })
@@ -192,27 +230,39 @@ describe('useDictation -- with SpeechRecognition mock', () => {
     it('sets error=noSpeech on no-speech error', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
         const rec = mockInstances[0]
-        act(() => { rec!.fire('error', { error: 'no-speech' }) })
+        act(() => {
+            rec!.fire('error', { error: 'no-speech' })
+        })
         expect(result.current.error).toBe('noSpeech')
     })
 
     it('reset() clears transcript and error', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
         const rec = mockInstances[0]
         act(() => {
             rec!.fire('result', {
                 results: {
                     length: 1,
-                    0: { isFinal: false, length: 1, 0: { transcript: 'some text', confidence: 0.9 } },
+                    0: {
+                        isFinal: false,
+                        length: 1,
+                        0: { transcript: 'some text', confidence: 0.9 },
+                    },
                 },
             })
         })
         expect(result.current.transcript).toBe('some text')
-        act(() => { result.current.reset() })
+        act(() => {
+            result.current.reset()
+        })
         expect(result.current.transcript).toBe('')
         expect(result.current.error).toBeNull()
     })
@@ -220,9 +270,13 @@ describe('useDictation -- with SpeechRecognition mock', () => {
     it('stop() calls recognition.stop()', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
-        await act(async () => { result.current.start() })
+        await act(async () => {
+            result.current.start()
+        })
         const rec = mockInstances[0]
-        act(() => { result.current.stop() })
+        act(() => {
+            result.current.stop()
+        })
         expect(rec?.stop).toHaveBeenCalled()
     })
 })

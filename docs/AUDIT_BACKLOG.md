@@ -84,11 +84,11 @@ Last updated: 2026-04-05
 | -------- | ----------- |
 | Severity | Low         |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** Some Redux slices (e.g., `simulationSlice`) contain both UI state and domain data. This can lead to unnecessary re-renders.
 
-**Action:** Audit slices for mixed concerns. Move transient UI state to appropriate Zustand stores.
+**Resolution:** Transient UI state moved to 8 dedicated Zustand stores (`useUIStore`, `useFiltersStore`, `useStrainsViewStore`, `useAlertsStore`, etc.) with `uiStateBridge.ts` providing Redux<->Zustand sync. Implemented in Session 39 (commit 4291f62).
 
 ---
 
@@ -202,11 +202,11 @@ Last updated: 2026-04-05
 | -------- | ----------------- |
 | Severity | High              |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** No enforced bundle size budget. Lighthouse CI config exists (`lighthouserc.json`) but does not gate on bundle size thresholds.
 
-**Action:** Add `maxSize` assertions to `lighthouserc.json` or configure `rollup-plugin-size` in Vite. Set initial budget based on current measurements, then ratchet down.
+**Resolution:** `scripts/check-bundle-budget.mjs` enforces gzipped KB limits (main chunk <300 KB, vendor chunks <500 KB, ai-runtime/strains-data exempt). Wired into `ci.yml` after build. ESLint `import/no-cycle` guard added (Session 41).
 
 ---
 
@@ -216,11 +216,11 @@ Last updated: 2026-04-05
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** User-uploaded plant photos stored in IndexedDB without compression. Large images impact storage quota and rendering performance.
 
-**Action:** Add client-side image compression (e.g., browser-image-compression) before IndexedDB storage. Implement progressive loading for photo galleries.
+**Resolution:** `services/imageService.ts` uses `browser-image-compression` (1 MB target, max 800px) before IndexedDB storage. `dbService.ts` calls `resizeImage()` before saving plant photos. Auto-pruning removes images over quota.
 
 ---
 
@@ -694,7 +694,7 @@ Recommended implementation order based on impact and effort:
 
 - [x] C-02 -- Release workflow (Done)
 - [x] C-01 -- Changelog generation (unblocked by C-02)
-- [ ] P-02 -- Bundle size budget
+- [x] P-02 -- Bundle size budget (Done)
 - [ ] K-01 -- Package boundary enforcement
 - [ ] I-01 -- Translation completeness CI
 
@@ -713,7 +713,7 @@ Recommended implementation order based on impact and effort:
 - [ ] T-03 -- Visual regression testing
 - [ ] T-05 -- AI contract tests
 - [ ] A-02 -- Local AI model versioning
-- [ ] P-03 -- Image optimization
+- [x] P-03 -- Image optimization (Done)
 - [ ] F-05 -- Multi-grow management
 - [ ] D-01 -- API documentation
 

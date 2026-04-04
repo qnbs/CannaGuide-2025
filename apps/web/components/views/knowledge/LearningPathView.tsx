@@ -80,6 +80,11 @@ const PathCard: React.FC<PathCardProps> = ({ path, completedSteps, onStepComplet
                                     aria-valuenow={pct}
                                     aria-valuemin={0}
                                     aria-valuemax={100}
+                                    aria-label={t('knowledgeView.lernpfad.progressLabel', {
+                                        done,
+                                        total,
+                                        defaultValue: `${done} of ${total} steps`,
+                                    })}
                                 />
                             </div>
                             <span className="text-[10px] text-slate-400 whitespace-nowrap">

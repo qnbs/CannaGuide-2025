@@ -2,11 +2,65 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (2026-04-04, Session 39) -- Zustand State Management Optimization
+## Latest Session (2026-04-05, Session 41) -- A11y Focus Trap + Knowledge View Tests + ESLint no-cycle
 
-**Status: v1.3.0-beta. 8 Zustand stores standardized. uiStateBridge.ts created. useStateHealthCheck added. 1288 tests passing. TypeScript clean.**
+**Status: v1.3.0-beta. A11y gaps fixed. 4 knowledge view unit tests added. ESLint import/no-cycle guard added. AUDIT_BACKLOG updated. 1323 tests passing. TypeScript clean.**
 
-### What Was Done (Session 39)
+### What Was Done (Session 41)
+
+1. **A11y: DiseaseDetailPanel focus trap** (`apps/web/components/views/knowledge/DiseaseAtlasView.tsx`):
+    - Added `useFocusTrap(true)` hook (already existed at `apps/web/hooks/useFocusTrap.ts`)
+    - `ref={dialogRef}` on dialog container div; Escape key closes dialog via `onKeyDown` on backdrop
+    - Fixes WCAG 2.1 SC 2.1.2 (no keyboard trap) and SC 2.4.3 (focus order)
+
+2. **A11y: LearningPath progressbar aria-label** (`apps/web/components/views/knowledge/LearningPathView.tsx`):
+    - Added `aria-label={t('knowledgeView.lernpfad.progressLabel', { done, total, defaultValue: '...' })}` to `role="progressbar"` div
+    - Fixes WCAG 2.2 SC 1.3.1 (progressbar requires accessible name)
+
+3. **Knowledge View unit tests** (35 tests, all passing):
+    - `LexikonView.test.tsx`: 9 tests -- search input aria-label, category filter buttons, aria-pressed, filter logic, no-results
+    - `DiseaseAtlasView.test.tsx`: 9 tests -- filter groups, disease card buttons, focus trap mock, dialog open/close
+    - `CalculatorHubView.test.tsx`: 8 tests -- tablist ARIA, tab switching, aria-selected, aria-controls, VPD input
+    - `LearningPathView.test.tsx`: 9 tests -- path cards, level filters, aria-expanded, progressbar attributes, dispatch
+
+4. **ESLint import/no-cycle guard** (`eslint.config.js`):
+    - Installed `eslint-plugin-import` (root devDependency)
+    - Added `'import/no-cycle': ['error', { maxDepth: 3, ignoreExternal: true }]` to TS rules block
+    - Verified 0 circular dependencies detected in `aiFacade.ts` and other complex services
+
+5. **AUDIT_BACKLOG stale entries resolved**:
+    - K-05 State Slice Granularity: **Open** -> **Done** (8 Zustand stores + uiStateBridge, Session 39)
+    - P-02 Bundle Size Budget: **Open** -> **Done** (`check-bundle-budget.mjs` wired into CI)
+    - P-03 Image Optimization: **Open** -> **Done** (`imageService.ts` uses `browser-image-compression`)
+
+### Verified Metrics (Session 41)
+
+- Tests: 1323 passing, 0 failures (+35 new knowledge view tests vs 1288)
+- TypeScript: clean (RTK TS2719 filtered)
+- ESLint: 0 cycle errors detected
+
+### Next Steps
+
+- **A11y Unit Test for focus trap**: Add a Playwright CT test verifying Escape key closes DiseaseDetailPanel
+- **IndexedDB Monitor UI**: Wire `indexedDbMonitorService` into Settings view (currently service only, no UI)
+- **I-01 Translation completeness CI**: Add `check-i18n-completeness.mjs` to CI workflow
+- **K-01 Package boundary enforcement**: Already in ESLint (`no-restricted-imports`), but no automated test
+- **S-04 API Key Rotation**: Surface `isKeyRotationDue()` warning in Settings UI
+- **FR/NL knowledge.ts growTech**: add missing translations (currently EN fallback)
+- **docs/ARCHITECTURE.md**: verify and update service list
+
+### Planned Executions
+
+#### Execution 42: IndexedDB Monitor Settings UI
+
+- Wire `indexedDbMonitorService` output into a Settings tab panel
+- Show per-store entry counts and quota usage bar
+- Add `settings` namespace i18n key `settings.storage.title`
+
+#### Execution 43: I18n CI completeness gate
+
+- Run `check-i18n-completeness.mjs` against all 5 locales in CI
+- Fix any missing DE/ES/FR/NL keys surfaced
 
 1. **devtools middleware on all 8 Zustand stores**: All stores now expose named slices in Redux DevTools Extension (`ui`, `alerts`, `filters`, `tts`, `iot`, `strainsView`, `sensor`, `calculatorSession`). All wrapped with `enabled: import.meta.env.DEV` to avoid production overhead.
     - `useUIStore.ts`: `devtools(subscribeWithSelector(...), {name: 'ui', enabled: DEV})`

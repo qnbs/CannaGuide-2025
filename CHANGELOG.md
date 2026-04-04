@@ -6,7 +6,30 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixes
+
+- **workerbus:** Fixed debounce timer leak in `workerTelemetryService.ts` -- `debounceTimer` set to `undefined` after callback fires to prevent stale timer ID accumulation
+- **sentry:** Fixed `DataManagementTab.tsx` -- replaced invalid `Sentry.captureMessage(msg, {level, tags})` (wrong Sentry v8 API) with `Sentry.withScope` pattern; tags now correctly attached to event scope
+- **tests:** Fixed `workerBus.test.ts` MockWorker -- `postMessage` signature missing `_transfer?: Transferable[]` param causing type annotation mismatch in Transferable zero-copy tests
+
 ### Features
+
+- **workerbus:** AbortController support in `workerBus.ts` -- pre-flight + mid-flight cancellation via `signal?: AbortSignal`; cancelled requests reject with `{code: 'CANCELLED'}`
+- **workerbus:** Transferable zero-copy transfers -- `transferable?: Transferable[]` passed as second arg to `worker.postMessage(req, transferable)`
+- **workerbus:** `DispatchCompleteEvent` interface + `onDispatchComplete(handler) => cleanup` hook
+- **workerbus:** New `workerStateSyncService.ts` -- framework-agnostic handler registry; auto-wires WorkerBus dispatch results to Redux/Zustand; eliminates manual boilerplate at call sites
+- **workerbus:** New `workerMetricsSlice.ts` -- runtime-only RTK slice; `updateWorkerMetrics` action; excluded from IndexedDB persistence; visible in Redux DevTools
+- **workerbus:** New `workerTelemetryService.ts` -- Sentry 10% error-rate alerts + 5-second debounced Redux DevTools metrics flush; immediate flush on error events
+
+### Documentation
+
+- **README:** All metric positions updated to verified current values: 1278 tests, 94 services, 22 hooks, 13 Redux slices, 8 Zustand stores (EN + DE sections + badges + tech table + quality gates)
+- **docs/worker-bus.md:** Full rewrite -- 8-worker table (removed non-existent `vpd-chart`; added `calculation`, `strain-hydrate`, `terpene`); `errorCode?: WorkerErrorCode` in protocol; full P1 Features section; stale Limitations removed
+- **.github/copilot-instructions.md:** 3 new Important Files entries (workerStateSyncService, workerTelemetryService, workerMetricsSlice); Key Patterns #8 updated to 8 workers + P1 features description; workerMetrics runtime-only note in State Management split
+
+---
+
+### [Previous unreleased]
 
 - **equipment:** `TimerScheduleCalculator` -- 13th calculator; optimal on/off photoperiod per growth stage (seedling/veg/flower/autoflower); optional PPFD + DLI inputs; DLI status color-coding; history save; i18n EN/DE/ES/FR/NL
 - **equipment:** `calculateTimerSchedule` added to `equipmentCalculatorService.ts` -- stage defaults (18/6, 12/12, 20/4), DLI-driven override formula, dliStatus classification

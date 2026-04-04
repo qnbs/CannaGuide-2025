@@ -125,7 +125,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiInfrastructureService.ts` -- Backward-compatible barrel re-export for LocalAIInfrastructure
     - `localAiWebGpuService.ts` -- Centralized WebGPU adapter, shared device lifecycle, feature detection
 
-8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, and pagehide teardown. All 7 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene) use this bus. See `docs/worker-bus.md`.
+8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, AbortController support, Transferable zero-copy transfers, and pagehide teardown. All 8 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene, calculation) use this bus. `workerStateSyncService.ts` provides a framework-agnostic handler registry for automatic Redux/Zustand wiring from dispatch results. `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`). See `docs/worker-bus.md`.
 
 9. **Seedbank API:** `seedbankService.ts` provides deterministic mock seed pricing/availability. SeedFinder.eu API permanently removed (dead since mid-2024). 5 hardcoded seedbanks with hash-based availability. 5-min in-memory TTL cache. `isLocalOnlyMode()` guard.
 
@@ -134,7 +134,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 11. **Native Bridge:** `nativeBridgeService.ts` provides unified notification dispatch across platforms. Detects runtime: Tauri v2 (`__TAURI_INTERNALS__`), Capacitor (`window.Capacitor.isNativePlatform()`), Browser (Web Notification API). All native plugin imports are dynamic for tree-shaking. Permissions requested at app bootstrap. Tauri uses `@tauri-apps/plugin-notification` (registered in `main.rs`, capabilities in `default.json`). Capacitor uses `@capacitor/local-notifications`. Both are `optionalDependencies` in `apps/web/package.json`, stubbed by `optionalMlPlugin()` in `vite.config.ts` when not installed.
 
 12. **State Management Split:**
-    - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner. RTK Query for AI API caching (9 endpoints).
+    - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner. RTK Query for AI API caching (9 endpoints). `workerMetrics` is a runtime-only slice (not persisted) for WorkerBus telemetry visibility in Redux DevTools.
     - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts). No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
     - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. Components must import AI services from `aiFacade`, not from individual service files.
 
@@ -410,7 +410,9 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/seedbankService.ts`                      | Deterministic mock seed pricing (SeedFinder removed)                                                               |
 | `apps/web/services/imageGenerationService.ts`               | SD-Turbo text-to-image (WebGPU, worker-offloaded)                                                                  |
 | `apps/web/services/dailyStrainsService.ts`                  | 4:20 Daily Drop: seeded PRNG daily picks, AI search, resolveDiscoveredToStrain                                     |
-| `apps/web/services/workerBus.ts`                            | Promise-based worker communication bus (7 workers)                                                                 |
+| `apps/web/services/workerBus.ts`                            | Promise-based worker communication bus (8 workers), AbortController, Transferable, onDispatchComplete hook         |
+| `apps/web/services/workerStateSyncService.ts`               | Framework-agnostic handler registry -- auto-wires WorkerBus results to Redux/Zustand                               |
+| `apps/web/services/workerTelemetryService.ts`               | Sentry 10% error-rate alerts + 5s debounced Redux DevTools metrics flush                                           |
 | `apps/web/services/proactiveCoachService.ts`                | Smart coach: threshold monitoring + AI advice + cooldown                                                           |
 | `apps/web/services/nativeBridgeService.ts`                  | Unified native notification dispatch (Tauri/Capacitor/Web)                                                         |
 | `apps/web/services/strainLookupService.ts`                  | 5-source Strain Intelligence Lookup cascade + entourage effect science                                             |
@@ -419,6 +421,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                                     |
 | `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                                    |
 | `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                                     |
+| `apps/web/stores/slices/workerMetricsSlice.ts`              | Runtime-only RTK slice for WorkerBus telemetry (DevTools visibility, not persisted to IndexedDB)                   |
 | `apps/web/simulation.worker.ts`                             | VPD simulation Web Worker                                                                                          |
 | `apps/web/data/diseases.ts`                                 | 22 DiseaseEntry objects (deficiency/toxicity/environmental/pest/disease)                                           |
 | `apps/web/data/learningPaths.ts`                            | 5 LearningPath objects with step-by-step grow education programs                                                   |

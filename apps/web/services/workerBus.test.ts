@@ -27,7 +27,7 @@ class MockWorker {
         }
     }
 
-    postMessage(data: unknown): void {
+    postMessage(data: unknown, _transfer?: Transferable[]): void {
         this.lastMessage = data
     }
 

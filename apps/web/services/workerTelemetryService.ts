@@ -36,6 +36,7 @@ const flushMetrics = (dispatch: AppDispatch): void => {
     clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => {
         dispatch(updateWorkerMetrics(workerBus.getMetrics()))
+        debounceTimer = undefined
     }, DEBOUNCE_MS)
 }
 

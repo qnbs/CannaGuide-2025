@@ -2,6 +2,70 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (2026-04-04, Session 38) -- WorkerBus P1 Implementation + Full App Audit + Doc Sync
+
+**Status: v1.3.0-beta. WorkerBus P1 complete. Full audit + doc sync complete. 1278 tests passing. TypeScript clean. Build succeeds.**
+
+### What Was Done (Session 38)
+
+1. **WorkerBus P1 -- `apps/web/services/workerBus.ts`** (commit 6530d62):
+    - AbortController support: `signal?: AbortSignal` in `DispatchOptions`; pre-flight + mid-flight CANCELLED rejection
+    - Transferable zero-copy: `transferable?: Transferable[]`; passed as `postMessage(req, transferable)`
+    - `DispatchCompleteEvent` interface and `onDispatchComplete(handler) => cleanup` hook
+    - `type` field in `PendingRequest`; `fireDispatchHooks` private method; `dispose()` clears hooks
+
+2. **New service `apps/web/services/workerStateSyncService.ts`**:
+    - Framework-agnostic handler registry (`registerWorkerResultHandler<T>`)
+    - Eliminates manual `await dispatch()` boilerplate at call sites
+    - Initialized via `initWorkerStateSync()` in `index.tsx` after store hydration
+
+3. **New slice `apps/web/stores/slices/workerMetricsSlice.ts`**:
+    - RTK `updateWorkerMetrics` action; runtime-only (excluded from IndexedDB persistence)
+    - Added to `rootReducer` in `store.ts` with `workerMetrics` in `ignoredPaths`
+
+4. **New service `apps/web/services/workerTelemetryService.ts`**:
+    - `initWorkerTelemetry(dispatch)`: Sentry 10% error-rate alert threshold + 5s debounced Redux DevTools flush
+    - Immediate flush + error-rate check on every error event
+
+5. **Full app audit + bug fixes**:
+    - `workerTelemetryService.ts`: Fixed debounce timer leak (`debounceTimer = undefined` after callback fires)
+    - `DataManagementTab.tsx`: Fixed Sentry.captureMessage API misuse (object as 2nd arg) -> `withScope` pattern
+    - `workerBus.test.ts`: Fixed `MockWorker.postMessage` missing `transfer?: Transferable[]` parameter
+
+6. **Documentation sync** (all verified against actual codebase):
+    - `README.md`: 12 metric positions updated (tests 1278, services 94, hooks 22, 13 slices, 8 Zustand stores)
+    - `docs/worker-bus.md`: Full rewrite -- 8-worker table (removed non-existent `vpd-chart`, added calculation/strain-hydration/terpene), errorCode in protocol, P1 features section (AbortController, Transferable, onDispatchComplete, workerStateSyncService, workerTelemetryService), Limitations updated
+    - `.github/copilot-instructions.md`: 3 new Important Files entries, Key Patterns #8 updated to 8 workers, workerMetrics runtime-only note in State Management split
+
+7. **Tests added** (workerBus.test.ts + workerStateSyncService.test.ts):
+    - AbortController pre-flight + mid-flight cancellation
+    - Transferable zero-copy postMessage call verification
+    - onDispatchComplete success/error/cleanup edge cases
+    - Handler registry: register, cleanup, routing, error isolation, idempotent init
+
+### Verified Metrics (Session 38)
+
+- Tests: 1278 passing, 0 failures
+- TypeScript: clean (RTK TS2719 filtered)
+- Build: succeeds
+
+### Next Steps
+
+- **Trends Phase 4**: Annual refresh mechanism -- add `year`/`confidence`/`source` metadata to trend data, `refreshTrendsData()` service method
+- **Trends Phase 5**: PDF export of Genetic Trends via `jsPDF`
+- **FR/NL knowledge.ts growTech**: add missing translations (currently EN fallback)
+- **trendsSlice.ts**: optional Redux slice for persisting user trend notes/bookmarks
+- **Workers priority queue**: high-priority lane for VPD alerts (mid-term WorkerBus roadmap)
+- **docs/ARCHITECTURE.md**: verify and update service list, trendsEcosystemService entry
+
+### Planned Executions
+
+- Execution N+1: Genetic Trends Phase 4 (refresh mechanism + source metadata)
+- Execution N+2: PDF/Markdown export for Trends overview
+- Execution N+3: Missing FR/NL translations audit + completion
+
+---
+
 ## Latest Session (2026-04-04, Session 37) -- Genetic Trends & Grow Tech Phase 2-3: Interactive Filter, Match-to-My-Grow, AI Analysis
 
 **Status: v1.3.0-beta. Phase 2+3 of Genetic Trends / Grow Tech audit complete. 1243 tests passing. TypeScript clean. Build succeeds.**

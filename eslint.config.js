@@ -5,6 +5,7 @@ import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
+import importPlugin from 'eslint-plugin-import'
 import prettierConfig from 'eslint-config-prettier'
 import globals from 'globals'
 
@@ -70,6 +71,7 @@ export default [
             '@typescript-eslint': tsPlugin,
             react: reactPlugin,
             'react-hooks': reactHooksPlugin,
+            import: importPlugin,
         },
         settings: {
             react: { version: 'detect' },
@@ -107,6 +109,8 @@ export default [
                     ],
                 },
             ],
+            // Cyclic import guard (P1-D)
+            'import/no-cycle': ['error', { maxDepth: 3, ignoreExternal: true }],
         },
     },
 

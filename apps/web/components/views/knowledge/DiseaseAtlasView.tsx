@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { DiseaseCategory, DiseaseEntry, PlantStage } from '@/types'
 import { diseaseAtlas } from '@/data/diseases'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 type CategoryFilter = 'all' | DiseaseCategory
 type UrgencyFilter = 'all' | DiseaseEntry['urgency']
@@ -36,10 +37,21 @@ interface DiseaseDetailPanelProps {
 const DiseaseDetailPanel: React.FC<DiseaseDetailPanelProps> = ({ entry, onClose }) => {
     const { t } = useTranslation()
     const base = `knowledgeView.atlas.diseases.${entry.id}`
+    const dialogRef = useFocusTrap(true)
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onClose()
+        }
+    }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onKeyDown={handleKeyDown}
+        >
             <div
+                ref={dialogRef}
                 className="w-full max-w-lg rounded-2xl bg-slate-900 border border-white/10 shadow-2xl overflow-hidden"
                 role="dialog"
                 aria-modal="true"

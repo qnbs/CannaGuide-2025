@@ -1,21 +1,31 @@
 /**
- * GPU Resource Manager — Mutual exclusion for GPU-bound workloads.
+ * GPU Resource Manager -- Mutual exclusion for GPU-bound workloads.
  *
- * Prevents VRAM collisions between WebLLM (chat inference) and SD-Turbo
- * (image generation) by serializing GPU access through an async mutex.
+ * Prevents VRAM collisions between WebLLM (chat inference), SD-Turbo
+ * (image generation), and main-thread ONNX-WebGPU pipelines by serializing
+ * GPU access through an async mutex.
+ *
+ * Registered consumers:
+ *   'webllm'      -- @mlc-ai/web-llm engine (CreateMLCEngine manages its own device)
+ *   'image-gen'   -- SD-Turbo text-to-image (WebGPU compute)
+ *   'onnx-webgpu' -- Transformers.js ONNX pipelines running on the WebGPU device
+ *                    (localAIModelLoader wraps loadTransformersPipeline when backend='webgpu')
  *
  * Flow:
- *   1. Consumer calls `acquireGpu('webllm' | 'image-gen')`
+ *   1. Consumer calls acquireGpu('webllm' | 'image-gen' | 'onnx-webgpu')
  *   2. If another consumer holds the lock -> queue, wait for release
  *   3. If WebLLM holds the lock and image-gen requests it -> evict WebLLM first
  *   4. On release, next queued consumer is granted the lock
+ *
+ * Note: CLIP (localAiImageSimilarityService) runs in inference.worker.ts with the
+ * WASM backend and does NOT register here -- it never touches WebGPU.
  */
 
 import { captureLocalAiError } from './sentryService'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type GpuConsumer = 'webllm' | 'image-gen'
+export type GpuConsumer = 'webllm' | 'image-gen' | 'onnx-webgpu'
 
 export interface GpuLockState {
     /** Whether the GPU lock is currently held. */

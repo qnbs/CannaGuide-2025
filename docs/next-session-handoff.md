@@ -2,6 +2,62 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 48) -- R-02 GPU Resource Manager v2: ONNX-WebGPU Mutex + Device-Loss Deadlock Prevention
+
+**Status: v1.4.0-alpha. R-02 closed. 1370 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 48)
+
+1. **`services/gpuResourceManager.ts`** -- extended `GpuConsumer` union type:
+    - `GpuConsumer`: `'webllm' | 'image-gen'` -> `'webllm' | 'image-gen' | 'onnx-webgpu'`
+    - Updated JSDoc to list all 3 consumers and note CLIP (WASM inference worker) does not register
+    - No logic changes needed -- existing acquire/release/queue semantics handle the new consumer correctly
+
+2. **`services/localAIModelLoader.ts`** -- guarded WebGPU pipeline load with GPU mutex:
+    - Added import: `{ acquireGpu, releaseGpu } from './gpuResourceManager'`
+    - `loadTransformersPipeline()`: `backend` detection moved before `try`; `usingWebGpu` flag; `acquireGpu('onnx-webgpu')` before pipeline load when `backend === 'webgpu'`; `releaseGpu('onnx-webgpu')` in `finally` block (deadlock-safe); WASM path unaffected (zero regression)
+
+3. **`services/localAiWebLlmService.ts`** -- device-loss guard:
+    - Added `isDeviceLostError()` helper: regex `/device\s*lost|gpu.*lost|lost.*gpu|webgpu.*invalid/i`
+    - In `generateWithWebLlm` catch block: `if (isDeviceLostError(error)) { enginePromise = null; releaseGpu('webllm') }` -- prevents deadlock when WebLLM inference crashes due to `GPUDevice.lost`
+    - `CreateMLCEngine` manages its own internal `GPUDevice` privately -- error-path guard is the correct mechanism without WebLLM internals access
+
+4. **`services/gpuResourceManager.test.ts`** -- 5 new tests for `onnx-webgpu` consumer:
+    - `onnx-webgpu can acquire when GPU is free`
+    - `onnx-webgpu releases correctly`
+    - `onnx-webgpu queues behind webllm`
+    - `webllm queues behind onnx-webgpu`
+    - `onnx-webgpu is re-entrant`
+
+5. **`services/localAIModelLoader.test.ts`** -- 3 new GPU mutex integration tests:
+    - acquires `onnx-webgpu` lock when backend is `webgpu`
+    - does NOT call GPU mutex when backend is `wasm`
+    - releases `onnx-webgpu` lock via `finally` even when all pipeline load attempts throw (R-02 deadlock guard)
+
+6. **`services/localAiWebLlmService.test.ts`** -- NEW file (device-loss tests):
+    - `generateWithWebLlm` returns null when no WebGPU support (jsdom)
+    - Device-lost regex covers expected patterns (`Device lost`, `GPUDevice was lost`, `gpu lost`, `WebGPU invalid state`, etc.)
+    - Non-device-lost errors (timeout, OOM, network) do NOT match pattern
+    - `disposeWebLlm` does not call `releaseGpu` when no engine loaded (no false release)
+    - `disposeWebLlm` is idempotent
+
+### Verified Metrics (Session 48)
+
+- Tests: 1370 passing, 0 failures (+14: 5 gpuResourceManager + 3 localAIModelLoader + 6 localAiWebLlmService)
+- TypeScript: clean (RTK TS2719 filtered)
+- ESLint: 0 errors (714 pre-existing warnings, unchanged)
+- Build: clean (152 precached entries)
+
+### Next Steps (Session 49)
+
+- **P2 Rate-limiter UX toast**: When AI returns 429, show user-facing toast (currently silent drop) -- route from `geminiService.ts`/`aiProviderService.ts` 429 error into `useAlertsStore`
+- **Fix vi.mock hoisting warnings**: Move nested `vi.mock()` in `voiceCommandRegistry.test.ts` to top level (Vitest deprecation warning)
+- **SonarCloud hotspots**: Review and address open security hotspots from latest SonarCloud scan
+- **Stryker mutation run**: Run `npm run test:mutate` to verify Redux slice mutation score is above 50% threshold
+- **V-06 (deferred)**: Full offline TTS/STT ONNX pipeline -- remains deferred to v2.0
+
+---
+
 ## Latest Session (Session 47) -- R-01 Streaming Generalization: useStreamingResponse Hook
 
 **Status: v1.4.0-alpha. R-01 closed as code-quality refactor. 1356 tests passing. TypeScript clean. Build clean.**
@@ -21,13 +77,12 @@
     - Covers: initial state, isStreaming lifecycle, token accumulation, result passthrough, error fallback, no-fallback error, reset, second-stream clear, two-instance isolation
 
 3. **`AiTab.tsx` refactored** (Advisor + Diagnosis):
-    - Removed: 6 `useState` vars (`isStreamingAdvice`, `streamingAdviceText`, `streamedAdvice` kept; `isStreamingDiagnosis`, `streamingDiagnosisText`, `streamedDiagnosis` kept), 2 `useRef` (adviceStreamRef, diagnosisStreamRef), 2 inline RAF-debounce closures
+    - Removed: 6 `useState` vars, 2 `useRef` (adviceStreamRef, diagnosisStreamRef), 2 inline RAF-debounce closures
     - Added: `adviceStream = useStreamingResponse<AIResponse>()`, `diagnosisStream = useStreamingResponse<AIResponse>()`
     - `handleGetAdvice` + `handleGetDiagnosis` simplified from ~20 lines each to ~9 lines each
-    - All JSX references updated: `isStreamingAdvice` -> `adviceStream.isStreaming`, `streamingAdviceText` -> `adviceStream.streamedText`, etc.
     - Zero UX change: loading indicators, fallback to RTK mutation, archive save -- all preserved as before
 
-4. **Context**: R-01 was open since Session 13. `AiTab.tsx` already had working streaming (added in a prior session) but with duplicated RAF-debounce boilerplate. This session consolidates that into a shared hook -- a quality improvement, not a new feature.
+4. **Context**: R-01 was open since Session 13. `AiTab.tsx` already had working streaming but with duplicated RAF-debounce boilerplate. This session consolidates that into a shared hook.
 
 ### Verified Metrics (Session 47)
 
@@ -35,12 +90,6 @@
 - TypeScript: clean (RTK TS2719 filtered)
 - ESLint: 0 errors (713 pre-existing warnings, unchanged)
 - Build: clean (152 precached entries)
-
-### Next Steps (Session 48)
-
-- **Rate-limiter UX toast**: When AI 429, show user-facing toast (currently silent drop) -- from `geminiService.ts`/`aiProviderService.ts` 429 error into `useAlertsStore`
-- **Fix vi.mock warnings**: Move nested `vi.mock()` in `voiceCommandRegistry.test.ts` to top level (Vitest deprecation warning)
-- **V-06 (deferred)**: Full offline TTS/STT ONNX pipeline -- remains deferred to v2.0
 
 ---
 

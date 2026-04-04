@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, devtools } from 'zustand/middleware'
 import {
     View,
     Strain,
@@ -10,6 +10,7 @@ import {
     KnowledgeViewTab,
     SavedSetup,
 } from '@/types'
+import { getReduxSnapshot } from '@/services/uiStateBridge'
 import { getT } from '@/i18n'
 
 // ---------------------------------------------------------------------------
@@ -141,7 +142,8 @@ export const initialUIState: UIState = {
 // ---------------------------------------------------------------------------
 
 export const useUIStore = create<UIState & UIActions>()(
-    subscribeWithSelector((set) => ({
+    devtools(
+        subscribeWithSelector((set) => ({
         ...initialUIState,
 
         setActiveView: (view) =>
@@ -277,26 +279,14 @@ export const useUIStore = create<UIState & UIActions>()(
 
         hydrateUI: (partial) => set((state) => ({ ...state, ...partial })),
     })),
+        { name: 'ui', enabled: import.meta.env.DEV },
+    ),
 )
 
 /**
  * Snapshot accessor for non-React code (Redux thunks, listener middleware, etc.)
  */
 export const getUISnapshot = (): UIState & UIActions => useUIStore.getState()
-
-// ---------------------------------------------------------------------------
-// Redux bridge -- wired once from store.ts via initUIStoreReduxBridge()
-// ---------------------------------------------------------------------------
-
-interface ReduxBridgeState {
-    simulation: { plantSlots: (string | null)[] }
-}
-
-let _getReduxState: (() => ReduxBridgeState) | null = null
-
-export const initUIStoreReduxBridge = (getter: () => ReduxBridgeState): void => {
-    _getReduxState = getter
-}
 
 // ---------------------------------------------------------------------------
 // Standalone thunk replacements (use both Zustand + Redux state)
@@ -308,8 +298,8 @@ export const initUIStoreReduxBridge = (getter: () => ReduxBridgeState): void => 
  */
 export function initiateGrowFromStrainList(strain: Strain): void {
     const ui = useUIStore.getState()
-    const reduxState = _getReduxState?.()
-    if (reduxState?.simulation.plantSlots.every((s) => s !== null)) {
+    const plantSlots = getReduxSnapshot((s) => s.simulation.plantSlots)
+    if (plantSlots.every((s) => s !== null)) {
         ui.addNotification({
             message: getT()('plantsView.notifications.allSlotsFull'),
             type: 'error',

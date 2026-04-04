@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------------
 
 import { createStore } from 'zustand/vanilla'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, devtools } from 'zustand/middleware'
 import { INITIAL_TELEMETRY, type MqttTelemetryMetrics } from '@/types/iotSchemas'
 
 // ---------------------------------------------------------------------------
@@ -84,7 +84,8 @@ const MAX_TOAST_EVENTS = 10
 let toastIdCounter = 0
 
 export const sensorStore = createStore<SensorState>()(
-    subscribeWithSelector((set) => ({
+    devtools(
+        subscribeWithSelector((set) => ({
         currentReading: null,
         history: [],
         connectionState: 'disconnected',
@@ -139,4 +140,6 @@ export const sensorStore = createStore<SensorState>()(
                 toastEvents: [],
             }),
     })),
+        { name: 'sensor', enabled: import.meta.env.DEV },
+    ),
 )

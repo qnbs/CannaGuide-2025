@@ -6,6 +6,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Features
+
+- **state:** `devtools` middleware added to all 8 Zustand stores -- `useUIStore`, `useAlertsStore`, `useFiltersStore`, `useTtsStore`, `useIotStore`, `useStrainsViewStore`, `sensorStore`, `useCalculatorSessionStore` -- each with a unique name; `enabled: import.meta.env.DEV` for zero production overhead; all stores now visible in Redux DevTools Extension as named slices
+- **state:** New `services/uiStateBridge.ts` -- central Redux<->Zustand bridge; `initUIStateBridgeFull(getState, dispatch, subscribe)` replaces the private `initUIStoreReduxBridge`; exposes `getReduxSnapshot(selector)` for synchronous reads, `subscribeToRedux(selector, handler)` for reactive subscriptions with cleanup, `dispatchToRedux(action)` for dispatch from Zustand context; all subscriptions auto-cleared on re-init
+- **state:** New `hooks/useStateHealthCheck.ts` -- dev-only hook; checks `onboardingStep` (Zustand) vs `onboardingCompleted` (Redux) consistency; `console.warn` on inconsistency; zero production overhead (tree-shaken)
+- **refactor(state):** `useUIStore.initiateGrowFromStrainList` now uses `getReduxSnapshot` from `uiStateBridge` instead of module-level `_getReduxState` singleton; `initUIStoreReduxBridge` export removed
+
+---
+
 ### Fixes
 
 - **workerbus:** Fixed debounce timer leak in `workerTelemetryService.ts` -- `debounceTimer` set to `undefined` after callback fires to prevent stale timer ID accumulation

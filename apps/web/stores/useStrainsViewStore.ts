@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, devtools } from 'zustand/middleware'
 import { StrainViewTab } from '@/types'
 
 export interface StrainsViewState {
@@ -27,7 +27,8 @@ const initialState: StrainsViewState = {
 }
 
 export const useStrainsViewStore = create<StrainsViewState & StrainsViewActions>()(
-    subscribeWithSelector((set) => ({
+    devtools(
+        subscribeWithSelector((set) => ({
         ...initialState,
 
         setStrainsViewState: (state) => set(state),
@@ -64,4 +65,6 @@ export const useStrainsViewStore = create<StrainsViewState & StrainsViewActions>
 
         clearStrainSelection: () => set({ selectedStrainIds: [] }),
     })),
+        { name: 'strainsView', enabled: import.meta.env.DEV },
+    ),
 )

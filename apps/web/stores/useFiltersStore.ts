@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, devtools } from 'zustand/middleware'
 import { AdvancedFilterState, StrainType, SortKey, SortDirection } from '@/types'
 import { INITIAL_ADVANCED_FILTERS } from '@/constants'
 
@@ -36,7 +36,8 @@ const initialState: FiltersState = {
 }
 
 export const useFiltersStore = create<FiltersState & FiltersActions>()(
-    subscribeWithSelector((set) => ({
+    devtools(
+        subscribeWithSelector((set) => ({
         ...initialState,
 
         setFiltersState: (state) => set(state),
@@ -78,6 +79,8 @@ export const useFiltersStore = create<FiltersState & FiltersActions>()(
 
         resetAllFilters: () => set(initialState),
     })),
+        { name: 'filters', enabled: import.meta.env.DEV },
+    ),
 )
 
 /**

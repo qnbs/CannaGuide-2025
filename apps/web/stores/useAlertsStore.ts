@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 
 import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, devtools } from 'zustand/middleware'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -45,7 +45,8 @@ const MAX_ALERTS = 50
 // ---------------------------------------------------------------------------
 
 export const useAlertsStore = create<AlertsState>()(
-    subscribeWithSelector((set) => ({
+    devtools(
+        subscribeWithSelector((set) => ({
         alerts: [],
 
         addAlert: (alert: SmartAlert) =>
@@ -64,4 +65,6 @@ export const useAlertsStore = create<AlertsState>()(
 
         clearAlerts: () => set({ alerts: [] }),
     })),
+        { name: 'alerts', enabled: import.meta.env.DEV },
+    ),
 )

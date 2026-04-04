@@ -107,6 +107,9 @@ jobs:
             - name: Service dependency acyclic check
               run: node scripts/generate-service-map.mjs
 
+            - name: Check i18n completeness
+              run: node scripts/check-i18n-completeness.mjs
+
             - name: Upload build artifact
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:

@@ -2,6 +2,48 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 47) -- R-01 Streaming Generalization: useStreamingResponse Hook
+
+**Status: v1.4.0-alpha. R-01 closed as code-quality refactor. 1356 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 47)
+
+1. **New `hooks/useStreamingResponse.ts`** (77 lines):
+    - Generic hook `useStreamingResponse<T>()` with `{ streamedText, isStreaming, start, reset }`
+    - `start(streamFn, fallbackFn?)` accepts a `StreamFn<T>` that receives a RAF-debounced `onToken` callback
+    - `requestAnimationFrame` coalesces rapid token callbacks to prevent React render flooding
+    - Internal `textRef` avoids stale closures in the RAF callback
+    - `fallbackFn` called (without args) when `streamFn` throws -- used to trigger RTK batch mutations
+    - `reset()` clears `streamedText` without affecting `isStreaming`
+
+2. **New `hooks/useStreamingResponse.test.ts`** (10 tests -- all green):
+    - RAF callbacks stubbed with `vi.spyOn(requestAnimationFrame)` + manual `flushRaf()` helper
+    - Covers: initial state, isStreaming lifecycle, token accumulation, result passthrough, error fallback, no-fallback error, reset, second-stream clear, two-instance isolation
+
+3. **`AiTab.tsx` refactored** (Advisor + Diagnosis):
+    - Removed: 6 `useState` vars (`isStreamingAdvice`, `streamingAdviceText`, `streamedAdvice` kept; `isStreamingDiagnosis`, `streamingDiagnosisText`, `streamedDiagnosis` kept), 2 `useRef` (adviceStreamRef, diagnosisStreamRef), 2 inline RAF-debounce closures
+    - Added: `adviceStream = useStreamingResponse<AIResponse>()`, `diagnosisStream = useStreamingResponse<AIResponse>()`
+    - `handleGetAdvice` + `handleGetDiagnosis` simplified from ~20 lines each to ~9 lines each
+    - All JSX references updated: `isStreamingAdvice` -> `adviceStream.isStreaming`, `streamingAdviceText` -> `adviceStream.streamedText`, etc.
+    - Zero UX change: loading indicators, fallback to RTK mutation, archive save -- all preserved as before
+
+4. **Context**: R-01 was open since Session 13. `AiTab.tsx` already had working streaming (added in a prior session) but with duplicated RAF-debounce boilerplate. This session consolidates that into a shared hook -- a quality improvement, not a new feature.
+
+### Verified Metrics (Session 47)
+
+- Tests: 1356 passing, 0 failures (+10: 10 new `useStreamingResponse` tests)
+- TypeScript: clean (RTK TS2719 filtered)
+- ESLint: 0 errors (713 pre-existing warnings, unchanged)
+- Build: clean (152 precached entries)
+
+### Next Steps (Session 48)
+
+- **Rate-limiter UX toast**: When AI 429, show user-facing toast (currently silent drop) -- from `geminiService.ts`/`aiProviderService.ts` 429 error into `useAlertsStore`
+- **Fix vi.mock warnings**: Move nested `vi.mock()` in `voiceCommandRegistry.test.ts` to top level (Vitest deprecation warning)
+- **V-06 (deferred)**: Full offline TTS/STT ONNX pipeline -- remains deferred to v2.0
+
+---
+
 ## Latest Session (Session 46) -- Tauri Desktop Build Fix: Version Sync + Environment Gate Removal
 
 **Status: v1.4.0-alpha. Tauri build unblocked. 1346 tests passing. TypeScript clean. Build clean.**

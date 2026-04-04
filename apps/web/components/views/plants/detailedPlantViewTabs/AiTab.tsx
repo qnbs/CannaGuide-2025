@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react'
+import React, { useState, useEffect, useCallback, memo } from 'react'
+import { useStreamingResponse } from '@/hooks/useStreamingResponse'
 import { Plant, ArchivedAdvisorResponse, AIResponse } from '@/types'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
@@ -43,16 +44,11 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     const [isDiagnosisSaved, setIsDiagnosisSaved] = useState(false)
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
-    // Streaming state
-    const [isStreamingAdvice, setIsStreamingAdvice] = useState(false)
-    const [streamingAdviceText, setStreamingAdviceText] = useState('')
+    // Streaming state via shared hook (RAF-debounced token accumulation)
+    const adviceStream = useStreamingResponse<AIResponse>()
+    const diagnosisStream = useStreamingResponse<AIResponse>()
     const [streamedAdvice, setStreamedAdvice] = useState<AIResponse | null>(null)
-    const adviceStreamRef = useRef('')
-
-    const [isStreamingDiagnosis, setIsStreamingDiagnosis] = useState(false)
-    const [streamingDiagnosisText, setStreamingDiagnosisText] = useState('')
     const [streamedDiagnosis, setStreamedDiagnosis] = useState<AIResponse | null>(null)
-    const diagnosisStreamRef = useRef('')
 
     const plantQueryData = JSON.stringify(
         {
@@ -69,9 +65,9 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
 
     useEffect(() => {
         const useCase: LoadingUseCase | null =
-            advisorState.isLoading || isStreamingAdvice
+            advisorState.isLoading || adviceStream.isStreaming
                 ? 'advisor'
-                : diagnosisState.isLoading || isStreamingDiagnosis
+                : diagnosisState.isLoading || diagnosisStream.isStreaming
                   ? 'proactiveDiagnosis'
                   : null
 
@@ -102,70 +98,40 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     }, [
         advisorState.isLoading,
         diagnosisState.isLoading,
-        isStreamingAdvice,
-        isStreamingDiagnosis,
+        adviceStream.isStreaming,
+        diagnosisStream.isStreaming,
         plant.name,
     ])
 
     const handleGetAdvice = useCallback(async () => {
         setIsCurrentResponseSaved(false)
         setStreamedAdvice(null)
-        setStreamingAdviceText('')
-        adviceStreamRef.current = ''
-        setIsStreamingAdvice(true)
+        adviceStream.reset()
 
-        try {
-            const { aiService } = await import('@/services/aiService')
-            let rafPending = false
-            const onToken = (_token: string, accumulated: string) => {
-                adviceStreamRef.current = accumulated
-                if (!rafPending) {
-                    rafPending = true
-                    requestAnimationFrame(() => {
-                        rafPending = false
-                        setStreamingAdviceText(adviceStreamRef.current)
-                    })
-                }
-            }
-            const result = await aiService.getPlantAdviceStream(plant, lang, onToken)
+        const { aiService } = await import('@/services/aiService')
+        const result = await adviceStream.start(
+            (onToken) => aiService.getPlantAdviceStream(plant, lang, onToken),
+            () => getPlantAdvice({ plant, lang }),
+        )
+        if (result !== undefined) {
             setStreamedAdvice(result)
-        } catch {
-            // Streaming failed -- fall back to batch RTK mutation
-            getPlantAdvice({ plant, lang })
-        } finally {
-            setIsStreamingAdvice(false)
         }
-    }, [plant, lang, getPlantAdvice])
+    }, [plant, lang, getPlantAdvice, adviceStream])
 
     const handleGetDiagnosis = useCallback(async () => {
         setIsDiagnosisSaved(false)
         setStreamedDiagnosis(null)
-        setStreamingDiagnosisText('')
-        diagnosisStreamRef.current = ''
-        setIsStreamingDiagnosis(true)
+        diagnosisStream.reset()
 
-        try {
-            const { aiService } = await import('@/services/aiService')
-            let rafPending = false
-            const onToken = (_token: string, accumulated: string) => {
-                diagnosisStreamRef.current = accumulated
-                if (!rafPending) {
-                    rafPending = true
-                    requestAnimationFrame(() => {
-                        rafPending = false
-                        setStreamingDiagnosisText(diagnosisStreamRef.current)
-                    })
-                }
-            }
-            const result = await aiService.getProactiveDiagnosisStream(plant, lang, onToken)
+        const { aiService } = await import('@/services/aiService')
+        const result = await diagnosisStream.start(
+            (onToken) => aiService.getProactiveDiagnosisStream(plant, lang, onToken),
+            () => getProactiveDiagnosis({ plant, lang }),
+        )
+        if (result !== undefined) {
             setStreamedDiagnosis(result)
-        } catch {
-            // Streaming failed -- fall back to batch RTK mutation
-            getProactiveDiagnosis({ plant, lang })
-        } finally {
-            setIsStreamingDiagnosis(false)
         }
-    }, [plant, lang, getProactiveDiagnosis])
+    }, [plant, lang, getProactiveDiagnosis, diagnosisStream])
 
     const handleSaveResponse = () => {
         const data = streamedAdvice ?? advisorState.data
@@ -246,29 +212,29 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                 <div className="p-3 bg-slate-800/50 rounded-lg">
                     <Button
                         onClick={handleGetDiagnosis}
-                        disabled={diagnosisState.isLoading || isStreamingDiagnosis}
+                        disabled={diagnosisState.isLoading || diagnosisStream.isStreaming}
                         className="w-full"
                     >
-                        {diagnosisState.isLoading || isStreamingDiagnosis
+                        {diagnosisState.isLoading || diagnosisStream.isStreaming
                             ? loadingMessage
                             : t('plantsView.aiAdvisor.runDiagnosis')}
                     </Button>
 
                     <div className="mt-4">
-                        {(diagnosisState.isLoading || isStreamingDiagnosis) &&
-                            !streamingDiagnosisText && (
+                        {(diagnosisState.isLoading || diagnosisStream.isStreaming) &&
+                            !diagnosisStream.streamedText && (
                                 <AiLoadingIndicator loadingMessage={loadingMessage} />
                             )}
-                        {isStreamingDiagnosis && streamingDiagnosisText && (
+                        {diagnosisStream.isStreaming && diagnosisStream.streamedText && (
                             <Card className="bg-slate-900/70 animate-fade-in">
                                 <p className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                                    {streamingDiagnosisText}
+                                    {diagnosisStream.streamedText}
                                 </p>
                             </Card>
                         )}
                         {(streamedDiagnosis ?? diagnosisState.data) &&
                             !diagnosisState.isLoading &&
-                            !isStreamingDiagnosis && (
+                            !diagnosisStream.isStreaming && (
                                 <Card className="bg-slate-900/70 animate-fade-in">
                                     <Speakable elementId={`proactive-diag-content-${plant.id}`}>
                                         <h4 className="font-bold text-primary-300">
@@ -318,28 +284,29 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                 <div className="p-3 bg-slate-800/50 rounded-lg">
                     <Button
                         onClick={handleGetAdvice}
-                        disabled={advisorState.isLoading || isStreamingAdvice}
+                        disabled={advisorState.isLoading || adviceStream.isStreaming}
                         className="w-full"
                     >
-                        {advisorState.isLoading || isStreamingAdvice
+                        {advisorState.isLoading || adviceStream.isStreaming
                             ? loadingMessage
                             : t('ai.getAdvice')}
                     </Button>
 
                     <div className="mt-4">
-                        {(advisorState.isLoading || isStreamingAdvice) && !streamingAdviceText && (
-                            <AiLoadingIndicator loadingMessage={loadingMessage} />
-                        )}
-                        {isStreamingAdvice && streamingAdviceText && (
+                        {(advisorState.isLoading || adviceStream.isStreaming) &&
+                            !adviceStream.streamedText && (
+                                <AiLoadingIndicator loadingMessage={loadingMessage} />
+                            )}
+                        {adviceStream.isStreaming && adviceStream.streamedText && (
                             <Card className="bg-slate-900/70 animate-fade-in">
                                 <p className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                                    {streamingAdviceText}
+                                    {adviceStream.streamedText}
                                 </p>
                             </Card>
                         )}
                         {(streamedAdvice ?? advisorState.data) &&
                             !advisorState.isLoading &&
-                            !isStreamingAdvice && (
+                            !adviceStream.isStreaming && (
                                 <Card className="bg-slate-900/70 animate-fade-in">
                                     <Speakable elementId={`advisor-content-${plant.id}`}>
                                         <h4 className="font-bold text-primary-300">

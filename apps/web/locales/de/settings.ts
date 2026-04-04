@@ -486,6 +486,11 @@ export const settingsView = {
     data: {
         title: 'Datenverwaltung',
         storageInsights: 'Speicher-Einblicke',
+        dbStore: {
+            title: 'IndexedDB-Speicherdetails',
+            loading: 'Daten werden geladen...',
+            empty: 'Speicherinformationen nicht verfügbar.',
+        },
         backupAndRestore: 'Sicherung & Wiederherstellung',
         dangerZone: 'Gefahrenzone',
         importData: 'Daten importieren',

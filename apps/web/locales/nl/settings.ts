@@ -444,6 +444,11 @@ export const settingsView = {
     data: {
         title: 'Gegevensbeheer',
         storageInsights: 'Opslaginzichten',
+        dbStore: {
+            title: 'IndexedDB-opslagdetails',
+            loading: 'Opslaggegevens laden...',
+            empty: 'Opslaginformatie niet beschikbaar.',
+        },
         backupAndRestore: 'Back-up & Herstel',
         dangerZone: 'Gevarenzone',
         importData: 'Gegevens importeren',

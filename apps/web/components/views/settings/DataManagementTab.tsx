@@ -32,6 +32,7 @@ import {
     getKnownDatabaseNames,
 } from '@/services/privacyService'
 import * as Sentry from '@sentry/react'
+import { getDbStats, type DbStoreStats } from '@/services/indexedDbMonitorService'
 import { CommunitySharePanel } from './CommunitySharePanel'
 const CloudSyncPanel = lazy(() => import('./CloudSyncPanel'))
 import {
@@ -41,6 +42,62 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+
+const DbStoreBreakdown: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) => {
+    const { t } = useTranslation()
+    const [stats, setStats] = useState<DbStoreStats[] | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        setIsLoading(true)
+        getDbStats()
+            .then((s) => {
+                setStats(s)
+                setIsLoading(false)
+            })
+            .catch((err) => {
+                console.debug('[DataManagementTab] DbStoreBreakdown failed:', err)
+                setIsLoading(false)
+            })
+    }, [refreshTick])
+
+    if (isLoading) {
+        return <p className="text-xs text-slate-400">{t('settingsView.data.dbStore.loading')}</p>
+    }
+
+    if (!stats || stats.length === 0) {
+        return <p className="text-xs text-slate-400">{t('settingsView.data.dbStore.empty')}</p>
+    }
+
+    // Group rows by db name
+    const grouped: Record<string, DbStoreStats[]> = {}
+    for (const row of stats) {
+        if (!grouped[row.db]) grouped[row.db] = []
+        grouped[row.db]!.push(row)
+    }
+
+    return (
+        <div className="mt-3 space-y-3">
+            <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
+                {t('settingsView.data.dbStore.title')}
+            </h4>
+            {Object.entries(grouped).map(([db, rows]) => (
+                <div key={db} className="bg-slate-800/50 rounded-md px-3 py-2">
+                    <p className="text-xs font-mono text-slate-400 mb-1">{db}</p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                        {rows.map((row) => (
+                            <div key={row.store} className="flex justify-between text-xs">
+                                <span className="text-slate-400 truncate">{row.store}</span>
+                                <span className="text-slate-200 font-mono ml-2">{row.count}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+})
+DbStoreBreakdown.displayName = 'DbStoreBreakdown'
 
 const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -487,6 +544,7 @@ const DataManagementTab: React.FC = () => {
                     defaultOpen
                 >
                     <StorageInfo refreshTick={storageRefreshTick} />
+                    <DbStoreBreakdown refreshTick={storageRefreshTick} />
                     <div className="mt-4 pt-4 border-t border-slate-700/50 flex flex-col gap-2">
                         <p className="text-sm text-slate-400">
                             {t('settingsView.data.runCleanupDesc')}

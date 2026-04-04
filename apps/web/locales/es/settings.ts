@@ -454,6 +454,11 @@ export const settingsView = {
     data: {
         title: 'Gestion de Datos',
         storageInsights: 'Informacion de Almacenamiento',
+        dbStore: {
+            title: 'Detalles del almacen IndexedDB',
+            loading: 'Cargando datos del almacen...',
+            empty: 'Informacion del almacen no disponible.',
+        },
         backupAndRestore: 'Copia de Seguridad y Restauracion',
         dangerZone: 'Zona de Peligro',
         importData: 'Importar Datos',

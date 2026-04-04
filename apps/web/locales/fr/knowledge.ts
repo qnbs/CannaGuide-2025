@@ -504,6 +504,7 @@ export const knowledgeView = {
     lernpfad: {
         title: "Parcours d'Apprentissage",
         progress: '{{done}} sur {{total}} etapes completees',
+        progressLabel: '{{done}} sur {{total}} etapes',
         filterByLevel: 'Filtrer par niveau',
         allLevels: 'Tous les niveaux',
         completed: 'Termine',

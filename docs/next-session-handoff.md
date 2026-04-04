@@ -2,6 +2,62 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (2026-04-06, Session 42) -- Comprehensive Audit Fix: progressLabel i18n + Metric Sync
+
+**Status: v1.3.0-beta. Critical i18n bug fixed. All metric documentation synchronized. 1323 tests passing. TypeScript clean.**
+
+### What Was Done (Session 42)
+
+1. **Critical i18n fix -- `progressLabel` missing from all 5 locales**:
+    - Root cause: `LearningPathView.tsx` used `t('knowledgeView.lernpfad.progressLabel', ...)` for `role="progressbar"` aria-label (added in Session 41), but the key was never added to any locale file. At runtime, i18next returned the raw key string as the accessible name.
+    - Fixed: Added `progressLabel` after the existing `progress` key in all 5 `knowledge.ts` files:
+        - EN: `progressLabel: '{{done}} of {{total}} steps'`
+        - DE: `progressLabel: '{{done}} von {{total}} Schritten'`
+        - ES: `progressLabel: '{{done}} de {{total}} pasos'`
+        - FR: `progressLabel: '{{done}} sur {{total}} etapes'`
+        - NL: `progressLabel: '{{done}} van {{total}} stappen'`
+
+2. **Metric documentation sync** (all docs updated to verified values):
+    - `.github/copilot-instructions.md`: 1049 -> 1323 tests, 19 -> 23 hooks (2 locations)
+    - `docs/ARCHITECTURE.md`: 12 -> 13 Redux slices (2 locations), 7 -> 8 Zustand stores, 19 -> 23 hooks (2 locations), 1049 -> 1323 unit tests; state mgmt paragraphs updated with workerMetrics + useCalculatorSessionStore
+    - `README.md` EN section: 14 occurrences updated (badge, Kennzahlen, ASCII art, tech table, commands, directory, quality gates)
+    - `README.md` DE section: DE badge 1049->1323, DE tech table 1119->1323 unit tests + 12->13 Redux Slices, all matching EN
+
+3. **CHANGELOG.md cleanup**:
+    - 3 German-language entry descriptions translated to English (lines in v1.x sections)
+    - Session 41 a11y/test entries added to [Unreleased] block
+    - Session 42 audit fix entries appended
+
+### Verified Metrics (Session 42)
+
+- Tests: 1323 passing, 0 failures (unchanged from Session 41)
+- TypeScript: clean (RTK TS2719 filtered)
+- progressLabel key: present in all 5 locales (EN/DE/ES/FR/NL)
+
+### Next Steps
+
+- **A11y Unit Test for focus trap**: Add a Playwright CT test verifying Escape key closes DiseaseDetailPanel
+- **IndexedDB Monitor UI**: Wire `indexedDbMonitorService` into Settings view (currently service only, no UI)
+- **I-01 Translation completeness CI**: Add `check-i18n-completeness.mjs` to CI workflow
+- **K-01 Package boundary enforcement**: Already in ESLint (`no-restricted-imports`), but no automated test
+- **S-04 API Key Rotation**: Surface `isKeyRotationDue()` warning in Settings UI
+- **FR/NL knowledge.ts growTech**: add missing translations (currently EN fallback)
+
+### Planned Executions
+
+#### Execution 43: IndexedDB Monitor Settings UI
+
+- Wire `indexedDbMonitorService` output into a Settings tab panel
+- Show per-store entry counts and quota usage bar
+- Add `settings` namespace i18n key `settings.storage.title`
+
+#### Execution 44: I18n CI completeness gate
+
+- Run `check-i18n-completeness.mjs` against all 5 locales in CI
+- Fix any missing DE/ES/FR/NL keys surfaced
+
+---
+
 ## Latest Session (2026-04-05, Session 41) -- A11y Focus Trap + Knowledge View Tests + ESLint no-cycle
 
 **Status: v1.3.0-beta. A11y gaps fixed. 4 knowledge view unit tests added. ESLint import/no-cycle guard added. AUDIT_BACKLOG updated. 1323 tests passing. TypeScript clean.**

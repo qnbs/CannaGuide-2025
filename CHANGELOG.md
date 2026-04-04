@@ -38,6 +38,27 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+### a11y
+
+- **a11y:** focus-trap restored on all modal dialogs -- `trapFocus` utility applied to `StrainDetailModal`, `PlantModal`, `SettingsModal`; Tab/Shift+Tab cycles within modal; focus returns to trigger element on close
+- **a11y:** `LearningPathView` progressbar -- `aria-label` now uses `knowledgeView.lernpfad.progressLabel` i18n key (`{{done}} of {{total}} steps`) instead of static string; all 5 locales (EN/DE/ES/FR/NL) include the key
+- **a11y:** ESLint `import/no-cycle` rule enabled for `apps/web` -- 0 circular import violations
+
+### Tests
+
+- **knowledge:** 4 new unit tests for `LearningPathView`, `LexikonView`, `DiseaseAtlasView`, `CalculatorHubView` sub-views (render, interaction, Redux wiring)
+- Total: **1323 tests passing** (was 1288)
+
+### Bug Fixes
+
+- **i18n:** `progressLabel` key added to all 5 locale `knowledge.ts` files (`knowledgeView.lernpfad.progressLabel`) -- was missing; `LearningPathView` aria-label rendered raw i18n key as text at runtime
+
+### Documentation
+
+- **docs:** Metric sync across all documentation -- copilot-instructions (1323 tests, 23 hooks), ARCHITECTURE.md (13 slices, 8 stores, 23 hooks, 1323 tests), README.md EN + DE sections (14 occurrences updated)
+
+---
+
 ### [Previous unreleased]
 
 - **equipment:** `TimerScheduleCalculator` -- 13th calculator; optimal on/off photoperiod per growth stage (seedling/veg/flower/autoflower); optional PPFD + DLI inputs; DLI status color-coding; history save; i18n EN/DE/ES/FR/NL
@@ -197,7 +218,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **plants:** comprehensive plants page audit, enhancement & optimization ([7d7e4d1](https://github.com/qnbs/CannaGuide-2025/commit/7d7e4d1b45ef47a7b84cf84bf5182902adc0d8d4))
 - **plants:** implement digital twin environment control panel ([2c6544a](https://github.com/qnbs/CannaGuide-2025/commit/2c6544a265d5b4b0c2e892733e00a97a7bea5d5b))
 - **plants:** implement reactive environment analytics dashboard for digital twin ([6c66c68](https://github.com/qnbs/CannaGuide-2025/commit/6c66c68e5b19e7b81698b2784926acdfc8503f1f))
-- PWA-Optimierung, vollständige i18n für GrowReminderPanel, a11y & UX-Fixes ([6534a9a](https://github.com/qnbs/CannaGuide-2025/commit/6534a9a050f1a438ed37cdc61658c5ba019be9cc))
+- PWA optimization, full i18n for GrowReminderPanel, a11y & UX fixes ([6534a9a](https://github.com/qnbs/CannaGuide-2025/commit/6534a9a050f1a438ed37cdc61658c5ba019be9cc))
 - **pwa:** daily strain-update Action + local-only mode with one-tap Gist sync ([2603a0b](https://github.com/qnbs/CannaGuide-2025/commit/2603a0b222ac0f93a00743e4085460b3b56f13d4))
 - **pwa:** improve viewport and theme-color integration ([562ce91](https://github.com/qnbs/CannaGuide-2025/commit/562ce912f43f5f31339b36a2ac4e4dc02ef01e79))
 - Refactor UI styling and improve ErrorBoundary ([649865a](https://github.com/qnbs/CannaGuide-2025/commit/649865abeb5ab7ee949f8c68163832b1ab956d37))
@@ -294,7 +315,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - harden state hydration for vpd simulation rollout ([d948f14](https://github.com/qnbs/CannaGuide-2025/commit/d948f14c6eb3d4a4efe6b572aaadb617615e6e0d))
 - **i18n,security:** full localization audit and console.error compliance ([5770a38](https://github.com/qnbs/CannaGuide-2025/commit/5770a387dbfd70c1a02b29ad5af0d2cb534b30ad))
 - **i18n,ui:** fix missing settings translation keys and sync button layout ([763a699](https://github.com/qnbs/CannaGuide-2025/commit/763a6998a780823e175c9c3e2ebeff55869fd5d9))
-- **i18n:** ChemotypeCalculator + SensorIntegrationPanel vollständig lokalisiert ([918368b](https://github.com/qnbs/CannaGuide-2025/commit/918368bb3bb0f5de4d003cc3a71c67a304dd0244))
+- **i18n:** ChemotypeCalculator + SensorIntegrationPanel fully localized ([918368b](https://github.com/qnbs/CannaGuide-2025/commit/918368bb3bb0f5de4d003cc3a71c67a304dd0244))
 - **i18n:** guard navigator access for node environment ([a7719a3](https://github.com/qnbs/CannaGuide-2025/commit/a7719a3f3096e881dc4ebbc9d64fa68e50a120e3))
 - **i18n:** remove hardcoded language picker text from onboarding step 0 ([f6e3cc8](https://github.com/qnbs/CannaGuide-2025/commit/f6e3cc86d6150d98e221a3c62fabb32b48ab1f7b))
 - **i18n:** render Seedbanks Genetic Trends 2026 section and clean up locale exports ([d3325e7](https://github.com/qnbs/CannaGuide-2025/commit/d3325e761d24eb88ab64cc45634c187b0fa1ec38))
@@ -377,7 +398,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **ui:** refine mobile layout spacing ([520e565](https://github.com/qnbs/CannaGuide-2025/commit/520e5655aecbd7cfde9e986f39f7d9a985502e50))
 - **ui:** resolve ESLint warnings -- hooks deps and no-explicit-any ([f1d6a79](https://github.com/qnbs/CannaGuide-2025/commit/f1d6a790a67d7189a7409369302b2fe13c120133))
 - unhandled promise rejections, migration safety-net for old plant data ([83396be](https://github.com/qnbs/CannaGuide-2025/commit/83396bed170d03dd298fbd07e59b0854ed3bf657))
-- vollständige i18n + App-weite Fehlerbehebungen ([80acbaa](https://github.com/qnbs/CannaGuide-2025/commit/80acbaa0d0bba84e046b3412d6a17a10ec8acb97))
+- full i18n + app-wide bug fixes ([80acbaa](https://github.com/qnbs/CannaGuide-2025/commit/80acbaa0d0bba84e046b3412d6a17a10ec8acb97))
 
 ### Performance Improvements
 

@@ -10,14 +10,14 @@
 | Layer        | Technology                                                                          |
 | ------------ | ----------------------------------------------------------------------------------- |
 | UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                 |
-| State        | Redux Toolkit 2.11 (12 slices), Zustand 5 (8 stores), RTK Query, memoized selectors |
+| State        | Redux Toolkit 2.11 (13 slices), Zustand 5 (8 stores), RTK Query, memoized selectors |
 | AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                         |
 | AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                |
 | Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                            |
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                 |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                       |
 | Workers      | WorkerBus (promise-based, 8 workers, messageId correlation, auto-timeout)           |
-| Testing      | Vitest 1049 unit tests, Playwright E2E + Component tests                            |
+| Testing      | Vitest 1323 unit tests, Playwright E2E + Component tests                            |
 | Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                    |
 
 ---
@@ -60,7 +60,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     useAlertsStore.ts     Zustand store for proactive smart coach alerts
     selectors.ts          Memoized selectors (map-based cache by ID)
     listenerMiddleware.ts Side effects: i18n sync, persistence triggers
-    slices/               12 Redux slices (simulation, settings, strains, etc.)
+    slices/               13 Redux slices (simulation, settings, strains, workerMetrics, etc.)
     indexedDBStorage.ts   CannaGuideStateDB adapter
 
   services/
@@ -83,7 +83,7 @@ apps/web/                 Main PWA (@cannaguide/web)
 
   data/                   Static data: 778 strains, FAQ, lexicon (89 entries, 6 categories), guides, diseases (22 entries), learningPaths (5 paths)
   locales/                i18n translations: en/, de/, es/, fr/, nl/
-  hooks/                  19 custom React hooks
+  hooks/                  23 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
   services/workerBus.ts   Centralized promise-based WorkerBus (8 workers, timeout, messageId)
   services/equipmentCalculatorService.ts  Pure-formula service: CO2, Humidity Deficit, Light Hanging Height (Zod-validated)
@@ -121,11 +121,11 @@ docker/                   nginx config, esp32-mock, tauri-mock
 
 The app uses a **dual-store architecture** with clear separation of concerns:
 
-**Redux Toolkit (12 slices, persisted in IndexedDB):**
-Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner. Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
+**Redux Toolkit (13 slices, persisted in IndexedDB):**
+Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
 
-**Zustand (7 stores, transient/never persisted):**
-`useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts).
+**Zustand (8 stores, transient/never persisted):**
+`useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite).
 
 **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
 

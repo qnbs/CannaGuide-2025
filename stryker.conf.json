@@ -14,7 +14,7 @@
     "coverageAnalysis": "off",
     "vitest": {
         "configFile": "apps/web/vite.config.ts",
-        "related": false
+        "dir": "apps/web"
     },
     "testFiles": ["apps/web/**/*.test.ts", "apps/web/**/*.test.tsx"],
     "reporters": ["clear-text", "html"],
@@ -26,7 +26,7 @@
         "low": 60,
         "break": 50
     },
-    "concurrency": 2,
+    "concurrency": 1,
     "timeoutMS": 30000,
     "ignorePatterns": ["node_modules", "dist", ".turbo", "coverage"]
 }

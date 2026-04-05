@@ -18,28 +18,28 @@
 
 ## Short-term (Sprint 2)
 
-| ID   | Finding                       | Effort | Status      |
-| ---- | ----------------------------- | ------ | ----------- |
-| S-01 | Prompt injection allow-list   | Low    | In Progress |
-| A-01 | AI response validation        | Medium | Open        |
-| A-04 | RAG context window management | Medium | Open        |
-| F-04 | Data export/backup            | Medium | Open        |
-| U-01 | Keyboard navigation audit     | Medium | Open        |
-| U-02 | Screen reader testing         | Medium | Open        |
+| ID   | Finding                       | Effort | Status |
+| ---- | ----------------------------- | ------ | ------ |
+| S-01 | Prompt injection allow-list   | Low    | Done   |
+| A-01 | AI response validation        | Medium | Open   |
+| A-04 | RAG context window management | Medium | Open   |
+| F-04 | Data export/backup            | Medium | Open   |
+| U-01 | Keyboard navigation audit     | Medium | Open   |
+| U-02 | Screen reader testing         | Medium | Open   |
 
 ## Medium-term (Sprint 3)
 
 | ID   | Finding                               | Effort | Status |
 | ---- | ------------------------------------- | ------ | ------ |
-| T-01 | Mutation testing pilot                | High   | Open   |
+| T-01 | Mutation testing pilot                | High   | Done   |
 | T-03 | Visual regression testing             | Medium | Open   |
 | T-05 | AI contract tests                     | Medium | Open   |
 | A-02 | Local AI model versioning             | Medium | Open   |
 | P-03 | Image optimization pipeline           | Medium | Open   |
 | F-05 | Multi-grow management                 | High   | Open   |
 | D-01 | API documentation                     | High   | Open   |
-| R-01 | Streaming generalization              | Medium | Open   |
-| R-02 | GPU resource manager v2 (N consumers) | Medium | Open   |
+| R-01 | Streaming generalization              | Medium | Done   |
+| R-02 | GPU resource manager v2 (N consumers) | Medium | Done   |
 | R-03 | WebLLM preload UX (progress bar)      | Low    | Open   |
 
 ## Long-term (Backlog)
@@ -57,6 +57,10 @@
 
 | ID    | Finding                           | Resolution                                        |
 | ----- | --------------------------------- | ------------------------------------------------- |
+| S-01  | Prompt injection allow-list       | 5-layer sanitization pipeline in geminiService    |
+| T-01  | Mutation testing pilot            | Stryker baseline + 2 new slice tests (Session 63) |
+| R-01  | Streaming generalization          | useStreamingResponse.ts hook (Session 47)         |
+| R-02  | GPU resource manager v2           | gpuResourceManager.ts with priority queue (S48)   |
 | S-02  | Tailwind CDN                      | PostCSS build-time compilation already active     |
 | P-01  | Tailwind CDN (duplicate)          | Same as S-02                                      |
 | T-02  | Coverage thresholds               | v8 provider + thresholds in vite.config.ts        |

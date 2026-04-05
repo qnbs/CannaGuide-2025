@@ -8,6 +8,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- test(stores): `savedItemsSlice.test.ts` -- 17 tests for setups CRUD, strain tips validation, exports CRUD (Session 63)
+- test(stores): `userStrainsSlice.test.ts` -- 12 tests for add/update/delete/setAll/deleteMultiple (Session 63)
 - docs: `DEPENDENCY-GRAPH.md` -- monorepo package topology, ESLint enforcement, pipeline dependencies (Session 62)
 - docs: `ARCHITECTURE-MIGRATION-PLAN.md` -- service classification and migration priorities (Session 62)
 - feat(lint): add `@cannaguide/desktop` to `no-restricted-imports` boundary rules (Session 62)
@@ -15,6 +17,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- fix(ai): parse `Retry-After` header on HTTP 429 responses from OpenAI-compatible and Anthropic providers instead of hard-coded 60s (Session 63)
+- fix(build): use `import.meta.url`-based `__webRoot` for vite.config.ts path resolution -- fixes Stryker sandbox alias and setupFiles (Session 63)
+- fix(test): add `.stryker-tmp` to vitest exclude to prevent sandbox test pollution (Session 63)
+- fix(stryker): add `dir: "apps/web"` and reduce concurrency to 1 for Codespace compatibility (Session 63)
 - fix(turbo): add 6 missing root-level source files to `build`/`build:gh` inputs (`constants.ts`, `types.ts`, `i18n.ts`, `styles.css`, `securityHeaders.ts`, `simulation.worker.ts`) (Session 62)
 - fix(turbo): add `env` declarations (`BUILD_BASE_PATH`, `VITE_*`) to build tasks for proper cache invalidation (Session 62)
 - fix(turbo): add `package-lock.json` to `globalDependencies` so dependency changes invalidate all caches (Session 62)

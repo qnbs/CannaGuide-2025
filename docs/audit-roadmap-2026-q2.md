@@ -5,7 +5,7 @@
 > Dedizierte Roadmap zur Umsetzung aller Maßnahmen aus dem **Full-Scale Deep Audit, Critical Evaluation & Action-Plan** (Stand: 23. März 2026, Commit `473044d`).
 > Dieses Dokument ist der zentrale Übergabe- und Anknüpfungspunkt für alle zukünftigen Sessions.
 
-**Letzte Aktualisierung:** 2026-03-28
+**Letzte Aktualisierung:** 2026-04-05
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
 
 ---
@@ -30,21 +30,22 @@
 
 ## Gesamtübersicht & Zielzustand
 
-### Ist-Zustand (2026-03-29)
+### Ist-Zustand (2026-04-05)
 
-| Metrik                     | Wert                 | Bewertung           |
-| -------------------------- | -------------------- | ------------------- |
-| App-Version                | v1.2.0-alpha         | ✅ Stabil           |
-| Tests                      | 793/793 (88 Dateien) | ✅ Grün             |
-| OpenSSF Scorecard          | 8.5/10               | ⚠ Ziel: 10/10       |
-| SonarCloud Security        | A                    | ✅                  |
-| SonarCloud Reliability     | B                    | ⚠ Ziel: A           |
-| SonarCloud Hotspots        | E (0 % reviewed)     | 🔴 Blocker          |
-| SonarCloud Maintainability | A                    | ⚠ 354 Code Smells   |
-| Test-Coverage              | ~22–28 %             | ⚠ Ziel: >30 %       |
-| Duplicate Code             | ~115 Major-Blöcke    | ⚠ Technische Schuld |
-| Security Alerts            | 0                    | ✅                  |
-| CI Workflows               | 21 (alle grün)       | ✅                  |
+| Metrik                     | Wert                    | Bewertung           |
+| -------------------------- | ----------------------- | ------------------- |
+| App-Version                | v1.4.0-alpha            | ✅ Stabil           |
+| Tests                      | 1497/1497 (135 Dateien) | ✅ Grün             |
+| OpenSSF Scorecard          | 8.5/10                  | ⚠ Ziel: 10/10       |
+| SonarCloud Security        | A                       | ✅                  |
+| SonarCloud Reliability     | B                       | ⚠ Ziel: A           |
+| SonarCloud Hotspots        | E (0 % reviewed)        | 🔴 Blocker          |
+| SonarCloud Maintainability | A                       | ⚠ 354 Code Smells   |
+| Test-Coverage              | ~22-28 %                | ⚠ Ziel: >30 %       |
+| Duplicate Code             | ~115 Major-Bloecke      | ⚠ Technische Schuld |
+| Security Alerts            | 0                       | ✅                  |
+| CI Workflows               | 21 (alle gruen)         | ✅                  |
+| Stryker Mutation           | Baseline erstellt       | ✅ Neu (Session 63) |
 
 ### Soll-Zustand (nach vollständiger Roadmap)
 
@@ -513,6 +514,7 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
 
 | Datum      | Session-Fokus                    | Sprint       | Fortschritt                                            | Review-Doc                                      |
 | ---------- | -------------------------------- | ------------ | ------------------------------------------------------ | ----------------------------------------------- |
+| 2026-04-05 | P0/P1 Audit: Stryker + Tests     | S2 + S3      | 29 neue Tests, Stryker Baseline, Retry-After Parsing   | Session 63                                      |
 | 2026-03-28 | Deep Cleanup + 5-Feature Batch   | S3 + S5      | 18 files, eco-mode sync, plugin UI, DSGVO, i18n, dedup | [review](session-activity-review-2026-03-28.md) |
 | 2026-03-27 | Full Audit Plan (12 Phases)      | S3 + S5      | 24 files modified, 11 new, 12/12 phases done           | [review](session-activity-review-2026-03-27.md) |
 | 2026-03-24 | Development Journey Transparency | Vorbereitung | Roadmap erstellt, README + AboutTab + i18n + Handoff   | [review](session-activity-review-2026-03-24.md) |

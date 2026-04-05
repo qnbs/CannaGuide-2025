@@ -2,7 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 62) -- Package Boundary Enforcement + Monorepo Audit
+## Latest Session (Session 63) -- P0/P1 Comprehensive Audit & Fix
+
+**Status: v1.4.0-alpha. 1497 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 63)
+
+1. **Missing slice tests created** -- `savedItemsSlice.test.ts` (17 tests: setups CRUD, strain tips add/validate/update/delete, exports CRUD) and `userStrainsSlice.test.ts` (12 tests: add/update/delete/setAll/deleteMultiple). Both slices were the only Stryker-targeted files without test coverage.
+
+2. **Stryker mutation testing baseline** -- Fixed vite.config.ts path resolution (`path.resolve('./')` -> `__webRoot` via `import.meta.url`) so Stryker vitest runner resolves `@` alias and `setupFiles` correctly from sandbox. Fixed stryker.conf.json: added `dir: "apps/web"`, reduced concurrency to 1 (Codespace memory). First successful local mutation run: 384 tests, 2464 mutants.
+
+3. **Rate-limiter Retry-After header parsing** -- Added `parseRetryAfterHeader()` in `aiProviderService.ts`. OpenAI-compatible and Anthropic 429 handlers now parse the `Retry-After` header (integer seconds, capped at 300s) instead of hard-coded 60s. Fallback: 60s when no header.
+
+4. **PRIORITY_ROADMAP status corrections** -- S-01 (Prompt Injection): "In Progress" -> "Done" (5-layer pipeline already complete). R-01 (Streaming): "Open" -> "Done" (useStreamingResponse.ts since S47). R-02 (GPU Manager): "Open" -> "Done" (gpuResourceManager.ts since S48). T-01 (Mutation Testing): "Open" -> "Done".
+
+5. **P0/P1 audit findings** -- 4 of 7 items already fully implemented (Prompt Injection allow-list, API Key Rotation UI, Worker Error Propagation, Service Dependency Graph). 3 items had gaps (now fixed).
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered, 2 known cryptoService TS2769)
+- Tests: 1497 passing, 0 failures (135 test files)
+- Build: pending final verification
+- Stryker: 384 tests discovered, 2464 mutants instrumented
+
+### Next Steps
+
+- Session 64: UI/UX Next-Pass (5 remaining items from ui-ux-audit.md)
+    - Icon-only destructive actions -> 44x44 touch targets app-wide
+    - Screen-reader labels for chart toggles (SimulationChart, HistoryChart)
+    - Mobile E2E assertions: no clipping in key dialogs
+    - Focus-return tests for nested overlays
+    - Notch-safe-area padding audit
+- Continue audit-roadmap-2026-q2 Sprint 2 items (test coverage >30%, property-based fuzzing)
+- Consider adding `capacitor.config.ts` to tsconfig allowDefaultProject
+
+### Planned Executions
+
+#### Execution 2: UI/UX A11y Touch Target Standardization
+
+**Scope:** 5 remaining items from `ui-ux-audit.md` Next Pass
+**Prerequisites:** Session 63 complete
+**Estimated complexity:** Medium (1-2 days)
+**Files:** Button.tsx, dialog.tsx, Pagination.tsx, SimulationChart.tsx, HistoryChart.tsx, styles.css
+
+#### Execution 3: Test Coverage Sprint
+
+**Scope:** audit-roadmap S2.2 -- raise coverage from ~22% to >30%
+**Prerequisites:** Stryker baseline established
+**Estimated complexity:** High (1-2 days)
+**Target services:** aiProviderService, aiService, exportService, strainService, commandService, geminiService
+
+---
+
+## Session 62 -- Package Boundary Enforcement + Monorepo Audit
 
 **Status: v1.4.0-alpha. 1468 tests passing. TypeScript clean. Build clean.**
 

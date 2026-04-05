@@ -379,6 +379,7 @@ export enum StrainViewTab {
     MyStrains = 'my-strains',
     Favorites = 'favorites',
     DailyStrains = 'daily-strains',
+    Comparison = 'comparison',
     Genealogy = 'genealogy',
     BreedingLab = 'breeding-lab',
     Exports = 'exports',

@@ -10,6 +10,35 @@ import { matchVoiceCommand } from '@/services/voiceCommandRegistry'
 import type { VoiceCommandDef } from '@/services/voiceCommandRegistry'
 import type { AppDispatch } from '@/stores/store'
 
+// Top-level vi.mock declarations (Vitest hoisting requirement).
+// These mocks apply to buildVoiceCommands in the real-registry smoke test.
+vi.mock('@/i18n', () => ({
+    getT: () => (key: string) => key,
+}))
+vi.mock('@/stores/useUIStore', () => ({
+    getUISnapshot: () => ({
+        setActiveView: vi.fn(),
+        setEquipmentViewTab: vi.fn(),
+        setKnowledgeViewTab: vi.fn(),
+    }),
+}))
+vi.mock('@/stores/useFiltersStore', () => ({
+    useFiltersStore: {
+        getState: () => ({
+            setSearchTerm: vi.fn(),
+            resetAllFilters: vi.fn(),
+            toggleTypeFilter: vi.fn(),
+        }),
+    },
+}))
+vi.mock('@/stores/useStrainsViewStore', () => ({
+    useStrainsViewStore: { getState: () => ({ setStrainsViewTab: vi.fn() }) },
+}))
+vi.mock('@/stores/slices/settingsSlice', () => ({
+    setSetting: vi.fn(),
+    toggleSetting: vi.fn(),
+}))
+
 // ---------------------------------------------------------------------------
 // Fixture Commands
 // ---------------------------------------------------------------------------
@@ -179,34 +208,6 @@ describe('matchVoiceCommand -- Pass 2: fuzzy keyword scoring', () => {
 describe('matchVoiceCommand -- real registry smoke test', () => {
     // Lazy import to avoid i18n init issues in unit tests
     it('buildVoiceCommands returns at least 23 commands', async () => {
-        // Mock the i18n getT and Zustand store dependencies
-        vi.mock('@/i18n', () => ({
-            getT: () => (key: string) => key,
-        }))
-        vi.mock('@/stores/useUIStore', () => ({
-            getUISnapshot: () => ({
-                setActiveView: vi.fn(),
-                setEquipmentViewTab: vi.fn(),
-                setKnowledgeViewTab: vi.fn(),
-            }),
-        }))
-        vi.mock('@/stores/useFiltersStore', () => ({
-            useFiltersStore: {
-                getState: () => ({
-                    setSearchTerm: vi.fn(),
-                    resetAllFilters: vi.fn(),
-                    toggleTypeFilter: vi.fn(),
-                }),
-            },
-        }))
-        vi.mock('@/stores/useStrainsViewStore', () => ({
-            useStrainsViewStore: { getState: () => ({ setStrainsViewTab: vi.fn() }) },
-        }))
-        vi.mock('@/stores/slices/settingsSlice', () => ({
-            setSetting: vi.fn(),
-            toggleSetting: vi.fn(),
-        }))
-
         const { buildVoiceCommands } = await import('@/services/voiceCommandRegistry')
         const commands = buildVoiceCommands(mockDispatch)
         expect(commands.length).toBeGreaterThanOrEqual(23)

@@ -37,6 +37,11 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
             label: t('strainsView.tabs.dailyStrains'),
         },
         {
+            id: StrainViewTab.Comparison,
+            icon: <PhosphorIcons.Columns />,
+            label: t('strainsView.tabs.comparison'),
+        },
+        {
             id: StrainViewTab.Genealogy,
             icon: <PhosphorIcons.TreeStructure />,
             label: t('strainsView.tabs.genealogy'),

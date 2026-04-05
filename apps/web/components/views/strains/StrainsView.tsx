@@ -68,6 +68,9 @@ const GeneticTrendsView = lazy(() =>
     import('./GeneticTrendsView').then((m) => ({ default: m.GeneticTrendsView })),
 )
 const DailyStrains = lazy(() => import('./DailyStrains').then((m) => ({ default: m.DailyStrains })))
+const StrainComparisonView = lazy(() =>
+    import('./StrainComparisonView').then((m) => ({ default: m.StrainComparisonView })),
+)
 
 const DEFAULT_AGRONOMIC = {
     difficulty: 'Medium',
@@ -192,6 +195,9 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.DailyStrains]: (
                 <PhosphorIcons.BellSimple className="w-16 h-16 mx-auto text-cyan-400" />
             ),
+            [StrainViewTab.Comparison]: (
+                <PhosphorIcons.Columns className="w-16 h-16 mx-auto text-teal-400" />
+            ),
             [StrainViewTab.Genealogy]: (
                 <PhosphorIcons.TreeStructure className="w-16 h-16 mx-auto text-purple-400" />
             ),
@@ -217,6 +223,7 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.MyStrains]: t('strainsView.tabs.myStrains'),
             [StrainViewTab.Favorites]: t('strainsView.tabs.favorites'),
             [StrainViewTab.DailyStrains]: t('strainsView.tabs.dailyStrains'),
+            [StrainViewTab.Comparison]: t('strainsView.tabs.comparison'),
             [StrainViewTab.Genealogy]: t('strainsView.tabs.genealogy'),
             [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab'),
             [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
@@ -623,6 +630,14 @@ export const StrainsView: React.FC = () => {
                     <ErrorBoundary>
                         <Suspense fallback={<SkeletonLoader count={3} />}>
                             <DailyStrains />
+                        </Suspense>
+                    </ErrorBoundary>
+                )
+            case StrainViewTab.Comparison:
+                return (
+                    <ErrorBoundary>
+                        <Suspense fallback={<SkeletonLoader count={3} />}>
+                            <StrainComparisonView allStrains={allStrains} />
                         </Suspense>
                     </ErrorBoundary>
                 )

@@ -380,7 +380,10 @@ const executeInWorker = async (
             dataUrl: string
             latencyMs: number
             backend: string
-        }>(WORKER_NAME, 'GENERATE', payload, GENERATION_TIMEOUT_MS)
+        }>(WORKER_NAME, 'GENERATE', payload, {
+            timeoutMs: GENERATION_TIMEOUT_MS,
+            priority: 'low',
+        })
         return result
     } finally {
         w.removeEventListener('message', progressHandler)

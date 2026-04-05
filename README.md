@@ -60,7 +60,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 21-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 778 strains -- 1447 tests -- 100 services -- 13 Redux slices + 8 Zustand stores -- 23 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
+**Key numbers:** 778 strains -- 1468 tests -- 100 services -- 13 Redux slices + 8 Zustand stores -- 23 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
 
 ---
 

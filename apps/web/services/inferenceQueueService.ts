@@ -98,7 +98,10 @@ const processQueue = (): void => {
 
             activeCount++
             workerBus
-                .dispatch<unknown>(WORKER_NAME, 'INFER', task.payload, task.timeoutMs)
+                .dispatch<unknown>(WORKER_NAME, 'INFER', task.payload, {
+                    timeoutMs: task.timeoutMs,
+                    priority: 'low',
+                })
                 .then((result) => {
                     task.resolve(result)
                 })

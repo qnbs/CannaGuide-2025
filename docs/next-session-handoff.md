@@ -2,7 +2,43 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 59) -- localAI.ts Service Facade Refactoring + Commit Workflow Fix
+## Latest Session (Session 60) -- WorkerBus Priority Queue + VPD High-Priority Lane
+
+**Status: v1.4.0-alpha. 1468 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 60)
+
+1. **`apps/web/utils/priorityQueue.ts`** (NEW, ~155 lines) -- Generic min-heap `PriorityQueue<T>` with O(log n) enqueue/dequeue. FIFO tiebreaking via monotone `insertOrder` counter. Exports `WorkerPriority` type (`critical | high | normal | low`) and `PRIORITY_VALUES` mapping.
+
+2. **`apps/web/services/workerBus.ts`** (MODIFIED, ~740 lines) -- Replaced FIFO `QueuedDispatch[]` array with `PriorityQueue<QueuedDispatch>` heap. Added `priority` field to `DispatchOptions`, `QueuedDispatch`, `PendingRequest`, `DispatchCompleteEvent`. `drainQueue()` now dequeues highest-priority item first. New `getQueueState()` method returns per-priority breakdown, current in-flight, and queued items. No preemption -- critical jobs queue-jump but never interrupt running workers.
+
+3. **Consumer priority wiring (6 dispatch sites):**
+    - `plantSimulationService.ts` -- VPD `RUN_DAILY`/`RUN_GROWTH`: `priority: 'critical'`
+    - `simulationSlice.ts` -- `SIMULATE`: `priority: 'high'`
+    - `sandboxSlice.ts` -- `RUN_SCENARIO`: `priority: 'normal'` (explicit)
+    - `inferenceQueueService.ts` -- ML `INFER`: `priority: 'low'`
+    - `imageGenerationService.ts` -- `GENERATE`: `priority: 'low'`
+
+4. **Tests:** 22 new tests (10 PriorityQueue unit + 12 WorkerBus priority integration). Total: 1468 passing.
+
+5. **Docs:** Updated README, CHANGELOG, copilot-instructions, worker-bus.md, next-session-handoff.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1468 passing, 0 failures
+- Build: success (157 precache entries)
+
+### Next Steps
+
+- Session 61: Continue audit-roadmap-2026-q2 items
+- Consider per-worker-type rate limiting (e.g., inference max 3 req/s)
+- Priority telemetry -- track per-priority latency in workerTelemetryService
+- Cross-worker communication channel (SharedArrayBuffer or MessageChannel)
+
+---
+
+## Session 59 -- localAI.ts Service Facade Refactoring + Commit Workflow Fix
 
 **Status: v1.4.0-alpha. 1447 tests passing. TypeScript clean. Build clean.**
 

@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1447 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1468 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -128,7 +128,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiInfrastructureService.ts` -- Backward-compatible barrel re-export for LocalAIInfrastructure
     - `localAiWebGpuService.ts` -- Centralized WebGPU adapter, shared device lifecycle, feature detection
 
-8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, AbortController support, Transferable zero-copy transfers, and pagehide teardown. All 8 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene, calculation) use this bus. `workerStateSyncService.ts` provides a framework-agnostic handler registry for automatic Redux/Zustand wiring from dispatch results. `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`). See `docs/worker-bus.md`.
+8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, AbortController support, Transferable zero-copy transfers, heap-based priority queue, and pagehide teardown. All 8 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene, calculation) use this bus. Priority levels: `critical` (VPD safety), `high` (user-initiated simulation), `normal` (default), `low` (ML inference, image gen). `PriorityQueue<T>` min-heap in `utils/priorityQueue.ts` with O(log n) enqueue/dequeue and FIFO tiebreaking. `getQueueState()` returns per-priority breakdown. No preemption -- critical jobs queue-jump but never interrupt running workers. `workerStateSyncService.ts` provides a framework-agnostic handler registry for automatic Redux/Zustand wiring from dispatch results. `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`). See `docs/worker-bus.md`.
 
 9. **Seedbank API:** `seedbankService.ts` provides deterministic mock seed pricing/availability. SeedFinder.eu API permanently removed (dead since mid-2024). 5 hardcoded seedbanks with hash-based availability. 5-min in-memory TTL cache. `isLocalOnlyMode()` guard.
 
@@ -224,7 +224,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1447 tests, 0 failures
+- Baseline: 1468 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
@@ -452,6 +452,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/components/views/knowledge/DiseaseAtlasView.tsx`  | 22-entry plant disease diagnostic atlas sub-view                                                                   |
 | `apps/web/components/views/knowledge/CalculatorHubView.tsx` | VPD + Nutrient Ratio + pH/EC calculator hub sub-view                                                               |
 | `apps/web/components/views/knowledge/LearningPathView.tsx`  | 5-path grow education learning paths sub-view (Redux progress)                                                     |
+| `apps/web/utils/priorityQueue.ts`                           | Generic min-heap PriorityQueue<T> with FIFO tiebreaking, WorkerPriority type, PRIORITY_VALUES                      |
 | `apps/web/utils/random.ts`                                  | `secureRandom()` -- Web Crypto replacement for Math.random                                                         |
 | `apps/web/constants.ts`                                     | App-wide constants                                                                                                 |
 | `apps/web/types.ts`                                         | Core TypeScript types                                                                                              |

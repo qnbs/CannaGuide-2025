@@ -14,6 +14,18 @@
  * - AbortController support (signal option) -- cancel in-flight requests
  * - Transferable Object support -- zero-copy ArrayBuffer/ImageBitmap transfers
  * - onDispatchComplete hook -- automatic Redux/Zustand state sync via workerStateSyncService
+ * - Heap-based priority queue -- critical > high > normal > low dispatch ordering
+ *
+ * Priority Guide:
+ *   critical -- VPD alerts, safety-critical plant monitoring (<100ms target)
+ *   high     -- user-initiated simulation, interactive AI queries
+ *   normal   -- standard operations (default)
+ *   low      -- ML inference (WebLLM/ONNX), image generation, background tasks
+ *
+ * Design: No preemption. Critical jobs do not interrupt running workers.
+ * They are guaranteed to be dispatched next once the current job completes.
+ * True preemption would require Worker.terminate() + re-create, risking
+ * race conditions and lost in-flight state.
  *
  * Usage:
  *   workerBus.register('genealogy', new Worker(...))
@@ -25,6 +37,9 @@
 
 import type { WorkerRequest, WorkerResponse } from '@/types/workerBus.types'
 import { WorkerErrorCode, WorkerBusError } from '@/types/workerBus.types'
+import { PriorityQueue, type WorkerPriority } from '@/utils/priorityQueue'
+
+export type { WorkerPriority } from '@/utils/priorityQueue'
 
 // ---------------------------------------------------------------------------
 // Internal types
@@ -38,6 +53,8 @@ interface PendingRequest<T = unknown> {
     workerName: string
     /** Message type stored for hook events and telemetry. */
     type: string
+    /** Dispatch priority for queue-state reporting. */
+    priority: WorkerPriority
     /** Removes the AbortSignal listener when the request settles. */
     abortCleanup?: (() => void) | undefined
 }
@@ -47,6 +64,7 @@ interface QueuedDispatch {
     type: string
     payload: unknown
     timeoutMs: number
+    priority: WorkerPriority
     signal?: AbortSignal | undefined
     transferable?: Transferable[] | undefined
     resolve: (value: unknown) => void
@@ -71,6 +89,11 @@ export interface DispatchOptions {
      * avoiding a structured-clone memory copy (e.g. ArrayBuffer, ImageBitmap).
      */
     transferable?: Transferable[] | undefined
+    /**
+     * Dispatch priority. Higher-priority jobs are dequeued before lower ones
+     * when multiple jobs are waiting. Default: 'normal'.
+     */
+    priority?: WorkerPriority | undefined
 }
 
 /**
@@ -83,6 +106,8 @@ export interface DispatchCompleteEvent {
     type: string
     latencyMs: number
     success: boolean
+    /** Dispatch priority that was assigned to this job. */
+    priority: WorkerPriority
     /** Present on success -- the resolved data value. */
     data?: unknown
     /** Present on failure -- human-readable error description. */
@@ -142,7 +167,7 @@ class WorkerBusImpl {
     private readonly workers = new Map<string, Worker>()
     private readonly pending = new Map<string, PendingRequest>()
     private readonly activeCount = new Map<string, number>()
-    private readonly queues = new Map<string, QueuedDispatch[]>()
+    private readonly queues = new Map<string, PriorityQueue<QueuedDispatch>>()
     private readonly concurrencyLimits = new Map<string, number>()
     private readonly dispatchHooks: Array<(event: DispatchCompleteEvent) => void> = []
     private defaultTimeoutMs = DEFAULT_TIMEOUT_MS
@@ -214,6 +239,7 @@ class WorkerBusImpl {
                         type: entry.type,
                         latencyMs: performance.now() - entry.startedAt,
                         success: false,
+                        priority: entry.priority,
                         error: errMsg,
                     })
                     entry.reject(new Error(errMsg))
@@ -249,8 +275,10 @@ class WorkerBusImpl {
         // Reject queued items
         const queue = this.queues.get(name)
         if (queue) {
-            for (const item of queue) {
+            let item = queue.dequeue()
+            while (item !== undefined) {
                 item.reject(new Error(`[WorkerBus] Worker "${name}" unregistered`))
+                item = queue.dequeue()
             }
             this.queues.delete(name)
         }
@@ -285,6 +313,7 @@ class WorkerBusImpl {
         const retryDelayMs = opts.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS
         const signal = opts.signal
         const transferable = opts.transferable
+        const priority: WorkerPriority = opts.priority ?? 'normal'
 
         if (retries > 0) {
             return this.dispatchWithRetry<TResponse>(
@@ -296,6 +325,7 @@ class WorkerBusImpl {
                 retryDelayMs,
                 signal,
                 transferable,
+                priority,
             )
         }
         return this.dispatchOnce<TResponse>(
@@ -305,6 +335,7 @@ class WorkerBusImpl {
             timeoutMs,
             signal,
             transferable,
+            priority,
         )
     }
 
@@ -346,7 +377,7 @@ class WorkerBusImpl {
                 totalErrors: tel.totalErrors,
                 totalTimeouts: tel.totalTimeouts,
                 pendingCount,
-                queuedCount: queue?.length ?? 0,
+                queuedCount: queue?.size ?? 0,
                 averageLatencyMs:
                     tel.latencyCount > 0 ? Math.round(tel.latencySum / tel.latencyCount) : 0,
             }
@@ -363,6 +394,45 @@ class WorkerBusImpl {
             if (entry.workerName === name) count++
         }
         return count
+    }
+
+    /**
+     * Snapshot of the current queue state across all workers.
+     * Useful for debugging and monitoring priority distribution.
+     */
+    getQueueState(): {
+        current: Array<{ workerName: string; type: string; priority: WorkerPriority }>
+        queued: Array<{ workerName: string; type: string; priority: WorkerPriority }>
+        byPriority: Record<WorkerPriority, number>
+    } {
+        const current: Array<{ workerName: string; type: string; priority: WorkerPriority }> = []
+        for (const entry of this.pending.values()) {
+            current.push({
+                workerName: entry.workerName,
+                type: entry.type,
+                priority: entry.priority,
+            })
+        }
+
+        const queued: Array<{ workerName: string; type: string; priority: WorkerPriority }> = []
+        const byPriority: Record<WorkerPriority, number> = {
+            critical: 0,
+            high: 0,
+            normal: 0,
+            low: 0,
+        }
+        for (const queue of this.queues.values()) {
+            for (const item of queue.toArray()) {
+                queued.push({
+                    workerName: item.workerName,
+                    type: item.type,
+                    priority: item.priority,
+                })
+                byPriority[item.priority]++
+            }
+        }
+
+        return { current, queued, byPriority }
     }
 
     /**
@@ -397,6 +467,7 @@ class WorkerBusImpl {
         timeoutMs: number,
         signal?: AbortSignal | undefined,
         transferable?: Transferable[] | undefined,
+        priority: WorkerPriority = 'normal',
     ): Promise<TResponse> {
         // Pre-flight abort check -- reject immediately if already aborted
         if (signal?.aborted) {
@@ -424,14 +495,14 @@ class WorkerBusImpl {
         const active = this.activeCount.get(workerName) ?? 0
 
         if (active >= limit) {
-            // Queue the request (backpressure) -- preserve signal and transferable
+            // Queue the request (backpressure) -- priority-ordered via heap
             return new Promise<TResponse>((resolve, reject) => {
                 let queue = this.queues.get(workerName)
                 if (!queue) {
-                    queue = []
+                    queue = new PriorityQueue<QueuedDispatch>()
                     this.queues.set(workerName, queue)
                 }
-                if (queue.length >= DEFAULT_MAX_QUEUE_SIZE) {
+                if (queue.size >= DEFAULT_MAX_QUEUE_SIZE) {
                     reject(
                         new WorkerBusError(
                             `Queue full for "${workerName}" (${DEFAULT_MAX_QUEUE_SIZE} pending)`,
@@ -441,16 +512,20 @@ class WorkerBusImpl {
                     )
                     return
                 }
-                queue.push({
-                    workerName,
-                    type,
-                    payload,
-                    timeoutMs,
-                    signal,
-                    transferable,
-                    resolve: resolve as (v: unknown) => void,
-                    reject,
-                })
+                queue.enqueue(
+                    {
+                        workerName,
+                        type,
+                        payload,
+                        timeoutMs,
+                        priority,
+                        signal,
+                        transferable,
+                        resolve: resolve as (v: unknown) => void,
+                        reject,
+                    },
+                    priority,
+                )
             })
         }
 
@@ -462,6 +537,7 @@ class WorkerBusImpl {
             timeoutMs,
             signal,
             transferable,
+            priority,
         )
     }
 
@@ -473,6 +549,7 @@ class WorkerBusImpl {
         timeoutMs: number,
         signal?: AbortSignal | undefined,
         transferable?: Transferable[] | undefined,
+        priority: WorkerPriority = 'normal',
     ): Promise<TResponse> {
         const messageId = `${workerName}:${crypto.randomUUID()}`
         const tel = getTelemetry(workerName)
@@ -491,6 +568,7 @@ class WorkerBusImpl {
                     type,
                     latencyMs: performance.now() - startedAt,
                     success: false,
+                    priority,
                     error: errMsg,
                 })
                 this.decrementActive(workerName)
@@ -531,6 +609,7 @@ class WorkerBusImpl {
                 startedAt,
                 workerName,
                 type,
+                priority,
                 abortCleanup,
             }
             this.pending.set(messageId, pendingEntry)
@@ -552,15 +631,15 @@ class WorkerBusImpl {
 
     private drainQueue(workerName: string): void {
         const queue = this.queues.get(workerName)
-        if (!queue || queue.length === 0) return
+        if (!queue || queue.size === 0) return
 
         const limit = this.concurrencyLimits.get(workerName) ?? DEFAULT_MAX_CONCURRENT
 
-        while (queue.length > 0) {
+        while (queue.size > 0) {
             const currentActive = this.activeCount.get(workerName) ?? 0
             if (currentActive >= limit) break
 
-            const item = queue.shift()
+            const item = queue.dequeue()
             if (!item) break
 
             // Pre-flight abort check for queued items
@@ -589,6 +668,7 @@ class WorkerBusImpl {
                 item.timeoutMs,
                 item.signal,
                 item.transferable,
+                item.priority,
             )
                 .then(item.resolve)
                 .catch(item.reject)
@@ -604,6 +684,7 @@ class WorkerBusImpl {
         retryDelayMs: number,
         signal?: AbortSignal | undefined,
         transferable?: Transferable[] | undefined,
+        priority: WorkerPriority = 'normal',
     ): Promise<TResponse> {
         let lastError: Error | undefined
         for (let attempt = 0; attempt <= retries; attempt++) {
@@ -623,6 +704,7 @@ class WorkerBusImpl {
                     timeoutMs,
                     signal,
                     transferable,
+                    priority,
                 )
             } catch (err) {
                 lastError = err instanceof Error ? err : new Error(String(err))
@@ -677,6 +759,7 @@ class WorkerBusImpl {
                 type: entry.type,
                 latencyMs,
                 success: false,
+                priority: entry.priority,
                 error: data.error,
             })
             entry.reject(
@@ -692,6 +775,7 @@ class WorkerBusImpl {
                 type: entry.type,
                 latencyMs,
                 success: true,
+                priority: entry.priority,
                 data: data.data,
             })
             entry.resolve(data.data)

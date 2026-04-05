@@ -37,7 +37,7 @@ export const runComparisonScenario = createAsyncThunk<
         SCENARIO_WORKER,
         'RUN_SCENARIO',
         { basePlant, scenario, simulationSettings },
-        120_000,
+        { timeoutMs: 120_000, priority: 'normal' },
     )
     return { ...result, basePlantId: plantId, scenarioId: scenario.id }
 })

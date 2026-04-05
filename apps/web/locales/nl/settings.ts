@@ -16,11 +16,14 @@ export const settingsView = {
         lookAndFeel: 'Uiterlijk',
         interactivity: 'Interactiviteit',
         ai: 'AI-configuratie',
+        iot: 'Hardware & IoT', // machine-translated, review needed
     },
     security: {
         title: 'AI-beveiliging (Multi-Model BYOK)',
         warning:
             'Je API-sleutel wordt alleen op dit apparaat opgeslagen in IndexedDB. Deel je sleutel nooit en verwijder deze op gedeelde apparaten.',
+        geminiFreeNote:
+            'Tip: De Gemini API-sleutel van Google AI Studio is gratis met een Google-account op aistudio.google.com.', // machine-translated, review needed
         provider: 'AI-provider',
         providerDesc: 'Selecteer de AI-modelprovider. Elke provider vereist een eigen API-sleutel.',
         apiKey: 'API-sleutel',
@@ -57,6 +60,19 @@ export const settingsView = {
         auditLog: 'Lokaal AI-auditlogboek',
         auditLogEmpty: 'Er zijn nog geen AI-verzoeken geregistreerd.',
         clearAuditLog: 'Auditlogboek wissen',
+        panicButton: 'Noodwissing sleutels', // machine-translated, review needed
+        panicButtonDesc:
+            'Verwijder onmiddellijk ALLE opgeslagen API-sleutels en de versleutelingssleutel van dit apparaat. Dit kan niet ongedaan worden gemaakt.',
+        panicButtonConfirm: 'Alle sleutels wissen',
+        panicButtonSuccess: 'Alle API-sleutels en versleutelingssleutel zijn verwijderd.',
+        encryptionNotice: 'Transparantie van versleuteling',
+        encryptionNoticeDesc:
+            'API-sleutels worden versleuteld met AES-256-GCM met een niet-exporteerbare sleutel in IndexedDB. Beschermt tegen toevallig browsen en basis XSS-aanvallen.',
+        providerConsent: 'Toestemming gegevensoverdracht',
+        providerConsentPrompt:
+            'U staat op het punt plantengegevens (inclusief fotos) te sturen naar {{provider}}. Stemt u in?',
+        providerConsentRemember: 'Mijn keuze onthouden voor deze provider',
+        providerDpaLink: 'Gegevensverwerkingsovereenkomst bekijken',
     },
     aiMode: {
         title: 'AI-uitvoeringsmodus',
@@ -113,6 +129,17 @@ export const settingsView = {
         forceWasm: 'WASM-backend forceren',
         forceWasmHint:
             'Overschrijf WebGPU-autodetectie en gebruik altijd de WASM-backend. Nuttig voor foutopsporing.',
+        enableWebGpu: 'WebGPU-versnelling inschakelen', // machine-translated, review needed
+        enableWebGpuHint:
+            'Gebruik de GPU voor lokale AI-inferentie indien beschikbaar. Levert 3-8x snellere inferentie op ondersteunde apparaten. Schakel uit voor CPU-only modus.',
+        webGpuTier: 'GPU-niveau: {{value}}',
+        webGpuVram: 'GPU VRAM: {{value}} MB',
+        webGpuVendor: 'GPU: {{value}}',
+        webGpuBatteryGated:
+            'WebGPU gepauzeerd -- batterij onder 15%. Sluit aan om GPU-versnelling opnieuw in te schakelen.',
+        webGpuFeatureF16: 'shader-f16: {{value}}',
+        webGpuDeviceCleanup:
+            'GPU-geheugen wordt automatisch vrijgegeven wanneer het tabblad 30 seconden verborgen is.',
         preferredModel: 'Voorkeurstekstmodel',
         modelAuto: 'Automatisch (Qwen2.5-1.5B)',
         modelQwen25: 'Qwen2.5-1.5B (Gebalanceerd)',
@@ -416,6 +443,20 @@ export const settingsView = {
         altitudeM: 'Kweekhoogte',
         altitudeMDesc:
             'Past barometrische VPD-correctie toe op basis van de hoogte van je kweekruimte boven zeeniveau.',
+        growTech2026: '2026 Kweeektechnologieen', // machine-translated, review needed
+        dynamicLighting: 'Dynamische verlichting',
+        dynamicLightingDesc:
+            'Schakel spectrumadaptieve verlichting in die automatisch de LED-uitvoer aanpast (blauw voor veg, rood voor bloei) op basis van de groeifase en VPD.',
+        enableAeroponics: 'Aeroponiemodus',
+        enableAeroponicsDesc:
+            'Activeert aeroponiespecifieke simulatieparameters: snellere nutrientopname, verminderd waterverbruiksmodel en mist-cyclustiming.',
+        co2Enrichment: 'CO2-verrijkingssimulatie',
+        co2EnrichmentDesc:
+            'Schakelt CO2-verrijkingseffecten in de simulatie-engine in. Stel doel-ppm in voor opbrengstberekeningen.',
+        co2TargetPpm: 'CO2-doel (ppm)',
+        smartFertigationAlerts: 'Slimme fertigatiewaarschuwingen',
+        smartFertigationAlertsDesc:
+            'Ontvang geautomatiseerde waarschuwingen wanneer pH of EC buiten de optimale bereiken drifts op basis van realtime sensorgegevens.',
     },
     notifications: {
         title: 'Meldingen',
@@ -506,6 +547,8 @@ export const settingsView = {
             connected: 'Verbonden met Gist',
             blockedByLocalOnly:
                 'Cloud Sync is uitgeschakeld zolang de Alleen-lokaal-modus actief is. Schakel de Alleen-lokaal-modus uit in Privacy & Beveiliging om Cloud Sync te gebruiken.',
+            gistSecurityWarning:
+                'Uw gegevens worden opgeslagen in een niet-vindbare GitHub Gist. Hoewel versleuteld, is de Gist-URL publiek toegankelijk als deze bekend is. Schakel E2EE in voor bescherming.', // machine-translated, review needed
             encryptionKeyRequired:
                 'Deze back-up is versleuteld. Voer de versleutelingssleutel in om deze te herstellen.',
             e2ee: {
@@ -656,6 +699,18 @@ export const settingsView = {
         credits: {
             title: 'Dankbetuigingen & Links',
             phosphor: 'Pictogrammen geleverd door Phosphor Icons.',
+            strainProviders:
+                'Rasenrijking via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa en Kushy.', // machine-translated, review needed
+            corsProxies: 'CORS-proxy-relay door allorigins.win en corsproxy.io.',
+            transformersJs:
+                'On-device NLP en embeddings via Transformers.js (Xenova/Hugging Face).',
+            webLlm: 'Lokale LLM-inferentie via WebLLM (MLC AI).',
+            onnx: 'ML-runtime door ONNX Runtime Web en TensorFlow.js.',
+            radixUi: 'Toegankelijke UI-primitieven door Radix UI.',
+            recharts: 'Grafiekvisualisaties door Recharts en D3.js.',
+            tailwind: 'Utility-first stijlen door Tailwind CSS.',
+            sentry: 'Foutopsporing door Sentry.',
+            vite: 'Build-tooling door Vite en TurboRepo.',
         },
         githubLinkText: 'Project bekijken op GitHub',
         aiStudioLinkText: 'Project forken in AI Studio',

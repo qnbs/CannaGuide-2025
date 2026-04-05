@@ -870,6 +870,15 @@ export const knowledgeView = {
             content:
                 'CannaGuide integra muchas de estas tecnolog\u00edas de 2026: simulaci\u00f3n VPD en tiempo real, diagn\u00f3sticos impulsados por IA, experimentos hipot\u00e9ticos en sandbox, integraci\u00f3n de sensores IoT y un fallback de IA local de 3 capas para operaci\u00f3n completamente sin conexi\u00f3n.',
         },
+        searchPlaceholder: 'Filtrar tecnologias...', // machine-translated, review needed
+        matchToGrow: 'Comparar con mi instalacion',
+        matchScore: 'Puntuacion de coincidencia',
+        noMatchResults: 'Ninguna tecnologia coincide con tu busqueda.',
+        aiAnalyze: 'Recomendacion IA',
+        aiAnalyzing: 'Analizando...',
+        aiInsightLabel: 'Perspectiva IA',
+        noSetupAvailable:
+            'Configura tu instalacion en Ajustes para ver tu puntuacion de coincidencia personal.',
     },
     rechner: {
         title: 'Centro de Calculadoras',

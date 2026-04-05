@@ -863,6 +863,15 @@ export const knowledgeView = {
             content:
                 'CannaGuide integrates many 2026 technologies: real-time VPD simulation, AI-powered diagnostics, what-if sandbox experiments, IoT sensor integration, and a 3-layer local AI fallback.',
         },
+        searchPlaceholder: 'Filtrer les technologies...', // machine-translated, review needed
+        matchToGrow: 'Correspondre a mon installation',
+        matchScore: 'Score de correspondance',
+        noMatchResults: 'Aucune technologie ne correspond a votre recherche.',
+        aiAnalyze: 'Recommandation IA',
+        aiAnalyzing: 'Analyse en cours...',
+        aiInsightLabel: 'Apercu IA',
+        noSetupAvailable:
+            'Configurez votre installation dans les Parametres pour voir votre score de correspondance.',
     },
     rechner: {
         title: 'Centre de Calculatrices',

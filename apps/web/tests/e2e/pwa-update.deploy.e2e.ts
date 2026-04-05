@@ -37,27 +37,31 @@ test('pwa update: service worker registers with GitHub Pages subpath scope', asy
 
     await page.waitForFunction(() => 'serviceWorker' in navigator)
 
-    // Wait for at least one SW registration to appear (async registration may take time in CI)
-    await page.waitForFunction(
-        async () => {
-            const entries = await navigator.serviceWorker.getRegistrations()
-            return entries.length > 0
-        },
-        { timeout: 30_000 },
-    )
-
+    // Atomically wait for SW registrations AND snapshot them in a single
+    // evaluate call. This avoids the TOCTOU race where a separate
+    // waitForFunction sees registrations > 0 but a subsequent evaluate
+    // returns 0 because the SW transitioned between calls.
     const registrations = (await page.evaluate(async () => {
-        const entries = await navigator.serviceWorker.getRegistrations()
+        const deadline = Date.now() + 30_000
+        const poll = 500
 
-        return entries.map((registration) => ({
-            scope: registration.scope,
-            scriptURL:
-                registration.active?.scriptURL ||
-                registration.waiting?.scriptURL ||
-                registration.installing?.scriptURL ||
-                null,
-            hasActiveOrWaiting: Boolean(registration.active || registration.waiting),
-        }))
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const entries = await navigator.serviceWorker.getRegistrations()
+            if (entries.length > 0) {
+                return entries.map((registration) => ({
+                    scope: registration.scope,
+                    scriptURL:
+                        registration.active?.scriptURL ||
+                        registration.waiting?.scriptURL ||
+                        registration.installing?.scriptURL ||
+                        null,
+                    hasActiveOrWaiting: Boolean(registration.active || registration.waiting),
+                }))
+            }
+            if (Date.now() >= deadline) return []
+            await new Promise((r) => setTimeout(r, poll))
+        }
     })) as SwRegistrationSnapshot[]
 
     expect(registrations.length).toBeGreaterThan(0)

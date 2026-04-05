@@ -8,6 +8,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(plants): nutrient deficiency decision tree service with 8 question nodes + 9 deficiency results (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl) (Session 68)
+- feat(plants): interactive NutrientDeficiencyWizard component with step-by-step diagnosis, severity badges, symptoms/treatment display (Session 68)
+- feat(plants): AI Scanner / Manual Diagnosis tab toggle in LeafDiagnosisPanel with lazy-loaded wizard (Session 68)
+- feat(i18n): nutrientWizard translations for all 5 locales (EN/DE/ES/FR/NL) -- 8 questions, 9 deficiency results (Session 68)
+- test(plants): nutrientDeficiencyService tests (6), NutrientDeficiencyWizard tests (5), LeafDiagnosisPanel tab tests (2) (Session 68)
 - feat(hydro): ONNX stub model for pH/EC/Temp forecasting (1.1 KB, Reshape+MatMul+Add) (Session 67)
 - feat(hydro): hydroForecastWorker with ONNX WASM inference + weighted moving average fallback (Session 67)
 - feat(hydro): hydroForecastService with trend detection, alert generation, graceful degradation (Session 67)
@@ -23,9 +28,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- test: 1554 tests passing (144 test files) (Session 67)
+- test: 1567 tests passing (146 test files) (Session 68)
 
-- feat(equipment): hydroponic monitoring dashboard with Redux slice, Recharts UI, gauge cards, alerts, dosing reference (Session 65)
+### Fixed
+
+- fix(e2e): TOCTOU race condition in pwa-update.deploy.e2e.ts -- merged waitForFunction + evaluate into single atomic polling evaluate (Session 68)
+- feat(hydro): ONNX stub model for pH/EC/Temp forecasting (Session 67)
 - feat(equipment): HydroMonitoring tab in Equipment navigation with Drop icon (Session 65)
 - feat(i18n): hydroMonitoring translations for all 5 locales (EN/DE/ES/FR/NL) (Session 65)
 - test(stores): hydroSlice tests (12 tests: addReading, FIFO pruning, alerts, thresholds) (Session 65)

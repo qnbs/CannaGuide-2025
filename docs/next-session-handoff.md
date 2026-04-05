@@ -2,7 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 67) -- Hydro Sensor-Forecasting (Lightweight ONNX)
+## Latest Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix
+
+**Status: v1.4.0-alpha. 1567 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 68)
+
+1. **Deploy Badge Fix** -- `pwa-update.deploy.e2e.ts`: Fixed TOCTOU race condition where
+   `waitForFunction` confirmed registrations > 0 but separate `evaluate` call returned 0.
+   Merged into single atomic `evaluate` with internal polling loop (30s deadline, 500ms poll).
+
+2. **nutrientDeficiencyService** -- `services/nutrientDeficiencyService.ts`: Pure-logic
+   decision tree for visual nutrient deficiency diagnosis. 8 `DiagnosisNode` question nodes
+    - 9 `DeficiencyResult` leaf nodes covering N/P/K/Mg/Ca/Fe/Mn/Mo/Cl. Tree starts at
+      "older/lower leaves affected?" splitting mobile vs immobile nutrients. Max depth: 4 steps.
+      API: `getStartNode()`, `getNode(id)`, `isResult()`, `getAllDeficiencyIds()`, `getMaxDepth()`.
+
+3. **NutrientDeficiencyWizard** -- `components/views/plants/NutrientDeficiencyWizard.tsx`:
+   Interactive step-by-step wizard UI with progress bar, Yes/No buttons, back navigation,
+   result card with severity badge, symptoms list, treatment recommendations, ViewInAtlas link.
+   Uses `React.memo()` with `displayName`.
+
+4. **LeafDiagnosisPanel Integration** -- Added `DiagnosisTab = 'ai' | 'manual'` tab toggle.
+   AI Scanner tab (existing ONNX model) and Manual Diagnosis tab (lazy-loaded wizard via
+   `React.lazy()` + `Suspense`). Tab UI with Brain/TreeStructure icons.
+
+5. **i18n** -- `nutrientWizard.*` keys added to all 5 locales (EN/DE/ES/FR/NL): 8 question
+   keys, 9 deficiency result blocks (name/symptoms/treatments), severity labels, UI chrome.
+
+6. **Tests** -- 13 new tests: nutrientDeficiencyService (6), NutrientDeficiencyWizard (5),
+   LeafDiagnosisPanel tab integration (2). Total: 1567 passing (146 test files).
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1567 passing, 0 failures (146 test files)
+- Build: clean (166 precache entries)
+- Lint: clean (0 errors on changed files)
+
+### Next Steps
+
+- **N+1: IoT Auto-Feed** -- Connect sensorStore (MQTT live data) to hydroSlice (auto-add readings
+  from IoT sensors). Add toggle: manual vs. auto mode.
+- **N+2: Proactive Hydro Coach** -- Extend proactiveCoachService for hydro readings threshold
+  monitoring with AI-powered pH/EC adjustment recommendations.
+- **N+3: Atlas Integration** -- Wire NutrientDeficiencyWizard "View in Atlas" button to
+  navigate to DiseaseAtlasView with pre-selected deficiency entry.
+- **N+4: Extended Decision Tree** -- Add secondary branches for nutrient toxicity (excess)
+  and combined deficiency patterns.
+- Continue audit-roadmap-2026-q2 Sprint 2 items.
+
+---
+
+## Previous Session (Session 67) -- Hydro Sensor-Forecasting (Lightweight ONNX)
 
 **Status: v1.4.0-alpha. 1554 tests passing. TypeScript clean. Build clean.**
 

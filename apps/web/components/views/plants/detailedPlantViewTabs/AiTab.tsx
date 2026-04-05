@@ -20,6 +20,7 @@ import {
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { LeafDiagnosisPanel } from '@/components/views/plants/LeafDiagnosisPanel'
 
 interface AiTabProps {
     plant: Plant
@@ -349,6 +350,14 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                     </div>
                     <p className="text-xs text-slate-500 mt-4 text-center">{t('ai.disclaimer')}</p>
                 </div>
+            </Card>
+
+            {/* ONNX Leaf Scanner */}
+            <Card>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-3 flex items-center gap-2">
+                    <PhosphorIcons.Leafy className="w-6 h-6" /> {t('plantsView.diagnosis.title')}
+                </h3>
+                <LeafDiagnosisPanel plant={plant} />
             </Card>
 
             <Card>

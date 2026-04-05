@@ -2,6 +2,40 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 56) -- i18n Completion: FR/NL/ES growTech + strainLookup + settings
+
+**Status: v1.4.0-alpha. 1402 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 56)
+
+1. **`locales/fr/knowledge.ts`, `locales/nl/knowledge.ts`, `locales/es/knowledge.ts`** -- added 8 missing `growTech` UI keys (searchPlaceholder, matchToGrow, matchScore, noMatchResults, aiAnalyze, aiAnalyzing, aiInsightLabel, noSetupAvailable) that were open since Session 11.
+
+2. **`locales/fr/strains.ts`, `locales/nl/strains.ts`, `locales/es/strains.ts`** -- added full `export const strainLookup = {...}` block (49 keys: entourage, confidenceSources, comparison sub-objects) that was entirely missing from these locales.
+
+3. **`locales/fr/settings.ts`, `locales/nl/settings.ts`, `locales/es/settings.ts`** -- filled 41 missing WARN keys in 7 sections: categories.iot, security (geminiFreeNote, panicButton*, encryptionNotice*, providerConsent*), offlineAi (enableWebGpu, webGpu*), plants (growTech2026, dynamicLighting*, enableAeroponics*, co2Enrichment*, co2TargetPpm, smartFertigation*), data.sync.gistSecurityWarning, about.credits (strainProviders, corsProxies, transformersJs, webLlm, onnx, radixUi, recharts, tailwind, sentry, vite).
+
+4. **Bug fix (es/settings.ts TS1005)** -- categories closing `},` was on same line after `//` comment, making it invisible to TypeScript. Fixed by splitting onto separate lines.
+
+5. **i18n check**: `node scripts/check-i18n-completeness.mjs` -- exit 0, 0 FAIL entries.
+
+### Verified Metrics (Session 56)
+
+- Tests: 1402 passing, 0 failures
+- TypeScript: clean (RTK TS2719 filtered)
+- ESLint: 0 errors
+- Build: clean
+- i18n completeness: 0 FAIL entries
+
+### Next Steps (Session 57)
+
+- **help.ts 36 WARN keys** (× ES/FR/NL = 108 keys) -- only WARN level, deferred from Session 56
+- **strains.ts 43 remaining WARN keys** -- non-strainLookup strainsView gaps in FR/NL/ES
+- **Stryker first real run**: `npx stryker run --inPlace --mutate "apps/web/services/knowledgeCalculatorService.ts"`
+- **P2 Rate-limiter UX toast**: When AI returns 429, show user-facing toast (currently silent drop)
+- **Native speaker review** of machine-translated FR/NL/ES additions (tagged with `// machine-translated, review needed`)
+
+---
+
 ## Latest Session (Session 53) -- Stryker Config Fix, CHANGELOG Restructure, Version Sync
 
 **Status: v1.4.0-alpha. 1377 tests passing. TypeScript clean. Build clean.**

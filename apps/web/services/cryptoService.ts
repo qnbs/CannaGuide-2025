@@ -159,10 +159,15 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
 
     try {
         const raw = base64ToBytes(storedRaw)
-        // Safety: Uint8Array.buffer is ArrayBufferLike; Web Crypto overloads require ArrayBuffer
+        // Safety: slice() produces a correctly-sized ArrayBuffer (Uint8Array.buffer
+        // may reference a larger backing pool in Node.js, breaking Web Crypto)
+        const rawBuf: ArrayBuffer = raw.buffer.slice(
+            raw.byteOffset,
+            raw.byteOffset + raw.byteLength,
+        ) as ArrayBuffer
         const importedKey = await crypto.subtle.importKey(
             'raw',
-            raw.buffer as ArrayBuffer,
+            rawBuf,
             { name: 'AES-GCM' },
             false,
             ['encrypt', 'decrypt'],
@@ -211,12 +216,16 @@ export async function decrypt(payload: string): Promise<string> {
     try {
         const iv = base64ToBytes(parsed.iv)
         const encrypted = base64ToBytes(parsed.data)
-        // Safety: Uint8Array.buffer is ArrayBufferLike; Web Crypto overloads require ArrayBuffer
-        const decrypted = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
-            key,
-            encrypted.buffer as ArrayBuffer,
-        )
+        // Safety: slice() produces correctly-sized ArrayBuffers (see importKey comment)
+        const ivBuf: ArrayBuffer = iv.buffer.slice(
+            iv.byteOffset,
+            iv.byteOffset + iv.byteLength,
+        ) as ArrayBuffer
+        const dataBuf: ArrayBuffer = encrypted.buffer.slice(
+            encrypted.byteOffset,
+            encrypted.byteOffset + encrypted.byteLength,
+        ) as ArrayBuffer
+        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ivBuf }, key, dataBuf)
         return new TextDecoder().decode(decrypted)
     } catch {
         return payload

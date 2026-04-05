@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, fireEvent } from '@testing-library/react'
 import { renderWithProviders } from '@/tests/test-utils'
 import { PlantStage, StrainType } from '@/types'
 import type { Plant } from '@/types'
@@ -124,5 +124,20 @@ describe('LeafDiagnosisPanel', () => {
         // canAnalyze = isReady && imageData !== null && !loading
         // Initial modelStatus='not-cached' means isReady=false, so button is disabled.
         expect(screen.getByTestId('analyze-button')).toBeDisabled()
+    })
+
+    it('renders both diagnosis tab buttons', () => {
+        renderWithProviders(<LeafDiagnosisPanel plant={buildPlant()} />)
+        expect(screen.getByTestId('diagnosis-tabs')).toBeInTheDocument()
+        expect(screen.getByTestId('tab-ai')).toBeInTheDocument()
+        expect(screen.getByTestId('tab-manual')).toBeInTheDocument()
+    })
+
+    it('switches to manual tab and shows the wizard', async () => {
+        renderWithProviders(<LeafDiagnosisPanel plant={buildPlant()} />)
+        fireEvent.click(screen.getByTestId('tab-manual'))
+        // Lazy-loaded wizard should appear
+        const wizard = await screen.findByTestId('wizard-question')
+        expect(wizard).toBeInTheDocument()
     })
 })

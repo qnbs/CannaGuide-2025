@@ -25,6 +25,9 @@ const GrowTechView = lazy(() => import('./GrowTechView'))
 const IotDashboardView = lazy(() =>
     import('./IotDashboardView').then((m) => ({ default: m.IotDashboardView })),
 )
+const HydroMonitorView = lazy(() =>
+    import('./HydroMonitorView').then((m) => ({ default: m.HydroMonitorView })),
+)
 
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslation()
@@ -65,6 +68,9 @@ export const EquipmentView: React.FC = () => {
             [EquipmentViewTab.IotDashboard]: (
                 <PhosphorIcons.WifiHigh className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-cyan-400" />
             ),
+            [EquipmentViewTab.HydroMonitoring]: (
+                <PhosphorIcons.Drop className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-blue-400" />
+            ),
         }),
         [],
     )
@@ -78,6 +84,7 @@ export const EquipmentView: React.FC = () => {
             [EquipmentViewTab.Seedbanks]: t('equipmentView.tabs.seedbanks'),
             [EquipmentViewTab.GrowTech]: t('equipmentView.tabs.growTech'),
             [EquipmentViewTab.IotDashboard]: t('equipmentView.tabs.iotDashboard'),
+            [EquipmentViewTab.HydroMonitoring]: t('equipmentView.tabs.hydroMonitoring'),
         }),
         [t],
     )
@@ -114,6 +121,8 @@ export const EquipmentView: React.FC = () => {
                 return <GrowTechView />
             case EquipmentViewTab.IotDashboard:
                 return <IotDashboardView />
+            case EquipmentViewTab.HydroMonitoring:
+                return <HydroMonitorView />
             default:
                 return null
         }

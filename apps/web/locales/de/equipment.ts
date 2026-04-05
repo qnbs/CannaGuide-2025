@@ -9,6 +9,7 @@ export const equipmentView = {
         seedbanks: 'Saatgut',
         growTech: 'Grow Tech 2026',
         iotDashboard: 'IoT Dashboard',
+        hydroMonitoring: 'Hydro Monitor',
     },
     configurator: {
         title: 'KI-Setup-Konfigurator',
@@ -373,6 +374,7 @@ export const equipmentView = {
             dliRangeNote: 'Empfohlener DLI-Bereich fur diese Phase: {{min}}-{{max}} mol/m2/Tag.',
         },
         aiPanel: {
+            title: 'KI-Schnellempfehlung',
             description:
                 'Einkaufsliste aus deinen aktuellen Raummaßen und der Lichtwattleistung generieren.',
             generate: 'Einkaufsliste generieren',
@@ -391,6 +393,57 @@ export const equipmentView = {
             syncButton: 'Sensordaten verwenden',
             synced: 'Live IoT',
             noData: 'Keine Sensordaten verfügbar',
+        },
+    },
+    hydroMonitoring: {
+        title: 'Hydroponik-Monitoring',
+        subtitle: 'pH, EC und Wassertemperatur deines Hydro-Systems verfolgen.',
+        systemType: 'Systemtyp',
+        systems: {
+            DWC: 'Tiefwasserkultur',
+            NFT: 'Naehrfilmtechnik',
+            DripSystem: 'Tropfsystem',
+            EbbFlow: 'Ebbe & Flut',
+            Aeroponics: 'Aeroponik',
+            Kratky: 'Kratky-Methode',
+        },
+        gauges: {
+            ph: 'pH',
+            ec: 'EC',
+            waterTemp: 'Wassertemp.',
+            readings: 'Messwerte',
+        },
+        alerts: {
+            title: 'Warnungen',
+            dismiss: 'Verwerfen',
+            tooLow: 'zu niedrig',
+            tooHigh: 'zu hoch',
+            threshold: 'Grenzwert',
+            noAlerts: 'Keine aktiven Warnungen.',
+        },
+        chart: {
+            title: 'Trenddiagramm',
+            '24h': '24h',
+            '48h': '48h',
+            '7d': '7d',
+        },
+        input: {
+            title: 'Messwert hinzufuegen',
+            ph: 'pH',
+            ec: 'EC (mS/cm)',
+            waterTemp: 'Wassertemp. (C)',
+            addReading: 'Messwert hinzufuegen',
+            clearAll: 'Alle loeschen',
+        },
+        thresholds: {
+            title: 'Warn-Schwellenwerte',
+        },
+        dosing: {
+            title: 'Dosierungsreferenz (Hydro)',
+            stage: 'Wachstumsphase',
+            seedling: 'Saemling',
+            vegetative: 'Vegetativ',
+            flowering: 'Bluete',
         },
     },
     growShops: {

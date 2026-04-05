@@ -2,7 +2,61 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 64) -- Vision AI: ONNX Leaf Diagnosis (MobileNetV2 PlantVillage)
+## Latest Session (Session 65) -- Hydroponic Monitoring Dashboard + i18n Audit + Quick Fixes
+
+**Status: v1.4.0-alpha. 1527 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 65)
+
+1. **Hydroponic Monitoring Dashboard** -- Full new Equipment tab with Redux slice, Recharts UI, and
+   i18n in 5 languages:
+    - `hydroSlice.ts`: Redux slice with readings (FIFO 168 cap), alerts (threshold checks on
+      pH/EC/waterTemp), system type (6 hydro systems), configurable thresholds. Persisted to IndexedDB.
+    - `HydroMonitorView.tsx`: Gauge cards (pH/EC/WaterTemp/Readings with color-coded status), dual
+      Y-axis Recharts LineChart (pH + EC, 24h/48h/7d toggle), manual input form, alert dismissal,
+      threshold editor, dosing reference table (Seedling/Vegetative/Flowering EC+pH ranges).
+    - Navigation: EquipmentSubNav + EquipmentView integration (lazy import, Drop icon, tab label).
+    - `EquipmentViewTab.HydroMonitoring` enum value + `HydroReading`, `HydroAlert`, `HydroState`,
+      `HydroThresholds`, `HydroSystemType` types added to `types.ts`.
+    - i18n: `hydroMonitoring.*` section + `tabs.hydroMonitoring` in all 5 locale equipment.ts files.
+    - Tests: 12 hydroSlice tests + 4 HydroMonitorView tests = 16 new tests.
+
+2. **i18n Audit Fixes:**
+    - DE `aiPanel.title` missing -- added `'KI-Schnellempfehlung'` to German equipment locale.
+    - GrowTechView raw genetic trend names -- wrapped `{genetic}` with `t()` pointing to
+      `strainsView.geneticTrends.categories.${genetic}.title` with `ns: 'strains'`.
+    - knowledgeRagService hardcoded English -- threaded `lang` parameter through `buildPrompt()`,
+      appended language instruction to all 6 calculator prompts, replaced hardcoded `'en'` with
+      `i18nInstance.language` in `explain()`.
+    - AiEquipmentPanel hardcoded English -- appended language instruction to equipment recommendation
+      prompt (component already had `lang` from Redux).
+    - CalculatorHistoryPanel raw DB keys -- replaced raw `{k}` with `t('calculators.' + k, {...})`
+      with `defaultValue: k` fallback.
+
+3. **cryptoService.ts unsafe type assertion** -- replaced `as Partial<EncryptedPayload>` with
+   `as unknown` + proper narrowing via `typeof`/`in` checks (0 lint warnings).
+
+4. **README badge updates** -- `xAI Grok` -> `Grok4.20`, `Claude Opus 4.6` -> `Claude 4.6`
+   (both EN and DE sections). Test count badges updated to 1527.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1527 passing, 0 failures (140 test files)
+- Build: clean (162 precache entries)
+
+### Next Steps
+
+- **N+1: IoT Auto-Feed** -- Connect sensorStore (MQTT live data) to hydroSlice (auto-add readings
+  from IoT sensors). Add toggle: manual vs. auto mode.
+- **N+2: CSV Export + Data Sharing** -- Export hydro readings as CSV, share via clipboard/download.
+- **N+3: Proactive Hydro Coach** -- Extend proactiveCoachService for hydro readings threshold
+  monitoring with AI-powered pH/EC adjustment recommendations.
+- Continue audit-roadmap-2026-q2 Sprint 2 items.
+
+---
+
+## Previous Session (Session 64) -- Vision AI: ONNX Leaf Diagnosis (MobileNetV2 PlantVillage)
 
 **Status: v1.4.0-alpha. 1510 tests passing. TypeScript clean. Build clean.**
 

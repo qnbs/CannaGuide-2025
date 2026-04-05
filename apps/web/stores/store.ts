@@ -15,6 +15,7 @@ import sandboxReducer from './slices/sandboxSlice'
 import genealogyReducer from './slices/genealogySlice'
 import nutrientPlannerReducer from './slices/nutrientPlannerSlice'
 import workerMetricsReducer from './slices/workerMetricsSlice'
+import hydroReducer from './slices/hydroSlice'
 import { geminiApi } from './api'
 import {
     listenerMiddleware,
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
     sandbox: sandboxReducer,
     genealogy: genealogyReducer,
     nutrientPlanner: nutrientPlannerReducer,
+    hydro: hydroReducer,
     // Runtime-only -- excluded from stateToSave in indexedDBStorage
     workerMetrics: workerMetricsReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,
@@ -142,11 +144,7 @@ export const createAppStore = async (): Promise<AppStore> => {
     const store = makeStore(preloadedState)
 
     // Wire up Zustand <-> Redux bridges
-    initUIStateBridgeFull(
-        () => store.getState(),
-        store.dispatch,
-        store.subscribe,
-    )
+    initUIStateBridgeFull(() => store.getState(), store.dispatch, store.subscribe)
     initFilterUrlSync()
     initVoiceCommandSubscription(store.dispatch, () => store.getState())
     initOnboardingSubscription(() => store.getState())

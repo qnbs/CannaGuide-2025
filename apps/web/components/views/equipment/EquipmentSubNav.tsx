@@ -46,6 +46,11 @@ export const EquipmentSubNav: React.FC<EquipmentSubNavProps> = ({ activeTab, onT
             label: t('equipmentView.tabs.growTech'),
             icon: <PhosphorIcons.Lightning />,
         },
+        {
+            id: EquipmentViewTab.HydroMonitoring,
+            label: t('equipmentView.tabs.hydroMonitoring'),
+            icon: <PhosphorIcons.Drop />,
+        },
     ]
 
     return (

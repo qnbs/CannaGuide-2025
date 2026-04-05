@@ -115,7 +115,7 @@ export const AiEquipmentPanel: React.FC = memo(() => {
         setExportError(null)
         const { width, depth, height } = roomDimensions
         const vol = ((width / 100) * (depth / 100) * (height / 100)).toFixed(2)
-        const prompt = `Room: ${width}cm x ${depth}cm x ${height}cm (${vol} m3). Light: ${sharedLightWattage}W LED. Recommend a complete indoor cannabis equipment setup for this space.`
+        const prompt = `Room: ${width}cm x ${depth}cm x ${height}cm (${vol} m3). Light: ${sharedLightWattage}W LED. Recommend a complete indoor cannabis equipment setup for this space. Respond entirely in ${lang === 'de' ? 'German' : lang === 'es' ? 'Spanish' : lang === 'fr' ? 'French' : lang === 'nl' ? 'Dutch' : 'English'}.`
         getEquipmentRecommendation({ prompt, lang }).catch(console.error)
     }, [getEquipmentRecommendation, lang, roomDimensions, sharedLightWattage, reset])
 

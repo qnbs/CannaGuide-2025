@@ -19,7 +19,24 @@ import DOMPurify from 'dompurify'
 import { aiService } from '@/services/aiFacade'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { growLogRagService } from '@/services/growLogRagService'
-import type { Plant } from '@/types'
+import { i18nInstance } from '@/i18n'
+import type { Language, Plant } from '@/types'
+
+// ---------------------------------------------------------------------------
+// Language helpers (mirrors localAiPromptHandlers pattern)
+// ---------------------------------------------------------------------------
+
+const LANGUAGE_NAMES: Record<Language, string> = {
+    en: 'English',
+    de: 'German',
+    es: 'Spanish',
+    fr: 'French',
+    nl: 'Dutch',
+}
+
+function languageInstruction(lang: Language): string {
+    return `\nRespond entirely in ${LANGUAGE_NAMES[lang]}.`
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -63,6 +80,7 @@ function buildPrompt(
     calculator: CalculatorName,
     values: Record<string, number | string>,
     journalContext: string,
+    lang: Language,
 ): string {
     const sanitized = Object.fromEntries(
         Object.entries(values).map(([k, v]) => [
@@ -123,7 +141,7 @@ In 2-3 sentences, explain what this cannabinoid profile means for the consumer.
 Under 400 characters. Plain text only.`,
     }
 
-    return prompts[calculator]
+    return prompts[calculator] + languageInstruction(lang)
 }
 
 // ---------------------------------------------------------------------------
@@ -173,6 +191,8 @@ class KnowledgeRagService {
         try {
             lastCallTs.set(calculator, Date.now())
 
+            const lang = (i18nInstance.language ?? 'en').slice(0, 2) as Language
+
             // Build journal context from grow logs (semantic with keyword fallback)
             const queryStr = `${calculator} ${Object.values(values).join(' ')}`
             let journalContext = 'No grow log entries found.'
@@ -191,10 +211,10 @@ class KnowledgeRagService {
             const hadJournalContext =
                 journalContext !== 'No grow log entries found.' && journalContext.trim().length > 0
 
-            const prompt = buildPrompt(calculator, values, journalContext)
+            const prompt = buildPrompt(calculator, values, journalContext, lang)
 
             // getGrowLogRagAnswer accepts arbitrary query strings + optional plant context
-            const response = await aiService.getGrowLogRagAnswer(plants, prompt, 'en')
+            const response = await aiService.getGrowLogRagAnswer(plants, prompt, lang)
             const raw = response.content ?? ''
             const explanation = raw.trim().slice(0, 420)
 

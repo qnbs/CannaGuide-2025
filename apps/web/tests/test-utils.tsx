@@ -15,6 +15,7 @@ import sandboxReducer from '@/stores/slices/sandboxSlice'
 import savedItemsReducer from '@/stores/slices/savedItemsSlice'
 import genealogyReducer from '@/stores/slices/genealogySlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
+import hydroReducer from '@/stores/slices/hydroSlice'
 
 import type { RootState } from '@/stores/store'
 
@@ -30,6 +31,7 @@ const rootReducer = combineReducers({
     savedItems: savedItemsReducer,
     genealogy: genealogyReducer,
     simulation: simulationReducer,
+    hydro: hydroReducer,
 })
 
 export function createTestStore(preloadedState?: Partial<RootState>) {

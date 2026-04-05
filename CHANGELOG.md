@@ -8,6 +8,26 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(equipment): hydroponic monitoring dashboard with Redux slice, Recharts UI, gauge cards, alerts, dosing reference (Session 65)
+- feat(equipment): HydroMonitoring tab in Equipment navigation with Drop icon (Session 65)
+- feat(i18n): hydroMonitoring translations for all 5 locales (EN/DE/ES/FR/NL) (Session 65)
+- test(stores): hydroSlice tests (12 tests: addReading, FIFO pruning, alerts, thresholds) (Session 65)
+- test(equipment): HydroMonitorView tests (4 tests: render, system selector, gauges, form submit) (Session 65)
+
+### Fixed
+
+- fix(i18n): add missing DE `aiPanel.title` translation (Session 65)
+- fix(i18n): translate raw GeneticTrendCategory enums in GrowTechView (Session 65)
+- fix(i18n): thread language through knowledgeRagService prompts (was hardcoded English) (Session 65)
+- fix(i18n): add language instruction to AiEquipmentPanel prompt (Session 65)
+- fix(i18n): translate raw DB keys in CalculatorHistoryPanel (Session 65)
+- fix(security): replace unsafe `as Partial<EncryptedPayload>` in cryptoService with proper narrowing (Session 65)
+- fix(docs): update README badges -- Grok4.20, Claude 4.6 (Session 65)
+
+### Changed
+
+- test: 1527 tests passing (140 test files) (Session 65)
+
 - test(stores): `savedItemsSlice.test.ts` -- 17 tests for setups CRUD, strain tips validation, exports CRUD (Session 63)
 - test(stores): `userStrainsSlice.test.ts` -- 12 tests for add/update/delete/setAll/deleteMultiple (Session 63)
 - docs: `DEPENDENCY-GRAPH.md` -- monorepo package topology, ESLint enforcement, pipeline dependencies (Session 62)

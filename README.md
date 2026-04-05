@@ -11,13 +11,13 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1497%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1527%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- AI Development Stack -->
 
 [![Prototyped in AI Studio](https://img.shields.io/badge/Prototyped%20in-Google%20AI%20Studio-4285F4)](https://aistudio.google.com)
-[![Evaluated by Grok](https://img.shields.io/badge/Evaluated%20by-xAI%20Grok-000000)](https://x.ai)
-[![Built with Claude](https://img.shields.io/badge/Built%20with-Claude%20Opus%204.6-cc785c)](https://claude.ai)
+[![Evaluated by Grok](https://img.shields.io/badge/Evaluated%20by-Grok4.20-000000)](https://x.ai)
+[![Built with Claude](https://img.shields.io/badge/Built%20with-Claude%204.6-cc785c)](https://claude.ai)
 [![GitHub Codespaces](https://img.shields.io/badge/Dev%20in-GitHub%20Codespaces-24292e)](https://github.com/codespaces)
 [![Consulting: Gemini](https://img.shields.io/badge/Consulting-Gemini%203.1%20Pro-4285F4)](https://deepmind.google/technologies/gemini/)
 
@@ -454,13 +454,13 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-1323%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-1527%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 
 [![Prototyped in AI Studio](https://img.shields.io/badge/Prototyp%20in-Google%20AI%20Studio-4285F4)](https://aistudio.google.com)
-[![Evaluated by Grok](https://img.shields.io/badge/Evaluiert%20von-xAI%20Grok-000000)](https://x.ai)
-[![Gebaut mit Claude](https://img.shields.io/badge/Gebaut%20mit-Claude%20Opus%204.6-cc785c)](https://claude.ai)
+[![Evaluated by Grok](https://img.shields.io/badge/Evaluiert%20von-Grok4.20-000000)](https://x.ai)
+[![Gebaut mit Claude](https://img.shields.io/badge/Gebaut%20mit-Claude%204.6-cc785c)](https://claude.ai)
 [![GitHub Codespaces](https://img.shields.io/badge/Entwickelt%20in-GitHub%20Codespaces-24292e)](https://github.com/codespaces)
 [![Consulting: Gemini](https://img.shields.io/badge/Consulting-Gemini%203.1%20Pro-4285F4)](https://deepmind.google/technologies/gemini/)
 

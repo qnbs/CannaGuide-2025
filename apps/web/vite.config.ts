@@ -3,7 +3,10 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import type { PluginOption } from 'vite'
+
+const __webRoot = path.dirname(fileURLToPath(import.meta.url))
 import { CSP, DEV_CSP, PERMISSIONS_POLICY } from './securityHeaders'
 
 // ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
@@ -217,19 +220,20 @@ export default defineConfig({
 
     resolve: {
         alias: {
-            '@': path.resolve('./'),
+            '@': __webRoot,
         },
     },
     test: {
         globals: true,
         environment: 'jsdom',
         maxWorkers: 1,
-        setupFiles: './vitest.setup.ts',
+        setupFiles: path.join(__webRoot, 'vitest.setup.ts'),
         exclude: [
             '**/node_modules/**',
             '**/dist/**',
             '**/cypress/**',
             '**/.{idea,git,cache,output,temp}/**',
+            '**/.stryker-tmp/**',
             'tests/e2e/**',
         ],
         coverage: {

@@ -153,6 +153,22 @@ function isProviderKeyRotationDue(provider: AiProvider): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Retry-After header parsing
+// ---------------------------------------------------------------------------
+
+const DEFAULT_RETRY_AFTER_SEC = 60
+
+function parseRetryAfterHeader(response: Response): number {
+    const header = response.headers.get('Retry-After')
+    if (!header) return DEFAULT_RETRY_AFTER_SEC
+    const seconds = Number(header)
+    if (Number.isFinite(seconds) && seconds > 0) {
+        return Math.min(Math.ceil(seconds), 300)
+    }
+    return DEFAULT_RETRY_AFTER_SEC
+}
+
+// ---------------------------------------------------------------------------
 // OpenAI-compatible API call (for xAI/Grok and OpenAI)
 // ---------------------------------------------------------------------------
 
@@ -205,7 +221,10 @@ async function callOpenAiCompatible(
 
     if (!response.ok) {
         await response.text().catch(() => '')
-        if (response.status === 429) throw new Error('ai.error.rateLimited:60')
+        if (response.status === 429) {
+            const retryAfter = parseRetryAfterHeader(response)
+            throw new Error(`ai.error.rateLimited:${retryAfter}`)
+        }
         throw new Error(`API error ${response.status}`)
     }
 
@@ -248,7 +267,10 @@ async function callAnthropic(
 
     if (!response.ok) {
         await response.text().catch(() => '')
-        if (response.status === 429) throw new Error('ai.error.rateLimited:60')
+        if (response.status === 429) {
+            const retryAfter = parseRetryAfterHeader(response)
+            throw new Error(`ai.error.rateLimited:${retryAfter}`)
+        }
         throw new Error(`API error ${response.status}`)
     }
 

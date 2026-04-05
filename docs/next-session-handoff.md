@@ -2,7 +2,51 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 60) -- WorkerBus Priority Queue + VPD High-Priority Lane
+## Latest Session (Session 61) -- TypeScript Strict Hardening
+
+**Status: v1.4.0-alpha. 1468 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 61)
+
+1. **`apps/web/utils/browserApis.ts`** (NEW, ~85 lines) -- Centralized typed helpers for non-standard browser APIs: `getPerformanceMemory()`, `getDeviceMemoryGB()`, `getBatteryManager()`, `getGpuAdapterInfo()`, `getGpuAdapterDescription()`. Eliminates `as unknown as` casts at call sites for Chromium-only APIs.
+
+2. **Double assertion (`as unknown as`) reduction** -- Replaced 8 double assertions with safer alternatives:
+    - `cryptoService.ts`: Replaced `as unknown as ArrayBuffer` with `.buffer as ArrayBuffer` (single assertion)
+    - `localAiHealthService.ts`: 4 casts replaced with `browserApis` helpers
+    - `localAiWebGpuService.ts`: 2 casts replaced with `browserApis` helpers
+    - `webLlmDiagnosticsService.ts`: 1 cast replaced with `browserApis` helper
+    - `aiService.ts`: Replaced `parsed as unknown as Omit<MentorMessage, 'role'>` with explicit object construction + targeted single assertion for `uiHighlights`
+
+3. **Non-null assertion (`!`) elimination** -- 16 `!` operators removed:
+    - `GenealogyView.tsx`: `zoomRef.current!` -> null-safe local variable
+    - `GuideView.tsx`: `groups['Phases']!` -> conditional block
+    - `MentorView.tsx`: `relevantArticles[0]!` -> IIFE + null guard
+    - `DataManagementTab.tsx`: `grouped[row.db]!` -> if/else pattern
+    - `strainLookupService.ts`: 9 `!` removed via `KnownFlavonoid` union type + `Record<KnownFlavonoid, ...>`
+    - `flavonoidDatabase.ts`: `map[effect]!` -> if/else pattern
+
+4. **Safety documentation** -- Added justification comments to remaining casts:
+    - `migrationLogic.ts`: 10 `as Record<string, unknown>` casts (deserialization boundary)
+    - `nativeBridgeService.ts`, `pdfReportService.ts`, `localAiWebLlmService.ts`: external-API boundary casts
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1468 passing, 0 failures (133 test files)
+- Build: success (157 precache entries)
+- `as unknown as` (non-test): 27 remaining (10 in migrationLogic deserialization, rest justified)
+- `!.` non-null assertions (non-test): 9 remaining (all in Redux slices/services with prior array-existence guards)
+
+### Next Steps
+
+- Session 62: Continue audit-roadmap-2026-q2 items
+- Consider migrating remaining 3 `as unknown as` in localAIModelLoader.ts to browserApis helpers
+- Consider extracting strainDataProviderRegistry.ts `capabilities!` to proper type guard
+- Priority telemetry -- track per-priority latency in workerTelemetryService
+
+---
+
+## Session 60 -- WorkerBus Priority Queue + VPD High-Priority Lane
 
 **Status: v1.4.0-alpha. 1468 tests passing. TypeScript clean. Build clean.**
 

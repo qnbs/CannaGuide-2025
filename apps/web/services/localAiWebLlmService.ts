@@ -135,6 +135,8 @@ export const loadWebLlmEngine = (): Promise<LocalWebLlmEngine | null> => {
                             })
                             console.debug('[WebLLM]', report)
                         },
+                        // Safe cast: CreateMLCEngine returns a compatible engine but
+                        // @mlc-ai/web-llm types diverge from our LocalWebLlmEngine interface
                     })) as unknown as LocalWebLlmEngine
                     reportWebLlmReady()
                     return engine

@@ -36,6 +36,7 @@ export function detectPlatform(): NativePlatform {
     if ('__TAURI_INTERNALS__' in window) return 'tauri'
 
     // Capacitor injects a global Capacitor object with isNativePlatform()
+    // Safe cast: Capacitor global has no TS declarations; runtime-checked below
     const cap = (window as unknown as Record<string, unknown>)['Capacitor'] as
         | { isNativePlatform?: () => boolean }
         | undefined

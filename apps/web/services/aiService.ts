@@ -185,10 +185,18 @@ const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMes
         const parsed = JSON.parse(result) as {
             title?: string | undefined
             content?: string | undefined
-            uiHighlights?: string[] | undefined
+            uiHighlights?: unknown[] | undefined
         }
         if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
-            return parsed as unknown as Omit<MentorMessage, 'role'>
+            const msg: Omit<MentorMessage, 'role'> = {
+                title: parsed.title,
+                content: parsed.content,
+            }
+            if (Array.isArray(parsed.uiHighlights)) {
+                // Safety: uiHighlights shape enforced by AI responseSchema
+                msg.uiHighlights = parsed.uiHighlights as MentorMessage['uiHighlights']
+            }
+            return msg
         }
     } catch {
         // Not valid JSON — fall through to plain text response
@@ -512,6 +520,7 @@ export const aiService = {
     async getTelemetrySnapshot(): Promise<Record<string, unknown> | null> {
         try {
             const { getSnapshot } = await import('@/services/localAiTelemetryService')
+            // Safe widening: TelemetrySnapshot -> Record<string, unknown> for facade decoupling
             return getSnapshot() as unknown as Record<string, unknown>
         } catch {
             return null
@@ -563,6 +572,7 @@ export const aiService = {
     async getHealthReport(): Promise<Record<string, unknown>> {
         try {
             const { generateHealthReport } = await import('@/services/localAiHealthService')
+            // Safe widening: HealthReport -> Record<string, unknown> for facade decoupling
             return (await generateHealthReport()) as unknown as Record<string, unknown>
         } catch {
             return { status: 'unknown', generatedAt: Date.now() }

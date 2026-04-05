@@ -15,6 +15,7 @@
  */
 
 import { captureLocalAiError } from './sentryService'
+import { getBatteryManager, getGpuAdapterInfo } from '@/utils/browserApis'
 
 // --------------------------------------------------------------------------
 // WebGPU type shims (lib.dom may lack full WebGPU definitions)
@@ -123,18 +124,11 @@ const probeBattery = async (): Promise<{
     onBattery: boolean | null
     batteryLevel: number | null
 }> => {
-    try {
-        const nav = navigator as unknown as {
-            getBattery?: () => Promise<{ charging: boolean; level: number }>
-        }
-        if (!nav.getBattery) return { onBattery: null, batteryLevel: null }
-        const battery = await nav.getBattery()
-        return {
-            onBattery: !battery.charging,
-            batteryLevel: battery.level,
-        }
-    } catch {
-        return { onBattery: null, batteryLevel: null }
+    const battery = await getBatteryManager()
+    if (!battery) return { onBattery: null, batteryLevel: null }
+    return {
+        onBattery: !battery.charging,
+        batteryLevel: battery.level,
     }
 }
 
@@ -240,9 +234,7 @@ export const probeWebGpu = async (): Promise<WebGpuCapabilities> => {
         const features = probeFeatures(adapter)
         const vramMB = features.maxBufferSizeMB > 0 ? features.maxBufferSizeMB : null
         const tier = classifyTier(vramMB, features)
-        const info = adapter as unknown as {
-            info?: { description?: string; vendor?: string; architecture?: string }
-        }
+        const info = getGpuAdapterInfo(adapter)
 
         const { onBattery, batteryLevel } = await probeBattery()
         const batteryGated =
@@ -251,9 +243,9 @@ export const probeWebGpu = async (): Promise<WebGpuCapabilities> => {
         cachedCapabilities = {
             apiAvailable: true,
             adapterAcquired: true,
-            adapterDescription: info.info?.description ?? null,
-            vendor: info.info?.vendor ?? null,
-            architecture: info.info?.architecture ?? null,
+            adapterDescription: info?.description ?? null,
+            vendor: info?.vendor ?? null,
+            architecture: info?.architecture ?? null,
             vramMB,
             features,
             tier,
@@ -264,7 +256,7 @@ export const probeWebGpu = async (): Promise<WebGpuCapabilities> => {
         }
 
         console.debug(
-            `[WebGPU] Probe: tier=${tier}, vram=${vramMB ?? '?'}MB, f16=${features.shaderF16}, vendor=${info.info?.vendor ?? '?'}`,
+            `[WebGPU] Probe: tier=${tier}, vram=${vramMB ?? '?'}MB, f16=${features.shaderF16}, vendor=${info?.vendor ?? '?'}`,
         )
 
         return cachedCapabilities

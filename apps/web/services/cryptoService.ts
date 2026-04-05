@@ -159,9 +159,10 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
 
     try {
         const raw = base64ToBytes(storedRaw)
+        // Safety: Uint8Array.buffer is ArrayBufferLike; Web Crypto overloads require ArrayBuffer
         const importedKey = await crypto.subtle.importKey(
             'raw',
-            raw as unknown as ArrayBuffer,
+            raw.buffer as ArrayBuffer,
             { name: 'AES-GCM' },
             false,
             ['encrypt', 'decrypt'],
@@ -210,10 +211,11 @@ export async function decrypt(payload: string): Promise<string> {
     try {
         const iv = base64ToBytes(parsed.iv)
         const encrypted = base64ToBytes(parsed.data)
+        // Safety: Uint8Array.buffer is ArrayBufferLike; Web Crypto overloads require ArrayBuffer
         const decrypted = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv: iv as unknown as ArrayBuffer },
+            { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
             key,
-            encrypted as unknown as ArrayBuffer,
+            encrypted.buffer as ArrayBuffer,
         )
         return new TextDecoder().decode(decrypted)
     } catch {

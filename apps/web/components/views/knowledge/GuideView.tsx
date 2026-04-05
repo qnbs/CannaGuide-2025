@@ -131,13 +131,16 @@ const GuideViewComponent: React.FC = () => {
         })
 
         // Sort articles within the 'Phases' group numerically by their title for correct order
-        groups['Phases']!.articles = groups['Phases']!.articles.toSorted((a, b) => {
-            const aTitle = t(a.titleKey)
-            const bTitle = t(b.titleKey)
-            const aNum = Number.parseInt(phaseNumberPattern.exec(aTitle)?.[0] ?? '0')
-            const bNum = Number.parseInt(phaseNumberPattern.exec(bTitle)?.[0] ?? '0')
-            return aNum - bNum
-        })
+        const phases = groups['Phases']
+        if (phases) {
+            phases.articles = phases.articles.toSorted((a, b) => {
+                const aTitle = t(a.titleKey)
+                const bTitle = t(b.titleKey)
+                const aNum = Number.parseInt(phaseNumberPattern.exec(aTitle)?.[0] ?? '0')
+                const bNum = Number.parseInt(phaseNumberPattern.exec(bTitle)?.[0] ?? '0')
+                return aNum - bNum
+            })
+        }
 
         return Object.entries(groups)
             .filter(([, groupData]) => groupData.articles.length > 0)

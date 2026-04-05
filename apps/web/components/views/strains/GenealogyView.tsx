@@ -700,10 +700,12 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                         const { width, height } = svgEl.getBoundingClientRect()
                         if (width === 0 || height === 0) return
                         const [ix, iy] = getInitialZoomOffset(width, height)
+                        const zoom = zoomRef.current
+                        if (!zoom) return
                         d3.select(svgEl)
                             .transition()
                             .duration(300)
-                            .call(zoomRef.current!.transform, d3.zoomIdentity.translate(ix, iy))
+                            .call(zoom.transform, d3.zoomIdentity.translate(ix, iy))
                     } catch {
                         // ResizeObserver-Callback-Fehler ignorieren
                     }

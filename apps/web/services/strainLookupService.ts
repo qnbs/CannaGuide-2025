@@ -166,7 +166,18 @@ const TERPENE_SYNERGIES: Record<string, TerpeneInteraction[]> = {
 }
 
 // Known flavonoids with estimated entourage contributions
-const FLAVONOID_PROFILES: Record<string, { interactions: TerpeneInteraction[]; score: number }> = {
+type KnownFlavonoid =
+    | 'Cannflavin A'
+    | 'Cannflavin B'
+    | 'Quercetin'
+    | 'Apigenin'
+    | 'Luteolin'
+    | 'Kaempferol'
+
+const FLAVONOID_PROFILES: Record<
+    KnownFlavonoid,
+    { interactions: TerpeneInteraction[]; score: number }
+> = {
     'Cannflavin A': {
         interactions: [
             {
@@ -232,19 +243,19 @@ const TYPE_FLAVONOIDS: Record<string, FlavonoidDataPoint[]> = {
             name: 'Cannflavin A',
             role: 'dominant',
             entourageScore: 8.5,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Cannflavin A']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Cannflavin A'].interactions,
         },
         {
             name: 'Quercetin',
             role: 'secondary',
             entourageScore: 6.5,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin'].interactions,
         },
         {
             name: 'Apigenin',
             role: 'trace',
             entourageScore: 6.0,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Apigenin']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Apigenin'].interactions,
         },
     ],
     Sativa: [
@@ -252,19 +263,19 @@ const TYPE_FLAVONOIDS: Record<string, FlavonoidDataPoint[]> = {
             name: 'Luteolin',
             role: 'dominant',
             entourageScore: 5.5,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Luteolin']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Luteolin'].interactions,
         },
         {
             name: 'Apigenin',
             role: 'secondary',
             entourageScore: 6.0,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Apigenin']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Apigenin'].interactions,
         },
         {
             name: 'Quercetin',
             role: 'trace',
             entourageScore: 6.5,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin'].interactions,
         },
     ],
     Hybrid: [
@@ -272,19 +283,19 @@ const TYPE_FLAVONOIDS: Record<string, FlavonoidDataPoint[]> = {
             name: 'Cannflavin B',
             role: 'dominant',
             entourageScore: 7.5,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Cannflavin B']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Cannflavin B'].interactions,
         },
         {
             name: 'Quercetin',
             role: 'secondary',
             entourageScore: 6.5,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Quercetin'].interactions,
         },
         {
             name: 'Kaempferol',
             role: 'trace',
             entourageScore: 5.0,
-            cannabinoidInteractions: FLAVONOID_PROFILES['Kaempferol']!.interactions,
+            cannabinoidInteractions: FLAVONOID_PROFILES['Kaempferol'].interactions,
         },
     ],
 }
@@ -912,7 +923,10 @@ async function lookupWithAI(name: string): Promise<LookupStrainResult | null> {
                 if (f && typeof f === 'object' && 'name' in f) {
                     const rec = f as Record<string, unknown>
                     const fname = String(rec['name'])
-                    const profile = FLAVONOID_PROFILES[fname]
+                    const profile =
+                        fname in FLAVONOID_PROFILES
+                            ? FLAVONOID_PROFILES[fname as KnownFlavonoid]
+                            : undefined
                     aiFlavonoids.push({
                         name: fname,
                         role: (rec['role'] as FlavonoidDataPoint['role']) ?? 'secondary',

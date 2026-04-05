@@ -113,32 +113,38 @@ export const MentorView: React.FC = () => {
                 </p>
             )}
 
-            {selectedPlantForHub && relevantArticles.length > 0 && (
-                <div className="mt-4">
-                    <h3 className="text-xl font-bold font-display text-slate-100 mb-2">
-                        {t('knowledgeView.hub.todaysFocus', {
-                            plantName: selectedPlantForHub.name,
-                        })}
-                    </h3>
-                    <details
-                        className="group glass-pane rounded-lg overflow-hidden ring-1 ring-inset ring-white/20"
-                        open
-                    >
-                        <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
-                            <h4 className="font-semibold text-slate-100">
-                                {t(relevantArticles[0]!.titleKey)}
-                            </h4>
-                            <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
-                        </summary>
-                        <div className="p-4 border-t border-slate-700/50">
-                            <SafeHtml
-                                className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1"
-                                html={t(relevantArticles[0]!.contentKey)}
-                            />
+            {selectedPlantForHub &&
+                relevantArticles.length > 0 &&
+                (() => {
+                    const firstArticle = relevantArticles[0]
+                    if (!firstArticle) return null
+                    return (
+                        <div className="mt-4">
+                            <h3 className="text-xl font-bold font-display text-slate-100 mb-2">
+                                {t('knowledgeView.hub.todaysFocus', {
+                                    plantName: selectedPlantForHub.name,
+                                })}
+                            </h3>
+                            <details
+                                className="group glass-pane rounded-lg overflow-hidden ring-1 ring-inset ring-white/20"
+                                open
+                            >
+                                <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
+                                    <h4 className="font-semibold text-slate-100">
+                                        {t(firstArticle.titleKey)}
+                                    </h4>
+                                    <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
+                                </summary>
+                                <div className="p-4 border-t border-slate-700/50">
+                                    <SafeHtml
+                                        className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1"
+                                        html={t(firstArticle.contentKey)}
+                                    />
+                                </div>
+                            </details>
                         </div>
-                    </details>
-                </div>
-            )}
+                    )
+                })()}
 
             <GrowLogRagPanel />
         </div>

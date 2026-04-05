@@ -10,11 +10,13 @@
         "!apps/web/stores/**/*.test.ts"
     ],
     "testRunner": "vitest",
-    "checkers": ["typescript"],
-    "tsconfigFile": "apps/web/tsconfig.json",
+    "checkers": [],
+    "coverageAnalysis": "off",
     "vitest": {
-        "configFile": "apps/web/vitest.config.ts"
+        "configFile": "apps/web/vite.config.ts",
+        "related": false
     },
+    "testFiles": ["apps/web/**/*.test.ts", "apps/web/**/*.test.tsx"],
     "reporters": ["clear-text", "html"],
     "htmlReporter": {
         "fileName": "reports/mutation/mutation-report.html"

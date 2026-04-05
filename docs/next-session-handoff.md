@@ -2,6 +2,49 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 53) -- Stryker Config Fix, CHANGELOG Restructure, Version Sync
+
+**Status: v1.4.0-alpha. 1377 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 53)
+
+1. **`stryker.conf.json`** -- fixed 4 configuration issues blocking `npm run test:mutate`:
+    - `checkers: ["typescript"]` removed (RTK TS2719 upstream bug blocked dry-run)
+    - `vitest.configFile`: `vitest.config.ts` corrected to `vite.config.ts` (no separate vitest config exists)
+    - `coverageAnalysis: "off"` added (sandbox vitest.related resolution fails in monorepo)
+    - `vitest.related: false` + `testFiles` pattern added for explicit test file discovery
+    - Note: actual mutation run still requires `--inPlace` mode; sandbox mode incompatible with monorepo node_modules structure
+
+2. **`CHANGELOG.md`** -- restructured to Keep-a-Changelog convention:
+    - Moved `## [Unreleased]` to TOP (was incorrectly placed after `## [1.4.0-alpha]`)
+    - Added Sessions 49-52 CI/infra entries at top of [Unreleased]
+    - Order is now: [Unreleased] -> [1.4.0-alpha] -> [1.3.0-alpha] -> older
+
+3. **`apps/web/package.json`** -- version sync `1.3.0-beta` -> `1.4.0-alpha`
+
+### Sessions 49-52 Summary (completed in prior sessions, now documented in CHANGELOG)
+
+- **Session 49**: fix(ci) -- resolve TS6133 unused `makeEngine` in localAiWebLlmService.test.ts
+- **Session 50**: ci(sonar) + chore(renovate) -- lcov coverage for SonarCloud, matchPackagePatterns migration
+- **Session 51**: ci(sonar) non-blocking + ci(snyk) --all-projects monitoring
+- **Session 52**: feat(ai) -- GPU resource manager v2 (string registry, GpuPriority, priority queue, 30s auto-release, getQueueState())
+
+### Verified Metrics (Session 53)
+
+- Tests: 1377 passing, 0 failures (unchanged)
+- TypeScript: clean (RTK TS2719 filtered)
+- ESLint: 0 errors
+- Build: clean
+
+### Next Steps (Session 54)
+
+- **Stryker first real run**: `npx stryker run --inPlace --mutate "apps/web/services/knowledgeCalculatorService.ts"` (allow 5+ minutes); evaluate mutation score; adjust thresholds if needed
+- **P2 Rate-limiter UX toast**: When AI returns 429, show user-facing toast (currently silent drop)
+- **Fix vi.mock hoisting warnings**: Move nested `vi.mock()` in `voiceCommandRegistry.test.ts` to top level
+- **V-06 (deferred)**: Full offline TTS/STT ONNX pipeline -- deferred to v2.0
+
+---
+
 ## Latest Session (Session 48) -- R-02 GPU Resource Manager v2: ONNX-WebGPU Mutex + Device-Loss Deadlock Prevention
 
 **Status: v1.4.0-alpha. R-02 closed. 1370 tests passing. TypeScript clean. Build clean.**

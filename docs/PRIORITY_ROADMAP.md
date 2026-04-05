@@ -23,6 +23,7 @@
 | S-01 | Prompt injection allow-list   | Low    | Done   |
 | A-01 | AI response validation        | Medium | Open   |
 | A-04 | RAG context window management | Medium | Open   |
+| S-04 | Key rotation warning UI       | Low    | Done   |
 | F-04 | Data export/backup            | Medium | Open   |
 | U-01 | Keyboard navigation audit     | Medium | Open   |
 | U-02 | Screen reader testing         | Medium | Open   |
@@ -58,6 +59,10 @@
 | ID    | Finding                           | Resolution                                        |
 | ----- | --------------------------------- | ------------------------------------------------- |
 | S-01  | Prompt injection allow-list       | 5-layer sanitization pipeline in geminiService    |
+| S-04  | Key rotation warning UI           | GeminiSecurityCard w/ age label + badge (S69)     |
+| S-05  | SRI for CDN assets                | N/A -- no external CDN scripts (S69)              |
+| K-03  | Service dependency cycles         | import/no-cycle ESLint error + CI (S41/S62)       |
+| K-04  | Worker error propagation          | WorkerBusError class + 10-code enum (S69)         |
 | T-01  | Mutation testing pilot            | Stryker baseline + 2 new slice tests (Session 63) |
 | R-01  | Streaming generalization          | useStreamingResponse.ts hook (Session 47)         |
 | R-02  | GPU resource manager v2           | gpuResourceManager.ts with priority queue (S48)   |

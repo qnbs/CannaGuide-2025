@@ -14,9 +14,9 @@ Last updated: 2026-04-06
 | Severity | Total | Done | Open |
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
-| High     | 12    | 7    | 5    |
-| Medium   | 13    | 3    | 10   |
-| Low      | 6     | 0    | 6    |
+| High     | 12    | 9    | 3    |
+| Medium   | 13    | 5    | 8    |
+| Low      | 6     | 3    | 3    |
 
 ---
 
@@ -56,11 +56,11 @@ Last updated: 2026-04-06
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** The 15 local AI services have complex interdependencies. Risk of circular imports as the codebase grows.
 
-**Action:** Generate dependency graph via `scripts/generate-service-map.mjs` and enforce acyclic constraint. Consider barrel-file restructure if cycles detected.
+**Resolution:** ESLint `import/no-cycle: ['error', { maxDepth: 3, ignoreExternal: true }]` enforced since Session 41 in `eslint.config.js`. CI `quality` job runs lint on every push/PR. `scripts/generate-service-map.mjs` generates Mermaid dependency graph and verifies acyclic constraint. Session 62 confirmed 0 cycles across all service files.
 
 ---
 
@@ -70,11 +70,11 @@ Last updated: 2026-04-06
 | -------- | ----------- |
 | Severity | Low         |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** WorkerBus error handling relies on generic `Error` objects. Typed error codes would improve debugging and allow targeted recovery.
 
-**Action:** Define `WorkerErrorCode` enum. Propagate structured error objects through the worker bus.
+**Resolution:** `WorkerErrorCode` enum (10 codes: UNKNOWN, TIMEOUT, NOT_REGISTERED, DISPOSED, QUEUE_FULL, EXECUTION_ERROR, INVALID_PAYLOAD, RESOURCE_UNAVAILABLE, OUT_OF_MEMORY, CANCELLED) and `WorkerBusError` class defined in `types/workerBus.types.ts`. All 6 generic `new Error()` calls in `workerBus.ts` converted to `new WorkerBusError()` with appropriate error codes. 3 dedicated tests validate typed error propagation. Session 69.
 
 ---
 
@@ -100,11 +100,11 @@ Last updated: 2026-04-06
 | -------- | -------------------- |
 | Severity | High                 |
 | Effort   | Low (partially done) |
-| Status   | **In Progress**      |
+| Status   | **Done**             |
 
 **Finding:** 30+ regex patterns block known prompt injection vectors. However, a positive allow-list approach (restricting to known-good topic patterns) would be more robust than deny-list alone.
 
-**Action:** Add topic-scoped allow-list to complement existing deny-list. Validate that AI prompts match expected cannabis cultivation domains before submission.
+**Resolution:** 5-layer defense-in-depth implemented in `geminiService.ts`: (1) DOMPurify HTML stripping, (2) zero-width/control char normalization + homoglyph map (17 mappings), (3) `ALLOWED_INPUT_CHARS` character-class allowlist, (4) 30+ `INJECTION_PATTERNS` blocklist with `[redacted]` replacement, (5) length truncation. 9 `ALLOWED_TOPIC_PATTERNS` regex patterns cover cannabis cultivation domains (multilingual). `isTopicRelevant()` exported as soft positive guard -- injects topic-redirect system message for off-topic prompts. `sanitizeForPrompt()` called before every LLM prompt (mentor, RAG, diagnosis, journal). Property-based fuzz tests (`geminiService.fuzz.test.ts`) validate crash-safety, keyword matching, and injection resistance. Implemented incrementally across Sessions 20-60.
 
 ---
 
@@ -144,11 +144,11 @@ Last updated: 2026-04-06
 | -------- | ----------- |
 | Severity | Medium      |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** `isKeyRotationDue()` exists in `@cannaguide/ai-core/providers.ts` but is advisory only. Users are not actively prompted to rotate keys.
 
-**Action:** Surface key rotation warnings in the Settings UI when `isKeyRotationDue()` returns true. Add visual indicator (badge/banner).
+**Resolution:** `GeminiSecurityCard` in `SettingsView.tsx` displays key age via `getKeyAgeLabel()` (days since last rotation) and a rotation warning badge when `isKeyRotationDue()` returns true (90-day window via `KEY_ROTATION_WINDOW_MS`). All 4 providers (Gemini, OpenAI, xAI, Anthropic) supported. `aiProviderService.ts` auto-clears keys past rotation window on next read. Key metadata (`updatedAt` timestamp) persisted per-provider in localStorage. Implemented across Sessions 40-60.
 
 ---
 
@@ -158,11 +158,11 @@ Last updated: 2026-04-06
 | -------- | ----------- |
 | Severity | Low         |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** If any external CDN resources are loaded (e.g., fonts), they should have SRI hashes.
 
-**Action:** Audit all external resource loads. Add `integrity` attribute where applicable. Currently low risk since app is mostly self-contained.
+**Resolution:** Audit complete. Only external resource: Google Fonts CSS (`fonts.googleapis.com/css2?...`). Google Fonts CSS responses are dynamically generated per user-agent (different CSS content for different browsers), making SRI hashes infeasible. No external JavaScript files loaded. All app code is self-hosted. CSP `style-src` restricts to `'self' 'unsafe-inline' https://fonts.googleapis.com`. Session 69.
 
 ---
 

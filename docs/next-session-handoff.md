@@ -2,7 +2,52 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix
+## Latest Session (Session 69) -- Security Hardening + Audit Closure + README Badges
+
+**Status: v1.4.0-alpha. 1570 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 69)
+
+1. **K-04: Typed WorkerBusError** -- All 6 generic `new Error()` calls in `workerBus.ts`
+   converted to `new WorkerBusError()` with appropriate `WorkerErrorCode` enums:
+   EXECUTION_ERROR (line 245), NOT_REGISTERED (lines 270, 280, 356, 659), UNKNOWN (line 710).
+   3 new tests validate typed error propagation (dispatch, getWorker, unregister).
+
+2. **README Badges** -- ~30 new shields.io badges added in categorized groups: repository
+   activity (stars, forks, issues, PRs, last commit, commit activity, contributors, repo size),
+   tech stack (TypeScript, React 19, Vite 7, Tailwind, Redux Toolkit, Node.js), code quality
+   (OpenSSF Scorecard dynamic, Conventional Commits, ESLint, Prettier, TS strict, zero-any,
+   security policy), distribution (Docker, Tauri v2, Capacitor, GitHub Pages, Netlify),
+   project metrics (strains, services, slices, stores, themes, workflows, hooks, namespaces).
+
+3. **Audit Closure** -- 5 items closed in AUDIT_BACKLOG.md:
+    - K-03 (dependency cycles): ESLint import/no-cycle:error since S41, 0 cycles verified S62
+    - S-01 (prompt injection): 5-layer defense in geminiService.ts, fuzz-tested
+    - K-04 (worker errors): WorkerBusError class + 10-code enum, all paths converted
+    - S-04 (key rotation UI): GeminiSecurityCard with age label + warning badge
+    - S-05 (SRI): N/A -- Google Fonts CSS dynamic, no external scripts
+      Summary updated: High 9/12 Done, Medium 5/13 Done, Low 3/6 Done.
+
+4. **Tests** -- 3 new tests. Total: 1570 passing (146 test files), 0 failures.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1570 passing, 0 failures (146 test files)
+- Build: clean (166 precache entries)
+
+### Next Steps
+
+- **N+1: A-01 AI Response Validation** -- Audit all aiService methods, ensure Zod schema
+  validation on every AI response path. High priority audit item.
+- **N+2: A-04 RAG Context Window** -- Token counting + truncation in growLogRagService.
+- **N+3: F-04 Data Export/Backup** -- JSON export/import with validation for IndexedDB data.
+- **N+4: U-01 Keyboard Navigation** -- Playwright keyboard tests for all major views.
+- Continue audit-roadmap-2026-q2 remaining open items.
+
+---
+
+## Previous Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix
 
 **Status: v1.4.0-alpha. 1567 tests passing. TypeScript clean. Build clean.**
 

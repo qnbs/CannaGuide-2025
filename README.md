@@ -9,9 +9,40 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/release-v1.3.0--beta-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
+[![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1567%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1570%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Docker](https://github.com/qnbs/CannaGuide-2025/actions/workflows/docker.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/docker.yml)
+
+<!-- Repository Activity (dynamic) -->
+
+[![GitHub stars](https://img.shields.io/github/stars/qnbs/CannaGuide-2025?style=flat&logo=github)](https://github.com/qnbs/CannaGuide-2025/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/qnbs/CannaGuide-2025?style=flat&logo=github)](https://github.com/qnbs/CannaGuide-2025/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/qnbs/CannaGuide-2025?logo=github)](https://github.com/qnbs/CannaGuide-2025/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/qnbs/CannaGuide-2025?logo=github)](https://github.com/qnbs/CannaGuide-2025/pulls)
+[![GitHub last commit](https://img.shields.io/github/last-commit/qnbs/CannaGuide-2025?logo=github)](https://github.com/qnbs/CannaGuide-2025/commits/main)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/qnbs/CannaGuide-2025?logo=github)](https://github.com/qnbs/CannaGuide-2025/graphs/commit-activity)
+[![GitHub contributors](https://img.shields.io/github/contributors/qnbs/CannaGuide-2025?logo=github)](https://github.com/qnbs/CannaGuide-2025/graphs/contributors)
+[![GitHub repo size](https://img.shields.io/github/repo-size/qnbs/CannaGuide-2025?logo=github)](https://github.com/qnbs/CannaGuide-2025)
+
+<!-- Tech Stack -->
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+
+<!-- Code Quality & Security -->
+
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/qnbs/CannaGuide-2025?label=OpenSSF%20Scorecard)](https://scorecard.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+[![ESLint](https://img.shields.io/badge/ESLint-flat%20config-4B32C3?logo=eslint&logoColor=white)](https://eslint.org/)
+[![Prettier](https://img.shields.io/badge/Prettier-formatted-F7B93E?logo=prettier&logoColor=black)](https://prettier.io/)
+[![TypeScript Strict](https://img.shields.io/badge/TS-strict%20mode-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/tsconfig#strict)
+[![Security Policy](https://img.shields.io/badge/Security-policy%20enabled-green?logo=shield)](https://github.com/qnbs/CannaGuide-2025/security/policy)
+[![Zero Any](https://img.shields.io/badge/any-zero%20tolerance-red?logo=typescript&logoColor=white)](https://github.com/qnbs/CannaGuide-2025)
 
 <!-- AI Development Stack -->
 
@@ -26,6 +57,25 @@
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE%20|%20ES%20|%20FR%20|%20NL-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
+
+<!-- Distribution -->
+
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://github.com/qnbs/CannaGuide-2025/pkgs/container/cannaguide-2025)
+[![Tauri](https://img.shields.io/badge/Tauri-v2%20desktop-FFC131?logo=tauri&logoColor=black)](https://tauri.app/)
+[![Capacitor](https://img.shields.io/badge/Capacitor-mobile-119EFF?logo=capacitor&logoColor=white)](https://capacitorjs.com/)
+[![GitHub Pages](https://img.shields.io/badge/Hosted-GitHub%20Pages-222222?logo=githubpages&logoColor=white)](https://qnbs.github.io/CannaGuide-2025/)
+[![Netlify](https://img.shields.io/badge/Preview-Netlify-00C7B7?logo=netlify&logoColor=white)](https://netlify.com/)
+
+<!-- Project Metrics -->
+
+[![Strains](https://img.shields.io/badge/strains-778-green)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/services-102-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Redux Slices](https://img.shields.io/badge/Redux%20slices-13-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
+[![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
+[![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![Custom Hooks](https://img.shields.io/badge/hooks-23-orange)](https://qnbs.github.io/CannaGuide-2025/)
+[![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
 
@@ -60,7 +110,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 21-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 778 strains -- 1567 tests -- 102 services -- 13 Redux slices + 8 Zustand stores -- 23 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
+**Key numbers:** 778 strains -- 1570 tests -- 102 services -- 13 Redux slices + 8 Zustand stores -- 23 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
 
 ---
 

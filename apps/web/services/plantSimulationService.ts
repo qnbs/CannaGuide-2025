@@ -119,15 +119,17 @@ export interface SimulationDiagnostics {
         tone: 'good' | 'warn' | 'critical'
         context: Record<string, string | number>
     }>
-    postHarvest?: {
-        stage: PlantStage
-        jarHumidity: number
-        chlorophyllPercent: number
-        terpeneRetentionPercent: number
-        moldRiskPercent: number
-        finalQuality: number
-        burpDebtDays: number
-    } | undefined
+    postHarvest?:
+        | {
+              stage: PlantStage
+              jarHumidity: number
+              chlorophyllPercent: number
+              terpeneRetentionPercent: number
+              moldRiskPercent: number
+              finalQuality: number
+              burpDebtDays: number
+          }
+        | undefined
 }
 
 // More detailed stage information for the mechanistic model
@@ -348,15 +350,17 @@ class PlantSimulationService {
         }
     }
 
-    private _getSimulationAltitude(simulationSettings?: SimulationSettings| undefined): number {
+    private _getSimulationAltitude(simulationSettings?: SimulationSettings | undefined): number {
         return this._clamp(simulationSettings?.altitudeM ?? 0, 0, 5000)
     }
 
-    private _getProfileCurve(simulationSettings?: SimulationSettings| undefined) {
+    private _getProfileCurve(simulationSettings?: SimulationSettings | undefined) {
         return SIMULATION_PROFILE_CURVES[simulationSettings?.simulationProfile ?? 'intermediate']
     }
 
-    private _getEnvironmentalInstabilityCurve(simulationSettings?: SimulationSettings| undefined): number {
+    private _getEnvironmentalInstabilityCurve(
+        simulationSettings?: SimulationSettings | undefined,
+    ): number {
         if (!simulationSettings) {
             return 0.18
         }
@@ -369,7 +373,7 @@ class PlantSimulationService {
         return Math.pow(1 - normalizedStability, 1.35)
     }
 
-    private _getPestPressureCurve(simulationSettings?: SimulationSettings| undefined): number {
+    private _getPestPressureCurve(simulationSettings?: SimulationSettings | undefined): number {
         if (!simulationSettings) {
             return 1
         }
@@ -377,7 +381,9 @@ class PlantSimulationService {
         return 0.45 + Math.pow(this._clamp(simulationSettings.pestPressure, 0, 1), 1.6) * 3.2
     }
 
-    private _getNutrientSensitivityCurve(simulationSettings?: SimulationSettings| undefined): number {
+    private _getNutrientSensitivityCurve(
+        simulationSettings?: SimulationSettings | undefined,
+    ): number {
         if (!simulationSettings) {
             return 1
         }
@@ -439,7 +445,9 @@ class PlantSimulationService {
         )
     }
 
-    private _getEnvironmentalStressMultiplier(simulationSettings?: SimulationSettings| undefined): number {
+    private _getEnvironmentalStressMultiplier(
+        simulationSettings?: SimulationSettings | undefined,
+    ): number {
         return this._clamp(
             (0.72 + this._getEnvironmentalInstabilityCurve(simulationSettings) * 0.95) *
                 this._getProfileCurve(simulationSettings).environmentStress,
@@ -448,7 +456,9 @@ class PlantSimulationService {
         )
     }
 
-    private _getNutrientStressMultiplier(simulationSettings?: SimulationSettings| undefined): number {
+    private _getNutrientStressMultiplier(
+        simulationSettings?: SimulationSettings | undefined,
+    ): number {
         return this._clamp(
             this._getNutrientSensitivityCurve(simulationSettings) *
                 this._getProfileCurve(simulationSettings).nutrientStress,
@@ -457,7 +467,9 @@ class PlantSimulationService {
         )
     }
 
-    private _getPestPressureMultiplier(simulationSettings?: SimulationSettings| undefined): number {
+    private _getPestPressureMultiplier(
+        simulationSettings?: SimulationSettings | undefined,
+    ): number {
         return this._clamp(
             this._getPestPressureCurve(simulationSettings) *
                 this._getProfileCurve(simulationSettings).pestPressure,
@@ -1152,7 +1164,10 @@ class PlantSimulationService {
         }
     }
 
-    applyEnvironmentalCorrections(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
+    applyEnvironmentalCorrections(
+        plant: Plant,
+        simulationSettings?: SimulationSettings | undefined,
+    ): Plant {
         const p = this._normalizePlant(this.clonePlant(plant))
         const correctedRh = this._getCorrectedRh(p)
         const leafOffset = this._getSimulationLeafTemperatureOffset(p, simulationSettings)
@@ -1299,7 +1314,10 @@ class PlantSimulationService {
         return { updatedPlant, newJournalEntries, newTasks }
     }
 
-    private _runDailyEcosystem(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
+    private _runDailyEcosystem(
+        plant: Plant,
+        simulationSettings?: SimulationSettings | undefined,
+    ): Plant {
         const p = this._applyDailyEnvironmentalDrift(this.clonePlant(plant), simulationSettings)
 
         // Exhaust fan replenishes CO2 toward ambient (400 ppm).
@@ -1323,7 +1341,10 @@ class PlantSimulationService {
         return p
     }
 
-    private _runDailyMetabolism(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
+    private _runDailyMetabolism(
+        plant: Plant,
+        simulationSettings?: SimulationSettings | undefined,
+    ): Plant {
         const p = this.clonePlant(plant)
 
         p.environment = this.applyEnvironmentalCorrections(p, simulationSettings).environment
@@ -1368,7 +1389,10 @@ class PlantSimulationService {
         return p
     }
 
-    private _runDailyGrowth(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
+    private _runDailyGrowth(
+        plant: Plant,
+        simulationSettings?: SimulationSettings | undefined,
+    ): Plant {
         const p = this.clonePlant(plant)
         const nutrientConversionEfficiency =
             this._getSimulationNutrientConversionEfficiency(simulationSettings)
@@ -1461,7 +1485,10 @@ class PlantSimulationService {
         return p
     }
 
-    private _updateHealthAndStress(plant: Plant, simulationSettings?: SimulationSettings| undefined): Plant {
+    private _updateHealthAndStress(
+        plant: Plant,
+        simulationSettings?: SimulationSettings | undefined,
+    ): Plant {
         const p = this.clonePlant(plant)
         const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals
         const envMult = this._getEnvironmentalStressMultiplier(simulationSettings)
@@ -1792,7 +1819,10 @@ class VPDSimulationService {
         return { tempProfile, rhProfile }
     }
 
-    createInputFromPlant(plant: Plant, simulationSettings?: SimulationSettings| undefined): VPDInput {
+    createInputFromPlant(
+        plant: Plant,
+        simulationSettings?: SimulationSettings | undefined,
+    ): VPDInput {
         const dynamicLeafOffset =
             plant.equipment.light.type === 'HPS'
                 ? 3.5
@@ -1850,16 +1880,21 @@ class VPDSimulationService {
             )
         }
 
-        return workerBus.dispatch<SimulationPoint[]>(VPD_WORKER_NAME, 'RUN_DAILY', {
-            baseInput: {
-                medium: input.medium,
-                airflow: input.airflow,
-                phase: input.phase,
-                leafTempOffset: input.leafTempOffset,
+        return workerBus.dispatch<SimulationPoint[]>(
+            VPD_WORKER_NAME,
+            'RUN_DAILY',
+            {
+                baseInput: {
+                    medium: input.medium,
+                    airflow: input.airflow,
+                    phase: input.phase,
+                    leafTempOffset: input.leafTempOffset,
+                },
+                tempProfile: profiles.tempProfile,
+                rhProfile: profiles.rhProfile,
             },
-            tempProfile: profiles.tempProfile,
-            rhProfile: profiles.rhProfile,
-        })
+            { priority: 'critical' },
+        )
     }
 
     runGrowthProjection(plant: VPDPlantState, env: VPDInput, days = 7): Promise<VPDPlantState> {
@@ -1905,11 +1940,16 @@ class VPDSimulationService {
             return Promise.resolve(projectedPlant)
         }
 
-        return workerBus.dispatch<VPDPlantState>(VPD_WORKER_NAME, 'RUN_GROWTH', {
-            plant,
-            env,
-            days,
-        })
+        return workerBus.dispatch<VPDPlantState>(
+            VPD_WORKER_NAME,
+            'RUN_GROWTH',
+            {
+                plant,
+                env,
+                days,
+            },
+            { priority: 'critical' },
+        )
     }
 }
 

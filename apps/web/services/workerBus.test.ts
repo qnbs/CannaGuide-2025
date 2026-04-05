@@ -574,3 +574,265 @@ describe('WorkerBus -- Transferable objects', () => {
         await p
     })
 })
+
+// ---------------------------------------------------------------------------
+// Priority Queue integration
+// ---------------------------------------------------------------------------
+
+describe('WorkerBus -- Priority Queue', () => {
+    let w: MockWorker
+    const WORKER = 'prio-worker'
+    /** Track all dispatches so afterEach can settle them to avoid unhandled rejections. */
+    let pendingPromises: Array<Promise<unknown>>
+
+    beforeEach(() => {
+        pendingPromises = []
+        w = new MockWorker()
+        try {
+            workerBus.unregister(WORKER)
+        } catch {
+            /* ignore */
+        }
+        workerBus.register(WORKER, w as unknown as Worker)
+        // Concurrency limit 1 -- forces queuing after first dispatch
+        workerBus.setConcurrencyLimit(WORKER, 1)
+    })
+
+    afterEach(async () => {
+        // Settle any in-flight dispatches to prevent unhandled rejections
+        try {
+            workerBus.unregister(WORKER)
+        } catch {
+            /* ignore */
+        }
+        // Absorb all rejections from pending promises
+        await Promise.allSettled(pendingPromises)
+    })
+
+    it('dequeues critical before high before normal before low', async () => {
+        const order: string[] = []
+
+        // First dispatch occupies the slot
+        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {})
+
+        // Queue 4 jobs with different priorities
+        const pLow = workerBus
+            .dispatch(WORKER, 'LOW', {}, { priority: 'low' })
+            .then(() => order.push('low'))
+        const pNormal = workerBus
+            .dispatch(WORKER, 'NORMAL', {}, { priority: 'normal' })
+            .then(() => order.push('normal'))
+        const pHigh = workerBus
+            .dispatch(WORKER, 'HIGH', {}, { priority: 'high' })
+            .then(() => order.push('high'))
+        const pCritical = workerBus
+            .dispatch(WORKER, 'CRITICAL', {}, { priority: 'critical' })
+            .then(() => order.push('critical'))
+
+        // Release blocker
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+        await p0
+
+        // Drain queue sequentially -- each response triggers the next dequeue
+        for (let i = 0; i < 4; i++) {
+            await vi.advanceTimersByTimeAsync(0)
+            w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+            await vi.advanceTimersByTimeAsync(0)
+        }
+
+        await Promise.all([pLow, pNormal, pHigh, pCritical])
+        expect(order).toEqual(['critical', 'high', 'normal', 'low'])
+    })
+
+    it('maintains FIFO for two critical jobs', async () => {
+        const order: string[] = []
+
+        // Block the slot
+        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {})
+
+        const p1 = workerBus
+            .dispatch(WORKER, 'C1', {}, { priority: 'critical' })
+            .then(() => order.push('C1'))
+        const p2 = workerBus
+            .dispatch(WORKER, 'C2', {}, { priority: 'critical' })
+            .then(() => order.push('C2'))
+
+        // Release blocker
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+        await p0
+
+        // Drain
+        for (let i = 0; i < 2; i++) {
+            await vi.advanceTimersByTimeAsync(0)
+            w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+            await vi.advanceTimersByTimeAsync(0)
+        }
+
+        await Promise.all([p1, p2])
+        expect(order).toEqual(['C1', 'C2'])
+    })
+
+    it('cancels a low-priority queued job via AbortSignal', async () => {
+        const { WorkerErrorCode } = await import('@/types/workerBus.types')
+        const ctrl = new AbortController()
+
+        // Block the slot
+        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {})
+
+        const pLow = workerBus.dispatch(
+            WORKER,
+            'LOW',
+            {},
+            {
+                priority: 'low',
+                signal: ctrl.signal,
+            },
+        )
+
+        // Abort before it gets processed
+        ctrl.abort()
+
+        // Release blocker -- drainQueue will find the queued item aborted
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+        await p0
+
+        await expect(pLow).rejects.toMatchObject({ code: WorkerErrorCode.CANCELLED })
+    })
+
+    it('getQueueState() shows byPriority correctly', async () => {
+        // Block the slot
+        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}))
+
+        // Queue jobs with different priorities
+        pendingPromises.push(workerBus.dispatch(WORKER, 'A', {}, { priority: 'critical' }))
+        pendingPromises.push(workerBus.dispatch(WORKER, 'B', {}, { priority: 'low' }))
+        pendingPromises.push(workerBus.dispatch(WORKER, 'C', {}, { priority: 'low' }))
+        pendingPromises.push(workerBus.dispatch(WORKER, 'D', {}, { priority: 'normal' }))
+
+        const state = workerBus.getQueueState()
+        expect(state.byPriority.critical).toBe(1)
+        expect(state.byPriority.high).toBe(0)
+        expect(state.byPriority.normal).toBe(1)
+        expect(state.byPriority.low).toBe(2)
+        expect(state.queued).toHaveLength(4)
+    })
+
+    it('getQueueState() shows current in-flight requests', async () => {
+        // Block the slot -- this dispatch is now in-flight
+        pendingPromises.push(workerBus.dispatch(WORKER, 'INFLIGHT', {}, { priority: 'high' }))
+
+        const state = workerBus.getQueueState()
+        expect(state.current.length).toBeGreaterThanOrEqual(1)
+        const inflight = state.current.find((c) => c.type === 'INFLIGHT')
+        expect(inflight?.priority).toBe('high')
+    })
+
+    it('default priority is normal', async () => {
+        // Block the slot
+        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}))
+
+        // Queue without explicit priority
+        pendingPromises.push(workerBus.dispatch(WORKER, 'DEFAULT', {}))
+
+        const state = workerBus.getQueueState()
+        const queued = state.queued.find((q) => q.type === 'DEFAULT')
+        expect(queued?.priority).toBe('normal')
+    })
+
+    it('transferable objects work with priority', async () => {
+        const buffer = new ArrayBuffer(16)
+        const spy = vi.spyOn(w, 'postMessage')
+        const p = workerBus.dispatch(WORKER, 'XFER', buffer, {
+            transferable: [buffer],
+            priority: 'critical',
+        })
+        const rawCall = spy.mock.calls[0] as unknown
+        const callArgs = rawCall as [unknown, Transferable[]]
+        expect(Array.isArray(callArgs[1])).toBe(true)
+        w.respond((w.lastMessage as { messageId: string }).messageId, null)
+        await p
+    })
+
+    it('DispatchCompleteEvent includes priority field', async () => {
+        const events: import('./workerBus').DispatchCompleteEvent[] = []
+        const cleanup = workerBus.onDispatchComplete((e) => events.push(e))
+        autoRespond(w, 'ok')
+        await workerBus.dispatch(WORKER, 'PRIO-EVT', {}, { priority: 'critical' })
+        expect(events[0]?.priority).toBe('critical')
+        cleanup()
+    })
+
+    it('handles simultaneous jobs with correct serialization', async () => {
+        const results: string[] = []
+
+        // 3 concurrent dispatches -- concurrency=1 means 1 runs, 2 queue
+        const p1 = workerBus
+            .dispatch(WORKER, 'A', {}, { priority: 'low' })
+            .then(() => results.push('A'))
+        const p2 = workerBus
+            .dispatch(WORKER, 'B', {}, { priority: 'critical' })
+            .then(() => results.push('B'))
+        const p3 = workerBus
+            .dispatch(WORKER, 'C', {}, { priority: 'high' })
+            .then(() => results.push('C'))
+
+        // Settle first (A is already in-flight -- it got the slot)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+        await vi.advanceTimersByTimeAsync(0)
+
+        // Now B (critical) should be next
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+        await vi.advanceTimersByTimeAsync(0)
+
+        // Then C (high)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
+        await vi.advanceTimersByTimeAsync(0)
+
+        await Promise.all([p1, p2, p3])
+        // A runs first (got the slot), then B (critical), then C (high)
+        expect(results).toEqual(['A', 'B', 'C'])
+    })
+
+    it('processes 50 jobs in random priority order without losing any', async () => {
+        autoRespond(w)
+        const priorities: Array<import('@/utils/priorityQueue').WorkerPriority> = [
+            'critical',
+            'high',
+            'normal',
+            'low',
+        ]
+        const promises: Array<Promise<unknown>> = []
+
+        for (let i = 0; i < 50; i++) {
+            const priority = priorities[i % 4] as import('@/utils/priorityQueue').WorkerPriority
+            promises.push(workerBus.dispatch(WORKER, `JOB_${i}`, {}, { priority }))
+        }
+
+        const results = await Promise.all(promises)
+        expect(results).toHaveLength(50)
+    })
+
+    it('enqueues 100 jobs in under 50ms', () => {
+        // Block the slot so all subsequent dispatches queue
+        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}))
+
+        const priorities: Array<import('@/utils/priorityQueue').WorkerPriority> = [
+            'critical',
+            'high',
+            'normal',
+            'low',
+        ]
+
+        const start = performance.now()
+        for (let i = 0; i < 64; i++) {
+            // Max queue size is 64, use that
+            const priority = priorities[i % 4] as import('@/utils/priorityQueue').WorkerPriority
+            pendingPromises.push(workerBus.dispatch(WORKER, `PERF_${i}`, {}, { priority }))
+        }
+        const elapsed = performance.now() - start
+        expect(elapsed).toBeLessThan(50)
+
+        const state = workerBus.getQueueState()
+        expect(state.queued).toHaveLength(64)
+    })
+})

@@ -78,13 +78,14 @@ Register a named Worker instance. Replaces existing worker with same name (termi
 
 Send a request and get a Promise back. Options:
 
-| Option         | Default | Description                                             |
-| -------------- | ------- | ------------------------------------------------------- |
-| `timeoutMs`    | 30000   | Per-request timeout override                            |
-| `retries`      | 0       | Retry attempts on transient failure                     |
-| `retryDelayMs` | 500     | Base delay for exponential backoff                      |
-| `signal`       | --      | `AbortSignal` to cancel the request (rejects CANCELLED) |
-| `transferable` | --      | `Transferable[]` for zero-copy ArrayBuffer/ImageBitmap  |
+| Option         | Default    | Description                                                |
+| -------------- | ---------- | ---------------------------------------------------------- |
+| `timeoutMs`    | 30000      | Per-request timeout override                               |
+| `retries`      | 0          | Retry attempts on transient failure                        |
+| `retryDelayMs` | 500        | Base delay for exponential backoff                         |
+| `signal`       | --         | `AbortSignal` to cancel the request (rejects CANCELLED)    |
+| `transferable` | --         | `Transferable[]` for zero-copy ArrayBuffer/ImageBitmap     |
+| `priority`     | `'normal'` | `WorkerPriority` -- `critical`, `high`, `normal`, or `low` |
 
 ### `workerBus.unregister(name)`
 
@@ -113,9 +114,45 @@ interface WorkerBusMetrics {
 
 Query helpers for worker state.
 
+## Priority Queue
+
+Every dispatch accepts an optional `priority` field (`WorkerPriority`). When a worker is at its concurrency limit, queued items are stored in a min-heap (`PriorityQueue<T>` from `utils/priorityQueue.ts`) ordered by priority value (`critical=0 < high=1 < normal=2 < low=3`). Items with equal priority are dequeued in FIFO order via a monotone `insertOrder` counter.
+
+```typescript
+// VPD safety-critical -- always next in queue
+await workerBus.dispatch('vpd-sim', 'RUN_DAILY', payload, { priority: 'critical' })
+
+// ML inference -- yields to higher-priority work
+await workerBus.dispatch('inference', 'INFER', task, { priority: 'low' })
+```
+
+**No preemption:** A running worker is never interrupted. Priority only determines queue order for pending dispatches.
+
+### Default Priority Assignments
+
+| Consumer                  | Priority   | Rationale                      |
+| ------------------------- | ---------- | ------------------------------ |
+| VPD simulation            | `critical` | Plant safety alerts            |
+| Plant simulation (growth) | `high`     | User-initiated grow simulation |
+| Scenario planning         | `normal`   | Background scenario runs       |
+| ML inference              | `low`      | Bulk inference, can wait       |
+| Image generation          | `low`      | Non-urgent creative task       |
+| All others (default)      | `normal`   | When no priority is specified  |
+
+### `workerBus.getQueueState()`
+
+Inspect in-flight and queued dispatches with per-priority breakdown:
+
+```typescript
+const state = workerBus.getQueueState()
+// state.current: Array<{ workerName, type, priority }>
+// state.queued: Array<{ workerName, type, priority }>
+// state.byPriority: { critical: 1, high: 0, normal: 3, low: 2 }
+```
+
 ## Backpressure
 
-When a worker reaches its concurrency limit (default: 8), further dispatches are queued (FIFO, max 64). Queued items drain automatically as in-flight requests complete. If the queue is full, dispatch rejects immediately with `Queue full`.
+When a worker reaches its concurrency limit (default: 8), further dispatches are queued in the priority heap (max 64). Queued items drain automatically as in-flight requests complete, with the highest-priority item dequeued first. If the queue is full, dispatch rejects immediately with `Queue full`.
 
 ## Retry with Exponential Backoff
 
@@ -177,7 +214,7 @@ const cleanup = workerBus.onDispatchComplete((event) => {
 cleanup()
 ```
 
-`DispatchCompleteEvent` fields: `workerName`, `type`, `latencyMs`, `success`, `data?`, `error?`.
+`DispatchCompleteEvent` fields: `workerName`, `type`, `priority`, `latencyMs`, `success`, `data?`, `error?`.
 
 ### workerStateSyncService
 
@@ -239,7 +276,7 @@ sequenceDiagram
 ### Current Limitations
 
 - No per-worker-type rate limiting (e.g., inference max 3 req/s)
-- No priority queue -- all dispatches are FIFO regardless of urgency
+- Priority is queue-order only (no preemption of running workers)
 - Telemetry snapshots are Redux DevTools only -- no external metric export
 - No cross-worker communication (inference cannot query VPD data without main-thread hop)
 
@@ -252,7 +289,7 @@ sequenceDiagram
 
 **Mid-term (v1.4+):**
 
-- Priority Queue (high priority for VPD alerts)
+- ~~Priority Queue (high priority for VPD alerts)~~ -- DONE (Session 60)
 - Event emitter for real-time IoT sensor streaming
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
 - Cross-worker communication channel (SharedArrayBuffer or MessageChannel)

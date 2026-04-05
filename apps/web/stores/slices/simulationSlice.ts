@@ -469,11 +469,16 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                             updatedPlant: Plant
                             newJournalEntries: JournalEntry[]
                             newTasks: Task[]
-                        }>(SIM_WORKER, 'SIMULATE', {
-                            plant,
-                            deltaTime,
-                            simulationSettings: settings.simulation,
-                        })
+                        }>(
+                            SIM_WORKER,
+                            'SIMULATE',
+                            {
+                                plant,
+                                deltaTime,
+                                simulationSettings: settings.simulation,
+                            },
+                            { priority: 'high' },
+                        )
                     })()
 
                     const filteredJournalEntries = result.newJournalEntries.filter((entry) => {

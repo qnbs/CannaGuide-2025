@@ -7,18 +7,18 @@
 
 ## High-Level Stack
 
-| Layer        | Technology                                                                          |
-| ------------ | ----------------------------------------------------------------------------------- |
-| UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                 |
-| State        | Redux Toolkit 2.11 (13 slices), Zustand 5 (8 stores), RTK Query, memoized selectors |
-| AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                         |
-| AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                |
-| Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                            |
-| Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                 |
-| i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                       |
-| Workers      | WorkerBus (promise-based, 8 workers, messageId correlation, auto-timeout)           |
-| Testing      | Vitest 1423 unit tests, Playwright E2E + Component tests                            |
-| Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                    |
+| Layer        | Technology                                                                               |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                      |
+| State        | Redux Toolkit 2.11 (13 slices), Zustand 5 (8 stores), RTK Query, memoized selectors      |
+| AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                              |
+| AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                     |
+| Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                                 |
+| Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                      |
+| i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                            |
+| Workers      | WorkerBus (promise-based, 8 workers, heap-based priority queue, messageId, auto-timeout) |
+| Testing      | Vitest 1468 unit tests, Playwright E2E + Component tests                                 |
+| Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                         |
 
 ---
 
@@ -88,7 +88,8 @@ apps/web/                 Main PWA (@cannaguide/web)
   locales/                i18n translations: en/, de/, es/, fr/, nl/
   hooks/                  23 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
-  services/workerBus.ts   Centralized promise-based WorkerBus (8 workers, timeout, messageId)
+  services/workerBus.ts   Centralized promise-based WorkerBus (8 workers, priority queue, timeout)
+  utils/priorityQueue.ts  Generic min-heap PriorityQueue<T> with WorkerPriority type
   services/ragEmbeddingCacheService.ts  Persistent IndexedDB LRU embedding cache (MiniLM-L6, model versioning, telemetry)
   services/equipmentCalculatorService.ts  Pure-formula service: CO2, Humidity Deficit, Light Hanging Height (Zod-validated)
   utils/                  Shared utilities (secureRandom, etc.)

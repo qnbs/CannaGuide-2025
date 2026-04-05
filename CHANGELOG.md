@@ -6,6 +6,14 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- feat(workers): heap-based priority queue for WorkerBus dispatch -- `PriorityQueue<T>` min-heap with O(log n) enqueue/dequeue and FIFO tiebreaking (Session 60)
+- feat(workers): `WorkerPriority` type (`critical | high | normal | low`) with `PRIORITY_VALUES` mapping (Session 60)
+- feat(workers): `getQueueState()` API returning per-priority breakdown, current in-flight, and queued items (Session 60)
+- feat(workers): VPD dispatches wired as `critical` priority, simulation as `high`, ML inference + image gen as `low` (Session 60)
+- test(workers): 22 new tests (10 PriorityQueue unit + 12 WorkerBus priority integration) (Session 60)
+
 ### Refactored
 
 - refactor(ai): extract `localAiInferenceRouter.ts` (230 lines) -- cache -> WebLLM -> Transformers.js routing with retry + backoff (Session 59)

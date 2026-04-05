@@ -445,6 +445,33 @@ export const equipmentView = {
             vegetative: 'Vegetatif',
             flowering: 'Floraison',
         },
+        forecast: {
+            title: 'Heure Suivante (Prevision IA)',
+            subtitle: 'Valeurs prevues de pH, EC et temperature pour la prochaine heure.',
+            nextHour: 'Heure Suivante',
+            trend: 'Tendance',
+            confidence: 'Confiance',
+            modelActive: 'IA Active',
+            basicMode: 'Mode Basique',
+            loading: 'Calcul de la prevision...',
+            insufficientReadings: 'Ajoutez au moins 3 lectures pour la prevision.',
+            noData: 'Aucune donnee de prevision disponible.',
+            trends: {
+                stable: 'Stable',
+                rising: 'En hausse',
+                falling: 'En baisse',
+                critical: 'Critique',
+            },
+            alerts: {
+                phRising: 'Le pH devrait depasser la plage de securite',
+                phFalling: 'Le pH devrait descendre sous la plage de securite',
+                ecRising: "L'EC devrait depasser la plage de securite",
+                ecFalling: "L'EC devrait descendre sous la plage de securite",
+                tempRising: 'La temperature devrait depasser la plage de securite',
+                tempFalling: 'La temperature devrait descendre sous la plage de securite',
+                critical: 'Valeurs critiques detectees',
+            },
+        },
     },
     growShops: {
         region: {

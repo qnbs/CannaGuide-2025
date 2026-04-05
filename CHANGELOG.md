@@ -8,6 +8,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(hydro): ONNX stub model for pH/EC/Temp forecasting (1.1 KB, Reshape+MatMul+Add) (Session 67)
+- feat(hydro): hydroForecastWorker with ONNX WASM inference + weighted moving average fallback (Session 67)
+- feat(hydro): hydroForecastService with trend detection, alert generation, graceful degradation (Session 67)
+- feat(hydro): forecast panel in HydroMonitorView with model status badge, trend arrows, confidence display (Session 67)
+- feat(i18n): hydroMonitoring.forecast translations for all 5 locales (EN/DE/ES/FR/NL) (Session 67)
+- test(hydro): hydroForecastWorker tests (3), hydroForecastService tests (5), HydroMonitorView forecast tests (2) (Session 67)
 - feat(ai): WebLLM model catalog with 4 curated models (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) and GPU-tier auto-selection (Session 66)
 - feat(ai): card-based LLM model selector UI replacing old dropdown in Settings AI tab (Session 66)
 - feat(ai): `selectedLlmModelId` setting with `setLlmModel`/`setLlmModelAuto` reducers (Session 66)
@@ -17,7 +23,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- test: 1544 tests passing (142 test files) (Session 66)
+- test: 1554 tests passing (144 test files) (Session 67)
 
 - feat(equipment): hydroponic monitoring dashboard with Redux slice, Recharts UI, gauge cards, alerts, dosing reference (Session 65)
 - feat(equipment): HydroMonitoring tab in Equipment navigation with Drop icon (Session 65)

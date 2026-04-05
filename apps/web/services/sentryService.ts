@@ -148,6 +148,7 @@ export const captureLocalAiError = (
             | 'webgpu-device-destroy-pagehide'
             | 'webgpu-device-destroy-hidden'
             | 'webgpu-device-destroy-explicit'
+            | 'hydro-forecast'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
         batchItem?: number

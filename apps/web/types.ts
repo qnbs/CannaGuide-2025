@@ -409,6 +409,20 @@ export interface HydroState {
     thresholds: HydroThresholds
 }
 
+// ---------------------------------------------------------------------------
+// Hydroponic Forecasting types
+// ---------------------------------------------------------------------------
+
+export type HydroForecastTrend = 'stable' | 'rising' | 'falling' | 'critical'
+
+export interface HydroForecast {
+    nextHour: { ph: number; ec: number; temp: number }
+    trend: HydroForecastTrend
+    confidence: number
+    alerts: string[]
+    modelBased: boolean
+}
+
 export enum KnowledgeViewTab {
     Mentor = 'mentor',
     Guide = 'guide',

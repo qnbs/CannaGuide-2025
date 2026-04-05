@@ -437,6 +437,33 @@ export const equipmentView = {
             vegetative: 'Vegetatief',
             flowering: 'Bloei',
         },
+        forecast: {
+            title: 'Volgend Uur (AI Voorspelling)',
+            subtitle: 'Voorspelde pH-, EC- en temperatuurwaarden voor het volgende uur.',
+            nextHour: 'Volgend Uur',
+            trend: 'Trend',
+            confidence: 'Betrouwbaarheid',
+            modelActive: 'AI Actief',
+            basicMode: 'Basismodus',
+            loading: 'Voorspelling berekenen...',
+            insufficientReadings: 'Voeg minimaal 3 metingen toe voor voorspelling.',
+            noData: 'Geen voorspellingsgegevens beschikbaar.',
+            trends: {
+                stable: 'Stabiel',
+                rising: 'Stijgend',
+                falling: 'Dalend',
+                critical: 'Kritiek',
+            },
+            alerts: {
+                phRising: 'pH zal naar verwachting boven het veilige bereik stijgen',
+                phFalling: 'pH zal naar verwachting onder het veilige bereik dalen',
+                ecRising: 'EC zal naar verwachting boven het veilige bereik stijgen',
+                ecFalling: 'EC zal naar verwachting onder het veilige bereik dalen',
+                tempRising: 'Temperatuur zal naar verwachting boven het veilige bereik stijgen',
+                tempFalling: 'Temperatuur zal naar verwachting onder het veilige bereik dalen',
+                critical: 'Kritieke waarden gedetecteerd',
+            },
+        },
     },
     growShops: {
         region: {

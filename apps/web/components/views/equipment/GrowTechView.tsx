@@ -289,7 +289,10 @@ export const GrowTechView: React.FC = React.memo(() => {
                                                     key={genetic}
                                                     className="text-xs px-2 py-0.5 rounded-full bg-pink-900/40 border border-pink-700/40 text-pink-300"
                                                 >
-                                                    {genetic}
+                                                    {t(
+                                                        `strainsView.geneticTrends.categories.${genetic}.title`,
+                                                        { ns: 'strains' },
+                                                    )}
                                                 </span>
                                             ))}
                                         </div>

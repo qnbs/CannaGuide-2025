@@ -1,0 +1,541 @@
+import React, { memo, useState, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    CartesianGrid,
+} from 'recharts'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
+import {
+    addReading,
+    selectHydroReadings,
+    selectHydroAlerts,
+    selectHydroSystemType,
+    selectHydroThresholds,
+    selectLatestReading,
+    setSystemType,
+    setThresholds,
+    dismissAlert,
+    clearReadings,
+    clearAlerts,
+} from '@/stores/slices/hydroSlice'
+import type { HydroSystemType, HydroThresholds } from '@/types'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { cn } from '@/lib/utils'
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SYSTEM_TYPES: HydroSystemType[] = [
+    'DWC',
+    'NFT',
+    'DripSystem',
+    'EbbFlow',
+    'Aeroponics',
+    'Kratky',
+]
+
+const TIME_RANGES = ['24h', '48h', '7d'] as const
+type TimeRange = (typeof TIME_RANGES)[number]
+
+const TIME_RANGE_MS: Record<TimeRange, number> = {
+    '24h': 24 * 60 * 60 * 1000,
+    '48h': 48 * 60 * 60 * 1000,
+    '7d': 7 * 24 * 60 * 60 * 1000,
+}
+
+// ---------------------------------------------------------------------------
+// Gauge Card component
+// ---------------------------------------------------------------------------
+
+interface GaugeProps {
+    label: string
+    value: number | undefined
+    unit: string
+    min: number
+    max: number
+    decimals?: number | undefined
+}
+
+const GaugeCard: React.FC<GaugeProps> = memo(({ label, value, unit, min, max, decimals = 1 }) => {
+    const status =
+        value === undefined ? 'unknown' : value < min ? 'low' : value > max ? 'high' : 'ok'
+
+    const colorMap = {
+        ok: 'border-emerald-500/40 bg-emerald-900/20',
+        low: 'border-amber-500/40 bg-amber-900/20',
+        high: 'border-red-500/40 bg-red-900/20',
+        unknown: 'border-slate-600/40 bg-slate-800/20',
+    }
+
+    const textColor = {
+        ok: 'text-emerald-400',
+        low: 'text-amber-400',
+        high: 'text-red-400',
+        unknown: 'text-slate-500',
+    }
+
+    return (
+        <div
+            className={cn('rounded-lg border p-3 text-center transition-colors', colorMap[status])}
+        >
+            <p className="text-xs text-slate-400 mb-1">{label}</p>
+            <p className={cn('text-2xl font-bold tabular-nums', textColor[status])}>
+                {value !== undefined ? value.toFixed(decimals) : '--'}
+            </p>
+            <p className="text-xs text-slate-500">
+                {unit} ({min}-{max})
+            </p>
+        </div>
+    )
+})
+GaugeCard.displayName = 'GaugeCard'
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
+export const HydroMonitorView: React.FC = memo(() => {
+    const { t } = useTranslation('equipment')
+    const dispatch = useAppDispatch()
+
+    const readings = useAppSelector(selectHydroReadings)
+    const alerts = useAppSelector(selectHydroAlerts)
+    const systemType = useAppSelector(selectHydroSystemType)
+    const thresholds = useAppSelector(selectHydroThresholds)
+    const latestReading = useAppSelector(selectLatestReading)
+
+    const [timeRange, setTimeRange] = useState<TimeRange>('24h')
+    const [formPh, setFormPh] = useState('')
+    const [formEc, setFormEc] = useState('')
+    const [formTemp, setFormTemp] = useState('')
+    const [showThresholdEditor, setShowThresholdEditor] = useState(false)
+
+    // Filtered readings for chart
+    const chartData = useMemo(() => {
+        const cutoff = Date.now() - TIME_RANGE_MS[timeRange]
+        return readings
+            .filter((r) => r.timestamp >= cutoff)
+            .map((r) => ({
+                time: new Date(r.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }),
+                ph: r.ph,
+                ec: r.ec,
+                waterTemp: r.waterTemp,
+            }))
+    }, [readings, timeRange])
+
+    // Form submit
+    const handleAddReading = useCallback(() => {
+        const ph = parseFloat(formPh)
+        const ec = parseFloat(formEc)
+        const waterTemp = parseFloat(formTemp)
+        if (Number.isNaN(ph) || Number.isNaN(ec) || Number.isNaN(waterTemp)) return
+        dispatch(
+            addReading({
+                timestamp: Date.now(),
+                ph,
+                ec,
+                waterTemp,
+            }),
+        )
+        setFormPh('')
+        setFormEc('')
+        setFormTemp('')
+    }, [dispatch, formPh, formEc, formTemp])
+
+    const handleSystemChange = useCallback(
+        (e: React.ChangeEvent<HTMLSelectElement>) => {
+            dispatch(setSystemType(e.target.value as HydroSystemType))
+        },
+        [dispatch],
+    )
+
+    const handleThresholdChange = useCallback(
+        (field: keyof HydroThresholds, value: string) => {
+            const num = parseFloat(value)
+            if (!Number.isNaN(num)) {
+                dispatch(setThresholds({ [field]: num }))
+            }
+        },
+        [dispatch],
+    )
+
+    return (
+        <div className="space-y-6 p-2 sm:p-4">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h2 className="text-lg font-bold text-slate-100">
+                        {t('hydroMonitoring.title')}
+                    </h2>
+                    <p className="text-sm text-slate-400">{t('hydroMonitoring.subtitle')}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <label htmlFor="hydro-system-select" className="text-xs text-slate-400">
+                        {t('hydroMonitoring.systemType')}:
+                    </label>
+                    <select
+                        id="hydro-system-select"
+                        value={systemType}
+                        onChange={handleSystemChange}
+                        className="text-xs bg-slate-800 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                    >
+                        {SYSTEM_TYPES.map((st) => (
+                            <option key={st} value={st}>
+                                {t(`hydroMonitoring.systems.${st}`)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Gauge Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <GaugeCard
+                    label={t('hydroMonitoring.gauges.ph')}
+                    value={latestReading?.ph}
+                    unit="pH"
+                    min={thresholds.phMin}
+                    max={thresholds.phMax}
+                    decimals={2}
+                />
+                <GaugeCard
+                    label={t('hydroMonitoring.gauges.ec')}
+                    value={latestReading?.ec}
+                    unit="mS/cm"
+                    min={thresholds.ecMin}
+                    max={thresholds.ecMax}
+                    decimals={2}
+                />
+                <GaugeCard
+                    label={t('hydroMonitoring.gauges.waterTemp')}
+                    value={latestReading?.waterTemp}
+                    unit="C"
+                    min={thresholds.waterTempMin}
+                    max={thresholds.waterTempMax}
+                    decimals={1}
+                />
+                <GaugeCard
+                    label={t('hydroMonitoring.gauges.readings')}
+                    value={readings.length > 0 ? readings.length : undefined}
+                    unit="#"
+                    min={0}
+                    max={168}
+                    decimals={0}
+                />
+            </div>
+
+            {/* Alerts */}
+            {alerts.length > 0 && (
+                <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-red-400">
+                        <PhosphorIcons.WarningCircle
+                            className="w-4 h-4 inline mr-1"
+                            aria-hidden="true"
+                        />
+                        {t('hydroMonitoring.alerts.title')} ({alerts.length})
+                    </h3>
+                    {alerts.map((alert) => (
+                        <div
+                            key={alert.id}
+                            className="flex items-center justify-between bg-red-900/20 border border-red-700/30 rounded-md px-3 py-2"
+                        >
+                            <span className="text-xs text-red-300">
+                                {t(`hydroMonitoring.gauges.${alert.metric}`)} ={' '}
+                                {alert.value.toFixed(2)} (
+                                {alert.direction === 'low'
+                                    ? t('hydroMonitoring.alerts.tooLow')
+                                    : t('hydroMonitoring.alerts.tooHigh')}
+                                , {t('hydroMonitoring.alerts.threshold')}: {alert.threshold})
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => dispatch(dismissAlert(alert.id))}
+                                className="text-xs text-red-400 hover:text-red-300 ml-2"
+                            >
+                                {t('hydroMonitoring.alerts.dismiss')}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Chart */}
+            {chartData.length > 1 && (
+                <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-semibold text-slate-200">
+                            {t('hydroMonitoring.chart.title')}
+                        </h3>
+                        <div className="flex gap-1">
+                            {TIME_RANGES.map((tr) => (
+                                <button
+                                    key={tr}
+                                    type="button"
+                                    onClick={() => setTimeRange(tr)}
+                                    className={cn(
+                                        'text-xs px-2 py-0.5 rounded',
+                                        timeRange === tr
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600',
+                                    )}
+                                >
+                                    {t(`hydroMonitoring.chart.${tr}`)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                            <XAxis
+                                dataKey="time"
+                                tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                stroke="#475569"
+                            />
+                            <YAxis
+                                yAxisId="ph"
+                                orientation="left"
+                                domain={[4, 8]}
+                                tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                stroke="#475569"
+                                label={{
+                                    value: 'pH',
+                                    angle: -90,
+                                    position: 'insideLeft',
+                                    style: { fontSize: 10, fill: '#94a3b8' },
+                                }}
+                            />
+                            <YAxis
+                                yAxisId="ec"
+                                orientation="right"
+                                domain={[0, 4]}
+                                tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                stroke="#475569"
+                                label={{
+                                    value: 'EC',
+                                    angle: 90,
+                                    position: 'insideRight',
+                                    style: { fontSize: 10, fill: '#94a3b8' },
+                                }}
+                            />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: '#1e293b',
+                                    border: '1px solid #334155',
+                                    borderRadius: '6px',
+                                    fontSize: 12,
+                                }}
+                            />
+                            <Line
+                                yAxisId="ph"
+                                type="monotone"
+                                dataKey="ph"
+                                stroke="#22c55e"
+                                strokeWidth={2}
+                                dot={false}
+                                name="pH"
+                            />
+                            <Line
+                                yAxisId="ec"
+                                type="monotone"
+                                dataKey="ec"
+                                stroke="#3b82f6"
+                                strokeWidth={2}
+                                dot={false}
+                                name="EC (mS/cm)"
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
+
+            {/* Manual Input Form */}
+            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+                <h3 className="text-sm font-semibold text-slate-200 mb-3">
+                    {t('hydroMonitoring.input.title')}
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                    <div>
+                        <label htmlFor="hydro-ph" className="text-xs text-slate-400 block mb-1">
+                            {t('hydroMonitoring.input.ph')}
+                        </label>
+                        <input
+                            id="hydro-ph"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="14"
+                            value={formPh}
+                            onChange={(e) => setFormPh(e.target.value)}
+                            className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                            placeholder="6.0"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="hydro-ec" className="text-xs text-slate-400 block mb-1">
+                            {t('hydroMonitoring.input.ec')}
+                        </label>
+                        <input
+                            id="hydro-ec"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="10"
+                            value={formEc}
+                            onChange={(e) => setFormEc(e.target.value)}
+                            className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                            placeholder="1.6"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="hydro-temp" className="text-xs text-slate-400 block mb-1">
+                            {t('hydroMonitoring.input.waterTemp')}
+                        </label>
+                        <input
+                            id="hydro-temp"
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="40"
+                            value={formTemp}
+                            onChange={(e) => setFormTemp(e.target.value)}
+                            className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                            placeholder="21.0"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                    <button
+                        type="button"
+                        onClick={handleAddReading}
+                        disabled={!formPh || !formEc || !formTemp}
+                        className="text-xs bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-1.5 rounded transition-colors"
+                    >
+                        {t('hydroMonitoring.input.addReading')}
+                    </button>
+                    {readings.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                dispatch(clearReadings())
+                                dispatch(clearAlerts())
+                            }}
+                            className="text-xs text-slate-500 hover:text-red-400 px-2 py-1.5 transition-colors"
+                        >
+                            {t('hydroMonitoring.input.clearAll')}
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Threshold Editor */}
+            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+                <button
+                    type="button"
+                    onClick={() => setShowThresholdEditor(!showThresholdEditor)}
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-slate-100 w-full"
+                >
+                    <PhosphorIcons.GearSix className="w-4 h-4" aria-hidden="true" />
+                    {t('hydroMonitoring.thresholds.title')}
+                    <span className="ml-auto text-xs text-slate-500">
+                        {showThresholdEditor ? '-' : '+'}
+                    </span>
+                </button>
+                {showThresholdEditor && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+                        {(
+                            [
+                                ['phMin', 'pH Min'],
+                                ['phMax', 'pH Max'],
+                                ['ecMin', 'EC Min'],
+                                ['ecMax', 'EC Max'],
+                                ['waterTempMin', 'Temp Min'],
+                                ['waterTempMax', 'Temp Max'],
+                            ] as const
+                        ).map(([field, label]) => (
+                            <div key={field}>
+                                <label
+                                    htmlFor={`thresh-${field}`}
+                                    className="text-xs text-slate-400 block mb-1"
+                                >
+                                    {label}
+                                </label>
+                                <input
+                                    id={`thresh-${field}`}
+                                    type="number"
+                                    step="0.1"
+                                    value={thresholds[field]}
+                                    onChange={(e) =>
+                                        handleThresholdChange(
+                                            field as keyof HydroThresholds,
+                                            e.target.value,
+                                        )
+                                    }
+                                    className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Dosing Reference */}
+            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+                <h3 className="text-sm font-semibold text-slate-200 mb-3">
+                    <PhosphorIcons.Flask className="w-4 h-4 inline mr-1" aria-hidden="true" />
+                    {t('hydroMonitoring.dosing.title')}
+                </h3>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                        <thead>
+                            <tr className="border-b border-slate-700">
+                                <th className="text-left py-1.5 text-slate-400 font-medium">
+                                    {t('hydroMonitoring.dosing.stage')}
+                                </th>
+                                <th className="text-center py-1.5 text-slate-400 font-medium">
+                                    EC (mS/cm)
+                                </th>
+                                <th className="text-center py-1.5 text-slate-400 font-medium">
+                                    pH
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="border-b border-slate-800">
+                                <td className="py-1.5 text-slate-300">
+                                    {t('hydroMonitoring.dosing.seedling')}
+                                </td>
+                                <td className="text-center text-slate-400">0.3 - 0.6</td>
+                                <td className="text-center text-slate-400">5.5 - 6.0</td>
+                            </tr>
+                            <tr className="border-b border-slate-800">
+                                <td className="py-1.5 text-slate-300">
+                                    {t('hydroMonitoring.dosing.vegetative')}
+                                </td>
+                                <td className="text-center text-slate-400">0.8 - 1.6</td>
+                                <td className="text-center text-slate-400">5.5 - 6.0</td>
+                            </tr>
+                            <tr>
+                                <td className="py-1.5 text-slate-300">
+                                    {t('hydroMonitoring.dosing.flowering')}
+                                </td>
+                                <td className="text-center text-slate-400">1.4 - 2.4</td>
+                                <td className="text-center text-slate-400">5.5 - 6.0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    )
+})
+HydroMonitorView.displayName = 'HydroMonitorView'

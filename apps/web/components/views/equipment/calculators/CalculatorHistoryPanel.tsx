@@ -76,14 +76,16 @@ export const CalculatorHistoryPanel: React.FC<Props> = memo(({ calculatorId, ref
                         <div className="flex flex-wrap gap-x-3 gap-y-1">
                             {Object.entries(entry.inputs).map(([k, v]) => (
                                 <span key={k} className="text-xs text-slate-500">
-                                    {k}: <span className="text-slate-400">{v}</span>
+                                    {t(`calculators.${k}`, { defaultValue: k })}:{' '}
+                                    <span className="text-slate-400">{v}</span>
                                 </span>
                             ))}
                         </div>
                         <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
                             {Object.entries(entry.result).map(([k, v]) => (
                                 <span key={k} className="text-xs text-emerald-600">
-                                    {k}: <span className="text-emerald-400">{v}</span>
+                                    {t(`calculators.${k}`, { defaultValue: k })}:{' '}
+                                    <span className="text-emerald-400">{v}</span>
                                 </span>
                             ))}
                         </div>

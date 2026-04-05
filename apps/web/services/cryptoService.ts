@@ -37,19 +37,23 @@ interface EncryptedPayload {
 
 const parseEncryptedPayload = (payload: string): EncryptedPayload | null => {
     try {
-        const parsed = JSON.parse(payload) as Partial<EncryptedPayload>
+        const parsed: unknown = JSON.parse(payload)
         if (
-            parsed &&
-            parsed.v === 1 &&
-            typeof parsed.iv === 'string' &&
-            typeof parsed.data === 'string' &&
-            parsed.iv.length > 0 &&
-            parsed.data.length > 0
+            typeof parsed === 'object' &&
+            parsed !== null &&
+            'v' in parsed &&
+            'iv' in parsed &&
+            'data' in parsed &&
+            (parsed as Record<string, unknown>)['v'] === 1 &&
+            typeof (parsed as Record<string, unknown>)['iv'] === 'string' &&
+            typeof (parsed as Record<string, unknown>)['data'] === 'string' &&
+            ((parsed as Record<string, unknown>)['iv'] as string).length > 0 &&
+            ((parsed as Record<string, unknown>)['data'] as string).length > 0
         ) {
             return {
                 v: 1,
-                iv: parsed.iv,
-                data: parsed.data,
+                iv: (parsed as Record<string, unknown>)['iv'] as string,
+                data: (parsed as Record<string, unknown>)['data'] as string,
             }
         }
     } catch {

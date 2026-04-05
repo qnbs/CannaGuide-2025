@@ -360,6 +360,53 @@ export enum EquipmentViewTab {
     Seedbanks = 'seedbanks',
     GrowTech = 'growTech',
     IotDashboard = 'iotDashboard',
+    HydroMonitoring = 'hydroMonitoring',
+}
+
+// ---------------------------------------------------------------------------
+// Hydroponic Monitoring types
+// ---------------------------------------------------------------------------
+
+export type HydroSystemType = 'DWC' | 'NFT' | 'DripSystem' | 'EbbFlow' | 'Aeroponics' | 'Kratky'
+
+export interface HydroThresholds {
+    phMin: number
+    phMax: number
+    ecMin: number
+    ecMax: number
+    waterTempMin: number
+    waterTempMax: number
+}
+
+export interface HydroReading {
+    id: string
+    timestamp: number
+    ph: number
+    ec: number
+    waterTemp: number
+    reservoirLevel?: number | undefined
+    tds?: number | undefined
+    plantId?: string | undefined
+    note?: string | undefined
+}
+
+export type HydroAlertDirection = 'low' | 'high'
+
+export interface HydroAlert {
+    id: string
+    metric: 'ph' | 'ec' | 'waterTemp'
+    value: number
+    threshold: number
+    direction: HydroAlertDirection
+    timestamp: number
+    dismissed: boolean
+}
+
+export interface HydroState {
+    readings: HydroReading[]
+    alerts: HydroAlert[]
+    systemType: HydroSystemType
+    thresholds: HydroThresholds
 }
 
 export enum KnowledgeViewTab {

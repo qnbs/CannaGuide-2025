@@ -78,6 +78,10 @@ test.describe('IoT Sensor Simulation', () => {
     // requests to loopback and WebKit times out. Chromium-only is sufficient
     // because IoT hardware integration is browser-agnostic.
     test.skip(
+        () => !process.env['VITE_ESP32_URL'],
+        'Skipped: VITE_ESP32_URL not set (no ESP32 mock in deploy environment)',
+    )
+    test.skip(
         ({ browserName }) => browserName !== 'chromium',
         'IoT mock uses HTTP localhost -- only testable in Chromium',
     )
@@ -222,6 +226,10 @@ test.describe('IoT Sensor Simulation', () => {
 })
 
 test.describe('Sensor Store Resilience', () => {
+    test.skip(
+        () => !process.env['VITE_ESP32_URL'],
+        'Skipped: VITE_ESP32_URL not set (no ESP32 mock in deploy environment)',
+    )
     test.skip(
         ({ browserName }) => browserName !== 'chromium',
         'IoT mock uses HTTP localhost -- only testable in Chromium',

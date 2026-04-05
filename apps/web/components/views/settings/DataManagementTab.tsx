@@ -404,6 +404,9 @@ const DataManagementTab: React.FC = () => {
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>{String(t('settingsView.data.resetAll'))}</DialogTitle>
+                        <DialogDescription>
+                            {t('settingsView.data.resetAllConfirm')}
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="p-4 bg-red-900/20 rounded-lg border border-red-500/30 space-y-3">
                         <h4 className="font-bold text-red-300">

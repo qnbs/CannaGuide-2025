@@ -477,5 +477,7 @@ After implementation is complete with all validations passing, update **all affe
 | `.devcontainer/start.sh`                                    | postStartCommand (IoT mock servers)                                                                                |
 | `.github/workflows/config-guard.yml`                        | CI scan for RCE patterns in config files                                                                           |
 | `docs/ACCESSIBILITY.md`                                     | WCAG 2.1 AA accessibility statement                                                                                |
+| `docs/DEPENDENCY-GRAPH.md`                                  | Monorepo package topology, ESLint enforcement, TurboRepo pipeline dependencies                                     |
+| `docs/ARCHITECTURE-MIGRATION-PLAN.md`                       | Service classification (99 services) and future migration priorities                                               |
 | `scripts/security/check-csp-consistency.mjs`                | CI: CSP consistency across securityHeaders/index.html/netlify                                                      |
 | `scripts/check-i18n-completeness.mjs`                       | CI: i18n key coverage checker across all languages                                                                 |

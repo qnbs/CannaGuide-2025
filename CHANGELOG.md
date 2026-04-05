@@ -8,7 +8,16 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- docs: `DEPENDENCY-GRAPH.md` -- monorepo package topology, ESLint enforcement, pipeline dependencies (Session 62)
+- docs: `ARCHITECTURE-MIGRATION-PLAN.md` -- service classification and migration priorities (Session 62)
+- feat(lint): add `@cannaguide/desktop` to `no-restricted-imports` boundary rules (Session 62)
 - feat(security): `apps/web/utils/browserApis.ts` -- centralized typed helpers for non-standard browser APIs (Session 61)
+
+### Fixed
+
+- fix(turbo): add 6 missing root-level source files to `build`/`build:gh` inputs (`constants.ts`, `types.ts`, `i18n.ts`, `styles.css`, `securityHeaders.ts`, `simulation.worker.ts`) (Session 62)
+- fix(turbo): add `env` declarations (`BUILD_BASE_PATH`, `VITE_*`) to build tasks for proper cache invalidation (Session 62)
+- fix(turbo): add `package-lock.json` to `globalDependencies` so dependency changes invalidate all caches (Session 62)
 
 ### Refactored
 

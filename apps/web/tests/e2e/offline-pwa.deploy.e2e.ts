@@ -58,7 +58,7 @@ test.describe('Offline & PWA', () => {
     })
 
     test('manifest.json is accessible', async ({ page }) => {
-        const response = await page.goto('/manifest.json')
+        const response = await page.goto('./manifest.json')
         if (response && response.ok()) {
             const manifest = await response.json()
             expect(manifest.name).toBeTruthy()

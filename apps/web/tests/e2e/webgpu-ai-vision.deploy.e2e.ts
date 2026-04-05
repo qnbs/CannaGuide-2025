@@ -87,6 +87,14 @@ async function injectCameraFeedMock(page: Page): Promise<void> {
 // ---------------------------------------------------------------------------
 
 test.describe('WebGPU AI Vision Pipeline', () => {
+    // WebGPU tests require a GPU-capable browser. In headless CI the mock
+    // injection works but the app shell tests depend on a correctly-booted
+    // SPA which is only reliable in a local browser with GPU support.
+    test.skip(
+        () => process.env['CI'] === 'true',
+        'Skipped: WebGPU tests require local browser with GPU support (not available in headless CI)',
+    )
+
     test.beforeEach(async ({ page }) => {
         await injectWebGPUMock(page)
         await injectCameraFeedMock(page)

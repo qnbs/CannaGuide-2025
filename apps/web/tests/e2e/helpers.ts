@@ -107,7 +107,7 @@ export const seedPostOnboardingState = async (page: Page) => {
 
 export const bootFreshAppWithLegalGates = async (page: Page) => {
     await resetAppStateKeepingLegalGates(page)
-    await page.goto('/')
+    await page.goto('./')
     await deleteAppDatabases(page)
     await page.reload({ waitUntil: 'networkidle' })
     await page.waitForLoadState('networkidle')
@@ -115,7 +115,7 @@ export const bootFreshAppWithLegalGates = async (page: Page) => {
 
 export const bootFreshAppPastOnboarding = async (page: Page) => {
     await resetAppStateKeepingLegalGates(page)
-    await page.goto('/')
+    await page.goto('./')
     await deleteAppDatabases(page)
     await seedPostOnboardingState(page)
     await page.reload({ waitUntil: 'networkidle' })

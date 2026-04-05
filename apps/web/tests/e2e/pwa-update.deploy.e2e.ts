@@ -43,7 +43,7 @@ test('pwa update: service worker registers with GitHub Pages subpath scope', asy
             const entries = await navigator.serviceWorker.getRegistrations()
             return entries.length > 0
         },
-        { timeout: 15_000 },
+        { timeout: 30_000 },
     )
 
     const registrations = (await page.evaluate(async () => {

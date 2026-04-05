@@ -991,6 +991,8 @@ export interface AppSettings {
         /** Feature flag: enable WebGPU acceleration for local AI inference. */
         enableWebGpu: boolean
         preferredTextModel: 'auto' | 'qwen2.5' | 'qwen3'
+        /** Selected WebLLM model ID or 'auto' for GPU-tier-based auto-selection. */
+        selectedLlmModelId: string
         enableSemanticRag: boolean
         enableSentimentAnalysis: boolean
         enableSummarization: boolean

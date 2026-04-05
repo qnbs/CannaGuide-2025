@@ -147,6 +147,24 @@ export const settingsView = {
         benchPreloadTime: 'Letzter Preload: {{value}} s',
         benchInferenceSpeed: 'Inferenzgeschwindigkeit: {{value}} tok/s',
         benchNotAvailable: 'Starte einen Preload, um Leistungsdaten zu sehen.',
+        // LLM-Modellauswahl
+        modelSelector: {
+            title: 'LLM-Modellauswahl',
+            subtitle: 'Waehle welches lokale KI-Modell fuer Textgenerierung verwendet wird.',
+            autoLabel: 'Auto (Empfohlen)',
+            autoDesc: 'Waehlt automatisch das beste Modell fuer dein Geraet.',
+            currentAuto: 'Dein Geraet: {{model}}',
+            recommended: 'Empfohlen',
+            downloadSize: '{{size}} MB Download',
+            largeDownload: 'Grosser Download',
+            loading: 'Modell wird geladen...',
+            'model_0.5B_desc':
+                'Ultraleichtes Modell fuer jedes Geraet. Schnell, aber begrenzte Qualitaet.',
+            'model_1.5B_desc':
+                'Ausgewogenes Modell fuer mittlere GPUs. Gute mehrsprachige Unterstuetzung.',
+            model_3B_desc: 'Hohe Qualitaet beim Reasoning. Beste Wahl fuer leistungsfaehige GPUs.',
+            model_4B_desc: 'Starkes Reasoning und Instruktionsbefolgung. Groesste Option.',
+        },
         // Embedding & Semantic RAG
         embeddingModelReady: 'Embedding-Modell (MiniLM) ist bereit für semantische Suche.',
         embeddingModelMissing:

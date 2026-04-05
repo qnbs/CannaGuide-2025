@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import settingsReducer, { defaultSettings, setSetting, toggleSetting, simulationProfilePresets } from '@/stores/slices/settingsSlice'
+import settingsReducer, {
+    defaultSettings,
+    setSetting,
+    toggleSetting,
+    simulationProfilePresets,
+    setLlmModel,
+    setLlmModelAuto,
+} from '@/stores/slices/settingsSlice'
 import type { SettingsState } from '@/stores/slices/settingsSlice'
 
 const initial: SettingsState = { settings: defaultSettings, version: 5 }
@@ -48,27 +55,61 @@ describe('settingsSlice', () => {
     })
 
     it('setSetting for onboardingCompleted', () => {
-        const state = settingsReducer(initial, setSetting({ path: 'onboardingCompleted', value: true }))
+        const state = settingsReducer(
+            initial,
+            setSetting({ path: 'onboardingCompleted', value: true }),
+        )
         expect(state.settings.onboardingCompleted).toBe(true)
     })
 
     it('setSetting for language', () => {
-        const state = settingsReducer(initial, setSetting({ path: 'general.language', value: 'de' }))
+        const state = settingsReducer(
+            initial,
+            setSetting({ path: 'general.language', value: 'de' }),
+        )
         expect(state.settings.general.language).toBe('de')
     })
 
     it('applying a simulation profile updates the bundled simulation parameters', () => {
-        const state = settingsReducer(initial, setSetting({ path: 'simulation.simulationProfile', value: 'expert' }))
+        const state = settingsReducer(
+            initial,
+            setSetting({ path: 'simulation.simulationProfile', value: 'expert' }),
+        )
         expect(state.settings.simulation.simulationProfile).toBe('expert')
-        expect(state.settings.simulation.pestPressure).toBe(simulationProfilePresets.expert.pestPressure)
-        expect(state.settings.simulation.nutrientSensitivity).toBe(simulationProfilePresets.expert.nutrientSensitivity)
-        expect(state.settings.simulation.environmentalStability).toBe(simulationProfilePresets.expert.environmentalStability)
-        expect(state.settings.simulation.lightExtinctionCoefficient).toBe(simulationProfilePresets.expert.lightExtinctionCoefficient)
+        expect(state.settings.simulation.pestPressure).toBe(
+            simulationProfilePresets.expert.pestPressure,
+        )
+        expect(state.settings.simulation.nutrientSensitivity).toBe(
+            simulationProfilePresets.expert.nutrientSensitivity,
+        )
+        expect(state.settings.simulation.environmentalStability).toBe(
+            simulationProfilePresets.expert.environmentalStability,
+        )
+        expect(state.settings.simulation.lightExtinctionCoefficient).toBe(
+            simulationProfilePresets.expert.lightExtinctionCoefficient,
+        )
     })
 
     it('simulation profile switches preserve altitude calibration', () => {
-        const withAltitude = settingsReducer(initial, setSetting({ path: 'simulation.altitudeM', value: 1250 }))
-        const switched = settingsReducer(withAltitude, setSetting({ path: 'simulation.simulationProfile', value: 'beginner' }))
+        const withAltitude = settingsReducer(
+            initial,
+            setSetting({ path: 'simulation.altitudeM', value: 1250 }),
+        )
+        const switched = settingsReducer(
+            withAltitude,
+            setSetting({ path: 'simulation.simulationProfile', value: 'beginner' }),
+        )
         expect(switched.settings.simulation.altitudeM).toBe(1250)
+    })
+
+    it('setLlmModel stores the selected model ID', () => {
+        const state = settingsReducer(initial, setLlmModel('Llama-3.2-3B-Instruct-q4f16_1-MLC'))
+        expect(state.settings.localAi.selectedLlmModelId).toBe('Llama-3.2-3B-Instruct-q4f16_1-MLC')
+    })
+
+    it('setLlmModelAuto resets model selection to auto', () => {
+        const withModel = settingsReducer(initial, setLlmModel('Phi-3.5-mini-instruct-q4f16_1-MLC'))
+        const reset = settingsReducer(withModel, setLlmModelAuto())
+        expect(reset.settings.localAi.selectedLlmModelId).toBe('auto')
     })
 })

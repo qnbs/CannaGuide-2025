@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 65) -- Hydroponic Monitoring Dashboard + i18n Audit + Quick Fixes
+## Latest Session (Session 66) -- LLM Model Selector + WebLLM Default Upgrade
+
+**Status: v1.4.0-alpha. 1544 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 66)
+
+1. **WebLLM Model Catalog** -- `webLlmModelCatalog.ts`: 4-model catalog with metadata (Qwen2.5-0.5B,
+   Qwen2.5-1.5B, Llama-3.2-3B recommended, Phi-3.5-mini). `autoSelectModel(gpuTier)` selects
+   high->3B, mid->1.5B, low/none->0.5B. `getModelById()`, `getAllModels()`.
+
+2. **Settings Slice** -- New `selectedLlmModelId: string` field in `AppSettings.localAi` (default
+   `'auto'`). Reducers: `setLlmModel`, `setLlmModelAuto`. Old `preferredTextModel` kept for
+   backward compat (dead setting, never consumed).
+
+3. **Model Resolution Wiring** -- `localAIModelLoader.ts`: new `modelIdOverride` + catalog-based
+   branch in `resolveModelProfile()` before manual overrides. `setPreferredModelOverride()` and
+   `getPreferredModelOverride()` exported. `localAiModelManager.ts`: `switchModel(id)` method
+   disposes active model and sets override. `index.tsx`: boot-time sync reads persisted setting.
+
+4. **LlmModelSelector UI** -- Card-based model selector component replacing old dropdown:
+   `AutoCard` (shows GPU-tier-resolved model), `ModelCard` (size/recommended/WebGPU badges,
+   download size warning), `LoadingProgress` (reuses `useWebLlmLoadProgress()`). Integrated into
+   SettingsView AI tab.
+
+5. **i18n** -- `modelSelector.*` keys in all 5 locales (EN/DE/ES/FR/NL): title, subtitle,
+   autoLabel, autoDesc, currentAuto, recommended, downloadSize, largeDownload, loading, 4 model
+   descriptions.
+
+6. **Tests** -- 17 new tests: catalog (9), settings slice (2), UI (6). Total: 1544 passing (142
+   test files).
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1544 passing, 0 failures (142 test files)
+- Build: clean (164 precache entries)
+- Lint: clean (0 errors on changed files)
+
+### Next Steps
+
+- **N+1: IoT Auto-Feed** -- Connect sensorStore (MQTT live data) to hydroSlice (auto-add readings
+  from IoT sensors). Add toggle: manual vs. auto mode.
+- **N+2: CSV Export + Data Sharing** -- Export hydro readings as CSV, share via clipboard/download.
+- **N+3: Proactive Hydro Coach** -- Extend proactiveCoachService for hydro readings threshold
+  monitoring with AI-powered pH/EC adjustment recommendations.
+- Continue audit-roadmap-2026-q2 Sprint 2 items.
+
+---
+
+## Previous Session (Session 65) -- Hydroponic Monitoring Dashboard + i18n Audit + Quick Fixes
 
 **Status: v1.4.0-alpha. 1527 tests passing. TypeScript clean. Build clean.**
 

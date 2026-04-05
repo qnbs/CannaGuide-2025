@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1527%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1544%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- AI Development Stack -->
 
@@ -454,7 +454,7 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-1527%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-1544%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 

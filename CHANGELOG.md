@@ -8,6 +8,17 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(ai): WebLLM model catalog with 4 curated models (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) and GPU-tier auto-selection (Session 66)
+- feat(ai): card-based LLM model selector UI replacing old dropdown in Settings AI tab (Session 66)
+- feat(ai): `selectedLlmModelId` setting with `setLlmModel`/`setLlmModelAuto` reducers (Session 66)
+- feat(ai): `switchModel()` in localAiModelManager + catalog override in resolveModelProfile (Session 66)
+- feat(i18n): modelSelector translations for all 5 locales (EN/DE/ES/FR/NL) (Session 66)
+- test(ai): webLlmModelCatalog tests (9), settingsSlice LLM tests (2), LlmModelSelector UI tests (6) (Session 66)
+
+### Changed
+
+- test: 1544 tests passing (142 test files) (Session 66)
+
 - feat(equipment): hydroponic monitoring dashboard with Redux slice, Recharts UI, gauge cards, alerts, dosing reference (Session 65)
 - feat(equipment): HydroMonitoring tab in Equipment navigation with Drop icon (Session 65)
 - feat(i18n): hydroMonitoring translations for all 5 locales (EN/DE/ES/FR/NL) (Session 65)

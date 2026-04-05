@@ -35,7 +35,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <DialogContent className="max-w-lg">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
-                    {description && <DialogDescription>{description}</DialogDescription>}
+                    <DialogDescription className={description ? undefined : 'sr-only'}>
+                        {description ?? title}
+                    </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="mt-2">
                     <Button variant="secondary" onClick={() => onOpenChange(false)}>

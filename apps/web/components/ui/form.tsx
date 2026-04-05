@@ -63,7 +63,10 @@ interface SelectProps {
 export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     ({ options, value, onChange, label, className, disabled, ...props }, ref) => {
         const id = useId()
-        const stringValue = value !== undefined && value !== '' ? String(value) : undefined
+        // Radix Select uses value="" to mean "clear selection and show placeholder".
+        // Always pass a controlled value (never undefined) to prevent the React
+        // "uncontrolled to controlled" warning when callers initialise state with ''.
+        const stringValue = value != null ? String(value) : ''
 
         // Radix SelectItem throws on empty-string values, so separate the
         // placeholder option (value === '') from the real items.
@@ -78,7 +81,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     </label>
                 )}
                 <UiSelect
-                    {...(stringValue != null ? { value: stringValue } : {})}
+                    value={stringValue}
                     onValueChange={(next) => {
                         const matched = realOptions.find((option) => String(option.value) === next)
                         onChange?.({ target: { value: matched ? matched.value : next } })

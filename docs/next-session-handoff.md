@@ -2,9 +2,47 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 57) -- Deploy E2E Tests Stabilized
+## Latest Session (Session 58) -- RAG Semantic Hybrid Re-Ranking with MiniLM-L6
 
-**Status: v1.4.0-alpha. 1402 tests passing. TypeScript clean. Build clean.**
+**Status: v1.4.0-alpha. 1423 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 58)
+
+1. **`apps/web/services/ragEmbeddingCacheService.ts`** (NEW) -- Persistent IndexedDB-backed embedding cache using `createIndexedDbLruCache` factory. 2048 entries, 90-day TTL. Model version tracking (`Xenova/all-MiniLM-L6-v2-q`) for automatic cache invalidation on model upgrades. Hit/miss telemetry counters. `getOrComputeEmbedding()` dispatches to inference worker, `precomputeEmbeddings()` batch-processes grow log entries, `startBackgroundPrecomputation()` respects EcoMode and worker availability.
+
+2. **`apps/web/services/growLogRagService.ts`** (MODIFIED) -- Replaced volatile in-memory Map cache with persistent `ragEmbeddingCacheService`. Implemented hybrid scoring: 60% cosine similarity + 30% normalized BM25-style token score + 10% recency. `normalizeTokenScore()` uses Okapi BM25-inspired k1=1.2 saturation. Falls back to 85% token + 15% recency when embeddings unavailable. Added `isSemanticRankingAvailable()` public method.
+
+3. **`apps/web/services/geminiService.ts`** (MODIFIED) -- `buildMentorPrompt()` and `buildGrowLogRagPrompt()` now async, using `retrieveSemanticContext()` with try/catch fallback to `retrieveRelevantContext()`. `getMentorResponse()` and `getGrowLogRagAnswer()` updated with await.
+
+4. **`apps/web/services/knowledgeRagService.ts`** (MODIFIED) -- `retrieveSemanticContext()` used in knowledge explainer with keyword fallback on error.
+
+5. **`apps/web/index.tsx`** (MODIFIED) -- Background precomputation hook after `scheduleIdlePreload()`. Converts Redux EntityAdapter state to Plant[] via `Object.values().filter()`.
+
+6. **`apps/web/services/ragEmbeddingCacheService.test.ts`** (NEW) -- 14 tests covering cache hit/miss, compute-on-miss, precomputation, EcoMode guard, worker availability guard, semantic availability, stats, clear.
+
+7. **`apps/web/services/growLogRagService.test.ts`** (EXTENDED) -- 7 new hybrid ranking tests: semantic beats token-only, fallback behavior, topK, persistent cache usage, hybrid score computation.
+
+### Verified Metrics (Session 58)
+
+- Tests: 1423 passing, 0 failures
+- TypeScript: clean (RTK TS2719 filtered)
+- Build: success (157 precache entries)
+- New service files: 1 (ragEmbeddingCacheService.ts)
+- New test files: 1 (ragEmbeddingCacheService.test.ts)
+- Total services: 97
+
+### Next Steps (Session 59)
+
+- **Embedding warm-up telemetry**: Add Sentry breadcrumb for precomputation duration + entries processed
+- **RAG A/B testing**: Add feature flag to toggle hybrid vs token-only ranking for quality comparison
+- **P2 Rate-limiter UX toast**: When AI returns 429, show user-facing toast (currently silent drop)
+- **help.ts 36 WARN keys** (x ES/FR/NL = 108 keys) -- deferred from Session 56
+- **strains.ts 43 remaining WARN keys** -- non-strainLookup strainsView gaps in FR/NL/ES
+- **Stryker first real run**: `npx stryker run --inPlace --mutate "apps/web/services/knowledgeCalculatorService.ts"`
+
+---
+
+## Latest Session (Session 57) -- Deploy E2E Tests Stabilized
 
 ### What Was Done (Session 57)
 

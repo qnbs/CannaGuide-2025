@@ -139,6 +139,7 @@ export const captureLocalAiError = (
             | 'image-cache-clear'
             | 'gpu-mutex-eviction'
             | 'gpu-mutex-rehydrate'
+            | 'gpu-mutex-auto-release'
             | 'webllm-eviction'
             | 'webllm-diagnostics'
             | 'webllm-streaming'
@@ -151,6 +152,7 @@ export const captureLocalAiError = (
         retryAttempt?: number
         batchItem?: number
         candidateIndex?: number
+        consumer?: string
     },
 ): void => {
     Sentry.captureException(error, {

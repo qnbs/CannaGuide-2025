@@ -31,3 +31,9 @@ test-results/
 
 # ESPHome secrets (user-specific, never commit)
 firmware/**/secrets.yaml
+
+# Stryker mutation testing artifacts
+.stryker-tmp/
+stryker-setup-*.js
+stryker.log
+reports/mutation/

@@ -69,7 +69,10 @@ apps/web/                 Main PWA (@cannaguide/web)
     aiProviderService.ts  Multi-provider AI routing (BYOK, imports configs from @cannaguide/ai-core)
     aiService.ts          Unified cloud + local AI entry point
     LocalAIInfrastructure.ts Unified cache + telemetry + preload class
-    localAI.ts            Core local AI orchestration
+    localAI.ts            Pure facade (delegates to router, manager, orchestrator)
+    localAiInferenceRouter.ts  Cache -> WebLLM -> Transformers.js routing (retry + backoff)
+    localAiModelManager.ts     Pipeline lifecycle (text + vision), primary/alt fallback
+    localAiPreloadOrchestrator.ts  8-step preload sequence with progress callbacks
     localAIModelLoader.ts ONNX pipeline loader (WebGPU/WASM, semaphore)
     localAi*.ts           15 local AI service modules
     gpuResourceManager.ts GPU mutex (FIFO queue, WebLLM eviction)

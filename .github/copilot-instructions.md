@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1423 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1447 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -105,8 +105,11 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 6. **Archive Capping:** Mentor: 100 entries, Advisor: 50/plant, FIFO culling.
 
-7. **Local AI Stack:** 18 service modules orchestrate on-device ML:
-    - `localAI.ts` -- Core orchestration (text gen, vision, diagnosis, preload)
+7. **Local AI Stack:** 21 service modules orchestrate on-device ML:
+    - `localAI.ts` -- Pure facade implementing BaseAIProvider (delegates to router, manager, orchestrator)
+    - `localAiInferenceRouter.ts` -- Cache -> WebLLM -> Transformers.js routing with retry + backoff
+    - `localAiModelManager.ts` -- Pipeline lifecycle (text + vision), primary/alt fallback, dispose
+    - `localAiPreloadOrchestrator.ts` -- 8-step preload sequence with progress callbacks
     - `localAIModelLoader.ts` -- ONNX backend detection, pipeline loading (max 3 concurrent), cache
     - `localAiNlpService.ts` -- Sentiment analysis, summarization, zero-shot classification
     - `localAiEmbeddingService.ts` -- MiniLM-L6 embeddings, semantic ranking, batch processing
@@ -221,7 +224,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1423 tests, 0 failures
+- Baseline: 1447 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
@@ -231,8 +234,13 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 ### Git
 
 - Conventional Commits: `<type>(<scope>): <description>`
-- Types: feat, fix, docs, refactor, test, perf, chore, a11y, i18n
+- Types: feat, fix, docs, refactor, test, perf, chore, ci, build, revert, style, a11y, i18n
 - Scopes: ai, plants, strains, equipment, knowledge, settings, help, genealogy, pwa, ci, security, ui, sentry
+- **Commit message rules (enforced by commitlint):**
+    - Subject (type, scope, description) **must be lowercase** -- e.g. `feat(ai): add embedding cache` not `Add Embedding Cache`
+    - Body lines **max 100 characters** -- wrap longer lines
+    - **Blank line required** between subject and body
+    - Subject must not end with a period
 - **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `npm run pr:push` (branch -> PR -> auto-merge).
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
@@ -361,15 +369,20 @@ After implementation is complete with all validations passing, update **all affe
 ### Phase 4 -- Commit and Push (Agent Mode)
 
 1. **Stage all changes:** `git add -A`
-2. **Commit** with Conventional Commits format:
+2. **Commit** with Conventional Commits format (all lowercase, body lines max 100 chars):
 
     ```
-    <type>(<scope>): <description>
+    <type>(<scope>): <lowercase description>
 
-    - bullet summary of key changes
-    - updated docs: README, handoff, architecture, copilot-instructions
+    - bullet summary of key changes (wrap at 100 chars)
+    - updated docs: README, handoff, architecture,
+      copilot-instructions
     - tests: <count> passing, 0 failures
     ```
+
+    **Rules:** Subject must start lowercase. No period at end.
+    Body lines must not exceed 100 characters -- wrap with
+    continuation indent if needed.
 
 3. **Push:** `git push origin main`
 
@@ -396,7 +409,10 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/aiFacade.ts`                             | Public AI facade (re-exports aiService + provider + infra)                                                         |
 | `apps/web/services/aiService.ts`                            | Unified AI service (cloud + local routing)                                                                         |
 | `apps/web/services/LocalAIInfrastructure.ts`                | Unified cache + telemetry + preload class                                                                          |
-| `apps/web/services/localAI.ts`                              | Core local AI orchestration                                                                                        |
+| `apps/web/services/localAI.ts`                              | Pure facade implementing BaseAIProvider (delegates to router, manager, orchestrator)                               |
+| `apps/web/services/localAiInferenceRouter.ts`               | Cache -> WebLLM -> Transformers.js inference routing with retry + backoff                                          |
+| `apps/web/services/localAiModelManager.ts`                  | Pipeline lifecycle (text + vision), primary/alt model fallback, dispose                                            |
+| `apps/web/services/localAiPreloadOrchestrator.ts`           | 8-step preload sequence with progress callbacks and error counting                                                 |
 | `apps/web/services/localAIModelLoader.ts`                   | ONNX pipeline loader (WebGPU/WASM, concurrency guard)                                                              |
 | `apps/web/services/localAiNlpService.ts`                    | NLP pipelines (sentiment, summarization, zero-shot)                                                                |
 | `apps/web/services/localAiEmbeddingService.ts`              | MiniLM embeddings, semantic ranking                                                                                |

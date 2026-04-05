@@ -565,6 +565,13 @@ const XCircle: React.FC<IconProps> = memo(({ className }) => (
     </IconBase>
 ))
 
+// Two vertical side-by-side columns -- comparison / side-by-side view
+const Columns: React.FC<IconProps> = memo(({ className }) => (
+    <IconBase className={className}>
+        <path d="M104,40H56A16,16,0,0,0,40,56V200a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,160H56V56h48ZM200,40H152a16,16,0,0,0-16,16V200a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,160H152V56h48Z" />
+    </IconBase>
+))
+
 export const PhosphorIcons = {
     Archive,
     ArchiveBox,
@@ -587,6 +594,7 @@ export const PhosphorIcons = {
     Camera,
     Cannabis,
     ChartLineUp,
+    Columns,
     ChartPieSlice,
     CheckCircle,
     Checks,

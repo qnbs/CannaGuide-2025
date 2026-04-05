@@ -538,4 +538,11 @@ export const plantsView = {
         listening: 'Dictando... hable ahora.',
         inserted: 'Entrada de voz insertada.',
     },
+    export: {
+        pdfReport: 'Descargar informe PDF de cultivo',
+        generating: 'Generando PDF...',
+        downloadReady: 'Informe PDF descargado.',
+        error: 'Error al generar el informe PDF.',
+        noEntries: 'No hay entradas de diario.',
+    },
 }

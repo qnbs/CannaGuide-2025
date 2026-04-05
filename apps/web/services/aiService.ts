@@ -115,10 +115,17 @@ async function withLocalFallback<T>(
     try {
         return await cloudFn()
     } catch (error) {
-        console.debug(
-            '[AI] Cloud call failed, falling back to local AI:',
-            error instanceof Error ? error.message : error,
-        )
+        const msg = error instanceof Error ? error.message : String(error)
+        if (msg.startsWith('ai.error.rateLimited')) {
+            const seconds = msg.split(':')[1] ?? '60'
+            const { useUIStore } = await import('@/stores/useUIStore')
+            const { getT } = await import('@/i18n')
+            useUIStore.getState().addNotification({
+                message: getT()('common.ai.rateLimited', { seconds }),
+                type: 'error',
+            })
+        }
+        console.debug('[AI] Cloud call failed, falling back to local AI:', msg)
         return localFallback()
     }
 }

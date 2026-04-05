@@ -569,4 +569,11 @@ export const plantsView = {
         listening: 'Dictating... speak now.',
         inserted: 'Voice input inserted.',
     },
+    export: {
+        pdfReport: 'Download PDF Grow Report',
+        generating: 'Generating PDF...',
+        downloadReady: 'PDF report downloaded.',
+        error: 'Failed to generate PDF report.',
+        noEntries: 'No journal entries to include.',
+    },
 }

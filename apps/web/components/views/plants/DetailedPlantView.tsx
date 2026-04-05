@@ -17,6 +17,7 @@ import { EnvironmentDashboard } from './analytics/EnvironmentDashboard'
 import { ProactiveAlertBanner } from './ProactiveAlertBanner'
 import { RelatedKnowledgePanel } from '@/components/common/RelatedKnowledgePanel'
 import { calculateVPD } from '@/lib/vpd/calculator'
+import { useUIStore } from '@/stores/useUIStore'
 
 interface DetailedPlantViewProps {
     plant: Plant
@@ -60,11 +61,38 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const [activeTab, setActiveTab] = useState('overview')
+    const [isPdfLoading, setIsPdfLoading] = useState(false)
     const tabListRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         dispatch(updatePlantToNow(plant.id))
     }, [plant.id, dispatch])
+
+    const handlePdfExport = useCallback(async () => {
+        if (isPdfLoading) return
+        setIsPdfLoading(true)
+        try {
+            const { generateGrowReport } = await import('@/services/pdfReportService')
+            const { blob, filename } = await generateGrowReport(plant, plant.journal)
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = filename
+            a.click()
+            URL.revokeObjectURL(url)
+            useUIStore.getState().addNotification({
+                message: t('plantsView.export.downloadReady'),
+                type: 'success',
+            })
+        } catch {
+            useUIStore.getState().addNotification({
+                message: t('plantsView.export.error'),
+                type: 'error',
+            })
+        } finally {
+            setIsPdfLoading(false)
+        }
+    }, [plant, isPdfLoading, t])
 
     const isPostHarvest = useMemo(
         () =>
@@ -224,6 +252,23 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                         >
                             VPD {currentVpd.toFixed(2)}
                         </span>
+                    </button>
+                )}
+                {plant.journal.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={handlePdfExport}
+                        disabled={isPdfLoading}
+                        aria-label={t('plantsView.export.pdfReport')}
+                        title={t('plantsView.export.pdfReport')}
+                        className="flex items-center gap-1 rounded-full bg-slate-700/60 hover:bg-slate-600/80 disabled:opacity-50 disabled:cursor-wait px-2.5 py-1.5 ring-1 ring-inset ring-slate-500/40 transition-colors"
+                    >
+                        {isPdfLoading ? (
+                            <span className="w-4 h-4 border-2 border-slate-400/30 border-t-slate-300 rounded-full animate-spin" />
+                        ) : (
+                            <PhosphorIcons.DownloadSimple className="w-4 h-4 text-slate-300" />
+                        )}
+                        <span className="text-xs text-slate-300 hidden sm:inline">PDF</span>
                     </button>
                 )}
             </div>

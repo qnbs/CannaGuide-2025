@@ -4,6 +4,40 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.5.0-alpha](https://github.com/qnbs/CannaGuide-2025/compare/cannaguide-2025-v1.4.0-alpha...cannaguide-2025-v1.5.0-alpha) (2026-04-05)
+
+
+### Features
+
+* **ai:** add RAG semantic hybrid re-ranking with embedding cache ([f86ca2a](https://github.com/qnbs/CannaGuide-2025/commit/f86ca2ae12382f696fd1b51e693d3dbc50ce5ae2))
+* **ai:** extract useStreamingResponse hook, wire Advisor + Diagnosis (R-01) ([b09fe37](https://github.com/qnbs/CannaGuide-2025/commit/b09fe370cea79177ac959f067b6017058948e2db))
+* **ai:** gpu resource manager v2 -- string registry, priorities, auto-release ([1a36bbb](https://github.com/qnbs/CannaGuide-2025/commit/1a36bbbbf3022fd4e0ba1110d5350a16023ac037))
+* **ai:** onnx plant disease vision worker (mobilenetv2 plantvilla ge) ([7a5feb1](https://github.com/qnbs/CannaGuide-2025/commit/7a5feb1d66df7bc7fe1b3752e403aecbc313820e))
+* **ai:** webllm model catalog with card-based selector ui ([ca6e37f](https://github.com/qnbs/CannaGuide-2025/commit/ca6e37fe650deb4285f17697366a1c22a86f6cfb))
+* **equipment:** hydroponic monitoring dashboard + i18n audit fixes ([4ce8e06](https://github.com/qnbs/CannaGuide-2025/commit/4ce8e06c01b1201a6daf024b64bf3d36f2cf695c))
+* **hydro:** onnx stub model + forecast worker + service + dashboard panel ([fafcda0](https://github.com/qnbs/CannaGuide-2025/commit/fafcda0f25dea80c467fe48818471cbd2a6e8439))
+* **i18n:** complete FR/NL/ES translations -- growTech + session 54-55 new keys ([1155e9f](https://github.com/qnbs/CannaGuide-2025/commit/1155e9f098266d12504287484e456d8c8d20a52a))
+* **monorepo:** package boundary enforcement + architecture audit ([86eb428](https://github.com/qnbs/CannaGuide-2025/commit/86eb428b177ff069d91e61419110004c35d7b34e))
+* **plants:** nutrient deficiency decision tree wizard + deploy badge fix ([ae048e1](https://github.com/qnbs/CannaGuide-2025/commit/ae048e1763f1b078df1dfd46e9313be8605f5641))
+* **plants:** pdf grow report export via jsPDF (v1.2) ([6cb4339](https://github.com/qnbs/CannaGuide-2025/commit/6cb433986381dd4b9a45ef4d3312866696ef01de))
+* **settings:** wire IndexedDB per-store entry counts into storage insights panel ([d6dee0b](https://github.com/qnbs/CannaGuide-2025/commit/d6dee0bbad49ebbc8386ffb4bb7dac3a15a9f7e3))
+* **strains:** strain comparison tool with radar chart (v1.2) ([e3d3c4c](https://github.com/qnbs/CannaGuide-2025/commit/e3d3c4c0da4790822bbae8cbe9ddd603879adafd))
+* **voice:** v-03 hotword + v-04 dictation + v-05 tests + dead-code cleanup ([0753df2](https://github.com/qnbs/CannaGuide-2025/commit/0753df250dba95964ed9c014df98508484f2c67a))
+* **workers:** heap-based priority queue for workerbus dispatch ([87be261](https://github.com/qnbs/CannaGuide-2025/commit/87be261272ca2089b8ccfc786752446272a4f4c9))
+* **workers:** typed WorkerBusError + audit closure + readme badges ([3572e47](https://github.com/qnbs/CannaGuide-2025/commit/3572e47197f3df17cb609f0902ae0bab3c69b241))
+
+
+### Bug Fixes
+
+* **ai:** r-02 GPU mutex v2 -- guard ONNX-WebGPU pipeline ([1cc1f45](https://github.com/qnbs/CannaGuide-2025/commit/1cc1f454786f28561eb32091d41b2d3806beb414))
+* **ci:** resolve TS6133 in localAiWebLlmService.test + TS2719 in store ([8dedbf6](https://github.com/qnbs/CannaGuide-2025/commit/8dedbf6e33e3fa943e696163075b058db89e0c0b))
+* **crypto:** pass uint8array directly to web crypto api ([c7d8e99](https://github.com/qnbs/CannaGuide-2025/commit/c7d8e99edc1a1c5fd7f24e78833998d28de464d6))
+* **security:** fix crypto web api buffer pool issue in node.js ([3d064a4](https://github.com/qnbs/CannaGuide-2025/commit/3d064a44d0109c214de679e1b4cb4b75a20e34e8))
+* **security:** replace html-strip regex with DOMParser in MentorChatView (CodeQL [#272](https://github.com/qnbs/CannaGuide-2025/issues/272) [#273](https://github.com/qnbs/CannaGuide-2025/issues/273)) ([ee26bba](https://github.com/qnbs/CannaGuide-2025/commit/ee26bba0cd0e96642300373e07a37622b8bb9a4b))
+* **tauri:** sync version to 1.4.0-alpha and remove environment approval gates ([b5fdb8c](https://github.com/qnbs/CannaGuide-2025/commit/b5fdb8c2711c71708364569ce593bdd2697da134))
+* **test:** add missing slice tests, fix stryker and 429 handling ([c421a62](https://github.com/qnbs/CannaGuide-2025/commit/c421a62ea965f1f1dc4b7e7454dd4f23cd80866a))
+* **ui:** resolve DevConsole warnings -- Select controlled mode + Dialog descriptions ([27b884a](https://github.com/qnbs/CannaGuide-2025/commit/27b884aea022fe287813b99f2e90346edc0c96a4))
+
 ## [Unreleased]
 
 ### Added

@@ -581,4 +581,11 @@ export const plantsView = {
         listening: 'Diktat aktiv... bitte sprechen.',
         inserted: 'Spracheingabe eingefügt.',
     },
+    export: {
+        pdfReport: 'PDF-Grow-Bericht herunterladen',
+        generating: 'PDF wird erstellt...',
+        downloadReady: 'PDF-Bericht heruntergeladen.',
+        error: 'PDF-Bericht konnte nicht erstellt werden.',
+        noEntries: 'Keine Tagebucheintr\u00e4ge vorhanden.',
+    },
 }

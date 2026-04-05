@@ -530,4 +530,11 @@ export const plantsView = {
         listening: 'Dicteren... spreek nu.',
         inserted: 'Spraakinvoer ingevoegd.',
     },
+    export: {
+        pdfReport: 'PDF groeibericht downloaden',
+        generating: 'PDF genereren...',
+        downloadReady: 'PDF-rapport gedownload.',
+        error: 'PDF-rapport genereren mislukt.',
+        noEntries: 'Geen dagboekitems aanwezig.',
+    },
 }

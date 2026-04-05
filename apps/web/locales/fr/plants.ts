@@ -538,4 +538,11 @@ export const plantsView = {
         listening: 'Dictee active... parlez maintenant.',
         inserted: 'Saisie vocale inseree.',
     },
+    export: {
+        pdfReport: 'Telecharger le rapport PDF de culture',
+        generating: 'Generation du PDF...',
+        downloadReady: 'Rapport PDF telecharge.',
+        error: 'Echec de la generation du rapport PDF.',
+        noEntries: 'Aucune entree de journal.',
+    },
 }

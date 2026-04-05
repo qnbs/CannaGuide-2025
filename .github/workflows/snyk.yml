@@ -54,7 +54,17 @@ jobs:
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
               with:
-                  args: --severity-threshold=high --sarif-file-output=snyk-results.sarif
+                  args: --severity-threshold=high --sarif-file-output=snyk-results.sarif --all-projects
+
+            - name: Snyk Monitor (track vulnerabilities)
+              if: ${{ env.HAS_TOKEN == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+              uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04
+              continue-on-error: true
+              env:
+                  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+              with:
+                  command: monitor
+                  args: --all-projects
 
             - name: Upload Snyk SARIF
               if: ${{ env.HAS_TOKEN == 'true' && always() }}

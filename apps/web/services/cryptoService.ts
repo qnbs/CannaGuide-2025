@@ -20,9 +20,13 @@ const toIndexedDbError = (error: DOMException | null, fallbackMessage: string): 
 
 const bytesToBase64 = (bytes: Uint8Array): string => btoa(String.fromCharCode(...bytes))
 
-const base64ToBytes = (value: string): Uint8Array => {
+const base64ToBytes = (value: string): Uint8Array<ArrayBuffer> => {
     const binary = atob(value)
-    return Uint8Array.from(binary, (char) => char.charCodeAt(0))
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i)
+    }
+    return bytes
 }
 
 interface EncryptedPayload {
@@ -159,19 +163,12 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
 
     try {
         const raw = base64ToBytes(storedRaw)
-        // Safety: slice() produces a correctly-sized ArrayBuffer (Uint8Array.buffer
-        // may reference a larger backing pool in Node.js, breaking Web Crypto)
-        const rawBuf: ArrayBuffer = raw.buffer.slice(
-            raw.byteOffset,
-            raw.byteOffset + raw.byteLength,
-        ) as ArrayBuffer
-        const importedKey = await crypto.subtle.importKey(
-            'raw',
-            rawBuf,
-            { name: 'AES-GCM' },
-            false,
-            ['encrypt', 'decrypt'],
-        )
+        // Pass Uint8Array directly as BufferSource -- avoids Node.js
+        // ArrayBuffer pool issues where .buffer returns oversized backing store.
+        const importedKey = await crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, [
+            'encrypt',
+            'decrypt',
+        ])
         await persistEncryptionKey(importedKey)
         cachedEncryptionKey = importedKey
 
@@ -216,16 +213,9 @@ export async function decrypt(payload: string): Promise<string> {
     try {
         const iv = base64ToBytes(parsed.iv)
         const encrypted = base64ToBytes(parsed.data)
-        // Safety: slice() produces correctly-sized ArrayBuffers (see importKey comment)
-        const ivBuf: ArrayBuffer = iv.buffer.slice(
-            iv.byteOffset,
-            iv.byteOffset + iv.byteLength,
-        ) as ArrayBuffer
-        const dataBuf: ArrayBuffer = encrypted.buffer.slice(
-            encrypted.byteOffset,
-            encrypted.byteOffset + encrypted.byteLength,
-        ) as ArrayBuffer
-        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ivBuf }, key, dataBuf)
+        // Pass Uint8Array directly as BufferSource -- consistent with encrypt()
+        // and avoids Node.js ArrayBuffer pool issues (see 3d064a4).
+        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted)
         return new TextDecoder().decode(decrypted)
     } catch {
         return payload

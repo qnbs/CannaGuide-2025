@@ -3,10 +3,12 @@ import {
     acquireGpu,
     releaseGpu,
     getGpuLockState,
+    getQueueState,
     isGpuHeldBy,
     resetGpuMutex,
     setEvictWebLlmHook,
     setRehydrateWebLlmHook,
+    AUTO_RELEASE_TIMEOUT_MS,
 } from './gpuResourceManager'
 
 describe('gpuResourceManager', () => {
@@ -188,5 +190,146 @@ describe('gpuResourceManager', () => {
         // Only one release needed
         releaseGpu('onnx-webgpu')
         expect(getGpuLockState().locked).toBe(false)
+    })
+
+    // ─── v2: getQueueState ─────────────────────────────────────────────────────
+
+    it('getQueueState returns current holder and queue in order', async () => {
+        await acquireGpu('webllm', 'normal')
+
+        const p1 = acquireGpu('onnx-webgpu', 'low')
+        const p2 = acquireGpu('image-gen', 'high')
+
+        // Allow microtasks to run so both enter queue
+        await new Promise((r) => setTimeout(r, 10))
+
+        const state = getQueueState()
+        expect(state.current).toBe('webllm')
+        // image-gen (high) inserted before onnx-webgpu (low)
+        expect(state.queue).toEqual(['image-gen', 'onnx-webgpu'])
+
+        // Drain
+        releaseGpu('webllm')
+        await p2
+        releaseGpu('image-gen')
+        await p1
+        releaseGpu('onnx-webgpu')
+    })
+
+    it('getQueueState returns empty queue when GPU is free', () => {
+        const state = getQueueState()
+        expect(state.current).toBeNull()
+        expect(state.queue).toEqual([])
+    })
+
+    // ─── v2: Priority queue ────────────────────────────────────────────────────
+
+    it('high priority consumer acquires before low priority in queue', async () => {
+        await acquireGpu('webllm', 'normal')
+
+        const order: string[] = []
+        // Queue low first, then high -- high should jump ahead
+        const pLow = acquireGpu('onnx-webgpu', 'low').then(() => {
+            order.push('onnx-webgpu')
+        })
+        const pHigh = acquireGpu('image-gen', 'high').then(() => {
+            order.push('image-gen')
+        })
+
+        await new Promise((r) => setTimeout(r, 10))
+        expect(getGpuLockState().queueLength).toBe(2)
+        // image-gen (high) should be first in queue
+        expect(getQueueState().queue[0]).toBe('image-gen')
+
+        releaseGpu('webllm')
+        await new Promise((r) => setTimeout(r, 10))
+        expect(isGpuHeldBy('image-gen')).toBe(true)
+
+        releaseGpu('image-gen')
+        await new Promise((r) => setTimeout(r, 10))
+        expect(isGpuHeldBy('onnx-webgpu')).toBe(true)
+
+        releaseGpu('onnx-webgpu')
+        await pLow
+        await pHigh
+        expect(order).toEqual(['image-gen', 'onnx-webgpu'])
+    })
+
+    it('normal priority consumer acquires before low priority', async () => {
+        await acquireGpu('webllm', 'normal')
+
+        const order: string[] = []
+        const pLow = acquireGpu('onnx-webgpu', 'low').then(() => {
+            order.push('onnx-webgpu')
+        })
+        const pNormal = acquireGpu('image-gen', 'normal').then(() => {
+            order.push('image-gen')
+        })
+
+        await new Promise((r) => setTimeout(r, 10))
+
+        releaseGpu('webllm')
+        await new Promise((r) => setTimeout(r, 10))
+        expect(isGpuHeldBy('image-gen')).toBe(true)
+
+        releaseGpu('image-gen')
+        await new Promise((r) => setTimeout(r, 10))
+        expect(isGpuHeldBy('onnx-webgpu')).toBe(true)
+
+        releaseGpu('onnx-webgpu')
+        await pLow
+        await pNormal
+        expect(order).toEqual(['image-gen', 'onnx-webgpu'])
+    })
+
+    // ─── v2: Auto-release timeout ──────────────────────────────────────────────
+
+    it('auto-release fires after timeout and releases lock', async () => {
+        vi.useFakeTimers()
+        try {
+            await acquireGpu('webllm', 'normal')
+            expect(isGpuHeldBy('webllm')).toBe(true)
+
+            vi.advanceTimersByTime(AUTO_RELEASE_TIMEOUT_MS + 1)
+
+            expect(isGpuHeldBy('webllm')).toBe(false)
+            expect(getGpuLockState().locked).toBe(false)
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('auto-release does not fire when manually released before timeout', async () => {
+        vi.useFakeTimers()
+        try {
+            await acquireGpu('webllm', 'normal')
+            releaseGpu('webllm')
+
+            vi.advanceTimersByTime(AUTO_RELEASE_TIMEOUT_MS + 1)
+
+            expect(getGpuLockState().locked).toBe(false)
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('auto-release starts fresh for next consumer after grant', async () => {
+        vi.useFakeTimers()
+        try {
+            await acquireGpu('webllm', 'normal')
+            const p = acquireGpu('onnx-webgpu', 'normal')
+
+            releaseGpu('webllm')
+            await p
+
+            expect(isGpuHeldBy('onnx-webgpu')).toBe(true)
+
+            vi.advanceTimersByTime(AUTO_RELEASE_TIMEOUT_MS + 1)
+
+            // onnx-webgpu should also be auto-released
+            expect(getGpuLockState().locked).toBe(false)
+        } finally {
+            vi.useRealTimers()
+        }
     })
 })

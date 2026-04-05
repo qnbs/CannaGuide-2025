@@ -2,7 +2,40 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 58) -- RAG Semantic Hybrid Re-Ranking with MiniLM-L6
+## Latest Session (Session 59) -- localAI.ts Service Facade Refactoring + Commit Workflow Fix
+
+**Status: v1.4.0-alpha. 1447 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 59)
+
+1. **Commit Workflow Fix:** Extended `commitlint.config.js` type-enum with `a11y`, `i18n`, `ci`, `build`, `revert`, `style`. Documented lowercase-subject and 100-char body-line rules in copilot-instructions.
+
+2. **`apps/web/services/localAiInferenceRouter.ts`** (NEW, 230 lines) -- Extracted inference routing from localAI.ts. Dual-hash LRU cache (64 entries), retry loop with WebLLM -> Transformers.js fallback, worker offload, persistent cache integration.
+
+3. **`apps/web/services/localAiModelManager.ts`** (NEW, 84 lines) -- Extracted pipeline lifecycle. Primary/alt model fallback (`Xenova/Qwen2.5-0.5B-Instruct`), vision pipeline, dispose.
+
+4. **`apps/web/services/localAiPreloadOrchestrator.ts`** (NEW, 165 lines) -- Extracted 8-step preload sequence with progress callbacks and error counting.
+
+5. **`apps/web/services/localAI.ts`** (REWRITTEN, 241 lines -- was 750) -- Pure facade implementing BaseAIProvider. Constructor DI for `LocalAiModelManager`. Factory `createLocalAiService()` for test DI.
+
+6. **Tests:** 24 new tests (14 inference router, 6 model manager, 4 preload orchestrator). Total: 1447 passing.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1447 passing, 0 failures
+- Build: success (157 precache entries)
+- Services: 100 production files
+
+### Next Steps
+
+- Session 60: Continue audit-roadmap-2026-q2 items
+- Consider extracting prompt handlers into per-feature modules
+- localAiDiagnosisService.ts could benefit from similar facade slimming
+
+---
+
+## Session 58 -- RAG Semantic Hybrid Re-Ranking with MiniLM-L6
 
 **Status: v1.4.0-alpha. 1423 tests passing. TypeScript clean. Build clean.**
 

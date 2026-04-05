@@ -3,6 +3,11 @@ import { clearInferenceCache, localAiService } from '@/services/localAI'
 import { clearPipelineCache, detectOnnxBackend } from '@/services/localAIModelLoader'
 import { PlantStage, type Plant, type Strain, StrainType } from '@/types'
 
+/** Test-internal cast to reset pipeline caches on the singleton. */
+interface SvcInternal {
+    modelManager: { textPipelinePromise: unknown; visionPipelinePromise: unknown }
+}
+
 const pipelineMock = vi.fn()
 
 vi.mock('@xenova/transformers', () => ({
@@ -172,8 +177,8 @@ describe('localAiService', () => {
 
     it('falls back to a local nutrient recommendation when text generation is unavailable', async () => {
         clearInferenceCache()
-        const svc = localAiService as unknown as Record<string, unknown>
-        svc.textPipelinePromise = null
+        const svc = localAiService as unknown as SvcInternal
+        svc.modelManager.textPipelinePromise = null
 
         pipelineMock.mockRejectedValue(new Error('offline – model unavailable'))
 
@@ -242,10 +247,9 @@ describe('localAiService', () => {
 
     it('preloadOfflineAssets counts failures when pipelines reject', async () => {
         // Clear cached pipeline promises from prior tests
-        const svc = localAiService as unknown as Record<string, unknown>
-        svc.textPipelinePromise = null
-        svc.visionPipelinePromise = null
-        svc.webLlmPromise = null
+        const svc = localAiService as unknown as SvcInternal
+        svc.modelManager.textPipelinePromise = null
+        svc.modelManager.visionPipelinePromise = null
 
         pipelineMock.mockRejectedValue(new Error('offline – model unavailable'))
 
@@ -262,8 +266,8 @@ describe('localAiService', () => {
     })
 
     it('classifies expanded cannabis labels including root rot', async () => {
-        const svc = localAiService as unknown as Record<string, unknown>
-        svc.visionPipelinePromise = null
+        const svc = localAiService as unknown as SvcInternal
+        svc.modelManager.visionPipelinePromise = null
 
         pipelineMock.mockImplementation(async (task: string) => {
             if (task === 'zero-shot-image-classification') {
@@ -289,8 +293,8 @@ describe('localAiService', () => {
     })
 
     it('maps new German label for botrytis bud rot', async () => {
-        const svc = localAiService as unknown as Record<string, unknown>
-        svc.visionPipelinePromise = null
+        const svc = localAiService as unknown as SvcInternal
+        svc.modelManager.visionPipelinePromise = null
 
         pipelineMock.mockImplementation(async (task: string) => {
             if (task === 'zero-shot-image-classification') {

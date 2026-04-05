@@ -6,6 +6,22 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Refactored
+
+- refactor(ai): extract `localAiInferenceRouter.ts` (230 lines) -- cache -> WebLLM -> Transformers.js routing with retry + backoff (Session 59)
+- refactor(ai): extract `localAiModelManager.ts` (84 lines) -- pipeline lifecycle, primary/alt fallback, dispose (Session 59)
+- refactor(ai): extract `localAiPreloadOrchestrator.ts` (165 lines) -- 8-step preload with progress callbacks (Session 59)
+- refactor(ai): rewrite `localAI.ts` as pure facade (750 -> 241 lines) with constructor DI (Session 59)
+
+### Tests
+
+- test(ai): 24 new tests for extracted local AI services (1447 total) (Session 59)
+
+### CI / Infrastructure
+
+- fix(ci): extend commitlint type-enum with a11y, i18n, ci, build, revert, style (Session 59)
+- docs: document commit formatting rules (lowercase subject, 100-char body) in copilot-instructions (Session 59)
+
 ### Features
 
 - feat(ai): persistent IndexedDB embedding cache (`ragEmbeddingCacheService.ts`) with LRU eviction (2048 entries, 90-day TTL), model version tracking for cache invalidation, hit/miss telemetry counters (Session 58)

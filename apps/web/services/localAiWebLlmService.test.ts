@@ -61,17 +61,6 @@ import { createInferenceTimer } from './localAiInfrastructureService'
 // Helpers
 // ---------------------------------------------------------------------------
 
-const makeEngine = (content = 'AI response') => ({
-    chat: {
-        completions: {
-            create: vi.fn().mockResolvedValue({
-                choices: [{ message: { content } }],
-            }),
-        },
-    },
-    unload: vi.fn().mockResolvedValue(undefined),
-})
-
 const makeTimer = () => ({
     stop: vi.fn(),
 })

@@ -16,11 +16,14 @@ export const settingsView = {
         lookAndFeel: 'Apparence & Style',
         interactivity: 'Interactivite',
         ai: 'Configuration IA',
+        iot: 'Materiel & IoT', // machine-translated, review needed
     },
     security: {
         title: 'Securite IA (Multi-Model BYOK)',
         warning:
             'Votre cle API est stockee uniquement sur cet appareil dans IndexedDB. Ne partagez jamais votre cle et supprimez-la sur les appareils partages.',
+        geminiFreeNote:
+            'Astuce : La cle API Gemini de Google AI Studio est gratuite avec un compte Google sur aistudio.google.com.', // machine-translated, review needed
         provider: 'Fournisseur IA',
         providerDesc:
             'Selectionnez le fournisseur de modele IA. Chaque fournisseur necessite sa propre cle API.',
@@ -59,6 +62,19 @@ export const settingsView = {
         auditLog: "Journal d'audit IA local",
         auditLogEmpty: "Aucune requete IA n'a encore ete enregistree.",
         clearAuditLog: "Effacer le journal d'audit",
+        panicButton: "Effacement d'urgence des cles", // machine-translated, review needed
+        panicButtonDesc:
+            'Supprimez immediatement TOUTES les cles API stockees et la cle de chiffrement de cet appareil. Cette action est irreversible.',
+        panicButtonConfirm: 'Effacer toutes les cles',
+        panicButtonSuccess: 'Toutes les cles API et la cle de chiffrement ont ete supprimees.',
+        encryptionNotice: 'Transparence du chiffrement',
+        encryptionNoticeDesc:
+            'Les cles API sont chiffrees avec AES-256-GCM via une cle non exportable dans IndexedDB. Protege contre la navigation desinvolte et les attaques XSS basiques.',
+        providerConsent: 'Consentement de transmission de donnees',
+        providerConsentPrompt:
+            "Vous etes sur le point d'envoyer des donnees de plante (y compris des photos) a {{provider}}. Acceptez-vous ?",
+        providerConsentRemember: 'Retenir mon choix pour ce fournisseur',
+        providerDpaLink: "Voir l'accord de traitement des donnees",
     },
     aiMode: {
         title: "Mode d'execution IA",
@@ -115,6 +131,17 @@ export const settingsView = {
         forceWasm: 'Forcer le backend WASM',
         forceWasmHint:
             'Ignorer la detection automatique de WebGPU et toujours utiliser le backend WASM. Utile pour le debogage.',
+        enableWebGpu: "Activer l'acceleration WebGPU", // machine-translated, review needed
+        enableWebGpuHint:
+            "Utiliser le GPU pour l'inference IA locale lorsque disponible. Offre une inference 3-8x plus rapide. Desactivez pour forcer le mode CPU uniquement.",
+        webGpuTier: 'Niveau GPU : {{value}}',
+        webGpuVram: 'VRAM GPU : {{value}} Mo',
+        webGpuVendor: 'GPU : {{value}}',
+        webGpuBatteryGated:
+            'WebGPU en pause -- batterie en dessous de 15%. Branchez pour reactiver.',
+        webGpuFeatureF16: 'shader-f16 : {{value}}',
+        webGpuDeviceCleanup:
+            "La memoire GPU est automatiquement liberee lorsque l'onglet est masque pendant 30 secondes.",
         preferredModel: 'Modele texte prefere',
         modelAuto: 'Auto (Qwen2.5-1.5B)',
         modelQwen25: 'Qwen2.5-1.5B (Equilibre)',
@@ -425,6 +452,20 @@ export const settingsView = {
         altitudeM: 'Altitude de culture',
         altitudeMDesc:
             "Applique une correction barometrique du VPD basee sur l'elevation de votre salle de culture au-dessus du niveau de la mer.",
+        growTech2026: 'Technologies de culture 2026', // machine-translated, review needed
+        dynamicLighting: 'Eclairage dynamique',
+        dynamicLightingDesc:
+            "Active l'eclairage adaptatif au spectre qui ajuste automatiquement la sortie LED (bleu pour veg, rouge pour floraison) selon la phase de croissance et le VPD.",
+        enableAeroponics: 'Mode aeroponique',
+        enableAeroponicsDesc:
+            "Active les parametres de simulation specifiques a l'aeroponique : absorption plus rapide, modele de consommation d'eau reduite et timings de brumisation.",
+        co2Enrichment: "Simulation d'enrichissement CO2",
+        co2EnrichmentDesc:
+            'Active les effets CO2 dans le moteur de simulation. Definissez la ppm cible pour les calculs de rendement.',
+        co2TargetPpm: 'Cible CO2 (ppm)',
+        smartFertigationAlerts: 'Alertes de fertirrigation intelligentes',
+        smartFertigationAlertsDesc:
+            'Recevez des alertes automatisees lorsque le pH ou la CE sort des plages optimales.',
     },
     notifications: {
         title: 'Notifications',
@@ -519,6 +560,8 @@ export const settingsView = {
             connected: 'Connecte au Gist',
             blockedByLocalOnly:
                 'La synchronisation cloud est desactivee tant que le mode Local uniquement est actif. Desactivez le mode Local uniquement dans Confidentialite & Securite pour utiliser la synchronisation cloud.',
+            gistSecurityWarning:
+                "Vos donnees sont dans un Gist GitHub non liste. Bien que chiffrees, l'URL du Gist est accessible publiquement si elle est connue. Activez E2EE ci-dessous pour la protection.", // machine-translated, review needed
             encryptionKeyRequired:
                 'Cette sauvegarde est chiffree. Veuillez fournir la cle de chiffrement pour la restaurer.',
             e2ee: {
@@ -673,6 +716,18 @@ export const settingsView = {
         credits: {
             title: 'Remerciements & Liens',
             phosphor: 'Icones fournies par Phosphor Icons.',
+            strainProviders:
+                'Enrichissement des varietes via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa et Kushy.', // machine-translated, review needed
+            corsProxies: 'Relais de proxy CORS par allorigins.win et corsproxy.io.',
+            transformersJs:
+                'NLP et embeddings sur appareil via Transformers.js (Xenova/Hugging Face).',
+            webLlm: 'Inference LLM locale via WebLLM (MLC AI).',
+            onnx: 'Runtime ML par ONNX Runtime Web et TensorFlow.js.',
+            radixUi: 'Primitives UI accessibles par Radix UI.',
+            recharts: 'Visualisations de graphiques par Recharts et D3.js.',
+            tailwind: 'Style utilitaire par Tailwind CSS.',
+            sentry: 'Suivi des erreurs par Sentry.',
+            vite: 'Outils de build par Vite et TurboRepo.',
         },
         githubLinkText: 'Voir le projet sur GitHub',
         aiStudioLinkText: 'Forker le projet dans AI Studio',

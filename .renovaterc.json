@@ -18,15 +18,15 @@
     "packageRules": [
         {
             "description": "AI & ML packages (grouped, manual merge)",
-            "matchPackagePatterns": [
-                "^@xenova/",
-                "^@huggingface/",
-                "^@mlc-ai/",
-                "^@tensorflow/",
-                "^onnxruntime",
-                "^@google/generative-ai",
-                "^openai",
-                "^@anthropic-ai/"
+            "matchPackageNames": [
+                "/^@xenova\//",
+                "/^@huggingface\//",
+                "/^@mlc-ai\//",
+                "/^@tensorflow\//",
+                "/^onnxruntime/",
+                "/^@google\\/generative-ai/",
+                "/^openai/",
+                "/^@anthropic-ai\//"
             ],
             "groupName": "ai-and-ml",
             "labels": ["dependencies", "ai"],
@@ -35,19 +35,19 @@
         },
         {
             "description": "Testing tools (grouped)",
-            "matchPackagePatterns": ["^vitest", "^@vitest/", "^playwright", "^@playwright/"],
+            "matchPackageNames": ["/^vitest/", "/^@vitest\//", "/^playwright/", "/^@playwright\//"],
             "groupName": "testing",
             "labels": ["dependencies", "tests"],
             "prPriority": 3
         },
         {
             "description": "UI & styling (grouped)",
-            "matchPackagePatterns": [
-                "^@radix-ui/",
-                "^tailwindcss",
-                "^@tailwindcss/",
-                "^postcss",
-                "^autoprefixer"
+            "matchPackageNames": [
+                "/^@radix-ui\//",
+                "/^tailwindcss/",
+                "/^@tailwindcss\//",
+                "/^postcss/",
+                "/^autoprefixer/"
             ],
             "groupName": "ui-and-styling",
             "labels": ["dependencies", "ui"],
@@ -57,7 +57,7 @@
             "description": "Security patches (high priority, auto-merge)",
             "matchDatasources": ["npm"],
             "matchUpdateTypes": ["patch"],
-            "matchPackagePatterns": ["^@sentry/", "^dompurify"],
+            "matchPackageNames": ["/^@sentry\//", "/^dompurify/"],
             "groupName": "security-patches",
             "labels": ["dependencies", "security"],
             "automerge": true,
@@ -65,7 +65,12 @@
         },
         {
             "description": "Linting & formatting (grouped, auto-merge patches)",
-            "matchPackagePatterns": ["^eslint", "^@eslint/", "^prettier", "^typescript-eslint"],
+            "matchPackageNames": [
+                "/^eslint/",
+                "/^@eslint\//",
+                "/^prettier/",
+                "/^typescript-eslint/"
+            ],
             "groupName": "linting",
             "labels": ["dependencies"],
             "automerge": true,
@@ -74,7 +79,7 @@
         },
         {
             "description": "Build tools (grouped)",
-            "matchPackagePatterns": ["^vite", "^@vitejs/", "^rollup", "^esbuild"],
+            "matchPackageNames": ["/^vite/", "/^@vitejs\//", "/^rollup/", "/^esbuild/"],
             "groupName": "build-tools",
             "labels": ["dependencies"],
             "prPriority": 2
@@ -90,7 +95,7 @@
         },
         {
             "description": "Tauri & desktop (grouped, manual merge)",
-            "matchPackagePatterns": ["^@tauri-apps/", "^tauri-"],
+            "matchPackageNames": ["/^@tauri-apps\//", "/^tauri-/"],
             "groupName": "tauri-desktop",
             "labels": ["dependencies", "tauri"],
             "automerge": false,
@@ -98,7 +103,7 @@
         },
         {
             "description": "i18n packages",
-            "matchPackagePatterns": ["^i18next", "^react-i18next"],
+            "matchPackageNames": ["/^i18next/", "/^react-i18next/"],
             "groupName": "i18n",
             "labels": ["dependencies", "i18n"],
             "prPriority": 2

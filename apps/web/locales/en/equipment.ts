@@ -440,6 +440,33 @@ export const equipmentView = {
             vegetative: 'Vegetative',
             flowering: 'Flowering',
         },
+        forecast: {
+            title: 'Next Hour (AI Forecast)',
+            subtitle: 'Predicted pH, EC, and temperature for the next hour.',
+            nextHour: 'Next Hour',
+            trend: 'Trend',
+            confidence: 'Confidence',
+            modelActive: 'AI Active',
+            basicMode: 'Basic Mode',
+            loading: 'Calculating forecast...',
+            insufficientReadings: 'Add at least 3 readings for forecast.',
+            noData: 'No forecast data available.',
+            trends: {
+                stable: 'Stable',
+                rising: 'Rising',
+                falling: 'Falling',
+                critical: 'Critical',
+            },
+            alerts: {
+                phRising: 'pH predicted to rise above safe range',
+                phFalling: 'pH predicted to drop below safe range',
+                ecRising: 'EC predicted to rise above safe range',
+                ecFalling: 'EC predicted to drop below safe range',
+                tempRising: 'Temperature predicted to rise above safe range',
+                tempFalling: 'Temperature predicted to drop below safe range',
+                critical: 'Critical values detected',
+            },
+        },
     },
     growShops: {
         region: {

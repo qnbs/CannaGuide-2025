@@ -445,6 +445,33 @@ export const equipmentView = {
             vegetative: 'Vegetativ',
             flowering: 'Bluete',
         },
+        forecast: {
+            title: 'Naechste Stunde (KI-Vorhersage)',
+            subtitle: 'Vorhergesagte pH-, EC- und Temperaturwerte fuer die naechste Stunde.',
+            nextHour: 'Naechste Stunde',
+            trend: 'Trend',
+            confidence: 'Konfidenz',
+            modelActive: 'KI aktiv',
+            basicMode: 'Basis-Modus',
+            loading: 'Vorhersage wird berechnet...',
+            insufficientReadings: 'Mindestens 3 Messwerte fuer Vorhersage erforderlich.',
+            noData: 'Keine Vorhersagedaten verfuegbar.',
+            trends: {
+                stable: 'Stabil',
+                rising: 'Steigend',
+                falling: 'Fallend',
+                critical: 'Kritisch',
+            },
+            alerts: {
+                phRising: 'pH steigt voraussichtlich ueber den sicheren Bereich',
+                phFalling: 'pH faellt voraussichtlich unter den sicheren Bereich',
+                ecRising: 'EC steigt voraussichtlich ueber den sicheren Bereich',
+                ecFalling: 'EC faellt voraussichtlich unter den sicheren Bereich',
+                tempRising: 'Temperatur steigt voraussichtlich ueber den sicheren Bereich',
+                tempFalling: 'Temperatur faellt voraussichtlich unter den sicheren Bereich',
+                critical: 'Kritische Werte erkannt',
+            },
+        },
     },
     growShops: {
         region: {

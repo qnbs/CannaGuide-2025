@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, useMemo } from 'react'
+import React, { memo, useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
     LineChart,
@@ -23,9 +23,10 @@ import {
     clearReadings,
     clearAlerts,
 } from '@/stores/slices/hydroSlice'
-import type { HydroSystemType, HydroThresholds } from '@/types'
+import type { HydroSystemType, HydroThresholds, HydroForecast } from '@/types'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { cn } from '@/lib/utils'
+import { forecastNextHour, initForecastModel } from '@/services/hydroForecastService'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -115,6 +116,32 @@ export const HydroMonitorView: React.FC = memo(() => {
     const [formEc, setFormEc] = useState('')
     const [formTemp, setFormTemp] = useState('')
     const [showThresholdEditor, setShowThresholdEditor] = useState(false)
+    const [forecast, setForecast] = useState<HydroForecast | null>(null)
+    const [forecastLoading, setForecastLoading] = useState(false)
+
+    // Initialise forecast model on mount
+    useEffect(() => {
+        void initForecastModel()
+    }, [])
+
+    // Refresh forecast when readings change
+    useEffect(() => {
+        if (readings.length < 3) {
+            setForecast(null)
+            return
+        }
+        let cancelled = false
+        setForecastLoading(true)
+        void forecastNextHour(readings).then((result) => {
+            if (!cancelled) {
+                setForecast(result)
+                setForecastLoading(false)
+            }
+        })
+        return () => {
+            cancelled = true
+        }
+    }, [readings])
 
     // Filtered readings for chart
     const chartData = useMemo(() => {
@@ -357,6 +384,117 @@ export const HydroMonitorView: React.FC = memo(() => {
                     </ResponsiveContainer>
                 </div>
             )}
+
+            {/* Forecast Panel */}
+            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+                <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-slate-200">
+                        <PhosphorIcons.ChartLineUp
+                            className="w-4 h-4 inline mr-1"
+                            aria-hidden="true"
+                        />
+                        {t('hydroMonitoring.forecast.title')}
+                    </h3>
+                    <span
+                        data-testid="forecast-model-badge"
+                        className={cn(
+                            'text-xs rounded px-2 py-0.5',
+                            forecast?.modelBased
+                                ? 'bg-emerald-800/50 text-emerald-300'
+                                : 'bg-slate-700 text-slate-400',
+                        )}
+                    >
+                        {forecast?.modelBased
+                            ? t('hydroMonitoring.forecast.modelActive')
+                            : t('hydroMonitoring.forecast.basicMode')}
+                    </span>
+                </div>
+
+                {forecastLoading && (
+                    <p className="text-xs text-slate-500">
+                        {t('hydroMonitoring.forecast.loading')}
+                    </p>
+                )}
+
+                {!forecastLoading && !forecast && (
+                    <p className="text-xs text-slate-500">
+                        {t('hydroMonitoring.forecast.insufficientReadings')}
+                    </p>
+                )}
+
+                {!forecastLoading && forecast && (
+                    <>
+                        <div className="grid grid-cols-3 gap-3 mb-3">
+                            <div className="rounded-md bg-slate-900/60 p-2 text-center">
+                                <p className="text-xs text-slate-400">pH</p>
+                                <p className="text-lg font-bold text-emerald-400 tabular-nums">
+                                    {forecast.nextHour.ph.toFixed(2)}
+                                </p>
+                            </div>
+                            <div className="rounded-md bg-slate-900/60 p-2 text-center">
+                                <p className="text-xs text-slate-400">EC</p>
+                                <p className="text-lg font-bold text-blue-400 tabular-nums">
+                                    {forecast.nextHour.ec.toFixed(2)}
+                                </p>
+                            </div>
+                            <div className="rounded-md bg-slate-900/60 p-2 text-center">
+                                <p className="text-xs text-slate-400">
+                                    {t('hydroMonitoring.gauges.waterTemp')}
+                                </p>
+                                <p className="text-lg font-bold text-amber-400 tabular-nums">
+                                    {forecast.nextHour.temp.toFixed(1)}C
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs">
+                            <span className="flex items-center gap-1 text-slate-300">
+                                {forecast.trend === 'rising' && (
+                                    <PhosphorIcons.ArrowUp
+                                        className="w-3.5 h-3.5 text-amber-400"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                {forecast.trend === 'falling' && (
+                                    <PhosphorIcons.ArrowDown
+                                        className="w-3.5 h-3.5 text-blue-400"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                {forecast.trend === 'stable' && (
+                                    <PhosphorIcons.ArrowRight
+                                        className="w-3.5 h-3.5 text-emerald-400"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                {forecast.trend === 'critical' && (
+                                    <PhosphorIcons.WarningCircle
+                                        className="w-3.5 h-3.5 text-red-400"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                {t(`hydroMonitoring.forecast.trends.${forecast.trend}`)}
+                            </span>
+                            {forecast.confidence > 0 && (
+                                <span className="text-slate-500">
+                                    {t('hydroMonitoring.forecast.confidence')}:{' '}
+                                    {Math.round(forecast.confidence * 100)}%
+                                </span>
+                            )}
+                        </div>
+
+                        {forecast.alerts.length > 0 && (
+                            <div className="mt-2 text-xs text-amber-400">
+                                {forecast.alerts.map((alert) => (
+                                    <span key={alert} className="mr-2">
+                                        {t(`hydroMonitoring.forecast.alerts.${alert}`)}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
 
             {/* Manual Input Form */}
             <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">

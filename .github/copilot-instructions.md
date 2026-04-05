@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1544 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1554 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -225,7 +225,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1544 tests, 0 failures
+- Baseline: 1554 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
@@ -448,7 +448,9 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                                                                                             |
 | `apps/web/stores/slices/workerMetricsSlice.ts`              | Runtime-only RTK slice for WorkerBus telemetry (DevTools visibility, not persisted to IndexedDB)                                                                           |
 | `apps/web/stores/slices/hydroSlice.ts`                      | Hydroponic monitoring Redux slice: readings FIFO (168 cap), thresholds, alerts, system type                                                                                |
-| `apps/web/components/views/equipment/HydroMonitorView.tsx`  | Hydro dashboard UI: gauge cards, Recharts pH/EC trend chart, manual input form, alerts, dosing reference                                                                   |
+| `apps/web/components/views/equipment/HydroMonitorView.tsx`  | Hydro dashboard UI: gauge cards, Recharts pH/EC trend chart, manual input form, alerts, dosing reference, ONNX forecast panel                                              |
+| `apps/web/services/hydroForecastService.ts`                 | Hydro forecast API: ONNX worker dispatch, moving-average fallback, trend detection, alert generation                                                                       |
+| `apps/web/workers/hydroForecastWorker.ts`                   | Off-main-thread ONNX hydro inference: pH/EC/Temp prediction, WASM backend, weighted moving average fallback                                                                |
 | `apps/web/components/views/settings/LlmModelSelector.tsx`   | Card-based WebLLM model selector UI: auto/manual model selection, GPU tier awareness, download progress                                                                    |
 | `apps/web/hooks/useStreamingResponse.ts`                    | Shared RAF-debounced streaming hook used by MentorChatView, AiTab (advisor + diagnosis)                                                                                    |
 | `apps/web/hooks/useStateHealthCheck.ts`                     | Dev-only hook: detects Redux<->Zustand state inconsistencies; zero production overhead (tree-shaken)                                                                       |

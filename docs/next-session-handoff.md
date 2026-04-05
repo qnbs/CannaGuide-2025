@@ -2,7 +2,64 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 66) -- LLM Model Selector + WebLLM Default Upgrade
+## Latest Session (Session 67) -- Hydro Sensor-Forecasting (Lightweight ONNX)
+
+**Status: v1.4.0-alpha. 1554 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 67)
+
+1. **ONNX Stub Model** -- `scripts/create_hydro_stub_model.py` generates a 1.1 KB ONNX model:
+   Input [1,24,3] (24h x pH/EC/Temp), Output [1,3]. Ops: Reshape -> MatMul -> Add with
+   exponentially-weighted moving average coefficients. Output at
+   `apps/web/public/models/hydro_forecast_stub.onnx`.
+
+2. **Types** -- `HydroForecastTrend` union type + `HydroForecast` interface added to `types.ts`.
+
+3. **hydroForecastWorker** -- `workers/hydroForecastWorker.ts`: INIT/FORECAST/TERMINATE protocol
+   (same pattern as visionInferenceWorker). ONNX WASM inference with weighted moving average
+   fallback. Origin guard for security.
+
+4. **hydroForecastService** -- `services/hydroForecastService.ts`: `forecastNextHour(readings)`,
+   `initForecastModel()`, `isModelReady()`. Lazy worker registration, trend detection (first-half
+   vs second-half averages), alert generation against cannabis hydro safe ranges (pH 5.5-6.5,
+   EC 0.5-3.0, Temp 18-24C). Main-thread moving average fallback when worker unavailable.
+   `captureLocalAiError` with new `hydro-forecast` stage for Sentry tracking.
+
+5. **Forecast Panel** -- HydroMonitorView extended with forecast section: model status badge
+   (AI Active / Basic Mode), 3 forecast value cards (pH/EC/Temp), trend arrow icons, confidence
+   percentage, alert messages.
+
+6. **i18n** -- `hydroMonitoring.forecast.*` keys (~20 per locale) in all 5 languages (EN/DE/ES/
+   FR/NL): trends, alerts, model status.
+
+7. **Tests** -- 10 new tests: hydroForecastWorker (3), hydroForecastService (5),
+   HydroMonitorView forecast (2). Total: 1554 passing (144 test files).
+
+8. **Aquaponics Decision** -- EXCLUDED. Cannabis aquaponics is extremely niche (<2%), requires
+   different sensor domain (DO, ammonia, nitrite/nitrate). No existing code or types. Documented
+   as future roadmap option (7th HydroSystemType) if demand arises.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1554 passing, 0 failures (144 test files)
+- Build: clean (165 precache entries)
+- Lint: clean (0 errors on changed files)
+
+### Next Steps
+
+- **N+1: IoT Auto-Feed** -- Connect sensorStore (MQTT live data) to hydroSlice (auto-add readings
+  from IoT sensors). Add toggle: manual vs. auto mode.
+- **N+2: Proactive Hydro Coach** -- Extend proactiveCoachService for hydro readings threshold
+  monitoring with AI-powered pH/EC adjustment recommendations.
+- **N+3: Real ONNX Model Training** -- Replace stub model with proper time-series model trained on
+  synthetic cannabis hydro data. Consider LSTM/GRU ONNX export.
+- **N+4: CSV Export + Data Sharing** -- Export hydro readings as CSV, share via clipboard/download.
+- Continue audit-roadmap-2026-q2 Sprint 2 items.
+
+---
+
+## Previous Session (Session 66) -- LLM Model Selector + WebLLM Default Upgrade
 
 **Status: v1.4.0-alpha. 1544 tests passing. TypeScript clean. Build clean.**
 
@@ -39,15 +96,6 @@
 - Tests: 1544 passing, 0 failures (142 test files)
 - Build: clean (164 precache entries)
 - Lint: clean (0 errors on changed files)
-
-### Next Steps
-
-- **N+1: IoT Auto-Feed** -- Connect sensorStore (MQTT live data) to hydroSlice (auto-add readings
-  from IoT sensors). Add toggle: manual vs. auto mode.
-- **N+2: CSV Export + Data Sharing** -- Export hydro readings as CSV, share via clipboard/download.
-- **N+3: Proactive Hydro Coach** -- Extend proactiveCoachService for hydro readings threshold
-  monitoring with AI-powered pH/EC adjustment recommendations.
-- Continue audit-roadmap-2026-q2 Sprint 2 items.
 
 ---
 

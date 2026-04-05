@@ -350,8 +350,12 @@ export const EFFECT_FLAVONOIDS: Partial<Record<EffectTag, FlavonoidName[]>> = ((
     const map: Partial<Record<EffectTag, FlavonoidName[]>> = {}
     for (const [name, ref] of Object.entries(FLAVONOID_DATABASE)) {
         for (const effect of ref.effects) {
-            if (!map[effect]) map[effect] = []
-            map[effect]!.push(name as FlavonoidName)
+            const list = map[effect]
+            if (list) {
+                list.push(name as FlavonoidName)
+            } else {
+                map[effect] = [name as FlavonoidName]
+            }
         }
     }
     return map

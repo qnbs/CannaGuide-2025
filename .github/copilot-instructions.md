@@ -454,6 +454,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/components/views/knowledge/LearningPathView.tsx`  | 5-path grow education learning paths sub-view (Redux progress)                                                     |
 | `apps/web/utils/priorityQueue.ts`                           | Generic min-heap PriorityQueue<T> with FIFO tiebreaking, WorkerPriority type, PRIORITY_VALUES                      |
 | `apps/web/utils/random.ts`                                  | `secureRandom()` -- Web Crypto replacement for Math.random                                                         |
+| `apps/web/utils/browserApis.ts`                             | Typed helpers for non-standard browser APIs (performance.memory, deviceMemory, battery, GPU adapter)               |
 | `apps/web/constants.ts`                                     | App-wide constants                                                                                                 |
 | `apps/web/types.ts`                                         | Core TypeScript types                                                                                              |
 | `apps/web/i18n.ts`                                          | i18next initialization                                                                                             |

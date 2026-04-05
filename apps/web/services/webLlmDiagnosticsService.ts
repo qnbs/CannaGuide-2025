@@ -12,6 +12,7 @@
  */
 
 import { captureLocalAiError } from './sentryService'
+import { getGpuAdapterDescription } from '@/utils/browserApis'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -155,8 +156,7 @@ const probeGpuAdapter = async (
         }
 
         details.adapterAcquired = true
-        details.adapterDescription =
-            (adapter as unknown as { info?: { description?: string } }).info?.description ?? null
+        details.adapterDescription = getGpuAdapterDescription(adapter)
 
         const maxBufferBytes = (adapter.limits as GPUSupportedLimits).maxBufferSize ?? 0
         const vramMB = maxBufferBytes > 0 ? Math.round(maxBufferBytes / (1024 * 1024)) : null

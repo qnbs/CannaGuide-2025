@@ -72,8 +72,12 @@ const DbStoreBreakdown: React.FC<{ refreshTick: number }> = memo(({ refreshTick 
     // Group rows by db name
     const grouped: Record<string, DbStoreStats[]> = {}
     for (const row of stats) {
-        if (!grouped[row.db]) grouped[row.db] = []
-        grouped[row.db]!.push(row)
+        const group = grouped[row.db]
+        if (group) {
+            group.push(row)
+        } else {
+            grouped[row.db] = [row]
+        }
     }
 
     return (

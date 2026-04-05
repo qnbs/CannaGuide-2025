@@ -59,6 +59,7 @@ export async function generateGrowReport(
 ): Promise<{ blob: Blob; filename: string }> {
     const { default: JsPDFBase } = await import('jspdf')
     await import('jspdf-autotable')
+    // Safe cast: jspdf-autotable augments JsPDF at runtime but lacks merged types
     const doc = new JsPDFBase() as unknown as JsPDFWithAutoTable
 
     const today = formatDate(Date.now())

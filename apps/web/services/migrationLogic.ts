@@ -12,6 +12,12 @@ import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
 // This represents the shape of the persisted state object.
 // NOTE: `ui` was migrated to Zustand but may still exist in older persisted snapshots.
+//
+// Type-safety note: This module intentionally uses `as Record<string, unknown>`
+// casts throughout. Persisted state from IndexedDB has unknown shapes, and the
+// migration functions must narrow them at runtime via typeof/instanceof checks
+// before accessing properties. These casts are the correct pattern for untyped
+// deserialization boundaries.
 export type PersistedState = Partial<RootState> & {
     version?: number
     /** Per-slice schema versions stamped at persist time. */

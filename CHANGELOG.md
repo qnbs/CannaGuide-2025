@@ -8,6 +8,16 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(security): `apps/web/utils/browserApis.ts` -- centralized typed helpers for non-standard browser APIs (Session 61)
+
+### Refactored
+
+- refactor(security): eliminate 8 `as unknown as` double assertions across cryptoService, localAiHealthService, localAiWebGpuService, webLlmDiagnosticsService, aiService (Session 61)
+- refactor(security): eliminate 16 non-null assertions across GenealogyView, GuideView, MentorView, DataManagementTab, strainLookupService, flavonoidDatabase (Session 61)
+- refactor(strains): add `KnownFlavonoid` union type for type-safe flavonoid profile lookups (Session 61)
+
+### Added
+
 - feat(workers): heap-based priority queue for WorkerBus dispatch -- `PriorityQueue<T>` min-heap with O(log n) enqueue/dequeue and FIFO tiebreaking (Session 60)
 - feat(workers): `WorkerPriority` type (`critical | high | normal | low`) with `PRIORITY_VALUES` mapping (Session 60)
 - feat(workers): `getQueueState()` API returning per-priority breakdown, current in-flight, and queued items (Session 60)

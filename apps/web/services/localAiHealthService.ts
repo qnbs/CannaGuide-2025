@@ -15,6 +15,11 @@ import {
     loadPersistedSnapshot,
     getCacheSize,
 } from './localAiInfrastructureService'
+import {
+    getPerformanceMemory,
+    getDeviceMemoryGB,
+    getGpuAdapterDescription,
+} from '@/utils/browserApis'
 
 /**
  * Local AI Health Service — monitors the health, performance, and resource
@@ -122,16 +127,11 @@ export interface HealthReport {
  * Only available in Chromium browsers with `performance.memory`.
  */
 export const getMemoryInfo = (): MemoryInfo => {
-    const perf = performance as unknown as {
-        memory?: {
-            usedJSHeapSize: number
-            jsHeapSizeLimit: number
-        }
-    }
+    const mem = getPerformanceMemory()
 
-    if (perf.memory) {
-        const usedMB = perf.memory.usedJSHeapSize / (1024 * 1024)
-        const limitMB = perf.memory.jsHeapSizeLimit / (1024 * 1024)
+    if (mem) {
+        const usedMB = mem.usedJSHeapSize / (1024 * 1024)
+        const limitMB = mem.jsHeapSizeLimit / (1024 * 1024)
         const percent = limitMB > 0 ? (usedMB / limitMB) * 100 : null
         return {
             usedHeapMB: Math.round(usedMB * 10) / 10,
@@ -184,8 +184,7 @@ export const probeGpuVram = async (): Promise<VramInfo> => {
         // maxBufferSize is a reliable proxy for usable VRAM
         const maxBufferBytes = (adapter.limits as GPUSupportedLimits).maxBufferSize ?? 0
         const vramMB = maxBufferBytes > 0 ? Math.round(maxBufferBytes / (1024 * 1024)) : null
-        const adapterDescription =
-            (adapter as unknown as { info?: { description?: string } }).info?.description ?? null
+        const adapterDescription = getGpuAdapterDescription(adapter) ?? null
         const vramLabel = vramMB ?? 'unknown'
         const adapterLabel = adapterDescription ?? 'unknown'
 
@@ -260,7 +259,7 @@ export const classifyDevice = (): DeviceClass => {
 
     const hasWebGpu = 'gpu' in navigator
     const coreCount = navigator.hardwareConcurrency ?? 0
-    const memoryGB = (navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0
+    const memoryGB = getDeviceMemoryGB() ?? 0
     const vram = cachedVramInfo
 
     // Downgrade if VRAM is probed and insufficient (<4GB)
@@ -288,7 +287,7 @@ export const classifyDevice = (): DeviceClass => {
  */
 export const shouldForceHeuristics = (): boolean => {
     if (typeof navigator === 'undefined') return true
-    const memoryGB = (navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0
+    const memoryGB = getDeviceMemoryGB() ?? 0
     if (memoryGB > 0 && memoryGB < 4) return true
     return classifyDevice() === 'low-end'
 }

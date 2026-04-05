@@ -17,3 +17,7 @@ export const loadWebLlm = async (): Promise<typeof import('@mlc-ai/web-llm')> =>
 /** Lazy-load @google/genai (Gemini cloud API). */
 export const loadGenAI = async (): Promise<typeof import('@google/genai')> =>
     import('@google/genai')
+
+/** Lazy-load onnxruntime-web (direct ONNX model inference via WebGPU/WASM). */
+export const loadOnnxRuntime = async (): Promise<typeof import('onnxruntime-web')> =>
+    import('onnxruntime-web')

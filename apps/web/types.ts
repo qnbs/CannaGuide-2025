@@ -804,6 +804,34 @@ export interface AIResponse {
     confidence?: number | undefined
 }
 
+/** Status of the cached plant disease ONNX model. */
+export type ModelStatus = 'not-cached' | 'downloading' | 'ready' | 'error'
+
+/** Knowledge-base recommendation linked to a detected disease label. */
+export interface DiseaseRecommendation {
+    diseaseId: string
+    relatedLexiconKeys: string[]
+    relatedArticleIds: string[]
+}
+
+/** Result of an on-device leaf image scan (ONNX or zero-shot fallback). */
+export interface LeafDiagnosisResult {
+    /** Mapped cannabis-term label (e.g. 'spider_mites'). */
+    label: string
+    /** Top-1 confidence score (0-1). */
+    confidence: number
+    /** Top-5 class predictions sorted by confidence. */
+    top5: Array<{ label: string; confidence: number }>
+    /** Severity tier derived from confidence. */
+    severity: 'none' | 'mild' | 'moderate' | 'severe'
+    /** Disease-atlas recommendations linked to the detected label. */
+    recommendations: DiseaseRecommendation[]
+    /** Which model produced the result. */
+    modelUsed: 'onnx-mobilenet' | 'zero-shot' | 'unavailable'
+    /** Inference wall-clock time in milliseconds. */
+    latencyMs: number
+}
+
 export interface YieldPredictionResult {
     predictedDryWeight: number
     heuristicDryWeight: number

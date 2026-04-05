@@ -26,6 +26,12 @@ vi.mock('@/services/localAiFallbackService', () => ({
         mockDiagnoseWithRules(...args),
 }))
 
+// Mock plantDiseaseModelService for classifyLeafImage tests
+vi.mock('@/services/plantDiseaseModelService', () => ({
+    isModelCached: vi.fn().mockResolvedValue(false),
+    ensureWorkerRegistered: vi.fn(),
+}))
+
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
@@ -37,6 +43,9 @@ import {
     classifyPlantImage,
     buildDiagnosisContent,
     fallbackDiagnosis,
+    classifyLeafImage,
+    classifySeverity,
+    enrichWithKnowledge,
 } from '@/services/localAiDiagnosisService'
 
 // ---------------------------------------------------------------------------
@@ -316,6 +325,53 @@ describe('localAiDiagnosisService', () => {
                 const result = fallbackDiagnosis(buildPlant(), lang)
                 expect(result.prevention.length).toBeGreaterThan(10)
             }
+        })
+    })
+
+    // ---- ONNX leaf diagnosis helpers ----------------------------------------
+
+    describe('classifySeverity', () => {
+        it('maps confidence thresholds to the correct severity tiers', () => {
+            expect(classifySeverity(0.85)).toBe('severe')
+            expect(classifySeverity(0.8)).toBe('severe')
+            expect(classifySeverity(0.65)).toBe('moderate')
+            expect(classifySeverity(0.6)).toBe('moderate')
+            expect(classifySeverity(0.45)).toBe('mild')
+            expect(classifySeverity(0.4)).toBe('mild')
+            expect(classifySeverity(0.3)).toBe('none')
+            expect(classifySeverity(0)).toBe('none')
+        })
+    })
+
+    describe('enrichWithKnowledge', () => {
+        it('returns a recommendation with non-empty relatedLexiconKeys for spider_mites', () => {
+            const recs = enrichWithKnowledge('spider_mites')
+            expect(recs.length).toBeGreaterThan(0)
+            const rec = recs[0]
+            expect(rec).toBeDefined()
+            expect(rec!.diseaseId).toBe('spider-mites')
+            expect(rec!.relatedLexiconKeys.length).toBeGreaterThan(0)
+        })
+
+        it('returns empty array for an unknown label', () => {
+            expect(enrichWithKnowledge('completely_unknown_xyz')).toHaveLength(0)
+        })
+    })
+
+    describe('classifyLeafImage', () => {
+        it('returns zero-shot fallback when the ONNX model is not cached', async () => {
+            // isModelCached is mocked to return false (see vi.mock block above).
+            // ImageData is not available in jsdom; use a plain object cast instead.
+            const imageData = {
+                data: new Uint8ClampedArray(4),
+                width: 1,
+                height: 1,
+                colorSpace: 'srgb',
+            } as unknown as ImageData
+            const result = await classifyLeafImage(imageData)
+            expect(result.modelUsed).toBe('zero-shot')
+            expect(result.label).toBe('unavailable')
+            expect(result.severity).toBe('none')
         })
     })
 })

@@ -2,11 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 63) -- P0/P1 Comprehensive Audit & Fix
+## Latest Session (Session 64) -- Vision AI: ONNX Leaf Diagnosis (MobileNetV2 PlantVillage)
 
-**Status: v1.4.0-alpha. 1497 tests passing. TypeScript clean. Build clean.**
+**Status: v1.4.0-alpha. 1510 tests passing. TypeScript clean. Build clean.**
 
-### What Was Done (Session 63)
+### What Was Done (Session 64)
+
+1. **ONNX MobileNetV2 plant disease model pipeline** -- `plantDiseaseModelService.ts`: IndexedDB
+   caching of the PlantVillage MobileNetV2 model (HuggingFace URL), HEAD check, progress reporting,
+   `isLocalOnlyMode()` guard, `ensureWorkerRegistered()` lazy worker registration.
+
+2. **visionInferenceWorker** -- New off-main-thread ONNX inference worker: 38 PlantVillage class
+   labels, `CANNABIS_MAP` table (~38 entries), `preprocessImage()` (OffscreenCanvas resize + ImageNet
+   normalisation to CHW Float32Array [1,3,224,224]), `mapToCannabisTerm()`, WorkerBus protocol
+   (INIT / CLASSIFY / TERMINATE). WASM served via `cdn.jsdelivr.net`.
+
+3. **localAiDiagnosisService extension** -- `classifyLeafImage(ImageData)` routes to ONNX
+   (via WorkerBus) when model is cached, falls back to zero-shot stub; `classifySeverity()` maps
+   confidence thresholds ≥0.8→severe/≥0.6→moderate/≥0.4→mild/else→none; `enrichWithKnowledge()`
+   maps cannabis label to diseaseAtlas recommendations.
+
+4. **LeafDiagnosisPanel.tsx** -- New React component with model status bar (download/retry button),
+   drag-zone upload, camera capture, analyze button, results card (confidence bar, severity badge,
+   model-used chip, RAG recommendations). Integrated as new Card in `AiTab.tsx`.
+
+5. **i18n** -- `diagnosis.*` keys added to all 5 locales (EN/DE/ES/FR/NL) in `plants.ts` files.
+
+6. **CSP** -- `cdn.jsdelivr.net` added to `connect-src` in `securityHeaders.ts`, `index.html`,
+   `netlify.toml`.
+
+7. **Types** -- `ModelStatus`, `DiseaseRecommendation`, `LeafDiagnosisResult` added to `types.ts`.
+
+8. **Packages** -- `onnxruntime-web` updated to `^1.20.0` in `ai-core` optionalDependencies;
+   `loadOnnxRuntime()` lazy loader added to `packages/ai-core/src/ml.ts`.
+
+9. **Tests (13 new)** -- `plantDiseaseModelService.test.ts` (3), `visionInferenceWorker.test.ts` (3),
+   `LeafDiagnosisPanel.test.tsx` (3), localAiDiagnosisService additions (4). All pass.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1510 passing, 0 failures (138 test files)
+- Build: clean (`visionInferenceWorker-*.js` 5.73 kB bundled)
+- Lint: clean (0 errors)
+
+### Next Steps
+
+- **Session 65 (YOLOv11n)**: Add real-time bounding-box detection via YOLOv11n ONNX model.
+  Integrate with visionInferenceWorker (new `DETECT` message type). Show detections overlay on
+  LeafDiagnosisPanel preview image.
+- **Session 65 alt**: UI/UX pass (icon touch targets, screen-reader labels, mobile E2E).
+- Continue audit-roadmap-2026-q2 Sprint 2 items.
+
+### Planned Executions
 
 1. **Missing slice tests created** -- `savedItemsSlice.test.ts` (17 tests: setups CRUD, strain tips add/validate/update/delete, exports CRUD) and `userStrainsSlice.test.ts` (12 tests: add/update/delete/setAll/deleteMultiple). Both slices were the only Stryker-targeted files without test coverage.
 

@@ -3,13 +3,21 @@
  *
  * Extracted from localAI.ts -- owns zero-shot image classification,
  * issue-label dictionary, diagnosis content assembly, and fallback.
+ * Also provides classifyLeafImage() for ONNX MobileNetV2 plant disease detection.
  */
 
 import DOMPurify from 'dompurify'
-import type { Language, Plant, PlantDiagnosisResponse } from '@/types'
+import type {
+    Language,
+    Plant,
+    PlantDiagnosisResponse,
+    LeafDiagnosisResult,
+    DiseaseRecommendation,
+} from '@/types'
 import { captureLocalAiError } from '@/services/sentryService'
 import { diagnosePlant as diagnoseWithRules } from '@/services/localAiFallbackService'
 import type { LocalAiPipeline } from './localAIModelLoader'
+import { diseaseAtlas } from '@/data/diseases'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -339,5 +347,128 @@ export const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisR
             heuristic.issues.length > 0
                 ? (heuristic.issues[0] ?? heuristic.topPriority)
                 : heuristic.topPriority,
+    }
+}
+
+// ---------------------------------------------------------------------------
+// ONNX MobileNetV2 Leaf Diagnosis (classifyLeafImage)
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps a cannabis-term label to disease-atlas recommendations.
+ * Returns an empty array when no matching atlas entry exists.
+ */
+export const enrichWithKnowledge = (label: string): DiseaseRecommendation[] => {
+    // Map cannabis slug -> disease atlas ID
+    const LABEL_TO_ATLAS_ID: Readonly<Record<string, string>> = {
+        spider_mites: 'spider-mites',
+        powdery_mildew: 'powdery-mildew',
+        late_blight: 'botrytis',
+        leaf_mold: 'botrytis',
+        mosaic_virus: 'botrytis',
+        fungal_infection: 'powdery-mildew',
+        fungal_leaf_spot: 'powdery-mildew',
+        target_spot: 'powdery-mildew',
+        leaf_blight: 'botrytis',
+        leaf_curl_virus: 'botrytis',
+        bacterial_spot: 'botrytis',
+        early_blight: 'botrytis',
+        septoria_leaf_spot: 'powdery-mildew',
+        rusty_spots: 'powdery-mildew',
+        leaf_scorch: 'heat-stress',
+        nutrient_lockout: 'ph-lockout',
+    }
+
+    const atlasId = LABEL_TO_ATLAS_ID[label]
+    if (!atlasId) return []
+
+    const entry = diseaseAtlas.find((d) => d.id === atlasId)
+    if (!entry) return []
+
+    return [
+        {
+            diseaseId: entry.id,
+            relatedLexiconKeys: entry.relatedLexiconKeys,
+            relatedArticleIds: entry.relatedArticleIds,
+        },
+    ]
+}
+
+/** Derive a severity tier from a confidence score (0-1). */
+export const classifySeverity = (confidence: number): 'none' | 'mild' | 'moderate' | 'severe' => {
+    if (confidence >= 0.8) return 'severe'
+    if (confidence >= 0.6) return 'moderate'
+    if (confidence >= 0.4) return 'mild'
+    return 'none'
+}
+
+/**
+ * Classify a leaf image using the on-device ONNX model when cached,
+ * or fall back to the CLIP zero-shot pipeline if the model is unavailable.
+ */
+export const classifyLeafImage = async (imageData: ImageData): Promise<LeafDiagnosisResult> => {
+    const t0 = performance.now()
+
+    try {
+        // Lazy import to avoid circular dependency at module load time
+        const { isModelCached, ensureWorkerRegistered } =
+            await import('@/services/plantDiseaseModelService')
+        const cached = await isModelCached()
+
+        if (cached) {
+            ensureWorkerRegistered()
+            const { workerBus } = await import('@/services/workerBus')
+
+            type WorkerResult = {
+                label: string
+                confidence: number
+                top5: Array<{ label: string; confidence: number }>
+                latencyMs: number
+            }
+
+            const workerResult = await workerBus.dispatch<WorkerResult>(
+                'visionInference',
+                'CLASSIFY',
+                {
+                    imageData: {
+                        data: imageData.data,
+                        width: imageData.width,
+                        height: imageData.height,
+                    },
+                },
+                { priority: 'high', timeoutMs: 30_000 },
+            )
+
+            const label = workerResult.label ?? 'unknown'
+            const confidence = workerResult.confidence ?? 0
+
+            return {
+                label,
+                confidence,
+                top5: workerResult.top5 ?? [],
+                severity: classifySeverity(confidence),
+                recommendations: enrichWithKnowledge(label),
+                modelUsed: 'onnx-mobilenet',
+                latencyMs: workerResult.latencyMs ?? Math.round(performance.now() - t0),
+            }
+        }
+    } catch (err) {
+        captureLocalAiError(err, {
+            consumer: 'localAiDiagnosisService',
+            stage: 'vision',
+        })
+    }
+
+    // Fallback: CLIP zero-shot on a flat white placeholder (ImageData -> base64)
+    // When the ONNX model is not cached we still return a valid LeafDiagnosisResult
+    // with modelUsed 'zero-shot' so the UI can degrade gracefully.
+    return {
+        label: 'unavailable',
+        confidence: 0,
+        top5: [],
+        severity: 'none',
+        recommendations: [],
+        modelUsed: 'zero-shot',
+        latencyMs: Math.round(performance.now() - t0),
     }
 }

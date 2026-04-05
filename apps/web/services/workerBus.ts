@@ -242,7 +242,7 @@ class WorkerBusImpl {
                         priority: entry.priority,
                         error: errMsg,
                     })
-                    entry.reject(new Error(errMsg))
+                    entry.reject(new WorkerBusError(errMsg, WorkerErrorCode.EXECUTION_ERROR, name))
                     this.pending.delete(id)
                 }
             }
@@ -267,7 +267,13 @@ class WorkerBusImpl {
             if (entry.workerName === name) {
                 clearTimeout(entry.timer)
                 entry.abortCleanup?.()
-                entry.reject(new Error(`[WorkerBus] Worker "${name}" unregistered`))
+                entry.reject(
+                    new WorkerBusError(
+                        `[WorkerBus] Worker "${name}" unregistered`,
+                        WorkerErrorCode.NOT_REGISTERED,
+                        name,
+                    ),
+                )
                 this.pending.delete(id)
             }
         }
@@ -277,7 +283,13 @@ class WorkerBusImpl {
         if (queue) {
             let item = queue.dequeue()
             while (item !== undefined) {
-                item.reject(new Error(`[WorkerBus] Worker "${name}" unregistered`))
+                item.reject(
+                    new WorkerBusError(
+                        `[WorkerBus] Worker "${name}" unregistered`,
+                        WorkerErrorCode.NOT_REGISTERED,
+                        name,
+                    ),
+                )
                 item = queue.dequeue()
             }
             this.queues.delete(name)
@@ -353,7 +365,11 @@ class WorkerBusImpl {
     getWorker(name: string): Worker {
         const w = this.workers.get(name)
         if (!w) {
-            throw new Error(`[WorkerBus] No worker registered with name "${name}"`)
+            throw new WorkerBusError(
+                `[WorkerBus] No worker registered with name "${name}"`,
+                WorkerErrorCode.NOT_REGISTERED,
+                name,
+            )
         }
         return w
     }
@@ -656,7 +672,13 @@ class WorkerBusImpl {
 
             const worker = this.workers.get(workerName)
             if (!worker) {
-                item.reject(new Error(`[WorkerBus] No worker registered with name "${workerName}"`))
+                item.reject(
+                    new WorkerBusError(
+                        `[WorkerBus] No worker registered with name "${workerName}"`,
+                        WorkerErrorCode.NOT_REGISTERED,
+                        workerName,
+                    ),
+                )
                 continue
             }
 
@@ -707,7 +729,10 @@ class WorkerBusImpl {
                     priority,
                 )
             } catch (err) {
-                lastError = err instanceof Error ? err : new Error(String(err))
+                lastError =
+                    err instanceof Error
+                        ? err
+                        : new WorkerBusError(String(err), WorkerErrorCode.UNKNOWN, workerName)
                 // Do not retry if worker is missing, bus disposed, queue full, or cancelled
                 if (lastError instanceof WorkerBusError) {
                     const nonRetryableCodes: WorkerErrorCode[] = [

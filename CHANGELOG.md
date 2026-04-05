@@ -8,6 +8,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(workers): typed WorkerBusError class with WorkerErrorCode enum (10 codes) -- all 6 generic Error() converted (K-04) (Session 69)
+- test(workers): WorkerBusError typed error propagation tests (3) (Session 69)
+- chore(readme): ~30 dynamic shields.io badges -- repository activity, tech stack, code quality, security, distribution, project metrics (Session 69)
+- chore(audit): close K-03 (import/no-cycle ESLint), S-01 (5-layer prompt injection defense), K-04 (typed WorkerError), S-04 (key rotation UI), S-05 (SRI N/A) (Session 69)
 - feat(plants): nutrient deficiency decision tree service with 8 question nodes + 9 deficiency results (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl) (Session 68)
 - feat(plants): interactive NutrientDeficiencyWizard component with step-by-step diagnosis, severity badges, symptoms/treatment display (Session 68)
 - feat(plants): AI Scanner / Manual Diagnosis tab toggle in LeafDiagnosisPanel with lazy-loaded wizard (Session 68)
@@ -28,7 +32,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- test: 1567 tests passing (146 test files) (Session 68)
+- test: 1570 tests passing (146 test files) (Session 69)
 
 ### Fixed
 

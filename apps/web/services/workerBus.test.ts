@@ -836,3 +836,45 @@ describe('WorkerBus -- Priority Queue', () => {
         expect(state.queued).toHaveLength(64)
     })
 })
+
+// --- WorkerBusError typed errors (K-04) ---
+
+describe('WorkerBusError typed errors (K-04)', () => {
+    it('dispatch to unregistered worker rejects with WorkerBusError NOT_REGISTERED', async () => {
+        const { WorkerBusError, WorkerErrorCode } = await import('@/types/workerBus.types')
+        await expect(workerBus.dispatch('nonexistent', 'PING', {})).rejects.toSatisfy(
+            (err: unknown) =>
+                err instanceof WorkerBusError &&
+                err.code === WorkerErrorCode.NOT_REGISTERED &&
+                err.workerName === 'nonexistent',
+        )
+    })
+
+    it('getWorker throws WorkerBusError NOT_REGISTERED for missing worker', async () => {
+        const { WorkerBusError, WorkerErrorCode } = await import('@/types/workerBus.types')
+        expect(() => workerBus.getWorker('missing')).toThrow(WorkerBusError)
+        try {
+            workerBus.getWorker('missing')
+        } catch (err) {
+            expect(err).toBeInstanceOf(WorkerBusError)
+            expect((err as InstanceType<typeof WorkerBusError>).code).toBe(
+                WorkerErrorCode.NOT_REGISTERED,
+            )
+        }
+    })
+
+    it('unregister rejects pending requests with WorkerBusError NOT_REGISTERED', async () => {
+        const { WorkerBusError, WorkerErrorCode } = await import('@/types/workerBus.types')
+        const w = new MockWorker()
+        workerBus.register('typed-test', w as unknown as Worker)
+        // Dispatch without auto-respond so it stays pending
+        const p = workerBus.dispatch('typed-test', 'HANG', {})
+        workerBus.unregister('typed-test')
+        await expect(p).rejects.toSatisfy(
+            (err: unknown) =>
+                err instanceof WorkerBusError &&
+                err.code === WorkerErrorCode.NOT_REGISTERED &&
+                err.workerName === 'typed-test',
+        )
+    })
+})

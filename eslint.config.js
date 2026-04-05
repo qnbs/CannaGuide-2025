@@ -106,6 +106,10 @@ export default [
                             message:
                                 'Import from package entry point (e.g. @cannaguide/ai-core) instead of deep src/ paths.',
                         },
+                        {
+                            group: ['**/apps/desktop/src/*', '@cannaguide/desktop'],
+                            message: 'apps/web must not import from @cannaguide/desktop internals.',
+                        },
                     ],
                 },
             ],

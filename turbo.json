@@ -1,10 +1,11 @@
 {
     "$schema": "https://turbo.build/schema.json",
-    "globalDependencies": ["tsconfig.json"],
+    "globalDependencies": ["tsconfig.json", "package-lock.json"],
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["dist/**"],
+            "env": ["BUILD_BASE_PATH", "VITE_*"],
             "inputs": [
                 "src/**",
                 "components/**",
@@ -18,6 +19,12 @@
                 "types/**",
                 "lib/**",
                 "public/**",
+                "constants.ts",
+                "types.ts",
+                "i18n.ts",
+                "styles.css",
+                "securityHeaders.ts",
+                "simulation.worker.ts",
                 "vite.config.ts",
                 "tsconfig.json",
                 "tailwind.config.cjs",
@@ -54,6 +61,7 @@
         "build:gh": {
             "dependsOn": ["^build"],
             "outputs": ["dist/**"],
+            "env": ["BUILD_BASE_PATH", "VITE_*"],
             "inputs": [
                 "src/**",
                 "components/**",
@@ -67,6 +75,12 @@
                 "types/**",
                 "lib/**",
                 "public/**",
+                "constants.ts",
+                "types.ts",
+                "i18n.ts",
+                "styles.css",
+                "securityHeaders.ts",
+                "simulation.worker.ts",
                 "vite.config.ts",
                 "tsconfig.json",
                 "tailwind.config.cjs",

@@ -2,7 +2,40 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 61) -- TypeScript Strict Hardening
+## Latest Session (Session 62) -- Package Boundary Enforcement + Monorepo Audit
+
+**Status: v1.4.0-alpha. 1468 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 62)
+
+1. **Full dependency-graph audit** -- Traced all 99 services in apps/web, all cross-package imports, all package.json dependencies. Result: 0 import cycles, 0 boundary violations, 0 reverse imports. Architecture already clean.
+
+2. **`turbo.json` cache-input fix** -- Added 6 missing root-level source files (`constants.ts`, `types.ts`, `i18n.ts`, `styles.css`, `securityHeaders.ts`, `simulation.worker.ts`) to `build` and `build:gh` inputs. Added `env` declarations (`BUILD_BASE_PATH`, `VITE_*`). Added `package-lock.json` to `globalDependencies`. Prevents false cache hits when core files change.
+
+3. **`docs/DEPENDENCY-GRAPH.md`** (NEW) -- ASCII dependency graph of package topology, ESLint enforcement table, TurboRepo pipeline dependencies, cross-package import inventory.
+
+4. **`docs/ARCHITECTURE-MIGRATION-PLAN.md`** (NEW) -- Classification of all 99 services (95 NOT MOVABLE, 3 PARTIAL, 1 MOVABLE). Documents why no service migrations are needed and establishes future migration priorities.
+
+5. **ESLint boundary enhancement** -- Added `@cannaguide/desktop` to `no-restricted-imports` patterns. Prevents apps/web from importing desktop internals.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1468 passing, 0 failures (133 test files)
+- Build: success (157 precache entries)
+- Lint: 0 new errors (1 pre-existing capacitor.config.ts parse error)
+- Import cycles: 0
+- Boundary violations: 0
+
+### Next Steps
+
+- Session 63: Continue audit-roadmap-2026-q2 items
+- Consider adding `capacitor.config.ts` to tsconfig or ESLint `allowDefaultProject`
+- Future: type consolidation into ai-core if second consumer app is added
+
+---
+
+## Session 61 -- TypeScript Strict Hardening
 
 **Status: v1.4.0-alpha. 1468 tests passing. TypeScript clean. Build clean.**
 

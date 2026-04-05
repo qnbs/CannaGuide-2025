@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                 |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                       |
 | Workers      | WorkerBus (promise-based, 8 workers, messageId correlation, auto-timeout)           |
-| Testing      | Vitest 1323 unit tests, Playwright E2E + Component tests                            |
+| Testing      | Vitest 1423 unit tests, Playwright E2E + Component tests                            |
 | Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                    |
 
 ---
@@ -86,6 +86,7 @@ apps/web/                 Main PWA (@cannaguide/web)
   hooks/                  23 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
   services/workerBus.ts   Centralized promise-based WorkerBus (8 workers, timeout, messageId)
+  services/ragEmbeddingCacheService.ts  Persistent IndexedDB LRU embedding cache (MiniLM-L6, model versioning, telemetry)
   services/equipmentCalculatorService.ts  Pure-formula service: CO2, Humidity Deficit, Light Hanging Height (Zod-validated)
   utils/                  Shared utilities (secureRandom, etc.)
   types/                  Zod schemas for AI response validation

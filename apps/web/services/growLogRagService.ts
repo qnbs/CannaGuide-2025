@@ -5,6 +5,11 @@ import {
     embedBatch,
     cosineSimilarity,
 } from '@/services/localAiEmbeddingService'
+import {
+    getCachedEmbedding as getCachedEmbeddingPersistent,
+    getOrComputeEmbedding,
+    isSemanticRankingAvailable as checkSemanticAvailable,
+} from '@/services/ragEmbeddingCacheService'
 import DOMPurify from 'dompurify'
 
 interface LogChunk {
@@ -38,21 +43,20 @@ const scoreChunk = (chunk: LogChunk, queryTokens: string[]): number => {
     return score + ageBoost
 }
 
-/** Embedding cache to avoid recomputing embeddings for unchanged chunks. */
-const embeddingCache = new Map<string, Float32Array>()
-const EMBEDDING_CACHE_MAX = 512
-
-const getCachedEmbedding = (key: string): Float32Array | undefined => embeddingCache.get(key)
-
-const setCachedEmbedding = (key: string, vec: Float32Array): void => {
-    if (embeddingCache.size >= EMBEDDING_CACHE_MAX) {
-        const oldest = embeddingCache.keys().next().value
-        if (oldest !== undefined) embeddingCache.delete(oldest)
-    }
-    embeddingCache.set(key, vec)
-}
-
+/** Embedding cache key for a chunk (plantId:createdAt). */
 const buildChunkEmbeddingKey = (chunk: LogChunk): string => `${chunk.plantId}:${chunk.createdAt}`
+
+/**
+ * Normalize the token-based score to [0, 1] range.
+ * Used for hybrid ranking alongside semantic cosine similarity.
+ */
+const normalizeTokenScore = (chunk: LogChunk, queryTokens: string[]): number => {
+    if (queryTokens.length === 0) return 0
+    const raw = scoreChunk(chunk, queryTokens)
+    // Max possible = 2 per token match + 1.0 recency boost
+    const maxPossible = queryTokens.length * 2 + 1
+    return Math.min(1, raw / maxPossible)
+}
 
 const calculateRecencyScore = (createdAt: number): number =>
     Math.max(0, 1 - (Date.now() - createdAt) / (1000 * 60 * 60 * 24 * 30))
@@ -99,7 +103,8 @@ class GrowLogRagService {
     }
 
     /**
-     * Retrieve relevant context using semantic embeddings.
+     * Retrieve relevant context using hybrid semantic + token ranking.
+     * Combines cosine similarity (60%), token overlap (30%), and recency (10%).
      * Falls back to keyword scoring if embedding fails.
      */
     private async semanticRetrieve(
@@ -109,21 +114,24 @@ class GrowLogRagService {
     ): Promise<string> {
         try {
             const queryVec = await embedText(query)
+            const queryTokens = tokenize(query)
             const chunkTexts = chunks.map((c) => c.text.slice(0, 256))
 
-            // Use cached embeddings where available, compute missing ones
+            // Use persistent cached embeddings where available, compute missing ones
             const uncachedIndices: number[] = []
             const uncachedTexts: string[] = []
-            const allVecs: Array<Float32Array | null> = chunkTexts.map((text, i) => {
-                const chunk = chunks[i]
-                if (!chunk) return null
-                const key = buildChunkEmbeddingKey(chunk)
-                const cached = getCachedEmbedding(key)
-                if (cached) return cached
-                uncachedIndices.push(i)
-                uncachedTexts.push(text)
-                return null
-            })
+            const allVecs: Array<Float32Array | null> = await Promise.all(
+                chunkTexts.map(async (_text, i) => {
+                    const chunk = chunks[i]
+                    if (!chunk) return null
+                    const key = buildChunkEmbeddingKey(chunk)
+                    const cached = await getCachedEmbeddingPersistent(key)
+                    if (cached) return cached
+                    uncachedIndices.push(i)
+                    uncachedTexts.push(chunkTexts[i] ?? '')
+                    return null
+                }),
+            )
 
             if (uncachedTexts.length > 0) {
                 const computed = await embedBatch(uncachedTexts)
@@ -135,19 +143,27 @@ class GrowLogRagService {
                     if (!chunk) continue
                     const key = buildChunkEmbeddingKey(chunk)
                     const emb = computed[j]
-                    if (emb) setCachedEmbedding(key, emb)
+                    if (emb) {
+                        // Persist to IndexedDB cache (fire-and-forget)
+                        void getOrComputeEmbedding(chunkTexts[idx] ?? '', key)
+                    }
                 }
             }
 
-            const ageWeight = 0.15
+            // Hybrid scoring: 60% semantic + 30% token + 10% recency
             const scored = chunks
                 .map((chunk, i) => {
                     const vec = allVecs[i]
-                    const semantic = vec
+                    const semanticScore = vec
                         ? cosineSimilarity(queryVec, vec as unknown as Float32Array)
                         : 0
+                    const tokenScore = normalizeTokenScore(chunk, queryTokens)
                     const recency = calculateRecencyScore(chunk.createdAt)
-                    return { chunk, score: semantic * (1 - ageWeight) + recency * ageWeight }
+                    const hybridScore =
+                        semanticScore > 0
+                            ? 0.6 * semanticScore + 0.3 * tokenScore + 0.1 * recency
+                            : 0.85 * tokenScore + 0.15 * recency
+                    return { chunk, score: hybridScore }
                 })
                 .toSorted((a, b) => b.score - a.score)
                 .slice(0, limit)
@@ -234,6 +250,11 @@ class GrowLogRagService {
 
         const effectiveLimit = this.dynamicLimit(chunks.length, limit)
         return this.slidingWindowRetrieve(chunks, query, effectiveLimit)
+    }
+
+    /** Whether semantic (embedding-based) ranking is available. */
+    public isSemanticRankingAvailable(): boolean {
+        return checkSemanticAvailable()
     }
 }
 

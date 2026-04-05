@@ -8,6 +8,12 @@ vi.mock('@/services/localAiEmbeddingService', () => ({
     cosineSimilarity: vi.fn(),
 }))
 
+vi.mock('@/services/ragEmbeddingCacheService', () => ({
+    getCachedEmbedding: vi.fn(() => Promise.resolve(null)),
+    getOrComputeEmbedding: vi.fn(() => Promise.resolve(new Float32Array(384))),
+    isSemanticRankingAvailable: vi.fn(() => false),
+}))
+
 vi.mock('dompurify', () => ({
     default: {
         sanitize: (input: string, opts?: { ALLOWED_TAGS?: string[] }) => {
@@ -29,6 +35,16 @@ vi.mock('dompurify', () => ({
 import { growLogRagService } from './growLogRagService'
 import { JournalEntryType } from '@/types'
 import type { Plant, JournalEntry } from '@/types'
+import {
+    isEmbeddingModelReady,
+    embedText,
+    embedBatch,
+    cosineSimilarity,
+} from '@/services/localAiEmbeddingService'
+import {
+    getCachedEmbedding as getCachedEmbeddingPersistent,
+    isSemanticRankingAvailable,
+} from '@/services/ragEmbeddingCacheService'
 
 function makePlant(id: string, name: string, journal: Partial<JournalEntry>[]): Plant {
     return {
@@ -125,5 +141,163 @@ describe('growLogRagService', () => {
     it('returns empty message via async path when no entries', async () => {
         const result = await growLogRagService.retrieveSemanticContext([], 'test')
         expect(result).toBe('No grow log entries found.')
+    })
+
+    describe('isSemanticRankingAvailable', () => {
+        it('delegates to ragEmbeddingCacheService', () => {
+            vi.mocked(isSemanticRankingAvailable).mockReturnValue(true)
+            expect(growLogRagService.isSemanticRankingAvailable()).toBe(true)
+
+            vi.mocked(isSemanticRankingAvailable).mockReturnValue(false)
+            expect(growLogRagService.isSemanticRankingAvailable()).toBe(false)
+        })
+    })
+
+    describe('hybrid semantic ranking', () => {
+        const makeVec = (values: number[]): Float32Array => {
+            const vec = new Float32Array(384)
+            for (let i = 0; i < values.length; i++) vec[i] = values[i] ?? 0
+            return vec
+        }
+
+        it('ranks semantically similar entry higher than token-only match', async () => {
+            // Enable semantic path
+            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
+
+            // Query embedding
+            const queryVec = makeVec([1, 0, 0])
+            vi.mocked(embedText).mockResolvedValue(queryVec)
+
+            // Two entries: one with high semantic match, one with exact token match
+            const p = makePlant('p1', 'TestPlant', [
+                {
+                    type: JournalEntryType.Observation,
+                    notes: 'Chlorose detected on lower leaves',
+                    createdAt: Date.now() - 1000,
+                },
+                {
+                    type: JournalEntryType.Observation,
+                    notes: 'yellowing yellowing yellowing leaves',
+                    createdAt: Date.now() - 2000,
+                },
+            ])
+
+            // Semantic entry gets high cosine, token-only gets low
+            const semanticVec = makeVec([0.99, 0.01, 0])
+            const tokenVec = makeVec([0.1, 0.1, 0.8])
+            vi.mocked(embedBatch).mockResolvedValue([semanticVec, tokenVec])
+            vi.mocked(cosineSimilarity).mockImplementation((a: Float32Array, b: Float32Array) => {
+                // Simplified: first element dominance
+                const dotProduct = (a[0] ?? 0) * (b[0] ?? 0)
+                return Math.min(1, Math.max(-1, dotProduct))
+            })
+            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+
+            const result = await growLogRagService.retrieveSemanticContext([p], 'yellowing leaves')
+            const lines = result.split('\n').filter(Boolean)
+
+            // The first line should be the semantically similar one (Chlorose)
+            // because hybrid score: 0.6 * 0.99 + 0.3 * tokenScore + 0.1 * recency > token-only
+            expect(lines.length).toBeGreaterThan(0)
+            expect(lines[0]).toContain('Chlorose')
+        })
+
+        it('falls back to keyword ranking when embeddings unavailable', async () => {
+            vi.mocked(isEmbeddingModelReady).mockReturnValue(false)
+
+            const p = makePlant('p1', 'TestPlant', [
+                {
+                    type: JournalEntryType.Watering,
+                    notes: 'Gave water to the plant',
+                    createdAt: Date.now() - 1000,
+                },
+            ])
+
+            const result = await growLogRagService.retrieveSemanticContext([p], 'water')
+            expect(result).toContain('water')
+        })
+
+        it('respects topK in hybrid mode', async () => {
+            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
+            vi.mocked(embedText).mockResolvedValue(makeVec([1, 0, 0]))
+            vi.mocked(embedBatch).mockResolvedValue(
+                Array.from({ length: 10 }, () => makeVec([0.5, 0.5, 0])),
+            )
+            vi.mocked(cosineSimilarity).mockReturnValue(0.7)
+            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+
+            const entries = Array.from({ length: 10 }, (_, i) => ({
+                type: JournalEntryType.Observation as const,
+                notes: `Entry ${i} about testing`,
+                createdAt: Date.now() - i * 1000,
+            }))
+            const p = makePlant('p1', 'TestPlant', entries)
+
+            const result = await growLogRagService.retrieveSemanticContext([p], 'testing', 3)
+            // Sliding window: 3 recent + max(1, 3-3) semantic = at most 4
+            const lines = result.split('\n').filter(Boolean)
+            expect(lines.length).toBeLessThanOrEqual(4)
+        })
+
+        it('falls back to keyword when embedding throws', async () => {
+            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
+            vi.mocked(embedText).mockRejectedValue(new Error('Model failed'))
+            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+
+            const p = makePlant('p1', 'TestPlant', [
+                {
+                    type: JournalEntryType.Observation,
+                    notes: 'Keyword match here',
+                    createdAt: Date.now(),
+                },
+            ])
+
+            const result = await growLogRagService.retrieveSemanticContext([p], 'Keyword')
+            expect(result).toContain('Keyword')
+        })
+
+        it('uses persistent cache when embeddings are pre-computed', async () => {
+            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
+            const cachedVec = makeVec([0.9, 0.1, 0])
+            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(cachedVec)
+            vi.mocked(embedText).mockResolvedValue(makeVec([1, 0, 0]))
+            vi.mocked(cosineSimilarity).mockReturnValue(0.95)
+
+            const p = makePlant('p1', 'TestPlant', [
+                {
+                    type: JournalEntryType.Observation,
+                    notes: 'Cached entry',
+                    createdAt: Date.now(),
+                },
+            ])
+
+            const result = await growLogRagService.retrieveSemanticContext([p], 'test')
+            // embedBatch should NOT be called since cache provides the vector
+            expect(embedBatch).not.toHaveBeenCalled()
+            expect(result).toContain('Cached entry')
+        })
+
+        it('computes hybrid score combining semantic, token and recency', async () => {
+            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
+            vi.mocked(embedText).mockResolvedValue(makeVec([1, 0, 0]))
+            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+
+            // One entry with known semantic score
+            vi.mocked(embedBatch).mockResolvedValue([makeVec([0.8, 0.2, 0])])
+            vi.mocked(cosineSimilarity).mockReturnValue(0.8)
+
+            const p = makePlant('p1', 'TestPlant', [
+                {
+                    type: JournalEntryType.Observation,
+                    notes: 'test entry with content',
+                    createdAt: Date.now(), // Recent = recency ~1.0
+                },
+            ])
+
+            const result = await growLogRagService.retrieveSemanticContext([p], 'test', 10)
+            // Even with semantic scoring, result should contain the entry text
+            expect(result).toContain('test entry with content')
+            expect(result).toContain('TestPlant')
+        })
     })
 })

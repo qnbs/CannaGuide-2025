@@ -5,6 +5,7 @@ import { Provider } from 'react-redux'
 import { I18nextProvider } from 'react-i18next'
 import { App } from '@/components/views/plants/App'
 import { createAppStore, createAppStoreSync, AppStore, RootState } from '@/stores/store'
+import type { Plant } from '@/types'
 import { i18nPromise, i18nInstance } from './i18n'
 import { getUISnapshot } from './stores/useUIStore'
 import { strainService } from './services/strainService'
@@ -316,6 +317,13 @@ const mountHydratedApp = async () => {
         // Schedule local AI model preloading during browser idle time
         const { localAiPreloadService } = await import('@/services/localAiPreloadService')
         localAiPreloadService.scheduleIdlePreload()
+
+        // Schedule background embedding precomputation for RAG semantic ranking
+        const { startBackgroundPrecomputation } =
+            await import('@/services/ragEmbeddingCacheService')
+        const plantEntities = (hydratedStore.getState() as RootState).simulation.plants.entities
+        const allPlants = Object.values(plantEntities).filter((p): p is Plant => p !== undefined)
+        startBackgroundPrecomputation(allPlants)
 
         // 6. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)

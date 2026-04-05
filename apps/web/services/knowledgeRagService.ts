@@ -173,15 +173,20 @@ class KnowledgeRagService {
         try {
             lastCallTs.set(calculator, Date.now())
 
-            // Build journal context from grow logs (keyword-only for speed -- no embedding wait)
-            const journalContext =
-                plants.length > 0
-                    ? growLogRagService.retrieveRelevantContext(
-                          plants,
-                          `${calculator} ${Object.values(values).join(' ')}`,
-                          4,
-                      )
-                    : 'No grow log entries found.'
+            // Build journal context from grow logs (semantic with keyword fallback)
+            const queryStr = `${calculator} ${Object.values(values).join(' ')}`
+            let journalContext = 'No grow log entries found.'
+            if (plants.length > 0) {
+                try {
+                    journalContext = await growLogRagService.retrieveSemanticContext(
+                        plants,
+                        queryStr,
+                        4,
+                    )
+                } catch {
+                    journalContext = growLogRagService.retrieveRelevantContext(plants, queryStr, 4)
+                }
+            }
 
             const hadJournalContext =
                 journalContext !== 'No grow log entries found.' && journalContext.trim().length > 0

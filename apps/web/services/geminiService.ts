@@ -1317,13 +1317,18 @@ PLANT CONTEXT:
         return createLocalizedPrompt(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`, lang)
     }
 
-    private buildMentorPrompt(
+    private async buildMentorPrompt(
         plant: Plant,
         query: string,
         t: ReturnType<typeof getT>,
-    ): { prompt: string; ragContext: string } {
+    ): Promise<{ prompt: string; ragContext: string }> {
         const plantContext = this.buildPlantJournalContext(plant, t)
-        const ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+        let ragContext: string
+        try {
+            ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
+        } catch {
+            ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+        }
         const sanitizedQuery = sanitizeForPrompt(query, 600)
 
         // S-01: Topic-scoped allow-list -- redirect off-topic queries
@@ -1408,8 +1413,13 @@ PLANT CONTEXT:
             .join('\n')
     }
 
-    private buildGrowLogRagPrompt(plants: Plant[], query: string): string {
-        const ragContext = growLogRagService.retrieveRelevantContext(plants, query)
+    private async buildGrowLogRagPrompt(plants: Plant[], query: string): Promise<string> {
+        let ragContext: string
+        try {
+            ragContext = await growLogRagService.retrieveSemanticContext(plants, query)
+        } catch {
+            ragContext = growLogRagService.retrieveRelevantContext(plants, query)
+        }
         const safeQuery = sanitizeForPrompt(query, 600)
         // S-01: Topic-scoped allow-list
         const topicGuard = isTopicRelevant(safeQuery)
@@ -1500,7 +1510,7 @@ PLANT CONTEXT:
         lang: Language,
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
-        const { prompt, ragContext } = this.buildMentorPrompt(plant, query, t)
+        const { prompt, ragContext } = await this.buildMentorPrompt(plant, query, t)
 
         try {
             if (this.isAlternateProvider()) {
@@ -1620,7 +1630,7 @@ PLANT CONTEXT:
     }
 
     async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
-        const prompt = this.buildGrowLogRagPrompt(plants, query)
+        const prompt = await this.buildGrowLogRagPrompt(plants, query)
 
         return this.runWithLocalFallback<AIResponse>(
             async () => {

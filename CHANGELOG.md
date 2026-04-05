@@ -6,6 +6,13 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Features
+
+- feat(ai): persistent IndexedDB embedding cache (`ragEmbeddingCacheService.ts`) with LRU eviction (2048 entries, 90-day TTL), model version tracking for cache invalidation, hit/miss telemetry counters (Session 58)
+- feat(ai): hybrid semantic+token RAG ranking in `growLogRagService.ts` -- 60% cosine similarity + 30% normalized BM25-style token score + 10% recency; falls back to 85% token + 15% recency when embeddings unavailable (Session 58)
+- feat(ai): cloud RAG migration -- `geminiService.ts` and `knowledgeRagService.ts` now use async semantic retrieval with keyword fallback (Session 58)
+- feat(ai): background embedding precomputation at app boot -- respects EcoMode and worker availability (Session 58)
+
 ### CI / Infrastructure
 
 - fix(ci): resolve TS6133 -- unused `makeEngine` helper removed from localAiWebLlmService.test.ts (Session 49)

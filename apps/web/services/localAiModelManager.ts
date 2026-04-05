@@ -3,6 +3,7 @@ import {
     clearPipelineCache,
     evictIdlePipelines,
     getResolvedProfile,
+    setPreferredModelOverride,
     type LocalAiPipeline,
 } from './localAIModelLoader'
 import { disposeWebLlm } from './localAiWebLlmService'
@@ -71,6 +72,18 @@ export class LocalAiModelManager {
         this.visionPipelinePromise = null
         clearPipelineCache()
         clearInferenceCache()
+    }
+
+    /**
+     * Switch to a different LLM model by ID.
+     * Disposes the current model pipelines and sets the new override so the
+     * next `loadTextPipeline()` / WebLLM load picks up the new model.
+     *
+     * @param modelId - Catalog model ID or `'auto'` for GPU-tier-based selection.
+     */
+    switchModel(modelId: string): void {
+        this.dispose()
+        setPreferredModelOverride(modelId === 'auto' ? null : modelId)
     }
 }
 

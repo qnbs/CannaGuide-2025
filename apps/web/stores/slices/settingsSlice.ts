@@ -153,6 +153,7 @@ export const defaultSettings: AppSettings = {
         forceWasm: false,
         enableWebGpu: true,
         preferredTextModel: 'auto',
+        selectedLlmModelId: 'auto',
         enableSemanticRag: true,
         enableSentimentAnalysis: true,
         enableSummarization: true,
@@ -295,9 +296,16 @@ const settingsSlice = createSlice({
             const finalKey = keys[keys.length - 1]
             if (finalKey) current[finalKey] = !current[finalKey]
         },
+        setLlmModel: (state, action: PayloadAction<string>) => {
+            state.settings.localAi.selectedLlmModelId = action.payload
+        },
+        setLlmModelAuto: (state) => {
+            state.settings.localAi.selectedLlmModelId = 'auto'
+        },
     },
 })
 
-export const { setSettingsState, setSetting, toggleSetting } = settingsSlice.actions
+export const { setSettingsState, setSetting, toggleSetting, setLlmModel, setLlmModelAuto } =
+    settingsSlice.actions
 
 export default settingsSlice.reducer

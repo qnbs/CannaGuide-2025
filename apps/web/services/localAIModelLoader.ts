@@ -1,5 +1,6 @@
 type TransformersModule = typeof import('@xenova/transformers')
 import { acquireGpu, releaseGpu } from './gpuResourceManager'
+import { getModelById } from './webLlmModelCatalog'
 
 export type LocalAiPipeline = (
     input: unknown,
@@ -319,6 +320,9 @@ let quantOverride: QuantizationLevel | null = null
 /** Manual model size tier override (null = auto-detect). */
 let sizeOverride: ModelSizeTier | null = null
 
+/** Manual model ID override from catalog selection (null = auto-detect). */
+let modelIdOverride: string | null = null
+
 /** Cached resolved profile — invalidated on override or VRAM changes. */
 let cachedProfile: ModelProfile | null = null
 
@@ -349,6 +353,20 @@ export const setModelSizeTier = (tier: ModelSizeTier | null): void => {
 export const getModelSizeTierOverride = (): ModelSizeTier | null => sizeOverride
 
 /**
+ * Set a preferred model ID override from the catalog.
+ * When set, `resolveModelProfile()` uses this model's metadata instead of
+ * VRAM-based auto-detection. Pass `null` to return to auto mode.
+ */
+export const setPreferredModelOverride = (modelId: string | null): void => {
+    modelIdOverride = modelId
+    cachedProfile = null
+    console.debug(`[LocalAI] Model ID override set to: ${modelId ?? 'auto'}`)
+}
+
+/** Get the current model ID override (null = auto). */
+export const getPreferredModelOverride = (): string | null => modelIdOverride
+
+/**
  * Resolve the optimal model profile based on device capabilities and VRAM.
  *
  * **Strategy (Progressive Quantization):**
@@ -370,6 +388,31 @@ export const resolveModelProfile = (vramMB: number | null = null): ModelProfile 
         typeof navigator !== 'undefined'
             ? ((navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0)
             : 0
+
+    // ── Catalog model ID override ──────────────────────────────────────
+    if (modelIdOverride !== null) {
+        const catalogModel = getModelById(modelIdOverride)
+        if (catalogModel) {
+            const sTier: ModelSizeTier =
+                catalogModel.sizeTier === '0.5B' || catalogModel.sizeTier === '1.5B'
+                    ? catalogModel.sizeTier
+                    : '0.5B'
+            const fallbackTransformersId =
+                catalogModel.transformersFallbackId ?? TRANSFORMERS_MODELS['0.5B']
+            cachedProfile = {
+                quantLevel: 'q4f16',
+                sizeTier: sTier,
+                transformersModelId: fallbackTransformersId,
+                webLlmModelId: hasWebGpu ? catalogModel.id : null,
+                useQuantized: true,
+                reason: `Catalog override: ${catalogModel.label} (${catalogModel.sizeTier}).`,
+                estimatedSavingsPercent: catalogModel.sizeTier === '0.5B' ? 70 : 40,
+            }
+            return cachedProfile
+        }
+        // Invalid model ID -- fall through to auto-detection
+        console.debug(`[LocalAI] Unknown catalog model ID: ${modelIdOverride}, using auto.`)
+    }
 
     // ── Manual overrides ─────────────────────────────────────────────────
     if (quantOverride !== null || sizeOverride !== null) {
@@ -457,4 +500,5 @@ export const resetQuantizationState = (): void => {
     cachedProfile = null
     quantOverride = null
     sizeOverride = null
+    modelIdOverride = null
 }

@@ -142,6 +142,22 @@ export const settingsView = {
         benchPreloadTime: 'Last preload: {{value}} s',
         benchInferenceSpeed: 'Inference speed: {{value}} tok/s',
         benchNotAvailable: 'Run a preload to see performance data.',
+        // LLM Model Selector
+        modelSelector: {
+            title: 'LLM Model Selection',
+            subtitle: 'Choose which local AI model to use for text generation.',
+            autoLabel: 'Auto (Recommended)',
+            autoDesc: 'Automatically selects the best model for your device.',
+            currentAuto: 'Your device: {{model}}',
+            recommended: 'Recommended',
+            downloadSize: '{{size}} MB download',
+            largeDownload: 'Large download',
+            loading: 'Loading model...',
+            'model_0.5B_desc': 'Ultra-light model for any device. Fast but limited quality.',
+            'model_1.5B_desc': 'Balanced model for mid-range GPUs. Good multilingual support.',
+            model_3B_desc: 'High quality reasoning. Best choice for capable GPUs.',
+            model_4B_desc: 'Strong reasoning and instruction following. Largest option.',
+        },
         // Embedding & Semantic RAG
         embeddingModelReady: 'Embedding model (MiniLM) is ready for semantic search.',
         embeddingModelMissing:

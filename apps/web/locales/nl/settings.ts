@@ -147,6 +147,23 @@ export const settingsView = {
         benchPreloadTime: 'Laatste voorlading: {{value}} s',
         benchInferenceSpeed: 'Inferentiesnelheid: {{value}} tok/s',
         benchNotAvailable: 'Voer een voorlading uit om prestatiegegevens te zien.',
+        // LLM-modelselectie
+        modelSelector: {
+            title: 'LLM-modelselectie',
+            subtitle: 'Kies welk lokaal AI-model wordt gebruikt voor tekstgeneratie.',
+            autoLabel: 'Auto (Aanbevolen)',
+            autoDesc: 'Selecteert automatisch het beste model voor je apparaat.',
+            currentAuto: 'Jouw apparaat: {{model}}',
+            recommended: 'Aanbevolen',
+            downloadSize: '{{size}} MB download',
+            largeDownload: 'Grote download',
+            loading: 'Model laden...',
+            'model_0.5B_desc': 'Ultralicht model voor elk apparaat. Snel maar beperkte kwaliteit.',
+            'model_1.5B_desc':
+                'Gebalanceerd model voor middenklasse GPUs. Goede meertalige ondersteuning.',
+            model_3B_desc: 'Hoge kwaliteit redenering. Beste keuze voor krachtige GPUs.',
+            model_4B_desc: 'Sterk redeneren en instructies volgen. Grootste optie.',
+        },
         // Embedding & Semantic RAG
         embeddingModelReady: 'Embeddingmodel (MiniLM) is gereed voor semantisch zoeken.',
         embeddingModelMissing:

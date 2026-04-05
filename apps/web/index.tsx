@@ -293,6 +293,15 @@ const mountHydratedApp = async () => {
         const { setAiMode } = await import('@/services/aiService')
         setAiMode(hydratedStore.getState().settings.settings.aiMode ?? 'hybrid')
 
+        // Sync persisted LLM model selection into the model loader
+        const persistedLlmModel =
+            (hydratedStore.getState() as RootState).settings.settings.localAi?.selectedLlmModelId ??
+            'auto'
+        if (persistedLlmModel !== 'auto') {
+            const { setPreferredModelOverride } = await import('@/services/localAIModelLoader')
+            setPreferredModelOverride(persistedLlmModel)
+        }
+
         // Initialize MQTT IoT sensor bridge
         const { mqttClientService } = await import('@/services/mqttClientService')
         mqttClientService.init(hydratedStore)

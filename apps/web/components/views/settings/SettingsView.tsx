@@ -4,7 +4,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Language, LightType, PotType, Theme, VentilationPower, View, AiMode } from '@/types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
-import { setSetting } from '@/stores/slices/settingsSlice'
+import { setSetting, setLlmModel } from '@/stores/slices/settingsSlice'
 import { Switch } from '@/components/common/Switch'
 import { FormSection } from '@/components/ui/form'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
@@ -20,6 +20,8 @@ import { aiProviderService, type AiProvider } from '@/services/aiProviderService
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { localAiPreloadService } from '../../../services/localAiInfrastructureService'
 import { detectOnnxBackend, setForceWasm } from '../../../services/localAIModelLoader'
+import { getGpuTier } from '../../../services/localAiWebGpuService'
+import { LlmModelSelector } from './LlmModelSelector'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { SearchBar } from '@/components/common/SearchBar'
@@ -576,8 +578,11 @@ const LocalAiOfflineCard: React.FC = () => {
         dispatch(setSetting({ path: 'localAi.forceWasm', value: next }))
     }
 
-    const handleModelChange = (value: string) => {
-        dispatch(setSetting({ path: 'localAi.preferredTextModel', value }))
+    const handleModelChange = (modelId: string) => {
+        dispatch(setLlmModel(modelId))
+        import('../../../services/localAIModelLoader').then(({ setPreferredModelOverride }) => {
+            setPreferredModelOverride(modelId === 'auto' ? null : modelId)
+        })
     }
 
     const statusLabel = (() => {
@@ -717,23 +722,10 @@ const LocalAiOfflineCard: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="text-sm text-slate-200 block mb-1">
-                                {t('settingsView.offlineAi.preferredModel')}
-                            </label>
-                            <SettingsSelect
-                                value={localAiSettings.preferredTextModel}
-                                onChange={handleModelChange}
-                                options={[
-                                    { value: 'auto', label: t('settingsView.offlineAi.modelAuto') },
-                                    {
-                                        value: 'qwen2.5',
-                                        label: t('settingsView.offlineAi.modelQwen25'),
-                                    },
-                                    {
-                                        value: 'qwen3',
-                                        label: t('settingsView.offlineAi.modelQwen3'),
-                                    },
-                                ]}
+                            <LlmModelSelector
+                                selectedModelId={localAiSettings.selectedLlmModelId ?? 'auto'}
+                                onSelect={handleModelChange}
+                                gpuTier={getGpuTier()}
                             />
                         </div>
                         <div className="text-xs text-slate-400">

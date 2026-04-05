@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1527 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1544 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -105,12 +105,12 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 6. **Archive Capping:** Mentor: 100 entries, Advisor: 50/plant, FIFO culling.
 
-7. **Local AI Stack:** 21 service modules orchestrate on-device ML:
+7. **Local AI Stack:** 22 service modules orchestrate on-device ML:
     - `localAI.ts` -- Pure facade implementing BaseAIProvider (delegates to router, manager, orchestrator)
     - `localAiInferenceRouter.ts` -- Cache -> WebLLM -> Transformers.js routing with retry + backoff
-    - `localAiModelManager.ts` -- Pipeline lifecycle (text + vision), primary/alt fallback, dispose
+    - `localAiModelManager.ts` -- Pipeline lifecycle (text + vision), primary/alt fallback, dispose, switchModel
     - `localAiPreloadOrchestrator.ts` -- 8-step preload sequence with progress callbacks
-    - `localAIModelLoader.ts` -- ONNX backend detection, pipeline loading (max 3 concurrent), cache
+    - `localAIModelLoader.ts` -- ONNX backend detection, pipeline loading (max 3 concurrent), cache, catalog model override
     - `localAiNlpService.ts` -- Sentiment analysis, summarization, zero-shot classification
     - `localAiEmbeddingService.ts` -- MiniLM-L6 embeddings, semantic ranking, batch processing
     - `localAiFallbackService.ts` -- Heuristic fallback when models unavailable
@@ -124,6 +124,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiDiagnosisService.ts` -- Plant health diagnosis pipeline (+ ONNX classifyLeafImage, classifySeverity, enrichWithKnowledge)
     - `localAiPromptHandlers.ts` -- Prompt formatting for all AI features
     - `localAiWebLlmService.ts` -- WebLLM lifecycle, model loading, progress tracking
+    - `webLlmModelCatalog.ts` -- Curated 4-model catalog (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini), GPU-tier auto-selection
     - `LocalAIInfrastructure.ts` -- Unified cache + telemetry + preload class
     - `localAiInfrastructureService.ts` -- Backward-compatible barrel re-export for LocalAIInfrastructure
     - `localAiWebGpuService.ts` -- Centralized WebGPU adapter, shared device lifecycle, feature detection
@@ -224,7 +225,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1527 tests, 0 failures
+- Baseline: 1544 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
 - **CI E2E timeout:** 25 minutes
@@ -441,12 +442,14 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/trendsEcosystemService.ts`               | Cross-hub match scores (genetic trends <-> grow tech), 5-min cache, static relationship maps                                                                               |
 | `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                                                                                             |
 | `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                                                                                            |
+| `apps/web/services/webLlmModelCatalog.ts`                   | Curated WebLLM model catalog (4 models), auto-selection by GPU tier, model metadata                                                                                        |
 | `apps/web/services/gpuResourceManager.ts`                   | GPU mutex v2: string registry, GpuPriority queue (high/normal/low), auto-release 30s, getQueueState()                                                                      |
 | `apps/web/services/uiStateBridge.ts`                        | Central Redux<->Zustand bridge: `initUIStateBridgeFull`, `getReduxSnapshot`, `subscribeToRedux`, `dispatchToRedux`                                                         |
 | `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                                                                                             |
 | `apps/web/stores/slices/workerMetricsSlice.ts`              | Runtime-only RTK slice for WorkerBus telemetry (DevTools visibility, not persisted to IndexedDB)                                                                           |
 | `apps/web/stores/slices/hydroSlice.ts`                      | Hydroponic monitoring Redux slice: readings FIFO (168 cap), thresholds, alerts, system type                                                                                |
 | `apps/web/components/views/equipment/HydroMonitorView.tsx`  | Hydro dashboard UI: gauge cards, Recharts pH/EC trend chart, manual input form, alerts, dosing reference                                                                   |
+| `apps/web/components/views/settings/LlmModelSelector.tsx`   | Card-based WebLLM model selector UI: auto/manual model selection, GPU tier awareness, download progress                                                                    |
 | `apps/web/hooks/useStreamingResponse.ts`                    | Shared RAF-debounced streaming hook used by MentorChatView, AiTab (advisor + diagnosis)                                                                                    |
 | `apps/web/hooks/useStateHealthCheck.ts`                     | Dev-only hook: detects Redux<->Zustand state inconsistencies; zero production overhead (tree-shaken)                                                                       |
 | `apps/web/simulation.worker.ts`                             | VPD simulation Web Worker                                                                                                                                                  |

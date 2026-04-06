@@ -6,9 +6,20 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI pnpm audit** -- Replaced npm-only `--omit=dev` flag with pnpm-native `--prod` in ci.yml and deploy.yml (Session 80)
+
 ### Changed
 
+- **Scorecard pinned-deps** -- Added `# vX.Y.Z` version comments to 17 SHA-pinned action references across 7 CI workflows (Session 80)
+- **actions/github-script** v7 -> v8.0.0 in cleanup-deployments.yml (Session 80)
+- **dependabot/fetch-metadata** v2.5.0 -> v3.0.0 in dependabot-auto-merge.yml (Session 80)
 - **pnpm migration** -- Migrated from npm to pnpm 10 via Corepack across entire monorepo: root package.json, 11 CI workflows, shared CI action, DevContainer, 3 Husky hooks, 5 build scripts, netlify.toml, lighthouserc.json. Lockfile reduced from 23k to 15k lines. workspace:\* protocol for internal packages. (Session 79)
+
+### Removed
+
+- **p-retry** -- Removed unused dependency from apps/web (no imports in codebase) (Session 80)
 
 ### Added
 

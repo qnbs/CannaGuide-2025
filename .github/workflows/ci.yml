@@ -145,7 +145,7 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Security audit (critical)
-              run: pnpm audit --audit-level=critical --omit=dev
+              run: pnpm audit --audit-level=critical --prod
 
             - name: Trojan-source scan
               run: pnpm run security:trojan-source

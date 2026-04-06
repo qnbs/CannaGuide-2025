@@ -11,8 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1626%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://github.com/qnbs/CannaGuide-2025/pkgs/container/cannaguide-2025)
+[![Tests](https://img.shields.io/badge/tests-1614%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity (dynamic) -->
 
@@ -60,9 +59,6 @@
 
 <!-- Distribution -->
 
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://github.com/qnbs/CannaGuide-2025/pkgs/container/cannaguide-2025)
-[![Tauri](https://img.shields.io/badge/Tauri-v2%20desktop-FFC131?logo=tauri&logoColor=black)](https://tauri.app/)
-[![Capacitor](https://img.shields.io/badge/Capacitor-mobile-119EFF?logo=capacitor&logoColor=white)](https://capacitorjs.com/)
 [![GitHub Pages](https://img.shields.io/badge/Hosted-GitHub%20Pages-222222?logo=githubpages&logoColor=white)](https://qnbs.github.io/CannaGuide-2025/)
 [![Netlify](https://img.shields.io/badge/Preview-Netlify-00C7B7?logo=netlify&logoColor=white)](https://netlify.com/)
 
@@ -110,7 +106,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 21-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 778 strains -- 1626 tests -- 105 services -- 14 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 24 CI workflows
+**Key numbers:** 778 strains -- 1614 tests -- 105 services -- 14 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
 
 ---
 
@@ -168,8 +164,6 @@ Three-tier client-side architecture with offline-first design:
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
 | **Testing**        | Vitest 4.1, Playwright 1.58          | 1447 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
-| **Desktop**        | Tauri v2 (Rust)                      | Native desktop wrapper                                     |
-| **Mobile**         | Capacitor                            | iOS/Android wrapper                                        |
 
 ---
 
@@ -310,7 +304,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- runs across all workspaces)
 npm run dev              # turbo run dev (Vite dev server on localhost:5173)
 npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest, 1626 tests)
+npm test                 # turbo run test (Vitest, 1614 tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -330,7 +324,7 @@ npm run -w @cannaguide/web typecheck # tsc --noEmit
 ```text
 package.json               Workspace root (turbo, eslint, prettier -- NO app deps)
 turbo.json                 TurboRepo pipeline (build, dev, test, lint, typecheck)
-tsconfig.json              References-only (apps/web, apps/desktop, packages/*)
+tsconfig.json              References-only (apps/web, packages/*)
 
 apps/
   web/                     Main PWA (@cannaguide/web)
@@ -346,15 +340,13 @@ apps/
     tests/                  E2E (tests/e2e/), component tests (tests/ct/)
     lib/                    Utility library (cn(), VPD calculations)
     public/                 Static assets, SW, manifest
-  desktop/                  Tauri v2 desktop wrapper (Rust IPC commands)
 
 packages/
   ai-core/                  Shared AI types, provider configs, key validation, ML isolation
   ui/                       Shared design tokens (9 themes) + Tailwind preset
 
-src-tauri/                  Tauri v2 desktop config (Rust backend + capabilities)
 scripts/                    Build/lint/security scripts
-docker/                     nginx config, ESP32-mock, Tauri-mock
+docker/                     IoT mock servers (ESP32 sensor simulator)
 .github/                    22 CI/CD workflows, issue templates
 ```
 
@@ -366,14 +358,13 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 
 6 jobs, zero `continue-on-error`, gate job requires all to pass:
 
-| Job                     | Description                                                                 |
-| ----------------------- | --------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 1626 tests, production build |
-| 🛡 Security             | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
-| 🎭 E2E Tests            | Playwright Chromium (needs quality artifact)                                |
-| 🐳 Docker Compose + IoT | ESP32-mock + Tauri-mock healthcheck, sensor endpoint validation             |
-| 🖥 Tauri Build Check    | `cargo check` on ubuntu-22.04 with Linux deps                               |
-| ✅ CI Status            | Gate job — all 5 must pass                                                  |
+| Job                | Description                                                                 |
+| ------------------ | --------------------------------------------------------------------------- |
+| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1614 tests, production build |
+| 🛡 Security        | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
+| 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
+| 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |
+| ✅ CI Status       | Gate job -- all must pass                                                   |
 
 ### Additional Workflows
 
@@ -382,9 +373,6 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 | CodeQL                | push, PR, weekly | SAST analysis (JavaScript/TypeScript) |
 | Deploy                | push to main     | GitHub Pages + Lighthouse budget gate |
 | E2E & Integration     | push, PR         | Standalone E2E suite                  |
-| Tauri Build           | release tags     | Cross-platform desktop builds         |
-| Capacitor Build       | release tags     | iOS/Android builds                    |
-| Docker                | release tags     | Container image                       |
 | Security Full         | push, PR, weekly | Comprehensive security scan suite     |
 | Security Scan         | push, PR         | Quick security checks                 |
 | Snyk                  | push, PR         | Vulnerability scanning                |
@@ -404,13 +392,10 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 
 ## Distribution
 
-| Target               | Method                | Trigger            |
-| -------------------- | --------------------- | ------------------ |
-| **GitHub Pages**     | `deploy.yml`          | Push to `main`     |
-| **Netlify**          | `netlify.toml`        | PR preview deploys |
-| **Docker**           | `docker.yml`          | Release tag `v*`   |
-| **Tauri Desktop**    | `tauri-build.yml`     | Release tag `v*`   |
-| **Capacitor Mobile** | `capacitor-build.yml` | Release tag `v*`   |
+| Target           | Method         | Trigger            |
+| ---------------- | -------------- | ------------------ |
+| **GitHub Pages** | `deploy.yml`   | Push to `main`     |
+| **Netlify**      | `netlify.toml` | PR preview deploys |
 
 ---
 
@@ -431,10 +416,10 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 | Version  | Status      | Highlights                                                                                                                                                                                                             |
 | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **v1.0** | ✅ Released | 778 strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                                                                                 |
-| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1049 tests, Tauri v2, Docker IoT mocks, CodeQL, Grype                                                             |
+| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1049 tests, IoT mocks, CodeQL, Grype                                                                              |
 | **v1.2** | ✅ Released | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data integration (8 providers), strain data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
 | **v1.3** | ✅ Released | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                        |
-| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1626 tests                                              |
+| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1614 tests                                              |
 | **v1.5** | 📋 Planned  | Digital Twin architecture, ONNX TTS/STT, Data Export/Import, full axe-core a11y integration, AI response validation coverage                                                                                           |
 | **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                               |
 
@@ -458,8 +443,8 @@ CannaGuide 2025 was built iteratively through an AI-assisted development process
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                             | v0.1 → v1.0  |
 | **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                       | Throughout   |
-| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1626 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.4 |
-| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Production deployment, PR previews, desktop/mobile distribution, OpenSSF compliance                                           | Continuous   |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1614 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.4 |
+| **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Production deployment, PR previews, OpenSSF compliance                                                                        | Continuous   |
 
 > **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
 
@@ -479,7 +464,7 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 
 **Security:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, ClusterFuzzLite, OpenSSF Scorecard
 
-**Infrastructure:** GitHub Pages, Netlify, Docker, Tauri (Rust), Capacitor, TurboRepo
+**Infrastructure:** GitHub Pages, Netlify, TurboRepo
 
 **Icons:** Phosphor Icons -- thank you for the beautiful icon set
 
@@ -504,7 +489,7 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-1626%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-1614%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 
@@ -544,7 +529,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 18-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 778 Sorten -- 1626 Tests -- 105 Services -- 14 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 24 CI-Workflows
+**Kennzahlen:** 778 Sorten -- 1614 Tests -- 105 Services -- 14 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 21 CI-Workflows
 
 ---
 
@@ -601,8 +586,6 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
 | **Testing**        | Vitest 4.1, Playwright 1.58          | 1423 Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
-| **Desktop**        | Tauri v2 (Rust)                      | Nativer Desktop-Wrapper                       |
-| **Mobil**          | Capacitor                            | iOS/Android-Wrapper                           |
 
 ---
 
@@ -743,7 +726,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- laeuft ueber alle Workspaces)
 npm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 npm run build            # turbo run build (alle Workspaces)
-npm test                 # turbo run test (Vitest, 1626 Tests)
+npm test                 # turbo run test (Vitest, 1614 Tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -763,7 +746,7 @@ npm run -w @cannaguide/web typecheck # tsc --noEmit
 ```text
 package.json               Workspace-Root (turbo, eslint, prettier -- KEINE App-Deps)
 turbo.json                 TurboRepo-Pipeline (build, dev, test, lint, typecheck)
-tsconfig.json              Nur Referenzen (apps/web, apps/desktop, packages/*)
+tsconfig.json              Nur Referenzen (apps/web, packages/*)
 
 apps/
   web/                     Haupt-PWA (@cannaguide/web)
@@ -779,15 +762,13 @@ apps/
     tests/                  E2E (tests/e2e/), Komponenten-Tests (tests/ct/)
     lib/                    Hilfsbibliothek (cn(), VPD-Berechnungen)
     public/                 Statische Assets, SW, Manifest
-  desktop/                  Tauri v2 Desktop-Wrapper (Rust IPC-Commands)
 
 packages/
   ai-core/                  Gemeinsame KI-Typen + ML-Dependency-Isolation
   ui/                       Gemeinsame UI-Tokens & Theme-Typen
 
-src-tauri/                  Tauri v2 Desktop-Konfig (Rust-Backend + Capabilities)
 scripts/                    Build-/Lint-/Sicherheits-Skripte
-docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
+docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 .github/                    22 CI/CD-Workflows, Issue-Templates
 ```
 
@@ -799,14 +780,13 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 
 6 Jobs, null `continue-on-error`, Gate-Job erfordert alle:
 
-| Job                     | Beschreibung                                                                 |
-| ----------------------- | ---------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 1626 Tests, Produktions-Build |
-| 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
-| 🎭 E2E Tests            | Playwright Chromium (benötigt Quality-Artefakt)                              |
-| 🐳 Docker Compose + IoT | ESP32-Mock + Tauri-Mock Healthcheck, Sensor-Endpunkt-Validierung             |
-| 🖥 Tauri Build Check    | `cargo check` auf ubuntu-22.04 mit Linux-Deps                                |
-| ✅ CI Status            | Gate-Job — alle 5 müssen bestehen                                            |
+| Job                | Beschreibung                                                                 |
+| ------------------ | ---------------------------------------------------------------------------- |
+| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1614 Tests, Produktions-Build |
+| 🛡 Security        | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
+| 🎭 E2E Tests       | Playwright Chromium (benötigt Quality-Artefakt)                              |
+| 🌡 IoT-Integration | ESP32-Mock Healthcheck, Sensor-Endpunkt-Validierung                          |
+| ✅ CI Status       | Gate-Job -- alle muessen bestehen                                            |
 
 ### Weitere Workflows
 
@@ -815,9 +795,6 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 | CodeQL                | Push, PR, woechentlich | SAST-Analyse (JavaScript/TypeScript)     |
 | Deploy                | Push auf main          | GitHub Pages Deployment + Lighthouse     |
 | E2E & Integration     | Push, PR               | Eigenstaendige E2E-Suite                 |
-| Tauri Build           | Release-Tags           | Cross-Platform Desktop-Builds            |
-| Capacitor Build       | Release-Tags           | iOS/Android-Builds                       |
-| Docker                | Release-Tags           | Container-Image                          |
 | Security Full         | Push, PR, woechentlich | Umfassende Sicherheits-Scan-Suite        |
 | Security Scan         | Push, PR               | Schnelle Sicherheitspruefungen           |
 | Snyk                  | Push, PR               | Schwachstellen-Scanning                  |
@@ -837,13 +814,10 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 
 ## Distribution (DE)
 
-| Ziel                | Methode               | Trigger            |
-| ------------------- | --------------------- | ------------------ |
-| **GitHub Pages**    | `deploy.yml`          | Push auf `main`    |
-| **Netlify**         | `netlify.toml`        | PR-Preview-Deploys |
-| **Docker**          | `docker.yml`          | Release-Tag `v*`   |
-| **Tauri Desktop**   | `tauri-build.yml`     | Release-Tag `v*`   |
-| **Capacitor Mobil** | `capacitor-build.yml` | Release-Tag `v*`   |
+| Ziel             | Methode        | Trigger            |
+| ---------------- | -------------- | ------------------ |
+| **GitHub Pages** | `deploy.yml`   | Push auf `main`    |
+| **Netlify**      | `netlify.toml` | PR-Preview-Deploys |
 
 ---
 
@@ -864,10 +838,10 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | Version  | Status            | Highlights                                                                                                                                                                                                                                        |
 | -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **v1.0** | ✅ Veröffentlicht | 778 Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                               |
-| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype                                                                                       |
+| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, IoT-Mocks, CodeQL, Grype                                                                                                        |
 | **v1.2** | ✅ Veröffentlicht | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
 | **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                 |
-| **v1.4** | � In Arbeit       | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1626 Tests                                                                         |
+| **v1.4** | In Arbeit         | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1614 Tests                                                                         |
 | **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                       |
 | **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                       |
 
@@ -892,7 +866,7 @@ CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                              | v0.1 → v1.0    |
 | **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                      | Durchgehend    |
 | **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1049 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.3+  |
-| **4. Deployment & Distribution** | GitHub Pages, Netlify, Docker, Tauri v2, Capacitor    | Produktions-Deployment, PR-Previews, Desktop-/Mobil-Distribution, OpenSSF-Compliance                                                | Kontinuierlich |
+| **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Produktions-Deployment, PR-Previews, OpenSSF-Compliance                                                                             | Kontinuierlich |
 
 > **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.
 
@@ -912,7 +886,7 @@ CannaGuide 2025 basiert auf vielen hervorragenden Open-Source-Projekten und exte
 
 **Sicherheit:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, ClusterFuzzLite, OpenSSF Scorecard
 
-**Infrastruktur:** GitHub Pages, Netlify, Docker, Tauri (Rust), Capacitor, TurboRepo
+**Infrastruktur:** GitHub Pages, Netlify, TurboRepo
 
 **Icons:** Phosphor Icons -- Danke fuer das wunderschoene Icon-Set
 

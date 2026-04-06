@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 76) -- Audit Backlog Sprint (6 Items)
+## Latest Session (Session 77) -- Docker/Tauri/Capacitor Removal + Scorecard Fix
+
+**Status: Docker deployment, Tauri desktop, and Capacitor mobile completely removed. Scorecard Pinned-Dependencies fix applied.**
+
+### What Was Done (Session 77)
+
+1. **Docker Deployment Removed** -- Deleted Dockerfile, Dockerfile.dev,
+   docker-compose.yml, .dockerignore, docker/nginx.conf,
+   docker/tauri-mock/ directory, docker/esp32-mock/Dockerfile,
+   docker/iot-mocks/Dockerfile, .github/workflows/docker.yml.
+   DevContainer and IoT mock Node.js servers preserved.
+
+2. **Tauri Desktop Removed** -- Deleted src-tauri/ directory,
+   apps/desktop/ directory, .github/workflows/tauri-build.yml,
+   tauriIpcService.ts + test. Removed from vite.config.ts externals,
+   turbo.json tasks, tsconfig.json references, devcontainer config.
+
+3. **Capacitor Mobile Removed** -- Deleted capacitor.config.ts,
+   .github/workflows/capacitor-build.yml. Removed @capacitor/cli
+   from devDependencies, emptied optionalDependencies.
+
+4. **nativeBridgeService Simplified** -- Rewritten to web-only
+   (Web Notification API). Removed all Tauri/Capacitor platform
+   detection and dynamic imports.
+
+5. **Scorecard Fix (#276)** -- Pinned semgrep==1.67.0 in
+   security-scan.yml line 68 to resolve Pinned-Dependencies alert.
+
+6. **Documentation Updated** -- README.md (EN+DE), copilot-instructions,
+   ARCHITECTURE.md, DEPENDENCY-GRAPH.md, ROADMAP.md, IoT-Roadmap.md
+   all cleaned of Docker/Tauri/Capacitor references.
+
+### Verified Metrics
+
+- Tests: 1614 passing (148 files), 0 failures
+- TypeScript: clean (only known RTK TS2719)
+- Build: success
+- Distribution: GitHub Pages + Netlify only
+
+### Next Steps
+
+- Verify test count, typecheck, and build pass after removal
+- T-05: AI contract tests (provider response schema validation)
+- F-05: Multi-grow management (High effort)
+- D-01: API documentation (High effort)
+- Low-priority backlog: P-04, U-05, I-02, A-03, C-04, D-02
+
+---
+
+## Previous Session (Session 76) -- Audit Backlog Sprint (6 Items)
 
 **Status: v1.4.0 Stable. 1626 tests passing (149 files). TypeScript clean (TS2719 only). Build clean. Medium Done 23/28 (5 Open).**
 

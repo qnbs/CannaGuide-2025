@@ -65,7 +65,7 @@ jobs:
                   if command -v semgrep >/dev/null 2>&1; then
                     npm run security:semgrep
                   elif command -v pip3 >/dev/null 2>&1; then
-                    pip3 install --quiet semgrep
+                    pip3 install --quiet semgrep==1.67.0
                     npm run security:semgrep
                   else
                     echo "[SKIP] Semgrep not available -- install via 'pip install semgrep'"

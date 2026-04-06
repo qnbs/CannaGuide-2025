@@ -11,7 +11,6 @@
     },
     "references": [
         { "path": "apps/web" },
-        { "path": "apps/desktop" },
         { "path": "packages/ai-core" },
         { "path": "packages/ui" }
     ],

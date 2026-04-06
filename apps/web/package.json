@@ -7,7 +7,6 @@
         "dev": "vite",
         "build": "vite build",
         "build:gh": "vite build && cp dist/index.html dist/404.html",
-        "build:docker": "BUILD_BASE_PATH=/ vite build",
         "build:analyze": "ANALYZE=1 vite build --sourcemap",
         "preview": "vite preview",
         "typecheck": "node ../../scripts/typecheck-filter.mjs",
@@ -55,7 +54,6 @@
     },
     "devDependencies": {
         "@axe-core/playwright": "^4.11.1",
-        "@capacitor/cli": "^8.3.0",
         "@playwright/experimental-ct-react": "^1.58.2",
         "@playwright/test": "^1.58.2",
         "@stryker-mutator/core": "^9.6.0",
@@ -88,8 +86,5 @@
         "vite-plugin-pwa": "^1.2.0",
         "vitest": "^4.1.0"
     },
-    "optionalDependencies": {
-        "@capacitor/local-notifications": "^7.0.0",
-        "@tauri-apps/plugin-notification": "^2.0.0"
-    }
+    "optionalDependencies": {}
 }

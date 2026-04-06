@@ -151,7 +151,7 @@ jobs:
               run: npm run security:trojan-source
 
             # Trivy removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
-            # Replaced by Grype in docker.yml (image) + security-full.yml (filesystem).
+            # Replaced by Grype in security-full.yml (filesystem).
             # CI filesystem scanning covered by npm audit + Snyk + CodeQL.
             - name: Gitleaks secret scan
               run: |
@@ -243,8 +243,7 @@ jobs:
                   path: apps/web/test-results/
                   retention-days: 7
 
-    # Docker integration: covered by docker.yml (release) + e2e-integration.yml
-    # Tauri build check: covered by tauri-build.yml (release)
+    # IoT integration: covered by e2e-integration.yml
 
     # ---------------------------------------------------------------------
     # CI Gate -- all jobs must pass

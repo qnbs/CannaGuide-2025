@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-04-06 (Session 76)
+Last updated: 2026-04-08 (Session 78)
 
 ---
 
@@ -15,8 +15,8 @@ Last updated: 2026-04-06 (Session 76)
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
 | High     | 11    | 11   | 0    |
-| Medium   | 28    | 23   | 5    |
-| Low      | 10    | 3    | 7    |
+| Medium   | 28    | 24   | 4    |
+| Low      | 10    | 5    | 5    |
 
 ---
 
@@ -228,11 +228,11 @@ Last updated: 2026-04-06 (Session 76)
 | -------- | ----------- |
 | Severity | Low         |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** Service Worker uses Network-First for navigation and Cache-First for assets. Could benefit from stale-while-revalidate for API responses.
 
-**Action:** Evaluate stale-while-revalidate strategy for AI API responses. Measure impact on perceived latency.
+**Resolution:** AI API calls are POST requests, which are filtered by the SW fetch handler's GET-only guard. Stale-while-revalidate is already used for non-hashed assets. App-level caching via RTK Query (9 endpoints) and IndexedDB handles AI response caching. No SW changes needed. Documented in sw.js. Session 78.
 
 ---
 
@@ -314,11 +314,11 @@ Last updated: 2026-04-06 (Session 76)
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** AI provider integrations (Gemini, OpenAI, xAI, Anthropic) lack contract tests to detect API changes.
 
-**Action:** Add contract test suite that validates response schemas against provider API specs. Run on schedule (weekly) to catch breaking changes early.
+**Resolution:** Contract test suite added in `services/aiProviderContract.test.ts`. Validates AIResponseSchema, PlantDiagnosisResponseSchema, StructuredGrowTipsSchema, DeepDiveGuideSchema, RecommendationSchema via Zod. Provider config validation for all 4 providers (Gemini/OpenAI/xAI/Anthropic). Key format and rotation tests. Cross-provider boundary checks (unicode, extra fields). Session 78.
 
 ---
 
@@ -576,11 +576,11 @@ Last updated: 2026-04-06 (Session 76)
 | -------- | ----------- |
 | Severity | Low         |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** No formal deprecation policy for APIs or features.
 
-**Action:** Document deprecation process in CONTRIBUTING.md. Use `@deprecated` JSDoc tags and runtime warnings.
+**Resolution:** Deprecation Strategy section added to CONTRIBUTING.md with 3-phase lifecycle (Announce -> Grace period -> Removal), `@deprecated` JSDoc tags, runtime `console.warn` for deprecated code paths, and rules for deprecated code removal. Session 78.
 
 ---
 
@@ -806,7 +806,7 @@ Recommended implementation order based on impact and effort:
 
 - [x] T-01 -- Mutation testing pilot (Done, Stryker, Session 63)
 - [ ] T-03 -- Visual regression testing
-- [ ] T-05 -- AI contract tests
+- [x] T-05 -- AI contract tests (Done, Session 78)
 - [ ] A-02 -- Local AI model versioning
 - [x] P-03 -- Image optimization (Done)
 - [ ] F-05 -- Multi-grow management

@@ -32,36 +32,29 @@
 
 ### Ist-Zustand (2026-04-05)
 
-| Metrik                     | Wert                    | Bewertung           |
-| -------------------------- | ----------------------- | ------------------- |
-| App-Version                | v1.4.0                  | ✅ Stabil           |
-| Tests                      | 1626/1626 (149 Dateien) | ✅ Grün             |
-| OpenSSF Scorecard          | 8.5/10                  | ⚠ Ziel: 10/10       |
-| SonarCloud Security        | A                       | ✅                  |
-| SonarCloud Reliability     | B                       | ⚠ Ziel: A           |
-| SonarCloud Hotspots        | E (0 % reviewed)        | 🔴 Blocker          |
-| SonarCloud Maintainability | A                       | ⚠ 354 Code Smells   |
-| Test-Coverage              | ~22-28 %                | ⚠ Ziel: >30 %       |
-| Duplicate Code             | ~115 Major-Bloecke      | ⚠ Technische Schuld |
-| Security Alerts            | 0                       | ✅                  |
-| CI Workflows               | 24 (alle gruen)         | ✅                  |
-| Stryker Mutation           | Baseline erstellt       | ✅ Neu (Session 63) |
+| Metrik            | Wert                    | Bewertung           |
+| ----------------- | ----------------------- | ------------------- |
+| App-Version       | v1.4.0                  | ✅ Stabil           |
+| Tests             | 1626/1626 (149 Dateien) | ✅ Grün             |
+| OpenSSF Scorecard | 8.5/10                  | ⚠ Ziel: 10/10       |
+| Test-Coverage     | ~22-28 %                | ⚠ Ziel: >30 %       |
+| Duplicate Code    | ~115 Major-Bloecke      | ⚠ Technische Schuld |
+| Security Alerts   | 0                       | ✅                  |
+| CI Workflows      | 24 (alle gruen)         | ✅                  |
+| Stryker Mutation  | Baseline erstellt       | ✅ Neu (Session 63) |
 
 ### Soll-Zustand (nach vollständiger Roadmap)
 
-| Metrik                   | Zielwert               | Sprint  |
-| ------------------------ | ---------------------- | ------- |
-| OpenSSF Scorecard        | **10/10**              | S1 + S4 |
-| SonarCloud Quality Gate  | **Passed (A/A/A)**     | S1 + S2 |
-| SonarCloud Hotspots      | **A (100 % reviewed)** | S1      |
-| Test-Coverage            | **>30 %**              | S2      |
-| Tests                    | **700+**               | S2      |
-| Duplicate Code           | **<80 Major-Blöcke**   | S2 + S3 |
-| Code Smells              | **<200**               | S3      |
-| WCAG 2.2 AA              | **100 % compliant**    | S3      |
-| Lighthouse Performance   | **≥0.80**              | S3      |
-| Lighthouse Accessibility | **≥0.90**              | S3      |
-| v1.2 Feature-Readiness   | **Complete**           | S5      |
+| Metrik                   | Zielwert             | Sprint  |
+| ------------------------ | -------------------- | ------- |
+| OpenSSF Scorecard        | **10/10**            | S1 + S4 |
+| Test-Coverage            | **>30 %**            | S2      |
+| Tests                    | **700+**             | S2      |
+| Duplicate Code           | **<80 Major-Blöcke** | S2 + S3 |
+| WCAG 2.2 AA              | **100 % compliant**  | S3      |
+| Lighthouse Performance   | **≥0.80**            | S3      |
+| Lighthouse Accessibility | **≥0.90**            | S3      |
+| v1.2 Feature-Readiness   | **Complete**         | S5      |
 
 ---
 
@@ -73,10 +66,10 @@
 Letzte Session:     2026-03-29 (Audit v2 Fixes + Version Bump)
 App-Version:        v1.2.0-alpha
 Tests:              793/793 (88 files)
-Naechste Prioritaet:  Sonar Hotspots, Test Coverage >30%, Cache-Deduplizierung
+Naechste Prioritaet:  Test Coverage >30%, Cache-Deduplizierung
 Sprint-Fortschritt: S1 [0/3] | S2 [1/4] | S3 [3/5] | S4 [0/2] | S5 [6/8] | S6 [0/7]
 Gesamtfortschritt:  ██████████░░░░░░░░░░ 10/29 Tasks (~34%)
-Blocker:            SonarCloud Hotspot Review (Admin UI), CII Badge (Email)
+Blocker:            CII Badge (Email)
 Erledigt (2026-03-29): Biome-Toolchain entfernt (Dual-Toolchain-Kollision aufgeloest),
                         gate:push --passWithNoTests Silent-Bypass behoben,
                         Version 1.1.0 -> 1.2.0-alpha (root + web),
@@ -95,22 +88,17 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 
 ## Sprint 1 — P0: Admin-Blocker & Quick Wins
 
-**Ziel:** Alle blockierenden Admin-Aktionen erledigen, SonarCloud Quality Gate erreichen.
-**Geschätzter Aufwand:** ~1 Stunde (+ Wartezeit CII Badge)
-**Voraussetzung:** Admin-PAT / Browser-Zugang zu SonarCloud + GitHub + bestpractices.dev
+**Ziel:** Alle blockierenden Admin-Aktionen erledigen.
+**Geschaetzter Aufwand:** ~1 Stunde (+ Wartezeit CII Badge)
+**Voraussetzung:** Admin-PAT / Browser-Zugang zu GitHub + bestpractices.dev
 
-### S1.1 — SonarCloud Security Hotspots reviewen
+> **Hinweis:** SonarCloud wurde im April 2026 vollstaendig entfernt (Projekt geloescht).
+> S1.1 (Sonar Hotspot Review) entfaellt ersatzlos.
 
-| Feld             | Detail                                                                                          |
-| ---------------- | ----------------------------------------------------------------------------------------------- |
-| **Was**          | Alle Security Hotspots in SonarCloud manuell reviewen/dismissen                                 |
-| **Warum**        | 0 % reviewed = E-Rating → blockiert Quality Gate A                                              |
-| **Wie**          | SonarCloud UI → Security Hotspots → Jeden Hotspot reviewen → "Safe" / "Won't Fix" mit Kommentar |
-| **Referenz**     | `docs/sonar-handoff-review-2026-03-21.md`, Commit `83b64a9`                                     |
-| **Impact**       | Quality Gate E → A/B, Sonar-Dashboard bereinigt                                                 |
-| **Aufwand**      | 15–30 min                                                                                       |
-| **Status**       | ⬜ Nicht gestartet                                                                              |
-| **Abhängigkeit** | Browser-Zugang SonarCloud Dashboard                                                             |
+### S1.1 -- ENTFAELLT (SonarCloud entfernt)
+
+> SonarCloud-Projekt wurde im April 2026 geloescht. Alle Sonar-Referenzen aus dem Repository entfernt.
+> **Status:** Erledigt (entfaellt ersatzlos)
 
 ### S1.2 — CII Best Practices Badge aktivieren
 
@@ -141,10 +129,10 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 
 ### Sprint 1 — Erfolgskriterien
 
-- [ ] SonarCloud Security Hotspots: 100 % reviewed → Rating ≥B
+- [x] ~~SonarCloud Security Hotspots~~ — ENTFAELLT (Projekt geloescht)
 - [ ] CII Badge in README sichtbar (oder Email-Verifikation gestartet)
 - [ ] Branch Protection enforce_admins aktiv
-- [ ] Scorecard ≥9.0
+- [ ] Scorecard >=9.0
 
 ---
 
@@ -189,22 +177,17 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 | **Status** | ⬜ Nicht gestartet |
 | **Metriken** | Coverage vor → nach in Vitest-Report dokumentieren |
 
-### S2.3 — Sonar-Handoff-Dokumente konsolidieren
+### S2.3 -- ENTFAELLT (SonarCloud entfernt)
 
-| Feld        | Detail                                                                                                                     |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Was**     | `sonar-handoff-review-2026-03-21.md` + `sonar-handoff-todo-2026-03-21.md` → eine Datei mit Completed/Remaining-Abschnitten |
-| **Warum**   | Dokumentations-Hygiene, reduziert Verwirrung bei Session-Handoffs                                                          |
-| **Wie**     | 1. Inhalte mergen → 2. Alte Dateien löschen → 3. Referenzen in `next-session-handoff.md` aktualisieren                     |
-| **Aufwand** | 30 min                                                                                                                     |
-| **Status**  | ⬜ Nicht gestartet                                                                                                         |
+> Sonar-Handoff-Dokumente existieren nicht mehr. SonarCloud-Projekt geloescht.
+> **Status:** Erledigt (entfaellt ersatzlos)
 
 ### S2.4 — Duplicate Code reduzieren (erste Welle)
 
 | Feld                      | Detail                                         |
 | ------------------------- | ---------------------------------------------- |
 | **Was**                   | ~115 Major-Duplicate-Blöcke auf <80 reduzieren |
-| **Warum**                 | SonarCloud Maintainability, Wartbarkeit        |
+| **Warum**                 | Wartbarkeit, technische Schuld                 |
 | **Prioritäts-Kandidaten** |                                                |
 
 | Datei/Bereich                                                                | Duplikat-Typ           | Lösungsansatz                      |
@@ -222,9 +205,9 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 
 - [ ] Test-Coverage ≥30 % (Vitest `--coverage` Report)
 - [ ] Tests ≥680 (Ziel: +40 neue Tests)
-- [ ] `commandService.test.fuzz.ts` existiert und läuft in CI
-- [ ] Sonar-Handoff-Docs zu einer Datei konsolidiert
-- [ ] Duplicate-Code-Blöcke <90
+- [ ] `commandService.test.fuzz.ts` existiert und laeuft in CI
+- [x] ~~Sonar-Handoff-Docs konsolidieren~~ -- ENTFAELLT (Projekt geloescht)
+- [ ] Duplicate-Code-Bloecke <90
 
 ---
 
@@ -256,25 +239,18 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 | **Status**       | ⬜ Nicht gestartet                                                                 |
 | **Abhängigkeit** | Repo Settings Zugang                                                               |
 
-### S3.3 — SonarCloud Maintainability (354 Code Smells → <200)
+### S3.3 -- Code-Qualitaet verbessern (ESLint-getrieben)
 
-| Feld                        | Detail                                                                  |
-| --------------------------- | ----------------------------------------------------------------------- |
-| **Was**                     | Code Smells systematisch abbauen, Maintainability Rating auf stabiles A |
-| **Warum**                   | Langfristige Wartbarkeit, sauberes Codebase                             |
-| **Priorisierte Kategorien** |                                                                         |
+> Ersetzt fruehere SonarCloud Maintainability-Metrik. Qualitaetsmessung erfolgt nun
+> ausschliesslich via ESLint strict scopes (`npm run lint:scopes`) und Vitest Coverage.
 
-| Kategorie                 | Geschätzte Anzahl | Aufwand        |
-| ------------------------- | ----------------- | -------------- |
-| Cognitive Complexity      | ~80               | 4–6 h          |
-| Duplicate String Literals | ~60               | 2–3 h          |
-| Unused Imports/Variables  | ~40               | 1 h (Lint-Fix) |
-| Missing Switch Defaults   | ~30               | 1 h            |
-| Long Functions (>50 LOC)  | ~25               | 3–4 h          |
-| Rest                      | ~119              | 2–3 h          |
-
-| **Aufwand** | 1–2 Tage |
-| **Status** | ⬜ Ongoing (von ~450 auf 354 reduziert) |
+| Feld        | Detail                                                       |
+| ----------- | ------------------------------------------------------------ |
+| **Was**     | Cognitive Complexity, Duplikate, lange Funktionen reduzieren |
+| **Warum**   | Langfristige Wartbarkeit, sauberes Codebase                  |
+| **Wie**     | ESLint strict scopes + lint-burndown Strategie               |
+| **Aufwand** | 1--2 Tage                                                    |
+| **Status**  | Ongoing                                                      |
 
 ### S3.4 — UI/UX Accessibility Block (`ui-ux-audit.md`)
 
@@ -309,10 +285,9 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 
 - [ ] Lighthouse: Performance ≥0.80, A11y ≥0.90 in CI
 - [ ] `security-full.yml` aktiv und erster Run erfolgreich
-- [ ] Code Smells <200
-- [ ] Alle 5 A11y-Maßnahmen aus ui-ux-audit umgesetzt
-- [ ] Duplicate-Code <70 Major-Blöcke
-- [ ] 0 neue Sonar-Hotspots
+- [ ] ESLint strict scopes: 0 warnings
+- [ ] Alle 5 A11y-Massnahmen aus ui-ux-audit umgesetzt
+- [ ] Duplicate-Code <70 Major-Bloecke
 
 ---
 
@@ -440,21 +415,19 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 ## Abhängigkeiten & Blockermatrix
 
 ```
-S1.1 (Sonar Hotspots)     → S2.2 (Coverage sinnvoll messbar)
-S1.3 (Branch Protection)  → S2.* (alle PRs über PR-Workflow)
-S1.2 (CII Badge)          → S4.2 (Scorecard 10/10)
-S2.2 (Coverage >30%)      → S3.3 (Maintainability sinnvoll)
-S2.4 (Duplicates Welle 1) → S3.5 (Duplicates Welle 2)
-S1–S4 (Quality Infra)     → S5.* (Feature Delivery)
-S5.* (v1.2 Features)      → S6.* (v1.3+ Vision)
+S1.3 (Branch Protection)  -> S2.* (alle PRs ueber PR-Workflow)
+S1.2 (CII Badge)          -> S4.2 (Scorecard 10/10)
+S2.2 (Coverage >30%)      -> S3.3 (Code-Qualitaet)
+S2.4 (Duplicates Welle 1) -> S3.5 (Duplicates Welle 2)
+S1-S4 (Quality Infra)     -> S5.* (Feature Delivery)
+S5.* (v1.2 Features)      -> S6.* (v1.3+ Vision)
 ```
 
 ```mermaid
 graph TD
-    S1.1[S1.1 Sonar Hotspots] --> S2.2[S2.2 Coverage >30%]
     S1.3[S1.3 Branch Protection] --> S2[Sprint 2]
     S1.2[S1.2 CII Badge] --> S4.2[S4.2 Scorecard 10/10]
-    S2.2 --> S3.3[S3.3 Maintainability]
+    S2.2[S2.2 Coverage >30%] --> S3.3[S3.3 Code-Qualitaet]
     S2.4[S2.4 Duplicates W1] --> S3.5[S3.5 Duplicates W2]
     S1[Sprint 1] --> S2
     S2 --> S3[Sprint 3]
@@ -494,7 +467,6 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
 - [ ] Relevante Regressionstests grün
 - [ ] Neue Funktionalität mit Tests abgedeckt
 - [ ] i18n: Beide Sprachen (EN + DE) aktualisiert
-- [ ] Sonar-Findings geschlossen oder als "Remaining" dokumentiert
 - [ ] Handoff-Delta in `docs/next-session-handoff.md` dokumentiert
 
 ### Pro Sprint
@@ -535,7 +507,6 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
     - Produkt-Roadmap: [`ROADMAP.md`](../ROADMAP.md)
     - UI/UX Audit: [`ui-ux-audit.md`](../ui-ux-audit.md)
     - Security Status: [`docs/security-alerts-status.md`](security-alerts-status.md)
-    - Sonar Handoff: [`docs/sonar-handoff-review-2026-03-21.md`](sonar-handoff-review-2026-03-21.md)
     - Session Todo: [`docs/session-activity-todo-2026-03-28.md`](session-activity-todo-2026-03-28.md)
 7. **Conventional Commit Format:** `<type>(<scope>): <description>` — Typen: feat, fix, docs, refactor, test, perf, chore, a11y, i18n, security
 

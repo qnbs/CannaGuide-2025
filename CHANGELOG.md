@@ -8,6 +8,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(voice): 6 new voice commands -- diagnosis, compare strains, random strain, AI status, change model, hydro monitor (Session 71)
+- feat(voice): Levenshtein distance fuzzy alias matching (Pass 2, distance <= 2) in voice command matcher (Session 71)
+- feat(voice): ITTSProvider interface in types.ts, TTSService now implements it (Session 71)
+- fix(readme): Docker badge replaced with static shields.io badge (workflow never ran -- no release tag) (Session 71)
+- test(voice): 15 new tests -- levenshtein (4), fuzzy alias (2), V-05 commands (7), TTS interface (2) (Session 71)
 - a11y(ui): touch targets raised to 44px minimum on PwaInstallBanner, Speakable, CommandPalette, TTSControls, Toast icon buttons (Session 70)
 - a11y(ui): Toast close button focus:ring fixed to focus-visible:ring for keyboard-only focus indication (Session 70)
 - sec(csp): S-03 closed as Won't Fix -- strict-dynamic infeasible for static Vite PWA, active mitigations documented (Session 70)

@@ -2,7 +2,55 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 70) -- UI/UX Accessibility + CSP Finalisierung
+## Latest Session (Session 71) -- Voice Sprint V-05/V-06 + Docker Badge Fix
+
+**Status: v1.4.0-alpha. 1585 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 71)
+
+1. **Docker Badge Fix** -- README.md line 15: replaced broken workflow badge
+   (docker.yml never ran -- no release tag) with static shields.io badge.
+
+2. **V-05: 6 New Voice Commands** -- Added to voiceCommandRegistry.ts:
+   diag_show, strain_compare, strain_random, ai_status, ai_change_model,
+   equip_tab_hydro. All with EN+DE aliases. Total: 29 commands (was 23).
+
+3. **Levenshtein Fuzzy Matching** -- New `levenshtein(a, b)` function (DP,
+   exported). Integrated as Pass 2 in `matchVoiceCommand()` between exact
+   alias and keyword passes. Threshold: distance <= 2 on alias prefix.
+
+4. **V-06: ITTSProvider Interface** -- Formal `ITTSProvider` interface added
+   to types.ts. `TTSService` class now `implements ITTSProvider`. Foundation
+   for future ONNX offline TTS provider swapping.
+
+5. **Community Gist Sharing** -- Confirmed already fully implemented
+   (communityShareService.ts + CommunitySharePanel.tsx + i18n + 3 tests).
+   No changes needed. Skipped.
+
+6. **15 New Tests** -- levenshtein unit (4), fuzzy alias Levenshtein (2),
+   V-05 real-registry commands (7), TTS interface shape + language (2).
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1585 passing, 0 failures (146 test files)
+- Build: clean
+
+### Next Steps
+
+- **N+1: A-01 AI Response Validation** -- Audit all aiService methods, ensure
+  Zod schema validation on every AI response path.
+- **N+2: A-04 RAG Context Window** -- Token counting + truncation in
+  growLogRagService.
+- **N+3: U-01 Keyboard Navigation (full)** -- Playwright keyboard-only tests
+  for all major views, focus trap verification in modals/drawers.
+- **N+4: U-02 Screen Reader (full)** -- axe-core integration into Playwright
+  E2E, automated WCAG violation detection.
+- Continue audit-roadmap-2026-q2 remaining open items.
+
+---
+
+## Previous Session (Session 70) -- UI/UX Accessibility + CSP Finalisierung
 
 **Status: v1.4.0-alpha. 1570 tests passing. TypeScript clean. Build clean.**
 

@@ -16,6 +16,9 @@ import { useFiltersStore } from '@/stores/useFiltersStore'
 import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
 import { setSetting, toggleSetting } from '@/stores/slices/settingsSlice'
 import { waterAllPlants } from '@/stores/slices/simulationSlice'
+import { getReduxSnapshot } from '@/services/uiStateBridge'
+import { allStrainsData } from '@/data/strains'
+import { secureRandom } from '@/utils/random'
 import type { AppDispatch } from '@/stores/store'
 
 // ---------------------------------------------------------------------------
@@ -36,13 +39,34 @@ export interface VoiceCommandDef {
 }
 
 // ---------------------------------------------------------------------------
+// Levenshtein Distance
+// ---------------------------------------------------------------------------
+
+/** Compute edit distance between two strings (DP, O(n*m)). */
+export function levenshtein(a: string, b: string): number {
+    const m = a.length
+    const n = b.length
+    const dp: number[][] = Array.from({ length: m + 1 }, () => Array<number>(n + 1).fill(0))
+    for (let i = 0; i <= m; i++) dp[i]![0] = i
+    for (let j = 0; j <= n; j++) dp[0]![j] = j
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1
+            dp[i]![j] = Math.min(dp[i - 1]![j]! + 1, dp[i]![j - 1]! + 1, dp[i - 1]![j - 1]! + cost)
+        }
+    }
+    return dp[m]![n]!
+}
+
+// ---------------------------------------------------------------------------
 // Matching
 // ---------------------------------------------------------------------------
 
 /**
- * Two-pass matcher:
- * 1. Alias pass  - transcript.startsWith(alias)      -> immediate match
- * 2. Keyword pass - count 3+-char token hits in transcript -> best score >= 2
+ * Three-pass matcher:
+ * 1. Alias pass     - transcript.startsWith(alias)          -> immediate match
+ * 2. Fuzzy alias    - Levenshtein distance <= 2 on aliases  -> best distance wins
+ * 3. Keyword pass   - count 3+-char token hits in transcript -> best score >= 2
  */
 export function matchVoiceCommand(
     transcript: string,
@@ -57,7 +81,25 @@ export function matchVoiceCommand(
         }
     }
 
-    // Pass 2: fuzzy keyword token match
+    // Pass 2: fuzzy alias via Levenshtein (distance <= 2)
+    let fuzzyCmd: VoiceCommandDef | null = null
+    let fuzzyDist = 3 // threshold + 1
+    for (const cmd of commands) {
+        for (const alias of cmd.aliases) {
+            // Compare against the same-length prefix of the transcript
+            const candidate = lower.slice(0, alias.length)
+            const dist = levenshtein(candidate, alias)
+            if (dist > 0 && dist < fuzzyDist) {
+                fuzzyDist = dist
+                fuzzyCmd = cmd
+            }
+        }
+    }
+    if (fuzzyCmd) {
+        return fuzzyCmd
+    }
+
+    // Pass 3: fuzzy keyword token match
     let bestCmd: VoiceCommandDef | null = null
     let bestScore = 0
     for (const cmd of commands) {
@@ -362,6 +404,97 @@ export function buildVoiceCommands(dispatch: AppDispatch): VoiceCommandDef[] {
             aliases: ['toggle high contrast', 'high contrast', 'hoher kontrast'],
             keywords: 'high contrast visibility accessibility bold toggle',
             action: () => dispatch(toggleSetting({ path: 'general.highContrastMode' })),
+        },
+        // ── Diagnosis ─────────────────────────────────────────────────────
+        {
+            id: 'diag_show',
+            group: 'Knowledge',
+            label: 'Show Diagnosis',
+            aliases: [
+                'show diagnosis',
+                'zeige diagnose',
+                'plant diagnosis',
+                'pflanzendiagnose',
+                'leaf diagnosis',
+                'blattdiagnose',
+            ],
+            keywords: 'diagnosis health leaf disease check scan',
+            action: () => {
+                getUISnapshot().setActiveView(View.Knowledge)
+                getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Mentor)
+            },
+        },
+
+        // ── Strain Compare & Random ───────────────────────────────────────
+        {
+            id: 'strain_compare',
+            group: 'Strains',
+            label: 'Compare Strains',
+            aliases: [
+                'compare strains',
+                'vergleiche sorten',
+                'strain comparison',
+                'sortenvergleich',
+            ],
+            keywords: 'compare comparison side strains versus',
+            action: () => {
+                getUISnapshot().setActiveView(View.Strains)
+                useStrainsViewStore.getState().setStrainsViewTab(StrainViewTab.Comparison)
+            },
+        },
+        {
+            id: 'strain_random',
+            group: 'Strains',
+            label: 'Random Strain',
+            aliases: ['random strain', 'zufaellige sorte', 'surprise me', 'ueberrasche mich'],
+            keywords: 'random surprise strain discover pick',
+            action: () => {
+                const strains = allStrainsData
+                if (strains.length > 0) {
+                    const pick = strains[Math.floor(secureRandom() * strains.length)]
+                    if (pick) {
+                        getUISnapshot().setActiveView(View.Strains)
+                        useFiltersStore.getState().setSearchTerm(pick.name)
+                    }
+                }
+            },
+        },
+
+        // ── AI Status & Model Change ──────────────────────────────────────
+        {
+            id: 'ai_status',
+            group: 'AI',
+            label: 'AI Status',
+            aliases: ['ai status', 'ki status', 'model status', 'modell status'],
+            keywords: 'status model loaded info check',
+            action: () => {
+                const aiMode = getReduxSnapshot((s) => s.settings.settings.aiMode)
+                getUISnapshot().addNotification({
+                    message: `AI mode: ${aiMode ?? 'hybrid'}`,
+                    type: 'info',
+                })
+            },
+        },
+        {
+            id: 'ai_change_model',
+            group: 'AI',
+            label: 'Change AI Model',
+            aliases: ['change model', 'modell wechseln', 'switch model', 'modell aendern'],
+            keywords: 'change switch model select llm webllm',
+            action: () => getUISnapshot().setActiveView(View.Settings),
+        },
+
+        // ── Hydro Monitor ─────────────────────────────────────────────────
+        {
+            id: 'equip_tab_hydro',
+            group: 'Equipment',
+            label: 'Show Hydro Monitor',
+            aliases: ['show hydro', 'show ph', 'zeige ph', 'zeige hydro', 'hydro monitor'],
+            keywords: 'hydro ph ec monitor water nutrient',
+            action: () => {
+                getUISnapshot().setActiveView(View.Equipment)
+                getUISnapshot().setEquipmentViewTab(EquipmentViewTab.HydroMonitoring)
+            },
         },
     ]
 }

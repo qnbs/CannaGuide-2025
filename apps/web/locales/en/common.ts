@@ -202,6 +202,7 @@ export const common = {
         title: 'Something went wrong.',
         description:
             'An unexpected error occurred. Please try reloading the application. If the problem persists, you may need to clear your site data.',
+        retry: 'Try Again',
         reload: 'Reload Application',
         safeRecovery: 'Try Safe Recovery',
     },

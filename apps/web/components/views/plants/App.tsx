@@ -30,6 +30,7 @@ import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
 import { PwaInstallBanner } from '@/components/common/PwaInstallBanner'
 import { OfflineIndicator } from '@/components/common/OfflineIndicator'
 import { DevTelemetryPanel } from '@/components/common/DevTelemetryPanel'
+import { WebLlmPreloadBanner } from '@/components/common/WebLlmPreloadBanner'
 
 const CLEAR_AI_HISTORY_ON_EXIT_KEY = 'cg.ai.clear-on-exit.pending'
 
@@ -402,6 +403,7 @@ export const App: React.FC = () => {
             <DevTelemetryPanel />
             <TTSControls />
             <OfflineIndicator />
+            <WebLlmPreloadBanner />
             <PwaInstallBanner
                 deferredPrompt={deferredPrompt}
                 isInstalled={isInstalled}

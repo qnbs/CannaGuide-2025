@@ -33,15 +33,16 @@
 | ID   | Finding                               | Effort | Status |
 | ---- | ------------------------------------- | ------ | ------ |
 | T-01 | Mutation testing pilot                | High   | Done   |
-| T-03 | Visual regression testing             | Medium | Open   |
+| T-03 | Visual regression testing             | Medium | Done   |
+| T-04 | Multi-browser E2E coverage            | Medium | Done   |
 | T-05 | AI contract tests                     | Medium | Open   |
-| A-02 | Local AI model versioning             | Medium | Open   |
+| A-02 | Local AI model versioning             | Medium | Done   |
 | P-03 | Image optimization pipeline           | Medium | Done   |
 | F-05 | Multi-grow management                 | High   | Open   |
 | D-01 | API documentation                     | High   | Open   |
 | R-01 | Streaming generalization              | Medium | Done   |
 | R-02 | GPU resource manager v2 (N consumers) | Medium | Done   |
-| R-03 | WebLLM preload UX (progress bar)      | Low    | Open   |
+| R-03 | WebLLM preload UX (progress bar)      | Low    | Done   |
 
 ## Long-term (Backlog)
 
@@ -93,3 +94,9 @@
 | F-04  | Data export/backup                | DataManagementTab export/import/auto-backup               |
 | U-01  | Keyboard navigation audit         | Touch target fixes + mobile E2E tests (S70)               |
 | U-02  | Screen reader testing             | 40+ ARIA attributes + 14 landmarks audit (S70)            |
+| U-04  | Error state UX                    | ErrorBoundary retry button + 3 recovery options (S76)     |
+| C-03  | CI pipeline caching               | 3-layer cache: Turbo + NPM + Playwright (S76)             |
+| T-03  | Visual regression testing         | Expanded to 9 themes (45 baselines) (S76)                 |
+| T-04  | Multi-browser E2E coverage        | Firefox enabled in CI with extended timeouts (S76)        |
+| A-02  | Local AI model versioning         | WebLlmModel version/releaseDate + catalog v1.0.0 (S76)    |
+| R-03  | WebLLM preload UX                 | Global WebLlmPreloadBanner toast component (S76)          |

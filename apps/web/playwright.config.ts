@@ -31,14 +31,19 @@ export default defineConfig({
             use: { ...devices['Pixel 5'] },
             testMatch: ['mobile-*.e2e.ts', 'screenshots.e2e.ts', 'onboarding.e2e.ts'],
         },
-        // Firefox and WebKit are unreliable in CI (timeouts, missing APIs).
-        // Run locally with: npx playwright test --project=firefox --project=webkit
+        // Firefox runs in CI with extended timeouts.
+        // WebKit is local-only (Safari API gaps: no WebGPU, mixed-content blocks).
+        {
+            name: 'firefox',
+            use: {
+                ...devices['Desktop Firefox'],
+                actionTimeout: 30_000,
+                navigationTimeout: 90_000,
+            },
+            timeout: 120_000,
+        },
         ...(!process.env.CI
             ? [
-                  {
-                      name: 'firefox' as const,
-                      use: { ...devices['Desktop Firefox'] },
-                  },
                   {
                       name: 'webkit' as const,
                       use: {

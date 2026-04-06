@@ -2,7 +2,73 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 75) -- Documentation Audit + CI Fix Sprint
+## Latest Session (Session 76) -- Audit Backlog Sprint (6 Items)
+
+**Status: v1.4.0 Stable. 1626 tests passing (149 files). TypeScript clean (TS2719 only). Build clean. Medium Done 23/28 (5 Open).**
+
+### What Was Done (Session 76)
+
+1. **C-03 CI Pipeline Caching (Done)** -- Verified 3-layer caching
+   already complete: Turbo cache (actions/cache@v4, 3-tier restore
+   keys), NPM cache (setup-node cache:npm + --prefer-offline), Playwright
+   browser cache (lockfile hash). Remote Turbo cache deferred.
+
+2. **U-04 Error State UX (Done)** -- Added "Try Again" retry button to
+   ErrorBoundary that resets error state without page reload.
+   ErrorFallback now has 3 recovery options: retry (component re-render),
+   reload (full page), safe recovery (IndexedDB clear). i18n EN + DE.
+
+3. **T-03 Visual Regression Testing (Done)** -- Expanded themes array
+   in visual-regression.e2e.ts from 2 (midnight, forest) to all 9
+   themes. Creates 5 views x 9 themes = 45 screenshot baselines.
+   CI auto-generates with --update-snapshots.
+
+4. **R-03 WebLLM Preload UX (Done)** -- Created WebLlmPreloadBanner
+   component: fixed-position toast at viewport bottom during auto-preload.
+   Shows model name + percentage + progress bar. Dismissible. Uses
+   existing useWebLlmLoadProgress() hook. Rendered in App.tsx.
+
+5. **A-02 Local AI Model Versioning (Done)** -- Added version and
+   releaseDate fields to WebLlmModel interface. All 4 catalog models
+   pinned with semantic versions. MODEL_CATALOG_VERSION constant (1.0.0).
+   getModelVersion() helper. modelVersion optional field in telemetry
+   InferenceRecord.
+
+6. **T-04 Multi-Browser E2E (Done)** -- Firefox project enabled in CI
+   with extended timeouts (120s). Chromium and Firefox run as separate
+   CI steps -- Firefox is continue-on-error. WebKit stays local-only.
+
+### Verified Metrics
+
+- Tests: 1626 passing (149 files), 0 failures
+- TypeScript: clean (only known RTK TS2719)
+- Build: success
+- Audit: Medium Done 23/28 (5 Open), Low Done 3/10 (7 Open)
+
+### Next Steps
+
+- T-05: AI contract tests (provider response schema validation)
+- F-05: Multi-grow management (High effort, 3-5 days)
+- D-01: API documentation (High effort, 3-5 days)
+- F-02: Social sharing (Medium effort)
+- F-06: Offline sync conflict resolution (High effort)
+- Low-priority backlog: P-04, U-05, I-02, A-03, C-04, D-02
+
+### Planned Executions
+
+**Execution N+1 (T-05):** AI contract tests -- validate provider
+response schemas against Zod types for all 4 AI providers. Scope:
+test files, schema definitions, provider mocks.
+
+**Execution N+2 (Low-priority sprint):** Batch remaining Low items --
+P-04 (SW cache tuning), U-05 (onboarding tracking), A-03 (cost tracking).
+
+**Execution N+3 (F-05):** Multi-grow management -- large feature,
+requires new Redux slice, UI views, data model changes.
+
+---
+
+## Previous Session (Session 75) -- Documentation Audit + CI Fix Sprint
 
 **Status: v1.4.0 Stable. 1626 tests passing (149 files). TypeScript clean (TS2719 only). Build clean. 3 CI failures diagnosed and fixed.**
 

@@ -4,326 +4,49 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
-## [Unreleased]
+## [1.4.0] - 2026-04-06
 
 ### Added
 
-- feat(ci): release-gate.yml workflow -- 4-job release gate (pre-flight, test-suite, build-verify, release-summary) (Session 72)
-- feat(ci): check-audit-backlog.mjs script -- blocks CI on open HIGH-severity audit items (Session 72)
-- feat(ci): audit backlog check step in ci.yml quality job (Session 72)
-- feat(ui): DevTelemetryPanel -- dev-only collapsible overlay for GPU/WorkerBus/RAG/Inference/EcoMode metrics (Session 72)
-- feat(storage): indexedDbPruneService -- quota-aware IndexedDB store pruning (images 500 cap, search 5000 cap) (Session 72)
-- feat(storage): DataManagementTab cleanup now runs pruneOnQuotaThreshold after image cleanup (Session 72)
-- fix(ci): E2E timeout increased from 20min to 30min (step) / 25min to 40min (job) for mobile-chrome tests (Session 72)
-- test(storage): 6 tests for indexedDbPruneService (pruneOldestEntries + pruneOnQuotaThreshold) (Session 72)
-- test(ui): 3 tests for DevTelemetryPanel (render, expand, collapse) (Session 72)
-- feat(voice): 6 new voice commands -- diagnosis, compare strains, random strain, AI status, change model, hydro monitor (Session 71)
-- feat(voice): Levenshtein distance fuzzy alias matching (Pass 2, distance <= 2) in voice command matcher (Session 71)
-- feat(voice): ITTSProvider interface in types.ts, TTSService now implements it (Session 71)
-- fix(readme): Docker badge replaced with static shields.io badge (workflow never ran -- no release tag) (Session 71)
-- test(voice): 15 new tests -- levenshtein (4), fuzzy alias (2), V-05 commands (7), TTS interface (2) (Session 71)
-- a11y(ui): touch targets raised to 44px minimum on PwaInstallBanner, Speakable, CommandPalette, TTSControls, Toast icon buttons (Session 70)
-- a11y(ui): Toast close button focus:ring fixed to focus-visible:ring for keyboard-only focus indication (Session 70)
-- sec(csp): S-03 closed as Won't Fix -- strict-dynamic infeasible for static Vite PWA, active mitigations documented (Session 70)
-- test(e2e): mobile-chrome Playwright project (Pixel 5 viewport) added to playwright.config.ts (Session 70)
-- test(e2e): mobile-responsive.e2e.ts with 3 tests -- bottom nav visibility, nav item switching, modal open/close (Session 70)
-- chore(audit): U-03 closed (mobile E2E), S-03 Won't Fix, U-01/U-02 moved to In Progress (Session 70)
-- feat(workers): typed WorkerBusError class with WorkerErrorCode enum (10 codes) -- all 6 generic Error() converted (K-04) (Session 69)
-- test(workers): WorkerBusError typed error propagation tests (3) (Session 69)
-- chore(readme): ~30 dynamic shields.io badges -- repository activity, tech stack, code quality, security, distribution, project metrics (Session 69)
-- chore(audit): close K-03 (import/no-cycle ESLint), S-01 (5-layer prompt injection defense), K-04 (typed WorkerError), S-04 (key rotation UI), S-05 (SRI N/A) (Session 69)
-- feat(plants): nutrient deficiency decision tree service with 8 question nodes + 9 deficiency results (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl) (Session 68)
-- feat(plants): interactive NutrientDeficiencyWizard component with step-by-step diagnosis, severity badges, symptoms/treatment display (Session 68)
-- feat(plants): AI Scanner / Manual Diagnosis tab toggle in LeafDiagnosisPanel with lazy-loaded wizard (Session 68)
-- feat(i18n): nutrientWizard translations for all 5 locales (EN/DE/ES/FR/NL) -- 8 questions, 9 deficiency results (Session 68)
-- test(plants): nutrientDeficiencyService tests (6), NutrientDeficiencyWizard tests (5), LeafDiagnosisPanel tab tests (2) (Session 68)
-- feat(hydro): ONNX stub model for pH/EC/Temp forecasting (1.1 KB, Reshape+MatMul+Add) (Session 67)
-- feat(hydro): hydroForecastWorker with ONNX WASM inference + weighted moving average fallback (Session 67)
-- feat(hydro): hydroForecastService with trend detection, alert generation, graceful degradation (Session 67)
-- feat(hydro): forecast panel in HydroMonitorView with model status badge, trend arrows, confidence display (Session 67)
-- feat(i18n): hydroMonitoring.forecast translations for all 5 locales (EN/DE/ES/FR/NL) (Session 67)
-- test(hydro): hydroForecastWorker tests (3), hydroForecastService tests (5), HydroMonitorView forecast tests (2) (Session 67)
-- feat(ai): WebLLM model catalog with 4 curated models (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) and GPU-tier auto-selection (Session 66)
-- feat(ai): card-based LLM model selector UI replacing old dropdown in Settings AI tab (Session 66)
-- feat(ai): `selectedLlmModelId` setting with `setLlmModel`/`setLlmModelAuto` reducers (Session 66)
-- feat(ai): `switchModel()` in localAiModelManager + catalog override in resolveModelProfile (Session 66)
-- feat(i18n): modelSelector translations for all 5 locales (EN/DE/ES/FR/NL) (Session 66)
-- test(ai): webLlmModelCatalog tests (9), settingsSlice LLM tests (2), LlmModelSelector UI tests (6) (Session 66)
+- Vision AI Leaf Diagnosis -- ONNX MobileNetV2 PlantVillage model, off-main-thread inference worker, 38-class cannabis mapping, drag-zone upload + camera capture UI (Session 64)
+- Equipment Calculator i18n -- full EN/DE/ES/FR/NL translations for CO2, Humidity Deficit, Light Hanging Height calculators (Session 65)
+- Hydro Forecast Service -- ONNX stub model for pH/EC/Temp forecasting, hydroForecastWorker with WASM inference + weighted moving average fallback, trend detection and alert generation (Session 67)
+- WebLLM Model Catalog -- 4 curated models (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) with GPU-tier auto-selection, card-based LLM model selector UI (Session 66)
+- Nutrient Deficiency Decision Tree Wizard -- 8 question nodes, 9 deficiency results (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl), interactive step-by-step diagnosis UI, i18n for all 5 locales (Session 68)
+- Prompt Injection Allow-List -- 5-layer defense-in-depth (DOMPurify, char normalization, character-class allowlist, 30+ blocklist patterns, length truncation), 9 ALLOWED_TOPIC_PATTERNS (Session 69)
+- WorkerBusError typed Error-Class -- WorkerErrorCode enum (10 codes), all 6 generic Error() calls converted (Session 69)
+- ARIA-Labels, Touch-Targets, Mobile E2E -- 44px minimum touch targets, focus-visible:ring, Pixel 5 viewport E2E, mobile-responsive.e2e.ts with 3 tests (Session 70)
+- Voice Commands V-05 extended -- 6 new commands (diagnosis, compare strains, random strain, AI status, change model, hydro monitor), Levenshtein fuzzy matching (Session 71)
+- ITTSProvider V-06 interface -- ITTSProvider interface in types.ts, TTSService implements it (Session 71)
+- Community Gist Sharing and Import (pre-existing, verified in S71)
+- Release-Gate CI Workflow -- 4-job release gate (pre-flight, test-suite, build-verify, release-summary), check-audit-backlog.mjs script (Session 72)
+- IndexedDB-Quota-Monitoring with Auto-Prune -- indexedDbPruneService (images 500 cap, search 5000 cap), quota-aware pruning integrated into DataManagementTab (Session 72)
+- DevTelemetryPanel -- dev-only collapsible overlay for GPU/WorkerBus/RAG/Inference/EcoMode metrics (Session 72)
+- Heap-based Priority Queue for WorkerBus -- PriorityQueue min-heap with O(log n) and FIFO tiebreaking, VPD=critical priority (Session 60)
+- RAG Persistent Embedding Cache -- IndexedDB LRU (2048 entries, 90-day TTL), model version tracking, hit/miss telemetry (Session 58)
+- Hybrid Semantic+Token RAG Ranking -- 65/35 semantic+token scoring with recency factor (Session 58)
 
 ### Changed
 
-- test: 1570 tests passing (146 test files) (Session 69)
+- localAI.ts refactored: 750 -> 241 lines, extracted inference router + model manager + preload orchestrator (Session 59)
+- WorkerBus: heap priority queue, VPD=critical, simulation=high, ML inference=low (Session 60)
+- RAG: 65/35 semantic+token hybrid ranking with recency factor, embedding fallback to 85/15 token+recency (Session 58)
+- Docker badge replaced with static shields.io badge (workflow never ran -- no release tag) (Session 71)
 
 ### Fixed
 
-- fix(e2e): TOCTOU race condition in pwa-update.deploy.e2e.ts -- merged waitForFunction + evaluate into single atomic polling evaluate (Session 68)
-- feat(hydro): ONNX stub model for pH/EC/Temp forecasting (Session 67)
-- feat(equipment): HydroMonitoring tab in Equipment navigation with Drop icon (Session 65)
-- feat(i18n): hydroMonitoring translations for all 5 locales (EN/DE/ES/FR/NL) (Session 65)
-- test(stores): hydroSlice tests (12 tests: addReading, FIFO pruning, alerts, thresholds) (Session 65)
-- test(equipment): HydroMonitorView tests (4 tests: render, system selector, gauges, form submit) (Session 65)
-
-### Fixed
-
-- fix(i18n): add missing DE `aiPanel.title` translation (Session 65)
-- fix(i18n): translate raw GeneticTrendCategory enums in GrowTechView (Session 65)
-- fix(i18n): thread language through knowledgeRagService prompts (was hardcoded English) (Session 65)
-- fix(i18n): add language instruction to AiEquipmentPanel prompt (Session 65)
-- fix(i18n): translate raw DB keys in CalculatorHistoryPanel (Session 65)
-- fix(security): replace unsafe `as Partial<EncryptedPayload>` in cryptoService with proper narrowing (Session 65)
-- fix(docs): update README badges -- Grok4.20, Claude 4.6 (Session 65)
-
-### Changed
-
-- test: 1527 tests passing (140 test files) (Session 65)
-
-- test(stores): `savedItemsSlice.test.ts` -- 17 tests for setups CRUD, strain tips validation, exports CRUD (Session 63)
-- test(stores): `userStrainsSlice.test.ts` -- 12 tests for add/update/delete/setAll/deleteMultiple (Session 63)
-- docs: `DEPENDENCY-GRAPH.md` -- monorepo package topology, ESLint enforcement, pipeline dependencies (Session 62)
-- docs: `ARCHITECTURE-MIGRATION-PLAN.md` -- service classification and migration priorities (Session 62)
-- feat(lint): add `@cannaguide/desktop` to `no-restricted-imports` boundary rules (Session 62)
-- feat(security): `apps/web/utils/browserApis.ts` -- centralized typed helpers for non-standard browser APIs (Session 61)
-
-### Fixed
-
-- fix(ai): parse `Retry-After` header on HTTP 429 responses from OpenAI-compatible and Anthropic providers instead of hard-coded 60s (Session 63)
-- fix(build): use `import.meta.url`-based `__webRoot` for vite.config.ts path resolution -- fixes Stryker sandbox alias and setupFiles (Session 63)
-- fix(test): add `.stryker-tmp` to vitest exclude to prevent sandbox test pollution (Session 63)
-- fix(stryker): add `dir: "apps/web"` and reduce concurrency to 1 for Codespace compatibility (Session 63)
-- fix(turbo): add 6 missing root-level source files to `build`/`build:gh` inputs (`constants.ts`, `types.ts`, `i18n.ts`, `styles.css`, `securityHeaders.ts`, `simulation.worker.ts`) (Session 62)
-- fix(turbo): add `env` declarations (`BUILD_BASE_PATH`, `VITE_*`) to build tasks for proper cache invalidation (Session 62)
-- fix(turbo): add `package-lock.json` to `globalDependencies` so dependency changes invalidate all caches (Session 62)
-
-### Refactored
-
-- refactor(security): eliminate 8 `as unknown as` double assertions across cryptoService, localAiHealthService, localAiWebGpuService, webLlmDiagnosticsService, aiService (Session 61)
-- refactor(security): eliminate 16 non-null assertions across GenealogyView, GuideView, MentorView, DataManagementTab, strainLookupService, flavonoidDatabase (Session 61)
-- refactor(strains): add `KnownFlavonoid` union type for type-safe flavonoid profile lookups (Session 61)
-
-### Added
-
-- feat(workers): heap-based priority queue for WorkerBus dispatch -- `PriorityQueue<T>` min-heap with O(log n) enqueue/dequeue and FIFO tiebreaking (Session 60)
-- feat(workers): `WorkerPriority` type (`critical | high | normal | low`) with `PRIORITY_VALUES` mapping (Session 60)
-- feat(workers): `getQueueState()` API returning per-priority breakdown, current in-flight, and queued items (Session 60)
-- feat(workers): VPD dispatches wired as `critical` priority, simulation as `high`, ML inference + image gen as `low` (Session 60)
-- test(workers): 22 new tests (10 PriorityQueue unit + 12 WorkerBus priority integration) (Session 60)
-
-### Refactored
-
-- refactor(ai): extract `localAiInferenceRouter.ts` (230 lines) -- cache -> WebLLM -> Transformers.js routing with retry + backoff (Session 59)
-- refactor(ai): extract `localAiModelManager.ts` (84 lines) -- pipeline lifecycle, primary/alt fallback, dispose (Session 59)
-- refactor(ai): extract `localAiPreloadOrchestrator.ts` (165 lines) -- 8-step preload with progress callbacks (Session 59)
-- refactor(ai): rewrite `localAI.ts` as pure facade (750 -> 241 lines) with constructor DI (Session 59)
-
-### Tests
-
-- test(ai): 24 new tests for extracted local AI services (1447 total) (Session 59)
-
-### CI / Infrastructure
-
-- fix(ci): extend commitlint type-enum with a11y, i18n, ci, build, revert, style (Session 59)
-- docs: document commit formatting rules (lowercase subject, 100-char body) in copilot-instructions (Session 59)
-
-### Features
-
-- feat(ai): persistent IndexedDB embedding cache (`ragEmbeddingCacheService.ts`) with LRU eviction (2048 entries, 90-day TTL), model version tracking for cache invalidation, hit/miss telemetry counters (Session 58)
-- feat(ai): hybrid semantic+token RAG ranking in `growLogRagService.ts` -- 60% cosine similarity + 30% normalized BM25-style token score + 10% recency; falls back to 85% token + 15% recency when embeddings unavailable (Session 58)
-- feat(ai): cloud RAG migration -- `geminiService.ts` and `knowledgeRagService.ts` now use async semantic retrieval with keyword fallback (Session 58)
-- feat(ai): background embedding precomputation at app boot -- respects EcoMode and worker availability (Session 58)
-
-### CI / Infrastructure
-
-- fix(ci): resolve TS6133 -- unused `makeEngine` helper removed from localAiWebLlmService.test.ts (Session 49)
-- ci(sonar): add vitest lcov coverage reporting for SonarCloud; `test:coverage` script in apps/web/package.json (Session 50)
-- chore(renovate): migrate matchPackagePatterns to matchPackageNames with /regex/ syntax in .renovaterc.json (Session 50)
-- ci(sonar): non-blocking SonarCloud -- `continue-on-error: true`, `sonar.qualitygate.wait=false` (Session 51)
-- ci(snyk): `--all-projects` flag + snyk monitor step for monorepo vulnerability tracking (Session 51)
-
-### Features
-
-- feat(ai): GPU resource manager v2 -- string registry, GpuPriority (high/normal/low), priority queue, 30s auto-release timeout, `getQueueState()` API (Session 52)
-
----
-
-### Features
-
-- **voice:** V-03 Hotword wake detection -- `VoiceControl.tsx` adds second continuous `SpeechRecognition` instance; regex `hey\s+canna(guide)?/i` triggers 5-second activation window; `hotwordEnabled` guard from `settings.voiceControl.hotwordEnabled`; `aria-live="polite"` status span + `aria-label`/`aria-pressed` on mic button
-- **voice:** V-04 Grow-Log dictation -- new `hooks/useDictation.ts` hook (start/stop/reset, transcript accumulation, `onTranscript` callback, `notAllowed`/`noSpeech`/`generic` typed errors); `LogActionModal.tsx` gains microphone button with live transcript overlay; `plants.voiceDictation.*` i18n keys added to all 5 locales (EN/DE/ES/FR/NL)
-- **voice:** `nativeBridgeService.ts` -- new `requestMicrophonePermission()`: Tauri (`@tauri-apps/plugin-microphone` dynamic import), Capacitor (`@capacitor/microphone`), Browser (`getUserMedia`) platform routing; `src-tauri/capabilities/default.json` extended with `microphone:default`
-
-### Tests
-
-- **voice:** New `hooks/useDictation.test.ts` (15 tests): class-based constructable mock, lifecycle, transcript accumulation, error handling, reset/stop behaviour -- all passing
-- **voice:** New `services/voiceCommandRegistry.test.ts` (33 tests): two-pass matcher coverage, EN+DE aliases, fuzzy keyword scoring, edge cases -- all passing
-
-### Chores
-
-- **dead-code:** Deleted `services/strainCurationService.ts` (412 lines) -- never invoked at runtime
-- **dead-code:** Deleted `workers/strainHydration.worker.ts` (201 lines) -- never invoked at runtime
-- **dead-code:** Deleted `services/strainCurationService.test.ts` -- test for removed service
-
----
-
-### Features
-
-- **voice:** New `services/voiceCommandRegistry.ts` (367 lines) -- centralised voice command definitions; 23 `VoiceCommandDef` objects across 7 groups (Navigation, Strains, Plants, Equipment, Knowledge, AI, Accessibility); EN+DE aliases for each command; two-pass matcher (exact alias startsWith + fuzzy keyword token scoring)
-- **voice:** `listenerMiddleware.ts` voice routing rewritten -- replaces hardcoded 6-command list with `buildVoiceCommands(dispatch)` + `matchVoiceCommand(transcript, commands)` from `voiceCommandRegistry`; 23 fully functional voice commands now route to app actions
-- **voice:** `MentorChatView.tsx` -- AI Mentor responses now auto-read via TTS after stream completion when `settings.tts.enabled`; per-message "read aloud" button (`SpeakerHigh` icon) added; plain-text extraction strips HTML before queuing
-- **voice:** `VoiceSettingsTab.tsx` commands section -- replaced static 6-item display with live registry list from `voiceCommandRegistry`; commands grouped by category, searchable by label; no longer orphaned UI
-
-### Documentation
-
-- **docs/AUDIT_BACKLOG.md:** Voice System (V) section added -- V-01 (Done), V-02 (Done), V-03..V-05 (Open), V-06 (Deferred); summary counts updated
-- **ROADMAP.md:** Voice Sprint V-03/V-04/V-05 added to v1.4 High-Priority; v2.0 ONNX TTS/STT entry updated to Medium
-
----
-
-### Features
-
-- **state:** `devtools` middleware added to all 8 Zustand stores -- `useUIStore`, `useAlertsStore`, `useFiltersStore`, `useTtsStore`, `useIotStore`, `useStrainsViewStore`, `sensorStore`, `useCalculatorSessionStore` -- each with a unique name; `enabled: import.meta.env.DEV` for zero production overhead; all stores now visible in Redux DevTools Extension as named slices
-- **state:** New `services/uiStateBridge.ts` -- central Redux<->Zustand bridge; `initUIStateBridgeFull(getState, dispatch, subscribe)` replaces the private `initUIStoreReduxBridge`; exposes `getReduxSnapshot(selector)` for synchronous reads, `subscribeToRedux(selector, handler)` for reactive subscriptions with cleanup, `dispatchToRedux(action)` for dispatch from Zustand context; all subscriptions auto-cleared on re-init
-- **state:** New `hooks/useStateHealthCheck.ts` -- dev-only hook; checks `onboardingStep` (Zustand) vs `onboardingCompleted` (Redux) consistency; `console.warn` on inconsistency; zero production overhead (tree-shaken)
-- **refactor(state):** `useUIStore.initiateGrowFromStrainList` now uses `getReduxSnapshot` from `uiStateBridge` instead of module-level `_getReduxState` singleton; `initUIStoreReduxBridge` export removed
-
----
-
-### Fixes
-
-- **workerbus:** Fixed debounce timer leak in `workerTelemetryService.ts` -- `debounceTimer` set to `undefined` after callback fires to prevent stale timer ID accumulation
-- **sentry:** Fixed `DataManagementTab.tsx` -- replaced invalid `Sentry.captureMessage(msg, {level, tags})` (wrong Sentry v8 API) with `Sentry.withScope` pattern; tags now correctly attached to event scope
-- **tests:** Fixed `workerBus.test.ts` MockWorker -- `postMessage` signature missing `_transfer?: Transferable[]` param causing type annotation mismatch in Transferable zero-copy tests
-
-### Features
-
-- **workerbus:** AbortController support in `workerBus.ts` -- pre-flight + mid-flight cancellation via `signal?: AbortSignal`; cancelled requests reject with `{code: 'CANCELLED'}`
-- **workerbus:** Transferable zero-copy transfers -- `transferable?: Transferable[]` passed as second arg to `worker.postMessage(req, transferable)`
-- **workerbus:** `DispatchCompleteEvent` interface + `onDispatchComplete(handler) => cleanup` hook
-- **workerbus:** New `workerStateSyncService.ts` -- framework-agnostic handler registry; auto-wires WorkerBus dispatch results to Redux/Zustand; eliminates manual boilerplate at call sites
-- **workerbus:** New `workerMetricsSlice.ts` -- runtime-only RTK slice; `updateWorkerMetrics` action; excluded from IndexedDB persistence; visible in Redux DevTools
-- **workerbus:** New `workerTelemetryService.ts` -- Sentry 10% error-rate alerts + 5-second debounced Redux DevTools metrics flush; immediate flush on error events
-
-### Documentation
-
-- **README:** All metric positions updated to verified current values: 1278 tests, 94 services, 22 hooks, 13 Redux slices, 8 Zustand stores (EN + DE sections + badges + tech table + quality gates)
-- **docs/worker-bus.md:** Full rewrite -- 8-worker table (removed non-existent `vpd-chart`; added `calculation`, `strain-hydrate`, `terpene`); `errorCode?: WorkerErrorCode` in protocol; full P1 Features section; stale Limitations removed
-- **.github/copilot-instructions.md:** 3 new Important Files entries (workerStateSyncService, workerTelemetryService, workerMetricsSlice); Key Patterns #8 updated to 8 workers + P1 features description; workerMetrics runtime-only note in State Management split
-
----
-
-### a11y
-
-- **a11y:** focus-trap restored on all modal dialogs -- `trapFocus` utility applied to `StrainDetailModal`, `PlantModal`, `SettingsModal`; Tab/Shift+Tab cycles within modal; focus returns to trigger element on close
-- **a11y:** `LearningPathView` progressbar -- `aria-label` now uses `knowledgeView.lernpfad.progressLabel` i18n key (`{{done}} of {{total}} steps`) instead of static string; all 5 locales (EN/DE/ES/FR/NL) include the key
-- **a11y:** ESLint `import/no-cycle` rule enabled for `apps/web` -- 0 circular import violations
-
-### Tests
-
-- **knowledge:** 4 new unit tests for `LearningPathView`, `LexikonView`, `DiseaseAtlasView`, `CalculatorHubView` sub-views (render, interaction, Redux wiring)
-- Total: **1323 tests passing** (was 1288)
-
-### Bug Fixes
-
-- **i18n:** `progressLabel` key added to all 5 locale `knowledge.ts` files (`knowledgeView.lernpfad.progressLabel`) -- was missing; `LearningPathView` aria-label rendered raw i18n key as text at runtime
-
-### Documentation
-
-- **docs:** Metric sync across all documentation -- copilot-instructions (1323 tests, 23 hooks), ARCHITECTURE.md (13 slices, 8 stores, 23 hooks, 1323 tests), README.md EN + DE sections (14 occurrences updated)
-
----
-
-### [Previous unreleased]
-
-- **equipment:** `TimerScheduleCalculator` -- 13th calculator; optimal on/off photoperiod per growth stage (seedling/veg/flower/autoflower); optional PPFD + DLI inputs; DLI status color-coding; history save; i18n EN/DE/ES/FR/NL
-- **equipment:** `calculateTimerSchedule` added to `equipmentCalculatorService.ts` -- stage defaults (18/6, 12/12, 20/4), DLI-driven override formula, dliStatus classification
-- **utils:** `unitConversion.ts` -- 18 pure Metric<->Imperial conversion functions (temperature, length, volume, pressure, illuminance, flow, mass); `UnitSystem = 'metric' | 'imperial'`
-- **hooks:** `useUnitSystem.ts` -- Returns `UnitSystem` from Redux language setting (framework for future imperial support)
-- **types:** `calculatorTypes.ts` -- Re-exports all schemas and types from both calculator services + `UnitSystem`
-- **i18n:** `timerSchedule` block added to all 5 locales (`en/de/es/fr/nl/equipment.ts`) -- 16 keys each
-- **fix(i18n):** NL `knowledge.ts` -- 4 occurrences of `'Arpeen'` corrected to `'Terpeen'` (terpeneEntourage + lightSpectrum keys)
-- **i18n:** ES/FR/NL full `knowledgeView.rechner.*` section -- all 8 calculator sub-namespaces (vpd, transpiration, ecTds, lightDli, cannabinoid, terpeneEntourage, waterActivity, leafConductance) with per-calculator labels, units, status, simulate, explainAi, deepDive keys
-- **testing:** Stryker mutation config extended to cover `equipmentCalculatorService.ts`, `knowledgeCalculatorService.ts`, `knowledgeRagService.ts` in addition to Redux slices
-
-### Tests
-
-- **unitConversion.test.ts** -- 27 tests covering all 18 conversion functions with round-trip validation
-- **equipmentCalculatorService.test.ts** -- 15 new TimerSchedule tests (schema, defaults, DLI, status, clamping)
-- **SparklineChart.ct.tsx** -- 11 Playwright Component Tests: SVG role/label, polyline, empty-state, showArea, showDots, highlightLast, custom color/height, single point, x-axis labels
-- **visual-regression.e2e.ts** -- 2 new screenshot tests per theme: `calculator-hub-vpd-{theme}.png`, `calculator-hub-transpiration-{theme}.png` (4 new baselines total)
-- Total: **1228 tests passing** (114 test files)
-
----
-
-## Previous Unreleased
-
-- **equipment:** What-If Sandbox (WhatIfSandbox.tsx) -- collapsible panel with range sliders for room width/depth/height and light wattage; propagates instantly to Ventilation, CO2, and Light Hanging calculators; reset to defaults button; i18n EN/DE/ES/FR/NL
-- **equipment:** useCalculatorSessionStore -- transient Zustand store (no persist) for shared room dimensions and light wattage; bidirectional sync between Sandbox and connected calculators
-- **equipment:** CalculatorHistory -- IndexedDB-backed (CannaGuideDB v5, new 'calculator_history' object store); FIFO cap 20 entries per calculator; save/load/clear CRUD on dbService
-- **equipment:** CalculatorHistoryPanel -- collapsible history panel showing last 20 results per calculator; save button in Co2Calculator and LightHangingCalculator
-- **equipment:** VentilationCalculator -- room dimensions and light wattage now read/write from shared useCalculatorSessionStore (editing in calculator also updates Sandbox)
-- **equipment:** Co2Calculator -- roomVolume auto-derived from shared dimensions (no manual override); save-to-history button + CalculatorHistoryPanel
-- **equipment:** LightHangingCalculator -- wattage now read/write from sharedLightWattage in session store; save-to-history button + CalculatorHistoryPanel
-- **equipment:** equipmentCalculatorService.ts -- new pure-formula service with Zod-validated schemas for CO2 enrichment, Humidity Deficit (Buck 1981 SVP), and Light Hanging Height (inverse-square law) calculations
-- **equipment:** Co2Calculator -- CO2 enrichment calculator with one-time boost + steady-state maintenance rate, safety note, status badges (enrichment/ambient/excess)
-- **equipment:** HumidityDeficitCalculator -- absolute HD calculator using Buck SVP formula; growth-stage-aware optimal ranges; status: low/optimal/high
-- **equipment:** LightHangingCalculator -- light hanging height via inverse-square law with LED/HPS/CMH/T5 efficiency coefficients; DLI at 18 h included
-- **equipment:** Calculators.tsx -- extended CalculatorType union and calculatorList with 3 new entries (CloudArrowUp, Thermometer, Ruler icons)
-- **i18n:** full EN/DE/ES/FR/NL translations for all 3 new equipment calculators (co2, humidityDeficit, lightHanging)
-- **ui(plants):** PlantsView mobile-first layout reordering (order-1..7 CSS grid for optimal mobile UX)
-- **docs(ci):** copilot-instructions.md -- added 4-phase Plan Execution Workflow (Plan Mode -> Agent Mode) section
-
-### Tests
-
-- 40 new unit tests for equipmentCalculatorService (CO2, HD, LHH formulas + Zod schemas)
-- Total: 1108 tests passing (was 1049)
-
-- **knowledge:** expand KnowledgeViewTab from 4 to 8 tabs (lexikon, atlas, rechner, lernpfad added to existing mentor/guide/archive/sandbox)
-- **knowledge:** LexikonView -- searchable 89-term glossary sub-view with 6-category filter (General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease) and animated cards
-- **knowledge:** DiseaseAtlasView -- 22-entry plant disease diagnostic atlas with urgency filter (low/medium/high/critical), severity badge, and detail modal (symptoms/causes/treatment/prevention)
-- **knowledge:** CalculatorHubView -- unified VPD, Nutrient Ratio, and pH/EC calculator hub in a single tabbed sub-view
-- **knowledge:** LearningPathView -- 5 curated grow education learning paths (Beginner First Grow, Environment Mastery, Nutrient Mastery, Pest & Disease Control, Advanced Training) with Redux-backed per-step progress tracking
-- **knowledge:** KnowledgeSubNav -- replaced fixed grid-cols-3 with horizontal scrollable flex bar supporting all 8 tabs with snap scrolling
-- **knowledge:** GuideView -- full-text article search, article read-progress tracking (Redux + badge), GrowTech 2026 article group, Genetics article group (3 articles each)
-- **data:** data/diseases.ts -- 22 DiseaseEntry objects across 5 categories (deficiency x8, toxicity x2, environmental x4, pest x4, disease x3)
-- **data:** data/learningPaths.ts -- 5 LearningPath objects with step-by-step program definitions
-- **data:** data/lexicon.ts -- expanded from 39 to 89 entries; added Nutrient category (16 entries), Disease category (13 entries), 22+ additional General entries
-- **knowledge,redux:** knowledgeSlice -- added learningPathProgress state; new actions completeLearningStep, resetLearningPath, setLearningPathProgress
-- **knowledge,redux:** selectors.ts -- added selectLearningPathProgress
-- **help:** HelpView + LexiconCard -- added Nutrient and Disease categories with green/red color tokens to LexiconCategory type
-- **i18n:** knowledge namespace (EN+DE) -- full new key trees for tabs.lexikon/atlas/rechner/lernpfad/navLabel, guide.growTech/genetics/searchPlaceholder/noResults/readProgress, lexikon._, atlas._, rechner._, lernpfad._ including all 22 disease entries localized in both languages
-- **i18n:** help namespace (EN+DE) -- added nutrients (16 terms) and diseases (13 terms) sections to helpView.lexicon; extended categories
-
-### Tests
-
-- knowledgeSlice.test.ts: updated fixtures with learningPathProgress initial state
-- Total: 1049 tests across 104 test files (unchanged -- no new test files in this session)
-
----
-
-### Features (Session 25-26 Entourage Science)
-
-- **strains:** entourage effect science -- terpene/cannabinoid/flavonoid interaction enrichment (TerpeneInteraction, FlavonoidDataPoint types; TERPENE_SYNERGIES map for 12 terpenes, FLAVONOID_PROFILES for 6 flavonoids, TYPE_FLAVONOIDS)
-- **strains:** enrichTerpeneDataPoints(), buildFlavonoidDataPoints(), calculateEntourageScore(), shannonDiversity() in strainLookupService
-- **strains:** EntourageScore SVG ring chart, FlavonoidBar recharts chart, TerpeneDetailList with interaction badges in StrainLookupSection
-- **schemas:** terpeneInteractionSchema, enhancedTerpeneSchema, flavonoidInteractionSchema, entourageInsightSchema (Zod) in strainSchemas.ts
-- **i18n:** entourage, flavonoids, terpeneDetails keys added to EN + DE strains namespace
-- **strains:** extend multi-API lookup pipeline with The Cannabis API as 5th source (confidence 65%, dual-endpoint fallback)
-- **strains:** improve Otreeba integration with dual-endpoint variant + dual response-shape parsing
-- **strains:** add Web Share API button to StrainLookupSection ResultCard
-- **strains:** add 'cannabis-api' confidence badge (violet) and update 5-source loading progress indicator
-- **security:** AES-256-GCM encryption for IoT MQTT password via cryptoService (useIotStore)
-- **security:** IoT raw password no longer persisted to localStorage; loadPersistedPassword() decrypts on boot
-- **services:** add indexedDbMonitorService with quota inspection, per-store entry counts, and health warnings
-
-### Tests
-
-- 33 new tests in strainLookupService.test.ts (entourage science, terpene enrichment, diversity calculation)
-- 16 new tests in strainSchemas.test.ts (new Zod schemas validation)
-- Total: 1049 tests across 104 test files (all passing)
-
-### Bug Fixes
-
-- **iot:** IotSettingsTab setPassword call updated to async (void) to avoid unhandled promise
-- **test:** useIotStore.test.ts updated for async setPassword and beforeEach reset
+- cryptoService decrypt ArrayBuffer bug (Hotfix 3d064a4)
+- E2E Deploy-Tests: IoT 8 SKIP, WebGPU 5 SKIP for cross-browser stability (Session 57)
+- TOCTOU race condition in pwa-update.deploy.e2e.ts -- atomic polling evaluate (Session 68)
+- WorkerBus debounce timer leak in workerTelemetryService.ts (Session 48)
+- Sentry DataManagementTab API mismatch -- withScope pattern for v8 (Session 48)
+
+### Security
+
+- AI Prompt Injection 5-Layer-Defense completed (S-01 closed)
+- ESLint import/no-cycle as CI-blocking step (K-03 closed)
+- Key-Rotation-Warning UI with 90-day window, auto-clear on expiry (S-04 closed)
+- CSP consistency validated across 5 delivery paths, S-03 closed as Won't Fix (Session 70)
 
 ---
 

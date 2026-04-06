@@ -5,7 +5,7 @@
 CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for cannabis cultivation management. Built with React 19, TypeScript (strict), Redux Toolkit, and Google Gemini AI. The app is 100% offline-first with dual IndexedDB persistence.
 
 **Live:** https://qnbs.github.io/CannaGuide-2025/
-**Version:** 1.3.0-beta
+**Version:** 1.4.0
 
 ---
 

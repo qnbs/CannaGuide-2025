@@ -25,9 +25,12 @@ flowchart TD
     localAiFallbackService["localAiFallbackService"]
     localAiHealthService["localAiHealthService"]
     localAiImageSimilarityService["localAiImageSimilarityService"]
+    localAiInferenceRouter["localAiInferenceRouter"]
     localAiInfrastructureService["localAiInfrastructureService"]
     localAiLanguageDetectionService["localAiLanguageDetectionService"]
+    localAiModelManager["localAiModelManager"]
     localAiNlpService["localAiNlpService"]
+    localAiPreloadOrchestrator["localAiPreloadOrchestrator"]
     localAiPreloadService["localAiPreloadService"]
     localAiPromptHandlers["localAiPromptHandlers"]
     localAiStreamingService["localAiStreamingService"]
@@ -61,30 +64,43 @@ flowchart TD
     geminiService --> localAI
     growLogRagService --> localAiEmbeddingService
     inferenceQueueService --> workerBus
-    localAI --> localAIModelLoader
     localAI --> localAiInfrastructureService
-    localAI --> inferenceQueueService
     localAI --> localAiStreamingService
     localAI --> localAiWebLlmService
     localAI --> localAiDiagnosisService
     localAI --> localAiPromptHandlers
-    localAI --> localAiEmbeddingService
-    localAI --> localAiNlpService
-    localAI --> localAiLanguageDetectionService
-    localAI --> localAiImageSimilarityService
+    localAI --> localAIModelLoader
+    localAI --> localAiInferenceRouter
+    localAI --> localAiModelManager
+    localAI --> localAiPreloadOrchestrator
     localAiCacheService --> indexedDbLruCache
     localAiDiagnosisService --> localAIModelLoader
     localAiDiagnosisService --> localAiFallbackService
+    localAiDiagnosisService --> workerBus
     localAiEmbeddingService --> inferenceQueueService
     localAiHealthService --> localAIModelLoader
     localAiHealthService --> localAiInfrastructureService
     localAiImageSimilarityService --> inferenceQueueService
+    localAiInferenceRouter --> localAiInfrastructureService
+    localAiInferenceRouter --> inferenceQueueService
+    localAiInferenceRouter --> localAiWebLlmService
+    localAiInferenceRouter --> localAIModelLoader
     localAiInfrastructureService --> LocalAIInfrastructure
     localAiInfrastructureService --> localAiCacheService
     localAiInfrastructureService --> localAiTelemetryService
     localAiInfrastructureService --> localAiPreloadService
     localAiLanguageDetectionService --> inferenceQueueService
+    localAiModelManager --> localAIModelLoader
+    localAiModelManager --> localAiWebLlmService
+    localAiModelManager --> localAiDiagnosisService
+    localAiModelManager --> localAiInferenceRouter
     localAiNlpService --> inferenceQueueService
+    localAiPreloadOrchestrator --> localAiWebLlmService
+    localAiPreloadOrchestrator --> localAiModelManager
+    localAiPreloadOrchestrator --> localAiEmbeddingService
+    localAiPreloadOrchestrator --> localAiNlpService
+    localAiPreloadOrchestrator --> localAiLanguageDetectionService
+    localAiPreloadOrchestrator --> localAiImageSimilarityService
     localAiPreloadService --> localAI
     localAiPreloadService --> localAiHealthService
     localAiPreloadService --> localAIModelLoader

@@ -1,6 +1,6 @@
 {
     "name": "@cannaguide/web",
-    "version": "1.4.0-alpha",
+    "version": "1.4.0",
     "private": true,
     "type": "module",
     "scripts": {

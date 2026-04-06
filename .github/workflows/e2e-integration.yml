@@ -6,16 +6,12 @@ on:
         paths:
             - 'docker/iot-mocks/**'
             - 'docker/esp32-mock/**'
-            - 'docker/tauri-mock/**'
-            - 'docker-compose.yml'
             - '.github/workflows/e2e-integration.yml'
     pull_request:
         branches: [main]
         paths:
             - 'docker/iot-mocks/**'
             - 'docker/esp32-mock/**'
-            - 'docker/tauri-mock/**'
-            - 'docker-compose.yml'
             - '.github/workflows/e2e-integration.yml'
     workflow_dispatch:
 

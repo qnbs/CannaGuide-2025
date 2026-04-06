@@ -97,38 +97,3 @@ updates:
       commit-message:
           prefix: 'chore'
           include: scope
-    - package-ecosystem: docker
-      directory: '/'
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 3
-      labels:
-          - dependencies
-          - docker
-      commit-message:
-          prefix: 'chore'
-          include: scope
-    - package-ecosystem: docker
-      directory: '/docker/esp32-mock'
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 2
-      labels:
-          - dependencies
-          - docker
-    - package-ecosystem: docker
-      directory: '/docker/tauri-mock'
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 2
-      labels:
-          - dependencies
-          - docker
-    - package-ecosystem: docker
-      directory: '/docker/iot-mocks'
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 2
-      labels:
-          - dependencies
-          - docker

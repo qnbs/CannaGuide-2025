@@ -72,13 +72,6 @@
         "gate:push": "npm run check:commit-identity && npm run lint:changed && npm run typecheck && npm run test -- --run && npm run prettier:check:changed",
         "pr:push": "node ./scripts/github/pr-push.mjs",
         "security:scan": "npm run security:prettier && npm run security:trojan-source && npm run security:eslint && npm run security:pre-commit && npm run security:secrets && npm run security:semgrep && npm run security:socket && npm run security:snyk && npm run security:grype && npm run security:scorecard",
-        "docker:build": "docker build -t cannaguide-2025:local .",
-        "docker:run": "docker run --rm -p 8080:8080 cannaguide-2025:local",
-        "tauri:dev": "npx tauri dev",
-        "tauri:build": "npx tauri build",
-        "cap:sync": "npx cap sync",
-        "cap:open:android": "npx cap open android",
-        "cap:open:ios": "npx cap open ios",
         "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0",
         "changelog:latest": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s",
         "docs:ai-core": "typedoc --entryPoints packages/ai-core/src/index.ts --out docs/api/ai-core --tsconfig packages/ai-core/tsconfig.json --plugin typedoc-plugin-markdown 2>/dev/null || typedoc --entryPoints packages/ai-core/src/index.ts --out docs/api/ai-core --tsconfig packages/ai-core/tsconfig.json"

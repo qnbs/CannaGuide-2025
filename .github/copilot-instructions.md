@@ -21,10 +21,10 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1626 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1614 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
-- **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
+- **Distribution:** GitHub Pages, Netlify (PR previews)
 
 ### Monorepo Layout
 
@@ -33,7 +33,7 @@ The project uses **npm workspaces + TurboRepo** with ML dependencies isolated in
 ```
 package.json             # Workspace root (turbo, eslint, prettier -- NO app deps)
 turbo.json               # TurboRepo pipeline (build, dev, test, lint, typecheck)
-tsconfig.json            # References-only (apps/web, apps/desktop, packages/*)
+tsconfig.json            # References-only (apps/web, packages/*)
 
 apps/
   web/                   # Main PWA (React 19 + Vite 7)
@@ -59,7 +59,6 @@ apps/
     lib/                 # Utility library (cn(), VPD calculations)
     public/              # Static assets, SW, manifest
     tests/               # E2E (tests/e2e/) + Component tests (tests/ct/)
-  desktop/               # Tauri v2 desktop wrapper (Rust IPC commands)
 
 packages/
   ai-core/               # Shared AI types, provider configs, key validation, ML isolation
@@ -77,9 +76,8 @@ packages/
       tailwind-preset.cjs # Shared Tailwind preset (colors, keyframes, animations, shadows)
   iot-mocks/             # ESP32 sensor mock server (port 3001)
 
-src-tauri/               # Tauri v2 desktop config (Rust backend + capabilities)
 scripts/                 # Build/lint/merge scripts
-docker/                  # nginx config, esp32-mock, tauri-mock
+docker/                  # IoT mock servers (ESP32 sensor simulator)
 docs/                    # Developer guides, roadmap
 .github/                 # 22 CI/CD workflows, issue templates
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
@@ -133,9 +131,9 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 9. **Seedbank API:** `seedbankService.ts` provides deterministic mock seed pricing/availability. SeedFinder.eu API permanently removed (dead since mid-2024). 5 hardcoded seedbanks with hash-based availability. 5-min in-memory TTL cache. `isLocalOnlyMode()` guard.
 
-10. **Proactive Smart Coach:** `proactiveCoachService.ts` subscribes to the Redux store and monitors plant environment values (temperature, humidity, VPD, pH, EC) against safe thresholds. When a metric breaches limits, the service requests plant-specific advice via `aiFacade.aiService.getPlantAdvice()` and pushes a `SmartAlert` into `useAlertsStore` (Zustand). 2-hour per-metric per-plant cooldown prevents alert spam. Initialised in `index.tsx` after store hydration. `ProactiveAlertBanner.tsx` renders active alerts in `DetailedPlantView`. Native OS push notifications dispatched via `nativeBridgeService`.
+10. **Proactive Smart Coach:** `proactiveCoachService.ts` subscribes to the Redux store and monitors plant environment values (temperature, humidity, VPD, pH, EC) against safe thresholds. When a metric breaches limits, the service requests plant-specific advice via `aiFacade.aiService.getPlantAdvice()` and pushes a `SmartAlert` into `useAlertsStore` (Zustand). 2-hour per-metric per-plant cooldown prevents alert spam. Initialised in `index.tsx` after store hydration. `ProactiveAlertBanner.tsx` renders active alerts in `DetailedPlantView`. Browser push notifications dispatched via `nativeBridgeService`.
 
-11. **Native Bridge:** `nativeBridgeService.ts` provides unified notification dispatch across platforms. Detects runtime: Tauri v2 (`__TAURI_INTERNALS__`), Capacitor (`window.Capacitor.isNativePlatform()`), Browser (Web Notification API). All native plugin imports are dynamic for tree-shaking. Permissions requested at app bootstrap. Tauri uses `@tauri-apps/plugin-notification` (registered in `main.rs`, capabilities in `default.json`). Capacitor uses `@capacitor/local-notifications`. Both are `optionalDependencies` in `apps/web/package.json`, stubbed by `optionalMlPlugin()` in `vite.config.ts` when not installed.
+11. **Notification Service:** `nativeBridgeService.ts` provides browser notification dispatch via the Web Notification API. Permissions requested at app bootstrap. Gracefully degrades to no-op when permissions are denied.
 
 12. **State Management Split:**
     - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner. RTK Query for AI API caching (9 endpoints). `workerMetrics` is a runtime-only slice (not persisted) for WorkerBus telemetry visibility in Redux DevTools.
@@ -178,8 +176,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **AES-256-GCM** encryption for API keys at rest (cryptoService.ts)
 - **EXIF/GPS stripping** before image AI transmission
 - **30+ regex patterns** block prompt injection in AI prompts
-- **CSP hardened** across 5 delivery paths (`securityHeaders.ts`, `index.html`, `netlify.toml`, `nginx.conf`, `tauri.conf.json`) with `'self' 'unsafe-inline' 'wasm-unsafe-eval'` (static Vite PWA -- nonce plugin deferred to S-03)
-- **Tauri v2 capabilities**: Minimal permission set in `src-tauri/capabilities/default.json`
+- **CSP hardened** across 3 delivery paths (`securityHeaders.ts`, `index.html`, `netlify.toml`) with `'self' 'unsafe-inline' 'wasm-unsafe-eval'` (static Vite PWA -- nonce plugin deferred to S-03)
 - **Local-only mode guard**: All outbound network services must check `isLocalOnlyMode()` before fetch
 - **No `console.log`** in production — use `console.debug` (stripped) or `console.warn`/`console.error`
 - **No `console.warn`** for error detail logging — use `console.debug` to prevent info leaks
@@ -225,7 +222,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1626 tests, 0 failures
+- Baseline: 1614 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 40 minutes (job)
@@ -305,13 +302,10 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Deployment
 
-| Target           | Method                                  | Trigger                     |
-| ---------------- | --------------------------------------- | --------------------------- |
-| GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`              |
-| Netlify          | `netlify.toml`                          | Push + PR (preview deploys) |
-| Docker           | `.github/workflows/docker.yml`          | Release tag `v*`            |
-| Tauri Desktop    | `.github/workflows/tauri-build.yml`     | Release tag `v*`            |
-| Capacitor Mobile | `.github/workflows/capacitor-build.yml` | Release tag `v*`            |
+| Target       | Method                         | Trigger                     |
+| ------------ | ------------------------------ | --------------------------- |
+| GitHub Pages | `.github/workflows/deploy.yml` | Push to `main`              |
+| Netlify      | `netlify.toml`                 | Push + PR (preview deploys) |
 
 ---
 
@@ -427,7 +421,6 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/localAiHealthService.ts`                 | Device classification, health monitoring                                                                                                                                   |
 | `apps/web/services/equipmentCalculatorService.ts`           | Pure-formula calculator service: CO2 enrichment, Humidity Deficit (Buck SVP), Light Hanging Height (Zod-validated)                                                         |
 | `apps/web/services/sentryService.ts`                        | Sentry error tracking initialization                                                                                                                                       |
-| `apps/web/services/tauriIpcService.ts`                      | Tauri binary IPC bridge (image + sensor)                                                                                                                                   |
 | `apps/web/services/pluginService.ts`                        | Plugin architecture (nutrient, hardware, grow)                                                                                                                             |
 | `apps/web/services/seedbankService.ts`                      | Deterministic mock seed pricing (SeedFinder removed)                                                                                                                       |
 | `apps/web/services/nutrientDeficiencyService.ts`            | Decision tree for visual nutrient deficiency diagnosis (8 nodes, 9 results: N/P/K/Mg/Ca/Fe/Mn/Mo/Cl)                                                                       |
@@ -437,7 +430,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/workerStateSyncService.ts`               | Framework-agnostic handler registry -- auto-wires WorkerBus results to Redux/Zustand                                                                                       |
 | `apps/web/services/workerTelemetryService.ts`               | Sentry 10% error-rate alerts + 5s debounced Redux DevTools metrics flush                                                                                                   |
 | `apps/web/services/proactiveCoachService.ts`                | Smart coach: threshold monitoring + AI advice + cooldown                                                                                                                   |
-| `apps/web/services/nativeBridgeService.ts`                  | Unified native notification dispatch (Tauri/Capacitor/Web)                                                                                                                 |
+| `apps/web/services/nativeBridgeService.ts`                  | Web Notification API dispatch (browser-only)                                                                                                                               |
 | `apps/web/services/strainLookupService.ts`                  | 5-source Strain Intelligence Lookup cascade + entourage effect science                                                                                                     |
 | `apps/web/services/indexedDbMonitorService.ts`              | IndexedDB quota inspection, per-store entry counts, health warnings                                                                                                        |
 | `apps/web/services/indexedDbPruneService.ts`                | Quota-aware IndexedDB store pruning (images 500 cap, search 5000 cap), cursor-based oldest-first deletion                                                                  |
@@ -482,8 +475,6 @@ After implementation is complete with all validations passing, update **all affe
 | `scripts/typecheck-filter.mjs`                              | Typecheck with RTK TS2719 filter (known upstream bug)                                                                                                                      |
 | `scripts/generate-service-map.mjs`                          | AI service Mermaid dependency map generator                                                                                                                                |
 | `scripts/github/pr-push.mjs`                                | Automated PR workflow (branch -> PR -> auto-merge -> cleanup)                                                                                                              |
-| `src-tauri/capabilities/default.json`                       | Tauri v2 capability permissions (minimal set)                                                                                                                              |
-| `apps/desktop/src/ipc.rs`                                   | Tauri Rust IPC commands (image, sensor, sysinfo)                                                                                                                           |
 | `.devcontainer/devcontainer.json`                           | DevContainer config (Dockerfile build, ports, extensions)                                                                                                                  |
 | `.devcontainer/Dockerfile`                                  | Dev container image (Playwright + system deps)                                                                                                                             |
 | `.devcontainer/setup.sh`                                    | postCreateCommand (workspace-filtered install, no ML)                                                                                                                      |

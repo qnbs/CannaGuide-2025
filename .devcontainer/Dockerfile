@@ -9,8 +9,7 @@ LABEL org.opencontainers.image.source="https://github.com/qnbs/CannaGuide-2025"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-    VITE_ESP32_URL=http://localhost:3001 \
-    VITE_TAURI_MOCK_URL=http://localhost:3002
+    VITE_ESP32_URL=http://localhost:3001
 
 # System packages in one RUN layer + cache cleanup
 # gh CLI requires official GitHub apt repo (not in default Ubuntu repos)

@@ -32,8 +32,8 @@
 ## 1. Executive Summary
 
 Die IoT-Integration in CannaGuide 2025 ist seit dem 30.03.2026 aktiv und umfasst einen vollstaendigen
-MQTT-over-WebSocket-Client, Web Bluetooth LE, Tauri IPC, einen AI-Proactive-Smart-Coach und
-Docker-basierte ESP32-Mocks. Die Integration ist 100% client-side, privacy-first und offline-faehig.
+MQTT-over-WebSocket-Client, Web Bluetooth LE, einen AI-Proactive-Smart-Coach und
+ESP32-Mocks. Die Integration ist 100% client-side, privacy-first und offline-faehig.
 
 **Gesamtnote: 6.8 / 10** -- Technisch ambitioniert und nahtlos in die App eingebettet, aber noch
 "Minimum Viable IoT". Es fehlt Robustheit, Protokoll-Tiefe, Hardware-Docs und echte Firmware-Templates.
@@ -47,13 +47,12 @@ hardware-ready Smart-Grow-Telemetrie-Loesung.
 
 ### 2.1 IoT-Services (5 Module, ~1020 LOC)
 
-| Service         | Datei                                            | LOC  | Funktion                                                                                              |
-| --------------- | ------------------------------------------------ | ---- | ----------------------------------------------------------------------------------------------------- |
-| MQTT Client     | `apps/web/services/mqttClientService.ts`         | 238  | Singleton MQTT-Client, subscribt Topics, dispatcht Redux `addJournalEntry` mit `source: 'iot_sensor'` |
-| MQTT Sensor     | `apps/web/services/mqttSensorService.ts`         | 356  | Callback-basierter Sensor-Mapper, fuettert `sensorStore` (Zustand), validiert Payloads inline         |
-| Web Bluetooth   | `apps/web/services/webBluetoothSensorService.ts` | 105  | One-Shot BLE-Read via `navigator.bluetooth.requestDevice()`, ESP32 GATT Characteristics               |
-| Tauri IPC       | `apps/web/services/tauriIpcService.ts`           | ~200 | Binary IPC Decoder (little-endian f32 Triplets: temp, humidity, pH) + Image + Sysinfo                 |
-| Proactive Coach | `apps/web/services/proactiveCoachService.ts`     | 226  | Threshold-Monitoring -> AI-Advice -> Alerts (2h Cooldown, max 2 concurrent AI calls)                  |
+| Service         | Datei                                            | LOC | Funktion                                                                                              |
+| --------------- | ------------------------------------------------ | --- | ----------------------------------------------------------------------------------------------------- |
+| MQTT Client     | `apps/web/services/mqttClientService.ts`         | 238 | Singleton MQTT-Client, subscribt Topics, dispatcht Redux `addJournalEntry` mit `source: 'iot_sensor'` |
+| MQTT Sensor     | `apps/web/services/mqttSensorService.ts`         | 356 | Callback-basierter Sensor-Mapper, fuettert `sensorStore` (Zustand), validiert Payloads inline         |
+| Web Bluetooth   | `apps/web/services/webBluetoothSensorService.ts` | 105 | One-Shot BLE-Read via `navigator.bluetooth.requestDevice()`, ESP32 GATT Characteristics               |
+| Proactive Coach | `apps/web/services/proactiveCoachService.ts`     | 226 | Threshold-Monitoring -> AI-Advice -> Alerts (2h Cooldown, max 2 concurrent AI calls)                  |
 
 ### 2.2 State Stores (2 Module, ~194 LOC)
 
@@ -81,7 +80,6 @@ hardware-ready Smart-Grow-Telemetrie-Loesung.
 | ---------- | --------------------------------- | ---- | ------------------------------------------------------------- |
 | ESP32 Mock | `docker/esp32-mock/server.mjs`    | 3001 | HTTP-Sensor-Simulator mit Diurnal-Zyklus (18h Tag / 6h Nacht) |
 | IoT Mocks  | `docker/iot-mocks/src/server.mjs` | 3001 | Erweiterte Kopie des ESP32-Mocks                              |
-| Tauri Mock | `docker/tauri-mock/`              | 3002 | IPC-Bridge-Simulator                                          |
 
 **ESP32-Mock-Details:**
 
@@ -179,19 +177,7 @@ webBluetoothSensorService.readEsp32EnvironmentalSensor()
 dispatch(setGlobalEnvironment())  [Redux, One-Shot]
 ```
 
-### 3.3 Tauri IPC-Pfad (Desktop)
-
-```
-tauriIpcService.decodeSensorBinary(bytes)
-    |-- invoke('read_sensor_binary')  [Rust IPC]
-    |-- Decode little-endian f32 Triplets: [temp, hum, ph, ...]
-    |-- JS DataView Fallback
-    |
-    v
-Redux dispatch / sensorStore
-```
-
-### 3.4 AI Smart Coach Integration
+### 3.3 AI Smart Coach Integration
 
 ```
 Redux Store (plant environment state)
@@ -216,8 +202,8 @@ useAlertsStore.addAlert({ metric, triggerValue, aiAdvice })
 
 1. **100% client-side und offline-faehig** -- kein Backend, keine Cloud-Pflicht, maximale DSGVO-Privacy
 2. **Nahtlose Integration** in bestehende Kern-Features (Digital Twin, VPD, AI-Coach, Journal)
-3. **Drei Sensor-Pfade** (MQTT, BLE, Tauri IPC) -- maximale Hardware-Flexibilitaet
-4. **Mock-Infrastruktur** bereits produktiv und CI-integriert (Docker Compose)
+3. **Zwei Sensor-Pfade** (MQTT, BLE) -- maximale Hardware-Flexibilitaet
+4. **Mock-Infrastruktur** bereits produktiv und CI-integriert
 5. **Proactive Smart Coach** mit AI-basierter Beratung bei Threshold-Breaches
 6. **Robuste Inline-Validierung** (Clamping, Payload-Size, URL/Subtopic-Checks)
 7. **E2E-Testabdeckung** fuer Edge Cases (Offline, Absurde Werte, Paketverlust)
@@ -243,7 +229,7 @@ useAlertsStore.addAlert({ metric, triggerValue, aiAdvice })
 
 - WebSocket bricht bei Tab-Wechsel/Sleep/DOZE (Mobile) ab
 - Hoher Batterieverbrauch bei permanentem Keep-Alive
-- Kein nativer Bluetooth/Zigbee/WiFi-Direct (nur via Tauri-Plugin moeglich)
+- Kein nativer Bluetooth/Zigbee/WiFi-Direct (nur via Web APIs moeglich)
 - Service Worker kann WS-Connections nicht aufrechterhalten
 
 ### 5.3 Security
@@ -312,7 +298,7 @@ useAlertsStore.addAlert({ metric, triggerValue, aiAdvice })
 | #   | Massnahme                                                                     | Prioritaet | Begruendung                                |
 | --- | ----------------------------------------------------------------------------- | ---------- | ------------------------------------------ |
 | 6   | **Credentials verschluesseln** mit Web Crypto AES-256-GCM (wie cryptoService) | H          | localStorage ist XSS-angreifbar            |
-| 7   | **PIN/Biometrie-Lock** fuer Gateway-Settings (Capacitor/Tauri)                | M          | Grow-Daten sind sensibel                   |
+| 7   | **PIN/Biometrie-Lock** fuer Gateway-Settings (Web Crypto)                     | M          | Grow-Daten sind sensibel                   |
 | 8   | **Topic-Namespace** mit User-spezifischem Prefix                              | M          | Verhindert Cross-Talk bei geteiltem Broker |
 | 9   | **Audit-Log** aller IoT-Connections (IndexedDB)                               | M          | Nachvollziehbarkeit bei Security-Incidents |
 
@@ -327,15 +313,15 @@ useAlertsStore.addAlert({ metric, triggerValue, aiAdvice })
 
 ### D. Feature-Erweiterungen und Perfektionierung (M-L)
 
-| #   | Massnahme                                                                   | Prioritaet | Begruendung                                     |
-| --- | --------------------------------------------------------------------------- | ---------- | ----------------------------------------------- |
-| 14  | **Multi-Broker / Multi-Gateway** Support (Zimmer 1 + Zimmer 2)              | M          | Real-World Grows haben mehrere Zonen            |
-| 15  | **ESP32 / Tasmota / Sonoff Ready-Made Templates** (Topics + Firmware-Links) | M          | 90% der Grower brauchen Copy-Paste-Loesung      |
-| 16  | **Bluetooth Low Energy (BLE)** via Web BLE API + Tauri-Native               | L          | Batteriebetriebene Mini-Sensoren                |
-| 17  | **VPD-Automation Rules Engine** ("Wenn VPD > 1.2 -> Ventilator via MQTT")   | L          | Echte Grow-Automation direkt aus der App        |
-| 18  | **Export** von Telemetry als CSV/PDF + Dashboard-Charts                     | M          | Grower brauchen Reports fuer Optimierung        |
-| 19  | **AR-Plant-Overlay** mit live Sensor-Overlay auf Kamera-Feed                | L          | Roadmap v2.0 Feature (Capacitor Camera + TF.js) |
-| 20  | **Community IoT-Sharing** (anonymisierte Telemetry-Gists)                   | L          | Strain-spezifische Grow-Daten aggregieren       |
+| #   | Massnahme                                                                   | Prioritaet | Begruendung                                   |
+| --- | --------------------------------------------------------------------------- | ---------- | --------------------------------------------- |
+| 14  | **Multi-Broker / Multi-Gateway** Support (Zimmer 1 + Zimmer 2)              | M          | Real-World Grows haben mehrere Zonen          |
+| 15  | **ESP32 / Tasmota / Sonoff Ready-Made Templates** (Topics + Firmware-Links) | M          | 90% der Grower brauchen Copy-Paste-Loesung    |
+| 16  | **Bluetooth Low Energy (BLE)** via Web BLE API                              | L          | Batteriebetriebene Mini-Sensoren              |
+| 17  | **VPD-Automation Rules Engine** ("Wenn VPD > 1.2 -> Ventilator via MQTT")   | L          | Echte Grow-Automation direkt aus der App      |
+| 18  | **Export** von Telemetry als CSV/PDF + Dashboard-Charts                     | M          | Grower brauchen Reports fuer Optimierung      |
+| 19  | **AR-Plant-Overlay** mit live Sensor-Overlay auf Kamera-Feed                | L          | Roadmap v2.0 Feature (Web Camera API + TF.js) |
+| 20  | **Community IoT-Sharing** (anonymisierte Telemetry-Gists)                   | L          | Strain-spezifische Grow-Daten aggregieren     |
 
 ### E. UX/UI und Accessibility (M)
 
@@ -359,7 +345,7 @@ useAlertsStore.addAlert({ metric, triggerValue, aiAdvice })
 
 | #   | Massnahme                                                         | Prioritaet | Begruendung                      |
 | --- | ----------------------------------------------------------------- | ---------- | -------------------------------- |
-| 29  | **Native Tauri IoT-Plugins** (Rust: echtes MQTT, Serial, GPIO)    | L          | Maximale Desktop-Performance     |
+| 29  | ~~Native Tauri IoT-Plugins~~ (Removed)                            | --         | Tauri entfernt                   |
 | 30  | **WebGPU-beschleunigte Telemetry-ML** (VPD-Prediction im Browser) | L          | Predictive statt reactive Alerts |
 | 31  | **Federated IoT** (Community-Aggregate-Daten)                     | L          | "Community Grow Trends 2026"     |
 | 32  | **Home Assistant Integration** via MQTT Auto-Discovery            | L          | Smart-Home-Oekosystem-Anbindung  |
@@ -371,7 +357,7 @@ useAlertsStore.addAlert({ metric, triggerValue, aiAdvice })
 ### 8.1 Aktueller Stand
 
 - **Nur Mock-basiert** -- kein einziger Zeile echten Firmware-Code im Repo
-- ESP32-Mock (`docker/esp32-mock/server.mjs`) simuliert HTTP-Endpoints, kein echtes MQTT-Publishing
+- ESP32-Mock (`docker/esp32-mock/server.mjs`) simuliert HTTP-Endpoints, kein echtes MQTT-Publishing (laeuft als Node.js-Server im DevContainer)
 - Keine .ino, kein ESP-IDF, kein ESPHome-YAML, kein Tasmota-Template
 - Keine Flashing-Guides oder Hardware-Empfehlungen
 

@@ -41,7 +41,6 @@ Released: **2026-07-07**
 | Command Palette (40+ commands)                                 | UX           | ✅     |
 | 9 cannabis themes + onboarding wizard                          | UX           | ✅     |
 | Community strain sharing via GitHub Gists                      | Community    | ✅     |
-| Docker + Chainguard nginx deployment                           | DevOps       | ✅     |
 | GitHub Pages CI/CD deployment                                  | DevOps       | ✅     |
 | 13 GitHub Actions workflows                                    | DevOps       | ✅     |
 | OpenSSF Scorecard + CodeQL + Snyk + Grype scanning             | Security     | ✅     |
@@ -52,36 +51,36 @@ Released: **2026-07-07**
 
 Released: **2026-Q1**
 
-| Feature                                                   | Category      | Status | Issue |
-| --------------------------------------------------------- | ------------- | ------ | ----- |
-| Sentry error tracking integration                         | Observability | ✅     | —     |
-| Playwright Component Tests infrastructure                 | Testing       | ✅     | —     |
-| Netlify deployment with automatic PR previews             | Deployment    | ✅     | —     |
-| Capacitor mobile build CI workflow                        | CI/CD         | ✅     | —     |
-| PWA auto-update notification with changelog               | PWA           | ✅     | —     |
-| Docker-Compose ESP32-Mock sensor simulation               | DevOps        | ✅     | —     |
-| Enhanced CONTRIBUTING.md with issue templates             | Docs          | ✅     | —     |
-| ROADMAP.md with GitHub Projects integration               | Docs          | ✅     | —     |
-| Updated copilot-instructions.md                           | Docs          | ✅     | —     |
-| Tauri v2 binary IPC (image + sensor processing)           | Desktop       | ✅     | —     |
-| Tauri capability-based security (minimal permissions)     | Security      | ✅     | —     |
-| CSP hardening: remove `unsafe-inline` from script-src     | Security      | ✅     | —     |
-| Local-only mode guard on all network services             | Security      | ✅     | —     |
-| Security audit: semgrep (0 findings), gitleaks (0 leaks)  | Security      | ✅     | —     |
-| 529 tests across 58 files (Vitest)                        | Testing       | ✅     | —     |
-| DevContainer with IoT mock auto-start + health-check      | DevOps        | ✅     | —     |
-| Docker-Compose validation in E2E CI                       | CI/CD         | ✅     | —     |
-| Turbo monorepo with `packages/iot-mocks` + `apps/desktop` | Architecture  | ✅     | —     |
-| AI Eco mode with adaptive routing for mobile/low-end      | AI            | ✅     | —     |
-| Time-series storage + predictive analytics                | AI            | ✅     | —     |
-| Plugin architecture for nutrient/hardware/grow profiles   | Architecture  | ✅     | —     |
-| Bluetooth sensor value clamping (plausibility checks)     | IoT           | ✅     | —     |
-| Client-side image generation (SD-Turbo + ONNX)            | AI            | ✅     | —     |
-| GPU resource mutex (WebLLM ↔ image gen)                   | Architecture  | ✅     | —     |
-| WebLLM diagnostics cascade (6-step availability check)    | AI            | ✅     | —     |
-| Token streaming for Mentor chat (typing effect)           | AI            | ✅     | —     |
-| Performance degradation detection (tok/s monitoring)      | AI            | ✅     | —     |
-| 574 tests across 62 files (Vitest)                        | Testing       | ✅     | —     |
+| Feature                                                  | Category      | Status | Issue   |
+| -------------------------------------------------------- | ------------- | ------ | ------- |
+| Sentry error tracking integration                        | Observability | ✅     | —       |
+| Playwright Component Tests infrastructure                | Testing       | ✅     | —       |
+| Netlify deployment with automatic PR previews            | Deployment    | ✅     | —       |
+| Capacitor mobile build CI workflow                       | CI/CD         | ❌     | Removed |
+| PWA auto-update notification with changelog              | PWA           | ✅     | —       |
+| Docker-Compose ESP32-Mock sensor simulation              | DevOps        | ❌     | Removed |
+| Enhanced CONTRIBUTING.md with issue templates            | Docs          | ✅     | —       |
+| ROADMAP.md with GitHub Projects integration              | Docs          | ✅     | —       |
+| Updated copilot-instructions.md                          | Docs          | ✅     | —       |
+| Tauri v2 binary IPC (image + sensor processing)          | Desktop       | ❌     | Removed |
+| Tauri capability-based security (minimal permissions)    | Security      | ❌     | Removed |
+| CSP hardening: remove `unsafe-inline` from script-src    | Security      | ✅     | —       |
+| Local-only mode guard on all network services            | Security      | ✅     | —       |
+| Security audit: semgrep (0 findings), gitleaks (0 leaks) | Security      | ✅     | —       |
+| 529 tests across 58 files (Vitest)                       | Testing       | ✅     | —       |
+| DevContainer with IoT mock auto-start + health-check     | DevOps        | ✅     | —       |
+| Docker-Compose validation in E2E CI                      | CI/CD         | ❌     | Removed |
+| Turbo monorepo with `packages/iot-mocks`                 | Architecture  | ✅     | —       |
+| AI Eco mode with adaptive routing for mobile/low-end     | AI            | ✅     | —       |
+| Time-series storage + predictive analytics               | AI            | ✅     | —       |
+| Plugin architecture for nutrient/hardware/grow profiles  | Architecture  | ✅     | —       |
+| Bluetooth sensor value clamping (plausibility checks)    | IoT           | ✅     | —       |
+| Client-side image generation (SD-Turbo + ONNX)           | AI            | ✅     | —       |
+| GPU resource mutex (WebLLM ↔ image gen)                  | Architecture  | ✅     | —       |
+| WebLLM diagnostics cascade (6-step availability check)   | AI            | ✅     | —       |
+| Token streaming for Mentor chat (typing effect)          | AI            | ✅     | —       |
+| Performance degradation detection (tok/s monitoring)     | AI            | ✅     | —       |
+| 574 tests across 62 files (Vitest)                       | Testing       | ✅     | —       |
 
 ---
 
@@ -195,8 +194,6 @@ Target: **2027-Q2**
 
 | Feature                                                       | Category      | Priority | Issue |
 | ------------------------------------------------------------- | ------------- | -------- | ----- |
-| Mobile-native experience (Capacitor production)               | Platform      | High     | —     |
-| Tauri desktop production release                              | Platform      | High     | —     |
 | Real-time multi-device sync (CRDTs)                           | Sync          | High     | —     |
 | Plugin/extension system                                       | Architecture  | Medium   | —     |
 | Grow community forums & profiles                              | Community     | Medium   | —     |

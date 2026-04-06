@@ -21,10 +21,6 @@ cannaguide-2025 (workspace root)
     +-- @cannaguide/web           Main PWA (React 19 + Vite 7)
     |   deps: @cannaguide/ai-core, @cannaguide/ui
     |   99 service files, 25 hooks, 9 themes
-    |
-    +-- @cannaguide/desktop       Tauri v2 desktop wrapper (Rust IPC)
-        deps: @tauri-apps/api, @tauri-apps/cli, @tauri-apps/plugin-notification
-        (no TS cross-package imports)
 ```
 
 ## Dependency Direction
@@ -32,12 +28,10 @@ cannaguide-2025 (workspace root)
 ```
 @cannaguide/web ──imports──> @cannaguide/ai-core    (3 TS imports: types + providers)
 @cannaguide/web ──imports──> @cannaguide/ui          (CSS/Tailwind only, 0 TS imports)
-@cannaguide/web     X        @cannaguide/desktop     (no imports -- correct)
 
 @cannaguide/ai-core    X     @cannaguide/web         (no reverse imports -- correct)
 @cannaguide/ai-core    X     @cannaguide/ui          (no cross-package -- correct)
 @cannaguide/ui         X     @cannaguide/ai-core     (no cross-package -- correct)
-@cannaguide/desktop    X     @cannaguide/web         (no reverse imports -- correct)
 ```
 
 ## ESLint Enforcement
@@ -46,7 +40,6 @@ cannaguide-2025 (workspace root)
 | -------------------------------------- | ------------------- | -------------------------------------------------------------------------------- |
 | `import/no-cycle` (error, maxDepth: 3) | All `*.ts`, `*.tsx` | Prevents circular imports within and across packages                             |
 | `no-restricted-imports` (error)        | All `*.ts`, `*.tsx` | Blocks `**/packages/*/src/*` deep imports -- forces `@cannaguide/*` entry points |
-| `no-restricted-imports` (error)        | All `*.ts`, `*.tsx` | Blocks `**/apps/desktop/src/*` imports from web app                              |
 
 ## TurboRepo Pipeline Dependencies
 
@@ -58,8 +51,6 @@ test        --> ^build (packages must be built before tests)
 test:e2e    --> build  (full web build required for E2E)
 typecheck   --> ^build (packages must be built for type resolution)
 lint        --> ^build (packages must be built for import resolution)
-tauri:build --> build  (web build required, then Rust compile)
-tauri:dev   --> ^build (packages built, then concurrent Vite + Tauri)
 ```
 
 ## Cross-Package Import Inventory
@@ -86,5 +77,3 @@ CSS/Tailwind integration only:
 | Import cycles                       | 0 found |
 | Cross-package boundary violations   | 0 found |
 | Reverse imports (packages --> apps) | 0 found |
-| Relative path escapes into packages | 0 found |
-| Desktop internals accessed from web | 0 found |

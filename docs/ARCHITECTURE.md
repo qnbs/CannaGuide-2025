@@ -17,8 +17,8 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                      |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                            |
 | Workers      | WorkerBus (promise-based, 8 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 1626 unit tests, Playwright E2E + Component tests                                 |
-| Distribution | GitHub Pages, Netlify (PR previews), Docker, Tauri v2, Capacitor                         |
+| Testing      | Vitest 1614 unit tests, Playwright E2E + Component tests                                 |
+| Distribution | GitHub Pages, Netlify (PR previews)                                                      |
 
 ---
 
@@ -29,7 +29,7 @@ The project is a **Turborepo monorepo** with npm workspaces. All web app source 
 ```
 package.json              Workspace root (turbo, eslint, prettier -- NO app deps)
 turbo.json                TurboRepo pipeline (build, dev, test, lint, typecheck)
-tsconfig.json             References-only (apps/web, apps/desktop, packages/*)
+tsconfig.json             References-only (apps/web, packages/*)
 
 apps/web/                 Main PWA (@cannaguide/web)
   package.json            All frontend deps + @cannaguide/ai-core + @cannaguide/ui
@@ -98,8 +98,6 @@ apps/web/                 Main PWA (@cannaguide/web)
   public/                 Static assets, sw.js, manifest.json
   tests/                  E2E (tests/e2e/) + Component tests (tests/ct/)
 
-apps/desktop/             Tauri v2 desktop wrapper (Rust IPC commands)
-
 packages/
   ai-core/                Shared AI types, provider configs, key validation, ML isolation
     src/
@@ -115,9 +113,8 @@ packages/
       tailwind-preset.cjs Shared Tailwind preset (colors, keyframes, animations)
   iot-mocks/              ESP32 sensor mock server (port 3001)
 
-src-tauri/                Tauri v2 desktop config (Rust backend)
 scripts/                  Build, lint, merge, CI scripts
-docker/                   nginx config, esp32-mock, tauri-mock
+docker/                   IoT mock servers (ESP32 sensor simulator)
 ```
 
 ---

@@ -16,9 +16,6 @@ const OPTIONAL_ML_EXTERNALS = [
     '@xenova/transformers',
     '@mlc-ai/web-llm',
     'onnxruntime-web',
-    '@tauri-apps/api/core',
-    '@tauri-apps/plugin-notification',
-    '@capacitor/local-notifications',
 ]
 
 // Resolve which ML modules are actually missing so we can stub them at build time.
@@ -56,10 +53,7 @@ function optionalMlPlugin(): PluginOption {
     }
 }
 
-// Tauri v2 sets TAURI_ENV_PLATFORM during builds; Docker sets BUILD_BASE_PATH=/
-const base = process.env.TAURI_ENV_PLATFORM
-    ? '/'
-    : (process.env.BUILD_BASE_PATH ?? '/CannaGuide-2025/')
+const base = process.env.BUILD_BASE_PATH ?? '/CannaGuide-2025/'
 
 // In dev mode the restrictive CSP meta tag in index.html blocks Vite's inline
 // HMR preamble script.  Strip it so only the relaxed HTTP header (DEV_CSP) applies.

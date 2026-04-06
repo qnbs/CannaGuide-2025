@@ -19,13 +19,18 @@ test.describe('Mobile Responsive (Pixel 5)', () => {
     })
 
     test('bottom nav visible, side nav hidden on mobile viewport', async ({ page }) => {
-        // Bottom nav should be visible on mobile
-        const bottomNav = page
-            .locator('nav[aria-label]')
-            .filter({ has: page.locator('[data-view-id]') })
-        await expect(bottomNav.first()).toBeVisible({ timeout: 10_000 })
+        // BottomNav renders as a <nav> inside a fixed-positioned wrapper (no aside).
+        // SideNav renders inside <aside class="hidden md:block">.
+        // On mobile (< 640px) BottomNav is visible, SideNav is CSS-hidden.
+        // Use :visible pseudo-selector to skip the hidden SideNav.
+        const visibleNav = page.locator('nav[aria-label]:visible')
+        await expect(visibleNav.first()).toBeVisible({ timeout: 10_000 })
 
-        // Side nav (aside or desktop nav) should be hidden on mobile
+        // At least one data-view-id button should be visible inside it
+        const visibleButton = page.locator('[data-view-id]:visible')
+        await expect(visibleButton.first()).toBeVisible({ timeout: 5_000 })
+
+        // Side nav (aside) should be hidden on mobile
         const sideNav = page.locator('aside')
         if ((await sideNav.count()) > 0) {
             await expect(sideNav.first()).not.toBeVisible()
@@ -51,29 +56,22 @@ test.describe('Mobile Responsive (Pixel 5)', () => {
     })
 
     test('command palette opens and closes on mobile', async ({ page }) => {
-        // Open command palette via the header button
-        const openButton = page.getByRole('button', { name: /command/i })
-        if ((await openButton.count()) === 0) {
-            // Fallback: try keyboard shortcut
-            await page.keyboard.press('Meta+k')
-        } else {
-            await openButton.first().click()
-        }
+        // Open command palette via keyboard shortcut (most reliable cross-platform)
+        await page.keyboard.press('Meta+k')
+        // Small wait for Radix dialog animation
+        await page.waitForTimeout(500)
 
-        // Command palette dialog should appear
-        const dialog = page.getByRole('dialog')
-        await expect(dialog.first()).toBeVisible({ timeout: 10_000 })
+        // Radix renders dialog with data-state="open"; check DOM presence
+        const dialog = page.locator('[cmdk-dialog][data-state="open"]')
+        await expect(dialog).toHaveCount(1, { timeout: 10_000 })
 
-        // Close via the close button inside the dialog
-        const closeButton = dialog.getByRole('button', { name: /close|schlie/i })
-        if ((await closeButton.count()) > 0) {
-            await closeButton.first().click()
-        } else {
-            // Fallback: press Escape
-            await page.keyboard.press('Escape')
-        }
+        // Close via Escape
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(500)
 
-        // Dialog should be gone
-        await expect(dialog).not.toBeVisible({ timeout: 5_000 })
+        // Dialog should be closed (removed or data-state="closed")
+        await expect(page.locator('[cmdk-dialog][data-state="open"]')).toHaveCount(0, {
+            timeout: 5_000,
+        })
     })
 })

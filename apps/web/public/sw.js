@@ -18,6 +18,16 @@ const CACHE_NAME = `cannaguide-${MANIFEST_HASH}-pwa-cache`
 const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`
 const API_HOSTNAMES = new Set(['generativelanguage.googleapis.com', 'googleapis.com'])
 
+// P-04 Resolution: AI API responses are POST requests and are filtered out by the
+// GET-only guard below.  Application-level caching via localAiCacheService (IndexedDB,
+// 256 entries, 7d TTL) and RTK Query already handles AI response caching with proper
+// invalidation.  Adding SW-level cache for API responses would create stale-data risk
+// without benefit.  Current strategies are optimal:
+//   - Navigation:        Network-First (fresh HTML, offline fallback)
+//   - Hashed Vite assets: Cache-First (immutable content-hashed bundles)
+//   - Images:            Cache-First with 150-entry cap
+//   - Everything else:   Stale-While-Revalidate (JSON, non-hashed assets)
+
 const APP_SHELL_URLS = ['./', './index.html', './manifest.json', './icon.svg', './favicon.ico']
 
 // THIRD_PARTY_URLS: The app is Vite-bundled; all dependencies are self-hosted in /assets/.

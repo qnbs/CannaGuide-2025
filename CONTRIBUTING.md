@@ -15,6 +15,7 @@ Thank you for considering contributing to CannaGuide 2025! We welcome contributi
 - [Testing](#testing)
 - [Internationalization (i18n)](#internationalization-i18n)
 - [Pull Request Process](#pull-request-process)
+- [Deprecation Strategy](#deprecation-strategy)
 - [Reporting Issues](#reporting-issues)
 
 ---
@@ -288,6 +289,50 @@ When proposing significant changes, please follow these guidelines:
 - **Security**: All user-facing HTML must use DOMPurify. All external links need `rel="noopener noreferrer"`.
 - **Error tracking**: Runtime errors are captured by Sentry. Use `Sentry.captureException()` for explicit error reporting.
 - **Testing**: Component tests use Playwright (`tests/ct/`), unit tests use Vitest, E2E tests use Playwright (`tests/e2e/`).
+
+---
+
+## Deprecation Strategy
+
+When removing or replacing a public API, component, or feature, follow this process to give dependent code a migration window:
+
+### Marking Code as Deprecated
+
+1. Add a **`@deprecated` JSDoc tag** with a migration hint:
+    ```ts
+    /**
+     * @deprecated Use `aiFacade.aiService.getPlantAdvice()` instead.
+     * Scheduled for removal in v1.6.
+     */
+    export function legacyGetAdvice(plantId: string): Promise<string> { ... }
+    ```
+2. Add a **runtime `console.warn`** on first invocation so developers notice during testing:
+    ```ts
+    let warned = false
+    export function legacyGetAdvice(plantId: string): Promise<string> {
+        if (!warned) {
+            console.warn('[Deprecated] legacyGetAdvice -- use aiFacade.aiService.getPlantAdvice()')
+            warned = true
+        }
+        // ...
+    }
+    ```
+3. Add a `deprecated` label to the corresponding GitHub Issue (if any).
+
+### Deprecation Timeline
+
+| Phase        | Duration              | Action                                  |
+| :----------- | :-------------------- | :-------------------------------------- |
+| Announce     | Current release       | Add `@deprecated` tag + runtime warning |
+| Grace period | 1 minor release cycle | Keep functional, emit warning           |
+| Removal      | Next minor release    | Delete code, update CHANGELOG           |
+
+### Rules
+
+- **Never** remove a public export without a prior deprecation phase.
+- Deprecated code **must** still pass typecheck and tests until removal.
+- Document the replacement in the `@deprecated` tag body (not just "deprecated").
+- Update `CHANGELOG.md` when deprecating (under `### Deprecated`) and when removing (under `### Removed`).
 
 ---
 

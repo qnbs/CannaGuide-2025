@@ -2,7 +2,74 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 77) -- Docker/Tauri/Capacitor Removal + Scorecard Fix
+## Latest Session (Session 78) -- Audit P0 Sprint + SonarCloud Removal
+
+**Status: D-02, P-04, T-05 closed. 4 new E2E tests. AI contract test suite. SonarCloud fully removed. sonar-project.properties deleted.**
+
+### What Was Done (Session 78)
+
+1. **D-02 Deprecation Strategy (Done)** -- Added Deprecation Strategy
+   section to CONTRIBUTING.md with 3-phase lifecycle (Announce ->
+   Grace period -> Removal), `@deprecated` JSDoc tags, runtime
+   `console.warn` for deprecated code paths.
+
+2. **P-04 SW Cache Strategy (Done)** -- Documented resolution in
+   sw.js: AI API calls are POST (filtered by GET-only guard),
+   stale-while-revalidate already active for non-hashed assets,
+   RTK Query + IndexedDB handle app-level caching. No SW changes
+   needed.
+
+3. **T-05 AI Contract Tests (Done)** -- Created
+   `services/aiProviderContract.test.ts` (~280 lines). Validates
+   AIResponseSchema, PlantDiagnosisResponseSchema,
+   StructuredGrowTipsSchema, DeepDiveGuideSchema,
+   RecommendationSchema via Zod. Provider config validation for
+   all 4 providers. Key format/rotation tests. Cross-provider
+   boundary checks (unicode, extra fields).
+
+4. **E2E Tests (4 new):**
+    - `hydro-monitor.e2e.ts` -- Hydro Monitor nav, gauge cards,
+      system type selection
+    - `nutrient-planner.e2e.ts` -- Calculator hub, EC/pH content
+    - `webllm-inference.e2e.ts` -- Settings AI tab, local AI cache,
+      model selector, WebGPU graceful handling
+    - `voice-workflow.e2e.ts` -- Settings Voice tab, TTS/voice
+      control sections, mic button, SpeechRecognition graceful
+      degradation
+
+5. **SonarCloud Fully Removed:**
+    - Deleted `sonar-project.properties`
+    - Cleaned audit-roadmap-2026-q2.md (S1.1 + S2.3 marked
+      ENTFAELLT, S3.3 rewritten ESLint-driven)
+    - Removed SonarSource/\* from SECURITY.md allowlist
+    - Cleaned all active Sonar TODOs in next-session-handoff.md
+    - Updated historical records (sonar-project.properties now
+      noted as deleted)
+
+6. **Documentation Updated:**
+    - AUDIT_BACKLOG.md: D-02, P-04, T-05 marked Done; summary
+      updated (Medium 24/28, Low 5/10)
+    - PRIORITY_ROADMAP.md: T-05 marked Done
+    - next-session-handoff.md: Session 78 entry
+
+### Verified Metrics
+
+- Tests: 1663 passing (149 files), 0 failures
+- TypeScript: clean (only known RTK TS2719)
+- Build: success (155 precache entries)
+
+### Next Steps
+
+- P0 remaining: Regression tests for Redux slices (Stryker run),
+  IndexedDB data validation tests, Zod production-path validation
+- P1: PWA deployment smoke test, bundle budget verification
+- F-05: Multi-grow management (deferred to v1.5)
+- D-01: API documentation (High effort)
+- Low-priority backlog: U-05, I-02, A-03, C-04, S-03
+
+---
+
+## Previous Session (Session 77) -- Docker/Tauri/Capacitor Removal + Scorecard Fix
 
 **Status: Docker deployment, Tauri desktop, and Capacitor mobile completely removed. Scorecard Pinned-Dependencies fix applied.**
 
@@ -1138,7 +1205,6 @@ requires new Redux slice, UI views, data model changes.
 
 - **P2 Rate-limiter UX toast**: When AI returns 429, show user-facing toast (currently silent drop) -- route from `geminiService.ts`/`aiProviderService.ts` 429 error into `useAlertsStore`
 - **Fix vi.mock hoisting warnings**: Move nested `vi.mock()` in `voiceCommandRegistry.test.ts` to top level (Vitest deprecation warning)
-- **SonarCloud hotspots**: Review and address open security hotspots from latest SonarCloud scan
 - **Stryker mutation run**: Run `npm run test:mutate` to verify Redux slice mutation score is above 50% threshold
 - **V-06 (deferred)**: Full offline TTS/STT ONNX pipeline -- remains deferred to v2.0
 
@@ -2606,7 +2672,7 @@ Optional follow-up candidates:
 
 **P0 -- Immediate:**
 
-- SonarCloud review of workerBus.ts + all 6 .worker.ts files (security hotspots + code smells)
+- Review of workerBus.ts + all 6 .worker.ts files (security hotspots + code smells)
 - WorkerBus unit test coverage >95% (backpressure queue, retry edge cases, 20+ concurrent calls)
 - Consider adding lab results tab and lineage tab to StrainDetailView (data structures already exist)
 - E2E tests for new strain detail features (genealogy navigation, template insertion)
@@ -2712,7 +2778,7 @@ Optional follow-up candidates:
 **Priority 2 -- Quality Infrastructure:**
 
 - [ ] Lighthouse CI assertions (Performance >=0.80, A11y >=0.90)
-- [ ] SonarCloud code smells reduction (354 -> <200)
+- [x] ~~SonarCloud code smells~~ -- SonarCloud removed (April 2026)
 - [ ] Screen-reader labels for chart toggles (`SimulationChart.tsx`)
 
 **Priority 3 -- Feature Delivery (v1.2):**
@@ -2813,7 +2879,7 @@ Three-phase session: (1) CI pipeline diagnosis and fixes. (2) 5-language onboard
 
 - [ ] Unit tests for onboarding language selection (ES/FR/NL)
 - [ ] Complete remaining ES/FR/NL translation gaps if any
-- [ ] SonarCloud Hotspot review
+- [x] ~~SonarCloud Hotspot review~~ -- SonarCloud removed (April 2026)
 - [ ] Dockerfile + netlify.toml path verification for monorepo
 
 ---
@@ -2862,7 +2928,8 @@ Two-phase session: (1) Deep cleanup syncing all documentation, metadata, artifac
 - [ ] Unit tests for new features (eco-mode sync, DB deletion, pipeline factory, plugin UI)
 - [ ] Playwright E2E: DSGVO erase, nutrient plugin workflow
 - [ ] Complete ES/FR/NL translations (remaining namespaces)
-- [ ] SonarCloud Hotspot review + CII Badge verification
+- [x] ~~SonarCloud Hotspot review~~ -- SonarCloud removed (April 2026)
+- [ ] CII Badge verification
 - [ ] Dockerfile + netlify.toml path updates for monorepo
 - [ ] Verify GitHub Pages deploy with apps/web/dist
 
@@ -2953,7 +3020,7 @@ Systematic technical debt resolution from the full-scale audit document. Focus: 
 
 - [ ] Build UI for selective DSGVO database deletion (uses `eraseSingleDatabase`)
 - [ ] Translate remaining i18n namespaces: plants (ES/FR/NL have ~18 fewer keys than EN)
-- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
+- [x] ~~SonarCloud Hotspots~~ -- SonarCloud removed (April 2026)
 - [ ] Playwright E2E: export dialog, DSGVO erase, touch target verification
 - [ ] Run Lighthouse CI post-deploy for FCP metrics
 - [ ] CII-Best-Practices badge email verification
@@ -3028,7 +3095,7 @@ Complete execution of the validated audit plan across all 5 categories: Bug Fixe
 - [ ] Unit tests for privacyService.ts, nutrient plugin integration, eco-mode
 - [ ] Playwright E2E: export dialog, DSGVO erase, touch target verification
 - [ ] Run Lighthouse CI post-deploy for FCP metrics
-- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
+- [x] ~~SonarCloud Hotspots~~ -- SonarCloud removed (April 2026)
 - [ ] CII-Best-Practices badge email verification
 
 > **Full Session Review:** [`docs/session-activity-review-2026-03-27.md`](session-activity-review-2026-03-27.md)
@@ -3096,11 +3163,11 @@ Two-part session: First part was cleanup + ASCII + initial tests (669 tests). Se
 ### Immediate Next Tasks
 
 - [ ] CII-Best-Practices badge email verification (#187, bestpractices.dev)
-- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
 - [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`
 - [ ] Additional test coverage: aiProviderService, aiService, geminiService (harder -- external API deps)
-- [ ] Re-enable SonarCloud when SONAR_TOKEN secret is configured (optional)
 - [ ] Run `node scripts/github/harden-repo-settings.mjs` to apply new branch protection settings
+
+> **Note:** SonarCloud was completely removed in April 2026 (project deleted). No re-enablement planned.
 
 > **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
 
@@ -3116,7 +3183,7 @@ Dockerfile best practices for Codespaces dev container. CI pipeline slimmed from
 
 1. **Dockerfile-based Dev Container:** Created `.devcontainer/Dockerfile` with Playwright noble base, system deps (ripgrep, gh, jq) baked into image layer with proper apt cache cleanup. `.devcontainer/.dockerignore` added. `devcontainer.json` switched from `image` to `build.dockerfile`.
 2. **CI Pipeline Slimmed:** Removed `docker-integration` and `tauri-check` from main CI (covered by release workflows `docker.yml` and `tauri-build.yml`). CI now: quality -> security -> e2e -> ci-status (3+1 jobs).
-3. **SonarCloud Removed:** Deleted `.github/workflows/sonarcloud.yml` (was failing, not a required check, `continue-on-error: true`). `sonar-project.properties` kept for potential re-enablement.
+3. **SonarCloud Removed:** Deleted `.github/workflows/sonarcloud.yml` (was failing, not a required check, `continue-on-error: true`). `sonar-project.properties` also deleted (April 2026).
 4. **Anti-Emoji Rule:** Added "Text Encoding (Mandatory)" section to copilot-instructions.md: ASCII-only in all code/scripts/configs. Exceptions: i18n files and markdown docs.
 5. **copilot-instructions.md Updated:** Added Dev Container section, Config Guard mention, updated file table, Codespaces signing docs, removed SonarCloud references.
 6. **Non-ASCII Cleanup:** Cleaned Unicode characters from `bootstrap-git-signing.mjs` and `setup.sh`.
@@ -3173,11 +3240,11 @@ Comprehensive Codespaces security hardening based on Orca Security RCE disclosur
 
 ### Immediate Next Tasks
 
-- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating)
+- [x] ~~SonarCloud Hotspots~~ -- SonarCloud removed (April 2026)
 - [ ] CII-Best-Practices badge email verification (#187, bestpractices.dev)
 - [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`
 - [x] ~~SSH signing key persistence across sessions~~ (fixed: native GPG)
-- [ ] Increase test coverage toward SonarCloud 80% target on new code
+- [ ] Increase test coverage toward 80% target on new code
 - [ ] Monitor Scorecard #188/#194 after next run on main
 
 > **Full Audit Roadmap:** [`docs/audit-roadmap-2026-q2.md`](audit-roadmap-2026-q2.md)
@@ -3256,7 +3323,7 @@ npm run pr:push -- "feat/my-feature"     # explicit branch name
 
 ### Immediate Next Tasks
 
-- [ ] SonarCloud Security Hotspots manual review (0% reviewed = E-Rating, blocks QG)
+- [x] ~~SonarCloud Hotspots~~ -- SonarCloud removed (April 2026)
 - [ ] CII-Best-Practices badge email verification (bestpractices.dev)
 - [ ] Test Grype integration: trigger `security-full.yml` via `workflow_dispatch`, verify SARIF output in Security tab
 - [ ] Optional: store SSH signing key as Codespace secret for zero-downtime persistence
@@ -3417,10 +3484,10 @@ Completed all remaining CodeAnt AI report items, closed all 18 open PRs, and cle
 
 #### P1 — Ongoing Quality
 
-- [ ] SonarCloud Security Hotspots reviewen (0% reviewed = E-Rating)
+- [x] ~~SonarCloud Hotspots~~ -- SonarCloud removed (April 2026)
 - [ ] CII-Best-Practices Badge aktivieren (bestpractices.dev email verification)
 - [ ] Coverage von 22.8% Richtung >30% steigern
-- [ ] Remaining ~115 minor duplicate code groups (SonarCloud reported, most are <10 lines)
+- [ ] Remaining ~115 minor duplicate code groups (most are <10 lines)
 - [ ] Feature-Entwicklung fortsetzen
 
 ### Test-Baseline
@@ -3431,7 +3498,6 @@ Completed all remaining CodeAnt AI report items, closed all 18 open PRs, and cle
 
 - `docs/session-activity-review-2026-03-23.md` — Full 7-phase + CodeAnt review
 - `docs/session-activity-todo-2026-03-23.md` — Priorisierte TODO-Liste
-- `docs/sonar-handoff-review-2026-03-21.md` — SonarCloud Tracking-Log
 
 > **Last updated:** 2026-03-23 — Full CodeAnt Cleanup + PR Purge Session
 > **Author:** Copilot session

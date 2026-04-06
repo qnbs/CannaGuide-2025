@@ -35,7 +35,7 @@
 | T-01 | Mutation testing pilot                | High   | Done   |
 | T-03 | Visual regression testing             | Medium | Done   |
 | T-04 | Multi-browser E2E coverage            | Medium | Done   |
-| T-05 | AI contract tests                     | Medium | Open   |
+| T-05 | AI contract tests                     | Medium | Done   |
 | A-02 | Local AI model versioning             | Medium | Done   |
 | P-03 | Image optimization pipeline           | Medium | Done   |
 | F-05 | Multi-grow management                 | High   | Open   |

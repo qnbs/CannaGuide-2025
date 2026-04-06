@@ -14,9 +14,9 @@ Last updated: 2026-04-06 (Session 73)
 | Severity | Total | Done | Open |
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
-| High     | 9     | 9    | 0    |
-| Medium   | 19    | 10   | 9    |
-| Low      | 6     | 3    | 3    |
+| High     | 11    | 11   | 0    |
+| Medium   | 28    | 9    | 19   |
+| Low      | 10    | 3    | 7    |
 
 ---
 

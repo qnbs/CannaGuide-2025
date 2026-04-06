@@ -65,7 +65,7 @@ const RagExplainBox: React.FC<RagExplainBoxProps> = ({
     const { t } = useTranslation()
     const [explanation, setExplanation] = useState('')
     const [loading, setLoading] = useState(false)
-    const [pathId, setPathId] = useState<string | null>(suggestedPathId)
+    const [pathId, setPathId] = useState(suggestedPathId)
 
     const handleExplain = useCallback(async () => {
         setLoading(true)

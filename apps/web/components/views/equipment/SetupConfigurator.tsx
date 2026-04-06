@@ -220,14 +220,14 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
     const [getEquipmentRecommendation, { data: recommendation, isLoading, error, reset }] =
         useGetEquipmentRecommendationMutation()
 
-    const [step, setStep] = useState<number>(1)
+    const [step, setStep] = useState(1)
     const [plantCount, setPlantCount] = useState<PlantCount>('1')
     const [experience, setExperience] = useState<ExperienceLevel>('beginner')
     const [growSpace, setGrowSpace] = useState({ width: 80, depth: 80 })
     const [floweringTypePreference, setFloweringTypePreference] = useState<
         'autoflower' | 'photoperiod' | 'any'
     >('any')
-    const [budget, setBudget] = useState<number>(1000)
+    const [budget, setBudget] = useState(1000)
     const [priorities, setPriorities] = useState<GrowPriority[]>([])
     const [customNotes, setCustomNotes] = useState('')
 

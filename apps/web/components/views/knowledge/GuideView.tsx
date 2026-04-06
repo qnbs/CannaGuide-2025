@@ -13,7 +13,7 @@ const GuideViewComponent: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useDispatch()
     const progress = useSelector(selectKnowledgeProgress)
-    const [activeSection, setActiveSection] = useState<string>('')
+    const [activeSection, setActiveSection] = useState('')
     const [searchQuery, setSearchQuery] = useState('')
     const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 

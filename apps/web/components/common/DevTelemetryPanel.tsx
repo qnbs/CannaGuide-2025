@@ -44,7 +44,7 @@ const safeCall = <T,>(fn: () => T, fallback: T): T => {
 
 const DevTelemetryPanelInner: React.FC = memo(() => {
     const [expanded, setExpanded] = useState(false)
-    const [state, setState] = useState<TelemetryState>(EMPTY_STATE)
+    const [state, setState] = useState(EMPTY_STATE)
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const settings = useAppSelector(selectSettings)
 

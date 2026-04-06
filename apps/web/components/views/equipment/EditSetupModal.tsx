@@ -26,7 +26,7 @@ const FormTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> &
 
 export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, onSave }) => {
     const { t } = useTranslation();
-    const [formData, setFormData] = useState<SavedSetup>(setup);
+    const [formData, setFormData] = useState(setup);
 
     useEffect(() => {
         setFormData(setup);

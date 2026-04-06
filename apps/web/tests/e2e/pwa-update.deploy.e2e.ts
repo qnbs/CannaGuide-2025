@@ -45,7 +45,6 @@ test('pwa update: service worker registers with GitHub Pages subpath scope', asy
         const deadline = Date.now() + 30_000
         const poll = 500
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             const entries = await navigator.serviceWorker.getRegistrations()
             if (entries.length > 0) {

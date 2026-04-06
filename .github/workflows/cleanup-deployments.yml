@@ -1,0 +1,84 @@
+name: Cleanup Old Deployments
+
+on:
+    schedule:
+        # Run weekly on Sunday at 03:00 UTC
+        - cron: '0 3 * * 0'
+    workflow_dispatch:
+        inputs:
+            keep_count:
+                description: 'Number of recent deployments to keep per environment'
+                required: false
+                default: '3'
+
+permissions: {}
+
+jobs:
+    cleanup:
+        name: Prune old deployments
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        permissions:
+            deployments: write
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+              with:
+                  egress-policy: audit
+
+            - name: Delete old deployments
+              uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+              with:
+                  script: |
+                      const keep = parseInt('${{ inputs.keep_count }}' || '3', 10);
+                      const owner = context.repo.owner;
+                      const repo = context.repo.repo;
+
+                      // Get all deployments (paginated)
+                      const deployments = await github.paginate(
+                        github.rest.repos.listDeployments,
+                        { owner, repo, per_page: 100 }
+                      );
+
+                      // Group by environment
+                      const byEnv = {};
+                      for (const d of deployments) {
+                        const env = d.environment || 'unknown';
+                        if (!byEnv[env]) byEnv[env] = [];
+                        byEnv[env].push(d);
+                      }
+
+                      let deleted = 0;
+                      for (const [env, deps] of Object.entries(byEnv)) {
+                        // Sort newest first
+                        deps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                        const toDelete = deps.slice(keep);
+
+                        if (toDelete.length === 0) {
+                          core.info(`[${env}] ${deps.length} deployments, nothing to prune`);
+                          continue;
+                        }
+
+                        core.info(`[${env}] ${deps.length} total, keeping ${keep}, deleting ${toDelete.length}`);
+
+                        for (const d of toDelete) {
+                          try {
+                            // Mark deployment as inactive first
+                            await github.rest.repos.createDeploymentStatus({
+                              owner, repo,
+                              deployment_id: d.id,
+                              state: 'inactive',
+                            });
+                            // Then delete it
+                            await github.rest.repos.deleteDeployment({
+                              owner, repo,
+                              deployment_id: d.id,
+                            });
+                            deleted++;
+                          } catch (err) {
+                            core.warning(`Failed to delete deployment ${d.id} (${env}): ${err.message}`);
+                          }
+                        }
+                      }
+
+                      core.info(`[OK] Deleted ${deleted} old deployment(s)`);

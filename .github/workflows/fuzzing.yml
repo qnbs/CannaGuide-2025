@@ -10,7 +10,7 @@ on:
             - 'apps/web/types.ts'
             - 'apps/web/vite.config.ts'
             - 'apps/web/package.json'
-            - 'package-lock.json'
+            - 'pnpm-lock.yaml'
             - '.github/workflows/fuzzing.yml'
     pull_request:
         branches: [main]
@@ -21,7 +21,7 @@ on:
             - 'apps/web/types.ts'
             - 'apps/web/vite.config.ts'
             - 'apps/web/package.json'
-            - 'package-lock.json'
+            - 'pnpm-lock.yaml'
             - '.github/workflows/fuzzing.yml'
     schedule:
         - cron: '17 4 * * 2'
@@ -52,4 +52,4 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Run fuzz test suite
-              run: npm run -w @cannaguide/web test:fuzz
+              run: pnpm --filter @cannaguide/web run test:fuzz

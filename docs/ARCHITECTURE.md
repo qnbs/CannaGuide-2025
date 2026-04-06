@@ -24,7 +24,7 @@
 
 ## Directory Structure
 
-The project is a **Turborepo monorepo** with npm workspaces. All web app source lives in `apps/web/`.
+The project is a **Turborepo monorepo** with pnpm workspaces. All web app source lives in `apps/web/`.
 
 ```
 package.json              Workspace root (turbo, eslint, prettier -- NO app deps)
@@ -228,7 +228,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 | Local-Only Mode  | All outbound services check `isLocalOnlyMode()`                      |
 | Randomness       | `secureRandom()` via Web Crypto (no Math.random)                     |
 | GDPR             | Full data export (Art. 20) + erasure (Art. 17) via privacyService.ts |
-| CI Security      | Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk             |
+| CI Security      | Semgrep, Gitleaks, Grype, Trojan-source, pnpm audit, Snyk            |
 | Fuzzing          | ClusterFuzzLite on PRs                                               |
 
 ---
@@ -236,15 +236,15 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ## Build and Deployment
 
 ```bash
-npm run dev              # Vite dev server (localhost:5173)
-npm run build            # Production build (Vite 7 + PWA manifest injection)
-npm test                 # Vitest unit/integration (960+ tests)
-npm run test:e2e         # Playwright E2E
-npm run test:ct          # Playwright Component tests
-npm run lint:full        # ESLint entire project
-npx tsc --noEmit         # Type check (strict, zero any)
-npm run security:scan    # Full security scan suite
-npm run pr:push          # Push via automated PR workflow
+pnpm run dev              # Vite dev server (localhost:5173)
+pnpm run build            # Production build (Vite 7 + PWA manifest injection)
+pnpm test                 # Vitest unit/integration (960+ tests)
+pnpm run test:e2e         # Playwright E2E
+pnpm run test:ct          # Playwright Component tests
+pnpm run lint:full        # ESLint entire project
+pnpm exec tsc --noEmit         # Type check (strict, zero any)
+pnpm run security:scan    # Full security scan suite
+pnpm run pr:push          # Push via automated PR workflow
 ```
 
 **Bundle Strategy:**

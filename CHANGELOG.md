@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **pnpm migration** -- Migrated from npm to pnpm 10 via Corepack across entire monorepo: root package.json, 11 CI workflows, shared CI action, DevContainer, 3 Husky hooks, 5 build scripts, netlify.toml, lighthouserc.json. Lockfile reduced from 23k to 15k lines. workspace:\* protocol for internal packages. (Session 79)
+
 ### Added
 
 - AI Fallback Telemetry (A-05) -- FallbackLayer type, recordFallbackEvent(), getFallbackBreakdown() in localAiTelemetryService, inference router and fallback service instrumented (Session 74)

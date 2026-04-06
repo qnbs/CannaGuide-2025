@@ -16,7 +16,7 @@
             "settings": {
                 "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
             },
-            "startServerCommand": "npx vite preview --port 9222",
+            "startServerCommand": "pnpm exec vite preview --port 9222",
             "startServerReadyPattern": "Local:",
             "url": ["http://localhost:9222/CannaGuide-2025/"]
         },

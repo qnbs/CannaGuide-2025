@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # DevContainer postCreateCommand (Lite Mode)
-# Deterministic install via npm ci (lockfile-pinned, OSSF Scorecard compliant).
+# Deterministic install via pnpm (lockfile-pinned, OSSF Scorecard compliant).
 # ML models are browser-side only -- no heavy binaries downloaded at install time.
 set -uo pipefail
 
+echo "[setup] Enabling Corepack for pnpm..."
+corepack enable
+
 echo "[setup] Installing dependencies (deterministic lockfile-pinned install)..."
-# npm ci uses package-lock.json for deterministic, hash-pinned installs (OSSF Scorecard compliant).
-# --ignore-scripts prevents postinstall scripts from running during container build.
+# pnpm install --frozen-lockfile uses pnpm-lock.yaml for deterministic installs (OSSF Scorecard compliant).
 # ML models are loaded lazily at runtime in-browser, not at install time.
-CI=1 npm ci --no-fund --no-audit --ignore-scripts
+CI=1 pnpm install --frozen-lockfile
 
 echo "[setup] Initializing git hooks (husky)..."
-npx husky || echo "[setup] WARN: Husky setup failed, continuing..."
+pnpm exec husky || echo "[setup] WARN: Husky setup failed, continuing..."
 
 echo "[setup] Configuring git signing..."
 if [ -f "./scripts/devcontainer/bootstrap-git-signing.mjs" ]; then

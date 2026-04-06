@@ -59,36 +59,36 @@ jobs:
 
             # -- Quality gates ---------------------------------------------------
             - name: Security audit
-              run: npm audit --audit-level=critical --omit=dev
+              run: pnpm audit --audit-level=critical --omit=dev
 
             - name: Lint changed files
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'workflow_dispatch' && format('origin/{0}~1', github.ref_name) || '' }}
               run: |
                   echo "::group::lint:changed"
-                  npm run lint:changed
+                  pnpm run lint:changed
                   echo "::endgroup::"
 
             - name: Lint strict scopes
               run: |
                   echo "::group::lint:scopes"
-                  npm run lint:scopes
+                  pnpm run lint:scopes
                   echo "::endgroup::"
 
             - name: Type check
-              run: npx turbo run typecheck
+              run: pnpm exec turbo run typecheck
 
             - name: Unit tests
               run: |
                   echo "::group::vitest"
-                  npm run -w @cannaguide/web test -- --run --reporter=verbose
+                  pnpm --filter @cannaguide/web run test -- --run --reporter=verbose
                   echo "::endgroup::"
 
             # -- Build -----------------------------------------------------------
             - name: Build for GitHub Pages
               run: |
                   echo "::group::vite build"
-                  npm run build:gh
+                  pnpm run build:gh
                   echo "::endgroup::"
                   echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
 
@@ -150,20 +150,20 @@ jobs:
               uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               with:
                   path: ~/.cache/ms-playwright
-                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
                       playwright-chromium-${{ runner.os }}-
 
             - name: Install Playwright browser
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: npm run test:e2e:install:ci
+              run: pnpm run test:e2e:install:ci
 
             - name: Run E2E tests on deployed URL
               env:
                   DEPLOY_BASE_URL: ${{ env.PAGES_URL }}
               run: |
                   echo "::group::playwright e2e"
-                  npm run -w @cannaguide/web test:e2e:deploy
+                  pnpm --filter @cannaguide/web run test:e2e:deploy
                   echo "::endgroup::"
 
             - name: Upload Playwright traces on failure
@@ -192,7 +192,7 @@ jobs:
 
             - name: Lighthouse CI (live URL)
               run: |
-                  npx @lhci/cli autorun \
+                  pnpm exec @lhci/cli autorun \
                     --collect.url=${{ env.PAGES_URL }} \
                     --collect.numberOfRuns=3 \
                     --upload.target=temporary-public-storage \

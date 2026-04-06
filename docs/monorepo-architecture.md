@@ -2,7 +2,7 @@
 
 ## Current State (Fully Migrated)
 
-The project is a **Turborepo monorepo** with npm workspaces. All web application source code lives in `apps/web/`. Heavy ML dependencies are isolated in `@cannaguide/ai-core` as `optionalDependencies`.
+The project is a **Turborepo monorepo** with pnpm workspaces. All web application source code lives in `apps/web/`. Heavy ML dependencies are isolated in `@cannaguide/ai-core` as `optionalDependencies`.
 
 ### Turbo Pipeline
 
@@ -87,7 +87,7 @@ The web app's `vite.config.ts` includes `optionalMlPlugin()` -- a custom Vite pl
 DevContainer uses `--no-optional` to skip all ML packages for fast boot:
 
 ```bash
-CI=1 npm install -w @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional
+CI=1 pnpm install --filter @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional
 ```
 
 ### Root package.json

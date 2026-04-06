@@ -36,11 +36,11 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
     ```
 3. **Install dependencies**:
     ```bash
-    npm install
+    pnpm install
     ```
 4. **Start the development server**:
     ```bash
-    npm run dev
+    pnpm run dev
     ```
 
 ---
@@ -91,8 +91,8 @@ Direct pushes to `main` are blocked (`enforce_admins: true`). All changes go thr
 git add -A && git commit -S -m "feat(scope): description"
 
 # 2. Push via automated PR workflow
-npm run pr:push                          # auto-generated branch name
-npm run pr:push -- "feat/my-feature"     # explicit branch name
+pnpm run pr:push                          # auto-generated branch name
+pnpm run pr:push -- "feat/my-feature"     # explicit branch name
 ```
 
 The `pr:push` script (`scripts/github/pr-push.mjs`) automates: branch creation → push → PR → auto-merge (squash) → CI wait → cleanup. PRs are merge-gated by CI checks (`quality` + `ci-status`) and signed commits.
@@ -139,7 +139,7 @@ test(ai): add rate limiter unit tests
 ## Code Style
 
 - **TypeScript strict mode** — no `any` types, no `@ts-expect-error`.
-- **ESLint 9 flat config** — run `npm run lint` before committing.
+- **ESLint 9 flat config** — run `pnpm run lint` before committing.
 - **Tailwind CSS** — use utility classes, avoid custom CSS where possible.
 - **Functional components** with hooks — no class components.
 - **Named exports** — prefer named over default exports.
@@ -147,10 +147,10 @@ test(ai): add rate limiter unit tests
 
 ```bash
 # Check for lint errors
-npm run lint
+pnpm run lint
 
 # Type-check without emitting
-npx tsc --noEmit
+pnpm exec tsc --noEmit
 ```
 
 ### Rules
@@ -176,13 +176,13 @@ We use **Vitest** for unit/integration tests and **Playwright** for E2E tests.
 
 ```bash
 # Run all unit/integration tests
-npm test
+pnpm test
 
 # Run tests in watch mode
-npx vitest --watch
+pnpm exec vitest --watch
 
 # Run E2E tests (requires build)
-npm run build && npx playwright test
+pnpm run build && pnpm exec playwright test
 ```
 
 ### Guidelines
@@ -231,7 +231,7 @@ console.debug(t('common:error.generic'))
 2. Ensure your branch is **up to date** with `main`.
 3. Run the full check suite:
     ```bash
-    npx tsc --noEmit && npm run lint && npm test
+    pnpm exec tsc --noEmit && pnpm run lint && pnpm test
     ```
 4. Write a **clear PR description** explaining what changed and why.
 5. Link the related issue (e.g., `Closes #42`).
@@ -240,9 +240,9 @@ console.debug(t('common:error.generic'))
 
 ### PR Checklist
 
-- [ ] TypeScript compiles with 0 errors (`npx tsc --noEmit`)
-- [ ] ESLint passes with 0 warnings (`npm run lint`)
-- [ ] All existing tests pass (`npm test`)
+- [ ] TypeScript compiles with 0 errors (`pnpm exec tsc --noEmit`)
+- [ ] ESLint passes with 0 warnings (`pnpm run lint`)
+- [ ] All existing tests pass (`pnpm test`)
 - [ ] New features include tests
 - [ ] Translations added for EN and DE
 - [ ] No `console.log` statements
@@ -339,7 +339,7 @@ When removing or replacing a public API, component, or feature, follow this proc
 ## Release Process
 
 1. Maintainer bumps version in `package.json`.
-2. Generate CHANGELOG: `npm run changelog:latest` (or `npm run changelog` for full rebuild).
+2. Generate CHANGELOG: `pnpm run changelog:latest` (or `pnpm run changelog` for full rebuild).
 3. Create a tag: `git tag v1.x.0 && git push --tags`.
 4. GitHub Actions automatically:
     - Deploys to GitHub Pages and Netlify.

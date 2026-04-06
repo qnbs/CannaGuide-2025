@@ -3,16 +3,12 @@
     "description": "AI-powered cannabis cultivation guide – plant tracker, 800+ strain encyclopedia, VPD calculator, breeding simulator, Gemini AI mentor & offline-first PWA.",
     "private": true,
     "version": "1.4.1",
-    "packageManager": "npm@10.8.2",
+    "packageManager": "pnpm@10.33.0",
     "engines": {
         "node": ">=20"
     },
     "homepage": "https://qnbs.github.io/CannaGuide-2025/",
     "type": "module",
-    "workspaces": [
-        "packages/*",
-        "apps/*"
-    ],
     "keywords": [
         "cannabis",
         "cultivation",
@@ -35,18 +31,18 @@
         "typecheck": "turbo run typecheck",
         "test": "turbo run test",
         "test:coverage": "turbo run test:coverage",
-        "test:e2e": "npm run test:e2e -w apps/web",
-        "test:e2e:install": "npm run test:e2e:install -w apps/web",
-        "test:e2e:install:ci": "npm run test:e2e:install:ci -w apps/web",
-        "test:ct": "npm run test:ct -w apps/web",
-        "test:mutate": "npx stryker run",
+        "test:e2e": "pnpm --filter @cannaguide/web test:e2e",
+        "test:e2e:install": "pnpm --filter @cannaguide/web test:e2e:install",
+        "test:e2e:install:ci": "pnpm --filter @cannaguide/web test:e2e:install:ci",
+        "test:ct": "pnpm --filter @cannaguide/web test:ct",
+        "test:mutate": "pnpm exec stryker run",
         "lint": "node ./scripts/lint-changed.mjs",
         "lint:changed": "node ./scripts/lint-changed.mjs",
         "lint:full": "eslint . --report-unused-disable-directives",
         "lint:strict": "eslint . --report-unused-disable-directives --quiet",
         "lint:scopes": "node ./scripts/lint-scopes.mjs",
         "format": "prettier --write .",
-        "preview": "npm run preview -w apps/web",
+        "preview": "pnpm --filter @cannaguide/web preview",
         "check:commit-identity": "node ./scripts/check-commit-identity.mjs",
         "devcontainer:doctor": "node ./scripts/devcontainer/doctor.mjs",
         "prettier:check:changed": "node ./scripts/prettier-check-changed.mjs",
@@ -69,9 +65,9 @@
         "security:snyk": "snyk test --all-projects --severity-threshold=high",
         "security:grype": "grype dir:. --fail-on high --only-fixed --exclude ./node_modules --exclude ./dist --exclude ./coverage",
         "security:scorecard": "scorecard --local . --file-mode git --format json --output scorecard.json --show-details",
-        "gate:push": "npm run check:commit-identity && npm run lint:changed && npm run typecheck && npm run test -- --run && npm run prettier:check:changed",
+        "gate:push": "pnpm run check:commit-identity && pnpm run lint:changed && pnpm run typecheck && pnpm run test -- --run && pnpm run prettier:check:changed",
         "pr:push": "node ./scripts/github/pr-push.mjs",
-        "security:scan": "npm run security:prettier && npm run security:trojan-source && npm run security:eslint && npm run security:pre-commit && npm run security:secrets && npm run security:semgrep && npm run security:socket && npm run security:snyk && npm run security:grype && npm run security:scorecard",
+        "security:scan": "pnpm run security:prettier && pnpm run security:trojan-source && pnpm run security:eslint && pnpm run security:pre-commit && pnpm run security:secrets && pnpm run security:semgrep && pnpm run security:socket && pnpm run security:snyk && pnpm run security:grype && pnpm run security:scorecard",
         "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0",
         "changelog:latest": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s",
         "docs:ai-core": "typedoc --entryPoints packages/ai-core/src/index.ts --out docs/api/ai-core --tsconfig packages/ai-core/tsconfig.json --plugin typedoc-plugin-markdown 2>/dev/null || typedoc --entryPoints packages/ai-core/src/index.ts --out docs/api/ai-core --tsconfig packages/ai-core/tsconfig.json"
@@ -112,10 +108,18 @@
         "typedoc": "0.28.18",
         "typescript": "5.9.3"
     },
-    "overrides": {
-        "@rollup/plugin-terser": "1.0.0",
-        "tmp": "0.2.5",
-        "lodash-es": "4.18.1",
-        "lodash": ">=4.18.0"
+    "pnpm": {
+        "overrides": {
+            "@rollup/plugin-terser": "1.0.0",
+            "tmp": "0.2.5",
+            "lodash-es": "4.18.1",
+            "lodash": ">=4.18.0"
+        },
+        "onlyBuiltDependencies": [
+            "esbuild",
+            "sharp",
+            "msw",
+            "protobufjs"
+        ]
     }
 }

@@ -24,25 +24,28 @@ jobs:
             - name: Capture benchmark start
               run: echo "BENCHMARK_START=$(date +%s)" >> "$GITHUB_ENV"
 
+            - name: Enable Corepack
+              run: corepack enable
+
             - name: Setup Node ${{ env.NODE_VERSION }}
               uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: npm
+                  cache: pnpm
 
             - name: Install dependencies
-              run: npm ci --prefer-offline
+              run: pnpm install --frozen-lockfile
 
             - name: depcheck
-              run: npm run depcheck
+              run: pnpm run depcheck
 
             - name: Bundle analysis
-              run: npm run benchmark
+              run: pnpm run benchmark
 
             - name: Lighthouse CI
               id: lighthouse
               run: |
-                  npm run lighthouse:ci 2>&1 || {
+                  pnpm run lighthouse:ci 2>&1 || {
                     echo "[WARN] Lighthouse CI failed -- metrics will show n/a"
                     echo "lighthouse_failed=true" >> "$GITHUB_ENV"
                   }

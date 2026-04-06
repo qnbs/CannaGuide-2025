@@ -34,17 +34,20 @@ jobs:
                           - node_modules
                           - coverage
 
+            - name: Enable Corepack
+              run: corepack enable
+
             - name: Setup Node
               uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: npm
+                  cache: pnpm
 
             - name: Install dependencies
-              run: npm ci --prefer-offline
+              run: pnpm install --frozen-lockfile
 
             - name: Build for CodeQL analysis
-              run: npm run build
+              run: pnpm run build
 
             - name: Perform CodeQL analysis
               uses: github/codeql-action/analyze@c10b8064de6f491fea524254123dbe5e09572f13
@@ -57,20 +60,23 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+            - name: Enable Corepack
+              run: corepack enable
+
             - name: Setup Node
               uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: npm
+                  cache: pnpm
 
             - name: Install dependencies
-              run: npm ci --prefer-offline
+              run: pnpm install --frozen-lockfile
 
-            - name: Audit npm dependencies
+            - name: Audit dependencies
               run: |
-                  npm audit --audit-level=high 2>&1 || {
-                    echo "[WARN] npm audit found high-severity vulnerabilities -- review output above"
-                    echo "Run 'npm audit' locally and update affected packages"
+                  pnpm audit --audit-level=high 2>&1 || {
+                    echo "[WARN] pnpm audit found high-severity vulnerabilities -- review output above"
+                    echo "Run 'pnpm audit' locally and update affected packages"
                   }
 
     gitleaks:
@@ -147,17 +153,20 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+            - name: Enable Corepack
+              run: corepack enable
+
             - name: Setup Node
               uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: npm
+                  cache: pnpm
 
             - name: Install dependencies
-              run: npm ci --prefer-offline
+              run: pnpm install --frozen-lockfile
 
             - name: Scan for bidi controls
-              run: npm run security:trojan-source
+              run: pnpm run security:trojan-source
 
     scorecard:
         name: Scorecard

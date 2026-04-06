@@ -124,8 +124,8 @@ function main() {
 
     console.log(`[lint:changed] Linting ${changedFiles.length} changed files (base: ${baseRef}).`)
     const result = spawnSync(
-        'npx',
-        ['eslint', '--quiet', '--report-unused-disable-directives', '--', ...changedFiles],
+        'pnpm',
+        ['exec', 'eslint', '--quiet', '--report-unused-disable-directives', '--', ...changedFiles],
         {
             stdio: 'inherit',
             shell: process.platform === 'win32',

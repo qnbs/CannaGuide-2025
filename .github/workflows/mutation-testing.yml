@@ -38,7 +38,7 @@ jobs:
 
             - name: Run Stryker
               working-directory: apps/web
-              run: npx stryker run ../../stryker.conf.json
+              run: pnpm exec stryker run ../../stryker.conf.json
 
             - name: Upload mutation report
               if: always()

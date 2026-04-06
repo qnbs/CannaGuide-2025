@@ -18,6 +18,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
 - **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 18 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
+- **Package Manager:** pnpm 10 via Corepack (shamefully-hoist, workspace:\* protocol)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
@@ -28,10 +29,12 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 
 ### Monorepo Layout
 
-The project uses **npm workspaces + TurboRepo** with ML dependencies isolated in `@cannaguide/ai-core`.
+The project uses **pnpm workspaces + TurboRepo** with ML dependencies isolated in `@cannaguide/ai-core`.
 
 ```
 package.json             # Workspace root (turbo, eslint, prettier -- NO app deps)
+pnpm-workspace.yaml      # pnpm workspace definition (packages/*, apps/*)
+.npmrc                   # pnpm config (shamefully-hoist, auto-install-peers)
 turbo.json               # TurboRepo pipeline (build, dev, test, lint, typecheck)
 tsconfig.json            # References-only (apps/web, packages/*)
 
@@ -85,7 +88,7 @@ docs/                    # Developer guides, roadmap
 
 ### ML Isolation Strategy
 
-Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-web`) are declared as `optionalDependencies` in `@cannaguide/ai-core`. The web app's `vite.config.ts` includes `optionalMlPlugin()` that stubs missing ML modules at build time, allowing the build to succeed even without ML binaries installed. DevContainer uses `npm ci` for deterministic lockfile-pinned installs (OSSF Scorecard compliant). ML models are loaded lazily at runtime in-browser.
+Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-web`) are declared as `optionalDependencies` in `@cannaguide/ai-core`. The web app's `vite.config.ts` includes `optionalMlPlugin()` that stubs missing ML modules at build time, allowing the build to succeed even without ML binaries installed. DevContainer uses `pnpm install --frozen-lockfile` for deterministic lockfile-pinned installs (OSSF Scorecard compliant). ML models are loaded lazily at runtime in-browser.
 
 ### Key Patterns
 
@@ -249,7 +252,8 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - System deps (ripgrep, gh, jq) baked into image layer with apt cache cleanup
 - `postCreateCommand` in `.devcontainer/setup.sh` -- deterministic lockfile-pinned install:
     ```
-    CI=1 npm ci --no-fund --no-audit --ignore-scripts
+    corepack enable
+    CI=1 pnpm install --frozen-lockfile
     ```
 - `postStartCommand` in `.devcontainer/start.sh` (IoT mock servers health-checked)
 - `.devcontainer/.dockerignore` excludes node_modules, .git, dist, coverage
@@ -262,27 +266,27 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 ```bash
 # Root (delegates to TurboRepo)
-npm run dev              # turbo run dev (Vite dev server)
-npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest)
-npm run lint             # turbo run lint
-npm run typecheck        # turbo run typecheck
-npm run format           # Prettier format
-npm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
+pnpm run dev              # turbo run dev (Vite dev server)
+pnpm run build            # turbo run build (all workspaces)
+pnpm test                 # turbo run test (Vitest)
+pnpm run lint             # turbo run lint
+pnpm run typecheck        # turbo run typecheck
+pnpm run format           # Prettier format
+pnpm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
 git push origin main     # Direct push (admin bypass)
-npm run pr:push          # CI-gated push via automated PR workflow (optional)
-npm run changelog        # Generate full CHANGELOG from conventional commits
-npm run changelog:latest # Append latest release to CHANGELOG
-npm run docs:ai-core     # Generate Typedoc API docs for ai-core package
+node ./scripts/github/pr-push.mjs  # CI-gated push via automated PR workflow (optional)
+pnpm run changelog        # Generate full CHANGELOG from conventional commits
+pnpm run changelog:latest # Append latest release to CHANGELOG
+pnpm run docs:ai-core     # Generate Typedoc API docs for ai-core package
 
 # Web app (from apps/web/ or via workspace flag)
-npm run -w @cannaguide/web dev       # Vite dev server (localhost:5173)
-npm run -w @cannaguide/web build     # Production build
-npm run -w @cannaguide/web test -- --run  # Vitest unit/integration (--run required -- no --run = watch mode hangs)
-npm run -w @cannaguide/web test:e2e  # Playwright E2E (requires build)
-npm run -w @cannaguide/web test:ct   # Playwright Component tests
-npm run -w @cannaguide/web typecheck # tsc --noEmit (TS2719 filtered)
-npm run test:mutate                  # Stryker mutation testing (Redux slices)
+pnpm --filter @cannaguide/web dev       # Vite dev server (localhost:5173)
+pnpm --filter @cannaguide/web build     # Production build
+pnpm --filter @cannaguide/web test -- --run  # Vitest unit/integration (--run required -- no --run = watch mode hangs)
+pnpm --filter @cannaguide/web test:e2e  # Playwright E2E (requires build)
+pnpm --filter @cannaguide/web test:ct   # Playwright Component tests
+pnpm --filter @cannaguide/web typecheck # tsc --noEmit (TS2719 filtered)
+pnpm exec stryker run                   # Stryker mutation testing (Redux slices)
 ```
 
 ---
@@ -471,6 +475,8 @@ After implementation is complete with all validations passing, update **all affe
 | `packages/ui/src/tokens.css`                                | 9 cannabis theme CSS custom properties (RGB triplets)                                                                                                                      |
 | `packages/ui/src/tailwind-preset.cjs`                       | Shared Tailwind preset (colors, keyframes, animations)                                                                                                                     |
 | `lighthouserc.json`                                         | Lighthouse CI config + performance budget assertions                                                                                                                       |
+| `pnpm-workspace.yaml`                                       | pnpm workspace definition (packages/_, apps/_)                                                                                                                             |
+| `.npmrc`                                                    | pnpm config (shamefully-hoist, auto-install-peers, strict-peer-dependencies=false)                                                                                         |
 | `stryker.conf.json`                                         | Stryker mutation testing config (Redux slices, 50% break)                                                                                                                  |
 | `scripts/typecheck-filter.mjs`                              | Typecheck with RTK TS2719 filter (known upstream bug)                                                                                                                      |
 | `scripts/generate-service-map.mjs`                          | AI service Mermaid dependency map generator                                                                                                                                |

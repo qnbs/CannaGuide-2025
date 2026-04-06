@@ -1,6 +1,6 @@
-import { TTSSettings, Language } from '@/types'
+import { TTSSettings, Language, ITTSProvider } from '@/types'
 
-class TTSService {
+class TTSService implements ITTSProvider {
     private readonly synth: SpeechSynthesis | null =
         typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis
             ? window.speechSynthesis

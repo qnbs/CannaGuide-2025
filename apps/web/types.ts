@@ -1050,6 +1050,17 @@ export interface TTSSettings {
     highlightSpeakingText: boolean
 }
 
+/** Provider interface for text-to-speech engines. */
+export interface ITTSProvider {
+    isSupported(): boolean
+    init(): void
+    getVoices(lang: Language): SpeechSynthesisVoice[]
+    speak(text: string, lang: Language, onEnd: () => void, settings: TTSSettings): void
+    cancel(): void
+    pause(): void
+    resume(): void
+}
+
 // UI & State types
 export interface AdvancedFilterState {
     thcRange: [number, number]

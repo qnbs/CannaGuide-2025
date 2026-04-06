@@ -128,4 +128,30 @@ describe('ttsService', () => {
         expect(pause).toHaveBeenCalledTimes(1)
         expect(resume).toHaveBeenCalledTimes(1)
     })
+
+    it('conforms to ITTSProvider interface shape', async () => {
+        setupSpeechEnvironment()
+        const ttsService = await loadService()
+
+        expect(typeof ttsService.isSupported).toBe('function')
+        expect(typeof ttsService.init).toBe('function')
+        expect(typeof ttsService.getVoices).toBe('function')
+        expect(typeof ttsService.speak).toBe('function')
+        expect(typeof ttsService.cancel).toBe('function')
+        expect(typeof ttsService.pause).toBe('function')
+        expect(typeof ttsService.resume).toBe('function')
+    })
+
+    it('speaks with a different language parameter', async () => {
+        const { speak } = setupSpeechEnvironment()
+        const ttsService = await loadService()
+        ttsService.init()
+
+        const onEnd = vi.fn()
+        ttsService.speak('Hallo Welt', 'de', onEnd, baseSettings)
+
+        expect(speak).toHaveBeenCalledTimes(1)
+        const utterance = speak.mock.calls[0]?.[0] as { lang: string }
+        expect(utterance?.lang).toBe('de-DE')
+    })
 })

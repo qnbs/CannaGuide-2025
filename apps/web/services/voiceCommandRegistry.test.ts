@@ -6,7 +6,7 @@
  * edge cases (empty transcript, no match, partial match below threshold).
  */
 import { describe, it, expect, vi, beforeAll } from 'vitest'
-import { matchVoiceCommand } from '@/services/voiceCommandRegistry'
+import { matchVoiceCommand, levenshtein } from '@/services/voiceCommandRegistry'
 import type { VoiceCommandDef } from '@/services/voiceCommandRegistry'
 import type { AppDispatch } from '@/stores/store'
 
@@ -37,6 +37,15 @@ vi.mock('@/stores/useStrainsViewStore', () => ({
 vi.mock('@/stores/slices/settingsSlice', () => ({
     setSetting: vi.fn(),
     toggleSetting: vi.fn(),
+}))
+vi.mock('@/services/uiStateBridge', () => ({
+    getReduxSnapshot: vi.fn(() => ({ settings: { settings: { aiMode: 'hybrid' } } })),
+}))
+vi.mock('@/data/strains', () => ({
+    allStrainsData: [{ id: '1', name: 'Blue Dream' }],
+}))
+vi.mock('@/utils/random', () => ({
+    secureRandom: () => 0.5,
 }))
 
 // ---------------------------------------------------------------------------
@@ -277,5 +286,125 @@ describe('HOTWORD_REGEX', () => {
 
     it('allows multiple spaces between hey and canna', () => {
         expect(HOTWORD_REGEX.test('hey   canna')).toBe(true)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Levenshtein distance
+// ---------------------------------------------------------------------------
+
+describe('levenshtein', () => {
+    it('returns 0 for identical strings', () => {
+        expect(levenshtein('hello', 'hello')).toBe(0)
+    })
+
+    it('returns 1 for single deletion', () => {
+        expect(levenshtein('hello', 'helo')).toBe(1)
+    })
+
+    it('returns 3 for kitten -> sitting', () => {
+        expect(levenshtein('kitten', 'sitting')).toBe(3)
+    })
+
+    it('returns length of other string when one is empty', () => {
+        expect(levenshtein('', 'abc')).toBe(3)
+        expect(levenshtein('abc', '')).toBe(3)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Pass 2: Fuzzy alias via Levenshtein
+// ---------------------------------------------------------------------------
+
+describe('matchVoiceCommand -- Pass 2: fuzzy alias (Levenshtein)', () => {
+    it('matches a typo within distance 2 (comparre -> compare)', () => {
+        const cmds: VoiceCommandDef[] = [
+            {
+                id: 'strain_compare',
+                group: 'Strains',
+                label: 'Compare Strains',
+                aliases: ['compare strains'],
+                keywords: 'compare comparison side strains versus',
+                action: vi.fn(),
+            },
+        ]
+        const result = matchVoiceCommand('comparre strains', cmds)
+        expect(result?.id).toBe('strain_compare')
+    })
+
+    it('does not match when distance exceeds 2', () => {
+        const cmds: VoiceCommandDef[] = [
+            {
+                id: 'nav_plants',
+                group: 'Navigation',
+                label: 'Plants',
+                aliases: ['go to plants'],
+                keywords: 'plants garden grow home dashboard',
+                action: vi.fn(),
+            },
+        ]
+        // "xx xx xxxxxx" is very far from "go to plants"
+        const result = matchVoiceCommand('xx xx xxxxxx', cmds)
+        expect(result).toBeNull()
+    })
+})
+
+// ---------------------------------------------------------------------------
+// New commands: V-05 extended set (real registry)
+// ---------------------------------------------------------------------------
+
+describe('matchVoiceCommand -- V-05 new commands', () => {
+    it('buildVoiceCommands returns at least 29 commands', async () => {
+        const { buildVoiceCommands } = await import('@/services/voiceCommandRegistry')
+        const commands = buildVoiceCommands(mockDispatch)
+        expect(commands.length).toBeGreaterThanOrEqual(29)
+    })
+
+    it('"show diagnosis" matches diag_show via alias', async () => {
+        const { buildVoiceCommands, matchVoiceCommand: match } =
+            await import('@/services/voiceCommandRegistry')
+        const cmds = buildVoiceCommands(mockDispatch)
+        const result = match('show diagnosis', cmds)
+        expect(result?.id).toBe('diag_show')
+    })
+
+    it('"zeige diagnose" matches diag_show (DE alias)', async () => {
+        const { buildVoiceCommands, matchVoiceCommand: match } =
+            await import('@/services/voiceCommandRegistry')
+        const cmds = buildVoiceCommands(mockDispatch)
+        const result = match('zeige diagnose', cmds)
+        expect(result?.id).toBe('diag_show')
+    })
+
+    it('"compare strains" matches strain_compare', async () => {
+        const { buildVoiceCommands, matchVoiceCommand: match } =
+            await import('@/services/voiceCommandRegistry')
+        const cmds = buildVoiceCommands(mockDispatch)
+        const result = match('compare strains', cmds)
+        expect(result?.id).toBe('strain_compare')
+    })
+
+    it('"random strain" matches strain_random', async () => {
+        const { buildVoiceCommands, matchVoiceCommand: match } =
+            await import('@/services/voiceCommandRegistry')
+        const cmds = buildVoiceCommands(mockDispatch)
+        const result = match('random strain', cmds)
+        expect(result?.id).toBe('strain_random')
+    })
+
+    it('"ai status" matches ai_status', async () => {
+        const { buildVoiceCommands, matchVoiceCommand: match } =
+            await import('@/services/voiceCommandRegistry')
+        const cmds = buildVoiceCommands(mockDispatch)
+        const result = match('ai status', cmds)
+        expect(result?.id).toBe('ai_status')
+    })
+
+    it('"show hydro" matches equip_tab_hydro', async () => {
+        const { buildVoiceCommands, matchVoiceCommand: match } =
+            await import('@/services/voiceCommandRegistry')
+        const cmds = buildVoiceCommands(mockDispatch)
+        const result = match('show hydro', cmds)
+        expect(result?.id).toBe('equip_tab_hydro')
     })
 })

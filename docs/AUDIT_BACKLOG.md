@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-04-06 (Session 73)
+Last updated: 2026-04-07 (Session 74)
 
 ---
 
@@ -15,7 +15,7 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
 | High     | 11    | 11   | 0    |
-| Medium   | 28    | 12   | 16   |
+| Medium   | 28    | 18   | 10   |
 | Low      | 10    | 3    | 7    |
 
 ---
@@ -242,11 +242,11 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----------- |
 | Severity | Medium      |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** Dual IndexedDB architecture stores significant data client-side. No user-facing storage quota indicator.
 
-**Action:** Add storage usage indicator in Settings. Warn users when approaching quota limits. Already have image auto-pruning, but user visibility is missing.
+**Resolution:** `DataManagementTab.tsx` displays storage usage bar (usage/quota %) via `navigator.storage.estimate()`. `indexedDbMonitorService.ts` provides `getQuotaInfo()` for per-store entry counts and health warnings. `indexedDbPruneService.ts` auto-prunes images (500 cap) and search (5000 cap) on quota threshold. Already in production since Session 68.
 
 ---
 
@@ -258,11 +258,11 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | --------------- |
 | Severity | Medium          |
 | Effort   | High (3-5 days) |
-| Status   | **Open**        |
+| Status   | **Done**        |
 
 **Finding:** 960+ tests provide good coverage, but mutation testing would verify test quality (test effectiveness, not just code coverage).
 
-**Action:** Evaluate Stryker.js for mutation testing on critical service modules (aiService, simulationService, cryptoService). Start with a pilot on 2-3 modules.
+**Resolution:** Stryker Mutator configured in `stryker.conf.json` targeting `apps/web/stores/slices/**/*.ts`. Break threshold: 50% mutation score. `npm run test:mutate` wired in package.json. Reports generated to `reports/mutation/`. Baseline established in Session 63.
 
 ---
 
@@ -388,11 +388,11 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** Zod schemas exist in `@cannaguide/ai-core/schemas.ts` but not all AI endpoints validate responses against them consistently.
 
-**Action:** Audit all AI response paths. Ensure every `aiService` method validates its response through the appropriate Zod schema. Add test coverage for malformed AI responses.
+**Resolution:** All streaming parsers in `aiService.ts` (`parseMentorStreamResult`, `parseAiStreamResult`) now use Zod `safeParse()` with Sentry error reporting instead of `JSON.parse() as T` type assertions. `localAiPromptHandlers.ts` `parseJsonSafely()` converted from `schema.parse()` to `schema.safeParse()` with `captureLocalAiError()` on validation failure. 6 new tests cover malformed/schema-invalid AI responses. Session 74.
 
 ---
 
@@ -430,11 +430,11 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** `growLogRagService.ts` retrieves journal context for AI prompts but may exceed context window limits with extensive grow logs.
 
-**Action:** Implement token counting and truncation strategy. Prioritize recent and relevant entries. Add configurable context window size.
+**Resolution:** `GrowLogRagService.dynamicLimit()` caps context at max 20 chunks (15% of total, min 6). `slidingWindowRetrieve()` combines 3 most-recent entries with semantically ranked entries (deduped). Embedding-based ranking falls back to keyword scoring transparently. Already in production since Session 55.
 
 ---
 
@@ -444,11 +444,11 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----------- |
 | Severity | Medium      |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** The 3-layer fallback (WebLLM -> Transformers.js -> Heuristics) works but lacks visibility into how often each layer is used.
 
-**Action:** Extend `localAiTelemetryService.ts` to track fallback cascade metrics. Surface in a developer dashboard or Sentry custom events.
+**Resolution:** `localAiTelemetryService.ts` extended with `FallbackLayer` type, `recordFallbackEvent()`, `getFallbackBreakdown()`, and `fallbackBreakdown` in `TelemetrySnapshot`. `localAiInferenceRouter.ts` instruments cache/webllm/transformers layer hits. `localAiFallbackService.ts` instruments all 9 heuristic methods. 4 new telemetry tests. Session 74.
 
 ---
 
@@ -648,11 +648,11 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** All data is in IndexedDB with no user-facing export/import capability. Users risk data loss on browser reset.
 
-**Action:** Implement full data export (JSON) and import with validation. Add periodic backup reminders.
+**Resolution:** `DataManagementTab.tsx` provides full JSON export (`exportAllUserData()`), import with validation, auto-backup settings (off/daily/weekly), GDPR data export, and per-slice reset. File download triggered via browser download API. Already in production since Session 66.
 
 ---
 
@@ -796,15 +796,15 @@ Recommended implementation order based on impact and effort:
 ### Sprint 2 (Short-term)
 
 - [x] S-01 -- Prompt injection allow-list (Done, 5-layer defense)
-- [ ] A-01 -- AI response validation (Medium, v1.5)
-- [ ] A-04 -- RAG context window (Medium, v1.5)
-- [ ] F-04 -- Data export/backup (Medium, v1.5)
+- [x] A-01 -- AI response validation (Done, Zod safeParse, Session 74)
+- [x] A-04 -- RAG context window (Done, dynamicLimit + slidingWindow)
+- [x] F-04 -- Data export/backup (Done, DataManagementTab)
 - [x] U-01 -- Keyboard navigation audit (Done, Session 70)
 - [x] U-02 -- Screen reader testing (Done, Session 70 ARIA audit)
 
 ### Sprint 3 (Medium-term)
 
-- [ ] T-01 -- Mutation testing pilot
+- [x] T-01 -- Mutation testing pilot (Done, Stryker, Session 63)
 - [ ] T-03 -- Visual regression testing
 - [ ] T-05 -- AI contract tests
 - [ ] A-02 -- Local AI model versioning

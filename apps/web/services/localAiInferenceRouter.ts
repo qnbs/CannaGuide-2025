@@ -6,6 +6,7 @@ import {
     recordCacheMiss,
     debouncedPersistSnapshot,
 } from './localAiInfrastructureService'
+import { recordFallbackEvent } from './localAiTelemetryService'
 import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { generateWithWebLlm, type WebLlmDeps } from './localAiWebLlmService'
 import { detectOnnxBackend, getResolvedProfile, type LocalAiPipeline } from './localAIModelLoader'
@@ -195,6 +196,7 @@ export async function routeInference(
     const cached = getCached(prompt)
     if (cached) {
         recordCacheHit()
+        recordFallbackEvent('cache', 'in-memory hit')
         return cached
     }
 
@@ -203,6 +205,7 @@ export async function routeInference(
     if (persisted) {
         setCached(prompt, persisted)
         recordCacheHit()
+        recordFallbackEvent('cache', 'indexeddb hit')
         return persisted
     }
 
@@ -211,11 +214,13 @@ export async function routeInference(
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         const webLlmResult = await generateWithWebLlm(prompt, attempt, deps.webLlmDeps)
         if (webLlmResult) {
+            recordFallbackEvent('webllm')
             return webLlmResult
         }
 
         const transformersResult = await tryGenerateWithTransformers(prompt, attempt, deps)
         if (transformersResult) {
+            recordFallbackEvent('transformers')
             return transformersResult
         }
 

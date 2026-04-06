@@ -12,6 +12,7 @@ import {
 import DOMPurify from 'dompurify'
 import type { ImageStyle, NutrientContext } from '@/types/aiProvider'
 import { secureRandom } from '@/utils/random'
+import { recordFallbackEvent } from '@/services/localAiTelemetryService'
 
 const isGerman = (lang: Language) => lang === 'de'
 
@@ -1390,7 +1391,12 @@ const buildStrainImageSvg = (
 }
 
 class LocalAiFallbackService {
+    private track(method: string): void {
+        recordFallbackEvent('heuristic', method)
+    }
+
     diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
+        this.track('diagnosePlant')
         return diagnosePlant(plant, lang)
     }
 
@@ -1400,6 +1406,7 @@ class LocalAiFallbackService {
         ragContext: string,
         lang: Language,
     ): Omit<MentorMessage, 'role'> {
+        this.track('getMentorResponse')
         const diagnosis = diagnosePlant(plant, lang)
         const safeQuery = safe(query)
         const safeRag = safe(ragContext)
@@ -1426,6 +1433,7 @@ class LocalAiFallbackService {
     }
 
     getPlantAdvice(plant: Plant, lang: Language): AIResponse {
+        this.track('getPlantAdvice')
         const diagnosis = diagnosePlant(plant, lang)
         const issueList =
             diagnosis.issues.length > 0
@@ -1453,6 +1461,7 @@ class LocalAiFallbackService {
     }
 
     getGardenStatusSummary(plants: Plant[], lang: Language): AIResponse {
+        this.track('getGardenStatusSummary')
         const plantDetails = plants.map((p) => {
             const diag = diagnosePlant(p, lang)
             const issuesLabel = isGerman(lang) ? 'Problem(e)' : 'issue(s)'
@@ -1485,10 +1494,12 @@ class LocalAiFallbackService {
     }
 
     getEquipmentRecommendation(prompt: string, lang: Language): Recommendation {
+        this.track('getEquipmentRecommendation')
         return buildEquipmentRecommendation(prompt, lang)
     }
 
     getNutrientRecommendation(context: NutrientRecommendationContext, lang: Language): string {
+        this.track('getNutrientRecommendation')
         return buildNutrientRecommendation(context, lang)
     }
 
@@ -1498,12 +1509,14 @@ class LocalAiFallbackService {
         criteria: { focus: string; composition: string; mood: string },
         lang: Language,
     ): string {
+        this.track('generateStrainImage')
         const resolved = resolveStyle(style)
         const svg = buildStrainImageSvg(strain, resolved, criteria, lang)
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
     }
 
     getStrainTips(strain: Strain, lang: Language): StructuredGrowTips {
+        this.track('getStrainTips')
         let thcLevel: 'high' | 'medium' | 'low' = 'low'
         if (strain.thc > 25) {
             thcLevel = 'high'
@@ -1542,6 +1555,7 @@ class LocalAiFallbackService {
     }
 
     getGrowLogRagAnswer(query: string, ragContext: string, lang: Language): AIResponse {
+        this.track('getGrowLogRagAnswer')
         const safeQuery = safe(query)
         const safeRag = safe(ragContext)
 

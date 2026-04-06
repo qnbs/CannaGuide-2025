@@ -481,4 +481,61 @@ describe('localAiPromptHandlers', () => {
             expect(result).toContain('data:image/svg+xml')
         })
     })
+
+    // ── A-01: Malformed AI response resilience ───────────────────────
+
+    describe('malformed AI response resilience (A-01)', () => {
+        it('returns fallback on invalid JSON from mentor', async () => {
+            mockGenerate.mockResolvedValue('not valid json {{{')
+            const result = await handleMentorResponse(buildPlant(), 'help', 'en', '', mockGenerate)
+            expect(result.title).toBeTruthy()
+            expect(result.content).toBeTruthy()
+        })
+
+        it('returns fallback on schema-invalid mentor JSON (missing content)', async () => {
+            mockGenerate.mockResolvedValue(JSON.stringify({ title: 'Hi' }))
+            const result = await handleMentorResponse(buildPlant(), 'help', 'en', '', mockGenerate)
+            // Should still produce a valid response via fallback
+            expect(result.title).toBeTruthy()
+            expect(result.content).toBeTruthy()
+        })
+
+        it('returns fallback on invalid JSON from plant advice', async () => {
+            mockGenerate.mockResolvedValue('broken response')
+            const result = await handlePlantAdvice(buildPlant(), 'en', mockGenerate)
+            expect(result.title).toBeTruthy()
+            expect(result.content).toBeTruthy()
+        })
+
+        it('returns fallback on schema-invalid advice JSON (wrong types)', async () => {
+            mockGenerate.mockResolvedValue(JSON.stringify({ title: 123, content: null }))
+            const result = await handlePlantAdvice(buildPlant(), 'en', mockGenerate)
+            expect(result.title).toBeTruthy()
+            expect(result.content).toBeTruthy()
+        })
+
+        it('reports validation errors to Sentry on schema-invalid JSON', async () => {
+            const { captureLocalAiError: mockCapture } = await import('@/services/sentryService')
+            ;(mockCapture as ReturnType<typeof vi.fn>).mockClear()
+            // Valid JSON but missing required field "content"
+            mockGenerate.mockResolvedValue(JSON.stringify({ title: 'Only title' }))
+            await handlePlantAdvice(buildPlant(), 'en', mockGenerate)
+            expect(mockCapture).toHaveBeenCalledWith(
+                expect.objectContaining({ message: expect.stringContaining('validation failed') }),
+                expect.objectContaining({ stage: 'response-validation' }),
+            )
+        })
+
+        it('returns fallback on schema-invalid grow tips JSON', async () => {
+            mockGenerate.mockResolvedValue(JSON.stringify({ nutrientTip: 'only one field' }))
+            const result = await handleStrainTips(
+                buildPlant().strain,
+                { focus: 'flower', stage: 'vegetative', experienceLevel: 'beginner' },
+                'en',
+                mockGenerate,
+            )
+            expect(result).toHaveProperty('nutrientTip')
+            expect(result).toHaveProperty('trainingTip')
+        })
+    })
 })

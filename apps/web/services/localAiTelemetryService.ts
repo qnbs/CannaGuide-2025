@@ -12,6 +12,8 @@ const MAX_HISTORY = 100
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+export type FallbackLayer = 'cache' | 'webllm' | 'transformers' | 'heuristic' | 'cloud'
+
 export interface InferenceRecord {
     model: string
     task: string
@@ -22,12 +24,15 @@ export interface InferenceRecord {
     cached: boolean
     timestamp: number
     success: boolean
+    fallbackLayer?: FallbackLayer | undefined
+    fallbackReason?: string | undefined
 }
 
 export interface TelemetrySnapshot {
     totalInferences: number
     totalTokensGenerated: number
     averageLatencyMs: number
+    fallbackBreakdown: Record<FallbackLayer, number>
     averageTokensPerSecond: number
     cacheHitRate: number
     modelBreakdown: Record<string, { count: number; avgLatencyMs: number; avgTokPerSec: number }>
@@ -37,6 +42,13 @@ export interface TelemetrySnapshot {
     lastUpdated: number
 }
 
+const fallbackCounts: Record<FallbackLayer, number> = {
+    cache: 0,
+    webllm: 0,
+    transformers: 0,
+    heuristic: 0,
+    cloud: 0,
+}
 // ─── State ───────────────────────────────────────────────────────────────────
 
 const records: InferenceRecord[] = []
@@ -118,6 +130,30 @@ export const recordCacheMiss = (): void => {
     totalCacheMisses++
 }
 
+// ─── Fallback Tracking ───────────────────────────────────────────────────────
+
+/**
+ * Record which fallback layer handled an inference and why.
+ * Called at each transition point in the inference router.
+ */
+export const recordFallbackEvent = (layer: FallbackLayer, reason?: string | undefined): void => {
+    fallbackCounts[layer]++
+    if (records.length > 0) {
+        const last = records[records.length - 1]
+        if (last) {
+            last.fallbackLayer = layer
+            if (reason) last.fallbackReason = reason
+        }
+    }
+}
+
+/**
+ * Get a breakdown of how often each fallback layer was used.
+ */
+export const getFallbackBreakdown = (): Record<FallbackLayer, number> => ({
+    ...fallbackCounts,
+})
+
 // ─── Snapshot ────────────────────────────────────────────────────────────────
 
 /** Rough token estimation from string output (~4 chars per token). */
@@ -176,6 +212,7 @@ export const getSnapshot = (): TelemetrySnapshot => {
         cacheHitRate,
         modelBreakdown,
         backendBreakdown,
+        fallbackBreakdown: { ...fallbackCounts },
         successRate: totalInferences > 0 ? successful.length / totalInferences : 1,
         peakTokensPerSecond,
         lastUpdated: Date.now(),
@@ -323,4 +360,9 @@ export const resetTelemetry = (): void => {
     records.length = 0
     totalCacheHits = 0
     totalCacheMisses = 0
+    fallbackCounts.cache = 0
+    fallbackCounts.webllm = 0
+    fallbackCounts.transformers = 0
+    fallbackCounts.heuristic = 0
+    fallbackCounts.cloud = 0
 }

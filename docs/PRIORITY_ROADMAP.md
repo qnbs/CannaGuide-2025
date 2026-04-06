@@ -12,21 +12,21 @@
 | ---- | ---------------------------- | ------ | ------ |
 | C-02 | Automated release workflow   | Low    | Done   |
 | C-01 | Changelog generation         | Low    | Done   |
-| P-02 | Bundle size budget           | Medium | Open   |
+| P-02 | Bundle size budget           | Medium | Done   |
 | K-01 | Package boundary enforcement | Medium | Done   |
-| I-01 | Translation completeness CI  | Low    | Open   |
+| I-01 | Translation completeness CI  | Low    | Done   |
 
 ## Short-term (Sprint 2)
 
-| ID   | Finding                       | Effort | Status      |
-| ---- | ----------------------------- | ------ | ----------- |
-| S-01 | Prompt injection allow-list   | Low    | Done        |
-| A-01 | AI response validation        | Medium | Open        |
-| A-04 | RAG context window management | Medium | Open        |
-| S-04 | Key rotation warning UI       | Low    | Done        |
-| F-04 | Data export/backup            | Medium | Open        |
-| U-01 | Keyboard navigation audit     | Medium | In Progress |
-| U-02 | Screen reader testing         | Medium | In Progress |
+| ID   | Finding                       | Effort | Status |
+| ---- | ----------------------------- | ------ | ------ |
+| S-01 | Prompt injection allow-list   | Low    | Done   |
+| A-01 | AI response validation        | Medium | Done   |
+| A-04 | RAG context window management | Medium | Done   |
+| S-04 | Key rotation warning UI       | Low    | Done   |
+| F-04 | Data export/backup            | Medium | Done   |
+| U-01 | Keyboard navigation audit     | Medium | Done   |
+| U-02 | Screen reader testing         | Medium | Done   |
 
 ## Medium-term (Sprint 3)
 
@@ -36,7 +36,7 @@
 | T-03 | Visual regression testing             | Medium | Open   |
 | T-05 | AI contract tests                     | Medium | Open   |
 | A-02 | Local AI model versioning             | Medium | Open   |
-| P-03 | Image optimization pipeline           | Medium | Open   |
+| P-03 | Image optimization pipeline           | Medium | Done   |
 | F-05 | Multi-grow management                 | High   | Open   |
 | D-01 | API documentation                     | High   | Open   |
 | R-01 | Streaming generalization              | Medium | Done   |
@@ -83,3 +83,13 @@
 | AI-R1 | Strain recommendation scoring     | Daily Strains match % badge (0-100 relevance)             |
 | U-03  | Mobile responsiveness             | mobile-chrome Playwright project + 3 E2E tests (S70)      |
 | S-03  | CSP nonce                         | Won't Fix: strict-dynamic infeasible for static PWA (S70) |
+| A-01  | AI response validation            | Zod safeParse in aiService + localAiPromptHandlers (S74)  |
+| A-04  | RAG context window management     | dynamicLimit + slidingWindow in growLogRagService         |
+| A-05  | AI fallback telemetry             | recordFallbackEvent + getFallbackBreakdown (S74)          |
+| P-02  | Bundle size budget                | check-bundle-budget.mjs in CI                             |
+| P-03  | Image optimization pipeline       | browser-image-compression in imageService                 |
+| P-05  | IndexedDB storage monitoring      | DataManagementTab storage bar + indexedDbMonitorService   |
+| I-01  | Translation completeness CI       | check-i18n-completeness.mjs in ci.yml (S72)               |
+| F-04  | Data export/backup                | DataManagementTab export/import/auto-backup               |
+| U-01  | Keyboard navigation audit         | Touch target fixes + mobile E2E tests (S70)               |
+| U-02  | Screen reader testing             | 40+ ARIA attributes + 14 landmarks audit (S70)            |

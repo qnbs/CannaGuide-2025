@@ -4,6 +4,26 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- AI Fallback Telemetry (A-05) -- FallbackLayer type, recordFallbackEvent(), getFallbackBreakdown() in localAiTelemetryService, inference router and fallback service instrumented (Session 74)
+- AI Response Validation (A-01) -- Zod safeParse replaces unsafe JSON.parse() as T in aiService streaming parsers and localAiPromptHandlers, Sentry error reporting on validation failure (Session 74)
+- Malformed AI response tests -- 6 new tests for invalid JSON, schema-invalid responses, Sentry logging (Session 74)
+- Fallback telemetry tests -- 4 new tests for layer tracking, snapshot inclusion, reset behavior (Session 74)
+- response-validation stage in captureLocalAiError (Session 74)
+
+### Fixed
+
+- Mobile E2E command palette test -- replaced non-existent Meta+k shortcut with button click (Session 74)
+
+### Changed
+
+- Audit document sync -- 6 items corrected from Open to Done (F-04, P-05, T-01, A-04, A-01, A-05), summary table updated (Session 74)
+
+---
+
 ## [1.4.0] - 2026-04-06
 
 ### Added

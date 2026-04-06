@@ -3,6 +3,8 @@ import {
     recordInference,
     recordCacheHit,
     recordCacheMiss,
+    recordFallbackEvent,
+    getFallbackBreakdown,
     getSnapshot,
     createInferenceTimer,
     resetTelemetry,
@@ -323,6 +325,61 @@ describe('localAiTelemetryService', () => {
             })
             const alert = checkPerformanceDegradation()
             expect(alert.degraded).toBe(true)
+        })
+    })
+
+    describe('fallback telemetry', () => {
+        it('records fallback events and reports breakdown', () => {
+            recordFallbackEvent('cache', 'in-memory hit')
+            recordFallbackEvent('cache', 'indexeddb hit')
+            recordFallbackEvent('webllm')
+            recordFallbackEvent('heuristic', 'getMentorResponse')
+
+            const breakdown = getFallbackBreakdown()
+            expect(breakdown.cache).toBe(2)
+            expect(breakdown.webllm).toBe(1)
+            expect(breakdown.heuristic).toBe(1)
+            expect(breakdown.transformers).toBe(0)
+            expect(breakdown.cloud).toBe(0)
+        })
+
+        it('includes fallback breakdown in snapshot', () => {
+            recordFallbackEvent('transformers')
+            recordFallbackEvent('heuristic', 'getPlantAdvice')
+
+            const snapshot = getSnapshot()
+            expect(snapshot.fallbackBreakdown.transformers).toBe(1)
+            expect(snapshot.fallbackBreakdown.heuristic).toBe(1)
+        })
+
+        it('annotates the last inference record with fallback info', () => {
+            const record: InferenceRecord = {
+                model: 'test',
+                task: 'text-generation',
+                latencyMs: 100,
+                tokensGenerated: 10,
+                tokensPerSecond: 100,
+                backend: 'wasm',
+                cached: false,
+                timestamp: Date.now(),
+                success: true,
+            }
+            recordInference(record)
+            recordFallbackEvent('webllm', 'model loaded')
+
+            const snapshot = getSnapshot()
+            expect(snapshot.totalInferences).toBe(1)
+            expect(getFallbackBreakdown().webllm).toBe(1)
+        })
+
+        it('resets fallback counts with resetTelemetry', () => {
+            recordFallbackEvent('cache')
+            recordFallbackEvent('heuristic')
+            resetTelemetry()
+
+            const breakdown = getFallbackBreakdown()
+            expect(breakdown.cache).toBe(0)
+            expect(breakdown.heuristic).toBe(0)
         })
     })
 })

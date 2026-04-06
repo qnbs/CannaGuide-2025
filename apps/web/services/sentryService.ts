@@ -149,6 +149,8 @@ export const captureLocalAiError = (
             | 'webgpu-device-destroy-hidden'
             | 'webgpu-device-destroy-explicit'
             | 'hydro-forecast'
+            | 'response-validation'
+            | 'response-validation'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
         batchItem?: number

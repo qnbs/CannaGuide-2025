@@ -2,7 +2,7 @@
     "name": "cannaguide-2025",
     "description": "AI-powered cannabis cultivation guide – plant tracker, 800+ strain encyclopedia, VPD calculator, breeding simulator, Gemini AI mentor & offline-first PWA.",
     "private": true,
-    "version": "1.4.0",
+    "version": "1.4.1",
     "packageManager": "npm@10.8.2",
     "engines": {
         "node": ">=20"

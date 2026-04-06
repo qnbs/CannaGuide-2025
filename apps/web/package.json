@@ -89,7 +89,7 @@
         "vitest": "^4.1.0"
     },
     "optionalDependencies": {
-        "@capacitor/local-notifications": "^7.0.0",
+        "@capacitor/local-notifications": "^8.0.2",
         "@tauri-apps/plugin-notification": "^2.0.0"
     }
 }

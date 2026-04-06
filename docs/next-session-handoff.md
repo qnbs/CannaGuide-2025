@@ -2,7 +2,78 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 74) -- AI Quality Sprint + Audit Sync
+## Latest Session (Session 75) -- Documentation Audit + CI Fix Sprint
+
+**Status: v1.4.0 Stable. 1626 tests passing (149 files). TypeScript clean (TS2719 only). Build clean. 3 CI failures diagnosed and fixed.**
+
+### What Was Done (Session 75)
+
+1. **CI: GitHub Pages Deploy Fix** -- `pwa-update.deploy.e2e.ts` was
+   timing out (30s) waiting for SW registration on cold CDN. Increased
+   polling deadline from 30s to 60s.
+
+2. **CI: Docker Build Fix** -- Grype vulnerability scan failed because
+   `ghcr.io/qnbs/CannaGuide-2025` has uppercase letters (OCI requires
+   lowercase). Added `Lowercase image name` step to `docker.yml` that
+   writes `IMAGE_NAME_LC` env var via `tr '[:upper:]' '[:lower:]'`.
+   Grype scan now uses `IMAGE_NAME_LC`.
+
+3. **CI: Tauri Build Fix** -- `microphone:default` and
+   `microphone:allow-open` permissions in
+   `src-tauri/capabilities/default.json` referenced a plugin not
+   registered in `Cargo.toml`. Removed both permissions. Also bumped
+   `Cargo.toml` and `tauri.conf.json` version from `1.4.0-alpha` to
+   `1.4.0`.
+
+4. **Documentation Reconciliation** -- Comprehensive audit of all docs
+   against verified app metrics. Fixed stale numbers across 7 files:
+    - `ARCHITECTURE.md`: slices 13->14, tests 1468->1626, hooks 23->25,
+      lexicon 89->83
+    - `README.md`: slices 13->14, workflows 22->24, hooks 23->25,
+      tests 1423->1626, services 97->105 (EN+DE sections, badges,
+      diagrams, directory listings, version tables)
+    - `ROADMAP.md`: v1.2/v1.3 status -> Released, v1.4 -> In Progress,
+      lexicon 89->83
+    - `audit-roadmap-2026-q2.md`: version alpha->stable, tests
+      1497->1626, files 135->149, workflows 21->24
+    - `copilot-instructions.md`: lexicon 89->83
+
+### Verified Metrics
+
+- Tests: 1626 passing (149 files), 0 failures
+- TypeScript: clean (only known RTK TS2719)
+- Build: success
+- Redux slices: 14
+- Zustand stores: 8
+- Custom hooks: 25
+- Services: 105
+- CI workflows: 24
+- Lexicon entries: 83
+- Strains: 778
+- Themes: 9
+
+### CI Failure Root Causes (Diagnosed)
+
+| Workflow | Root Cause                            | Fix                 |
+| -------- | ------------------------------------- | ------------------- |
+| Deploy   | pwa-update E2E 30s timeout too short  | Increased to 60s    |
+| Docker   | Grype rejects uppercase OCI image ref | Lowercase via shell |
+| Tauri    | microphone plugin not in Cargo.toml   | Removed permissions |
+
+### Next Steps
+
+- T-03: Visual regression testing (Playwright screenshots across themes)
+- T-05: AI contract tests (provider response schema validation)
+- A-02: Local AI model versioning (pin versions in localAIModelLoader)
+- T-04: Multi-browser E2E (Firefox/WebKit matrix in CI)
+- C-03: CI pipeline caching (Turborepo remote cache)
+- U-04: Error state UX (error boundaries + retry buttons)
+- Verify Docker and Tauri builds pass after CI fixes (may need
+  `workflow_dispatch` trigger or `v1.4.0` tag)
+
+---
+
+## Previous Session (Session 74) -- AI Quality Sprint + Audit Sync
 
 **Status: v1.4.0 Stable. 1626 tests passing (149 files). TypeScript clean (TS2719 only). Build clean. 0 open HIGH audit items. Medium Done 18/28.**
 
@@ -53,7 +124,7 @@
 
 ---
 
-## Previous Session (Session 73) -- v1.4.0 Stable Release
+## Session 73 -- v1.4.0 Stable Release
 
 **Status: v1.4.0 Stable. 1594 tests passing (148 files). TypeScript clean. Build clean. 0 open HIGH audit items.**
 

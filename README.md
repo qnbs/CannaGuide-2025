@@ -70,11 +70,11 @@
 
 [![Strains](https://img.shields.io/badge/strains-778-green)](https://qnbs.github.io/CannaGuide-2025/)
 [![Services](https://img.shields.io/badge/services-105-blue)](https://qnbs.github.io/CannaGuide-2025/)
-[![Redux Slices](https://img.shields.io/badge/Redux%20slices-13-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
+[![Redux Slices](https://img.shields.io/badge/Redux%20slices-14-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
-[![Custom Hooks](https://img.shields.io/badge/hooks-23-orange)](https://qnbs.github.io/CannaGuide-2025/)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-24-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![Custom Hooks](https://img.shields.io/badge/hooks-25-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
@@ -110,7 +110,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 21-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 778 strains -- 1570 tests -- 102 services -- 13 Redux slices + 8 Zustand stores -- 23 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
+**Key numbers:** 778 strains -- 1626 tests -- 105 services -- 14 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 24 CI workflows
 
 ---
 
@@ -125,11 +125,11 @@ Three-tier client-side architecture with offline-first design:
 │  6 Views: Plants│Strains│Equipment│Knowledge│Settings│Help│
 ├─────────────────────────────────────────────────────────┤
 │  Business Logic Layer                                   │
-│  94 Services · 23 Hooks · 8 Web Workers                 │
+│  105 Services · 25 Hooks · 8 Web Workers                 │
 │  VPD Simulation · AI Providers · Genetics · RAG         │
 ├─────────────────────────────────────────────────────────┤
 │  State & Persistence Layer                              │
-│  Redux Toolkit (13 Slices) · Zustand (8 Stores) · RTK Query│
+│  Redux Toolkit (14 Slices) · Zustand (8 Stores) · RTK Query│
 │  Dual IndexedDB · Service Worker · Background Sync      │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -156,7 +156,7 @@ Three-tier client-side architecture with offline-first design:
 | ------------------ | ------------------------------------ | ---------------------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Component UI with zero `any`, `exactOptionalPropertyTypes` |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Fast HMR, InjectManifest SW                                |
-| **State**          | Redux Toolkit 2.11 + Zustand 5       | 13 Redux slices + 8 Zustand stores                         |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | 14 Redux slices + 8 Zustand stores                         |
 | **API Cache**      | RTK Query                            | AI API caching + data fetching                             |
 | **AI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction                            |
 | **AI (Local)**     | Transformers.js, WebLLM, TF.js, ONNX | 18 services, 8 ML models, 3-layer fallback                 |
@@ -189,7 +189,7 @@ AI equipment configurator recommending optimal setups based on grow parameters. 
 
 ### Knowledge
 
-AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials. **Grow Tech 2026** hub covering dynamic LED lighting, sensor/IoT/VPD automation, AI digital twins, aeroponics, tissue culture, smart grow boxes, and sustainability/post-harvest innovations. **Lexikon 2.0**: searchable 89-term glossary across 6 categories (General, Cannabinoid, Terpene, Flavonoid, Nutrient, Disease). **Disease Atlas**: 22-entry plant diagnostic reference covering deficiencies, toxicities, pests, and diseases, each with urgency classification, symptoms, causes, treatment, and prevention guides. **Calculator Hub**: VPD, Nutrient Ratio, and pH/EC calculators in a unified tabbed view. **Learning Paths**: 5 curated step-by-step grow education programs (Beginner First Grow, Environment Mastery, Nutrient Mastery, Pest & Disease Control, Advanced Training) with Redux-tracked per-step progress.
+AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials. **Grow Tech 2026** hub covering dynamic LED lighting, sensor/IoT/VPD automation, AI digital twins, aeroponics, tissue culture, smart grow boxes, and sustainability/post-harvest innovations. **Lexikon 2.0**: searchable 83-term glossary across 6 categories (General, Cannabinoid, Terpene, Flavonoid, Nutrient, Disease). **Disease Atlas**: 22-entry plant diagnostic reference covering deficiencies, toxicities, pests, and diseases, each with urgency classification, symptoms, causes, treatment, and prevention guides. **Calculator Hub**: VPD, Nutrient Ratio, and pH/EC calculators in a unified tabbed view. **Learning Paths**: 5 curated step-by-step grow education programs (Beginner First Grow, Environment Mastery, Nutrient Mastery, Pest & Disease Control, Advanced Training) with Redux-tracked per-step progress.
 
 ### Settings
 
@@ -310,7 +310,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- runs across all workspaces)
 npm run dev              # turbo run dev (Vite dev server on localhost:5173)
 npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest, 1423 tests)
+npm test                 # turbo run test (Vitest, 1626 tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -335,9 +335,9 @@ tsconfig.json              References-only (apps/web, apps/desktop, packages/*)
 apps/
   web/                     Main PWA (@cannaguide/web)
     components/             React components (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux (13 slices) + Zustand (8 stores), selectors, middleware
-    services/               97 service modules (AI, simulation, DB, crypto, IoT)
-    hooks/                  23 custom hooks
+    stores/                 Redux (14 slices) + Zustand (8 stores), selectors, middleware
+    services/               105 service modules (AI, simulation, DB, crypto, IoT)
+    hooks/                  25 custom hooks
     data/                   Static data: 778 strains, FAQ, lexicon, guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
     workers/                Web Workers: VPD simulation, genealogy, scenarios, inference, image gen, strain hydration, terpene (8 total)
@@ -368,7 +368,7 @@ docker/                     nginx config, ESP32-mock, Tauri-mock
 
 | Job                     | Description                                                                 |
 | ----------------------- | --------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 1423 tests, production build |
+| 🔍 Quality Gates        | Lint, typecheck (root + workspaces via Turbo), 1626 tests, production build |
 | 🛡 Security             | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
 | 🎭 E2E Tests            | Playwright Chromium (needs quality artifact)                                |
 | 🐳 Docker Compose + IoT | ESP32-mock + Tauri-mock healthcheck, sensor endpoint validation             |
@@ -544,7 +544,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 18-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 778 Sorten -- 1423 Tests -- 97 Services -- 13 Redux Slices + 8 Zustand Stores -- 23 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
+**Kennzahlen:** 778 Sorten -- 1626 Tests -- 105 Services -- 14 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 24 CI-Workflows
 
 ---
 
@@ -559,11 +559,11 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 │  6 Views: Pflanzen│Sorten│Ausrüstung│Wissen│Settings│Hilfe│
 ├─────────────────────────────────────────────────────────┤
 │  Business-Logik-Schicht                                 │
-│  94 Services · 23 Hooks · 8 Web Workers                 │
+│  105 Services · 25 Hooks · 8 Web Workers                 │
 │  VPD-Simulation · KI-Provider · Genetik · RAG           │
 ├─────────────────────────────────────────────────────────┤
 │  State- & Persistenzschicht                             │
-│  Redux Toolkit (13 Slices) · Zustand (8 Stores) · RTK Query│
+│  Redux Toolkit (14 Slices) · Zustand (8 Stores) · RTK Query│
 │  Dual IndexedDB · Service Worker · Background Sync      │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -590,7 +590,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | ------------------ | ------------------------------------ | --------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Komponenten-UI mit null `any`                 |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Schnelles HMR, InjectManifest SW              |
-| **State**          | Redux Toolkit 2.11 + Zustand 5       | 13 Redux Slices + 8 Zustand Stores            |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | 14 Redux Slices + 8 Zustand Stores            |
 | **KI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
 | **KI (Lokal)**     | Transformers.js, WebLLM, TF.js, ONNX | 18 Services, 8 ML-Modelle, 3-Schicht-Fallback |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 Cannabis-Themes via CSS Custom Properties   |
@@ -743,7 +743,7 @@ Node.js 20+, npm 10+
 # Root (TurboRepo -- laeuft ueber alle Workspaces)
 npm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 npm run build            # turbo run build (alle Workspaces)
-npm test                 # turbo run test (Vitest, 1423 Tests)
+npm test                 # turbo run test (Vitest, 1626 Tests)
 npm run lint             # turbo run lint
 npm run typecheck        # turbo run typecheck
 npm run format           # Prettier
@@ -768,9 +768,9 @@ tsconfig.json              Nur Referenzen (apps/web, apps/desktop, packages/*)
 apps/
   web/                     Haupt-PWA (@cannaguide/web)
     components/             React-Komponenten (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux: 13 Slices, 8 Zustand Stores, Selektoren, Middleware
-    services/               97 Service-Module (KI, Simulation, DB, Krypto, IoT)
-    hooks/                  23 Custom Hooks
+    stores/                 Redux: 14 Slices, 8 Zustand Stores, Selektoren, Middleware
+    services/               105 Service-Module (KI, Simulation, DB, Krypto, IoT)
+    hooks/                  25 Custom Hooks
     data/                   Statische Daten: 778 Sorten, FAQ, Lexikon, Guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (je 12 Namensräume)
     workers/                Web Workers: VPD-Simulation, Genealogie, Szenarien, Inferenz, Bildgen, Sorten-Hydration, Terpene (8 gesamt)
@@ -801,7 +801,7 @@ docker/                     nginx-Konfig, ESP32-Mock, Tauri-Mock
 
 | Job                     | Beschreibung                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
-| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 1423 Tests, Produktions-Build |
+| 🔍 Quality Gates        | Lint, Typecheck (Root + Workspaces via Turbo), 1626 Tests, Produktions-Build |
 | 🛡 Security             | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
 | 🎭 E2E Tests            | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🐳 Docker Compose + IoT | ESP32-Mock + Tauri-Mock Healthcheck, Sensor-Endpunkt-Validierung             |
@@ -861,15 +861,15 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 
 > Vollständige Details: [ROADMAP.md](ROADMAP.md)
 
-| Version  | Status              | Highlights                                                                                                                                                                                                                                                                                                                   |
-| -------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Veröffentlicht   | 778 Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                                                                                                          |
-| **v1.1** | ✅ Veröffentlicht   | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype                                                                                                                                                                  |
-| **v1.2** | ✅ Veröffentlicht   | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie)                                                                            |
-| **v1.3** | 🔄 In Arbeit (Beta) | Strain Intelligence Lookup (5-Quellen-Kaskade: lokal + Cannlytics + Otreeba + Cannabis API + KI), Entourage-Effekt-Wissenschaft (Terpen/Cannabinoid/Flavonoid-Anreicherung, EntourageScore-Ring, FlavonoidBar-Diagramm), AES-256-GCM IoT-Zugangsdaten-Verschluesselung, IndexedDB-Monitor-Service, Web Share API, 1049 Tests |
-| **v1.4** | 📋 Geplant          | Sorten-Skalierungsprogramm (mittelfristig 2.000+), endloser Discovery-Feed (News, HD-Galerien), Ausbau praxisnaher Anleitungen und Extraktionswissen                                                                                                                                                                         |
-| **v1.5** | 📋 Geplant          | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                                                                                                  |
-| **v2.0** | 📋 Geplant          | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                                                                                                  |
+| Version  | Status            | Highlights                                                                                                                                                                                                                                        |
+| -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Veröffentlicht | 778 Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                               |
+| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, Tauri v2, Docker IoT-Mocks, CodeQL, Grype                                                                                       |
+| **v1.2** | ✅ Veröffentlicht | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
+| **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                 |
+| **v1.4** | � In Arbeit       | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1626 Tests                                                                         |
+| **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                       |
+| **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                       |
 
 ### Strategische Ausbau-Schwerpunkte (2026-2028)
 

@@ -42,7 +42,7 @@ test('pwa update: service worker registers with GitHub Pages subpath scope', asy
     // waitForFunction sees registrations > 0 but a subsequent evaluate
     // returns 0 because the SW transitioned between calls.
     const registrations = (await page.evaluate(async () => {
-        const deadline = Date.now() + 30_000
+        const deadline = Date.now() + 60_000
         const poll = 500
 
         while (true) {

@@ -41,7 +41,7 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
             {children}
             <button
                 onClick={handleSpeak}
-                className="speakable-button absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity bg-slate-700/80 hover:bg-primary-500/80 text-white rounded-full p-1"
+                className="speakable-button absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity bg-slate-700/80 hover:bg-primary-500/80 text-white rounded-full p-2.5 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
                 aria-label={t('settingsView.tts.readThis')}
             >
                 <PhosphorIcons.SpeakerHigh className="w-4 h-4" />

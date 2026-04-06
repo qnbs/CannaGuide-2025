@@ -8,6 +8,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- a11y(ui): touch targets raised to 44px minimum on PwaInstallBanner, Speakable, CommandPalette, TTSControls, Toast icon buttons (Session 70)
+- a11y(ui): Toast close button focus:ring fixed to focus-visible:ring for keyboard-only focus indication (Session 70)
+- sec(csp): S-03 closed as Won't Fix -- strict-dynamic infeasible for static Vite PWA, active mitigations documented (Session 70)
+- test(e2e): mobile-chrome Playwright project (Pixel 5 viewport) added to playwright.config.ts (Session 70)
+- test(e2e): mobile-responsive.e2e.ts with 3 tests -- bottom nav visibility, nav item switching, modal open/close (Session 70)
+- chore(audit): U-03 closed (mobile E2E), S-03 Won't Fix, U-01/U-02 moved to In Progress (Session 70)
 - feat(workers): typed WorkerBusError class with WorkerErrorCode enum (10 codes) -- all 6 generic Error() converted (K-04) (Session 69)
 - test(workers): WorkerBusError typed error propagation tests (3) (Session 69)
 - chore(readme): ~30 dynamic shields.io badges -- repository activity, tech stack, code quality, security, distribution, project metrics (Session 69)

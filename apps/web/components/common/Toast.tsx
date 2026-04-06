@@ -50,7 +50,7 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
             <div className="text-sm font-normal text-slate-200">{notification.message}</div>
             <button
                 type="button"
-                className="ml-auto -mx-1.5 -my-1.5 bg-transparent text-slate-400 hover:text-white rounded-lg focus:ring-2 focus:ring-slate-300 p-2.5 hover:bg-slate-700"
+                className="ml-auto -mx-1.5 -my-1.5 bg-transparent text-slate-400 hover:text-white rounded-lg focus-visible:ring-2 focus-visible:ring-slate-300 p-2.5 min-h-[44px] min-w-[44px] inline-flex items-center justify-center hover:bg-slate-700"
                 onClick={() => onClose(notification.id)}
                 aria-label={t('common.close')}
             >

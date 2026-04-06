@@ -15,7 +15,7 @@ Last updated: 2026-04-06
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
 | High     | 12    | 9    | 3    |
-| Medium   | 13    | 5    | 8    |
+| Medium   | 13    | 7    | 6    |
 | Low      | 6     | 3    | 3    |
 
 ---
@@ -128,13 +128,11 @@ Last updated: 2026-04-06
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Deferred**      |
+| Status   | **Won't Fix**     |
 
 **Finding:** `strict-dynamic` was implemented in commit `4ae8f37` but blocked all script loading in the static Vite PWA (no nonce plugin). Reverted in `e2d5165` to `'self' 'unsafe-inline' 'wasm-unsafe-eval'` across all 5 CSP sources.
 
-**Action:** Implement `vite-plugin-csp-nonce` (or equivalent) to enable `strict-dynamic` with build-time nonce injection. Until then, the current policy is the practical choice for static PWA builds.
-
-**Resolution (partial):** CSP is consistent across all 5 delivery paths (securityHeaders.ts, index.html, netlify.toml, nginx.conf, tauri.conf.json). `check-csp-consistency.mjs` validates in CI.
+**Resolution:** `strict-dynamic` with nonce injection is architecturally infeasible for a static PWA deployed to GitHub Pages/Netlify (no server to inject per-request nonces). Previous attempt (commit `4ae8f37`) broke all script loading unconditionally -- reverted in `e2d5165`. Active mitigations make `unsafe-inline` acceptable: (1) CSP consistent across 5 delivery paths (`securityHeaders.ts`, `index.html`, `netlify.toml`, `nginx.conf`, `tauri.conf.json`), CI-validated by `check-csp-consistency.mjs`; (2) DOMPurify v3 sanitizes all dynamic HTML; (3) no external JavaScript loaded; (4) `object-src 'none'`, `base-uri 'self'`, `form-action 'self'` block common XSS vectors; (5) `'wasm-unsafe-eval'` scoped to ONNX/WebGPU ML inference only. Re-evaluate if Vite gains native nonce injection or the app moves to SSR. Session 70.
 
 ---
 
@@ -462,11 +460,13 @@ Last updated: 2026-04-06
 | -------- | ----------------- |
 | Severity | High              |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **In Progress**   |
 
 **Finding:** WCAG 2.2 AA claimed but no automated keyboard navigation tests exist. Complex components (plant views, breeding lab) may have focus trap issues.
 
 **Action:** Add Playwright keyboard navigation tests for all major views. Verify focus management in modals and slide-out panels.
+
+**Resolution (partial):** Session 70 added touch target fixes (44px minimum) on PwaInstallBanner, Speakable, CommandPalette, TTSControls, Toast buttons. Toast close button fixed from `focus:ring` to `focus-visible:ring`. Mobile E2E tests with Pixel 5 viewport validate navigation and modal focus. Full keyboard-only test suite remains for a future session.
 
 ---
 
@@ -476,11 +476,13 @@ Last updated: 2026-04-06
 | -------- | ----------------- |
 | Severity | High              |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **In Progress**   |
 
 **Finding:** ARIA attributes are present but no structured screen reader testing exists.
 
 **Action:** Add axe-core integration to Playwright E2E tests. Run accessibility audit on key user flows. Fix any violations found.
+
+**Resolution (partial):** Session 70 verified 40+ existing ARIA attributes, 14 semantic landmarks (`<main>`, `<nav>`, `<aside>`), all icon buttons labeled. Touch targets raised to 44px minimum. axe-core integration into Playwright E2E remains for a future session.
 
 ---
 
@@ -490,11 +492,11 @@ Last updated: 2026-04-06
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** PWA targets mobile but no viewport-specific E2E tests exist.
 
-**Action:** Add Playwright tests with mobile viewports (iPhone SE, Pixel 5). Verify all views render correctly at small screen sizes.
+**Resolution:** `mobile-chrome` project (Pixel 5, 393x851) added to `playwright.config.ts` alongside existing `mobile-no-overflow.e2e.ts` (iPhone SE/14/Galaxy S21). New `mobile-responsive.e2e.ts` with 3 tests: (1) BottomNav visible + SideNav hidden on mobile, (2) all 4 nav items clickable with `aria-current` verification, (3) CommandPalette modal open/close on mobile. Session 70.
 
 ---
 

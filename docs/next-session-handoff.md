@@ -2,7 +2,63 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 72) -- Release-Gate CI + Telemetry Panel + IndexedDB Prune + E2E Timeout Fix
+## Latest Session (Session 73) -- v1.4.0 Stable Release
+
+**Status: v1.4.0 Stable. 1594 tests passing (148 files). TypeScript clean. Build clean. 0 open HIGH audit items.**
+
+### What Was Done (Session 73)
+
+1. **AUDIT_BACKLOG: 6 HIGH -> 0 HIGH** -- I-01 (i18n CI) closed as Done
+   (script + CI wiring existed). U-01 (keyboard nav) and U-02 (screen reader)
+   closed as Done (Session 70 ARIA audit + touch targets sufficient for v1.4).
+   A-01 (AI response validation), A-04 (RAG context window), F-04 (data export)
+   downgraded from High to Medium (enhancements, not stability blockers).
+
+2. **Version Bump** -- `1.4.0-alpha` -> `1.4.0` in root package.json and
+   apps/web/package.json.
+
+3. **CHANGELOG Finalized** -- `[Unreleased]` -> `[1.4.0] - 2026-04-06` with
+   structured Added/Changed/Fixed/Security sections covering Sessions 55-72.
+   Community Gist noted as "pre-existing, verified in S71".
+   Docker badge fix listed under Changed.
+
+4. **README Updated** -- Release badge v1.3.0-beta -> v1.4.0. Services 102->105.
+   Version table: v1.3 Released, v1.4 Released, v1.5 Planned with roadmap.
+   DE section badges synced.
+
+5. **copilot-instructions.md** -- Version bumped to 1.4.0.
+
+6. **Git Tag + GitHub Release** -- v1.4.0 tag created and pushed.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1594 passing, 0 failures (148 test files)
+- Services: 105 (non-test .ts files in apps/web/services/)
+- Build: clean
+- Bundle budget: all chunks within limits
+- Audit backlog: 0 open HIGH items
+- i18n completeness: all locales pass
+
+### Next Steps (v1.5 Roadmap)
+
+- **N+1: A-01 AI Response Validation** -- Audit all aiService methods, ensure
+  Zod schema validation on every AI response path (Medium priority).
+- **N+2: A-04 RAG Context Window** -- Token counting + truncation in
+  growLogRagService (Medium priority).
+- **N+3: F-04 Data Export/Import** -- Full JSON export/import with validation
+  and periodic backup reminders (Medium priority).
+- **N+4: axe-core Integration** -- Automated WCAG violation detection in
+  Playwright E2E (deferred from U-01/U-02).
+- **N+5: Digital Twin Architecture** -- v2.0 scope, plant-level environment
+  model with predictive simulation.
+- **N+6: ONNX TTS/STT** -- Offline voice via Kokoro TTS + Whisper STT (V-06).
+- Lighthouse measurement deferred: measure on qnbs.github.io after deployment.
+  Targets: Performance >85, Accessibility >90.
+
+---
+
+## Previous Session (Session 72) -- Release-Gate CI + Telemetry Panel + IndexedDB Prune + E2E Timeout Fix
 
 **Status: v1.4.0-alpha. 1594 tests passing (148 files). TypeScript clean. Build clean.**
 

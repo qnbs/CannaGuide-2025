@@ -5,7 +5,7 @@
 > Dedizierte Roadmap zur Umsetzung aller Maßnahmen aus dem **Full-Scale Deep Audit, Critical Evaluation & Action-Plan** (Stand: 23. März 2026, Commit `473044d`).
 > Dieses Dokument ist der zentrale Übergabe- und Anknüpfungspunkt für alle zukünftigen Sessions.
 
-**Letzte Aktualisierung:** 2026-04-05
+**Letzte Aktualisierung:** 2026-04-06
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
 
 ---
@@ -34,8 +34,8 @@
 
 | Metrik                     | Wert                    | Bewertung           |
 | -------------------------- | ----------------------- | ------------------- |
-| App-Version                | v1.4.0-alpha            | ✅ Stabil           |
-| Tests                      | 1497/1497 (135 Dateien) | ✅ Grün             |
+| App-Version                | v1.4.0                  | ✅ Stabil           |
+| Tests                      | 1626/1626 (149 Dateien) | ✅ Grün             |
 | OpenSSF Scorecard          | 8.5/10                  | ⚠ Ziel: 10/10       |
 | SonarCloud Security        | A                       | ✅                  |
 | SonarCloud Reliability     | B                       | ⚠ Ziel: A           |
@@ -44,7 +44,7 @@
 | Test-Coverage              | ~22-28 %                | ⚠ Ziel: >30 %       |
 | Duplicate Code             | ~115 Major-Bloecke      | ⚠ Technische Schuld |
 | Security Alerts            | 0                       | ✅                  |
-| CI Workflows               | 21 (alle gruen)         | ✅                  |
+| CI Workflows               | 24 (alle gruen)         | ✅                  |
 | Stryker Mutation           | Baseline erstellt       | ✅ Neu (Session 63) |
 
 ### Soll-Zustand (nach vollständiger Roadmap)

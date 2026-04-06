@@ -110,6 +110,10 @@ jobs:
             - name: Check i18n completeness
               run: node scripts/check-i18n-completeness.mjs
 
+            - name: Audit backlog check (blocks on open HIGH items)
+              run: node scripts/check-audit-backlog.mjs
+              continue-on-error: false
+
             - name: Upload build artifact
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
@@ -163,7 +167,7 @@ jobs:
         name: E2E Tests
         needs: quality
         runs-on: ubuntu-latest
-        timeout-minutes: 25
+        timeout-minutes: 40
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
@@ -203,7 +207,7 @@ jobs:
                   START_TIME=$SECONDS
                   npx playwright test -c playwright.config.ts --grep-invert "Visual Regression" --workers=2
                   echo "E2E duration: $(( SECONDS - START_TIME ))s"
-              timeout-minutes: 20
+              timeout-minutes: 30
 
             - name: Run visual regression (snapshot baseline)
               if: always() && steps.playwright-cache.outcome != 'failure'

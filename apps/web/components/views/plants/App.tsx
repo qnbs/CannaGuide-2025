@@ -29,6 +29,7 @@ import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalB
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
 import { PwaInstallBanner } from '@/components/common/PwaInstallBanner'
 import { OfflineIndicator } from '@/components/common/OfflineIndicator'
+import { DevTelemetryPanel } from '@/components/common/DevTelemetryPanel'
 
 const CLEAR_AI_HISTORY_ON_EXIT_KEY = 'cg.ai.clear-on-exit.pending'
 
@@ -398,6 +399,7 @@ export const App: React.FC = () => {
                 </div>
             )}
             <ToastManager />
+            <DevTelemetryPanel />
             <TTSControls />
             <OfflineIndicator />
             <PwaInstallBanner

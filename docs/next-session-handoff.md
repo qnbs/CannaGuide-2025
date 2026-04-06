@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 71) -- Voice Sprint V-05/V-06 + Docker Badge Fix
+## Latest Session (Session 72) -- Release-Gate CI + Telemetry Panel + IndexedDB Prune + E2E Timeout Fix
+
+**Status: v1.4.0-alpha. 1594 tests passing (148 files). TypeScript clean. Build clean.**
+
+### What Was Done (Session 72)
+
+1. **Release-Gate CI Workflow** -- `.github/workflows/release-gate.yml` with 4 jobs:
+   pre-flight (audit-backlog + typecheck + lint), test-suite, build-verify
+   (build + bundle-budget), release-summary (aggregates results).
+
+2. **check-audit-backlog.mjs** -- CI script parsing `docs/AUDIT_BACKLOG.md`,
+   counts open HIGH/MEDIUM/LOW items, exits 1 if open HIGH > 0.
+   Added as step in ci.yml quality job with `continue-on-error: false`.
+
+3. **DevTelemetryPanel** -- Dev-only collapsible overlay (bottom-right, fixed).
+   5 sections: GPU Mutex, WorkerBus byPriority, RAG Cache, Inference
+   (latency/tok-per-sec/success/count), EcoMode. 5s refresh when expanded.
+   Mounted in App.tsx. Tree-shaken in production (`import.meta.env.DEV`).
+
+4. **indexedDbPruneService** -- `pruneOldestEntries(db, store, maxCount)` and
+   `pruneOnQuotaThreshold(80%)` targeting images (500 cap) + search (5000 cap).
+   Wired into DataManagementTab `handleRunStorageCleanup()` after existing
+   `dbService.pruneOldImages()`.
+
+5. **E2E Timeout Fix** -- Step timeout 20min -> 30min, job timeout 25min -> 40min
+   to accommodate mobile-chrome Playwright project added in Session 70.
+
+6. **9 New Tests** -- indexedDbPruneService (6), DevTelemetryPanel (3).
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1594 passing, 0 failures (148 test files)
+- Build: clean
+
+### Next Steps
+
+- **N+1: A-01 AI Response Validation** -- Audit all aiService methods, ensure
+  Zod schema validation on every AI response path.
+- **N+2: A-04 RAG Context Window** -- Token counting + truncation in
+  growLogRagService.
+- **N+3: U-01 Keyboard Navigation (full)** -- Playwright keyboard-only tests
+  for all major views, focus trap verification in modals/drawers.
+- **N+4: U-02 Screen Reader (full)** -- axe-core integration into Playwright
+  E2E, automated WCAG violation detection.
+- Continue audit-roadmap-2026-q2 remaining open items.
+
+---
+
+## Previous Session (Session 71) -- Voice Sprint V-05/V-06 + Docker Badge Fix
 
 **Status: v1.4.0-alpha. 1585 tests passing. TypeScript clean. Build clean.**
 

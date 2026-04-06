@@ -1,0 +1,147 @@
+name: Release Gate
+
+on:
+    push:
+        tags: ['v*']
+    workflow_dispatch:
+
+concurrency:
+    group: release-gate-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: '20'
+    TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+    # -----------------------------------------------------------------
+    # Pre-flight -- lint, typecheck, audit backlog
+    # -----------------------------------------------------------------
+    pre-flight:
+        name: Pre-flight Checks
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Audit backlog check (blocks on open HIGH items)
+              run: node scripts/check-audit-backlog.mjs
+              continue-on-error: false
+
+            - name: Type check (workspaces)
+              run: npx turbo run typecheck
+
+            - name: Lint
+              run: npm run lint:changed
+
+    # -----------------------------------------------------------------
+    # Test suite -- vitest
+    # -----------------------------------------------------------------
+    test-suite:
+        name: Test Suite
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Run tests
+              run: npm run -w @cannaguide/web test -- --run
+
+    # -----------------------------------------------------------------
+    # Build verify -- production build + bundle budget
+    # -----------------------------------------------------------------
+    build-verify:
+        name: Build Verify
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Build
+              run: npm run build
+
+            - name: Bundle budget check
+              run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
+
+    # -----------------------------------------------------------------
+    # Release summary -- aggregates all job results
+    # -----------------------------------------------------------------
+    release-summary:
+        name: Release Summary
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        needs: [pre-flight, test-suite, build-verify]
+        if: always()
+        steps:
+            - name: Evaluate gate results
+              run: |
+                  echo "=== RELEASE GATE SUMMARY ==="
+                  echo ""
+
+                  FAILED=0
+
+                  if [ "${{ needs.pre-flight.result }}" = "success" ]; then
+                    echo "[PASS] Pre-flight (typecheck + lint + audit)"
+                  else
+                    echo "[FAIL] Pre-flight: ${{ needs.pre-flight.result }}"
+                    FAILED=1
+                  fi
+
+                  if [ "${{ needs.test-suite.result }}" = "success" ]; then
+                    echo "[PASS] Test Suite"
+                  else
+                    echo "[FAIL] Test Suite: ${{ needs.test-suite.result }}"
+                    FAILED=1
+                  fi
+
+                  if [ "${{ needs.build-verify.result }}" = "success" ]; then
+                    echo "[PASS] Build Verify (build + bundle budget)"
+                  else
+                    echo "[FAIL] Build Verify: ${{ needs.build-verify.result }}"
+                    FAILED=1
+                  fi
+
+                  echo ""
+                  if [ "$FAILED" -eq 1 ]; then
+                    echo "[FAIL] Release gate failed -- fix issues before releasing."
+                    exit 1
+                  fi
+                  echo "[PASS] All release gate checks passed."

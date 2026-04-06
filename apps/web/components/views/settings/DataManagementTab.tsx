@@ -33,6 +33,7 @@ import {
 } from '@/services/privacyService'
 import * as Sentry from '@sentry/react'
 import { getDbStats, type DbStoreStats } from '@/services/indexedDbMonitorService'
+import { pruneOnQuotaThreshold } from '@/services/indexedDbPruneService'
 import { CommunitySharePanel } from './CommunitySharePanel'
 const CloudSyncPanel = lazy(() => import('./CloudSyncPanel'))
 import {
@@ -338,11 +339,15 @@ const DataManagementTab: React.FC = () => {
             }
 
             const deletedImages = await dbService.pruneOldImages(80)
+
+            const pruneResult = await pruneOnQuotaThreshold()
+            const totalPruned = deletedImages + pruneResult.prunedEntries
+
             setStorageRefreshTick((prev) => prev + 1)
 
             getUISnapshot().addNotification({
                 type: 'success',
-                message: String(t('settingsView.data.cleanupSuccess', { count: deletedImages })),
+                message: String(t('settingsView.data.cleanupSuccess', { count: totalPruned })),
             })
         } catch (error) {
             console.debug('[DataManagement] Storage cleanup failed:', error)

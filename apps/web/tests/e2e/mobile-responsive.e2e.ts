@@ -56,10 +56,9 @@ test.describe('Mobile Responsive (Pixel 5)', () => {
     })
 
     test('command palette opens and closes on mobile', async ({ page }) => {
-        // Open command palette via keyboard shortcut (most reliable cross-platform)
-        await page.keyboard.press('Meta+k')
-        // Small wait for Radix dialog animation
-        await page.waitForTimeout(500)
+        // Open command palette via header button (app has no global Cmd/Ctrl+K shortcut)
+        const openButton = page.getByRole('button', { name: /command palette|befehlspalette/i })
+        await openButton.click()
 
         // Radix renders dialog with data-state="open"; check DOM presence
         const dialog = page.locator('[cmdk-dialog][data-state="open"]')

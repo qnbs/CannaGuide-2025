@@ -22,7 +22,7 @@ export const TTSControls: React.FC = () => {
                 <Button
                     variant="secondary"
                     size="sm"
-                    className="!p-2 rounded-full"
+                    className="!p-2 rounded-full min-h-[44px] min-w-[44px]"
                     onClick={() => pause()}
                     aria-label={t('settingsView.tts.pause')}
                 >
@@ -32,7 +32,7 @@ export const TTSControls: React.FC = () => {
                 <Button
                     variant="primary"
                     size="sm"
-                    className="!p-2 rounded-full"
+                    className="!p-2 rounded-full min-h-[44px] min-w-[44px]"
                     onClick={() => play(settings)}
                     aria-label={t('settingsView.tts.play')}
                 >
@@ -42,7 +42,7 @@ export const TTSControls: React.FC = () => {
             <Button
                 variant="secondary"
                 size="sm"
-                className="!p-2 rounded-full"
+                className="!p-2 rounded-full min-h-[44px] min-w-[44px]"
                 onClick={() => next()}
                 disabled={ttsQueue.length <= 1 && !isTtsPaused}
                 aria-label={t('settingsView.tts.next')}
@@ -52,7 +52,7 @@ export const TTSControls: React.FC = () => {
             <Button
                 variant="danger"
                 size="sm"
-                className="!p-2 rounded-full"
+                className="!p-2 rounded-full min-h-[44px] min-w-[44px]"
                 onClick={() => stop()}
                 aria-label={t('settingsView.tts.stop')}
             >

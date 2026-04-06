@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 69) -- Security Hardening + Audit Closure + README Badges
+## Latest Session (Session 70) -- UI/UX Accessibility + CSP Finalisierung
+
+**Status: v1.4.0-alpha. 1570 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 70)
+
+1. **Touch Targets (44px minimum)** -- Raised interactive touch areas on 5 icon button
+   components to WCAG 2.2 minimum 44x44px:
+    - `PwaInstallBanner.tsx` dismiss: added `min-h-[44px] min-w-[44px]` + flex centering
+    - `Speakable.tsx` TTS button: `p-1` -> `p-2.5` + `min-h-[44px] min-w-[44px]`
+    - `CommandPalette.tsx` close: `h-8 w-8` -> `h-11 w-11` (44px)
+    - `TTSControls.tsx` play/pause/next/stop: added `min-h-[44px] min-w-[44px]` to all 4
+    - `Toast.tsx` close: added `min-h-[44px] min-w-[44px]` + inline-flex centering
+
+2. **Focus Pattern Fix** -- Toast close button changed from `focus:ring-2 focus:ring-slate-300`
+   to `focus-visible:ring-2 focus-visible:ring-slate-300` (keyboard-only focus indication).
+
+3. **CSP S-03 Won't Fix** -- `strict-dynamic` documented as architecturally infeasible for
+   static PWA (no server for nonce injection, previous attempt broke all scripts). Active
+   mitigations documented: 5-path CSP consistency (CI validated), DOMPurify v3, no external
+   JS, object-src none, base-uri self, form-action self, wasm-unsafe-eval scoped to ML.
+
+4. **Mobile E2E** -- `mobile-chrome` project (Pixel 5, 393x851) added to `playwright.config.ts`.
+   New `mobile-responsive.e2e.ts` with 3 tests: bottom nav visible + side nav hidden,
+   all 4 nav items clickable with aria-current verification, command palette open/close.
+
+5. **Audit Closure** -- U-03 (Mobile Responsiveness) closed as Done. S-03 (CSP Nonce) closed
+   as Won't Fix. U-01 (Keyboard Navigation) and U-02 (Screen Reader) moved to In Progress
+   with partial resolution documented.
+
+### Verified Metrics
+
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Tests: 1570 passing, 0 failures (146 test files)
+- Build: clean
+
+### Next Steps
+
+- **N+1: A-01 AI Response Validation** -- Audit all aiService methods, ensure Zod schema
+  validation on every AI response path. High priority audit item.
+- **N+2: A-04 RAG Context Window** -- Token counting + truncation in growLogRagService.
+- **N+3: U-01 Keyboard Navigation (full)** -- Playwright keyboard-only tests for all major
+  views, focus trap verification in modals/drawers.
+- **N+4: U-02 Screen Reader (full)** -- axe-core integration into Playwright E2E, automated
+  WCAG violation detection.
+- Continue audit-roadmap-2026-q2 remaining open items.
+
+---
+
+## Previous Session (Session 69) -- Security Hardening + Audit Closure + README Badges
 
 **Status: v1.4.0-alpha. 1570 tests passing. TypeScript clean. Build clean.**
 

@@ -18,15 +18,15 @@
 
 ## Short-term (Sprint 2)
 
-| ID   | Finding                       | Effort | Status |
-| ---- | ----------------------------- | ------ | ------ |
-| S-01 | Prompt injection allow-list   | Low    | Done   |
-| A-01 | AI response validation        | Medium | Open   |
-| A-04 | RAG context window management | Medium | Open   |
-| S-04 | Key rotation warning UI       | Low    | Done   |
-| F-04 | Data export/backup            | Medium | Open   |
-| U-01 | Keyboard navigation audit     | Medium | Open   |
-| U-02 | Screen reader testing         | Medium | Open   |
+| ID   | Finding                       | Effort | Status      |
+| ---- | ----------------------------- | ------ | ----------- |
+| S-01 | Prompt injection allow-list   | Low    | Done        |
+| A-01 | AI response validation        | Medium | Open        |
+| A-04 | RAG context window management | Medium | Open        |
+| S-04 | Key rotation warning UI       | Low    | Done        |
+| F-04 | Data export/backup            | Medium | Open        |
+| U-01 | Keyboard navigation audit     | Medium | In Progress |
+| U-02 | Screen reader testing         | Medium | In Progress |
 
 ## Medium-term (Sprint 3)
 
@@ -47,7 +47,7 @@
 
 | ID   | Finding                          | Effort | Status                                     |
 | ---- | -------------------------------- | ------ | ------------------------------------------ |
-| S-03 | CSP nonce implementation         | Medium | Deferred (strict-dynamic reverted e2d5165) |
+| S-03 | CSP nonce implementation         | Medium | Won't Fix (strict-dynamic infeasible, S70) |
 | C-04 | Deployment preview validation    | Medium | Open                                       |
 | F-02 | Social sharing                   | Medium | Open                                       |
 | F-06 | Offline sync conflict resolution | High   | Open                                       |
@@ -56,28 +56,30 @@
 
 ## Already Resolved
 
-| ID    | Finding                           | Resolution                                        |
-| ----- | --------------------------------- | ------------------------------------------------- |
-| S-01  | Prompt injection allow-list       | 5-layer sanitization pipeline in geminiService    |
-| S-04  | Key rotation warning UI           | GeminiSecurityCard w/ age label + badge (S69)     |
-| S-05  | SRI for CDN assets                | N/A -- no external CDN scripts (S69)              |
-| K-03  | Service dependency cycles         | import/no-cycle ESLint error + CI (S41/S62)       |
-| K-04  | Worker error propagation          | WorkerBusError class + 10-code enum (S69)         |
-| T-01  | Mutation testing pilot            | Stryker baseline + 2 new slice tests (Session 63) |
-| R-01  | Streaming generalization          | useStreamingResponse.ts hook (Session 47)         |
-| R-02  | GPU resource manager v2           | gpuResourceManager.ts with priority queue (S48)   |
-| S-02  | Tailwind CDN                      | PostCSS build-time compilation already active     |
-| P-01  | Tailwind CDN (duplicate)          | Same as S-02                                      |
-| T-02  | Coverage thresholds               | v8 provider + thresholds in vite.config.ts        |
-| C-02  | Release workflow                  | release-please in release.yml                     |
-| K-02  | Lazy hydration                    | React.lazy + Suspense + shell pattern             |
-| S-06  | Dependency pinning                | All CI actions use pinned SHA hashes              |
-| D-03  | Architecture Decision Records     | ADR template + ADR-0001 in docs/adr/              |
-| F-01  | iCal export                       | Implemented                                       |
-| F-03  | Push notifications                | Wave 5/6: proactiveCoach + nativeBridge           |
-| R-04  | Local AI service extraction       | Decomposed into 15 service modules                |
-| R-05  | Redux scope reduction             | Zustand stores for all transient UI state         |
-| R-06  | Worker architecture consolidation | workerBus with 8 typed workers                    |
-| IoT-1 | IoT real-time dashboard           | IotDashboardView with sparklines/gauges/telemetry |
-| V-01  | 3D interactive OrbitControls      | GrowRoom3D with auto-orbit + IoT badge            |
-| AI-R1 | Strain recommendation scoring     | Daily Strains match % badge (0-100 relevance)     |
+| ID    | Finding                           | Resolution                                                |
+| ----- | --------------------------------- | --------------------------------------------------------- |
+| S-01  | Prompt injection allow-list       | 5-layer sanitization pipeline in geminiService            |
+| S-04  | Key rotation warning UI           | GeminiSecurityCard w/ age label + badge (S69)             |
+| S-05  | SRI for CDN assets                | N/A -- no external CDN scripts (S69)                      |
+| K-03  | Service dependency cycles         | import/no-cycle ESLint error + CI (S41/S62)               |
+| K-04  | Worker error propagation          | WorkerBusError class + 10-code enum (S69)                 |
+| T-01  | Mutation testing pilot            | Stryker baseline + 2 new slice tests (Session 63)         |
+| R-01  | Streaming generalization          | useStreamingResponse.ts hook (Session 47)                 |
+| R-02  | GPU resource manager v2           | gpuResourceManager.ts with priority queue (S48)           |
+| S-02  | Tailwind CDN                      | PostCSS build-time compilation already active             |
+| P-01  | Tailwind CDN (duplicate)          | Same as S-02                                              |
+| T-02  | Coverage thresholds               | v8 provider + thresholds in vite.config.ts                |
+| C-02  | Release workflow                  | release-please in release.yml                             |
+| K-02  | Lazy hydration                    | React.lazy + Suspense + shell pattern                     |
+| S-06  | Dependency pinning                | All CI actions use pinned SHA hashes                      |
+| D-03  | Architecture Decision Records     | ADR template + ADR-0001 in docs/adr/                      |
+| F-01  | iCal export                       | Implemented                                               |
+| F-03  | Push notifications                | Wave 5/6: proactiveCoach + nativeBridge                   |
+| R-04  | Local AI service extraction       | Decomposed into 15 service modules                        |
+| R-05  | Redux scope reduction             | Zustand stores for all transient UI state                 |
+| R-06  | Worker architecture consolidation | workerBus with 8 typed workers                            |
+| IoT-1 | IoT real-time dashboard           | IotDashboardView with sparklines/gauges/telemetry         |
+| V-01  | 3D interactive OrbitControls      | GrowRoom3D with auto-orbit + IoT badge                    |
+| AI-R1 | Strain recommendation scoring     | Daily Strains match % badge (0-100 relevance)             |
+| U-03  | Mobile responsiveness             | mobile-chrome Playwright project + 3 E2E tests (S70)      |
+| S-03  | CSP nonce                         | Won't Fix: strict-dynamic infeasible for static PWA (S70) |

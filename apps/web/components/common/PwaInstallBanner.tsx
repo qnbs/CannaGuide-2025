@@ -89,7 +89,7 @@ export const PwaInstallBanner: React.FC<PwaInstallBannerProps> = ({
                     </div>
                     <button
                         onClick={handleDismiss}
-                        className="flex-shrink-0 text-slate-500 hover:text-slate-300 transition-colors"
+                        className="flex-shrink-0 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
                         aria-label={t('settingsView.pwa.dontShowAgain')}
                         title={t('settingsView.pwa.dontShowAgain')}
                     >

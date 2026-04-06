@@ -26,6 +26,10 @@ export default defineConfig({
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
         },
+        {
+            name: 'mobile-chrome',
+            use: { ...devices['Pixel 5'] },
+        },
         // Firefox and WebKit are unreliable in CI (timeouts, missing APIs).
         // Run locally with: npx playwright test --project=firefox --project=webkit
         ...(!process.env.CI

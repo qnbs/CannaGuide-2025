@@ -15,7 +15,7 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
 | High     | 11    | 11   | 0    |
-| Medium   | 28    | 9    | 19   |
+| Medium   | 28    | 12   | 16   |
 | Low      | 10    | 3    | 7    |
 
 ---
@@ -722,7 +722,7 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----------- |
 | Severity | Medium      |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** `settings.voiceControl.hotwordEnabled` toggle exists in Settings UI but has zero effect -- no wake-word detection code exists. Users must manually press the microphone button each time.
 
@@ -736,7 +736,7 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | ----------- |
 | Severity | Medium      |
 | Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Status   | **Done**    |
 
 **Finding:** Growers cannot dictate grow log entries hands-free. `LogActionModal.tsx` only has a text textarea with no microphone input option, breaking the "hands-free companion" use case during active grows.
 
@@ -750,7 +750,7 @@ Last updated: 2026-04-06 (Session 73)
 | -------- | --------------- |
 | Severity | Medium          |
 | Effort   | Medium (2 days) |
-| Status   | **Open**        |
+| Status   | **Done**        |
 
 **Finding:** Zero tests exist for `VoiceControl.tsx`, `voiceCommandRegistry.ts`, voice command routing in `listenerMiddleware`, or the new TTS-Mentor wiring. SpeechSynthesis and SpeechRecognition APIs require vitest mocks.
 

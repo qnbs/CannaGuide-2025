@@ -29,6 +29,7 @@ export default defineConfig({
         {
             name: 'mobile-chrome',
             use: { ...devices['Pixel 5'] },
+            testMatch: ['mobile-*.e2e.ts', 'screenshots.e2e.ts', 'onboarding.e2e.ts'],
         },
         // Firefox and WebKit are unreliable in CI (timeouts, missing APIs).
         // Run locally with: npx playwright test --project=firefox --project=webkit

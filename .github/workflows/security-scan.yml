@@ -31,14 +31,6 @@ jobs:
             - name: Install dependencies
               run: npm ci --prefer-offline
 
-            - name: Aikido Safe Chain setup
-              run: |
-                  if npx --yes @aikidosec/safe-chain --version >/dev/null 2>&1; then
-                    npx @aikidosec/safe-chain setup-ci
-                  else
-                    echo "[SKIP] Aikido Safe Chain not available"
-                  fi
-
             - name: Run pre-commit hooks
               run: |
                   if command -v pre-commit >/dev/null 2>&1; then

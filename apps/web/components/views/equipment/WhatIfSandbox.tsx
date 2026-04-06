@@ -15,7 +15,7 @@ import {
 } from '@/stores/useCalculatorSessionStore'
 
 export const WhatIfSandbox: React.FC = memo(() => {
-    const { t } = useTranslation('equipment')
+    const { t } = useTranslation()
     const roomDimensions = useCalculatorSessionStore((s) => s.roomDimensions)
     const sharedLightWattage = useCalculatorSessionStore((s) => s.sharedLightWattage)
     const setRoomDimensions = useCalculatorSessionStore((s) => s.setRoomDimensions)

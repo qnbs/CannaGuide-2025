@@ -159,7 +159,6 @@ jobs:
               run: npm run test:e2e:install:ci
 
             - name: Run E2E tests on deployed URL
-              continue-on-error: true
               env:
                   DEPLOY_BASE_URL: ${{ env.PAGES_URL }}
               run: |

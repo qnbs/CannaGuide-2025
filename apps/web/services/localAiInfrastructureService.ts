@@ -28,6 +28,8 @@ export {
     measureInference,
     recordCacheHit,
     recordCacheMiss,
+    recordFallbackEvent,
+    getFallbackBreakdown,
     getSnapshot,
     persistSnapshot,
     debouncedPersistSnapshot,
@@ -40,6 +42,7 @@ export type {
     InferenceRecord,
     TelemetrySnapshot,
     PerformanceAlert,
+    FallbackLayer,
 } from './localAiTelemetryService'
 
 // -- Preload -------------------------------------------------------------

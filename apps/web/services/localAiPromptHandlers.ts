@@ -61,7 +61,14 @@ const formatJsonPrompt = (sections: string[]): string => sections.join('\n\n')
 const parseJsonSafely = <T>(schema: z.ZodType<T>, value: string): T | null => {
     try {
         const parsed: unknown = JSON.parse(value)
-        return schema.parse(parsed)
+        const result = schema.safeParse(parsed)
+        if (result.success) {
+            return result.data
+        }
+        captureLocalAiError(new Error(`Local AI JSON validation failed: ${result.error.message}`), {
+            stage: 'response-validation',
+        })
+        return null
     } catch {
         return null
     }

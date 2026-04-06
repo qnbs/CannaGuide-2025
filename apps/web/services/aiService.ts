@@ -4,6 +4,8 @@ import { localAiFallbackService } from '@/services/localAiFallbackService'
 import { growLogRagService } from '@/services/growLogRagService'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { setEcoModeExplicit, registerModeAccessors } from '@/services/aiEcoModeService'
+import { AIResponseSchema, MentorMessageContentSchema } from '@/types/schemas'
+import { captureLocalAiError } from '@/services/sentryService'
 import {
     Language,
     Plant,
@@ -182,24 +184,17 @@ const buildMentorStreamPrompt = (
 
 const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMessage, 'role'> => {
     try {
-        const parsed = JSON.parse(result) as {
-            title?: string | undefined
-            content?: string | undefined
-            uiHighlights?: unknown[] | undefined
+        const parsed: unknown = JSON.parse(result)
+        const validated = MentorMessageContentSchema.safeParse(parsed)
+        if (validated.success) {
+            return validated.data as Omit<MentorMessage, 'role'>
         }
-        if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
-            const msg: Omit<MentorMessage, 'role'> = {
-                title: parsed.title,
-                content: parsed.content,
-            }
-            if (Array.isArray(parsed.uiHighlights)) {
-                // Safety: uiHighlights shape enforced by AI responseSchema
-                msg.uiHighlights = parsed.uiHighlights as MentorMessage['uiHighlights']
-            }
-            return msg
-        }
+        captureLocalAiError(
+            new Error(`Mentor stream validation failed: ${validated.error.message}`),
+            { stage: 'response-validation' },
+        )
     } catch {
-        // Not valid JSON — fall through to plain text response
+        // Not valid JSON -- fall through to plain text response
     }
 
     return {
@@ -242,10 +237,15 @@ const parseAiStreamResult = (
     kind: 'advisor' | 'diagnosis',
 ): AIResponse => {
     try {
-        const parsed = JSON.parse(result) as { title?: string; content?: string }
-        if (typeof parsed.title === 'string' && typeof parsed.content === 'string') {
-            return parsed as AIResponse
+        const parsed: unknown = JSON.parse(result)
+        const validated = AIResponseSchema.safeParse(parsed)
+        if (validated.success) {
+            return validated.data as AIResponse
         }
+        captureLocalAiError(
+            new Error(`AI stream validation failed (${kind}): ${validated.error.message}`),
+            { stage: 'response-validation' },
+        )
     } catch {
         // Not valid JSON
     }

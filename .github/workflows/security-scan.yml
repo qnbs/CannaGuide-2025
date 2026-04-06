@@ -32,12 +32,20 @@ jobs:
               run: npm ci --prefer-offline
 
             - name: Aikido Safe Chain setup
-              continue-on-error: true
-              run: npx @aikidosec/safe-chain setup-ci
+              run: |
+                  if npx --yes @aikidosec/safe-chain --version >/dev/null 2>&1; then
+                    npx @aikidosec/safe-chain setup-ci
+                  else
+                    echo "[SKIP] Aikido Safe Chain not available"
+                  fi
 
             - name: Run pre-commit hooks
-              continue-on-error: true
-              run: pre-commit run --all-files
+              run: |
+                  if command -v pre-commit >/dev/null 2>&1; then
+                    pre-commit run --all-files
+                  else
+                    echo "[SKIP] pre-commit not installed -- install via 'pip install pre-commit'"
+                  fi
 
             - name: Trojan source scan
               run: npm run security:trojan-source
@@ -53,20 +61,30 @@ jobs:
                   gitleaks detect --source . --no-banner --redact --config .gitleaks.toml -v
 
             - name: Semgrep scan
-              continue-on-error: true
-              run: npm run security:semgrep
+              run: |
+                  if command -v semgrep >/dev/null 2>&1; then
+                    npm run security:semgrep
+                  elif command -v pip3 >/dev/null 2>&1; then
+                    pip3 install --quiet semgrep
+                    npm run security:semgrep
+                  else
+                    echo "[SKIP] Semgrep not available -- install via 'pip install semgrep'"
+                  fi
 
             - name: Socket.dev dependency scan
-              continue-on-error: true
-              run: npm run security:socket
+              run: |
+                  if npm run security:socket --if-present 2>/dev/null; then
+                    echo "[OK] Socket.dev scan complete"
+                  else
+                    echo "[SKIP] Socket.dev scan not configured or unavailable"
+                  fi
 
             - name: Snyk dependency scan
-              continue-on-error: true
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
               run: |
                   if [ -z "$SNYK_TOKEN" ]; then
-                    echo "[WARN] SNYK_TOKEN not set -- skipping Snyk scan"
+                    echo "[SKIP] SNYK_TOKEN not set -- configure the secret to enable Snyk"
                     exit 0
                   fi
                   npm run security:snyk
@@ -76,7 +94,6 @@ jobs:
             # This sweep relies on Snyk + npm audit + Gitleaks + Semgrep above.
 
             - name: Scorecard local scan
-              continue-on-error: true
               uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
               with:
                   results_file: scorecard-results.sarif

@@ -40,8 +40,12 @@ jobs:
               run: npm run benchmark
 
             - name: Lighthouse CI
-              continue-on-error: true
-              run: npm run lighthouse:ci
+              id: lighthouse
+              run: |
+                  npm run lighthouse:ci 2>&1 || {
+                    echo "[WARN] Lighthouse CI failed -- metrics will show n/a"
+                    echo "lighthouse_failed=true" >> "$GITHUB_ENV"
+                  }
 
             - name: Collect metrics
               run: |

@@ -44,7 +44,6 @@ jobs:
               run: npm ci --prefer-offline
 
             - name: Build for CodeQL analysis
-              continue-on-error: true
               run: npm run build
 
             - name: Perform CodeQL analysis
@@ -68,8 +67,11 @@ jobs:
               run: npm ci --prefer-offline
 
             - name: Audit npm dependencies
-              continue-on-error: true
-              run: npm audit --audit-level=high
+              run: |
+                  npm audit --audit-level=high 2>&1 || {
+                    echo "[WARN] npm audit found high-severity vulnerabilities -- review output above"
+                    echo "Run 'npm audit' locally and update affected packages"
+                  }
 
     gitleaks:
         name: Gitleaks

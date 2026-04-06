@@ -206,6 +206,7 @@ export const common = {
         title: 'Etwas ist schiefgelaufen.',
         description:
             'Ein unerwarteter Fehler ist aufgetreten. Bitte lade die App neu. Falls das Problem weiterhin besteht, musst du möglicherweise deine Website-Daten löschen.',
+        retry: 'Erneut versuchen',
         reload: 'App neu laden',
         safeRecovery: 'Sichere Wiederherstellung versuchen',
     },

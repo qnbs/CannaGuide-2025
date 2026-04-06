@@ -4,14 +4,24 @@ import { bootFreshAppPastOnboarding, expectShellVisible } from './helpers'
 // ---------------------------------------------------------------------------
 // Visual Regression Tests
 //
-// Captures baseline screenshots for critical views across two themes
-// (midnight = default, forest = alternate). Run with --update-snapshots
-// to regenerate baselines after intentional UI changes.
+// Captures baseline screenshots for critical views across all 9 cannabis
+// themes. Run with --update-snapshots to regenerate baselines after
+// intentional UI changes.
 //
 // CI stores snapshot diffs as artifacts on failure for manual review.
 // ---------------------------------------------------------------------------
 
-const themes = ['midnight', 'forest'] as const
+const themes = [
+    'midnight',
+    'forest',
+    'purpleHaze',
+    'desertSky',
+    'roseQuartz',
+    'rainbowKush',
+    'ogKushGreen',
+    'runtzRainbow',
+    'lemonSkunk',
+] as const
 
 for (const theme of themes) {
     test.describe(`Visual Regression (${theme})`, () => {

@@ -16,6 +16,7 @@ export type FallbackLayer = 'cache' | 'webllm' | 'transformers' | 'heuristic' | 
 
 export interface InferenceRecord {
     model: string
+    modelVersion?: string | undefined
     task: string
     latencyMs: number
     tokensGenerated: number

@@ -12,7 +12,10 @@ interface ErrorBoundaryState {
     hasError: boolean
 }
 
-const ErrorFallback: React.FC<{ onSafeRecovery: () => void }> = ({ onSafeRecovery }) => {
+const ErrorFallback: React.FC<{ onRetry: () => void; onSafeRecovery: () => void }> = ({
+    onRetry,
+    onSafeRecovery,
+}) => {
     const { t } = useTranslation()
     return (
         <div className="flex flex-col h-full bg-slate-900 text-slate-300 font-sans items-center justify-center p-4 text-center">
@@ -21,7 +24,10 @@ const ErrorFallback: React.FC<{ onSafeRecovery: () => void }> = ({ onSafeRecover
                 {t('common.errorBoundary.title')}
             </h1>
             <p className="text-slate-400 mb-6 max-w-sm">{t('common.errorBoundary.description')}</p>
-            <Button variant="danger" onClick={() => globalThis.location.reload()}>
+            <Button variant="primary" onClick={onRetry}>
+                {t('common.errorBoundary.retry')}
+            </Button>
+            <Button variant="danger" onClick={() => globalThis.location.reload()} className="mt-2">
                 {t('common.errorBoundary.reload')}
             </Button>
             <Button variant="secondary" onClick={onSafeRecovery} className="mt-2">
@@ -66,9 +72,18 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         }
     }
 
+    private readonly resetErrorState = () => {
+        this.setState({ hasError: false })
+    }
+
     render(): React.ReactNode {
         if (this.state.hasError) {
-            return <ErrorFallback onSafeRecovery={this.requestSafeRecovery} />
+            return (
+                <ErrorFallback
+                    onRetry={this.resetErrorState}
+                    onSafeRecovery={this.requestSafeRecovery}
+                />
+            )
         }
 
         return this.props.children

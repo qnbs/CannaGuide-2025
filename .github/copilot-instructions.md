@@ -124,7 +124,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiDiagnosisService.ts` -- Plant health diagnosis pipeline (+ ONNX classifyLeafImage, classifySeverity, enrichWithKnowledge)
     - `localAiPromptHandlers.ts` -- Prompt formatting for all AI features
     - `localAiWebLlmService.ts` -- WebLLM lifecycle, model loading, progress tracking
-    - `webLlmModelCatalog.ts` -- Curated 4-model catalog (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini), GPU-tier auto-selection
+    - `webLlmModelCatalog.ts` -- Curated 4-model catalog (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini), GPU-tier auto-selection, MODEL_CATALOG_VERSION
     - `LocalAIInfrastructure.ts` -- Unified cache + telemetry + preload class
     - `localAiInfrastructureService.ts` -- Backward-compatible barrel re-export for LocalAIInfrastructure
     - `localAiWebGpuService.ts` -- Centralized WebGPU adapter, shared device lifecycle, feature detection
@@ -227,7 +227,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
 - Baseline: 1626 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
-- **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
+- **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 40 minutes (job)
 - **Visual Regression:** `tests/e2e/visual-regression.e2e.ts` uses `expect(page).toHaveScreenshot()` for Plants, Strains, Knowledge views across themes. Snapshots stored in `tests/e2e/__screenshots__/`. Generate/update baselines: `npx playwright test --grep "Visual Regression" --update-snapshots`. CI runs visual regression with `--update-snapshots` (non-blocking); snapshots uploaded as artifacts for diff review.
 - **Mutation Testing:** Stryker Mutator (`stryker.conf.json`) targets `apps/web/stores/slices/**/*.ts`. Run: `npm run test:mutate`. Break threshold: 50% mutation score. Reports in `reports/mutation/`.
@@ -444,7 +444,8 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/trendsEcosystemService.ts`               | Cross-hub match scores (genetic trends <-> grow tech), 5-min cache, static relationship maps                                                                               |
 | `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                                                                                             |
 | `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                                                                                            |
-| `apps/web/services/webLlmModelCatalog.ts`                   | Curated WebLLM model catalog (4 models), auto-selection by GPU tier, model metadata                                                                                        |
+| `apps/web/services/webLlmModelCatalog.ts`                   | Curated WebLLM model catalog (4 models), version-pinned, auto-selection by GPU tier, MODEL_CATALOG_VERSION                                                                 |
+| `apps/web/components/common/WebLlmPreloadBanner.tsx`        | Global toast showing WebLLM model download progress during auto-preload (dismissible)                                                                                      |
 | `apps/web/services/gpuResourceManager.ts`                   | GPU mutex v2: string registry, GpuPriority queue (high/normal/low), auto-release 30s, getQueueState()                                                                      |
 | `apps/web/services/uiStateBridge.ts`                        | Central Redux<->Zustand bridge: `initUIStateBridgeFull`, `getReduxSnapshot`, `subscribeToRedux`, `dispatchToRedux`                                                         |
 | `apps/web/stores/useAlertsStore.ts`                         | Zustand store for transient smart coach alerts                                                                                                                             |

@@ -10,11 +10,18 @@ import type { GpuTier } from './localAiWebGpuService'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+/** Catalog-level version (bump when models are added, removed, or updated). */
+export const MODEL_CATALOG_VERSION = '1.0.0'
+
 export interface WebLlmModel {
     /** WebLLM model string (MLC format). */
     id: string
     /** Display name for UI. */
     label: string
+    /** Semantic version of the model weights (e.g. '2.5.0'). */
+    version: string
+    /** ISO date when this model entry was last verified (YYYY-MM-DD). */
+    releaseDate: string
     /** Approximate download size in bytes. */
     sizeBytes: number
     /** Model parameter tier. */
@@ -41,6 +48,8 @@ export const WEB_LLM_MODELS: readonly WebLlmModel[] = [
     {
         id: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
         label: 'Qwen 2.5 0.5B',
+        version: '2.5.0',
+        releaseDate: '2024-09-19',
         sizeBytes: 400_000_000,
         sizeTier: '0.5B',
         minVramMb: 0,
@@ -54,6 +63,8 @@ export const WEB_LLM_MODELS: readonly WebLlmModel[] = [
     {
         id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
         label: 'Qwen 2.5 1.5B',
+        version: '2.5.0',
+        releaseDate: '2024-09-19',
         sizeBytes: 1_000_000_000,
         sizeTier: '1.5B',
         minVramMb: 2048,
@@ -67,6 +78,8 @@ export const WEB_LLM_MODELS: readonly WebLlmModel[] = [
     {
         id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
         label: 'Llama 3.2 3B',
+        version: '3.2.0',
+        releaseDate: '2024-09-25',
         sizeBytes: 1_800_000_000,
         sizeTier: '3B',
         minVramMb: 4096,
@@ -80,6 +93,8 @@ export const WEB_LLM_MODELS: readonly WebLlmModel[] = [
     {
         id: 'Phi-3.5-mini-instruct-q4f16_1-MLC',
         label: 'Phi 3.5 Mini',
+        version: '3.5.0',
+        releaseDate: '2024-08-20',
         sizeBytes: 2_200_000_000,
         sizeTier: '4B',
         minVramMb: 4096,
@@ -100,6 +115,9 @@ export const getAllModels = (): readonly WebLlmModel[] => WEB_LLM_MODELS
 /** Find a model by its WebLLM ID. */
 export const getModelById = (id: string): WebLlmModel | undefined =>
     WEB_LLM_MODELS.find((m) => m.id === id)
+
+/** Get the pinned version string for a model ID (returns undefined if not found). */
+export const getModelVersion = (id: string): string | undefined => getModelById(id)?.version
 
 /**
  * Automatically select the best model for the given GPU tier.

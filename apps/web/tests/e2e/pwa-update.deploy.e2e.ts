@@ -28,6 +28,8 @@ test('pwa update: service worker registers with GitHub Pages subpath scope', asy
     page,
     baseURL,
 }) => {
+    // SW registration on cold CDN can take 30-60s. Use a generous timeout.
+    test.setTimeout(90_000)
     const resolvedBaseUrl = baseURL || 'https://qnbs.github.io/CannaGuide-2025/'
     const base = new URL(resolvedBaseUrl)
     const expectedPathPrefix = base.pathname.endsWith('/') ? base.pathname : `${base.pathname}/`
@@ -42,7 +44,7 @@ test('pwa update: service worker registers with GitHub Pages subpath scope', asy
     // waitForFunction sees registrations > 0 but a subsequent evaluate
     // returns 0 because the SW transitioned between calls.
     const registrations = (await page.evaluate(async () => {
-        const deadline = Date.now() + 60_000
+        const deadline = Date.now() + 75_000
         const poll = 500
 
         while (true) {

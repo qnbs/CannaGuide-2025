@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const CalculatorHistoryPanel: React.FC<Props> = memo(({ calculatorId, refreshToken }) => {
-    const { t } = useTranslation('equipment')
+    const { t } = useTranslation()
     const [entries, setEntries] = useState<CalculatorHistoryEntry[]>([])
 
     useEffect(() => {

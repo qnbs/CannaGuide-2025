@@ -48,7 +48,6 @@ updates:
               patterns:
                   - 'dompurify'
                   - '@sentry/*'
-                  - '@aikidosec/*'
                   - 'snyk'
                   - '@socketsecurity/*'
               update-types:

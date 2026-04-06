@@ -102,7 +102,7 @@ GaugeCard.displayName = 'GaugeCard'
 // ---------------------------------------------------------------------------
 
 export const HydroMonitorView: React.FC = memo(() => {
-    const { t } = useTranslation('equipment')
+    const { t } = useTranslation()
     const dispatch = useAppDispatch()
 
     const readings = useAppSelector(selectHydroReadings)

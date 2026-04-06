@@ -56,7 +56,7 @@
         "strains:generate": "node ./scripts/generate-strain-files.mjs",
         "strains:sync": "node ./scripts/extract-strains-to-json.mjs && node ./scripts/generate-strain-files.mjs",
         "strains:enrich-provenance": "node ./scripts/enrich-provenance.mjs",
-        "depcheck": "depcheck --ignore-dirs=dist,coverage,node_modules,test-results,artifacts,.lighthouseci --ignores=@capacitor/cli,@lhci/cli,@testing-library/user-event,@vitest/coverage-v8,autoprefixer,babel-plugin-react-compiler,depcheck,postcss,prettier,source-map-explorer,onnxruntime-web,@aikidosec/safe-chain,@commitlint/cli,@commitlint/config-conventional,@socketsecurity/cli,@types/d3-hierarchy,anti-trojan-source,husky,lint-staged,snyk --specials=typescript,eslint,postcss,webpack",
+        "depcheck": "depcheck --ignore-dirs=dist,coverage,node_modules,test-results,artifacts,.lighthouseci --ignores=@capacitor/cli,@lhci/cli,@testing-library/user-event,@vitest/coverage-v8,autoprefixer,babel-plugin-react-compiler,depcheck,postcss,prettier,source-map-explorer,onnxruntime-web,@commitlint/cli,@commitlint/config-conventional,@socketsecurity/cli,@types/d3-hierarchy,anti-trojan-source,husky,lint-staged,snyk --specials=typescript,eslint,postcss,webpack",
         "prepare": "husky",
         "lighthouse:ci": "lhci autorun",
         "security:prettier": "prettier --check .",
@@ -90,7 +90,6 @@
         ]
     },
     "devDependencies": {
-        "@aikidosec/safe-chain": "^1.4.9",
         "@commitlint/cli": "^20.5.0",
         "@commitlint/config-conventional": "^20.5.0",
         "@eslint/js": "^9.39.4",
@@ -114,7 +113,7 @@
         "typescript": "5.9.3"
     },
     "overrides": {
-        "serialize-javascript": "7.0.4",
+        "@rollup/plugin-terser": "1.0.0",
         "tmp": "0.2.5",
         "lodash-es": "4.18.1",
         "lodash": ">=4.18.0"

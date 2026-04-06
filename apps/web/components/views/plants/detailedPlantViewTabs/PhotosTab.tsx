@@ -14,7 +14,7 @@ const PhotoItem: React.FC<{
     entry: JournalEntry
     onOpen: (url: string, entry: JournalEntry) => void
 }> = memo(({ entry, onOpen }) => {
-    const [imageUrl, setImageUrl] = useState<string | null>(
+    const [imageUrl, setImageUrl] = useState(
         (entry.details as PhotoDetails)?.imageUrl || null,
     )
     const [isLoading, setIsLoading] = useState(!(entry.details as PhotoDetails)?.imageUrl)

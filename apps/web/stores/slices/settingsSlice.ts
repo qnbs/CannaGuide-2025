@@ -218,7 +218,7 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
     },
 )
 
-export const resetAllData = createAsyncThunk<void, void>('settings/resetAllData', async () => {
+export const resetAllData = createAsyncThunk<void>('settings/resetAllData', async () => {
     await indexedDBStorage.removeItem(REDUX_STATE_KEY)
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()

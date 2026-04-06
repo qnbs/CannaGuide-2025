@@ -6,7 +6,7 @@ import { PlantStage } from '@/types'
 export const LightCalculator: React.FC = memo(() => {
     const { t } = useTranslation()
     const [dimensions, setDimensions] = useState({ width: 80, depth: 80 })
-    const [stage, setStage] = useState<PlantStage>(PlantStage.Flowering)
+    const [stage, setStage] = useState(PlantStage.Flowering)
 
     const { ppfd, dli, watts } = useMemo(() => {
         const area = (dimensions.width / 100) * (dimensions.depth / 100)

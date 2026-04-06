@@ -14,7 +14,7 @@ const GrowLogRagPanelComponent: React.FC = () => {
     const plants = useActivePlants()
     const lang = useAppSelector(selectLanguage)
     const [query, setQuery] = useState('')
-    const [answer, setAnswer] = useState<string>('')
+    const [answer, setAnswer] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
     const handleAnalyze = async () => {

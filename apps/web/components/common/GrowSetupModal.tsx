@@ -37,7 +37,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
         [settings.defaults.growSetup],
     )
 
-    const [setup, setSetup] = useState<GrowSetup>(initialSetup)
+    const [setup, setSetup] = useState(initialSetup)
 
     useEffect(() => {
         setSetup(initialSetup)

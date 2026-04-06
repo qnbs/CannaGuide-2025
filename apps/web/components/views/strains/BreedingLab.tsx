@@ -370,8 +370,8 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
         [t],
     )
 
-    const [geneticsParentAId, setGeneticsParentAId] = useState<string>('')
-    const [geneticsParentBId, setGeneticsParentBId] = useState<string>('')
+    const [geneticsParentAId, setGeneticsParentAId] = useState('')
+    const [geneticsParentBId, setGeneticsParentBId] = useState('')
     const [generation, setGeneration] = useState<Generation>('F1')
     const [geneticsOffspring, setGeneticsOffspring] = useState<Omit<Strain, 'id'> | null>(null)
     const [hasCrossed, setHasCrossed] = useState(false)

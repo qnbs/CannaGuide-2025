@@ -42,7 +42,7 @@
         "jspdf": "^4.2.1",
         "jspdf-autotable": "^5.0.7",
         "mqtt": "^5.15.0",
-        "p-retry": "^4.6.2",
+        "p-retry": "^8.0.0",
         "qrcode.react": "^4.2.0",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",

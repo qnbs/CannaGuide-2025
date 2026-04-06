@@ -56,8 +56,8 @@
     "devDependencies": {
         "@axe-core/playwright": "^4.11.1",
         "@capacitor/cli": "^8.3.0",
-        "@playwright/experimental-ct-react": "^1.58.2",
-        "@playwright/test": "^1.58.2",
+        "@playwright/experimental-ct-react": "^1.59.1",
+        "@playwright/test": "^1.59.1",
         "@stryker-mutator/core": "^9.6.0",
         "@stryker-mutator/typescript-checker": "^9.6.0",
         "@stryker-mutator/vitest-runner": "^9.6.0",

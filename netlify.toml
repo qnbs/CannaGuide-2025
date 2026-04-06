@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm run build"
   publish = "apps/web/dist"
 
 [build.environment]
@@ -43,7 +43,7 @@
 
 # Deploy previews for PRs are enabled by default on Netlify
 [context.deploy-preview]
-  command = "npm run build"
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm run build"
 
 [context.deploy-preview.environment]
   BUILD_BASE_PATH = "/"

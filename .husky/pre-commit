@@ -3,4 +3,4 @@ set -e
 
 node ./scripts/check-commit-identity.mjs
 
-npx lint-staged
+pnpm exec lint-staged

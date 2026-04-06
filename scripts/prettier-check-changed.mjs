@@ -141,7 +141,7 @@ function main() {
         `[prettier:check:changed] Checking ${changedFiles.length} changed files (base: ${baseRef || 'n/a'}).`,
     )
 
-    const result = spawnSync('npx', ['prettier', '--check', '--', ...changedFiles], {
+    const result = spawnSync('pnpm', ['exec', 'prettier', '--check', '--', ...changedFiles], {
         stdio: 'inherit',
         shell: process.platform === 'win32',
     })

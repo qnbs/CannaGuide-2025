@@ -2,7 +2,53 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 78) -- Audit P0 Sprint + SonarCloud Removal
+## Latest Session (Session 79) -- pnpm Migration
+
+**Status: Full npm-to-pnpm migration complete. P0 9-12 validated as done.**
+
+### What Was Done (Session 79)
+
+1. **P0 Steps 9-12 Validated** -- All fully implemented:
+    - Step 9: 21 E2E tests, Playwright configured, CI wired
+    - Step 10: IndexedDB prune (80% threshold) + quota monitor
+    - Step 11: 13 Zod schemas with safeParse, telemetry, Sentry
+    - Step 12: PWA live on GitHub Pages + Netlify
+
+2. **pnpm 10 Migration (Complete):**
+    - Root package.json: packageManager pnpm@10.33.0, workspaces
+      removed (pnpm-workspace.yaml), overrides migrated to
+      pnpm.overrides, scripts updated (pnpm run/--filter)
+    - New files: pnpm-workspace.yaml, .npmrc
+    - turbo.json: globalDependencies pnpm-lock.yaml
+    - 11 CI workflows migrated (npm->pnpm, corepack enable)
+    - Shared CI action: corepack enable, cache: pnpm
+    - DevContainer: corepack enable + pnpm install
+    - 3 Husky hooks: npx->pnpm exec, npm run->pnpm run
+    - 5 build scripts: spawnSync pnpm exec
+    - netlify.toml: corepack enable + pnpm install + pnpm build
+    - lighthouserc.json: pnpm exec vite preview
+    - workspace:\* protocol for @cannaguide/ai-core, @cannaguide/ui
+    - vite.config.ts: TS2352 fix (visualizer plugin cast)
+    - Lockfile: 23k (npm) -> 15k (pnpm) lines
+
+### Verified Metrics (Session 79)
+
+- Tests: 1663 passed (149 files), 0 failures
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Build: success (153 precache entries)
+- Audit: 0 vulnerabilities
+- pnpm-lock.yaml: 15,053 lines
+
+### Next Steps
+
+- P1 audit items from PRIORITY_ROADMAP.md
+- Consider CI cache optimization (pnpm store)
+- Update CONTRIBUTING.md with pnpm commands
+- Playwright E2E run to confirm no regressions
+
+---
+
+## Previous Session (Session 78) -- Audit P0 Sprint + SonarCloud Removal
 
 **Status: D-02, P-04, T-05 closed. 4 new E2E tests. AI contract test suite. SonarCloud fully removed. sonar-project.properties deleted.**
 

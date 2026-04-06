@@ -1,5 +1,5 @@
 name: Setup Node and install deps
-description: Standardized Node setup with npm cache and deterministic install
+description: Standardized Node setup with pnpm and deterministic install
 inputs:
     node-version:
         description: Node.js version to install
@@ -8,15 +8,19 @@ inputs:
     install-command:
         description: Install command to run after setup
         required: false
-        default: 'npm ci --prefer-offline'
+        default: 'pnpm install --frozen-lockfile'
 runs:
     using: composite
     steps:
+        - name: Enable Corepack
+          shell: bash
+          run: corepack enable
+
         - name: Setup Node.js
           uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
           with:
               node-version: ${{ inputs.node-version }}
-              cache: npm
+              cache: pnpm
 
         - name: Install dependencies
           shell: bash

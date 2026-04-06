@@ -3,7 +3,7 @@
 // Exits 0 if no unknown errors remain, 1 otherwise.
 import { spawnSync } from 'node:child_process'
 
-const result = spawnSync('npx', ['tsc', '--noEmit'], {
+const result = spawnSync('pnpm', ['exec', 'tsc', '--noEmit'], {
     encoding: 'utf-8',
     stdio: ['inherit', 'pipe', 'pipe'],
 })

@@ -30,7 +30,7 @@ env:
 
 jobs:
     # ---------------------------------------------------------------------
-    # Quality Gates -- npm run for root tasks, turbo for workspace packages
+    # Quality Gates -- pnpm run for root tasks, turbo for workspace packages
     # ---------------------------------------------------------------------
     quality:
         name: Quality Gates
@@ -56,25 +56,25 @@ jobs:
               uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               with:
                   path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}-${{ github.sha }}
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
                   restore-keys: |
-                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}-
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
                       turbo-${{ runner.os }}-
                   save-always: true
 
             - name: Lint changed files
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
-              run: npm run lint:changed
+              run: pnpm run lint:changed
 
             - name: Lint strict scopes
-              run: npm run lint:scopes
+              run: pnpm run lint:scopes
 
             - name: Type check (workspaces)
-              run: npx turbo run typecheck
+              run: pnpm exec turbo run typecheck
 
             - name: Type check (root)
-              run: npm run typecheck
+              run: pnpm run typecheck
 
             - name: Zero-any enforcement
               run: |
@@ -88,7 +88,7 @@ jobs:
                   echo "[OK] Zero any in app source"
 
             - name: Test + Coverage
-              run: npm run test:coverage
+              run: pnpm run test:coverage
 
             - name: Upload coverage
               if: always()
@@ -99,7 +99,7 @@ jobs:
                   retention-days: 14
 
             - name: Build
-              run: npm run build
+              run: pnpm run build
 
             - name: Bundle budget check
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
@@ -145,14 +145,14 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Security audit (critical)
-              run: npm audit --audit-level=critical --omit=dev
+              run: pnpm audit --audit-level=critical --omit=dev
 
             - name: Trojan-source scan
-              run: npm run security:trojan-source
+              run: pnpm run security:trojan-source
 
             # Trivy removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
             # Replaced by Grype in security-full.yml (filesystem).
-            # CI filesystem scanning covered by npm audit + Snyk + CodeQL.
+            # CI filesystem scanning covered by pnpm audit + Snyk + CodeQL.
             - name: Gitleaks secret scan
               run: |
                   GITLEAKS_VERSION="8.24.3"
@@ -187,13 +187,13 @@ jobs:
               uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               with:
                   path: ~/.cache/ms-playwright
-                  key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+                  key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
                       playwright-browsers-${{ runner.os }}-
 
             - name: Install Playwright browsers
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: npm run test:e2e:install:ci
+              run: pnpm run test:e2e:install:ci
 
             - name: Download build artifact
               uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -205,7 +205,7 @@ jobs:
               working-directory: apps/web
               run: |
                   START_TIME=$SECONDS
-                  npx playwright test -c playwright.config.ts --project=chromium --project=mobile-chrome --grep-invert "Visual Regression" --workers=2
+                  pnpm exec playwright test -c playwright.config.ts --project=chromium --project=mobile-chrome --grep-invert "Visual Regression" --workers=2
                   echo "E2E Chromium duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 
@@ -215,7 +215,7 @@ jobs:
               working-directory: apps/web
               run: |
                   START_TIME=$SECONDS
-                  npx playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression" --workers=2
+                  pnpm exec playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression" --workers=2
                   echo "E2E Firefox duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 
@@ -224,7 +224,7 @@ jobs:
               continue-on-error: true
               timeout-minutes: 10
               working-directory: apps/web
-              run: npx playwright test -c playwright.config.ts --grep "Visual Regression" --update-snapshots --workers=1
+              run: pnpm exec playwright test -c playwright.config.ts --grep "Visual Regression" --update-snapshots --workers=1
 
             - name: Upload visual regression snapshots
               if: always()

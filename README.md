@@ -106,7 +106,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 21-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 778 strains -- 1614 tests -- 105 services -- 14 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
+**Key numbers:** 778 strains -- 1663 tests -- 105 services -- 14 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
 
 ---
 
@@ -302,21 +302,21 @@ Node.js 20+, npm 10+
 
 ```bash
 # Root (TurboRepo -- runs across all workspaces)
-npm run dev              # turbo run dev (Vite dev server on localhost:5173)
-npm run build            # turbo run build (all workspaces)
-npm test                 # turbo run test (Vitest, 1614 tests)
-npm run lint             # turbo run lint
-npm run typecheck        # turbo run typecheck
-npm run format           # Prettier
-npm run security:scan    # Full security scan
+pnpm run dev              # turbo run dev (Vite dev server on localhost:5173)
+pnpm run build            # turbo run build (all workspaces)
+pnpm test                 # turbo run test (Vitest, 1663 tests)
+pnpm run lint             # turbo run lint
+pnpm run typecheck        # turbo run typecheck
+pnpm run format           # Prettier
+pnpm run security:scan    # Full security scan
 
 # Web app (workspace-scoped)
-npm run -w @cannaguide/web dev       # Vite dev server
-npm run -w @cannaguide/web build     # Production build
-npm run -w @cannaguide/web test      # Vitest unit/integration
-npm run -w @cannaguide/web test:e2e  # Playwright E2E (requires build)
-npm run -w @cannaguide/web test:ct   # Playwright component tests
-npm run -w @cannaguide/web typecheck # tsc --noEmit
+pnpm --filter @cannaguide/web dev       # Vite dev server
+pnpm --filter @cannaguide/web build     # Production build
+pnpm --filter @cannaguide/web test      # Vitest unit/integration
+pnpm --filter @cannaguide/web test:e2e  # Playwright E2E (requires build)
+pnpm --filter @cannaguide/web test:ct   # Playwright component tests
+pnpm --filter @cannaguide/web typecheck # tsc --noEmit
 ```
 
 ### Monorepo Structure
@@ -360,7 +360,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 | Job                | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
-| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1614 tests, production build |
+| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1663 tests, production build |
 | 🛡 Security        | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
 | 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
 | 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |
@@ -419,7 +419,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 | **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1049 tests, IoT mocks, CodeQL, Grype                                                                              |
 | **v1.2** | ✅ Released | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data integration (8 providers), strain data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
 | **v1.3** | ✅ Released | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                        |
-| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1614 tests                                              |
+| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1663 tests                                              |
 | **v1.5** | 📋 Planned  | Digital Twin architecture, ONNX TTS/STT, Data Export/Import, full axe-core a11y integration, AI response validation coverage                                                                                           |
 | **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                               |
 
@@ -443,7 +443,7 @@ CannaGuide 2025 was built iteratively through an AI-assisted development process
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                             | v0.1 → v1.0  |
 | **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                       | Throughout   |
-| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1614 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.4 |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1663 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.4 |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Production deployment, PR previews, OpenSSF compliance                                                                        | Continuous   |
 
 > **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
@@ -529,7 +529,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 18-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 778 Sorten -- 1614 Tests -- 105 Services -- 14 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 21 CI-Workflows
+**Kennzahlen:** 778 Sorten -- 1663 Tests -- 105 Services -- 14 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 21 CI-Workflows
 
 ---
 
@@ -724,21 +724,21 @@ Node.js 20+, npm 10+
 
 ```bash
 # Root (TurboRepo -- laeuft ueber alle Workspaces)
-npm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
-npm run build            # turbo run build (alle Workspaces)
-npm test                 # turbo run test (Vitest, 1614 Tests)
-npm run lint             # turbo run lint
-npm run typecheck        # turbo run typecheck
-npm run format           # Prettier
-npm run security:scan    # Vollstaendiger Sicherheits-Scan
+pnpm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
+pnpm run build            # turbo run build (alle Workspaces)
+pnpm test                 # turbo run test (Vitest, 1663 Tests)
+pnpm run lint             # turbo run lint
+pnpm run typecheck        # turbo run typecheck
+pnpm run format           # Prettier
+pnpm run security:scan    # Vollstaendiger Sicherheits-Scan
 
 # Web-App (Workspace-spezifisch)
-npm run -w @cannaguide/web dev       # Vite Dev-Server
-npm run -w @cannaguide/web build     # Produktions-Build
-npm run -w @cannaguide/web test      # Vitest Unit/Integration
-npm run -w @cannaguide/web test:e2e  # Playwright E2E (erfordert Build)
-npm run -w @cannaguide/web test:ct   # Playwright Komponenten-Tests
-npm run -w @cannaguide/web typecheck # tsc --noEmit
+pnpm --filter @cannaguide/web dev       # Vite Dev-Server
+pnpm --filter @cannaguide/web build     # Produktions-Build
+pnpm --filter @cannaguide/web test      # Vitest Unit/Integration
+pnpm --filter @cannaguide/web test:e2e  # Playwright E2E (erfordert Build)
+pnpm --filter @cannaguide/web test:ct   # Playwright Komponenten-Tests
+pnpm --filter @cannaguide/web typecheck # tsc --noEmit
 ```
 
 ### Monorepo-Struktur
@@ -782,7 +782,7 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 
 | Job                | Beschreibung                                                                 |
 | ------------------ | ---------------------------------------------------------------------------- |
-| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1614 Tests, Produktions-Build |
+| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1663 Tests, Produktions-Build |
 | 🛡 Security        | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
 | 🎭 E2E Tests       | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🌡 IoT-Integration | ESP32-Mock Healthcheck, Sensor-Endpunkt-Validierung                          |
@@ -841,7 +841,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, IoT-Mocks, CodeQL, Grype                                                                                                        |
 | **v1.2** | ✅ Veröffentlicht | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
 | **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                 |
-| **v1.4** | In Arbeit         | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1614 Tests                                                                         |
+| **v1.4** | In Arbeit         | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1663 Tests                                                                         |
 | **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                       |
 | **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                       |
 

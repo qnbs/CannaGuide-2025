@@ -24,6 +24,26 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.4.1] - 2026-04-06
+
+### Fixed
+
+- Docker deployment: use lowercase OCI image reference in metadata action (was causing parse error in Grype container scan)
+- Docker deployment: reference image by digest instead of wrong 40-char SHA tag format (type=sha generates 7-char abbreviated SHA)
+- Tauri desktop builds: remove non-existent `microphone:default` capability permission (was failing all 4 platform builds)
+- PWA deploy E2E test: rewrite service worker registration test to use `navigator.serviceWorker.ready` instead of busy-loop polling
+- PWA deploy E2E test: use `waitUntil: 'load'` instead of `networkidle` to ensure SW registration starts before assertion
+
+### Changed
+
+- Remove 10 false-safety `continue-on-error` across 5 CI workflows, replacing with proper availability guards (`command -v`), token checks, step-outcome conditions, and explicit error handling
+- security-scan.yml: Aikido, pre-commit, Semgrep, Socket.dev, Snyk, Scorecard now use availability checks instead of silent failure
+- security-full.yml: CodeQL build step now hard-fails, npm audit has explicit error messaging
+- benchmark.yml: Lighthouse CI uses explicit error handling with environment variable flag
+- snyk.yml: step-outcome conditions replace blanket continue-on-error
+
+---
+
 ## [1.4.0] - 2026-04-06
 
 ### Added

@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1585 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1594 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
@@ -225,10 +225,10 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1585 tests, 0 failures
+- Baseline: 1594 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit uses extended timeouts (120s).
-- **CI E2E timeout:** 25 minutes
+- **CI E2E timeout:** 30 minutes (step), 40 minutes (job)
 - **Visual Regression:** `tests/e2e/visual-regression.e2e.ts` uses `expect(page).toHaveScreenshot()` for Plants, Strains, Knowledge views across themes. Snapshots stored in `tests/e2e/__screenshots__/`. Generate/update baselines: `npx playwright test --grep "Visual Regression" --update-snapshots`. CI runs visual regression with `--update-snapshots` (non-blocking); snapshots uploaded as artifacts for diff review.
 - **Mutation Testing:** Stryker Mutator (`stryker.conf.json`) targets `apps/web/stores/slices/**/*.ts`. Run: `npm run test:mutate`. Break threshold: 50% mutation score. Reports in `reports/mutation/`.
 
@@ -440,6 +440,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/nativeBridgeService.ts`                  | Unified native notification dispatch (Tauri/Capacitor/Web)                                                                                                                 |
 | `apps/web/services/strainLookupService.ts`                  | 5-source Strain Intelligence Lookup cascade + entourage effect science                                                                                                     |
 | `apps/web/services/indexedDbMonitorService.ts`              | IndexedDB quota inspection, per-store entry counts, health warnings                                                                                                        |
+| `apps/web/services/indexedDbPruneService.ts`                | Quota-aware IndexedDB store pruning (images 500 cap, search 5000 cap), cursor-based oldest-first deletion                                                                  |
 | `apps/web/services/trendsEcosystemService.ts`               | Cross-hub match scores (genetic trends <-> grow tech), 5-min cache, static relationship maps                                                                               |
 | `apps/web/services/localAiInfrastructureService.ts`         | Backward-compatible barrel re-export for LocalAIInfrastructure                                                                                                             |
 | `apps/web/services/localAiWebGpuService.ts`                 | Centralized WebGPU adapter, device lifecycle, feature detection                                                                                                            |

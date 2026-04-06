@@ -8,6 +8,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- feat(ci): release-gate.yml workflow -- 4-job release gate (pre-flight, test-suite, build-verify, release-summary) (Session 72)
+- feat(ci): check-audit-backlog.mjs script -- blocks CI on open HIGH-severity audit items (Session 72)
+- feat(ci): audit backlog check step in ci.yml quality job (Session 72)
+- feat(ui): DevTelemetryPanel -- dev-only collapsible overlay for GPU/WorkerBus/RAG/Inference/EcoMode metrics (Session 72)
+- feat(storage): indexedDbPruneService -- quota-aware IndexedDB store pruning (images 500 cap, search 5000 cap) (Session 72)
+- feat(storage): DataManagementTab cleanup now runs pruneOnQuotaThreshold after image cleanup (Session 72)
+- fix(ci): E2E timeout increased from 20min to 30min (step) / 25min to 40min (job) for mobile-chrome tests (Session 72)
+- test(storage): 6 tests for indexedDbPruneService (pruneOldestEntries + pruneOnQuotaThreshold) (Session 72)
+- test(ui): 3 tests for DevTelemetryPanel (render, expand, collapse) (Session 72)
 - feat(voice): 6 new voice commands -- diagnosis, compare strains, random strain, AI status, change model, hydro monitor (Session 71)
 - feat(voice): Levenshtein distance fuzzy alias matching (Pass 2, distance <= 2) in voice command matcher (Session 71)
 - feat(voice): ITTSProvider interface in types.ts, TTSService now implements it (Session 71)

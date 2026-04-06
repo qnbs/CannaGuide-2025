@@ -2,53 +2,54 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 79) -- pnpm Migration
+## Latest Session (Session 80) -- CI Security Fixes + Dependency Cleanup
 
-**Status: Full npm-to-pnpm migration complete. P0 9-12 validated as done.**
+**Status: All CI blockers resolved. Scorecard pinned-deps fixed. Unused deps removed.**
 
-### What Was Done (Session 79)
+### What Was Done (Session 80)
 
-1. **P0 Steps 9-12 Validated** -- All fully implemented:
-    - Step 9: 21 E2E tests, Playwright configured, CI wired
-    - Step 10: IndexedDB prune (80% threshold) + quota monitor
-    - Step 11: 13 Zod schemas with safeParse, telemetry, Sentry
-    - Step 12: PWA live on GitHub Pages + Netlify
+1. **pnpm audit CI fix (critical blocker):**
+    - Replaced `--omit=dev` (npm flag) with `--prod` (pnpm flag)
+      in ci.yml and deploy.yml -- was failing CI with
+      "Unknown option: omit"
 
-2. **pnpm 10 Migration (Complete):**
-    - Root package.json: packageManager pnpm@10.33.0, workspaces
-      removed (pnpm-workspace.yaml), overrides migrated to
-      pnpm.overrides, scripts updated (pnpm run/--filter)
-    - New files: pnpm-workspace.yaml, .npmrc
-    - turbo.json: globalDependencies pnpm-lock.yaml
-    - 11 CI workflows migrated (npm->pnpm, corepack enable)
-    - Shared CI action: corepack enable, cache: pnpm
-    - DevContainer: corepack enable + pnpm install
-    - 3 Husky hooks: npx->pnpm exec, npm run->pnpm run
-    - 5 build scripts: spawnSync pnpm exec
-    - netlify.toml: corepack enable + pnpm install + pnpm build
-    - lighthouserc.json: pnpm exec vite preview
-    - workspace:\* protocol for @cannaguide/ai-core, @cannaguide/ui
-    - vite.config.ts: TS2352 fix (visualizer plugin cast)
-    - Lockfile: 23k (npm) -> 15k (pnpm) lines
+2. **Scorecard Pinned-Dependencies (Alert #278):**
+    - Added `# vX.Y.Z` version comments to 17 SHA-pinned action
+      references across 7 workflows (deploy, stale, security-full,
+      labeler, scorecard, snyk, codeql)
+    - All SHAs verified via GitHub API
 
-### Verified Metrics (Session 79)
+3. **Dependency cleanup:**
+    - Removed unused `p-retry@^4.6.2` from apps/web dependencies
+      (no imports found anywhere in codebase)
+
+4. **GitHub Actions upgrades:**
+    - actions/github-script v7 -> v8.0.0 in cleanup-deployments.yml
+      (aligned with deploy.yml which already used v8)
+    - dependabot/fetch-metadata v2.5.0 -> v3.0.0 in
+      dependabot-auto-merge.yml (SHA: ffa630c65fa7e0ecfa0625b5ceda64399aea1b36)
+
+5. **Deferred:** Vite 7 -> 8 major upgrade (PR #141) --
+   requires dedicated session for plugin/config compatibility
+
+### Verified Metrics (Session 80)
 
 - Tests: 1663 passed (149 files), 0 failures
 - TypeScript: clean (1 known RTK TS2719 filtered)
 - Build: success (153 precache entries)
-- Audit: 0 vulnerabilities
-- pnpm-lock.yaml: 15,053 lines
+- Audit: 0 vulnerabilities (pnpm audit --audit-level=critical --prod)
+- All workflow actions: SHA-pinned with version comments
 
 ### Next Steps
 
+- Close Dependabot PRs #138-#141 (manually resolved or deferred)
+- Vite 8 upgrade in dedicated session (PR #141)
 - P1 audit items from PRIORITY_ROADMAP.md
-- Consider CI cache optimization (pnpm store)
 - Update CONTRIBUTING.md with pnpm commands
-- Playwright E2E run to confirm no regressions
 
 ---
 
-## Previous Session (Session 78) -- Audit P0 Sprint + SonarCloud Removal
+## Previous Session (Session 79) -- pnpm Migration
 
 **Status: D-02, P-04, T-05 closed. 4 new E2E tests. AI contract test suite. SonarCloud fully removed. sonar-project.properties deleted.**
 

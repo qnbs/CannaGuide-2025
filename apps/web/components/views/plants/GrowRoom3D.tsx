@@ -295,13 +295,14 @@ interface GrowRoom3DProps {
 }
 
 const disposeScene = (scene: THREE.Scene, renderer: THREE.WebGLRenderer): void => {
-    scene.traverse((obj: THREE.Mesh) => {
-        if (obj instanceof THREE.Mesh || obj instanceof THREE.Points) {
-            obj.geometry.dispose()
-            if (Array.isArray(obj.material)) {
-                obj.material.forEach((m: THREE.MeshStandardMaterial) => m.dispose())
+    scene.traverse((obj) => {
+        const mesh = obj as THREE.Mesh
+        if (mesh.geometry) {
+            mesh.geometry.dispose()
+            if (Array.isArray(mesh.material)) {
+                mesh.material.forEach((m) => m.dispose())
             } else {
-                obj.material.dispose()
+                mesh.material.dispose()
             }
         }
     })
@@ -479,9 +480,10 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         ]
 
         activePlants.forEach((plant, index) => {
-            if (index < 3) {
+            const pos = plantPositions[index]
+            if (index < 3 && pos) {
                 const model = createPlant3D(plant)
-                model.position.copy(plantPositions[index])
+                model.position.copy(pos)
                 scene.add(model)
             }
         })

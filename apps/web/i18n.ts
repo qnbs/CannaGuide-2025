@@ -7,6 +7,13 @@ export type SupportedLocale = 'en' | 'de' | 'es' | 'fr' | 'nl'
 
 const SUPPORTED_LOCALES: readonly SupportedLocale[] = ['en', 'de', 'es', 'fr', 'nl'] as const
 
+// RTL locales -- empty for now; add 'ar', 'he' etc. when translations land
+const RTL_LOCALES: ReadonlySet<string> = new Set<string>()
+
+/** Returns the text direction for a given locale. */
+export const getTextDirection = (locale: string): 'ltr' | 'rtl' =>
+    RTL_LOCALES.has(locale) ? 'rtl' : 'ltr'
+
 export const loadLocale = async (lang: SupportedLocale): Promise<LocalePayload> => {
     switch (lang) {
         case 'de': {
@@ -64,5 +71,13 @@ export const i18nPromise = (async () => {
         interpolation: {
             escapeValue: false,
         },
+    })
+
+    // Sync <html lang="..." dir="..."> on every language switch
+    i18nInstance.on('languageChanged', (lng: string) => {
+        if (typeof document !== 'undefined') {
+            document.documentElement.lang = lng
+            document.documentElement.dir = getTextDirection(lng)
+        }
     })
 })()

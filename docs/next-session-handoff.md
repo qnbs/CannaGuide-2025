@@ -2,7 +2,66 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 83) -- Audit Findings H-4, M-1 to M-4
+## Latest Session (Session 84) -- Audit Findings M-5, M-6, M-7
+
+**Status: v1.4.1. 1663 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 84)
+
+1. **M-5 (C-04) Netlify preview validation:**
+    - New `.github/workflows/preview-validation.yml`
+    - Triggers on `deployment_status` event when Netlify
+      deploy-preview succeeds
+    - Job 1: Playwright smoke tests via `DEPLOY_BASE_URL` env var
+      (reuses existing `playwright.deploy.config.ts` + 7 deploy
+      E2E tests)
+    - Job 2: Lighthouse CI audit (1 run, same budget assertions
+      as deploy.yml)
+    - Both jobs `continue-on-error: true` (non-blocking)
+
+2. **M-6 (I-02) RTL language infrastructure:**
+    - `i18n.ts`: Added `RTL_LOCALES` constant (empty set),
+      `getTextDirection()` exported helper, and
+      `languageChanged` callback that sets
+      `document.documentElement.dir` + `.lang`
+    - `index.html`: Explicit `dir="ltr"` on `<html>` element
+    - New `rtl-smoke.e2e.ts` E2E test: sets `dir="rtl"` via
+      `page.evaluate`, verifies nav + main render, checks
+      computed direction === 'rtl', verifies default is 'ltr'
+    - `ACCESSIBILITY.md`: RTL readiness table with status of
+      each aspect (done vs planned)
+    - Note: CSS logical properties migration (15+ components)
+      deferred to dedicated RTL session
+
+3. **M-7 OrbitControls @types/three migration:**
+    - Installed `@types/three` as devDependency
+    - Deleted `apps/web/types/three.d.ts` (74 lines of `any` stubs)
+    - Fixed type errors in `GrowRoom3D.tsx`: `disposeScene`
+      traverse callback (Object3D cast), `plantPositions[index]`
+      undefined guard
+    - Fixed type errors in `BreedingArPreview.tsx`: `appendArButton`
+      return type `HTMLElement` (was `HTMLButtonElement`),
+      `domOverlay.root` cast
+    - Updated ADR-0003: custom .d.ts consequence marked resolved
+    - Three.js classes now have full type safety instead of `any`
+
+### Verified Metrics (Session 84)
+
+- Tests: 1663 passed (149 files), 0 failures
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Build: success (149 precache entries)
+
+### Next Steps
+
+- H-1 (F-05): Multi-grow management -- concept + type system design
+- RTL CSS migration: 15+ components need logical properties
+  (BottomNav, Tabs, Header, RangeSlider, Toast, Card, etc.)
+- Three.js visual regression test (optional: verify 3D renders
+  correctly with @types/three)
+
+---
+
+## Session 83 -- Audit Findings H-4, M-1 to M-4
 
 **Status: v1.4.1. 1663 tests passing. TypeScript clean. Build clean.**
 

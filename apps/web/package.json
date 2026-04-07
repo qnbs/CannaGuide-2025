@@ -69,6 +69,7 @@
         "@types/d3-hierarchy": "^3.1.7",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
+        "@types/three": "^0.183.1",
         "@vitejs/plugin-react": "^5.2.0",
         "@vitest/coverage-v8": "^4.1.2",
         "autoprefixer": "^10.4.27",

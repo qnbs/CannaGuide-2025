@@ -75,7 +75,7 @@ const disposeSceneResources = (scene: THREE.Scene): void => {
 const appendArButton = (
     renderer: THREE.WebGLRenderer,
     root: HTMLDivElement | null,
-): HTMLButtonElement | null => {
+): HTMLElement | null => {
     if (!(typeof navigator !== 'undefined' && 'xr' in navigator)) {
         return null
     }
@@ -83,7 +83,7 @@ const appendArButton = (
     const button = ARButton.createButton(renderer, {
         requiredFeatures: ['hit-test'],
         optionalFeatures: ['dom-overlay'],
-        domOverlay: { root: root ?? undefined },
+        domOverlay: { root: root as HTMLElement },
     })
 
     if (!button) {

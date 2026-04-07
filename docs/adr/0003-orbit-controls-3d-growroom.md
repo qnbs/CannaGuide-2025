@@ -14,6 +14,8 @@ Add `OrbitControls` from `three/examples/jsm/controls/OrbitControls.js` with dam
 
 A custom TypeScript module declaration in `types/three.d.ts` provides type safety for OrbitControls since the examples directory has no bundled types.
 
+**Update (2026-04-07):** Custom `types/three.d.ts` replaced by `@types/three` (DefinitelyTyped). All Three.js classes now have full type safety instead of `any` stubs.
+
 ## Consequences
 
 ### Positive
@@ -25,7 +27,7 @@ A custom TypeScript module declaration in `types/three.d.ts` provides type safet
 ### Negative
 
 - Additional ~15KB for OrbitControls (already tree-shaken from Three.js bundle)
-- Custom `.d.ts` declaration must be maintained if Three.js OrbitControls API changes
+- Custom `.d.ts` declaration must be maintained if Three.js OrbitControls API changes -- **Resolved:** Replaced by `@types/three` which is maintained by DefinitelyTyped and auto-updated with Three.js releases
 
 ### Neutral
 

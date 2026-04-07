@@ -1,0 +1,135 @@
+name: Preview Validation
+
+# ---------------------------------------------------------------------------
+# Runs Playwright smoke tests + Lighthouse CI against Netlify deploy-preview
+# URLs. Triggered automatically when Netlify finishes a PR preview deploy.
+# Non-blocking (continue-on-error) -- results are informational.
+# ---------------------------------------------------------------------------
+
+on:
+    deployment_status:
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: '20'
+
+jobs:
+    # -------------------------------------------------------------------------
+    # GATE -- only run when Netlify deploy-preview succeeds
+    # -------------------------------------------------------------------------
+    check:
+        name: Validate trigger
+        if: >-
+            github.event.deployment_status.state == 'success' &&
+            contains(github.event.deployment_status.environment, 'deploy-preview')
+        runs-on: ubuntu-latest
+        outputs:
+            preview-url: ${{ steps.url.outputs.url }}
+        steps:
+            - name: Extract preview URL
+              id: url
+              run: |
+                  URL="${{ github.event.deployment_status.environment_url }}"
+                  echo "url=${URL}" >> "$GITHUB_OUTPUT"
+                  echo "[INFO] Preview URL: ${URL}"
+
+    # -------------------------------------------------------------------------
+    # E2E -- Playwright smoke tests against the preview deployment
+    # -------------------------------------------------------------------------
+    e2e-preview:
+        name: E2E Smoke (Preview)
+        needs: check
+        if: needs.check.outputs.preview-url != ''
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        timeout-minutes: 15
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Cache Playwright Chromium
+              id: playwright-cache
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      playwright-chromium-${{ runner.os }}-
+
+            - name: Install Playwright browser
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+              run: pnpm run test:e2e:install:ci
+
+            - name: Run smoke tests against preview URL
+              env:
+                  DEPLOY_BASE_URL: ${{ needs.check.outputs.preview-url }}
+              run: |
+                  echo "[INFO] Testing preview: ${DEPLOY_BASE_URL}"
+                  pnpm --filter @cannaguide/web run test:e2e:deploy
+
+            - name: Upload Playwright traces on failure
+              if: failure()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: preview-e2e-traces-${{ github.run_id }}
+                  path: apps/web/test-results/
+                  retention-days: 7
+
+    # -------------------------------------------------------------------------
+    # LIGHTHOUSE -- performance + accessibility audit on preview deployment
+    # -------------------------------------------------------------------------
+    lighthouse-preview:
+        name: Lighthouse (Preview)
+        needs: check
+        if: needs.check.outputs.preview-url != ''
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        timeout-minutes: 10
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Lighthouse CI (preview URL)
+              run: |
+                  echo "[INFO] Auditing preview: ${{ needs.check.outputs.preview-url }}"
+                  pnpm exec @lhci/cli autorun \
+                    --collect.url=${{ needs.check.outputs.preview-url }} \
+                    --collect.numberOfRuns=1 \
+                    --upload.target=temporary-public-storage \
+                    --assert.assertions.first-contentful-paint="error;maxNumericValue=2000" \
+                    --assert.assertions.largest-contentful-paint="error;maxNumericValue=4000" \
+                    --assert.assertions.total-blocking-time="error;maxNumericValue=300" \
+                    --assert.assertions.cumulative-layout-shift="error;maxNumericValue=0.1" \
+                    --assert.assertions.categories:performance="warn;minScore=0.9" \
+                    --assert.assertions.categories:accessibility="error;minScore=0.9" \
+                    --assert.assertions.categories:best-practices="error;minScore=0.9"
+
+            - name: Upload Lighthouse report
+              if: always()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: preview-lighthouse-${{ github.run_id }}
+                  path: .lighthouseci/
+                  retention-days: 14

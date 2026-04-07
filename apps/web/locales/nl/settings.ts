@@ -595,6 +595,25 @@ export const settingsView = {
                 copyKey: 'Sleutel kopieren',
                 keyCopied: 'Versleutelingssleutel gekopieerd naar klembord.',
             },
+            conflictTitle: 'Sync-conflict gedetecteerd',
+            conflictDescription:
+                'Je lokale gegevens en de cloudversie hebben afwijkende wijzigingen. Kies hoe je dit wilt oplossen:',
+            localChanges: 'Alleen lokaal',
+            remoteChanges: 'Alleen remote',
+            conflictingItems: 'Conflicterend',
+            merge: 'Slim samenvoegen',
+            keepLocal: 'Lokaal behouden',
+            useCloud: 'Cloud gebruiken',
+            viewDetails: 'Details bekijken',
+            pendingSync: 'Sync in behandeling -- wordt opnieuw geprobeerd bij verbinding...',
+            synced: 'Gesynchroniseerd om {{time}}',
+            syncError: 'Sync mislukt',
+            statusIdle: 'Niet gesynchroniseerd',
+            keepLocalConfirm:
+                'Dit verwijdert alle remote wijzigingen en uploadt je lokale status naar de cloud. Dit kan niet ongedaan worden gemaakt.',
+            useCloudConfirm:
+                'Dit verwijdert alle lokale wijzigingen en vervangt je gegevens door de cloudversie. Dit kan niet ongedaan worden gemaakt.',
+            migrating: 'Oud sync-formaat wordt gemigreerd -- app wordt opnieuw geladen...',
         },
         replayOnboarding: 'Handleiding opnieuw tonen',
         replayOnboardingConfirm:

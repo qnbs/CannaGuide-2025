@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import { getUISnapshot } from '@/stores/useUIStore'
+import { getUISnapshot, useUIStore } from '@/stores/useUIStore'
 import { syncService } from '@/services/syncService'
 import { generateSyncEncryptionKey } from '@/services/syncEncryptionService'
+import { offlineSyncQueueService } from '@/services/offlineSyncQueueService'
+import { SyncConflictModal } from '@/components/common/SyncConflictModal'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 
@@ -25,6 +27,12 @@ const CloudSyncPanel: React.FC = () => {
     const settings = useAppSelector(selectSettings)
     const { cloudSync } = settings.data
     const isLocalOnly = settings.privacy.localOnlyMode
+
+    const syncState = useUIStore((s) => s.syncState)
+    const setSyncStatus = useUIStore((s) => s.setSyncStatus)
+    const setSyncConflict = useUIStore((s) => s.setSyncConflict)
+    const clearSyncConflict = useUIStore((s) => s.clearSyncConflict)
+    const setSyncLastSyncAt = useUIStore((s) => s.setSyncLastSyncAt)
 
     const [isPushing, setIsPushing] = useState(false)
     const [isPulling, setIsPulling] = useState(false)
@@ -67,33 +75,39 @@ const CloudSyncPanel: React.FC = () => {
     const handlePush = async (): Promise<void> => {
         if (isPushing) return
         setIsPushing(true)
+        setSyncStatus('syncing')
         try {
-            const stateJson = await indexedDBStorage.getItem(REDUX_STATE_KEY)
-            if (!stateJson) {
-                getUISnapshot().addNotification({ type: 'error', message: 'No state to sync.' })
-                return
-            }
-
             const result = await syncService.pushToGist(
-                stateJson,
                 cloudSync.gistId,
                 cloudSync.encryptionKeyBase64,
             )
             dispatch(setSetting({ path: 'data.cloudSync.gistId', value: result.gistId }))
             dispatch(setSetting({ path: 'data.cloudSync.lastSyncAt', value: result.syncedAt }))
+            setSyncStatus('synced')
+            setSyncLastSyncAt(result.syncedAt)
             getUISnapshot().addNotification({
                 type: 'success',
                 message: String(t('settingsView.data.sync.pushSuccess')),
             })
         } catch (error) {
             console.debug('[CloudSync] Push failed:', error)
-            getUISnapshot().addNotification({
-                type: 'error',
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : String(t('settingsView.data.sync.pushFailed', { status: 'unknown' })),
-            })
+            // If offline, queue for retry
+            if (!navigator.onLine) {
+                offlineSyncQueueService.queueSyncWhenOnline(
+                    cloudSync.gistId,
+                    cloudSync.encryptionKeyBase64,
+                )
+            } else {
+                setSyncStatus('error',
+                    error instanceof Error ? error.message : 'Push failed')
+                getUISnapshot().addNotification({
+                    type: 'error',
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : String(t('settingsView.data.sync.pushFailed', { status: 'unknown' })),
+                })
+            }
         } finally {
             setIsPushing(false)
         }
@@ -103,21 +117,62 @@ const CloudSyncPanel: React.FC = () => {
         if (isPulling) return
         setIsPulling(true)
         setIsPullConfirmOpen(false)
+        setSyncStatus('syncing')
         try {
             const gistRef = pullGistInput.trim() || cloudSync.gistId
             if (!gistRef) return
 
-            const result = await syncService.pullFromGist(gistRef, cloudSync.encryptionKeyBase64)
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, result.state)
-            getUISnapshot().addNotification({
-                type: 'success',
-                message: String(t('settingsView.data.sync.pullSuccess')),
-            })
-            if (browserWindow) {
-                setTimeout(() => browserWindow.location.reload(), 1000)
+            const { result, syncedAt, legacyState } = await syncService.pullFromGist(
+                gistRef,
+                cloudSync.encryptionKeyBase64,
+            )
+
+            switch (result.status) {
+                case 'merged':
+                    setSyncStatus('synced')
+                    setSyncLastSyncAt(syncedAt)
+                    dispatch(setSetting({ path: 'data.cloudSync.lastSyncAt', value: syncedAt }))
+                    getUISnapshot().addNotification({
+                        type: 'success',
+                        message: String(t('settingsView.data.sync.pullSuccess')),
+                    })
+                    break
+
+                case 'conflict':
+                    setSyncConflict(result.info, null)
+                    dispatch(setSetting({ path: 'data.cloudSync.lastSyncAt', value: syncedAt }))
+                    break
+
+                case 'no-change':
+                    setSyncStatus('synced')
+                    getUISnapshot().addNotification({
+                        type: 'success',
+                        message: String(t('settingsView.data.sync.pullSuccess')),
+                    })
+                    break
+
+                case 'migrated':
+                    // Legacy JSON format: import via indexedDBStorage + reload (one-time)
+                    if (legacyState) {
+                        await indexedDBStorage.setItem(REDUX_STATE_KEY, legacyState)
+                        getUISnapshot().addNotification({
+                            type: 'success',
+                            message: String(t('settingsView.data.sync.migrating')),
+                        })
+                        if (browserWindow) {
+                            setTimeout(() => browserWindow.location.reload(), 1000)
+                        }
+                    }
+                    break
+
+                case 'error':
+                    setSyncStatus('error', result.error)
+                    break
             }
         } catch (error) {
             console.debug('[CloudSync] Pull failed:', error)
+            setSyncStatus('error',
+                error instanceof Error ? error.message : 'Pull failed')
             getUISnapshot().addNotification({
                 type: 'error',
                 message:
@@ -125,6 +180,7 @@ const CloudSyncPanel: React.FC = () => {
                         ? error.message
                         : String(t('settingsView.data.sync.pullFailed', { status: 'unknown' })),
             })
+        } finally {
             setIsPulling(false)
         }
     }
@@ -312,9 +368,91 @@ const CloudSyncPanel: React.FC = () => {
                                 className="font-mono text-xs"
                             />
                         </div>
+
+                        {/* Sync status indicator */}
+                        {syncState.status !== 'idle' && (
+                            <div className="flex items-center gap-2 text-xs">
+                                <span
+                                    className={`inline-block h-2.5 w-2.5 rounded-full ${
+                                        syncState.status === 'synced'
+                                            ? 'bg-green-400'
+                                            : syncState.status === 'syncing'
+                                              ? 'bg-yellow-400 animate-pulse'
+                                              : syncState.status === 'error'
+                                                ? 'bg-red-400'
+                                                : syncState.status === 'conflict'
+                                                  ? 'bg-amber-400'
+                                                  : 'bg-slate-400'
+                                    }`}
+                                />
+                                <span className="text-slate-300">
+                                    {syncState.status === 'error' && syncState.errorMessage
+                                        ? t('settingsView.data.sync.syncError')
+                                        : syncState.status === 'conflict'
+                                          ? t('settingsView.data.sync.conflictTitle')
+                                          : syncState.status === 'synced'
+                                            ? t('settingsView.data.sync.synced', {
+                                                  time: syncState.lastSyncAt
+                                                      ? new Date(
+                                                            syncState.lastSyncAt,
+                                                        ).toLocaleTimeString()
+                                                      : '',
+                                              })
+                                            : t('settingsView.data.sync.syncing')}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Pending sync badge */}
+                        {syncState.pendingRetries > 0 && (
+                            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-2 text-xs text-amber-300">
+                                <PhosphorIcons.Clock className="h-3.5 w-3.5" />
+                                {t('settingsView.data.sync.pendingSync')}
+                            </div>
+                        )}
                     </div>
                 )}
             </Card>
+
+            {/* Conflict resolution modal */}
+            {syncState.conflictInfo && (
+                <SyncConflictModal
+                    open={syncState.status === 'conflict'}
+                    onClose={clearSyncConflict}
+                    conflictInfo={syncState.conflictInfo}
+                    onMerge={() => {
+                        // CRDT merge already applied during pull -- just acknowledge
+                        clearSyncConflict()
+                        getUISnapshot().addNotification({
+                            type: 'success',
+                            message: String(t('settingsView.data.sync.pullSuccess')),
+                        })
+                    }}
+                    onKeepLocal={() => {
+                        clearSyncConflict()
+                        void syncService
+                            .forceLocalToGist(
+                                cloudSync.gistId ?? '',
+                                cloudSync.encryptionKeyBase64,
+                            )
+                            .then(({ syncedAt }) => {
+                                setSyncLastSyncAt(syncedAt)
+                                dispatch(
+                                    setSetting({
+                                        path: 'data.cloudSync.lastSyncAt',
+                                        value: syncedAt,
+                                    }),
+                                )
+                            })
+                    }}
+                    onUseCloud={() => {
+                        clearSyncConflict()
+                        if (syncState.remotePayload) {
+                            void syncService.forceRemoteToLocal(syncState.remotePayload)
+                        }
+                    }}
+                />
+            )}
         </>
     )
 }

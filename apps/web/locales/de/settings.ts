@@ -598,6 +598,25 @@ export const settingsView = {
                 copyKey: 'Schlüssel kopieren',
                 keyCopied: 'Verschlüsselungsschlüssel in die Zwischenablage kopiert.',
             },
+            conflictTitle: 'Sync-Konflikt erkannt',
+            conflictDescription:
+                'Deine lokalen Daten und die Cloud-Version haben abweichende Aenderungen. Waehle eine Loesung:',
+            localChanges: 'Nur lokal',
+            remoteChanges: 'Nur remote',
+            conflictingItems: 'Konflikte',
+            merge: 'Smart Merge',
+            keepLocal: 'Lokal behalten',
+            useCloud: 'Cloud verwenden',
+            viewDetails: 'Details anzeigen',
+            pendingSync: 'Sync ausstehend -- wird bei Verbindung erneut versucht...',
+            synced: 'Synchronisiert um {{time}}',
+            syncError: 'Sync fehlgeschlagen',
+            statusIdle: 'Nicht synchronisiert',
+            keepLocalConfirm:
+                'Alle Remote-Aenderungen werden verworfen und dein lokaler Stand in die Cloud uebertragen. Dies kann nicht rueckgaengig gemacht werden.',
+            useCloudConfirm:
+                'Alle lokalen Aenderungen werden verworfen und durch die Cloud-Version ersetzt. Dies kann nicht rueckgaengig gemacht werden.',
+            migrating: 'Altes Sync-Format wird migriert -- App wird neu geladen...',
         },
         replayOnboarding: 'Einführung erneut anzeigen',
         replayOnboardingConfirm:

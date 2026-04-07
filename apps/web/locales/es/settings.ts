@@ -609,6 +609,25 @@ export const settingsView = {
                 copyKey: 'Copiar Clave',
                 keyCopied: 'Clave de cifrado copiada al portapapeles.',
             },
+            conflictTitle: 'Conflicto de sincronizacion detectado',
+            conflictDescription:
+                'Tus datos locales y la version en la nube tienen cambios divergentes. Elige como resolver:',
+            localChanges: 'Solo local',
+            remoteChanges: 'Solo remoto',
+            conflictingItems: 'En conflicto',
+            merge: 'Fusion inteligente',
+            keepLocal: 'Mantener local',
+            useCloud: 'Usar nube',
+            viewDetails: 'Ver detalles',
+            pendingSync: 'Sincronizacion pendiente -- se reintentara cuando haya conexion...',
+            synced: 'Sincronizado a las {{time}}',
+            syncError: 'Sincronizacion fallida',
+            statusIdle: 'No sincronizado',
+            keepLocalConfirm:
+                'Esto descartara todos los cambios remotos y subira tu estado local a la nube. No se puede deshacer.',
+            useCloudConfirm:
+                'Esto descartara todos los cambios locales y reemplazara tus datos con la version de la nube. No se puede deshacer.',
+            migrating: 'Migrando formato de sincronizacion antiguo -- la aplicacion se recargara...',
         },
         replayOnboarding: 'Mostrar Tutorial de Nuevo',
         replayOnboardingConfirm:

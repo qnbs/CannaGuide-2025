@@ -583,6 +583,25 @@ export const settingsView = {
                 copyKey: 'Copy Key',
                 keyCopied: 'Encryption key copied to clipboard.',
             },
+            conflictTitle: 'Sync Conflict Detected',
+            conflictDescription:
+                'Your local data and the cloud version have divergent changes. Choose how to resolve:',
+            localChanges: 'Local only',
+            remoteChanges: 'Remote only',
+            conflictingItems: 'Conflicting',
+            merge: 'Smart Merge',
+            keepLocal: 'Keep Local',
+            useCloud: 'Use Cloud',
+            viewDetails: 'View Details',
+            pendingSync: 'Sync pending -- will retry when online...',
+            synced: 'Synced at {{time}}',
+            syncError: 'Sync failed',
+            statusIdle: 'Not synced',
+            keepLocalConfirm:
+                'This will discard all remote changes and push your local state to the cloud. This cannot be undone.',
+            useCloudConfirm:
+                'This will discard all local-only changes and replace your data with the cloud version. This cannot be undone.',
+            migrating: 'Migrating old sync format -- app will reload...',
         },
         replayOnboarding: 'Show Tutorial Again',
         replayOnboardingConfirm:

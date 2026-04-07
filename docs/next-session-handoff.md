@@ -2,78 +2,79 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 89) -- Multi-Grow AI Integration + Data Export (F-07 Session D)
+## Latest Session (Session 90) -- CRDT Offline Sync Production Hardening (F-06 Session III)
 
-**Status: v1.4.1. 1741 tests passing. TypeScript clean. Build clean.**
+**Status: v1.4.1. 1760 tests passing. TypeScript clean. Build clean.**
 
-### What Was Done (Session 89)
+### What Was Done (Session 90)
 
-1. **Grow-scoped RAG** -- Added `growId` to `LogChunk`, updated
-   embedding cache key to `growId:plantId:createdAt`. New methods
-   `retrieveRelevantContextForGrow` and
-   `retrieveSemanticContextForGrow` in growLogRagService. aiService
-   `resolveRagContext` routes to grow-scoped methods when growId
-   provided.
+1. **CrdtErrorCode + CrdtError** -- Structured error enum
+   (INIT_FAILED, SYNC_ENCODE_FAILED, SYNC_APPLY_FAILED,
+   STORAGE_QUOTA_EXCEEDED, BRIDGE_LOOP_DETECTED) and error
+   class with code, docSizeBytes, pendingOps. All errors
+   reported to Sentry with structured tags.
 
-2. **AI Mentor grow context** -- geminiService `buildMentorPrompt`
-   accepts `growId?` and `growName?`, uses grow-scoped RAG and
-   adds GROW CONTEXT section. `getMentorResponse` and
-   `getMentorResponseStream` forward grow params. Stream prompt
-   includes `Grow: {growName}` line.
+2. **Fallback mode** -- crdtService.initialize() now catches
+   errors and enters fallback mode instead of throwing.
+   `isFallbackMode()` getter. syncService uses LWW JSON
+   push/pull when CRDT is unavailable.
 
-3. **AI Diagnostics grow context** -- `buildDiagnosePlantContext`
-   and `diagnosePlant` accept `growName?`, adding grow name to
-   PLANT CONTEXT section in diagnosis prompts.
+3. **Bridge loop detector** -- Module-level circuit breaker
+   in crdtSyncBridge: 50 dispatches in 100ms window triggers
+   5s cooldown. Sentry alert on loop detection. Exported
+   test helpers `_getLoopDetectorState()` and
+   `_resetLoopDetector()`.
 
-4. **Proactive coach grow awareness** -- SmartAlert interface
-   extended with `growId` and `growName`. Coach resolves grow
-   info from state and includes it in alerts. Per-grow threshold
-   monitoring.
+4. **Observer cleanup + destroyCrdtSyncBridge()** -- All 3
+   CRDT->Redux observers tracked for cleanup. New
+   `destroyCrdtSyncBridge()` unobserves all. Wired into
+   pagehide handler in index.tsx alongside crdtService.destroy().
 
-5. **Types + selectors** -- New `GrowExportData` interface (v2.0
-   format) and `GrowSummary` interface in types.ts. New
-   `selectGrowSummary(growId)` factory selector with Map cache
-   in selectors.ts.
+5. **Performance benchmarking** -- `benchmarkSync()` with
+   performance.now() timing, Sentry warning when encode > 200ms.
+   `getDocSizeBytes()`, `getStorageUsage()` with quota info,
+   `pruneOldHistory()` for GC compaction.
 
-6. **Per-grow export/import** -- DataManagementTab: export active
-   grow as v2.0 JSON, import grow from file (validates format,
-   dispatches addGrow). New "Per-Grow Backup" card section.
+6. **CRDT storage bar** -- CrdtStorageInfo component in
+   DataManagementTab shows Y.Doc size and fallback mode warning.
 
-7. **Grow stats** -- GrowStatsRow component in GrowManagerTab
-   shows plant count, journal entries, health %, oldest plant
-   age for each active grow.
+7. **Onboarding sync step** -- 5th feature slide in OnboardingModal
+   about offline CRDT sync. TOTAL_STEPS 7->8. i18n keys added
+   to all 5 languages (EN/DE/ES/FR/NL).
 
-8. **i18n** -- 24 new keys across 5 languages (EN/DE/ES/FR/NL):
-   per-grow export/import (7 keys) + grow stats (4 keys) in
-   settings namespace.
+8. **Unit tests** -- 19 new tests: crdtService.test.ts (15 tests:
+   error classes, init, encode/apply, benchmark, storage, destroy),
+   crdtSyncBridge.test.ts (4 new: loop detector state, reset,
+   destroyCrdtSyncBridge idempotent).
+   Total: 1760 tests, 0 failures, 157 files.
 
-9. **Tests** -- 5 new tests: 3 grow-scoped RAG retrieval tests,
-   1 grow import slice test, 1 alerts growId test.
-   Total: 1741 tests, 0 failures.
+9. **syncService LWW fallback** -- Private `_pushRawJson()` and
+   `_pullLwwFallback()` methods for degraded sync when CRDT init
+   fails. syncService.test.ts mock updated with isFallbackMode.
 
-### Verified Metrics (Session 89)
+### Verified Metrics (Session 90)
 
-- Tests: 1741 passed (156 files), 0 failures
+- Tests: 1760 passed (157 files), 0 failures
 - TypeScript: clean (pre-existing TS2719/GitMerge/Clock filtered)
 - Build: success (153 precache entries)
 
-### Next Steps -- Session E (Multi-Grow Polish)
+### Next Steps
 
-1. **Equipment grow scoping** -- Add growId to equipment
-   entities, schema migration, per-grow equipment filtering.
+1. **E2E tests** -- Playwright multi-tab CRDT sync scenarios
+   (crdt-sync.e2e.ts).
 
-2. **Grow environment panel** -- Per-grow environment
-   settings in GrowManagerTab or DetailedPlantView.
+2. **CRDT pruning UI** -- Add "Compact CRDT History" button
+   to DataManagementTab calling pruneOldHistory().
 
-3. **Grow nutrient schedules** -- Per-grow nutrient planner
-   filtering in NutrientPlannerView.
+3. **ADR-0004 update** -- Mark Session III as complete in
+   docs/adr/0004-crdt-yjs-offline-sync.md.
 
-4. **Multi-grow E2E tests** -- Playwright: create grow,
-   switch grow, verify plant filtering, archive grow.
+4. **Equipment grow scoping** -- Add growId to equipment
+   entities, per-grow equipment filtering.
 
 ---
 
-## Previous Session (Session 88) -- Multi-Grow UI Components (F-07 Session C)
+## Previous Session (Session 89) -- Multi-Grow AI Integration + Data Export (F-07 Session D)
 
 **Status: v1.4.1. 1736 tests passing. TypeScript clean. Build clean.**
 

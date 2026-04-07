@@ -18,16 +18,41 @@ import type { AppStore } from '@/stores/store'
 // Mock crdtService with an in-memory Y.Doc (no IndexedDB)
 // ---------------------------------------------------------------------------
 
+vi.mock('@sentry/react', () => ({
+    captureException: vi.fn(),
+    addBreadcrumb: vi.fn(),
+}))
+
 const testDoc = new Y.Doc()
 
 vi.mock('./crdtService', () => ({
     crdtService: {
         isInitialized: () => true,
+        isFallbackMode: () => false,
         getDoc: () => testDoc,
         getPlantsMap: () => testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>,
         getNutrientScheduleMap: () => testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>,
         getNutrientReadingsMap: () => testDoc.getMap('nutrient-readings') as Y.Map<Y.Map<unknown>>,
         getSettingsMap: () => testDoc.getMap('settings'),
+        getDocSizeBytes: () => 0,
+    },
+    CrdtError: class CrdtError extends Error {
+        constructor(
+            message: string,
+            public readonly code: string,
+            public readonly docSizeBytes: number = 0,
+            public readonly pendingOps: number = 0,
+        ) {
+            super(message)
+            this.name = 'CrdtError'
+        }
+    },
+    CrdtErrorCode: {
+        INIT_FAILED: 'CRDT_INIT_FAILED',
+        SYNC_ENCODE_FAILED: 'CRDT_SYNC_ENCODE_FAILED',
+        SYNC_APPLY_FAILED: 'CRDT_SYNC_APPLY_FAILED',
+        STORAGE_QUOTA_EXCEEDED: 'CRDT_STORAGE_QUOTA_EXCEEDED',
+        BRIDGE_LOOP_DETECTED: 'CRDT_BRIDGE_LOOP_DETECTED',
     },
 }))
 
@@ -35,7 +60,13 @@ vi.mock('./crdtService', () => ({
 // Import bridge AFTER mock is set up
 // ---------------------------------------------------------------------------
 
-const { initCrdtSyncBridge, registerCrdtListeners } = await import('./crdtSyncBridge')
+const {
+    initCrdtSyncBridge,
+    registerCrdtListeners,
+    destroyCrdtSyncBridge,
+    _getLoopDetectorState,
+    _resetLoopDetector,
+} = await import('./crdtSyncBridge')
 const { startAppListening } = await import('@/stores/listenerMiddleware')
 const { listenerMiddleware } = await import('@/stores/listenerMiddleware')
 
@@ -158,6 +189,9 @@ describe('crdtSyncBridge', () => {
     let store: AppStore
 
     beforeEach(() => {
+        // Reset loop detector state
+        _resetLoopDetector()
+
         // Clear Y.Doc between tests
         const plantsMap = testDoc.getMap('plants')
         const scheduleMap = testDoc.getMap('nutrient-schedule')
@@ -172,6 +206,7 @@ describe('crdtSyncBridge', () => {
     })
 
     afterEach(() => {
+        destroyCrdtSyncBridge()
         vi.restoreAllMocks()
     })
 
@@ -376,6 +411,37 @@ describe('crdtSyncBridge', () => {
             initCrdtSyncBridge(plantStore)
 
             expect(plantsMap.has('pre-existing')).toBe(true)
+        })
+    })
+
+    // -- Loop detector --------------------------------------------------------
+
+    describe('loop detector', () => {
+        it('starts with bridge enabled and zero dispatch count', () => {
+            const state = _getLoopDetectorState()
+            expect(state.bridgeDisabled).toBe(false)
+            expect(state.recentDispatchCount).toBe(0)
+        })
+
+        it('resets cleanly via _resetLoopDetector', () => {
+            _resetLoopDetector()
+            const state = _getLoopDetectorState()
+            expect(state.bridgeDisabled).toBe(false)
+            expect(state.recentDispatchCount).toBe(0)
+        })
+    })
+
+    // -- Cleanup (destroyCrdtSyncBridge) --------------------------------------
+
+    describe('destroyCrdtSyncBridge', () => {
+        it('cleans up without error', () => {
+            expect(() => destroyCrdtSyncBridge()).not.toThrow()
+        })
+
+        it('can be called multiple times safely', () => {
+            destroyCrdtSyncBridge()
+            destroyCrdtSyncBridge()
+            // should not throw on double-destroy
         })
     })
 })

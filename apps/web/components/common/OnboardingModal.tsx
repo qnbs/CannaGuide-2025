@@ -11,9 +11,9 @@ import { FlagDE, FlagEN, FlagES, FlagFR, FlagNL } from '@/components/icons/Flags
 import { i18nInstance, loadLocale, SupportedLocale } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 
-// Wizard steps: 1–4 are feature slides, 5 = experience, 6 = goal, 7 = setup
-const FEATURE_STEP_COUNT = 4
-const TOTAL_STEPS = 7
+// Wizard steps: 1–5 are feature slides, 6 = experience, 7 = goal, 8 = setup
+const FEATURE_STEP_COUNT = 5
+const TOTAL_STEPS = 8
 
 interface OnboardingModalProps {
     onClose: () => void
@@ -101,6 +101,11 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                 icon: <PhosphorIcons.Brain className="w-16 h-16 text-primary-400" />,
                 title: t('onboarding.step4.title'),
                 text: t('onboarding.step4.text'),
+            },
+            {
+                icon: <PhosphorIcons.CloudArrowUp className="w-16 h-16 text-primary-400" />,
+                title: t('onboarding.step5.title'),
+                text: t('onboarding.step5.text'),
             },
         ],
         [t],
@@ -258,8 +263,8 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         )
     }
 
-    // ---- Step 5: Experience level ----
-    if (step === 5) {
+    // ---- Step 6: Experience level ----
+    if (step === 6) {
         const expOptions: { value: ExperienceLevel; icon: React.ReactNode }[] = [
             { value: 'beginner', icon: <PhosphorIcons.Leafy className="w-6 h-6" /> },
             { value: 'intermediate', icon: <PhosphorIcons.Plant className="w-6 h-6" /> },
@@ -306,8 +311,8 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         )
     }
 
-    // ---- Step 6: Grow goal ----
-    if (step === 6) {
+    // ---- Step 7: Grow goal ----
+    if (step === 7) {
         const goalOptions: { value: GrowGoal; icon: React.ReactNode }[] = [
             { value: 'medical', icon: <PhosphorIcons.FirstAidKit className="w-6 h-6" /> },
             { value: 'recreational', icon: <PhosphorIcons.Cannabis className="w-6 h-6" /> },
@@ -354,7 +359,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         )
     }
 
-    // ---- Step 7: Space + Budget (last wizard step) ----
+    // ---- Step 8: Space + Budget (last wizard step) ----
     const spaceOptions: { value: SpaceSize; icon: React.ReactNode }[] = [
         { value: 'small', icon: <PhosphorIcons.Minus className="w-6 h-6" /> },
         { value: 'medium', icon: <PhosphorIcons.Cube className="w-6 h-6" /> },

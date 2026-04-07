@@ -19,6 +19,10 @@ export const onboarding = {
         title: 'El Centro de Conocimiento',
         text: 'Aprende con la guia interactiva, pide consejo al mentor IA y usa los lexicos para profundizar tu conocimiento.',
     },
+    step5: {
+        title: 'Sincronizacion Sin Conexion',
+        text: 'Tus datos se sincronizan perfectamente entre dispositivos usando tecnologia CRDT libre de conflictos. Funciona sin conexion -- los cambios se fusionan automaticamente al reconectarte.',
+    },
     startGrow: 'Comencemos Tu Primer Cultivo!',
     localOnlyNote:
         'No se necesita cuenta. Todos los datos permanecen en tu dispositivo. Puedes activar la sincronizacion en la nube mas tarde en Configuracion.',

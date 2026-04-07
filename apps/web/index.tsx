@@ -197,11 +197,17 @@ const mountHydratedApp = async () => {
         try {
             const { crdtService } = await import('./services/crdtService')
             await crdtService.initialize()
-            const { registerCrdtListeners, initCrdtSyncBridge } =
+            const { registerCrdtListeners, initCrdtSyncBridge, destroyCrdtSyncBridge } =
                 await import('./services/crdtSyncBridge')
             const { startAppListening } = await import('./stores/listenerMiddleware')
             registerCrdtListeners(startAppListening)
             initCrdtSyncBridge(hydratedStore)
+
+            // Cleanup bridge observers on page unload to prevent memory leaks
+            window.addEventListener('pagehide', () => {
+                destroyCrdtSyncBridge()
+                crdtService.destroy()
+            }, { once: true })
         } catch (crdtError) {
             console.error('[CRDT] Initialization failed, continuing without sync:', crdtError)
         }

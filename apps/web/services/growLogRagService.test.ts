@@ -300,4 +300,62 @@ describe('growLogRagService', () => {
             expect(result).toContain('TestPlant')
         })
     })
+
+    describe('grow-scoped retrieval', () => {
+        function makeGrowPlant(
+            id: string,
+            name: string,
+            growId: string,
+            journal: Partial<JournalEntry>[],
+        ): Plant {
+            return {
+                ...makePlant(id, name, journal),
+                growId,
+            } as unknown as Plant
+        }
+
+        it('retrieveRelevantContextForGrow filters by growId', () => {
+            const p1 = makeGrowPlant('p1', 'PlantA', 'grow-1', [
+                { type: JournalEntryType.Watering, notes: 'watered grow-1', createdAt: Date.now() },
+            ])
+            const p2 = makeGrowPlant('p2', 'PlantB', 'grow-2', [
+                { type: JournalEntryType.Watering, notes: 'watered grow-2', createdAt: Date.now() },
+            ])
+            const result = growLogRagService.retrieveRelevantContextForGrow(
+                [p1, p2],
+                'watered',
+                'grow-1',
+            )
+            expect(result).toContain('PlantA')
+            expect(result).not.toContain('PlantB')
+        })
+
+        it('retrieveSemanticContextForGrow filters by growId', async () => {
+            const p1 = makeGrowPlant('p1', 'PlantA', 'grow-1', [
+                { type: JournalEntryType.Observation, notes: 'green leaves', createdAt: Date.now() },
+            ])
+            const p2 = makeGrowPlant('p2', 'PlantB', 'grow-2', [
+                { type: JournalEntryType.Observation, notes: 'yellow spots', createdAt: Date.now() },
+            ])
+            const result = await growLogRagService.retrieveSemanticContextForGrow(
+                [p1, p2],
+                'leaves',
+                'grow-1',
+            )
+            expect(result).toContain('PlantA')
+            expect(result).not.toContain('PlantB')
+        })
+
+        it('returns empty message when no plants match growId', () => {
+            const p = makeGrowPlant('p1', 'PlantA', 'grow-1', [
+                { type: JournalEntryType.Watering, notes: 'water', createdAt: Date.now() },
+            ])
+            const result = growLogRagService.retrieveRelevantContextForGrow(
+                [p],
+                'water',
+                'nonexistent-grow',
+            )
+            expect(result).toBe('No grow log entries found.')
+        })
+    })
 })

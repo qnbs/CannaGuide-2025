@@ -14,6 +14,7 @@ import type { AppStore, RootState } from '@/stores/store'
 import { useAlertsStore, type AlertMetric } from '@/stores/useAlertsStore'
 import { secureRandom } from '@/utils/random'
 import { PlantStage, type Plant } from '@/types'
+import { DEFAULT_GROW_ID, DEFAULT_GROW_NAME } from '@/constants'
 
 // ---------------------------------------------------------------------------
 // Threshold configuration
@@ -179,7 +180,12 @@ function detectBreaches(plant: Plant): Breach[] {
 // AI call (fire-and-forget, non-blocking)
 // ---------------------------------------------------------------------------
 
-async function requestAiAdvice(plant: Plant, breach: Breach): Promise<void> {
+async function requestAiAdvice(
+    plant: Plant,
+    breach: Breach,
+    growId: string,
+    growName: string,
+): Promise<void> {
     if (pendingCalls >= MAX_CONCURRENT_CALLS) return
 
     pendingCalls++
@@ -221,6 +227,8 @@ async function requestAiAdvice(plant: Plant, breach: Breach): Promise<void> {
             isDismissed: false,
             plantId: plant.id,
             plantName: plant.name,
+            growId,
+            growName,
         })
 
         // Push native OS notification so the user is alerted even when the
@@ -260,14 +268,20 @@ async function requestAiAdvice(plant: Plant, breach: Breach): Promise<void> {
 
 function handleStateChange(state: RootState): void {
     const plants = Object.values(state.simulation.plants.entities)
+    const growEntities = state.grows?.grows?.entities ?? {}
+
     for (const plant of plants) {
         if (!plant) continue
+
+        const growId = plant.growId ?? DEFAULT_GROW_ID
+        const growEntity = growEntities[growId]
+        const growName = growEntity?.name ?? DEFAULT_GROW_NAME
 
         const breaches = detectBreaches(plant)
         for (const breach of breaches) {
             if (!isCooldownActive(plant.id, breach.metric)) {
                 // Fire-and-forget -- non-blocking
-                void requestAiAdvice(plant, breach)
+                void requestAiAdvice(plant, breach, growId, growName)
                 // Set cooldown immediately to prevent duplicate calls before
                 // the async AI request resolves.
                 setCooldown(plant.id, breach.metric)

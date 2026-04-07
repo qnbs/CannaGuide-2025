@@ -7,6 +7,7 @@ import {
     selectActiveGrowId,
     selectGrowCount,
     selectPlantsForGrow,
+    selectGrowSummary,
 } from '@/stores/selectors'
 import { setActiveGrowId } from '@/stores/slices/growsSlice'
 import { Card } from '@/components/common/Card'
@@ -28,6 +29,36 @@ const GrowPlantBadge: React.FC<{ growId: string }> = memo(({ growId }) => {
     )
 })
 GrowPlantBadge.displayName = 'GrowPlantBadge'
+
+const GrowStatsRow: React.FC<{ growId: string }> = memo(({ growId }) => {
+    const summary = useAppSelector(selectGrowSummary(growId))
+    const { t } = useTranslation()
+    return (
+        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+            <span>
+                {t('settingsView.grows.statsPlants', { count: summary.plantCount })}
+            </span>
+            {summary.journalEntryCount > 0 && (
+                <span>
+                    {t('settingsView.grows.statsJournal', { count: summary.journalEntryCount })}
+                </span>
+            )}
+            {summary.averageHealth > 0 && (
+                <span>
+                    {t('settingsView.grows.statsHealth', {
+                        value: Math.round(summary.averageHealth),
+                    })}
+                </span>
+            )}
+            {summary.oldestPlantAge > 0 && (
+                <span>
+                    {t('settingsView.grows.statsAge', { days: summary.oldestPlantAge })}
+                </span>
+            )}
+        </div>
+    )
+})
+GrowStatsRow.displayName = 'GrowStatsRow'
 
 const GrowManagerTab: React.FC = () => {
     const { t } = useTranslation()
@@ -100,6 +131,7 @@ const GrowManagerTab: React.FC = () => {
                                         </p>
                                     )}
                                     <GrowPlantBadge growId={grow.id} />
+                                    <GrowStatsRow growId={grow.id} />
                                 </div>
                                 <div className="flex items-center gap-1">
                                     {!isActive && (

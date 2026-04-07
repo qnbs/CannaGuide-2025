@@ -24,6 +24,8 @@ export interface SmartAlert {
     isDismissed: boolean
     plantId: string
     plantName: string
+    growId: string
+    growName: string
 }
 
 interface AlertsState {

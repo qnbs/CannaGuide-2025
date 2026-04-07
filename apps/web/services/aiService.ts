@@ -132,10 +132,24 @@ async function withLocalFallback<T>(
     }
 }
 
-const resolveRagContext = async (plants: Plant[], query: string): Promise<string> => {
+const resolveRagContext = async (
+    plants: Plant[],
+    query: string,
+    growId?: string,
+): Promise<string> => {
     try {
+        if (growId) {
+            return await growLogRagService.retrieveSemanticContextForGrow(
+                plants,
+                query,
+                growId,
+            )
+        }
         return await growLogRagService.retrieveSemanticContext(plants, query)
     } catch {
+        if (growId) {
+            return growLogRagService.retrieveRelevantContextForGrow(plants, query, growId)
+        }
         return growLogRagService.retrieveRelevantContext(plants, query)
     }
 }
@@ -164,6 +178,7 @@ const buildMentorStreamPrompt = (
     query: string,
     lang: Language,
     ragContext: string,
+    growName?: string,
 ): string => {
     const isDE = lang === 'de'
     const instruction = isDE
@@ -172,6 +187,7 @@ const buildMentorStreamPrompt = (
 
     return [
         instruction,
+        growName ? `Grow: ${growName}` : '',
         `Plant: ${plant.name} | ${plant.strain.name} | stage=${plant.stage}`,
         ragContext ? `Context: ${ragContext}` : '',
         `Question: ${query}`,
@@ -285,6 +301,7 @@ export const aiService = {
         plant: Plant,
         userNotes: string,
         lang: Language,
+        growName?: string,
     ): Promise<PlantDiagnosisResponse> {
         return runRouted(
             () =>
@@ -298,6 +315,7 @@ export const aiService = {
                     plant,
                     userNotes,
                     lang,
+                    growName,
                 ),
             () =>
                 withLocalService((local) =>
@@ -326,15 +344,24 @@ export const aiService = {
         plant: Plant,
         query: string,
         lang: Language,
+        growId?: string,
+        growName?: string,
     ): Promise<Omit<MentorMessage, 'role'>> {
         return runRouted(
             async () => {
-                const ragContext = await resolveRagContext([plant], query)
+                const ragContext = await resolveRagContext([plant], query, growId)
                 return withLocalService((local) =>
                     local.getMentorResponse(plant, query, lang, ragContext),
                 )
             },
-            async () => (await getGeminiService()).getMentorResponse(plant, query, lang),
+            async () =>
+                (await getGeminiService()).getMentorResponse(
+                    plant,
+                    query,
+                    lang,
+                    growId,
+                    growName,
+                ),
             () => localAiFallbackService.getMentorResponse(plant, query, '', lang),
         )
     },
@@ -348,12 +375,14 @@ export const aiService = {
         query: string,
         lang: Language,
         onToken: (token: string, accumulated: string) => void,
+        growId?: string,
+        growName?: string,
     ): Promise<Omit<MentorMessage, 'role'>> {
         if (shouldRouteLocally()) {
-            const ragContext = await resolveRagContext([plant], query)
+            const ragContext = await resolveRagContext([plant], query, growId)
             const local = await getLocalAiService()
 
-            const prompt = buildMentorStreamPrompt(plant, query, lang, ragContext)
+            const prompt = buildMentorStreamPrompt(plant, query, lang, ragContext, growName)
 
             const result = await local.generateTextStream(prompt, onToken)
 
@@ -365,7 +394,7 @@ export const aiService = {
         }
 
         // Non-local: standard batch response
-        return this.getMentorResponse(plant, query, lang)
+        return this.getMentorResponse(plant, query, lang, growId, growName)
     },
 
     /**
@@ -457,10 +486,15 @@ export const aiService = {
         )
     },
 
-    async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
+    async getGrowLogRagAnswer(
+        plants: Plant[],
+        query: string,
+        lang: Language,
+        growId?: string,
+    ): Promise<AIResponse> {
         return runRouted(
             async () => {
-                const ragContext = await resolveRagContext(plants, query)
+                const ragContext = await resolveRagContext(plants, query, growId)
                 return withLocalService((local) =>
                     local.getGrowLogRagAnswer(plants, query, lang, ragContext),
                 )

@@ -158,6 +158,7 @@ export const precomputeEmbeddings = async (
 /**
  * Fire-and-forget background precomputation for all journal entries.
  * Skips when EcoMode is active or the inference worker is unavailable.
+ * Cache key includes growId for grow-scoped isolation.
  */
 export const startBackgroundPrecomputation = (plants: ReadonlyArray<Plant>): void => {
     if (isEcoMode() || !isWorkerAvailable()) return
@@ -167,7 +168,7 @@ export const startBackgroundPrecomputation = (plants: ReadonlyArray<Plant>): voi
     for (const plant of plants) {
         for (const entry of plant.journal) {
             const raw = buildChunkText(entry)
-            entries.push({ text: raw, key: `${plant.id}:${entry.createdAt}` })
+            entries.push({ text: raw, key: `${plant.growId}:${plant.id}:${entry.createdAt}` })
         }
     }
 

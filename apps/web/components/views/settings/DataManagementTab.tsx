@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/settingsSlice'
 import { clearArchives } from '@/stores/slices/archivesSlice'
 import { setSimulationState } from '@/stores/slices/simulationSlice'
+import { addGrow } from '@/stores/slices/growsSlice'
 import { Card } from '@/components/common/Card'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { FormSection } from '@/components/ui/form'
@@ -24,6 +25,8 @@ import type { VersionedSliceName } from '@/constants'
 import { getUISnapshot } from '@/stores/useUIStore'
 import { dbService } from '@/services/dbService'
 import { selectSettings, selectSimulation } from '@/stores/selectors'
+import { selectActiveGrow, selectActiveGrowPlants } from '@/stores/selectors'
+import type { GrowExportData } from '@/types'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import {
     eraseAllData,
@@ -193,6 +196,8 @@ const DataManagementTab: React.FC = () => {
     const dispatch = useAppDispatch()
     const simulationState = useAppSelector(selectSimulation)
     const settings = useAppSelector(selectSettings)
+    const activeGrow = useAppSelector(selectActiveGrow)
+    const activeGrowPlants = useAppSelector(selectActiveGrowPlants)
     const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false)
     const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
     const [fileToImport, setFileToImport] = useState<string | null>(null)
@@ -259,6 +264,71 @@ const DataManagementTab: React.FC = () => {
             setTimeout(() => globalThis.location.reload(), 1000)
         }
     }
+
+    const handleExportGrow = useCallback(() => {
+        if (!activeGrow) return
+        const exportData: GrowExportData = {
+            version: '2.0',
+            exportedAt: Date.now(),
+            grow: activeGrow,
+            plants: activeGrowPlants,
+        }
+        const json = JSON.stringify(exportData, null, 2)
+        const blob = new Blob([json], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        const safeName = activeGrow.name.replaceAll(/[^\w-]/g, '_')
+        a.download = `cannaguide-grow-${safeName}-${new Date().toISOString().slice(0, 10)}.json`
+        a.click()
+        URL.revokeObjectURL(url)
+    }, [activeGrow, activeGrowPlants])
+
+    const handleImportGrow = useCallback(() => {
+        document.getElementById('import-grow-file-input')?.click()
+    }, [])
+
+    const handleGrowFileChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0]
+            if (!file) return
+            const reader = new FileReader()
+            reader.onload = (event) => {
+                const content = event.target?.result
+                if (typeof content !== 'string') return
+                try {
+                    const parsed = JSON.parse(content) as unknown
+                    if (
+                        typeof parsed !== 'object' ||
+                        parsed === null ||
+                        (parsed as { version?: unknown }).version !== '2.0' ||
+                        !(parsed as { grow?: unknown }).grow ||
+                        !Array.isArray((parsed as { plants?: unknown }).plants)
+                    ) {
+                        throw new Error('Invalid grow export format')
+                    }
+                    const data = parsed as GrowExportData
+                    dispatch(addGrow(data.grow))
+                    getUISnapshot().addNotification({
+                        type: 'success',
+                        message: String(
+                            t('settingsView.data.growImportSuccess', {
+                                name: data.grow.name,
+                            }),
+                        ),
+                    })
+                } catch {
+                    getUISnapshot().addNotification({
+                        type: 'error',
+                        message: String(t('settingsView.data.growImportError')),
+                    })
+                }
+            }
+            reader.readAsText(file)
+            e.target.value = ''
+        },
+        [dispatch, t],
+    )
 
     const handleResetAll = () => {
         dispatch(resetAllData())
@@ -548,6 +618,52 @@ const DataManagementTab: React.FC = () => {
                     </div>
                 </FormSection>
             </Card>
+
+            {activeGrow ? (
+                <Card>
+                    <FormSection
+                        title={t('settingsView.data.growExportTitle')}
+                        icon={<PhosphorIcons.Plant />}
+                        defaultOpen
+                    >
+                        <div className="sm:col-span-2 space-y-4">
+                            <p className="text-sm text-slate-300">
+                                {t('settingsView.data.growExportDesc', {
+                                    name: activeGrow.name,
+                                    count: activeGrowPlants.length,
+                                })}
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <Button
+                                    onClick={handleExportGrow}
+                                    className="flex-1 justify-center"
+                                >
+                                    <PhosphorIcons.DownloadSimple className="mr-2" />
+                                    {t('settingsView.data.exportGrow')}
+                                </Button>
+                                <Button
+                                    onClick={handleImportGrow}
+                                    variant="secondary"
+                                    className="flex-1 justify-center"
+                                >
+                                    <PhosphorIcons.UploadSimple className="mr-2" />
+                                    {t('settingsView.data.importGrow')}
+                                </Button>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                                {t('settingsView.data.growImportDesc')}
+                            </p>
+                            <input
+                                type="file"
+                                id="import-grow-file-input"
+                                accept=".json"
+                                className="hidden"
+                                onChange={handleGrowFileChange}
+                            />
+                        </div>
+                    </FormSection>
+                </Card>
+            ) : null}
 
             <Card>
                 <FormSection

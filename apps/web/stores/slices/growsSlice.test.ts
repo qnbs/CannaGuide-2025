@@ -133,4 +133,20 @@ describe('growsSlice', () => {
         expect(state.grows.entities['grow-2']?.archived).toBe(true)
         expect(state.activeGrowId).toBe(DEFAULT_GROW_ID)
     })
+
+    it('addGrow accepts a full Grow object from import', () => {
+        const importedGrow: Grow = {
+            id: 'imported-grow',
+            name: 'Imported',
+            createdAt: 1_700_000_000_000,
+            updatedAt: 1_700_000_000_000,
+            isActive: false,
+            color: '#3b82f6',
+            description: 'from export',
+        }
+        const state = reducer(getInitialState(), addGrow(importedGrow))
+        expect(state.grows.ids).toContain('imported-grow')
+        expect(state.grows.entities['imported-grow']?.name).toBe('Imported')
+        expect(state.grows.entities['imported-grow']?.color).toBe('#3b82f6')
+    })
 })

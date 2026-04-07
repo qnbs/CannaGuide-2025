@@ -848,6 +848,25 @@ export interface GrowsState {
     activeGrowId: string
 }
 
+/** Data format for per-grow export (v2.0). */
+export interface GrowExportData {
+    version: '2.0'
+    exportedAt: number
+    grow: Grow
+    plants: Plant[]
+}
+
+/** Summary statistics for a single grow. */
+export interface GrowSummary {
+    growId: string
+    plantCount: number
+    activePlantCount: number
+    journalEntryCount: number
+    nutrientEntryCount: number
+    oldestPlantAge: number
+    averageHealth: number
+}
+
 // AI related types
 export interface ProductLink {
     vendor: string

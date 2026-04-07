@@ -38,6 +38,18 @@ We aim to conform to **WCAG 2.1 Level AA** where applicable, specifically:
 - Complex data visualizations (3D grow room, genealogy tree) have limited screen reader support
 - Voice control features depend on Web Speech API browser support
 
+## RTL (Right-to-Left) Readiness
+
+| Aspect                           | Status   | Notes                                                                                                      |
+| -------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `dir` attribute on `<html>`      | Done     | Set to `ltr` by default, updated dynamically on language switch via `i18n.ts`                              |
+| `getTextDirection()` helper      | Done     | Exported from `i18n.ts`, maps locale to `ltr` or `rtl`                                                     |
+| `RTL_LOCALES` constant           | Done     | Empty set, prepared for `ar`, `he` when translations land                                                  |
+| Tailwind `rtl:` modifier         | Built-in | Tailwind v3 supports `rtl:` / `ltr:` natively -- no plugin required                                        |
+| E2E smoke test                   | Done     | `rtl-smoke.e2e.ts` verifies app renders without crash under `dir="rtl"`                                    |
+| CSS logical properties migration | Planned  | 15+ components use physical `ml-`/`mr-`/`text-left` classes that need `ms-`/`me-`/`text-start` equivalents |
+| Dynamic indicator positioning    | Planned  | `BottomNav.tsx` and `Tabs.tsx` use `offsetLeft` -- needs `inset-inline-start` or conditional logic         |
+
 ## Feedback
 
 If you encounter accessibility barriers, please open an issue on
@@ -47,4 +59,4 @@ We aim to respond to accessibility feedback within 5 business days.
 
 ---
 
-_Last updated: 2026-04-01_
+_Last updated: 2026-04-07_

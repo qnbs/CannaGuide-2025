@@ -49,10 +49,10 @@
 | ID   | Finding                          | Effort | Status                                     |
 | ---- | -------------------------------- | ------ | ------------------------------------------ |
 | S-03 | CSP nonce implementation         | Medium | Won't Fix (strict-dynamic infeasible, S70) |
-| C-04 | Deployment preview validation    | Medium | Open                                       |
+| C-04 | Deployment preview validation    | Medium | Done (Session 84)                          |
 | F-02 | Social sharing                   | Medium | Open                                       |
 | F-06 | Offline sync conflict resolution | High   | Open                                       |
-| I-02 | RTL language preparation         | Medium | Open                                       |
+| I-02 | RTL language preparation         | Medium | Done (Session 84) -- infra only            |
 | A-03 | AI cost tracking                 | Medium | Done (Session 83)                          |
 | W-01 | WorkerBus per-worker rate limit  | Medium | Open (target v1.5)                         |
 | W-02 | WorkerBus priority preemption    | High   | Open (target v1.6)                         |

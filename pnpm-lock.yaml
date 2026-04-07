@@ -215,6 +215,9 @@ importers:
             '@types/react-dom':
                 specifier: ^19.2.3
                 version: 19.2.3(@types/react@19.2.14)
+            '@types/three':
+                specifier: ^0.183.1
+                version: 0.183.1
             '@vitejs/plugin-react':
                 specifier: ^5.2.0
                 version: 5.2.0(vite@7.3.2(@types/node@25.5.2)(jiti@1.21.7)(terser@5.46.1)(yaml@2.8.3))
@@ -1349,6 +1352,12 @@ packages:
                 integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==,
             }
         engines: { node: '>=18' }
+
+    '@dimforge/rapier3d-compat@0.12.0':
+        resolution:
+            {
+                integrity: sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow==,
+            }
 
     '@esbuild/aix-ppc64@0.25.12':
         resolution:
@@ -3571,6 +3580,12 @@ packages:
         cpu: [arm64]
         os: [win32]
 
+    '@tweenjs/tween.js@23.1.3':
+        resolution:
+            {
+                integrity: sha512-vJmvvwFxYuGnF2axRtPYocag6Clbb5YS7kLL+SO/TeVFzHqDIWrNKYtcsPMibjDx9O+bu+psAy9NKfWklassUA==,
+            }
+
     '@types/aria-query@5.0.4':
         resolution:
             {
@@ -3915,10 +3930,22 @@ packages:
                 integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==,
             }
 
+    '@types/stats.js@0.17.4':
+        resolution:
+            {
+                integrity: sha512-jIBvWWShCvlBqBNIZt0KAshWpvSjhkwkEu4ZUcASoAvhmrgAUI2t1dXrjSL4xXVLB4FznPrIsX3nKXFl/Dt4vA==,
+            }
+
     '@types/statuses@2.0.6':
         resolution:
             {
                 integrity: sha512-xMAgYwceFhRA2zY+XbEA7mxYbA093wdiW8Vu6gZPGWy9cmOyU9XesH1tNcEWsKFd5Vzrqx5T3D38PWx1FIIXkA==,
+            }
+
+    '@types/three@0.183.1':
+        resolution:
+            {
+                integrity: sha512-f2Pu5Hrepfgavttdye3PsH5RWyY/AvdZQwIVhrc4uNtvF7nOWJacQKcoVJn0S4f0yYbmAE6AR+ve7xDcuYtMGw==,
             }
 
     '@types/trusted-types@2.0.7':
@@ -3937,6 +3964,12 @@ packages:
         resolution:
             {
                 integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==,
+            }
+
+    '@types/webxr@0.5.24':
+        resolution:
+            {
+                integrity: sha512-h8fgEd/DpoS9CBrjEQXR+dIDraopAEfu4wYVNY2tEPwk60stPWhvZMf4Foo5FakuQ7HFZoa8WceaWFervK2Ovg==,
             }
 
     '@types/ws@8.18.1':
@@ -4148,6 +4181,12 @@ packages:
         resolution:
             {
                 integrity: sha512-ksNyrmRQzWJJ8n3cRDuSF7zNNontuJg1YHnmWRJd2AMu8Ij2bqwiiri2lH5rHtYPZjj4STkNcgcmiQqlOjiYGg==,
+            }
+
+    '@webgpu/types@0.1.69':
+        resolution:
+            {
+                integrity: sha512-RPmm6kgRbI8e98zSD3RVACvnuktIja5+yLgDAkTmxLr90BEwdTXRQWNLF3ETTTyH/8mKhznZuN5AveXYFEsMGQ==,
             }
 
     '@xenova/transformers@2.17.2':
@@ -8427,6 +8466,12 @@ packages:
                 integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==,
             }
         engines: { node: '>= 8' }
+
+    meshoptimizer@1.0.1:
+        resolution:
+            {
+                integrity: sha512-Vix+QlA1YYT3FwmBBZ+49cE5y/b+pRrcXKqGpS5ouh33d3lSp2PoTpCw19E0cKDFWalembrHnIaZetf27a+W2g==,
+            }
 
     metaviewport-parser@0.3.0:
         resolution:
@@ -12925,6 +12970,8 @@ snapshots:
 
     '@csstools/css-tokenizer@3.0.4': {}
 
+    '@dimforge/rapier3d-compat@0.12.0': {}
+
     '@esbuild/aix-ppc64@0.25.12':
         optional: true
 
@@ -14251,6 +14298,8 @@ snapshots:
     '@turbo/windows-arm64@2.9.4':
         optional: true
 
+    '@tweenjs/tween.js@23.1.3': {}
+
     '@types/aria-query@5.0.4': {}
 
     '@types/babel__core@7.20.5':
@@ -14448,13 +14497,27 @@ snapshots:
 
     '@types/retry@0.12.0': {}
 
+    '@types/stats.js@0.17.4': {}
+
     '@types/statuses@2.0.6': {}
+
+    '@types/three@0.183.1':
+        dependencies:
+            '@dimforge/rapier3d-compat': 0.12.0
+            '@tweenjs/tween.js': 23.1.3
+            '@types/stats.js': 0.17.4
+            '@types/webxr': 0.5.24
+            '@webgpu/types': 0.1.69
+            fflate: 0.8.2
+            meshoptimizer: 1.0.1
 
     '@types/trusted-types@2.0.7': {}
 
     '@types/unist@3.0.3': {}
 
     '@types/use-sync-external-store@0.0.6': {}
+
+    '@types/webxr@0.5.24': {}
 
     '@types/ws@8.18.1':
         dependencies:
@@ -14667,6 +14730,8 @@ snapshots:
             '@vue/shared': 3.5.32
 
     '@vue/shared@3.5.32': {}
+
+    '@webgpu/types@0.1.69': {}
 
     '@xenova/transformers@2.17.2':
         dependencies:
@@ -17472,6 +17537,8 @@ snapshots:
     merge-descriptors@1.0.3: {}
 
     merge2@1.4.1: {}
+
+    meshoptimizer@1.0.1: {}
 
     metaviewport-parser@0.3.0: {}
 

@@ -9,12 +9,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 ### Added
 
 - **AI cost tracking for BYOK users (A-03/H-4)** -- Real token usage extraction from Gemini (`usageMetadata`), OpenAI/xAI (`data.usage`), and Anthropic (`data.usage.input_tokens/output_tokens`) API responses. Provider pricing in `PROVIDER_CONFIGS` (ai-core). `aiRateLimiter.reportActualUsage()` corrects hardcoded estimates with actual token counts and computes USD cost. New `CostTrackingSection` in Settings AI tab: daily token/cost cards, 7-day bar chart, monthly budget progress bar (color-coded), budget limit setter. i18n keys for all 5 languages. (Session 83)
+- **Netlify preview validation workflow (C-04/M-5)** -- New `preview-validation.yml` triggers on Netlify deploy-preview success. Runs Playwright smoke tests + Lighthouse CI audit against the preview URL. Non-blocking (`continue-on-error`). (Session 84)
+- **RTL language infrastructure (I-02/M-6)** -- `getTextDirection()` helper and `RTL_LOCALES` constant in `i18n.ts`. Dynamic `dir`/`lang` attribute updates on `<html>` via `languageChanged` callback. Explicit `dir="ltr"` default in `index.html`. RTL smoke E2E test (`rtl-smoke.e2e.ts`). RTL readiness section in `ACCESSIBILITY.md`. (Session 84)
 - **WorkerBus concrete session targets (M-2)** -- W-01 to W-04 in PRIORITY_ROADMAP with version targets (v1.5/v1.6). Updated worker-bus.md Known Limitations from "v1.4+" to specific milestones. (Session 83)
 - **lint-burndown progress tracking (M-3)** -- Phase progress table in lint-burndown.md: Phase 1 (hooks) marked Active/Enforced in CI, Phases 2-5 Planned. CI enforcement documented. (Session 83)
 
 ### Changed
 
 - **IoT sparkline throttle (M-1)** -- Added `useDeferredValue` to sensor history in `IotDashboardView.tsx`, allowing React to defer sparkline re-renders during high-frequency MQTT updates. (Session 83)
+- **Three.js types: @types/three replaces custom stubs (M-7)** -- Removed `types/three.d.ts` (74 lines of `any` stubs). Installed `@types/three` as devDependency. Full type safety for all Three.js classes and OrbitControls. Updated ADR-0003 consequence as resolved. (Session 84)
 
 ### Fixed
 

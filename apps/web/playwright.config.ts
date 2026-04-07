@@ -20,7 +20,7 @@ export default defineConfig({
     workers: process.env.CI ? 2 : '50%',
     reporter: process.env.CI ? [['list'], ['github']] : [['list']],
     use: {
-        baseURL: 'http://localhost:4173',
+        baseURL: 'http://localhost:4173/CannaGuide-2025/',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         bypassCSP: true,

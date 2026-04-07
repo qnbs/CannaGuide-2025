@@ -75,10 +75,12 @@ function devCspPlugin(): PluginOption {
 }
 
 // ── Manual Chunk Groups – declarative vendor split registry ─────────────
+// NOTE: React, Redux, Radix UI, and other core framework libraries are
+// intentionally NOT listed here.  Rollup's automatic splitting handles
+// their execution order correctly and avoids circular chunk dependencies
+// that break module-level React hook access (e.g. useLayoutEffect in
+// react-redux).  Only truly isolated, lazy-loaded vendor bundles belong here.
 const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
-    { name: 'react', patterns: ['/react/', 'react-dom', 'react-redux'] },
-    { name: 'redux', patterns: ['@reduxjs/toolkit', 'immer', 'reselect'] },
-    { name: 'i18n', patterns: ['i18next', 'react-i18next'] },
     { name: 'charts-d3', patterns: ['d3-', '/d3/'] },
     { name: 'charts-recharts', patterns: ['recharts', 'victory-vendor'] },
     { name: 'ai', patterns: ['@google/genai'] },
@@ -94,10 +96,6 @@ const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
     { name: 'pdf-export', patterns: ['jspdf', 'jspdf-autotable'] },
     { name: 'image-export', patterns: ['html2canvas'] },
     { name: 'image-compress', patterns: ['browser-image-compression'] },
-    { name: 'radix-ui', patterns: ['@radix-ui'] },
-    { name: 'sanitizer', patterns: ['dompurify'] },
-    { name: 'zod', patterns: ['zod'] },
-    { name: 'cmdk', patterns: ['cmdk'] },
     { name: 'three', patterns: ['three'] },
 ]
 

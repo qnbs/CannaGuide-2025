@@ -1,184 +1,38 @@
 import { expect, Page } from '@playwright/test'
-import { APP_VERSION, REDUX_STATE_KEY } from '@/constants'
-import { defaultSettings } from '@/stores/slices/settingsSlice'
 
 /**
- * Set the GDPR consent cookie (v2) directly via browser context.
- * This is the primary check path in consentService.hasConsent(), making
- * tests independent of localStorage migration timing issues.
+ * Legacy helper kept for deploy-smoke and accessibility tests.
+ * With gates removed, this is a no-op.
  */
-const seedConsentCookie = async (page: Page) => {
-    await page.context().addCookies([
-        {
-            name: 'cg.gdpr.consent.v2',
-            value: '1',
-            domain: 'localhost',
-            path: '/',
-        },
-    ])
+export const seedLegalGateState = async (_page: Page) => {
+    // No-op: consent and age gates auto-granted at boot
 }
 
-export const seedLegalGateState = async (page: Page) => {
-    await page.addInitScript(() => {
-        window.localStorage.setItem('cg.gdpr.consent.v1', '1')
-        window.localStorage.setItem('cg.ageVerified.v1', '1')
-    })
-}
-
-export const resetAppStateKeepingLegalGates = async (page: Page) => {
-    // Set consent cookie directly (primary check path in consentService)
-    await seedConsentCookie(page)
-    await page.addInitScript(() => {
-        window.localStorage.clear()
-        window.sessionStorage.clear()
-        window.localStorage.setItem('cg.gdpr.consent.v1', '1')
-        window.localStorage.setItem('cg.ageVerified.v1', '1')
-        window.localStorage.setItem('cg.geoLegal.dismissed.v1', '1')
-    })
-}
-
-export const deleteAppDatabases = async (page: Page) => {
-    await page.evaluate(async () => {
-        const databaseNames = [
-            'CannaGuideStateDB',
-            'CannaGuideDB',
-            'CannaGuideSecureDB',
-            'CannaGuideReminderDB',
-            'cannaguide-db',
-        ]
-        await Promise.all(
-            databaseNames.map(
-                (name) =>
-                    new Promise<void>((resolve) => {
-                        const request = indexedDB.deleteDatabase(name)
-                        request.onsuccess = () => resolve()
-                        request.onerror = () => resolve()
-                        request.onblocked = () => resolve()
-                    }),
-            ),
-        )
-    })
-}
-
-export const seedPostOnboardingState = async (page: Page) => {
-    const persistedState = {
-        version: APP_VERSION,
-        settings: {
-            version: APP_VERSION,
-            settings: {
-                ...defaultSettings,
-                onboardingCompleted: true,
-            },
-        },
-        ui: {
-            lastActiveView: defaultSettings.general.defaultView,
-            onboardingStep: 8,
-            equipmentViewTab: 'Configurator',
-            knowledgeViewTab: 'Mentor',
-        },
-    }
-
-    await page.evaluate(
-        async ({ reduxStateKey, state }) => {
-            const dbName = 'CannaGuideStateDB'
-            const storeName = 'zustand_state'
-
-            const database = await new Promise<IDBDatabase>((resolve, reject) => {
-                const request = indexedDB.open(dbName, 1)
-
-                request.onupgradeneeded = (event) => {
-                    const database = (event.target as IDBOpenDBRequest).result
-                    if (!database.objectStoreNames.contains(storeName)) {
-                        database.createObjectStore(storeName)
-                    }
-                }
-
-                request.onsuccess = (event) => {
-                    resolve((event.target as IDBOpenDBRequest).result)
-                }
-
-                request.onerror = () => reject(request.error)
-            })
-
-            await new Promise<void>((resolve, reject) => {
-                const transaction = database.transaction(storeName, 'readwrite')
-                const store = transaction.objectStore(storeName)
-                const request = store.put(JSON.stringify(state), reduxStateKey)
-
-                request.onerror = () => reject(request.error)
-                transaction.oncomplete = () => resolve()
-                transaction.onabort = () =>
-                    reject(transaction.error ?? new Error('IndexedDB transaction aborted'))
-                transaction.onerror = () =>
-                    reject(transaction.error ?? new Error('IndexedDB transaction failed'))
-            })
-
-            database.close()
-        },
-        { reduxStateKey: REDUX_STATE_KEY, state: persistedState },
-    )
-}
-
+/**
+ * Boot the app with a fresh browser context (Playwright default).
+ * No database or localStorage seeding needed -- each test context is clean.
+ * The app boots directly (consent auto-granted, no age gate).
+ */
 export const bootFreshAppWithLegalGates = async (page: Page) => {
-    await resetAppStateKeepingLegalGates(page)
-    // Load a minimal page on the correct origin so IndexedDB operations work
-    // without the app holding open database connections.
-    await page.route('**/*', (route) =>
-        route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-    )
-    await page.goto('./')
-    await deleteAppDatabases(page)
-    await page.unroute('**/*')
-    // Now load the real app with clean databases
-    await page.goto('./', { waitUntil: 'load' })
-    await page.waitForLoadState('domcontentloaded')
+    await page.goto('/', { waitUntil: 'networkidle' })
 }
 
+/**
+ * Boot the app and dismiss the onboarding wizard so tests start at the shell.
+ * Uses the same simple-navigation pattern as the passing screenshot tests.
+ */
 export const bootFreshAppPastOnboarding = async (page: Page) => {
-    await resetAppStateKeepingLegalGates(page)
-    // Load a minimal page on the correct origin so IndexedDB operations work
-    // without the app holding open database connections.
-    await page.route('**/*', (route) =>
-        route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-    )
-    await page.goto('./')
-    await deleteAppDatabases(page)
-    await seedPostOnboardingState(page)
-    await page.unroute('**/*')
-    // Now load the real app with seeded state
-    await page.goto('./', { waitUntil: 'load' })
+    await page.goto('/', { waitUntil: 'networkidle' })
     await closeOnboardingIfVisible(page)
 }
 
 export const expectShellVisible = async (page: Page) => {
-    await closeConsentGateIfVisible(page)
     await closeOnboardingIfVisible(page)
-    await closeLegalNoticeIfVisible(page)
     await expect(page.locator('main').first()).toBeVisible({ timeout: 30_000 })
     // Desktop sidebar nav is hidden on mobile viewports
     const vw = page.viewportSize()?.width ?? 1280
     if (vw >= 768) {
         await expect(page.locator('nav').first()).toBeVisible({ timeout: 30_000 })
-    }
-}
-
-export const closeConsentGateIfVisible = async (page: Page) => {
-    // The BootstrapConsentGate renders a <dialog open> with "I understand and consent" button.
-    // Must be dismissed before <main> can appear.
-    const consentBtn = page.getByRole('button', { name: /I understand and consent/i })
-    const visible = await consentBtn.isVisible().catch(() => false)
-    if (visible) {
-        await consentBtn.click()
-        await page.waitForTimeout(500)
-    }
-}
-
-export const closeLegalNoticeIfVisible = async (page: Page) => {
-    const btn = page.getByRole('button', { name: /I understand/i })
-    const visible = await btn.isVisible().catch(() => false)
-    if (visible) {
-        await btn.click()
-        await page.waitForTimeout(300)
     }
 }
 
@@ -195,16 +49,7 @@ export const closeOnboardingIfVisible = async (page: Page) => {
         return
     }
 
-    // Skip if the visible dialog is the Consent gate (not onboarding)
-    const isConsentDialog = await page
-        .locator('#consent-title')
-        .isVisible()
-        .catch(() => false)
-    if (isConsentDialog) {
-        return
-    }
-
-    // Select language (step 0 → 1) — do NOT return, continue through wizard
+    // Select language (step 0 -> 1) -- do NOT return, continue through wizard
     const englishButton = onboardingDialog.getByRole('button', { name: /^English$/i })
     if (await englishButton.isVisible().catch(() => false)) {
         await englishButton.click()

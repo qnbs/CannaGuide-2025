@@ -34,6 +34,8 @@ export const expectShellVisible = async (page: Page) => {
     if (vw >= 768) {
         await expect(page.locator('nav').first()).toBeVisible({ timeout: 30_000 })
     }
+    // Wait for at least one navigation button to be attached (app fully rendered)
+    await page.waitForSelector('[data-view-id]', { state: 'attached', timeout: 30_000 })
 }
 
 export const closeOnboardingIfVisible = async (page: Page) => {

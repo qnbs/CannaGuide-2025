@@ -108,6 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <Button
                             variant="ghost"
                             className="rounded-xl !p-2"
+                            data-view-id={View.Help}
                             onClick={() => setActiveView(View.Help)}
                             aria-label={t('nav.help')}
                         >
@@ -116,6 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <Button
                             variant="ghost"
                             className="rounded-xl !p-2"
+                            data-view-id={View.Settings}
                             onClick={() => setActiveView(View.Settings)}
                             aria-label={t('nav.settings')}
                         >

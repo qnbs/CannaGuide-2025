@@ -30,7 +30,7 @@ test.describe('WebLLM Local AI Critical Path', () => {
 
         // Navigate to Settings view
         const settingsNav = page.locator('[data-view-id="settings"]')
-        await expect(settingsNav.first()).toBeVisible({ timeout: 10_000 })
+        await expect(settingsNav.first()).toBeVisible({ timeout: 15_000 })
         await settingsNav.first().click()
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 

@@ -64,7 +64,7 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
                 const nextId = navItemIds[nextIndex]
                 if (nextId) onTabChange(nextId)
                 const btn = navRef.current?.querySelector<HTMLButtonElement>(
-                    `[data-tab="${nextId}"]`,
+                    `[data-tab-id="${nextId}"]`,
                 )
                 btn?.focus()
             }
@@ -88,7 +88,7 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
                         type="button"
                         key={id}
                         role="tab"
-                        data-tab={id}
+                        data-tab-id={id}
                         id={`settings-tab-${id}`}
                         aria-selected={isActive}
                         aria-controls={`settings-panel-${id}`}

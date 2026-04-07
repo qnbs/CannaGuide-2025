@@ -19,6 +19,10 @@ export const onboarding = {
         title: 'Le Centre de Connaissances',
         text: 'Apprenez avec le guide interactif, demandez conseil au mentor IA et utilisez les lexiques pour approfondir vos connaissances.',
     },
+    step5: {
+        title: 'Synchronisation Hors Ligne',
+        text: 'Vos donnees se synchronisent parfaitement entre appareils grace a la technologie CRDT sans conflit. Fonctionne hors ligne -- les modifications fusionnent automatiquement a la reconnexion.',
+    },
     startGrow: 'Commencons Votre Premier Culture !',
     localOnlyNote:
         'Aucun compte necessaire. Toutes les donnees restent sur votre appareil. Vous pouvez activer la synchronisation cloud plus tard dans les Parametres.',

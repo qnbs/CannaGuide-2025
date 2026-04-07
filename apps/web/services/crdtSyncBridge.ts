@@ -1,7 +1,7 @@
 import * as Y from 'yjs'
 import type { AppStore, RootState } from '@/stores/store'
 import type { Plant } from '@/types'
-import { crdtService } from './crdtService'
+import { crdtService, CrdtError, CrdtErrorCode } from './crdtService'
 import {
     plantToYMap,
     yMapToPlant,
@@ -27,6 +27,7 @@ import {
 import type { TypedStartListening } from '@reduxjs/toolkit'
 import type { AppDispatch } from '@/stores/store'
 import { isAnyOf } from '@reduxjs/toolkit'
+import * as Sentry from '@sentry/react'
 
 /**
  * Origin tag used when the bridge writes to Y.Doc from Redux changes.
@@ -36,6 +37,81 @@ import { isAnyOf } from '@reduxjs/toolkit'
 const BRIDGE_ORIGIN = 'redux-bridge'
 
 type AppStartListening = TypedStartListening<RootState, AppDispatch>
+
+// ---------------------------------------------------------------------------
+// Bridge loop detector (safety circuit breaker)
+// ---------------------------------------------------------------------------
+
+const LOOP_THRESHOLD = 50
+const LOOP_WINDOW_MS = 100
+const LOOP_COOLDOWN_MS = 5000
+
+let recentDispatchCount = 0
+let bridgeDisabled = false
+let loopCooldownTimer: ReturnType<typeof setTimeout> | null = null
+
+function checkLoopDetector(): boolean {
+    if (bridgeDisabled) return true
+    recentDispatchCount++
+    setTimeout(() => {
+        recentDispatchCount = Math.max(0, recentDispatchCount - 1)
+    }, LOOP_WINDOW_MS)
+    if (recentDispatchCount > LOOP_THRESHOLD) {
+        bridgeDisabled = true
+        const err = new CrdtError(
+            'CRDT bridge loop detected -- temporarily disabled',
+            CrdtErrorCode.BRIDGE_LOOP_DETECTED,
+            crdtService.getDocSizeBytes(),
+            recentDispatchCount,
+        )
+        Sentry.captureException(err, {
+            tags: {
+                feature: 'crdt-sync',
+                'crdt.errorCode': CrdtErrorCode.BRIDGE_LOOP_DETECTED,
+            },
+            extra: {
+                'crdt.docSizeBytes': err.docSizeBytes,
+                'crdt.pendingOps': err.pendingOps,
+            },
+        })
+        loopCooldownTimer = setTimeout(() => {
+            bridgeDisabled = false
+            recentDispatchCount = 0
+            loopCooldownTimer = null
+        }, LOOP_COOLDOWN_MS)
+        return true
+    }
+    return false
+}
+
+/** Test-only: read loop detector internal state. */
+export function _getLoopDetectorState(): {
+    recentDispatchCount: number
+    bridgeDisabled: boolean
+} {
+    return { recentDispatchCount, bridgeDisabled }
+}
+
+/** Test-only: reset loop detector to initial state. */
+export function _resetLoopDetector(): void {
+    recentDispatchCount = 0
+    bridgeDisabled = false
+    if (loopCooldownTimer !== null) {
+        clearTimeout(loopCooldownTimer)
+        loopCooldownTimer = null
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Observer tracking for cleanup
+// ---------------------------------------------------------------------------
+
+type ObserverCleanup = () => void
+const observerCleanups: ObserverCleanup[] = []
+
+// ---------------------------------------------------------------------------
+// Helper: write a plain record into a Y.Map
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Helper: write a plain record into a Y.Map
@@ -330,13 +406,15 @@ export function initCrdtSyncBridge(store: AppStore): void {
     // -- Plants observer ------------------------------------------------------
 
     try {
-        crdtService.getPlantsMap().observe((event) => {
+        const plantsMap = crdtService.getPlantsMap()
+        const plantsObserver = (event: Y.YMapEvent<Y.Map<unknown>>): void => {
             if (event.transaction.origin === BRIDGE_ORIGIN) return
 
             event.changes.keys.forEach((change, key) => {
+                if (checkLoopDetector()) return
                 try {
                     if (change.action === 'add' || change.action === 'update') {
-                        const yMap = crdtService.getPlantsMap().get(key)
+                        const yMap = plantsMap.get(key)
                         if (!yMap) return
                         const plant = yMapToPlant(yMap.toJSON() as Record<string, unknown>)
                         if (plant) {
@@ -349,7 +427,9 @@ export function initCrdtSyncBridge(store: AppStore): void {
                     console.error(`[CrdtBridge] Failed to sync plant ${key} to Redux:`, error)
                 }
             })
-        })
+        }
+        plantsMap.observe(plantsObserver)
+        observerCleanups.push(() => plantsMap.unobserve(plantsObserver))
     } catch (error) {
         console.error('[CrdtBridge] Failed to attach plants observer:', error)
     }
@@ -357,13 +437,15 @@ export function initCrdtSyncBridge(store: AppStore): void {
     // -- Nutrient schedule observer -------------------------------------------
 
     try {
-        crdtService.getNutrientScheduleMap().observe((event) => {
+        const scheduleMap = crdtService.getNutrientScheduleMap()
+        const scheduleObserver = (event: Y.YMapEvent<Y.Map<unknown>>): void => {
             if (event.transaction.origin === BRIDGE_ORIGIN) return
 
             event.changes.keys.forEach((change, key) => {
+                if (checkLoopDetector()) return
                 try {
                     if (change.action === 'add' || change.action === 'update') {
-                        const yMap = crdtService.getNutrientScheduleMap().get(key)
+                        const yMap = scheduleMap.get(key)
                         if (!yMap) return
                         const entry = yMapToNutrientEntry(yMap.toJSON() as Record<string, unknown>)
                         if (entry) {
@@ -379,7 +461,9 @@ export function initCrdtSyncBridge(store: AppStore): void {
                     )
                 }
             })
-        })
+        }
+        scheduleMap.observe(scheduleObserver)
+        observerCleanups.push(() => scheduleMap.unobserve(scheduleObserver))
     } catch (error) {
         console.error('[CrdtBridge] Failed to attach nutrient schedule observer:', error)
     }
@@ -387,13 +471,15 @@ export function initCrdtSyncBridge(store: AppStore): void {
     // -- Nutrient readings observer -------------------------------------------
 
     try {
-        crdtService.getNutrientReadingsMap().observe((event) => {
+        const readingsMap = crdtService.getNutrientReadingsMap()
+        const readingsObserver = (event: Y.YMapEvent<Y.Map<unknown>>): void => {
             if (event.transaction.origin === BRIDGE_ORIGIN) return
 
             event.changes.keys.forEach((change, key) => {
+                if (checkLoopDetector()) return
                 try {
                     if (change.action === 'add' || change.action === 'update') {
-                        const yMap = crdtService.getNutrientReadingsMap().get(key)
+                        const yMap = readingsMap.get(key)
                         if (!yMap) return
                         const reading = yMapToEcPhReading(yMap.toJSON() as Record<string, unknown>)
                         if (reading) {
@@ -406,8 +492,30 @@ export function initCrdtSyncBridge(store: AppStore): void {
                     console.error(`[CrdtBridge] Failed to sync reading ${key} to Redux:`, error)
                 }
             })
-        })
+        }
+        readingsMap.observe(readingsObserver)
+        observerCleanups.push(() => readingsMap.unobserve(readingsObserver))
     } catch (error) {
         console.error('[CrdtBridge] Failed to attach nutrient readings observer:', error)
     }
+}
+
+// ---------------------------------------------------------------------------
+// Cleanup
+// ---------------------------------------------------------------------------
+
+/**
+ * Destroy the CRDT<->Redux sync bridge by unobserving all Y.Map observers
+ * and resetting the loop detector. Call on pagehide or before hot-reload.
+ */
+export function destroyCrdtSyncBridge(): void {
+    for (const cleanup of observerCleanups) {
+        try {
+            cleanup()
+        } catch {
+            // observer may already be gone
+        }
+    }
+    observerCleanups.length = 0
+    _resetLoopDetector()
 }

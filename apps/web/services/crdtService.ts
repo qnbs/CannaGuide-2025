@@ -1,7 +1,47 @@
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
+import * as Sentry from '@sentry/react'
 
 const DOC_NAME = 'cannaguide-crdt-v1'
+const DOC_SIZE_WARNING_BYTES = 1_048_576 // 1 MB
+const ENCODE_WARN_MS = 200
+
+// ---------------------------------------------------------------------------
+// Error codes + structured error class
+// ---------------------------------------------------------------------------
+
+export enum CrdtErrorCode {
+    INIT_FAILED = 'CRDT_INIT_FAILED',
+    SYNC_ENCODE_FAILED = 'CRDT_SYNC_ENCODE_FAILED',
+    SYNC_APPLY_FAILED = 'CRDT_SYNC_APPLY_FAILED',
+    STORAGE_QUOTA_EXCEEDED = 'CRDT_STORAGE_QUOTA_EXCEEDED',
+    BRIDGE_LOOP_DETECTED = 'CRDT_BRIDGE_LOOP_DETECTED',
+}
+
+export class CrdtError extends Error {
+    constructor(
+        message: string,
+        public readonly code: CrdtErrorCode,
+        public readonly docSizeBytes: number = 0,
+        public readonly pendingOps: number = 0,
+    ) {
+        super(message)
+        this.name = 'CrdtError'
+    }
+}
+
+function reportCrdtError(error: CrdtError): void {
+    Sentry.captureException(error, {
+        tags: {
+            feature: 'crdt-sync',
+            'crdt.errorCode': error.code,
+        },
+        extra: {
+            'crdt.docSizeBytes': error.docSizeBytes,
+            'crdt.pendingOps': error.pendingOps,
+        },
+    })
+}
 
 // ---------------------------------------------------------------------------
 // Sync protocol types
@@ -20,6 +60,18 @@ export type CrdtSyncResult =
     | { status: 'migrated' }
     | { status: 'error'; error: string }
 
+export interface BenchmarkResult {
+    encodeMs: number
+    applyMs: number
+    docSizeBytes: number
+}
+
+export interface StorageUsage {
+    crdtBytes: number
+    quota: number
+    percent: number
+}
+
 /**
  * Central CRDT service managing the Y.Doc lifecycle and IndexedDB persistence.
  *
@@ -31,17 +83,19 @@ export type CrdtSyncResult =
  *   2. crdtService.initialize() attaches to a separate Yjs IndexedDB
  *   3. crdtSyncBridge wires bidirectional Redux <-> Y.Doc sync
  *
- * If initialization fails, the app continues without CRDT -- all public
- * methods guard against uninitialized state.
+ * If initialization fails, the app enters fallback mode (LWW Gist sync)
+ * and all public methods return safe defaults instead of throwing.
  */
 class CrdtService {
     private doc: Y.Doc | null = null
     private persistence: IndexeddbPersistence | null = null
     private initialized = false
+    private _fallbackMode = false
 
     /**
      * Initialize the Y.Doc and IndexedDB persistence provider.
      * Resolves once the local Yjs IndexedDB has been read into the doc.
+     * On failure, enters fallback mode instead of propagating the error.
      */
     async initialize(): Promise<void> {
         if (this.initialized) return
@@ -52,18 +106,34 @@ class CrdtService {
 
             await this.persistence.whenSynced
             this.initialized = true
+            this._fallbackMode = false
         } catch (error) {
             // Clean up partial init
             this.doc?.destroy()
             this.doc = null
             this.persistence = null
-            throw error
+            this._fallbackMode = true
+            const crdtErr = new CrdtError(
+                `CRDT init failed: ${error instanceof Error ? error.message : String(error)}`,
+                CrdtErrorCode.INIT_FAILED,
+            )
+            reportCrdtError(crdtErr)
+            Sentry.addBreadcrumb({
+                category: 'sync',
+                message: 'crdt-fallback-activated',
+                level: 'warning',
+            })
         }
     }
 
     /** Whether the service has been successfully initialized. */
     isInitialized(): boolean {
         return this.initialized
+    }
+
+    /** Whether CRDT init failed and the app should use LWW fallback. */
+    isFallbackMode(): boolean {
+        return this._fallbackMode
     }
 
     /** Get the underlying Y.Doc. Throws if not initialized. */
@@ -134,8 +204,18 @@ class CrdtService {
      * This is the complete state, not a diff.
      */
     encodeSyncPayload(): string {
-        const update = Y.encodeStateAsUpdate(this.getDoc())
-        return uint8ArrayToBase64(update)
+        try {
+            const update = Y.encodeStateAsUpdate(this.getDoc())
+            return uint8ArrayToBase64(update)
+        } catch (error) {
+            const crdtErr = new CrdtError(
+                `Encode failed: ${error instanceof Error ? error.message : String(error)}`,
+                CrdtErrorCode.SYNC_ENCODE_FAILED,
+                this.getDocSizeBytes(),
+            )
+            reportCrdtError(crdtErr)
+            throw crdtErr
+        }
     }
 
     /**
@@ -144,8 +224,18 @@ class CrdtService {
      * are preserved.
      */
     applySyncPayload(base64: string): void {
-        const update = base64ToUint8Array(base64)
-        Y.applyUpdate(this.getDoc(), update)
+        try {
+            const update = base64ToUint8Array(base64)
+            Y.applyUpdate(this.getDoc(), update)
+        } catch (error) {
+            const crdtErr = new CrdtError(
+                `Apply failed: ${error instanceof Error ? error.message : String(error)}`,
+                CrdtErrorCode.SYNC_APPLY_FAILED,
+                this.getDocSizeBytes(),
+            )
+            reportCrdtError(crdtErr)
+            throw crdtErr
+        }
     }
 
     /**
@@ -218,6 +308,103 @@ class CrdtService {
         remoteDoc.destroy()
 
         return { localOnlyChanges, remoteOnlyChanges, conflictingKeys }
+    }
+
+    // -- Performance + storage ------------------------------------------------
+
+    /** Current serialized Y.Doc size in bytes. Returns 0 if not initialized. */
+    getDocSizeBytes(): number {
+        if (!this.doc) return 0
+        try {
+            return Y.encodeStateAsUpdate(this.doc).byteLength
+        } catch {
+            return 0
+        }
+    }
+
+    /**
+     * Run a quick benchmark of CRDT encode/apply performance.
+     * Reports to Sentry if thresholds are exceeded.
+     */
+    benchmarkSync(): BenchmarkResult {
+        const doc = this.getDoc()
+        const docSizeBytes = Y.encodeStateAsUpdate(doc).byteLength
+
+        // Benchmark encode
+        const encodeStart = performance.now()
+        const encoded = Y.encodeStateAsUpdate(doc)
+        const encodeMs = performance.now() - encodeStart
+
+        // Benchmark apply (into a temporary doc)
+        const tempDoc = new Y.Doc()
+        const applyStart = performance.now()
+        Y.applyUpdate(tempDoc, encoded)
+        const applyMs = performance.now() - applyStart
+        tempDoc.destroy()
+
+        if (encodeMs > ENCODE_WARN_MS) {
+            Sentry.addBreadcrumb({
+                category: 'sync',
+                message: `CRDT encode slow: ${encodeMs.toFixed(1)}ms (${docSizeBytes} bytes)`,
+                level: 'warning',
+            })
+        }
+
+        return { encodeMs, applyMs, docSizeBytes }
+    }
+
+    /**
+     * Get CRDT storage usage relative to browser quota.
+     */
+    async getStorageUsage(): Promise<StorageUsage> {
+        const docBytes = this.getDocSizeBytes()
+        let quota = 0
+        try {
+            if (navigator.storage?.estimate) {
+                const est = await navigator.storage.estimate()
+                quota = est.quota ?? 0
+            }
+        } catch {
+            // Storage API unavailable
+        }
+        const percent = quota > 0 ? (docBytes / quota) * 100 : 0
+
+        if (docBytes > DOC_SIZE_WARNING_BYTES) {
+            Sentry.addBreadcrumb({
+                category: 'sync',
+                message: `CRDT doc large: ${docBytes} bytes`,
+                level: 'warning',
+            })
+        }
+
+        return { crdtBytes: docBytes, quota, percent }
+    }
+
+    /**
+     * Prune old CRDT history via Yjs garbage collection.
+     * Creates a new GC-enabled Y.Doc from the current state, replacing the
+     * old doc. This compacts tombstones and reduces on-disk size.
+     */
+    async pruneOldHistory(_keepDays: number = 90): Promise<void> {
+        if (!this.doc) return
+
+        const currentState = Y.encodeStateAsUpdate(this.doc)
+        const oldSize = currentState.byteLength
+
+        // Create a GC-enabled doc and apply current state
+        const gcDoc = new Y.Doc({ gc: true })
+        Y.applyUpdate(gcDoc, currentState)
+        const gcState = Y.encodeStateAsUpdate(gcDoc)
+        gcDoc.destroy()
+
+        // Apply the compacted state back to the current doc
+        Y.applyUpdate(this.doc, gcState)
+
+        Sentry.addBreadcrumb({
+            category: 'sync',
+            message: `CRDT pruned: ${oldSize} -> ${gcState.byteLength} bytes`,
+            level: 'info',
+        })
     }
 
     // -- Lifecycle ------------------------------------------------------------

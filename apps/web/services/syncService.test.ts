@@ -18,6 +18,7 @@ const encodeSyncPayloadMock = vi.fn<() => string>(() => FAKE_BASE64)
 const applySyncPayloadMock = vi.fn<(base64: string) => void>()
 const detectDivergenceMock = vi.fn()
 const isInitializedMock = vi.fn<() => boolean>(() => true)
+const isFallbackModeMock = vi.fn<() => boolean>(() => false)
 const getDocMock = vi.fn()
 const applyUpdateMock = vi.fn()
 
@@ -41,6 +42,7 @@ vi.mock('@/services/crdtService', () => ({
         applySyncPayload: (b64: string) => applySyncPayloadMock(b64),
         detectDivergence: (u: Uint8Array) => detectDivergenceMock(u),
         isInitialized: () => isInitializedMock(),
+        isFallbackMode: () => isFallbackModeMock(),
         getDoc: () => getDocMock(),
         applyUpdate: (u: Uint8Array) => applyUpdateMock(u),
     },

@@ -191,6 +191,59 @@ const StorageInfo: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) =>
 })
 StorageInfo.displayName = 'StorageInfo'
 
+const CrdtStorageInfo: React.FC = memo(() => {
+    const { t } = useTranslation()
+    const [crdtSize, setCrdtSize] = useState<number | null>(null)
+
+    useEffect(() => {
+        let cancelled = false
+        import('@/services/crdtService')
+            .then(({ crdtService }) => {
+                if (cancelled) return
+                if (crdtService.isInitialized()) {
+                    setCrdtSize(crdtService.getDocSizeBytes())
+                } else if (crdtService.isFallbackMode()) {
+                    setCrdtSize(-1) // sentinel for fallback
+                }
+            })
+            .catch(() => {
+                // CRDT not available
+            })
+        return () => {
+            cancelled = true
+        }
+    }, [])
+
+    if (crdtSize === null) return null
+
+    if (crdtSize === -1) {
+        return (
+            <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-md">
+                <p className="text-xs text-amber-300">
+                    {t('settingsView.data.crdtFallback', 'CRDT sync in fallback mode (LWW). Offline merge disabled.')}
+                </p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="mt-3 p-2 bg-slate-800/50 rounded-md">
+            <div className="flex justify-between text-xs">
+                <span className="text-slate-400">
+                    {t('settingsView.data.crdtDocSize', 'CRDT Document')}
+                </span>
+                <span className="text-slate-200 font-mono">{formatBytes(crdtSize)}</span>
+            </div>
+            {crdtSize > 1_048_576 && (
+                <p className="text-xs text-amber-300 mt-1">
+                    {t('settingsView.data.crdtSizeWarning', 'CRDT document exceeds 1 MB. Consider running storage cleanup.')}
+                </p>
+            )}
+        </div>
+    )
+})
+CrdtStorageInfo.displayName = 'CrdtStorageInfo'
+
 const DataManagementTab: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
@@ -672,6 +725,7 @@ const DataManagementTab: React.FC = () => {
                     defaultOpen
                 >
                     <StorageInfo refreshTick={storageRefreshTick} />
+                    <CrdtStorageInfo />
                     <DbStoreBreakdown refreshTick={storageRefreshTick} />
                     <div className="mt-4 pt-4 border-t border-slate-700/50 flex flex-col gap-2">
                         <p className="text-sm text-slate-400">

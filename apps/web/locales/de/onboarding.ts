@@ -18,8 +18,10 @@ export const onboarding = {
   step4: {
     title: '🧠 Das Wissenszentrum',
     text: 'Lerne mit dem interaktiven Guide, frage den KI-Mentor um Rat und nutze die Lexika, um dein Wissen zu vertiefen.'
-  },
-  startGrow: 'Lass uns deinen ersten Anbau starten!',
+  },  step5: {
+    title: 'Offline-Synchronisation',
+    text: 'Deine Daten werden nahtlos zwischen Geraeten synchronisiert -- mit konfliktfreier CRDT-Technologie. Funktioniert offline und Aenderungen werden beim Wiederherstellen der Verbindung automatisch zusammengefuehrt.',
+  },  startGrow: 'Lass uns deinen ersten Anbau starten!',
   localOnlyNote: 'Kein Konto nötig. Alle Daten bleiben auf deinem Gerät. Du kannst Cloud-Sync später optional in den Einstellungen aktivieren.',
   wizard: {
     stepExperience: {

@@ -19,6 +19,10 @@ export const onboarding = {
         title: 'Het Kenniscentrum',
         text: 'Leer met de interactieve gids, vraag advies aan de AI-mentor en gebruik de lexicons om je kennis te verdiepen.',
     },
+    step5: {
+        title: 'Offline Synchronisatie',
+        text: 'Je gegevens synchroniseren naadloos tussen apparaten met conflictvrije CRDT-technologie. Werkt offline -- wijzigingen worden automatisch samengevoegd wanneer je opnieuw verbindt.',
+    },
     startGrow: 'Laten We Beginnen Met Je Eerste Kweek!',
     localOnlyNote:
         'Geen account nodig. Alle gegevens blijven op je apparaat. Je kunt later optioneel cloudsynchronisatie inschakelen in Instellingen.',

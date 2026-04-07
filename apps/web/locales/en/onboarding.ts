@@ -19,6 +19,10 @@ export const onboarding = {
     title: '🧠 The Knowledge Center',
     text: 'Learn with the interactive guide, ask the AI mentor for advice, and use the lexicons to deepen your knowledge.',
   },
+  step5: {
+    title: 'Offline Sync',
+    text: 'Your data syncs seamlessly across devices using conflict-free CRDT technology. Works offline -- changes merge automatically when you reconnect.',
+  },
   startGrow: "Let's Start Your First Grow!",
   localOnlyNote: 'No account needed. All data stays on your device. You can optionally enable cloud sync later in Settings.',
   wizard: {

@@ -55,7 +55,7 @@
 
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE%20|%20ES%20|%20FR%20|%20NL-orange)](https://qnbs.github.io/CannaGuide-2025/)
-[![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
+[![WCAG 2.1 AA](https://img.shields.io/badge/a11y-WCAG%202.1%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
 
 <!-- Distribution -->
 
@@ -187,7 +187,7 @@ AI Mentor chat with RAG (retrieval-augmented generation) pulling context from th
 
 ### Settings
 
-9 visual themes, colorblind modes (deuteranopia, protanopia, tritanopia), WCAG 2.2 AA accessibility. BYOK API key management with AES-256-GCM encryption at rest. Data export/import (JSON). Cloud sync via encrypted GitHub Gists. Local-only mode toggle. TTS (text-to-speech) for AI responses.
+9 visual themes, colorblind modes (deuteranopia, protanopia, tritanopia), WCAG 2.1 AA accessibility. BYOK API key management with AES-256-GCM encryption at rest. Data export/import (JSON). Cloud sync via encrypted GitHub Gists. Local-only mode toggle. TTS (text-to-speech) for AI responses.
 
 ### Help
 
@@ -610,7 +610,7 @@ KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Gr
 
 ### Einstellungen
 
-9 visuelle Themes, Farbenblind-Modi (Deuteranopie, Protanopie, Tritanopie), WCAG 2.2 AA Barrierefreiheit. BYOK API-Key-Verwaltung mit AES-256-GCM-Verschlüsselung at rest. Datenexport/-import (JSON). Cloud-Sync via verschlüsselte GitHub Gists. Nur-Lokal-Modus. TTS (Text-to-Speech) für KI-Antworten.
+9 visuelle Themes, Farbenblind-Modi (Deuteranopie, Protanopie, Tritanopie), WCAG 2.1 AA Barrierefreiheit. BYOK API-Key-Verwaltung mit AES-256-GCM-Verschlüsselung at rest. Datenexport/-import (JSON). Cloud-Sync via verschlüsselte GitHub Gists. Nur-Lokal-Modus. TTS (Text-to-Speech) für KI-Antworten.
 
 ### Hilfe
 

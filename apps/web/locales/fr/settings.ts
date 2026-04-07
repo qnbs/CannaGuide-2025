@@ -76,6 +76,20 @@ export const settingsView = {
         providerConsentRemember: 'Retenir mon choix pour ce fournisseur',
         providerDpaLink: "Voir l'accord de traitement des donnees",
     },
+    costTracking: {
+        title: 'Suivi des couts IA',
+        disclaimer:
+            'Les estimations de couts sont approximatives et basees sur les tarifs publies des API. Les frais reels peuvent varier.',
+        tokensToday: "Tokens aujourd'hui",
+        costToday: "Cout est. aujourd'hui",
+        last7Days: '7 derniers jours',
+        monthlyBudget: 'Budget mensuel',
+        unlimited: 'Illimite',
+        budgetPlaceholder: 'Limite de tokens (0 = desactive)',
+        setBudget: 'Definir',
+        resetHistory: "Reinitialiser l'historique des couts",
+        budgetWarning: 'Vous avez atteint votre budget mensuel de tokens.',
+    },
     aiMode: {
         title: "Mode d'execution IA",
         description:

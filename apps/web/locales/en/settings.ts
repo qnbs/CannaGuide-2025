@@ -72,6 +72,20 @@ export const settingsView = {
         providerConsentRemember: 'Remember my choice for this provider',
         providerDpaLink: 'View Data Processing Agreement',
     },
+    costTracking: {
+        title: 'AI Cost Tracking',
+        disclaimer:
+            'Cost estimates are approximate and based on published API pricing. Actual charges may differ.',
+        tokensToday: 'Tokens today',
+        costToday: 'Est. cost today',
+        last7Days: 'Last 7 days',
+        monthlyBudget: 'Monthly budget',
+        unlimited: 'Unlimited',
+        budgetPlaceholder: 'Token limit (0 = off)',
+        setBudget: 'Set',
+        resetHistory: 'Reset cost history',
+        budgetWarning: 'You have reached your monthly token budget.',
+    },
     aiMode: {
         title: 'AI Execution Mode',
         description:

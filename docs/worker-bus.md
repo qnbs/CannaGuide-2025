@@ -287,14 +287,18 @@ sequenceDiagram
 - Unit test coverage >95% for backpressure queue, retry edge cases, concurrent load
 - Generic `WorkerMessage<T, R>` types for zero-runtime type checks
 
-**Mid-term (v1.4+):**
+**Mid-term (v1.5):**
 
 - ~~Priority Queue (high priority for VPD alerts)~~ -- DONE (Session 60)
+- W-01: Per-worker-type rate limiting (inference worker throttle) -- target v1.5
+- W-03: External telemetry export (Sentry + custom metrics) -- target v1.5
 - Event emitter for real-time IoT sensor streaming
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
-- Cross-worker communication channel (SharedArrayBuffer or MessageChannel)
 
-**Long-term (v2.0+):**
+**Long-term (v1.6+):**
+
+- W-02: Priority preemption for running workers -- target v1.6
+- W-04: Cross-worker communication channel (SharedArrayBuffer or MessageChannel) -- target v1.6
 
 - Extract as `@cannaguide/worker-bus` open-source package
 - WebGPU worker support + advanced ONNX Runtime integration

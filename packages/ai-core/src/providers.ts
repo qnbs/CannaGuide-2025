@@ -19,6 +19,13 @@ export interface AiProviderConfig {
         image?: string
         deepDive?: string
     }
+    /** Estimated pricing per 1M tokens (USD). Optional -- omit if unknown. */
+    pricing?: {
+        inputPer1MTokens: number
+        outputPer1MTokens: number
+        /** ISO date when pricing was last verified. */
+        updatedAt: string
+    }
 }
 
 /** Metadata stored alongside an encrypted API key. */
@@ -44,6 +51,11 @@ export const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
             image: 'gemini-2.0-flash-preview-image-generation',
             deepDive: 'gemini-2.5-pro',
         },
+        pricing: {
+            inputPer1MTokens: 0.15,
+            outputPer1MTokens: 0.6,
+            updatedAt: '2025-06-01',
+        },
     },
     openai: {
         id: 'openai',
@@ -56,6 +68,11 @@ export const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
             text: 'gpt-4o-mini',
             json: 'gpt-4o-mini',
             deepDive: 'gpt-4o',
+        },
+        pricing: {
+            inputPer1MTokens: 0.15,
+            outputPer1MTokens: 0.6,
+            updatedAt: '2025-06-01',
         },
     },
     xai: {
@@ -70,6 +87,11 @@ export const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
             json: 'grok-3-mini-fast',
             deepDive: 'grok-3',
         },
+        pricing: {
+            inputPer1MTokens: 0.3,
+            outputPer1MTokens: 0.5,
+            updatedAt: '2025-06-01',
+        },
     },
     anthropic: {
         id: 'anthropic',
@@ -82,6 +104,11 @@ export const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
             text: 'claude-sonnet-4-20250514',
             json: 'claude-sonnet-4-20250514',
             deepDive: 'claude-sonnet-4-20250514',
+        },
+        pricing: {
+            inputPer1MTokens: 3.0,
+            outputPer1MTokens: 15.0,
+            updatedAt: '2025-06-01',
         },
     },
 }

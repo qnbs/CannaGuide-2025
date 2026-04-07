@@ -75,6 +75,20 @@ export const settingsView = {
         providerConsentRemember: 'Meine Wahl für diesen Anbieter merken',
         providerDpaLink: 'Auftragsverarbeitungsvertrag anzeigen',
     },
+    costTracking: {
+        title: 'KI-Kostentracking',
+        disclaimer:
+            'Kostenschaetzungen basieren auf veroeffentlichten API-Preisen und sind ungefaehr. Tatsaechliche Kosten koennen abweichen.',
+        tokensToday: 'Tokens heute',
+        costToday: 'Gesch. Kosten heute',
+        last7Days: 'Letzte 7 Tage',
+        monthlyBudget: 'Monatsbudget',
+        unlimited: 'Unbegrenzt',
+        budgetPlaceholder: 'Token-Limit (0 = aus)',
+        setBudget: 'Setzen',
+        resetHistory: 'Kostenhistorie zuruecksetzen',
+        budgetWarning: 'Sie haben Ihr monatliches Token-Budget erreicht.',
+    },
     aiMode: {
         title: 'KI-Ausführungsmodus',
         description:

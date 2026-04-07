@@ -70,6 +70,7 @@ interface DayCost {
     date: string // ISO date string (YYYY-MM-DD)
     totalTokens: number
     requestCount: number
+    estimatedCostUsd: number
 }
 
 interface CostTrackerState {
@@ -120,9 +121,46 @@ function trackTokenUsage(endpoint: string): void {
         existing.totalTokens += tokens
         existing.requestCount += 1
     } else {
-        state.days.push({ date: today, totalTokens: tokens, requestCount: 1 })
+        state.days.push({ date: today, totalTokens: tokens, requestCount: 1, estimatedCostUsd: 0 })
     }
     saveCostState(state)
+}
+
+/** Report actual token usage from API response metadata + compute cost. */
+function reportActualUsage(
+    endpoint: string,
+    metadata: { promptTokens: number; completionTokens: number; totalTokens: number },
+    pricing?: { inputPer1MTokens: number; outputPer1MTokens: number } | undefined,
+): void {
+    const estimated = TOKEN_ESTIMATES[endpoint] ?? 1500
+    const actualTotal = metadata.totalTokens
+    const delta = actualTotal - estimated
+
+    const state = loadCostState()
+    const today = todayKey()
+    const existing = state.days.find((d) => d.date === today)
+    if (existing) {
+        // Correct the estimated tokens with actual values
+        existing.totalTokens += delta
+    }
+
+    // Compute cost if pricing is available
+    if (pricing && existing) {
+        const cost =
+            (metadata.promptTokens * pricing.inputPer1MTokens +
+                metadata.completionTokens * pricing.outputPer1MTokens) /
+            1_000_000
+        existing.estimatedCostUsd += cost
+    }
+
+    saveCostState(state)
+
+    // Also correct the monthly budget with the delta
+    if (delta !== 0) {
+        const budget = loadBudget()
+        budget.spent += delta
+        saveBudget(budget)
+    }
 }
 
 /** Get today's estimated usage. */
@@ -130,7 +168,12 @@ function getTodayUsage(): DayCost {
     const state = loadCostState()
     const today = todayKey()
     return (
-        state.days.find((d) => d.date === today) ?? { date: today, totalTokens: 0, requestCount: 0 }
+        state.days.find((d) => d.date === today) ?? {
+            date: today,
+            totalTokens: 0,
+            requestCount: 0,
+            estimatedCostUsd: 0,
+        }
     )
 }
 
@@ -292,6 +335,7 @@ export const aiRateLimiter = {
     recordRequest,
     getRemainingRequests,
     trackTokenUsage,
+    reportActualUsage,
     getTodayUsage,
     getUsageHistory,
     clearCostHistory,

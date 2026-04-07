@@ -25,6 +25,7 @@ import { apiKeyService } from '@/services/apiKeyService'
 import { growLogRagService } from '@/services/growLogRagService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
+import { PROVIDER_CONFIGS } from '@cannaguide/ai-core'
 import { secureRandom } from '@/utils/random'
 
 const formatPlantContextForPrompt = (
@@ -569,6 +570,37 @@ class GeminiService implements BaseAIProvider {
         }
     }
 
+    /** Extract and report actual token usage from a Gemini response. */
+    private reportGeminiUsage(
+        endpoint: string,
+        response: {
+            usageMetadata?:
+                | {
+                      promptTokenCount?: number | undefined
+                      candidatesTokenCount?: number | undefined
+                      totalTokenCount?: number | undefined
+                  }
+                | undefined
+        },
+    ): void {
+        try {
+            const meta = response.usageMetadata
+            if (!meta) return
+            const promptTokens = meta.promptTokenCount ?? 0
+            const completionTokens = meta.candidatesTokenCount ?? 0
+            const totalTokens = meta.totalTokenCount ?? promptTokens + completionTokens
+            if (totalTokens <= 0) return
+            const pricing = PROVIDER_CONFIGS.gemini.pricing
+            aiRateLimiter.reportActualUsage(
+                endpoint,
+                { promptTokens, completionTokens, totalTokens },
+                pricing,
+            )
+        } catch {
+            // Best-effort -- never fail the AI call for telemetry
+        }
+    }
+
     private async generateTextStreamed({
         ai,
         model,
@@ -858,6 +890,7 @@ class GeminiService implements BaseAIProvider {
                 responseSchema: this.buildEquipmentRecommendationResponseSchema(),
             },
         })
+        this.reportGeminiUsage('getEquipmentRecommendation', response)
 
         return this.parseJsonResponse<Recommendation>(
             response,
@@ -938,6 +971,7 @@ class GeminiService implements BaseAIProvider {
                 responseSchema: this.buildMentorResponseSchema(),
             },
         })
+        this.reportGeminiUsage('getMentorResponse', response)
 
         return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(
             response,
@@ -1040,6 +1074,7 @@ PLANT CONTEXT:
                 responseSchema: this.buildDiagnosePlantResponseSchema(),
             },
         })
+        this.reportGeminiUsage('diagnosePlant', response)
 
         return this.parseJsonResponse<PlantDiagnosisResponse>(
             response,
@@ -1094,6 +1129,7 @@ PLANT CONTEXT:
                 responseSchema: this.buildStrainTipsResponseSchema(),
             },
         })
+        this.reportGeminiUsage('getStrainTips', response)
 
         return this.parseJsonResponse<StructuredGrowTips>(
             response,
@@ -1152,6 +1188,7 @@ PLANT CONTEXT:
                 responseSchema: this.buildDeepDiveResponseSchema(),
             },
         })
+        this.reportGeminiUsage('generateDeepDive', response)
 
         return this.parseJsonResponse<DeepDiveGuide>(
             response,
@@ -1577,6 +1614,7 @@ PLANT CONTEXT:
                     responseModalities: [Modality.IMAGE],
                 },
             })
+            this.reportGeminiUsage('generateStrainImage', response)
 
             return this.extractGeneratedImageDataOrThrow(response)
         } catch (error) {

@@ -203,6 +203,8 @@ aiFacade.ts  -->  aiService.ts  -->  Cloud available?  --yes-->  aiProviderServi
 
 **Eco-Mode:** When `settings.localAi.ecoMode` is true, `getModelRecommendation()` forces WASM backend, smallest model (0.5B q4), disables WebLLM and image generation.
 
+> **API Reference:** See [docs/api/](api/) for detailed method signatures: [AI Facade](api/ai-facade.md), [RAG Pipeline](api/rag-pipeline.md), [Local AI Infrastructure](api/local-ai-infrastructure.md).
+
 ### Plugin System
 
 Declarative plugins stored in IndexedDB (no code execution):
@@ -238,7 +240,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 pnpm run dev              # Vite dev server (localhost:5173)
 pnpm run build            # Production build (Vite 7 + PWA manifest injection)
-pnpm test                 # Vitest unit/integration (960+ tests)
+pnpm test                 # Vitest unit/integration (1663 tests)
 pnpm run test:e2e         # Playwright E2E
 pnpm run test:ct          # Playwright Component tests
 pnpm run lint:full        # ESLint entire project

@@ -260,7 +260,7 @@ Last updated: 2026-04-08 (Session 78)
 | Effort   | High (3-5 days) |
 | Status   | **Done**        |
 
-**Finding:** 960+ tests provide good coverage, but mutation testing would verify test quality (test effectiveness, not just code coverage).
+**Finding:** 1663 tests provide good coverage, but mutation testing would verify test quality (test effectiveness, not just code coverage).
 
 **Resolution:** Stryker Mutator configured in `stryker.conf.json` targeting `apps/web/stores/slices/**/*.ts`. Break threshold: 50% mutation score. `npm run test:mutate` wired in package.json. Reports generated to `reports/mutation/`. Baseline established in Session 63.
 

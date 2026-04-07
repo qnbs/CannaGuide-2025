@@ -8,6 +8,16 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **README metric inconsistencies (K-1)** -- services badge 105->104, EN test count 1447->1663, DE test count 1423->1663, DE v1.4 roadmap status corrected to released, DE dev journey test count 1049->1663 (Session 82)
+- **ARCHITECTURE.md test count (K-2)** -- build commands section 960+->1663 tests, synchronized with stack table (Session 82)
+- **AUDIT_BACKLOG.md stale test reference** -- T-01 finding updated from 960+ to 1663 (Session 82)
+
+### Added
+
+- **API reference documentation (D-01/H-2)** -- `docs/api/` with ai-facade.md (24 methods, routing logic, mode helpers), rag-pipeline.md (hybrid scoring, embedding cache API), local-ai-infrastructure.md (cache/telemetry/preload, 3-layer fallback architecture). Linked from ARCHITECTURE.md, README contributing sections (Session 82)
+
+### Fixed
+
 - **HydroMonitorView TS7053** -- Typed threshold editor field tuples as `[keyof HydroThresholds, string][]` instead of `[string, string][]`, removing implicit `any` index access and redundant type cast (Session 81)
 - **Vitest hanging in CI/local** -- `pnpm test -- --run` was broken: `--` caused `--run` to be interpreted as file pattern, not CLI flag. Added dedicated `test:run` script (`vitest run`) to `apps/web`, root `package.json`, and `turbo.json`. Updated `deploy.yml`, `release-gate.yml`, `gate:push`, and all documentation references (Session 81)
 

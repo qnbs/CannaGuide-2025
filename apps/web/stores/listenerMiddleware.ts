@@ -4,11 +4,7 @@ import { i18nInstance, getT, loadLocale, SupportedLocale } from '@/i18n'
 import { Language, Strain, View } from '@/types'
 import type { AiMode, PlantProblem } from '@/types'
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice'
-import {
-    plantStateUpdated,
-    resetPlants,
-    addJournalEntry,
-} from './slices/simulationSlice'
+import { plantStateUpdated, resetPlants, addJournalEntry } from './slices/simulationSlice'
 import { getUISnapshot, useUIStore } from './useUIStore'
 import { useFiltersStore, getFiltersSnapshot } from './useFiltersStore'
 import { urlService } from '@/services/urlService'
@@ -36,7 +32,7 @@ import { addMultipleToFavorites, removeMultipleFromFavorites } from './slices/fa
 export const listenerMiddleware = createListenerMiddleware()
 
 type AppStartListening = TypedStartListening<RootState, AppDispatch>
-const startAppListening = listenerMiddleware.startListening as AppStartListening
+export const startAppListening = listenerMiddleware.startListening as AppStartListening
 
 const getAiService = async () => {
     const module = await import('@/services/aiService')

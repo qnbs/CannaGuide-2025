@@ -382,6 +382,47 @@ const nutrientPlannerSlice = createSlice({
             state.activePluginId = null
             state.schedule = createDefaultSchedule()
         },
+
+        // --- CRDT sync actions (Session I) ---
+        upsertScheduleEntry: {
+            reducer(state, action: PayloadAction<NutrientScheduleEntry>) {
+                const entry = action.payload
+                const idx = state.schedule.findIndex((e) => e.id === entry.id)
+                if (idx >= 0) {
+                    state.schedule[idx] = entry
+                } else {
+                    state.schedule.push(entry)
+                }
+            },
+            prepare(entry: NutrientScheduleEntry, meta?: { fromCrdt?: boolean | undefined }) {
+                return { payload: entry, meta: { fromCrdt: meta?.fromCrdt } }
+            },
+        },
+        removeScheduleEntry: {
+            reducer(state, action: PayloadAction<string>) {
+                state.schedule = state.schedule.filter((e) => e.id !== action.payload)
+            },
+            prepare(id: string, meta?: { fromCrdt?: boolean | undefined }) {
+                return { payload: id, meta: { fromCrdt: meta?.fromCrdt } }
+            },
+        },
+        upsertReading: {
+            reducer(state, action: PayloadAction<EcPhReading>) {
+                const reading = action.payload
+                const idx = state.readings.findIndex((r) => r.id === reading.id)
+                if (idx >= 0) {
+                    state.readings[idx] = reading
+                } else {
+                    state.readings.push(reading)
+                    if (state.readings.length > MAX_READINGS) {
+                        state.readings = state.readings.slice(-MAX_READINGS)
+                    }
+                }
+            },
+            prepare(reading: EcPhReading, meta?: { fromCrdt?: boolean | undefined }) {
+                return { payload: reading, meta: { fromCrdt: meta?.fromCrdt } }
+            },
+        },
     },
 })
 
@@ -399,6 +440,9 @@ export const {
     setAiRecommendation,
     applyPluginSchedule,
     detachPlugin,
+    upsertScheduleEntry,
+    removeScheduleEntry,
+    upsertReading,
 } = nutrientPlannerSlice.actions
 
 export default nutrientPlannerSlice.reducer

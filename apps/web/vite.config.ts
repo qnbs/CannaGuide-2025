@@ -97,6 +97,7 @@ const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
     { name: 'image-export', patterns: ['html2canvas'] },
     { name: 'image-compress', patterns: ['browser-image-compression'] },
     { name: 'three', patterns: ['three'] },
+    { name: 'sync', patterns: ['yjs', 'y-indexeddb', 'lib0'] },
 ]
 
 function resolveManualChunk(id: string): string | undefined {

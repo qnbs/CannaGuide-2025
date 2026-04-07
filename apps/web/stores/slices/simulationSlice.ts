@@ -332,6 +332,39 @@ const simulationSlice = createSlice({
         setCatchUpState: (state, action: PayloadAction<boolean>) => {
             state.isCatchingUp = action.payload
         },
+
+        // --- CRDT sync actions (Session I) ---
+        upsertPlant: {
+            reducer(state, action: PayloadAction<Plant>) {
+                const plant = action.payload
+                plantsAdapter.upsertOne(state.plants, plant)
+                // Assign to first empty slot if this is a new plant
+                if (!state.plantSlots.includes(plant.id)) {
+                    const emptySlotIndex = state.plantSlots.findIndex((slot) => slot === null)
+                    if (emptySlotIndex >= 0) {
+                        state.plantSlots[emptySlotIndex] = plant.id
+                    }
+                }
+            },
+            prepare(plant: Plant, meta?: { fromCrdt?: boolean | undefined }) {
+                return { payload: plant, meta: { fromCrdt: meta?.fromCrdt } }
+            },
+        },
+        removePlant: {
+            reducer(state, action: PayloadAction<string>) {
+                const plantId = action.payload
+                plantsAdapter.removeOne(state.plants, plantId)
+                state.plantSlots = state.plantSlots.map((slot) =>
+                    slot === plantId ? null : slot,
+                ) as [string | null, string | null, string | null]
+                if (state.selectedPlantId === plantId) {
+                    state.selectedPlantId = null
+                }
+            },
+            prepare(plantId: string, meta?: { fromCrdt?: boolean | undefined }) {
+                return { payload: plantId, meta: { fromCrdt: meta?.fromCrdt } }
+            },
+        },
     },
 })
 
@@ -718,6 +751,8 @@ export const {
     resetPlants,
     setPlantVpdProfile,
     setCatchUpState,
+    upsertPlant,
+    removePlant,
 } = simulationSlice.actions
 
 export default simulationSlice.reducer

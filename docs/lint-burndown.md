@@ -39,8 +39,14 @@ Strict scope configuration is stored in `scripts/lint-burndown.config.json`.
 
 ## Suggested phase order
 
-1. `hooks/**/*.ts`
-2. `components/common/**/*.tsx`
-3. `services/**/*.ts`
-4. `stores/**/*.ts`
-5. Full-project strict lint (`pnpm run lint:strict`)
+| Phase | Scope                        | Status                     |
+| ----- | ---------------------------- | -------------------------- |
+| 1     | `hooks/**/*.ts`              | Active (enforced in CI)    |
+| 2     | `components/common/**/*.tsx` | Planned (candidate)        |
+| 3     | `services/**/*.ts`           | Planned (candidate)        |
+| 4     | `stores/**/*.ts`             | Planned (candidate)        |
+| 5     | Full-project strict lint     | Planned (end-state target) |
+
+Phase 1 is enforced via `pnpm run lint:scopes` in both `ci.yml` and `deploy.yml`.
+The script `scripts/lint-scopes.mjs` runs ESLint with `--max-warnings 0` on all
+paths listed in `strictScopes`.

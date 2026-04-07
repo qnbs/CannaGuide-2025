@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useEffect, useState, useCallback } from 'react'
+import React, { memo, useMemo, useEffect, useState, useCallback, useDeferredValue } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSyncExternalStore } from 'react'
 import { Card } from '@/components/common/Card'
@@ -228,17 +228,21 @@ function IotDashboardViewComponent(): React.JSX.Element {
         useCallback((cb: () => void) => sensorStore.subscribe(cb), []),
         () => sensorStore.getState().history,
     )
+    const deferredHistory = useDeferredValue(history)
     const telemetry = useSyncExternalStore(
         useCallback((cb: () => void) => sensorStore.subscribe(cb), []),
         () => sensorStore.getState().telemetry,
     )
 
-    // Extract sparkline data from history
-    const tempData = useMemo(() => history.map((r) => r.temperatureC), [history])
-    const humidityData = useMemo(() => history.map((r) => r.humidityPercent), [history])
+    // Extract sparkline data from history (deferred to avoid blocking urgent updates)
+    const tempData = useMemo(() => deferredHistory.map((r) => r.temperatureC), [deferredHistory])
+    const humidityData = useMemo(
+        () => deferredHistory.map((r) => r.humidityPercent),
+        [deferredHistory],
+    )
     const phData = useMemo(
-        () => history.filter((r) => r.ph != null).map((r) => r.ph as number),
-        [history],
+        () => deferredHistory.filter((r) => r.ph != null).map((r) => r.ph as number),
+        [deferredHistory],
     )
 
     // Compute VPD from latest reading
@@ -250,11 +254,11 @@ function IotDashboardViewComponent(): React.JSX.Element {
     }, [currentReading])
 
     const vpdData = useMemo(() => {
-        return history.map((r) => {
+        return deferredHistory.map((r) => {
             const svp = 0.6108 * Math.exp((17.27 * r.temperatureC) / (r.temperatureC + 237.3))
             return svp * (1 - r.humidityPercent / 100)
         })
-    }, [history])
+    }, [deferredHistory])
 
     // Last update relative time
     const [, setTick] = useState(0)

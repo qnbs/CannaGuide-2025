@@ -74,6 +74,20 @@ export const settingsView = {
         providerConsentRemember: 'Mijn keuze onthouden voor deze provider',
         providerDpaLink: 'Gegevensverwerkingsovereenkomst bekijken',
     },
+    costTracking: {
+        title: 'AI-kostentracking',
+        disclaimer:
+            'Kostenschattingen zijn bij benadering en gebaseerd op gepubliceerde API-prijzen. Werkelijke kosten kunnen verschillen.',
+        tokensToday: 'Tokens vandaag',
+        costToday: 'Gesch. kosten vandaag',
+        last7Days: 'Laatste 7 dagen',
+        monthlyBudget: 'Maandbudget',
+        unlimited: 'Onbeperkt',
+        budgetPlaceholder: 'Tokenlimiet (0 = uit)',
+        setBudget: 'Instellen',
+        resetHistory: 'Kostengeschiedenis wissen',
+        budgetWarning: 'U heeft uw maandelijkse tokenbudget bereikt.',
+    },
     aiMode: {
         title: 'AI-uitvoeringsmodus',
         description:

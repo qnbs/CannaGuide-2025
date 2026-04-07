@@ -2,6 +2,13 @@
 // Shared AI response types
 // ---------------------------------------------------------------------------
 
+/** Token usage metadata returned by AI provider APIs. */
+export interface AiUsageMetadata {
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
+}
+
 /** Generic AI text response. */
 export interface AIResponse {
     title: string

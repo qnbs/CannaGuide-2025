@@ -15,6 +15,7 @@ export {
 } from './providers'
 export type {
     AIResponse,
+    AiUsageMetadata,
     PlantDiagnosisResponse,
     StructuredGrowTips,
     DeepDiveGuide,

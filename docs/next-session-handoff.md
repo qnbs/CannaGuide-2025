@@ -2,7 +2,70 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 82) -- Deep Audit Remediation (K-1, K-2, H-2)
+## Latest Session (Session 83) -- Audit Findings H-4, M-1 to M-4
+
+**Status: v1.4.1. 1663 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 83)
+
+1. **H-4 (A-03) AI cost tracking for BYOK users:**
+    - Added `AiUsageMetadata` type to `@cannaguide/ai-core/types.ts`
+    - Added `pricing` field to `AiProviderConfig` with default
+      pricing for all 4 providers (Gemini, OpenAI, xAI, Anthropic)
+    - Extended `aiRateLimiter.ts` with `reportActualUsage()` that
+      corrects hardcoded estimates with real token counts + computes
+      USD cost from provider pricing
+    - Added `DayCost.estimatedCostUsd` field for per-day cost tracking
+    - Token extraction in `geminiService.ts` (6 endpoints):
+      `response.usageMetadata` (promptTokenCount, candidatesTokenCount)
+    - Token extraction in `aiProviderService.ts`:
+      OpenAI/xAI `data.usage` + Anthropic `data.usage.input_tokens`
+    - New `CostTrackingSection` component in SettingsView:
+      daily token/cost cards, 7-day bar chart, monthly budget
+      progress bar (color-coded), budget limit setter
+    - i18n keys for all 5 languages (EN/DE/ES/FR/NL):
+      `settingsView.costTracking.*` (14 keys each)
+    - A-03 ready to mark Done in PRIORITY_ROADMAP
+
+2. **M-1 Equipment sparkline throttle:**
+    - Added `useDeferredValue` to `IotDashboardView.tsx` for the
+      sensor history data, allowing React to defer sparkline
+      re-renders during high-frequency MQTT updates
+
+3. **M-2 WorkerBus session targets:**
+    - Added W-01 to W-04 in `PRIORITY_ROADMAP.md` (Long-term Backlog)
+    - Updated `worker-bus.md` Known Limitations: replaced "v1.4+"
+      with concrete version targets (v1.5 for rate limiting +
+      telemetry, v1.6 for preemption + cross-worker comms)
+
+4. **M-3 lint-burndown progress documentation:**
+    - Updated `lint-burndown.md` with phase progress table:
+      Phase 1 (hooks) marked "Active (enforced in CI)",
+      Phases 2-5 marked "Planned"
+    - Documented CI enforcement refs (ci.yml, deploy.yml)
+
+5. **M-4 WCAG badge fix:**
+    - README.md badge + EN/DE text: WCAG 2.2 AA -> WCAG 2.1 AA
+      (matches docs/ACCESSIBILITY.md "WCAG 2.1 Level AA")
+
+### Verified Metrics (Session 83)
+
+- Tests: 1663 passed (149 files), 0 failures
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Build: success (149 precache entries)
+
+### Next Steps
+
+- Mark A-03 Done in PRIORITY_ROADMAP (after merge)
+- H-1 (F-05): Multi-grow management -- concept + type system design
+- H-3 (F-06): Offline sync conflict resolution -- pragmatic
+  timestamp-based conflict UI as quick win
+- C-04: Netlify preview smoke test
+- M-1 follow-up: evaluate Equipment tab consolidation (8 tabs)
+
+---
+
+## Session 82 -- Deep Audit Remediation (K-1, K-2, H-2)
 
 **Status: v1.4.1. 1663 tests passing. TypeScript clean. Build clean.**
 

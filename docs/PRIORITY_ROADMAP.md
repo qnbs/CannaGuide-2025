@@ -53,7 +53,11 @@
 | F-02 | Social sharing                   | Medium | Open                                       |
 | F-06 | Offline sync conflict resolution | High   | Open                                       |
 | I-02 | RTL language preparation         | Medium | Open                                       |
-| A-03 | AI cost tracking                 | Medium | Open                                       |
+| A-03 | AI cost tracking                 | Medium | Done (Session 83)                          |
+| W-01 | WorkerBus per-worker rate limit  | Medium | Open (target v1.5)                         |
+| W-02 | WorkerBus priority preemption    | High   | Open (target v1.6)                         |
+| W-03 | WorkerBus external telemetry     | Low    | Open (target v1.5)                         |
+| W-04 | WorkerBus cross-worker comms     | High   | Open (target v1.6)                         |
 
 ## Already Resolved
 

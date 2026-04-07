@@ -6,8 +6,19 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **AI cost tracking for BYOK users (A-03/H-4)** -- Real token usage extraction from Gemini (`usageMetadata`), OpenAI/xAI (`data.usage`), and Anthropic (`data.usage.input_tokens/output_tokens`) API responses. Provider pricing in `PROVIDER_CONFIGS` (ai-core). `aiRateLimiter.reportActualUsage()` corrects hardcoded estimates with actual token counts and computes USD cost. New `CostTrackingSection` in Settings AI tab: daily token/cost cards, 7-day bar chart, monthly budget progress bar (color-coded), budget limit setter. i18n keys for all 5 languages. (Session 83)
+- **WorkerBus concrete session targets (M-2)** -- W-01 to W-04 in PRIORITY_ROADMAP with version targets (v1.5/v1.6). Updated worker-bus.md Known Limitations from "v1.4+" to specific milestones. (Session 83)
+- **lint-burndown progress tracking (M-3)** -- Phase progress table in lint-burndown.md: Phase 1 (hooks) marked Active/Enforced in CI, Phases 2-5 Planned. CI enforcement documented. (Session 83)
+
+### Changed
+
+- **IoT sparkline throttle (M-1)** -- Added `useDeferredValue` to sensor history in `IotDashboardView.tsx`, allowing React to defer sparkline re-renders during high-frequency MQTT updates. (Session 83)
+
 ### Fixed
 
+- **WCAG badge mismatch (M-4)** -- README badge and EN/DE text corrected from WCAG 2.2 AA to WCAG 2.1 AA to match `docs/ACCESSIBILITY.md`. (Session 83)
 - **README metric inconsistencies (K-1)** -- services badge 105->104, EN test count 1447->1663, DE test count 1423->1663, DE v1.4 roadmap status corrected to released, DE dev journey test count 1049->1663 (Session 82)
 - **ARCHITECTURE.md test count (K-2)** -- build commands section 960+->1663 tests, synchronized with stack table (Session 82)
 - **AUDIT_BACKLOG.md stale test reference** -- T-01 finding updated from 960+ to 1663 (Session 82)

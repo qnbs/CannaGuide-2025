@@ -13,6 +13,7 @@ import {
     isValidProviderKeyFormat as coreIsValidKeyFormat,
 } from '@cannaguide/ai-core'
 import type { AiProvider, AiProviderConfig, AiProviderKeyMetadata } from '@cannaguide/ai-core'
+import { aiRateLimiter } from '@/services/aiRateLimiter'
 
 // Re-export types for existing local consumers
 export type { AiProvider, AiProviderConfig, AiProviderKeyMetadata }
@@ -181,6 +182,11 @@ interface OpenAiChatResponse {
     choices: Array<{
         message: { content: string }
     }>
+    usage?: {
+        prompt_tokens?: number
+        completion_tokens?: number
+        total_tokens?: number
+    }
 }
 
 const OPENAI_COMPAT_BASE_URLS: Partial<Record<AiProvider, string>> = {
@@ -200,6 +206,7 @@ async function callOpenAiCompatible(
     messages: OpenAiMessage[],
     jsonMode: boolean,
     maxTokens: number,
+    provider?: AiProvider | undefined,
 ): Promise<string> {
     const body: Record<string, unknown> = {
         model,
@@ -231,6 +238,21 @@ async function callOpenAiCompatible(
     const data = (await response.json()) as OpenAiChatResponse
     const text = data.choices?.[0]?.message?.content
     if (!text) throw new Error('ai.error.generic')
+
+    // Report actual token usage if available
+    if (data.usage && typeof data.usage.total_tokens === 'number') {
+        const pricing = provider ? PROVIDER_CONFIGS[provider].pricing : undefined
+        aiRateLimiter.reportActualUsage(
+            'generateTextWithProvider',
+            {
+                promptTokens: data.usage.prompt_tokens ?? 0,
+                completionTokens: data.usage.completion_tokens ?? 0,
+                totalTokens: data.usage.total_tokens,
+            },
+            pricing,
+        )
+    }
+
     return text
 }
 
@@ -240,6 +262,10 @@ async function callOpenAiCompatible(
 
 interface AnthropicResponse {
     content: Array<{ type: string; text?: string }>
+    usage?: {
+        input_tokens?: number
+        output_tokens?: number
+    }
 }
 
 async function callAnthropic(
@@ -277,6 +303,23 @@ async function callAnthropic(
     const data = (await response.json()) as AnthropicResponse
     const text = data.content?.find((c) => c.type === 'text')?.text
     if (!text) throw new Error('ai.error.generic')
+
+    // Report actual token usage if available
+    if (data.usage) {
+        const inputTokens = data.usage.input_tokens ?? 0
+        const outputTokens = data.usage.output_tokens ?? 0
+        const pricing = PROVIDER_CONFIGS.anthropic.pricing
+        aiRateLimiter.reportActualUsage(
+            'generateTextWithProvider',
+            {
+                promptTokens: inputTokens,
+                completionTokens: outputTokens,
+                totalTokens: inputTokens + outputTokens,
+            },
+            pricing,
+        )
+    }
+
     return text
 }
 
@@ -313,6 +356,7 @@ async function generateTextWithProvider(
         buildProviderMessages(systemPrompt, userPrompt),
         jsonMode,
         maxTokens,
+        provider,
     )
 }
 

@@ -598,7 +598,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 ['ecMax', t('hydroMonitoring.thresholds.ecMax')],
                                 ['waterTempMin', t('hydroMonitoring.thresholds.tempMin')],
                                 ['waterTempMax', t('hydroMonitoring.thresholds.tempMax')],
-                            ] as [string, string][]
+                            ] as [keyof HydroThresholds, string][]
                         ).map(([field, label]) => (
                             <div key={field}>
                                 <label
@@ -612,12 +612,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                     type="number"
                                     step="0.1"
                                     value={thresholds[field]}
-                                    onChange={(e) =>
-                                        handleThresholdChange(
-                                            field as keyof HydroThresholds,
-                                            e.target.value,
-                                        )
-                                    }
+                                    onChange={(e) => handleThresholdChange(field, e.target.value)}
                                     className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
                                 />
                             </div>

@@ -24,7 +24,7 @@ import { clearArchives } from '@/stores/slices/archivesSlice'
 import { ToastContainer } from '@/components/common/Toast'
 import { Button } from '@/components/common/Button'
 import { Input } from '@/components/ui/input'
-import { AgeGateModal, useAgeGate } from '@/components/common/AgeGateModal'
+// Age gate removed (can be re-introduced later)
 import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalBanner'
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
 import { PwaInstallBanner } from '@/components/common/PwaInstallBanner'
@@ -170,7 +170,6 @@ export const App: React.FC = () => {
     useBadgeApi()
 
     // Legal gates
-    const { isVerified: isAgeVerified, verify: verifyAge } = useAgeGate()
     const { showBanner: showGeoLegal, dismiss: dismissGeoLegal } = useGeoLegalBanner()
     const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
 
@@ -335,11 +334,6 @@ export const App: React.FC = () => {
 
     if (!isAppReady) {
         return <LoadingGate />
-    }
-
-    // Legal gate: Age verification (KCanG §1 – 18+)
-    if (!isAgeVerified) {
-        return <AgeGateModal onVerified={verifyAge} />
     }
 
     if (settings.privacy.requirePinOnLaunch && settings.privacy.pin && !isPinUnlocked) {

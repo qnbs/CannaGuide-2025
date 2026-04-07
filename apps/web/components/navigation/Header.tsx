@@ -6,6 +6,7 @@ import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 import { Button } from '../common/Button'
 import { useUIStore } from '@/stores/useUIStore'
 import { VoiceControl } from '../common/VoiceControl'
+import { GrowSwitcher } from '../common/GrowSwitcher'
 
 interface HeaderProps {
     onCommandPaletteOpen: () => void
@@ -83,6 +84,11 @@ export const Header: React.FC<HeaderProps> = ({
                             </h1>
                         </div>
                     </button>
+
+                    <div className="hidden sm:flex">
+                        <GrowSwitcher />
+                    </div>
+
                     <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-black/10 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:gap-2">
                         {!isInstalled && deferredPrompt && (
                             <Button

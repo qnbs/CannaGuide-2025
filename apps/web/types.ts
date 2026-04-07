@@ -833,6 +833,12 @@ export interface Grow {
     isActive: boolean
     /** Optional description */
     description?: string | undefined
+    /** Accent color (CSS hex) */
+    color?: string | undefined
+    /** Display emoji */
+    emoji?: string | undefined
+    /** Archived (finished) grow */
+    archived?: boolean | undefined
 }
 
 export interface GrowsState {

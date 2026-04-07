@@ -32,9 +32,10 @@ const GrowRoom3D = lazy(() =>
     import('./plants/GrowRoom3D').then((m) => ({ default: m.GrowRoom3D })),
 )
 
-import { useAppDispatch } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { useUIStore } from '@/stores/useUIStore'
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice'
+import { selectActiveGrow, selectGrowCount } from '@/stores/selectors'
 
 interface EmptyPlantSlotProps {
     index: number
@@ -135,6 +136,8 @@ export const PlantsView: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const [isLoading, setIsLoading] = useState(true)
+    const activeGrow = useAppSelector(selectActiveGrow)
+    const growCount = useAppSelector(selectGrowCount)
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 300)
@@ -209,6 +212,20 @@ export const PlantsView: React.FC = () => {
             {/* Main Dashboard View - Hidden when a plant is selected to preserve state */}
             <div style={{ display: selectedPlant ? 'none' : 'block' }}>
                 <div className="space-y-6">
+                    {growCount > 1 && activeGrow && (
+                        <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2">
+                            <span
+                                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                                style={{
+                                    backgroundColor: activeGrow.color ?? '#22c55e',
+                                }}
+                            />
+                            <span className="text-sm font-medium text-slate-200">
+                                {activeGrow.emoji ? `${activeGrow.emoji} ` : ''}
+                                {activeGrow.name}
+                            </span>
+                        </div>
+                    )}
                     <div className="section-hero animate-fade-in">
                         <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                             <div className="min-w-0">

@@ -2,7 +2,95 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 87) -- CRDT Sync Protocol + Conflict UI (F-06 Session II/3)
+## Latest Session (Session 88) -- Multi-Grow UI Components (F-07 Session C)
+
+**Status: v1.4.1. 1736 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 88)
+
+1. **Grow type extension** -- Extended Grow interface with
+   `color?: string`, `emoji?: string`, `archived?: boolean`.
+   Added GROW_COLORS constant (6 hex presets). Added
+   `archiveGrow` action to growsSlice (sets archived=true,
+   switches activeGrowId if needed). Added
+   `selectNonArchivedGrows` selector.
+
+2. **GrowSwitcher component** -- New `GrowSwitcher.tsx` using
+   @radix-ui/react-dropdown-menu. Shows active grow name +
+   color dot + ChevronDown. Lists non-archived grows with
+   plant count badges. "New Grow" footer item. Only renders
+   when growCount >= 2. React.memo + displayName.
+
+3. **Navigation integration** -- GrowSwitcher added to
+   Header.tsx (desktop, hidden sm:flex between home and
+   toolbar) and BottomNav.tsx (mobile, compact pill above
+   nav bar).
+
+4. **GrowManagerTab** -- New lazy-loaded settings tab with
+   full grow CRUD. Active/archived grow cards with color
+   dots, plant count, activate/edit buttons. Integrated into
+   SettingsSubNav (navItemIds + TreeStructure icon) and
+   SettingsView (lazy import + Suspense).
+
+5. **GrowCreateModal** -- Modal with name, description, color
+   picker. MAX_GROWS limit warning. Auto-activates new grow.
+
+6. **GrowEditModal** -- Pre-populated modal with archive and
+   delete (double-confirm) actions.
+
+7. **PlantsView grow context** -- Grow context bar above hero
+   section shows active grow name + color when multiple grows
+   exist.
+
+8. **i18n** -- 17 new grows keys in all 5 languages
+   (EN/DE/ES/FR/NL): title, subtitle, createGrow, editGrow,
+   name, namePlaceholder, description, descriptionPlaceholder,
+   color, activate, active, archive, delete, confirmDelete,
+   archived, limitReached, activeGrow, plantCount.
+   Added grows category key.
+
+9. **ADR-0006** -- Equipment grow scoping deferred to Session D.
+
+10. **Tests** -- GrowSwitcher.test.tsx (2 tests): renders
+    nothing with 1 grow, renders switcher with 2 grows.
+    GrowCreateModal.test.tsx (3 tests): renders modal, name
+    input, cancel callback. growsSlice.test.ts +2 tests:
+    archiveGrow flag, archiveGrow activeGrowId switch.
+    Test utils: added growsReducer to test store.
+
+### Verified Metrics (Session 88)
+
+- Tests: 1736 passed (156 files), 0 failures
+- TypeScript: clean (pre-existing TS2719/GitMerge/Clock filtered)
+- Build: success (153 precache entries)
+
+### Next Steps -- Session D (Multi-Grow Polish)
+
+1. **Equipment grow scoping** -- Add growId to equipment
+   entities, schema migration, per-grow equipment filtering.
+
+2. **Grow environment panel** -- Per-grow environment
+   settings in GrowManagerTab or DetailedPlantView.
+
+3. **Grow nutrient schedules** -- Per-grow nutrient planner
+   filtering in NutrientPlannerView.
+
+4. **Multi-grow E2E tests** -- Playwright: create grow,
+   switch grow, verify plant filtering, archive grow.
+
+5. **Grow export/import** -- Export single grow as JSON
+   for sharing between users.
+
+### Planned Executions
+
+- **Session D (F-07/IV):** Equipment grow scoping, per-grow
+  environment, nutrient schedule filtering, E2E tests
+- **Session III (F-06/III):** CRDT integration polish + E2E
+  (auto-push, Background Sync, conflict E2E, health dashboard)
+
+---
+
+## Previous Session (Session 87) -- CRDT Sync Protocol + Conflict UI (F-06 Session II/3)
 
 **Status: v1.4.1. 1729 tests passing. TypeScript clean. Build clean.**
 

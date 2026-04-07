@@ -5,6 +5,7 @@ import reducer, {
     removeGrow,
     setActiveGrowId,
     setGrowsState,
+    archiveGrow,
     createDefaultGrow,
     growsAdapter,
 } from './growsSlice'
@@ -115,5 +116,21 @@ describe('growsSlice', () => {
         const state = reducer(getInitialState(), setGrowsState(newState))
         expect(state.grows.ids).toEqual(['custom-grow'])
         expect(state.activeGrowId).toBe('custom-grow')
+    })
+
+    it('archiveGrow sets archived flag on a grow', () => {
+        let state = getInitialState()
+        state = reducer(state, addGrow({ id: 'grow-2', name: 'Tent B', isActive: true }))
+        state = reducer(state, archiveGrow('grow-2'))
+        expect(state.grows.entities['grow-2']?.archived).toBe(true)
+    })
+
+    it('archiveGrow switches activeGrowId when archiving the active grow', () => {
+        let state = getInitialState()
+        state = reducer(state, addGrow({ id: 'grow-2', name: 'Tent B', isActive: true }))
+        state = reducer(state, setActiveGrowId('grow-2'))
+        state = reducer(state, archiveGrow('grow-2'))
+        expect(state.grows.entities['grow-2']?.archived).toBe(true)
+        expect(state.activeGrowId).toBe(DEFAULT_GROW_ID)
     })
 })

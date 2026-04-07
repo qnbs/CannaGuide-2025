@@ -15,6 +15,15 @@ export const MAX_GROWS = 3
 export const DEFAULT_GROW_ID = 'default-grow'
 export const DEFAULT_GROW_NAME = 'Mein Grow'
 
+export const GROW_COLORS = [
+    '#22c55e', // green
+    '#a855f7', // purple
+    '#3b82f6', // blue
+    '#f97316', // orange
+    '#ef4444', // red
+    '#14b8a6', // teal
+] as const
+
 export const SLICE_SCHEMA_VERSIONS = {
     settings: 2,
     simulation: 3,

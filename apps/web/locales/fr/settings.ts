@@ -609,6 +609,25 @@ export const settingsView = {
                 copyKey: 'Copier la cle',
                 keyCopied: 'Cle de chiffrement copiee dans le presse-papiers.',
             },
+            conflictTitle: 'Conflit de synchronisation detecte',
+            conflictDescription:
+                'Vos donnees locales et la version cloud ont des modifications divergentes. Choisissez comment resoudre :',
+            localChanges: 'Local uniquement',
+            remoteChanges: 'Distant uniquement',
+            conflictingItems: 'En conflit',
+            merge: 'Fusion intelligente',
+            keepLocal: 'Garder local',
+            useCloud: 'Utiliser le cloud',
+            viewDetails: 'Voir les details',
+            pendingSync: 'Synchronisation en attente -- nouvelle tentative des la connexion...',
+            synced: 'Synchronise a {{time}}',
+            syncError: 'Echec de la synchronisation',
+            statusIdle: 'Non synchronise',
+            keepLocalConfirm:
+                'Ceci supprimera toutes les modifications distantes et enverra votre etat local vers le cloud. Cette action est irreversible.',
+            useCloudConfirm:
+                'Ceci supprimera toutes les modifications locales et remplacera vos donnees par la version cloud. Cette action est irreversible.',
+            migrating: 'Migration de l ancien format de synchronisation -- l application va se recharger...',
         },
         replayOnboarding: 'Revoir le tutoriel',
         replayOnboardingConfirm:

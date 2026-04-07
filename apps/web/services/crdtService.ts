@@ -3,6 +3,23 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 
 const DOC_NAME = 'cannaguide-crdt-v1'
 
+// ---------------------------------------------------------------------------
+// Sync protocol types
+// ---------------------------------------------------------------------------
+
+export interface DivergenceInfo {
+    localOnlyChanges: number
+    remoteOnlyChanges: number
+    conflictingKeys: string[]
+}
+
+export type CrdtSyncResult =
+    | { status: 'merged' }
+    | { status: 'conflict'; info: DivergenceInfo }
+    | { status: 'no-change' }
+    | { status: 'migrated' }
+    | { status: 'error'; error: string }
+
 /**
  * Central CRDT service managing the Y.Doc lifecycle and IndexedDB persistence.
  *
@@ -110,6 +127,99 @@ class CrdtService {
         }
     }
 
+    // -- Sync transport -------------------------------------------------------
+
+    /**
+     * Encode the full Y.Doc state as a base64 string for Gist storage.
+     * This is the complete state, not a diff.
+     */
+    encodeSyncPayload(): string {
+        const update = Y.encodeStateAsUpdate(this.getDoc())
+        return uint8ArrayToBase64(update)
+    }
+
+    /**
+     * Decode a base64 sync payload and apply it to the local Y.Doc.
+     * The CRDT merge is always lossless -- both local and remote changes
+     * are preserved.
+     */
+    applySyncPayload(base64: string): void {
+        const update = base64ToUint8Array(base64)
+        Y.applyUpdate(this.getDoc(), update)
+    }
+
+    /**
+     * Detect semantic divergence between local state and a remote update.
+     *
+     * Algorithm:
+     * 1. Create a temporary Y.Doc and apply the remote update
+     * 2. Compute local-only diff (state in local but not in remote)
+     * 3. Compute remote-only diff (state in remote but not in local)
+     * 4. After merging both into a comparison doc, iterate shared maps
+     *    to find keys where the final merged value differs from local
+     */
+    detectDivergence(remoteUpdate: Uint8Array): DivergenceInfo {
+        const localDoc = this.getDoc()
+
+        // Build a doc representing only the remote state
+        const remoteDoc = new Y.Doc()
+        Y.applyUpdate(remoteDoc, remoteUpdate)
+
+        const localSv = Y.encodeStateVector(localDoc)
+        const remoteSv = Y.encodeStateVector(remoteDoc)
+
+        // Diffs: what each side has that the other does not
+        const localOnlyDiff = Y.encodeStateAsUpdate(localDoc, remoteSv)
+        const remoteOnlyDiff = Y.encodeStateAsUpdate(remoteDoc, localSv)
+
+        // Use byte length as a proxy for change count (Yjs update header is ~4 bytes)
+        const EMPTY_UPDATE_SIZE = 4
+        const localOnlyChanges = Math.max(0, localOnlyDiff.byteLength - EMPTY_UPDATE_SIZE)
+        const remoteOnlyChanges = Math.max(0, remoteOnlyDiff.byteLength - EMPTY_UPDATE_SIZE)
+
+        // Detect conflicting keys by merging into a temporary doc and comparing
+        const conflictingKeys: string[] = []
+
+        if (localOnlyChanges > 0 && remoteOnlyChanges > 0) {
+            // Build merged doc from both updates
+            const mergedDoc = new Y.Doc()
+            Y.applyUpdate(mergedDoc, Y.encodeStateAsUpdate(localDoc))
+            Y.applyUpdate(mergedDoc, remoteUpdate)
+
+            // Compare plants and schedule maps for field-level conflicts
+            const mapNames = ['plants', 'nutrient-schedule', 'nutrient-readings']
+            for (const mapName of mapNames) {
+                const localMap = localDoc.getMap(mapName) as Y.Map<Y.Map<unknown>>
+                const mergedMap = mergedDoc.getMap(mapName) as Y.Map<Y.Map<unknown>>
+
+                localMap.forEach((_value, key) => {
+                    const localEntry = localMap.get(key)
+                    const mergedEntry = mergedMap.get(key)
+                    if (!localEntry || !mergedEntry) return
+
+                    const localJson = JSON.stringify(localEntry.toJSON())
+                    const mergedJson = JSON.stringify(mergedEntry.toJSON())
+                    if (localJson !== mergedJson) {
+                        conflictingKeys.push(key)
+                    }
+                })
+
+                // Keys only in remote (added remotely)
+                mergedMap.forEach((_value, key) => {
+                    if (!localMap.has(key) && !conflictingKeys.includes(key)) {
+                        conflictingKeys.push(key)
+                    }
+                })
+            }
+
+            mergedDoc.destroy()
+        }
+
+        remoteDoc.destroy()
+
+        return { localOnlyChanges, remoteOnlyChanges, conflictingKeys }
+    }
+
     // -- Lifecycle ------------------------------------------------------------
 
     /** Destroy the Y.Doc and IndexedDB persistence provider. */
@@ -127,3 +237,26 @@ class CrdtService {
 }
 
 export const crdtService = new CrdtService()
+
+// ---------------------------------------------------------------------------
+// Base64 <-> Uint8Array helpers (sync transport encoding)
+// ---------------------------------------------------------------------------
+
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+    let binary = ''
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i] as number)
+    }
+    return btoa(binary)
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+    const binary = atob(base64)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i)
+    }
+    return bytes
+}
+
+export { uint8ArrayToBase64, base64ToUint8Array }

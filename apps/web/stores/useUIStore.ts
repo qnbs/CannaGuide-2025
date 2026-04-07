@@ -12,6 +12,9 @@ import {
 } from '@/types'
 import { getReduxSnapshot } from '@/services/uiStateBridge'
 import { getT } from '@/i18n'
+import type { DivergenceInfo } from '@/services/crdtService'
+
+export type SyncStatus = 'idle' | 'syncing' | 'conflict' | 'error' | 'synced'
 
 // ---------------------------------------------------------------------------
 // State
@@ -48,6 +51,14 @@ export interface UIState {
         isAvailable: boolean
         lastTranscript: string | null
         statusMessage: string | null
+    }
+    syncState: {
+        status: SyncStatus
+        lastSyncAt: number | null
+        conflictInfo: DivergenceInfo | null
+        errorMessage: string | null
+        pendingRetries: number
+        remotePayload: string | null
     }
 }
 
@@ -88,6 +99,11 @@ export interface UIActions {
     processVoiceCommand: (transcript: string) => void
     _setupConfirmedForSlotSelection: (setup: GrowSetup) => void
     hydrateUI: (partial: Partial<UIState>) => void
+    setSyncStatus: (status: SyncStatus, errorMessage?: string | null) => void
+    setSyncConflict: (info: DivergenceInfo, remotePayload: string | null) => void
+    clearSyncConflict: () => void
+    setSyncLastSyncAt: (ts: number) => void
+    setSyncPendingRetries: (count: number) => void
 }
 
 // ---------------------------------------------------------------------------
@@ -135,6 +151,14 @@ export const initialUIState: UIState = {
         lastTranscript: null,
         statusMessage: null,
     },
+    syncState: {
+        status: 'idle',
+        lastSyncAt: null,
+        conflictInfo: null,
+        errorMessage: null,
+        pendingRetries: 0,
+        remotePayload: null,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -144,141 +168,181 @@ export const initialUIState: UIState = {
 export const useUIStore = create<UIState & UIActions>()(
     devtools(
         subscribeWithSelector((set) => ({
-        ...initialUIState,
+            ...initialUIState,
 
-        setActiveView: (view) =>
-            set((state) => ({
-                activeView: view,
-                lastActiveView: MAIN_VIEWS.includes(view) ? view : state.lastActiveView,
-            })),
+            setActiveView: (view) =>
+                set((state) => ({
+                    activeView: view,
+                    lastActiveView: MAIN_VIEWS.includes(view) ? view : state.lastActiveView,
+                })),
 
-        setOnboardingStep: (step) => set({ onboardingStep: step }),
+            setOnboardingStep: (step) => set({ onboardingStep: step }),
 
-        addNotification: (payload) =>
-            set((state) => ({
-                notifications: [...state.notifications, { id: Date.now(), ...payload }],
-            })),
+            addNotification: (payload) =>
+                set((state) => ({
+                    notifications: [...state.notifications, { id: Date.now(), ...payload }],
+                })),
 
-        removeNotification: (id) =>
-            set((state) => ({
-                notifications: state.notifications.filter((n) => n.id !== id),
-            })),
+            removeNotification: (id) =>
+                set((state) => ({
+                    notifications: state.notifications.filter((n) => n.id !== id),
+                })),
 
-        setAppReady: (ready) => set({ isAppReady: ready }),
+            setAppReady: (ready) => set({ isAppReady: ready }),
 
-        setIsCommandPaletteOpen: (open) => set({ isCommandPaletteOpen: open }),
+            setIsCommandPaletteOpen: (open) => set({ isCommandPaletteOpen: open }),
 
-        openAddModal: (strain) => set({ isAddModalOpen: true, strainToEdit: strain ?? null }),
+            openAddModal: (strain) => set({ isAddModalOpen: true, strainToEdit: strain ?? null }),
 
-        closeAddModal: () => set({ isAddModalOpen: false, strainToEdit: null }),
+            closeAddModal: () => set({ isAddModalOpen: false, strainToEdit: null }),
 
-        openExportModal: () => set({ isExportModalOpen: true }),
-        closeExportModal: () => set({ isExportModalOpen: false }),
+            openExportModal: () => set({ isExportModalOpen: true }),
+            closeExportModal: () => set({ isExportModalOpen: false }),
 
-        openActionModal: (payload) => set({ actionModal: { isOpen: true, ...payload } }),
+            openActionModal: (payload) => set({ actionModal: { isOpen: true, ...payload } }),
 
-        closeActionModal: () => set({ actionModal: { isOpen: false, plantId: null, type: null } }),
+            closeActionModal: () =>
+                set({ actionModal: { isOpen: false, plantId: null, type: null } }),
 
-        openDeepDiveModal: (payload) => set({ deepDiveModal: { isOpen: true, ...payload } }),
+            openDeepDiveModal: (payload) => set({ deepDiveModal: { isOpen: true, ...payload } }),
 
-        closeDeepDiveModal: () =>
-            set({ deepDiveModal: { isOpen: false, plantId: null, topic: null } }),
+            closeDeepDiveModal: () =>
+                set({ deepDiveModal: { isOpen: false, plantId: null, topic: null } }),
 
-        openDiagnosticsModal: (plantId) =>
-            set({ isDiagnosticsModalOpen: true, diagnosticsPlantId: plantId }),
+            openDiagnosticsModal: (plantId) =>
+                set({ isDiagnosticsModalOpen: true, diagnosticsPlantId: plantId }),
 
-        closeDiagnosticsModal: () =>
-            set({ isDiagnosticsModalOpen: false, diagnosticsPlantId: null }),
+            closeDiagnosticsModal: () =>
+                set({ isDiagnosticsModalOpen: false, diagnosticsPlantId: null }),
 
-        startGrowInSlot: (slotIndex) =>
-            set({
-                newGrowFlow: {
-                    status: 'selectingStrain',
-                    slotIndex,
-                    strain: null,
-                    setup: null,
-                },
-            }),
+            startGrowInSlot: (slotIndex) =>
+                set({
+                    newGrowFlow: {
+                        status: 'selectingStrain',
+                        slotIndex,
+                        strain: null,
+                        setup: null,
+                    },
+                }),
 
-        initiateGrowFromStrain: (strain) =>
-            set({
-                newGrowFlow: {
-                    status: 'configuringSetup',
-                    slotIndex: null,
-                    strain,
-                    setup: null,
-                },
-            }),
+            initiateGrowFromStrain: (strain) =>
+                set({
+                    newGrowFlow: {
+                        status: 'configuringSetup',
+                        slotIndex: null,
+                        strain,
+                        setup: null,
+                    },
+                }),
 
-        selectSlotForGrow: (slotIndex) =>
-            set((state) => {
-                if (state.newGrowFlow.status === 'selectingSlot' && state.newGrowFlow.strain) {
-                    return {
-                        newGrowFlow: {
-                            ...state.newGrowFlow,
-                            slotIndex,
-                            status: 'configuringSetup' as const,
-                        },
+            selectSlotForGrow: (slotIndex) =>
+                set((state) => {
+                    if (state.newGrowFlow.status === 'selectingSlot' && state.newGrowFlow.strain) {
+                        return {
+                            newGrowFlow: {
+                                ...state.newGrowFlow,
+                                slotIndex,
+                                status: 'configuringSetup' as const,
+                            },
+                        }
                     }
-                }
-                return {}
-            }),
+                    return {}
+                }),
 
-        selectStrainForGrow: (strain) =>
-            set((state) => {
-                if (state.newGrowFlow.status === 'selectingStrain') {
-                    return {
-                        newGrowFlow: {
-                            ...state.newGrowFlow,
-                            strain,
-                            status: 'configuringSetup' as const,
-                        },
+            selectStrainForGrow: (strain) =>
+                set((state) => {
+                    if (state.newGrowFlow.status === 'selectingStrain') {
+                        return {
+                            newGrowFlow: {
+                                ...state.newGrowFlow,
+                                strain,
+                                status: 'configuringSetup' as const,
+                            },
+                        }
                     }
-                }
-                return {}
-            }),
+                    return {}
+                }),
 
-        confirmSetupAndShowConfirmation: (setup) =>
-            set((state) => ({
-                newGrowFlow: { ...state.newGrowFlow, setup, status: 'confirming' },
-            })),
+            confirmSetupAndShowConfirmation: (setup) =>
+                set((state) => ({
+                    newGrowFlow: { ...state.newGrowFlow, setup, status: 'confirming' },
+                })),
 
-        cancelNewGrow: () => set({ newGrowFlow: { ...initialGrowFlow } }),
+            cancelNewGrow: () => set({ newGrowFlow: { ...initialGrowFlow } }),
 
-        setEquipmentViewTab: (tab) => set({ equipmentViewTab: tab }),
-        setKnowledgeViewTab: (tab) => set({ knowledgeViewTab: tab }),
-        setActiveMentorPlantId: (id) => set({ activeMentorPlantId: id }),
+            setEquipmentViewTab: (tab) => set({ equipmentViewTab: tab }),
+            setKnowledgeViewTab: (tab) => set({ knowledgeViewTab: tab }),
+            setActiveMentorPlantId: (id) => set({ activeMentorPlantId: id }),
 
-        openSaveSetupModal: (setup) => set({ isSaveSetupModalOpen: true, setupToSave: setup }),
+            openSaveSetupModal: (setup) => set({ isSaveSetupModalOpen: true, setupToSave: setup }),
 
-        closeSaveSetupModal: () => set({ isSaveSetupModalOpen: false, setupToSave: null }),
+            closeSaveSetupModal: () => set({ isSaveSetupModalOpen: false, setupToSave: null }),
 
-        setVoiceListening: (listening) =>
-            set((state) => ({
-                voiceControl: { ...state.voiceControl, isListening: listening },
-            })),
+            setVoiceListening: (listening) =>
+                set((state) => ({
+                    voiceControl: { ...state.voiceControl, isListening: listening },
+                })),
 
-        setVoiceStatusMessage: (message) =>
-            set((state) => ({
-                voiceControl: { ...state.voiceControl, statusMessage: message },
-            })),
+            setVoiceStatusMessage: (message) =>
+                set((state) => ({
+                    voiceControl: { ...state.voiceControl, statusMessage: message },
+                })),
 
-        processVoiceCommand: (transcript) =>
-            set((state) => ({
-                voiceControl: { ...state.voiceControl, lastTranscript: transcript },
-            })),
+            processVoiceCommand: (transcript) =>
+                set((state) => ({
+                    voiceControl: { ...state.voiceControl, lastTranscript: transcript },
+                })),
 
-        _setupConfirmedForSlotSelection: (setup) =>
-            set((state) => ({
-                newGrowFlow: {
-                    ...state.newGrowFlow,
-                    setup,
-                    status: 'selectingSlot' as const,
-                },
-            })),
+            _setupConfirmedForSlotSelection: (setup) =>
+                set((state) => ({
+                    newGrowFlow: {
+                        ...state.newGrowFlow,
+                        setup,
+                        status: 'selectingSlot' as const,
+                    },
+                })),
 
-        hydrateUI: (partial) => set((state) => ({ ...state, ...partial })),
-    })),
+            hydrateUI: (partial) => set((state) => ({ ...state, ...partial })),
+
+            setSyncStatus: (status, errorMessage) =>
+                set((state) => ({
+                    syncState: {
+                        ...state.syncState,
+                        status,
+                        errorMessage: errorMessage ?? null,
+                    },
+                })),
+
+            setSyncConflict: (info, remotePayload) =>
+                set((state) => ({
+                    syncState: {
+                        ...state.syncState,
+                        status: 'conflict' as const,
+                        conflictInfo: info,
+                        remotePayload,
+                    },
+                })),
+
+            clearSyncConflict: () =>
+                set((state) => ({
+                    syncState: {
+                        ...state.syncState,
+                        status: 'synced' as const,
+                        conflictInfo: null,
+                        remotePayload: null,
+                    },
+                })),
+
+            setSyncLastSyncAt: (ts) =>
+                set((state) => ({
+                    syncState: { ...state.syncState, lastSyncAt: ts },
+                })),
+
+            setSyncPendingRetries: (count) =>
+                set((state) => ({
+                    syncState: { ...state.syncState, pendingRetries: count },
+                })),
+        })),
         { name: 'ui', enabled: import.meta.env.DEV },
     ),
 )

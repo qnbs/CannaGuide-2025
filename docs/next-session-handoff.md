@@ -2,7 +2,93 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 86) -- Multi-Grow State Layer (F-07 Session A+B)
+## Latest Session (Session 87) -- CRDT Sync Protocol + Conflict UI (F-06 Session II/3)
+
+**Status: v1.4.1. 1729 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 87)
+
+1. **crdtService transport layer** -- Added `encodeSyncPayload()`,
+   `applySyncPayload(base64)`, `detectDivergence(remoteUpdate)`.
+   DivergenceInfo and CrdtSyncResult types. Base64<->Uint8Array
+   helpers exported.
+
+2. **syncService rewrite** -- Replaced JSON-based Gist sync
+   with CRDT-aware protocol. `pushToGist(gistId, encKey)` uses
+   `crdtService.encodeSyncPayload()`. `pullFromGist()` returns
+   CrdtSyncResult (merged/conflict/no-change/migrated/error).
+   Legacy JSON format auto-detected for one-time migration.
+   `forceLocalToGist()` and `forceRemoteToLocal(base64)` for
+   conflict resolution. Sentry breadcrumbs on all sync decisions.
+
+3. **Zustand sync state** -- Added `syncState` to useUIStore:
+   status (idle/syncing/synced/error/conflict), lastSyncAt,
+   conflictInfo (DivergenceInfo), pendingRetries, remotePayload.
+   5 new actions: setSyncStatus, setSyncConflict, clearSyncConflict,
+   setSyncLastSyncAt, setSyncPendingRetries.
+
+4. **offlineSyncQueueService** -- New service for offline push
+   retry queue. Navigator.onLine + 'online' event listener.
+   Max 3 retries with exponential backoff (2s, 4s, 8s).
+
+5. **SyncConflictModal** -- New conflict resolution UI modal.
+   3 stat cards (local-only, remote-only, conflicting changes).
+   Smart Merge (green), Keep Local (amber), Use Cloud (red)
+   buttons. Keep Local/Use Cloud require double-confirmation.
+   Expandable detail view for conflicting entity keys.
+
+6. **CloudSyncPanel update** -- Rewrote handlePush and
+   handlePullConfirm for CRDT sync. No more JSON state read.
+   Sync status indicator dot (green/yellow/red/amber). Pending
+   sync badge. SyncConflictModal integration.
+
+7. **i18n keys** -- 17 new sync keys in all 5 languages
+   (EN/DE/ES/FR/NL): conflictTitle, conflictDescription,
+   localChanges, remoteChanges, conflictingItems, merge,
+   keepLocal, useCloud, viewDetails, pendingSync, synced,
+   syncError, statusIdle, keepLocalConfirm, useCloudConfirm,
+   migrating.
+
+8. **Tests** -- syncService.test.ts rewritten (13 tests): CRDT
+   push/pull, encryption, local-only guard, conflict detection,
+   legacy migration, forceLocal/forceRemote. New
+   SyncConflictModal.test.tsx (5 tests). New
+   offlineSyncQueueService.test.ts (5 tests).
+
+### Verified Metrics (Session 87)
+
+- Tests: 1729 passed (154 files), 0 failures
+- TypeScript: clean (1 known TS2719 in store.ts, filtered)
+- Build: success (152 precache entries)
+
+### Next Steps -- Session III (CRDT Integration + E2E)
+
+1. **crdtSyncBridge auto-push** -- After Redux->CRDT
+   propagation, debounced auto-push to Gist (30s cooldown).
+
+2. **Background Sync API** -- Register SW Background Sync
+   for offline pushes (replace online event listener).
+
+3. **Conflict resolution E2E tests** -- Playwright flow:
+   push, pull with divergent state, verify modal, resolve.
+
+4. **Sync health dashboard** -- Small stats panel in
+   DataManagementTab showing last sync time, pending
+   retries, CRDT doc size.
+
+5. **ADR-0004 update** -- Document sync protocol format,
+   conflict detection algorithm, and migration path.
+
+### Planned Executions
+
+- **Session III (F-06/III):** CRDT integration polish + E2E tests
+  (auto-push, Background Sync, conflict E2E, health dashboard)
+- **Session C (F-07/III):** Multi-Grow UI layer (GrowSwitcher,
+  per-grow views, per-grow environment, per-grow nutrients)
+
+---
+
+## Previous Session (Session 86) -- Multi-Grow State Layer (F-07 Session A+B)
 
 **Status: v1.4.1. 1710 tests passing. TypeScript clean. Build clean.**
 

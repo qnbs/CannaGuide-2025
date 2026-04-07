@@ -658,6 +658,7 @@ export const settingsView = {
             'Verwijder permanent ALLE gegevens van dit apparaat (Art. 17 GDPR). Dit kan niet ongedaan worden gemaakt.',
         gdprEraseWarning:
             'Dit verwijdert permanent ALLE databases, lokale opslag, caches en service workers. Typ DELETE ALL om te bevestigen.',
+        gdprEraseConfirmPlaceholder: 'DELETE ALL',
         gdprSelectiveTitle: 'Selectieve Database-Verwijdering',
         gdprSelectiveDesc:
             'Verwijder individuele databases in plaats van alle gegevens tegelijk (Art. 17 GDPR gedeeltelijke verwijdering).',
@@ -707,17 +708,23 @@ export const settingsView = {
         },
         techStack: {
             title: 'Technologiestack',
+            geminiLabel: 'Google Gemini:',
             gemini: 'Drijft alle AI-functies aan voor intelligente diagnoses en advies.',
             react: 'Voor een moderne, performante en responsieve gebruikersinterface.',
             indexedDb: 'Robuuste clientzijde database voor 100% offline functionaliteit.',
+            webWorkersLabel: 'Web Workers:',
             webWorkers:
                 'Voert complexe simulaties uit buiten de hoofdthread om de UI soepel te houden.',
         },
         credits: {
             title: 'Dankbetuigingen & Links',
+            phosphorLabel: 'Phosphor Icons:',
             phosphor: 'Pictogrammen geleverd door Phosphor Icons.',
+            dataProvidersLabel: 'Gegevensproviders:',
             strainProviders:
                 'Rasenrijking via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa en Kushy.', // machine-translated, review needed
+            webLlmOnnxLabel: 'WebLLM / ONNX:',
+            corsProxiesLabel: 'CORS-proxies:',
             corsProxies: 'CORS-proxy-relay door allorigins.win en corsproxy.io.',
             transformersJs:
                 'On-device NLP en embeddings via Transformers.js (Xenova/Hugging Face).',

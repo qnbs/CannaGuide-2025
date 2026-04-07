@@ -78,10 +78,12 @@ export const LightCalculator: React.FC = memo(() => {
             >
                 <div className="text-xs text-slate-400 mt-2 grid grid-cols-2 gap-2">
                     <div title={t('equipmentView.calculators.light.ppfdTooltip')}>
-                        <strong>PPFD</strong> {ppfd} µmol/m²/s
+                        <strong>{t('equipmentView.calculators.light.ppfdLabel')}</strong> {ppfd}{' '}
+                        µmol/m²/s
                     </div>
                     <div title={t('equipmentView.calculators.light.dliTooltip')}>
-                        <strong>DLI</strong> {dli.toFixed(1)} mol/m²/day
+                        <strong>{t('equipmentView.calculators.light.dliLabel')}</strong>{' '}
+                        {dli.toFixed(1)} mol/m²/day
                     </div>
                 </div>
             </ResultDisplay>

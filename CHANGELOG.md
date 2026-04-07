@@ -6,6 +6,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **Full i18n polish** -- Replaced all hardcoded strings in HydroMonitorView, EcPhPlannerCalculator, GrowShopsView, IotDashboardView, WhatIfSandbox, SetupConfigurator, AiEquipmentPanel, StrainLookupSection, CalculatorHubView, LightCalculator, ChemotypeCalculator with `t()` calls. 225+ new locale keys across 5 languages (EN/DE/ES/FR/NL) in equipment, strains, knowledge namespaces. E2E i18n smoke tests (12 tests: 4 languages x 3 views). (Session 78)
+- **E2E sharding + config hardening** -- Playwright `fullyParallel`, `forbidOnly`, `globalTimeout` 45min, `workers: CI?2:'50%'`, `github` reporter. CI matrix sharding (2 shards), trace `on-first-retry`. (Session 78)
+
 ### Fixed
 
 - **CI pnpm audit** -- Replaced npm-only `--omit=dev` flag with pnpm-native `--prod` in ci.yml and deploy.yml (Session 80)

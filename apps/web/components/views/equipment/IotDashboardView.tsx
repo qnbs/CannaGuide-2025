@@ -351,7 +351,10 @@ function IotDashboardViewComponent(): React.JSX.Element {
 
             {/* History count */}
             <div className="text-xs text-slate-600 text-right">
-                {history.length} readings / 120 buffer
+                {t('equipmentView.iotDashboard.readingsBuffer', {
+                    count: history.length,
+                    max: 120,
+                })}
             </div>
         </div>
     )

@@ -218,6 +218,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Use `useTranslation('<namespace>')` in components
 - Use `getT()` from `i18n.ts` in services/middleware
 - 12 namespaces: common, plants, knowledge, strains, equipment, settings, help, commandPalette, onboarding, seedbanks, strainsData, legal
+- **New component rule:** Every new UI component must have 100% of user-facing strings in `locales/*.ts` across all 5 languages (EN/DE/ES/FR/NL). No hardcoded strings.
 
 ### Testing
 
@@ -228,7 +229,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Baseline: 1614 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
-- **CI E2E timeout:** 30 minutes (step), 40 minutes (job)
+- **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
 - **Visual Regression:** `tests/e2e/visual-regression.e2e.ts` uses `expect(page).toHaveScreenshot()` for Plants, Strains, Knowledge views across themes. Snapshots stored in `tests/e2e/__screenshots__/`. Generate/update baselines: `npx playwright test --grep "Visual Regression" --update-snapshots`. CI runs visual regression with `--update-snapshots` (non-blocking); snapshots uploaded as artifacts for diff review.
 - **Mutation Testing:** Stryker Mutator (`stryker.conf.json`) targets `apps/web/stores/slices/**/*.ts`. Run: `npm run test:mutate`. Break threshold: 50% mutation score. Reports in `reports/mutation/`.
 

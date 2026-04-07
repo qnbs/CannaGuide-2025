@@ -54,30 +54,21 @@ const RADAR_COLOR = '#10b981'
 // Confidence badge
 // ---------------------------------------------------------------------------
 
-const CONFIDENCE_META: Record<ConfidenceSource, { label: string; labelDe: string; color: string }> =
-    {
-        local: {
-            label: 'Local Catalog',
-            labelDe: 'Lokaler Katalog',
-            color: 'text-emerald-400 bg-emerald-400/10',
-        },
-        cannlytics: {
-            label: 'Cannlytics Labs',
-            labelDe: 'Cannlytics Labs',
-            color: 'text-blue-400 bg-blue-400/10',
-        },
-        otreeba: { label: 'Otreeba', labelDe: 'Otreeba', color: 'text-cyan-400 bg-cyan-400/10' },
-        'cannabis-api': {
-            label: 'Cannabis API',
-            labelDe: 'Cannabis API',
-            color: 'text-violet-400 bg-violet-400/10',
-        },
-        ai: {
-            label: 'AI Generated',
-            labelDe: 'KI-generiert',
-            color: 'text-amber-400 bg-amber-400/10',
-        },
-    }
+const CONFIDENCE_META: Record<ConfidenceSource, { color: string }> = {
+    local: {
+        color: 'text-emerald-400 bg-emerald-400/10',
+    },
+    cannlytics: {
+        color: 'text-blue-400 bg-blue-400/10',
+    },
+    otreeba: { color: 'text-cyan-400 bg-cyan-400/10' },
+    'cannabis-api': {
+        color: 'text-violet-400 bg-violet-400/10',
+    },
+    ai: {
+        color: 'text-amber-400 bg-amber-400/10',
+    },
+}
 
 interface ConfidenceBadgeProps {
     source: ConfidenceSource
@@ -85,16 +76,17 @@ interface ConfidenceBadgeProps {
 }
 
 const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = memo(({ source, score }) => {
-    const { i18n } = useTranslation()
+    const { t } = useTranslation()
     const meta = CONFIDENCE_META[source]
-    const label = i18n.language.startsWith('de') ? meta.labelDe : meta.label
+    const sourceKey = source === 'cannabis-api' ? 'ai' : source
+    const label = t(`strainLookup.confidenceSources.${sourceKey}`)
     return (
         <span
             className={cn(
                 'text-xs font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1',
                 meta.color,
             )}
-            title={`${label} -- ${score}% confidence`}
+            title={t('strainLookup.confidenceTooltip', { label, score })}
         >
             <PhosphorIcons.ShieldCheck className="w-3 h-3" />
             {score}% {label}

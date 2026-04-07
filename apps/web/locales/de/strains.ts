@@ -856,6 +856,7 @@ export const strainLookup = {
         otreeba: 'Otreeba',
         ai: 'KI-generiert',
     },
+    confidenceTooltip: '{{label}} -- {{score}} % Konfidenz',
     comparison: {
         title: 'Sorten-Vergleich',
         addStrain: 'Sorte suchen und hinzufuegen...',

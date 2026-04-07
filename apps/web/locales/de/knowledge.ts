@@ -570,6 +570,7 @@ export const knowledgeView = {
             targetEc: 'Ziel-EC (mS/cm)',
             dosage: 'Ungefähre Dosierung',
             disclaimer: 'Werte sind nur Richtwerte. Immer EC und pH nach dem Mischen messen.',
+            unitLiter: 'L',
         },
         ph: {
             intro: 'Ideale pH- und EC-Bereiche variieren je nach Anzuchtmedium. Die Einhaltung dieser Bereiche gewährleistet optimale Nährstoffverfügbarkeit.',
@@ -577,6 +578,11 @@ export const knowledgeView = {
             phRange: 'pH-Bereich',
             ecRange: 'EC-Bereich (mS/cm)',
             note: 'Wasser und Nährlösung nach jedem Mischen immer pH-en. Kalibrierten pH-Meter verwenden.',
+            mediums: {
+                soil: 'Erde',
+                coco: 'Kokos',
+                hydro: 'Hydro',
+            },
         },
         terpeneEntourage: {
             description:
@@ -594,6 +600,9 @@ export const knowledgeView = {
             aiExplanationTitle: 'KI-Erklärung',
             aiLoading: 'Erklärung wird generiert...',
             deepDive: 'Vertiefung: Lernpfad ->',
+            thcLabel: 'THC',
+            cbdLabel: 'CBD',
+            cbgLabel: 'CBG',
         },
         transpiration: {
             description:

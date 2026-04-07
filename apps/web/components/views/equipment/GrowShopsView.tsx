@@ -22,15 +22,21 @@ interface Shop {
     key?: string
 }
 
-const getRatingTier = (rating: number): { label: string; color: string } => {
+const getRatingTier = (rating: number, t: TranslateFn): { label: string; color: string } => {
     if (rating >= 4.7)
-        return { label: 'Top Pick', color: 'text-amber-300 bg-amber-500/15 ring-amber-400/30' }
+        return {
+            label: t('equipmentView.growShops.ratingTier.topPick'),
+            color: 'text-amber-300 bg-amber-500/15 ring-amber-400/30',
+        }
     if (rating >= 4.4)
         return {
-            label: 'Recommended',
+            label: t('equipmentView.growShops.ratingTier.recommended'),
             color: 'text-emerald-300 bg-emerald-500/15 ring-emerald-400/30',
         }
-    return { label: 'Good', color: 'text-slate-300 bg-slate-500/15 ring-slate-400/30' }
+    return {
+        label: t('equipmentView.growShops.ratingTier.good'),
+        color: 'text-slate-300 bg-slate-500/15 ring-slate-400/30',
+    }
 }
 
 const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: () => void }> = ({
@@ -38,7 +44,7 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
     t,
     onClose,
 }) => {
-    const tier = getRatingTier(shop.rating)
+    const tier = getRatingTier(shop.rating, t)
 
     return (
         <Modal isOpen={true} onClose={onClose} title={shop.name} size="lg">
@@ -69,7 +75,9 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
                     <span className="text-lg font-bold text-amber-300">
                         {shop.rating.toFixed(1)}
                     </span>
-                    <span className="text-xs text-slate-500">/5.0</span>
+                    <span className="text-xs text-slate-500">
+                        {t('equipmentView.growShops.ratingSuffix')}
+                    </span>
                 </div>
 
                 <div className="flex-grow overflow-y-auto pr-2 space-y-5">
@@ -144,7 +152,8 @@ const ShopDetailModal = memo(ShopDetailModalComponent)
 ShopDetailModal.displayName = 'ShopDetailModal'
 
 const ShopCard: React.FC<{ shop: Shop; onSelect: () => void }> = memo(({ shop, onSelect }) => {
-    const tier = getRatingTier(shop.rating)
+    const { t } = useTranslation()
+    const tier = getRatingTier(shop.rating, t)
 
     return (
         <Card

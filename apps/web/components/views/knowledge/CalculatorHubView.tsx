@@ -441,7 +441,9 @@ const NutrientRatioPanel: React.FC = () => {
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         aria-label={t('knowledgeView.rechner.nutrient.volume')}
                     />
-                    <span className="text-[10px] text-slate-500 text-center">Liter</span>
+                    <span className="text-[10px] text-slate-500 text-center">
+                        {t('knowledgeView.rechner.nutrient.unitLiter')}
+                    </span>
                 </label>
             </div>
 
@@ -479,7 +481,8 @@ const NutrientRatioPanel: React.FC = () => {
                     <span>
                         {t('knowledgeView.rechner.nutrient.dosage')}:{' '}
                         <strong className="text-white">
-                            {(mlPerLitre * volume).toFixed(0)} ml / {volume}L
+                            {(mlPerLitre * volume).toFixed(0)} ml / {volume}
+                            {t('knowledgeView.rechner.nutrient.unitLiter')}
                         </strong>
                     </span>
                 </div>
@@ -495,10 +498,9 @@ const NutrientRatioPanel: React.FC = () => {
 const PhQuickGuidePanel: React.FC = () => {
     const { t } = useTranslation()
     const ranges = [
-        { medium: 'Soil', phMin: 6.0, phMax: 7.0, ecMin: 1.0, ecMax: 2.0 },
-        { medium: 'Coco', phMin: 5.8, phMax: 6.3, ecMin: 1.2, ecMax: 2.2 },
-        { medium: 'Hydro', phMin: 5.5, phMax: 6.2, ecMin: 1.0, ecMax: 2.5 },
-        { medium: 'Aeroponics', phMin: 5.5, phMax: 6.0, ecMin: 1.0, ecMax: 2.0 },
+        { medium: 'soil', phMin: 6.0, phMax: 7.0, ecMin: 1.0, ecMax: 2.0 },
+        { medium: 'coco', phMin: 5.8, phMax: 6.3, ecMin: 1.2, ecMax: 2.2 },
+        { medium: 'hydro', phMin: 5.5, phMax: 6.2, ecMin: 1.0, ecMax: 2.5 },
     ]
 
     return (
@@ -525,7 +527,9 @@ const PhQuickGuidePanel: React.FC = () => {
                                 key={r.medium}
                                 className="border-b border-white/5 hover:bg-slate-700/40 transition-colors"
                             >
-                                <td className="px-3 py-2 font-medium text-slate-200">{r.medium}</td>
+                                <td className="px-3 py-2 font-medium text-slate-200">
+                                    {t(`knowledgeView.rechner.ph.mediums.${r.medium}`)}
+                                </td>
                                 <td className="px-3 py-2 text-center text-green-300">
                                     {r.phMin.toFixed(1)} - {r.phMax.toFixed(1)}
                                 </td>
@@ -667,9 +671,24 @@ const TerpeneEntouragePanel: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-2">
                 {[
-                    { label: 'THC %', val: thc, set: setThc, max: 40 },
-                    { label: 'CBD %', val: cbd, set: setCbd, max: 40 },
-                    { label: 'CBG %', val: cbg, set: setCbg, max: 20 },
+                    {
+                        label: `${t('knowledgeView.rechner.terpeneEntourage.thcLabel')} %`,
+                        val: thc,
+                        set: setThc,
+                        max: 40,
+                    },
+                    {
+                        label: `${t('knowledgeView.rechner.terpeneEntourage.cbdLabel')} %`,
+                        val: cbd,
+                        set: setCbd,
+                        max: 40,
+                    },
+                    {
+                        label: `${t('knowledgeView.rechner.terpeneEntourage.cbgLabel')} %`,
+                        val: cbg,
+                        set: setCbg,
+                        max: 20,
+                    },
                 ].map(({ label, val, set, max }) => (
                     <label key={label} className="flex flex-col gap-1">
                         <span className="text-xs text-slate-400">{label}</span>
@@ -1285,9 +1304,24 @@ const CannabinoidRatioPanel: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-3">
                 {[
-                    { label: 'THC %', val: thc, set: setThc, max: 40 },
-                    { label: 'CBD %', val: cbd, set: setCbd, max: 40 },
-                    { label: 'CBG %', val: cbg, set: setCbg, max: 20 },
+                    {
+                        label: `${t('knowledgeView.rechner.terpeneEntourage.thcLabel')} %`,
+                        val: thc,
+                        set: setThc,
+                        max: 40,
+                    },
+                    {
+                        label: `${t('knowledgeView.rechner.terpeneEntourage.cbdLabel')} %`,
+                        val: cbd,
+                        set: setCbd,
+                        max: 40,
+                    },
+                    {
+                        label: `${t('knowledgeView.rechner.terpeneEntourage.cbgLabel')} %`,
+                        val: cbg,
+                        set: setCbg,
+                        max: 20,
+                    },
                 ].map(({ label, val, set, max }) => (
                     <label key={label} className="flex flex-col gap-1">
                         <span className="text-xs text-slate-400">{label}</span>
@@ -1337,15 +1371,21 @@ const CannabinoidRatioPanel: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-3 gap-1 text-center text-xs border-t border-white/10 pt-2">
                         <div>
-                            <div className="text-slate-500">THC</div>
+                            <div className="text-slate-500">
+                                {t('knowledgeView.rechner.terpeneEntourage.thcLabel')}
+                            </div>
                             <div className="text-white font-bold">{result.thcPct}%</div>
                         </div>
                         <div>
-                            <div className="text-slate-500">CBD</div>
+                            <div className="text-slate-500">
+                                {t('knowledgeView.rechner.terpeneEntourage.cbdLabel')}
+                            </div>
                             <div className="text-white font-bold">{result.cbdPct}%</div>
                         </div>
                         <div>
-                            <div className="text-slate-500">CBG</div>
+                            <div className="text-slate-500">
+                                {t('knowledgeView.rechner.terpeneEntourage.cbgLabel')}
+                            </div>
                             <div className="text-white font-bold">{result.cbgPct}%</div>
                         </div>
                     </div>

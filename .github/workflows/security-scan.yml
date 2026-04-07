@@ -59,11 +59,12 @@ jobs:
               run: |
                   if command -v semgrep >/dev/null 2>&1; then
                     pnpm run security:semgrep
-                  elif command -v pip3 >/dev/null 2>&1; then
-                    pip3 install --quiet semgrep==1.67.0
+                  elif command -v pipx >/dev/null 2>&1; then
+                    pipx install semgrep==1.67.0
+                    export PATH="$HOME/.local/bin:$PATH"
                     pnpm run security:semgrep
                   else
-                    echo "[SKIP] Semgrep not available -- install via 'pip install semgrep'"
+                    echo "[SKIP] Semgrep not available -- install via 'pipx install semgrep'"
                   fi
 
             - name: Socket.dev dependency scan

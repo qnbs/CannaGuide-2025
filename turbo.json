@@ -93,6 +93,9 @@
         "lint:scopes": {
             "cache": false
         },
+        "lint:i18n": {
+            "cache": false
+        },
         "test:coverage": {
             "dependsOn": ["^build"],
             "outputs": ["coverage/**"]

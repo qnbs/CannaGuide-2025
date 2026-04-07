@@ -1,3 +1,4 @@
+// Added in i18n-audit Session 78 -- Hydro + Strain + Calculator Polish (Opus 4.6)
 import { seedbanks } from './seedbanks'
 
 export const equipmentView = {
@@ -10,6 +11,9 @@ export const equipmentView = {
         growTech: 'Grow Tech 2026',
         iotDashboard: 'IoT Dashboard',
         hydroMonitoring: 'Hydro Monitor',
+    },
+    iotDashboard: {
+        readingsBuffer: '{{count}} readings / {{max}} buffer',
     },
     configurator: {
         title: 'AI Setup Configurator',
@@ -120,6 +124,8 @@ export const equipmentView = {
                 'PPFD (Photosynthetic Photon Flux Density) is the amount of light your plant receives.',
             dliTooltip:
                 'DLI (Daily Light Integral) is the total amount of light over a 24-hour period.',
+            ppfdLabel: 'PPFD',
+            dliLabel: 'DLI',
         },
         cost: {
             title: 'Electricity Cost Calculator',
@@ -195,6 +201,9 @@ export const equipmentView = {
                 pinene: 'Pinene',
                 linalool: 'Linalool',
                 caryophyllene: 'Caryophyllene',
+                thc: 'THC',
+                cbd: 'CBD',
+                cbg: 'CBG',
             },
         },
         yes: 'Yes',
@@ -235,6 +244,15 @@ export const equipmentView = {
                 monitor: 'Monitor',
                 schedule: 'Schedule',
                 history: 'History',
+            },
+            directionHigh: 'High',
+            directionLow: 'Low',
+            npkN: 'N:P:K (N)',
+            npkPK: 'N:P:K (P/K)',
+            mediums: {
+                soil: 'Soil',
+                coco: 'Coco',
+                hydro: 'Hydro',
             },
         },
         co2: {
@@ -319,6 +337,8 @@ export const equipmentView = {
             lightWattage: 'Light Wattage',
             propagateNote: 'Editing dimensions in individual calculators also updates the Sandbox.',
             reset: 'Reset defaults',
+            unitM3: 'm3',
+            unitWatt: 'W',
         },
         history: {
             title: 'Calculation History',
@@ -383,6 +403,7 @@ export const equipmentView = {
             price: 'Price',
             rationale: 'Rationale',
             total: 'Total',
+            currency: 'EUR',
         },
         iot: {
             syncButton: 'Use Sensor Data',
@@ -421,6 +442,10 @@ export const equipmentView = {
             '24h': '24h',
             '48h': '48h',
             '7d': '7d',
+            axisLabelPh: 'pH',
+            axisLabelEc: 'EC',
+            legendPh: 'pH',
+            legendEc: 'EC (mS/cm)',
         },
         input: {
             title: 'Add Reading',
@@ -432,6 +457,12 @@ export const equipmentView = {
         },
         thresholds: {
             title: 'Alert Thresholds',
+            phMin: 'pH Min',
+            phMax: 'pH Max',
+            ecMin: 'EC Min',
+            ecMax: 'EC Max',
+            tempMin: 'Temp Min',
+            tempMax: 'Temp Max',
         },
         dosing: {
             title: 'Dosing Reference (Hydro)',
@@ -439,6 +470,8 @@ export const equipmentView = {
             seedling: 'Seedling',
             vegetative: 'Vegetative',
             flowering: 'Flowering',
+            ecColumn: 'EC (mS/cm)',
+            phColumn: 'pH',
         },
         forecast: {
             title: 'Next Hour (AI Forecast)',
@@ -469,6 +502,12 @@ export const equipmentView = {
         },
     },
     growShops: {
+        ratingTier: {
+            topPick: 'Top Pick',
+            recommended: 'Recommended',
+            good: 'Good',
+        },
+        ratingSuffix: '/5.0',
         region: {
             europe: 'Europe',
             usa: 'USA / Canada',

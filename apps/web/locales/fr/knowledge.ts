@@ -921,6 +921,7 @@ export const knowledgeView = {
             dosage: 'Dosage Approximatif',
             disclaimer:
                 'Les valeurs sont des lignes directrices. Mesurez toujours la CE et le pH apres melange.',
+            unitLiter: 'L',
         },
         ph: {
             intro: 'Les plages optimales de pH et CE varient selon le substrat. Rester dans ces plages garantit une disponibilite optimale des nutriments.',
@@ -928,6 +929,11 @@ export const knowledgeView = {
             phRange: 'Plage pH',
             ecRange: 'Plage CE (mS/cm)',
             note: 'Ajustez toujours le pH de votre eau et solution nutritive apres chaque melange. Utilisez un pH-metre calibre.',
+            mediums: {
+                soil: 'Terre',
+                coco: 'Coco',
+                hydro: 'Hydro',
+            },
         },
         terpeneEntourage: {
             description:
@@ -945,6 +951,9 @@ export const knowledgeView = {
             aiExplanationTitle: 'Explication IA',
             aiLoading: "Generation de l'explication...",
             deepDive: "Approfondir: Parcours d'Apprentissage ->",
+            thcLabel: 'THC',
+            cbdLabel: 'CBD',
+            cbgLabel: 'CBG',
         },
         transpiration: {
             description:

@@ -47,10 +47,13 @@ const StageLabel: React.FC<{ stage: PlantStage }> = memo(({ stage }) => {
 StageLabel.displayName = 'StageLabel'
 
 const AlertBadge: React.FC<{ type: string }> = memo(({ type }) => {
+    const { t } = useTranslation()
     const isHigh = type.includes('high')
     const isEc = type.includes('ec')
     const metricLabel = isEc ? 'EC' : 'pH'
-    const directionLabel = isHigh ? 'High' : 'Low'
+    const directionLabel = isHigh
+        ? t('equipmentView.calculators.ecPhPlanner.directionHigh')
+        : t('equipmentView.calculators.ecPhPlanner.directionLow')
     return (
         <span
             className={cn(
@@ -264,7 +267,7 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
                                 : 'bg-slate-800/50 text-slate-400 hover:text-slate-200',
                         )}
                     >
-                        {m}
+                        {t(`equipmentView.calculators.ecPhPlanner.mediums.${m.toLowerCase()}`)}
                     </button>
                 ))}
                 <button
@@ -560,7 +563,7 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
                                         }
                                     />
                                     <Input
-                                        label="N:P:K (N)"
+                                        label={t('equipmentView.calculators.ecPhPlanner.npkN')}
                                         type="number"
                                         min="0"
                                         max="10"
@@ -580,7 +583,7 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
                                         }
                                     />
                                     <Input
-                                        label="N:P:K (P/K)"
+                                        label={t('equipmentView.calculators.ecPhPlanner.npkPK')}
                                         type="number"
                                         min="0"
                                         max="10"
@@ -676,7 +679,9 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
                                                                 : 'bg-blue-900/30 text-blue-300',
                                                         )}
                                                     >
-                                                        {reading.readingType}
+                                                        {t(
+                                                            `equipmentView.calculators.ecPhPlanner.${reading.readingType}`,
+                                                        )}
                                                     </span>
                                                 </td>
                                             </tr>

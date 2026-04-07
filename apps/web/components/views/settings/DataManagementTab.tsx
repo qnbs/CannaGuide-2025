@@ -806,7 +806,10 @@ const DataManagementTab: React.FC = () => {
                     <Input
                         value={eraseConfirmText}
                         onChange={(e) => setEraseConfirmText(e.target.value)}
-                        placeholder="DELETE ALL"
+                        placeholder={t(
+                            'settingsView.data.gdprEraseConfirmPlaceholder',
+                            'DELETE ALL',
+                        )}
                         className="font-mono"
                     />
                     <DialogFooter>

@@ -39,7 +39,7 @@
 | A-02 | Local AI model versioning             | Medium | Done   |
 | P-03 | Image optimization pipeline           | Medium | Done   |
 | F-05 | Multi-grow management                 | High   | Open   |
-| D-01 | API documentation                     | High   | Open   |
+| D-01 | API documentation                     | High   | Done   |
 | R-01 | Streaming generalization              | Medium | Done   |
 | R-02 | GPU resource manager v2 (N consumers) | Medium | Done   |
 | R-03 | WebLLM preload UX (progress bar)      | Low    | Done   |

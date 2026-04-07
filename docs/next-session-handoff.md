@@ -2,6 +2,79 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 82) -- Deep Audit Remediation (K-1, K-2, H-2)
+
+**Status: v1.4.1. 1663 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 82)
+
+1. **K-1 README metric synchronization:**
+    - Services badge: 105 -> 104
+    - EN Tech Stack test count: 1447 -> 1663
+    - DE Tech Stack test count: 1423 -> 1663
+    - DE v1.4 roadmap status: "In Arbeit" -> Released
+    - DE Development Journey test count: 1049 -> 1663, period v1.0->v1.3+ -> v1.0->v1.4
+    - API reference link added to EN + DE Contributing sections
+
+2. **K-2 ARCHITECTURE.md test count fix:**
+    - Build commands section: 960+ -> 1663 tests
+    - Added API reference link to docs/api/ after AI pipeline section
+
+3. **AUDIT_BACKLOG.md test count fix:**
+    - T-01 finding: 960+ -> 1663
+
+4. **H-2 API documentation (docs/api/):**
+    - docs/api/README.md -- index with convention, related docs links
+    - docs/api/ai-facade.md -- full method table (24 aiService methods
+      with signatures, routing, return types), mode helpers, routing
+      decision tree, error handling
+    - docs/api/rag-pipeline.md -- growLogRagService internal pipeline,
+      hybrid scoring weights, ragEmbeddingCacheService API (2048 entries,
+      90d TTL, background precomputation)
+    - docs/api/local-ai-infrastructure.md -- cache/telemetry/preload
+      APIs, 3-layer fallback architecture, GPU resource management,
+      model catalog
+    - D-01 marked Done in PRIORITY_ROADMAP.md
+
+### Verified Metrics (Session 82)
+
+- Tests: 1663 passed (149 files), 0 failures
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Build: success
+
+### Next Steps
+
+- H-1 (F-05): Multi-grow management -- concept + type system design
+- H-3 (F-06): Offline sync conflict resolution -- pragmatic
+  timestamp-based conflict UI as quick win
+- C-04: Netlify preview smoke test
+- Vite 8 upgrade (PR #141, dedicated session)
+
+### Planned Executions
+
+**Execution 2 -- Multi-Grow Concept (H-1):**
+Scope: Grow interface design, growId type additions, simulationSlice
+refactor concept, selector impact analysis, migration strategy.
+Prerequisites: None. Complexity: High (14-19 dev days total).
+
+**Execution 3 -- Pragmatic Offline Sync (H-3 Phase A):**
+Scope: Timestamp-based conflict detection on JSON import,
+merge-conflict UI in DataManagementTab.tsx showing both versions.
+Prerequisites: None. Complexity: Medium (1 session).
+
+**Execution 4 -- Multi-Grow Implementation (H-1 cont.):**
+Scope: Redux slice refactoring, selector updates, state migration,
+UI (Grow-Switcher, PlantsView filter), tests.
+Prerequisites: Execution 2. Complexity: High (3-4 sessions).
+
+**Execution 5 -- CRDT Sync (H-3 Phase B):**
+Scope: Yjs evaluation + integration, per-slice CRDT adapters,
+WebSocket provider (Supabase), conflict UI, multi-client E2E.
+Prerequisites: Execution 4 + backend infrastructure decision.
+Complexity: Very High (3 sessions).
+
+---
+
 ## Latest Session (Session 81) -- CI Typecheck Fix + Vitest Hang Fix
 
 **Status: TS7053 fixed. Vitest `test:run` script added. All CI workflows and docs updated.**

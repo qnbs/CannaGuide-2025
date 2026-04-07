@@ -65,7 +65,7 @@
 <!-- Project Metrics -->
 
 [![Strains](https://img.shields.io/badge/strains-778-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/services-105-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/services-104-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-14-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
@@ -162,7 +162,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1447 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1663 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 
 ---
@@ -402,7 +402,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. API reference: [docs/api/](docs/api/).
 
 1. [Open an issue](https://github.com/qnbs/CannaGuide-2025/issues) to discuss
 2. Fork → branch (`git checkout -b feature/my-feature`) → commit → push → PR
@@ -585,7 +585,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 Namensräume                |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1423 Unit-, E2E-, Komponenten-Tests           |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1663 Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 
 ---
@@ -825,7 +825,7 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 
 ## Mitwirken
 
-Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
+Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien. API-Referenz: [docs/api/](docs/api/).
 
 1. [Issue eröffnen](https://github.com/qnbs/CannaGuide-2025/issues) zur Diskussion
 2. Fork → Branch (`git checkout -b feature/mein-feature`) → Commit → Push → PR
@@ -843,7 +843,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, IoT-Mocks, CodeQL, Grype                                                                                                        |
 | **v1.2** | ✅ Veröffentlicht | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
 | **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                 |
-| **v1.4** | In Arbeit         | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1663 Tests                                                                         |
+| **v1.4** | ✅ Veröffentlicht | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, 1663 Tests                                                                         |
 | **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                       |
 | **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                       |
 
@@ -867,7 +867,7 @@ CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                              | v0.1 → v1.0    |
 | **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                      | Durchgehend    |
-| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1049 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.3+  |
+| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1663 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.4   |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Produktions-Deployment, PR-Previews, OpenSSF-Compliance                                                                             | Kontinuierlich |
 
 > **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.

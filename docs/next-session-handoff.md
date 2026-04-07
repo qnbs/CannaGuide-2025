@@ -2,7 +2,100 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 84) -- Audit Findings M-5, M-6, M-7
+## Latest Session (Session 85) -- Yjs CRDT Foundation (F-06 Session I/3)
+
+**Status: v1.4.1. 1696 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 85)
+
+1. **Yjs + y-indexeddb installed** as dependencies in
+   `apps/web/package.json`. `sync` Vite chunk isolates
+   yjs/y-indexeddb/lib0 (~80 KB, lazy-loaded).
+
+2. **crdtService.ts** -- Central Y.Doc lifecycle manager.
+   IndexeddbPersistence provider (`cannaguide-crdt-v1`).
+   Typed map accessors for plants, nutrient-schedule,
+   nutrient-readings, settings. State vector API for
+   future sync protocol. Singleton export.
+
+3. **crdtAdapters.ts** -- Bidirectional serializers for
+   Plant, JournalEntry, NutrientScheduleEntry, EcPhReading.
+   Zod validation on deserialization (returns null on
+   invalid data). Excludes `simulationClock` and `history`
+   from sync. Nested objects as JSON strings (Session I).
+
+4. **crdtSyncBridge.ts** -- Bidirectional Redux<->CRDT
+   bridge. Redux->CRDT via listener middleware (addPlant,
+   updatePlant, upsertPlant, removePlant, addJournalEntry,
+   nutrient actions). CRDT->Redux via Y.Map observers
+   dispatching upsert/remove with `meta.fromCrdt: true`.
+   Double loop prevention: `meta.fromCrdt` flag +
+   `BRIDGE_ORIGIN` transaction origin.
+
+5. **New slice actions** -- `upsertPlant`, `removePlant`
+   (simulationSlice with prepare callbacks),
+   `upsertScheduleEntry`, `removeScheduleEntry`,
+   `upsertReading` (nutrientPlannerSlice with prepare
+   callbacks). All support `{ fromCrdt?: boolean }` meta.
+
+6. **Bootstrap integration** -- CRDT init in `index.tsx`
+   after IndexedDB hydration, before persistence setup.
+   Dynamic import for lazy loading. try/catch for failure
+   isolation. Initial seed from Redux if Y.Doc empty.
+
+7. **33 new tests** -- `crdtAdapters.test.ts` (17 tests:
+   round-trips, null safety, timestamps, optional fields),
+   `crdtSyncBridge.test.ts` (16 tests: Redux->CRDT,
+   CRDT->Redux, loop prevention, error resilience, seeding).
+
+8. **ADR-0004** -- Architecture decision record documenting
+   Yjs over Automerge, Y.Doc schema, boot order, session
+   roadmap.
+
+### Verified Metrics (Session 85)
+
+- Tests: 1696 passed (151 files), 0 failures
+- TypeScript: clean (1 known TS2719 in store.ts, filtered)
+- Build: success, `sync-*.js` chunk exists (~80 KB)
+- Sync chunk NOT in initial HTML (lazy-loaded only)
+
+### Next Steps -- Session II (CRDT Sync Transport)
+
+1. **Replace Gist JSON blob with Y.Doc state vector
+   exchange** -- `communityShareService.ts` exports/imports
+   Y.Doc state updates instead of raw JSON. Gist payload
+   becomes `{ version: 2, stateVector: base64, update: base64 }`.
+
+2. **Multi-tab BroadcastChannel sync** -- Y.Doc changes
+   broadcast to other tabs of the same origin via
+   `BroadcastChannel('cannaguide-crdt')`.
+
+3. **y-websocket evaluation** -- Evaluate adding
+   `y-websocket` for real-time sync (Supabase Realtime or
+   self-hosted signaling). May defer to Session III.
+
+4. **Journal Y.Array migration** -- Upgrade journal entries
+   from JSON string to `Y.Array<Y.Map>` for per-entry
+   CRDT merge (concurrent journal writes from two devices).
+
+### Next Steps -- Session III (Conflict UI)
+
+1. **Semantic conflict detection** -- Detect when CRDT
+   merge produces unexpected combinations (e.g., stage
+   regression from Flowering to Vegetative).
+
+2. **Conflict resolution UI** -- Modal showing both versions
+   with diff highlighting, manual accept/reject per field.
+
+3. **E2E multi-client tests** -- Playwright tests with two
+   browser contexts simulating concurrent edits.
+
+4. **Settings map wiring** -- Connect settings slice to
+   CRDT settings map.
+
+---
+
+## Previous Session (Session 84) -- Audit Findings M-5, M-6, M-7
 
 **Status: v1.4.1. 1663 tests passing. TypeScript clean. Build clean.**
 

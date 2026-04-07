@@ -166,6 +166,12 @@ importers:
             three:
                 specifier: ^0.180.0
                 version: 0.180.0
+            y-indexeddb:
+                specifier: ^9.0.12
+                version: 9.0.12(yjs@13.6.30)
+            yjs:
+                specifier: ^13.6.30
+                version: 13.6.30
             zod:
                 specifier: ^3.25.76
                 version: 3.25.76
@@ -7841,6 +7847,12 @@ packages:
                 integrity: sha512-qvUtwJ3j6qwsF3jLxkZ72qCgjMysPzDfeV240JHiGZsANBYd+EEuu35v7dfrJ9Up0Ak07D7GGSkGhCHTqg/5wA==,
             }
 
+    isomorphic.js@0.2.5:
+        resolution:
+            {
+                integrity: sha512-PIeMbHqMt4DnUP3MA/Flc0HElYjMXArsw1qwJZcm9sqR8mq3l8NYizFMty0pWwE/tzIGH3EKK5+jes5mAr85yw==,
+            }
+
     istanbul-lib-coverage@3.2.2:
         resolution:
             {
@@ -8110,6 +8122,14 @@ packages:
                 integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==,
             }
         engines: { node: '>= 0.8.0' }
+
+    lib0@0.2.117:
+        resolution:
+            {
+                integrity: sha512-DeXj9X5xDCjgKLU/7RR+/HQEVzuuEUiwldwOGsHK/sfAfELGWEyTcf0x+uOvCvK3O2zPmZePXWL85vtia6GyZw==,
+            }
+        engines: { node: '>=16' }
+        hasBin: true
 
     lie@3.1.1:
         resolution:
@@ -11920,6 +11940,15 @@ packages:
                 integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==,
             }
 
+    y-indexeddb@9.0.12:
+        resolution:
+            {
+                integrity: sha512-9oCFRSPPzBK7/w5vOkJBaVCQZKHXB/v6SIT+WYhnJxlEC61juqG0hBrAf+y3gmSMLFLwICNH9nQ53uscuse6Hg==,
+            }
+        engines: { node: '>=16.0.0', npm: '>=8.0.0' }
+        peerDependencies:
+            yjs: ^13.0.0
+
     y18n@4.0.3:
         resolution:
             {
@@ -12027,6 +12056,13 @@ packages:
             {
                 integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==,
             }
+
+    yjs@13.6.30:
+        resolution:
+            {
+                integrity: sha512-vv/9h42eCMC81ZHDFswuu/MKzkl/vyq1BhaNGfHyOonwlG4CJbQF4oiBBJPvfdeCt/PlVDWh7Nov9D34YY09uQ==,
+            }
+        engines: { node: '>=16.0.0', npm: '>=8.0.0' }
 
     yocto-queue@0.1.0:
         resolution:
@@ -17143,6 +17179,8 @@ snapshots:
         transitivePeerDependencies:
             - encoding
 
+    isomorphic.js@0.2.5: {}
+
     istanbul-lib-coverage@3.2.2: {}
 
     istanbul-lib-report@3.0.1:
@@ -17309,6 +17347,10 @@ snapshots:
         dependencies:
             prelude-ls: 1.2.1
             type-check: 0.4.0
+
+    lib0@0.2.117:
+        dependencies:
+            isomorphic.js: 0.2.5
 
     lie@3.1.1:
         dependencies:
@@ -19780,6 +19822,11 @@ snapshots:
 
     xmlchars@2.2.0: {}
 
+    y-indexeddb@9.0.12(yjs@13.6.30):
+        dependencies:
+            lib0: 0.2.117
+            yjs: 13.6.30
+
     y18n@4.0.3: {}
 
     y18n@5.0.8: {}
@@ -19855,6 +19902,10 @@ snapshots:
         dependencies:
             buffer-crc32: 0.2.13
             fd-slicer: 1.1.0
+
+    yjs@13.6.30:
+        dependencies:
+            lib0: 0.2.117
 
     yocto-queue@0.1.0: {}
 

@@ -170,6 +170,28 @@ All user data lives in IndexedDB. The Service Worker uses Network-First for navi
 
 Additional databases: `CannaGuideSecureDB` (crypto keys), `CannaGuideTimeSeriesDB` (IoT sensors), `CannaGuideLocalAiCache` (inference), `CannaGuideImageGenCache` (generated images), `CannaGuideReminderDB` (SW reminders).
 
+### CRDT Sync Layer (Yjs)
+
+Multi-device conflict resolution uses [Yjs](https://github.com/yjs/yjs) CRDTs with automatic merge. The `sync` Vite chunk (~80 KB) is lazy-loaded after Redux hydration.
+
+**Y.Doc schema (`cannaguide-crdt-v1`):**
+
+| Map name            | Key        | Value                   |
+| ------------------- | ---------- | ----------------------- |
+| `plants`            | plantId    | Y.Map of plant fields   |
+| `nutrient-schedule` | scheduleId | Y.Map of schedule entry |
+| `nutrient-readings` | readingId  | Y.Map of EC/pH reading  |
+| `settings`          | settingKey | Primitive value         |
+
+**Boot order:** IndexedDB hydration -> Redux ready -> `crdtService.initialize()` -> `initCrdtSyncBridge(store)` -> bridge attaches observers.
+
+**Bidirectional bridge:**
+
+- Redux -> CRDT: listener middleware intercepts plant/nutrient actions, writes to Y.Doc (skipped when `action.meta.fromCrdt === true`)
+- CRDT -> Redux: Y.Map observers dispatch `upsertPlant`/`removePlant` with `{ meta: { fromCrdt: true } }` (skipped when transaction origin is `'redux-bridge'`)
+
+**Failure isolation:** CRDT failure does not crash the app. All initialization and observation is `try/catch` wrapped. See [ADR-0004](adr/0004-crdt-yjs-offline-sync.md).
+
 ### AI Pipeline
 
 ```

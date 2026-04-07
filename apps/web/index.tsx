@@ -190,6 +190,22 @@ const mountHydratedApp = async () => {
         const hydratedStore: AppStore = await createAppStore()
         renderAppWithStore(hydratedStore)
 
+        // 3b. Initialize CRDT sync layer (Yjs + y-indexeddb).
+        //     Must happen AFTER Redux hydration to prevent stale CRDT data
+        //     from overwriting fresh IndexedDB state on first boot.
+        //     Failure is non-fatal -- app works without CRDT.
+        try {
+            const { crdtService } = await import('./services/crdtService')
+            await crdtService.initialize()
+            const { registerCrdtListeners, initCrdtSyncBridge } =
+                await import('./services/crdtSyncBridge')
+            const { startAppListening } = await import('./stores/listenerMiddleware')
+            registerCrdtListeners(startAppListening)
+            initCrdtSyncBridge(hydratedStore)
+        } catch (crdtError) {
+            console.error('[CRDT] Initialization failed, continuing without sync:', crdtError)
+        }
+
         // 4. Setup robust, event-driven persistence
         const saveState = async () => {
             try {

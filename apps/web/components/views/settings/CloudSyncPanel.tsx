@@ -98,8 +98,7 @@ const CloudSyncPanel: React.FC = () => {
                     cloudSync.encryptionKeyBase64,
                 )
             } else {
-                setSyncStatus('error',
-                    error instanceof Error ? error.message : 'Push failed')
+                setSyncStatus('error', error instanceof Error ? error.message : 'Push failed')
                 getUISnapshot().addNotification({
                     type: 'error',
                     message:
@@ -171,8 +170,7 @@ const CloudSyncPanel: React.FC = () => {
             }
         } catch (error) {
             console.debug('[CloudSync] Pull failed:', error)
-            setSyncStatus('error',
-                error instanceof Error ? error.message : 'Pull failed')
+            setSyncStatus('error', error instanceof Error ? error.message : 'Pull failed')
             getUISnapshot().addNotification({
                 type: 'error',
                 message:
@@ -406,7 +404,7 @@ const CloudSyncPanel: React.FC = () => {
                         {/* Pending sync badge */}
                         {syncState.pendingRetries > 0 && (
                             <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-2 text-xs text-amber-300">
-                                <PhosphorIcons.Clock className="h-3.5 w-3.5" />
+                                <PhosphorIcons.ArrowClockwise className="h-3.5 w-3.5" />
                                 {t('settingsView.data.sync.pendingSync')}
                             </div>
                         )}
@@ -431,10 +429,7 @@ const CloudSyncPanel: React.FC = () => {
                     onKeepLocal={() => {
                         clearSyncConflict()
                         void syncService
-                            .forceLocalToGist(
-                                cloudSync.gistId ?? '',
-                                cloudSync.encryptionKeyBase64,
-                            )
+                            .forceLocalToGist(cloudSync.gistId ?? '', cloudSync.encryptionKeyBase64)
                             .then(({ syncedAt }) => {
                                 setSyncLastSyncAt(syncedAt)
                                 dispatch(

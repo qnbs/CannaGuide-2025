@@ -62,7 +62,7 @@ vi.mock('@/components/icons/PhosphorIcons', () => ({
         Warning: ({ className }: { className?: string }) => (
             <span className={className} data-testid="warning-icon" />
         ),
-        GitMerge: ({ className }: { className?: string }) => (
+        ShareNetwork: ({ className }: { className?: string }) => (
             <span className={className} data-testid="merge-icon" />
         ),
     },
@@ -125,9 +125,7 @@ describe('SyncConflictModal', () => {
             screen.getByText((content) => content.includes('settingsView.data.sync.localChanges')),
         ).toBeInTheDocument()
         expect(
-            screen.getByText((content) =>
-                content.includes('settingsView.data.sync.remoteChanges'),
-            ),
+            screen.getByText((content) => content.includes('settingsView.data.sync.remoteChanges')),
         ).toBeInTheDocument()
     })
 

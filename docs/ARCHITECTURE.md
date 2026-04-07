@@ -16,8 +16,8 @@
 | Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                                 |
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                      |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                            |
-| Workers      | WorkerBus (promise-based, 8 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 1614 unit tests, Playwright E2E + Component tests                                 |
+| Workers      | WorkerBus (promise-based, 9 workers, heap-based priority queue, messageId, auto-timeout) |
+| Testing      | Vitest 1663 unit tests, Playwright E2E + Component tests                                 |
 | Distribution | GitHub Pages, Netlify (PR previews)                                                      |
 
 ---
@@ -87,8 +87,8 @@ apps/web/                 Main PWA (@cannaguide/web)
   data/                   Static data: 778 strains, FAQ, lexicon (83 entries, 6 categories), guides, diseases (22 entries), learningPaths (5 paths)
   locales/                i18n translations: en/, de/, es/, fr/, nl/
   hooks/                  25 custom React hooks
-  workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
-  services/workerBus.ts   Centralized promise-based WorkerBus (8 workers, priority queue, timeout)
+  workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation
+  services/workerBus.ts   Centralized promise-based WorkerBus (9 workers, priority queue, timeout)
   utils/priorityQueue.ts  Generic min-heap PriorityQueue<T> with WorkerPriority type
   services/ragEmbeddingCacheService.ts  Persistent IndexedDB LRU embedding cache (MiniLM-L6, model versioning, telemetry)
   services/equipmentCalculatorService.ts  Pure-formula service: CO2, Humidity Deficit, Light Hanging Height (Zod-validated)

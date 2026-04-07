@@ -2,7 +2,58 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 78) -- Full i18n Polish Hydro/Equipment/Calculator/Strain-Comparison
+## Latest Session (Session 81) -- CI Typecheck Fix + Vitest Hang Fix
+
+**Status: TS7053 fixed. Vitest `test:run` script added. All CI workflows and docs updated.**
+
+### What Was Done (Session 81)
+
+1. **TS7053 fix in HydroMonitorView:**
+    - Typed threshold editor field tuples as
+      `[keyof HydroThresholds, string][]` instead of `[string, string][]`
+    - Removed redundant `as keyof HydroThresholds` cast in onChange
+    - Fixes CI typecheck failure (TS7053 was an unknown error,
+      causing typecheck-filter to also expose the known TS2719)
+
+2. **Vitest hanging root cause + fix:**
+    - Root cause: `pnpm test -- --run` passes `--` to vitest,
+      which marks end of CLI options -- `--run` becomes a file
+      pattern positional arg, vitest stays in watch mode forever
+    - Added `"test:run": "vitest run"` script to apps/web/package.json
+    - Added `"test:run": "turbo run test:run"` to root package.json
+    - Added `test:run` task to turbo.json
+    - Updated deploy.yml: `test:run --reporter=verbose`
+    - Updated release-gate.yml: `test:run`
+    - Updated gate:push script in root package.json
+    - Eliminated all `test -- --run` references across codebase
+    - Updated copilot-instructions.md commands section
+
+3. **Documentation updates:**
+    - README badges: 1614 -> 1663 tests (EN + DE)
+    - README commands: added `test:run` (EN + DE)
+    - copilot-instructions: test count 1614 -> 1663,
+      commands section with test:run
+    - CHANGELOG: session 81 entries
+    - next-session-handoff: session 81 entry
+
+### Verified Metrics (Session 81)
+
+- Tests: 1663 passed (149 files), 0 failures
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Build: success (153 precache entries)
+- test:run script exits cleanly (no hang)
+
+### Next Steps
+
+- P1 audit items from PRIORITY_ROADMAP.md
+- Vite 8 upgrade (PR #141, dedicated session)
+- C-04 Netlify preview smoke test
+- A-03 AI cost tracking
+- F-05 Multi-grow management
+
+---
+
+## Previous Session (Session 78) -- Full i18n Polish Hydro/Equipment/Calculator/Strain-Comparison
 
 **Status: All hardcoded strings replaced. 5 languages complete. E2E i18n smoke tests added. E2E CI sharding enabled.**
 

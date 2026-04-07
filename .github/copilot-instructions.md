@@ -16,13 +16,13 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Frontend:** React 19 + TypeScript (strict mode, zero `any`)
 - **State:** Redux Toolkit (persisted app-state) + Zustand (transient UI-state) + RTK Query (AI API caching)
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
-- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 18 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
+- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 22 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
 - **Package Manager:** pnpm 10 via Corepack (shamefully-hoist, workspace:\* protocol)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1614 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1663 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews)
@@ -56,7 +56,7 @@ apps/
     hooks/               # Custom React hooks (25)
     data/                # Static data: 778 strains, FAQ, lexicon (83 entries), guides, diseases (22 entries), learningPaths (5 paths)
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
-    workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, strain hydration, terpene
+    workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation
     utils/               # Shared utilities
     types/               # Zod schemas for AI response validation
     lib/                 # Utility library (cn(), VPD calculations)
@@ -82,7 +82,7 @@ packages/
 scripts/                 # Build/lint/merge scripts
 docker/                  # IoT mock servers (ESP32 sensor simulator)
 docs/                    # Developer guides, roadmap
-.github/                 # 22 CI/CD workflows, issue templates
+.github/                 # 21 CI/CD workflows, issue templates
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
 
@@ -130,7 +130,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiInfrastructureService.ts` -- Backward-compatible barrel re-export for LocalAIInfrastructure
     - `localAiWebGpuService.ts` -- Centralized WebGPU adapter, shared device lifecycle, feature detection
 
-8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, AbortController support, Transferable zero-copy transfers, heap-based priority queue, and pagehide teardown. All 8 workers (VPD simulation, genealogy, scenario, inference, image generation, strain hydration, terpene, calculation) use this bus. Priority levels: `critical` (VPD safety), `high` (user-initiated simulation), `normal` (default), `low` (ML inference, image gen). `PriorityQueue<T>` min-heap in `utils/priorityQueue.ts` with O(log n) enqueue/dequeue and FIFO tiebreaking. `getQueueState()` returns per-priority breakdown. No preemption -- critical jobs queue-jump but never interrupt running workers. `workerStateSyncService.ts` provides a framework-agnostic handler registry for automatic Redux/Zustand wiring from dispatch results. `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`). See `docs/worker-bus.md`.
+8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, AbortController support, Transferable zero-copy transfers, heap-based priority queue, and pagehide teardown. All 9 workers (VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation) use this bus. Priority levels: `critical` (VPD safety), `high` (user-initiated simulation), `normal` (default), `low` (ML inference, image gen). `PriorityQueue<T>` min-heap in `utils/priorityQueue.ts` with O(log n) enqueue/dequeue and FIFO tiebreaking. `getQueueState()` returns per-priority breakdown. No preemption -- critical jobs queue-jump but never interrupt running workers. `workerStateSyncService.ts` provides a framework-agnostic handler registry for automatic Redux/Zustand wiring from dispatch results. `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`). See `docs/worker-bus.md`.
 
 9. **Seedbank API:** `seedbankService.ts` provides deterministic mock seed pricing/availability. SeedFinder.eu API permanently removed (dead since mid-2024). 5 hardcoded seedbanks with hash-based availability. 5-min in-memory TTL cache. `isLocalOnlyMode()` guard.
 
@@ -226,7 +226,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1614 tests, 0 failures
+- Baseline: 1663 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
@@ -269,7 +269,8 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 # Root (delegates to TurboRepo)
 pnpm run dev              # turbo run dev (Vite dev server)
 pnpm run build            # turbo run build (all workspaces)
-pnpm test                 # turbo run test (Vitest)
+pnpm test                 # turbo run test (Vitest, watch mode)
+pnpm run test:run         # turbo run test:run (Vitest, single run, exits)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier format
@@ -283,7 +284,7 @@ pnpm run docs:ai-core     # Generate Typedoc API docs for ai-core package
 # Web app (from apps/web/ or via workspace flag)
 pnpm --filter @cannaguide/web dev       # Vite dev server (localhost:5173)
 pnpm --filter @cannaguide/web build     # Production build
-pnpm --filter @cannaguide/web test -- --run  # Vitest unit/integration (--run required -- no --run = watch mode hangs)
+pnpm --filter @cannaguide/web test:run  # Vitest unit/integration (single run, exits when done)
 pnpm --filter @cannaguide/web test:e2e  # Playwright E2E (requires build)
 pnpm --filter @cannaguide/web test:ct   # Playwright Component tests
 pnpm --filter @cannaguide/web typecheck # tsc --noEmit (TS2719 filtered)
@@ -340,7 +341,7 @@ Switch to Agent Mode and execute the approved plan:
 2. **Implement changes** in dependency order, marking todos in-progress/completed as you go.
 3. **Run validation** after each logical group of changes:
     - `npm run -w @cannaguide/web typecheck` (must be clean)
-    - `npm run -w @cannaguide/web test -- --run` (must pass, 0 failures -- `--run` is mandatory, omitting it starts watch mode and hangs indefinitely)
+    - `pnpm --filter @cannaguide/web test:run` (must pass, 0 failures)
     - `npm run -w @cannaguide/web build` (must succeed)
 4. **Fix any errors** immediately before proceeding to the next step.
 
@@ -431,7 +432,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/nutrientDeficiencyService.ts`            | Decision tree for visual nutrient deficiency diagnosis (8 nodes, 9 results: N/P/K/Mg/Ca/Fe/Mn/Mo/Cl)                                                                       |
 | `apps/web/services/imageGenerationService.ts`               | SD-Turbo text-to-image (WebGPU, worker-offloaded)                                                                                                                          |
 | `apps/web/services/dailyStrainsService.ts`                  | 4:20 Daily Drop: seeded PRNG daily picks, AI search, resolveDiscoveredToStrain                                                                                             |
-| `apps/web/services/workerBus.ts`                            | Promise-based worker communication bus (8 workers), AbortController, Transferable, onDispatchComplete hook                                                                 |
+| `apps/web/services/workerBus.ts`                            | Promise-based worker communication bus (9 workers), AbortController, Transferable, onDispatchComplete hook                                                                 |
 | `apps/web/services/workerStateSyncService.ts`               | Framework-agnostic handler registry -- auto-wires WorkerBus results to Redux/Zustand                                                                                       |
 | `apps/web/services/workerTelemetryService.ts`               | Sentry 10% error-rate alerts + 5s debounced Redux DevTools metrics flush                                                                                                   |
 | `apps/web/services/proactiveCoachService.ts`                | Smart coach: threshold monitoring + AI advice + cooldown                                                                                                                   |

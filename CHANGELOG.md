@@ -6,6 +6,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **HydroMonitorView TS7053** -- Typed threshold editor field tuples as `[keyof HydroThresholds, string][]` instead of `[string, string][]`, removing implicit `any` index access and redundant type cast (Session 81)
+- **Vitest hanging in CI/local** -- `pnpm test -- --run` was broken: `--` caused `--run` to be interpreted as file pattern, not CLI flag. Added dedicated `test:run` script (`vitest run`) to `apps/web`, root `package.json`, and `turbo.json`. Updated `deploy.yml`, `release-gate.yml`, `gate:push`, and all documentation references (Session 81)
+
 ### Added
 
 - **Full i18n polish** -- Replaced all hardcoded strings in HydroMonitorView, EcPhPlannerCalculator, GrowShopsView, IotDashboardView, WhatIfSandbox, SetupConfigurator, AiEquipmentPanel, StrainLookupSection, CalculatorHubView, LightCalculator, ChemotypeCalculator with `t()` calls. 225+ new locale keys across 5 languages (EN/DE/ES/FR/NL) in equipment, strains, knowledge namespaces. E2E i18n smoke tests (12 tests: 4 languages x 3 views). (Session 78)

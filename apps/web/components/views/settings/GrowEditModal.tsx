@@ -20,7 +20,7 @@ const GrowEditModal: React.FC<GrowEditModalProps> = memo(({ isOpen, onClose, gro
     const dispatch = useAppDispatch()
     const [name, setName] = useState(grow.name)
     const [description, setDescription] = useState(grow.description ?? '')
-    const [color, setColor] = useState<string>(grow.color ?? GROW_COLORS[0] ?? '#22c55e')
+    const [color, setColor] = useState(grow.color ?? GROW_COLORS[0] ?? '#22c55e')
     const [confirmDelete, setConfirmDelete] = useState(false)
 
     const canSave = name.trim().length > 0

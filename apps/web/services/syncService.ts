@@ -59,7 +59,7 @@ function logSyncDecision(action: string, details?: Record<string, unknown>): voi
     Sentry.addBreadcrumb({
         category: 'sync',
         message: action,
-        data: details,
+        data: details ?? {},
         level: 'info',
     })
 }
@@ -207,10 +207,7 @@ class SyncService {
                 conflicting: divergenceInfo.conflictingKeys.length,
             })
 
-            if (
-                divergenceInfo.localOnlyChanges === 0 &&
-                divergenceInfo.remoteOnlyChanges === 0
-            ) {
+            if (divergenceInfo.localOnlyChanges === 0 && divergenceInfo.remoteOnlyChanges === 0) {
                 return { result: { status: 'no-change' }, syncedAt: parsed.timestamp }
             }
 
@@ -272,7 +269,7 @@ class SyncService {
         doc.transact(() => {
             for (const [, value] of doc.share) {
                 if (value instanceof Map || (value as { clear?: () => void }).clear) {
-                    ;(value as { clear: () => void }).clear()
+                    ;(value as unknown as { clear: () => void }).clear()
                 }
             }
         })

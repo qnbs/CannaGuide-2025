@@ -89,7 +89,12 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = memo(
                     onConfirm={handleUseCloud}
                 />
 
-                <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+                <Dialog
+                    open={open}
+                    onOpenChange={(o) => {
+                        if (!o) onClose()
+                    }}
+                >
                     <DialogContent className="max-w-lg">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-amber-400">
@@ -140,7 +145,7 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = memo(
                                     onClick={handleMerge}
                                     className="flex-1 justify-center bg-green-600 hover:bg-green-700"
                                 >
-                                    <PhosphorIcons.GitMerge className="mr-2 h-4 w-4" />
+                                    <PhosphorIcons.ShareNetwork className="mr-2 h-4 w-4" />
                                     {t('settingsView.data.sync.merge')}
                                 </Button>
                                 <Button
@@ -166,7 +171,9 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = memo(
                                     onClick={() => setShowDetails(!showDetails)}
                                 >
                                     {t('settingsView.data.sync.viewDetails')}{' '}
-                                    {showDetails ? String.fromCharCode(9650) : String.fromCharCode(9660)}
+                                    {showDetails
+                                        ? String.fromCharCode(9650)
+                                        : String.fromCharCode(9660)}
                                 </button>
                             )}
 

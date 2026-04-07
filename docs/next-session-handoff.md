@@ -2,7 +2,57 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 80) -- CI Security Fixes + Dependency Cleanup
+## Latest Session (Session 78) -- Full i18n Polish Hydro/Equipment/Calculator/Strain-Comparison
+
+**Status: All hardcoded strings replaced. 5 languages complete. E2E i18n smoke tests added. E2E CI sharding enabled.**
+
+### What Was Done (Session 78)
+
+1. **i18n audit + locale keys:**
+    - Identified ~45 hardcoded strings across equipment, strains,
+      knowledge views (HIGH + MEDIUM priority)
+    - Added 225+ new locale keys to all 15 locale files
+      (5 languages x 3 namespaces: equipment, strains, knowledge)
+    - Added 4 extra keys (directionHigh, directionLow, npkN, npkPK)
+
+2. **Component refactoring (11 files):**
+    - HydroMonitorView, EcPhPlannerCalculator, GrowShopsView,
+      IotDashboardView, WhatIfSandbox, SetupConfigurator,
+      AiEquipmentPanel, StrainLookupSection, CalculatorHubView,
+      LightCalculator, ChemotypeCalculator
+    - All hardcoded strings replaced with `t()` calls
+
+3. **E2E i18n smoke tests:**
+    - `tests/e2e/i18n-smoke.e2e.ts` -- 12 tests
+      (4 languages x 3 view groups: Equipment, Strains, Knowledge)
+    - Asserts no leaked i18n key patterns in rendered UI
+
+4. **E2E infrastructure optimization:**
+    - `playwright.config.ts`: fullyParallel, forbidOnly,
+      globalTimeout 45min, workers CI?2:'50%', github reporter,
+      trace on-first-retry, pnpm webServer command
+    - `ci.yml`: 2-shard matrix (fail-fast: false), shard-specific
+      artifact names, visual regression on shard 1/2 only
+
+### Verified Metrics (Session 78)
+
+- Tests: 1663 passed (149 files), 0 failures
+- TypeScript: clean (1 known RTK TS2719 filtered)
+- Build: success (153 precache entries)
+- i18n: all 5 locales complete (EN/DE/ES/FR/NL)
+- E2E: 12 new i18n smoke tests, sharded CI pipeline
+
+### Next Steps
+
+- Prompt 5 documentation updates (copilot-instructions i18n rule)
+- P1 audit items from PRIORITY_ROADMAP.md
+- Vite 8 upgrade (PR #141, dedicated session)
+- C-04 Netlify preview smoke test
+- A-03 AI cost tracking
+
+---
+
+## Previous Session (Session 80) -- CI Security Fixes + Dependency Cleanup
 
 **Status: All CI blockers resolved. Scorecard pinned-deps fixed. Unused deps removed.**
 

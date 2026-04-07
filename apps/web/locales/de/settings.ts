@@ -667,6 +667,7 @@ export const settingsView = {
         gdprSelectiveError: 'Löschen der Datenbank "{{name}}" fehlgeschlagen.',
         gdprEraseWarning:
             'Dies löscht unwiderruflich ALLE Datenbanken, lokalen Speicher, Caches und Service Worker. Tippe DELETE ALL zur Bestätigung.',
+        gdprEraseConfirmPlaceholder: 'DELETE ALL',
     },
     privacy: {
         title: 'Privatsphäre & Sicherheit',
@@ -708,16 +709,22 @@ export const settingsView = {
         },
         techStack: {
             title: 'Technologie-Stack',
+            geminiLabel: 'Google Gemini:',
             gemini: 'Treiber aller KI-Funktionen für intelligente Diagnosen und Ratschläge.',
             react: 'Für eine moderne, performante und reaktionsschnelle Benutzeroberfläche.',
             indexedDb: 'Robuste clientseitige Datenbank für 100% Offline-Funktionalität.',
+            webWorkersLabel: 'Web Workers:',
             webWorkers: 'Lagert komplexe Simulationen aus, um die UI flüssig zu halten.',
         },
         credits: {
             title: 'Danksagungen & Links',
+            phosphorLabel: 'Phosphor Icons:',
             phosphor: 'Icons bereitgestellt von Phosphor Icons.',
+            dataProvidersLabel: 'Datenanbieter:',
             strainProviders:
                 'Sorten-Anreicherung via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa und Kushy.',
+            webLlmOnnxLabel: 'WebLLM / ONNX:',
+            corsProxiesLabel: 'CORS-Proxies:',
             corsProxies: 'CORS-Proxy-Relay durch allorigins.win und corsproxy.io.',
             transformersJs:
                 'On-Device NLP und Embeddings via Transformers.js (Xenova/Hugging Face).',

@@ -1,3 +1,4 @@
+// Added in i18n-audit Session 78 -- Hydro + Strain + Calculator Polish (Opus 4.6)
 import { seedbanks } from './seedbanks'
 
 export const equipmentView = {
@@ -9,6 +10,7 @@ export const equipmentView = {
         seedbanks: 'Zaadbanken',
         growTech: 'Grow Tech 2026',
         hydroMonitoring: 'Hydro Monitor',
+        iotDashboard: 'IoT Dashboard',
     },
     configurator: {
         title: 'AI Apparatuur Configurator',
@@ -118,6 +120,8 @@ export const equipmentView = {
             result: 'Aanbevolen LED-vermogen',
             ppfdTooltip: 'PPFD is de hoeveelheid licht die je plant ontvangt.',
             dliTooltip: 'DLI is de totale hoeveelheid licht over een periode van 24 uur.',
+            ppfdLabel: 'PPFD',
+            dliLabel: 'DLI',
         },
         cost: {
             title: 'Elektriciteitskostencalculator',
@@ -195,6 +199,9 @@ export const equipmentView = {
                 pinene: 'Pineen',
                 linalool: 'Linalool',
                 caryophyllene: 'Caryofylleen',
+                thc: 'THC',
+                cbd: 'CBD',
+                cbg: 'CBG',
             },
         },
         yes: 'Ja',
@@ -208,6 +215,16 @@ export const equipmentView = {
             plant: 'Plant',
             allPlants: 'Alle Planten',
             readingType: 'Meettype',
+            directionHigh: 'Hoog',
+            directionLow: 'Laag',
+            npkN: 'N:P:K (N)',
+            npkPK: 'N:P:K (P/K)',
+            mediums: {
+                soil: 'Aarde',
+                coco: 'Kokos',
+                hydro: 'Hydro',
+            },
+            nutrientPlugins: 'Voedingsprogramma Plugins',
             input: 'Invoer',
             runoff: 'Drainage',
             ecValue: 'EC-waarde',
@@ -316,6 +333,8 @@ export const equipmentView = {
             lightWattage: 'Lampvermogen',
             propagateNote: 'Afmetingen bewerken in individuele rekenaars werkt ook de Sandbox bij.',
             reset: 'Standaardwaarden',
+            unitM3: 'm\u00B3',
+            unitWatt: 'W',
         },
         history: {
             title: 'Berekeningsgeschiedenis',
@@ -380,6 +399,7 @@ export const equipmentView = {
             price: 'Prijs',
             rationale: 'Toelichting',
             total: 'Totaal',
+            currency: 'EUR',
         },
         iot: {
             syncButton: 'Sensorgegevens gebruiken',
@@ -404,6 +424,7 @@ export const equipmentView = {
             ec: 'EC',
             waterTemp: 'Watertemp.',
             readings: 'Metingen',
+            readingsBuffer: '{{count}} metingen / {{max}} buffer',
         },
         alerts: {
             title: 'Waarschuwingen',
@@ -418,6 +439,10 @@ export const equipmentView = {
             '24h': '24h',
             '48h': '48h',
             '7d': '7d',
+            axisLabelPh: 'pH',
+            axisLabelEc: 'EC (mS/cm)',
+            legendPh: 'pH',
+            legendEc: 'EC',
         },
         input: {
             title: 'Meting Toevoegen',
@@ -429,6 +454,12 @@ export const equipmentView = {
         },
         thresholds: {
             title: 'Waarschuwingsdrempels',
+            phMin: 'pH Min',
+            phMax: 'pH Max',
+            ecMin: 'EC Min',
+            ecMax: 'EC Max',
+            tempMin: 'Temp Min',
+            tempMax: 'Temp Max',
         },
         dosing: {
             title: 'Doseringsreferentie (Hydro)',
@@ -436,6 +467,8 @@ export const equipmentView = {
             seedling: 'Zaailing',
             vegetative: 'Vegetatief',
             flowering: 'Bloei',
+            ecColumn: 'EC (mS/cm)',
+            phColumn: 'pH',
         },
         forecast: {
             title: 'Volgend Uur (AI Voorspelling)',
@@ -480,6 +513,12 @@ export const equipmentView = {
         sortName: 'A-Z',
         shopsFound: 'winkels',
         noResults: 'Geen winkels gevonden voor je zoekopdracht.',
+        ratingTier: {
+            topPick: 'Topkeuze',
+            recommended: 'Aanbevolen',
+            good: 'Goed',
+        },
+        ratingSuffix: '/ 5',
         shops: {
             zamnesia: {
                 name: 'Zamnesia',

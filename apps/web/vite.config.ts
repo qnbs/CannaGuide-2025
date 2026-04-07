@@ -220,7 +220,9 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
+        pool: 'forks',
         maxWorkers: 1,
+        teardownTimeout: 3000,
         setupFiles: path.join(__webRoot, 'vitest.setup.ts'),
         exclude: [
             '**/node_modules/**',

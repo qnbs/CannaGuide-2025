@@ -1,3 +1,4 @@
+// Added in i18n-audit Session 78 -- Hydro + Strain + Calculator Polish (Opus 4.6)
 import { seedbanks } from './seedbanks'
 
 export const equipmentView = {
@@ -10,6 +11,9 @@ export const equipmentView = {
         growTech: 'Grow Tech 2026',
         iotDashboard: 'IoT Dashboard',
         hydroMonitoring: 'Hydro Monitor',
+    },
+    iotDashboard: {
+        readingsBuffer: '{{count}} Messwerte / {{max}} Puffer',
     },
     configurator: {
         title: 'KI-Setup-Konfigurator',
@@ -122,6 +126,8 @@ export const equipmentView = {
                 'PPFD (Photosynthetische Photonenflussdichte) ist die Lichtmenge, die deine Pflanze erhält.',
             dliTooltip:
                 'DLI (Tägliches Lichtintegral) ist die Gesamtlichtmenge über einen 24-Stunden-Zeitraum.',
+            ppfdLabel: 'PPFD',
+            dliLabel: 'DLI',
         },
         cost: {
             title: 'Stromkostenrechner',
@@ -200,6 +206,9 @@ export const equipmentView = {
                 pinene: 'Pinen',
                 linalool: 'Linalool',
                 caryophyllene: 'Caryophyllen',
+                thc: 'THC',
+                cbd: 'CBD',
+                cbg: 'CBG',
             },
         },
         yes: 'Ja',
@@ -239,6 +248,15 @@ export const equipmentView = {
                 monitor: 'Monitor',
                 schedule: 'Zeitplan',
                 history: 'Verlauf',
+            },
+            directionHigh: 'Hoch',
+            directionLow: 'Niedrig',
+            npkN: 'N:P:K (N)',
+            npkPK: 'N:P:K (P/K)',
+            mediums: {
+                soil: 'Erde',
+                coco: 'Kokos',
+                hydro: 'Hydro',
             },
         },
         co2: {
@@ -324,6 +342,8 @@ export const equipmentView = {
             propagateNote:
                 'Das Bearbeiten der Maße in einzelnen Rechnern aktualisiert auch die Sandbox.',
             reset: 'Standardwerte',
+            unitM3: 'm3',
+            unitWatt: 'W',
         },
         history: {
             title: 'Berechnungsverlauf',
@@ -388,6 +408,7 @@ export const equipmentView = {
             price: 'Preis',
             rationale: 'Begründung',
             total: 'Gesamt',
+            currency: 'EUR',
         },
         iot: {
             syncButton: 'Sensordaten verwenden',
@@ -426,6 +447,10 @@ export const equipmentView = {
             '24h': '24h',
             '48h': '48h',
             '7d': '7d',
+            axisLabelPh: 'pH',
+            axisLabelEc: 'EC',
+            legendPh: 'pH',
+            legendEc: 'EC (mS/cm)',
         },
         input: {
             title: 'Messwert hinzufuegen',
@@ -437,6 +462,12 @@ export const equipmentView = {
         },
         thresholds: {
             title: 'Warn-Schwellenwerte',
+            phMin: 'pH Min',
+            phMax: 'pH Max',
+            ecMin: 'EC Min',
+            ecMax: 'EC Max',
+            tempMin: 'Temp. Min',
+            tempMax: 'Temp. Max',
         },
         dosing: {
             title: 'Dosierungsreferenz (Hydro)',
@@ -444,6 +475,8 @@ export const equipmentView = {
             seedling: 'Saemling',
             vegetative: 'Vegetativ',
             flowering: 'Bluete',
+            ecColumn: 'EC (mS/cm)',
+            phColumn: 'pH',
         },
         forecast: {
             title: 'Naechste Stunde (KI-Vorhersage)',
@@ -474,6 +507,12 @@ export const equipmentView = {
         },
     },
     growShops: {
+        ratingTier: {
+            topPick: 'Top-Auswahl',
+            recommended: 'Empfohlen',
+            good: 'Gut',
+        },
+        ratingSuffix: '/5.0',
         region: {
             europe: 'Europa',
             usa: 'USA / Kanada',

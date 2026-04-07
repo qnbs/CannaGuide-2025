@@ -41,6 +41,7 @@
         "lint:full": "eslint . --report-unused-disable-directives",
         "lint:strict": "eslint . --report-unused-disable-directives --quiet",
         "lint:scopes": "node ./scripts/lint-scopes.mjs",
+        "lint:i18n": "node ./scripts/check-i18n-hardcoded.mjs",
         "format": "prettier --write .",
         "preview": "pnpm --filter @cannaguide/web preview",
         "check:commit-identity": "node ./scripts/check-commit-identity.mjs",

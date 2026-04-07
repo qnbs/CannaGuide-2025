@@ -560,6 +560,7 @@ export const knowledgeView = {
             targetEc: 'Target EC (mS/cm)',
             dosage: 'Approximate Dosage',
             disclaimer: 'Values are guidelines only. Always measure EC and pH after mixing.',
+            unitLiter: 'L',
         },
         ph: {
             intro: 'Ideal pH and EC ranges vary by growing medium. Keeping within these ranges ensures optimal nutrient availability.',
@@ -567,6 +568,11 @@ export const knowledgeView = {
             phRange: 'pH Range',
             ecRange: 'EC Range (mS/cm)',
             note: 'Always pH your water and nutrient solution after every mix. Use a calibrated pH meter.',
+            mediums: {
+                soil: 'Soil',
+                coco: 'Coco',
+                hydro: 'Hydro',
+            },
         },
         terpeneEntourage: {
             description:
@@ -584,6 +590,9 @@ export const knowledgeView = {
             aiExplanationTitle: 'AI Explanation',
             aiLoading: 'Generating explanation...',
             deepDive: 'Deep dive: Learning Path ->',
+            thcLabel: 'THC',
+            cbdLabel: 'CBD',
+            cbgLabel: 'CBG',
         },
         transpiration: {
             description:

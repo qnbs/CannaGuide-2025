@@ -1,3 +1,4 @@
+// Added in i18n-audit Session 78 -- Hydro + Strain + Calculator Polish (Opus 4.6)
 import { seedbanks } from './seedbanks'
 
 export const equipmentView = {
@@ -9,6 +10,7 @@ export const equipmentView = {
         seedbanks: 'Banques de Graines',
         growTech: 'Grow Tech 2026',
         hydroMonitoring: 'Moniteur Hydro',
+        iotDashboard: 'Tableau de Bord IoT',
     },
     configurator: {
         title: "Configurateur IA d'Equipement",
@@ -120,6 +122,8 @@ export const equipmentView = {
             result: 'Puissance LED Recommandee',
             ppfdTooltip: 'Le PPFD est la quantite de lumiere que votre plante recoit.',
             dliTooltip: 'Le DLI est la quantite totale de lumiere sur une periode de 24 heures.',
+            ppfdLabel: 'PPFD',
+            dliLabel: 'DLI',
         },
         cost: {
             title: 'Calculateur de Cout Electrique',
@@ -198,6 +202,9 @@ export const equipmentView = {
                 pinene: 'Pinene',
                 linalool: 'Linalol',
                 caryophyllene: 'Caryophyllene',
+                thc: 'THC',
+                cbd: 'CBD',
+                cbg: 'CBG',
             },
         },
         yes: 'Oui',
@@ -211,6 +218,16 @@ export const equipmentView = {
             plant: 'Plante',
             allPlants: 'Toutes les Plantes',
             readingType: 'Type de Mesure',
+            directionHigh: 'Haut',
+            directionLow: 'Bas',
+            npkN: 'N:P:K (N)',
+            npkPK: 'N:P:K (P/K)',
+            mediums: {
+                soil: 'Terre',
+                coco: 'Coco',
+                hydro: 'Hydro',
+            },
+            nutrientPlugins: 'Plugins de Programme Nutritif',
             input: 'Entree',
             runoff: 'Drainage',
             ecValue: 'Valeur EC',
@@ -324,6 +341,8 @@ export const equipmentView = {
             propagateNote:
                 'Modifier les dimensions dans les calculateurs individuels met egalement a jour le Bac a Sable.',
             reset: 'Valeurs par defaut',
+            unitM3: 'm\u00B3',
+            unitWatt: 'W',
         },
         history: {
             title: 'Historique des calculs',
@@ -388,6 +407,7 @@ export const equipmentView = {
             price: 'Prix',
             rationale: 'Justification',
             total: 'Total',
+            currency: 'EUR',
         },
         iot: {
             syncButton: 'Utiliser les donnees du capteur',
@@ -412,6 +432,7 @@ export const equipmentView = {
             ec: 'EC',
             waterTemp: 'Temp. Eau',
             readings: 'Mesures',
+            readingsBuffer: '{{count}} mesures / {{max}} tampon',
         },
         alerts: {
             title: 'Alertes',
@@ -426,6 +447,10 @@ export const equipmentView = {
             '24h': '24h',
             '48h': '48h',
             '7d': '7d',
+            axisLabelPh: 'pH',
+            axisLabelEc: 'EC (mS/cm)',
+            legendPh: 'pH',
+            legendEc: 'EC',
         },
         input: {
             title: 'Ajouter une Mesure',
@@ -437,6 +462,12 @@ export const equipmentView = {
         },
         thresholds: {
             title: 'Seuils d Alerte',
+            phMin: 'pH Min',
+            phMax: 'pH Max',
+            ecMin: 'EC Min',
+            ecMax: 'EC Max',
+            tempMin: 'Temp Min',
+            tempMax: 'Temp Max',
         },
         dosing: {
             title: 'Reference de Dosage (Hydro)',
@@ -444,6 +475,8 @@ export const equipmentView = {
             seedling: 'Semis',
             vegetative: 'Vegetatif',
             flowering: 'Floraison',
+            ecColumn: 'EC (mS/cm)',
+            phColumn: 'pH',
         },
         forecast: {
             title: 'Heure Suivante (Prevision IA)',
@@ -488,6 +521,12 @@ export const equipmentView = {
         sortName: 'A-Z',
         shopsFound: 'boutiques',
         noResults: 'Aucune boutique ne correspond a votre recherche.',
+        ratingTier: {
+            topPick: 'Top Selection',
+            recommended: 'Recommandee',
+            good: 'Bonne',
+        },
+        ratingSuffix: '/ 5',
         shops: {
             zamnesia: {
                 name: 'Zamnesia',

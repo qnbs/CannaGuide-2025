@@ -14,7 +14,7 @@ Last updated: 2026-04-08 (Session 78)
 | Severity | Total | Done | Open |
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
-| High     | 11    | 11   | 0    |
+| High     | 12    | 12   | 0    |
 | Medium   | 28    | 24   | 4    |
 | Low      | 10    | 5    | 5    |
 
@@ -551,6 +551,20 @@ Last updated: 2026-04-08 (Session 78)
 **Finding:** Current languages are all LTR. If Arabic or Hebrew support is planned, RTL layout support needs groundwork.
 
 **Action:** Evaluate Tailwind RTL plugin. Add `dir` attribute handling. Low priority unless RTL languages are on the roadmap.
+
+---
+
+### I-03 -- Component-Level i18n Completeness
+
+| Field    | Value              |
+| -------- | ------------------ |
+| Severity | High               |
+| Effort   | Medium (completed) |
+| Status   | **Done**           |
+
+**Finding:** Multiple views had hardcoded English strings: HydroMonitorView, EcPhPlannerCalculator, GrowShopsView, IotDashboardView, WhatIfSandbox, SetupConfigurator, AiEquipmentPanel, StrainLookupSection, CalculatorHubView, LightCalculator, ChemotypeCalculator.
+
+**Resolution:** All 11 component files refactored to use `t()` calls. 225+ locale keys added across 5 languages (EN/DE/ES/FR/NL) in equipment, strains, knowledge namespaces. E2E i18n smoke tests (`i18n-smoke.e2e.ts`, 12 tests: 4 languages x 3 view groups) validate no leaked key patterns. Session 78.
 
 ---
 

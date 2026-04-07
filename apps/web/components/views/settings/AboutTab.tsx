@@ -86,7 +86,7 @@ const AboutAppContent = memo(() => {
                     >
                         <ul className="space-y-2">
                             <ListItem icon={<PhosphorIcons.Lightning />}>
-                                <strong>Google Gemini:</strong>{' '}
+                                <strong>{t('settingsView.about.techStack.geminiLabel')}</strong>{' '}
                                 {t('settingsView.about.techStack.gemini')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Cube />}>
@@ -98,7 +98,7 @@ const AboutAppContent = memo(() => {
                                 {t('settingsView.about.techStack.indexedDb')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.GearSix />}>
-                                <strong>Web Workers:</strong>{' '}
+                                <strong>{t('settingsView.about.techStack.webWorkersLabel')}</strong>{' '}
                                 {t('settingsView.about.techStack.webWorkers')}
                             </ListItem>
                         </ul>
@@ -111,11 +111,13 @@ const AboutAppContent = memo(() => {
                     >
                         <ul className="space-y-3">
                             <ListItem icon={<PhosphorIcons.MagicWand />}>
-                                <strong>Phosphor Icons:</strong>{' '}
+                                <strong>{t('settingsView.about.credits.phosphorLabel')}</strong>{' '}
                                 {t('settingsView.about.credits.phosphor')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Database />}>
-                                <strong>Data Providers:</strong>{' '}
+                                <strong>
+                                    {t('settingsView.about.credits.dataProvidersLabel')}
+                                </strong>{' '}
                                 {t('settingsView.about.credits.strainProviders')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Brain />}>
@@ -123,7 +125,7 @@ const AboutAppContent = memo(() => {
                                 {t('settingsView.about.credits.transformersJs')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Cube />}>
-                                <strong>WebLLM / ONNX:</strong>{' '}
+                                <strong>{t('settingsView.about.credits.webLlmOnnxLabel')}</strong>{' '}
                                 {t('settingsView.about.credits.webLlm')}{' '}
                                 {t('settingsView.about.credits.onnx')}
                             </ListItem>
@@ -136,7 +138,7 @@ const AboutAppContent = memo(() => {
                                 <strong>Charts:</strong> {t('settingsView.about.credits.recharts')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Globe />}>
-                                <strong>CORS Proxies:</strong>{' '}
+                                <strong>{t('settingsView.about.credits.corsProxiesLabel')}</strong>{' '}
                                 {t('settingsView.about.credits.corsProxies')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Wrench />}>

@@ -171,7 +171,7 @@ const SetupResultDisplayComponent: React.FC<{
                                                 <PhosphorIcons.ArrowSquareOut className="w-3 h-3" />
                                                 {link.vendor}
                                                 {typeof link.price === 'number' &&
-                                                    ` ${link.price.toFixed(0)}${link.currency ?? 'EUR'}`}
+                                                    ` ${link.price.toFixed(0)}${link.currency ?? t('equipmentView.calculators.aiPanel.currency')}`}
                                             </a>
                                         ))}
                                     </div>

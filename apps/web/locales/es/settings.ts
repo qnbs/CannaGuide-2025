@@ -673,6 +673,7 @@ export const settingsView = {
             'Elimina permanentemente TODOS los datos de este dispositivo (Art. 17 GDPR). Esto no se puede deshacer.',
         gdprEraseWarning:
             'Esto eliminara permanentemente TODAS las bases de datos, almacenamiento local, caches y service workers. Escribe DELETE ALL para confirmar.',
+        gdprEraseConfirmPlaceholder: 'DELETE ALL',
         gdprSelectiveTitle: 'Eliminacion Selectiva de Bases de Datos',
         gdprSelectiveDesc:
             'Eliminar bases de datos individuales en lugar de todos los datos a la vez (Art. 17 GDPR eliminacion parcial).',
@@ -722,18 +723,24 @@ export const settingsView = {
         },
         techStack: {
             title: 'Pila Tecnologica',
+            geminiLabel: 'Google Gemini:',
             gemini: 'Potencia todas las funciones AI para diagnosticos inteligentes y consejos.',
             react: 'Para una interfaz de usuario moderna, eficiente y responsiva.',
             indexedDb:
                 'Base de datos robusta del lado del cliente para funcionalidad 100% sin conexion.',
+            webWorkersLabel: 'Web Workers:',
             webWorkers:
                 'Ejecuta simulaciones complejas fuera del hilo principal para mantener la interfaz fluida.',
         },
         credits: {
             title: 'Agradecimientos y Enlaces',
+            phosphorLabel: 'Phosphor Icons:',
             phosphor: 'Iconos proporcionados por Phosphor Icons.',
+            dataProvidersLabel: 'Proveedores de Datos:',
             strainProviders:
                 'Enriquecimiento de variedades via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa y Kushy.', // machine-translated, review needed
+            webLlmOnnxLabel: 'WebLLM / ONNX:',
+            corsProxiesLabel: 'Proxies CORS:',
             corsProxies: 'Servicio de proxy CORS por allorigins.win y corsproxy.io.',
             transformersJs:
                 'NLP e incrustaciones en el dispositivo via Transformers.js (Xenova/Hugging Face).',

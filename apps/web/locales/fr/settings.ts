@@ -675,6 +675,7 @@ export const settingsView = {
             'Supprimer definitivement TOUTES les donnees de cet appareil (Art. 17 GDPR). Cette action est irreversible.',
         gdprEraseWarning:
             'Cela supprimera definitivement TOUTES les bases de donnees, le stockage local, les caches et les service workers. Tapez DELETE ALL pour confirmer.',
+        gdprEraseConfirmPlaceholder: 'DELETE ALL',
         gdprSelectiveTitle: 'Suppression Selective de Bases de Donnees',
         gdprSelectiveDesc:
             'Supprimer des bases de donnees individuelles au lieu de toutes les donnees en une fois (Art. 17 GDPR suppression partielle).',
@@ -725,17 +726,23 @@ export const settingsView = {
         },
         techStack: {
             title: 'Pile technologique',
+            geminiLabel: 'Google Gemini:',
             gemini: 'Alimente toutes les fonctionnalites IA pour des diagnostics et conseils intelligents.',
             react: 'Pour une interface utilisateur moderne, performante et reactive.',
             indexedDb: 'Base de donnees client robuste pour une fonctionnalite 100% hors ligne.',
+            webWorkersLabel: 'Web Workers:',
             webWorkers:
                 "Execute les simulations complexes hors du thread principal pour garder l'interface fluide.",
         },
         credits: {
             title: 'Remerciements & Liens',
+            phosphorLabel: 'Phosphor Icons:',
             phosphor: 'Icones fournies par Phosphor Icons.',
+            dataProvidersLabel: 'Fournisseurs de Donnees:',
             strainProviders:
                 'Enrichissement des varietes via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa et Kushy.', // machine-translated, review needed
+            webLlmOnnxLabel: 'WebLLM / ONNX:',
+            corsProxiesLabel: 'Proxies CORS:',
             corsProxies: 'Relais de proxy CORS par allorigins.win et corsproxy.io.',
             transformersJs:
                 'NLP et embeddings sur appareil via Transformers.js (Xenova/Hugging Face).',

@@ -908,6 +908,7 @@ export const knowledgeView = {
             targetEc: 'Doel-EC (mS/cm)',
             dosage: 'Geschatte Dosering',
             disclaimer: 'Waarden zijn richtlijnen. Meet altijd EC en pH na het mengen.',
+            unitLiter: 'L',
         },
         ph: {
             intro: 'Optimale pH- en EC-bereiken varieren per groeisubstraat. Binnen deze bereiken blijven zorgt voor optimale voedingsstoffenbeschikbaarheid.',
@@ -915,6 +916,11 @@ export const knowledgeView = {
             phRange: 'pH Bereik',
             ecRange: 'EC Bereik (mS/cm)',
             note: 'Stel altijd de pH van je water en voedingsoplossing in na elk mengsel. Gebruik een gekalibreerde pH-meter.',
+            mediums: {
+                soil: 'Aarde',
+                coco: 'Kokos',
+                hydro: 'Hydro',
+            },
         },
         terpeneEntourage: {
             description:
@@ -932,6 +938,9 @@ export const knowledgeView = {
             aiExplanationTitle: 'AI Uitleg',
             aiLoading: 'Uitleg genereren...',
             deepDive: 'Verdieping: Leerpad ->',
+            thcLabel: 'THC',
+            cbdLabel: 'CBD',
+            cbgLabel: 'CBG',
         },
         transpiration: {
             description:

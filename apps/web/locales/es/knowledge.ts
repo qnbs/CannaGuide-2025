@@ -927,6 +927,7 @@ export const knowledgeView = {
             dosage: 'Dosis Aproximada',
             disclaimer:
                 'Los valores son orientativos. Mide siempre la CE y el pH despues de mezclar.',
+            unitLiter: 'L',
         },
         ph: {
             intro: 'Los rangos optimos de pH y CE varian segun el medio de cultivo. Mantenerse dentro de estos rangos garantiza la disponibilidad optima de nutrientes.',
@@ -934,6 +935,11 @@ export const knowledgeView = {
             phRange: 'Rango pH',
             ecRange: 'Rango CE (mS/cm)',
             note: 'Ajusta siempre el pH del agua y la solucion nutritiva despues de cada mezcla. Usa un medidor de pH calibrado.',
+            mediums: {
+                soil: 'Tierra',
+                coco: 'Coco',
+                hydro: 'Hidro',
+            },
         },
         terpeneEntourage: {
             description:
@@ -951,6 +957,9 @@ export const knowledgeView = {
             aiExplanationTitle: 'Explicacion IA',
             aiLoading: 'Generando explicacion...',
             deepDive: 'Aprender mas: Ruta de Aprendizaje ->',
+            thcLabel: 'THC',
+            cbdLabel: 'CBD',
+            cbgLabel: 'CBG',
         },
         transpiration: {
             description:

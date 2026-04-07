@@ -65,7 +65,9 @@ const RecommendationTable: React.FC<RecommendationTableProps> = memo(({ recommen
                                         {item.name}
                                     </td>
                                     <td className="px-3 py-2 text-right text-slate-200 whitespace-nowrap">
-                                        {item.price > 0 ? `EUR ${item.price.toFixed(2)}` : '-'}
+                                        {item.price > 0
+                                            ? `${t('equipmentView.calculators.aiPanel.currency')} ${item.price.toFixed(2)}`
+                                            : '-'}
                                     </td>
                                     <td className="px-3 py-2 text-slate-400 text-xs hidden sm:table-cell">
                                         {item.rationale}
@@ -78,7 +80,7 @@ const RecommendationTable: React.FC<RecommendationTableProps> = memo(({ recommen
                                 {t('equipmentView.calculators.aiPanel.total')}
                             </td>
                             <td className="px-3 py-2 text-right text-primary-300 whitespace-nowrap">
-                                EUR {total.toFixed(2)}
+                                {t('equipmentView.calculators.aiPanel.currency')} {total.toFixed(2)}
                             </td>
                             <td className="hidden sm:table-cell" />
                         </tr>

@@ -749,6 +749,7 @@ export const strainLookup = {
         otreeba: 'Otreeba',
         ai: 'AI Gegenereerd',
     },
+    confidenceTooltip: '{{label}} -- {{score}} % betrouwbaarheid',
     comparison: {
         title: 'Sortenvergelijking',
         addStrain: 'Zoek en voeg een soort toe...',

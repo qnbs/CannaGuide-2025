@@ -41,7 +41,8 @@ export const WhatIfSandbox: React.FC = memo(() => {
                     </span>
                 </div>
                 <span className="ml-auto mr-2 text-xs text-slate-500">
-                    {volumeM3.toFixed(2)} m3 &mdash; {sharedLightWattage} W
+                    {volumeM3.toFixed(2)} {t('equipmentView.calculators.sandbox.unitM3')} &mdash;{' '}
+                    {sharedLightWattage} {t('equipmentView.calculators.sandbox.unitWatt')}
                 </span>
                 <svg
                     className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-180"

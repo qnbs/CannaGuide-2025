@@ -5,6 +5,7 @@ export default defineConfig({
     testMatch: ['*.e2e.ts'],
     testIgnore: ['*.deploy.e2e.ts'],
     timeout: process.env.CI ? 90_000 : 60_000,
+    globalTimeout: process.env.CI ? 45 * 60_000 : 0,
     expect: {
         timeout: 10_000,
         toHaveScreenshot: {
@@ -13,11 +14,14 @@ export default defineConfig({
         },
     },
     snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
+    fullyParallel: true,
+    forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 1 : 0,
-    reporter: [['list']],
+    workers: process.env.CI ? 2 : '50%',
+    reporter: process.env.CI ? [['list'], ['github']] : [['list']],
     use: {
         baseURL: 'http://localhost:4173',
-        trace: 'retain-on-failure',
+        trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         bypassCSP: true,
     },
@@ -57,7 +61,7 @@ export default defineConfig({
             : []),
     ],
     webServer: {
-        command: 'npm run preview',
+        command: 'pnpm run preview',
         port: 4173,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

@@ -335,7 +335,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 tick={{ fontSize: 10, fill: '#94a3b8' }}
                                 stroke="#475569"
                                 label={{
-                                    value: 'pH',
+                                    value: t('hydroMonitoring.chart.axisLabelPh'),
                                     angle: -90,
                                     position: 'insideLeft',
                                     style: { fontSize: 10, fill: '#94a3b8' },
@@ -348,7 +348,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 tick={{ fontSize: 10, fill: '#94a3b8' }}
                                 stroke="#475569"
                                 label={{
-                                    value: 'EC',
+                                    value: t('hydroMonitoring.chart.axisLabelEc'),
                                     angle: 90,
                                     position: 'insideRight',
                                     style: { fontSize: 10, fill: '#94a3b8' },
@@ -369,7 +369,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 stroke="#22c55e"
                                 strokeWidth={2}
                                 dot={false}
-                                name="pH"
+                                name={t('hydroMonitoring.chart.legendPh')}
                             />
                             <Line
                                 yAxisId="ec"
@@ -378,7 +378,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 stroke="#3b82f6"
                                 strokeWidth={2}
                                 dot={false}
-                                name="EC (mS/cm)"
+                                name={t('hydroMonitoring.chart.legendEc')}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -592,13 +592,13 @@ export const HydroMonitorView: React.FC = memo(() => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
                         {(
                             [
-                                ['phMin', 'pH Min'],
-                                ['phMax', 'pH Max'],
-                                ['ecMin', 'EC Min'],
-                                ['ecMax', 'EC Max'],
-                                ['waterTempMin', 'Temp Min'],
-                                ['waterTempMax', 'Temp Max'],
-                            ] as const
+                                ['phMin', t('hydroMonitoring.thresholds.phMin')],
+                                ['phMax', t('hydroMonitoring.thresholds.phMax')],
+                                ['ecMin', t('hydroMonitoring.thresholds.ecMin')],
+                                ['ecMax', t('hydroMonitoring.thresholds.ecMax')],
+                                ['waterTempMin', t('hydroMonitoring.thresholds.tempMin')],
+                                ['waterTempMax', t('hydroMonitoring.thresholds.tempMax')],
+                            ] as [string, string][]
                         ).map(([field, label]) => (
                             <div key={field}>
                                 <label
@@ -640,10 +640,10 @@ export const HydroMonitorView: React.FC = memo(() => {
                                     {t('hydroMonitoring.dosing.stage')}
                                 </th>
                                 <th className="text-center py-1.5 text-slate-400 font-medium">
-                                    EC (mS/cm)
+                                    {t('hydroMonitoring.dosing.ecColumn')}
                                 </th>
                                 <th className="text-center py-1.5 text-slate-400 font-medium">
-                                    pH
+                                    {t('hydroMonitoring.dosing.phColumn')}
                                 </th>
                             </tr>
                         </thead>

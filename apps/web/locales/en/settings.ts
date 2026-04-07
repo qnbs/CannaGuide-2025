@@ -643,6 +643,7 @@ export const settingsView = {
             'Permanently delete ALL data from this device (Art. 17 GDPR). This cannot be undone.',
         gdprEraseWarning:
             'This will permanently delete ALL databases, local storage, caches, and service workers. Type DELETE ALL to confirm.',
+        gdprEraseConfirmPlaceholder: 'DELETE ALL',
         gdprSelectiveTitle: 'Selective Database Deletion',
         gdprSelectiveDesc:
             'Delete individual databases instead of all data at once (Art. 17 GDPR partial erasure).',
@@ -691,16 +692,22 @@ export const settingsView = {
         },
         techStack: {
             title: 'Technology Stack',
+            geminiLabel: 'Google Gemini:',
             gemini: 'Powers all AI features for intelligent diagnostics and advice.',
             react: 'For a modern, performant, and responsive user interface.',
             indexedDb: 'Robust client-side database for 100% offline functionality.',
+            webWorkersLabel: 'Web Workers:',
             webWorkers: 'Runs complex simulations off the main thread to keep the UI smooth.',
         },
         credits: {
             title: 'Acknowledgements & Links',
+            phosphorLabel: 'Phosphor Icons:',
             phosphor: 'Icons provided by Phosphor Icons.',
+            dataProvidersLabel: 'Data Providers:',
             strainProviders:
                 'Strain enrichment via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, and Kushy.',
+            webLlmOnnxLabel: 'WebLLM / ONNX:',
+            corsProxiesLabel: 'CORS Proxies:',
             corsProxies: 'CORS proxy relay by allorigins.win and corsproxy.io.',
             transformersJs:
                 'On-device NLP and embeddings via Transformers.js (Xenova/Hugging Face).',

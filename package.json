@@ -77,7 +77,7 @@
     "lint-staged": {
         "*.{js,jsx,ts,tsx,mjs,cjs}": [
             "anti-trojan-source",
-            "eslint --fix --quiet"
+            "eslint --fix --max-warnings 0 --no-warn-ignored"
         ],
         "*.{json,yml,yaml,md}": [
             "anti-trojan-source",

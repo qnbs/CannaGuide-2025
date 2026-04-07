@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { Language, LightType, PotType, Theme, VentilationPower, View, AiMode } from '@/types'
+import { LightType, PotType, VentilationPower, View, AiMode } from '@/types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 import { setSetting, setLlmModel } from '@/stores/slices/settingsSlice'
@@ -241,13 +241,16 @@ const GeminiSecurityCard: React.FC = () => {
         }
     }, [t, activeProvider])
 
+    const VALID_PROVIDERS: readonly AiProvider[] = ['gemini', 'openai', 'xai', 'anthropic']
+
     const handleProviderChange = (providerId: string) => {
-        const newProvider = providerId as AiProvider
-        setActiveProvider(newProvider)
-        aiProviderService.setActiveProviderId(newProvider)
+        const provider = VALID_PROVIDERS.find((p) => p === providerId)
+        if (!provider) return
+        setActiveProvider(provider)
+        aiProviderService.setActiveProviderId(provider)
         setApiKeyInput('')
         setStatusMessage(null)
-        loadKeyStatus(newProvider)
+        loadKeyStatus(provider)
     }
 
     const activeConfig = useMemo(
@@ -508,7 +511,7 @@ const AiModeCard: React.FC = () => {
     const isLocalReady = localStatus.state === 'ready'
 
     const handleModeChange = (mode: string) => {
-        dispatch(setSetting({ path: 'aiMode', value: mode as AiMode }))
+        dispatch(setSetting({ path: 'aiMode', value: mode }))
     }
 
     const modeOptions: Array<{
@@ -708,7 +711,7 @@ const LocalAiOfflineCard: React.FC = () => {
     })()
 
     return (
-        <Card>
+        <Card data-testid="local-ai-offline-cache-section">
             <FormSection
                 title={t('settingsView.offlineAi.title')}
                 icon={<PhosphorIcons.DownloadSimple />}
@@ -1211,9 +1214,7 @@ const GeneralSettingsTab: React.FC = () => {
                         <SettingsRow label={t('settingsView.general.language')}>
                             <SettingsSelect
                                 value={general.language}
-                                onChange={(value) =>
-                                    handleSetSetting('language', value as Language)
-                                }
+                                onChange={(value) => handleSetSetting('language', value)}
                                 options={[
                                     { value: 'en', label: t('settingsView.languages.en') },
                                     { value: 'de', label: t('settingsView.languages.de') },
@@ -1233,9 +1234,7 @@ const GeneralSettingsTab: React.FC = () => {
                                             <button
                                                 key={key}
                                                 type="button"
-                                                onClick={() =>
-                                                    handleSetSetting('theme', key as Theme)
-                                                }
+                                                onClick={() => handleSetSetting('theme', key)}
                                                 className={`relative flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all duration-200 ${
                                                     isActive
                                                         ? 'border-primary-500 bg-primary-500/10 ring-1 ring-primary-400 scale-[1.03]'
@@ -1308,7 +1307,7 @@ const GeneralSettingsTab: React.FC = () => {
                         <SettingsRow label={t('settingsView.general.defaultView')}>
                             <SettingsSelect
                                 value={general.defaultView}
-                                onChange={(value) => handleSetSetting('defaultView', value as View)}
+                                onChange={(value) => handleSetSetting('defaultView', value)}
                                 options={[
                                     { value: View.Plants, label: t('nav.plants') },
                                     { value: View.Strains, label: t('nav.strains') },
@@ -2197,7 +2196,7 @@ const SettingsViewComponent: React.FC = () => {
         setSearchQuery('')
     }, [])
 
-    const viewIcons = useMemo(
+    const viewIcons: Record<string, React.ReactNode> = useMemo(
         () => ({
             general: <PhosphorIcons.GearSix className="w-14 h-14 mx-auto text-primary-400" />,
             ai: <PhosphorIcons.Brain className="w-14 h-14 mx-auto text-violet-400" />,
@@ -2215,7 +2214,7 @@ const SettingsViewComponent: React.FC = () => {
         [],
     )
 
-    const viewTitles = useMemo(
+    const viewTitles: Record<string, string> = useMemo(
         () => ({
             general: t('settingsView.categories.general'),
             ai: t('settingsView.categories.ai'),
@@ -2328,9 +2327,9 @@ const SettingsViewComponent: React.FC = () => {
         <div className="space-y-6 animate-fade-in">
             {/* Header with icon and title */}
             <div className="text-center mb-4 animate-fade-in">
-                {viewIcons[activeTab as keyof typeof viewIcons]}
+                {viewIcons[activeTab]}
                 <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">
-                    {viewTitles[activeTab as keyof typeof viewTitles]}
+                    {viewTitles[activeTab]}
                 </h2>
             </div>
 
@@ -2352,7 +2351,7 @@ const SettingsViewComponent: React.FC = () => {
                                 className="flex items-center gap-3 w-full px-4 py-2.5 text-left hover:bg-slate-700/60 transition-colors first:rounded-t-xl last:rounded-b-xl"
                             >
                                 <span className="text-xs font-semibold text-primary-400 uppercase min-w-[60px]">
-                                    {viewTitles[result.tab as keyof typeof viewTitles]}
+                                    {viewTitles[result.tab]}
                                 </span>
                                 <span className="text-sm text-slate-200">{t(result.labelKey)}</span>
                             </button>

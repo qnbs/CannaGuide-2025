@@ -35,7 +35,7 @@ type WindowWithSpeech = Window & { SpeechRecognition?: unknown }
 function installMockSpeechRecognition(): void {
     mockInstances.length = 0
 
-    class MockSpeechRecognition {
+    class MockSpeechRecognition implements MockRecInstance {
         continuous = false
         interimResults = false
         lang = ''
@@ -58,9 +58,7 @@ function installMockSpeechRecognition(): void {
         }
 
         constructor() {
-            mockInstances.push(
-                this as unknown as MockRecInstance,
-            )
+            mockInstances.push(this)
         }
     }
 

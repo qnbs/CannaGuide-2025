@@ -67,8 +67,10 @@ test.describe('WebLLM Local AI Critical Path', () => {
             await page.waitForTimeout(1_000)
         }
 
-        // Look for Local AI / Offline Cache section
-        const localAiSection = page.getByText(/Local AI|Offline Cache|On-Device/i)
+        // Look for Local AI / Offline Cache section (data-testid primary, text fallback)
+        const localAiSection = page
+            .locator('[data-testid="local-ai-offline-cache-section"]')
+            .or(page.getByText(/Local AI|Offline Cache|On-Device/i))
         const hasSection = await localAiSection
             .first()
             .isVisible()

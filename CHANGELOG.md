@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **Permanent CI hardening pass (Session 91)** -- E2E selector fix (data-testid on LocalAiOfflineCard), typecheck gate in pre-commit hook, ESLint --max-warnings 0 parity in lint-staged, Turbo cache inputs for typecheck task, lint scope Phase 2 (components/common promoted to strict), E2E selector stability guard script (advisory), CI gate checklist in copilot-instructions. Fixed 6 no-unsafe-type-assertion warnings in components/common (DevTelemetryPanel, SegmentedControl, Tabs, VoiceControl.test). 1760 tests, 0 failures, 157 files.
+
 ### Added
 
 - **Multi-Grow AI integration + data export (F-07/Session D)** -- Grow-scoped RAG retrieval (`retrieveRelevantContextForGrow`, `retrieveSemanticContextForGrow` in growLogRagService), AI Mentor grow context (grow-scoped prompts + RAG in geminiService/aiService), AI Diagnostics grow context (`growName` in diagnosis pipeline), proactive coach grow awareness (growId/growName on SmartAlerts, per-grow threshold monitoring), `GrowExportData` + `GrowSummary` types, `selectGrowSummary` memoized selector, per-grow JSON export/import in DataManagementTab, grow stats row in GrowManagerTab, 24 i18n keys (5 langs). 5 new tests. 1741 tests, 0 failures. (Session 89)

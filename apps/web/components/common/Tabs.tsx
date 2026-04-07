@@ -19,9 +19,9 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
 
     useLayoutEffect(() => {
         if (navRef.current) {
-            const activeButton = navRef.current.querySelector(
+            const activeButton = navRef.current.querySelector<HTMLElement>(
                 `[data-tab-id="${activeTab}"]`,
-            ) as HTMLElement
+            )
             if (activeButton) {
                 setIndicatorStyle({
                     left: `${activeButton.offsetLeft}px`,
@@ -51,9 +51,9 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                 const tab = tabs[nextIndex]
                 if (tab) {
                     setActiveTab(tab.id)
-                    const btn = navRef.current?.querySelector(
+                    const btn = navRef.current?.querySelector<HTMLElement>(
                         `[data-tab-id="${tab.id}"]`,
-                    ) as HTMLElement
+                    )
                     btn?.focus()
                 }
             }

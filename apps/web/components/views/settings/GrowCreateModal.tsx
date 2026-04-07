@@ -20,7 +20,7 @@ const GrowCreateModal: React.FC<GrowCreateModalProps> = memo(({ isOpen, onClose 
     const growCount = useAppSelector(selectGrowCount)
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
-    const [color, setColor] = useState(GROW_COLORS[0] ?? '#22c55e')
+    const [color, setColor] = useState<string>(GROW_COLORS[0] ?? '#22c55e')
 
     const canCreate = name.trim().length > 0 && growCount < MAX_GROWS
     const atLimit = growCount >= MAX_GROWS

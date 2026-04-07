@@ -4,6 +4,7 @@ import { PlantStage, StrainType, type Plant, type Strain } from '@/types'
 
 const buildPlant = (overrides: Partial<Plant> = {}): Plant => ({
     id: 'plant-1',
+    growId: 'default-grow',
     name: 'Aurora',
     strain: {
         id: 'strain-1',

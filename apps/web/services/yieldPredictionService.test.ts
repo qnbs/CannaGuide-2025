@@ -4,6 +4,7 @@ import { yieldPredictionService } from './yieldPredictionService'
 
 const makePlant = (overrides: Partial<Plant> = {}): Plant => ({
     id: 'plant-1',
+    growId: 'default-grow',
     name: 'Test Plant',
     strain: {
         id: 'strain-1',

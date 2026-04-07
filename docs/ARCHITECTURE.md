@@ -10,7 +10,7 @@
 | Layer        | Technology                                                                               |
 | ------------ | ---------------------------------------------------------------------------------------- |
 | UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                      |
-| State        | Redux Toolkit 2.11 (14 slices), Zustand 5 (8 stores), RTK Query, memoized selectors      |
+| State        | Redux Toolkit 2.11 (15 slices), Zustand 5 (8 stores), RTK Query, memoized selectors      |
 | AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                              |
 | AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                     |
 | Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                                 |
@@ -60,7 +60,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     useAlertsStore.ts     Zustand store for proactive smart coach alerts
     selectors.ts          Memoized selectors (map-based cache by ID)
     listenerMiddleware.ts Side effects: i18n sync, persistence triggers
-    slices/               14 Redux slices (simulation, settings, strains, workerMetrics, hydro, etc.)
+    slices/               15 Redux slices (simulation, settings, strains, workerMetrics, hydro, grows, etc.)
     indexedDBStorage.ts   CannaGuideStateDB adapter
 
   services/
@@ -123,13 +123,23 @@ docker/                   IoT mock servers (ESP32 sensor simulator)
 
 The app uses a **dual-store architecture** with clear separation of concerns:
 
-**Redux Toolkit (14 slices, persisted in IndexedDB):**
-Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
+**Redux Toolkit (15 slices, persisted in IndexedDB):**
+Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, grows, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
 
 **Zustand (8 stores, transient/never persisted):**
 `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite).
 
 **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
+
+## Multi-Grow Architecture
+
+Plants are grouped into **grows** (max 3, enforced by German CanG). Each `Plant` carries a `growId` linking it to a `Grow` entity managed by `growsSlice` (EntityAdapter). A default grow (`default-grow`) is seeded on first boot and during migration v5->v6.
+
+- **growsSlice** -- CRUD for grows with MAX_GROWS=3 hard cap
+- **Grow-scoped selectors** -- `selectPlantsForGrow`, `selectNutrientScheduleForGrow` (Map-cached)
+- **Grow environment actions** -- `setGrowEnvironment`, `copyGrowEnvironment` (simulationSlice)
+- **Migration v5->v6** -- stamps `growId` on all existing plants/schedule entries
+- **ADR-0005** documents the architecture decision
 
 ## AI Service Architecture
 

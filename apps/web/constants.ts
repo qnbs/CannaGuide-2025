@@ -1,7 +1,7 @@
 import { PlantStage, AdvancedFilterState } from '@/types'
 
 // --- APP ---
-export const APP_VERSION = 5
+export const APP_VERSION = 6
 export const CURRENT_STRAIN_DATA_VERSION = 7
 
 /**
@@ -9,9 +9,16 @@ export const CURRENT_STRAIN_DATA_VERSION = 7
  * changes so the migration system can detect stale data and auto-reset that
  * specific slice without nuking the entire store.
  */
+// --- MULTI-GROW ---
+/** Legal limit: max 3 concurrent grows (CanG -- German Cannabis Act) */
+export const MAX_GROWS = 3
+export const DEFAULT_GROW_ID = 'default-grow'
+export const DEFAULT_GROW_NAME = 'Mein Grow'
+
 export const SLICE_SCHEMA_VERSIONS = {
     settings: 2,
-    simulation: 2,
+    simulation: 3,
+    grows: 1,
     genealogy: 3, // kept in sync with GENEALOGY_STATE_VERSION
     sandbox: 1,
     userStrains: 1,

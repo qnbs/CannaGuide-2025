@@ -17,6 +17,7 @@ import {
     SIM_LIGHT_EXTINCTION_COEFFICIENT_K,
     SIM_BIOMASS_CONVERSION_EFFICIENCY,
     SIM_SECONDS_PER_DAY,
+    DEFAULT_GROW_ID,
 } from '@/constants'
 import type {
     AirflowLevel,
@@ -1186,6 +1187,7 @@ class PlantSimulationService {
             setup.potSize * 1000 * (setup.potType === 'Fabric' ? 0.28 : 0.35)
         const newPlant: Plant = {
             id: `plant-${now}`,
+            growId: DEFAULT_GROW_ID,
             name,
             strain,
             mediumType: setup.medium,

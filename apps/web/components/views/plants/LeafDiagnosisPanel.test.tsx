@@ -35,6 +35,7 @@ vi.mock('@/services/localAiDiagnosisService', () => ({
 const buildPlant = (): Plant =>
     ({
         id: 'panel-test-1',
+        growId: 'default-grow',
         name: 'PanelPlant',
         strain: {
             id: 's1',

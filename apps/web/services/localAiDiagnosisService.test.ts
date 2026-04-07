@@ -55,6 +55,7 @@ import {
 const buildPlant = (): Plant =>
     ({
         id: 'p1',
+        growId: 'default-grow',
         name: 'DiagPlant',
         strain: {
             id: 's1',

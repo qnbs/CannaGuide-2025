@@ -2,6 +2,7 @@ import { z } from 'zod'
 import type { Plant, JournalEntry } from '@/types'
 import { PlantStage, JournalEntryType } from '@/types'
 import type { NutrientScheduleEntry, EcPhReading } from '@/stores/slices/nutrientPlannerSlice'
+import { DEFAULT_GROW_ID } from '@/constants'
 
 // ---------------------------------------------------------------------------
 // Minimal Zod schemas for CRDT deserialization validation
@@ -9,6 +10,7 @@ import type { NutrientScheduleEntry, EcPhReading } from '@/stores/slices/nutrien
 
 const PlantCrdtSchema = z.object({
     id: z.string().min(1),
+    growId: z.string().min(1).default(DEFAULT_GROW_ID),
     name: z.string(),
     strain: z.record(z.unknown()),
     mediumType: z.string(),
@@ -87,6 +89,7 @@ const JournalEntryCrdtSchema = z.object({
 
 const NutrientScheduleEntryCrdtSchema = z.object({
     id: z.string().min(1),
+    growId: z.string().min(1).default(DEFAULT_GROW_ID),
     stage: z.nativeEnum(PlantStage),
     targetEc: z.number(),
     targetPh: z.number(),
@@ -122,6 +125,7 @@ const EcPhReadingCrdtSchema = z.object({
  */
 export const plantToYMap = (plant: Plant): Record<string, unknown> => ({
     id: plant.id,
+    growId: plant.growId,
     name: plant.name,
     strain: JSON.stringify(plant.strain),
     mediumType: plant.mediumType,
@@ -277,6 +281,7 @@ export const yMapToJournalEntry = (data: Record<string, unknown>): JournalEntry 
 /** Serialize a NutrientScheduleEntry for Y.Map storage. */
 export const nutrientEntryToYMap = (entry: NutrientScheduleEntry): Record<string, unknown> => ({
     id: entry.id,
+    growId: entry.growId,
     stage: entry.stage,
     targetEc: entry.targetEc,
     targetPh: entry.targetPh,

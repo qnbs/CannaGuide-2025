@@ -2,7 +2,91 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 85) -- Yjs CRDT Foundation (F-06 Session I/3)
+## Latest Session (Session 86) -- Multi-Grow State Layer (F-07 Session A+B)
+
+**Status: v1.4.1. 1710 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 86)
+
+1. **growsSlice.ts** -- New Redux slice with EntityAdapter
+   for Grow entities. MAX_GROWS=3 (German CanG). Actions:
+   addGrow, updateGrow, removeGrow, setActiveGrowId,
+   setGrowsState. Default grow seeded in initial state.
+
+2. **growId on Plant + NutrientScheduleEntry** -- Added
+   `growId: string` to Plant interface and
+   NutrientScheduleEntry. DEFAULT_GROW_ID='default-grow'.
+   APP_VERSION bumped 5->6, simulation schema 2->3.
+
+3. **State migration v5->v6** -- `migrateV5ToV6` creates
+   grows slice, stamps growId on existing plants and
+   schedule entries. `ensureGrowsShape` boot validator
+   ensures grows exist on every startup.
+
+4. **Grow-scoped selectors** -- selectActiveGrowId,
+   selectAllGrows, selectGrowById, selectActiveGrow,
+   selectGrowCount, selectPlantsForGrow (Map-cached),
+   selectActiveGrowPlants, selectNutrientScheduleForGrow
+   (Map-cached).
+
+5. **Grow environment actions** -- setGrowEnvironment
+   (simulationSlice: sets env for all plants in a grow),
+   copyGrowEnvironment (copies env from one grow to
+   another).
+
+6. **Grow lifecycle listeners** -- addGrow auto-sets new
+   grow as active. removeGrow shows notification.
+
+7. **Store wiring** -- growsReducer in rootReducer (15
+   slices). grows in stateToSave persistence.
+
+8. **CRDT adapters updated** -- PlantCrdtSchema and
+   NutrientScheduleEntryCrdtSchema include growId with
+   Zod .default(). plantToYMap and nutrientEntryToYMap
+   serialize growId.
+
+9. **Tests** -- growsSlice.test.ts (8 tests), migration
+   v5->v6 (5 tests), all Plant/NutrientScheduleEntry
+   fixtures updated with growId across 11 test files.
+
+10. **ADR-0005** -- multi-grow-architecture.md documenting
+    MAX_GROWS=3, DEFAULT_GROW_ID, migration strategy.
+
+### Verified Metrics (Session 86)
+
+- Tests: 1710 passed (152 files), 0 failures
+- TypeScript: clean (1 known TS2719 in store.ts, filtered)
+- Build: success
+
+### Next Steps -- Session C (Multi-Grow UI Layer)
+
+1. **GrowSwitcher component** -- Tab bar or dropdown for
+   switching between grows (max 3). Create/rename/delete
+   grow actions. Show active grow indicator.
+
+2. **Per-grow plant views** -- Filter PlantList and
+   DetailedPlantView by activeGrowId. Grow badge on plant
+   cards.
+
+3. **Per-grow environment controls** -- Environment panel
+   scoped to active grow. Copy environment between grows.
+
+4. **Per-grow nutrient schedule** -- Filter nutrient
+   planner by activeGrowId.
+
+5. **Grow management settings** -- Grow overview in
+   settings with rename/archive options.
+
+### Planned Executions
+
+- **Session C (F-07/III):** Multi-Grow UI layer (GrowSwitcher,
+  per-grow views, per-grow environment, per-grow nutrients)
+- **Session D (F-07/IV):** Multi-Grow polish (grow templates,
+  grow archive, grow export/import, E2E tests)
+
+---
+
+## Previous Session (Session 85) -- Yjs CRDT Foundation (F-06 Session I/3)
 
 **Status: v1.4.1. 1696 tests passing. TypeScript clean. Build clean.**
 

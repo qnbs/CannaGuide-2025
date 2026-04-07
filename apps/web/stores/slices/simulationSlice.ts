@@ -333,6 +333,74 @@ const simulationSlice = createSlice({
             state.isCatchingUp = action.payload
         },
 
+        // --- Multi-Grow environment actions ---
+        /** Set environment for all plants belonging to a specific grow */
+        setGrowEnvironment: (
+            state,
+            action: PayloadAction<{
+                growId: string
+                temperature?: number | undefined
+                humidity?: number | undefined
+                ph?: number | undefined
+                simulationSettings?: AppSettings['simulation'] | undefined
+            }>,
+        ) => {
+            const { growId, temperature, humidity, ph, simulationSettings } = action.payload
+            for (const plantId of state.plants.ids) {
+                const plant = state.plants.entities[plantId as string]
+                if (plant && plant.growId === growId) {
+                    if (temperature !== undefined) {
+                        plant.environment.internalTemperature = temperature
+                    }
+                    if (humidity !== undefined) {
+                        plant.environment.internalHumidity = humidity
+                    }
+                    if (ph !== undefined) {
+                        plant.medium.ph = ph
+                    }
+                    plant.environment = plantSimulationService.applyEnvironmentalCorrections(
+                        plant,
+                        simulationSettings,
+                    ).environment
+                }
+            }
+        },
+
+        /** Copy environment settings from one grow's plants to another grow's plants */
+        copyGrowEnvironment: (
+            state,
+            action: PayloadAction<{ fromGrowId: string; toGrowId: string }>,
+        ) => {
+            const { fromGrowId, toGrowId } = action.payload
+            // Find first plant in the source grow to use as environment template
+            let sourceEnv: Plant['environment'] | undefined
+            let sourcePh: number | undefined
+            for (const plantId of state.plants.ids) {
+                const plant = state.plants.entities[plantId as string]
+                if (plant && plant.growId === fromGrowId) {
+                    sourceEnv = plant.environment
+                    sourcePh = plant.medium.ph
+                    break
+                }
+            }
+            if (!sourceEnv) return
+            // Apply to all plants in the target grow
+            for (const plantId of state.plants.ids) {
+                const plant = state.plants.entities[plantId as string]
+                if (plant && plant.growId === toGrowId) {
+                    plant.environment.internalTemperature = sourceEnv.internalTemperature
+                    plant.environment.internalHumidity = sourceEnv.internalHumidity
+                    plant.environment.co2Level = sourceEnv.co2Level
+                    if (sourcePh !== undefined) {
+                        plant.medium.ph = sourcePh
+                    }
+                    plant.environment = plantSimulationService.applyEnvironmentalCorrections(
+                        plant,
+                    ).environment
+                }
+            }
+        },
+
         // --- CRDT sync actions (Session I) ---
         upsertPlant: {
             reducer(state, action: PayloadAction<Plant>) {
@@ -747,6 +815,8 @@ export const {
     toggleCirculationFan,
     setVentilationPower,
     setGlobalEnvironment,
+    setGrowEnvironment,
+    copyGrowEnvironment,
     processPostHarvest,
     resetPlants,
     setPlantVpdProfile,

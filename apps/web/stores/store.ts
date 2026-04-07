@@ -53,10 +53,10 @@ const rootReducer = combineReducers({
 
 // RTK's GetDefaultMiddleware callback has optional properties incompatible
 // with exactOptionalPropertyTypes (TS2719). This is a known upstream RTK issue.
-const makeStore = (preloadedState?: Partial<RootState> | undefined) =>
+const makeStore = (preloadedState?: Partial<RootState>) =>
     configureStore({
         reducer: rootReducer,
-        preloadedState,
+        ...(preloadedState !== undefined && { preloadedState }),
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {

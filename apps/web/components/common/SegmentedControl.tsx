@@ -23,7 +23,9 @@ export function SegmentedControl<T extends string>({
         const buttons = Array.from(
             groupRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? [],
         )
-        const currentIndex = buttons.indexOf(e.target as HTMLButtonElement)
+        const target = e.target
+        if (!(target instanceof HTMLButtonElement)) return
+        const currentIndex = buttons.indexOf(target)
         if (currentIndex < 0) return
 
         let nextIndex = -1

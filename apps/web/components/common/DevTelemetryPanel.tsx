@@ -51,9 +51,14 @@ const DevTelemetryPanelInner: React.FC = memo(() => {
     const refresh = useCallback(async () => {
         const gpu = safeCall(() => getGpuLockState(), EMPTY_STATE.gpu)
 
-        const workerQ = safeCall(() => workerBus.getQueueState(), {
-            byPriority: EMPTY_STATE.workerByPriority,
-        } as ReturnType<typeof workerBus.getQueueState>)
+        const workerQ = safeCall(
+            () => workerBus.getQueueState(),
+            {
+                current: [],
+                queued: [],
+                byPriority: EMPTY_STATE.workerByPriority,
+            },
+        )
 
         let rag: TelemetryState['rag'] = null
         try {
@@ -68,7 +73,14 @@ const DevTelemetryPanelInner: React.FC = memo(() => {
             averageTokensPerSecond: 0,
             successRate: 0,
             totalInferences: 0,
-        } as ReturnType<typeof getSnapshot>)
+            totalTokensGenerated: 0,
+            fallbackBreakdown: {} as Record<string, number>,
+            cacheHitRate: 0,
+            modelBreakdown: {},
+            backendBreakdown: {},
+            peakTokensPerSecond: 0,
+            lastUpdated: 0,
+        })
 
         setState({
             gpu,

@@ -2,7 +2,44 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 90) -- CRDT Offline Sync Production Hardening (F-06 Session III)
+## Latest Session (Session 91) -- Permanent CI Hardening Pass
+
+**Status: v1.4.1. 1760 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 91)
+
+1. **E2E selector fix (Phase 1)** -- Added `data-testid="local-ai-offline-cache-section"` to LocalAiOfflineCard in SettingsView.tsx. Updated webllm-inference.e2e.ts to use data-testid as primary locator with text regex fallback.
+
+2. **Pre-commit typecheck gate (Phase 2)** -- Added `node ./scripts/typecheck-filter.mjs` to `.husky/pre-commit` before lint-staged. TS errors now blocked at commit time.
+
+3. **ESLint pre-commit parity (Phase 3)** -- Changed lint-staged from `eslint --fix --quiet` to `eslint --fix --max-warnings 0`. Pre-commit now matches CI strictness.
+
+4. **Turbo cache inputs (Phase 4)** -- Added `inputs: ["**/*.ts", "**/*.tsx", "tsconfig.json", "tsconfig.*.json"]` to typecheck task in turbo.json. Prevents stale cached typecheck results.
+
+5. **Lint scope Phase 2 (Phase 5)** -- Promoted `components/common/**/*.tsx` to strictScopes. Fixed 6 no-unsafe-type-assertion warnings: DevTelemetryPanel (full default objects), SegmentedControl (instanceof check), Tabs (generic querySelector), VoiceControl.test (implements interface). lint-burndown Phase 1 marked Done, Phase 2 Active.
+
+6. **E2E selector guard script (Phase 6)** -- New `scripts/check-e2e-selectors.mjs` scans E2E tests for fragile getByText/class selectors. Advisory step in ci.yml (continue-on-error). 21 files scanned, 0 findings.
+
+7. **CI gate checklist (Phase 7)** -- Added 7-point CI Gate Checklist to copilot-instructions.md under Coding Standards.
+
+### Verified Metrics (Session 91)
+
+- Typecheck: clean (TS2719 filtered)
+- Tests: 1760 passed, 0 failures, 157 files
+- Build: success
+- lint:scopes: 2 strict scopes passing (hooks + components/common)
+- E2E selector guard: 0 fragile selectors in 21 files
+
+### Next Steps
+
+- Promote `services/**/*.ts` to strict lint scope (Phase 3 in burndown)
+- Promote E2E selector guard from advisory to blocking once stable
+- Consider adding pre-push hook with `pnpm run build` for catch-all
+- Continue with feature work from PRIORITY_ROADMAP
+
+---
+
+## Previous Session (Session 90) -- CRDT Offline Sync Production Hardening (F-06 Session III)
 
 **Status: v1.4.1. 1760 tests passing. TypeScript clean. Build clean.**
 

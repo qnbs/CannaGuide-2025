@@ -41,8 +41,8 @@ Strict scope configuration is stored in `scripts/lint-burndown.config.json`.
 
 | Phase | Scope                        | Status                     |
 | ----- | ---------------------------- | -------------------------- |
-| 1     | `hooks/**/*.ts`              | Active (enforced in CI)    |
-| 2     | `components/common/**/*.tsx` | Planned (candidate)        |
+| 1     | `hooks/**/*.ts`              | Done (enforced in CI)      |
+| 2     | `components/common/**/*.tsx` | Active (enforced in CI)    |
 | 3     | `services/**/*.ts`           | Planned (candidate)        |
 | 4     | `stores/**/*.ts`             | Planned (candidate)        |
 | 5     | Full-project strict lint     | Planned (end-state target) |

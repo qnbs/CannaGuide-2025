@@ -89,7 +89,8 @@
             "dependsOn": ["^build"]
         },
         "typecheck": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "inputs": ["**/*.ts", "**/*.tsx", "tsconfig.json", "tsconfig.*.json"]
         },
         "lint:changed": {
             "cache": false

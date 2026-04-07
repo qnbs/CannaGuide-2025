@@ -200,6 +200,16 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **Exceptions:** i18n translation files (`locales/`) and documentation (`*.md`, `docs/`) may use Unicode
 - **Enforcement:** `anti-trojan-source` scanner runs in CI (`security:trojan-source`) and pre-commit (lint-staged)
 
+### CI Gate Checklist (verify before every commit)
+
+1. **Typecheck clean:** `node ./scripts/typecheck-filter.mjs` -- 0 errors (TS2719 filtered)
+2. **Tests pass:** `pnpm --filter @cannaguide/web test:run` -- 0 failures
+3. **Build succeeds:** `pnpm run build`
+4. **Lint zero warnings:** `eslint --max-warnings 0` on staged files (enforced by lint-staged)
+5. **i18n complete:** new user-facing strings present in all 5 languages (EN/DE/ES/FR/NL)
+6. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
+7. **Pre-commit hook runs:** `.husky/pre-commit` executes typecheck + lint-staged automatically
+
 ### AI Integration
 
 - All AI calls go through `services/aiFacade.ts` (public entry point), never through individual services directly

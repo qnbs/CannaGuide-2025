@@ -3,4 +3,6 @@ set -e
 
 node ./scripts/check-commit-identity.mjs
 
+node ./scripts/typecheck-filter.mjs
+
 pnpm exec lint-staged

@@ -1,8 +1,4 @@
 {
-    "strictScopes": ["apps/web/hooks/**/*.ts"],
-    "candidateScopes": [
-        "apps/web/components/common/**/*.tsx",
-        "apps/web/services/**/*.ts",
-        "apps/web/stores/**/*.ts"
-    ]
+    "strictScopes": ["apps/web/hooks/**/*.ts", "apps/web/components/common/**/*.tsx"],
+    "candidateScopes": ["apps/web/services/**/*.ts", "apps/web/stores/**/*.ts"]
 }

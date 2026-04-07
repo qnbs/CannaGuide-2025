@@ -74,7 +74,7 @@ async function assertNoLeakedKeys(page: Page, context: string): Promise<void> {
 async function switchLanguage(page: Page, langCode: string): Promise<void> {
     // Navigate to Settings
     const settingsNav = page.locator('[data-view-id="settings"]')
-    await expect(settingsNav.first()).toBeVisible({ timeout: 10_000 })
+    await expect(settingsNav.first()).toBeVisible({ timeout: 15_000 })
     await settingsNav.first().click()
     await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 

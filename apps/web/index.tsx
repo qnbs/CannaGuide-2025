@@ -343,6 +343,7 @@ const mountHydratedApp = async () => {
 
         // 6. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)
+        document.body.setAttribute('data-app-ready', 'true')
     } catch (error) {
         console.error('Failed to initialize the application:', error)
         const recovered = await triggerSafeRecovery('boot-initialization-failure', error)

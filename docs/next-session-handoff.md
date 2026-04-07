@@ -2,7 +2,78 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 88) -- Multi-Grow UI Components (F-07 Session C)
+## Latest Session (Session 89) -- Multi-Grow AI Integration + Data Export (F-07 Session D)
+
+**Status: v1.4.1. 1741 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 89)
+
+1. **Grow-scoped RAG** -- Added `growId` to `LogChunk`, updated
+   embedding cache key to `growId:plantId:createdAt`. New methods
+   `retrieveRelevantContextForGrow` and
+   `retrieveSemanticContextForGrow` in growLogRagService. aiService
+   `resolveRagContext` routes to grow-scoped methods when growId
+   provided.
+
+2. **AI Mentor grow context** -- geminiService `buildMentorPrompt`
+   accepts `growId?` and `growName?`, uses grow-scoped RAG and
+   adds GROW CONTEXT section. `getMentorResponse` and
+   `getMentorResponseStream` forward grow params. Stream prompt
+   includes `Grow: {growName}` line.
+
+3. **AI Diagnostics grow context** -- `buildDiagnosePlantContext`
+   and `diagnosePlant` accept `growName?`, adding grow name to
+   PLANT CONTEXT section in diagnosis prompts.
+
+4. **Proactive coach grow awareness** -- SmartAlert interface
+   extended with `growId` and `growName`. Coach resolves grow
+   info from state and includes it in alerts. Per-grow threshold
+   monitoring.
+
+5. **Types + selectors** -- New `GrowExportData` interface (v2.0
+   format) and `GrowSummary` interface in types.ts. New
+   `selectGrowSummary(growId)` factory selector with Map cache
+   in selectors.ts.
+
+6. **Per-grow export/import** -- DataManagementTab: export active
+   grow as v2.0 JSON, import grow from file (validates format,
+   dispatches addGrow). New "Per-Grow Backup" card section.
+
+7. **Grow stats** -- GrowStatsRow component in GrowManagerTab
+   shows plant count, journal entries, health %, oldest plant
+   age for each active grow.
+
+8. **i18n** -- 24 new keys across 5 languages (EN/DE/ES/FR/NL):
+   per-grow export/import (7 keys) + grow stats (4 keys) in
+   settings namespace.
+
+9. **Tests** -- 5 new tests: 3 grow-scoped RAG retrieval tests,
+   1 grow import slice test, 1 alerts growId test.
+   Total: 1741 tests, 0 failures.
+
+### Verified Metrics (Session 89)
+
+- Tests: 1741 passed (156 files), 0 failures
+- TypeScript: clean (pre-existing TS2719/GitMerge/Clock filtered)
+- Build: success (153 precache entries)
+
+### Next Steps -- Session E (Multi-Grow Polish)
+
+1. **Equipment grow scoping** -- Add growId to equipment
+   entities, schema migration, per-grow equipment filtering.
+
+2. **Grow environment panel** -- Per-grow environment
+   settings in GrowManagerTab or DetailedPlantView.
+
+3. **Grow nutrient schedules** -- Per-grow nutrient planner
+   filtering in NutrientPlannerView.
+
+4. **Multi-grow E2E tests** -- Playwright: create grow,
+   switch grow, verify plant filtering, archive grow.
+
+---
+
+## Previous Session (Session 88) -- Multi-Grow UI Components (F-07 Session C)
 
 **Status: v1.4.1. 1736 tests passing. TypeScript clean. Build clean.**
 

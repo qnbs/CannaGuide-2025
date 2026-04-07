@@ -38,7 +38,7 @@
 | T-05 | AI contract tests                     | Medium | Done   |
 | A-02 | Local AI model versioning             | Medium | Done   |
 | P-03 | Image optimization pipeline           | Medium | Done   |
-| F-05 | Multi-grow management                 | High   | Open   |
+| F-05 | Multi-grow management                 | High   | Done   |
 | D-01 | API documentation                     | High   | Done   |
 | R-01 | Streaming generalization              | Medium | Done   |
 | R-02 | GPU resource manager v2 (N consumers) | Medium | Done   |

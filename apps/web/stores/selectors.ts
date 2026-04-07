@@ -20,6 +20,7 @@ import {
     AiMode,
     Seed,
     SavedExperiment,
+    PlantStage,
 } from '@/types'
 import { SavedItemsState } from './slices/savedItemsSlice'
 import { FavoritesState } from './slices/favoritesSlice'
@@ -374,7 +375,7 @@ export const selectEnvironmentLogs = (
 }
 
 // --- Grows Selectors ---
-import type { Grow, GrowsState } from '@/types'
+import type { Grow, GrowsState, GrowSummary } from '@/types'
 import { growsAdapter } from './slices/growsSlice'
 
 const selectGrowsState = (state: RootState): GrowsState => state.grows
@@ -385,9 +386,7 @@ export const selectActiveGrowId = createSelector(
 )
 
 export const { selectAll: selectAllGrows, selectById: selectGrowById } =
-    growsAdapter.getSelectors<RootState>(
-        (state) => state.grows?.grows ?? EMPTY_ENTITY_STATE,
-    )
+    growsAdapter.getSelectors<RootState>((state) => state.grows?.grows ?? EMPTY_ENTITY_STATE)
 
 export const selectActiveGrow = createSelector(
     [selectGrowsState],
@@ -399,9 +398,8 @@ export const selectGrowCount = createSelector(
     (g: GrowsState): number => g.grows.ids.length,
 )
 
-export const selectNonArchivedGrows = createSelector(
-    [selectAllGrows],
-    (grows: Grow[]): Grow[] => grows.filter((g) => !g.archived),
+export const selectNonArchivedGrows = createSelector([selectAllGrows], (grows: Grow[]): Grow[] =>
+    grows.filter((g) => !g.archived),
 )
 
 // --- Grow-scoped Plant Selectors ---
@@ -410,9 +408,8 @@ const plantsForGrowCache = new Map<string, (state: RootState) => Plant[]>()
 export const selectPlantsForGrow = (growId: string): ((state: RootState) => Plant[]) => {
     let selector = plantsForGrowCache.get(growId)
     if (!selector) {
-        selector = createSelector(
-            [selectAllPlants],
-            (plants: Plant[]): Plant[] => plants.filter((p) => p.growId === growId),
+        selector = createSelector([selectAllPlants], (plants: Plant[]): Plant[] =>
+            plants.filter((p) => p.growId === growId),
         )
         plantsForGrowCache.set(growId, selector)
     }
@@ -442,6 +439,42 @@ export const selectNutrientScheduleForGrow = (
                 schedule.filter((e) => e.growId === growId),
         )
         nutrientScheduleForGrowCache.set(growId, selector)
+    }
+    return selector
+}
+
+// --- Grow Summary Selector ---
+
+const growSummaryCache = new Map<string, (state: RootState) => GrowSummary>()
+export const selectGrowSummary = (growId: string): ((state: RootState) => GrowSummary) => {
+    let selector = growSummaryCache.get(growId)
+    if (!selector) {
+        selector = createSelector(
+            [selectAllPlants, selectNutrientSchedule],
+            (plants: Plant[], schedule: NutrientScheduleEntry[]): GrowSummary => {
+                const growPlants = plants.filter((p) => p.growId === growId)
+                const activePlants = growPlants.filter(
+                    (p) => p.stage !== PlantStage.Harvest && p.stage !== PlantStage.Finished,
+                )
+                const journalCount = growPlants.reduce((sum, p) => sum + p.journal.length, 0)
+                const nutrientCount = schedule.filter((e) => e.growId === growId).length
+                const ages = growPlants.map((p) => p.age)
+                const healthValues = growPlants.map((p) => p.health)
+                return {
+                    growId,
+                    plantCount: growPlants.length,
+                    activePlantCount: activePlants.length,
+                    journalEntryCount: journalCount,
+                    nutrientEntryCount: nutrientCount,
+                    oldestPlantAge: ages.length > 0 ? Math.max(...ages) : 0,
+                    averageHealth:
+                        healthValues.length > 0
+                            ? healthValues.reduce((a, b) => a + b, 0) / healthValues.length
+                            : 0,
+                }
+            },
+        )
+        growSummaryCache.set(growId, selector)
     }
     return selector
 }

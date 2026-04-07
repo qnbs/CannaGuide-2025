@@ -15,6 +15,7 @@ import DOMPurify from 'dompurify'
 interface LogChunk {
     plantId: string
     plantName: string
+    growId: string
     text: string
     createdAt: number
 }
@@ -43,8 +44,9 @@ const scoreChunk = (chunk: LogChunk, queryTokens: string[]): number => {
     return score + ageBoost
 }
 
-/** Embedding cache key for a chunk (plantId:createdAt). */
-const buildChunkEmbeddingKey = (chunk: LogChunk): string => `${chunk.plantId}:${chunk.createdAt}`
+/** Embedding cache key for a chunk (growId:plantId:createdAt). */
+const buildChunkEmbeddingKey = (chunk: LogChunk): string =>
+    `${chunk.growId}:${chunk.plantId}:${chunk.createdAt}`
 
 /**
  * Normalize the token-based score to [0, 1] range.
@@ -75,6 +77,7 @@ class GrowLogRagService {
                 return {
                     plantId: plant.id,
                     plantName: plant.name,
+                    growId: plant.growId,
                     createdAt: entry.createdAt,
                     text: DOMPurify.sanitize(rawText, { ALLOWED_TAGS: [] }),
                 }
@@ -250,6 +253,34 @@ class GrowLogRagService {
 
         const effectiveLimit = this.dynamicLimit(chunks.length, limit)
         return this.slidingWindowRetrieve(chunks, query, effectiveLimit)
+    }
+
+    /**
+     * Grow-scoped keyword context retrieval.
+     * Pre-filters plants by growId before building chunks.
+     */
+    public retrieveRelevantContextForGrow(
+        plants: Plant[],
+        query: string,
+        growId: string,
+        limit?: number,
+    ): string {
+        const growPlants = plants.filter((p) => p.growId === growId)
+        return this.retrieveRelevantContext(growPlants, query, limit)
+    }
+
+    /**
+     * Grow-scoped semantic context retrieval.
+     * Pre-filters plants by growId before building chunks.
+     */
+    public async retrieveSemanticContextForGrow(
+        plants: Plant[],
+        query: string,
+        growId: string,
+        limit?: number,
+    ): Promise<string> {
+        const growPlants = plants.filter((p) => p.growId === growId)
+        return this.retrieveSemanticContext(growPlants, query, limit)
     }
 
     /** Whether semantic (embedding-based) ranking is available. */

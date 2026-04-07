@@ -545,6 +545,14 @@ export const settingsView = {
         importSuccess: "Donnees importees avec succes. L'application va maintenant se recharger.",
         importError:
             "L'importation a echoue. Veuillez vous assurer qu'il s'agit d'un fichier de sauvegarde valide.",
+        growExportTitle: 'Sauvegarde par Culture',
+        growExportDesc: 'Exporter "{{name}}" avec {{count}} plantes en fichier JSON portable.',
+        exportGrow: 'Exporter cette Culture',
+        importGrow: 'Importer une Culture',
+        growImportDesc: 'Importer un fichier de culture exporte precedemment (format v2.0).',
+        growImportSuccess: 'Culture "{{name}}" importee avec succes.',
+        growImportError:
+            "Importation echouee. Veuillez verifier qu'il s'agit d'un fichier d'exportation de culture valide (v2.0).",
         totalUsage: 'Utilisation totale',
         lastBackup: 'Derniere sauvegarde',
         noBackup: 'Aucune sauvegarde creee',
@@ -1030,5 +1038,11 @@ export const settingsView = {
         activeGrow: 'Culture active: {{name}}',
         plantCount_one: '{{count}} plante',
         plantCount_other: '{{count}} plantes',
+        statsPlants_one: '{{count}} plante',
+        statsPlants_other: '{{count}} plantes',
+        statsJournal_one: '{{count}} entree',
+        statsJournal_other: '{{count}} entrees',
+        statsHealth: 'Sante: {{value}}%',
+        statsAge: 'Plus ancienne: {{days}}j',
     },
 }

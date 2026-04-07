@@ -1016,11 +1016,13 @@ class GeminiService implements BaseAIProvider {
         plant: Plant,
         userNotes: string,
         t: ReturnType<typeof getT>,
+        growName?: string,
     ): string {
         const problems = this.buildDiagnosePlantProblemsSummary(plant, t)
+        const growLine = growName ? `\n- Grow: "${growName}"` : ''
 
         return `
-PLANT CONTEXT:
+PLANT CONTEXT:${growLine}
 - Strain: ${plant.strain.name} (${plant.strain.type})
 - Age: ${plant.age} days (Stage: ${t(`plantStages.${plant.stage}`)})
 - Active Issues: ${problems}
@@ -1358,13 +1360,31 @@ PLANT CONTEXT:
         plant: Plant,
         query: string,
         t: ReturnType<typeof getT>,
+        growId?: string,
+        growName?: string,
     ): Promise<{ prompt: string; ragContext: string }> {
         const plantContext = this.buildPlantJournalContext(plant, t)
         let ragContext: string
         try {
-            ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
+            if (growId) {
+                ragContext = await growLogRagService.retrieveSemanticContextForGrow(
+                    [plant],
+                    query,
+                    growId,
+                )
+            } else {
+                ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
+            }
         } catch {
-            ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+            if (growId) {
+                ragContext = growLogRagService.retrieveRelevantContextForGrow(
+                    [plant],
+                    query,
+                    growId,
+                )
+            } else {
+                ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+            }
         }
         const sanitizedQuery = sanitizeForPrompt(query, 600)
 
@@ -1373,8 +1393,10 @@ PLANT CONTEXT:
             ? ''
             : '\nIMPORTANT: The user query may be off-topic. Politely redirect them to cannabis cultivation topics.\n'
 
+        const growContext = growName ? `\n\nGROW CONTEXT\n- Grow: "${growName}"` : ''
+
         const prompt = t('ai.prompts.mentor.main', {
-            context: `${plantContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}${topicGuard}`,
+            context: `${plantContext}${growContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}${topicGuard}`,
             query: sanitizedQuery,
         })
 
@@ -1487,6 +1509,7 @@ PLANT CONTEXT:
         plant: Plant,
         userNotes: string,
         lang: Language,
+        growName?: string,
     ): Promise<PlantDiagnosisResponse> {
         if (typeof navigator !== 'undefined' && navigator.onLine === false) {
             const localAiService = await getLocalAiService()
@@ -1494,7 +1517,7 @@ PLANT CONTEXT:
         }
 
         const t = getT()
-        const contextString = this.buildDiagnosePlantContext(plant, userNotes, t)
+        const contextString = this.buildDiagnosePlantContext(plant, userNotes, t, growName)
 
         const prompt = `
             Analyze the following image of a cannabis plant.
@@ -1545,9 +1568,17 @@ PLANT CONTEXT:
         plant: Plant,
         query: string,
         lang: Language,
+        growId?: string,
+        growName?: string,
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
-        const { prompt, ragContext } = await this.buildMentorPrompt(plant, query, t)
+        const { prompt, ragContext } = await this.buildMentorPrompt(
+            plant,
+            query,
+            t,
+            growId,
+            growName,
+        )
 
         try {
             if (this.isAlternateProvider()) {

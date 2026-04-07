@@ -11,6 +11,8 @@ function makeAlert(overrides: Partial<SmartAlert> = {}): SmartAlert {
         isDismissed: false,
         plantId: 'plant-1',
         plantName: 'Northern Lights',
+        growId: 'default-grow',
+        growName: 'Mein Grow',
         ...overrides,
     }
 }
@@ -96,5 +98,18 @@ describe('useAlertsStore', () => {
         expect(result.plantId).toBe('p42')
         expect(result.plantName).toBe('White Widow')
         expect(result.isDismissed).toBe(true)
+    })
+
+    it('stores growId and growName on alerts', () => {
+        const alert = makeAlert({
+            id: 'grow-test',
+            growId: 'grow-2',
+            growName: 'Indoor Tent',
+        })
+        useAlertsStore.getState().addAlert(alert)
+
+        const result = useAlertsStore.getState().alerts[0]!
+        expect(result.growId).toBe('grow-2')
+        expect(result.growName).toBe('Indoor Tent')
     })
 })

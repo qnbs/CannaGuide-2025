@@ -10,6 +10,7 @@ export const common = {
     downloadAgain: 'Erneut herunterladen',
     all: 'Alle',
     none: 'Keine',
+    growDeleted: 'Grow geloescht.',
     outOfStock: 'Nicht vorrätig',
     imageGenCapability: {
         webgpuRequired:

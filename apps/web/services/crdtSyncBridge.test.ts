@@ -46,6 +46,7 @@ const { listenerMiddleware } = await import('@/stores/listenerMiddleware')
 const makePlant = (id = 'plant-1'): Plant =>
     ({
         id,
+        growId: 'default-grow',
         name: `Test Plant ${id}`,
         strain: {
             id: 's1',
@@ -114,6 +115,7 @@ const makePlant = (id = 'plant-1'): Plant =>
 
 const makeScheduleEntry = (id = 'schedule-veg'): NutrientScheduleEntry => ({
     id,
+    growId: 'default-grow',
     stage: PlantStage.Vegetative,
     targetEc: 1.2,
     targetPh: 6.3,

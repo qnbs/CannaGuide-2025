@@ -248,6 +248,7 @@ const mountHydratedApp = async () => {
                         status: 'idle' as const,
                     },
                     hydro: state.hydro,
+                    grows: state.grows,
                     ui: {
                         // Only persist essential, non-transient UI state
                         lastActiveView: getUISnapshot().lastActiveView,

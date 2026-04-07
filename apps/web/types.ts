@@ -667,6 +667,8 @@ export interface PlantSimulationClock {
 
 export interface Plant {
     id: string
+    /** ID of the grow this plant belongs to */
+    growId: string
     name: string
     strain: Strain
     mediumType: GrowSetup['medium']
@@ -818,6 +820,26 @@ export interface SimulationState {
     vpdProfiles: Record<string, SimulationPoint[]>
     /** Set to true while the background worker is processing a catch-up delta. */
     isCatchingUp?: boolean | undefined
+}
+
+// --- Multi-Grow Types ---
+
+export interface Grow {
+    id: string
+    name: string
+    createdAt: number
+    updatedAt: number
+    /** Whether this grow is currently active */
+    isActive: boolean
+    /** Optional description */
+    description?: string | undefined
+}
+
+export interface GrowsState {
+    /** All grows keyed by EntityAdapter (max MAX_GROWS) */
+    grows: EntityState<Grow, string>
+    /** Currently selected/active grow ID */
+    activeGrowId: string
 }
 
 // AI related types

@@ -52,6 +52,7 @@ function makeEntry(
 
 const basePlant: Plant = {
     id: 'plant-1',
+    growId: 'default-grow',
     name: 'White Widow',
     strain: {
         id: 'strain-1',

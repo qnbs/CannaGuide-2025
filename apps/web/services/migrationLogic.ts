@@ -7,6 +7,8 @@ import {
     GENEALOGY_STATE_VERSION,
     SLICE_SCHEMA_VERSIONS,
     VersionedSliceName,
+    DEFAULT_GROW_ID,
+    DEFAULT_GROW_NAME,
 } from '@/constants'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
@@ -519,6 +521,82 @@ const ensureSandboxShape = (state: PersistedState): void => {
     }
 }
 
+/**
+ * Ensures the grows slice has a valid shape with at least the default grow.
+ * Runs on every boot to guard against corrupt / missing grow data.
+ */
+const ensureGrowsShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.grows || typeof s.grows !== 'object') {
+        const now = Date.now()
+        s.grows = {
+            grows: {
+                ids: [DEFAULT_GROW_ID],
+                entities: {
+                    [DEFAULT_GROW_ID]: {
+                        id: DEFAULT_GROW_ID,
+                        name: DEFAULT_GROW_NAME,
+                        createdAt: now,
+                        updatedAt: now,
+                        isActive: true,
+                    },
+                },
+            },
+            activeGrowId: DEFAULT_GROW_ID,
+        }
+        return
+    }
+    const grows = s.grows as Record<string, unknown>
+    if (!grows.grows || typeof grows.grows !== 'object') {
+        const now = Date.now()
+        grows.grows = {
+            ids: [DEFAULT_GROW_ID],
+            entities: {
+                [DEFAULT_GROW_ID]: {
+                    id: DEFAULT_GROW_ID,
+                    name: DEFAULT_GROW_NAME,
+                    createdAt: now,
+                    updatedAt: now,
+                    isActive: true,
+                },
+            },
+        }
+    } else {
+        const inner = grows.grows as Record<string, unknown>
+        inner.ids = Array.isArray(inner.ids) ? inner.ids : [DEFAULT_GROW_ID]
+        inner.entities =
+            inner.entities && typeof inner.entities === 'object' ? inner.entities : {}
+    }
+    if (typeof grows.activeGrowId !== 'string') {
+        grows.activeGrowId = DEFAULT_GROW_ID
+    }
+
+    // Ensure all plants have a growId
+    const sim = s.simulation as Record<string, unknown> | undefined
+    if (sim) {
+        const plants = sim.plants as Record<string, unknown> | undefined
+        const entities = plants?.entities as Record<string, Record<string, unknown>> | undefined
+        if (entities) {
+            for (const id in entities) {
+                const plant = entities[id]
+                if (plant && typeof plant.growId !== 'string') {
+                    plant.growId = DEFAULT_GROW_ID
+                }
+            }
+        }
+    }
+
+    // Ensure all nutrient schedule entries have a growId
+    const np = s.nutrientPlanner as Record<string, unknown> | undefined
+    if (np && Array.isArray(np.schedule)) {
+        for (const entry of np.schedule as Record<string, unknown>[]) {
+            if (entry && typeof entry.growId !== 'string') {
+                entry.growId = DEFAULT_GROW_ID
+            }
+        }
+    }
+}
+
 const ensureStrainsViewShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (!s.strainsView || typeof s.strainsView !== 'object') {
@@ -827,6 +905,67 @@ const migrateV4ToV5 = (state: PersistedState): PersistedState => {
 }
 
 /**
+ * V5->V6 migration: Multi-Grow support.
+ * - Creates a `grows` slice with one default grow.
+ * - Stamps `growId` on every existing Plant.
+ * - Stamps `growId` on every existing NutrientScheduleEntry.
+ */
+const migrateV5ToV6 = (state: PersistedState): PersistedState => {
+    console.debug('[MigrationLogic] Migrating state from v5 to v6...')
+
+    const now = Date.now()
+
+    // 1. Create the grows slice with a single default grow
+    if (!state.grows) {
+        const defaultGrow = {
+            id: DEFAULT_GROW_ID,
+            name: DEFAULT_GROW_NAME,
+            createdAt: now,
+            updatedAt: now,
+            isActive: true,
+        }
+        ;(state as Record<string, unknown>).grows = {
+            grows: {
+                ids: [DEFAULT_GROW_ID],
+                entities: { [DEFAULT_GROW_ID]: defaultGrow },
+            },
+            activeGrowId: DEFAULT_GROW_ID,
+        }
+    }
+
+    // 2. Stamp growId on all existing plants
+    const sim = state.simulation as Record<string, unknown> | undefined
+    if (sim) {
+        const plants = sim.plants as Record<string, unknown> | undefined
+        const entities = plants?.entities as Record<string, Record<string, unknown>> | undefined
+        if (entities) {
+            for (const id in entities) {
+                const plant = entities[id]
+                if (plant && !plant.growId) {
+                    plant.growId = DEFAULT_GROW_ID
+                }
+            }
+        }
+    }
+
+    // 3. Stamp growId on all existing nutrient schedule entries
+    const np = state.nutrientPlanner as Record<string, unknown> | undefined
+    if (np && Array.isArray(np.schedule)) {
+        for (const entry of np.schedule as Record<string, unknown>[]) {
+            if (entry && !entry.growId) {
+                entry.growId = DEFAULT_GROW_ID
+            }
+        }
+    }
+
+    if (state.settings?.settings) {
+        state.settings.settings = deepMergeSettings(state.settings.settings)
+    }
+
+    return state
+}
+
+/**
  * Strips transient / runtime-only state that must never survive a restart.
  * Called on EVERY boot, regardless of version.
  */
@@ -925,6 +1064,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
         { targetVersion: 3, migrate: migrateV2ToV3 },
         { targetVersion: 4, migrate: migrateV3ToV4 },
         { targetVersion: 5, migrate: migrateV4ToV5 },
+        { targetVersion: 6, migrate: migrateV5ToV6 },
     ]
 
     if (stateVersion < APP_VERSION) {
@@ -967,6 +1107,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
         ensureKnowledgeShape,
         ensureBreedingShape,
         ensureSandboxShape,
+        ensureGrowsShape,
         ensureStrainsViewShape,
     ] as const
     for (const validate of shapeValidators) {

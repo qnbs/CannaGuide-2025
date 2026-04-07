@@ -372,3 +372,71 @@ export const selectEnvironmentLogs = (
     }
     return selector
 }
+
+// --- Grows Selectors ---
+import type { Grow, GrowsState } from '@/types'
+import { growsAdapter } from './slices/growsSlice'
+
+const selectGrowsState = (state: RootState): GrowsState => state.grows
+
+export const selectActiveGrowId = createSelector(
+    [selectGrowsState],
+    (g: GrowsState): string => g.activeGrowId,
+)
+
+export const { selectAll: selectAllGrows, selectById: selectGrowById } =
+    growsAdapter.getSelectors<RootState>(
+        (state) => state.grows?.grows ?? EMPTY_ENTITY_STATE,
+    )
+
+export const selectActiveGrow = createSelector(
+    [selectGrowsState],
+    (g: GrowsState): Grow | undefined => g.grows.entities[g.activeGrowId],
+)
+
+export const selectGrowCount = createSelector(
+    [selectGrowsState],
+    (g: GrowsState): number => g.grows.ids.length,
+)
+
+// --- Grow-scoped Plant Selectors ---
+
+const plantsForGrowCache = new Map<string, (state: RootState) => Plant[]>()
+export const selectPlantsForGrow = (growId: string): ((state: RootState) => Plant[]) => {
+    let selector = plantsForGrowCache.get(growId)
+    if (!selector) {
+        selector = createSelector(
+            [selectAllPlants],
+            (plants: Plant[]): Plant[] => plants.filter((p) => p.growId === growId),
+        )
+        plantsForGrowCache.set(growId, selector)
+    }
+    return selector
+}
+
+export const selectActiveGrowPlants = createSelector(
+    [selectAllPlants, selectActiveGrowId],
+    (plants: Plant[], activeGrowId: string): Plant[] =>
+        plants.filter((p) => p.growId === activeGrowId),
+)
+
+// --- Grow-scoped Nutrient Selectors ---
+
+const nutrientScheduleForGrowCache = new Map<
+    string,
+    (state: RootState) => NutrientScheduleEntry[]
+>()
+export const selectNutrientScheduleForGrow = (
+    growId: string,
+): ((state: RootState) => NutrientScheduleEntry[]) => {
+    let selector = nutrientScheduleForGrowCache.get(growId)
+    if (!selector) {
+        selector = createSelector(
+            [selectNutrientSchedule],
+            (schedule: NutrientScheduleEntry[]): NutrientScheduleEntry[] =>
+                schedule.filter((e) => e.growId === growId),
+        )
+        nutrientScheduleForGrowCache.set(growId, selector)
+    }
+    return selector
+}

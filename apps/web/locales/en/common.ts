@@ -10,6 +10,7 @@ export const common = {
     downloadAgain: 'Download Again',
     all: 'All',
     none: 'None',
+    growDeleted: 'Grow deleted.',
     outOfStock: 'Out of stock',
     imageGenCapability: {
         webgpuRequired: 'WebGPU is required for image generation. This device only supports WASM.',

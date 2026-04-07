@@ -19,6 +19,7 @@ const initialState: NutrientPlannerState = {
     schedule: [
         {
             id: 'schedule-seedling',
+            growId: 'default-grow',
             stage: PlantStage.Seedling,
             targetEc: 0.6,
             targetPh: 6.2,
@@ -27,6 +28,7 @@ const initialState: NutrientPlannerState = {
         },
         {
             id: 'schedule-vegetative',
+            growId: 'default-grow',
             stage: PlantStage.Vegetative,
             targetEc: 1.2,
             targetPh: 6.3,
@@ -35,6 +37,7 @@ const initialState: NutrientPlannerState = {
         },
         {
             id: 'schedule-flowering',
+            growId: 'default-grow',
             stage: PlantStage.Flowering,
             targetEc: 1.6,
             targetPh: 6.1,

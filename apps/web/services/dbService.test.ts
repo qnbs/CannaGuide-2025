@@ -59,6 +59,7 @@ const makePlant = (journalCount: number): Plant => {
     const now = Date.now()
     return {
         id: 'plant-1',
+        growId: 'default-grow',
         name: 'Plant One',
         strain: makeStrain(),
         mediumType: 'Soil',

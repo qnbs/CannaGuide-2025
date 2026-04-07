@@ -15,6 +15,7 @@ export const common = {
     downloadAgain: 'Descargar de nuevo',
     all: 'Todo',
     none: 'Ninguno',
+    growDeleted: 'Grow eliminado.',
     outOfStock: 'Agotado',
     name: 'Nombre',
     type: 'Tipo',

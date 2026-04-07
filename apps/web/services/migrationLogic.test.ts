@@ -116,7 +116,8 @@ describe('migrationLogic', () => {
             version: 4,
             _sliceVersions: {
                 settings: 2,
-                simulation: 2,
+                simulation: 3,
+                grows: 1,
                 genealogy: 3,
                 sandbox: 1,
                 userStrains: 1,
@@ -294,5 +295,108 @@ describe('migrationLogic', () => {
         expect(migrated.savedItems!.savedSetups).toEqual({ ids: [], entities: {} })
         expect(migrated.savedItems!.savedStrainTips).toEqual({ ids: [], entities: {} })
         expect(migrated.savedItems!.savedExports).toEqual({ ids: [], entities: {} })
+    })
+})
+
+describe('v5 -> v6 migration (Multi-Grow)', () => {
+    it('creates grows slice with default grow', () => {
+        const migrated = migrateState({ version: 5 } as never)
+
+        const grows = (migrated as Record<string, unknown>).grows as Record<string, unknown>
+        expect(grows).toBeDefined()
+        expect(grows.activeGrowId).toBe('default-grow')
+        const inner = grows.grows as { ids: string[]; entities: Record<string, unknown> }
+        expect(inner.ids).toContain('default-grow')
+        expect(inner.entities['default-grow']).toBeDefined()
+    })
+
+    it('stamps growId on existing plants', () => {
+        const migrated = migrateState({
+            version: 5,
+            simulation: {
+                plants: {
+                    ids: ['plant-1'],
+                    entities: {
+                        'plant-1': {
+                            id: 'plant-1',
+                            growId: 'default-grow',
+                            name: 'Legacy Plant',
+                            stage: PlantStage.Vegetative,
+                            health: 100,
+                            stressLevel: 0,
+                            height: 20,
+                            age: 7,
+                        },
+                    },
+                },
+                plantSlots: ['plant-1', null, null],
+                selectedPlantId: null,
+                vpdProfiles: {},
+            },
+        } as never)
+
+        const sim = migrated.simulation as unknown as Record<string, unknown>
+        const plants = sim?.plants as { entities: Record<string, Record<string, unknown>> }
+        expect(plants.entities['plant-1']?.growId).toBe('default-grow')
+    })
+
+    it('stamps growId on existing nutrient schedule entries', () => {
+        const migrated = migrateState({
+            version: 5,
+            nutrientPlanner: {
+                schedule: [
+                    {
+                        id: 'schedule-seedling',
+                        stage: PlantStage.Seedling,
+                        targetEc: 0.6,
+                        targetPh: 6.2,
+                        npkRatio: { n: 2, p: 1, k: 1 },
+                        notes: '',
+                    },
+                ],
+                readings: [],
+                alerts: [],
+                autoAdjustEnabled: false,
+                medium: 'Soil',
+                isAiLoading: false,
+                lastAiRecommendation: null,
+                activePluginId: null,
+                autoAdjustRecommendation: null,
+            },
+        } as never)
+
+        const np = migrated.nutrientPlanner as unknown as Record<string, unknown>
+        const schedule = np.schedule as Record<string, unknown>[]
+        expect(schedule[0]?.growId).toBe('default-grow')
+    })
+
+    it('does not overwrite existing growId on plants', () => {
+        const migrated = migrateState({
+            version: 5,
+            simulation: {
+                plants: {
+                    ids: ['plant-1'],
+                    entities: {
+                        'plant-1': {
+                            id: 'plant-1',
+                            growId: 'custom-grow',
+                            name: 'Already Has GrowId',
+                        },
+                    },
+                },
+                plantSlots: ['plant-1', null, null],
+                selectedPlantId: null,
+                vpdProfiles: {},
+            },
+        } as never)
+
+        const sim = migrated.simulation as unknown as Record<string, unknown>
+        const plants = sim?.plants as { entities: Record<string, Record<string, unknown>> }
+        expect(plants.entities['plant-1']?.growId).toBe('custom-grow')
+    })
+
+    it('migrated state has version 6', () => {
+        const migrated = migrateState({ version: 5 } as never)
+        expect(migrated.version).toBe(6)
     })
 })

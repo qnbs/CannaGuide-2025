@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { PlantStage } from '@/types'
 import type { NutrientWeek } from '@/services/pluginService'
+import { DEFAULT_GROW_ID } from '@/constants'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -9,6 +10,8 @@ import type { NutrientWeek } from '@/services/pluginService'
 export interface NutrientScheduleEntry {
     /** Unique identifier */
     id: string
+    /** ID of the grow this schedule entry belongs to */
+    growId: string
     /** Growth stage this entry applies to */
     stage: PlantStage
     /** Target EC (mS/cm) */
@@ -114,6 +117,7 @@ export const getOptimalRange = (medium: string, stage: PlantStage): OptimalRange
 const createDefaultSchedule = (): NutrientScheduleEntry[] => [
     {
         id: 'schedule-seedling',
+        growId: DEFAULT_GROW_ID,
         stage: PlantStage.Seedling,
         targetEc: 0.6,
         targetPh: 6.2,
@@ -122,6 +126,7 @@ const createDefaultSchedule = (): NutrientScheduleEntry[] => [
     },
     {
         id: 'schedule-vegetative',
+        growId: DEFAULT_GROW_ID,
         stage: PlantStage.Vegetative,
         targetEc: 1.2,
         targetPh: 6.3,
@@ -130,6 +135,7 @@ const createDefaultSchedule = (): NutrientScheduleEntry[] => [
     },
     {
         id: 'schedule-flowering',
+        growId: DEFAULT_GROW_ID,
         stage: PlantStage.Flowering,
         targetEc: 1.6,
         targetPh: 6.1,
@@ -367,6 +373,7 @@ const nutrientPlannerSlice = createSlice({
 
             state.schedule = Array.from(stageMap.entries()).map(([stage, week]) => ({
                 id: `plugin-${pluginId}-${stage}`,
+                growId: DEFAULT_GROW_ID,
                 stage,
                 targetEc: week.ecTarget ?? getOptimalRange(state.medium, stage).ecMin,
                 targetPh: week.phTarget

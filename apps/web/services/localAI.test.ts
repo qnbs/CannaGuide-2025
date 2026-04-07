@@ -21,6 +21,7 @@ vi.mock('@/i18n', () => ({
 
 const buildPlant = (): Plant => ({
     id: 'plant-1',
+    growId: 'default-grow',
     name: 'Alpha',
     strain: {
         id: 'strain-1',

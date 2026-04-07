@@ -486,6 +486,33 @@ startAppListening({
     },
 })
 
+import { addGrow, removeGrow, setActiveGrowId } from './slices/growsSlice'
+
+/**
+ * When a new grow is added, automatically set it as the active grow.
+ */
+startAppListening({
+    actionCreator: addGrow,
+    effect: (action, listenerApi) => {
+        listenerApi.dispatch(setActiveGrowId(action.payload.id))
+    },
+})
+
+/**
+ * When the active grow is deleted, the slice already handles fallback.
+ * This listener notifies the user.
+ */
+startAppListening({
+    actionCreator: removeGrow,
+    effect: () => {
+        const t = getT()
+        getUISnapshot().addNotification({
+            message: t('common.growDeleted'),
+            type: 'info',
+        })
+    },
+})
+
 /**
  * Onboarding step subscription via Zustand.
  * Called once from store.ts after the store is created.

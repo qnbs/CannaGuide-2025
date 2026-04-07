@@ -19,6 +19,7 @@ import type { NutrientScheduleEntry, EcPhReading } from '@/stores/slices/nutrien
 
 const makePlant = (overrides: Partial<Plant> = {}): Plant => ({
     id: 'plant-1',
+    growId: 'default-grow',
     name: 'Northern Lights #1',
     strain: { id: 's1', name: 'Northern Lights', type: 'Indica' } as Plant['strain'],
     mediumType: 'Soil',
@@ -85,6 +86,7 @@ const makeNutrientEntry = (
     overrides: Partial<NutrientScheduleEntry> = {},
 ): NutrientScheduleEntry => ({
     id: 'schedule-vegetative',
+    growId: 'default-grow',
     stage: PlantStage.Vegetative,
     targetEc: 1.2,
     targetPh: 6.3,

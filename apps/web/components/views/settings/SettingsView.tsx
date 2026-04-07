@@ -32,6 +32,7 @@ const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
 const VoiceSettingsTab = lazy(() => import('./VoiceSettingsTab'))
 const DataManagementTab = lazy(() => import('./DataManagementTab'))
 const IotSettingsTab = lazy(() => import('./IotSettingsTab'))
+const GrowManagerTab = lazy(() => import('./GrowManagerTab'))
 
 const timeOptions = [
     { value: '12', label: '12/12' },
@@ -2203,6 +2204,7 @@ const SettingsViewComponent: React.FC = () => {
             tts: <PhosphorIcons.SpeakerHigh className="w-14 h-14 mx-auto text-accent-400" />,
             strains: <PhosphorIcons.Leafy className="w-14 h-14 mx-auto text-green-400" />,
             plants: <PhosphorIcons.Plant className="w-14 h-14 mx-auto text-green-400" />,
+            grows: <PhosphorIcons.TreeStructure className="w-14 h-14 mx-auto text-emerald-400" />,
             notifications: <PhosphorIcons.Bell className="w-14 h-14 mx-auto text-amber-400" />,
             defaults: <PhosphorIcons.ListChecks className="w-14 h-14 mx-auto text-cyan-400" />,
             privacy: <PhosphorIcons.ShieldCheck className="w-14 h-14 mx-auto text-emerald-400" />,
@@ -2220,6 +2222,7 @@ const SettingsViewComponent: React.FC = () => {
             tts: t('settingsView.categories.tts'),
             strains: t('settingsView.categories.strains'),
             plants: t('settingsView.categories.plants'),
+            grows: t('settingsView.categories.grows'),
             notifications: t('settingsView.categories.notifications'),
             defaults: t('settingsView.categories.defaults'),
             privacy: t('settingsView.categories.privacy'),
@@ -2262,6 +2265,18 @@ const SettingsViewComponent: React.FC = () => {
                 )
             case 'plants':
                 return <PlantsSettingsTab />
+            case 'grows':
+                return (
+                    <Suspense
+                        fallback={
+                            <Card>
+                                <SkeletonLoader count={3} />
+                            </Card>
+                        }
+                    >
+                        <GrowManagerTab />
+                    </Suspense>
+                )
             case 'notifications':
                 return <NotificationsSettingsTab />
             case 'defaults':

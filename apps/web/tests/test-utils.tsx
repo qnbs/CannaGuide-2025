@@ -16,6 +16,7 @@ import savedItemsReducer from '@/stores/slices/savedItemsSlice'
 import genealogyReducer from '@/stores/slices/genealogySlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
 import hydroReducer from '@/stores/slices/hydroSlice'
+import growsReducer from '@/stores/slices/growsSlice'
 
 import type { RootState } from '@/stores/store'
 
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
     genealogy: genealogyReducer,
     simulation: simulationReducer,
     hydro: hydroReducer,
+    grows: growsReducer,
 })
 
 export function createTestStore(preloadedState?: Partial<RootState>) {

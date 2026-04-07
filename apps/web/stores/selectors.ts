@@ -399,6 +399,11 @@ export const selectGrowCount = createSelector(
     (g: GrowsState): number => g.grows.ids.length,
 )
 
+export const selectNonArchivedGrows = createSelector(
+    [selectAllGrows],
+    (grows: Grow[]): Grow[] => grows.filter((g) => !g.archived),
+)
+
 // --- Grow-scoped Plant Selectors ---
 
 const plantsForGrowCache = new Map<string, (state: RootState) => Plant[]>()

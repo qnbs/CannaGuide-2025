@@ -86,6 +86,23 @@ const growsSlice = createSlice({
             }
         },
 
+        archiveGrow(state, action: PayloadAction<string>) {
+            const growId = action.payload
+            growsAdapter.updateOne(state.grows, {
+                id: growId,
+                changes: { archived: true, updatedAt: Date.now() },
+            })
+            // If the archived grow was active, switch to first non-archived
+            if (state.activeGrowId === growId) {
+                const firstNonArchived = state.grows.ids.find((id) => {
+                    const g = state.grows.entities[id as string]
+                    return g && !g.archived && g.id !== growId
+                })
+                state.activeGrowId =
+                    (firstNonArchived as string) ?? state.grows.ids[0] ?? DEFAULT_GROW_ID
+            }
+        },
+
         /** Restore full grows state (e.g. from migration or import) */
         setGrowsState(_state, action: PayloadAction<GrowsState>) {
             return action.payload
@@ -93,6 +110,6 @@ const growsSlice = createSlice({
     },
 })
 
-export const { addGrow, updateGrow, removeGrow, setActiveGrowId, setGrowsState } =
+export const { addGrow, updateGrow, removeGrow, setActiveGrowId, archiveGrow, setGrowsState } =
     growsSlice.actions
 export default growsSlice.reducer

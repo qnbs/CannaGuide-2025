@@ -3,6 +3,7 @@ import { View } from '@/types'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@/stores/useUIStore'
+import { GrowSwitcher } from '@/components/common/GrowSwitcher'
 
 const navIcons: Record<string, React.ReactNode> = {
     [View.Strains]: <PhosphorIcons.Leafy />,
@@ -66,6 +67,9 @@ export const BottomNav: React.FC = () => {
             aria-label={t('common.accessibility.mainNavigation')}
             className="fixed inset-x-0 bottom-0 z-[90] mt-auto px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:hidden"
         >
+            <div className="mx-auto mb-2 flex max-w-md justify-center">
+                <GrowSwitcher compact />
+            </div>
             <div
                 ref={navRef}
                 className="glass-pane relative mx-auto flex max-w-md justify-around rounded-[1.75rem] border-white/10 px-2 py-2 shadow-[0_-12px_48px_rgba(2,6,23,0.34)]"

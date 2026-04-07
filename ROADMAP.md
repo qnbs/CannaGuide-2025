@@ -6,15 +6,15 @@
 
 ## Release Overview
 
-| Version  | Target     | Status         | Theme                                                        |
-| -------- | ---------- | -------------- | ------------------------------------------------------------ |
-| **v1.0** | 2026-07-07 | ✅ Released    | Foundation — Full-featured cultivation PWA                   |
-| **v1.1** | 2026-Q1    | ✅ Released    | DevOps & Quality — Error tracking, testing, deployment       |
-| **v1.2** | 2026-Q2    | ✅ Released    | Community & Automation -- Languages, scheduling, marketplace |
-| **v1.3** | 2026-Q3    | ✅ Released    | Analytics & Visualization -- IoT, 3D, dashboards             |
-| **v1.4** | 2026-Q4    | 🔄 In Progress | Discovery & Knowledge Scale -- Feeds, media, expanded corpus |
-| **v1.5** | 2027-Q1    | 📋 Planned     | Scholarly Expansion — Encyclopedia, curation, source graph   |
-| **v2.0** | 2027-Q2    | 📋 Planned     | Digital Twin Platform — AR/VR overlays + advanced sandbox    |
+| Version  | Target     | Status      | Theme                                                        |
+| -------- | ---------- | ----------- | ------------------------------------------------------------ |
+| **v1.0** | 2026-07-07 | ✅ Released | Foundation — Full-featured cultivation PWA                   |
+| **v1.1** | 2026-Q1    | ✅ Released | DevOps & Quality — Error tracking, testing, deployment       |
+| **v1.2** | 2026-Q2    | ✅ Released | Community & Automation -- Languages, scheduling, marketplace |
+| **v1.3** | 2026-Q3    | ✅ Released | Analytics & Visualization -- IoT, 3D, dashboards             |
+| **v1.4** | 2026-Q4    | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus |
+| **v1.5** | 2027-Q1    | 📋 Planned  | Scholarly Expansion — Encyclopedia, curation, source graph   |
+| **v2.0** | 2027-Q2    | 📋 Planned  | Digital Twin Platform — AR/VR overlays + advanced sandbox    |
 
 ---
 

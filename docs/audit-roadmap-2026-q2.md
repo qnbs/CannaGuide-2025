@@ -30,17 +30,17 @@
 
 ## Gesamtübersicht & Zielzustand
 
-### Ist-Zustand (2026-04-05)
+### Ist-Zustand (2026-04-07)
 
 | Metrik            | Wert                    | Bewertung           |
 | ----------------- | ----------------------- | ------------------- |
-| App-Version       | v1.4.0                  | ✅ Stabil           |
-| Tests             | 1626/1626 (149 Dateien) | ✅ Grün             |
+| App-Version       | v1.4.1                  | ✅ Stabil           |
+| Tests             | 1663/1663 (149 Dateien) | ✅ Grün             |
 | OpenSSF Scorecard | 8.5/10                  | ⚠ Ziel: 10/10       |
 | Test-Coverage     | ~22-28 %                | ⚠ Ziel: >30 %       |
 | Duplicate Code    | ~115 Major-Bloecke      | ⚠ Technische Schuld |
 | Security Alerts   | 0                       | ✅                  |
-| CI Workflows      | 24 (alle gruen)         | ✅                  |
+| CI Workflows      | 21 (alle gruen)         | ✅                  |
 | Stryker Mutation  | Baseline erstellt       | ✅ Neu (Session 63) |
 
 ### Soll-Zustand (nach vollständiger Roadmap)
@@ -63,25 +63,21 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-03-29 (Audit v2 Fixes + Version Bump)
-App-Version:        v1.2.0-alpha
-Tests:              793/793 (88 files)
-Naechste Prioritaet:  Test Coverage >30%, Cache-Deduplizierung
+Letzte Session:     2026-04-07 (CI Typecheck Fix + Vitest Hang Fix + Doc Audit)
+App-Version:        v1.4.1
+Tests:              1663/1663 (149 files)
+Naechste Prioritaet:  Test Coverage >30%, F-05 Multi-grow, D-01 API Docs
 Sprint-Fortschritt: S1 [0/3] | S2 [1/4] | S3 [3/5] | S4 [0/2] | S5 [6/8] | S6 [0/7]
 Gesamtfortschritt:  ██████████░░░░░░░░░░ 10/29 Tasks (~34%)
 Blocker:            CII Badge (Email)
-Erledigt (2026-03-29): Biome-Toolchain entfernt (Dual-Toolchain-Kollision aufgeloest),
-                        gate:push --passWithNoTests Silent-Bypass behoben,
-                        Version 1.1.0 -> 1.2.0-alpha (root + web),
-                        Test-Diskrepanz behoben (CONTRIBUTING.md 622 -> 793),
-                        GitGuardian API-Key Fix, Full i18n Audit (21 Dateien),
-                        Changelog + Docs Sync
-Erledigt (2026-03-28): Monorepo-Docs-Sync, Eco-Mode-Redux-Sync, Nutrient-Plugin-UI,
-                        DSGVO-Individual-DB-Delete, Seedbanks-i18n-5-Locales,
+```
+
                         createCachedPipelineLoader-Dedup (4 Services, ~75 LOC)
+
 Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
-                        Three.js-Splitting, i18n ES/FR/NL, Nutrient-Plugin, DSGVO,
-                        Eco-Mode, ARCHITECTURE.md, Lighthouse-Fonts
+Three.js-Splitting, i18n ES/FR/NL, Nutrient-Plugin, DSGVO,
+Eco-Mode, ARCHITECTURE.md, Lighthouse-Fonts
+
 ```
 
 ---
@@ -415,13 +411,15 @@ Erledigt (2026-03-27): Export-Bug, Focus-Return, Touch-Targets, IndexedDB-Retry,
 ## Abhängigkeiten & Blockermatrix
 
 ```
-S1.3 (Branch Protection)  -> S2.* (alle PRs ueber PR-Workflow)
-S1.2 (CII Badge)          -> S4.2 (Scorecard 10/10)
-S2.2 (Coverage >30%)      -> S3.3 (Code-Qualitaet)
+
+S1.3 (Branch Protection) -> S2._ (alle PRs ueber PR-Workflow)
+S1.2 (CII Badge) -> S4.2 (Scorecard 10/10)
+S2.2 (Coverage >30%) -> S3.3 (Code-Qualitaet)
 S2.4 (Duplicates Welle 1) -> S3.5 (Duplicates Welle 2)
-S1-S4 (Quality Infra)     -> S5.* (Feature Delivery)
-S5.* (v1.2 Features)      -> S6.* (v1.3+ Vision)
-```
+S1-S4 (Quality Infra) -> S5._ (Feature Delivery)
+S5._ (v1.2 Features) -> S6._ (v1.3+ Vision)
+
+````
 
 ```mermaid
 graph TD
@@ -435,7 +433,7 @@ graph TD
     S4.1[S4.1 Signed Releases] --> S4.2
     S4 --> S5[Sprint 5: v1.2]
     S5 --> S6[Sprint 6: v1.3-v2.0]
-```
+````
 
 ---
 

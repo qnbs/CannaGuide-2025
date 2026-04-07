@@ -2,6 +2,22 @@ import { expect, Page } from '@playwright/test'
 import { APP_VERSION, REDUX_STATE_KEY } from '@/constants'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
 
+/**
+ * Set the GDPR consent cookie (v2) directly via browser context.
+ * This is the primary check path in consentService.hasConsent(), making
+ * tests independent of localStorage migration timing issues.
+ */
+const seedConsentCookie = async (page: Page) => {
+    await page.context().addCookies([
+        {
+            name: 'cg.gdpr.consent.v2',
+            value: '1',
+            domain: 'localhost',
+            path: '/',
+        },
+    ])
+}
+
 export const seedLegalGateState = async (page: Page) => {
     await page.addInitScript(() => {
         window.localStorage.setItem('cg.gdpr.consent.v1', '1')
@@ -10,11 +26,14 @@ export const seedLegalGateState = async (page: Page) => {
 }
 
 export const resetAppStateKeepingLegalGates = async (page: Page) => {
+    // Set consent cookie directly (primary check path in consentService)
+    await seedConsentCookie(page)
     await page.addInitScript(() => {
         window.localStorage.clear()
         window.sessionStorage.clear()
         window.localStorage.setItem('cg.gdpr.consent.v1', '1')
         window.localStorage.setItem('cg.ageVerified.v1', '1')
+        window.localStorage.setItem('cg.geoLegal.dismissed.v1', '1')
     })
 }
 
@@ -98,31 +117,41 @@ export const seedPostOnboardingState = async (page: Page) => {
         },
         { reduxStateKey: REDUX_STATE_KEY, state: persistedState },
     )
-
-    // Dismiss geo-legal banner via localStorage so it does not block tests
-    await page.evaluate(() => {
-        localStorage.setItem('cg.geoLegal.dismissed.v1', '1')
-    })
 }
 
 export const bootFreshAppWithLegalGates = async (page: Page) => {
     await resetAppStateKeepingLegalGates(page)
+    // Load a minimal page on the correct origin so IndexedDB operations work
+    // without the app holding open database connections.
+    await page.route('**/*', (route) =>
+        route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
+    )
     await page.goto('./')
     await deleteAppDatabases(page)
-    await page.reload({ waitUntil: 'networkidle' })
-    await page.waitForLoadState('networkidle')
+    await page.unroute('**/*')
+    // Now load the real app with clean databases
+    await page.goto('./', { waitUntil: 'load' })
+    await page.waitForLoadState('domcontentloaded')
 }
 
 export const bootFreshAppPastOnboarding = async (page: Page) => {
     await resetAppStateKeepingLegalGates(page)
+    // Load a minimal page on the correct origin so IndexedDB operations work
+    // without the app holding open database connections.
+    await page.route('**/*', (route) =>
+        route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
+    )
     await page.goto('./')
     await deleteAppDatabases(page)
     await seedPostOnboardingState(page)
-    await page.reload({ waitUntil: 'networkidle' })
+    await page.unroute('**/*')
+    // Now load the real app with seeded state
+    await page.goto('./', { waitUntil: 'load' })
     await closeOnboardingIfVisible(page)
 }
 
 export const expectShellVisible = async (page: Page) => {
+    await closeConsentGateIfVisible(page)
     await closeOnboardingIfVisible(page)
     await closeLegalNoticeIfVisible(page)
     await expect(page.locator('main').first()).toBeVisible({ timeout: 30_000 })
@@ -130,6 +159,17 @@ export const expectShellVisible = async (page: Page) => {
     const vw = page.viewportSize()?.width ?? 1280
     if (vw >= 768) {
         await expect(page.locator('nav').first()).toBeVisible({ timeout: 30_000 })
+    }
+}
+
+export const closeConsentGateIfVisible = async (page: Page) => {
+    // The BootstrapConsentGate renders a <dialog open> with "I understand and consent" button.
+    // Must be dismissed before <main> can appear.
+    const consentBtn = page.getByRole('button', { name: /I understand and consent/i })
+    const visible = await consentBtn.isVisible().catch(() => false)
+    if (visible) {
+        await consentBtn.click()
+        await page.waitForTimeout(500)
     }
 }
 
@@ -152,6 +192,15 @@ export const closeOnboardingIfVisible = async (page: Page) => {
     }
 
     if (!isVisible) {
+        return
+    }
+
+    // Skip if the visible dialog is the Consent gate (not onboarding)
+    const isConsentDialog = await page
+        .locator('#consent-title')
+        .isVisible()
+        .catch(() => false)
+    if (isConsentDialog) {
         return
     }
 

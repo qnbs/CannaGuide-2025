@@ -10,16 +10,16 @@ This project uses an incremental lint hardening model to keep delivery fast whil
 
 ## Current model
 
-- `npm run lint` / `npm run lint:changed`
-  - Lints changed JS/TS files only.
-  - Uses `--quiet` to fail only on errors.
-- `npm run lint:scopes`
-  - Strict lint for configured clean scopes.
-  - Fails on warnings and errors.
-- `npm run lint:full`
-  - Full project lint report (warnings allowed).
-- `npm run lint:strict`
-  - Full project strict lint (target end-state).
+- `pnpm run lint` / `pnpm run lint:changed`
+    - Lints changed JS/TS files only.
+    - Uses `--quiet` to fail only on errors.
+- `pnpm run lint:scopes`
+    - Strict lint for configured clean scopes.
+    - Fails on warnings and errors.
+- `pnpm run lint:full`
+    - Full project lint report (warnings allowed).
+- `pnpm run lint:strict`
+    - Full project strict lint (target end-state).
 
 ## Configuration
 
@@ -33,7 +33,7 @@ Strict scope configuration is stored in `scripts/lint-burndown.config.json`.
 1. Pick one candidate scope (e.g. `hooks/**/*.ts`).
 2. Fix all lint warnings/errors in that scope.
 3. Verify locally:
-   - `npx eslint --max-warnings 0 <scope-glob>`
+    - `npx eslint --max-warnings 0 <scope-glob>`
 4. Move the scope from `candidateScopes` to `strictScopes`.
 5. Commit and let CI enforce it going forward.
 
@@ -43,4 +43,4 @@ Strict scope configuration is stored in `scripts/lint-burndown.config.json`.
 2. `components/common/**/*.tsx`
 3. `services/**/*.ts`
 4. `stores/**/*.ts`
-5. Full-project strict lint (`npm run lint:strict`)
+5. Full-project strict lint (`pnpm run lint:strict`)

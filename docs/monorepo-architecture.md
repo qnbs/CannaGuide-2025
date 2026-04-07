@@ -6,16 +6,15 @@ The project is a **Turborepo monorepo** with pnpm workspaces. All web applicatio
 
 ### Turbo Pipeline
 
-| Task          | Depends On | Outputs                              | Cached | Notes                                       |
-| ------------- | ---------- | ------------------------------------ | ------ | ------------------------------------------- |
-| `build`       | `^build`   | `dist/**`                            | Yes    | Web app (Vite) + workspace packages (tsc)   |
-| `tauri:build` | `build`    | `src-tauri/target/release/bundle/**` | No     | Platform-specific binaries; env passthrough |
-| `tauri:dev`   | `^build`   | --                                   | No     | Persistent dev process; env passthrough     |
-| `dev`         | `^build`   | --                                   | No     | Persistent (Vite dev server)                |
-| `test`        | `^build`   | `coverage/**`                        | Yes    |                                             |
-| `test:e2e`    | `build`    | `test-results/**`                    | Yes    | Needs web build artifact                    |
-| `lint`        | `^build`   | --                                   | Yes    |                                             |
-| `typecheck`   | `^build`   | --                                   | Yes    |                                             |
+| Task        | Depends On | Outputs           | Cached | Notes                                     |
+| ----------- | ---------- | ----------------- | ------ | ----------------------------------------- |
+| `build`     | `^build`   | `dist/**`         | Yes    | Web app (Vite) + workspace packages (tsc) |
+| `dev`       | `^build`   | --                | No     | Persistent (Vite dev server)              |
+| `test`      | `^build`   | `coverage/**`     | Yes    | Vitest watch mode                         |
+| `test:run`  | `^build`   | `coverage/**`     | Yes    | Vitest single run (exits)                 |
+| `test:e2e`  | `build`    | `test-results/**` | Yes    | Needs web build artifact                  |
+| `lint`      | `^build`   | --                | Yes    |                                           |
+| `typecheck` | `^build`   | --                | Yes    |                                           |
 
 ### Directory Structure
 
@@ -23,7 +22,7 @@ The project is a **Turborepo monorepo** with pnpm workspaces. All web applicatio
 CannaGuide-2025/
   package.json              # Workspace root (turbo, eslint, prettier -- NO app deps)
   turbo.json                # TurboRepo pipeline
-  tsconfig.json             # References-only (apps/web, apps/desktop, packages/*)
+  tsconfig.json             # References-only (apps/web, packages/*)
 
   apps/
     web/                    # Main PWA (@cannaguide/web)
@@ -35,20 +34,15 @@ CannaGuide-2025/
       components/           # React components
       stores/               # Redux slices, selectors, middleware
       services/             # Business logic (AI, DB, crypto, IoT, Sentry)
-      hooks/                # Custom React hooks (17)
+      hooks/                # Custom React hooks (25)
       data/                 # Static data: 778 strains, FAQ, lexicon
-      locales/              # i18n: en/, de/ (13 namespaces)
-      workers/              # Web Workers
+      locales/              # i18n: en/, de/, es/, fr/, nl/ (12 namespaces)
+      workers/              # 9 Web Workers
       utils/                # Shared utilities
       types/                # Zod schemas for AI validation
       lib/                  # cn(), VPD calculations
       public/               # Static assets, SW, manifest
       tests/                # E2E + Component tests
-    desktop/                # Tauri v2 desktop wrapper
-      package.json          # @cannaguide/desktop
-      src/
-        main.rs             # Tauri entry (with IPC commands)
-        ipc.rs              # Binary IPC: image processing, sensor data
 
   packages/
     ai-core/                # Shared AI types + ML dependency isolation
@@ -59,9 +53,8 @@ CannaGuide-2025/
     ui/                     # Shared UI tokens & theme types
     iot-mocks/              # ESP32 sensor mock server (port 3001)
 
-  src-tauri/                # Tauri v2 desktop config (Rust backend)
   scripts/                  # Build, lint, merge, CI scripts
-  docker/                   # nginx config, esp32-mock, tauri-mock
+  docker/                   # ESP32 sensor mock server
 ```
 
 ### ML Isolation Strategy
@@ -84,10 +77,11 @@ The web app's `vite.config.ts` includes `optionalMlPlugin()` -- a custom Vite pl
 2. Stubs them with modules that throw runtime errors ("not installed")
 3. Allows the build to succeed without ML binaries installed
 
-DevContainer uses `--no-optional` to skip all ML packages for fast boot:
+DevContainer uses `--frozen-lockfile` for deterministic lockfile-pinned installs:
 
 ```bash
-CI=1 pnpm install --filter @cannaguide/web -w @cannaguide/iot-mocks --include-workspace-root --no-optional
+corepack enable
+CI=1 pnpm install --frozen-lockfile
 ```
 
 ### Root package.json
@@ -106,7 +100,6 @@ Root `tsconfig.json` is references-only:
 {
     "references": [
         { "path": "apps/web" },
-        { "path": "apps/desktop" },
         { "path": "packages/ai-core" },
         { "path": "packages/ui" }
     ],
@@ -124,11 +117,3 @@ Root `tsconfig.json` is references-only:
 | AI responses, mentor history   | **Redux** (via RTK Query)       | Cache management, deduplication                 |
 | Sensor readings (MQTT/BLE)     | **Zustand** (ephemeral)         | High-frequency (~500ms), no persistence needed  |
 | UI navigation, modals          | **Redux**                       | Coordinated with persistence (last active view) |
-
-## Tauri IPC Protocol
-
-| Command                | Direction  | Payload                     | Benefit                          |
-| ---------------------- | ---------- | --------------------------- | -------------------------------- |
-| `process_image_binary` | JS -> Rust | `Vec<u8>` (raw JPEG/WebP)   | ~33% smaller than Base64-JSON    |
-| `read_sensor_binary`   | JS -> Rust | `Vec<u8>` (interleaved f32) | Zero-copy from USB/serial buffer |
-| `get_system_info`      | Rust -> JS | JSON                        | Adaptive model selection         |

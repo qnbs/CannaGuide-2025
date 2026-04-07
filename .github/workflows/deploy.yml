@@ -81,7 +81,7 @@ jobs:
             - name: Unit tests
               run: |
                   echo "::group::vitest"
-                  pnpm --filter @cannaguide/web run test -- --run --reporter=verbose
+                  pnpm --filter @cannaguide/web run test:run --reporter=verbose
                   echo "::endgroup::"
 
             # -- Build -----------------------------------------------------------

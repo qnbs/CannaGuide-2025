@@ -243,7 +243,7 @@ jobs:
               if: failure()
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
-                  name: e2e-traces-${{ matrix.shard }}-${{ github.run_id }}
+                  name: e2e-traces-shard${{ strategy.job-index }}-${{ github.run_id }}
                   path: apps/web/test-results/
                   retention-days: 7
 

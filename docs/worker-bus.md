@@ -19,10 +19,10 @@ Main Thread                              Worker Threads
                     |                     [Scenarios]
                     |-- messageId tag     [Inference (ML)]
                     |-- timeout guard     [Image Generation]
-                    |-- backpressure      [Strain Hydration]
+                    |-- backpressure      [Hydro Forecast]
                     |-- retry logic       [Terpene Analysis]
                     |-- AbortSignal       [Calculation]
-                    v
+                    v                     [Vision Inference]
               [Pending Map]
               messageId -> {resolve, reject, timer, abortCleanup}
                     |

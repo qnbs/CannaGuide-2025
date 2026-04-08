@@ -131,7 +131,7 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
 TemperatureHumidityChart.displayName = 'TemperatureHumidityChart'
 
 const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
-    const { t } = useTranslation('plants')
+    const { t } = useTranslation()
     const filtered = useMemo(() => data.filter((d) => d.vpd != null), [data])
 
     const vpdZoneLabels = useMemo(

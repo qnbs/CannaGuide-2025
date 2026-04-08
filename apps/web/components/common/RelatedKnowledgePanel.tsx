@@ -74,7 +74,7 @@ interface RelatedKnowledgePanelProps {
 
 export const RelatedKnowledgePanel: React.FC<RelatedKnowledgePanelProps> = memo(
     ({ plantId, currentStage, maxResults = 6, className, compact = false }) => {
-        const { t } = useTranslation('knowledge')
+        const { t } = useTranslation()
         const { relatedLinks, isReady } = useKnowledgeGraph(plantId, currentStage, maxResults)
         const setActiveView = useUIStore((s) => s.setActiveView)
         const setKnowledgeViewTab = useUIStore((s) => s.setKnowledgeViewTab)

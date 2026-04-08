@@ -11,7 +11,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
  * Dismissible -- closing hides the banner but does not cancel the preload.
  */
 export const WebLlmPreloadBanner = memo(function WebLlmPreloadBanner() {
-    const { t } = useTranslation('settings')
+    const { t } = useTranslation()
     const loadState = useWebLlmLoadProgress()
     const [dismissed, setDismissed] = useState(false)
 
@@ -35,7 +35,7 @@ export const WebLlmPreloadBanner = memo(function WebLlmPreloadBanner() {
                 <PhosphorIcons.Brain weight="fill" className="h-5 w-5 shrink-0 text-emerald-400" />
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium text-slate-200">
-                        {t('localAi.modelSelector.loading')}
+                        {t('settingsView.offlineAi.modelSelector.loading')}
                     </p>
                     <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-slate-700">
                         <div
@@ -55,7 +55,7 @@ export const WebLlmPreloadBanner = memo(function WebLlmPreloadBanner() {
                     type="button"
                     onClick={handleDismiss}
                     className="shrink-0 rounded p-0.5 text-slate-400 transition-colors hover:text-slate-200"
-                    aria-label={t('common:dismiss')}
+                    aria-label={t('common.dismiss')}
                 >
                     <PhosphorIcons.X weight="regular" className="h-4 w-4" />
                 </button>

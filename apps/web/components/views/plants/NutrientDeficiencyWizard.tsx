@@ -22,7 +22,7 @@ const SEVERITY_COLOURS: Readonly<Record<string, string>> = {
 // ---------------------------------------------------------------------------
 
 const NutrientDeficiencyWizardComponent: React.FC = () => {
-    const { t } = useTranslation('plants')
+    const { t } = useTranslation()
 
     const [currentNodeId, setCurrentNodeId] = useState('root')
     const [history, setHistory] = useState<string[]>([])
@@ -67,12 +67,12 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                 <Card className="bg-slate-900/70 space-y-3">
                     <h4 className="font-semibold text-primary-300 flex items-center gap-2">
                         <PhosphorIcons.FirstAidKit className="w-5 h-5" />
-                        {t('nutrientWizard.resultTitle')}
+                        {t('plantsView.nutrientWizard.resultTitle')}
                     </h4>
 
                     {/* Deficiency name */}
                     <p className="text-lg font-bold text-slate-100" data-testid="result-name">
-                        {t(`nutrientWizard.results.${resultNode.deficiencyId}.name`)}
+                        {t(`plantsView.nutrientWizard.results.${resultNode.deficiencyId}.name`)}
                     </p>
 
                     {/* Severity badge */}
@@ -83,18 +83,18 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                         )}
                         data-testid="result-severity"
                     >
-                        {t(`nutrientWizard.severity.${resultNode.severity}`)}
+                        {t(`plantsView.nutrientWizard.severity.${resultNode.severity}`)}
                     </span>
 
                     {/* Symptoms */}
                     <div>
                         <p className="text-xs font-semibold text-slate-300 mb-1 uppercase tracking-wide">
-                            {t('nutrientWizard.symptoms')}
+                            {t('plantsView.nutrientWizard.symptoms')}
                         </p>
                         <ul className="list-disc list-inside space-y-0.5">
                             {resultNode.symptomKeys.map((key) => (
                                 <li key={key} className="text-sm text-slate-400">
-                                    {t(`nutrientWizard.results.${key}`)}
+                                    {t(`plantsView.nutrientWizard.results.${key}`)}
                                 </li>
                             ))}
                         </ul>
@@ -103,12 +103,12 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                     {/* Treatment */}
                     <div>
                         <p className="text-xs font-semibold text-slate-300 mb-1 uppercase tracking-wide">
-                            {t('nutrientWizard.treatment')}
+                            {t('plantsView.nutrientWizard.treatment')}
                         </p>
                         <ul className="list-disc list-inside space-y-0.5">
                             {resultNode.treatmentKeys.map((key) => (
                                 <li key={key} className="text-sm text-slate-400">
-                                    {t(`nutrientWizard.results.${key}`)}
+                                    {t(`plantsView.nutrientWizard.results.${key}`)}
                                 </li>
                             ))}
                         </ul>
@@ -117,7 +117,7 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                     {/* View in Atlas link */}
                     <p className="text-xs text-primary-400">
                         <PhosphorIcons.BookOpenText className="w-3 h-3 inline mr-1" />
-                        {t('nutrientWizard.viewInAtlas')}
+                        {t('plantsView.nutrientWizard.viewInAtlas')}
                     </p>
                 </Card>
 
@@ -125,11 +125,11 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                 <div className="flex gap-2">
                     <Button size="sm" variant="secondary" onClick={goBack}>
                         <PhosphorIcons.ArrowLeft className="w-4 h-4 mr-1" />
-                        {t('nutrientWizard.back')}
+                        {t('plantsView.nutrientWizard.back')}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={restart}>
                         <PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1" />
-                        {t('nutrientWizard.restart')}
+                        {t('plantsView.nutrientWizard.restart')}
                     </Button>
                 </div>
             </div>
@@ -146,7 +146,7 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
         <div className="space-y-4" data-testid="wizard-question">
             {/* Progress */}
             <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>{t('nutrientWizard.step', { current: step, max: maxDepth })}</span>
+                <span>{t('plantsView.nutrientWizard.step', { current: step, max: maxDepth })}</span>
                 <div className="flex-1 mx-3 h-1 bg-slate-800 rounded-full overflow-hidden">
                     <div
                         className="h-full bg-primary-600 transition-all duration-300"
@@ -160,7 +160,7 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                 <div className="flex items-start gap-3">
                     <PhosphorIcons.Question className="w-6 h-6 text-primary-400 shrink-0 mt-0.5" />
                     <p className="text-sm text-slate-200 font-medium" data-testid="question-text">
-                        {t(`nutrientWizard.questions.${questionNode.questionKey}`)}
+                        {t(`plantsView.nutrientWizard.questions.${questionNode.questionKey}`)}
                     </p>
                 </div>
 
@@ -172,7 +172,7 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                         data-testid="btn-yes"
                     >
                         <PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />
-                        {t('nutrientWizard.yes')}
+                        {t('plantsView.nutrientWizard.yes')}
                     </Button>
                     <Button
                         className="flex-1"
@@ -181,7 +181,7 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
                         data-testid="btn-no"
                     >
                         <PhosphorIcons.X className="w-4 h-4 mr-1.5" />
-                        {t('nutrientWizard.no')}
+                        {t('plantsView.nutrientWizard.no')}
                     </Button>
                 </div>
             </Card>
@@ -190,7 +190,7 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
             {history.length > 0 && (
                 <Button size="sm" variant="secondary" onClick={goBack} data-testid="btn-back">
                     <PhosphorIcons.ArrowLeft className="w-4 h-4 mr-1" />
-                    {t('nutrientWizard.back')}
+                    {t('plantsView.nutrientWizard.back')}
                 </Button>
             )}
         </div>

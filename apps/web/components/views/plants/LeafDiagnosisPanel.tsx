@@ -46,7 +46,7 @@ const SEVERITY_COLOURS: Readonly<Record<string, string>> = {
 // ---------------------------------------------------------------------------
 
 const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
-    const { t } = useTranslation('plants')
+    const { t } = useTranslation()
 
     const [activeTab, setActiveTab] = useState<DiagnosisTab>('ai')
     const [modelStatus, setModelStatus] = useState<ModelStatus>('not-cached')
@@ -83,7 +83,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
         const ok = await downloadModel((pct) => setDownloadProgress(pct))
         setModelStatus(getModelStatus())
         if (!ok && getModelStatus() === 'error') {
-            setError(t('diagnosis.error'))
+            setError(t('plantsView.diagnosis.error'))
         }
     }, [t])
 
@@ -162,7 +162,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
             const res = await classifyLeafImage(imageData)
             setResult(res)
         } catch {
-            setError(t('diagnosis.error'))
+            setError(t('plantsView.diagnosis.error'))
         } finally {
             setLoading(false)
         }
@@ -191,7 +191,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                     data-testid="tab-ai"
                 >
                     <PhosphorIcons.Brain className="w-3.5 h-3.5 inline mr-1" />
-                    {t('nutrientWizard.tabAiScanner')}
+                    {t('plantsView.nutrientWizard.tabAiScanner')}
                 </button>
                 <button
                     type="button"
@@ -205,7 +205,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                     data-testid="tab-manual"
                 >
                     <PhosphorIcons.TreeStructure className="w-3.5 h-3.5 inline mr-1" />
-                    {t('nutrientWizard.tabManual')}
+                    {t('plantsView.nutrientWizard.tabManual')}
                 </button>
             </div>
 
@@ -239,7 +239,9 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                     className="w-4 h-4 text-green-400 shrink-0"
                                     weight="fill"
                                 />
-                                <span className="text-green-300">{t('diagnosis.ready')}</span>
+                                <span className="text-green-300">
+                                    {t('plantsView.diagnosis.ready')}
+                                </span>
                             </>
                         )}
                         {modelStatus === 'not-cached' && (
@@ -249,10 +251,10 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                     className="text-amber-300 flex-1"
                                     data-testid="model-not-loaded"
                                 >
-                                    {t('diagnosis.modelNotLoaded')}
+                                    {t('plantsView.diagnosis.modelNotLoaded')}
                                 </span>
                                 <Button size="sm" onClick={() => void handleDownload()}>
-                                    {t('diagnosis.download')}
+                                    {t('plantsView.diagnosis.download')}
                                 </Button>
                             </>
                         )}
@@ -261,7 +263,9 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                 <PhosphorIcons.ArrowClockwise className="w-4 h-4 text-blue-400 shrink-0 animate-spin" />
                                 <div className="flex-1">
                                     <p className="text-blue-300 mb-1">
-                                        {t('diagnosis.downloading', { pct: downloadProgress })}
+                                        {t('plantsView.diagnosis.downloading', {
+                                            pct: downloadProgress,
+                                        })}
                                     </p>
                                     <div className="h-1.5 bg-blue-900/50 rounded-full overflow-hidden">
                                         <div
@@ -278,13 +282,15 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                     className="w-4 h-4 text-red-400 shrink-0"
                                     weight="fill"
                                 />
-                                <span className="text-red-300 flex-1">{t('diagnosis.error')}</span>
+                                <span className="text-red-300 flex-1">
+                                    {t('plantsView.diagnosis.error')}
+                                </span>
                                 <Button
                                     size="sm"
                                     variant="danger"
                                     onClick={() => void handleDownload()}
                                 >
-                                    {t('diagnosis.download')}
+                                    {t('plantsView.diagnosis.download')}
                                 </Button>
                             </>
                         )}
@@ -298,7 +304,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                             accept="image/*"
                             className="hidden"
                             onChange={handleFileChange}
-                            aria-label={t('diagnosis.uploadPhoto')}
+                            aria-label={t('plantsView.diagnosis.uploadPhoto')}
                         />
                         {previewUrl ? (
                             <div className="relative">
@@ -312,7 +318,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                     variant="secondary"
                                     className="absolute top-2 right-2"
                                     onClick={handleClearImage}
-                                    aria-label={t('diagnosis.clearImage')}
+                                    aria-label={t('plantsView.diagnosis.clearImage')}
                                 >
                                     <PhosphorIcons.X className="w-4 h-4" />
                                 </Button>
@@ -325,7 +331,9 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                 data-testid="upload-button"
                             >
                                 <PhosphorIcons.UploadSimple className="w-8 h-8 mx-auto mb-2" />
-                                <span className="text-sm">{t('diagnosis.uploadPhoto')}</span>
+                                <span className="text-sm">
+                                    {t('plantsView.diagnosis.uploadPhoto')}
+                                </span>
                             </button>
                         )}
                         <div className="flex gap-2">
@@ -336,7 +344,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <PhosphorIcons.UploadSimple className="w-4 h-4 mr-1.5" />
-                                {t('diagnosis.uploadPhoto')}
+                                {t('plantsView.diagnosis.uploadPhoto')}
                             </Button>
                             {typeof navigator !== 'undefined' &&
                                 typeof navigator.mediaDevices?.getUserMedia === 'function' && (
@@ -361,12 +369,12 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                         {loading ? (
                             <>
                                 <PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5 animate-spin" />
-                                {t('diagnosis.analyzing')}
+                                {t('plantsView.diagnosis.analyzing')}
                             </>
                         ) : (
                             <>
                                 <PhosphorIcons.MagnifyingGlass className="w-4 h-4 mr-1.5" />
-                                {t('diagnosis.analyze')}
+                                {t('plantsView.diagnosis.analyze')}
                             </>
                         )}
                     </Button>
@@ -386,18 +394,20 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                         >
                             <h4 className="font-semibold text-primary-300 flex items-center gap-2">
                                 <PhosphorIcons.Leafy className="w-4 h-4" />
-                                {t('diagnosis.result')}
+                                {t('plantsView.diagnosis.result')}
                             </h4>
 
                             {/* Label */}
                             <p className="text-sm text-slate-200" data-testid="result-label">
-                                {t('diagnosis.label', { label: result.label.replace(/_/g, ' ') })}
+                                {t('plantsView.diagnosis.label', {
+                                    label: result.label.replace(/_/g, ' '),
+                                })}
                             </p>
 
                             {/* Confidence bar */}
                             <div>
                                 <div className="flex justify-between text-xs text-slate-400 mb-1">
-                                    <span>{t('diagnosis.confidence')}</span>
+                                    <span>{t('plantsView.diagnosis.confidence')}</span>
                                     <span>{Math.round(result.confidence * 100)}%</span>
                                 </div>
                                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -427,7 +437,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                             {result.recommendations.length > 0 ? (
                                 <div>
                                     <p className="text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wide">
-                                        {t('diagnosis.recommendations')}
+                                        {t('plantsView.diagnosis.recommendations')}
                                     </p>
                                     <ul className="space-y-1">
                                         {result.recommendations.map((rec) => (
@@ -450,7 +460,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                 </div>
                             ) : (
                                 <p className="text-xs text-slate-500">
-                                    {t('diagnosis.noRecommendations')}
+                                    {t('plantsView.diagnosis.noRecommendations')}
                                 </p>
                             )}
                         </Card>

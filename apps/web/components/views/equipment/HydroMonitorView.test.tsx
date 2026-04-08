@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/tests/test-utils'
 import { HydroMonitorView } from './HydroMonitorView'
@@ -34,7 +34,7 @@ vi.mock('@/services/hydroForecastService', () => ({
 describe('HydroMonitorView', () => {
     it('renders without crash', () => {
         renderWithProviders(<HydroMonitorView />)
-        expect(screen.getByText('hydroMonitoring.title')).toBeInTheDocument()
+        expect(screen.getByText('Hydroponic Monitoring')).toBeInTheDocument()
     })
 
     it('displays system type selector', () => {
@@ -45,19 +45,19 @@ describe('HydroMonitorView', () => {
 
     it('shows gauge cards', () => {
         renderWithProviders(<HydroMonitorView />)
-        expect(screen.getByText('hydroMonitoring.gauges.ph')).toBeInTheDocument()
-        expect(screen.getByText('hydroMonitoring.gauges.ec')).toBeInTheDocument()
-        expect(screen.getByText('hydroMonitoring.gauges.waterTemp')).toBeInTheDocument()
+        expect(screen.getAllByText('pH').length).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('EC').length).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Water Temp').length).toBeGreaterThanOrEqual(1)
     })
 
     it('submits manual reading via form', async () => {
         const user = userEvent.setup()
         renderWithProviders(<HydroMonitorView />)
 
-        const phInput = screen.getByLabelText('hydroMonitoring.input.ph')
-        const ecInput = screen.getByLabelText('hydroMonitoring.input.ec')
-        const tempInput = screen.getByLabelText('hydroMonitoring.input.waterTemp')
-        const addButton = screen.getByText('hydroMonitoring.input.addReading')
+        const phInput = screen.getByLabelText('pH')
+        const ecInput = screen.getByLabelText('EC (mS/cm)')
+        const tempInput = screen.getByLabelText('Water Temp (C)')
+        const addButton = screen.getByRole('button', { name: 'Add Reading' })
 
         await user.type(phInput, '6.2')
         await user.type(ecInput, '1.8')
@@ -65,12 +65,14 @@ describe('HydroMonitorView', () => {
         await user.click(addButton)
 
         // After adding, the gauge should show the value instead of --
-        expect(screen.getByText('6.20')).toBeInTheDocument()
+        await waitFor(() => {
+            expect(screen.getByText('6.20')).toBeInTheDocument()
+        })
     })
 
     it('renders forecast panel without crash', () => {
         renderWithProviders(<HydroMonitorView />)
-        expect(screen.getByText('hydroMonitoring.forecast.title')).toBeInTheDocument()
+        expect(screen.getByText('Next Hour (AI Forecast)')).toBeInTheDocument()
     })
 
     it('shows forecast model status badge', () => {
@@ -78,6 +80,6 @@ describe('HydroMonitorView', () => {
         const badge = screen.getByTestId('forecast-model-badge')
         expect(badge).toBeInTheDocument()
         // Without model loaded, it should show basic mode
-        expect(badge).toHaveTextContent('hydroMonitoring.forecast.basicMode')
+        expect(badge).toHaveTextContent('Basic Mode')
     })
 })

@@ -79,11 +79,11 @@ export const VoiceControl: React.FC = () => {
             if (!firstResult) return
             const transcript = firstResult.transcript.trim()
             if (latest && !latest.isFinal) {
-                setVoiceStatusMessage(t('voiceControl.processing', { transcript }))
+                setVoiceStatusMessage(t('common.voiceControl.processing', { transcript }))
                 return
             }
             if (transcript) {
-                setVoiceStatusMessage(t('voiceControl.processing', { transcript }))
+                setVoiceStatusMessage(t('common.voiceControl.processing', { transcript }))
                 processVoiceCommand(transcript)
             }
             // Stop listening after a command is processed
@@ -97,11 +97,11 @@ export const VoiceControl: React.FC = () => {
     const handleError = useCallback(
         (event: WSpeechRecognitionErrorEvent) => {
             console.debug('Speech recognition error:', event.error)
-            let errorMessageKey = 'voiceControl.errors.generic'
+            let errorMessageKey = 'common.voiceControl.errors.generic'
             if (event.error === 'no-speech') {
-                errorMessageKey = 'voiceControl.errors.noSpeech'
+                errorMessageKey = 'common.voiceControl.errors.noSpeech'
             } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                errorMessageKey = 'voiceControl.errors.notAllowed'
+                errorMessageKey = 'common.voiceControl.errors.notAllowed'
             }
             setVoiceStatusMessage(t(errorMessageKey))
             setVoiceListening(false)
@@ -153,7 +153,7 @@ export const VoiceControl: React.FC = () => {
     // ---------------------------------------------------------------------------
     const activateFromHotword = useCallback(() => {
         setHotwordActive(true)
-        setVoiceStatusMessage(t('voiceControl.hotwordDetected'))
+        setVoiceStatusMessage(t('common.voiceControl.hotwordDetected'))
         if (hotwordTimerRef.current !== null) {
             clearTimeout(hotwordTimerRef.current)
         }
@@ -245,7 +245,7 @@ export const VoiceControl: React.FC = () => {
             try {
                 recognitionRef.current.start()
                 setVoiceListening(true)
-                setVoiceStatusMessage(t('voiceControl.listening'))
+                setVoiceStatusMessage(t('common.voiceControl.listening'))
             } catch (e) {
                 console.debug('Error starting recognition:', e)
                 // This can happen if recognition is already started, so we defensively stop it.
@@ -254,7 +254,7 @@ export const VoiceControl: React.FC = () => {
                 } catch {
                     // Ignore errors on stopping if it was already stopped.
                 }
-                setVoiceStatusMessage(t('voiceControl.errors.startFailed'))
+                setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
                 setVoiceListening(false)
             }
         }
@@ -274,8 +274,8 @@ export const VoiceControl: React.FC = () => {
                         : 'text-slate-300 hover:text-slate-100'
                 }`}
                 onClick={toggleListening}
-                title={t('voiceControl.toggle')}
-                aria-label={t('voiceControl.toggle')}
+                title={t('common.voiceControl.toggle')}
+                aria-label={t('common.voiceControl.toggle')}
                 aria-pressed={isListening}
             >
                 <PhosphorIcons.Microphone className="w-6 h-6" />

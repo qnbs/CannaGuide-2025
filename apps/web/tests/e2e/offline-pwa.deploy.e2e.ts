@@ -8,6 +8,9 @@ import {
 
 test.describe('Offline & PWA', () => {
     test('app renders after going offline', async ({ page, context }) => {
+        // Known Chromium headless SEGV crash on CI with offline context + missing GPU adapters
+        test.skip(!!process.env.CI, 'Chromium headless SEGV on CI with offline context')
+
         // Use past-onboarding boot so the app shell renders reliably
         await bootFreshAppPastOnboarding(page)
         await expectShellVisible(page)

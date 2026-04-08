@@ -15,7 +15,7 @@ test('settings expose the local AI offline cache section', async ({ page, baseUR
     await settingsButton.first().click({ timeout: 30_000 })
 
     // Switch to the AI tab (default tab is "plants")
-    const aiTab = page.locator('[data-tab="ai"]')
+    const aiTab = page.locator('[data-tab-id="ai"]')
     await aiTab.click({ timeout: 15_000 })
 
     await expect(page.getByText(/Local AI Offline Cache|Lokaler KI-Offline-Cache/i)).toBeVisible()

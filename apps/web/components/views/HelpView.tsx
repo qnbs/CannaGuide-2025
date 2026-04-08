@@ -12,7 +12,8 @@ import { Speakable } from '@/components/common/Speakable'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { HelpSubNav } from './help/HelpSubNav'
-import { ScreenshotGallery } from './help/ScreenshotGallery'
+// ScreenshotGallery disabled -- screenshot assets not yet generated
+// import { ScreenshotGallery } from './help/ScreenshotGallery'
 
 type ManualSectionData = {
     title?: string
@@ -447,10 +448,9 @@ LexiconSection.displayName = 'LexiconSection'
 /* ------------------------------------------------------------------ */
 const ManualSection: React.FC = memo(() => {
     const { t } = useTranslation()
-    const manualContent = t('helpView.manual', { returnObjects: true }) as Record<
-        string,
-        ManualSectionData
-    >
+    const manualContent: Record<string, ManualSectionData> = t('helpView.manual', {
+        returnObjects: true,
+    })
 
     const sectionOrder = useMemo(
         () => [
@@ -630,9 +630,11 @@ ManualSection.displayName = 'ManualSection'
 /* ------------------------------------------------------------------ */
 /*  Help View (Main)                                                   */
 /* ------------------------------------------------------------------ */
+type HelpTabId = 'manual' | 'lexicon' | 'guides' | 'faq'
+
 export const HelpView: React.FC = () => {
     const { t } = useTranslation()
-    const [activeTab, setActiveTab] = useState('manual')
+    const [activeTab, setActiveTab] = useState<HelpTabId>('manual')
 
     const tabMeta = useMemo(
         () => ({
@@ -642,8 +644,8 @@ export const HelpView: React.FC = () => {
                 ),
                 title: t('helpView.tabs.manual'),
                 description: t('helpView.tabs.manualDescription'),
-                count: 6,
-                countLabel: t('helpView.sectionCount', { count: 6 }),
+                count: 7,
+                countLabel: t('helpView.sectionCount', { count: 7 }),
             },
             lexicon: {
                 icon: (
@@ -675,20 +677,11 @@ export const HelpView: React.FC = () => {
                 count: faqData.length,
                 countLabel: t('helpView.itemCount', { count: faqData.length }),
             },
-            screenshots: {
-                icon: (
-                    <PhosphorIcons.Camera className="w-14 h-14 mx-auto text-pink-400 drop-shadow-[0_0_12px_rgba(244,114,182,0.3)]" />
-                ),
-                title: t('helpView.tabs.screenshots'),
-                description: t('helpView.tabs.screenshotsDescription'),
-                count: 60,
-                countLabel: t('helpView.screenshotCount', { count: 60 }),
-            },
         }),
         [t],
     )
 
-    const currentMeta = tabMeta[activeTab as keyof typeof tabMeta]
+    const currentMeta = tabMeta[activeTab]
 
     const renderContent = () => {
         switch (activeTab) {
@@ -700,8 +693,6 @@ export const HelpView: React.FC = () => {
                 return <VisualGuidesSection />
             case 'faq':
                 return <FAQSection />
-            case 'screenshots':
-                return <ScreenshotGallery />
             default:
                 return null
         }

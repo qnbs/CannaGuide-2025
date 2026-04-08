@@ -623,12 +623,27 @@ export const helpView = {
             calculators: {
                 title: 'Präzisionsrechner',
                 content:
-                    'Nutzen Sie eine Reihe von Rechnern für <strong>Lüftung</strong>, <strong>Beleuchtung (PPFD/DLI)</strong>, <strong>Stromkosten</strong>, <strong>Nährstoffmischungen</strong> und mehr, um jeden Aspekt Ihres Anbaus zu optimieren.',
+                    'Nutzen Sie eine Reihe von Rechnern für <strong>Lüftung</strong>, <strong>Beleuchtung (PPFD/DLI)</strong>, <strong>Stromkosten</strong>, <strong>Nährstoffmischungen</strong>, <strong>CO2-Anreicherung</strong>, <strong>Humidity Deficit (Buck SVP)</strong> und <strong>Lampenaufhängehöhe</strong>, um jeden Aspekt Ihres Anbaus zu optimieren. Alle Rechner verwenden Zod-validierte Formeln für präzise Ergebnisse.',
             },
             shops: {
                 title: 'Grow Shops & Saatgutbanken',
                 content:
-                    'Durchsuchen Sie kuratierte, regionalspezifische Listen empfohlener Grow Shops und Saatgutbanken, komplett mit Bewertungen, Stärken und Versandinformationen.',
+                    'Durchsuchen Sie kuratierte, regionalspezifische Listen empfohlener Grow Shops und Saatgutbanken, komplett mit Bewertungen, Stärken und Versandinformationen. Saatgutpreise nutzen deterministische Mock-Daten von 5 fest programmierten Saatgutbanken.',
+            },
+            hydroMonitor: {
+                title: 'Hydro-Monitor Dashboard',
+                content:
+                    'Überwachen Sie Ihr hydroponisches System in Echtzeit mit Anzeigekarten für pH, EC und Temperatur. Sehen Sie Trends über Recharts-Diagramme, protokollieren Sie manuelle Messwerte, verfolgen Sie Alarme bei Schwellenwertüberschreitungen und nutzen Sie die Dosierungsreferenztabelle. Ein ONNX-gestütztes Vorhersage-Panel prognostiziert zukünftige pH/EC-Werte mit einem Moving-Average-Fallback, wenn das Modell nicht verfügbar ist.',
+            },
+            growTech: {
+                title: 'Grow Tech 2026',
+                content:
+                    'Entdecken Sie 8 innovative Cannabis-Anbau-Technologien für 2026: Dynamische LED-Beleuchtung, Sensoren & IoT, KI-Automatisierung, Digital Twins, Hydroponik & Aeroponik, Gewebekultur, Smarte Grow-Boxen und Nachhaltigkeit. Jeder Bereich enthält Hauptvorteile, praktische Tipps, Querverweise zu Genetik-Trends und eine KI-Analysefunktion.',
+            },
+            iotDashboard: {
+                title: 'IoT-Sensor-Dashboard',
+                content:
+                    'Verbinden Sie ESP32-Sensoren für Echtzeit-Umgebungsüberwachung. Sehen Sie Live-Messwerte für Temperatur, Luftfeuchtigkeit, CO2 und Bodenfeuchte. Konfigurieren Sie Geräteadressen und Polling-Intervalle in den IoT-Einstellungen.',
             },
         },
         knowledge: {
@@ -658,6 +673,26 @@ export const helpView = {
                 title: 'Grow Tech 2026',
                 content:
                     'Entdecken Sie die neuesten Cannabis-Anbau-Technologien für 2026 -- von dynamischen LED-Spektren und KI-gesteuerten Controllern bis hin zu Digital Twins, Aeroponik, Gewebekultur und smarten Grow-Boxen. Jeder Technologiebereich enthält Hauptvorteile, praktische Tipps und Integrationspunkte mit bereits in der App verfügbaren CannaGuide-Funktionen.',
+            },
+            diseaseAtlas: {
+                title: 'Krankheitsatlas',
+                content:
+                    'Ein diagnostisches Nachschlagewerk mit 22 häufigen Cannabis-Krankheiten, Mängeln, Toxizitäten, Umweltstressoren und Schädlingen. Jeder Eintrag enthält Symptome, Ursachen, Präventionsstrategien und Behandlungsoptionen. Nutzen Sie ihn zusammen mit der KI-Fotodiagnose für ein umfassendes Pflanzengesundheitsmanagement.',
+            },
+            learningPaths: {
+                title: 'Lernpfade',
+                content:
+                    'Folgen Sie 5 strukturierten Schritt-für-Schritt-Bildungsprogrammen, die den gesamten Grow-Zyklus abdecken -- vom Samen bis zur Ernte. Verfolgen Sie Ihren Fortschritt durch jeden Lernpfad mit Redux-persistierten Checkpoints. Ideal für Anfänger, die eine geführte Einführung in den Cannabisanbau wünschen.',
+            },
+            calculatorHub: {
+                title: 'Rechner-Hub',
+                content:
+                    'Zugang zu VPD-Berechnung, Nährstoffverhältnis-Analyse und pH/EC-Referenztools in einer eigenen Rechner-Unteransicht. Perfekt für schnelle Berechnungen, ohne die Wissenssektion verlassen zu müssen.',
+            },
+            lexikon: {
+                title: 'Wissensglossar',
+                content:
+                    'Durchsuchen Sie 83 Grower-Begriffe in 6 Kategorien: Allgemein, Cannabinoid, Terpen, Flavonoid, Nährstoff und Krankheit. Jeder Begriff enthält eine klare Definition und ist in allen 5 Sprachen verfügbar.',
             },
         },
         settings: {

@@ -116,7 +116,8 @@
             "@rollup/plugin-terser": "1.0.0",
             "tmp": "0.2.5",
             "lodash-es": "4.18.1",
-            "lodash": ">=4.18.0"
+            "lodash": ">=4.18.0",
+            "basic-ftp": ">=5.2.1"
         },
         "onlyBuiltDependencies": [
             "esbuild",

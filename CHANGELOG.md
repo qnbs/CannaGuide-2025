@@ -6,7 +6,30 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [1.5.0] - 2026-04-08
 
+### Fixed
+
+- **basic-ftp CRLF injection (Dependabot #49, Session 97)** --
+  Added pnpm override `basic-ftp>=5.2.1` for transitive dep via
+  @lhci/cli -> lighthouse -> puppeteer-core chain. CVE fix.
+- **i18n raw keys in GrowTech 2026 (Session 97)** -- Removed
+  erroneous `{ ns: 'strains' }` from t() in GrowTechView.tsx.
+  geneticTrends category titles now resolve correctly.
+- **Settings AI Config crash (Session 97)** -- Wrapped
+  localAiPreloadService/detectOnnxBackend/getGpuTier in try-catch.
+  Added AiSettingsTab error boundary with retry. Prevents
+  white-screen on deployed app.
+- **Help Screenshots tab removed (Session 97)** -- ScreenshotGallery
+  referenced 70+ PNGs that don't exist. Removed broken tab from
+  HelpView and HelpSubNav.
+- **Deploy smoke tests mandatory (Session 97)** -- Removed
+  continue-on-error from e2e-pages job in deploy.yml.
+
 ### Changed
+
+- **Help Bedienungsanleitung expanded (Session 97)** -- Added
+  hydroMonitor, growTech, iotDashboard to equipment manual and
+  diseaseAtlas, learningPaths, calculatorHub, lexikon to knowledge
+  manual in EN and DE locales.
 
 - **Permanent CI hardening pass (Session 91)** -- E2E selector fix (data-testid on LocalAiOfflineCard), typecheck gate in pre-commit hook, ESLint --max-warnings 0 parity in lint-staged, Turbo cache inputs for typecheck task, lint scope Phase 2 (components/common promoted to strict), E2E selector stability guard script (advisory), CI gate checklist in copilot-instructions. Fixed 6 no-unsafe-type-assertion warnings in components/common (DevTelemetryPanel, SegmentedControl, Tabs, VoiceControl.test). 1760 tests, 0 failures, 157 files.
 

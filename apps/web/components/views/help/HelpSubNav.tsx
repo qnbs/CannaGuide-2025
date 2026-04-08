@@ -10,7 +10,7 @@ interface HelpSubNavProps {
     onTabChange: (tab: string) => void
 }
 
-const TAB_IDS = ['manual', 'lexicon', 'guides', 'faq', 'screenshots'] as const
+const TAB_IDS = ['manual', 'lexicon', 'guides', 'faq'] as const
 
 export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }) => {
     const { t } = useTranslation()
@@ -21,7 +21,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
             id: 'manual',
             label: t('helpView.tabs.manual'),
             icon: <PhosphorIcons.BookOpenText />,
-            count: 6,
+            count: 7,
         },
         {
             id: 'lexicon',
@@ -40,12 +40,6 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
             label: t('helpView.tabs.faq'),
             icon: <PhosphorIcons.Question />,
             count: faqData.length,
-        },
-        {
-            id: 'screenshots',
-            label: t('helpView.tabs.screenshots'),
-            icon: <PhosphorIcons.Camera />,
-            count: 60,
         },
     ]
 

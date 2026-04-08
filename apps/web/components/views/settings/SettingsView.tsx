@@ -507,8 +507,14 @@ const AiModeCard: React.FC = () => {
     const dispatch = useAppDispatch()
     const settings = useAppSelector(selectSettings)
     const currentMode: AiMode = settings.aiMode ?? 'hybrid'
-    const localStatus = localAiPreloadService.getStatus()
-    const isLocalReady = localStatus.state === 'ready'
+
+    let isLocalReady = false
+    try {
+        const localStatus = localAiPreloadService.getStatus()
+        isLocalReady = localStatus.state === 'ready'
+    } catch {
+        // Graceful degradation when local AI services are unavailable
+    }
 
     const handleModeChange = (mode: string) => {
         dispatch(setSetting({ path: 'aiMode', value: mode }))
@@ -629,7 +635,27 @@ const LocalAiOfflineCard: React.FC = () => {
     const settings = useAppSelector(selectSettings)
     const isOffline = useOnlineStatus()
     const [isBusy, setIsBusy] = useState(false)
-    const [status, setStatus] = useState(() => localAiPreloadService.getStatus())
+    const [status, setStatus] = useState(() => {
+        try {
+            return localAiPreloadService.getStatus()
+        } catch {
+            return {
+                state: 'idle' as const,
+                textModelReady: false,
+                visionModelReady: false,
+                embeddingModelReady: false,
+                sentimentModelReady: false,
+                summarizationModelReady: false,
+                zeroShotTextModelReady: false,
+                languageDetectionReady: false,
+                imageSimilarityReady: false,
+                webLlmReady: false,
+                persistentStorageGranted: null,
+                readyAt: null,
+                details: null,
+            }
+        }
+    })
     const [progress, setProgress] = useState<{
         loaded: number
         total: number
@@ -639,7 +665,12 @@ const LocalAiOfflineCard: React.FC = () => {
     const [healthStatus, setHealthStatus] = useState<string | null>(null)
     const [deviceClass, setDeviceClass] = useState<string | null>(null)
     const supportsWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
-    const onnxBackend = detectOnnxBackend()
+    let onnxBackend: string = 'wasm'
+    try {
+        onnxBackend = detectOnnxBackend()
+    } catch {
+        // Graceful degradation
+    }
 
     useEffect(() => {
         let cancelled = false
@@ -660,6 +691,14 @@ const LocalAiOfflineCard: React.FC = () => {
             cancelled = true
         }
     }, [status])
+
+    const safeGpuTier = (() => {
+        try {
+            return getGpuTier()
+        } catch {
+            return 'none' as const
+        }
+    })()
 
     const localAiSettings = settings.localAi ?? {
         forceWasm: false,
@@ -835,7 +874,7 @@ const LocalAiOfflineCard: React.FC = () => {
                             <LlmModelSelector
                                 selectedModelId={localAiSettings.selectedLlmModelId ?? 'auto'}
                                 onSelect={handleModelChange}
-                                gpuTier={getGpuTier()}
+                                gpuTier={safeGpuTier}
                             />
                         </div>
                         <div className="text-xs text-slate-400">
@@ -1118,14 +1157,33 @@ const LocalAiFeaturesCard: React.FC = () => {
 }
 LocalAiFeaturesCard.displayName = 'LocalAiFeaturesCard'
 
-const AiSettingsTab: React.FC = () => (
-    <div className="space-y-6">
-        <AiModeCard />
-        <GeminiSecurityCard />
-        <LocalAiOfflineCard />
-        <LocalAiFeaturesCard />
-    </div>
-)
+const AiSettingsTab: React.FC = () => {
+    const [hasError, setHasError] = useState(false)
+    const { t } = useTranslation()
+
+    if (hasError) {
+        return (
+            <Card>
+                <div className="text-center py-8 space-y-3">
+                    <PhosphorIcons.Warning className="w-10 h-10 mx-auto text-amber-400" />
+                    <p className="text-sm text-slate-300">{t('common.errorBoundary.subtitle')}</p>
+                    <Button variant="secondary" onClick={() => setHasError(false)}>
+                        {t('common.errorBoundary.retryButton')}
+                    </Button>
+                </div>
+            </Card>
+        )
+    }
+
+    return (
+        <div className="space-y-6">
+            <AiModeCard />
+            <GeminiSecurityCard />
+            <LocalAiOfflineCard />
+            <LocalAiFeaturesCard />
+        </div>
+    )
+}
 
 const THEME_SWATCHES: Record<string, string[]> = {
     midnight: ['#0f172a', '#3b82f6', '#60a5fa'],

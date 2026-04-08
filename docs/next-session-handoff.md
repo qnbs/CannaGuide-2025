@@ -2,16 +2,79 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 96) -- PWA/i18n/UI Polish
+## Latest Session (Session 97) -- Security/UX/CI Multi-Fix
+
+**Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.
+51 E2E passed (Chromium).**
+
+### What Was Done (Session 97)
+
+1. **Dependabot Alert #49: basic-ftp CRLF Injection** -- Added
+   `"basic-ftp": ">=5.2.1"` to pnpm.overrides in root package.json.
+   Transitive dep chain: @lhci/cli -> lighthouse -> puppeteer-core
+   -> @puppeteer/browsers -> proxy-agent -> pac-proxy-agent ->
+   get-uri -> basic-ftp. Upgraded from 5.2.0 to 5.2.1.
+
+2. **i18n Fix: GrowTech 2026 Raw Keys** -- Removed erroneous
+   `{ ns: 'strains' }` from `t()` call in GrowTechView.tsx. App
+   uses single 'translation' namespace; the ns override caused
+   `strainsView.geneticTrends.categories.*` keys to display raw.
+
+3. **Help: Removed Broken Screenshots Tab** -- ScreenshotGallery
+   referenced 70+ PNG files but only 2 SVGs exist in
+   public/screenshots/. Removed import, tab definition, and switch
+   case from HelpView.tsx and removed 'screenshots' from
+   HelpSubNav.tsx TAB_IDS and navItems.
+
+4. **Settings: AI Config Crash Hardening** -- Wrapped
+   `localAiPreloadService.getStatus()`, `detectOnnxBackend()`, and
+   `getGpuTier()` in try-catch blocks in SettingsView.tsx. Converted
+   `AiSettingsTab` to stateful component with `hasError` state and
+   fallback UI with retry button. Prevents white-screen crash on
+   deployed app when local AI modules fail to initialize.
+
+5. **Help: Bedienungsanleitung Updated (EN+DE)** -- Added new
+   subsections to equipment manual: hydroMonitor, growTech,
+   iotDashboard. Added to knowledge manual: diseaseAtlas,
+   learningPaths, calculatorHub, lexikon. Both EN and DE locales.
+
+6. **CI: Deploy Smoke Tests Made Mandatory** -- Removed
+   `continue-on-error: true` from e2e-pages job in deploy.yml.
+   Failed E2E smoke tests now block deployment.
+
+### Verified Metrics (Session 97)
+
+- Typecheck: clean (TS2719 filtered)
+- Tests: 1766 passed, 0 failures (157 test files)
+- E2E: 51 passed, 1 skipped (Chromium)
+- Build: success (158 precache entries)
+- Strains: 776
+- Services: 108
+- CI Workflows: 22
+
+### Next Steps
+
+- W-02: Worker preemption (v1.6 target, High effort)
+- W-04: Cross-worker communication (v1.6 target, High effort)
+- lint-burndown Phase 3: stores/slices strict scope
+- E2E visual regression baseline refresh for v1.5.0
+- v1.6 Scholarly Knowledge features (encyclopedia, video hub)
+- Help i18n: add manual subsections to ES/FR/NL locales
+- Generate actual screenshot PNGs for a future gallery feature
+
+---
+
+## Previous Session (Session 96) -- PWA/i18n/UI Polish
 
 **Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.**
 
 ### What Was Done (Session 96)
 
 1. **PWA Icon Audit** -- Verified manifest.json icons match the app
-   magnifying-glass+leaf logo. Added PNG icon files (192/512 for
-   both `any` and `maskable` purposes). Updated apple-touch-icon
-   in index.html to PNG.
+
+    magnifying-glass+leaf logo. Added PNG icon files (192/512 for
+    both `any` and `maskable` purposes). Updated apple-touch-icon
+    in index.html to PNG.
 
 2. **Critical i18n Bug Fix** -- `strainsView.comparison.title`,
    `addStrain`, `emptyHint` keys showed raw on the Strain Comparison

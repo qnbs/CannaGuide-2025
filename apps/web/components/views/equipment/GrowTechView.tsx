@@ -291,7 +291,6 @@ export const GrowTechView: React.FC = React.memo(() => {
                                                 >
                                                     {t(
                                                         `strainsView.geneticTrends.categories.${genetic}.title`,
-                                                        { ns: 'strains' },
                                                     )}
                                                 </span>
                                             ))}

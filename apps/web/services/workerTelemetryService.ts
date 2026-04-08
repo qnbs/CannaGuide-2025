@@ -90,7 +90,7 @@ export const initWorkerTelemetry = (dispatch: AppDispatch): void => {
     sentryContextTimer = setInterval(() => {
         try {
             const snapshot = workerBus.exportTelemetry()
-            Sentry.setContext('workerBusTelemetry', snapshot)
+            Sentry.setContext('workerBusTelemetry', { ...snapshot })
         } catch {
             // Sentry context is best-effort, never block
         }

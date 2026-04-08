@@ -20,6 +20,7 @@ import type { AppDispatch } from '../stores/store'
 
 const DEBOUNCE_MS = 5_000
 const ERROR_RATE_THRESHOLD = 0.1 // 10 %
+const SENTRY_CONTEXT_INTERVAL_MS = 60_000 // 1 min
 
 // ---------------------------------------------------------------------------
 // Internal state
@@ -27,6 +28,7 @@ const ERROR_RATE_THRESHOLD = 0.1 // 10 %
 
 let initialised = false
 let debounceTimer: ReturnType<typeof setTimeout> | undefined
+let sentryContextTimer: ReturnType<typeof setInterval> | undefined
 
 // ---------------------------------------------------------------------------
 // Private helpers
@@ -83,6 +85,16 @@ export const initWorkerTelemetry = (dispatch: AppDispatch): void => {
         // Success -- debounced flush is sufficient
         flushMetrics(dispatch)
     })
+
+    // W-03: Periodically attach telemetry export as Sentry context
+    sentryContextTimer = setInterval(() => {
+        try {
+            const snapshot = workerBus.exportTelemetry()
+            Sentry.setContext('workerBusTelemetry', snapshot)
+        } catch {
+            // Sentry context is best-effort, never block
+        }
+    }, SENTRY_CONTEXT_INTERVAL_MS)
 }
 
 /**
@@ -92,5 +104,7 @@ export const initWorkerTelemetry = (dispatch: AppDispatch): void => {
 export const resetWorkerTelemetry = (): void => {
     initialised = false
     clearTimeout(debounceTimer)
+    clearInterval(sentryContextTimer)
     debounceTimer = undefined
+    sentryContextTimer = undefined
 }

@@ -114,9 +114,9 @@ jobs:
               run: node scripts/check-audit-backlog.mjs
               continue-on-error: false
 
-            - name: E2E selector stability (advisory)
+            - name: E2E selector stability guard
               run: node scripts/check-e2e-selectors.mjs
-              continue-on-error: true
+              continue-on-error: false
 
             - name: Upload build artifact
               uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0

@@ -124,6 +124,20 @@ export interface WorkerBusMetrics {
     averageLatencyMs: number
 }
 
+/** W-03: Extended per-worker telemetry snapshot for external export. */
+export interface WorkerTelemetrySnapshot extends WorkerBusMetrics {
+    peakLatencyMs: number
+    errorRate: number
+    lastSuccessAt: number | undefined
+    lastErrorAt: number | undefined
+}
+
+/** W-03: Full telemetry export payload (JSON-serializable). */
+export interface WorkerBusTelemetryExport {
+    timestamp: number
+    workers: Record<string, WorkerTelemetrySnapshot>
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -137,6 +151,50 @@ const DEFAULT_RETRY_DELAY_MS = 500
 const NON_RETRYABLE = ['No worker registered', 'disposed', 'unregistered', 'Queue full'] as const
 
 // ---------------------------------------------------------------------------
+// W-01: Per-worker sliding-window rate limiter
+// ---------------------------------------------------------------------------
+
+interface RateLimitConfig {
+    /** Maximum number of dispatches allowed within the window. */
+    maxRequests: number
+    /** Window duration in milliseconds. */
+    windowMs: number
+}
+
+/** Sliding-window timestamps per worker for rate-limit enforcement. */
+const rateLimitWindows = new Map<string, number[]>()
+const rateLimitConfigs = new Map<string, RateLimitConfig>()
+
+/**
+ * Check whether a dispatch to the given worker is allowed under
+ * the currently configured rate limit. Prunes stale timestamps.
+ * Returns `true` when the request should proceed.
+ */
+const isRateLimitAllowed = (workerName: string): boolean => {
+    const config = rateLimitConfigs.get(workerName)
+    if (!config) return true // no limit configured
+
+    const now = performance.now()
+    let window = rateLimitWindows.get(workerName)
+    if (!window) {
+        window = []
+        rateLimitWindows.set(workerName, window)
+    }
+
+    // Prune expired timestamps
+    const cutoff = now - config.windowMs
+    while (window.length > 0 && (window[0] ?? now) < cutoff) {
+        window.shift()
+    }
+
+    if (window.length >= config.maxRequests) {
+        return false
+    }
+    window.push(now)
+    return true
+}
+
+// ---------------------------------------------------------------------------
 // Telemetry tracking (per worker)
 // ---------------------------------------------------------------------------
 
@@ -146,6 +204,12 @@ interface WorkerTelemetry {
     totalTimeouts: number
     latencySum: number
     latencyCount: number
+    /** W-03: Peak latency observed (ms). */
+    peakLatencyMs: number
+    /** W-03: Timestamp of last successful dispatch. */
+    lastSuccessAt: number
+    /** W-03: Timestamp of last error. */
+    lastErrorAt: number
 }
 
 const telemetryMap = new Map<string, WorkerTelemetry>()
@@ -153,7 +217,16 @@ const telemetryMap = new Map<string, WorkerTelemetry>()
 const getTelemetry = (name: string): WorkerTelemetry => {
     let t = telemetryMap.get(name)
     if (!t) {
-        t = { totalDispatches: 0, totalErrors: 0, totalTimeouts: 0, latencySum: 0, latencyCount: 0 }
+        t = {
+            totalDispatches: 0,
+            totalErrors: 0,
+            totalTimeouts: 0,
+            latencySum: 0,
+            latencyCount: 0,
+            peakLatencyMs: 0,
+            lastSuccessAt: 0,
+            lastErrorAt: 0,
+        }
         telemetryMap.set(name, t)
     }
     return t
@@ -172,6 +245,75 @@ class WorkerBusImpl {
     private readonly dispatchHooks: Array<(event: DispatchCompleteEvent) => void> = []
     private defaultTimeoutMs = DEFAULT_TIMEOUT_MS
     private disposed = false
+
+    // -------------------------------------------------------------------
+    // W-01: Per-worker rate limiting
+    // -------------------------------------------------------------------
+
+    /**
+     * Configure a sliding-window rate limit for a specific worker.
+     * Example: `setRateLimit('inference', { maxRequests: 3, windowMs: 1000 })`
+     * limits the inference worker to 3 dispatches per second.
+     *
+     * Pass `undefined` to remove the limit.
+     */
+    setRateLimit(workerName: string, config: RateLimitConfig | undefined): void {
+        if (config === undefined) {
+            rateLimitConfigs.delete(workerName)
+            rateLimitWindows.delete(workerName)
+        } else {
+            rateLimitConfigs.set(workerName, {
+                maxRequests: Math.max(1, config.maxRequests),
+                windowMs: Math.max(100, config.windowMs),
+            })
+        }
+    }
+
+    /**
+     * Get the current rate-limit configuration for a worker (undefined if none).
+     */
+    getRateLimit(workerName: string): RateLimitConfig | undefined {
+        return rateLimitConfigs.get(workerName)
+    }
+
+    // -------------------------------------------------------------------
+    // W-03: Telemetry export
+    // -------------------------------------------------------------------
+
+    /**
+     * Export a JSON-serializable telemetry snapshot for all workers.
+     * Includes extended metrics (peak latency, last success/error timestamps,
+     * error rate, queue depth). Suitable for external dashboards or Sentry
+     * custom context.
+     */
+    exportTelemetry(): WorkerBusTelemetryExport {
+        const workers: Record<string, WorkerTelemetrySnapshot> = {}
+        for (const name of this.workers.keys()) {
+            const tel = getTelemetry(name)
+            const queue = this.queues.get(name)
+            let pendingCount = 0
+            for (const entry of this.pending.values()) {
+                if (entry.workerName === name) pendingCount++
+            }
+            workers[name] = {
+                totalDispatches: tel.totalDispatches,
+                totalErrors: tel.totalErrors,
+                totalTimeouts: tel.totalTimeouts,
+                averageLatencyMs:
+                    tel.latencyCount > 0 ? Math.round(tel.latencySum / tel.latencyCount) : 0,
+                peakLatencyMs: Math.round(tel.peakLatencyMs),
+                errorRate:
+                    tel.totalDispatches > 0
+                        ? Math.round((tel.totalErrors / tel.totalDispatches) * 10000) / 10000
+                        : 0,
+                pendingCount,
+                queuedCount: queue?.size ?? 0,
+                lastSuccessAt: tel.lastSuccessAt > 0 ? tel.lastSuccessAt : undefined,
+                lastErrorAt: tel.lastErrorAt > 0 ? tel.lastErrorAt : undefined,
+            }
+        }
+        return { timestamp: Date.now(), workers }
+    }
 
     /**
      * Set the default timeout for all dispatches (can be overridden per-call).
@@ -461,6 +603,8 @@ class WorkerBusImpl {
             this.unregister(name)
         }
         telemetryMap.clear()
+        rateLimitWindows.clear()
+        rateLimitConfigs.clear()
         this.dispatchHooks.splice(0)
     }
 
@@ -507,6 +651,17 @@ class WorkerBusImpl {
             )
         }
 
+        // W-01: Per-worker sliding-window rate limit check
+        if (!isRateLimitAllowed(workerName)) {
+            return Promise.reject(
+                new WorkerBusError(
+                    `Rate limit exceeded for "${workerName}"`,
+                    WorkerErrorCode.RATE_LIMITED,
+                    workerName,
+                ),
+            )
+        }
+
         const limit = this.concurrencyLimits.get(workerName) ?? DEFAULT_MAX_CONCURRENT
         const active = this.activeCount.get(workerName) ?? 0
 
@@ -537,6 +692,7 @@ class WorkerBusImpl {
                         priority,
                         signal,
                         transferable,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                         resolve: resolve as (v: unknown) => void,
                         reject,
                     },
@@ -619,6 +775,7 @@ class WorkerBusImpl {
             }
 
             const pendingEntry: PendingRequest = {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 resolve: resolve as (v: unknown) => void,
                 reject,
                 timer,
@@ -740,6 +897,7 @@ class WorkerBusImpl {
                         WorkerErrorCode.DISPOSED,
                         WorkerErrorCode.QUEUE_FULL,
                         WorkerErrorCode.CANCELLED,
+                        WorkerErrorCode.RATE_LIMITED,
                     ]
                     if (nonRetryableCodes.includes(lastError.code)) {
                         throw lastError
@@ -774,11 +932,13 @@ class WorkerBusImpl {
         const latencyMs = performance.now() - entry.startedAt
         tel.latencySum += latencyMs
         tel.latencyCount++
+        if (latencyMs > tel.peakLatencyMs) tel.peakLatencyMs = latencyMs
 
         this.decrementActive(entry.workerName)
 
         if (data.error) {
             tel.totalErrors++
+            tel.lastErrorAt = Date.now()
             this.fireDispatchHooks({
                 workerName: entry.workerName,
                 type: entry.type,
@@ -795,6 +955,7 @@ class WorkerBusImpl {
                 ),
             )
         } else {
+            tel.lastSuccessAt = Date.now()
             this.fireDispatchHooks({
                 workerName: entry.workerName,
                 type: entry.type,

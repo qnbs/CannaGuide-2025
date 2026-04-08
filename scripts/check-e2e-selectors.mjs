@@ -87,12 +87,12 @@ function main() {
         )
     } else {
         console.log(
-            `\n[e2e-selectors] [WARN] ${totalFindings} fragile selector(s) in ${files.length} files.`,
+            `\n[e2e-selectors] [FAIL] ${totalFindings} fragile selector(s) in ${files.length} files.`,
         )
         console.log('[e2e-selectors] Prefer data-testid, data-view-id, or data-tab-id.')
+        process.exit(1)
     }
 
-    // Advisory only -- always exit 0
     process.exit(0)
 }
 

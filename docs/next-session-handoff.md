@@ -2,7 +2,61 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 94) -- Comprehensive Documentation Audit
+## Latest Session (Session 95) -- WorkerBus Hardening + README Feature Audit
+
+**Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 95)
+
+1. **WorkerBus W-01: Per-Worker Rate Limiting** -- Implemented
+   sliding-window rate limiter in workerBus.ts. New
+   `setRateLimit()`/`getRateLimit()` API. Rejects with non-retryable
+   `RATE_LIMITED` error code. 4 new tests.
+
+2. **WorkerBus W-03: Telemetry Export** -- Added `exportTelemetry()`
+   returning JSON-serializable `WorkerBusTelemetryExport` snapshots.
+   Extended `WorkerTelemetry` with peakLatencyMs, lastSuccessAt,
+   lastErrorAt. Sentry context export (60s interval). 2 new tests.
+
+3. **E2E Selector Guard Enforcement** -- Changed
+   `check-e2e-selectors.mjs` from advisory (exit 0) to mandatory
+   (exit 1 on findings). Updated ci.yml to remove continue-on-error.
+
+4. **README Feature Completeness Audit** -- Added 15+ missing features
+   to EN+DE Feature Modules: Leaf Diagnosis (ONNX vision), 3D Room,
+   Hydro Monitor + Forecast, Nutrient Wizard, Proactive Smart Coach,
+   WebLLM Model Catalog, Multi-Grow, Strain Intelligence Lookup,
+   CRDT Cloud Sync, AI Cost Tracking, Grow Manager, IoT Dashboard,
+   What-If Sandbox, Analytics Dashboard, Voice Commands.
+
+5. **ARCHITECTURE.md Enhancements** -- Added WorkerBus Architecture,
+   Hydro Monitor Architecture, Leaf Diagnosis Architecture sections.
+   Fixed CSP path count (5->3).
+
+6. **Test Count Updates** -- Updated 1760->1766 across README (16
+   occurrences), ARCHITECTURE.md, copilot-instructions.md,
+   next-session-handoff.md.
+
+### Verified Metrics (Session 95)
+
+- Typecheck: clean (TS2719 filtered)
+- Tests: 1766 passed, 0 failures (157 test files)
+- Build: success
+- Strains: 776
+- Services: 108
+- CI Workflows: 22
+
+### Next Steps
+
+- W-02: Worker preemption (v1.6 target, High effort)
+- W-04: Cross-worker communication (v1.6 target, High effort)
+- lint-burndown Phase 3: stores/slices strict scope
+- E2E visual regression baseline refresh for v1.5.0
+- v1.6 Scholarly Knowledge features (encyclopedia, video hub)
+
+---
+
+## Previous Session (Session 94) -- Comprehensive Documentation Audit
 
 **Status: v1.5.0. 1760 tests passing. TypeScript clean. Build clean.**
 

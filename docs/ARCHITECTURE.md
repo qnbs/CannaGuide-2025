@@ -157,6 +157,39 @@ Components and hooks must import from `aiFacade`, not from individual service fi
 - **`@cannaguide/ai-core`** -- Canonical source for AI provider types (`AiProvider`, `AiProviderConfig`), `PROVIDER_CONFIGS` map, key validation (`isKeyRotationDue`, `isValidProviderKeyFormat`), Zod schemas for AI response validation, and lazy ML loaders. ML dependencies are `optionalDependencies` to isolate heavy binaries.
 - **`@cannaguide/ui`** -- Design system tokens: 9 cannabis theme CSS custom properties (`tokens.css`), shared Tailwind preset with colors, keyframes, animations, and shadows (`tailwind-preset.cjs`), theme TypeScript types.
 
+## WorkerBus Architecture
+
+The `workerBus.ts` singleton provides centralized, promise-based communication with all 9 Web Workers:
+
+- **Priority Queue:** min-heap with 4 levels (`critical` > `high` > `normal` > `low`), FIFO tiebreaking
+- **Backpressure:** max 3 concurrent dispatches per worker, queued beyond that
+- **Per-Worker Rate Limiting (W-01):** sliding-window limiter (`setRateLimit`/`getRateLimit`), rejects with non-retryable `RATE_LIMITED` error
+- **Telemetry Export (W-03):** `exportTelemetry()` returns JSON-serializable `WorkerBusTelemetryExport` with per-worker snapshots (peakLatencyMs, errorRate, timestamps), integrated with Sentry context (60s interval)
+- **Abort Support:** AbortController per dispatch, automatic cleanup on cancel
+- **Transferable Objects:** zero-copy transfers for ArrayBuffer/ImageBitmap payloads
+- **State Sync:** `workerStateSyncService.ts` auto-wires dispatch results to Redux/Zustand via handler registry
+- **Telemetry Service:** `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`)
+
+Workers: VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation.
+
+## Hydro Monitor Architecture
+
+Real-time hydroponic monitoring with predictive capabilities:
+
+- **`hydroSlice.ts`** -- Redux slice: pH/EC/Temp readings FIFO (168 cap), thresholds, alerts, system type
+- **`HydroMonitorView.tsx`** -- Dashboard UI: gauge cards, Recharts pH/EC trend chart, manual input form, alerts, dosing reference panel
+- **`hydroForecastService.ts`** -- ONNX worker dispatch with moving-average fallback, trend detection, alert generation
+- **`hydroForecastWorker.ts`** -- Off-main-thread ONNX inference: pH/EC/Temp prediction, WASM backend, weighted moving average fallback
+
+## Leaf Diagnosis Architecture
+
+Vision AI plant disease detection pipeline:
+
+- **`plantDiseaseModelService.ts`** -- PlantVillage MobileNetV2 ONNX model: IndexedDB caching, download with progress, HEAD check, `ensureWorkerRegistered()`
+- **`visionInferenceWorker.ts`** -- Off-main-thread ONNX inference: 38-class PlantVillage labels, `CANNABIS_MAP`, `preprocessImage()` (ImageNet CHW), `mapToCannabisTerm()`, WorkerBus INIT/CLASSIFY/TERMINATE
+- **`LeafDiagnosisPanel.tsx`** -- UI: model status bar, drag-zone upload, camera capture, analyze button, results card with severity badge and RAG-enriched recommendations
+- **`localAiDiagnosisService.ts`** -- Orchestration: `classifyLeafImage`, `classifySeverity`, `enrichWithKnowledge`
+
 ---
 
 ## Data Flow
@@ -258,7 +291,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 | API Key Storage  | AES-256-GCM encryption at rest (cryptoService.ts)                    |
 | Image Privacy    | EXIF/GPS stripping before AI transmission                            |
 | Prompt Injection | 30+ regex patterns block injection attempts                          |
-| CSP              | Hardened across 5 paths (`'self' 'unsafe-inline' 'wasm-unsafe-eval') |
+| CSP              | Hardened across 3 paths (`'self' 'unsafe-inline' 'wasm-unsafe-eval') |
 | Local-Only Mode  | All outbound services check `isLocalOnlyMode()`                      |
 | Randomness       | `secureRandom()` via Web Crypto (no Math.random)                     |
 | GDPR             | Full data export (Art. 20) + erasure (Art. 17) via privacyService.ts |

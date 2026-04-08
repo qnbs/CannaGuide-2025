@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1760%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1766%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity (dynamic) -->
 
@@ -106,7 +106,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 22-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 776 strains -- 1760 tests -- 108 services -- 15 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
+**Key numbers:** 776 strains -- 1766 tests -- 108 services -- 15 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
 
 ---
 
@@ -162,7 +162,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1760 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1766 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 
 ---
@@ -171,23 +171,23 @@ Three-tier client-side architecture with offline-first design:
 
 ### Plants
 
-Grow simulation from seed to harvest. VPD-based transpiration modeling, biomass growth curves, environmental monitoring. Multi-step new grow wizard, plant dashboard with lifecycle stages, journal system with photo timeline, AI diagnostics with image analysis, post-harvest drying/curing tracker. Yield prediction via ML regression.
+Grow simulation from seed to harvest. VPD-based transpiration modeling, biomass growth curves, environmental monitoring. Multi-step new grow wizard, plant dashboard with lifecycle stages, journal system with photo timeline, AI diagnostics with image analysis, post-harvest drying/curing tracker. Yield prediction via ML regression. **Vision AI Leaf Diagnosis** -- ONNX PlantVillage MobileNetV2 classifier with drag-and-drop upload and camera capture for 38-class plant disease detection, severity scoring, and RAG-enriched treatment recommendations. **Nutrient Deficiency Wizard** -- interactive 8-node decision tree for visual diagnosis (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl). **Proactive Smart Coach** -- real-time threshold monitoring of temperature, humidity, VPD, pH, and EC with AI-generated per-plant alerts (2-hour cooldown) and browser push notifications. **3D Grow Room** -- Three.js OrbitControls 3D visualization for equipment placement and grow space planning. **Multi-Grow Management** -- up to 3 independent grows per German CanG compliance, grow-scoped selectors, AI context, and per-grow data export/import.
 
 ### Strains
 
-776-strain library with full-text search, filtering by type/effects/THC/CBD/terpenes. D3.js genealogy explorer for parent-child lineage visualization. AI-powered growing tips. Breeding lab for cross predictions. Community strain sharing via anonymous GitHub Gists. **4:20 Daily Drop** -- 5 hand-picked strains every day via seeded PRNG with 7 diversity categories and match scoring. Comprehensive terpene profiles (27 terpenes), cannabinoid profiles (11 cannabinoids), chemovar classification (Type I-V), and flavonoid profiles (12 flavonoids with scientific references). Strain data curated via AI-assisted research (Gemini, Opus) based on publicly available breeder, seedbank, and community information. Multi-source data enrichment architecture with Zod-validated import, data quality scoring, and provenance tracking. Seedbank availability with deterministic mock pricing. Lineage/breeder data enrichment. **Genetics 2026 Trends** hub covering terpene diversity, ultra-high potency, balanced hybrids, autoflowering revolution, polyploidy/advanced breeding, and landrace revival.
+776-strain library with full-text search, filtering by type/effects/THC/CBD/terpenes. D3.js genealogy explorer for parent-child lineage visualization. AI-powered growing tips. Breeding lab for cross predictions. Community strain sharing via anonymous GitHub Gists. **4:20 Daily Drop** -- 5 hand-picked strains every day via seeded PRNG with 7 diversity categories and match scoring. Comprehensive terpene profiles (27 terpenes), cannabinoid profiles (11 cannabinoids), chemovar classification (Type I-V), and flavonoid profiles (12 flavonoids with scientific references). Strain data curated via AI-assisted research (Gemini, Opus) based on publicly available breeder, seedbank, and community information. Multi-source data enrichment architecture with Zod-validated import, data quality scoring, and provenance tracking. Seedbank availability with deterministic mock pricing. Lineage/breeder data enrichment. **Genetics 2026 Trends** hub covering terpene diversity, ultra-high potency, balanced hybrids, autoflowering revolution, polyploidy/advanced breeding, and landrace revival. **Strain Intelligence Lookup** -- 5-source cascade with entourage effect science context. Strain comparison view and bulk export manager.
 
 ### Equipment
 
-AI equipment configurator recommending optimal setups based on grow parameters. Calculator suite: ventilation (CFM), lighting (PPFD/DLI), nutrient mixing, pot sizing. Shopping list generation.
+AI equipment configurator recommending optimal setups based on grow parameters. Calculator suite: ventilation (CFM), lighting (PPFD/DLI), nutrient mixing, pot sizing, CO2 enrichment, humidity deficit (Buck SVP), light hanging height. Shopping list generation. **Hydro Monitor** -- real-time pH/EC/temperature dashboard with Recharts trend charts, manual input, dosing reference panel, and **ONNX Hydro Forecast** (pH/EC/Temp prediction via off-thread worker, moving-average fallback, trend detection, alert generation). **IoT Dashboard** -- ESP32 sensor integration with MQTT/BLE, sparkline gauges, real-time telemetry, useDeferredValue throttling. **What-If Sandbox** -- breeding and scenario simulations with grow-parameter exploration. Saved setups with setup configurator. **Seedbanks** panel with deterministic mock pricing. **Grow Shops** and **Grow Tech** discovery hubs.
 
 ### Knowledge
 
-AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials. **Grow Tech 2026** hub covering dynamic LED lighting, sensor/IoT/VPD automation, AI digital twins, aeroponics, tissue culture, smart grow boxes, and sustainability/post-harvest innovations. **Lexikon 2.0**: searchable 83-term glossary across 6 categories (General, Cannabinoid, Terpene, Flavonoid, Nutrient, Disease). **Disease Atlas**: 22-entry plant diagnostic reference covering deficiencies, toxicities, pests, and diseases, each with urgency classification, symptoms, causes, treatment, and prevention guides. **Calculator Hub**: VPD, Nutrient Ratio, and pH/EC calculators in a unified tabbed view. **Learning Paths**: 5 curated step-by-step grow education programs (Beginner First Grow, Environment Mastery, Nutrient Mastery, Pest & Disease Control, Advanced Training) with Redux-tracked per-step progress.
+AI Mentor chat with RAG (retrieval-augmented generation) pulling context from the user's grow journals. What-if sandbox for breeding simulations. Visual guides and interactive tutorials. **Grow Tech 2026** hub covering dynamic LED lighting, sensor/IoT/VPD automation, AI digital twins, aeroponics, tissue culture, smart grow boxes, and sustainability/post-harvest innovations. **Lexikon 2.0**: searchable 83-term glossary across 6 categories (General, Cannabinoid, Terpene, Flavonoid, Nutrient, Disease). **Disease Atlas**: 22-entry plant diagnostic reference covering deficiencies, toxicities, pests, and diseases, each with urgency classification, symptoms, causes, treatment, and prevention guides. **Calculator Hub**: VPD, Nutrient Ratio, and pH/EC calculators in a unified tabbed view. **Learning Paths**: 5 curated step-by-step grow education programs (Beginner First Grow, Environment Mastery, Nutrient Mastery, Pest & Disease Control, Advanced Training) with Redux-tracked per-step progress. **Analytics Dashboard** with grow performance insights and AI-recommended optimizations. Mentor archive for chat history review.
 
 ### Settings
 
-9 visual themes, colorblind modes (deuteranopia, protanopia, tritanopia), WCAG 2.1 AA accessibility. BYOK API key management with AES-256-GCM encryption at rest. Data export/import (JSON). Cloud sync via encrypted GitHub Gists. Local-only mode toggle. TTS (text-to-speech) for AI responses.
+9 visual themes, colorblind modes (deuteranopia, protanopia, tritanopia), WCAG 2.1 AA accessibility. BYOK API key management with AES-256-GCM encryption at rest. **AI Cost Tracking** -- per-provider token usage extraction, 7-day cost bar chart, monthly budget progress with color-coded thresholds. **WebLLM Model Selector** -- card-based UI for local LLM model selection (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) with GPU-tier auto-selection and download progress tracking. Data export/import (JSON). **CRDT Cloud Sync** -- Yjs-powered conflict-free replication with encrypted GitHub Gists, 3-way conflict resolution UI (Smart Merge / Keep Local / Use Cloud), offline sync queue with exponential backoff. Local-only mode toggle. TTS (text-to-speech) for AI responses. Voice commands (6 extended, fuzzy matching). IoT device configuration (MQTT). **Grow Manager** -- multi-grow CRUD with archive, color picker, and CanG compliance limits.
 
 ### Help
 
@@ -305,7 +305,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite dev server on localhost:5173)
 pnpm run build            # turbo run build (all workspaces)
 pnpm test                 # turbo run test (Vitest, watch mode)
-pnpm run test:run         # turbo run test:run (single run, 1760 tests)
+pnpm run test:run         # turbo run test:run (single run, 1766 tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -361,7 +361,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 | Job                | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
-| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1760 tests, production build |
+| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1766 tests, production build |
 | 🛡 Security        | pnpm audit (critical), trojan-source scan, Gitleaks secret scan             |
 | 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
 | 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |
@@ -424,8 +424,8 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 | **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1049 tests, IoT mocks, CodeQL, Grype                                                                                          |
 | **v1.2** | ✅ Released | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data enrichment architecture (8 providers), strain data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
 | **v1.3** | ✅ Released | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                                    |
-| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1760 tests                                   |
-| **v1.5** | ✅ Released | CRDT offline sync, Multi-Grow management (3 per CanG), AI cost tracking, Netlify preview validation, RTL infrastructure, pnpm migration, CI hardening, 1760 tests                                                                  |
+| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1766 tests                                   |
+| **v1.5** | ✅ Released | CRDT offline sync, Multi-Grow management (3 per CanG), AI cost tracking, Netlify preview validation, RTL infrastructure, pnpm migration, CI hardening, 1766 tests                                                                  |
 | **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                                           |
 
 ### Strategic Expansion Focus (2026-2028)
@@ -448,7 +448,7 @@ CannaGuide 2025 was built iteratively through an AI-assisted development process
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                             | v0.1 → v1.0  |
 | **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                       | Throughout   |
-| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1760 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.4 |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1766 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.4 |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Production deployment, PR previews, OpenSSF compliance                                                                        | Continuous   |
 
 > **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
@@ -494,7 +494,7 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-1760%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-1766%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 
@@ -534,7 +534,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 22-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 776 Sorten -- 1760 Tests -- 108 Services -- 15 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
+**Kennzahlen:** 776 Sorten -- 1766 Tests -- 108 Services -- 15 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
 
 ---
 
@@ -589,7 +589,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 Namensräume                |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1760 Unit-, E2E-, Komponenten-Tests           |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1766 Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 
 ---
@@ -598,23 +598,23 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 
 ### Pflanzen
 
-Grow-Simulation von Samen bis Ernte. VPD-basierte Transpirationsmodellierung, Biomasse-Wachstumskurven, Umweltüberwachung. Mehrstufiger Grow-Wizard, Pflanzen-Dashboard mit Lebenszyklus-Phasen, Journal-System mit Foto-Timeline, KI-Diagnostik mit Bildanalyse, Post-Harvest Trocknung/Curing-Tracker. Ertragsprognose via ML-Regression.
+Grow-Simulation von Samen bis Ernte. VPD-basierte Transpirationsmodellierung, Biomasse-Wachstumskurven, Umweltüberwachung. Mehrstufiger Grow-Wizard, Pflanzen-Dashboard mit Lebenszyklus-Phasen, Journal-System mit Foto-Timeline, KI-Diagnostik mit Bildanalyse, Post-Harvest Trocknung/Curing-Tracker. Ertragsprognose via ML-Regression. **Vision-KI Blattdiagnose** -- ONNX PlantVillage MobileNetV2-Klassifikator mit Drag-and-Drop-Upload und Kameraaufnahme fuer 38-Klassen-Pflanzenkrankheitserkennung, Schweregrad-Bewertung und RAG-angereicherte Behandlungsempfehlungen. **Naehrstoffmangel-Wizard** -- interaktiver 8-Knoten-Entscheidungsbaum fuer visuelle Diagnose (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl). **Proaktiver Smart Coach** -- Echtzeit-Schwellenwert-Ueberwachung von Temperatur, Luftfeuchtigkeit, VPD, pH und EC mit KI-generierten Pflanz-spezifischen Warnungen (2-Stunden-Cooldown) und Browser-Push-Benachrichtigungen. **3D Grow Room** -- Three.js OrbitControls 3D-Visualisierung fuer Equipment-Platzierung und Grow-Space-Planung. **Multi-Grow-Verwaltung** -- bis zu 3 unabhaengige Grows gemaess deutschem CanG, Grow-bezogene Selektoren, KI-Kontext und Grow-spezifischer Datenexport/-import.
 
 ### Sorten
 
-776 Sorten-Bibliothek mit Volltextsuche, Filterung nach Typ/Effekte/THC/CBD/Terpene. D3.js Genealogie-Explorer fuer Eltern-Kind-Abstammungsvisualisierung. KI-gestuetzte Anbautipps. Zuchtlabor fuer Kreuzungsvorhersagen. Community-Sorten-Sharing via anonyme GitHub Gists. **4:20 Daily Drop** -- 5 handverlesene Sorten taeglich via Seeded PRNG mit 7 Diversitaets-Kategorien und Match-Scoring. Umfassende Terpen-Profile (27 Terpene), Cannabinoid-Profile (11 Cannabinoide), Chemovar-Klassifizierung (Typ I-V) und Flavonoid-Profile (12 Flavonoide mit wissenschaftlichen Referenzen). Sortendaten kuratiert durch KI-gestuetzte Recherche (Gemini, Opus) basierend auf oeffentlich verfuegbaren Zuechter-, Seedbank- und Community-Informationen. Multi-Source-Datenanreicherungs-Architektur mit Zod-validiertem Import, Datenqualitaets-Scoring und Provenienz-Tracking. Seedbank-Verfuegbarkeit mit deterministischen Mock-Preisen. Abstammungs-/Zuechter-Datenanreicherung. **Genetik 2026 Trends** Hub mit Terpen-Diversitaet, Ultra-Potenz, ausgewogenen Hybriden, Autoflowering-Revolution, Polyploidie/Advanced Breeding und Landrace Revival.
+776 Sorten-Bibliothek mit Volltextsuche, Filterung nach Typ/Effekte/THC/CBD/Terpene. D3.js Genealogie-Explorer fuer Eltern-Kind-Abstammungsvisualisierung. KI-gestuetzte Anbautipps. Zuchtlabor fuer Kreuzungsvorhersagen. Community-Sorten-Sharing via anonyme GitHub Gists. **4:20 Daily Drop** -- 5 handverlesene Sorten taeglich via Seeded PRNG mit 7 Diversitaets-Kategorien und Match-Scoring. Umfassende Terpen-Profile (27 Terpene), Cannabinoid-Profile (11 Cannabinoide), Chemovar-Klassifizierung (Typ I-V) und Flavonoid-Profile (12 Flavonoide mit wissenschaftlichen Referenzen). Sortendaten kuratiert durch KI-gestuetzte Recherche (Gemini, Opus) basierend auf oeffentlich verfuegbaren Zuechter-, Seedbank- und Community-Informationen. Multi-Source-Datenanreicherungs-Architektur mit Zod-validiertem Import, Datenqualitaets-Scoring und Provenienz-Tracking. Seedbank-Verfuegbarkeit mit deterministischen Mock-Preisen. Abstammungs-/Zuechter-Datenanreicherung. **Genetik 2026 Trends** Hub mit Terpen-Diversitaet, Ultra-Potenz, ausgewogenen Hybriden, Autoflowering-Revolution, Polyploidie/Advanced Breeding und Landrace Revival. **Sorten-Intelligenz-Lookup** -- 5-Quellen-Kaskade mit Entourage-Effekt-Wissenschaftskontext. Sortenvergleichs-Ansicht und Bulk-Export-Manager.
 
 ### Ausrüstung
 
-KI-Ausrüstungskonfigurator mit optimalen Setup-Empfehlungen basierend auf Grow-Parametern. Rechner-Suite: Belüftung (CFM), Beleuchtung (PPFD/DLI), Nährstoffmischung, Topfgröße. Einkaufslisten-Generierung.
+KI-Ausrüstungskonfigurator mit optimalen Setup-Empfehlungen basierend auf Grow-Parametern. Rechner-Suite: Belüftung (CFM), Beleuchtung (PPFD/DLI), Nährstoffmischung, Topfgröße, CO2-Anreicherung, Luftfeuchtigkeits-Defizit (Buck SVP), Licht-Aufhaenghoehe. Einkaufslisten-Generierung. **Hydro-Monitor** -- Echtzeit pH/EC/Temperatur-Dashboard mit Recharts-Trenddiagrammen, manueller Eingabe, Dosierungsreferenz-Panel und **ONNX Hydro-Forecast** (pH/EC/Temp-Vorhersage via Off-Thread-Worker, gleitender Durchschnitt Fallback, Trenderkennung, Alarmgenerierung). **IoT-Dashboard** -- ESP32-Sensorintegration mit MQTT/BLE, Sparkline-Gauges, Echtzeit-Telemetrie, useDeferredValue-Throttling. **What-If-Sandbox** -- Zucht- und Szenario-Simulationen mit Grow-Parameter-Exploration. Gespeicherte Setups mit Setup-Konfigurator. **Seedbanks** Panel mit deterministischen Mock-Preisen. **Grow Shops** und **Grow Tech** Discovery-Hubs.
 
 ### Wissen
 
-KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials. **Grow Tech 2026** Hub mit dynamischer LED-Beleuchtung, Sensor/IoT/VPD-Automatisierung, KI-Digital-Twins, Aeroponik, Gewebekultur, Smart Grow Boxes und Nachhaltigkeit/Post-Harvest-Innovationen. **Lexikon 2.0**: Durchsuchbares 83-Begriffe-Glossar in 6 Kategorien (Allgemein, Cannabinoide, Terpene, Flavonoide, Naehrstoffe, Krankheiten). **Krankheits-Atlas**: 22-Eintrag Pflanzendiagnose-Referenz (Maengel, Toxizitaeten, Schaedlinge, Krankheiten) mit Dringlichkeitsklassifikation, Symptomen, Ursachen, Behandlung und Praevention. **Rechner-Hub**: VPD-, Naehrstoffverhaeltnis- und pH/EC-Rechner in einer einheitlichen Ansicht. **Lernpfade**: 5 strukturierte Schritt-fuer-Schritt-Bildungsprogramme (Erstes Grow, Umgebungsbeherrschung, Naehrstoffbeherrschung, Schaedlings- und Krankheitskontrolle, Fortgeschrittenes Training) mit Redux-gesichertem Fortschritt.
+KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials. **Grow Tech 2026** Hub mit dynamischer LED-Beleuchtung, Sensor/IoT/VPD-Automatisierung, KI-Digital-Twins, Aeroponik, Gewebekultur, Smart Grow Boxes und Nachhaltigkeit/Post-Harvest-Innovationen. **Lexikon 2.0**: Durchsuchbares 83-Begriffe-Glossar in 6 Kategorien (Allgemein, Cannabinoide, Terpene, Flavonoide, Naehrstoffe, Krankheiten). **Krankheits-Atlas**: 22-Eintrag Pflanzendiagnose-Referenz (Maengel, Toxizitaeten, Schaedlinge, Krankheiten) mit Dringlichkeitsklassifikation, Symptomen, Ursachen, Behandlung und Praevention. **Rechner-Hub**: VPD-, Naehrstoffverhaeltnis- und pH/EC-Rechner in einer einheitlichen Ansicht. **Lernpfade**: 5 strukturierte Schritt-fuer-Schritt-Bildungsprogramme (Erstes Grow, Umgebungsbeherrschung, Naehrstoffbeherrschung, Schaedlings- und Krankheitskontrolle, Fortgeschrittenes Training) mit Redux-gesichertem Fortschritt. **Analyse-Dashboard** mit Grow-Performance-Einblicken und KI-empfohlenen Optimierungen. Mentor-Archiv fuer Chat-Verlaufsüberprüfung.
 
 ### Einstellungen
 
-9 visuelle Themes, Farbenblind-Modi (Deuteranopie, Protanopie, Tritanopie), WCAG 2.1 AA Barrierefreiheit. BYOK API-Key-Verwaltung mit AES-256-GCM-Verschlüsselung at rest. Datenexport/-import (JSON). Cloud-Sync via verschlüsselte GitHub Gists. Nur-Lokal-Modus. TTS (Text-to-Speech) für KI-Antworten.
+9 visuelle Themes, Farbenblind-Modi (Deuteranopie, Protanopie, Tritanopie), WCAG 2.1 AA Barrierefreiheit. BYOK API-Key-Verwaltung mit AES-256-GCM-Verschlüsselung at rest. **KI-Kostentracking** -- Pro-Provider-Token-Nutzungsextraktion, 7-Tage-Kosten-Balkendiagramm, monatlicher Budget-Fortschritt mit farbcodierten Schwellenwerten. **WebLLM-Modellauswahl** -- kartenbasierte UI fuer lokale LLM-Modellauswahl (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) mit GPU-Tier-Auto-Selektion und Download-Fortschrittsanzeige. Datenexport/-import (JSON). **CRDT Cloud-Sync** -- Yjs-basierte konfliktfreie Replikation mit verschluesselten GitHub Gists, 3-Wege-Konfliktloesung (Smart Merge / Lokal behalten / Cloud verwenden), Offline-Sync-Queue mit exponentiellem Backoff. Nur-Lokal-Modus. TTS (Text-to-Speech) für KI-Antworten. Sprachbefehle (6 erweitert, Fuzzy-Matching). IoT-Geraetekonfiguration (MQTT). **Grow-Manager** -- Multi-Grow-CRUD mit Archiv, Farbauswahl und CanG-Compliance-Limits.
 
 ### Hilfe
 
@@ -732,7 +732,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 pnpm run build            # turbo run build (alle Workspaces)
 pnpm test                 # turbo run test (Vitest, Watch-Modus)
-pnpm run test:run         # turbo run test:run (Einzellauf, 1760 Tests)
+pnpm run test:run         # turbo run test:run (Einzellauf, 1766 Tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -788,7 +788,7 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 
 | Job                | Beschreibung                                                                 |
 | ------------------ | ---------------------------------------------------------------------------- |
-| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1760 Tests, Produktions-Build |
+| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1766 Tests, Produktions-Build |
 | 🛡 Security        | pnpm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan              |
 | 🎭 E2E Tests       | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🌡 IoT-Integration | ESP32-Mock Healthcheck, Sensor-Endpunkt-Validierung                          |
@@ -851,8 +851,8 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, IoT-Mocks, CodeQL, Grype                                                                                                                      |
 | **v1.2** | ✅ Veröffentlicht | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenanreicherungs-Architektur (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
 | **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                               |
-| **v1.4** | ✅ Veröffentlicht | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1760 Tests                                                                |
-| **v1.5** | ✅ Veröffentlicht | CRDT-Offline-Sync, Multi-Grow-Verwaltung (3 pro CanG), KI-Kostentracking, Netlify-Preview-Validierung, RTL-Infrastruktur, pnpm-Migration, CI-Haertung, 1760 Tests                                                                                               |
+| **v1.4** | ✅ Veröffentlicht | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1766 Tests                                                                |
+| **v1.5** | ✅ Veröffentlicht | CRDT-Offline-Sync, Multi-Grow-Verwaltung (3 pro CanG), KI-Kostentracking, Netlify-Preview-Validierung, RTL-Infrastruktur, pnpm-Migration, CI-Haertung, 1766 Tests                                                                                               |
 | **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                                     |
 
 ### Strategische Ausbau-Schwerpunkte (2026-2028)
@@ -875,7 +875,7 @@ CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                              | v0.1 → v1.0    |
 | **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                      | Durchgehend    |
-| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1760 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.4   |
+| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1766 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.4   |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Produktions-Deployment, PR-Previews, OpenSSF-Compliance                                                                             | Kontinuierlich |
 
 > **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.

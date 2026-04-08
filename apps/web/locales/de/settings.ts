@@ -496,6 +496,9 @@ export const settingsView = {
         enableAll: 'Alle Benachrichtigungen aktivieren',
         enableAllDesc:
             'Globaler Schalter für Browser- und Service-Worker-Warnungen rund um den Grow.',
+        browserBlocked:
+            'Browser-Benachrichtigungen sind blockiert. Bitte erlaube Benachrichtigungen in deinen Browser-Einstellungen, um Grow-Warnungen zu erhalten.',
+        browserUnsupported: 'Dieser Browser unterstuetzt keine Push-Benachrichtigungen.',
         stageChange: 'Phasenwechsel',
         problemDetected: 'Problem erkannt',
         harvestReady: 'Ernte bereit',

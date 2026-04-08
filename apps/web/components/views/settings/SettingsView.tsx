@@ -1670,12 +1670,43 @@ const NotificationsSettingsTab: React.FC = () => {
     const dispatch = useAppDispatch()
     const notifications = useAppSelector(selectSettings).notifications
 
+    const [browserPermission, setBrowserPermission] = useState<string>(() =>
+        typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
+    )
+
     const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path: `notifications.${path}`, value }))
     }
 
+    const handleEnableToggle = async (value: boolean) => {
+        handleSetSetting('enabled', value)
+        if (value && browserPermission === 'default') {
+            try {
+                const { requestNotificationPermission } =
+                    await import('@/services/nativeBridgeService')
+                const granted = await requestNotificationPermission()
+                setBrowserPermission(granted ? 'granted' : 'denied')
+            } catch {
+                // Best-effort
+            }
+        }
+    }
+
+    const browserBlocked = browserPermission === 'denied'
+    const browserUnsupported = browserPermission === 'unsupported'
+
     return (
         <div className="space-y-6">
+            {browserBlocked && (
+                <div className="rounded-lg bg-amber-900/30 border border-amber-700/50 p-3 text-sm text-amber-300">
+                    {t('settingsView.notifications.browserBlocked')}
+                </div>
+            )}
+            {browserUnsupported && (
+                <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-3 text-sm text-slate-400">
+                    {t('settingsView.notifications.browserUnsupported')}
+                </div>
+            )}
             <Card>
                 <FormSection
                     title={t('settingsView.notifications.title')}
@@ -1689,7 +1720,7 @@ const NotificationsSettingsTab: React.FC = () => {
                         >
                             <Switch
                                 checked={notifications.enabled}
-                                onChange={(value) => handleSetSetting('enabled', value)}
+                                onChange={(value) => void handleEnableToggle(value)}
                             />
                         </SettingsRow>
                         <SettingsRow label={t('settingsView.notifications.problemDetected')}>

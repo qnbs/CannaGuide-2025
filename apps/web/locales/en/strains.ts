@@ -804,6 +804,22 @@ export const strainsView = {
         aiInsightLabel: 'AI Insight',
         noPlantSelected: 'Select a plant to see your personal match score.',
     },
+    comparison: {
+        title: 'Strain Comparison',
+        addStrain: 'Search and add a strain...',
+        removeStrain: 'Remove strain',
+        maxReached: 'Maximum of 3 strains reached.',
+        emptyHint: 'Add strains to compare them side by side.',
+        thc: 'THC',
+        cbd: 'CBD',
+        floweringTime: 'Flowering Time',
+        yield: 'Yield',
+        type: 'Type',
+        terpenes: 'Terpenes',
+        effects: 'Effects',
+        days: 'days',
+        gramsPerM2: 'g/m2',
+    },
 }
 
 export const strainLookup = {
@@ -848,20 +864,4 @@ export const strainLookup = {
         ai: 'AI Generated',
     },
     confidenceTooltip: '{{label}} -- {{score}}% confidence',
-    comparison: {
-        title: 'Strain Comparison',
-        addStrain: 'Search and add a strain...',
-        removeStrain: 'Remove strain',
-        maxReached: 'Maximum of 3 strains reached.',
-        emptyHint: 'Add strains to compare them side by side.',
-        thc: 'THC',
-        cbd: 'CBD',
-        floweringTime: 'Flowering Time',
-        yield: 'Yield',
-        type: 'Type',
-        terpenes: 'Terpenes',
-        effects: 'Effects',
-        days: 'days',
-        gramsPerM2: 'g/m2',
-    },
 }

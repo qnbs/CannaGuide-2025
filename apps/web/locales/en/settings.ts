@@ -482,6 +482,9 @@ export const settingsView = {
         title: 'Notifications',
         enableAll: 'Enable All Notifications',
         enableAllDesc: 'Master switch for browser and service worker grow alerts.',
+        browserBlocked:
+            'Browser notifications are blocked. Please allow notifications in your browser settings to receive grow alerts.',
+        browserUnsupported: 'This browser does not support push notifications.',
         stageChange: 'Stage Change',
         problemDetected: 'Problem Detected',
         harvestReady: 'Harvest Ready',

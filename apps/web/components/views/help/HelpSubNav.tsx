@@ -51,7 +51,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
 
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
-            const currentIndex = TAB_IDS.indexOf(activeTab as (typeof TAB_IDS)[number])
+            const currentIndex = (TAB_IDS as readonly string[]).indexOf(activeTab)
             if (currentIndex === -1) return
 
             let nextIndex = -1
@@ -92,7 +92,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
                         key={item.id}
                         onClick={() => onTabChange(item.id)}
                         onKeyDown={handleKeyDown}
-                        className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900
+                        className={`relative flex flex-col items-center justify-center gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200 min-h-[56px] sm:min-h-[64px] overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900
                             ${
                                 isActive
                                     ? 'bg-primary-600 text-white scale-[1.03] shadow-lg shadow-primary-600/20 ring-1 ring-primary-400'
@@ -101,8 +101,8 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
                         aria-label={item.label}
                         aria-pressed={isActive}
                     >
-                        <div className="w-6 h-6">{item.icon}</div>
-                        <span className="text-xs font-semibold text-center leading-tight">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 shrink-0">{item.icon}</div>
+                        <span className="text-[10px] sm:text-xs font-semibold text-center leading-tight line-clamp-2 w-full break-words">
                             {item.label}
                         </span>
                         <span className={countBadgeClassName}>{item.count}</span>

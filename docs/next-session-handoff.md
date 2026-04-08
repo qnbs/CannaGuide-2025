@@ -2,7 +2,61 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 95) -- WorkerBus Hardening + README Feature Audit
+## Latest Session (Session 96) -- PWA/i18n/UI Polish
+
+**Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 96)
+
+1. **PWA Icon Audit** -- Verified manifest.json icons match the app
+   magnifying-glass+leaf logo. Added PNG icon files (192/512 for
+   both `any` and `maskable` purposes). Updated apple-touch-icon
+   in index.html to PNG.
+
+2. **Critical i18n Bug Fix** -- `strainsView.comparison.title`,
+   `addStrain`, `emptyHint` keys showed raw on the Strain Comparison
+   page. Root cause: `comparison` block was placed inside the
+   `strainLookup` export instead of `strainsView` in EN and DE
+   locale files. ES/FR/NL had it duplicated in both exports. Fixed
+   by moving keys to correct export and removing duplicates.
+   Verified resolution with `npx tsx`.
+
+3. **Notification Settings i18n** -- Added missing `browserBlocked`
+   and `browserUnsupported` notification keys to DE, ES, FR, NL
+   settings locales.
+
+4. **SubNav Card Unification** -- Unified all 5 SubNav components
+   (Knowledge, Equipment, Strains, Help, Settings) with consistent
+   responsive card pattern: `min-h-[56px] sm:min-h-[64px]`,
+   `overflow-hidden`, `line-clamp-2`, `break-words`, responsive
+   icon and font sizing. Fixes "Krankheitsatlas" text overflow
+   on mobile.
+
+5. **README Help Section Expansion** -- Replaced minimal one-line
+   Help descriptions (EN+DE) with comprehensive 5-tab breakdown:
+   Manual (6 sections), Lexicon (83 terms, 6 categories), Visual
+   Guides (4), FAQ (45 items), Screenshot Gallery (60).
+
+### Verified Metrics (Session 96)
+
+- Typecheck: clean (TS2719 filtered)
+- Tests: 1766 passed, 0 failures (157 test files)
+- Build: success
+- Strains: 776
+- Services: 108
+- CI Workflows: 22
+
+### Next Steps
+
+- W-02: Worker preemption (v1.6 target, High effort)
+- W-04: Cross-worker communication (v1.6 target, High effort)
+- lint-burndown Phase 3: stores/slices strict scope
+- E2E visual regression baseline refresh for v1.5.0
+- v1.6 Scholarly Knowledge features (encyclopedia, video hub)
+
+---
+
+## Previous Session (Session 95) -- WorkerBus Hardening + README Feature Audit
 
 **Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.**
 
@@ -57,8 +111,6 @@
 ---
 
 ## Previous Session (Session 94) -- Comprehensive Documentation Audit
-
-**Status: v1.5.0. 1760 tests passing. TypeScript clean. Build clean.**
 
 ### What Was Done (Session 94)
 

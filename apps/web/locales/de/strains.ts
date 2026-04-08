@@ -813,6 +813,22 @@ export const strainsView = {
         noPlantSelected:
             'W\u00e4hle eine Pflanze, um deinen pers\u00f6nlichen Match-Score zu sehen.',
     },
+    comparison: {
+        title: 'Sorten-Vergleich',
+        addStrain: 'Sorte suchen und hinzufuegen...',
+        removeStrain: 'Sorte entfernen',
+        maxReached: 'Maximum von 3 Sorten erreicht.',
+        emptyHint: 'Sorten hinzufuegen um sie nebeneinander zu vergleichen.',
+        thc: 'THC',
+        cbd: 'CBD',
+        floweringTime: 'Bluetezeit',
+        yield: 'Ertrag',
+        type: 'Typ',
+        terpenes: 'Terpene',
+        effects: 'Effekte',
+        days: 'Tage',
+        gramsPerM2: 'g/m2',
+    },
 }
 
 export const strainLookup = {
@@ -857,20 +873,4 @@ export const strainLookup = {
         ai: 'KI-generiert',
     },
     confidenceTooltip: '{{label}} -- {{score}} % Konfidenz',
-    comparison: {
-        title: 'Sorten-Vergleich',
-        addStrain: 'Sorte suchen und hinzufuegen...',
-        removeStrain: 'Sorte entfernen',
-        maxReached: 'Maximum von 3 Sorten erreicht.',
-        emptyHint: 'Sorten hinzufuegen um sie nebeneinander zu vergleichen.',
-        thc: 'THC',
-        cbd: 'CBD',
-        floweringTime: 'Bluetezeit',
-        yield: 'Ertrag',
-        type: 'Typ',
-        terpenes: 'Terpene',
-        effects: 'Effekte',
-        days: 'Tage',
-        gramsPerM2: 'g/m2',
-    },
 }

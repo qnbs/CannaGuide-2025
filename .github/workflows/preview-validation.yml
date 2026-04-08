@@ -114,7 +114,7 @@ jobs:
             - name: Lighthouse CI (preview URL)
               run: |
                   echo "[INFO] Auditing preview: ${{ needs.check.outputs.preview-url }}"
-                  pnpm exec @lhci/cli autorun \
+                  pnpm exec lhci autorun \
                     --collect.url=${{ needs.check.outputs.preview-url }} \
                     --collect.numberOfRuns=1 \
                     --upload.target=temporary-public-storage \

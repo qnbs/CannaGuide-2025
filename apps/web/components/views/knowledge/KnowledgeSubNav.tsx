@@ -73,7 +73,7 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
                     type="button"
                     key={item.id}
                     onClick={() => onTabChange(item.id)}
-                    className={`flex flex-col items-center justify-center gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200
+                    className={`flex flex-col items-center justify-center gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200 min-h-[56px] sm:min-h-[64px] overflow-hidden
                         ${
                             activeTab === item.id
                                 ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
@@ -82,8 +82,8 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
                     aria-label={item.label}
                     aria-current={activeTab === item.id ? 'page' : undefined}
                 >
-                    <div className="w-5 h-5 sm:w-6 sm:h-6">{item.icon}</div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-center leading-tight">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 shrink-0">{item.icon}</div>
+                    <span className="text-[9px] sm:text-xs font-semibold text-center leading-tight line-clamp-2 w-full break-words">
                         {item.label}
                     </span>
                 </button>

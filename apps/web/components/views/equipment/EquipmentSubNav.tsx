@@ -56,25 +56,26 @@ export const EquipmentSubNav: React.FC<EquipmentSubNavProps> = ({ activeTab, onT
     return (
         <nav className="grid grid-cols-3 gap-2 sm:gap-4">
             {navItems.map((item) => {
-                if (item.id === 'placeholder') {
-                    return <div key={item.id} className="hidden sm:block"></div>
+                const id = item.id
+                if (id === 'placeholder') {
+                    return <div key={id} className="hidden sm:block"></div>
                 }
                 return (
                     <button
                         type="button"
-                        key={item.id}
-                        onClick={() => onTabChange(item.id as EquipmentViewTab)}
-                        className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200
+                        key={id}
+                        onClick={() => onTabChange(id)}
+                        className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200 min-h-[56px] sm:min-h-[64px] overflow-hidden
                             ${
-                                activeTab === item.id
+                                activeTab === id
                                     ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
                                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                             }`}
                         aria-label={item.label}
-                        aria-current={activeTab === item.id ? 'page' : undefined}
+                        aria-current={activeTab === id ? 'page' : undefined}
                     >
-                        <div className="w-6 h-6">{item.icon}</div>
-                        <span className="text-[11px] sm:text-xs font-semibold text-center leading-tight">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 shrink-0">{item.icon}</div>
+                        <span className="text-[10px] sm:text-xs font-semibold text-center leading-tight line-clamp-2 w-full break-words">
                             {item.label}
                         </span>
                     </button>

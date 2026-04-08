@@ -505,6 +505,9 @@ export const settingsView = {
         enableAll: 'Activer toutes les notifications',
         enableAllDesc:
             'Interrupteur principal pour les alertes du navigateur et du service worker.',
+        browserBlocked:
+            'Les notifications du navigateur sont bloquees. Veuillez autoriser les notifications dans les parametres de votre navigateur pour recevoir les alertes de culture.',
+        browserUnsupported: 'Ce navigateur ne prend pas en charge les notifications push.',
         stageChange: "Changement d'etape",
         problemDetected: 'Probleme detecte',
         harvestReady: 'Recolte prete',

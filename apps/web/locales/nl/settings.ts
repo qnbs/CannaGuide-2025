@@ -494,6 +494,9 @@ export const settingsView = {
         title: 'Meldingen',
         enableAll: 'Alle meldingen inschakelen',
         enableAllDesc: 'Hoofdschakelaar voor browser- en service worker-kweekmeldingen.',
+        browserBlocked:
+            'Browsermeldingen zijn geblokkeerd. Sta meldingen toe in je browserinstellingen om kweekmeldingen te ontvangen.',
+        browserUnsupported: 'Deze browser ondersteunt geen pushmeldingen.',
         stageChange: 'Fasewijziging',
         problemDetected: 'Probleem gedetecteerd',
         harvestReady: 'Oogstklaar',

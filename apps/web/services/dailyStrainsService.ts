@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // dailyStrainsService.ts -- 4:20 Daily Drop
 //
-// Smart daily strain picks from the 778-strain local catalog.
+// Smart daily strain picks from the 776-strain local catalog.
 // Uses a seeded PRNG (date-based) so every user sees the same daily drop.
 // Diversity scoring ensures category rotation across days.
 // AI search supplements local catalog results.
@@ -259,6 +259,7 @@ function loadFeedFromStorage(): DailyStrainsFeed | null {
     try {
         const raw = localStorage.getItem(STORAGE_KEY)
         if (!raw) return null
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- localStorage JSON boundary
         return JSON.parse(raw) as DailyStrainsFeed
     } catch {
         return null
@@ -269,6 +270,7 @@ function getDismissedIds(): Set<string> {
     try {
         const raw = localStorage.getItem(DISMISSED_KEY)
         if (!raw) return new Set()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- localStorage JSON boundary
         const arr = JSON.parse(raw) as string[]
         return new Set(arr)
     } catch {
@@ -306,7 +308,9 @@ export async function searchStrainsWithAI(query: string): Promise<DiscoveredStra
         const mode = getAiMode()
         if (mode === 'eco') return localResults
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- DOM lang attr
         const lang = (document.documentElement.lang as 'en' | 'de') || 'en'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- minimal stub
         const plantStub = { id: 'strain-lookup', name: query } as Parameters<
             typeof aiService.getMentorResponse
         >[0]
@@ -384,6 +388,7 @@ function parseAIStrainResponse(text: string): DiscoveredStrain[] {
     if (!jsonMatch) return results
 
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- JSON parse boundary
         const parsed = JSON.parse(jsonMatch) as Array<Record<string, unknown>>
         if (!Array.isArray(parsed)) return results
 
@@ -525,7 +530,7 @@ export const dailyStrainsService = {
             dateKey: todayKey,
             stats: {
                 totalPicks: strains.length,
-                categories: categories as string[],
+                categories: categories.filter((c): c is string => typeof c === 'string'),
                 existingCatalogSize: allStrainsData.length,
             },
             strains,
@@ -585,14 +590,14 @@ export function resolveDiscoveredToStrain(discovered: DiscoveredStrain): Strain 
     return createStrainObject({
         id: discovered.id,
         name: discovered.name,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated upstream
         type: discovered.type as StrainType,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated upstream
         floweringType: discovered.floweringType as Strain['floweringType'],
         thc: discovered.thc,
         cbd: discovered.cbd,
         description: discovered.description || undefined,
         genetics: discovered.genetics || undefined,
-        lineage: discovered.breeder
-            ? { parents: [], breeder: discovered.breeder }
-            : undefined,
+        lineage: discovered.breeder ? { parents: [], breeder: discovered.breeder } : undefined,
     })
 }

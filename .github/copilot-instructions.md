@@ -54,7 +54,7 @@ apps/
     stores/              # Redux: slices/, selectors/, middleware, store config
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
     hooks/               # Custom React hooks (25)
-    data/                # Static data: 778 strains, FAQ, lexicon (83 entries), guides, diseases (22 entries), learningPaths (5 paths)
+    data/                # Static data: 776 strains, FAQ, lexicon (83 entries), guides, diseases (22 entries), learningPaths (5 paths)
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation
     utils/               # Shared utilities

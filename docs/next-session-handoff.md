@@ -1069,7 +1069,7 @@ requires new Redux slice, UI views, data model changes.
 - Services: 105
 - CI workflows: 24
 - Lexicon entries: 83
-- Strains: 778
+- Strains: 776
 - Themes: 9
 
 ### CI Failure Root Causes (Diagnosed)
@@ -3064,7 +3064,7 @@ Optional follow-up candidates:
 | Metric          | Value                                                            |
 | --------------- | ---------------------------------------------------------------- |
 | Tests           | 1049 (104 test files, 0 failures)                                |
-| Strains         | 778                                                              |
+| Strains         | 776                                                              |
 | Services        | 82                                                               |
 | Custom Hooks    | 19                                                               |
 | Web Workers     | 8                                                                |
@@ -3109,7 +3109,7 @@ Optional follow-up candidates:
 | Metric          | Value                             |
 | --------------- | --------------------------------- |
 | Tests           | 1049 (104 test files, 0 failures) |
-| Strains         | 778                               |
+| Strains         | 776                               |
 | Services        | 82                                |
 | Custom Hooks    | 19                                |
 | Web Workers     | 8                                 |
@@ -3174,7 +3174,7 @@ Optional follow-up candidates:
 | Metric          | Value                             |
 | --------------- | --------------------------------- |
 | Tests           | 1049 (104 test files, 0 failures) |
-| Strains         | 778                               |
+| Strains         | 776                               |
 | Services        | 82                                |
 | Custom Hooks    | 19                                |
 | Web Workers     | 8                                 |
@@ -3264,7 +3264,7 @@ Optional follow-up candidates:
 | Metric          | Value                             |
 | --------------- | --------------------------------- |
 | Tests           | 1016 (103 test files, 0 failures) |
-| Strains         | 778                               |
+| Strains         | 776                               |
 | Services        | 80                                |
 | Custom Hooks    | 19                                |
 | Web Workers     | 8                                 |

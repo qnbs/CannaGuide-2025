@@ -24,7 +24,7 @@ Released: **2026-07-07**
 
 | Feature                                                        | Category     | Status |
 | -------------------------------------------------------------- | ------------ | ------ |
-| 778-strain encyclopedia with genealogy tracking                | Core         | ✅     |
+| 776-strain encyclopedia with genealogy tracking                | Core         | ✅     |
 | VPD-based plant simulation engine (Web Worker)                 | Core         | ✅     |
 | Multi-provider AI integration (Gemini, OpenAI, xAI, Anthropic) | AI           | ✅     |
 | RAG-powered grow log journal search                            | AI           | ✅     |
@@ -208,7 +208,7 @@ Target: **2026-Q4** | Status: **In Progress**
 
 | Feature                                                             | Category   | Priority | Issue |
 | ------------------------------------------------------------------- | ---------- | -------- | ----- |
-| Strain database growth program (778 → 2,000+ curated entries)       | Strains    | High     | —     |
+| Strain database growth program (776 → 2,000+ curated entries)       | Strains    | High     | —     |
 | Strain ingestion pipeline with dedupe/provenance/quality scoring    | Data       | High     | —     |
 | Voice Sprint: Hotword wake-word detection (V-03)                    | Voice/UX   | High     | —     |
 | Voice Sprint: Grow-log voice dictation (V-04)                       | Voice/UX   | High     | —     |

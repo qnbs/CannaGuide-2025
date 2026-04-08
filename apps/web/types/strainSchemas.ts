@@ -1,9 +1,12 @@
 /**
  * Zod Schemas for External Strain Data Validation
  *
- * Validates and sanitizes strain data from external APIs (Seedfinder, Otreeba,
- * Strain API, CannSeek, OpenTHC, Cansativa, Kushy, community datasets) before
- * merging into the local IndexedDB/Redux strain catalog.
+ * Validates and sanitizes strain data from external enrichment providers
+ * (Otreeba, Strain API, CannSeek, OpenTHC, Cansativa, Kushy, community
+ * datasets) before merging into the local IndexedDB/Redux strain catalog.
+ *
+ * Core strain catalog was curated via AI-assisted research (Gemini, Opus)
+ * based on publicly available breeder, seedbank, and community information.
  *
  * All schemas are permissive (partial) to handle incomplete API responses
  * gracefully while enforcing type safety on the fields that are present.

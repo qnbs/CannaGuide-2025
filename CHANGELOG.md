@@ -454,6 +454,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Real-World Seedbank API & Digital Twin (2026-03-29)
 
+> **Note (2026-04-08):** The SeedFinder.eu API was permanently removed in v1.3.0
+> (dead since mid-2024). The core strain catalog was never sourced from SeedFinder
+> or any single external API. It was curated via AI-assisted research (Gemini,
+> Opus) based on publicly available breeder, seedbank, and community information.
+> SeedFinder was only used briefly for seedbank availability lookups.
+
 - **SeedFinder.eu API integration**: `seedbankService.ts` fetches real availability data via CORS proxy cascade (allorigins -> corsproxy.io), 5-min in-memory TTL cache, `isLocalOnlyMode()` guard, deterministic mock fallback
 - **EnvironmentControlPanel**: Digital twin manual data capture (temperature, humidity, light PPFD, pH, EC, water volume) with live VPD indicator, journal logging, simulation state sync
 - **VPD Alert Badge**: Badge overlay on plant cards showing current VPD zone status

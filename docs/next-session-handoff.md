@@ -2,7 +2,54 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 93) -- GitHub Cleanup + v1.5.0 Release
+## Latest Session (Session 94) -- Comprehensive Documentation Audit
+
+**Status: v1.5.0. 1760 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 94)
+
+1. **Strain database deep audit** -- Found and removed 2 fuzzy-duplicate
+   strains (gastropop dup of gastro-pop, the-original dup of the-og).
+   778 -> 776 strains. Regenerated 27 TS strain files. Created
+   `scripts/check-strain-integrity.mjs` guard.
+
+2. **Source attribution audit** -- Corrected false SeedFinder/Leafly
+   attribution in README, CHANGELOG, strainSchemas, provider registry,
+   fetch-daily-strains, next-session-handoff. Strain catalog is
+   AI-curated (Gemini/Opus), not sourced from external DBs.
+
+3. **Comprehensive documentation accuracy audit** -- Fixed 32+
+   discrepancies across 8 files:
+    - README: services 104->108, CI 24/21->22, CodeQL badge link,
+      v1.5 Planned->Released (EN+DE), DE lexikon 89->83, added 4
+      missing workflows to tables
+    - ROADMAP: v1.5 Released with actual content, scholarly features
+      moved to v1.6
+    - CONTRIBUTING: npm->pnpm, tests 928->1760, i18n 2->5 languages
+    - ARCHITECTURE: tests 1741->1760
+    - monorepo-architecture: removed biome, fixed UI state (Redux->Zustand)
+    - copilot-instructions: 21->22 CI workflows
+
+### Verified Metrics (Session 94)
+
+- Typecheck: clean (TS2719 filtered)
+- Tests: 1760 passed, 0 failures
+- Build: success
+- Strains: 776 (2 fuzzy-duplicates removed)
+- Services: 108
+- CI Workflows: 22
+
+### Next Steps
+
+- W-01: Worker SharedArrayBuffer transport (v1.5 target)
+- W-02: Worker pool warm-start cache (v1.5 target)
+- lint-burndown Phase 3: stores/slices strict scope
+- E2E visual regression baseline refresh for v1.5.0
+- v1.6 Scholarly Knowledge features (encyclopedia, video hub)
+
+---
+
+## Previous Session (Session 93) -- GitHub Cleanup + v1.5.0 Release
 
 **Status: v1.5.0. 1760 tests passing. TypeScript clean. Build clean.**
 
@@ -3548,7 +3595,7 @@ Optional follow-up candidates:
 
 ### What Was Done (Session 7)
 
-1. **Multi-source strain data integration** -- 9-provider registry (SeedFinder, Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, Kushy, Leafly), Zod validation, quality scoring, provenance tracking, data hydration worker
+1. **Multi-source strain data enrichment architecture** -- 8-provider registry (Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, Kushy, Community) for optional runtime data hydration, Zod validation, quality scoring, provenance tracking, data hydration worker. _(Note: Core 776-strain catalog was curated via AI-assisted research -- Gemini/Opus -- based on publicly available breeder/seedbank/community information. SeedFinder.eu and Leafly were never used as catalog data sources.)_
 2. **Terpene profiles** -- 27 terpenes with aroma, flavor, effect metadata
 3. **Cannabinoid profiles** -- 11 cannabinoids with typed concentration ranges
 4. **Chemovar classification** -- Type I-V with THC:CBD ratio classification

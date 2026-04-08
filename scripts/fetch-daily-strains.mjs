@@ -2,8 +2,9 @@
 // ---------------------------------------------------------------------------
 // fetch-daily-strains.mjs -- DEPRECATED (SeedFinder API dead since mid-2024)
 //
-// This script was used to fetch new strain data from SeedFinder.eu API.
-// It has been replaced by the strains:extract / strains:generate pipeline.
+// This script was used to fetch seedbank availability data from SeedFinder.eu.
+// It was never used to source the core strain catalog (which was curated via
+// AI-assisted research). Replaced by strains:extract / strains:generate pipeline.
 // Kept for historical reference only.
 //
 // Usage: node scripts/fetch-daily-strains.mjs

@@ -4,7 +4,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
-## [Unreleased]
+## [1.5.0] - 2026-04-08
 
 ### Changed
 
@@ -27,6 +27,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 - **IoT sparkline throttle (M-1)** -- Added `useDeferredValue` to sensor history in `IotDashboardView.tsx`, allowing React to defer sparkline re-renders during high-frequency MQTT updates. (Session 83)
 - **Three.js types: @types/three replaces custom stubs (M-7)** -- Removed `types/three.d.ts` (74 lines of `any` stubs). Installed `@types/three` as devDependency. Full type safety for all Three.js classes and OrbitControls. Updated ADR-0003 consequence as resolved. (Session 84)
+- **Complete pnpm migration sweep** -- Replaced all remaining npm references across copilot-instructions, README, SECURITY.md, locale files, scripts, 28 generated strain files, vite.config, .clusterfuzzlite/build.sh, .gitignore. (Session 92)
 
 ### Fixed
 
@@ -34,55 +35,17 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **README metric inconsistencies (K-1)** -- services badge 105->104, EN test count 1447->1663, DE test count 1423->1663, DE v1.4 roadmap status corrected to released, DE dev journey test count 1049->1663 (Session 82)
 - **ARCHITECTURE.md test count (K-2)** -- build commands section 960+->1663 tests, synchronized with stack table (Session 82)
 - **AUDIT_BACKLOG.md stale test reference** -- T-01 finding updated from 960+ to 1663 (Session 82)
+- **Deploy workflow 3-bug fix** -- E2E locator `data-tab` -> `data-tab-id`, offline-pwa test.skip on CI (Chromium SEGV), lhci binary via `pnpm exec`, continue-on-error on post-deploy jobs. (Session 92)
+- **Broken CSP consistency script** -- Removed `extractFromTauri()` that read non-existent `src-tauri/tauri.conf.json`, reducing to 3 delivery paths. (Session 93)
 
 ### Added
 
 - **API reference documentation (D-01/H-2)** -- `docs/api/` with ai-facade.md (24 methods, routing logic, mode helpers), rag-pipeline.md (hybrid scoring, embedding cache API), local-ai-infrastructure.md (cache/telemetry/preload, 3-layer fallback architecture). Linked from ARCHITECTURE.md, README contributing sections (Session 82)
 
-### Fixed
-
-- **HydroMonitorView TS7053** -- Typed threshold editor field tuples as `[keyof HydroThresholds, string][]` instead of `[string, string][]`, removing implicit `any` index access and redundant type cast (Session 81)
-- **Vitest hanging in CI/local** -- `pnpm test -- --run` was broken: `--` caused `--run` to be interpreted as file pattern, not CLI flag. Added dedicated `test:run` script (`vitest run`) to `apps/web`, root `package.json`, and `turbo.json`. Updated `deploy.yml`, `release-gate.yml`, `gate:push`, and all documentation references (Session 81)
-
-### Added
-
-- **Full i18n polish** -- Replaced all hardcoded strings in HydroMonitorView, EcPhPlannerCalculator, GrowShopsView, IotDashboardView, WhatIfSandbox, SetupConfigurator, AiEquipmentPanel, StrainLookupSection, CalculatorHubView, LightCalculator, ChemotypeCalculator with `t()` calls. 225+ new locale keys across 5 languages (EN/DE/ES/FR/NL) in equipment, strains, knowledge namespaces. E2E i18n smoke tests (12 tests: 4 languages x 3 views). (Session 78)
-- **E2E sharding + config hardening** -- Playwright `fullyParallel`, `forbidOnly`, `globalTimeout` 45min, `workers: CI?2:'50%'`, `github` reporter. CI matrix sharding (2 shards), trace `on-first-retry`. (Session 78)
-
-### Fixed
-
-- **CI pnpm audit** -- Replaced npm-only `--omit=dev` flag with pnpm-native `--prod` in ci.yml and deploy.yml (Session 80)
-
-### Changed
-
-- **Scorecard pinned-deps** -- Added `# vX.Y.Z` version comments to 17 SHA-pinned action references across 7 CI workflows (Session 80)
-- **actions/github-script** v7 -> v8.0.0 in cleanup-deployments.yml (Session 80)
-- **dependabot/fetch-metadata** v2.5.0 -> v3.0.0 in dependabot-auto-merge.yml (Session 80)
-- **pnpm migration** -- Migrated from npm to pnpm 10 via Corepack across entire monorepo: root package.json, 11 CI workflows, shared CI action, DevContainer, 3 Husky hooks, 5 build scripts, netlify.toml, lighthouserc.json. Lockfile reduced from 23k to 15k lines. workspace:\* protocol for internal packages. (Session 79)
-
 ### Removed
 
+- **Dead Tauri/Capacitor/Docker infrastructure (Session 93)** -- Removed all lingering references to src-tauri, apps/desktop, @capacitor/local-notifications type stubs. Deleted legacy docker/esp32-mock (replaced by docker/iot-mocks). Cleaned .gitguardian.yml, .devcontainer/.dockerignore, eslint.config.js, labeler.yml, CONTRIBUTING.md, package.json depcheck, e2e-integration.yml triggers, 5 locale files. check-csp-consistency.mjs reduced from 4 to 3 sources.
 - **p-retry** -- Removed unused dependency from apps/web (no imports in codebase) (Session 80)
-
-### Added
-
-- AI Fallback Telemetry (A-05) -- FallbackLayer type, recordFallbackEvent(), getFallbackBreakdown() in localAiTelemetryService, inference router and fallback service instrumented (Session 74)
-- AI Response Validation (A-01) -- Zod safeParse replaces unsafe JSON.parse() as T in aiService streaming parsers and localAiPromptHandlers, Sentry error reporting on validation failure (Session 74)
-- Malformed AI response tests -- 6 new tests for invalid JSON, schema-invalid responses, Sentry logging (Session 74)
-- Fallback telemetry tests -- 4 new tests for layer tracking, snapshot inclusion, reset behavior (Session 74)
-- response-validation stage in captureLocalAiError (Session 74)
-
-### Fixed
-
-- Mobile E2E command palette test -- replaced non-existent Meta+k shortcut with button click (Session 74)
-
-### Changed
-
-- Audit document sync -- 6 items corrected from Open to Done (F-04, P-05, T-01, A-04, A-01, A-05), summary table updated (Session 74)
-
----
-
-## [1.4.1] - 2026-04-06
 
 ### Fixed
 

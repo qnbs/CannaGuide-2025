@@ -2,7 +2,42 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 91) -- Permanent CI Hardening Pass
+## Latest Session (Session 93) -- GitHub Cleanup + v1.5.0 Release
+
+**Status: v1.5.0. 1760 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 93)
+
+1. **Fixed broken CSP consistency script** -- `check-csp-consistency.mjs` crashed because `extractFromTauri()` read non-existent `src-tauri/tauri.conf.json`. Removed function and Tauri-specific diff logic. Script now validates 3 delivery paths (securityHeaders.ts, index.html, netlify.toml).
+
+2. **Removed all dead Tauri/Capacitor/Docker references** -- Cleaned 8 config files: `.gitguardian.yml` (src-tauri/desktop excludes), `.devcontainer/.dockerignore` (src-tauri/target), `eslint.config.js` (src-tauri/apps/desktop ignores), `.github/labeler.yml` (tauri label + docker label trimmed), `CONTRIBUTING.md` (Tauri/Docker release steps), `package.json` (depcheck @capacitor/cli), `apps/web/types/optional-deps.d.ts` (@capacitor/local-notifications stub), `.github/workflows/e2e-integration.yml` (esp32-mock trigger paths).
+
+3. **Deleted legacy docker/esp32-mock/** -- Replaced by `docker/iot-mocks/`. Updated server.mjs comment.
+
+4. **Updated 5 locale settings.ts files** -- Removed "Docker containers, Tauri desktop, and Capacitor mobile builds" from phase4Desc in EN/DE/ES/FR/NL.
+
+5. **CHANGELOG [Unreleased] -> [1.5.0]** -- Added deploy fix, pnpm sweep, CSP fix, dead infra removal entries. Consolidated duplicate sections.
+
+6. **Version bump 1.4.1 -> 1.5.0** -- Both package.json files + README badges (EN/DE).
+
+### Verified Metrics (Session 93)
+
+- Typecheck: clean (TS2719 filtered)
+- Tests: 1760 passed, 0 failures
+- Build: success
+- CSP script: runs without crash (3 sources)
+- GitHub environments: only github-pages (no orphans)
+
+### Next Steps
+
+- W-01: Worker SharedArrayBuffer transport (v1.5 target)
+- W-02: Worker pool warm-start cache (v1.5 target)
+- lint-burndown Phase 3: stores/slices strict scope
+- E2E visual regression baseline refresh for v1.5.0
+
+---
+
+## Previous Session (Session 91) -- Permanent CI Hardening Pass
 
 **Status: v1.4.1. 1760 tests passing. TypeScript clean. Build clean.**
 

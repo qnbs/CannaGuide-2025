@@ -85,18 +85,9 @@ workers:
                 - workers/**
                 - simulation.worker.ts
 
-tauri:
-    - changed-files:
-          - any-glob-to-any-file:
-                - src-tauri/**
-                - apps/desktop/**
-
 docker:
     - changed-files:
           - any-glob-to-any-file:
-                - Dockerfile
-                - Dockerfile.dev
-                - docker-compose.yml
                 - docker/**
 
 iot:

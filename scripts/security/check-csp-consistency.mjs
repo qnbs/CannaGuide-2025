@@ -2,8 +2,8 @@
 // ---------------------------------------------------------------------------
 // CSP Consistency Checker
 // ---------------------------------------------------------------------------
-// Extracts CSP directives from all 4 delivery paths and compares them.
-// Exits with code 1 if any directives differ (excluding Tauri-specific ones).
+// Extracts CSP directives from all 3 delivery paths and compares them.
+// Exits with code 1 if any directives differ.
 // ---------------------------------------------------------------------------
 
 import { readFileSync } from 'node:fs'
@@ -63,19 +63,6 @@ function extractFromNetlify() {
 }
 
 /**
- * Extract CSP from tauri.conf.json.
- */
-function extractFromTauri() {
-    const json = JSON.parse(readFileSync(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf-8'))
-    const csp = json?.app?.security?.csp ?? json?.tauri?.security?.csp
-    if (!csp) {
-        console.error('[FAIL] Could not find CSP in tauri.conf.json')
-        process.exit(1)
-    }
-    return csp
-}
-
-/**
  * Extract CSP from securityHeaders.ts (the single source of truth).
  * Parses the CSP_DIRECTIVES array and joins them like the runtime does.
  */
@@ -113,8 +100,6 @@ function extractFromSecurityHeaders() {
 // Main
 // ---------------------------------------------------------------------------
 
-// Directives that are expected to differ in Tauri (desktop app needs blob:/data: in default-src)
-const TAURI_EXPECTED_DIFFS = new Set(['default-src', 'font-src'])
 // Netlify adds frame-ancestors which others may not have
 const NETLIFY_EXTRAS = new Set(['frame-ancestors'])
 
@@ -122,7 +107,6 @@ const sources = {
     'securityHeaders.ts': extractFromSecurityHeaders(),
     'index.html': extractFromIndexHtml(),
     'netlify.toml': extractFromNetlify(),
-    'tauri.conf.json': extractFromTauri(),
 }
 
 const parsed = Object.fromEntries(
@@ -136,9 +120,6 @@ for (const [name, directives] of Object.entries(parsed)) {
     if (name === 'securityHeaders.ts') continue
 
     for (const [directive, refValue] of reference) {
-        // Skip Tauri-specific expected differences
-        if (name === 'tauri.conf.json' && TAURI_EXPECTED_DIFFS.has(directive)) continue
-
         const actual = directives.get(directive)
         if (!actual) {
             console.error(`[FAIL] ${name}: missing directive '${directive}'`)
@@ -155,7 +136,6 @@ for (const [name, directives] of Object.entries(parsed)) {
     for (const directive of directives.keys()) {
         if (!reference.has(directive)) {
             if (name === 'netlify.toml' && NETLIFY_EXTRAS.has(directive)) continue
-            if (name === 'tauri.conf.json' && TAURI_EXPECTED_DIFFS.has(directive)) continue
             console.warn(`[WARN] ${name}: extra directive '${directive}' not in securityHeaders.ts`)
         }
     }

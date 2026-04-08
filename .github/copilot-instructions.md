@@ -82,7 +82,7 @@ packages/
 scripts/                 # Build/lint/merge scripts
 docker/                  # IoT mock servers (ESP32 sensor simulator)
 docs/                    # Developer guides, roadmap
-.github/                 # 21 CI/CD workflows, issue templates
+.github/                 # 22 CI/CD workflows, issue templates
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
 

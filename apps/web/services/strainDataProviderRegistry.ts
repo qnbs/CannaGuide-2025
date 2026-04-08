@@ -1,13 +1,16 @@
 /**
  * Strain Data Provider Registry
  *
- * Centralized registry for all external strain data sources. Each provider
- * has a standardized interface for search, fetch, and capability reporting.
- * The registry handles provider selection, CORS proxy routing, rate limiting,
- * and result normalization via Zod schemas.
+ * Centralized registry for external strain data enrichment providers.
+ * Each provider has a standardized interface for search, fetch, and
+ * capability reporting. The registry handles provider selection, CORS
+ * proxy routing, rate limiting, and result normalization via Zod schemas.
  *
- * Providers:
- *  - Seedfinder.eu (lineage, breeder data)
+ * Note: The core 776-strain catalog was curated via AI-assisted research
+ * (Gemini, Opus) based on publicly available breeder/seedbank/community
+ * information. These providers serve as optional runtime enrichment sources.
+ *
+ * Enrichment providers:
  *  - Otreeba (open cannabis API -- strains, terpenes, studies)
  *  - Cannlytics (lab data, COAs)
  *  - Strain API / RapidAPI (effects, aromas)
@@ -482,25 +485,50 @@ const providerFetchers: Partial<
 }
 
 // ---------------------------------------------------------------------------
+// Type-safe accessors for Record<string, unknown>
+// ---------------------------------------------------------------------------
+
+const str = (v: unknown): string | undefined => (typeof v === 'string' ? v : undefined)
+const num = (v: unknown): number | undefined => (typeof v === 'number' ? v : undefined)
+const rec = (v: unknown): Record<string, unknown> | undefined => {
+    if (typeof v !== 'object' || v === null || Array.isArray(v)) return undefined
+    const obj: Record<string, unknown> = {}
+    for (const [k, val] of Object.entries(v)) {
+        obj[k] = val
+    }
+    return obj
+}
+const numRec = (v: unknown): Record<string, number> | undefined => {
+    const r = rec(v)
+    if (!r) return undefined
+    const out: Record<string, number> = {}
+    for (const [k, val] of Object.entries(r)) {
+        if (typeof val !== 'number') return undefined
+        out[k] = val
+    }
+    return out
+}
+
+// ---------------------------------------------------------------------------
 // Normalization helpers
 // ---------------------------------------------------------------------------
 
 const normalizeOtreebaResult = (data: Record<string, unknown>): Record<string, unknown> => {
-    const genetics = data.genetics as { names?: string } | undefined
-    const seedCompany = data.seed_company as { name?: string } | undefined
+    const genetics = rec(data.genetics)
+    const seedCompany = rec(data.seed_company)
 
     return {
         provider: 'otreeba',
-        externalId: data.ucpc as string | undefined,
-        name: (data.name as string) ?? 'Unknown',
-        genetics: genetics?.names,
-        lineage: seedCompany ? { breeder: seedCompany.name } : undefined,
-        sourceUrl: data.url as string | undefined,
+        externalId: str(data.ucpc),
+        name: str(data.name) ?? 'Unknown',
+        genetics: genetics ? str(genetics.names) : undefined,
+        lineage: seedCompany ? { breeder: str(seedCompany.name) } : undefined,
+        sourceUrl: str(data.url),
     }
 }
 
 const normalizeCannlyticsResult = (data: Record<string, unknown>): Record<string, unknown> => {
-    const results = data.results as Record<string, number> | undefined
+    const results = numRec(data.results)
     const terpeneProfile: Record<string, number> = {}
     const cannabinoidProfile: Record<string, number> = {}
 
@@ -523,7 +551,7 @@ const normalizeCannlyticsResult = (data: Record<string, unknown>): Record<string
 
     return {
         provider: 'cannlytics',
-        name: (data.strain_name as string) ?? (data.name as string) ?? 'Unknown',
+        name: str(data.strain_name) ?? str(data.name) ?? 'Unknown',
         terpeneProfile: Object.keys(terpeneProfile).length > 0 ? terpeneProfile : undefined,
         cannabinoidProfile:
             Object.keys(cannabinoidProfile).length > 0 ? cannabinoidProfile : undefined,
@@ -533,50 +561,38 @@ const normalizeCannlyticsResult = (data: Record<string, unknown>): Record<string
 
 const normalizeCansativaResult = (data: Record<string, unknown>): Record<string, unknown> => {
     const name =
-        (data.product_name as string) ??
-        (data.name as string) ??
-        (data.strain as string) ??
-        (data.kultivar as string) ??
+        str(data.product_name) ??
+        str(data.name) ??
+        str(data.strain) ??
+        str(data.kultivar) ??
         'Unknown'
 
     const terpeneProfile: Record<string, number> = {}
     const cannabinoidProfile: Record<string, number> = {}
 
     // Extract THC/CBD from top-level or nested lab data
-    const thc =
-        (data.thc as number) ??
-        (data.thc_percent as number) ??
-        (data.thc_content as number) ??
-        undefined
-    const cbd =
-        (data.cbd as number) ??
-        (data.cbd_percent as number) ??
-        (data.cbd_content as number) ??
-        undefined
+    const thc = num(data.thc) ?? num(data.thc_percent) ?? num(data.thc_content) ?? undefined
+    const cbd = num(data.cbd) ?? num(data.cbd_percent) ?? num(data.cbd_content) ?? undefined
 
     if (thc !== undefined) cannabinoidProfile['THC'] = thc
     if (cbd !== undefined) cannabinoidProfile['CBD'] = cbd
 
     // Extract terpene data if available
-    const terpenes = data.terpenes as Record<string, number> | undefined
-    if (terpenes && typeof terpenes === 'object') {
+    const terpenes = numRec(data.terpenes)
+    if (terpenes) {
         for (const [key, val] of Object.entries(terpenes)) {
-            if (typeof val === 'number') terpeneProfile[key] = val
+            terpeneProfile[key] = val
         }
     }
 
     // Extract cultivar/genetics info
-    const genetics =
-        (data.genetics as string) ??
-        (data.cultivar as string) ??
-        (data.sorte as string) ??
-        undefined
+    const genetics = str(data.genetics) ?? str(data.cultivar) ?? str(data.sorte) ?? undefined
 
-    const type = mapCansativaType((data.type as string) ?? (data.category as string) ?? genetics)
+    const type = mapCansativaType(str(data.type) ?? str(data.category) ?? genetics)
 
     return {
         provider: 'cansativa',
-        externalId: (data.id as string) ?? (data.pzn as string) ?? undefined,
+        externalId: str(data.id) ?? str(data.pzn) ?? undefined,
         name,
         type,
         genetics,
@@ -588,12 +604,12 @@ const normalizeCansativaResult = (data: Record<string, unknown>): Record<string,
         labTested: true,
         medicalInfo: {
             gmpCertified: true,
-            pzn: (data.pzn as string) ?? undefined,
+            pzn: str(data.pzn) ?? undefined,
             apothekenpflichtig: true,
-            cultivationCountry: (data.origin as string) ?? (data.herkunft as string) ?? undefined,
+            cultivationCountry: str(data.origin) ?? str(data.herkunft) ?? undefined,
         },
-        description: (data.description as string) ?? (data.beschreibung as string) ?? undefined,
-        sourceUrl: (data.url as string) ?? undefined,
+        description: str(data.description) ?? str(data.beschreibung) ?? undefined,
+        sourceUrl: str(data.url) ?? undefined,
     }
 }
 
@@ -612,7 +628,7 @@ const mapCansativaType = (
 // Utility helpers
 // ---------------------------------------------------------------------------
 
-// (removed unused parsePercentString -- was only used by seedfinder)
+// (removed unused parsePercentString -- legacy, no longer needed)
 
 const computeRelevance = (query: string, data: ValidatedExternalStrainData): number => {
     const q = query.toLowerCase()

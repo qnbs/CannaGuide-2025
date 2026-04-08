@@ -88,7 +88,7 @@ CI=1 pnpm install --frozen-lockfile
 
 The root `package.json` contains **zero application dependencies**. Only global dev tooling:
 
-- turbo, eslint, prettier, husky, typescript, biome
+- turbo, eslint, prettier, husky, typescript
 - commitlint, snyk, anti-trojan-source, lint-staged
 - Scripts delegate to `turbo run <task>`
 
@@ -111,9 +111,9 @@ Root `tsconfig.json` is references-only:
 
 ## State Management Strategy
 
-| Data Type                      | Store                           | Rationale                                       |
-| ------------------------------ | ------------------------------- | ----------------------------------------------- |
-| User settings, plants, journal | **Redux** (IndexedDB persisted) | Infrequent updates, needs persistence           |
-| AI responses, mentor history   | **Redux** (via RTK Query)       | Cache management, deduplication                 |
-| Sensor readings (MQTT/BLE)     | **Zustand** (ephemeral)         | High-frequency (~500ms), no persistence needed  |
-| UI navigation, modals          | **Redux**                       | Coordinated with persistence (last active view) |
+| Data Type                      | Store                           | Rationale                                      |
+| ------------------------------ | ------------------------------- | ---------------------------------------------- |
+| User settings, plants, journal | **Redux** (IndexedDB persisted) | Infrequent updates, needs persistence          |
+| AI responses, mentor history   | **Redux** (via RTK Query)       | Cache management, deduplication                |
+| Sensor readings (MQTT/BLE)     | **Zustand** (ephemeral)         | High-frequency (~500ms), no persistence needed |
+| UI navigation, modals          | **Zustand** (ephemeral)         | Transient UI state, no persistence needed      |

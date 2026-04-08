@@ -50,7 +50,7 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 ### Prerequisites
 
 - **Node.js** ≥ 20
-- **npm** ≥ 10
+- **pnpm** ≥ 10 (via Corepack: `corepack enable`)
 
 ### Tech Stack
 
@@ -191,18 +191,18 @@ pnpm run build && pnpm exec playwright test
 - Bug fixes **should** include a regression test.
 - Test files live next to their source: `MyComponent.test.tsx` or in `tests/`.
 - Use existing mocks from `tests/mocks/` for Gemini, IndexedDB, etc.
-- Current baseline: **928+ tests, 0 failures**.
+- Current baseline: **1760 tests, 0 failures**.
 
 ---
 
 ## Internationalization (i18n)
 
-All user-facing strings must be localized. We support **English (EN)** and **German (DE)**.
+All user-facing strings must be localized. We support **English (EN)**, **German (DE)**, **Spanish (ES)**, **French (FR)**, and **Dutch (NL)**.
 
 ### Adding translations
 
 1. Add your key to the appropriate namespace in `locales/en/<namespace>.ts`.
-2. Add the German translation in `locales/de/<namespace>.ts`.
+2. Add the translations in `locales/de/`, `locales/es/`, `locales/fr/`, and `locales/nl/`.
 3. Use the key in your component:
     ```tsx
     const { t } = useTranslation('plants')
@@ -244,7 +244,7 @@ console.debug(t('common:error.generic'))
 - [ ] ESLint passes with 0 warnings (`pnpm run lint`)
 - [ ] All existing tests pass (`pnpm test`)
 - [ ] New features include tests
-- [ ] Translations added for EN and DE
+- [ ] Translations added for all 5 languages (EN/DE/ES/FR/NL)
 - [ ] No `console.log` statements
 - [ ] No `any` types
 - [ ] DOMPurify used for any HTML rendering

@@ -6,15 +6,16 @@
 
 ## Release Overview
 
-| Version  | Target     | Status      | Theme                                                        |
-| -------- | ---------- | ----------- | ------------------------------------------------------------ |
-| **v1.0** | 2026-07-07 | ✅ Released | Foundation — Full-featured cultivation PWA                   |
-| **v1.1** | 2026-Q1    | ✅ Released | DevOps & Quality — Error tracking, testing, deployment       |
-| **v1.2** | 2026-Q2    | ✅ Released | Community & Automation -- Languages, scheduling, marketplace |
-| **v1.3** | 2026-Q3    | ✅ Released | Analytics & Visualization -- IoT, 3D, dashboards             |
-| **v1.4** | 2026-Q4    | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus |
-| **v1.5** | 2027-Q1    | 📋 Planned  | Scholarly Expansion — Encyclopedia, curation, source graph   |
-| **v2.0** | 2027-Q2    | 📋 Planned  | Digital Twin Platform — AR/VR overlays + advanced sandbox    |
+| Version  | Target     | Status      | Theme                                                                             |
+| -------- | ---------- | ----------- | --------------------------------------------------------------------------------- |
+| **v1.0** | 2026-07-07 | ✅ Released | Foundation — Full-featured cultivation PWA                                        |
+| **v1.1** | 2026-Q1    | ✅ Released | DevOps & Quality — Error tracking, testing, deployment                            |
+| **v1.2** | 2026-Q2    | ✅ Released | Community & Automation -- Languages, scheduling, marketplace                      |
+| **v1.3** | 2026-Q3    | ✅ Released | Analytics & Visualization -- IoT, 3D, dashboards                                  |
+| **v1.4** | 2026-Q4    | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus                      |
+| **v1.5** | 2026-Q4    | ✅ Released | Sync & Multi-Grow — CRDT offline sync, multi-grow, AI cost tracking, CI hardening |
+| **v1.6** | 2027-Q1    | 📋 Planned  | Scholarly Expansion -- Encyclopedia, curation, source graph                       |
+| **v2.0** | 2027-Q2    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                        |
 
 ---
 
@@ -227,7 +228,32 @@ Target: **2026-Q4** | Status: **In Progress**
 
 ---
 
-## v1.5 — Scholarly Knowledge & Media Curation 📋
+## v1.5 — Sync, Multi-Grow & CI Hardening ✅
+
+Released: **2026-04-08**
+
+| Feature                                                                         | Category | Priority | Issue |
+| ------------------------------------------------------------------------------- | -------- | -------- | ----- |
+| CRDT offline sync protocol + conflict UI (Y.js, 3-way merge)                    | Sync     | High     | —     |
+| Multi-Grow state layer + UI (EntityAdapter, MAX_GROWS=3 per CanG)               | Grows    | High     | —     |
+| Multi-Grow AI integration + per-grow data export/import                         | AI/Grows | High     | —     |
+| AI cost tracking for BYOK users (token usage, 7-day chart, monthly budget)      | AI       | High     | —     |
+| Netlify preview validation workflow (Playwright + Lighthouse on previews)       | CI       | Medium   | —     |
+| RTL language infrastructure (dir/lang attributes, smoke E2E)                    | i18n     | Medium   | —     |
+| Permanent CI hardening pass (lint-staged strict, E2E selectors, typecheck gate) | CI       | High     | —     |
+| Complete pnpm migration sweep (all npm references replaced)                     | Build    | Medium   | —     |
+| @types/three replaces custom stubs (full Three.js type safety)                  | Types    | Low      | —     |
+
+### v1.5 Exit Criteria
+
+- CRDT sync is operational with conflict resolution UI.
+- Multi-Grow lifecycle supports 3 grows per CanG with scoped AI context.
+- All npm references replaced with pnpm across the entire repo.
+- 1760 tests pass, build succeeds, typecheck clean.
+
+---
+
+## v1.6 — Scholarly Knowledge & Media Curation 📋
 
 Target: **2027-Q1**
 
@@ -241,7 +267,7 @@ Target: **2027-Q1**
 | Ranking model for educational signal quality (novice/intermediate/advanced)         | AI/Knowledge | Medium   | —     |
 | Community recommendation loop for article/video quality feedback                    | Community    | Medium   | —     |
 
-### v1.5 Exit Criteria
+### v1.6 Exit Criteria
 
 - Lexicon reaches encyclopedia baseline with transparent citation metadata.
 - Video hub supports language filter (DE/EN), topic tags, and quality labels.

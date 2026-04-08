@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/release-v1.5.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Tests](https://img.shields.io/badge/tests-1760%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
@@ -65,11 +65,11 @@
 <!-- Project Metrics -->
 
 [![Strains](https://img.shields.io/badge/strains-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/services-104-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/services-108-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-15-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-24-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/hooks-25-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -106,7 +106,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 22-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 776 strains -- 1760 tests -- 104 services -- 15 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
+**Key numbers:** 776 strains -- 1760 tests -- 108 services -- 15 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
 
 ---
 
@@ -121,7 +121,7 @@ Three-tier client-side architecture with offline-first design:
 │  6 Views: Plants│Strains│Equipment│Knowledge│Settings│Help│
 ├─────────────────────────────────────────────────────────┤
 │  Business Logic Layer                                   │
-│  104 Services · 25 Hooks · 9 Web Workers                 │
+│  108 Services · 25 Hooks · 9 Web Workers                 │
 │  VPD Simulation · AI Providers · Genetics · RAG         │
 ├─────────────────────────────────────────────────────────┤
 │  State & Persistence Layer                              │
@@ -175,7 +175,7 @@ Grow simulation from seed to harvest. VPD-based transpiration modeling, biomass 
 
 ### Strains
 
-776-strain library with full-text search, filtering by type/effects/THC/CBD/terpenes. D3.js genealogy explorer for parent-child lineage visualization. AI-powered growing tips. Breeding lab for cross predictions. Community strain sharing via anonymous GitHub Gists. **4:20 Daily Drop** -- 5 hand-picked strains every day via seeded PRNG with 7 diversity categories and match scoring. Comprehensive terpene profiles (27 terpenes), cannabinoid profiles (11 cannabinoids), chemovar classification (Type I-V), and flavonoid profiles (12 flavonoids with scientific references). Multi-source data integration from 8 external providers (Otreeba, Cannlytics, The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community) with Zod-validated import, data quality scoring, and provenance tracking. Seedbank availability with deterministic mock pricing. Lineage/breeder data enrichment. **Genetics 2026 Trends** hub covering terpene diversity, ultra-high potency, balanced hybrids, autoflowering revolution, polyploidy/advanced breeding, and landrace revival.
+776-strain library with full-text search, filtering by type/effects/THC/CBD/terpenes. D3.js genealogy explorer for parent-child lineage visualization. AI-powered growing tips. Breeding lab for cross predictions. Community strain sharing via anonymous GitHub Gists. **4:20 Daily Drop** -- 5 hand-picked strains every day via seeded PRNG with 7 diversity categories and match scoring. Comprehensive terpene profiles (27 terpenes), cannabinoid profiles (11 cannabinoids), chemovar classification (Type I-V), and flavonoid profiles (12 flavonoids with scientific references). Strain data curated via AI-assisted research (Gemini, Opus) based on publicly available breeder, seedbank, and community information. Multi-source data enrichment architecture with Zod-validated import, data quality scoring, and provenance tracking. Seedbank availability with deterministic mock pricing. Lineage/breeder data enrichment. **Genetics 2026 Trends** hub covering terpene diversity, ultra-high potency, balanced hybrids, autoflowering revolution, polyploidy/advanced breeding, and landrace revival.
 
 ### Equipment
 
@@ -331,7 +331,7 @@ apps/
   web/                     Main PWA (@cannaguide/web)
     components/             React components (common/, icons/, navigation/, ui/, views/)
     stores/                 Redux (15 slices) + Zustand (8 stores), selectors, middleware
-    services/               104 service modules (AI, simulation, DB, crypto, IoT)
+    services/               108 service modules (AI, simulation, DB, crypto, IoT)
     hooks/                  25 custom hooks
     data/                   Static data: 776 strains, FAQ, lexicon, guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
@@ -348,7 +348,7 @@ packages/
 
 scripts/                    Build/lint/security scripts
 docker/                     IoT mock servers (ESP32 sensor simulator)
-.github/                    21 CI/CD workflows, issue templates
+.github/                    22 CI/CD workflows, issue templates
 ```
 
 ---
@@ -388,6 +388,10 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 | Labeler               | PR               | Automatic PR labeling                 |
 | Stale                 | scheduled        | Stale issue/PR management             |
 | Release               | push to main     | Automated release creation            |
+| Cleanup Deployments   | scheduled        | Prune stale GitHub Pages deployments  |
+| Mutation Testing      | push, PR         | Stryker mutation testing (Redux)      |
+| Preview Validation    | deploy success   | Playwright + Lighthouse on previews   |
+| Release Gate          | push, PR         | Pre-release quality gate              |
 
 ---
 
@@ -414,15 +418,15 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 
 > Full details: [ROADMAP.md](ROADMAP.md) | Audit-driven priorities: [docs/PRIORITY_ROADMAP.md](docs/PRIORITY_ROADMAP.md) | Audit backlog: [docs/AUDIT_BACKLOG.md](docs/AUDIT_BACKLOG.md) | ADRs: [docs/adr/](docs/adr/)
 
-| Version  | Status      | Highlights                                                                                                                                                                                                             |
-| -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Released | 776 strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                                                                                 |
-| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1049 tests, IoT mocks, CodeQL, Grype                                                                              |
-| **v1.2** | ✅ Released | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data integration (8 providers), strain data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
-| **v1.3** | ✅ Released | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                        |
-| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1760 tests                       |
-| **v1.5** | 📋 Planned  | Digital Twin architecture, ONNX TTS/STT, Data Export/Import, full axe-core a11y integration, AI response validation coverage                                                                                           |
-| **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                               |
+| Version  | Status      | Highlights                                                                                                                                                                                                                         |
+| -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Released | 776 strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32, breeding lab, EN/DE                                                                                                                                             |
+| **v1.1** | ✅ Released | Local AI stack (WebLLM + Transformers.js + CLIP), ONNX routing, inference cache, Sentry, cloud sync, 1049 tests, IoT mocks, CodeQL, Grype                                                                                          |
+| **v1.2** | ✅ Released | Terpene profiles (27), chemovar classification, flavonoid database (12), multi-source data enrichment architecture (8 providers), strain data hydration worker, ES/FR/NL locales, WorkerBus audit (backpressure, retry, telemetry) |
+| **v1.3** | ✅ Released | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                                    |
+| **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1760 tests                                   |
+| **v1.5** | ✅ Released | CRDT offline sync, Multi-Grow management (3 per CanG), AI cost tracking, Netlify preview validation, RTL infrastructure, pnpm migration, CI hardening, 1760 tests                                                                  |
+| **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                                           |
 
 ### Strategic Expansion Focus (2026-2028)
 
@@ -459,7 +463,7 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 
 **AI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web
 
-**Data Sources:** Otreeba (strain catalog), Cannlytics (lab analytics), The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community datasets (GitHub/Kaggle)
+**Strain Data:** Curated via AI-assisted research (Gemini in AI Studio, Opus in Codespaces) based on publicly available information from breeders, seedbanks, and community sources. The multi-source enrichment architecture supports Otreeba, Cannlytics, The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, and community datasets for optional runtime data hydration.
 
 **Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand
 
@@ -530,7 +534,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 22-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 776 Sorten -- 1760 Tests -- 104 Services -- 15 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 21 CI-Workflows
+**Kennzahlen:** 776 Sorten -- 1760 Tests -- 108 Services -- 15 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
 
 ---
 
@@ -545,7 +549,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 │  6 Views: Pflanzen│Sorten│Ausrüstung│Wissen│Settings│Hilfe│
 ├─────────────────────────────────────────────────────────┤
 │  Business-Logik-Schicht                                 │
-│  104 Services · 25 Hooks · 9 Web Workers                 │
+│  108 Services · 25 Hooks · 9 Web Workers                 │
 │  VPD-Simulation · KI-Provider · Genetik · RAG           │
 ├─────────────────────────────────────────────────────────┤
 │  State- & Persistenzschicht                             │
@@ -598,7 +602,7 @@ Grow-Simulation von Samen bis Ernte. VPD-basierte Transpirationsmodellierung, Bi
 
 ### Sorten
 
-776 Sorten-Bibliothek mit Volltextsuche, Filterung nach Typ/Effekte/THC/CBD/Terpene. D3.js Genealogie-Explorer fuer Eltern-Kind-Abstammungsvisualisierung. KI-gestuetzte Anbautipps. Zuchtlabor fuer Kreuzungsvorhersagen. Community-Sorten-Sharing via anonyme GitHub Gists. **4:20 Daily Drop** -- 5 handverlesene Sorten taeglich via Seeded PRNG mit 7 Diversitaets-Kategorien und Match-Scoring. Umfassende Terpen-Profile (27 Terpene), Cannabinoid-Profile (11 Cannabinoide), Chemovar-Klassifizierung (Typ I-V) und Flavonoid-Profile (12 Flavonoide mit wissenschaftlichen Referenzen). Multi-Source-Datenintegration von 8 externen Anbietern (Otreeba, Cannlytics, The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community) mit Zod-validiertem Import, Datenqualitaets-Scoring und Provenienz-Tracking. Seedbank-Verfuegbarkeit mit deterministischen Mock-Preisen. Abstammungs-/Zuechter-Datenanreicherung. **Genetik 2026 Trends** Hub mit Terpen-Diversitaet, Ultra-Potenz, ausgewogenen Hybriden, Autoflowering-Revolution, Polyploidie/Advanced Breeding und Landrace Revival.
+776 Sorten-Bibliothek mit Volltextsuche, Filterung nach Typ/Effekte/THC/CBD/Terpene. D3.js Genealogie-Explorer fuer Eltern-Kind-Abstammungsvisualisierung. KI-gestuetzte Anbautipps. Zuchtlabor fuer Kreuzungsvorhersagen. Community-Sorten-Sharing via anonyme GitHub Gists. **4:20 Daily Drop** -- 5 handverlesene Sorten taeglich via Seeded PRNG mit 7 Diversitaets-Kategorien und Match-Scoring. Umfassende Terpen-Profile (27 Terpene), Cannabinoid-Profile (11 Cannabinoide), Chemovar-Klassifizierung (Typ I-V) und Flavonoid-Profile (12 Flavonoide mit wissenschaftlichen Referenzen). Sortendaten kuratiert durch KI-gestuetzte Recherche (Gemini, Opus) basierend auf oeffentlich verfuegbaren Zuechter-, Seedbank- und Community-Informationen. Multi-Source-Datenanreicherungs-Architektur mit Zod-validiertem Import, Datenqualitaets-Scoring und Provenienz-Tracking. Seedbank-Verfuegbarkeit mit deterministischen Mock-Preisen. Abstammungs-/Zuechter-Datenanreicherung. **Genetik 2026 Trends** Hub mit Terpen-Diversitaet, Ultra-Potenz, ausgewogenen Hybriden, Autoflowering-Revolution, Polyploidie/Advanced Breeding und Landrace Revival.
 
 ### Ausrüstung
 
@@ -606,7 +610,7 @@ KI-Ausrüstungskonfigurator mit optimalen Setup-Empfehlungen basierend auf Grow-
 
 ### Wissen
 
-KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials. **Grow Tech 2026** Hub mit dynamischer LED-Beleuchtung, Sensor/IoT/VPD-Automatisierung, KI-Digital-Twins, Aeroponik, Gewebekultur, Smart Grow Boxes und Nachhaltigkeit/Post-Harvest-Innovationen. **Lexikon 2.0**: Durchsuchbares 89-Begriffe-Glossar in 6 Kategorien (Allgemein, Cannabinoide, Terpene, Flavonoide, Naehrstoffe, Krankheiten). **Krankheits-Atlas**: 22-Eintrag Pflanzendiagnose-Referenz (Maengel, Toxizitaeten, Schaedlinge, Krankheiten) mit Dringlichkeitsklassifikation, Symptomen, Ursachen, Behandlung und Praevention. **Rechner-Hub**: VPD-, Naehrstoffverhaeltnis- und pH/EC-Rechner in einer einheitlichen Ansicht. **Lernpfade**: 5 strukturierte Schritt-fuer-Schritt-Bildungsprogramme (Erstes Grow, Umgebungsbeherrschung, Naehrstoffbeherrschung, Schaedlings- und Krankheitskontrolle, Fortgeschrittenes Training) mit Redux-gesichertem Fortschritt.
+KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Grow-Journals des Nutzers. What-If-Sandbox für Zucht-Simulationen. Visuelle Guides und interaktive Tutorials. **Grow Tech 2026** Hub mit dynamischer LED-Beleuchtung, Sensor/IoT/VPD-Automatisierung, KI-Digital-Twins, Aeroponik, Gewebekultur, Smart Grow Boxes und Nachhaltigkeit/Post-Harvest-Innovationen. **Lexikon 2.0**: Durchsuchbares 83-Begriffe-Glossar in 6 Kategorien (Allgemein, Cannabinoide, Terpene, Flavonoide, Naehrstoffe, Krankheiten). **Krankheits-Atlas**: 22-Eintrag Pflanzendiagnose-Referenz (Maengel, Toxizitaeten, Schaedlinge, Krankheiten) mit Dringlichkeitsklassifikation, Symptomen, Ursachen, Behandlung und Praevention. **Rechner-Hub**: VPD-, Naehrstoffverhaeltnis- und pH/EC-Rechner in einer einheitlichen Ansicht. **Lernpfade**: 5 strukturierte Schritt-fuer-Schritt-Bildungsprogramme (Erstes Grow, Umgebungsbeherrschung, Naehrstoffbeherrschung, Schaedlings- und Krankheitskontrolle, Fortgeschrittenes Training) mit Redux-gesichertem Fortschritt.
 
 ### Einstellungen
 
@@ -754,7 +758,7 @@ apps/
   web/                     Haupt-PWA (@cannaguide/web)
     components/             React-Komponenten (common/, icons/, navigation/, ui/, views/)
     stores/                 Redux: 15 Slices, 8 Zustand Stores, Selektoren, Middleware
-    services/               104 Service-Module (KI, Simulation, DB, Krypto, IoT)
+    services/               108 Service-Module (KI, Simulation, DB, Krypto, IoT)
     hooks/                  25 Custom Hooks
     data/                   Statische Daten: 776 Sorten, FAQ, Lexikon, Guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (je 12 Namensräume)
@@ -771,7 +775,7 @@ packages/
 
 scripts/                    Build-/Lint-/Sicherheits-Skripte
 docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
-.github/                    21 CI/CD-Workflows, Issue-Templates
+.github/                    22 CI/CD-Workflows, Issue-Templates
 ```
 
 ---
@@ -792,25 +796,29 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 
 ### Weitere Workflows
 
-| Workflow              | Trigger                | Zweck                                    |
-| --------------------- | ---------------------- | ---------------------------------------- |
-| CodeQL                | Push, PR, woechentlich | SAST-Analyse (JavaScript/TypeScript)     |
-| Deploy                | Push auf main          | GitHub Pages Deployment + Lighthouse     |
-| E2E & Integration     | Push, PR               | Eigenstaendige E2E-Suite                 |
-| Security Full         | Push, PR, woechentlich | Umfassende Sicherheits-Scan-Suite        |
-| Security Scan         | Push, PR               | Schnelle Sicherheitspruefungen           |
-| Snyk                  | Push, PR               | Schwachstellen-Scanning                  |
-| ClusterFuzzLite       | PR                     | Kontinuierliches Fuzzing                 |
-| Scorecard             | Push, woechentlich     | OpenSSF Scorecard (8.5/10)               |
-| Config Guard          | Push, PR               | RCE-Pattern-Scanning in Configs          |
-| Benchmark             | Push, PR               | Performance-Benchmarking                 |
-| Fuzzing               | Push, PR               | Vitest-Fuzz-Testing                      |
-| Strains Daily Update  | Cron                   | Automatische Sorten-Daten-Aktualisierung |
-| Strains Merge         | Push, PR               | Sorten-Merge-Automatisierung             |
-| Dependabot Auto-Merge | Bot                    | Dependency-Update-Automatisierung        |
-| Labeler               | PR                     | Automatisches PR-Labeling                |
-| Stale                 | Geplant                | Verwaltung veralteter Issues/PRs         |
-| Release               | Push auf main          | Automatisierte Release-Erstellung        |
+| Workflow              | Trigger                | Zweck                                      |
+| --------------------- | ---------------------- | ------------------------------------------ |
+| CodeQL                | Push, PR, woechentlich | SAST-Analyse (JavaScript/TypeScript)       |
+| Deploy                | Push auf main          | GitHub Pages Deployment + Lighthouse       |
+| E2E & Integration     | Push, PR               | Eigenstaendige E2E-Suite                   |
+| Security Full         | Push, PR, woechentlich | Umfassende Sicherheits-Scan-Suite          |
+| Security Scan         | Push, PR               | Schnelle Sicherheitspruefungen             |
+| Snyk                  | Push, PR               | Schwachstellen-Scanning                    |
+| ClusterFuzzLite       | PR                     | Kontinuierliches Fuzzing                   |
+| Scorecard             | Push, woechentlich     | OpenSSF Scorecard (8.5/10)                 |
+| Config Guard          | Push, PR               | RCE-Pattern-Scanning in Configs            |
+| Benchmark             | Push, PR               | Performance-Benchmarking                   |
+| Fuzzing               | Push, PR               | Vitest-Fuzz-Testing                        |
+| Strains Daily Update  | Cron                   | Automatische Sorten-Daten-Aktualisierung   |
+| Strains Merge         | Push, PR               | Sorten-Merge-Automatisierung               |
+| Dependabot Auto-Merge | Bot                    | Dependency-Update-Automatisierung          |
+| Labeler               | PR                     | Automatisches PR-Labeling                  |
+| Stale                 | Geplant                | Verwaltung veralteter Issues/PRs           |
+| Release               | Push auf main          | Automatisierte Release-Erstellung          |
+| Cleanup Deployments   | Geplant                | Bereinigung alter GitHub-Pages-Deployments |
+| Mutation Testing      | Push, PR               | Stryker-Mutationstesting (Redux)           |
+| Preview Validation    | Deploy-Erfolg          | Playwright + Lighthouse auf Previews       |
+| Release Gate          | Push, PR               | Pre-Release-Qualitaetspruefung             |
 
 ---
 
@@ -837,15 +845,15 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 
 > Vollständige Details: [ROADMAP.md](ROADMAP.md)
 
-| Version  | Status            | Highlights                                                                                                                                                                                                                                        |
-| -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | ✅ Veröffentlicht | 776 Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                               |
-| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, IoT-Mocks, CodeQL, Grype                                                                                                        |
-| **v1.2** | ✅ Veröffentlicht | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenintegration (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
-| **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                 |
-| **v1.4** | ✅ Veröffentlicht | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1760 Tests                                                  |
-| **v1.5** | 📋 Geplant        | Kuratierter DE/EN-Video-Hub, akademische Lexikon-Erweiterung (Endocannabinoid-System, Pharmakologie, Botanik, Genetik), Quellen-Transparenz                                                                                                       |
-| **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                       |
+| Version  | Status            | Highlights                                                                                                                                                                                                                                                      |
+| -------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Veröffentlicht | 776 Sorten, VPD-Simulation, Multi-Provider KI, DSGVO/WCAG, ESP32, Zuchtlabor, EN/DE                                                                                                                                                                             |
+| **v1.1** | ✅ Veröffentlicht | Lokaler KI-Stack (WebLLM + Transformers.js + CLIP), ONNX-Routing, Inferenz-Cache, Sentry, Cloud-Sync, 1049 Tests, IoT-Mocks, CodeQL, Grype                                                                                                                      |
+| **v1.2** | ✅ Veröffentlicht | Terpen-Profile (27), Chemovar-Klassifizierung, Flavonoid-Datenbank (12), Multi-Source-Datenanreicherungs-Architektur (8 Anbieter), Sorten-Kurations-Service, Daten-Hydrations-Worker, ES/FR/NL-Lokalisierung, WorkerBus-Audit (Backpressure, Retry, Telemetrie) |
+| **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                               |
+| **v1.4** | ✅ Veröffentlicht | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1760 Tests                                                                |
+| **v1.5** | ✅ Veröffentlicht | CRDT-Offline-Sync, Multi-Grow-Verwaltung (3 pro CanG), KI-Kostentracking, Netlify-Preview-Validierung, RTL-Infrastruktur, pnpm-Migration, CI-Haertung, 1760 Tests                                                                                               |
+| **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                                     |
 
 ### Strategische Ausbau-Schwerpunkte (2026-2028)
 
@@ -882,7 +890,7 @@ CannaGuide 2025 basiert auf vielen hervorragenden Open-Source-Projekten und exte
 
 **KI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web
 
-**Datenquellen:** Otreeba (Sortenkatalog), Cannlytics (Labor-Analytik), The Strain API, CannSeek, OpenTHC, Cansativa, Kushy, Community-Datensaetze (GitHub/Kaggle)
+**Sortendaten:** Kuratiert durch KI-gestuetzte Recherche (Gemini in AI Studio, Opus in Codespaces) basierend auf oeffentlich verfuegbaren Informationen von Zuechtern, Seedbanks und Community-Quellen. Die Multi-Source-Anreicherungs-Architektur unterstuetzt Otreeba, Cannlytics, The Strain API, CannSeek, OpenTHC, Cansativa, Kushy und Community-Datensaetze fuer optionale Laufzeit-Datenanreicherung.
 
 **Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand
 

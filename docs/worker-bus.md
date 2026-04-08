@@ -275,10 +275,13 @@ sequenceDiagram
 
 ### Current Limitations
 
-- No per-worker-type rate limiting (e.g., inference max 3 req/s)
 - Priority is queue-order only (no preemption of running workers)
-- Telemetry snapshots are Redux DevTools only -- no external metric export
 - No cross-worker communication (inference cannot query VPD data without main-thread hop)
+
+### Resolved (v1.5)
+
+- ~~No per-worker-type rate limiting~~ -- DONE (W-01, Session 94): `setRateLimit()` sliding-window API
+- ~~Telemetry Redux DevTools only~~ -- DONE (W-03, Session 94): `exportTelemetry()` + Sentry context
 
 ### Planned Improvements
 
@@ -287,18 +290,17 @@ sequenceDiagram
 - Unit test coverage >95% for backpressure queue, retry edge cases, concurrent load
 - Generic `WorkerMessage<T, R>` types for zero-runtime type checks
 
-**Mid-term (v1.5):**
+**Mid-term (v1.6):**
 
 - ~~Priority Queue (high priority for VPD alerts)~~ -- DONE (Session 60)
-- W-01: Per-worker-type rate limiting (inference worker throttle) -- target v1.5
-- W-03: External telemetry export (Sentry + custom metrics) -- target v1.5
+- ~~W-01: Per-worker-type rate limiting~~ -- DONE (Session 94)
+- ~~W-03: External telemetry export~~ -- DONE (Session 94)
+- W-02: Priority preemption for running workers -- target v1.6
+- W-04: Cross-worker communication channel (SharedArrayBuffer or MessageChannel) -- target v1.6
 - Event emitter for real-time IoT sensor streaming
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
 
-**Long-term (v1.6+):**
-
-- W-02: Priority preemption for running workers -- target v1.6
-- W-04: Cross-worker communication channel (SharedArrayBuffer or MessageChannel) -- target v1.6
+**Long-term (v2.0+):**
 
 - Extract as `@cannaguide/worker-bus` open-source package
 - WebGPU worker support + advanced ONNX Runtime integration

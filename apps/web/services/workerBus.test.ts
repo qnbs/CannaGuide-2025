@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // ---------------------------------------------------------------------------
@@ -876,5 +877,123 @@ describe('WorkerBusError typed errors (K-04)', () => {
                 err.code === WorkerErrorCode.NOT_REGISTERED &&
                 err.workerName === 'typed-test',
         )
+    })
+
+    // -----------------------------------------------------------------------
+    // W-01: Per-worker rate limiting
+    // -----------------------------------------------------------------------
+
+    describe('W-01: rate limiting', () => {
+        it('rejects dispatches that exceed the rate limit', async () => {
+            const { WorkerBusError, WorkerErrorCode } = await import('@/types/workerBus.types')
+            const w = new MockWorker()
+            autoRespond(w)
+            workerBus.register('rate-test', w as unknown as Worker)
+            workerBus.setRateLimit('rate-test', { maxRequests: 2, windowMs: 5000 })
+
+            // First two should succeed
+            await workerBus.dispatch('rate-test', 'A', {})
+            await workerBus.dispatch('rate-test', 'B', {})
+
+            // Third should be rate-limited
+            await expect(workerBus.dispatch('rate-test', 'C', {})).rejects.toSatisfy(
+                (err: unknown) =>
+                    err instanceof WorkerBusError && err.code === WorkerErrorCode.RATE_LIMITED,
+            )
+        })
+
+        it('allows dispatches after removing rate limit', async () => {
+            const w = new MockWorker()
+            autoRespond(w)
+            workerBus.register('rate-test-2', w as unknown as Worker)
+            workerBus.setRateLimit('rate-test-2', { maxRequests: 1, windowMs: 5000 })
+
+            await workerBus.dispatch('rate-test-2', 'A', {})
+            await expect(workerBus.dispatch('rate-test-2', 'B', {})).rejects.toBeTruthy()
+
+            // Remove limit
+            workerBus.setRateLimit('rate-test-2', undefined)
+            await expect(workerBus.dispatch('rate-test-2', 'C', {})).resolves.toBeDefined()
+        })
+
+        it('getRateLimit returns the configured limit', () => {
+            workerBus.setRateLimit('rl-get', { maxRequests: 5, windowMs: 2000 })
+            const config = workerBus.getRateLimit('rl-get')
+            expect(config).toEqual({ maxRequests: 5, windowMs: 2000 })
+            expect(workerBus.getRateLimit('nonexistent')).toBeUndefined()
+        })
+
+        it('rate limit is not retryable', async () => {
+            const { WorkerBusError, WorkerErrorCode } = await import('@/types/workerBus.types')
+            const w = new MockWorker()
+            autoRespond(w)
+            workerBus.register('rl-retry', w as unknown as Worker)
+            workerBus.setRateLimit('rl-retry', { maxRequests: 1, windowMs: 10000 })
+
+            await workerBus.dispatch('rl-retry', 'A', {})
+            // Should reject immediately without retrying
+            await expect(
+                workerBus.dispatch('rl-retry', 'B', {}, { retries: 3, retryDelayMs: 10 }),
+            ).rejects.toSatisfy(
+                (err: unknown) =>
+                    err instanceof WorkerBusError && err.code === WorkerErrorCode.RATE_LIMITED,
+            )
+        })
+    })
+
+    // -----------------------------------------------------------------------
+    // W-03: Telemetry export
+    // -----------------------------------------------------------------------
+
+    describe('W-03: telemetry export', () => {
+        it('exports telemetry with extended metrics', async () => {
+            const w = new MockWorker()
+            autoRespond(w)
+            workerBus.register('tel-export', w as unknown as Worker)
+
+            await workerBus.dispatch('tel-export', 'A', {})
+            await workerBus.dispatch('tel-export', 'B', {})
+
+            const snapshot = workerBus.exportTelemetry()
+            expect(snapshot.timestamp).toBeGreaterThan(0)
+            expect(snapshot.workers['tel-export']).toBeDefined()
+
+            const wt = snapshot.workers['tel-export']
+            expect(wt?.totalDispatches).toBe(2)
+            expect(wt?.totalErrors).toBe(0)
+            expect(wt?.errorRate).toBe(0)
+            expect(wt?.peakLatencyMs).toBeGreaterThanOrEqual(0)
+            expect(wt?.pendingCount).toBe(0)
+            expect(wt?.lastSuccessAt).toBeGreaterThan(0)
+        })
+
+        it('tracks error rate in export', async () => {
+            const w = new MockWorker()
+            workerBus.register('tel-err', w as unknown as Worker)
+
+            // Auto-respond with errors
+            const origPost = w.postMessage.bind(w)
+            w.postMessage = (msg: unknown) => {
+                origPost(msg)
+                const req = msg as { messageId: string }
+                setTimeout(() => w.respondError(req.messageId, 'test error'), 0)
+            }
+
+            try {
+                await workerBus.dispatch('tel-err', 'FAIL', {})
+            } catch {
+                /* expected */
+            }
+            try {
+                await workerBus.dispatch('tel-err', 'FAIL', {})
+            } catch {
+                /* expected */
+            }
+
+            const snapshot = workerBus.exportTelemetry()
+            const wt = snapshot.workers['tel-err']
+            expect(wt?.errorRate).toBe(1)
+            expect(wt?.lastErrorAt).toBeGreaterThan(0)
+        })
     })
 })

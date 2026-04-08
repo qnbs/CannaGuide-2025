@@ -64,6 +64,8 @@ export enum WorkerErrorCode {
     OUT_OF_MEMORY = 'OUT_OF_MEMORY',
     /** Operation was cancelled (e.g. AbortController). */
     CANCELLED = 'CANCELLED',
+    /** Per-worker rate limit exceeded (W-01). */
+    RATE_LIMITED = 'RATE_LIMITED',
 }
 
 /**

@@ -18,7 +18,7 @@ interface GrowBibleExportButtonProps {
 }
 
 export const GrowBibleExportButton: React.FC<GrowBibleExportButtonProps> = memo(({ className }) => {
-    const { t } = useTranslation('common')
+    const { t } = useTranslation()
     const plants = useAppSelector(selectAllPlants)
     const settings = useAppSelector(selectSettings)
     const [isExporting, setIsExporting] = useState(false)
@@ -57,8 +57,8 @@ export const GrowBibleExportButton: React.FC<GrowBibleExportButtonProps> = memo(
             )}
         >
             {isExporting
-                ? t('exporting', 'Exporting...')
-                : t('exportGrowBible', 'Export Grow Bible')}
+                ? t('common.exporting', 'Exporting...')
+                : t('common.exportGrowBible', 'Export Grow Bible')}
         </button>
     )
 })

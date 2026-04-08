@@ -59,7 +59,7 @@ interface StrainComparisonViewProps {
 // ---------------------------------------------------------------------------
 
 export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({ allStrains }) => {
-    const { t } = useTranslation('strains')
+    const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const favoriteIds = useAppSelector(selectFavoriteIds)
     const [selectedStrains, setSelectedStrains] = useState<Strain[]>([])

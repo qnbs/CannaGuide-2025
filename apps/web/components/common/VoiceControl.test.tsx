@@ -113,11 +113,9 @@ vi.mock('@/stores/store', () => ({
 }))
 
 vi.mock('@/stores/selectors', () => ({
-    selectLanguage: (s: {
-        settings: { settings: { general: { language: string } } }
-    }) => s.settings.settings.general.language,
-    selectSettings: (s: { settings: { settings: unknown } }) =>
-        s.settings.settings,
+    selectLanguage: (s: { settings: { settings: { general: { language: string } } } }) =>
+        s.settings.settings.general.language,
+    selectSettings: (s: { settings: { settings: unknown } }) => s.settings.settings,
 }))
 
 vi.mock('@/components/icons/PhosphorIcons', () => ({
@@ -175,7 +173,7 @@ describe('VoiceControl -- rendering', () => {
         render(React.createElement(VC))
         const button = screen.getByRole('button')
         expect(button).toBeInTheDocument()
-        expect(button).toHaveAttribute('aria-label', 'voiceControl.toggle')
+        expect(button).toHaveAttribute('aria-label', 'common.voiceControl.toggle')
     })
 
     it('renders a screen-reader live region', async () => {
@@ -299,7 +297,7 @@ describe('VoiceControl -- error handling', () => {
         main?.fire('error', { error: 'no-speech' })
 
         expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
-            'voiceControl.errors.noSpeech',
+            'common.voiceControl.errors.noSpeech',
         )
         expect(mockSetVoiceListening).toHaveBeenCalledWith(false)
     })
@@ -312,7 +310,7 @@ describe('VoiceControl -- error handling', () => {
         main?.fire('error', { error: 'not-allowed' })
 
         expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
-            'voiceControl.errors.notAllowed',
+            'common.voiceControl.errors.notAllowed',
         )
     })
 
@@ -323,9 +321,7 @@ describe('VoiceControl -- error handling', () => {
 
         main?.fire('error', { error: 'network' })
 
-        expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
-            'voiceControl.errors.generic',
-        )
+        expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith('common.voiceControl.errors.generic')
     })
 })
 
@@ -380,9 +376,7 @@ describe('VoiceControl -- hotword regex (V-03)', () => {
     })
 
     it('matches within a longer phrase', () => {
-        expect(
-            HOTWORD_REGEX.test('ok so hey cannaguide show me plants'),
-        ).toBe(true)
+        expect(HOTWORD_REGEX.test('ok so hey cannaguide show me plants')).toBe(true)
     })
 
     it('matches case-insensitively', () => {

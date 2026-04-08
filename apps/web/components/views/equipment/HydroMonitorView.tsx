@@ -98,6 +98,23 @@ const GaugeCard: React.FC<GaugeProps> = memo(({ label, value, unit, min, max, de
 GaugeCard.displayName = 'GaugeCard'
 
 // ---------------------------------------------------------------------------
+// Hydro system type guard
+// ---------------------------------------------------------------------------
+
+const VALID_SYSTEM_TYPES: readonly string[] = [
+    'DWC',
+    'NFT',
+    'DripSystem',
+    'EbbFlow',
+    'Aeroponics',
+    'Kratky',
+]
+
+function isHydroSystemType(value: string): value is HydroSystemType {
+    return VALID_SYSTEM_TYPES.includes(value)
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -180,7 +197,10 @@ export const HydroMonitorView: React.FC = memo(() => {
 
     const handleSystemChange = useCallback(
         (e: React.ChangeEvent<HTMLSelectElement>) => {
-            dispatch(setSystemType(e.target.value as HydroSystemType))
+            const value = e.target.value
+            if (isHydroSystemType(value)) {
+                dispatch(setSystemType(value))
+            }
         },
         [dispatch],
     )
@@ -201,13 +221,15 @@ export const HydroMonitorView: React.FC = memo(() => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h2 className="text-lg font-bold text-slate-100">
-                        {t('hydroMonitoring.title')}
+                        {t('equipmentView.hydroMonitoring.title')}
                     </h2>
-                    <p className="text-sm text-slate-400">{t('hydroMonitoring.subtitle')}</p>
+                    <p className="text-sm text-slate-400">
+                        {t('equipmentView.hydroMonitoring.subtitle')}
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <label htmlFor="hydro-system-select" className="text-xs text-slate-400">
-                        {t('hydroMonitoring.systemType')}:
+                        {t('equipmentView.hydroMonitoring.systemType')}:
                     </label>
                     <select
                         id="hydro-system-select"
@@ -217,7 +239,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     >
                         {SYSTEM_TYPES.map((st) => (
                             <option key={st} value={st}>
-                                {t(`hydroMonitoring.systems.${st}`)}
+                                {t(`equipmentView.hydroMonitoring.systems.${st}`)}
                             </option>
                         ))}
                     </select>
@@ -227,7 +249,7 @@ export const HydroMonitorView: React.FC = memo(() => {
             {/* Gauge Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <GaugeCard
-                    label={t('hydroMonitoring.gauges.ph')}
+                    label={t('equipmentView.hydroMonitoring.gauges.ph')}
                     value={latestReading?.ph}
                     unit="pH"
                     min={thresholds.phMin}
@@ -235,7 +257,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     decimals={2}
                 />
                 <GaugeCard
-                    label={t('hydroMonitoring.gauges.ec')}
+                    label={t('equipmentView.hydroMonitoring.gauges.ec')}
                     value={latestReading?.ec}
                     unit="mS/cm"
                     min={thresholds.ecMin}
@@ -243,7 +265,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     decimals={2}
                 />
                 <GaugeCard
-                    label={t('hydroMonitoring.gauges.waterTemp')}
+                    label={t('equipmentView.hydroMonitoring.gauges.waterTemp')}
                     value={latestReading?.waterTemp}
                     unit="C"
                     min={thresholds.waterTempMin}
@@ -251,7 +273,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     decimals={1}
                 />
                 <GaugeCard
-                    label={t('hydroMonitoring.gauges.readings')}
+                    label={t('equipmentView.hydroMonitoring.gauges.readings')}
                     value={readings.length > 0 ? readings.length : undefined}
                     unit="#"
                     min={0}
@@ -268,7 +290,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                             className="w-4 h-4 inline mr-1"
                             aria-hidden="true"
                         />
-                        {t('hydroMonitoring.alerts.title')} ({alerts.length})
+                        {t('equipmentView.hydroMonitoring.alerts.title')} ({alerts.length})
                     </h3>
                     {alerts.map((alert) => (
                         <div
@@ -276,19 +298,20 @@ export const HydroMonitorView: React.FC = memo(() => {
                             className="flex items-center justify-between bg-red-900/20 border border-red-700/30 rounded-md px-3 py-2"
                         >
                             <span className="text-xs text-red-300">
-                                {t(`hydroMonitoring.gauges.${alert.metric}`)} ={' '}
+                                {t(`equipmentView.hydroMonitoring.gauges.${alert.metric}`)} ={' '}
                                 {alert.value.toFixed(2)} (
                                 {alert.direction === 'low'
-                                    ? t('hydroMonitoring.alerts.tooLow')
-                                    : t('hydroMonitoring.alerts.tooHigh')}
-                                , {t('hydroMonitoring.alerts.threshold')}: {alert.threshold})
+                                    ? t('equipmentView.hydroMonitoring.alerts.tooLow')
+                                    : t('equipmentView.hydroMonitoring.alerts.tooHigh')}
+                                , {t('equipmentView.hydroMonitoring.alerts.threshold')}:{' '}
+                                {alert.threshold})
                             </span>
                             <button
                                 type="button"
                                 onClick={() => dispatch(dismissAlert(alert.id))}
                                 className="text-xs text-red-400 hover:text-red-300 ml-2"
                             >
-                                {t('hydroMonitoring.alerts.dismiss')}
+                                {t('equipmentView.hydroMonitoring.alerts.dismiss')}
                             </button>
                         </div>
                     ))}
@@ -300,7 +323,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                 <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-semibold text-slate-200">
-                            {t('hydroMonitoring.chart.title')}
+                            {t('equipmentView.hydroMonitoring.chart.title')}
                         </h3>
                         <div className="flex gap-1">
                             {TIME_RANGES.map((tr) => (
@@ -315,7 +338,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                             : 'bg-slate-700 text-slate-400 hover:bg-slate-600',
                                     )}
                                 >
-                                    {t(`hydroMonitoring.chart.${tr}`)}
+                                    {t(`equipmentView.hydroMonitoring.chart.${tr}`)}
                                 </button>
                             ))}
                         </div>
@@ -335,7 +358,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 tick={{ fontSize: 10, fill: '#94a3b8' }}
                                 stroke="#475569"
                                 label={{
-                                    value: t('hydroMonitoring.chart.axisLabelPh'),
+                                    value: t('equipmentView.hydroMonitoring.chart.axisLabelPh'),
                                     angle: -90,
                                     position: 'insideLeft',
                                     style: { fontSize: 10, fill: '#94a3b8' },
@@ -348,7 +371,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 tick={{ fontSize: 10, fill: '#94a3b8' }}
                                 stroke="#475569"
                                 label={{
-                                    value: t('hydroMonitoring.chart.axisLabelEc'),
+                                    value: t('equipmentView.hydroMonitoring.chart.axisLabelEc'),
                                     angle: 90,
                                     position: 'insideRight',
                                     style: { fontSize: 10, fill: '#94a3b8' },
@@ -369,7 +392,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 stroke="#22c55e"
                                 strokeWidth={2}
                                 dot={false}
-                                name={t('hydroMonitoring.chart.legendPh')}
+                                name={t('equipmentView.hydroMonitoring.chart.legendPh')}
                             />
                             <Line
                                 yAxisId="ec"
@@ -378,7 +401,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 stroke="#3b82f6"
                                 strokeWidth={2}
                                 dot={false}
-                                name={t('hydroMonitoring.chart.legendEc')}
+                                name={t('equipmentView.hydroMonitoring.chart.legendEc')}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -393,7 +416,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                             className="w-4 h-4 inline mr-1"
                             aria-hidden="true"
                         />
-                        {t('hydroMonitoring.forecast.title')}
+                        {t('equipmentView.hydroMonitoring.forecast.title')}
                     </h3>
                     <span
                         data-testid="forecast-model-badge"
@@ -405,20 +428,20 @@ export const HydroMonitorView: React.FC = memo(() => {
                         )}
                     >
                         {forecast?.modelBased
-                            ? t('hydroMonitoring.forecast.modelActive')
-                            : t('hydroMonitoring.forecast.basicMode')}
+                            ? t('equipmentView.hydroMonitoring.forecast.modelActive')
+                            : t('equipmentView.hydroMonitoring.forecast.basicMode')}
                     </span>
                 </div>
 
                 {forecastLoading && (
                     <p className="text-xs text-slate-500">
-                        {t('hydroMonitoring.forecast.loading')}
+                        {t('equipmentView.hydroMonitoring.forecast.loading')}
                     </p>
                 )}
 
                 {!forecastLoading && !forecast && (
                     <p className="text-xs text-slate-500">
-                        {t('hydroMonitoring.forecast.insufficientReadings')}
+                        {t('equipmentView.hydroMonitoring.forecast.insufficientReadings')}
                     </p>
                 )}
 
@@ -439,7 +462,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                             </div>
                             <div className="rounded-md bg-slate-900/60 p-2 text-center">
                                 <p className="text-xs text-slate-400">
-                                    {t('hydroMonitoring.gauges.waterTemp')}
+                                    {t('equipmentView.hydroMonitoring.gauges.waterTemp')}
                                 </p>
                                 <p className="text-lg font-bold text-amber-400 tabular-nums">
                                     {forecast.nextHour.temp.toFixed(1)}C
@@ -473,11 +496,13 @@ export const HydroMonitorView: React.FC = memo(() => {
                                         aria-hidden="true"
                                     />
                                 )}
-                                {t(`hydroMonitoring.forecast.trends.${forecast.trend}`)}
+                                {t(
+                                    `equipmentView.hydroMonitoring.forecast.trends.${forecast.trend}`,
+                                )}
                             </span>
                             {forecast.confidence > 0 && (
                                 <span className="text-slate-500">
-                                    {t('hydroMonitoring.forecast.confidence')}:{' '}
+                                    {t('equipmentView.hydroMonitoring.forecast.confidence')}:{' '}
                                     {Math.round(forecast.confidence * 100)}%
                                 </span>
                             )}
@@ -487,7 +512,9 @@ export const HydroMonitorView: React.FC = memo(() => {
                             <div className="mt-2 text-xs text-amber-400">
                                 {forecast.alerts.map((alert) => (
                                     <span key={alert} className="mr-2">
-                                        {t(`hydroMonitoring.forecast.alerts.${alert}`)}
+                                        {t(
+                                            `equipmentView.hydroMonitoring.forecast.alerts.${alert}`,
+                                        )}
                                     </span>
                                 ))}
                             </div>
@@ -499,12 +526,12 @@ export const HydroMonitorView: React.FC = memo(() => {
             {/* Manual Input Form */}
             <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
                 <h3 className="text-sm font-semibold text-slate-200 mb-3">
-                    {t('hydroMonitoring.input.title')}
+                    {t('equipmentView.hydroMonitoring.input.title')}
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
                     <div>
                         <label htmlFor="hydro-ph" className="text-xs text-slate-400 block mb-1">
-                            {t('hydroMonitoring.input.ph')}
+                            {t('equipmentView.hydroMonitoring.input.ph')}
                         </label>
                         <input
                             id="hydro-ph"
@@ -520,7 +547,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     </div>
                     <div>
                         <label htmlFor="hydro-ec" className="text-xs text-slate-400 block mb-1">
-                            {t('hydroMonitoring.input.ec')}
+                            {t('equipmentView.hydroMonitoring.input.ec')}
                         </label>
                         <input
                             id="hydro-ec"
@@ -536,7 +563,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     </div>
                     <div>
                         <label htmlFor="hydro-temp" className="text-xs text-slate-400 block mb-1">
-                            {t('hydroMonitoring.input.waterTemp')}
+                            {t('equipmentView.hydroMonitoring.input.waterTemp')}
                         </label>
                         <input
                             id="hydro-temp"
@@ -558,7 +585,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                         disabled={!formPh || !formEc || !formTemp}
                         className="text-xs bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-1.5 rounded transition-colors"
                     >
-                        {t('hydroMonitoring.input.addReading')}
+                        {t('equipmentView.hydroMonitoring.input.addReading')}
                     </button>
                     {readings.length > 0 && (
                         <button
@@ -569,7 +596,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                             }}
                             className="text-xs text-slate-500 hover:text-red-400 px-2 py-1.5 transition-colors"
                         >
-                            {t('hydroMonitoring.input.clearAll')}
+                            {t('equipmentView.hydroMonitoring.input.clearAll')}
                         </button>
                     )}
                 </div>
@@ -583,7 +610,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     className="flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-slate-100 w-full"
                 >
                     <PhosphorIcons.GearSix className="w-4 h-4" aria-hidden="true" />
-                    {t('hydroMonitoring.thresholds.title')}
+                    {t('equipmentView.hydroMonitoring.thresholds.title')}
                     <span className="ml-auto text-xs text-slate-500">
                         {showThresholdEditor ? '-' : '+'}
                     </span>
@@ -592,12 +619,18 @@ export const HydroMonitorView: React.FC = memo(() => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
                         {(
                             [
-                                ['phMin', t('hydroMonitoring.thresholds.phMin')],
-                                ['phMax', t('hydroMonitoring.thresholds.phMax')],
-                                ['ecMin', t('hydroMonitoring.thresholds.ecMin')],
-                                ['ecMax', t('hydroMonitoring.thresholds.ecMax')],
-                                ['waterTempMin', t('hydroMonitoring.thresholds.tempMin')],
-                                ['waterTempMax', t('hydroMonitoring.thresholds.tempMax')],
+                                ['phMin', t('equipmentView.hydroMonitoring.thresholds.phMin')],
+                                ['phMax', t('equipmentView.hydroMonitoring.thresholds.phMax')],
+                                ['ecMin', t('equipmentView.hydroMonitoring.thresholds.ecMin')],
+                                ['ecMax', t('equipmentView.hydroMonitoring.thresholds.ecMax')],
+                                [
+                                    'waterTempMin',
+                                    t('equipmentView.hydroMonitoring.thresholds.tempMin'),
+                                ],
+                                [
+                                    'waterTempMax',
+                                    t('equipmentView.hydroMonitoring.thresholds.tempMax'),
+                                ],
                             ] as [keyof HydroThresholds, string][]
                         ).map(([field, label]) => (
                             <div key={field}>
@@ -625,41 +658,41 @@ export const HydroMonitorView: React.FC = memo(() => {
             <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
                 <h3 className="text-sm font-semibold text-slate-200 mb-3">
                     <PhosphorIcons.Flask className="w-4 h-4 inline mr-1" aria-hidden="true" />
-                    {t('hydroMonitoring.dosing.title')}
+                    {t('equipmentView.hydroMonitoring.dosing.title')}
                 </h3>
                 <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                         <thead>
                             <tr className="border-b border-slate-700">
                                 <th className="text-left py-1.5 text-slate-400 font-medium">
-                                    {t('hydroMonitoring.dosing.stage')}
+                                    {t('equipmentView.hydroMonitoring.dosing.stage')}
                                 </th>
                                 <th className="text-center py-1.5 text-slate-400 font-medium">
-                                    {t('hydroMonitoring.dosing.ecColumn')}
+                                    {t('equipmentView.hydroMonitoring.dosing.ecColumn')}
                                 </th>
                                 <th className="text-center py-1.5 text-slate-400 font-medium">
-                                    {t('hydroMonitoring.dosing.phColumn')}
+                                    {t('equipmentView.hydroMonitoring.dosing.phColumn')}
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr className="border-b border-slate-800">
                                 <td className="py-1.5 text-slate-300">
-                                    {t('hydroMonitoring.dosing.seedling')}
+                                    {t('equipmentView.hydroMonitoring.dosing.seedling')}
                                 </td>
                                 <td className="text-center text-slate-400">0.3 - 0.6</td>
                                 <td className="text-center text-slate-400">5.5 - 6.0</td>
                             </tr>
                             <tr className="border-b border-slate-800">
                                 <td className="py-1.5 text-slate-300">
-                                    {t('hydroMonitoring.dosing.vegetative')}
+                                    {t('equipmentView.hydroMonitoring.dosing.vegetative')}
                                 </td>
                                 <td className="text-center text-slate-400">0.8 - 1.6</td>
                                 <td className="text-center text-slate-400">5.5 - 6.0</td>
                             </tr>
                             <tr>
                                 <td className="py-1.5 text-slate-300">
-                                    {t('hydroMonitoring.dosing.flowering')}
+                                    {t('equipmentView.hydroMonitoring.dosing.flowering')}
                                 </td>
                                 <td className="text-center text-slate-400">1.4 - 2.4</td>
                                 <td className="text-center text-slate-400">5.5 - 6.0</td>

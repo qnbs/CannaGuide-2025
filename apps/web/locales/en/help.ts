@@ -620,12 +620,27 @@ export const helpView = {
             calculators: {
                 title: 'Precision Calculators',
                 content:
-                    'Use a suite of calculators for <strong>Ventilation</strong>, <strong>Lighting (PPFD/DLI)</strong>, <strong>Electricity Cost</strong>, <strong>Nutrient Mixing</strong>, and more to optimize every aspect of your grow.',
+                    'Use a suite of calculators for <strong>Ventilation</strong>, <strong>Lighting (PPFD/DLI)</strong>, <strong>Electricity Cost</strong>, <strong>Nutrient Mixing</strong>, <strong>CO2 Enrichment</strong>, <strong>Humidity Deficit (Buck SVP)</strong>, and <strong>Light Hanging Height</strong> to optimize every aspect of your grow. All calculators use Zod-validated formulas for precise results.',
             },
             shops: {
                 title: 'Grow Shops & Seed Banks',
                 content:
-                    'Browse curated, region-specific lists of recommended Grow Shops and Seed Banks, complete with ratings, strengths, and shipping info.',
+                    'Browse curated, region-specific lists of recommended Grow Shops and Seed Banks, complete with ratings, strengths, and shipping info. Seed pricing uses deterministic mock data from 5 hardcoded seedbanks.',
+            },
+            hydroMonitor: {
+                title: 'Hydro Monitor Dashboard',
+                content:
+                    'Monitor your hydroponic system in real-time with gauge cards for pH, EC, and temperature. View trends via Recharts charts, log manual readings, track alerts when values breach thresholds, and access a dosing reference table. An ONNX-powered forecast panel predicts future pH/EC values using a moving-average fallback when the model is unavailable.',
+            },
+            growTech: {
+                title: 'Grow Tech 2026',
+                content:
+                    'Explore 8 cutting-edge cannabis cultivation technologies for 2026: Dynamic LED Lighting, Sensors & IoT, AI Automation, Digital Twins, Hydroponics & Aeroponics, Tissue Culture, Smart Grow Boxes, and Sustainability. Each section includes key benefits, practical tips, cross-references to genetic trends, and an AI analysis feature.',
+            },
+            iotDashboard: {
+                title: 'IoT Sensor Dashboard',
+                content:
+                    'Connect ESP32 sensors for real-time environment monitoring. View live temperature, humidity, CO2, and soil moisture readings. Configure device addresses and polling intervals in IoT Settings.',
             },
         },
         knowledge: {
@@ -656,6 +671,26 @@ export const helpView = {
                 title: 'Grow Tech 2026',
                 content:
                     'Explore the latest cannabis cultivation technologies for 2026 -- from dynamic LED spectra and AI-powered controllers to digital twins, aeroponics, tissue culture, and smart grow boxes. Each technology section includes key benefits, practical tips, and integration points with CannaGuide features already available in the app.',
+            },
+            diseaseAtlas: {
+                title: 'Disease Atlas',
+                content:
+                    'A diagnostic reference of 22 common cannabis diseases, deficiencies, toxicities, environmental stressors, and pests. Each entry includes symptoms, causes, prevention strategies, and treatment options. Use it alongside the AI Photo Diagnosis for comprehensive plant health management.',
+            },
+            learningPaths: {
+                title: 'Learning Paths',
+                content:
+                    'Follow 5 structured step-by-step education programs covering the full grow cycle -- from seed to harvest. Track your progress through each learning path with Redux-persisted checkpoints. Ideal for beginners wanting a guided introduction to cannabis cultivation.',
+            },
+            calculatorHub: {
+                title: 'Calculator Hub',
+                content:
+                    'Access VPD calculation, Nutrient Ratio analysis, and pH/EC reference tools in a dedicated calculator sub-view. Perfect for quick calculations without leaving the Knowledge section.',
+            },
+            lexikon: {
+                title: 'Knowledge Glossary',
+                content:
+                    'Search through 83 grower terms organized in 6 categories: General, Cannabinoid, Terpene, Flavonoid, Nutrient, and Disease. Each term includes a clear definition and is available in all 5 languages.',
             },
         },
         settings: {

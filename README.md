@@ -191,13 +191,12 @@ AI Mentor chat with RAG (retrieval-augmented generation) pulling context from th
 
 ### Help
 
-Comprehensive 5-tab help system with 198 total help items:
+Comprehensive 4-tab help system with 138 total help items:
 
-- **User Manual** (6 sections) -- step-by-step app usage guides covering all major features
+- **User Manual** (7 sections) -- step-by-step app usage guides covering all major features including Hydro Monitor, Grow Tech, IoT Dashboard, Disease Atlas, Learning Paths, Calculator Hub, and Lexikon
 - **Searchable Lexicon** (83 terms) -- grower glossary across 6 categories: General/Techniques, Cannabinoids (THC, CBD, CBG, CBN, CBC, THCV, CBDV), Terpenes (10), Flavonoids (7), Nutrients (16 macro/micro), Diseases/Problems (13)
 - **Visual Guides** (4) -- interactive illustrated tutorials for Topping, LST (Low Stress Training), Defoliation, and Harvesting techniques
 - **FAQ** (45 items) -- curated Q&A organized by plant stage (Seedling through Finished), covering environment, nutrients, techniques, harvest, local AI, cloud sync, vision classification, and advanced topics (aeroponics, tissue culture, CO2 enrichment)
-- **Screenshot Gallery** (60) -- annotated app interface screenshots for feature discovery and onboarding
 
 All content available in 5 languages (EN/DE/ES/FR/NL). Keyboard-navigable tab interface with responsive card layout.
 
@@ -626,13 +625,12 @@ KI-Mentor-Chat mit RAG (Retrieval-Augmented Generation) zieht Kontext aus den Gr
 
 ### Hilfe
 
-Umfassendes 5-Tab-Hilfesystem mit 198 Hilfe-Eintraegen insgesamt:
+Umfassendes 4-Tab-Hilfesystem mit 138 Hilfe-Eintraegen insgesamt:
 
-- **Benutzerhandbuch** (6 Sektionen) -- Schritt-fuer-Schritt-Anleitungen fuer alle wichtigen Funktionen
+- **Benutzerhandbuch** (7 Sektionen) -- Schritt-fuer-Schritt-Anleitungen fuer alle wichtigen Funktionen inkl. Hydro Monitor, Grow Tech, IoT Dashboard, Krankheitsatlas, Lernpfade, Rechner-Hub und Lexikon
 - **Durchsuchbares Lexikon** (83 Begriffe) -- Grower-Glossar in 6 Kategorien: Allgemein/Techniken, Cannabinoide (THC, CBD, CBG, CBN, CBC, THCV, CBDV), Terpene (10), Flavonoide (7), Naehrstoffe (16 Makro-/Mikro-), Krankheiten/Probleme (13)
 - **Visuelle Guides** (4) -- interaktive illustrierte Tutorials fuer Topping, LST (Low Stress Training), Entlaubung und Ernte-Techniken
 - **FAQ** (45 Eintraege) -- kuratierte Fragen und Antworten nach Pflanzenstadium (Saemling bis Fertig), zu Umgebung, Naehrstoffen, Techniken, Ernte, lokaler KI, Cloud-Sync, Bildklassifikation und fortgeschrittenen Themen (Aeroponik, Gewebekultur, CO2-Anreicherung)
-- **Screenshot-Galerie** (60) -- annotierte App-Screenshots zur Feature-Erkundung und Einarbeitung
 
 Alle Inhalte in 5 Sprachen verfuegbar (EN/DE/ES/FR/NL). Tastatur-navigierbares Tab-Interface mit responsivem Karten-Layout.
 

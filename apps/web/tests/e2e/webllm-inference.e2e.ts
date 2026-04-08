@@ -56,26 +56,17 @@ test.describe('WebLLM Local AI Critical Path', () => {
         await page.locator('[data-view-id="settings"]').first().click()
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
-        // Navigate to AI tab
-        const aiTab = page.locator('[data-tab-id="ai"]').or(page.getByRole('tab', { name: /AI/i }))
-        const hasAiTab = await aiTab
-            .first()
-            .isVisible()
-            .catch(() => false)
-        if (hasAiTab) {
-            await aiTab.first().click({ timeout: 15_000 })
-            await page.waitForTimeout(1_000)
-        }
+        // Wait for the lazy-loaded SettingsView to render (Suspense fallback clears)
+        const aiTab = page.locator('[data-tab-id="ai"]')
+        await expect(aiTab).toBeVisible({ timeout: 15_000 })
+        await aiTab.click()
+        await page.waitForTimeout(1_000)
 
-        // Look for Local AI / Offline Cache section (data-testid primary, text fallback)
+        // Wait for Local AI / Offline Cache section to render
         const localAiSection = page
             .locator('[data-testid="local-ai-offline-cache-section"]')
             .or(page.getByText(/Local AI|Offline Cache|On-Device/i))
-        const hasSection = await localAiSection
-            .first()
-            .isVisible()
-            .catch(() => false)
-        expect(hasSection).toBeTruthy()
+        await expect(localAiSection.first()).toBeVisible({ timeout: 15_000 })
 
         await expectNoCrashPatterns(page)
         tracker.detach()

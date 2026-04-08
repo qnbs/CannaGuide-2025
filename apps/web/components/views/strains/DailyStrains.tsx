@@ -306,7 +306,7 @@ export const DailyStrains: React.FC = () => {
                 </h2>
                 <p className="text-sm text-slate-400 mt-1">
                     {t('strainsView.dailyStrains.subtitle', {
-                        count: feed?.stats.existingCatalogSize ?? 778,
+                        count: feed?.stats.existingCatalogSize ?? 776,
                     })}
                 </p>
             </div>

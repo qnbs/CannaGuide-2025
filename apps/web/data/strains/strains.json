@@ -11010,47 +11010,6 @@
         ]
     },
     {
-        "id": "gastropop",
-        "name": "Gastropop",
-        "type": "Hybrid",
-        "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
-        "genetics": "Apples and Bananas x Grape Gasoline",
-        "floweringType": "Photoperiod",
-        "thcRange": "25-30%",
-        "cbdRange": "<1%",
-        "floweringTimeRange": "8-10",
-        "description": "A sativa-dominant hybrid with a complex flavor profile of sweet fruit, grape, and diesel. GastroPop provides an uplifting, energetic, and euphoric high that is perfect for social situations and creative endeavors.",
-        "thc": 27.5,
-        "cbd": 1,
-        "floweringTime": 9,
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium",
-            "yieldDetails": {
-                "indoor": "500-600 g/m²",
-                "outdoor": "600-700 g/Pflanze"
-            },
-            "heightDetails": {
-                "indoor": "120-180 cm",
-                "outdoor": "150-200 cm"
-            }
-        },
-        "aromas": ["Sweet", "Fruity", "Grape", "Diesel"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
-        "dataProvenance": [
-            {
-                "provider": "local",
-                "fetchedAt": "2026-04-03T22:50:37.212Z",
-                "externalId": "gastropop",
-                "labVerified": false,
-                "confidence": 0.5,
-                "sourceUrl": null,
-                "dataVersion": "2026.1"
-            }
-        ]
-    },
-    {
         "id": "gelato",
         "name": "Gelato",
         "type": "Hybrid",
@@ -26872,30 +26831,6 @@
                 "provider": "local",
                 "fetchedAt": "2026-04-03T22:50:37.212Z",
                 "externalId": "the-og",
-                "labVerified": false,
-                "confidence": 0.5,
-                "sourceUrl": null,
-                "dataVersion": "2026.1"
-            }
-        ]
-    },
-    {
-        "id": "the-original",
-        "name": "The Original",
-        "type": "Hybrid",
-        "typeDetails": "Indica 85% / Sativa 15%",
-        "genetics": "OG Kush",
-        "floweringType": "Photoperiod",
-        "thc": 22,
-        "cbd": 1,
-        "floweringTime": 8.5,
-        "aromas": ["Earthy", "Sweet", "Citrus", "Herbal"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
-        "dataProvenance": [
-            {
-                "provider": "local",
-                "fetchedAt": "2026-04-03T22:50:37.212Z",
-                "externalId": "the-original",
                 "labVerified": false,
                 "confidence": 0.5,
                 "sourceUrl": null,

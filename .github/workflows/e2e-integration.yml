@@ -5,13 +5,11 @@ on:
         branches: [main]
         paths:
             - 'docker/iot-mocks/**'
-            - 'docker/esp32-mock/**'
             - '.github/workflows/e2e-integration.yml'
     pull_request:
         branches: [main]
         paths:
             - 'docker/iot-mocks/**'
-            - 'docker/esp32-mock/**'
             - '.github/workflows/e2e-integration.yml'
     workflow_dispatch:
 

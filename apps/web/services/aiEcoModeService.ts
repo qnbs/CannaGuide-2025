@@ -4,7 +4,7 @@
 // Auto-detects low memory (<4 GB) or low battery (<25%, not charging) and
 // switches the AI mode to 'eco', which restricts inference to the small
 // 0.5B text model + rule-based heuristics. This saves battery and prevents
-// OOM on mobile / Capacitor / low-end hardware.
+// OOM on mobile / low-end hardware.
 // ---------------------------------------------------------------------------
 
 // ── Module state ──────────────────────────────────────────
@@ -40,6 +40,7 @@ export const registerModeAccessors = (
  */
 export const detectEcoCondition = async (): Promise<boolean> => {
     if (typeof navigator === 'undefined') return false
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrowing navigator for non-standard APIs
     const nav = navigator as unknown as {
         deviceMemory?: number
         getBattery?: () => Promise<{ level: number; charging: boolean }>

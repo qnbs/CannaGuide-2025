@@ -7,8 +7,6 @@ paths-ignore:
     - '**/dist/**'
     - '**/coverage/**'
     - '**/test-results/**'
-    - '**/src-tauri/target/**'
-    - '**/apps/desktop/target/**'
     - '**/*.test.ts'
     - '**/*.test.tsx'
     - '**/tests/mocks/**'

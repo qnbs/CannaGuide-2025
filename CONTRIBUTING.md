@@ -343,8 +343,6 @@ When removing or replacing a public API, component, or feature, follow this proc
 3. Create a tag: `git tag v1.x.0 && git push --tags`.
 4. GitHub Actions automatically:
     - Deploys to GitHub Pages and Netlify.
-    - Builds Tauri desktop apps (Windows/macOS/Linux).
-    - Builds Docker images.
 5. Create a GitHub Release with the CHANGELOG excerpt.
 
 ---

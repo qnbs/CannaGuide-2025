@@ -793,8 +793,7 @@ export const settingsView = {
             phase3Desc:
                 'Primaire iteratie en verfijning in GitHub Codespaces met VS Code Copilot aangedreven door Claude Opus 4.6 -- het merendeel van functieontwikkeling, beveiligingsverharding, testen en CI/CD-pipelinewerk.',
             phase4Title: 'Implementatie & Distributie',
-            phase4Desc:
-                'Productie-implementatie naar GitHub Pages, Netlify PR-previews, Docker-containers, Tauri desktop en Capacitor mobiele builds.',
+            phase4Desc: 'Productie-implementatie naar GitHub Pages en Netlify PR-previews.',
             secondaryNote: 'Kleine bijdragen door GPT-4 Mini en GPT-5.3 Codex.',
         },
         disclaimer: {
@@ -904,7 +903,7 @@ export const settingsView = {
                 <li><strong>Prototyping</strong>: Eerste app-opzet en functieset gebouwd met <strong>Google Gemini 2.5 Pro & 3.1 Pro</strong> in <strong>Google AI Studio</strong>, vervolgens geexporteerd naar GitHub.</li>
                 <li><strong>Evaluatie & Advies</strong>: Continue architectuurbeoordeling, beveiligingsadvies en kwaliteitsbegeleiding door <strong>xAI Grok 4.20</strong> gedurende het hele proces.</li>
                 <li><strong>Kernontwikkeling</strong>: Primaire iteratie in <strong>GitHub Codespaces</strong> met <strong>VS Code Copilot aangedreven door Claude Opus 4.6</strong> -- het merendeel van functieverfijning, beveiligingsverharding, 643+ tests, CI/CD en de lokale AI-stack.</li>
-                <li><strong>Implementatie</strong>: Productie via GitHub Pages, Netlify, Docker, Tauri v2 en Capacitor.</li>
+                <li><strong>Implementatie</strong>: Productie via GitHub Pages en Netlify.</li>
             </ol>
             <p><em>Kleine bijdragen door GPT-4 Mini en GPT-5.3 Codex.</em></p>
             <p>Dit project is volledig open source. Duik in de code, fork het project of draag bij op GitHub.</p>

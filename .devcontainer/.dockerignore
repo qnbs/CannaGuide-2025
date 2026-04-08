@@ -6,6 +6,3 @@ coverage
 dist
 test-results
 .turbo
-.lighthouseci
-playwright-report
-src-tauri/target

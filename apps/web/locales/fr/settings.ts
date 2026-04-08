@@ -636,7 +636,8 @@ export const settingsView = {
                 'Ceci supprimera toutes les modifications distantes et enverra votre etat local vers le cloud. Cette action est irreversible.',
             useCloudConfirm:
                 'Ceci supprimera toutes les modifications locales et remplacera vos donnees par la version cloud. Cette action est irreversible.',
-            migrating: 'Migration de l ancien format de synchronisation -- l application va se recharger...',
+            migrating:
+                'Migration de l ancien format de synchronisation -- l application va se recharger...',
         },
         replayOnboarding: 'Revoir le tutoriel',
         replayOnboardingConfirm:
@@ -904,8 +905,8 @@ export const settingsView = {
             <h4>Installation & Configuration</h4>
             <ol>
                 <li>Cloner le depot : <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
-                <li>Installer les dependances : <code>npm install</code></li>
-            <li>Lancer le serveur de developpement : <code>npm run dev</code></li>
+                <li>Installer les dependances : <code>pnpm install</code></li>
+            <li>Lancer le serveur de developpement : <code>pnpm dev</code></li>
             <li>Ouvrir Parametres -> General & Interface -> Securite IA (Multi-Model BYOK) et enregistrer votre cle API dans l'application.</li>
             </ol>
         `,

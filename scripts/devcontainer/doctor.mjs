@@ -107,7 +107,7 @@ if (failed.length > 0) {
         console.error(
             '  unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL',
         )
-        console.error('Then re-run: npm run devcontainer:doctor')
+        console.error('Then re-run: pnpm run devcontainer:doctor')
     }
     console.error(`\nDoctor failed: ${failed.length} check(s) need attention.`)
     process.exit(1)

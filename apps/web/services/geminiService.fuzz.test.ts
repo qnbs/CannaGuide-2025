@@ -6,7 +6,7 @@ import { isTopicRelevant } from '@/services/geminiService'
 // Property-Based Fuzz Tests -- AI prompt sanitisation & topic guard
 //
 // Uses fast-check to generate adversarial inputs and verify invariants.
-// Run via: npm run test:fuzz (vitest run fuzz)
+// Run via: pnpm run test:fuzz (vitest run fuzz)
 // ---------------------------------------------------------------------------
 
 describe('sanitizeForPrompt (fuzz)', () => {

@@ -362,7 +362,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 | Job                | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
 | Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1760 tests, production build |
-| 🛡 Security        | npm audit (critical), trojan-source scan, Gitleaks secret scan              |
+| 🛡 Security        | pnpm audit (critical), trojan-source scan, Gitleaks secret scan             |
 | 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
 | 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |
 | ✅ CI Status       | Gate job -- all must pass                                                   |
@@ -785,7 +785,7 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 | Job                | Beschreibung                                                                 |
 | ------------------ | ---------------------------------------------------------------------------- |
 | Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1760 Tests, Produktions-Build |
-| 🛡 Security        | npm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan               |
+| 🛡 Security        | pnpm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan              |
 | 🎭 E2E Tests       | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🌡 IoT-Integration | ESP32-Mock Healthcheck, Sensor-Endpunkt-Validierung                          |
 | ✅ CI Status       | Gate-Job -- alle muessen bestehen                                            |

@@ -3,5 +3,5 @@
 # Compiles JavaScript fuzz targets using Jazzer.js
 
 cd "$SRC/cannaguide"
-npm ci --ignore-scripts
+corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 compile_javascript_fuzzer cannaguide .clusterfuzzlite/fuzz_url_service.js fuzz_url_service

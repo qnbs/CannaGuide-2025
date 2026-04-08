@@ -551,7 +551,8 @@ export const settingsView = {
         importGrow: 'Importar Cultivo',
         growImportDesc: 'Importar un archivo de cultivo exportado previamente (formato v2.0).',
         growImportSuccess: 'Cultivo "{{name}}" importado exitosamente.',
-        growImportError: 'Importacion fallida. Asegurate de que sea un archivo de exportacion de cultivo valido (v2.0).',
+        growImportError:
+            'Importacion fallida. Asegurate de que sea un archivo de exportacion de cultivo valido (v2.0).',
         totalUsage: 'Uso Total',
         lastBackup: 'Ultima Copia de Seguridad',
         noBackup: 'Aun no se ha creado ninguna copia de seguridad',
@@ -635,7 +636,8 @@ export const settingsView = {
                 'Esto descartara todos los cambios remotos y subira tu estado local a la nube. No se puede deshacer.',
             useCloudConfirm:
                 'Esto descartara todos los cambios locales y reemplazara tus datos con la version de la nube. No se puede deshacer.',
-            migrating: 'Migrando formato de sincronizacion antiguo -- la aplicacion se recargara...',
+            migrating:
+                'Migrando formato de sincronizacion antiguo -- la aplicacion se recargara...',
         },
         replayOnboarding: 'Mostrar Tutorial de Nuevo',
         replayOnboardingConfirm:
@@ -900,8 +902,8 @@ export const settingsView = {
             <h4>Instalacion y Configuracion</h4>
             <ol>
                 <li>Clona el repositorio: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
-                <li>Instala las dependencias: <code>npm install</code></li>
-            <li>Ejecuta el servidor de desarrollo: <code>npm run dev</code></li>
+                <li>Instala las dependencias: <code>pnpm install</code></li>
+            <li>Ejecuta el servidor de desarrollo: <code>pnpm dev</code></li>
             <li>Abre Configuracion -> General e Interfaz -> Seguridad AI (Multi-Modelo BYOK) y guarda tu clave API en la aplicacion.</li>
             </ol>
         `,

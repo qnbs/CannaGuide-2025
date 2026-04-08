@@ -240,8 +240,8 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
-- **Visual Regression:** `tests/e2e/visual-regression.e2e.ts` uses `expect(page).toHaveScreenshot()` for Plants, Strains, Knowledge views across themes. Snapshots stored in `tests/e2e/__screenshots__/`. Generate/update baselines: `npx playwright test --grep "Visual Regression" --update-snapshots`. CI runs visual regression with `--update-snapshots` (non-blocking); snapshots uploaded as artifacts for diff review.
-- **Mutation Testing:** Stryker Mutator (`stryker.conf.json`) targets `apps/web/stores/slices/**/*.ts`. Run: `npm run test:mutate`. Break threshold: 50% mutation score. Reports in `reports/mutation/`.
+- **Visual Regression:** `tests/e2e/visual-regression.e2e.ts` uses `expect(page).toHaveScreenshot()` for Plants, Strains, Knowledge views across themes. Snapshots stored in `tests/e2e/__screenshots__/`. Generate/update baselines: `pnpm exec playwright test --grep "Visual Regression" --update-snapshots`. CI runs visual regression with `--update-snapshots` (non-blocking); snapshots uploaded as artifacts for diff review.
+- **Mutation Testing:** Stryker Mutator (`stryker.conf.json`) targets `apps/web/stores/slices/**/*.ts`. Run: `pnpm run test:mutate`. Break threshold: 50% mutation score. Reports in `reports/mutation/`.
 
 ### Git
 
@@ -253,7 +253,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - Body lines **max 100 characters** -- wrap longer lines
     - **Blank line required** between subject and body
     - Subject must not end with a period
-- **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `npm run pr:push` (branch -> PR -> auto-merge).
+- **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `pnpm run pr:push` (branch -> PR -> auto-merge).
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
 
@@ -350,9 +350,9 @@ Switch to Agent Mode and execute the approved plan:
 1. **Create a todo list** (`manage_todo_list`) with all implementation steps.
 2. **Implement changes** in dependency order, marking todos in-progress/completed as you go.
 3. **Run validation** after each logical group of changes:
-    - `npm run -w @cannaguide/web typecheck` (must be clean)
+    - `pnpm --filter @cannaguide/web typecheck` (must be clean)
     - `pnpm --filter @cannaguide/web test:run` (must pass, 0 failures)
-    - `npm run -w @cannaguide/web build` (must succeed)
+    - `pnpm --filter @cannaguide/web build` (must succeed)
 4. **Fix any errors** immediately before proceeding to the next step.
 
 ### Phase 3 -- Documentation Update (Agent Mode)
@@ -403,7 +403,7 @@ After implementation is complete with all validations passing, update **all affe
 - **Never skip Phase 3.** Every implementation must update all affected docs.
 - **Atomic sessions:** Each plan execution must leave the repo in a clean, buildable, documented state.
 - **Handoff continuity:** The `next-session-handoff.md` must always be current so any future session can resume without context loss.
-- **Metrics must be verified:** Never copy old metrics -- always re-run `npm test`, `typecheck`, `build` and report actual counts.
+- **Metrics must be verified:** Never copy old metrics -- always re-run `pnpm test`, `typecheck`, `build` and report actual counts.
 - **Follow-up executions are binding:** Plans written into `next-session-handoff.md` define the scope for subsequent sessions. Deviations require a new plan-mode prompt.
 
 ---

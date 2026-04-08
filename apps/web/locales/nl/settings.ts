@@ -539,7 +539,8 @@ export const settingsView = {
         importGrow: 'Kweek importeren',
         growImportDesc: 'Een eerder geexporteerd kweekbestand importeren (v2.0-formaat).',
         growImportSuccess: 'Kweek "{{name}}" succesvol geimporteerd.',
-        growImportError: 'Import mislukt. Controleer of het een geldig kweek-exportbestand (v2.0) is.',
+        growImportError:
+            'Import mislukt. Controleer of het een geldig kweek-exportbestand (v2.0) is.',
         totalUsage: 'Totaal gebruik',
         lastBackup: 'Laatste back-up',
         noBackup: 'Nog geen back-up gemaakt',
@@ -884,8 +885,8 @@ export const settingsView = {
             <h4>Installatie & Setup</h4>
             <ol>
                 <li>Kloon de repository: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
-                <li>Installeer afhankelijkheden: <code>npm install</code></li>
-            <li>Start de ontwikkelserver: <code>npm run dev</code></li>
+                <li>Installeer afhankelijkheden: <code>pnpm install</code></li>
+            <li>Start de ontwikkelserver: <code>pnpm dev</code></li>
             <li>Open Instellingen -> Algemeen & UI -> AI-beveiliging (Multi-Model BYOK) en sla je API-sleutel op in de app.</li>
             </ol>
         `,

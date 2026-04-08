@@ -1,7 +1,7 @@
 /**
  * AUTO-GENERATED SCREENSHOT WALKTHROUGH
  * Captures every main screen of CannaGuide in desktop and mobile viewports.
- * Run: npx playwright test screenshots.e2e.ts --project=chromium
+ * Run: pnpm exec playwright test screenshots.e2e.ts --project=chromium
  */
 import { test, Page } from '@playwright/test'
 

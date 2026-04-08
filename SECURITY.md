@@ -65,7 +65,7 @@ These policies were adopted on 2026-03-24 in response to the [Trivy supply-chain
 
 ### Removed Tools
 
-- **Trivy** (`aquasecurity/trivy-action`): Removed from all workflows on 2026-03-24 due to the supply-chain attack ([GHSA-69fq-xp46-6x23](https://github.com/advisories/GHSA-69fq-xp46-6x23)). This was the second compromise of the Aqua Security service account within one month, rendering the entire Trivy ecosystem unreliable. Replaced by **Grype** (`anchore/scan-action`) for container image and filesystem scanning in `docker.yml` and `security-full.yml`. Remaining filesystem coverage is provided by CodeQL, Snyk, Semgrep, Gitleaks, and `npm audit`.
+- **Trivy** (`aquasecurity/trivy-action`): Removed from all workflows on 2026-03-24 due to the supply-chain attack ([GHSA-69fq-xp46-6x23](https://github.com/advisories/GHSA-69fq-xp46-6x23)). This was the second compromise of the Aqua Security service account within one month, rendering the entire Trivy ecosystem unreliable. Replaced by **Grype** (`anchore/scan-action`) for container image and filesystem scanning in `docker.yml` and `security-full.yml`. Remaining filesystem coverage is provided by CodeQL, Snyk, Semgrep, Gitleaks, and `pnpm audit`.
 
 ### Actions Allowlist
 

@@ -545,7 +545,8 @@ export const settingsView = {
         importGrow: 'Grow importieren',
         growImportDesc: 'Eine zuvor exportierte Grow-Datei importieren (v2.0-Format).',
         growImportSuccess: 'Grow "{{name}}" erfolgreich importiert.',
-        growImportError: 'Import fehlgeschlagen. Bitte stellen Sie sicher, dass es sich um eine gueltige Grow-Exportdatei (v2.0) handelt.',
+        growImportError:
+            'Import fehlgeschlagen. Bitte stellen Sie sicher, dass es sich um eine gueltige Grow-Exportdatei (v2.0) handelt.',
         totalUsage: 'Gesamtnutzung',
         lastBackup: 'Letztes Backup',
         noBackup: 'Noch kein Backup erstellt',
@@ -887,8 +888,8 @@ export const settingsView = {
             <h4>Installation & Einrichtung</h4>
             <ol>
                 <li>Repository klonen: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
-                <li>Abhängigkeiten installieren: <code>npm install</code></li>
-            <li>Entwicklungsserver starten: <code>npm run dev</code></li>
+                <li>Abhängigkeiten installieren: <code>pnpm install</code></li>
+            <li>Entwicklungsserver starten: <code>pnpm dev</code></li>
             <li>Öffnen Sie Einstellungen → Allgemein & UI → KI-Sicherheit (Multi-Model BYOK) und speichern Sie den API-Key direkt in der App.</li>
             </ol>
         `,

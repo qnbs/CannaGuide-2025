@@ -870,8 +870,8 @@ export const settingsView = {
             <h4>Installation & Setup</h4>
             <ol>
                 <li>Clone the repository: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
-                <li>Install dependencies: <code>npm install</code></li>
-            <li>Run the development server: <code>npm run dev</code></li>
+                <li>Install dependencies: <code>pnpm install</code></li>
+            <li>Run the development server: <code>pnpm dev</code></li>
             <li>Open Settings → General & UI → AI Security (Multi-Model BYOK) and save your API key in-app.</li>
             </ol>
         `,

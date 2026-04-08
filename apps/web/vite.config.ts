@@ -140,9 +140,10 @@ export default defineConfig({
             },
             devOptions: { enabled: false },
         }),
-        // Bundle analyzer – run  ANALYZE=1 npm run build  to generate stats.html
+        // Bundle analyzer -- run  ANALYZE=1 pnpm run build  to generate stats.html
         ...(process.env.ANALYZE
             ? [
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- rollup-plugin-visualizer returns compatible PluginOption
                   visualizer({
                       filename: 'dist/stats.html',
                       open: true,

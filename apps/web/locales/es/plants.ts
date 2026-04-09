@@ -109,6 +109,7 @@ export const plantsView = {
         localOnlyWarning: 'Descarga desactivada en modo sin conexion.',
         error: 'Escaneo fallido. Por favor intentalo de nuevo.',
         clearImage: 'Eliminar imagen',
+        capturePhoto: 'Capturar foto con camara',
     },
     nutrientWizard: {
         tabAiScanner: 'Escaner IA',

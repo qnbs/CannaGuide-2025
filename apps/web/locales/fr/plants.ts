@@ -109,6 +109,7 @@ export const plantsView = {
         localOnlyWarning: 'Telechargement desactive en mode hors ligne.',
         error: 'Echec du scan. Veuillez reessayer.',
         clearImage: 'Supprimer image',
+        capturePhoto: 'Prendre une photo avec la camera',
     },
     nutrientWizard: {
         tabAiScanner: 'Scanner IA',

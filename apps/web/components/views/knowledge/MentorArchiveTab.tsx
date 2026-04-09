@@ -238,7 +238,7 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(
                                                         <PhosphorIcons.PencilSimple className="w-4 h-4" />
                                                     </Button>
                                                     <Button
-                                                        size="sm"
+                                                        size="icon"
                                                         variant="danger"
                                                         onClick={() => handleDelete(res.id)}
                                                         aria-label={t('common.delete')}

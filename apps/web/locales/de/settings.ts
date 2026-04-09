@@ -179,6 +179,7 @@ export const settingsView = {
                 'Ausgewogenes Modell fuer mittlere GPUs. Gute mehrsprachige Unterstuetzung.',
             model_3B_desc: 'Hohe Qualitaet beim Reasoning. Beste Wahl fuer leistungsfaehige GPUs.',
             model_4B_desc: 'Starkes Reasoning und Instruktionsbefolgung. Groesste Option.',
+            webGpu: 'WebGPU',
         },
         // Embedding & Semantic RAG
         embeddingModelReady: 'Embedding-Modell (MiniLM) ist bereit für semantische Suche.',

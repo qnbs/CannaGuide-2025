@@ -177,10 +177,10 @@ export const settingsView = {
             loading: 'Cargando modelo...',
             model_05B_desc:
                 'Modelo ultraligero para cualquier dispositivo. Rapido pero calidad limitada.',
-            model_15B_desc:
-                'Modelo equilibrado para GPUs de gama media. Buen soporte multilingue.',
+            model_15B_desc: 'Modelo equilibrado para GPUs de gama media. Buen soporte multilingue.',
             model_3B_desc: 'Razonamiento de alta calidad. Mejor opcion para GPUs potentes.',
             model_4B_desc: 'Fuerte razonamiento y seguimiento de instrucciones. Opcion mas grande.',
+            webGpu: 'WebGPU',
         },
         // Embedding & Semantic RAG
         embeddingModelReady: 'El modelo de embedding (MiniLM) esta listo para busqueda semantica.',

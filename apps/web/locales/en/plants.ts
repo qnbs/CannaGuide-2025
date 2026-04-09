@@ -114,6 +114,7 @@ export const plantsView = {
         localOnlyWarning: 'Download disabled in offline-only mode.',
         error: 'Scan failed. Please try again.',
         clearImage: 'Clear image',
+        capturePhoto: 'Capture photo with camera',
     },
     nutrientWizard: {
         tabAiScanner: 'AI Scanner',

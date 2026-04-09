@@ -350,9 +350,10 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                             {typeof navigator !== 'undefined' &&
                                 typeof navigator.mediaDevices?.getUserMedia === 'function' && (
                                     <Button
-                                        size="sm"
+                                        size="icon"
                                         variant="secondary"
                                         onClick={() => void handleCamera()}
+                                        aria-label={t('plantsView.diagnosis.capturePhoto')}
                                     >
                                         <PhosphorIcons.Camera className="w-4 h-4" />
                                     </Button>

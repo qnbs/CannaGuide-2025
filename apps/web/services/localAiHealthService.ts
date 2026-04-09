@@ -20,6 +20,7 @@ import {
     getDeviceMemoryGB,
     getGpuAdapterDescription,
 } from '@/utils/browserApis'
+import { captureLocalAiError } from './sentryService'
 
 /**
  * Local AI Health Service — monitors the health, performance, and resource
@@ -244,7 +245,8 @@ export const getStorageInfo = async (): Promise<StorageInfo> => {
             usagePercent: usagePercent !== null ? Math.round(usagePercent * 10) / 10 : null,
             persistentGranted,
         }
-    } catch {
+    } catch (error) {
+        captureLocalAiError(error, { stage: 'storage-estimate' })
         return { usageMB: null, quotaMB: null, usagePercent: null, persistentGranted: null }
     }
 }

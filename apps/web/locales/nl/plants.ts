@@ -107,6 +107,7 @@ export const plantsView = {
         localOnlyWarning: 'Downloaden uitgeschakeld in offline-modus.',
         error: 'Scan mislukt. Probeer het opnieuw.',
         clearImage: 'Afbeelding wissen',
+        capturePhoto: 'Foto maken met camera',
     },
     nutrientWizard: {
         tabAiScanner: 'AI Scanner',

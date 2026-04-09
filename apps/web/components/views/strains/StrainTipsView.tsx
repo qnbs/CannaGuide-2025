@@ -34,7 +34,11 @@ const TipItem: React.FC<{
 }> = ({ tip, onEdit, onDelete, onSelect, isSelected }) => {
     const { t } = useTranslation()
     const imageUrl = normalizeImageDataUrl(tip.imageUrl)
-    const tipCategories = [
+    const tipCategories: ReadonlyArray<{
+        key: keyof StructuredGrowTips
+        icon: React.ReactNode
+        label: string
+    }> = [
         {
             key: 'nutrientTip',
             icon: <PhosphorIcons.Flask />,
@@ -85,7 +89,7 @@ const TipItem: React.FC<{
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
-                            size="sm"
+                            size="icon"
                             variant="secondary"
                             onClick={() => onEdit(tip)}
                             aria-label={t('common.edit')}
@@ -93,7 +97,7 @@ const TipItem: React.FC<{
                             <PhosphorIcons.PencilSimple className="w-4 h-4" />
                         </Button>
                         <Button
-                            size="sm"
+                            size="icon"
                             variant="danger"
                             onClick={() => onDelete(tip.id)}
                             aria-label={t('common.delete')}
@@ -104,7 +108,7 @@ const TipItem: React.FC<{
                 </div>
                 <div className="mt-2 pt-2 border-t border-slate-700/50 space-y-3">
                     {tipCategories.map((cat) => {
-                        const tipContent = tip[cat.key as keyof StructuredGrowTips]
+                        const tipContent = tip[cat.key]
                         if (!tipContent) return null
                         return (
                             <div key={cat.key}>
@@ -165,9 +169,16 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
         )
     }, [savedTips, searchTerm])
 
-    const sortedAndGrouped = useMemo(() => {
+    type SortResult =
+        | { mode: 'date'; tips: SavedStrainTip[] }
+        | { mode: 'grouped'; groups: [string, SavedStrainTip[]][] }
+
+    const sortResult = useMemo((): SortResult => {
         if (sortMode === 'date') {
-            return filteredTips.toSorted((a, b) => b.createdAt - a.createdAt)
+            return {
+                mode: 'date',
+                tips: filteredTips.toSorted((a, b) => b.createdAt - a.createdAt),
+            }
         }
 
         const grouped: Record<string, SavedStrainTip[]> = filteredTips.reduce(
@@ -182,25 +193,23 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
             {} as Record<string, SavedStrainTip[]>,
         )
 
-        return Object.entries(grouped)
-            .map(
-                ([strainName, tips]) =>
-                    [strainName, tips.toSorted((a, b) => b.createdAt - a.createdAt)] as [
-                        string,
-                        SavedStrainTip[],
-                    ],
-            )
-            .toSorted((a, b) => compareText(a[0], b[0]))
+        return {
+            mode: 'grouped',
+            groups: Object.entries(grouped)
+                .map(([strainName, tips]): [string, SavedStrainTip[]] => [
+                    strainName,
+                    tips.toSorted((a, b) => b.createdAt - a.createdAt),
+                ])
+                .toSorted((a, b) => compareText(a[0], b[0])),
+        }
     }, [filteredTips, sortMode])
 
     const allVisibleIds = useMemo(() => {
-        if (sortMode === 'date') {
-            return (sortedAndGrouped as SavedStrainTip[]).map((t) => t.id)
+        if (sortResult.mode === 'date') {
+            return sortResult.tips.map((t) => t.id)
         }
-        return (sortedAndGrouped as [string, SavedStrainTip[]][]).flatMap(([, tips]) =>
-            tips.map((t) => t.id),
-        )
-    }, [sortedAndGrouped, sortMode])
+        return sortResult.groups.flatMap(([, tips]) => tips.map((t) => t.id))
+    }, [sortResult])
 
     const handleToggleSelection = useCallback((id: string) => {
         setSelectedIds((prev) => {
@@ -280,8 +289,8 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                     {t('strainsView.selectedCount_other', { count: selectedIds.size })}
                 </label>
             </div>
-            {sortMode === 'grouped'
-                ? (sortedAndGrouped as [string, SavedStrainTip[]][]).map(([strainName, tips]) => {
+            {sortResult.mode === 'grouped'
+                ? sortResult.groups.map(([strainName, tips]) => {
                       const strain = allStrains.find((s) => s.id === tips[0]?.strainId) ?? null
                       const startGrowingTitle = !hasAvailableSlots
                           ? t('plantsView.notifications.allSlotsFull')
@@ -340,7 +349,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                           </details>
                       )
                   })
-                : (sortedAndGrouped as SavedStrainTip[]).map((tip) => (
+                : sortResult.tips.map((tip) => (
                       <Card
                           key={tip.id}
                           className="bg-slate-800 p-3 ring-1 ring-inset ring-white/20"

@@ -175,12 +175,11 @@ export const settingsView = {
             downloadSize: '{{size}} Mo telechargement',
             largeDownload: 'Telechargement volumineux',
             loading: 'Chargement du modele...',
-            model_05B_desc:
-                'Modele ultra-leger pour tout appareil. Rapide mais qualite limitee.',
-            model_15B_desc:
-                'Modele equilibre pour GPUs milieu de gamme. Bon support multilingue.',
+            model_05B_desc: 'Modele ultra-leger pour tout appareil. Rapide mais qualite limitee.',
+            model_15B_desc: 'Modele equilibre pour GPUs milieu de gamme. Bon support multilingue.',
             model_3B_desc: 'Raisonnement de haute qualite. Meilleur choix pour GPUs performants.',
             model_4B_desc: 'Raisonnement fort et suivi des instructions. Option la plus grande.',
+            webGpu: 'WebGPU',
         },
         // Embedding & Semantic RAG
         embeddingModelReady:

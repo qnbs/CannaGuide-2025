@@ -5,18 +5,18 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-04-08 (Session 78)
+Last updated: 2026-04-09 (Session 79)
 
 ---
 
 ## Summary
 
-| Severity | Total | Done | Open |
-| -------- | ----- | ---- | ---- |
-| Critical | 3     | 3    | 0    |
-| High     | 12    | 12   | 0    |
-| Medium   | 28    | 26   | 2    |
-| Low      | 10    | 5    | 5    |
+| Severity | Total | Done | Open | Deferred |
+| -------- | ----- | ---- | ---- | -------- |
+| Critical | 3     | 3    | 0    | 0        |
+| High     | 12    | 12   | 0    | 0        |
+| Medium   | 28    | 27   | 1    | 0        |
+| Low      | 10    | 5    | 4    | 1        |
 
 ---
 
@@ -422,6 +422,8 @@ Last updated: 2026-04-08 (Session 78)
 
 **Action:** Track token counts from AI provider responses. Display cumulative usage in Settings. Add optional budget limit with warning.
 
+**Progress (Session 79):** Infrastructure is done -- `aiRateLimiter.ts` implements `reportActualUsage()` tracking prompt/completion tokens, computing per-model costs, and updating monthly budget counters. Missing: Settings UI component to expose cost/usage data to users.
+
 ---
 
 ### A-04 -- RAG Context Window Management
@@ -512,15 +514,17 @@ Last updated: 2026-04-08 (Session 78)
 
 ### U-05 -- Onboarding Completion Tracking
 
-| Field    | Value       |
-| -------- | ----------- |
-| Severity | Low         |
-| Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Field    | Value        |
+| -------- | ------------ |
+| Severity | Low          |
+| Effort   | Low (1 day)  |
+| Status   | **Deferred** |
 
 **Finding:** Onboarding wizard exists but no analytics track completion rate or drop-off points.
 
 **Action:** Add telemetry events for onboarding step progression. Use Sentry custom events or local analytics.
+
+**Deferred (Session 79):** Low priority. No user-facing impact -- purely internal analytics. Deferred to v2.0 when a proper analytics pipeline is in scope.
 
 ---
 
@@ -796,9 +800,9 @@ Recommended implementation order based on impact and effort:
 
 - [x] V-01 -- TTS Mentor streaming wiring (Done, Session 43)
 - [x] V-02 -- Voice CommandPalette bridge (Done, Session 43)
-- [ ] V-03 -- Hotword wake-word detection
-- [ ] V-04 -- Grow-log voice dictation
-- [ ] V-05 -- Voice test coverage
+- [x] V-03 -- Hotword wake-word detection (Done)
+- [x] V-04 -- Grow-log voice dictation (Done)
+- [x] V-05 -- Voice test coverage (Done)
 - [ ] V-06 -- Offline ONNX TTS/STT (deferred v1.5)
 
 ### Sprint 1 (Immediate)
@@ -821,18 +825,18 @@ Recommended implementation order based on impact and effort:
 ### Sprint 3 (Medium-term)
 
 - [x] T-01 -- Mutation testing pilot (Done, Stryker, Session 63)
-- [ ] T-03 -- Visual regression testing
+- [x] T-03 -- Visual regression testing (Done, Session 76)
 - [x] T-05 -- AI contract tests (Done, Session 78)
-- [ ] A-02 -- Local AI model versioning
+- [x] A-02 -- Local AI model versioning (Done, Session 76)
 - [x] P-03 -- Image optimization (Done)
 - [x] F-05 -- Multi-grow management
 - [x] D-01 -- API documentation
 
 ### Backlog (Long-term)
 
-- [ ] S-03 -- CSP nonce implementation
+- [x] S-03 -- CSP nonce implementation (Won't Fix)
 - [ ] C-04 -- Deployment preview validation
 - [ ] F-02 -- Social sharing
 - [x] F-06 -- Offline sync conflict resolution
 - [ ] I-02 -- RTL language preparation
-- [ ] A-03 -- AI cost tracking
+- [ ] A-03 -- AI cost tracking (infra done, UI pending)

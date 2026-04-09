@@ -139,6 +139,10 @@ async function tryGenerateWithTransformers(
                 )
                 generated = extractGeneratedText(workerResult)
             } catch (workerError) {
+                captureLocalAiError(workerError, {
+                    stage: 'worker-inference-fallthrough',
+                    model: activeTextId,
+                })
                 console.debug(
                     '[LocalAI] Worker inference failed, falling back to main thread.',
                     workerError,

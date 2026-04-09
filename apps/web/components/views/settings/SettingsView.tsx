@@ -682,8 +682,9 @@ const LocalAiOfflineCard: React.FC = () => {
                 const check = quickHealthCheck()
                 setHealthStatus(check.status)
                 setDeviceClass(classifyDevice())
-            } catch {
-                // Non-critical
+            } catch (error) {
+                console.debug('[Settings] Health check failed', error)
+                setHealthStatus('unknown')
             }
         }
         void loadHealth()

@@ -82,5 +82,45 @@ for (const viewport of MOBILE_VIEWPORTS) {
                 ).toHaveLength(0)
             })
         }
+
+        // --- Dialog / overlay clipping assertions -------------------------
+        test('command palette dialog does not clip on mobile', async ({ page }) => {
+            // Open command palette via keyboard shortcut
+            await page.keyboard.press('Control+k')
+            const dialog = page.locator('[cmdk-dialog]')
+            await expect(dialog).toBeVisible({ timeout: 10_000 })
+
+            const overflows = await page.evaluate(() => {
+                const vw = document.documentElement.clientWidth
+                const vh = document.documentElement.clientHeight
+                const dialogs = document.querySelectorAll('[cmdk-dialog], [role="dialog"]')
+                const issues: string[] = []
+                for (const el of dialogs) {
+                    const rect = el.getBoundingClientRect()
+                    if (rect.right > vw + 1) issues.push(`right-clip: ${rect.right - vw}px`)
+                    if (rect.bottom > vh + 1) issues.push(`bottom-clip: ${rect.bottom - vh}px`)
+                    if (rect.left < -1) issues.push(`left-clip: ${rect.left}px`)
+                }
+                return issues
+            })
+            expect(overflows, `Dialog overflows viewport: ${overflows.join(', ')}`).toHaveLength(0)
+
+            await page.keyboard.press('Escape')
+        })
+
+        test('settings modal content does not overflow on mobile', async ({ page }) => {
+            // Navigate to settings
+            const settingsNav = page.locator('[data-view-id="settings"]:visible')
+            if ((await settingsNav.count()) > 0) {
+                await settingsNav.first().click()
+                await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
+            }
+
+            // Check that no settings content overflows
+            const hasOverflow = await page.evaluate(() => {
+                return document.documentElement.scrollWidth > document.documentElement.clientWidth
+            })
+            expect(hasOverflow).toBe(false)
+        })
     })
 }

@@ -2,7 +2,74 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 106) -- API Docs + Architecture Sync + v1.6.0 Release
+## Latest Session (Session 107) -- Competitor Feature Suite Integration
+
+**Status: All features implemented. 1883 tests passing (+39 new). TypeScript
+clean. Build clean.**
+
+### What Was Done (Session 107)
+
+1. **3 New Redux Slices** -- `metricsSlice` (height/potWeight/CO2 time-series,
+   168 FIFO/plant), `growPlannerSlice` (calendar task scheduling, 500 FIFO,
+   recurring support, overdue/today/upcoming selectors), `diagnosisHistorySlice`
+   (AI diagnosis records, 100 FIFO/plant, severity trend selector). All
+   registered in `store.ts`.
+
+2. **VPD Zone Map** -- `VPDZoneMap.tsx`: Dr. Greenhouse-inspired psychrometric
+   heatmap (21x15 grid, 6 color zones, leaf-temp slider). Integrated in new
+   `MetricsOverviewTab` with 3 sub-tabs (VPD Zone, Charts, Quick Log).
+
+3. **QR Plant Tags + Scanner** -- `PlantTagGenerator.tsx` (qrcode.react SVG,
+   jsPDF PDF export), `QRScannerModal.tsx` (html5-qrcode camera scanning +
+   manual ID fallback). Wired into `DashboardSummary` with lazy loading.
+
+4. **Grow Planner** -- `GrowPlannerView.tsx`: Custom Tailwind calendar
+   (week/month views), 9 action types with color coding, recurring tasks.
+   `growScheduleTemplates.ts`: 6 strain templates (3 Auto + 3 Photo).
+   Integrated as new tab in DetailedPlantView.
+
+5. **Photo Timeline** -- `PhotoTimelineTab.tsx`: Chronological photo gallery
+   with timeline dots and 2-photo compare mode. Integrated as new tab.
+
+6. **Journal Summary Service** -- `journalSummaryService.ts`: Heuristic
+   summary (stats, pH/EC averages, issues) + AI fallback via aiFacade.
+
+7. **New Types** -- Added `MetricsReading`, `MetricsState`, `GrowAction`,
+   `PlannerTask`, `GrowPlannerState`, `DiagnosisRecord`,
+   `DiagnosisHistoryState` to `types.ts`.
+
+8. **5 New Phosphor Icons** -- `Clock`, `CalendarBlank`, `QrCode`, `Tag`,
+   `CalendarBlank` added to PhosphorIcons.tsx.
+
+9. **i18n (5 languages)** -- Added 90+ new keys per language (EN/DE/ES/FR/NL)
+   for metrics, QR scanner, tags, planner, timeline, journal summary.
+
+10. **39 New Tests** -- `metricsSlice.test.ts` (8), `growPlannerSlice.test.ts`
+    (10), `diagnosisHistorySlice.test.ts` (9), `journalSummaryService.test.ts`
+    (5), `growScheduleTemplates.test.ts` (7). All passing.
+
+### Verified Metrics
+
+- Tests: **1883 passing**, 0 failures (was 1844)
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- New files: 14 created, 10 modified
+- Redux slices: 18 (was 15)
+- Phosphor icons: 80 (was 75)
+
+### Next Steps
+
+- Enhanced PDF reports (add metrics charts, AI summary, diagnosis trend to
+  existing pdfReportService.ts via html2canvas)
+- Enhanced LeafDiagnosisPanel (harvest readiness score, auto-tagging to
+  journal, diagnosis history tab integration)
+- Strain Schedule Template integration in GrowPlannerView ("Auto-fill from
+  Strain" button that loads template steps)
+- Integration Testing: E2E tests for new tabs (Metrics, Timeline, Planner)
+- Consider: IoT sensor auto-logging to metricsSlice
+- Consider: Proactive coach integration with metrics thresholds
+
+## Previous Session (Session 106) -- API Docs + Architecture Sync + v1.6.0 Release
 
 **Status: All 5 Aufgaben implemented. 1844 tests passing. TypeScript
 clean. Build clean. v1.6.0 released.**

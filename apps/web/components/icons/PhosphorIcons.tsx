@@ -571,6 +571,26 @@ const Columns: React.FC<IconProps> = memo(({ className }) => (
         <path d="M104,40H56A16,16,0,0,0,40,56V200a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,160H56V56h48ZM200,40H152a16,16,0,0,0-16,16V200a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,160H152V56h48Z" />
     </IconBase>
 ))
+const Clock: React.FC<IconProps> = memo(({ className }) => (
+    <IconBase className={className}>
+        <path d="M128,24A104,104,0,1,0,232,128,104.2,104.2,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z" />
+    </IconBase>
+))
+const CalendarBlank: React.FC<IconProps> = memo(({ className }) => (
+    <IconBase className={className}>
+        <path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V208ZM48,80H208V48H48Z" />
+    </IconBase>
+))
+const QrCode: React.FC<IconProps> = memo(({ className }) => (
+    <IconBase className={className}>
+        <path d="M104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48ZM104,136H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48Zm40-64a8,8,0,0,0-8,8v56a8,8,0,0,0,16,0V184h32a8,8,0,0,0,8-8V144a8,8,0,0,0-16,0v24H152V144A8,8,0,0,0,144,136Zm64,48a8,8,0,0,0-8,8v8H184a8,8,0,0,0,0,16h24a8,8,0,0,0,8-8V192A8,8,0,0,0,208,184Z" />
+    </IconBase>
+))
+const Tag: React.FC<IconProps> = memo(({ className }) => (
+    <IconBase className={className}>
+        <path d="M243.3,134.3l-96-96A15.9,15.9,0,0,0,136,34H40A6,6,0,0,0,34,40v96a15.9,15.9,0,0,0,4.3,11.3l96,96a16.1,16.1,0,0,0,22.6,0l86.4-86.3A16.1,16.1,0,0,0,243.3,134.3ZM145.6,231.7l-96-96A4,4,0,0,1,48,133.9V46h87.9a4,4,0,0,1,1.8,1.6l96,96ZM100,84A12,12,0,1,1,88,72,12,12,0,0,1,100,84Z" />
+    </IconBase>
+))
 
 export const PhosphorIcons = {
     Archive,
@@ -591,9 +611,11 @@ export const PhosphorIcons = {
     Broom,
     BracketsCurly,
     Calculator,
+    CalendarBlank,
     Camera,
     Cannabis,
     ChartLineUp,
+    Clock,
     Columns,
     ChartPieSlice,
     CheckCircle,
@@ -640,6 +662,7 @@ export const PhosphorIcons = {
     Play,
     Plus,
     PlusCircle,
+    QrCode,
     Question,
     Ruler,
     Scissors,
@@ -655,6 +678,7 @@ export const PhosphorIcons = {
     Stop,
     Storefront,
     Sun,
+    Tag,
     Thermometer,
     TextBolder,
     TextItalic,

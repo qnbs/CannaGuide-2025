@@ -423,6 +423,73 @@ export interface HydroForecast {
     modelBased: boolean
 }
 
+// ---------------------------------------------------------------------------
+// Metrics Tracking types
+// ---------------------------------------------------------------------------
+
+export interface MetricsReading {
+    id: string
+    plantId: string
+    timestamp: number
+    height?: number | undefined
+    potWeight?: number | undefined
+    co2?: number | undefined
+    notes?: string | undefined
+}
+
+export interface MetricsState {
+    readings: MetricsReading[]
+}
+
+// ---------------------------------------------------------------------------
+// Grow Planner types
+// ---------------------------------------------------------------------------
+
+export type GrowAction =
+    | 'water'
+    | 'feed'
+    | 'train'
+    | 'photo'
+    | 'defoliate'
+    | 'flush'
+    | 'harvest_check'
+    | 'transplant'
+    | 'pest_control'
+
+export interface PlannerTask {
+    id: string
+    plantId: string
+    type: GrowAction
+    scheduledAt: number
+    completedAt?: number | undefined
+    recurring: boolean
+    intervalDays?: number | undefined
+    notes?: string | undefined
+}
+
+export interface GrowPlannerState {
+    tasks: PlannerTask[]
+}
+
+// ---------------------------------------------------------------------------
+// Diagnosis History types
+// ---------------------------------------------------------------------------
+
+export interface DiagnosisRecord {
+    id: string
+    plantId: string
+    timestamp: number
+    label: string
+    confidence: number
+    severity: 'none' | 'mild' | 'moderate' | 'severe'
+    harvestScore: number
+    imageId?: string | undefined
+}
+
+export interface DiagnosisHistoryState {
+    records: DiagnosisRecord[]
+}
+
 export enum KnowledgeViewTab {
     Mentor = 'mentor',
     Guide = 'guide',

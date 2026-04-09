@@ -241,6 +241,8 @@ export const plantsView = {
         completedTasks: 'Completadas',
     },
     journal: {
+        today: 'Hoy',
+        yesterday: 'Ayer',
         details: {
             amount: 'Cantidad',
             type: 'Tipo',

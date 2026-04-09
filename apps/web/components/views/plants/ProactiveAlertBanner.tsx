@@ -28,14 +28,14 @@ function metricUnit(metric: AlertMetric): string {
     }
 }
 
-const METRIC_I18N_KEY: Record<AlertMetric, string | undefined> = {
+const METRIC_I18N_KEY: Record<AlertMetric, string> = {
     temperature: 'common.metrics.temperature',
     humidity: 'common.metrics.humidity',
-    vpd: undefined,
-    ph: undefined,
-    ec: undefined,
-    co2: undefined,
-    moisture: undefined,
+    vpd: 'common.metrics.vpd',
+    ph: 'common.metrics.ph',
+    ec: 'common.metrics.ec',
+    co2: 'common.metrics.co2',
+    moisture: 'common.metrics.moisture',
 }
 
 const METRIC_FALLBACK: Record<AlertMetric, string> = {
@@ -84,12 +84,7 @@ export const ProactiveAlertBanner: React.FC<ProactiveAlertBannerProps> = memo(({
                     <PhosphorIcons.Sparkle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
                     <div className="min-w-0 flex-1 space-y-1">
                         <p className="text-sm font-semibold text-amber-300">
-                            {METRIC_I18N_KEY[alert.metric]
-                                ? t(
-                                      METRIC_I18N_KEY[alert.metric] as string,
-                                      METRIC_FALLBACK[alert.metric],
-                                  )
-                                : METRIC_FALLBACK[alert.metric]}{' '}
+                            {t(METRIC_I18N_KEY[alert.metric], METRIC_FALLBACK[alert.metric])}{' '}
                             {t('common.critical', 'critical')}:{' '}
                             {formatValue(alert.metric, alert.triggerValue)}
                         </p>

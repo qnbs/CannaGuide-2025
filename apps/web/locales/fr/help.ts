@@ -6,6 +6,7 @@ export const helpView = {
         guides: 'Guides Visuels',
         lexicon: 'Lexique',
         manual: 'Manuel Utilisateur',
+        screenshots: "Captures d'Ecran",
         faqDescription:
             "Reponses rapides aux questions les plus courantes sur l'app et la culture.",
         guidesDescription:
@@ -14,12 +15,15 @@ export const helpView = {
             'Un glossaire complet des cannabinoides, terpenes, flavonoides et termes de culture.',
         manualDescription:
             "Le manuel utilisateur complet couvrant chaque fonctionnalite de l'app en detail.",
+        screenshotsDescription:
+            "Captures d'ecran de chaque ecran de l'app en vues bureau et mobile.",
     },
     itemCount: '{{count}} elements',
     termCount: '{{count}} termes',
     sectionCount: '{{count}} sections',
     subSectionCount: '{{count}} sous-sections',
     guideCount: '{{count}} guides',
+    screenshotCount: "{{count}} captures d'ecran",
     faq: {
         title: 'Questions Frequemment Posees',
         subtitle: "Divisees en operations de l'app, support IA/offline et sujets de culture.",

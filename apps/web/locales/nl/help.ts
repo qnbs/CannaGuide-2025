@@ -6,6 +6,7 @@ export const helpView = {
         guides: 'Visuele Gidsen',
         lexicon: 'Lexicon',
         manual: 'Gebruikershandleiding',
+        screenshots: 'Schermafbeeldingen',
         faqDescription: 'Snelle antwoorden op de meest gestelde vragen over de app en het kweken.',
         guidesDescription:
             'Stap-voor-stap visuele handleidingen voor trainingstechnieken en app-workflows.',
@@ -13,12 +14,15 @@ export const helpView = {
             'Een uitgebreide woordenlijst van cannabinoiden, terpenen, flavonoiden en kweektermen.',
         manualDescription:
             'De volledige gebruikershandleiding die elke functie van de app in detail behandelt.',
+        screenshotsDescription:
+            'Schermafbeeldingen van elk app-scherm in desktop- en mobiele weergaven.',
     },
     itemCount: '{{count}} items',
     termCount: '{{count}} termen',
     sectionCount: '{{count}} secties',
     subSectionCount: '{{count}} subsecties',
     guideCount: '{{count}} gidsen',
+    screenshotCount: '{{count}} schermafbeeldingen',
     faq: {
         title: 'Veelgestelde Vragen',
         subtitle: 'Verdeeld in app-gebruik, AI/offline-ondersteuning en kweekonderwerpen.',

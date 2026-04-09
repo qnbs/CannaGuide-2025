@@ -260,6 +260,8 @@ export const plantsView = {
         completedTasks: 'Abgeschlossen',
     },
     journal: {
+        today: 'Heute',
+        yesterday: 'Gestern',
         details: {
             amount: 'Menge',
             type: 'Typ',

@@ -13,6 +13,7 @@ import {
     plantsView,
     settingsView,
     strainsView,
+    strainLookup,
     strainsData,
     legal,
 } from './nl/index'
@@ -34,6 +35,7 @@ export const nl = {
     plantsView,
     settingsView,
     strainsView,
+    strainLookup,
     strainsData,
     tipOfTheDay,
     analytics,

@@ -6,6 +6,7 @@ export const helpView = {
         guides: 'Guias Visuales',
         lexicon: 'Lexico',
         manual: 'Manual de Usuario',
+        screenshots: 'Capturas de Pantalla',
         faqDescription: 'Respuestas rapidas a las preguntas mas comunes sobre la app y el cultivo.',
         guidesDescription:
             'Guias visuales paso a paso para tecnicas de entrenamiento y flujos de trabajo de la app.',
@@ -13,12 +14,15 @@ export const helpView = {
             'Un glosario completo de cannabinoides, terpenos, flavonoides y terminos de cultivo.',
         manualDescription:
             'El manual de usuario completo que cubre cada funcion de la app en detalle.',
+        screenshotsDescription:
+            'Capturas de pantalla de cada pantalla de la app en vistas de escritorio y movil.',
     },
     itemCount: '{{count}} elementos',
     termCount: '{{count}} terminos',
     sectionCount: '{{count}} secciones',
     subSectionCount: '{{count}} sub-secciones',
     guideCount: '{{count}} guias',
+    screenshotCount: '{{count}} capturas de pantalla',
     faq: {
         title: 'Preguntas Frecuentes',
         subtitle: 'Dividido en operaciones de la app, soporte IA/offline y temas de cultivo.',

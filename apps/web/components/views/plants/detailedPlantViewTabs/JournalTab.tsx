@@ -4,14 +4,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import {
     JournalEntry,
     JournalEntryType,
-    WateringDetails,
-    TrainingDetails,
-    PestControlDetails,
-    AmendmentDetails,
-    FeedingDetails,
-    PhotoDetails,
-    ObservationDetails,
-    SystemDetails,
+    JournalEntryDetails,
 } from '@/types'
 import { useTranslation } from 'react-i18next'
 
@@ -21,87 +14,97 @@ interface JournalTabProps {
 
 const appendBaseFeedDetails = (
     detailsArray: string[],
-    details: { amountMl?: number | undefined; ph?: number | undefined; ec?: number | undefined },
+    details: JournalEntryDetails,
     t: (key: string) => string,
 ): void => {
-    if (details.amountMl != null)
-        detailsArray.push(`${t('plantsView.journal.details.amount')}: ${details.amountMl}ml`)
-    if (details.ph != null) detailsArray.push(`pH: ${details.ph.toFixed(2)}`)
-    if (details.ec != null) detailsArray.push(`EC: ${details.ec.toFixed(2)}`)
+    if ('amountMl' in details && details.amountMl != null)
+        detailsArray.push(
+            `${t('plantsView.journal.details.amount')}: ${String(details.amountMl)}ml`,
+        )
+    if ('ph' in details && details.ph != null)
+        detailsArray.push(`pH: ${Number(details.ph).toFixed(2)}`)
+    if ('ec' in details && details.ec != null)
+        detailsArray.push(`EC: ${Number(details.ec).toFixed(2)}`)
 }
 
+// Discriminated detail accessors -- renderDetails() narrows entry.type, so
+// each branch can safely pass entry.details as the concrete type.  We avoid
+// unsafe type assertions by accepting JournalEntryDetails and accessing only
+// properties that exist on the expected subtype (duck-typing).
 const renderWateringDetails = (
-    entry: JournalEntry,
+    d: JournalEntryDetails,
     detailsArray: string[],
     t: (key: string) => string,
 ): void => {
-    const d = entry.details as WateringDetails
     appendBaseFeedDetails(detailsArray, d, t)
 }
 
 const renderFeedingDetails = (
-    entry: JournalEntry,
+    d: JournalEntryDetails,
     detailsArray: string[],
     t: (key: string) => string,
 ): void => {
-    const d = entry.details as FeedingDetails
     appendBaseFeedDetails(detailsArray, d, t)
-    if (d.npk) detailsArray.push(`NPK: ${d.npk.n}-${d.npk.p}-${d.npk.k}`)
+    if ('npk' in d && d.npk) {
+        const npk = d.npk
+        detailsArray.push(`NPK: ${npk.n}-${npk.p}-${npk.k}`)
+    }
 }
 
 const renderTrainingDetails = (
-    entry: JournalEntry,
+    d: JournalEntryDetails,
     detailsArray: string[],
     t: (key: string) => string,
 ): void => {
-    const d = entry.details as TrainingDetails
-    if (!d.type) return
-    const translatedType = t(`plantsView.actionModals.trainingTypes.${d.type}`)
+    if (!('type' in d) || !d.type) return
+    const translatedType = t(`plantsView.actionModals.trainingTypes.${String(d.type)}`)
     detailsArray.push(`${t('plantsView.journal.details.type')}: ${translatedType}`)
 }
 
 const renderObservationDetails = (
-    entry: JournalEntry,
+    d: JournalEntryDetails,
     detailsArray: string[],
     t: (key: string) => string,
 ): void => {
-    const d = entry.details as ObservationDetails
-    if (d.diagnosis)
-        detailsArray.push(`${t('plantsView.journal.details.diagnosis')}: ${d.diagnosis}`)
+    if ('diagnosis' in d && d.diagnosis)
+        detailsArray.push(`${t('plantsView.journal.details.diagnosis')}: ${String(d.diagnosis)}`)
 }
 
 const renderPhotoDetails = (
-    entry: JournalEntry,
+    d: JournalEntryDetails,
     detailsArray: string[],
     t: (key: string) => string,
 ): void => {
-    const d = entry.details as PhotoDetails
-    if (d.photoCategory) {
-        const translatedCategory = t(`plantsView.actionModals.photo.categories.${d.photoCategory}`)
+    if ('photoCategory' in d && d.photoCategory) {
+        const translatedCategory = t(
+            `plantsView.actionModals.photo.categories.${String(d.photoCategory)}`,
+        )
         detailsArray.push(`${t('plantsView.journal.details.category')}: ${translatedCategory}`)
     }
-    if (d.timelineLabel)
-        detailsArray.push(`${t('plantsView.journal.details.timeline')}: ${d.timelineLabel}`)
+    if ('timelineLabel' in d && d.timelineLabel)
+        detailsArray.push(
+            `${t('plantsView.journal.details.timeline')}: ${String(d.timelineLabel)}`,
+        )
 }
 
 const renderPestControlDetails = (
-    entry: JournalEntry,
+    d: JournalEntryDetails,
     detailsArray: string[],
     t: (key: string) => string,
 ): void => {
-    const d = entry.details as PestControlDetails
-    if (d.method) detailsArray.push(`${t('plantsView.journal.details.method')}: ${d.method}`)
-    if (d.product) detailsArray.push(`${t('plantsView.journal.details.product')}: ${d.product}`)
+    if ('method' in d && d.method)
+        detailsArray.push(`${t('plantsView.journal.details.method')}: ${String(d.method)}`)
+    if ('product' in d && d.product)
+        detailsArray.push(`${t('plantsView.journal.details.product')}: ${String(d.product)}`)
 }
 
 const renderAmendmentDetails = (
-    entry: JournalEntry,
+    d: JournalEntryDetails,
     detailsArray: string[],
     t: (key: string) => string,
 ): void => {
-    const d = entry.details as AmendmentDetails
-    if (!d.type) return
-    const translatedType = t(`plantsView.actionModals.amendmentTypes.${d.type}`)
+    if (!('type' in d) || !d.type) return
+    const translatedType = t(`plantsView.actionModals.amendmentTypes.${String(d.type)}`)
     detailsArray.push(`${t('plantsView.journal.details.type')}: ${translatedType}`)
 }
 
@@ -122,27 +125,29 @@ const renderDetails = (entry: JournalEntry, t: (key: string) => string): string 
 
     const detailsArray: string[] = []
 
+    const d = entry.details
+
     switch (entry.type) {
         case JournalEntryType.Watering:
-            renderWateringDetails(entry, detailsArray, t)
+            renderWateringDetails(d, detailsArray, t)
             break
         case JournalEntryType.Feeding:
-            renderFeedingDetails(entry, detailsArray, t)
+            renderFeedingDetails(d, detailsArray, t)
             break
         case JournalEntryType.Training:
-            renderTrainingDetails(entry, detailsArray, t)
+            renderTrainingDetails(d, detailsArray, t)
             break
         case JournalEntryType.Observation:
-            renderObservationDetails(entry, detailsArray, t)
+            renderObservationDetails(d, detailsArray, t)
             break
         case JournalEntryType.Photo:
-            renderPhotoDetails(entry, detailsArray, t)
+            renderPhotoDetails(d, detailsArray, t)
             break
         case JournalEntryType.PestControl:
-            renderPestControlDetails(entry, detailsArray, t)
+            renderPestControlDetails(d, detailsArray, t)
             break
         case JournalEntryType.Amendment:
-            renderAmendmentDetails(entry, detailsArray, t)
+            renderAmendmentDetails(d, detailsArray, t)
             break
         default:
             renderGenericDetails(entry, detailsArray)
@@ -155,15 +160,15 @@ const getDateGroupKey = (timestamp: number): string => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-const formatDateGroup = (key: string): string => {
+const formatDateGroup = (key: string, t: (key: string) => string): string => {
     const [year = 0, month = 1, day = 1] = key.split('-').map(Number)
     const date = new Date(year, month - 1, day)
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    if (date.toDateString() === today.toDateString()) return 'Today'
-    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+    if (date.toDateString() === today.toDateString()) return t('plantsView.journal.today')
+    if (date.toDateString() === yesterday.toDateString()) return t('plantsView.journal.yesterday')
     return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
@@ -324,7 +329,7 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                         <div key={dateKey}>
                             <div className="flex items-center gap-3 mb-3">
                                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
-                                    {formatDateGroup(dateKey)}
+                                    {formatDateGroup(dateKey, t)}
                                 </h4>
                                 <div className="flex-grow h-px bg-slate-700/60" />
                                 <span className="text-xs text-slate-500">{entries.length}</span>
@@ -346,10 +351,10 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                                                         t(entry.notes, {
                                                             ...entry.details,
                                                             from: t(
-                                                                `plantStages.${(entry.details as SystemDetails)?.from}`,
+                                                                `plantStages.${entry.details != null && 'from' in entry.details ? String(entry.details.from) : ''}`,
                                                             ),
                                                             to: t(
-                                                                `plantStages.${(entry.details as SystemDetails)?.to}`,
+                                                                `plantStages.${entry.details != null && 'to' in entry.details ? String(entry.details.to) : ''}`,
                                                             ),
                                                         }),
                                                     )}

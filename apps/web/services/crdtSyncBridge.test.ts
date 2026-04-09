@@ -17,7 +17,7 @@ import nutrientPlannerReducer, {
 import settingsReducer, { defaultSettings } from '@/stores/slices/settingsSlice'
 import { plantToYMap } from './crdtAdapters'
 import type { Plant } from '@/types'
-import { PlantStage, StrainType } from '@/types'
+import { PlantStage, StrainType, JournalEntryType } from '@/types'
 import type { NutrientScheduleEntry } from '@/stores/slices/nutrientPlannerSlice'
 import type { AppStore } from '@/stores/store'
 
@@ -492,9 +492,8 @@ describe('crdtSyncBridge', () => {
                 addJournalEntry({
                     plantId: 'plant-journal',
                     entry: {
-                        type: 'note',
-                        note: 'Watered today',
-                        timestamp: Date.now(),
+                        type: JournalEntryType.Observation,
+                        notes: 'Watered today',
                     },
                 }),
             )

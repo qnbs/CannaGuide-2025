@@ -2,7 +2,57 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 101) -- Test Coverage Baseline + Critical Path Tests
+## Latest Session (Session 102) -- v1.5.1 Patch Release
+
+**Status: v1.5.1 released. 1818 tests passing. TypeScript clean.
+Build clean. All validations green.**
+
+### What Was Done (Session 102)
+
+1. **v1.5.1 patch release** -- Consolidated 12 commits since v1.5.0
+   into a tagged release: CHANGELOG [1.5.1], version bump (root +
+   web package.json), README badge v1.5.0->v1.5.1, annotated git
+   tag, GitHub Release with categorized notes.
+
+2. **CHANGELOG consolidation** -- All 12 post-v1.5.0 commits
+   documented under [1.5.1]: WorkerBus W-01/W-03, Lint Phase 3+4
+   (323 warnings), no-explicit-any for tests, pre-push gate, i18n
+   fixes (comparison keys, modelSelector dots, GrowTech ns), PWA
+   icons, SubNav unification, Settings AI crash, basic-ftp CVE,
+   Bedienungsanleitung, Screenshot Gallery removal, strain dedup,
+   docs audit, coverage baseline + 52 tests.
+
+3. **Test fixes** -- Fixed 4 TS errors in test files introduced by
+   inter-session type changes: JournalEntryType enum, plantStateUpdated
+   payload shape, Grow Omit<createdAt|updatedAt> + isActive.
+
+### Verified Metrics (Session 102)
+
+- Tests: 1818 passed, 0 failures
+- Typecheck: clean (raw tsc --noEmit, no filter)
+- Build: 3 tasks success, 158 precache entries
+- Lint scopes: 4 strict scopes passing
+- Strain integrity: 776 strains, 0 duplicates
+- CSP consistency: OK
+- Security audit: no known vulnerabilities
+
+### Next Steps
+
+- **Coverage >40% lines** -- Continue writing tests for untested
+  services (workerBus, aiService, geminiService)
+- **WorkerBus W-02** -- Preemption + Generic WorkerMessage types
+- **WorkerBus W-04** -- Cross-worker messaging
+- **CRDT tightening** -- Yjs Awareness protocol (v1.6 scope)
+
+### Planned Executions
+
+- **E3:** WorkerBus W-02 (preemption) + Generic WorkerMessage types
+- **E4:** WorkerBus W-04 (cross-worker) + API docs completion
+- **E5:** Coverage push to >40% lines
+
+---
+
+## Previous Session (Session 101) -- Test Coverage Baseline + Critical Path Tests
 
 **Status: v1.5.0. 1818 tests passing. TypeScript clean. Build clean.
 Coverage: 33.7% lines (thresholds enforced in vite.config.ts).**
@@ -76,7 +126,7 @@ Coverage: 33.7% lines (thresholds enforced in vite.config.ts).**
 
 ---
 
-## Previous Session (Session 100) -- Test Strictness + Lint Phase 4 Stores
+## Session 100 -- Test Strictness + Lint Phase 4 Stores
 
 **Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.
 Lint: 4 strict scopes enforced (hooks, components/common, services, stores).**

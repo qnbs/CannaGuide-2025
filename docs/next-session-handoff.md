@@ -2,7 +2,50 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 111) -- OpenSSF Scorecard Optimization
+## Latest Session (Session 112) -- Post-v1.6 Audit Polish + v1.6.1 Release
+
+**Status: Docs corrected, CHANGELOG released as v1.6.1, tag pushed. 1884 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 112)
+
+1. **ARCHITECTURE.md** -- Fixed stale Redux slice count on line 63:
+   "15 Redux slices" corrected to "18 Redux slices" (matching the
+   18 actual slice files and line 13 which already said 18).
+
+2. **audit-roadmap-2026-q2.md** -- Updated Ist-Zustand dashboard:
+   v1.4.1 -> v1.6.0, 1663 -> 1884 tests, 149 -> 163 test files,
+   21 -> 22 CI workflows, added SLSA L1 provenance status,
+   coverage updated from ~22-28% to ~33.66%, date to 2026-04-09,
+   added "Aktuell" line below Baseline.
+
+3. **CHANGELOG.md** -- Converted `[Unreleased]` section to
+   `[1.6.1] - 2026-04-09` with empty new `[Unreleased]` above.
+
+4. **v1.6.1 tag** -- Created and pushed `v1.6.1` annotated tag
+   to trigger `release-publish.yml` (SLSA provenance + GitHub
+   Release automation).
+
+### Verified Metrics
+
+- Tests: **1884 passing**, 0 failures
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- Commit: `156d53a8`
+- Tag: `v1.6.1` pushed
+
+### Next Steps
+
+- Verify `release-publish.yml` workflow ran on tag push (check Actions)
+- Complete Branch Protection via GitHub Web UI
+- Complete CII Best Practices questionnaire
+- Re-run scorecard after changes propagate: check scorecard.dev
+- Push unit test coverage above 40% lines
+- A-03: Build AI cost tracking UI (Settings dashboard)
+- C-04: Netlify deployment preview smoke tests
+
+---
+
+## Previous Session (Session 111) -- OpenSSF Scorecard Optimization
 
 **Status: Automated fixes implemented. Manual steps documented. 1884 tests passing. TypeScript clean. Build clean.**
 

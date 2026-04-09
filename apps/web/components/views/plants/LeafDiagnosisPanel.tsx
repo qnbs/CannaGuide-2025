@@ -147,9 +147,10 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                 if (blob) extractImageData(new File([blob], 'capture.jpg', { type: 'image/jpeg' }))
             }, 'image/jpeg')
         } catch {
-            // Camera permission denied -- silent
+            // Camera permission denied or hardware unavailable
+            setError(t('plantsView.aiDiagnostics.cameraError'))
         }
-    }, [extractImageData])
+    }, [extractImageData, t])
 
     // ---- Inference ------------------------------------------------------------
     const handleAnalyze = useCallback(async () => {

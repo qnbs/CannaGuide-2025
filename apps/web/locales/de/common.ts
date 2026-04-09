@@ -219,6 +219,11 @@ export const common = {
     metrics: {
         temperature: 'Temp',
         humidity: 'Feuchtigkeit',
+        vpd: 'VPD',
+        ph: 'pH',
+        ec: 'EC',
+        co2: 'CO2',
+        moisture: 'Bodenfeuchtigkeit',
     },
     offlineQueued: 'Offline. Aktion für Synchronisation vorgemerkt.',
     failedToSave: 'Speichern fehlgeschlagen.',

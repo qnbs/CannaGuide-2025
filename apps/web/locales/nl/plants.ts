@@ -238,6 +238,8 @@ export const plantsView = {
         completedTasks: 'Voltooid',
     },
     journal: {
+        today: 'Vandaag',
+        yesterday: 'Gisteren',
         details: {
             amount: 'Hoeveelheid',
             type: 'Type',

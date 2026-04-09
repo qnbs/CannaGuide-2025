@@ -17,9 +17,11 @@ export const useFocusTrap = (isOpen: boolean) => {
             containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS),
         )
 
+        let timerId: ReturnType<typeof setTimeout> | undefined
+
         if (focusableElements.length > 0) {
             // Delay focus to allow for modal transitions
-            setTimeout(() => {
+            timerId = setTimeout(() => {
                 const firstElement = focusableElements[0]
                 firstElement?.focus()
             }, 100)
@@ -58,6 +60,7 @@ export const useFocusTrap = (isOpen: boolean) => {
         document.addEventListener('keydown', handleKeyDown)
 
         return () => {
+            if (timerId !== undefined) clearTimeout(timerId)
             document.removeEventListener('keydown', handleKeyDown)
             previouslyFocusedElement.current?.focus()
         }

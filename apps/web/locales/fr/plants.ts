@@ -244,6 +244,8 @@ export const plantsView = {
         completedTasks: 'Terminees',
     },
     journal: {
+        today: "Aujourd'hui",
+        yesterday: 'Hier',
         details: {
             amount: 'Quantite',
             type: 'Type',

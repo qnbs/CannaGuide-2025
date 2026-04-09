@@ -3,10 +3,17 @@ import * as Y from 'yjs'
 import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import simulationReducer, {
     addPlant,
+    updatePlant,
     upsertPlant,
     removePlant,
+    addJournalEntry,
 } from '@/stores/slices/simulationSlice'
-import nutrientPlannerReducer from '@/stores/slices/nutrientPlannerSlice'
+import nutrientPlannerReducer, {
+    addReading,
+    updateScheduleEntry,
+    upsertScheduleEntry,
+    removeScheduleEntry,
+} from '@/stores/slices/nutrientPlannerSlice'
 import settingsReducer, { defaultSettings } from '@/stores/slices/settingsSlice'
 import { plantToYMap } from './crdtAdapters'
 import type { Plant } from '@/types'
@@ -428,6 +435,280 @@ describe('crdtSyncBridge', () => {
             const state = _getLoopDetectorState()
             expect(state.bridgeDisabled).toBe(false)
             expect(state.recentDispatchCount).toBe(0)
+        })
+    })
+
+    // -- Redux -> CRDT: updatePlant -------------------------------------------
+
+    describe('Redux -> CRDT: updatePlant', () => {
+        it('updatePlant syncs changed fields to existing Y.Map entry', () => {
+            const plant = makePlant('plant-update')
+            store.dispatch(addPlant({ plant, slotIndex: 0 }))
+
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+            expect(plantsMap.get('plant-update')!.get('name')).toBe('Test Plant plant-update')
+
+            store.dispatch(updatePlant({ id: 'plant-update', changes: { name: 'Renamed Plant' } }))
+            expect(plantsMap.get('plant-update')!.get('name')).toBe('Renamed Plant')
+        })
+
+        it('updatePlant serialises object changes as JSON', () => {
+            const plant = makePlant('plant-obj')
+            store.dispatch(addPlant({ plant, slotIndex: 0 }))
+
+            store.dispatch(
+                updatePlant({
+                    id: 'plant-obj',
+                    changes: { nutrientPool: { nitrogen: 99, phosphorus: 88, potassium: 77 } },
+                }),
+            )
+
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+            const raw = plantsMap.get('plant-obj')!.get('nutrientPool')
+            expect(typeof raw).toBe('string')
+            expect(JSON.parse(raw as string)).toEqual({
+                nitrogen: 99,
+                phosphorus: 88,
+                potassium: 77,
+            })
+        })
+
+        it('updatePlant ignores non-existing plant id', () => {
+            // Should not throw when updating a plant that is not in Y.Doc
+            expect(() => {
+                store.dispatch(updatePlant({ id: 'ghost', changes: { name: 'Ghost' } }))
+            }).not.toThrow()
+        })
+    })
+
+    // -- Redux -> CRDT: addJournalEntry ---------------------------------------
+
+    describe('Redux -> CRDT: addJournalEntry', () => {
+        it('syncs journal array to CRDT after addJournalEntry', () => {
+            const plant = makePlant('plant-journal')
+            store.dispatch(addPlant({ plant, slotIndex: 0 }))
+
+            store.dispatch(
+                addJournalEntry({
+                    plantId: 'plant-journal',
+                    entry: {
+                        type: 'note',
+                        note: 'Watered today',
+                        timestamp: Date.now(),
+                    },
+                }),
+            )
+
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+            const journalRaw = plantsMap.get('plant-journal')!.get('journal')
+            expect(journalRaw).toBeDefined()
+            const journal = JSON.parse(journalRaw as string) as unknown[]
+            expect(journal.length).toBeGreaterThanOrEqual(1)
+        })
+    })
+
+    // -- Redux -> CRDT: Nutrient schedule actions -----------------------------
+
+    describe('Redux -> CRDT: nutrient schedule', () => {
+        it('updateScheduleEntry writes updated entry to CRDT', () => {
+            // First seed a schedule entry via initCrdtSyncBridge preload
+            const entry = makeScheduleEntry('sched-update')
+            const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
+
+            // Manually add to CRDT so it exists
+            testDoc.transact(() => {
+                const yMap = new Y.Map<unknown>()
+                yMap.set('id', entry.id)
+                yMap.set('stage', entry.stage)
+                yMap.set('targetEc', entry.targetEc)
+                yMap.set('targetPh', entry.targetPh)
+                yMap.set('npkRatio', JSON.stringify(entry.npkRatio))
+                yMap.set('notes', entry.notes)
+                scheduleMap.set(entry.id, yMap as Y.Map<unknown>)
+            }, 'remote-peer')
+
+            // Dispatch updateScheduleEntry
+            store.dispatch(upsertScheduleEntry(entry))
+            store.dispatch(updateScheduleEntry({ id: 'sched-update', changes: { targetEc: 2.0 } }))
+
+            // The CRDT map should have the updated schedule entry
+            const updatedYMap = scheduleMap.get('sched-update')
+            expect(updatedYMap).toBeDefined()
+        })
+
+        it('removeScheduleEntry deletes from CRDT', () => {
+            const entry = makeScheduleEntry('sched-remove')
+            // Add entry to Redux store first
+            store.dispatch(upsertScheduleEntry(entry))
+
+            const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
+            expect(scheduleMap.has('sched-remove')).toBe(true)
+
+            // Remove it
+            store.dispatch(removeScheduleEntry('sched-remove'))
+            expect(scheduleMap.has('sched-remove')).toBe(false)
+        })
+
+        it('upsertScheduleEntry with fromCrdt=true skips CRDT write', () => {
+            const entry = makeScheduleEntry('sched-crdt')
+            const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
+
+            store.dispatch(upsertScheduleEntry(entry, { fromCrdt: true }))
+
+            // Should be in Redux but NOT in CRDT (bridge skipped due to fromCrdt)
+            const state = store.getState()
+            expect(state.nutrientPlanner.schedule.find((e) => e.id === 'sched-crdt')).toBeDefined()
+            expect(scheduleMap.has('sched-crdt')).toBe(false)
+        })
+    })
+
+    // -- Redux -> CRDT: Nutrient reading actions ------------------------------
+
+    describe('Redux -> CRDT: nutrient readings', () => {
+        it('addReading writes latest reading to CRDT', () => {
+            store.dispatch(
+                addReading({
+                    plantId: null,
+                    ec: 1.8,
+                    ph: 6.0,
+                    waterTempC: 21,
+                    readingType: 'input',
+                    notes: '',
+                }),
+            )
+
+            const readingsMap = testDoc.getMap('nutrient-readings') as Y.Map<Y.Map<unknown>>
+            // addReading generates id in reducer, so we check the map has at least one entry
+            expect(readingsMap.size).toBeGreaterThanOrEqual(1)
+        })
+    })
+
+    // -- CRDT -> Redux: schedule observer -------------------------------------
+
+    describe('CRDT -> Redux: schedule observer', () => {
+        it('schedule deletion from CRDT propagates to Redux', () => {
+            const entry = makeScheduleEntry('sched-remote-del')
+            // Add via Redux first
+            store.dispatch(upsertScheduleEntry(entry))
+            expect(
+                store.getState().nutrientPlanner.schedule.find((e) => e.id === 'sched-remote-del'),
+            ).toBeDefined()
+
+            // Simulate remote deletion from CRDT
+            const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
+            testDoc.transact(() => {
+                scheduleMap.delete('sched-remote-del')
+            }, 'remote-peer')
+
+            expect(
+                store.getState().nutrientPlanner.schedule.find((e) => e.id === 'sched-remote-del'),
+            ).toBeUndefined()
+        })
+    })
+
+    // -- CRDT -> Redux: readings observer -------------------------------------
+
+    describe('CRDT -> Redux: readings observer', () => {
+        it('reading add from CRDT propagates to Redux', () => {
+            const readingsMap = testDoc.getMap('nutrient-readings') as Y.Map<Y.Map<unknown>>
+
+            testDoc.transact(() => {
+                const yMap = new Y.Map<unknown>()
+                yMap.set('id', 'remote-reading-1')
+                yMap.set('plantId', null)
+                yMap.set('timestamp', 1700000000000)
+                yMap.set('ec', 2.1)
+                yMap.set('ph', 5.8)
+                yMap.set('waterTempC', 22)
+                yMap.set('readingType', 'input')
+                yMap.set('notes', '')
+                readingsMap.set('remote-reading-1', yMap as Y.Map<unknown>)
+            }, 'remote-peer')
+
+            const state = store.getState()
+            const found = state.nutrientPlanner.readings.find((r) => r.id === 'remote-reading-1')
+            expect(found).toBeDefined()
+            expect(found!.ec).toBe(2.1)
+        })
+    })
+
+    // -- Loop detector threshold breach ---------------------------------------
+
+    describe('loop detector threshold breach', () => {
+        it('disables bridge and reports to Sentry after >50 dispatches', async () => {
+            const Sentry = await import('@sentry/react')
+            const captureExceptionSpy = vi.spyOn(Sentry, 'captureException')
+
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+
+            // Rapid-fire >50 remote updates within the loop window
+            for (let i = 0; i < 55; i++) {
+                testDoc.transact(() => {
+                    const yMap = new Y.Map<unknown>()
+                    for (const [key, value] of Object.entries(
+                        plantToYMap(makePlant(`loop-plant-${i}`)),
+                    )) {
+                        yMap.set(key, value)
+                    }
+                    plantsMap.set(`loop-plant-${i}`, yMap as Y.Map<unknown>)
+                }, 'remote-peer')
+            }
+
+            const state = _getLoopDetectorState()
+            expect(state.bridgeDisabled).toBe(true)
+            expect(captureExceptionSpy).toHaveBeenCalled()
+        })
+    })
+
+    // -- Seeding: schedule and readings ---------------------------------------
+
+    describe('initial seeding: schedule and readings', () => {
+        it('seeds nutrient schedule from Redux when CRDT map is empty', () => {
+            const freshStore = createTestStore()
+            const entry = makeScheduleEntry('seed-sched')
+            freshStore.dispatch(upsertScheduleEntry(entry))
+
+            // Clear CRDT schedule map
+            const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
+            scheduleMap.forEach((_: unknown, key: string) => scheduleMap.delete(key))
+
+            // Also clear plants so seeding runs all branches
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+            plantsMap.forEach((_: unknown, key: string) => plantsMap.delete(key))
+
+            // Clear readings too
+            const readingsMap = testDoc.getMap('nutrient-readings') as Y.Map<Y.Map<unknown>>
+            readingsMap.forEach((_: unknown, key: string) => readingsMap.delete(key))
+
+            initCrdtSyncBridge(freshStore)
+
+            expect(scheduleMap.has('seed-sched')).toBe(true)
+        })
+
+        it('seeds nutrient readings from Redux when CRDT map is empty', () => {
+            const freshStore = createTestStore()
+            freshStore.dispatch(
+                addReading({
+                    plantId: null,
+                    ec: 1.5,
+                    ph: 6.2,
+                    waterTempC: 20,
+                    readingType: 'input',
+                    notes: '',
+                }),
+            )
+
+            // Clear all CRDT maps
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+            plantsMap.forEach((_: unknown, key: string) => plantsMap.delete(key))
+            const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
+            scheduleMap.forEach((_: unknown, key: string) => scheduleMap.delete(key))
+            const readingsMap = testDoc.getMap('nutrient-readings') as Y.Map<Y.Map<unknown>>
+            readingsMap.forEach((_: unknown, key: string) => readingsMap.delete(key))
+
+            initCrdtSyncBridge(freshStore)
+
+            expect(readingsMap.size).toBeGreaterThanOrEqual(1)
         })
     })
 

@@ -129,9 +129,10 @@ describe('syncService', () => {
         const body = JSON.parse(String((options as FetchOptions).body)) as {
             files: Record<string, { content: string }>
         }
-        const content = JSON.parse(
-            body.files['cannaguide-sync.json']?.content ?? '{}',
-        ) as { version: string; payload: string }
+        const content = JSON.parse(body.files['cannaguide-sync.json']?.content ?? '{}') as {
+            version: string
+            payload: string
+        }
         expect(content.version).toBe('crdt-v1')
         expect(content.payload).toBe(FAKE_BASE64)
     })
@@ -319,6 +320,296 @@ describe('syncService', () => {
         const svc = await loadService()
         await svc.forceRemoteToLocal(FAKE_BASE64)
 
+        expect(applyUpdateMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('forceRemoteToLocal throws when CRDT not initialized', async () => {
+        isInitializedMock.mockReturnValue(false)
+        const svc = await loadService()
+
+        await expect(svc.forceRemoteToLocal(FAKE_BASE64)).rejects.toThrow('CRDT not initialized')
+    })
+
+    // -- Fallback mode (CRDT init failed) ------------------------------------
+
+    describe('LWW fallback mode', () => {
+        it('pushToGist in fallback mode sends raw JSON', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    id: 'gist-fallback',
+                    html_url: 'https://gist.github.com/x/gist-fallback',
+                }),
+            } as Response)
+
+            const svc = await loadService()
+            const reduxState = JSON.stringify({ plants: [{ id: 'p1' }] })
+            const result = await svc.pushToGist(null, null, reduxState)
+
+            expect(result.gistId).toBe('gist-fallback')
+            const [, options] = vi.mocked(global.fetch).mock.calls[0] ?? []
+            const body = JSON.parse(String((options as FetchOptions).body)) as {
+                files: Record<string, { content: string }>
+            }
+            const content = JSON.parse(body.files['cannaguide-sync.json']?.content ?? '{}') as {
+                version: number
+                state: unknown
+            }
+            expect(content.version).toBe(1)
+            expect(content.state).toEqual({ plants: [{ id: 'p1' }] })
+        })
+
+        it('pushToGist in fallback mode throws when no reduxStateJson', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            const svc = await loadService()
+
+            await expect(svc.pushToGist(null)).rejects.toThrow(
+                'CRDT fallback requires reduxStateJson',
+            )
+        })
+
+        it('pushToGist in fallback mode encrypts when key provided', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            encryptSyncPayloadMock.mockResolvedValueOnce('encrypted-lww')
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    id: 'gist-enc-fb',
+                    html_url: 'https://gist.github.com/x/gist-enc-fb',
+                }),
+            } as Response)
+
+            const svc = await loadService()
+            await svc.pushToGist(null, 'my-key', '{"a":1}')
+
+            expect(encryptSyncPayloadMock).toHaveBeenCalledTimes(1)
+            const [, options] = vi.mocked(global.fetch).mock.calls[0] ?? []
+            const body = JSON.parse(String((options as FetchOptions).body)) as {
+                files: Record<string, { content: string }>
+            }
+            expect(body.files['cannaguide-sync.json']?.content).toBe('encrypted-lww')
+        })
+
+        it('pushToGist in fallback mode throws on fetch error', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+            } as Response)
+
+            const svc = await loadService()
+            await expect(svc.pushToGist(null, null, '{"a":1}')).rejects.toThrow(
+                'settingsView.data.sync.pushFailed',
+            )
+        })
+
+        it('pullFromGist in fallback mode returns legacy state', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    files: {
+                        'cannaguide-sync.json': {
+                            content: JSON.stringify({
+                                version: 1,
+                                syncedAt: 9999,
+                                state: { plants: [] },
+                            }),
+                        },
+                    },
+                }),
+            } as Response)
+
+            const svc = await loadService()
+            const pull = await svc.pullFromGist('abcdef01234567890123')
+
+            expect(pull.result.status).toBe('migrated')
+            expect(pull.legacyState).toBeDefined()
+        })
+
+        it('pullFromGist in fallback mode returns error for crdt-v1 payload', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            vi.mocked(global.fetch).mockResolvedValueOnce(makeCrdtGistResponse(FAKE_BASE64))
+
+            const svc = await loadService()
+            const pull = await svc.pullFromGist('abcdef01234567890123')
+
+            expect(pull.result.status).toBe('error')
+        })
+
+        it('pullFromGist in fallback mode throws on invalid payload', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    files: {
+                        'cannaguide-sync.json': {
+                            content: JSON.stringify({ unknown: true }),
+                        },
+                    },
+                }),
+            } as Response)
+
+            const svc = await loadService()
+            await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+                'settingsView.data.sync.invalidPayload',
+            )
+        })
+
+        it('pullFromGist in fallback mode throws on fetch failure', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: false,
+                status: 403,
+            } as Response)
+
+            const svc = await loadService()
+            await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+                'settingsView.data.sync.pullFailed',
+            )
+        })
+
+        it('pullFromGist in fallback mode decrypts encrypted payload', async () => {
+            isFallbackModeMock.mockReturnValue(true)
+            isEncryptedSyncPayloadMock.mockReturnValueOnce(true)
+            decryptSyncPayloadMock.mockResolvedValueOnce(
+                JSON.stringify({ version: 1, syncedAt: 5555, state: { x: 1 } }),
+            )
+
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    files: {
+                        'cannaguide-sync.json': {
+                            content: '{"v":2,"iv":"x","data":"y"}',
+                        },
+                    },
+                }),
+            } as Response)
+
+            const svc = await loadService()
+            const pull = await svc.pullFromGist('abcdef01234567890123', 'my-key')
+
+            expect(decryptSyncPayloadMock).toHaveBeenCalledTimes(1)
+            expect(pull.result.status).toBe('migrated')
+        })
+    })
+
+    // -- Push error handling -------------------------------------------------
+
+    it('throws on push fetch failure', async () => {
+        isFallbackModeMock.mockReturnValue(false)
+        isInitializedMock.mockReturnValue(true)
+        vi.mocked(global.fetch).mockResolvedValueOnce({
+            ok: false,
+            status: 403,
+        } as Response)
+
+        const svc = await loadService()
+        await expect(svc.pushToGist('gist-err')).rejects.toThrow(
+            'settingsView.data.sync.pushFailed',
+        )
+    })
+
+    // -- Pull edge cases -----------------------------------------------------
+
+    it('throws when pull response has no sync file', async () => {
+        vi.mocked(global.fetch).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                files: {},
+            }),
+        } as Response)
+
+        const svc = await loadService()
+        await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+            'settingsView.data.sync.noSyncFile',
+        )
+    })
+
+    it('throws when pull response has invalid payload', async () => {
+        vi.mocked(global.fetch).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                files: {
+                    'cannaguide-sync.json': {
+                        content: JSON.stringify({ unknown: 'format' }),
+                    },
+                },
+            }),
+        } as Response)
+
+        const svc = await loadService()
+        await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+            'settingsView.data.sync.invalidPayload',
+        )
+    })
+
+    it('throws when encrypted pull has no encryption key', async () => {
+        isEncryptedSyncPayloadMock.mockReturnValueOnce(true)
+
+        vi.mocked(global.fetch).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                files: {
+                    'cannaguide-sync.json': {
+                        content: '{"v":2,"iv":"x","data":"y"}',
+                    },
+                },
+            }),
+        } as Response)
+
+        const svc = await loadService()
+        await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+            'settingsView.data.sync.encryptionKeyRequired',
+        )
+    })
+
+    it('throws when CRDT not initialized on pull', async () => {
+        isInitializedMock.mockReturnValue(false)
+        isFallbackModeMock.mockReturnValue(false)
+        const svc = await loadService()
+
+        await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+            'CRDT not initialized',
+        )
+    })
+
+    it('extracts gist id from full URL', async () => {
+        vi.mocked(global.fetch).mockResolvedValueOnce(makeCrdtGistResponse(FAKE_BASE64))
+
+        const svc = await loadService()
+        await svc.pullFromGist('https://gist.github.com/user/abcdef01234567890123')
+
+        const [url] = vi.mocked(global.fetch).mock.calls[0] ?? []
+        expect(url).toContain('abcdef01234567890123')
+    })
+
+    it('pull fetch failure throws', async () => {
+        vi.mocked(global.fetch).mockResolvedValueOnce({
+            ok: false,
+            status: 404,
+        } as Response)
+
+        const svc = await loadService()
+        await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+            'settingsView.data.sync.pullFailed',
+        )
+    })
+
+    it('forceRemoteToLocal clears shared types before applying update', async () => {
+        const clearFn = vi.fn()
+        const mockDoc = {
+            share: new Map([['plants', { clear: clearFn }]]),
+            transact: (fn: () => void) => fn(),
+        }
+        getDocMock.mockReturnValue(mockDoc)
+
+        const svc = await loadService()
+        await svc.forceRemoteToLocal(FAKE_BASE64)
+
+        expect(clearFn).toHaveBeenCalledTimes(1)
         expect(applyUpdateMock).toHaveBeenCalledTimes(1)
     })
 })

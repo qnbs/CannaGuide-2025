@@ -2,7 +2,81 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 100) -- Test Strictness + Lint Phase 4 Stores
+## Latest Session (Session 101) -- Test Coverage Baseline + Critical Path Tests
+
+**Status: v1.5.0. 1818 tests passing. TypeScript clean. Build clean.
+Coverage: 33.7% lines (thresholds enforced in vite.config.ts).**
+
+### What Was Done (Session 101)
+
+1. **Coverage baseline measured** -- 33.13% lines, 23.53% functions,
+   33.96% branches, 39.17% statements before new tests.
+
+2. **crdtSyncBridge.ts: 51.2% -> 84.8% lines** -- Added 13 tests
+   covering updatePlant listener, addJournalEntry sync,
+   nutrient schedule CRUD (update/remove/upsert+fromCrdt),
+   addReading sync, CRDT->Redux schedule deletion observer,
+   CRDT->Redux readings observer, loop detector threshold
+   breach (>50 dispatches -> Sentry), schedule/readings
+   initial seeding.
+
+3. **syncService.ts: 57.9% -> 97.4% lines** -- Added 18 tests
+   covering LWW fallback mode (push raw JSON, push without
+   reduxStateJson, push encryption, push fetch error, pull legacy,
+   pull crdt-v1 error, pull invalid payload, pull fetch failure,
+   pull decryption), push fetch failure, pull no sync file,
+   pull invalid payload, pull encrypted without key, pull not
+   initialized, gist URL extraction, pull fetch failure,
+   forceRemoteToLocal clear+apply, forceRemoteToLocal not
+   initialized.
+
+4. **proactiveCoachService.ts: +7 tests** -- Cooldown throttling,
+   humidity/VPD/pH/EC breach detection, AI advice failure
+   graceful handling, missing grows graceful handling.
+
+5. **listenerMiddleware.ts: 16.6% -> 43.2% lines** -- Created
+   new test file with 14 tests covering setSetting listeners
+   (aiMode, localOnlyMode+sentry, ecoMode), notification
+   listeners (addUserStrain, deleteUserStrain, deleteMultiple,
+   addMultipleToFavorites, removeMultipleFromFavorites,
+   clearArchives, resetPlants), plantStateUpdated problem
+   detection, addGrow auto-activate, removeGrow notification.
+
+6. **README coverage badge** -- Added static coverage badge
+   (33.7% lines) next to test count badge. Updated test count
+   from 1766 to 1818.
+
+### Verified Metrics (Session 101)
+
+- Tests: 1818 passed, 0 failures (+52 new)
+- Coverage: 33.66% lines, 23.88% functions, 34.75% branches
+- Typecheck: clean (TS2719 filtered)
+- Build: success (158 precache entries)
+
+### Coverage per target file
+
+| File                     | Before      | After       |
+| ------------------------ | ----------- | ----------- |
+| crdtSyncBridge.ts        | 51.2% lines | 84.8% lines |
+| syncService.ts           | 57.9% lines | 97.4% lines |
+| proactiveCoachService.ts | ~30% lines  | ~55% lines  |
+| listenerMiddleware.ts    | 16.6% lines | 43.2% lines |
+
+### Next Steps (E3)
+
+- WorkerBus W-02 (preemption) + Generic WorkerMessage types
+- Continue coverage improvement to >40% lines global
+- Stryker mutation score verification
+
+### Planned Executions
+
+- **E3:** WorkerBus W-02 (preemption) + Generic WorkerMessage types
+- **E4:** WorkerBus W-04 (cross-worker) + API docs completion
+- **E5:** Release v1.5.1 + Lighthouse + security scan
+
+---
+
+## Previous Session (Session 100) -- Test Strictness + Lint Phase 4 Stores
 
 **Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.
 Lint: 4 strict scopes enforced (hooks, components/common, services, stores).**

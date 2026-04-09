@@ -2,7 +2,61 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 105) -- CRDT-WorkerBus Tightening + Yjs Performance
+## Latest Session (Session 106) -- API Docs + Architecture Sync + v1.6.0 Release
+
+**Status: All 5 Aufgaben implemented. 1844 tests passing. TypeScript
+clean. Build clean. v1.6.0 released.**
+
+### What Was Done (Session 106)
+
+1. **API Reference Documentation (8 docs)** -- Created 5 new API docs
+   in `docs/api/`: worker-bus.md (dispatch, priority, rate limiting,
+   cross-worker channels, telemetry, error codes), crdt-sync.md
+   (crdtService, crdtSyncBridge, crdtAdapters, syncService, protocol
+   flow), proactive-coach.md (thresholds, stage overrides, cooldown,
+   useAlertsStore), equipment-calculators.md (9 calculator functions
+   with Zod schemas), ai-providers.md (4 providers, key management,
+   generation routing). Updated docs/api/README.md index (8 docs listed).
+
+2. **ARCHITECTURE.md sync** -- Updated service count to 108, test count
+   to 1844. Added CRDT/sync/calculator services to directory listing.
+   Expanded WorkerBus section with W-04 cross-worker channels and typed
+   dispatch. Updated API reference links to all 8 docs.
+
+3. **AUDIT_BACKLOG closures** -- D-01 (API docs) closed with resolution.
+   F-05 (Multi-Grow) closed with resolution referencing growsSlice,
+   MAX_GROWS=3, ADR-0005. Summary table updated (26/28 Medium done).
+
+4. **ROADMAP.md update** -- v1.4 status corrected from "In Progress" to
+   "Released". v1.5 exit criteria test count updated (1844). v1.6
+   engineering track added (WorkerBus W-01-W-04, CRDT hardening, API
+   docs, architecture sync, audit closures).
+
+5. **v1.6.0 Release** -- Version bumped in root + apps/web package.json.
+   CHANGELOG.md entry added. README.md badges and metrics updated.
+   copilot-instructions.md version + test count updated.
+
+### Verified Metrics (Session 106)
+
+- Tests: 1844 passed, 0 failures
+- Typecheck: clean (TS2719 filtered)
+- Build: success
+- API docs: 8 reference documents in docs/api/
+- Services: 108 | Workers: 9 | Slices: 15 | Stores: 8
+
+### Next Steps
+
+- Push unit test coverage above 40% lines
+- Mutation testing: run Stryker on CRDT slices
+- Implement `__PORT_TRANSFER__` handler in production workers
+- Consider adding CRDT telemetry dashboard in Settings/Debug view
+- Evaluate Y.Doc compaction strategy for long-running documents
+- v1.6 content track: scholarly lexicon expansion, citation layer,
+  video hub (see ROADMAP.md v1.6 Content Track)
+
+---
+
+## Session 105 -- CRDT-WorkerBus Tightening + Yjs Performance
 
 **Status: All 6 Aufgaben implemented. Tests passing. TypeScript clean.
 Build clean. All validations green.**
@@ -48,14 +102,6 @@ Build clean. All validations green.**
 - Typecheck: clean (TS2719 filtered)
 - Build: success, 158 precache entries
 - CRDT tests: 52 bridge + 19 service + 31 sync = 102 passing
-
-### Next Steps
-
-- Push unit test coverage above 40% lines
-- Mutation testing: run Stryker on CRDT slices
-- Implement `__PORT_TRANSFER__` handler in production workers
-- Consider adding CRDT telemetry dashboard in Settings/Debug view
-- Evaluate Y.Doc compaction strategy for long-running documents
 
 ---
 

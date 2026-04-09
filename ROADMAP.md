@@ -205,7 +205,7 @@ Target: **2027-Q2**
 
 ## v1.4 -- Discovery & Knowledge Scale
 
-Target: **2026-Q4** | Status: **In Progress**
+Released: **2026-Q4**
 
 | Feature                                                             | Category   | Priority | Issue |
 | ------------------------------------------------------------------- | ---------- | -------- | ----- |
@@ -249,13 +249,30 @@ Released: **2026-04-08**
 - CRDT sync is operational with conflict resolution UI.
 - Multi-Grow lifecycle supports 3 grows per CanG with scoped AI context.
 - All npm references replaced with pnpm across the entire repo.
-- 1766 tests pass, build succeeds, typecheck clean.
+- 1844 tests pass, build succeeds, typecheck clean.
 
 ---
 
 ## v1.6 — Scholarly Knowledge & Media Curation 📋
 
 Target: **2027-Q1**
+
+### Engineering Track (completed in v1.6.0)
+
+| Feature                                                                         | Category      | Status |
+| ------------------------------------------------------------------------------- | ------------- | ------ |
+| WorkerBus W-01: Per-worker sliding-window rate limiting                         | Architecture  | done   |
+| WorkerBus W-02: Priority preemption (AbortController, re-queue, max 3)          | Architecture  | done   |
+| WorkerBus W-03: Telemetry export (JSON-serializable, Sentry context)            | Architecture  | done   |
+| WorkerBus W-04: Cross-worker MessageChannel + typed dispatch (WorkerMessageMap) | Architecture  | done   |
+| CRDT differential encoding (remote state vector, delta-only sync)               | Sync          | done   |
+| CRDT bridge batching (100ms debounce, single Y.Doc transaction)                 | Sync          | done   |
+| CRDT telemetry integration (WorkerBus W-03 setCrdtMetrics)                      | Observability | done   |
+| API reference documentation (8 docs in docs/api/)                               | Documentation | done   |
+| ARCHITECTURE.md sync (108 services, 1844 tests, full WorkerBus section)         | Documentation | done   |
+| Audit backlog closure (D-01 API docs, F-05 Multi-Grow, F-06 CRDT sync)          | Quality       | done   |
+
+### Content Track (planned)
 
 | Feature                                                                             | Category     | Priority | Issue |
 | ----------------------------------------------------------------------------------- | ------------ | -------- | ----- |

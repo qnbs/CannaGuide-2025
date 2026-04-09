@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                      |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                            |
 | Workers      | WorkerBus (promise-based, 9 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 1766 unit tests, Playwright E2E + Component tests                                 |
+| Testing      | Vitest 1844 unit tests, Playwright E2E + Component tests                                 |
 | Distribution | GitHub Pages, Netlify (PR previews)                                                      |
 
 ---
@@ -77,6 +77,12 @@ apps/web/                 Main PWA (@cannaguide/web)
     localAi*.ts           15 local AI service modules
     gpuResourceManager.ts GPU mutex (FIFO queue, WebLLM eviction)
     inferenceQueueService.ts  Priority queue for inference tasks
+    crdtService.ts        Y.Doc lifecycle, differential encoding, divergence detection
+    crdtSyncBridge.ts     Bidirectional Redux <-> Y.Doc bridge (batching, loop detection, telemetry)
+    crdtAdapters.ts       Zod-validated type adapters (Plant, JournalEntry, NutrientSchedule, EcPhReading)
+    syncService.ts        CRDT-aware Gist sync (push/pull/force), legacy JSON migration, E2EE
+    proactiveCoachService.ts  Smart coach: threshold monitoring + AI advice + cooldown
+    knowledgeCalculatorService.ts  Terpene entourage, transpiration, EC/TDS, light spectrum, cannabinoid ratio
     dbService.ts          CannaGuideDB (strains, images, search index)
     cryptoService.ts      AES-256-GCM key encryption at rest
     privacyService.ts     GDPR Art. 17/20 -- full erasure + data export
@@ -166,6 +172,7 @@ The `workerBus.ts` singleton provides centralized, promise-based communication w
 - **Priority Preemption (W-02):** when all slots are full and a higher-priority job arrives, the lowest-priority running job is preempted (AbortController-based, main-thread only) and automatically re-queued (max 3 retries before PREEMPTED rejection)
 - **Per-Worker Rate Limiting (W-01):** sliding-window limiter (`setRateLimit`/`getRateLimit`), rejects with non-retryable `RATE_LIMITED` error
 - **Telemetry Export (W-03):** `exportTelemetry()` returns JSON-serializable `WorkerBusTelemetryExport` with per-worker snapshots (peakLatencyMs, errorRate, timestamps, preemptionCount), integrated with Sentry context (60s interval)
+- **Cross-Worker Channels (W-04):** `createChannel(workerA, workerB)` creates a MessageChannel and transfers ports to both workers via `__PORT_TRANSFER__` message; `closeChannel()` tears down; auto-cleanup on unregister/dispose. `WorkerMessageMap` in `workerBus.types.ts` maps worker names to per-message payload/response types; `dispatch()` overloads enforce compile-time type safety for typed workers
 - **Abort Support:** AbortController per dispatch, automatic cleanup on cancel
 - **Transferable Objects:** zero-copy transfers for ArrayBuffer/ImageBitmap payloads
 - **State Sync:** `workerStateSyncService.ts` auto-wires dispatch results to Redux/Zustand via handler registry
@@ -273,7 +280,7 @@ aiFacade.ts  -->  aiService.ts  -->  Cloud available?  --yes-->  aiProviderServi
 
 **Eco-Mode:** When `settings.localAi.ecoMode` is true, `getModelRecommendation()` forces WASM backend, smallest model (0.5B q4), disables WebLLM and image generation.
 
-> **API Reference:** See [docs/api/](api/) for detailed method signatures: [AI Facade](api/ai-facade.md), [RAG Pipeline](api/rag-pipeline.md), [Local AI Infrastructure](api/local-ai-infrastructure.md).
+> **API Reference:** See [docs/api/](api/) for detailed method signatures: [AI Facade](api/ai-facade.md), [AI Providers](api/ai-providers.md), [CRDT Sync](api/crdt-sync.md), [Equipment Calculators](api/equipment-calculators.md), [Local AI Infrastructure](api/local-ai-infrastructure.md), [Proactive Coach](api/proactive-coach.md), [RAG Pipeline](api/rag-pipeline.md), [WorkerBus](api/worker-bus.md).
 
 ### Plugin System
 
@@ -310,7 +317,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 pnpm run dev              # Vite dev server (localhost:5173)
 pnpm run build            # Production build (Vite 7 + PWA manifest injection)
-pnpm test                 # Vitest unit/integration (1766 tests)
+pnpm test                 # Vitest unit/integration (1844 tests)
 pnpm run test:e2e         # Playwright E2E
 pnpm run test:ct          # Playwright Component tests
 pnpm run lint:full        # ESLint entire project

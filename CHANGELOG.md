@@ -4,6 +4,50 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.6.0] - 2026-04-10
+
+### Added
+
+- **WorkerBus W-02: priority preemption** -- When all concurrency
+  slots are full and a higher-priority job arrives, the lowest-priority
+  running job is preempted via AbortController and re-queued (max 3
+  re-queues before PREEMPTED rejection).
+- **WorkerBus W-04: cross-worker channels** -- `createChannel()` /
+  `closeChannel()` create direct MessageChannel links between workers
+  via `__PORT_TRANSFER__` messages. Auto-cleanup on unregister/dispose.
+- **WorkerBus W-04: typed dispatch** -- `WorkerMessageMap` in
+  `workerBus.types.ts` maps worker names to per-message payload/response
+  types. `dispatch()` overloads enforce compile-time type safety for
+  typed workers (simulation, visionInference, hydroForecast).
+- **CRDT differential encoding** -- `encodeSyncPayload()` uses stored
+  remote state vector to produce delta-only updates. Full-state fallback
+  when no remote vector is available.
+- **CRDT bridge batching** -- Redux dispatches within 100ms are batched
+  into a single Y.Doc transaction to reduce merge overhead.
+- **CRDT telemetry** -- `reportCrdtTelemetry()` feeds divergence count,
+  sync payload bytes, conflicts resolved, and sync duration into WorkerBus
+  W-03 via `setCrdtMetrics()`.
+- **API reference documentation** -- 8 comprehensive API docs in
+  `docs/api/`: WorkerBus, CRDT Sync, AI Providers, Equipment Calculators,
+  Proactive Coach, AI Facade, RAG Pipeline, Local AI Infrastructure.
+
+### Changed
+
+- **ARCHITECTURE.md sync** -- Updated service count (108), test count
+  (1844), added CRDT/sync/calculator services to directory listing,
+  expanded WorkerBus section with W-04 cross-worker channels.
+- **AUDIT_BACKLOG closures** -- D-01 (API docs), F-05 (Multi-Grow),
+  summary updated (26/28 Medium done).
+- **ROADMAP.md** -- v1.4 status corrected to Released, v1.5 exit
+  criteria updated (1844 tests), v1.6 engineering track added.
+
+### Fixed
+
+- **TS2411 workerBus.types.ts** -- Removed incompatible string index
+  signature from `WorkerMessageMap` interface.
+
+---
+
 ## [1.5.1] - 2026-04-09
 
 ### Added

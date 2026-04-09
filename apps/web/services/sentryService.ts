@@ -149,7 +149,10 @@ export const captureLocalAiError = (
             | 'webgpu-device-destroy-hidden'
             | 'webgpu-device-destroy-explicit'
             | 'hydro-forecast'
-            | 'response-validation'
+            | 'storage-estimate'
+            | 'worker-inference-fallthrough'
+            | 'preload-embedding'
+            | 'preload-nlp'
             | 'response-validation'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number

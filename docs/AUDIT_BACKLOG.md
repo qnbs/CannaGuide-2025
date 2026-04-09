@@ -15,7 +15,7 @@ Last updated: 2026-04-08 (Session 78)
 | -------- | ----- | ---- | ---- |
 | Critical | 3     | 3    | 0    |
 | High     | 12    | 12   | 0    |
-| Medium   | 28    | 24   | 4    |
+| Medium   | 28    | 26   | 2    |
 | Low      | 10    | 5    | 5    |
 
 ---
@@ -576,11 +576,11 @@ Last updated: 2026-04-08 (Session 78)
 | -------- | --------------- |
 | Severity | Medium          |
 | Effort   | High (3-5 days) |
-| Status   | **Open**        |
+| Status   | **Done**        |
 
 **Finding:** Service APIs lack generated documentation. New contributors rely on reading source code.
 
-**Action:** Evaluate TypeDoc or API Extractor for auto-generated API docs. Start with the public-facing services (aiFacade, workerBus, database).
+**Resolution:** 8 hand-written API reference documents created in `docs/api/`: AI Facade, AI Providers, CRDT Sync, Equipment Calculators, Local AI Infrastructure, Proactive Coach, RAG Pipeline, WorkerBus. All docs reflect actual code signatures verified against source. TypeDoc auto-generation available via `pnpm run docs:ai-core` for the ai-core package. Session 106.
 
 ---
 
@@ -676,11 +676,11 @@ Last updated: 2026-04-08 (Session 78)
 | -------- | --------------- |
 | Severity | Medium          |
 | Effort   | High (3-5 days) |
-| Status   | **Open**        |
+| Status   | **Done**        |
 
 **Finding:** Current architecture supports single grow environment. Users with multiple tents/rooms need separate environment tracking.
 
-**Action:** Extend data model to support multiple grow environments with independent sensor configs, plant assignments, and VPD targets.
+**Resolution:** Multi-grow architecture implemented via `growsSlice.ts` (EntityAdapter, MAX_GROWS=3 per CanG). Each plant carries a `growId`. Grow-scoped selectors (`selectPlantsForGrow`, `selectNutrientScheduleForGrow`). Default grow seeded on first boot. Migration v5->v6 stamps growId on all existing entities. Environment actions: `setGrowEnvironment`, `copyGrowEnvironment`. See ADR-0005. Sessions 89-92.
 
 ---
 
@@ -825,8 +825,8 @@ Recommended implementation order based on impact and effort:
 - [x] T-05 -- AI contract tests (Done, Session 78)
 - [ ] A-02 -- Local AI model versioning
 - [x] P-03 -- Image optimization (Done)
-- [ ] F-05 -- Multi-grow management
-- [ ] D-01 -- API documentation
+- [x] F-05 -- Multi-grow management
+- [x] D-01 -- API documentation
 
 ### Backlog (Long-term)
 

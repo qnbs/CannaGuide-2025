@@ -39,20 +39,18 @@ vi.mock('@/stores/api', async (importOriginal) => {
 
 vi.mock('@/services/strainService', () => ({
     strainService: {
-        getAllStrains: vi
-            .fn()
-            .mockResolvedValue([
-                {
-                    id: 'acdc',
-                    name: 'ACDC',
-                    type: 'Hybrid',
-                    thc: 1,
-                    cbd: 20,
-                    floweringTime: 9,
-                    agronomic: {},
-                    geneticModifiers: {},
-                },
-            ]),
+        getAllStrains: vi.fn().mockResolvedValue([
+            {
+                id: 'acdc',
+                name: 'ACDC',
+                type: 'Hybrid',
+                thc: 1,
+                cbd: 20,
+                floweringTime: 9,
+                agronomic: {},
+                geneticModifiers: {},
+            },
+        ]),
     },
 }))
 
@@ -102,7 +100,7 @@ describe('DashboardSummary', () => {
 
     it('renders stats correctly with active plants', () => {
         const state = createMockState()
-        mockUseAppSelector.mockImplementation((selector: (state: unknown) => unknown) =>
+        mockUseAppSelector.mockImplementation((selector: (state: RootState) => unknown) =>
             selector(state),
         )
 
@@ -124,7 +122,7 @@ describe('DashboardSummary', () => {
                 plants: { ids: [], entities: {} },
             } as unknown as RootState['simulation'],
         })
-        mockUseAppSelector.mockImplementation((selector: (state: unknown) => unknown) =>
+        mockUseAppSelector.mockImplementation((selector: (state: RootState) => unknown) =>
             selector(state),
         )
 
@@ -137,7 +135,7 @@ describe('DashboardSummary', () => {
 
     it('dispatches waterAllPlants action when button is clicked', () => {
         const state = createMockState()
-        mockUseAppSelector.mockImplementation((selector: (state: unknown) => unknown) =>
+        mockUseAppSelector.mockImplementation((selector: (state: RootState) => unknown) =>
             selector(state),
         )
 

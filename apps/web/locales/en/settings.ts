@@ -172,6 +172,7 @@ export const settingsView = {
             model_15B_desc: 'Balanced model for mid-range GPUs. Good multilingual support.',
             model_3B_desc: 'High quality reasoning. Best choice for capable GPUs.',
             model_4B_desc: 'Strong reasoning and instruction following. Largest option.',
+            webGpu: 'WebGPU',
         },
         // Embedding & Semantic RAG
         embeddingModelReady: 'Embedding model (MiniLM) is ready for semantic search.',

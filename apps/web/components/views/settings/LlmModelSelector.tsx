@@ -44,28 +44,30 @@ const ModelCard = memo(function ModelCard({ model, isSelected, onSelect }: Model
                     </span>
                     {model.recommended && (
                         <span className="text-xs rounded bg-emerald-700/60 px-1.5 py-0.5 text-emerald-300">
-                            {t('settingsView.modelSelector.recommended')}
+                            {t('settingsView.offlineAi.modelSelector.recommended')}
                         </span>
                     )}
                     {model.requiresWebGPU && (
                         <span className="text-xs rounded bg-purple-800/50 px-1.5 py-0.5 text-purple-300">
-                            WebGPU
+                            {t('settingsView.offlineAi.modelSelector.webGpu')}
                         </span>
                     )}
                 </div>
             </div>
             <p className="text-xs text-slate-400 mb-1.5">
-                {t(`settingsView.modelSelector.model_${model.sizeTier.replace('.', '')}_desc`)}
+                {t(
+                    `settingsView.offlineAi.modelSelector.model_${model.sizeTier.replace('.', '')}_desc`,
+                )}
             </p>
             <div className="flex items-center gap-2 text-xs text-slate-500">
                 <span>
-                    {t('settingsView.modelSelector.downloadSize', {
+                    {t('settingsView.offlineAi.modelSelector.downloadSize', {
                         size: formatMb(model.sizeBytes),
                     })}
                 </span>
                 {model.sizeBytes > 1_000_000_000 && (
                     <span className="text-amber-400">
-                        {t('settingsView.modelSelector.largeDownload')}
+                        {t('settingsView.offlineAi.modelSelector.largeDownload')}
                     </span>
                 )}
             </div>
@@ -98,17 +100,17 @@ const AutoCard = memo(function AutoCard({ isSelected, autoModel, onSelect }: Aut
         >
             <div className="flex items-center justify-between gap-2 mb-1">
                 <span className="text-sm font-medium text-slate-100 truncate min-w-0">
-                    {t('settingsView.modelSelector.autoLabel')}
+                    {t('settingsView.offlineAi.modelSelector.autoLabel')}
                 </span>
                 <span className="text-xs rounded bg-blue-800/50 px-1.5 py-0.5 text-blue-300 flex-shrink-0">
-                    {t('settingsView.modelSelector.recommended')}
+                    {t('settingsView.offlineAi.modelSelector.recommended')}
                 </span>
             </div>
             <p className="text-xs text-slate-400 mb-1.5">
-                {t('settingsView.modelSelector.autoDesc')}
+                {t('settingsView.offlineAi.modelSelector.autoDesc')}
             </p>
             <p className="text-xs text-slate-500">
-                {t('settingsView.modelSelector.currentAuto', { model: autoModel.label })}
+                {t('settingsView.offlineAi.modelSelector.currentAuto', { model: autoModel.label })}
             </p>
         </button>
     )
@@ -133,7 +135,7 @@ const LoadingProgress = memo(function LoadingProgress() {
                     aria-valuenow={percent}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-label={t('settingsView.modelSelector.loading')}
+                    aria-label={t('settingsView.offlineAi.modelSelector.loading')}
                 />
             </div>
         </div>
@@ -164,9 +166,11 @@ export const LlmModelSelector = memo(function LlmModelSelector({
         <div className="space-y-3 overflow-hidden">
             <div>
                 <h4 className="text-sm font-medium text-slate-200 mb-1">
-                    {t('settingsView.modelSelector.title')}
+                    {t('settingsView.offlineAi.modelSelector.title')}
                 </h4>
-                <p className="text-xs text-slate-500">{t('settingsView.modelSelector.subtitle')}</p>
+                <p className="text-xs text-slate-500">
+                    {t('settingsView.offlineAi.modelSelector.subtitle')}
+                </p>
             </div>
 
             <div className="grid gap-2">

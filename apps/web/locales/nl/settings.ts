@@ -178,6 +178,7 @@ export const settingsView = {
                 'Gebalanceerd model voor middenklasse GPUs. Goede meertalige ondersteuning.',
             model_3B_desc: 'Hoge kwaliteit redenering. Beste keuze voor krachtige GPUs.',
             model_4B_desc: 'Sterk redeneren en instructies volgen. Grootste optie.',
+            webGpu: 'WebGPU',
         },
         // Embedding & Semantic RAG
         embeddingModelReady: 'Embeddingmodel (MiniLM) is gereed voor semantisch zoeken.',

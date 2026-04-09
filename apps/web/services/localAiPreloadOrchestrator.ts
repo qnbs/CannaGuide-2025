@@ -1,4 +1,5 @@
 import { loadWebLlmEngine } from './localAiWebLlmService'
+import { captureLocalAiError } from './sentryService'
 import type { LocalAiModelManager } from './localAiModelManager'
 
 export interface LocalAiPreloadReport {
@@ -87,8 +88,9 @@ export async function preloadOfflineAssets(
         try {
             const { preloadEmbeddingModel } = await import('./localAiEmbeddingService')
             embeddingReady = await preloadEmbeddingModel()
-        } catch {
+        } catch (error) {
             embeddingReady = false
+            captureLocalAiError(error, { stage: 'preload-embedding' })
         }
         onProgress?.(++loaded, totalSteps, 'embedding-model')
     }
@@ -101,8 +103,8 @@ export async function preloadOfflineAssets(
             nlpStatus = await preloadNlpModels((nlpLoaded, _total, label) => {
                 onProgress?.(loaded + nlpLoaded, totalSteps, label)
             })
-        } catch {
-            // NLP preload failure is non-critical
+        } catch (error) {
+            captureLocalAiError(error, { stage: 'preload-nlp' })
         }
         loaded += 3
         onProgress?.(loaded, totalSteps, 'nlp-complete')

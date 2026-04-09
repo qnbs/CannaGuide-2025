@@ -2,7 +2,62 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 109) -- Forensic Audit Fixes + Documentation Sync
+## Latest Session (Session 110) -- UI/UX Audit Next Pass + i18n Fix + Local AI Error Handling
+
+**Status: All 5 phases implemented. 1884 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 110)
+
+1. **i18n Bug Fix (LlmModelSelector)** -- Fixed 13 `t()` calls in
+   `LlmModelSelector.tsx`: `settingsView.modelSelector.*` corrected to
+   `settingsView.offlineAi.modelSelector.*` (missing path segment caused
+   raw i18n keys to display in UI). Added `webGpu` i18n key to all 5
+   locales. Updated all test assertions.
+
+2. **44x44 Touch Targets** -- Changed `size="sm"` to `size="icon"`
+   (h-11 w-11 = 44x44px) on icon-only destructive buttons in 6 files:
+   AiTab, StrainTipsView, BulkActionsBar, MentorArchiveTab,
+   GenealogyView, LeafDiagnosisPanel. 4 files already compliant.
+
+3. **Screen-Reader Labels** -- Added `aria-label`, `aria-pressed`,
+   min-height to GrowPlannerView week/month toggle and HydroMonitorView
+   time range buttons. Added `toggleViewMode` + `selectTimeRange` i18n
+   keys (en/de common).
+
+4. **Mobile E2E Dialog Clipping** -- Added 2 new Playwright tests to
+   `mobile-no-overflow.e2e.ts`: command palette dialog + settings modal
+   content overflow checks.
+
+5. **Local AI Error Handling** -- Added `captureLocalAiError()` Sentry
+   reporting to 3 silent catch blocks in preload orchestrator, inference
+   router, and health service. SettingsView health check now sets
+   `healthStatus('unknown')` on error.
+
+6. **AUDIT_BACKLOG Updates** -- U-05 deferred (v2.0), A-03 partial
+   progress noted, 5 stale priority queue checkboxes fixed, summary
+   table updated with Deferred column.
+
+### Verified Metrics
+
+- Tests: **1884 passing**, 0 failures (163 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- Files modified: 20+ (9 components, 7 locale files, 3 services,
+  1 E2E test, 2 docs)
+
+### Next Steps
+
+- Push unit test coverage above 40% lines
+- A-03: Build AI cost tracking UI (Settings dashboard)
+- Mutation testing: run Stryker on CRDT slices
+- Enhanced PDF reports (metrics charts, AI summary, diagnosis trend)
+- Enhanced LeafDiagnosisPanel (harvest readiness, auto-tagging, history tab)
+- C-04: Netlify deployment preview smoke tests
+- F-02: Web Share API integration
+
+---
+
+## Previous Session (Session 109) -- Forensic Audit Fixes + Documentation Sync
 
 **Status: All 8 phases implemented. 1884 tests passing. TypeScript clean. Build clean.**
 

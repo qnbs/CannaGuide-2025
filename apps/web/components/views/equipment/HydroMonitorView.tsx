@@ -331,8 +331,12 @@ export const HydroMonitorView: React.FC = memo(() => {
                                     key={tr}
                                     type="button"
                                     onClick={() => setTimeRange(tr)}
+                                    aria-label={t('common.accessibility.selectTimeRange', {
+                                        range: t(`equipmentView.hydroMonitoring.chart.${tr}`),
+                                    })}
+                                    aria-pressed={timeRange === tr}
                                     className={cn(
-                                        'text-xs px-2 py-0.5 rounded',
+                                        'text-xs px-2.5 py-1 rounded min-h-[44px] min-w-[44px]',
                                         timeRange === tr
                                             ? 'bg-primary-600 text-white'
                                             : 'bg-slate-700 text-slate-400 hover:bg-slate-600',

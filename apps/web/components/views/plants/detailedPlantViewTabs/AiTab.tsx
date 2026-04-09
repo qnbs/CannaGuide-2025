@@ -441,7 +441,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                             </Button>
                                         </div>{' '}
                                         <Button
-                                            size="sm"
+                                            size="icon"
                                             variant="secondary"
                                             onClick={() => setEditingResponse(res)}
                                             aria-label={t('common.edit')}
@@ -449,7 +449,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                             <PhosphorIcons.PencilSimple className="w-4 h-4" />
                                         </Button>
                                         <Button
-                                            size="sm"
+                                            size="icon"
                                             variant="danger"
                                             onClick={() => setPendingDeleteId(res.id)}
                                             aria-label={t('common.deleteResponse')}

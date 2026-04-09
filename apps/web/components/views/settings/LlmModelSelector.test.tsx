@@ -26,7 +26,9 @@ describe('LlmModelSelector', () => {
     it('renders auto card and all catalog model cards', () => {
         render(<LlmModelSelector {...defaultProps} />)
         // Auto card
-        expect(screen.getByText('settingsView.modelSelector.autoLabel')).toBeInTheDocument()
+        expect(
+            screen.getByText('settingsView.offlineAi.modelSelector.autoLabel'),
+        ).toBeInTheDocument()
         // 4 model cards by their labels
         expect(screen.getByText('Qwen 2.5 0.5B')).toBeInTheDocument()
         expect(screen.getByText('Qwen 2.5 1.5B')).toBeInTheDocument()
@@ -37,7 +39,7 @@ describe('LlmModelSelector', () => {
     it('highlights auto card when selectedModelId is auto', () => {
         render(<LlmModelSelector {...defaultProps} selectedModelId="auto" />)
         const autoButton = screen
-            .getByText('settingsView.modelSelector.autoLabel')
+            .getByText('settingsView.offlineAi.modelSelector.autoLabel')
             .closest('button')
         expect(autoButton).toHaveAttribute('aria-pressed', 'true')
     })
@@ -53,7 +55,7 @@ describe('LlmModelSelector', () => {
         expect(llamaButton).toHaveAttribute('aria-pressed', 'true')
         // Auto should not be pressed
         const autoButton = screen
-            .getByText('settingsView.modelSelector.autoLabel')
+            .getByText('settingsView.offlineAi.modelSelector.autoLabel')
             .closest('button')
         expect(autoButton).toHaveAttribute('aria-pressed', 'false')
     })
@@ -61,7 +63,7 @@ describe('LlmModelSelector', () => {
     it('shows download size warning for large models', () => {
         render(<LlmModelSelector {...defaultProps} />)
         // Models > 1GB should show large download warning
-        const warnings = screen.getAllByText('settingsView.modelSelector.largeDownload')
+        const warnings = screen.getAllByText('settingsView.offlineAi.modelSelector.largeDownload')
         // Llama (1.8GB) and Phi (2.2GB) are > 1GB
         expect(warnings.length).toBeGreaterThanOrEqual(2)
     })
@@ -82,7 +84,7 @@ describe('LlmModelSelector', () => {
                 selectedModelId="Llama-3.2-3B-Instruct-q4f16_1-MLC"
             />,
         )
-        fireEvent.click(screen.getByText('settingsView.modelSelector.autoLabel'))
+        fireEvent.click(screen.getByText('settingsView.offlineAi.modelSelector.autoLabel'))
         expect(onSelect).toHaveBeenCalledWith('auto')
     })
 })

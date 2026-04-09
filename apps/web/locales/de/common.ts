@@ -289,6 +289,8 @@ export const common = {
         lowStressTraining: 'Low-Stress-Training',
         defoliationTechnique: 'Entlaubungstechnik',
         harvestingTechnique: 'Erntetechnik',
+        toggleViewMode: 'Zwischen Wochen- und Monatsansicht wechseln',
+        selectTimeRange: 'Zeitraum auswaehlen: {{range}}',
     },
 }
 

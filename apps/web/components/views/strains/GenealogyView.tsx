@@ -979,8 +979,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                         </Button>
                         <Button
                             variant="danger"
-                            size="sm"
+                            size="icon"
                             title={t('strainsView.genealogyView.resetCache')}
+                            aria-label={t('strainsView.genealogyView.resetCache')}
                             onClick={handleResetGenealogyCache}
                         >
                             <PhosphorIcons.TrashSimple />

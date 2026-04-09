@@ -4,6 +4,38 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **i18n(settings):** corrected 13 `t()` key paths in
+  `LlmModelSelector.tsx` from `settingsView.modelSelector.*` to
+  `settingsView.offlineAi.modelSelector.*` (raw keys were displayed)
+- **a11y:** standardized icon-only destructive buttons to 44x44px
+  touch targets across 6 components (AiTab, StrainTipsView,
+  BulkActionsBar, MentorArchiveTab, GenealogyView,
+  LeafDiagnosisPanel)
+- **a11y:** added `aria-label` and `aria-pressed` to chart toggles
+  in GrowPlannerView and HydroMonitorView
+- **sentry:** added `captureLocalAiError()` to 3 silent catch blocks
+  in preload orchestrator, inference router, and health service
+- **settings:** health check now sets `healthStatus('unknown')` on
+  error instead of silently swallowing
+
+### Added
+
+- **i18n:** `webGpu`, `capturePhoto`, `toggleViewMode`,
+  `selectTimeRange` keys across all 5 locales
+- **e2e:** 2 new mobile dialog clipping tests in
+  `mobile-no-overflow.e2e.ts`
+
+### Changed
+
+- **docs:** AUDIT_BACKLOG U-05 deferred to v2.0, A-03 partial
+  progress noted, 5 stale priority queue checkboxes fixed
+
+---
+
 ## [1.6.0] - 2026-04-10
 
 ### Added

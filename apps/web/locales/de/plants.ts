@@ -115,6 +115,7 @@ export const plantsView = {
         localOnlyWarning: 'Download im Offline-Modus deaktiviert.',
         error: 'Scan fehlgeschlagen. Bitte erneut versuchen.',
         clearImage: 'Bild entfernen',
+        capturePhoto: 'Foto mit Kamera aufnehmen',
     },
     nutrientWizard: {
         tabAiScanner: 'KI-Scanner',

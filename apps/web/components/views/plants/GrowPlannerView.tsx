@@ -170,7 +170,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                     <button
                         type="button"
                         onClick={() => setViewMode(viewMode === 'week' ? 'month' : 'week')}
-                        className="rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-1.5 text-xs text-white transition-colors"
+                        className="rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-1.5 text-xs text-white transition-colors min-h-[44px]"
+                        aria-label={t('common.accessibility.toggleViewMode')}
+                        aria-pressed={viewMode === 'month'}
                     >
                         {viewMode === 'week'
                             ? t('plantsView.planner.monthView', { defaultValue: 'Month' })

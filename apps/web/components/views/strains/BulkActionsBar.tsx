@@ -51,7 +51,7 @@ const BulkActionsBarComponent: React.FC<BulkActionsBarProps> = ({
                 )}
                 {onDelete && (
                     <Button
-                        size="sm"
+                        size="icon"
                         variant="danger"
                         onClick={onDelete}
                         aria-label={t('common.delete')}

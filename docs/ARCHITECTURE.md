@@ -163,8 +163,9 @@ The `workerBus.ts` singleton provides centralized, promise-based communication w
 
 - **Priority Queue:** min-heap with 4 levels (`critical` > `high` > `normal` > `low`), FIFO tiebreaking
 - **Backpressure:** max 3 concurrent dispatches per worker, queued beyond that
+- **Priority Preemption (W-02):** when all slots are full and a higher-priority job arrives, the lowest-priority running job is preempted (AbortController-based, main-thread only) and automatically re-queued (max 3 retries before PREEMPTED rejection)
 - **Per-Worker Rate Limiting (W-01):** sliding-window limiter (`setRateLimit`/`getRateLimit`), rejects with non-retryable `RATE_LIMITED` error
-- **Telemetry Export (W-03):** `exportTelemetry()` returns JSON-serializable `WorkerBusTelemetryExport` with per-worker snapshots (peakLatencyMs, errorRate, timestamps), integrated with Sentry context (60s interval)
+- **Telemetry Export (W-03):** `exportTelemetry()` returns JSON-serializable `WorkerBusTelemetryExport` with per-worker snapshots (peakLatencyMs, errorRate, timestamps, preemptionCount), integrated with Sentry context (60s interval)
 - **Abort Support:** AbortController per dispatch, automatic cleanup on cancel
 - **Transferable Objects:** zero-copy transfers for ArrayBuffer/ImageBitmap payloads
 - **State Sync:** `workerStateSyncService.ts` auto-wires dispatch results to Redux/Zustand via handler registry

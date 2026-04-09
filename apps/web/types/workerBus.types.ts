@@ -66,6 +66,8 @@ export enum WorkerErrorCode {
     CANCELLED = 'CANCELLED',
     /** Per-worker rate limit exceeded (W-01). */
     RATE_LIMITED = 'RATE_LIMITED',
+    /** Job was preempted by a higher-priority dispatch (W-02). */
+    PREEMPTED = 'PREEMPTED',
 }
 
 /**

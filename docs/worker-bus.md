@@ -126,7 +126,7 @@ await workerBus.dispatch('vpd-sim', 'RUN_DAILY', payload, { priority: 'critical'
 await workerBus.dispatch('inference', 'INFER', task, { priority: 'low' })
 ```
 
-**No preemption:** A running worker is never interrupted. Priority only determines queue order for pending dispatches.
+**Priority Preemption (W-02):** When all worker slots are full and a higher-priority job arrives, the lowest-priority running job is preempted and automatically re-queued. See [Priority Preemption](#priority-preemption-w-02) below.
 
 ### Default Priority Assignments
 
@@ -153,6 +153,30 @@ const state = workerBus.getQueueState()
 ## Backpressure
 
 When a worker reaches its concurrency limit (default: 8), further dispatches are queued in the priority heap (max 64). Queued items drain automatically as in-flight requests complete, with the highest-priority item dequeued first. If the queue is full, dispatch rejects immediately with `Queue full`.
+
+## Priority Preemption (W-02)
+
+When all concurrency slots for a worker are occupied and a **strictly higher-priority** job arrives, the bus preempts the lowest-priority running job:
+
+1. The preempted job's `PendingRequest` is removed from the pending map (its eventual worker response is silently ignored).
+2. The slot is freed and the higher-priority job is dispatched immediately.
+3. The preempted job is automatically re-queued with its original `resolve`/`reject` preserved, so the caller's promise resolves transparently when the job eventually completes.
+4. A job can be preempted at most 3 times (`MAX_PREEMPTION_RETRIES`). After that, it is rejected with `WorkerErrorCode.PREEMPTED`.
+
+**Rules:**
+
+- Preemption requires **strict** priority difference -- equal priority never triggers preemption.
+- `PREEMPTED` is a non-retryable error code.
+- Telemetry: `preemptionCount` is tracked per-worker in `getMetrics()` and `exportTelemetry()`.
+
+```typescript
+// VPD critical dispatch preempts a running low-priority ML inference job:
+const pInference = workerBus.dispatch('inference', 'CLASSIFY', data, { priority: 'low' })
+const pVpd = workerBus.dispatch('inference', 'VPD_CHECK', alert, { priority: 'critical' })
+// -> inference job is preempted, VPD runs immediately, inference resumes after
+```
+
+See [ADR-0007](adr/0007-workerbus-priority-preemption.md) for the design decision.
 
 ## Retry with Exponential Backoff
 
@@ -282,6 +306,7 @@ sequenceDiagram
 
 - ~~No per-worker-type rate limiting~~ -- DONE (W-01, Session 94): `setRateLimit()` sliding-window API
 - ~~Telemetry Redux DevTools only~~ -- DONE (W-03, Session 94): `exportTelemetry()` + Sentry context
+- ~~Priority is queue-order only (no preemption)~~ -- DONE (W-02): AbortController-based preemption + re-queue
 
 ### Planned Improvements
 
@@ -295,7 +320,7 @@ sequenceDiagram
 - ~~Priority Queue (high priority for VPD alerts)~~ -- DONE (Session 60)
 - ~~W-01: Per-worker-type rate limiting~~ -- DONE (Session 94)
 - ~~W-03: External telemetry export~~ -- DONE (Session 94)
-- W-02: Priority preemption for running workers -- target v1.6
+- ~~W-02: Priority preemption for running workers~~ -- DONE (ADR-0007)
 - W-04: Cross-worker communication channel (SharedArrayBuffer or MessageChannel) -- target v1.6
 - Event emitter for real-time IoT sensor streaming
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)

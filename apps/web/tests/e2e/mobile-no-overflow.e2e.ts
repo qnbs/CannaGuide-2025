@@ -85,8 +85,9 @@ for (const viewport of MOBILE_VIEWPORTS) {
 
         // --- Dialog / overlay clipping assertions -------------------------
         test('command palette dialog does not clip on mobile', async ({ page }) => {
-            // Open command palette via keyboard shortcut
-            await page.keyboard.press('Control+k')
+            // Open command palette via header button (keyboard shortcut unreliable on mobile emulation)
+            const openBtn = page.locator('button[aria-label*="ommand"]')
+            await openBtn.click()
             const dialog = page.locator('[cmdk-dialog]')
             await expect(dialog).toBeVisible({ timeout: 10_000 })
 

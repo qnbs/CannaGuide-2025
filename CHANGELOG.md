@@ -28,11 +28,16 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   `selectTimeRange` keys across all 5 locales
 - **e2e:** 2 new mobile dialog clipping tests in
   `mobile-no-overflow.e2e.ts`
+- **ci:** `release-publish.yml` workflow with SLSA provenance
+  attestation via `actions/attest-build-provenance@v4.1.0` and
+  automated GitHub Release via `gh release create`
+- **security:** SLSA L1 build provenance for all tagged releases
 
 ### Changed
 
 - **docs:** AUDIT_BACKLOG U-05 deferred to v2.0, A-03 partial
   progress noted, 5 stale priority queue checkboxes fixed
+- **security:** SECURITY.md supported versions updated to 1.6.x/1.5.x
 
 ---
 

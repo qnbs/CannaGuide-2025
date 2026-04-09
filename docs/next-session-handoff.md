@@ -2,7 +2,78 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 110) -- UI/UX Audit Next Pass + i18n Fix + Local AI Error Handling
+## Latest Session (Session 111) -- OpenSSF Scorecard Optimization
+
+**Status: Automated fixes implemented. Manual steps documented. 1884 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 111)
+
+1. **Release Publishing Workflow** -- Created
+   `.github/workflows/release-publish.yml` with:
+    - SLSA L1 provenance via `actions/attest-build-provenance@v4.1.0`
+    - Automated GitHub Release via `gh release create` CLI
+    - Tarball with SHA-256 checksum and verification instructions
+    - Triggered by Release Gate success or manual dispatch
+    - Step-security hardened, all actions SHA-pinned
+
+2. **CI Fix** -- Added 4 missing `stage` values to
+   `captureLocalAiError` union type in `sentryService.ts`
+   (`storage-estimate`, `worker-inference-fallthrough`,
+   `preload-embedding`, `preload-nlp`). Removed duplicate
+   `response-validation` entry. Fixes CI typecheck from Session 110.
+
+3. **SECURITY.md** -- Updated supported versions: 1.6.x + 1.5.x
+   (was 1.1.x + 1.0.x)
+
+### Scorecard Issues Addressed
+
+| Issue              | Fix                                        | Status     |
+| ------------------ | ------------------------------------------ | ---------- |
+| Signed-Releases    | `release-publish.yml` with SLSA provenance | Automated  |
+| Packaging          | Same workflow creates tarball + release    | Automated  |
+| Branch-Protection  | Needs `gh api` with admin token            | **Manual** |
+| CII-Best-Practices | Web questionnaire at bestpractices.dev     | **Manual** |
+
+### Manual Steps Required
+
+**Branch Protection (GitHub Web UI or PAT):**
+Go to Settings > Branches > main > Edit:
+
+1. Enable "Require a pull request before merging"
+2. Set "Required approving reviews" to 0
+3. Check "Require review from Code Owners"
+4. Keep "Include administrators" UNCHECKED (preserves
+   direct push via `git push origin main`)
+5. Verify "Require status checks" includes "CI Status"
+6. Keep "Require linear history" enabled
+
+**CII Best Practices Badge:**
+
+1. Go to https://www.bestpractices.dev/en/projects
+2. Complete the questionnaire (~50 questions)
+3. Most answers are "Yes" (tests, security scanning,
+   SLSA provenance, signed releases all in place)
+
+### Verified Metrics
+
+- Tests: **1884 passing**, 0 failures (163 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- Files created: 1 (release-publish.yml)
+- Files modified: 3 (sentryService.ts, SECURITY.md, CHANGELOG.md)
+
+### Next Steps
+
+- Complete Branch Protection via GitHub Web UI
+- Complete CII Best Practices questionnaire
+- Re-run scorecard after changes propagate: check scorecard.dev
+- Push unit test coverage above 40% lines
+- A-03: Build AI cost tracking UI (Settings dashboard)
+- C-04: Netlify deployment preview smoke tests
+
+---
+
+## Previous Session (Session 110) -- UI/UX Audit Next Pass + i18n Fix + Local AI Error Handling
 
 **Status: All 5 phases implemented. 1884 tests passing. TypeScript clean. Build clean.**
 

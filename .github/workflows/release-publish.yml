@@ -1,0 +1,126 @@
+name: Release Publish
+
+on:
+    workflow_run:
+        workflows: ['Release Gate']
+        types: [completed]
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: 'Tag to release (e.g. v1.6.0)'
+                required: true
+                type: string
+
+concurrency:
+    group: release-publish-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: '20'
+    TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+    publish:
+        name: Build and Publish Release
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            (github.event.workflow_run.conclusion == 'success' &&
+             startsWith(github.event.workflow_run.head_branch, 'refs/tags/v'))
+        permissions:
+            contents: write
+            id-token: write
+            attestations: write
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  fetch-depth: 0
+
+            - name: Resolve tag name
+              id: tag
+              shell: bash
+              run: |
+                  if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+                    TAG="${{ github.event.inputs.tag }}"
+                  else
+                    TAG="${{ github.event.workflow_run.head_branch }}"
+                  fi
+                  # Strip refs/tags/ prefix if present
+                  TAG="${TAG#refs/tags/}"
+                  echo "name=${TAG}" >> "$GITHUB_OUTPUT"
+                  echo "[INFO] Resolved tag: ${TAG}"
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Build
+              run: pnpm run build
+
+            - name: Create release tarball
+              id: tarball
+              shell: bash
+              run: |
+                  TARBALL="cannaguide-${{ steps.tag.outputs.name }}-dist.tar.gz"
+                  tar -czf "${TARBALL}" -C apps/web/dist .
+                  SHA256=$(sha256sum "${TARBALL}" | cut -d ' ' -f 1)
+                  echo "path=${TARBALL}" >> "$GITHUB_OUTPUT"
+                  echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
+                  echo "[INFO] Tarball: ${TARBALL} (sha256: ${SHA256})"
+
+            - name: Generate SLSA provenance attestation
+              uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+              with:
+                  subject-path: ${{ steps.tarball.outputs.path }}
+
+            - name: Create GitHub Release
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              shell: bash
+              run: |
+                  TAG="${{ steps.tag.outputs.name }}"
+                  TARBALL="${{ steps.tarball.outputs.path }}"
+                  SHA256="${{ steps.tarball.outputs.sha256 }}"
+
+                  NOTES="## CannaGuide ${TAG}
+
+                  **PWA Distribution** -- built from commit ${GITHUB_SHA::8}
+
+                  ### Artifact Checksums
+                  | File | SHA-256 |
+                  |------|---------|
+                  | ${TARBALL} | \`${SHA256}\` |
+
+                  ### Verification
+                  \`\`\`bash
+                  gh attestation verify ${TARBALL} --repo qnbs/CannaGuide-2025
+                  \`\`\`
+
+                  ### Install
+                  This is a Progressive Web App. Visit https://qnbs.github.io/CannaGuide-2025/
+                  "
+
+                  # Create release (draft=false, prerelease auto-detected from tag)
+                  if echo "${TAG}" | grep -qE '(alpha|beta|rc)'; then
+                    gh release create "${TAG}" "${TARBALL}" \
+                      --title "CannaGuide ${TAG}" \
+                      --notes "${NOTES}" \
+                      --prerelease
+                  else
+                    gh release create "${TAG}" "${TARBALL}" \
+                      --title "CannaGuide ${TAG}" \
+                      --notes "${NOTES}"
+                  fi
+
+                  echo "[OK] Release ${TAG} published with provenance attestation"

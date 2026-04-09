@@ -386,7 +386,8 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 | Security Scan         | push, PR         | Quick security checks                 |
 | Snyk                  | push, PR         | Vulnerability scanning                |
 | ClusterFuzzLite       | PR               | Continuous fuzzing                    |
-| Scorecard             | push, weekly     | OpenSSF Scorecard (8.5/10)            |
+| Scorecard             | push, weekly     | OpenSSF Scorecard                     |
+| Release Publish       | tag push v\*     | SLSA provenance + GitHub Release      |
 | Config Guard          | push, PR         | RCE pattern scanning in configs       |
 | Benchmark             | push, PR         | Performance benchmarking              |
 | Fuzzing               | push, PR         | Vitest fuzz testing                   |
@@ -823,7 +824,8 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 | Security Scan         | Push, PR               | Schnelle Sicherheitspruefungen             |
 | Snyk                  | Push, PR               | Schwachstellen-Scanning                    |
 | ClusterFuzzLite       | PR                     | Kontinuierliches Fuzzing                   |
-| Scorecard             | Push, woechentlich     | OpenSSF Scorecard (8.5/10)                 |
+| Scorecard             | Push, woechentlich     | OpenSSF Scorecard                          |
+| Release Publish       | Tag-Push v\*           | SLSA-Provenance + GitHub-Release           |
 | Config Guard          | Push, PR               | RCE-Pattern-Scanning in Configs            |
 | Benchmark             | Push, PR               | Performance-Benchmarking                   |
 | Fuzzing               | Push, PR               | Vitest-Fuzz-Testing                        |

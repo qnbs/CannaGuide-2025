@@ -186,7 +186,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **Sentry** captures runtime errors — use `Sentry.captureException()` for explicit reporting
 - **Security scanners**: Semgrep, Gitleaks, Trojan-source all pass with 0 findings
 - **`secureRandom()`** via `utils/random.ts` replaces `Math.random()` everywhere (Web Crypto)
-- **OpenSSF Scorecard**: 8.5/10 — branch protection, signed commits, pinned deps, SAST, fuzzing
+- **OpenSSF Scorecard**: branch protection, signed commits, pinned deps, SAST, fuzzing, SLSA provenance
 - **ClusterFuzzLite**: Continuous fuzzing via `cflite_pr.yml` on PRs
 - **Config Guard**: CI workflow scans devcontainer/vscode config changes for RCE patterns
 
@@ -321,10 +321,11 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Deployment
 
-| Target       | Method                         | Trigger                     |
-| ------------ | ------------------------------ | --------------------------- |
-| GitHub Pages | `.github/workflows/deploy.yml` | Push to `main`              |
-| Netlify      | `netlify.toml`                 | Push + PR (preview deploys) |
+| Target         | Method                                  | Trigger                         |
+| -------------- | --------------------------------------- | ------------------------------- |
+| GitHub Pages   | `.github/workflows/deploy.yml`          | Push to `main`                  |
+| Netlify        | `netlify.toml`                          | Push + PR (preview deploys)     |
+| GitHub Release | `.github/workflows/release-publish.yml` | Tag push `v*` (after gate pass) |
 
 ---
 
@@ -516,6 +517,7 @@ After implementation is complete with all validations passing, update **all affe
 | `.devcontainer/setup.sh`                                                        | postCreateCommand (workspace-filtered install, no ML)                                                                                                                      |
 | `.devcontainer/start.sh`                                                        | postStartCommand (IoT mock servers)                                                                                                                                        |
 | `.github/workflows/config-guard.yml`                                            | CI scan for RCE patterns in config files                                                                                                                                   |
+| `.github/workflows/release-publish.yml`                                         | Automated GitHub Release with SLSA provenance attestation (tag push v\*)                                                                                                   |
 | `docs/ACCESSIBILITY.md`                                                         | WCAG 2.1 AA accessibility statement                                                                                                                                        |
 | `docs/api/ai-facade.md`                                                         | AI Facade API reference (24 aiService methods, routing logic, mode helpers)                                                                                                |
 | `docs/api/rag-pipeline.md`                                                      | RAG pipeline API (growLogRagService, ragEmbeddingCacheService)                                                                                                             |

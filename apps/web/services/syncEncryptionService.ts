@@ -19,6 +19,7 @@ const base64ToBytes = (value: string): Uint8Array => {
 
 /** Creates a clean ArrayBuffer copy (cross-env WebCrypto compat). */
 const toBuffer = (bytes: Uint8Array): ArrayBuffer =>
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer
 
 /**
@@ -63,6 +64,7 @@ export async function encryptSyncPayload(plaintext: string, base64Key: string): 
  * Throws if the key is wrong or the payload is tampered with.
  */
 export async function decryptSyncPayload(payload: string, base64Key: string): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const parsed = JSON.parse(payload) as { v: number; iv: string; data: string }
     if (parsed.v !== 2 || !parsed.iv || !parsed.data) {
         throw new Error('Invalid encrypted sync payload')
@@ -83,6 +85,7 @@ export async function decryptSyncPayload(payload: string, base64Key: string): Pr
  */
 export function isEncryptedSyncPayload(content: string): boolean {
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(content) as { v?: number }
         return parsed.v === 2
     } catch {

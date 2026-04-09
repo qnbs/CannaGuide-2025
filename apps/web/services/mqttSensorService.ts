@@ -427,6 +427,7 @@ class MqttSensorService {
                     'timestamp' in data &&
                     typeof (data as Record<string, unknown>)['timestamp'] === 'number'
                 ) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const deviceTs = (data as Record<string, unknown>)['timestamp'] as number
                     this.trackLatency(deviceTs)
                 }
@@ -475,6 +476,7 @@ class MqttSensorService {
             // Parse JSON directly — DOMPurify is not appropriate for JSON data
             // as it can corrupt valid payloads. Sensor values are validated
             // downstream via clampSensorValue().
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const parsed = JSON.parse(raw) as Record<string, unknown>
             if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
                 console.debug('[MQTT] Payload is not a JSON object, discarding.')

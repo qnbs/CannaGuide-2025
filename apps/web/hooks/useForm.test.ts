@@ -4,7 +4,6 @@ import { renderHook, act } from '@testing-library/react'
 import { useForm } from './useForm'
 
 function createFakeEvent(): React.FormEvent {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- test mock
     return { preventDefault: vi.fn() } as unknown as React.FormEvent
 }
 

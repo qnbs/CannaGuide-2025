@@ -432,6 +432,7 @@ export const crdtService = new CrdtService()
 function uint8ArrayToBase64(bytes: Uint8Array): string {
     let binary = ''
     for (let i = 0; i < bytes.byteLength; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         binary += String.fromCharCode(bytes[i] as number)
     }
     return btoa(binary)

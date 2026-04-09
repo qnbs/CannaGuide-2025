@@ -57,6 +57,7 @@ const loadQueue: Array<() => void> = []
 
 /** Reject pipeline loads when memory pressure is critically high. */
 const checkMemoryPressure = (): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const perf = performance as unknown as {
         memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number }
     }
@@ -130,8 +131,10 @@ const executePipelineLoad = async (
 ): Promise<LocalAiPipeline> => {
     try {
         return await (pipeline(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             task as never,
             modelId,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             mergedOptions as never,
         ) as Promise<LocalAiPipeline>)
     } catch (pipelineError) {
@@ -141,9 +144,12 @@ const executePipelineLoad = async (
             forceWasmOverride = true
             detectedBackend = null
             mergedOptions.device = undefined
+
             return await (pipeline(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 task as never,
                 modelId,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 mergedOptions as never,
             ) as Promise<LocalAiPipeline>)
         }
@@ -245,6 +251,7 @@ export const loadTransformersPipeline = async (
 
 /** Returns true when JS heap usage exceeds 70 %. */
 const isMemoryPressureElevated = (): boolean => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const perf = performance as unknown as {
         memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number }
     }
@@ -386,7 +393,8 @@ export const resolveModelProfile = (vramMB: number | null = null): ModelProfile 
     const hasWebGpu = backend === 'webgpu'
     const memoryGB =
         typeof navigator !== 'undefined'
-            ? ((navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0)
+            ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+              ((navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0)
             : 0
 
     // ── Catalog model ID override ──────────────────────────────────────

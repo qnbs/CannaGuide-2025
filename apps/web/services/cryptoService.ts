@@ -47,12 +47,16 @@ const parseEncryptedPayload = (payload: string): EncryptedPayload | null => {
             (parsed as Record<string, unknown>)['v'] === 1 &&
             typeof (parsed as Record<string, unknown>)['iv'] === 'string' &&
             typeof (parsed as Record<string, unknown>)['data'] === 'string' &&
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             ((parsed as Record<string, unknown>)['iv'] as string).length > 0 &&
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             ((parsed as Record<string, unknown>)['data'] as string).length > 0
         ) {
             return {
                 v: 1,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 iv: (parsed as Record<string, unknown>)['iv'] as string,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 data: (parsed as Record<string, unknown>)['data'] as string,
             }
         }

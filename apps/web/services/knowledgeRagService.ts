@@ -191,6 +191,7 @@ class KnowledgeRagService {
         try {
             lastCallTs.set(calculator, Date.now())
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const lang = (i18nInstance.language ?? 'en').slice(0, 2) as Language
 
             // Build journal context from grow logs (semantic with keyword fallback)

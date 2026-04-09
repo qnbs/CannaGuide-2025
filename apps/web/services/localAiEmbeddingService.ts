@@ -43,6 +43,7 @@ let embeddingDispatched = false
 const extractEmbedding = (raw: unknown): Float32Array => {
     // Transformers.js feature-extraction returns a Tensor with { data, dims }.
     // The first row represents the [CLS] pooled output.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const output = raw as {
         data?: Float32Array | number[]
         tolist?: () => number[][]
@@ -57,6 +58,7 @@ const extractEmbedding = (raw: unknown): Float32Array => {
     if (typeof output.tolist === 'function') {
         const list = output.tolist()
         const first = Array.isArray(list[0]) ? list[0] : list
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return normalize(new Float32Array((first as number[]).slice(0, EMBEDDING_DIMENSION)))
     }
     return new Float32Array(EMBEDDING_DIMENSION)

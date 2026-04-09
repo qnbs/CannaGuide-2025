@@ -68,6 +68,7 @@ let _aiMode: AiMode = 'hybrid'
 registerModeAccessors(
     () => _aiMode,
     (mode: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         _aiMode = mode as AiMode
     },
 )
@@ -139,11 +140,7 @@ const resolveRagContext = async (
 ): Promise<string> => {
     try {
         if (growId) {
-            return await growLogRagService.retrieveSemanticContextForGrow(
-                plants,
-                query,
-                growId,
-            )
+            return await growLogRagService.retrieveSemanticContextForGrow(plants, query, growId)
         }
         return await growLogRagService.retrieveSemanticContext(plants, query)
     } catch {
@@ -355,13 +352,7 @@ export const aiService = {
                 )
             },
             async () =>
-                (await getGeminiService()).getMentorResponse(
-                    plant,
-                    query,
-                    lang,
-                    growId,
-                    growName,
-                ),
+                (await getGeminiService()).getMentorResponse(plant, query, lang, growId, growName),
             () => localAiFallbackService.getMentorResponse(plant, query, '', lang),
         )
     },
@@ -555,6 +546,7 @@ export const aiService = {
         try {
             const { getSnapshot } = await import('@/services/localAiTelemetryService')
             // Safe widening: TelemetrySnapshot -> Record<string, unknown> for facade decoupling
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             return getSnapshot() as unknown as Record<string, unknown>
         } catch {
             return null
@@ -607,6 +599,7 @@ export const aiService = {
         try {
             const { generateHealthReport } = await import('@/services/localAiHealthService')
             // Safe widening: HealthReport -> Record<string, unknown> for facade decoupling
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             return (await generateHealthReport()) as unknown as Record<string, unknown>
         } catch {
             return { status: 'unknown', generatedAt: Date.now() }

@@ -1,7 +1,11 @@
 #!/bin/sh
 set -e
 
-# Fast pre-push gate: identity check only.
-# Lint + typecheck + tests run in CI (ci.yml quality/security/e2e jobs).
-# Pre-commit hook already covers lint-staged + trojan-source + prettier.
-pnpm run check:commit-identity
+# Full CI-equivalent quality gate before every push.
+# Mirrors CI pipeline: identity + typecheck + tests + lint scopes + build.
+# Catches TS errors, test failures, and lint regressions BEFORE they hit CI.
+# Skip with: git push --no-verify (emergency only).
+
+echo "[pre-push] Running full CI gate locally..."
+pnpm run gate:push
+echo "[pre-push] All gates passed."

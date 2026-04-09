@@ -55,6 +55,7 @@ function triggerDownload(url: string, fileName: string): void {
 }
 
 export function exportEquipmentPlanPdf(data: EquipmentPlanExportData, lang: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const doc = new jsPDF() as JsPDFWithAutoTable
     const LEFT = 15
     const RIGHT = 195

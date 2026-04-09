@@ -156,12 +156,14 @@ const scoreEffects = (strain: Strain, ctx: RecommendationContext): number => {
     if (!desired || desired.length === 0) return 0.8
 
     const strainTerpenes: Set<TerpeneName> = new Set(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         (strain.dominantTerpenes ?? []) as TerpeneName[],
     )
 
     // Bonus from quantitative terpeneProfile if available
     if (strain.terpeneProfile !== undefined) {
         const profile = strain.terpeneProfile
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         for (const key of Object.keys(profile) as TerpeneName[]) {
             const pct = profile[key]
             if (pct !== undefined && pct > 0.05) {

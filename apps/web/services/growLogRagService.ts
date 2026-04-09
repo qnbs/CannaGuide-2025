@@ -158,7 +158,8 @@ class GrowLogRagService {
                 .map((chunk, i) => {
                     const vec = allVecs[i]
                     const semanticScore = vec
-                        ? cosineSimilarity(queryVec, vec as unknown as Float32Array)
+                        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+                          cosineSimilarity(queryVec, vec as unknown as Float32Array)
                         : 0
                     const tokenScore = normalizeTokenScore(chunk, queryTokens)
                     const recency = calculateRecencyScore(chunk.createdAt)

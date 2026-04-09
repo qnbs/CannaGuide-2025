@@ -192,6 +192,7 @@ class ExportService {
         })
 
         // --- Add Footers to all pages ---
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const pageCount = (doc as JsPDFWithAutoTable).internal.getNumberOfPages()
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i)
@@ -494,6 +495,7 @@ class ExportService {
 
     public exportSetupsAsPdf(setups: SavedSetup[], fileName: string, t: TFunction) {
         const doc = new jsPDF()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const typedDoc = doc as JsPDFWithAutoTable
         const rm = ExportService.PDF_MARGINS.right
         const pageRight = ExportService.PDF_PAGE_WIDTH - rm
@@ -620,6 +622,7 @@ class ExportService {
             ['Humidity', `${plant.environment.internalHumidity.toFixed(1)} % RH`],
         ]
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         ;(doc as JsPDFWithAutoTable).autoTable({
             startY: y,
             body: summaryRows,
@@ -632,6 +635,7 @@ class ExportService {
             margin: { left: leftMargin, right: rightMargin },
         })
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         y = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 8
 
         const journalRows = plant.journal
@@ -643,6 +647,7 @@ class ExportService {
                 entry.notes,
             ])
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         ;(doc as JsPDFWithAutoTable).autoTable({
             startY: y,
             head: [['Date', 'Type', 'Notes']],
@@ -653,6 +658,7 @@ class ExportService {
             margin: { left: leftMargin, right: rightMargin },
         })
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         y = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 8
 
         if (chartElement) {
@@ -700,6 +706,7 @@ class ExportService {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const pageCount = (doc as JsPDFWithAutoTable).internal.getNumberOfPages()
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i)

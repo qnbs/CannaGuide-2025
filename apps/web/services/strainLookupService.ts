@@ -9,6 +9,11 @@
 // Results are cached in sessionStorage (5-min TTL).
 // ---------------------------------------------------------------------------
 
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion --
+ * External API responses (Cannlytics, Otreeba, Cannabis API) return untyped
+ * JSON. Casts from Record<string, unknown> to domain types are used with ??
+ * fallbacks and runtime guards. A Zod layer is tracked for future work. */
+
 import { allStrainsData } from '@/data/strains/index'
 import { TERPENE_DATABASE } from '@/data/terpeneDatabase'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'

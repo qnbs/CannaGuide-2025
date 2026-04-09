@@ -31,6 +31,7 @@ const loadProviderMetadata = (provider: AiProvider): AiProviderKeyMetadata | nul
     try {
         const raw = localStorage.getItem(getProviderMetadataKey(provider))
         if (!raw) return null
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(raw) as AiProviderKeyMetadata
         if (!parsed || typeof parsed.updatedAt !== 'number') return null
         return parsed
@@ -50,6 +51,7 @@ const saveProviderMetadata = (provider: AiProvider, metadata: AiProviderKeyMetad
 function getActiveProviderId(): AiProvider {
     const stored = localStorage.getItem(ACTIVE_PROVIDER_KEY)
     if (stored && stored in PROVIDER_CONFIGS) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return stored as AiProvider
     }
     return 'gemini'
@@ -128,6 +130,7 @@ async function clearProviderApiKey(provider: AiProvider): Promise<void> {
 async function clearAllProviderApiKeys(): Promise<void> {
     await Promise.all(
         Object.keys(PROVIDER_CONFIGS).map((provider) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             clearProviderApiKey(provider as AiProvider),
         ),
     )
@@ -235,6 +238,7 @@ async function callOpenAiCompatible(
         throw new Error(`API error ${response.status}`)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const data = (await response.json()) as OpenAiChatResponse
     const text = data.choices?.[0]?.message?.content
     if (!text) throw new Error('ai.error.generic')
@@ -300,6 +304,7 @@ async function callAnthropic(
         throw new Error(`API error ${response.status}`)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const data = (await response.json()) as AnthropicResponse
     const text = data.content?.find((c) => c.type === 'text')?.text
     if (!text) throw new Error('ai.error.generic')

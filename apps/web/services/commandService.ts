@@ -17,6 +17,7 @@ export const getRecentCommands = (): RecentEntry[] => {
     try {
         const raw = localStorage.getItem(RECENT_COMMANDS_KEY)
         if (!raw) return []
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return JSON.parse(raw) as RecentEntry[]
     } catch {
         return []

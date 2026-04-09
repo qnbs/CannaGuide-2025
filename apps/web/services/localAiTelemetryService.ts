@@ -254,6 +254,7 @@ export const loadPersistedSnapshot = (): TelemetrySnapshot | null => {
     try {
         const raw = localStorage.getItem(TELEMETRY_STORAGE_KEY)
         if (!raw) return null
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(raw) as Record<string, unknown>
         // Validate required shape — reject if critical fields are missing or wrong type
         if (
@@ -265,6 +266,7 @@ export const loadPersistedSnapshot = (): TelemetrySnapshot | null => {
             localStorage.removeItem(TELEMETRY_STORAGE_KEY)
             return null
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return parsed as unknown as TelemetrySnapshot
     } catch {
         localStorage.removeItem(TELEMETRY_STORAGE_KEY)

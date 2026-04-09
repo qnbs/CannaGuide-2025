@@ -84,6 +84,7 @@ class LocalAiService implements BaseAIProvider {
             getCached,
             setCached,
             loadWebLlmEngine: () =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 loadWebLlmEngine() as ReturnType<
                     import('./localAiStreamingService').StreamingDeps['loadWebLlmEngine']
                 >,

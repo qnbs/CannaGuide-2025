@@ -270,6 +270,7 @@ export function deriveTerpeneProfile(dominantTerpenes: string[]): Record<string,
     if (!dominantTerpenes.length) return null
     const profile: Record<string, number> = {}
     dominantTerpenes.forEach((name, i) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const entry = TYPICAL_TERPENE_PERCENT[name as TerpeneName]
         if (entry) {
             profile[name] = i === 0 ? entry.solo : entry.secondary
@@ -338,6 +339,7 @@ const deriveTerpeneScores = (
     for (const [name, pct] of Object.entries(terpeneProfile)) {
         if (pct <= 0) continue
         totalTerpenePercent += pct
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const entry = TERPENE_DB[name as TerpeneName]
         if (!entry) continue
 
@@ -481,6 +483,7 @@ class EntourageService {
         const synergies = deriveSynergies(terpeneProfile, thc, cbd)
 
         // --- Sort effects ----------------------------------------------------
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const sortedEffects = (Object.entries(effectScores) as [EffectTag, number][])
             .toSorted((a, b) => b[1] - a[1])
             .slice(0, 6)

@@ -47,7 +47,9 @@ const parseSort = (
         return null
     }
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         sortKey: key as SortKey,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         sortDirection: dir as SortDirection,
     }
 }
@@ -108,7 +110,9 @@ export const urlService = {
         if (params.has('q')) parsedState.searchTerm = params.get('q')!
         if (params.has('l')) parsedState.letterFilter = params.get('l')!
         if (params.has('t'))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             parsedState.typeFilter = parseArray(params.get('t')).filter((v) =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 VALID_STRAIN_TYPES.has(v as StrainType),
             ) as StrainType[]
         if (params.get('fav') === '1') parsedState.showFavoritesOnly = true
@@ -124,14 +128,17 @@ export const urlService = {
         if (frRange) advFilters.floweringRange = frRange
 
         if (params.has('d'))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             advFilters.selectedDifficulties = parseArray(params.get('d')).filter((v) =>
                 VALID_DIFFICULTIES.has(v),
             ) as DifficultyLevel[]
         if (params.has('y'))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             advFilters.selectedYields = parseArray(params.get('y')).filter((v) =>
                 VALID_YIELDS.has(v),
             ) as YieldLevel[]
         if (params.has('h'))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             advFilters.selectedHeights = parseArray(params.get('h')).filter((v) =>
                 VALID_HEIGHTS.has(v),
             ) as HeightLevel[]
@@ -139,6 +146,7 @@ export const urlService = {
         if (params.has('tp')) advFilters.selectedTerpenes = parseArray(params.get('tp'))
 
         if (Object.keys(advFilters).length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             parsedState.advancedFilters = advFilters as AdvancedFilterState
         }
 

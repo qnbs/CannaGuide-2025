@@ -134,6 +134,7 @@ class SyncService {
             )
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gist = (await response.json()) as GistResponse
         logSyncDecision('push', { gistId: gist.id, format: CRDT_FORMAT_VERSION })
         return { gistId: gist.id, url: gist.html_url, syncedAt }
@@ -189,6 +190,7 @@ class SyncService {
             )
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gist = (await response.json()) as GistResponse
         const file = gist.files[SYNC_FILE_NAME]
         if (!file?.content) {
@@ -239,6 +241,7 @@ class SyncService {
         }
 
         // -- Legacy JSON format path (one-time migration) --
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const legacy = parsed as LegacyGistPayload
         if (legacy.state && typeof legacy.version === 'number') {
             logSyncDecision('pull-legacy-migration', { version: legacy.version })
@@ -284,7 +287,9 @@ class SyncService {
         // Clear all shared types in the current doc
         doc.transact(() => {
             for (const [, value] of doc.share) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 if (value instanceof Map || (value as { clear?: () => void }).clear) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     ;(value as unknown as { clear: () => void }).clear()
                 }
             }
@@ -338,6 +343,7 @@ class SyncService {
             )
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gist = (await response.json()) as GistResponse
         logSyncDecision('push-lww', { gistId: gist.id })
         return { gistId: gist.id, url: gist.html_url, syncedAt }
@@ -364,6 +370,7 @@ class SyncService {
             )
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gist = (await response.json()) as GistResponse
         const file = gist.files[SYNC_FILE_NAME]
         if (!file?.content) {
@@ -389,6 +396,7 @@ class SyncService {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const legacy = parsed as LegacyGistPayload
         if (legacy.state && typeof legacy.version === 'number') {
             return {

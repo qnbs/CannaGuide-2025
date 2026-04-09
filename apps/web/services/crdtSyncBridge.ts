@@ -184,8 +184,10 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     startAppListening({
         matcher: isAnyOf(upsertPlant),
         effect: (action) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const plant = action.payload as Plant
                 doc.transact(() => {
                     const plantsMap = crdtService.getPlantsMap()
@@ -202,8 +204,10 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     startAppListening({
         matcher: isAnyOf(removePlant),
         effect: (action) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const plantId = action.payload as string
                 doc.transact(() => {
                     crdtService.getPlantsMap().delete(plantId)
@@ -260,8 +264,10 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     startAppListening({
         matcher: isAnyOf(upsertScheduleEntry),
         effect: (action) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const entry = action.payload as { id: string }
                 doc.transact(() => {
                     const scheduleMap = crdtService.getNutrientScheduleMap()
@@ -269,6 +275,7 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
                     writeRecordToYMap(
                         yMap,
                         nutrientEntryToYMap(
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             action.payload as Parameters<typeof nutrientEntryToYMap>[0],
                         ),
                     )
@@ -283,9 +290,11 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     startAppListening({
         matcher: isAnyOf(removeScheduleEntry),
         effect: (matchedAction) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             if ((matchedAction as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
             try {
                 doc.transact(() => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     crdtService.getNutrientScheduleMap().delete(matchedAction.payload as string)
                 }, BRIDGE_ORIGIN)
             } catch (error) {
@@ -321,8 +330,10 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     startAppListening({
         matcher: isAnyOf(upsertReading),
         effect: (action) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const reading = action.payload as Parameters<typeof ecPhReadingToYMap>[0]
                 doc.transact(() => {
                     const readingsMap = crdtService.getNutrientReadingsMap()

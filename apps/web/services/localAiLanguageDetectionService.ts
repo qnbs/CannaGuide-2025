@@ -229,6 +229,7 @@ export const detectLanguage = async (text: string): Promise<LanguageDetectionRes
             multi_label: false,
         })
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const output = result as { labels?: string[]; scores?: number[] }
         const topLabel = output.labels?.[0] ?? ''
         const topScore = output.scores?.[0] ?? 0.5

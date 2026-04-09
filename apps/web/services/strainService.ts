@@ -53,6 +53,7 @@ const loadAllStrainsData = (): Promise<Strain[]> => {
         )
 
         const loadedModules = await Promise.allSettled(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             entries.map(([, loader]) => loader() as Promise<StrainModule>),
         )
 

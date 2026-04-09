@@ -47,6 +47,7 @@ const readStatus = (): LocalAiPreloadStatus => {
     try {
         const raw = localStorage.getItem(LOCAL_AI_PRELOAD_STATUS_KEY)
         if (!raw) return DEFAULT_STATUS
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(raw) as Partial<LocalAiPreloadStatus>
         return { ...DEFAULT_STATUS, ...parsed }
     } catch {

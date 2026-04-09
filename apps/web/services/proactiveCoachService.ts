@@ -110,6 +110,7 @@ function loadCooldownFromSession(): void {
     try {
         const raw = sessionStorage.getItem(COOLDOWN_SESSION_KEY)
         if (!raw) return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const map = JSON.parse(raw) as Record<string, number>
         for (const [k, v] of Object.entries(map)) {
             cooldownMap.set(k, v)
@@ -122,7 +123,9 @@ function loadCooldownFromSession(): void {
 function saveCooldownToSession(): void {
     try {
         const obj: Record<string, number> = {}
-        cooldownMap.forEach((v, k) => { obj[k] = v })
+        cooldownMap.forEach((v, k) => {
+            obj[k] = v
+        })
         sessionStorage.setItem(COOLDOWN_SESSION_KEY, JSON.stringify(obj))
     } catch {
         // sessionStorage write failure is non-critical

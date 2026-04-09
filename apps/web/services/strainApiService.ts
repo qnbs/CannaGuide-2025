@@ -44,6 +44,7 @@ const cache = new Map<string, CacheEntry<unknown>>()
 
 const getCached = <T>(key: string): T | null => {
     const entry = cache.get(key)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     if (entry && Date.now() < entry.expiresAt) return entry.data as T
     if (entry) cache.delete(key)
     return null
@@ -100,6 +101,7 @@ async function fetchViaProxy(directUrl: string, apiKey?: string): Promise<unknow
 
 const getApiKey = (provider: StrainApiProvider): string | undefined => {
     if (provider === 'otreeba') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return import.meta.env.VITE_OTREEBA_API_KEY as string | undefined
     }
     if (provider === 'cannlytics') {
@@ -147,6 +149,7 @@ interface OtreebaStrainResponse {
 }
 
 const parseOtreebaStrain = (json: unknown): ExternalStrainData | null => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const res = json as OtreebaStrainResponse
     if (!res?.data?.name) return null
 
@@ -256,6 +259,7 @@ interface CannlyticsStrainResponse {
 }
 
 const parseCannlyticsResponse = (json: unknown): ExternalStrainData | null => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const res = json as CannlyticsStrainResponse
     if (!res?.strain_name) return null
 
@@ -330,6 +334,7 @@ export const searchCannlytics = async (
     const responseData = json as { data?: unknown[] }
     if (Array.isArray(responseData?.data)) {
         for (const item of responseData.data) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const parsed = parseCannlyticsResponse(item as CannlyticsStrainResponse)
             if (parsed) results.push(parsed)
         }

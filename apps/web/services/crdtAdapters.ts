@@ -229,12 +229,15 @@ export const yMapToPlant = (data: Record<string, unknown>): Plant | null => {
         }
 
         // Return the full reconstructed plant (passthrough fields beyond schema)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return {
             ...parsed,
             // Ensure excluded fields have sensible defaults
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             simulationClock: (data['simulationClock'] as Plant['simulationClock']) ?? {
                 accumulatedDayMs: 0,
             },
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             history: Array.isArray(data['history']) ? (data['history'] as Plant['history']) : [],
         } as Plant
     } catch {

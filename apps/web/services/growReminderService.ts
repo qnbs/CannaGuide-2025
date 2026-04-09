@@ -32,6 +32,7 @@ export interface GrowReminderBatch {
 const readSnoozedMap = (): Record<string, number> => {
     try {
         const raw = localStorage.getItem(REMINDER_SNOOZE_KEY)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return raw ? (JSON.parse(raw) as Record<string, number>) : {}
     } catch {
         return {}
@@ -338,6 +339,7 @@ class GrowReminderService {
 
         if ('sync' in registration) {
             await (
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- SW Background Sync API
                 registration as ServiceWorkerRegistration & {
                     sync: { register: (tag: string) => Promise<void> }
                 }

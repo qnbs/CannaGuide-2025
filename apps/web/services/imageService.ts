@@ -43,6 +43,7 @@ const dataUrlToFile = (dataUrl: string, fileName = `image-${Date.now()}.jpg`): F
 const fileToDataUrl = (file: Blob): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         reader.onload = () => resolve(reader.result as string)
         reader.onerror = () => reject(reader.error)
         reader.readAsDataURL(file)

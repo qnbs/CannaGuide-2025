@@ -51,6 +51,7 @@ const openDb = (name: string, stores: string[]): Promise<IDBDatabase> =>
         req.onsuccess = () => resolve(req.result)
         req.onerror = () => reject(req.error)
         req.onupgradeneeded = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const db = (event.target as IDBOpenDBRequest).result
             for (const store of stores) {
                 if (!db.objectStoreNames.contains(store)) {

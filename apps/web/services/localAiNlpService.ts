@@ -81,7 +81,9 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
             sanitized.slice(0, 512),
         )
         const output = Array.isArray(result) ? result[0] : result
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const typed = output as { label?: string; score?: number }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const label = (typed.label ?? 'POSITIVE') as 'POSITIVE' | 'NEGATIVE'
         const score = typeof typed.score === 'number' ? typed.score : 0.5
         let normalized: SentimentResult['normalized'] = 'neutral'
@@ -133,8 +135,10 @@ export const summarizeText = async (
         })
         const output = Array.isArray(result) ? result[0] : result
         const summary =
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             typeof (output as { summary_text?: string }).summary_text === 'string'
-                ? (output as { summary_text: string }).summary_text
+                ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+                  (output as { summary_text: string }).summary_text
                 : sanitized.slice(0, maxLength)
         return {
             summary: DOMPurify.sanitize(summary, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }),
@@ -202,6 +206,7 @@ export const classifyGrowTopic = async (
                 multi_label: false,
             },
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const output = result as {
             labels?: string[]
             scores?: number[]

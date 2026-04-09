@@ -92,6 +92,7 @@ export function createIndexedDbLruCache<T extends BaseCacheEntry>(
                 const store = tx.objectStore(config.storeName)
                 const getReq = store.get(key)
                 getReq.onsuccess = () => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const entry = getReq.result as T | undefined
                     if (entry) {
                         if (Date.now() - entry.createdAt > config.ttlMs) {

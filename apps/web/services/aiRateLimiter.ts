@@ -90,6 +90,7 @@ function loadCostState(): CostTrackerState {
     try {
         const raw = localStorage.getItem(COST_TRACKER_STORAGE_KEY)
         if (!raw) return { days: [] }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(raw) as CostTrackerState
         if (!Array.isArray(parsed.days)) return { days: [] }
         // Keep only last 30 days
@@ -192,6 +193,7 @@ function loadAuditLog(): AuditLogEntry[] {
     try {
         const raw = localStorage.getItem(AUDIT_LOG_STORAGE_KEY)
         if (!raw) return []
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(raw) as AuditLogEntry[]
         if (!Array.isArray(parsed)) return []
         return parsed
@@ -258,6 +260,7 @@ function loadBudget(): MonthlyBudget {
     try {
         const raw = localStorage.getItem(BUDGET_STORAGE_KEY)
         if (!raw) return { limit: 0, month: currentMonthKey(), spent: 0 }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(raw) as MonthlyBudget
         // Reset if month rolled over
         if (parsed.month !== currentMonthKey()) {

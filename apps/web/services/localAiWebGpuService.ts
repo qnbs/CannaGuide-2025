@@ -101,6 +101,7 @@ let deviceDestroyRegistered = false
 
 const probeFeatures = (adapter: GPUAdapter): WebGpuFeatures => {
     const limits = adapter.limits as GPUSupportedLimits
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const featureSet = adapter.features as ReadonlySet<string>
 
     return {
@@ -293,6 +294,7 @@ export const getSharedDevice = async (): Promise<WebGpuDevice | null> => {
 
     try {
         const gpu = navigator.gpu as GPU
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const adapter = (await Promise.race([
             gpu.requestAdapter({ powerPreference: 'high-performance' }),
             new Promise<null>((resolve) => setTimeout(() => resolve(null), ADAPTER_TIMEOUT_MS)),

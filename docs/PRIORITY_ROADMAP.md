@@ -82,7 +82,7 @@
 | F-03  | Push notifications                | Wave 5/6: proactiveCoach + nativeBridge                       |
 | R-04  | Local AI service extraction       | Decomposed into 15 service modules                            |
 | R-05  | Redux scope reduction             | Zustand stores for all transient UI state                     |
-| R-06  | Worker architecture consolidation | workerBus with 8 typed workers                                |
+| R-06  | Worker architecture consolidation | workerBus with 9 typed workers                                |
 | IoT-1 | IoT real-time dashboard           | IotDashboardView with sparklines/gauges/telemetry             |
 | V-01  | 3D interactive OrbitControls      | GrowRoom3D with auto-orbit + IoT badge                        |
 | AI-R1 | Strain recommendation scoring     | Daily Strains match % badge (0-100 relevance)                 |

@@ -279,7 +279,8 @@ export const VPDZoneMap: React.FC<VPDZoneMapProps> = memo(
                                 className="w-2 h-2 rounded-full"
                                 style={{ backgroundColor: zone.color }}
                             />
-                            {zone.label}: {zone.min}--{zone.max}
+                            {t(`plantsView.vpd.zones.${key}`, { defaultValue: zone.label })}:{' '}
+                            {zone.min}--{zone.max}
                         </div>
                     ))}
                 </div>

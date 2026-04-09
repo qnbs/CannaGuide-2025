@@ -10,14 +10,14 @@
 | Layer        | Technology                                                                               |
 | ------------ | ---------------------------------------------------------------------------------------- |
 | UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                      |
-| State        | Redux Toolkit 2.11 (15 slices), Zustand 5 (8 stores), RTK Query, memoized selectors      |
+| State        | Redux Toolkit 2.11 (18 slices), Zustand 5 (8 stores), RTK Query, memoized selectors      |
 | AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                              |
 | AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                     |
 | Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                                 |
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                      |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                            |
 | Workers      | WorkerBus (promise-based, 9 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 1844 unit tests, Playwright E2E + Component tests                                 |
+| Testing      | Vitest 1884 unit tests, Playwright E2E + Component tests                                 |
 | Distribution | GitHub Pages, Netlify (PR previews)                                                      |
 
 ---
@@ -129,8 +129,8 @@ docker/                   IoT mock servers (ESP32 sensor simulator)
 
 The app uses a **dual-store architecture** with clear separation of concerns:
 
-**Redux Toolkit (15 slices, persisted in IndexedDB):**
-Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, grows, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
+**Redux Toolkit (18 slices, persisted in IndexedDB):**
+Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, grows, metrics, hydro, growPlanner, diagnosisHistory, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
 
 **Zustand (8 stores, transient/never persisted):**
 `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite).
@@ -317,7 +317,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 pnpm run dev              # Vite dev server (localhost:5173)
 pnpm run build            # Production build (Vite 7 + PWA manifest injection)
-pnpm test                 # Vitest unit/integration (1844 tests)
+pnpm test                 # Vitest unit/integration (1884 tests)
 pnpm run test:e2e         # Playwright E2E
 pnpm run test:ct          # Playwright Component tests
 pnpm run lint:full        # ESLint entire project

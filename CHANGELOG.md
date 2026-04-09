@@ -33,13 +33,13 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **ARCHITECTURE.md sync** -- Updated service count (108), test count
-  (1844), added CRDT/sync/calculator services to directory listing,
+- **ARCHITECTURE.md sync** -- Updated service count (109), test count
+  (1884), added CRDT/sync/calculator services to directory listing,
   expanded WorkerBus section with W-04 cross-worker channels.
 - **AUDIT_BACKLOG closures** -- D-01 (API docs), F-05 (Multi-Grow),
   summary updated (26/28 Medium done).
 - **ROADMAP.md** -- v1.4 status corrected to Released, v1.5 exit
-  criteria updated (1844 tests), v1.6 engineering track added.
+  criteria updated (1884 tests), v1.6 engineering track added.
 
 ### Fixed
 

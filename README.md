@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1883%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1884%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-33.7%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity (dynamic) -->
@@ -66,11 +66,11 @@
 <!-- Project Metrics -->
 
 [![Strains](https://img.shields.io/badge/strains-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/services-108-blue)](https://qnbs.github.io/CannaGuide-2025/)
-[![Redux Slices](https://img.shields.io/badge/Redux%20slices-15-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/services-109-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Redux Slices](https://img.shields.io/badge/Redux%20slices-18-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-21-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/hooks-25-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -107,7 +107,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 22-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 776 strains -- 1883 tests -- 111 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 22 CI workflows
+**Key numbers:** 776 strains -- 1884 tests -- 109 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
 
 ---
 
@@ -122,11 +122,11 @@ Three-tier client-side architecture with offline-first design:
 │  6 Views: Plants│Strains│Equipment│Knowledge│Settings│Help│
 ├─────────────────────────────────────────────────────────┤
 │  Business Logic Layer                                   │
-│  108 Services · 25 Hooks · 9 Web Workers                 │
+│  109 Services · 25 Hooks · 9 Web Workers                 │
 │  VPD Simulation · AI Providers · Genetics · RAG         │
 ├─────────────────────────────────────────────────────────┤
 │  State & Persistence Layer                              │
-│  Redux Toolkit (15 Slices) · Zustand (8 Stores) · RTK Query│
+│  Redux Toolkit (18 Slices) · Zustand (8 Stores) · RTK Query│
 │  Dual IndexedDB · Service Worker · Background Sync      │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -163,7 +163,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1883 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1884 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 
 ---
@@ -313,7 +313,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite dev server on localhost:5173)
 pnpm run build            # turbo run build (all workspaces)
 pnpm test                 # turbo run test (Vitest, watch mode)
-pnpm run test:run         # turbo run test:run (single run, 1883 tests)
+pnpm run test:run         # turbo run test:run (single run, 1884 tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -338,8 +338,8 @@ tsconfig.json              References-only (apps/web, packages/*)
 apps/
   web/                     Main PWA (@cannaguide/web)
     components/             React components (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux (15 slices) + Zustand (8 stores), selectors, middleware
-    services/               108 service modules (AI, simulation, DB, crypto, IoT)
+    stores/                 Redux (18 slices) + Zustand (8 stores), selectors, middleware
+    services/               109 service modules (AI, simulation, DB, crypto, IoT)
     hooks/                  25 custom hooks
     data/                   Static data: 776 strains, FAQ, lexicon, guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
@@ -356,7 +356,7 @@ packages/
 
 scripts/                    Build/lint/security scripts
 docker/                     IoT mock servers (ESP32 sensor simulator)
-.github/                    22 CI/CD workflows, issue templates
+.github/                    21 CI/CD workflows, issue templates
 ```
 
 ---
@@ -369,7 +369,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 | Job                | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
-| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1883 tests, production build |
+| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1884 tests, production build |
 | 🛡 Security        | pnpm audit (critical), trojan-source scan, Gitleaks secret scan             |
 | 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
 | 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |
@@ -436,6 +436,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 | **v1.3** | ✅ Released | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                                    |
 | **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1826 tests                                   |
 | **v1.5** | ✅ Released | CRDT offline sync, Multi-Grow management (3 per CanG), AI cost tracking, Netlify preview validation, RTL infrastructure, pnpm migration, CI hardening, 1826 tests                                                                  |
+| **v1.6** | ✅ Released | Forensic audit fixes, i18n completeness (5 languages), Intl.DateTimeFormat weekdays, metrics/diagnosis/planner slices, documentation sync, 1884 tests                                                                              |
 | **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                                           |
 
 ### Strategic Expansion Focus (2026-2028)
@@ -458,7 +459,7 @@ CannaGuide 2025 was built iteratively through an AI-assisted development process
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                             | v0.1 → v1.0  |
 | **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                       | Throughout   |
-| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1826 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.4 |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1884 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.6 |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Production deployment, PR previews, OpenSSF compliance                                                                        | Continuous   |
 
 > **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
@@ -500,11 +501,11 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 <!-- Status & Qualität -->
 
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/Release-v1.5.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![Release](https://img.shields.io/badge/Release-v1.6.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-1826%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-1884%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 
@@ -544,7 +545,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 22-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 776 Sorten -- 1826 Tests -- 108 Services -- 15 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 22 CI-Workflows
+**Kennzahlen:** 776 Sorten -- 1884 Tests -- 109 Services -- 18 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 21 CI-Workflows
 
 ---
 
@@ -559,11 +560,11 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 │  6 Views: Pflanzen│Sorten│Ausrüstung│Wissen│Settings│Hilfe│
 ├─────────────────────────────────────────────────────────┤
 │  Business-Logik-Schicht                                 │
-│  108 Services · 25 Hooks · 9 Web Workers                 │
+│  109 Services · 25 Hooks · 9 Web Workers                 │
 │  VPD-Simulation · KI-Provider · Genetik · RAG           │
 ├─────────────────────────────────────────────────────────┤
 │  State- & Persistenzschicht                             │
-│  Redux Toolkit (15 Slices) · Zustand (8 Stores) · RTK Query│
+│  Redux Toolkit (18 Slices) · Zustand (8 Stores) · RTK Query│
 │  Dual IndexedDB · Service Worker · Background Sync      │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -590,7 +591,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | ------------------ | ------------------------------------ | --------------------------------------------- |
 | **Runtime**        | React 19.2 + TypeScript (strict)     | Komponenten-UI mit null `any`                 |
 | **Build**          | Vite 7.3 + vite-plugin-pwa           | Schnelles HMR, InjectManifest SW              |
-| **State**          | Redux Toolkit 2.11 + Zustand 5       | 15 Redux Slices + 8 Zustand Stores            |
+| **State**          | Redux Toolkit 2.11 + Zustand 5       | 18 Redux Slices + 8 Zustand Stores            |
 | **KI (Cloud)**     | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
 | **KI (Lokal)**     | Transformers.js, WebLLM, TF.js, ONNX | 22 Services, 8 ML-Modelle, 3-Schicht-Fallback |
 | **Styling**        | Tailwind CSS 3.4 + Radix UI          | 9 Cannabis-Themes via CSS Custom Properties   |
@@ -599,7 +600,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 Namensräume                |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1826 Unit-, E2E-, Komponenten-Tests           |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1884 Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 
 ---
@@ -749,7 +750,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 pnpm run build            # turbo run build (alle Workspaces)
 pnpm test                 # turbo run test (Vitest, Watch-Modus)
-pnpm run test:run         # turbo run test:run (Einzellauf, 1826 Tests)
+pnpm run test:run         # turbo run test:run (Einzellauf, 1884 Tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -774,8 +775,8 @@ tsconfig.json              Nur Referenzen (apps/web, packages/*)
 apps/
   web/                     Haupt-PWA (@cannaguide/web)
     components/             React-Komponenten (common/, icons/, navigation/, ui/, views/)
-    stores/                 Redux: 15 Slices, 8 Zustand Stores, Selektoren, Middleware
-    services/               108 Service-Module (KI, Simulation, DB, Krypto, IoT)
+    stores/                 Redux: 18 Slices, 8 Zustand Stores, Selektoren, Middleware
+    services/               109 Service-Module (KI, Simulation, DB, Krypto, IoT)
     hooks/                  25 Custom Hooks
     data/                   Statische Daten: 776 Sorten, FAQ, Lexikon, Guides
     locales/                i18n: en/, de/, es/, fr/, nl/ (je 12 Namensräume)
@@ -792,7 +793,7 @@ packages/
 
 scripts/                    Build-/Lint-/Sicherheits-Skripte
 docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
-.github/                    22 CI/CD-Workflows, Issue-Templates
+.github/                    21 CI/CD-Workflows, Issue-Templates
 ```
 
 ---
@@ -805,7 +806,7 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 
 | Job                | Beschreibung                                                                 |
 | ------------------ | ---------------------------------------------------------------------------- |
-| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1826 Tests, Produktions-Build |
+| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1884 Tests, Produktions-Build |
 | 🛡 Security        | pnpm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan              |
 | 🎭 E2E Tests       | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🌡 IoT-Integration | ESP32-Mock Healthcheck, Sensor-Endpunkt-Validierung                          |
@@ -870,6 +871,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                               |
 | **v1.4** | ✅ Veröffentlicht | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1826 Tests                                                                |
 | **v1.5** | ✅ Veröffentlicht | CRDT-Offline-Sync, Multi-Grow-Verwaltung (3 pro CanG), KI-Kostentracking, Netlify-Preview-Validierung, RTL-Infrastruktur, pnpm-Migration, CI-Haertung, 1826 Tests                                                                                               |
+| **v1.6** | ✅ Veröffentlicht | Forensic-Audit-Fixes, i18n-Vollstaendigkeit (5 Sprachen), Intl.DateTimeFormat-Wochentage, Metrics/Diagnosis/Planner-Slices, Dokumentations-Sync, 1884 Tests                                                                                                     |
 | **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                                     |
 
 ### Strategische Ausbau-Schwerpunkte (2026-2028)
@@ -892,7 +894,7 @@ CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                              | v0.1 → v1.0    |
 | **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                      | Durchgehend    |
-| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1826 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.4   |
+| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1884 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.6   |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Produktions-Deployment, PR-Previews, OpenSSF-Compliance                                                                             | Kontinuierlich |
 
 > **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.

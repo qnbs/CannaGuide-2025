@@ -579,6 +579,14 @@ export const plantsView = {
             high: 'VPD demasiado alto: aumenta la RH o baja la temperatura del dosel.',
             danger: 'VPD en zona de peligro: se recomienda correccion inmediata para evitar estres.',
         },
+        zones: {
+            propagation: 'Propagacion',
+            seedling: 'Plantula',
+            vegetative: 'Vegetativo',
+            earlyFlower: 'Floracion Temprana',
+            lateFlower: 'Floracion Tardia',
+            danger: 'Peligro',
+        },
     },
     deepDive: {
         description:
@@ -730,6 +738,13 @@ export const plantsView = {
         autoFillStrain: 'Cargar plantilla de variedad',
         doneMarker: '[hecho]',
         removeMarker: '[x]',
+        newTask: 'Nueva Tarea',
+        taskType: 'Tipo',
+        scheduledDate: 'Fecha',
+        every: 'cada',
+        days: 'dias',
+        notesPlaceholder: 'Agregar notas...',
+        overdue: '{{count}} tarea(s) atrasada(s)',
     },
     photoTimeline: {
         title: 'Linea de Tiempo de Fotos',
@@ -738,6 +753,10 @@ export const plantsView = {
         exitCompare: 'Salir de Comparacion',
         selectTwo: 'Selecciona 2 fotos para comparar',
         day: 'Dia',
+        noPreview: 'Sin vista previa',
+    },
+    tagGenerator: {
+        pdfTitle: 'CannaGuide Etiquetas de Plantas',
     },
     journalSummary: {
         title: 'Resumen del Diario',

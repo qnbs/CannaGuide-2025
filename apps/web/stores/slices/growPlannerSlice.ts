@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 import type { GrowPlannerState, PlannerTask } from '@/types'
 
@@ -77,48 +77,63 @@ export const {
 
 export const selectAllPlannerTasks = (state: RootState): PlannerTask[] => state.growPlanner.tasks
 
-export const selectPlannerTasksForPlant =
-    (plantId: string) =>
-    (state: RootState): PlannerTask[] =>
-        state.growPlanner.tasks.filter((t) => t.plantId === plantId)
+export const selectPlannerTasksForPlant = (
+    plantId: string,
+): ((state: RootState) => PlannerTask[]) =>
+    createSelector(
+        (state: RootState) => state.growPlanner.tasks,
+        (tasks) => tasks.filter((t) => t.plantId === plantId),
+    )
 
-export const selectUpcomingTasks =
-    (plantId?: string | undefined) =>
-    (state: RootState): PlannerTask[] => {
-        const now = Date.now()
-        return state.growPlanner.tasks.filter(
-            (t) =>
-                t.completedAt == null &&
-                t.scheduledAt >= now &&
-                (plantId == null || t.plantId === plantId),
-        )
-    }
+export const selectUpcomingTasks = (
+    plantId?: string | undefined,
+): ((state: RootState) => PlannerTask[]) =>
+    createSelector(
+        (state: RootState) => state.growPlanner.tasks,
+        (tasks) => {
+            const now = Date.now()
+            return tasks.filter(
+                (t) =>
+                    t.completedAt == null &&
+                    t.scheduledAt >= now &&
+                    (plantId == null || t.plantId === plantId),
+            )
+        },
+    )
 
-export const selectOverdueTasks =
-    (plantId?: string | undefined) =>
-    (state: RootState): PlannerTask[] => {
-        const now = Date.now()
-        return state.growPlanner.tasks.filter(
-            (t) =>
-                t.completedAt == null &&
-                t.scheduledAt < now &&
-                (plantId == null || t.plantId === plantId),
-        )
-    }
+export const selectOverdueTasks = (
+    plantId?: string | undefined,
+): ((state: RootState) => PlannerTask[]) =>
+    createSelector(
+        (state: RootState) => state.growPlanner.tasks,
+        (tasks) => {
+            const now = Date.now()
+            return tasks.filter(
+                (t) =>
+                    t.completedAt == null &&
+                    t.scheduledAt < now &&
+                    (plantId == null || t.plantId === plantId),
+            )
+        },
+    )
 
-export const selectTodayTasks =
-    (plantId?: string | undefined) =>
-    (state: RootState): PlannerTask[] => {
-        const now = new Date()
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-        const endOfDay = startOfDay + 86_400_000
-        return state.growPlanner.tasks.filter(
-            (t) =>
-                t.completedAt == null &&
-                t.scheduledAt >= startOfDay &&
-                t.scheduledAt < endOfDay &&
-                (plantId == null || t.plantId === plantId),
-        )
-    }
+export const selectTodayTasks = (
+    plantId?: string | undefined,
+): ((state: RootState) => PlannerTask[]) =>
+    createSelector(
+        (state: RootState) => state.growPlanner.tasks,
+        (tasks) => {
+            const now = new Date()
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+            const endOfDay = startOfDay + 86_400_000
+            return tasks.filter(
+                (t) =>
+                    t.completedAt == null &&
+                    t.scheduledAt >= startOfDay &&
+                    t.scheduledAt < endOfDay &&
+                    (plantId == null || t.plantId === plantId),
+            )
+        },
+    )
 
 export default growPlannerSlice.reducer

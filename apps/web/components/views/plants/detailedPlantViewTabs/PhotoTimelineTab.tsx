@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next'
 import type { JournalEntry, PhotoDetails } from '@/types'
 import { JournalEntryType } from '@/types'
 
+function isPhotoDetails(d: unknown): d is PhotoDetails {
+    return d != null && typeof d === 'object' && 'photoCategory' in d
+}
+
 interface PhotoTimelineTabProps {
     journal: JournalEntry[]
     plantName: string
@@ -21,8 +25,7 @@ function extractPhotoEntries(journal: JournalEntry[]): PhotoEntry[] {
     return journal
         .filter((e) => e.type === JournalEntryType.Photo)
         .map((e) => {
-            const details =
-                e.details && 'imageId' in e.details ? (e.details as PhotoDetails) : undefined
+            const details = isPhotoDetails(e.details) ? e.details : undefined
             return {
                 id: e.id,
                 timestamp: e.createdAt,

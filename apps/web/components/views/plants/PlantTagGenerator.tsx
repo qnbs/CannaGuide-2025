@@ -17,14 +17,22 @@ const PlantTagCard: React.FC<PlantTagCardProps> = memo(({ plant }) => {
 
     return (
         <div className="flex flex-col items-center gap-2 rounded-xl bg-white p-4 text-black print:break-inside-avoid print:border print:border-slate-300">
-            <QRCodeSVG
-                value={qrValue}
-                size={120}
-                level="M"
-                includeMargin={false}
-                bgColor="#ffffff"
-                fgColor="#000000"
-            />
+            <div
+                role="img"
+                aria-label={t('plantsView.tags.qrAlt', {
+                    defaultValue: 'QR code for plant {{name}}',
+                    name: plant.name,
+                })}
+            >
+                <QRCodeSVG
+                    value={qrValue}
+                    size={120}
+                    level="M"
+                    includeMargin={false}
+                    bgColor="#ffffff"
+                    fgColor="#000000"
+                />
+            </div>
             <div className="text-center">
                 <p className="text-sm font-bold truncate max-w-[140px]">{plant.name}</p>
                 <p className="text-xs text-slate-600 truncate max-w-[140px]">{plant.strain.name}</p>
@@ -112,6 +120,9 @@ export const PlantTagGenerator: React.FC<PlantTagGeneratorProps> = memo(({ plant
                     <button
                         type="button"
                         onClick={handlePrint}
+                        aria-label={t('plantsView.tags.printAria', {
+                            defaultValue: 'Print plant tags',
+                        })}
                         className="rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-1.5 text-sm text-white transition-colors"
                     >
                         {t('plantsView.tags.print', { defaultValue: 'Print' })}
@@ -119,6 +130,9 @@ export const PlantTagGenerator: React.FC<PlantTagGeneratorProps> = memo(({ plant
                     <button
                         type="button"
                         onClick={handlePdfExport}
+                        aria-label={t('plantsView.tags.exportPdfAria', {
+                            defaultValue: 'Export plant tags as PDF',
+                        })}
                         className="rounded-lg bg-primary-600 hover:bg-primary-500 px-3 py-1.5 text-sm text-white transition-colors"
                     >
                         {t('plantsView.tags.exportPdf', { defaultValue: 'Export PDF' })}

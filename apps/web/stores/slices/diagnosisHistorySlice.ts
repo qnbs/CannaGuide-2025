@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 import type { DiagnosisHistoryState, DiagnosisRecord } from '@/types'
 
@@ -64,27 +64,38 @@ export const { addDiagnosisRecord, clearDiagnosisForPlant, clearAllDiagnosis } =
 export const selectDiagnosisRecords = (state: RootState): DiagnosisRecord[] =>
     state.diagnosisHistory.records
 
-export const selectDiagnosisForPlant =
-    (plantId: string) =>
-    (state: RootState): DiagnosisRecord[] =>
-        state.diagnosisHistory.records.filter((r) => r.plantId === plantId)
+export const selectDiagnosisForPlant = (
+    plantId: string,
+): ((state: RootState) => DiagnosisRecord[]) =>
+    createSelector(
+        (state: RootState) => state.diagnosisHistory.records,
+        (records) => records.filter((r) => r.plantId === plantId),
+    )
 
-export const selectLatestDiagnosis =
-    (plantId: string) =>
-    (state: RootState): DiagnosisRecord | undefined => {
-        const plantRecords = state.diagnosisHistory.records.filter((r) => r.plantId === plantId)
-        return plantRecords.length > 0 ? plantRecords[plantRecords.length - 1] : undefined
-    }
+export const selectLatestDiagnosis = (
+    plantId: string,
+): ((state: RootState) => DiagnosisRecord | undefined) =>
+    createSelector(
+        (state: RootState) => state.diagnosisHistory.records,
+        (records) => {
+            const plantRecords = records.filter((r) => r.plantId === plantId)
+            return plantRecords.length > 0 ? plantRecords[plantRecords.length - 1] : undefined
+        },
+    )
 
-export const selectDiagnosisTrend =
-    (plantId: string) =>
-    (state: RootState): Array<{ timestamp: number; severity: string; confidence: number }> =>
-        state.diagnosisHistory.records
-            .filter((r) => r.plantId === plantId)
-            .map((r) => ({
-                timestamp: r.timestamp,
-                severity: r.severity,
-                confidence: r.confidence,
-            }))
+export const selectDiagnosisTrend = (
+    plantId: string,
+): ((state: RootState) => Array<{ timestamp: number; severity: string; confidence: number }>) =>
+    createSelector(
+        (state: RootState) => state.diagnosisHistory.records,
+        (records) =>
+            records
+                .filter((r) => r.plantId === plantId)
+                .map((r) => ({
+                    timestamp: r.timestamp,
+                    severity: r.severity,
+                    confidence: r.confidence,
+                })),
+    )
 
 export default diagnosisHistorySlice.reducer

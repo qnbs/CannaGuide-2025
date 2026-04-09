@@ -190,13 +190,13 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                     {/* Metric cards */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <MetricCard
-                            label="VPD"
+                            label={t('plantsView.metrics.vpdLabel', { defaultValue: 'VPD' })}
                             value={currentVPD.toFixed(2)}
                             unit="kPa"
                             color="text-green-400"
                         />
                         <MetricCard
-                            label="pH"
+                            label={t('plantsView.metrics.phLabel', { defaultValue: 'pH' })}
                             value={
                                 hydroReadings.length > 0
                                     ? (hydroReadings[hydroReadings.length - 1]?.ph.toFixed(1) ??
@@ -207,7 +207,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                             color="text-blue-400"
                         />
                         <MetricCard
-                            label="EC"
+                            label={t('plantsView.metrics.ecLabel', { defaultValue: 'EC' })}
                             value={
                                 hydroReadings.length > 0
                                     ? (hydroReadings[hydroReadings.length - 1]?.ec.toFixed(2) ??
@@ -218,7 +218,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                             color="text-purple-400"
                         />
                         <MetricCard
-                            label={t('plantsView.metrics.heightLabel', {
+                            label={t('plantsView.metrics.height', {
                                 defaultValue: 'Height',
                             })}
                             value={
@@ -258,7 +258,9 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                         stroke="#3b82f6"
                                         dot={false}
                                         strokeWidth={2}
-                                        name="pH"
+                                        name={t('plantsView.metrics.phLabel', {
+                                            defaultValue: 'pH',
+                                        })}
                                     />
                                     <Line
                                         type="monotone"
@@ -266,7 +268,9 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                         stroke="#a855f7"
                                         dot={false}
                                         strokeWidth={2}
-                                        name="EC"
+                                        name={t('plantsView.metrics.ecLabel', {
+                                            defaultValue: 'EC',
+                                        })}
                                     />
                                     <Line
                                         type="monotone"
@@ -274,7 +278,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                         stroke="#10b981"
                                         dot={false}
                                         strokeWidth={2}
-                                        name={t('plantsView.metrics.heightLabel', {
+                                        name={t('plantsView.metrics.height', {
                                             defaultValue: 'Height',
                                         })}
                                     />
@@ -308,8 +312,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                 htmlFor="metrics-height"
                                 className="block text-xs text-slate-400 mb-1"
                             >
-                                {t('plantsView.metrics.heightLabel', { defaultValue: 'Height' })}{' '}
-                                (cm)
+                                {t('plantsView.metrics.height', { defaultValue: 'Height' })} (cm)
                             </label>
                             <input
                                 id="metrics-height"
@@ -350,7 +353,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                 htmlFor="metrics-co2"
                                 className="block text-xs text-slate-400 mb-1"
                             >
-                                CO2 (ppm)
+                                {t('plantsView.metrics.co2Ppm', { defaultValue: 'CO2 (ppm)' })}
                             </label>
                             <input
                                 id="metrics-co2"

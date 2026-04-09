@@ -217,7 +217,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                             defaultValue: 'Complete',
                                         })}
                                     >
-                                        [done]
+                                        {t('plantsView.planner.doneMarker', {
+                                            defaultValue: '[done]',
+                                        })}
                                     </button>
                                     <button
                                         type="button"
@@ -225,7 +227,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                         className="text-red-400 hover:text-red-300"
                                         aria-label={t('common.remove', { defaultValue: 'Remove' })}
                                     >
-                                        [x]
+                                        {t('plantsView.planner.removeMarker', {
+                                            defaultValue: '[x]',
+                                        })}
                                     </button>
                                 </div>
                             </div>

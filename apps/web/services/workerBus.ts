@@ -813,7 +813,7 @@ class WorkerBusImpl {
             if (candidate) {
                 return this.preempt<TResponse>(
                     candidate,
-                     
+
                     worker!,
                     workerName,
                     type,
@@ -1037,7 +1037,6 @@ class WorkerBusImpl {
             // Abort check before each attempt
             if (signal?.aborted) {
                 throw new WorkerBusError(
-                    WorkerErrorCode.PREEMPTED,
                     `Request to "${workerName}" was cancelled`,
                     WorkerErrorCode.CANCELLED,
                     workerName,

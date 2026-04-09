@@ -249,7 +249,7 @@ Released: **2026-04-08**
 - CRDT sync is operational with conflict resolution UI.
 - Multi-Grow lifecycle supports 3 grows per CanG with scoped AI context.
 - All npm references replaced with pnpm across the entire repo.
-- 1760 tests pass, build succeeds, typecheck clean.
+- 1766 tests pass, build succeeds, typecheck clean.
 
 ---
 

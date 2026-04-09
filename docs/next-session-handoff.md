@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 102) -- v1.5.1 Patch Release
+## Latest Session (Session 103) -- W-02 Priority Preemption
+
+**Status: W-02 implemented. 1826 tests passing. TypeScript clean.
+Build clean. All validations green.**
+
+### What Was Done (Session 103)
+
+1. **W-02 Priority Preemption** -- WorkerBus now preempts
+   lowest-priority running jobs when all slots are full and a
+   higher-priority job arrives. AbortController-based, main-thread
+   only, no Worker.terminate(). Max 3 re-queues per job before
+   PREEMPTED rejection.
+
+2. **New types** -- Added `PREEMPTED` to `WorkerErrorCode`, extended
+   `PendingRequest` and `QueuedDispatch` with re-queue fields,
+   added `preemptionCount` to `WorkerBusMetrics` and telemetry.
+
+3. **Core logic** -- `findPreemptionCandidate()` finds lowest-priority
+   running job, `preempt()` removes from pending, re-queues or
+   rejects, dispatches higher-priority job. `sendToWorker()` stores
+   all re-queue fields. `drainQueue()` passes preemptionCount.
+
+4. **8 new tests** -- critical preempts low, critical-vs-critical
+   no-preempt, equal-priority no-preempt, re-queue resolves,
+   telemetry tracking, max-retries rejection, high-vs-low,
+   DispatchCompleteEvent on preemption.
+
+5. **ADR-0007** -- Architecture Decision Record for W-02 at
+   `docs/adr/0007-workerbus-priority-preemption.md`.
+
+6. **Docs updated** -- worker-bus.md (preemption section, W-02
+   resolved), PRIORITY_ROADMAP.md (W-02 done), ARCHITECTURE.md,
+   copilot-instructions.md, README.md.
+
+### Verified Metrics (Session 103)
+
+- Tests: 1826 passed, 0 failures (8 new W-02 tests)
+- Typecheck: clean (TS2719 filtered)
+- Build: 3 tasks success, 158 precache entries
+- WorkerBus: 60 tests passing (8 new + 52 existing)
+
+### Next Steps
+
+- W-04: Cross-worker messaging (if prioritized)
+- Coverage: push unit test coverage above 40% lines
+- Mutation testing: run Stryker on workerBus slices
+
+---
+
+## Previous Session (Session 102) -- v1.5.1 Patch Release
 
 **Status: v1.5.1 released. 1818 tests passing. TypeScript clean.
 Build clean. All validations green.**

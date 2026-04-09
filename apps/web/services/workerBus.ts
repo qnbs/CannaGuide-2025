@@ -22,10 +22,12 @@
  *   normal   -- standard operations (default)
  *   low      -- ML inference (WebLLM/ONNX), image generation, background tasks
  *
- * Design: No preemption. Critical jobs do not interrupt running workers.
- * They are guaranteed to be dispatched next once the current job completes.
- * True preemption would require Worker.terminate() + re-create, risking
- * race conditions and lost in-flight state.
+ * W-02 Priority Preemption:
+ * When all worker slots are full and a higher-priority job arrives, the
+ * lowest-priority running job is preempted (removed from the pending map,
+ * its worker response silently ignored) and automatically re-queued.
+ * Preemption is main-thread only -- AbortController-based, no
+ * Worker.terminate(). Max 3 preemptions per job before final rejection.
  *
  * Usage:
  *   workerBus.register('genealogy', new Worker(...))
@@ -37,7 +39,7 @@
 
 import type { WorkerRequest, WorkerResponse } from '@/types/workerBus.types'
 import { WorkerErrorCode, WorkerBusError } from '@/types/workerBus.types'
-import { PriorityQueue, type WorkerPriority } from '@/utils/priorityQueue'
+import { PriorityQueue, PRIORITY_VALUES, type WorkerPriority } from '@/utils/priorityQueue'
 
 export type { WorkerPriority } from '@/utils/priorityQueue'
 
@@ -57,6 +59,16 @@ interface PendingRequest<T = unknown> {
     priority: WorkerPriority
     /** Removes the AbortSignal listener when the request settles. */
     abortCleanup?: (() => void) | undefined
+    /** W-02: Original payload for re-queue on preemption. */
+    payload: unknown
+    /** W-02: Original timeout for re-queue on preemption. */
+    timeoutMs: number
+    /** W-02: Original signal for re-queue on preemption. */
+    signal?: AbortSignal | undefined
+    /** W-02: Original transferable for re-queue on preemption. */
+    transferable?: Transferable[] | undefined
+    /** W-02: How many times this job has been preempted and re-queued. */
+    preemptionCount: number
 }
 
 interface QueuedDispatch {
@@ -69,6 +81,8 @@ interface QueuedDispatch {
     transferable?: Transferable[] | undefined
     resolve: (value: unknown) => void
     reject: (reason: unknown) => void
+    /** W-02: How many times this job has been preempted and re-queued. */
+    preemptionCount: number
 }
 
 /** Options for dispatch with retry support. */
@@ -122,6 +136,8 @@ export interface WorkerBusMetrics {
     pendingCount: number
     queuedCount: number
     averageLatencyMs: number
+    /** W-02: Number of times a job for this worker was preempted. */
+    preemptionCount: number
 }
 
 /** W-03: Extended per-worker telemetry snapshot for external export. */
@@ -146,6 +162,8 @@ const DEFAULT_TIMEOUT_MS = 30_000
 const DEFAULT_MAX_CONCURRENT = 8
 const DEFAULT_MAX_QUEUE_SIZE = 64
 const DEFAULT_RETRY_DELAY_MS = 500
+/** W-02: Maximum times a single job can be preempted before final rejection. */
+const MAX_PREEMPTION_RETRIES = 3
 
 // Non-retryable error markers (avoid brittle string matching)
 const NON_RETRYABLE = ['No worker registered', 'disposed', 'unregistered', 'Queue full'] as const
@@ -210,6 +228,8 @@ interface WorkerTelemetry {
     lastSuccessAt: number
     /** W-03: Timestamp of last error. */
     lastErrorAt: number
+    /** W-02: Total preemption events for this worker. */
+    preemptionCount: number
 }
 
 const telemetryMap = new Map<string, WorkerTelemetry>()
@@ -226,6 +246,7 @@ const getTelemetry = (name: string): WorkerTelemetry => {
             peakLatencyMs: 0,
             lastSuccessAt: 0,
             lastErrorAt: 0,
+            preemptionCount: 0,
         }
         telemetryMap.set(name, t)
     }
@@ -306,6 +327,7 @@ class WorkerBusImpl {
                     tel.totalDispatches > 0
                         ? Math.round((tel.totalErrors / tel.totalDispatches) * 10000) / 10000
                         : 0,
+                preemptionCount: tel.preemptionCount,
                 pendingCount,
                 queuedCount: queue?.size ?? 0,
                 lastSuccessAt: tel.lastSuccessAt > 0 ? tel.lastSuccessAt : undefined,
@@ -538,6 +560,7 @@ class WorkerBusImpl {
                 queuedCount: queue?.size ?? 0,
                 averageLatencyMs:
                     tel.latencyCount > 0 ? Math.round(tel.latencySum / tel.latencyCount) : 0,
+                preemptionCount: tel.preemptionCount,
             }
         }
         return result
@@ -617,6 +640,125 @@ class WorkerBusImpl {
     }
 
     // -----------------------------------------------------------------------
+    // W-02: Priority preemption
+    // -----------------------------------------------------------------------
+
+    /**
+     * Find the lowest-priority in-flight job for `workerName` that can be
+     * preempted by a job with `incomingPriority`. Returns `undefined` when
+     * no preemption candidate exists (all running jobs have equal or higher
+     * priority).
+     */
+    private findPreemptionCandidate(
+        workerName: string,
+        incomingPriority: WorkerPriority,
+    ): { messageId: string; entry: PendingRequest } | undefined {
+        const incomingValue = PRIORITY_VALUES[incomingPriority]
+        let worst: { messageId: string; entry: PendingRequest; value: number } | undefined
+
+        for (const [messageId, entry] of this.pending) {
+            if (entry.workerName !== workerName) continue
+            const entryValue = PRIORITY_VALUES[entry.priority]
+            // Strict greater -- only preempt if running job is strictly lower priority
+            if (entryValue > incomingValue) {
+                if (worst === undefined || entryValue > worst.value) {
+                    worst = { messageId, entry, value: entryValue }
+                }
+            }
+        }
+
+        return worst ? { messageId: worst.messageId, entry: worst.entry } : undefined
+    }
+
+    /**
+     * Preempt a running job and dispatch a higher-priority job in its place.
+     * The preempted job is re-queued (up to MAX_PREEMPTION_RETRIES times).
+     */
+    private preempt<TResponse>(
+        candidate: { messageId: string; entry: PendingRequest },
+        worker: Worker,
+        workerName: string,
+        type: string,
+        payload: unknown,
+        timeoutMs: number,
+        signal: AbortSignal | undefined,
+        transferable: Transferable[] | undefined,
+        priority: WorkerPriority,
+    ): Promise<TResponse> {
+        const { messageId, entry } = candidate
+
+        // Remove preempted job from pending map -- its worker response will be
+        // silently ignored when it eventually arrives (no matching messageId).
+        this.pending.delete(messageId)
+        clearTimeout(entry.timer)
+        entry.abortCleanup?.()
+
+        // Telemetry
+        const tel = getTelemetry(workerName)
+        tel.preemptionCount++
+
+        this.fireDispatchHooks({
+            workerName,
+            type: entry.type,
+            latencyMs: performance.now() - entry.startedAt,
+            success: false,
+            priority: entry.priority,
+            error: 'Preempted by higher-priority job',
+        })
+
+        // Free the slot (sendToWorker will re-increment)
+        const current = this.activeCount.get(workerName) ?? 0
+        this.activeCount.set(workerName, Math.max(0, current - 1))
+
+        // Re-queue the preempted job or reject if max retries exceeded
+        const nextPreemptionCount = entry.preemptionCount + 1
+        if (nextPreemptionCount > MAX_PREEMPTION_RETRIES) {
+            entry.reject(
+                new WorkerBusError(
+                    `Job "${entry.type}" for "${workerName}" exceeded max preemption retries (${MAX_PREEMPTION_RETRIES})`,
+                    WorkerErrorCode.PREEMPTED,
+                    workerName,
+                ),
+            )
+        } else {
+            // Re-enqueue with preserved resolve/reject so the caller's promise
+            // transparently resolves when the job eventually completes.
+            let queue = this.queues.get(workerName)
+            if (!queue) {
+                queue = new PriorityQueue<QueuedDispatch>()
+                this.queues.set(workerName, queue)
+            }
+            queue.enqueue(
+                {
+                    workerName,
+                    type: entry.type,
+                    payload: entry.payload,
+                    timeoutMs: entry.timeoutMs,
+                    priority: entry.priority,
+                    signal: entry.signal,
+                    transferable: entry.transferable,
+                    resolve: entry.resolve,
+                    reject: entry.reject,
+                    preemptionCount: nextPreemptionCount,
+                },
+                entry.priority,
+            )
+        }
+
+        // Dispatch the higher-priority job into the freed slot
+        return this.sendToWorker<TResponse>(
+            worker,
+            workerName,
+            type,
+            payload,
+            timeoutMs,
+            signal,
+            transferable,
+            priority,
+        )
+    }
+
+    // -----------------------------------------------------------------------
     // Private
     // -----------------------------------------------------------------------
 
@@ -666,6 +808,23 @@ class WorkerBusImpl {
         const active = this.activeCount.get(workerName) ?? 0
 
         if (active >= limit) {
+            // W-02: Attempt preemption before queuing
+            const candidate = this.findPreemptionCandidate(workerName, priority)
+            if (candidate) {
+                return this.preempt<TResponse>(
+                    candidate,
+                     
+                    worker!,
+                    workerName,
+                    type,
+                    payload,
+                    timeoutMs,
+                    signal,
+                    transferable,
+                    priority,
+                )
+            }
+
             // Queue the request (backpressure) -- priority-ordered via heap
             return new Promise<TResponse>((resolve, reject) => {
                 let queue = this.queues.get(workerName)
@@ -695,6 +854,7 @@ class WorkerBusImpl {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                         resolve: resolve as (v: unknown) => void,
                         reject,
+                        preemptionCount: 0,
                     },
                     priority,
                 )
@@ -722,6 +882,7 @@ class WorkerBusImpl {
         signal?: AbortSignal | undefined,
         transferable?: Transferable[] | undefined,
         priority: WorkerPriority = 'normal',
+        preemptionCount = 0,
     ): Promise<TResponse> {
         const messageId = `${workerName}:${crypto.randomUUID()}`
         const tel = getTelemetry(workerName)
@@ -784,6 +945,11 @@ class WorkerBusImpl {
                 type,
                 priority,
                 abortCleanup,
+                payload,
+                timeoutMs,
+                signal,
+                transferable,
+                preemptionCount,
             }
             this.pending.set(messageId, pendingEntry)
 
@@ -848,6 +1014,7 @@ class WorkerBusImpl {
                 item.signal,
                 item.transferable,
                 item.priority,
+                item.preemptionCount,
             )
                 .then(item.resolve)
                 .catch(item.reject)
@@ -870,6 +1037,7 @@ class WorkerBusImpl {
             // Abort check before each attempt
             if (signal?.aborted) {
                 throw new WorkerBusError(
+                    WorkerErrorCode.PREEMPTED,
                     `Request to "${workerName}" was cancelled`,
                     WorkerErrorCode.CANCELLED,
                     workerName,

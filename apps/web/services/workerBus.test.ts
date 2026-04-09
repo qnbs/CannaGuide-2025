@@ -612,8 +612,8 @@ describe('WorkerBus -- Priority Queue', () => {
     it('dequeues critical before high before normal before low', async () => {
         const order: string[] = []
 
-        // First dispatch occupies the slot
-        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {})
+        // First dispatch occupies the slot (critical so it cannot be preempted)
+        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {}, { priority: 'critical' })
 
         // Queue 4 jobs with different priorities
         const pLow = workerBus
@@ -647,8 +647,8 @@ describe('WorkerBus -- Priority Queue', () => {
     it('maintains FIFO for two critical jobs', async () => {
         const order: string[] = []
 
-        // Block the slot
-        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {})
+        // Block the slot (critical so it cannot be preempted)
+        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {}, { priority: 'critical' })
 
         const p1 = workerBus
             .dispatch(WORKER, 'C1', {}, { priority: 'critical' })
@@ -676,8 +676,8 @@ describe('WorkerBus -- Priority Queue', () => {
         const { WorkerErrorCode } = await import('@/types/workerBus.types')
         const ctrl = new AbortController()
 
-        // Block the slot
-        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {})
+        // Block the slot (critical so it cannot be preempted)
+        const p0 = workerBus.dispatch(WORKER, 'BLOCK', {}, { priority: 'critical' })
 
         const pLow = workerBus.dispatch(
             WORKER,
@@ -700,8 +700,8 @@ describe('WorkerBus -- Priority Queue', () => {
     })
 
     it('getQueueState() shows byPriority correctly', async () => {
-        // Block the slot
-        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}))
+        // Block the slot (critical so it cannot be preempted)
+        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}, { priority: 'critical' }))
 
         // Queue jobs with different priorities
         pendingPromises.push(workerBus.dispatch(WORKER, 'A', {}, { priority: 'critical' }))
@@ -728,8 +728,8 @@ describe('WorkerBus -- Priority Queue', () => {
     })
 
     it('default priority is normal', async () => {
-        // Block the slot
-        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}))
+        // Block the slot (critical so it cannot be preempted)
+        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}, { priority: 'critical' }))
 
         // Queue without explicit priority
         pendingPromises.push(workerBus.dispatch(WORKER, 'DEFAULT', {}))
@@ -765,7 +765,10 @@ describe('WorkerBus -- Priority Queue', () => {
     it('handles simultaneous jobs with correct serialization', async () => {
         const results: string[] = []
 
-        // 3 concurrent dispatches -- concurrency=1 means 1 runs, 2 queue
+        // 3 concurrent dispatches -- concurrency=1 means 1 runs, 2 queue.
+        // With W-02 preemption: A(low) gets the slot, B(critical) preempts A,
+        // C(high) queues behind re-queued A. After B completes, drain order
+        // is C(high) then A(low).
         const p1 = workerBus
             .dispatch(WORKER, 'A', {}, { priority: 'low' })
             .then(() => results.push('A'))
@@ -776,21 +779,21 @@ describe('WorkerBus -- Priority Queue', () => {
             .dispatch(WORKER, 'C', {}, { priority: 'high' })
             .then(() => results.push('C'))
 
-        // Settle first (A is already in-flight -- it got the slot)
+        // B (critical) preempted A and is now in-flight
         w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
         await vi.advanceTimersByTimeAsync(0)
 
-        // Now B (critical) should be next
+        // C (high) is next from queue
         w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
         await vi.advanceTimersByTimeAsync(0)
 
-        // Then C (high)
+        // A (low, re-queued) is last
         w.respond((w.lastMessage as { messageId: string }).messageId, 'done')
         await vi.advanceTimersByTimeAsync(0)
 
         await Promise.all([p1, p2, p3])
-        // A runs first (got the slot), then B (critical), then C (high)
-        expect(results).toEqual(['A', 'B', 'C'])
+        // B runs first (preempted A), then C (high), then A (re-queued low)
+        expect(results).toEqual(['B', 'C', 'A'])
     })
 
     it('processes 50 jobs in random priority order without losing any', async () => {
@@ -813,8 +816,8 @@ describe('WorkerBus -- Priority Queue', () => {
     })
 
     it('enqueues 100 jobs in under 50ms', () => {
-        // Block the slot so all subsequent dispatches queue
-        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}))
+        // Block the slot so all subsequent dispatches queue (critical = non-preemptable)
+        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK', {}, { priority: 'critical' }))
 
         const priorities: Array<import('@/utils/priorityQueue').WorkerPriority> = [
             'critical',
@@ -994,5 +997,233 @@ describe('WorkerBusError typed errors (K-04)', () => {
             expect(wt?.errorRate).toBe(1)
             expect(wt?.lastErrorAt).toBeGreaterThan(0)
         })
+    })
+})
+
+// ---------------------------------------------------------------------------
+// W-02: Priority Preemption
+// ---------------------------------------------------------------------------
+
+describe('WorkerBus -- W-02 Priority Preemption', () => {
+    let w: MockWorker
+    const WORKER = 'preempt-worker'
+
+    beforeEach(() => {
+        w = new MockWorker()
+        try {
+            workerBus.unregister(WORKER)
+        } catch {
+            /* ignore */
+        }
+        workerBus.register(WORKER, w as unknown as Worker)
+        // Concurrency limit 1 -- forces preemption scenario
+        workerBus.setConcurrencyLimit(WORKER, 1)
+    })
+
+    afterEach(async () => {
+        try {
+            workerBus.unregister(WORKER)
+        } catch {
+            /* ignore */
+        }
+    })
+
+    it('critical preempts low-priority running job and re-queues it', async () => {
+        // Low-priority job occupies the slot
+        const pLow = workerBus.dispatch<string>(WORKER, 'LOW_JOB', {}, { priority: 'low' })
+
+        // Critical job arrives -- should preempt the low job
+        const pCritical = workerBus.dispatch<string>(
+            WORKER,
+            'CRITICAL_JOB',
+            {},
+            { priority: 'critical' },
+        )
+
+        // Respond to critical job (it is now in-flight)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'critical-done')
+        const critResult = await pCritical
+        expect(critResult).toBe('critical-done')
+
+        // After critical finishes, the re-queued low job should drain
+        await vi.advanceTimersByTimeAsync(0)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'low-done')
+        const lowResult = await pLow
+        expect(lowResult).toBe('low-done')
+    })
+
+    it('critical does NOT preempt another critical job', async () => {
+        // Critical job occupies the slot
+        const p1 = workerBus.dispatch(WORKER, 'C1', {}, { priority: 'critical' })
+
+        // Second critical job -- should queue, not preempt
+        const p2 = workerBus.dispatch(WORKER, 'C2', {}, { priority: 'critical' })
+
+        // The first job is still in-flight (not preempted)
+        expect(workerBus.getPendingCount(WORKER)).toBe(1)
+
+        // Respond to first
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'c1-done')
+        await p1
+
+        // Drain second
+        await vi.advanceTimersByTimeAsync(0)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'c2-done')
+        await p2
+
+        // No preemption telemetry
+        const metrics = workerBus.getMetrics(WORKER)
+        expect(metrics[WORKER]?.preemptionCount).toBe(0)
+    })
+
+    it('normal does NOT preempt normal (equal priority)', async () => {
+        // Normal job occupies the slot
+        const p1 = workerBus.dispatch(WORKER, 'N1', {}, { priority: 'normal' })
+
+        // Second normal job -- should queue, not preempt
+        const p2 = workerBus.dispatch(WORKER, 'N2', {}, { priority: 'normal' })
+
+        // First still in-flight
+        expect(workerBus.getPendingCount(WORKER)).toBe(1)
+
+        // Respond to first
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'n1-done')
+        await p1
+
+        // Drain second
+        await vi.advanceTimersByTimeAsync(0)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'n2-done')
+        await p2
+
+        const metrics = workerBus.getMetrics(WORKER)
+        expect(metrics[WORKER]?.preemptionCount).toBe(0)
+    })
+
+    it('preempted job is retried and resolves after critical completes', async () => {
+        const results: string[] = []
+
+        // Normal job occupies the slot
+        const pNormal = workerBus
+            .dispatch<string>(WORKER, 'NORMAL', {}, { priority: 'normal' })
+            .then((r) => {
+                results.push(`normal:${r}`)
+                return r
+            })
+
+        // Critical preempts normal
+        const pCritical = workerBus
+            .dispatch<string>(WORKER, 'CRITICAL', {}, { priority: 'critical' })
+            .then((r) => {
+                results.push(`critical:${r}`)
+                return r
+            })
+
+        // Respond to critical
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'fast')
+        await pCritical
+
+        // Re-queued normal should now be dispatched
+        await vi.advanceTimersByTimeAsync(0)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'slow')
+        await pNormal
+
+        expect(results).toEqual(['critical:fast', 'normal:slow'])
+    })
+
+    it('tracks preemption count in telemetry', async () => {
+        // Low job occupies slot
+        const pLow = workerBus.dispatch(WORKER, 'LOW', {}, { priority: 'low' })
+
+        // Critical preempts
+        const pCritical = workerBus.dispatch(WORKER, 'CRIT', {}, { priority: 'critical' })
+
+        // Check getMetrics
+        const metrics = workerBus.getMetrics(WORKER)
+        expect(metrics[WORKER]?.preemptionCount).toBe(1)
+
+        // Check exportTelemetry
+        const snapshot = workerBus.exportTelemetry()
+        expect(snapshot.workers[WORKER]?.preemptionCount).toBe(1)
+
+        // Settle both to avoid unhandled rejections
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'ok')
+        await pCritical
+        await vi.advanceTimersByTimeAsync(0)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'ok')
+        await pLow
+    })
+
+    it('rejects with PREEMPTED after exceeding max preemption retries', async () => {
+        const { WorkerErrorCode } = await import('@/types/workerBus.types')
+
+        // Low job occupies slot
+        const pLow = workerBus.dispatch(WORKER, 'VICTIM', {}, { priority: 'low' })
+        // Attach early handler to prevent unhandled-rejection noise
+        pLow.catch(() => {})
+
+        // Preempt 4 times (max is 3, so the 4th should reject)
+        const criticals: Array<Promise<unknown>> = []
+        for (let i = 0; i < 4; i++) {
+            const pCrit = workerBus.dispatch(WORKER, `CRIT_${i}`, {}, { priority: 'critical' })
+            // Respond to each critical immediately so the slot frees for the
+            // re-queued low job to be drained, then preempted again.
+            w.respond((w.lastMessage as { messageId: string }).messageId, `crit-${i}`)
+            criticals.push(pCrit)
+            await vi.advanceTimersByTimeAsync(0)
+        }
+
+        await Promise.all(criticals)
+
+        // Low job should have been rejected after 4th preemption (exceeding max 3)
+        await expect(pLow).rejects.toMatchObject({ code: WorkerErrorCode.PREEMPTED })
+
+        // Telemetry should show 4 preemptions
+        const metrics = workerBus.getMetrics(WORKER)
+        expect(metrics[WORKER]?.preemptionCount).toBe(4)
+    })
+
+    it('high preempts low but not normal', async () => {
+        // Normal job occupies the slot
+        const pNormal = workerBus.dispatch(WORKER, 'NORM', {}, { priority: 'normal' })
+
+        // High arrives -- should NOT preempt normal (high=1, normal=2, but
+        // we need strict greater for the RUNNING job's numeric value)
+        // Actually high(1) < normal(2) so normal IS strictly lower priority.
+        // High should preempt normal.
+        const pHigh = workerBus.dispatch<string>(WORKER, 'HIGH', {}, { priority: 'high' })
+
+        const metrics = workerBus.getMetrics(WORKER)
+        expect(metrics[WORKER]?.preemptionCount).toBe(1)
+
+        // Settle
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'high-ok')
+        await pHigh
+        await vi.advanceTimersByTimeAsync(0)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'normal-ok')
+        await pNormal
+    })
+
+    it('fires DispatchCompleteEvent with error for preempted job', async () => {
+        const events: import('./workerBus').DispatchCompleteEvent[] = []
+        const cleanup = workerBus.onDispatchComplete((e) => events.push(e))
+
+        // Low job occupies slot
+        const pLow = workerBus.dispatch(WORKER, 'LOW_EVT', {}, { priority: 'low' })
+
+        // Critical preempts -- should fire a failure event for the preempted job
+        const pCritical = workerBus.dispatch(WORKER, 'CRIT_EVT', {}, { priority: 'critical' })
+
+        // Find the preemption event
+        const preemptEvent = events.find((e) => e.type === 'LOW_EVT' && e.success === false)
+        expect(preemptEvent).toBeDefined()
+        expect(preemptEvent?.error).toContain('Preempted')
+
+        // Settle
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'ok')
+        await pCritical
+        await vi.advanceTimersByTimeAsync(0)
+        w.respond((w.lastMessage as { messageId: string }).messageId, 'ok')
+        await pLow
+        cleanup()
     })
 })

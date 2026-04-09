@@ -381,7 +381,6 @@ describe('listenerMiddleware', () => {
             // Dispatch plantStateUpdated with a new active problem
             store.dispatch(
                 plantStateUpdated({
-                    plantId: 'plant-prob',
                     updatedPlant: {
                         ...plant,
                         problems: [
@@ -410,7 +409,7 @@ describe('listenerMiddleware', () => {
                 addGrow({
                     id: 'grow-new',
                     name: 'New Grow',
-                    createdAt: Date.now(),
+                    isActive: false,
                 }),
             )
 
@@ -427,7 +426,7 @@ describe('listenerMiddleware', () => {
                 addGrow({
                     id: 'grow-rm',
                     name: 'To Remove',
-                    createdAt: Date.now(),
+                    isActive: false,
                 }),
             )
             addNotificationMock.mockClear()

@@ -4,40 +4,84 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
-## [Unreleased]
+## [1.5.1] - 2026-04-09
+
+### Added
+
+- **WorkerBus W-01: per-worker rate limiting** -- Sliding-window
+  rate limiter per worker instance with configurable burst and
+  cooldown.
+- **WorkerBus W-03: telemetry export** -- Telemetry data export
+  with Sentry breadcrumb/context integration for debugging
+  production worker issues.
+- **Help Bedienungsanleitung expanded** -- Added hydroMonitor,
+  growTech, iotDashboard to equipment manual and diseaseAtlas,
+  learningPaths, calculatorHub, lexikon to knowledge manual (EN+DE).
+- **Test coverage baseline + 52 critical-path tests** --
+  crdtSyncBridge 51->85% lines (+13), syncService 58->97% (+18),
+  proactiveCoachService +7, listenerMiddleware 17->43% (+14 new
+  file). Global coverage baseline: 33.66% lines.
+- **Cache-proof pre-push gate** -- 10-point regression check
+  ensures typecheck, tests, lint scopes, and build all pass before
+  every push. Turbo cache-busted via `--force`.
 
 ### Changed
 
-- **Lint Phase 4: stores strict scope (Session 100)** -- Added
-  inline eslint-disable comments for 33 `no-unsafe-type-assertion`
-  warnings across 8 store files (api.ts, indexedDBStorage.ts,
-  listenerMiddleware.ts, nutrientPlannerSlice.ts, genealogySlice.ts,
-  settingsSlice.ts, growsSlice.ts, simulationSlice.ts). Promoted
-  `apps/web/stores/**/*.ts` to strictScopes. 4 enforced scopes.
-- **Test eslint strictness (Session 100)** -- Re-enabled
-  `no-explicit-any: 'error'` for test files. Fixed 53 warnings
-  across 11 test files by replacing `any` with proper types.
-  `no-unsafe-type-assertion` warnings across ~60 service files.
-  Promoted `apps/web/services/**/*.ts` to strictScopes. 3 enforced
-  scopes: hooks, components/common, services.
-- **Pre-push CI gate (Session 98)** -- `.husky/pre-push` now runs
-  full `gate:push` (typecheck + tests + lint scopes + build).
-- **Docs consolidation (Session 98)** -- Developer resource links
-  added to README.md and ROADMAP.md. lint-burndown.md Phases 2+3
-  marked Done.
+- **Lint Phase 3: services strict scope** -- Inline eslint-disable
+  for `no-unsafe-type-assertion` across ~60 service files. Promoted
+  `apps/web/services/**/*.ts` to strictScopes. 3 enforced scopes.
+- **Lint Phase 4: stores strict scope** -- Inline eslint-disable
+  for 33 `no-unsafe-type-assertion` warnings across 8 store files.
+  Promoted `apps/web/stores/**/*.ts` to strictScopes. 4 enforced
+  scopes total. 323 ESLint warnings eliminated across Phases 3+4.
+- **`no-explicit-any` re-enabled for tests** -- Fixed 53 warnings
+  across 11 test files by replacing `any` with proper types. Found
+  real type bugs in the process.
+- **Pre-push CI gate** -- `.husky/pre-push` runs full `gate:push`
+  (typecheck + tests + lint scopes + build) before every push.
+- **SubNav cards unified** -- Consistent card layout across all 5
+  navigation sub-views.
+- **PWA PNG icons** -- Added apple-touch-icon and standard PNG
+  icons for iOS home-screen compatibility.
+- **Deploy E2E mandatory** -- Removed `continue-on-error` from
+  e2e-pages job in deploy.yml. Smoke tests now block deployment.
+- **E2E selector guard mandatory** -- CI check script enforces
+  `data-testid`/`data-view-id`/`data-tab-id` selectors.
+- **Documentation audit** -- Fixed 32+ discrepancies across
+  README, ARCHITECTURE, CHANGELOG, and developer docs.
 
 ### Fixed
 
-- **HelpView TS2322 CI fix (Session 98)** -- Fixed i18next
-  `returnObjects` type mismatch and HelpSubNav callback type.
-- **LlmModelSelector i18n keys (Session 99)** -- Renamed
-  `model_0.5B_desc` / `model_1.5B_desc` locale keys to
-  `model_05B_desc` / `model_15B_desc` across all 5 languages. Dots
-  in key names conflicted with i18next default `keySeparator: '.'`.
-- **LlmModelSelector layout overflow (Session 99)** -- Added
-  `min-w-0`, `truncate`, `flex-shrink-0`, `flex-wrap` and
-  `overflow-hidden` to prevent card content from breaking out of
-  the settings panel on narrow viewports.
+- **basic-ftp CRLF injection (CVE)** -- pnpm override
+  `basic-ftp>=5.2.1` for transitive dep via @lhci/cli chain.
+- **i18n: comparison keys in wrong namespace** -- Moved comparison
+  keys from strainLookup to strainsView export.
+- **i18n: LLM model selector dot-keys** -- Renamed `model_0.5B_desc`
+  to `model_05B_desc` across all 5 languages. Dots conflicted with
+  i18next default `keySeparator: '.'`.
+- **i18n: GrowTech raw keys** -- Removed erroneous `{ ns: 'strains' }`
+  from t() calls in GrowTechView.tsx.
+- **LlmModelSelector layout overflow** -- Added `min-w-0`, `truncate`,
+  `flex-shrink-0`, `flex-wrap` to prevent card content breaking out
+  on narrow viewports.
+- **Settings AI Config crash** -- Wrapped localAiPreloadService,
+  detectOnnxBackend, getGpuTier in try-catch. Added AiSettingsTab
+  error boundary with retry. Prevents white-screen on devices
+  without WebGPU.
+- **HelpView TS2322** -- Fixed i18next `returnObjects` type
+  mismatch and HelpSubNav callback type.
+- **WorkerBus telemetry Sentry compat** -- Spread telemetry export
+  object for Sentry context compatibility.
+- **DashboardSummary test type** -- useSelector mock needs RootState
+  type, not `unknown`.
+- **Krankheitsatlas text overflow** -- Mobile viewport overflow in
+  disease atlas cards.
+
+### Removed
+
+- **Screenshot Gallery** -- Broken HelpView tab referencing 70+
+  missing PNG files.
+- **2 fuzzy-duplicate strains** -- Strain catalog 778 -> 776.
 
 ---
 

@@ -107,6 +107,7 @@ const OPTIMAL_RANGES: Record<string, Record<string, OptimalRange>> = {
 
 export const getOptimalRange = (medium: string, stage: PlantStage): OptimalRange => {
     const mediumRanges = OPTIMAL_RANGES[medium] ?? OPTIMAL_RANGES['Soil']
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- fallback always yields OptimalRange
     return (mediumRanges?.[stage] ?? mediumRanges?.['default']) as OptimalRange
 }
 

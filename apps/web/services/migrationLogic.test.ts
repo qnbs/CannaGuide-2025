@@ -172,7 +172,7 @@ describe('migrationLogic', () => {
                 selectedPlantId: null,
                 vpdProfiles: {},
                 isCatchingUp: false,
-            } as any,
+            } as never,
         })
 
         const harvestData = migrated.simulation?.plants.entities['plant-1']?.harvestData

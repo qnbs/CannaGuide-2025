@@ -394,9 +394,8 @@ const simulationSlice = createSlice({
                     if (sourcePh !== undefined) {
                         plant.medium.ph = sourcePh
                     }
-                    plant.environment = plantSimulationService.applyEnvironmentalCorrections(
-                        plant,
-                    ).environment
+                    plant.environment =
+                        plantSimulationService.applyEnvironmentalCorrections(plant).environment
                 }
             }
         },
@@ -422,9 +421,11 @@ const simulationSlice = createSlice({
             reducer(state, action: PayloadAction<string>) {
                 const plantId = action.payload
                 plantsAdapter.removeOne(state.plants, plantId)
+                /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- tuple shape preserved */
                 state.plantSlots = state.plantSlots.map((slot) =>
                     slot === plantId ? null : slot,
                 ) as [string | null, string | null, string | null]
+                /* eslint-enable @typescript-eslint/no-unsafe-type-assertion */
                 if (state.selectedPlantId === plantId) {
                     state.selectedPlantId = null
                 }

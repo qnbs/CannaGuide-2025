@@ -184,6 +184,7 @@ export const geminiApi = createApi({
                     const aiService = await getAiService()
                     const data = await aiService.generateStrainImage(
                         strain,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query arg narrowing
                         style as import('@/types/aiProvider').ImageStyle,
                         criteria,
                         lang,

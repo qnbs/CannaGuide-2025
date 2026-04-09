@@ -57,7 +57,10 @@ const growsSlice = createSlice({
             },
         },
 
-        updateGrow(state, action: PayloadAction<{ id: string; changes: Partial<Omit<Grow, 'id'>> }>) {
+        updateGrow(
+            state,
+            action: PayloadAction<{ id: string; changes: Partial<Omit<Grow, 'id'>> }>,
+        ) {
             const { id, changes } = action.payload
             growsAdapter.updateOne(state.grows, {
                 id,
@@ -75,6 +78,7 @@ const growsSlice = createSlice({
             // If active grow was removed, switch to the first remaining
             if (state.activeGrowId === growId) {
                 const firstId = state.grows.ids[0]
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- EntityAdapter ID narrowing
                 state.activeGrowId = (firstId as string) ?? DEFAULT_GROW_ID
             }
         },
@@ -99,6 +103,7 @@ const growsSlice = createSlice({
                     return g && !g.archived && g.id !== growId
                 })
                 state.activeGrowId =
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- EntityAdapter ID narrowing
                     (firstNonArchived as string) ?? state.grows.ids[0] ?? DEFAULT_GROW_ID
             }
         },

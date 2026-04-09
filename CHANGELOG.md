@@ -8,7 +8,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **Lint Phase 3: services strict scope (Session 98)** -- Fixed 290
+- **Lint Phase 4: stores strict scope (Session 100)** -- Added
+  inline eslint-disable comments for 33 `no-unsafe-type-assertion`
+  warnings across 8 store files (api.ts, indexedDBStorage.ts,
+  listenerMiddleware.ts, nutrientPlannerSlice.ts, genealogySlice.ts,
+  settingsSlice.ts, growsSlice.ts, simulationSlice.ts). Promoted
+  `apps/web/stores/**/*.ts` to strictScopes. 4 enforced scopes.
+- **Test eslint strictness (Session 100)** -- Re-enabled
+  `no-explicit-any: 'error'` for test files. Fixed 53 warnings
+  across 11 test files by replacing `any` with proper types.
   `no-unsafe-type-assertion` warnings across ~60 service files.
   Promoted `apps/web/services/**/*.ts` to strictScopes. 3 enforced
   scopes: hooks, components/common, services.

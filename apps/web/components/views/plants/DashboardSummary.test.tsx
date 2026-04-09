@@ -1,53 +1,63 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DashboardSummary } from './DashboardSummary';
-import * as reduxHooks from '@/stores/store';
-import { RootState } from '@/stores/store';
-import { Plant } from '@/types';
-import { selectGardenHealthMetrics } from '@/stores/selectors';
-import { plantSimulationService } from '@/services/plantSimulationService';
-
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { DashboardSummary } from './DashboardSummary'
+import * as reduxHooks from '@/stores/store'
+import { RootState } from '@/stores/store'
+import { Plant } from '@/types'
+import { selectGardenHealthMetrics } from '@/stores/selectors'
+import { plantSimulationService } from '@/services/plantSimulationService'
 
 // Mock the hooks from the store
 vi.mock('@/stores/store', async (importOriginal) => {
-  const actual = await importOriginal() as any;
-  return {
-    ...actual,
-    useAppDispatch: vi.fn(),
-    useAppSelector: vi.fn(),
-  };
-});
+    const actual = (await importOriginal()) as Record<string, unknown>
+    return {
+        ...actual,
+        useAppDispatch: vi.fn(),
+        useAppSelector: vi.fn(),
+    }
+})
 
 // Mock i18n
 vi.mock('react-i18next', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('react-i18next')>();
+    const actual = await importOriginal<typeof import('react-i18next')>()
     return {
         ...actual,
         useTranslation: () => ({ t: (key: string) => key }),
-    };
-});
+    }
+})
 
 vi.mock('@/stores/api', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('@/stores/api')>();
+    const actual = await importOriginal<typeof import('@/stores/api')>()
     return {
         ...actual,
         useGetGardenStatusSummaryMutation: () => [
             vi.fn(),
             { data: null, isLoading: false, error: null, reset: vi.fn() },
         ],
-    };
-});
+    }
+})
 
 vi.mock('@/services/strainService', () => ({
     strainService: {
-        getAllStrains: vi.fn().mockResolvedValue([
-            { id: 'acdc', name: 'ACDC', type: 'Hybrid', thc: 1, cbd: 20, floweringTime: 9, agronomic: {}, geneticModifiers: {} },
-        ]),
+        getAllStrains: vi
+            .fn()
+            .mockResolvedValue([
+                {
+                    id: 'acdc',
+                    name: 'ACDC',
+                    type: 'Hybrid',
+                    thc: 1,
+                    cbd: 20,
+                    floweringTime: 9,
+                    agronomic: {},
+                    geneticModifiers: {},
+                },
+            ]),
     },
-}));
+}))
 
-const mockDispatch = vi.fn();
-const mockUseAppSelector = vi.spyOn(reduxHooks, 'useAppSelector');
+const mockDispatch = vi.fn()
+const mockUseAppSelector = vi.spyOn(reduxHooks, 'useAppSelector')
 
 const createMockState = (overrides?: Partial<RootState>): RootState => {
     const baseState = {
@@ -76,62 +86,69 @@ const createMockState = (overrides?: Partial<RootState>): RootState => {
                 },
             },
         },
-    } as unknown as RootState;
+    } as unknown as RootState
 
     return {
         ...baseState,
         ...overrides,
-    };
-};
+    }
+}
 
 describe('DashboardSummary', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
-        vi.spyOn(reduxHooks, 'useAppDispatch').mockReturnValue(mockDispatch);
-    });
+        vi.clearAllMocks()
+        vi.spyOn(reduxHooks, 'useAppDispatch').mockReturnValue(mockDispatch)
+    })
 
     it('renders stats correctly with active plants', () => {
-                const state = createMockState();
-                mockUseAppSelector.mockImplementation((selector: any) => selector(state));
+        const state = createMockState()
+        mockUseAppSelector.mockImplementation((selector: (state: unknown) => unknown) =>
+            selector(state),
+        )
 
-        render(<DashboardSummary />);
+        render(<DashboardSummary />)
 
-        expect(screen.getByText('90%')).toBeInTheDocument();
-        expect(screen.getByText('1')).toBeInTheDocument();
-        expect(screen.getByText('25.0°')).toBeInTheDocument();
-        expect(screen.getByText('60.0%')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'plantsView.summary.waterAll' })).not.toBeDisabled();
-    });
+        expect(screen.getByText('90%')).toBeInTheDocument()
+        expect(screen.getByText('1')).toBeInTheDocument()
+        expect(screen.getByText('25.0°')).toBeInTheDocument()
+        expect(screen.getByText('60.0%')).toBeInTheDocument()
+        expect(
+            screen.getByRole('button', { name: 'plantsView.summary.waterAll' }),
+        ).not.toBeDisabled()
+    })
 
     it('renders correctly with no active plants and disables button', () => {
-                const state = createMockState({
-                    simulation: {
-                        plantSlots: [null, null, null],
-                        plants: { ids: [], entities: {} },
-                    } as any,
-                });
-                mockUseAppSelector.mockImplementation((selector: any) => selector(state));
+        const state = createMockState({
+            simulation: {
+                plantSlots: [null, null, null],
+                plants: { ids: [], entities: {} },
+            } as unknown as RootState['simulation'],
+        })
+        mockUseAppSelector.mockImplementation((selector: (state: unknown) => unknown) =>
+            selector(state),
+        )
 
-        render(<DashboardSummary />);
+        render(<DashboardSummary />)
 
-        expect(screen.getByText('100%')).toBeInTheDocument();
-        expect(screen.getByText('0')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'plantsView.summary.waterAll' })).toBeDisabled();
-    });
+        expect(screen.getByText('100%')).toBeInTheDocument()
+        expect(screen.getByText('0')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'plantsView.summary.waterAll' })).toBeDisabled()
+    })
 
     it('dispatches waterAllPlants action when button is clicked', () => {
-        const state = createMockState();
-        mockUseAppSelector.mockImplementation((selector: any) => selector(state));
+        const state = createMockState()
+        mockUseAppSelector.mockImplementation((selector: (state: unknown) => unknown) =>
+            selector(state),
+        )
 
-        render(<DashboardSummary />);
+        render(<DashboardSummary />)
 
-        fireEvent.click(screen.getByRole('button', { name: 'plantsView.summary.waterAll' }));
+        fireEvent.click(screen.getByRole('button', { name: 'plantsView.summary.waterAll' }))
 
-        expect(mockDispatch).toHaveBeenCalledTimes(1);
-        expect(typeof mockDispatch.mock.calls[0]![0]).toBe('function');
-    });
-});
-
+        expect(mockDispatch).toHaveBeenCalledTimes(1)
+        expect(typeof mockDispatch.mock.calls[0]![0]).toBe('function')
+    })
+})
 
 // New test suite for Redux selectors
 describe('Redux Selectors', () => {
@@ -141,48 +158,57 @@ describe('Redux Selectors', () => {
             mediumType: 'Soil',
             equipment: { potType: 'Fabric' },
             environment: { internalTemperature: 25, internalHumidity: 50 },
-        } as Plant;
+        } as Plant
         const mockPlant2: Plant = {
             health: 100,
             mediumType: 'Hydro',
             equipment: { potType: 'Plastic' },
             environment: { internalTemperature: 23, internalHumidity: 60 },
-        } as Plant;
+        } as Plant
 
         const mockState: Partial<RootState> = {
             simulation: {
                 plantSlots: ['p1', 'p2', null],
                 plants: {
                     ids: ['p1', 'p2'],
-                    entities: { 'p1': mockPlant1, 'p2': mockPlant2 }
-                }
-            } as any,
-            settings: { settings: { simulation: { leafTemperatureOffset: -2, altitudeM: 0 } } } as any
-        };
+                    entities: { p1: mockPlant1, p2: mockPlant2 },
+                },
+            } as unknown as RootState['simulation'],
+            settings: {
+                settings: { simulation: { leafTemperatureOffset: -2, altitudeM: 0 } },
+            } as unknown as RootState['settings'],
+        }
 
-        const result = selectGardenHealthMetrics(mockState as RootState);
-        expect(result.gardenHealth).toBe(90);
-        expect(result.activePlantsCount).toBe(2);
-        expect(result.avgTemp).toBe(24);
-        expect(result.avgHumidity).toBe(55);
+        const result = selectGardenHealthMetrics(mockState as RootState)
+        expect(result.gardenHealth).toBe(90)
+        expect(result.activePlantsCount).toBe(2)
+        expect(result.avgTemp).toBe(24)
+        expect(result.avgHumidity).toBe(55)
 
-        const expectedAvgVpd = (
-            plantSimulationService.applyEnvironmentalCorrections(mockPlant1, { leafTemperatureOffset: -2, altitudeM: 0 } as any).environment.vpd +
-            plantSimulationService.applyEnvironmentalCorrections(mockPlant2, { leafTemperatureOffset: -2, altitudeM: 0 } as any).environment.vpd
-        ) / 2;
-        expect(result.avgVPD).toBeCloseTo(expectedAvgVpd, 6);
-    });
+        const simSettings = { leafTemperatureOffset: -2, altitudeM: 0 } as unknown as Parameters<
+            typeof plantSimulationService.applyEnvironmentalCorrections
+        >[1]
+        const expectedAvgVpd =
+            (plantSimulationService.applyEnvironmentalCorrections(mockPlant1, simSettings)
+                .environment.vpd +
+                plantSimulationService.applyEnvironmentalCorrections(mockPlant2, simSettings)
+                    .environment.vpd) /
+            2
+        expect(result.avgVPD).toBeCloseTo(expectedAvgVpd, 6)
+    })
 
     it('selectGardenHealthMetrics returns defaults for no plants', () => {
-         const mockState: Partial<RootState> = {
+        const mockState: Partial<RootState> = {
             simulation: {
                 plantSlots: [null, null, null],
-                plants: { ids: [], entities: {} }
-            } as any,
-            settings: { settings: { simulation: { leafTemperatureOffset: -2, altitudeM: 0 } } } as any
-        };
-        const result = selectGardenHealthMetrics(mockState as RootState);
-        expect(result.gardenHealth).toBe(100);
-        expect(result.activePlantsCount).toBe(0);
-    });
-});
+                plants: { ids: [], entities: {} },
+            } as unknown as RootState['simulation'],
+            settings: {
+                settings: { simulation: { leafTemperatureOffset: -2, altitudeM: 0 } },
+            } as unknown as RootState['settings'],
+        }
+        const result = selectGardenHealthMetrics(mockState as RootState)
+        expect(result.gardenHealth).toBe(100)
+        expect(result.activePlantsCount).toBe(0)
+    })
+})

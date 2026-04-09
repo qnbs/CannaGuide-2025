@@ -8,7 +8,7 @@ vi.mock('@/i18n', () => ({
 
 describe('webBluetoothSensorService', () => {
     describe('isSupported', () => {
-        const originalBluetooth = (navigator as any).bluetooth
+        const originalBluetooth = (navigator as unknown as Record<string, unknown>).bluetooth
 
         afterEach(() => {
             if (originalBluetooth !== undefined) {

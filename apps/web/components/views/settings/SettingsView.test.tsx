@@ -10,7 +10,7 @@ vi.mock('@/stores/store', async (importOriginal) => {
     return {
         ...actual,
         useAppDispatch: vi.fn(() => mockDispatch),
-        useAppSelector: vi.fn((selector: (state: any) => any) =>
+        useAppSelector: vi.fn((selector: (state: unknown) => unknown) =>
             selector({ settings: { settings: defaultSettings } }),
         ),
     }

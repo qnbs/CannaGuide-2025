@@ -618,6 +618,14 @@ export const plantsView = {
             high: 'VPD too high: increase RH or lower canopy temperature.',
             danger: 'VPD in danger zone: immediate correction recommended to avoid stress.',
         },
+        zones: {
+            propagation: 'Propagation',
+            seedling: 'Seedling',
+            vegetative: 'Vegetative',
+            earlyFlower: 'Early Flower',
+            lateFlower: 'Late Flower',
+            danger: 'Danger',
+        },
     },
     deepDive: {
         description:
@@ -769,6 +777,13 @@ export const plantsView = {
         autoFillStrain: 'Auto-fill from Strain',
         doneMarker: '[done]',
         removeMarker: '[x]',
+        newTask: 'New Task',
+        taskType: 'Type',
+        scheduledDate: 'Date',
+        every: 'every',
+        days: 'days',
+        notesPlaceholder: 'Add notes...',
+        overdue: '{{count}} overdue task(s)',
     },
     photoTimeline: {
         title: 'Photo Timeline',
@@ -777,6 +792,10 @@ export const plantsView = {
         exitCompare: 'Exit Compare',
         selectTwo: 'Select 2 photos to compare',
         day: 'Day',
+        noPreview: 'No preview',
+    },
+    tagGenerator: {
+        pdfTitle: 'CannaGuide Plant Tags',
     },
     journalSummary: {
         title: 'Journal Summary',

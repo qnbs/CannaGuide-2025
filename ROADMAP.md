@@ -8,20 +8,20 @@
 
 | Version  | Target     | Status      | Theme                                                                             |
 | -------- | ---------- | ----------- | --------------------------------------------------------------------------------- |
-| **v1.0** | 2026-07-07 | ✅ Released | Foundation — Full-featured cultivation PWA                                        |
+| **v1.0** | 2025-07-07 | ✅ Released | Foundation — Full-featured cultivation PWA                                        |
 | **v1.1** | 2026-Q1    | ✅ Released | DevOps & Quality — Error tracking, testing, deployment                            |
 | **v1.2** | 2026-Q2    | ✅ Released | Community & Automation -- Languages, scheduling, marketplace                      |
 | **v1.3** | 2026-Q3    | ✅ Released | Analytics & Visualization -- IoT, 3D, dashboards                                  |
 | **v1.4** | 2026-Q4    | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus                      |
 | **v1.5** | 2026-Q4    | ✅ Released | Sync & Multi-Grow — CRDT offline sync, multi-grow, AI cost tracking, CI hardening |
-| **v1.6** | 2027-Q1    | 📋 Planned  | Scholarly Expansion -- Encyclopedia, curation, source graph                       |
+| **v1.6** | 2027-Q1    | ✅ Released | Engineering audit, i18n completeness, documentation sync                          |
 | **v2.0** | 2027-Q2    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                        |
 
 ---
 
 ## v1.0 — Foundation ✅
 
-Released: **2026-07-07**
+Released: **2025-07-07**
 
 | Feature                                                        | Category     | Status |
 | -------------------------------------------------------------- | ------------ | ------ |
@@ -193,13 +193,13 @@ Released: **2026-Q3**
 
 Target: **2027-Q2**
 
-| Feature                                                       | Category      | Priority | Issue |
-| ------------------------------------------------------------- | ------------- | -------- | ----- |
-| Real-time multi-device sync (CRDTs)                           | Sync          | High     | —     |
-| Plugin/extension system                                       | Architecture  | Medium   | —     |
-| Grow community forums & profiles                              | Community     | Medium   | —     |
-| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium   | —     |
-| AR plant overlay (WebXR)                                      | Visualization | Low      | —     |
+| Feature                                                       | Category      | Priority   | Issue |
+| ------------------------------------------------------------- | ------------- | ---------- | ----- |
+| Real-time multi-device sync (CRDTs)                           | Sync          | ~~High~~   | done  |
+| Plugin/extension system                                       | Architecture  | ~~Medium~~ | done  |
+| Grow community forums & profiles                              | Community     | Medium     | —     |
+| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium     | —     |
+| AR plant overlay (WebXR)                                      | Visualization | Low        | —     |
 
 ---
 
@@ -249,11 +249,11 @@ Released: **2026-04-08**
 - CRDT sync is operational with conflict resolution UI.
 - Multi-Grow lifecycle supports 3 grows per CanG with scoped AI context.
 - All npm references replaced with pnpm across the entire repo.
-- 1844 tests pass, build succeeds, typecheck clean.
+- 1884 tests pass, build succeeds, typecheck clean.
 
 ---
 
-## v1.6 — Scholarly Knowledge & Media Curation 📋
+## v1.6 — Scholarly Knowledge & Media Curation ✅
 
 Target: **2027-Q1**
 
@@ -269,7 +269,7 @@ Target: **2027-Q1**
 | CRDT bridge batching (100ms debounce, single Y.Doc transaction)                 | Sync          | done   |
 | CRDT telemetry integration (WorkerBus W-03 setCrdtMetrics)                      | Observability | done   |
 | API reference documentation (8 docs in docs/api/)                               | Documentation | done   |
-| ARCHITECTURE.md sync (108 services, 1844 tests, full WorkerBus section)         | Documentation | done   |
+| ARCHITECTURE.md sync (109 services, 1884 tests, full WorkerBus section)         | Documentation | done   |
 | Audit backlog closure (D-01 API docs, F-05 Multi-Grow, F-06 CRDT sync)          | Quality       | done   |
 
 ### Content Track (planned)

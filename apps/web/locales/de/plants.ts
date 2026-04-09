@@ -632,6 +632,14 @@ export const plantsView = {
             high: 'VPD zu hoch: Luftfeuchtigkeit erhöhen oder Blatttemperatur senken.',
             danger: 'VPD in Gefahrenzone: Sofortige Korrektur empfohlen, um Stress zu vermeiden.',
         },
+        zones: {
+            propagation: 'Vermehrung',
+            seedling: 'S\u00e4mling',
+            vegetative: 'Vegetativ',
+            earlyFlower: 'Fr\u00fche Bl\u00fcte',
+            lateFlower: 'Sp\u00e4te Bl\u00fcte',
+            danger: 'Gefahr',
+        },
     },
     deepDive: {
         description:
@@ -783,6 +791,13 @@ export const plantsView = {
         autoFillStrain: 'Sortenvorlage laden',
         doneMarker: '[erledigt]',
         removeMarker: '[x]',
+        newTask: 'Neue Aufgabe',
+        taskType: 'Typ',
+        scheduledDate: 'Datum',
+        every: 'alle',
+        days: 'Tage',
+        notesPlaceholder: 'Notizen hinzuf\u00fcgen...',
+        overdue: '{{count}} \u00fcberf\u00e4llige Aufgabe(n)',
     },
     photoTimeline: {
         title: 'Foto-Zeitstrahl',
@@ -791,6 +806,10 @@ export const plantsView = {
         exitCompare: 'Vergleich beenden',
         selectTwo: '2 Fotos zum Vergleichen ausw\u00e4hlen',
         day: 'Tag',
+        noPreview: 'Keine Vorschau',
+    },
+    tagGenerator: {
+        pdfTitle: 'CannaGuide Pflanzenetiketten',
     },
     journalSummary: {
         title: 'Journal-Zusammenfassung',

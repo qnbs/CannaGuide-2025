@@ -116,7 +116,10 @@ export const PhotoTimelineTab: React.FC<PhotoTimelineTabProps> = memo(
                                 <div key={photo.id} className="text-center space-y-2">
                                     <div className="aspect-square rounded-lg bg-slate-700 flex items-center justify-center">
                                         <span className="text-xs text-slate-500">
-                                            {photo.imageId ?? 'No preview'}
+                                            {photo.imageId ??
+                                                t('plantsView.photoTimeline.noPreview', {
+                                                    defaultValue: 'No preview',
+                                                })}
                                         </span>
                                     </div>
                                     <p className="text-xs text-slate-400">

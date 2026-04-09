@@ -570,6 +570,14 @@ export const plantsView = {
             high: 'VPD te hoog: verhoog RH of verlaag bladerdaktemperatuur.',
             danger: 'VPD in gevarenzone: onmiddellijke correctie aanbevolen om stress te voorkomen.',
         },
+        zones: {
+            propagation: 'Vermeerdering',
+            seedling: 'Zaailing',
+            vegetative: 'Vegetatief',
+            earlyFlower: 'Vroege Bloei',
+            lateFlower: 'Late Bloei',
+            danger: 'Gevaar',
+        },
     },
     deepDive: {
         description:
@@ -721,6 +729,13 @@ export const plantsView = {
         autoFillStrain: 'Soortsjabloon laden',
         doneMarker: '[klaar]',
         removeMarker: '[x]',
+        newTask: 'Nieuwe Taak',
+        taskType: 'Type',
+        scheduledDate: 'Datum',
+        every: 'elke',
+        days: 'dagen',
+        notesPlaceholder: 'Notities toevoegen...',
+        overdue: '{{count}} achterstallige ta(a)k(en)',
     },
     photoTimeline: {
         title: 'Foto Tijdlijn',
@@ -729,6 +744,10 @@ export const plantsView = {
         exitCompare: 'Vergelijking Sluiten',
         selectTwo: 'Kies 2 fotos om te vergelijken',
         day: 'Dag',
+        noPreview: 'Geen voorbeeld',
+    },
+    tagGenerator: {
+        pdfTitle: 'CannaGuide Plantlabels',
     },
     journalSummary: {
         title: 'Dagboek Samenvatting',

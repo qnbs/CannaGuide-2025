@@ -61,7 +61,11 @@ export const PlantTagGenerator: React.FC<PlantTagGeneratorProps> = memo(({ plant
             const rowHeight = 55
 
             doc.setFontSize(14)
-            doc.text('CannaGuide Plant Tags', 15, 15)
+            doc.text(
+                t('plantsView.tagGenerator.pdfTitle', { defaultValue: 'CannaGuide Plant Tags' }),
+                15,
+                15,
+            )
 
             for (let i = 0; i < plants.length; i++) {
                 const plant = plants[i]
@@ -96,7 +100,7 @@ export const PlantTagGenerator: React.FC<PlantTagGeneratorProps> = memo(({ plant
         } catch (err) {
             console.debug('[PlantTagGenerator] PDF export error:', err)
         }
-    }, [plants])
+    }, [plants, t])
 
     if (plants.length === 0) {
         return (

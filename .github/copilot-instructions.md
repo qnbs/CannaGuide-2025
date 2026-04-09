@@ -21,7 +21,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Package Manager:** pnpm 10 via Corepack (shamefully-hoist, workspace:\* protocol)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
-- **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
+- **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
 - **Testing:** Vitest (1884 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
@@ -55,7 +55,7 @@ apps/
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
     hooks/               # Custom React hooks (25)
     data/                # Static data: 776 strains, FAQ, lexicon (83 entries), guides, diseases (22 entries), learningPaths (5 paths)
-    locales/             # i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
+    locales/             # i18n: en/, de/, es/, fr/, nl/ (12 source files each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation
     utils/               # Shared utilities
     types/               # Zod schemas for AI response validation
@@ -82,7 +82,7 @@ packages/
 scripts/                 # Build/lint/merge scripts
 docker/                  # IoT mock servers (ESP32 sensor simulator)
 docs/                    # Developer guides, roadmap
-.github/                 # 22 CI/CD workflows, issue templates
+.github/                 # 21 CI/CD workflows, issue templates
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
 
@@ -227,9 +227,10 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 ### i18n
 
 - All user-facing strings must be in `locales/en/` and `locales/de/`
-- Use `useTranslation('<namespace>')` in components
+- Use `useTranslation()` in components (single namespace, no argument needed)
 - Use `getT()` from `i18n.ts` in services/middleware
-- 12 namespaces: common, plants, knowledge, strains, equipment, settings, help, commandPalette, onboarding, seedbanks, strainsData, legal
+- 12 source files per language: common, plants, knowledge, strains, equipment, settings, help, commandPalette, onboarding, seedbanks, strainsData, legal
+- Aggregator pattern: `locales/{lang}.ts` barrel files import all 12 source files and merge into a single flat object registered as the default i18next namespace
 - **New component rule:** Every new UI component must have 100% of user-facing strings in `locales/*.ts` across all 5 languages (EN/DE/ES/FR/NL). No hardcoded strings.
 
 ### Testing

@@ -40,7 +40,7 @@ function getActionStyle(type: GrowAction): string {
 }
 
 export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, plantName }) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const dispatch = useAppDispatch()
     const allTasks = useAppSelector(selectAllPlannerTasks)
     const overdueTasks = useAppSelector(selectOverdueTasks(plantId))
@@ -269,7 +269,11 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
             <div className="rounded-xl bg-slate-800/60 ring-1 ring-inset ring-slate-700/50 overflow-hidden">
                 {/* Day headers */}
                 <div className="grid grid-cols-7 border-b border-slate-700">
-                    {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
+                    {Array.from({ length: 7 }, (_, idx) =>
+                        new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }).format(
+                            new Date(2024, 0, 1 + idx),
+                        ),
+                    ).map((d) => (
                         <div
                             key={d}
                             className="py-2 text-center text-xs font-medium text-slate-500"

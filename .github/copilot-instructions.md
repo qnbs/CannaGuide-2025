@@ -22,7 +22,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 namespaces)
-- **Testing:** Vitest (1826 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (1835 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews)
@@ -130,7 +130,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
     - `localAiInfrastructureService.ts` -- Backward-compatible barrel re-export for LocalAIInfrastructure
     - `localAiWebGpuService.ts` -- Centralized WebGPU adapter, shared device lifecycle, feature detection
 
-8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, AbortController support, Transferable zero-copy transfers, heap-based priority queue, and pagehide teardown. All 9 workers (VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation) use this bus. Priority levels: `critical` (VPD safety), `high` (user-initiated simulation), `normal` (default), `low` (ML inference, image gen). `PriorityQueue<T>` min-heap in `utils/priorityQueue.ts` with O(log n) enqueue/dequeue and FIFO tiebreaking. `getQueueState()` returns per-priority breakdown. W-02 Priority Preemption -- when all slots are full and a higher-priority job arrives, the lowest-priority running job is preempted (AbortController-based, main-thread only, max 3 re-queues) and the higher-priority job takes the slot. `workerStateSyncService.ts` provides a framework-agnostic handler registry for automatic Redux/Zustand wiring from dispatch results. `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`). See `docs/worker-bus.md`.
+8. **Worker Bus:** `workerBus.ts` provides promise-based, type-safe worker communication with backpressure, retry, telemetry, AbortController support, Transferable zero-copy transfers, heap-based priority queue, and pagehide teardown. All 9 workers (VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation) use this bus. Priority levels: `critical` (VPD safety), `high` (user-initiated simulation), `normal` (default), `low` (ML inference, image gen). `PriorityQueue<T>` min-heap in `utils/priorityQueue.ts` with O(log n) enqueue/dequeue and FIFO tiebreaking. `getQueueState()` returns per-priority breakdown. W-02 Priority Preemption -- when all slots are full and a higher-priority job arrives, the lowest-priority running job is preempted (AbortController-based, main-thread only, max 3 re-queues) and the higher-priority job takes the slot. W-04 Cross-Worker Channels -- `createChannel(workerA, workerB)` creates a MessageChannel and transfers ports to both workers via `__PORT_TRANSFER__` message; `closeChannel()` tears down; auto-cleanup on unregister/dispose. W-04 Generic Typed Dispatch -- `WorkerMessageMap` in `workerBus.types.ts` maps worker names to per-message payload/response types; `dispatch()` overloads enforce compile-time type safety for typed workers (simulation, visionInference, hydroForecast); untyped workers fall through to `unknown`. `workerStateSyncService.ts` provides a framework-agnostic handler registry for automatic Redux/Zustand wiring from dispatch results. `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`). See `docs/worker-bus.md`.
 
 9. **Seedbank API:** `seedbankService.ts` provides deterministic mock seed pricing/availability. SeedFinder.eu API permanently removed (dead since mid-2024). 5 hardcoded seedbanks with hash-based availability. 5-min in-memory TTL cache. `isLocalOnlyMode()` guard.
 
@@ -238,7 +238,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1826 tests, 0 failures
+- Baseline: 1835 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)

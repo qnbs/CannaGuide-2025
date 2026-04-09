@@ -107,3 +107,72 @@ export function workerErr(
 ): WorkerResponse<never> {
     return { messageId, success: false, error, errorCode }
 }
+
+// ---------------------------------------------------------------------------
+// W-04: Generic WorkerMessageMap -- typed dispatch per worker
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-message-type mapping: message type string -> { payload, response }.
+ * Workers that are NOT listed here fall back to `unknown` (no type error).
+ */
+
+/** VPD simulation worker messages (`simulation`). */
+export interface SimulationMessages {
+    SIMULATE: {
+        payload: { points: number; params: Record<string, number> }
+        response: { results: unknown[] }
+    }
+}
+
+/** Vision inference worker messages (`visionInference`). */
+export interface VisionInferenceMessages {
+    INIT: { payload: undefined; response: { ready: boolean } }
+    CLASSIFY: {
+        payload: { imageData: ArrayBuffer; width: number; height: number }
+        response: { label: string; confidence: number; leafLabel: string }
+    }
+    TERMINATE: { payload: undefined; response: { terminated: boolean } }
+}
+
+/** Hydroponic forecast worker messages (`hydroForecast`). */
+export interface HydroForecastMessages {
+    INIT: { payload: undefined; response: { ready: boolean } }
+    FORECAST: {
+        payload: { metric: string; readings: number[]; timestamps: number[] }
+        response: { predicted: number; trend: string; confidence: number }
+    }
+}
+
+/**
+ * Map from registered worker name to its typed message definitions.
+ * Workers not listed here are still callable -- they fall back to
+ * `{ [type: string]: { payload: unknown; response: unknown } }`.
+ */
+export interface WorkerMessageMap {
+    simulation: SimulationMessages
+    visionInference: VisionInferenceMessages
+    hydroForecast: HydroForecastMessages
+    [workerName: string]: { [type: string]: { payload: unknown; response: unknown } }
+}
+
+/**
+ * Extract the valid message types for a given worker.
+ */
+export type WorkerTypes<W extends keyof WorkerMessageMap> = string & keyof WorkerMessageMap[W]
+
+/**
+ * Extract the payload type for a specific worker + message type.
+ */
+export type WorkerPayload<
+    W extends keyof WorkerMessageMap,
+    T extends WorkerTypes<W>,
+> = WorkerMessageMap[W][T] extends { payload: infer P } ? P : unknown
+
+/**
+ * Extract the response type for a specific worker + message type.
+ */
+export type WorkerResponseData<
+    W extends keyof WorkerMessageMap,
+    T extends WorkerTypes<W>,
+> = WorkerMessageMap[W][T] extends { response: infer R } ? R : unknown

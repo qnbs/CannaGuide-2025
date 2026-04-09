@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 import type { MetricsState, MetricsReading } from '@/types'
 
@@ -62,16 +62,21 @@ export const { addMetricsReading, clearMetricsForPlant, clearAllMetrics } = metr
 
 export const selectMetricsReadings = (state: RootState): MetricsReading[] => state.metrics.readings
 
-export const selectMetricsForPlant =
-    (plantId: string) =>
-    (state: RootState): MetricsReading[] =>
-        state.metrics.readings.filter((r) => r.plantId === plantId)
+export const selectMetricsForPlant = (plantId: string): ((state: RootState) => MetricsReading[]) =>
+    createSelector(
+        (state: RootState) => state.metrics.readings,
+        (readings) => readings.filter((r) => r.plantId === plantId),
+    )
 
-export const selectLatestMetrics =
-    (plantId: string) =>
-    (state: RootState): MetricsReading | undefined => {
-        const plantReadings = state.metrics.readings.filter((r) => r.plantId === plantId)
-        return plantReadings.length > 0 ? plantReadings[plantReadings.length - 1] : undefined
-    }
+export const selectLatestMetrics = (
+    plantId: string,
+): ((state: RootState) => MetricsReading | undefined) =>
+    createSelector(
+        (state: RootState) => state.metrics.readings,
+        (readings) => {
+            const plantReadings = readings.filter((r) => r.plantId === plantId)
+            return plantReadings.length > 0 ? plantReadings[plantReadings.length - 1] : undefined
+        },
+    )
 
 export default metricsSlice.reducer

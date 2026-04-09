@@ -61,6 +61,7 @@ jobs:
 
             - name: Snyk Monitor (track vulnerabilities)
               if: ${{ env.HAS_TOKEN == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.snyk-scan.outcome == 'success' }}
+              continue-on-error: true # Advisory-only -- transient Snyk 502s must not fail CI
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

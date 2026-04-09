@@ -49,9 +49,9 @@ const rootReducer = combineReducers({
     nutrientPlanner: nutrientPlannerReducer,
     hydro: hydroReducer,
     grows: growsReducer,
-    metrics: metricsReducer,
-    growPlanner: growPlannerReducer,
-    diagnosisHistory: diagnosisHistoryReducer,
+    metrics: metricsReducer, // Persisted -- plant metrics readings (FIFO 168/plant)
+    growPlanner: growPlannerReducer, // Persisted -- planner tasks (FIFO 500)
+    diagnosisHistory: diagnosisHistoryReducer, // Persisted -- diagnosis records (FIFO 100/plant)
     // Runtime-only -- excluded from stateToSave in indexedDBStorage
     workerMetrics: workerMetricsReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,

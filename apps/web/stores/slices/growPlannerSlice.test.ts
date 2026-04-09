@@ -75,6 +75,26 @@ describe('growPlannerSlice', () => {
         expect(state.tasks[0]?.completedAt).toBeUndefined()
     })
 
+    it('clears completed tasks for a specific plant only', () => {
+        const task1 = makeTask({ plantId: 'plant-1' })
+        const task2 = makeTask({ plantId: 'plant-2' })
+        let state = growPlannerReducer(initialState, addPlannerTask(task1))
+        state = growPlannerReducer(state, addPlannerTask(task2))
+        state = growPlannerReducer(
+            state,
+            completePlannerTask({ taskId: task1.id, completedAt: Date.now() }),
+        )
+        state = growPlannerReducer(
+            state,
+            completePlannerTask({ taskId: task2.id, completedAt: Date.now() }),
+        )
+        expect(state.tasks).toHaveLength(2)
+        state = growPlannerReducer(state, clearCompletedTasks('plant-1'))
+        // Only plant-1 completed task removed; plant-2 completed task remains
+        expect(state.tasks).toHaveLength(1)
+        expect(state.tasks[0]?.plantId).toBe('plant-2')
+    })
+
     it('clears tasks for a specific plant', () => {
         let state = growPlannerReducer(
             initialState,

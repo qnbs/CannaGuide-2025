@@ -2,7 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 103) -- W-02 Priority Preemption
+## Latest Session (Session 104) -- W-04 Cross-Worker Channels + Generic Typed Dispatch
+
+**Status: W-04 implemented. All tests passing. TypeScript clean.
+Build clean. All validations green.**
+
+### What Was Done (Session 104)
+
+1. **W-04 Cross-Worker Channels** -- WorkerBus now supports direct
+   worker-to-worker communication via MessageChannel. `createChannel()`
+   transfers paired ports to two workers. `closeChannel()` tears down.
+   Auto-cleanup on `unregister()` and `dispose()`.
+
+2. **W-04 Generic Typed Dispatch** -- `WorkerMessageMap` interface in
+   `workerBus.types.ts` maps worker names to per-message-type
+   payload/response pairs. `dispatch()` overloads provide compile-time
+   type safety for typed workers; untyped workers fall through to
+   `unknown`. 3 workers typed: `simulation`, `visionInference`,
+   `hydroForecast`.
+
+3. **New types** -- `WorkerMessageMap`, `SimulationMessages`,
+   `VisionInferenceMessages`, `HydroForecastMessages`, `WorkerTypes`,
+   `WorkerPayload`, `WorkerResponseData` utility types.
+
+4. **9 new tests** -- channel creation with port transfer, getChannels,
+   duplicate channel rejection, unregistered worker rejection,
+   self-channel rejection, closeChannel, no-op close, unregister
+   cleanup, dispose cleanup.
+
+5. **ADR-0008** -- Architecture Decision Record for W-04 at
+   `docs/adr/0008-workerbus-cross-worker-channels.md`.
+
+6. **Docs updated** -- worker-bus.md (channel architecture diagram,
+   W-04 resolved), PRIORITY_ROADMAP.md (W-04 done),
+   copilot-instructions.md, next-session-handoff.md.
+
+### Verified Metrics (Session 104)
+
+- Tests: 1835 passed, 0 failures (9 new W-04 tests)
+- Typecheck: clean (TS2719 filtered)
+- Build: 3 tasks success, 158 precache entries
+- WorkerBus: 69 tests passing (9 new + 60 existing)
+
+### Next Steps
+
+- Coverage: push unit test coverage above 40% lines
+- Mutation testing: run Stryker on workerBus slices
+- Implement `__PORT_TRANSFER__` handler in production workers
+  (visionInferenceWorker, hydroForecastWorker) to enable actual
+  cross-worker data flow
+
+---
+
+## Previous Session (Session 103) -- W-02 Priority Preemption
 
 **Status: W-02 implemented. 1826 tests passing. TypeScript clean.
 Build clean. All validations green.**

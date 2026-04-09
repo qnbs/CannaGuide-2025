@@ -1227,3 +1227,102 @@ describe('WorkerBus -- W-02 Priority Preemption', () => {
         cleanup()
     })
 })
+
+// ---------------------------------------------------------------------------
+// W-04: Cross-Worker Channels + Generic Typed Dispatch
+// ---------------------------------------------------------------------------
+
+describe('WorkerBus -- W-04 Cross-Worker Channels', () => {
+    let wA: MockWorker
+    let wB: MockWorker
+
+    beforeEach(() => {
+        wA = new MockWorker()
+        wB = new MockWorker()
+        workerBus.register('alpha', wA as unknown as Worker)
+        workerBus.register('beta', wB as unknown as Worker)
+    })
+
+    it('creates a channel and transfers ports to both workers', () => {
+        // Spy on postMessage to verify port transfer
+        const postA = vi.spyOn(wA, 'postMessage')
+        const postB = vi.spyOn(wB, 'postMessage')
+
+        workerBus.createChannel('alpha', 'beta')
+
+        // Both workers should receive a PORT_TRANSFER message with a Transferable
+        expect(postA).toHaveBeenCalledWith(
+            expect.objectContaining({ type: '__PORT_TRANSFER__', peer: 'beta' }),
+            expect.any(Array),
+        )
+        expect(postB).toHaveBeenCalledWith(
+            expect.objectContaining({ type: '__PORT_TRANSFER__', peer: 'alpha' }),
+            expect.any(Array),
+        )
+
+        expect(workerBus.hasChannel('alpha', 'beta')).toBe(true)
+        // Order-independent
+        expect(workerBus.hasChannel('beta', 'alpha')).toBe(true)
+    })
+
+    it('getChannels returns active channel pairs', () => {
+        workerBus.createChannel('alpha', 'beta')
+        const channels = workerBus.getChannels()
+        expect(channels).toHaveLength(1)
+        expect(channels[0]).toEqual(['alpha', 'beta'])
+    })
+
+    it('throws when creating duplicate channel', () => {
+        workerBus.createChannel('alpha', 'beta')
+        expect(() => workerBus.createChannel('alpha', 'beta')).toThrow(/already exists/)
+        // Reverse order should also throw
+        expect(() => workerBus.createChannel('beta', 'alpha')).toThrow(/already exists/)
+    })
+
+    it('throws when creating channel with unregistered worker', () => {
+        expect(() => workerBus.createChannel('alpha', 'ghost')).toThrow(/No worker registered/)
+    })
+
+    it('throws when creating channel with self', () => {
+        expect(() => workerBus.createChannel('alpha', 'alpha')).toThrow(
+            /Cannot create a channel between a worker and itself/,
+        )
+    })
+
+    it('closeChannel removes the channel', () => {
+        workerBus.createChannel('alpha', 'beta')
+        expect(workerBus.hasChannel('alpha', 'beta')).toBe(true)
+
+        workerBus.closeChannel('alpha', 'beta')
+        expect(workerBus.hasChannel('alpha', 'beta')).toBe(false)
+        expect(workerBus.getChannels()).toHaveLength(0)
+    })
+
+    it('closeChannel is a no-op for non-existent channel', () => {
+        // Should not throw
+        workerBus.closeChannel('alpha', 'beta')
+        expect(workerBus.hasChannel('alpha', 'beta')).toBe(false)
+    })
+
+    it('unregister cleans up channels involving the worker', () => {
+        workerBus.createChannel('alpha', 'beta')
+        expect(workerBus.hasChannel('alpha', 'beta')).toBe(true)
+
+        workerBus.unregister('alpha')
+        expect(workerBus.hasChannel('alpha', 'beta')).toBe(false)
+    })
+
+    it('dispose cleans up all channels', () => {
+        const wC = new MockWorker()
+        workerBus.register('gamma', wC as unknown as Worker)
+
+        workerBus.createChannel('alpha', 'beta')
+        workerBus.createChannel('alpha', 'gamma')
+        expect(workerBus.getChannels()).toHaveLength(2)
+
+        workerBus.dispose()
+        // After dispose, calling getChannels on reset bus should be empty
+        workerBus.reset()
+        expect(workerBus.getChannels()).toHaveLength(0)
+    })
+})

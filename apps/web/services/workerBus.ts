@@ -37,7 +37,14 @@
  *   await workerBus.dispatch('inference', 'CLASSIFY', data, { signal: ctrl.signal })
  */
 
-import type { WorkerRequest, WorkerResponse } from '@/types/workerBus.types'
+import type {
+    WorkerRequest,
+    WorkerResponse,
+    WorkerMessageMap,
+    WorkerTypes,
+    WorkerPayload,
+    WorkerResponseData,
+} from '@/types/workerBus.types'
 import { WorkerErrorCode, WorkerBusError } from '@/types/workerBus.types'
 import { PriorityQueue, PRIORITY_VALUES, type WorkerPriority } from '@/utils/priorityQueue'
 
@@ -165,6 +172,9 @@ const DEFAULT_RETRY_DELAY_MS = 500
 /** W-02: Maximum times a single job can be preempted before final rejection. */
 const MAX_PREEMPTION_RETRIES = 3
 
+/** W-04: Internal message type used to transfer a MessageChannel port to a worker. */
+const PORT_TRANSFER_TYPE = '__PORT_TRANSFER__'
+
 // Non-retryable error markers (avoid brittle string matching)
 const NON_RETRYABLE = ['No worker registered', 'disposed', 'unregistered', 'Queue full'] as const
 
@@ -264,6 +274,8 @@ class WorkerBusImpl {
     private readonly queues = new Map<string, PriorityQueue<QueuedDispatch>>()
     private readonly concurrencyLimits = new Map<string, number>()
     private readonly dispatchHooks: Array<(event: DispatchCompleteEvent) => void> = []
+    /** W-04: Active cross-worker MessageChannel instances keyed by sorted pair. */
+    private readonly channels = new Map<string, MessageChannel>()
     private defaultTimeoutMs = DEFAULT_TIMEOUT_MS
     private disposed = false
 
@@ -458,6 +470,15 @@ class WorkerBusImpl {
             }
             this.queues.delete(name)
         }
+
+        // W-04: Close any cross-worker channels involving this worker
+        for (const [key, channel] of this.channels) {
+            if (key.startsWith(`${name}::`) || key.endsWith(`::${name}`)) {
+                channel.port1.close()
+                channel.port2.close()
+                this.channels.delete(key)
+            }
+        }
     }
 
     /**
@@ -466,13 +487,29 @@ class WorkerBusImpl {
      *
      * Supports backpressure: if the worker has reached its concurrency limit,
      * the request is queued (up to DEFAULT_MAX_QUEUE_SIZE).
+     *
+     * W-04: Typed overloads for workers declared in WorkerMessageMap provide
+     * compile-time payload/response checks. Untyped workers fall through to
+     * the generic signature.
      */
+    dispatch<W extends keyof WorkerMessageMap, T extends WorkerTypes<W>>(
+        workerName: W & string,
+        type: T & string,
+        payload: WorkerPayload<W, T>,
+        timeoutOrOptions?: number | DispatchOptions,
+    ): Promise<WorkerResponseData<W, T>>
     dispatch<TResponse = unknown>(
         workerName: string,
         type: string,
         payload?: unknown,
         timeoutOrOptions?: number | DispatchOptions,
-    ): Promise<TResponse> {
+    ): Promise<TResponse>
+    dispatch(
+        workerName: string,
+        type: string,
+        payload?: unknown,
+        timeoutOrOptions?: number | DispatchOptions,
+    ): Promise<unknown> {
         if (this.disposed) {
             return Promise.reject(
                 new WorkerBusError('Bus has been disposed', WorkerErrorCode.DISPOSED, workerName),
@@ -492,7 +529,7 @@ class WorkerBusImpl {
         const priority: WorkerPriority = opts.priority ?? 'normal'
 
         if (retries > 0) {
-            return this.dispatchWithRetry<TResponse>(
+            return this.dispatchWithRetry(
                 workerName,
                 type,
                 payload,
@@ -504,7 +541,7 @@ class WorkerBusImpl {
                 priority,
             )
         }
-        return this.dispatchOnce<TResponse>(
+        return this.dispatchOnce(
             workerName,
             type,
             payload,
@@ -616,12 +653,117 @@ class WorkerBusImpl {
         return { current, queued, byPriority }
     }
 
+    // -------------------------------------------------------------------
+    // W-04: Cross-Worker Channels (MessageChannel)
+    // -------------------------------------------------------------------
+
+    /**
+     * Derive a stable, order-independent key for a worker pair.
+     */
+    private channelKey(a: string, b: string): string {
+        return a < b ? `${a}::${b}` : `${b}::${a}`
+    }
+
+    /**
+     * Create a direct MessageChannel between two registered workers.
+     * Each worker receives a `MessagePort` via a `PORT_TRANSFER` message
+     * with the peer's name attached so the worker can identify the sender.
+     *
+     * Throws if either worker is not registered, if a channel already exists,
+     * or if both names are identical.
+     */
+    createChannel(workerA: string, workerB: string): void {
+        if (workerA === workerB) {
+            throw new WorkerBusError(
+                'Cannot create a channel between a worker and itself',
+                WorkerErrorCode.INVALID_PAYLOAD,
+                workerA,
+            )
+        }
+
+        const wA = this.workers.get(workerA)
+        const wB = this.workers.get(workerB)
+        if (!wA) {
+            throw new WorkerBusError(
+                `No worker registered with name "${workerA}"`,
+                WorkerErrorCode.NOT_REGISTERED,
+                workerA,
+            )
+        }
+        if (!wB) {
+            throw new WorkerBusError(
+                `No worker registered with name "${workerB}"`,
+                WorkerErrorCode.NOT_REGISTERED,
+                workerB,
+            )
+        }
+
+        const key = this.channelKey(workerA, workerB)
+        if (this.channels.has(key)) {
+            throw new WorkerBusError(
+                `Channel already exists between "${workerA}" and "${workerB}"`,
+                WorkerErrorCode.INVALID_PAYLOAD,
+                workerA,
+            )
+        }
+
+        const channel = new MessageChannel()
+        this.channels.set(key, channel)
+
+        // Transfer port1 to workerA with workerB's name as peer identifier
+        wA.postMessage({ type: PORT_TRANSFER_TYPE, peer: workerB, messageId: `channel:${key}` }, [
+            channel.port1,
+        ])
+
+        // Transfer port2 to workerB with workerA's name as peer identifier
+        wB.postMessage({ type: PORT_TRANSFER_TYPE, peer: workerA, messageId: `channel:${key}` }, [
+            channel.port2,
+        ])
+    }
+
+    /**
+     * Close an existing channel between two workers.
+     * Does not throw if the channel does not exist.
+     */
+    closeChannel(workerA: string, workerB: string): void {
+        const key = this.channelKey(workerA, workerB)
+        const channel = this.channels.get(key)
+        if (!channel) return
+        channel.port1.close()
+        channel.port2.close()
+        this.channels.delete(key)
+    }
+
+    /**
+     * List all active cross-worker channels as sorted `[workerA, workerB]` pairs.
+     */
+    getChannels(): Array<[string, string]> {
+        return [...this.channels.keys()].map((key) => {
+            const parts = key.split('::')
+             
+            return [parts[0] ?? '', parts[1] ?? ''] as [string, string]
+        })
+    }
+
+    /**
+     * Check whether a channel exists between two workers.
+     */
+    hasChannel(workerA: string, workerB: string): boolean {
+        return this.channels.has(this.channelKey(workerA, workerB))
+    }
+
     /**
      * Terminate all workers and reject all pending requests.
      * Safe to call multiple times.
      */
     dispose(): void {
         this.disposed = true
+        // W-04: Close all channels before unregistering workers
+        for (const [key, channel] of this.channels) {
+            channel.port1.close()
+            channel.port2.close()
+            this.channels.delete(key)
+        }
         for (const name of [...this.workers.keys()]) {
             this.unregister(name)
         }

@@ -14,15 +14,15 @@
 ```
 Main Thread                              Worker Threads
 -----------                              --------------
-                                         [VPD Simulation]
-[React UI] --> [workerBus.dispatch()] --> [Genealogy]
-                    |                     [Scenarios]
-                    |-- messageId tag     [Inference (ML)]
-                    |-- timeout guard     [Image Generation]
-                    |-- backpressure      [Hydro Forecast]
-                    |-- retry logic       [Terpene Analysis]
-                    |-- AbortSignal       [Calculation]
-                    v                     [Vision Inference]
+                                         [VPD Simulation] <--+
+[React UI] --> [workerBus.dispatch()] --> [Genealogy]        |
+                    |                     [Scenarios]         | MessageChannel
+                    |-- messageId tag     [Inference (ML)]    | (W-04)
+                    |-- timeout guard     [Image Generation]  |
+                    |-- backpressure      [Hydro Forecast]    |
+                    |-- retry logic       [Terpene Analysis]  |
+                    |-- AbortSignal       [Calculation]       |
+                    v                     [Vision Inference] <+
               [Pending Map]
               messageId -> {resolve, reject, timer, abortCleanup}
                     |
@@ -299,21 +299,22 @@ sequenceDiagram
 
 ### Current Limitations
 
-- Priority is queue-order only (no preemption of running workers)
-- No cross-worker communication (inference cannot query VPD data without main-thread hop)
+- No channel telemetry (port messages are off main-thread, not observable)
+- Workers must implement `__PORT_TRANSFER__` handler to use cross-worker channels
 
 ### Resolved (v1.5)
 
 - ~~No per-worker-type rate limiting~~ -- DONE (W-01, Session 94): `setRateLimit()` sliding-window API
 - ~~Telemetry Redux DevTools only~~ -- DONE (W-03, Session 94): `exportTelemetry()` + Sentry context
 - ~~Priority is queue-order only (no preemption)~~ -- DONE (W-02): AbortController-based preemption + re-queue
+- ~~No cross-worker communication~~ -- DONE (W-04): MessageChannel-based `createChannel()` / `closeChannel()` + generic typed dispatch (ADR-0008)
 
 ### Planned Improvements
 
 **Short-term:**
 
 - Unit test coverage >95% for backpressure queue, retry edge cases, concurrent load
-- Generic `WorkerMessage<T, R>` types for zero-runtime type checks
+- ~~Generic `WorkerMessage<T, R>` types for zero-runtime type checks~~ -- DONE (W-04): `WorkerMessageMap` + typed dispatch overloads
 
 **Mid-term (v1.6):**
 
@@ -321,7 +322,7 @@ sequenceDiagram
 - ~~W-01: Per-worker-type rate limiting~~ -- DONE (Session 94)
 - ~~W-03: External telemetry export~~ -- DONE (Session 94)
 - ~~W-02: Priority preemption for running workers~~ -- DONE (ADR-0007)
-- W-04: Cross-worker communication channel (SharedArrayBuffer or MessageChannel) -- target v1.6
+- ~~W-04: Cross-worker communication channel (SharedArrayBuffer or MessageChannel)~~ -- DONE (ADR-0008): MessageChannel chosen over SharedArrayBuffer (COOP/COEP incompatible)
 - Event emitter for real-time IoT sensor streaming
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
 

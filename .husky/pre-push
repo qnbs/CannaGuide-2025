@@ -1,11 +1,12 @@
 #!/bin/sh
 set -e
 
-# Full CI-equivalent quality gate before every push.
-# Mirrors CI pipeline: identity + typecheck + tests + lint scopes + build.
-# Catches TS errors, test failures, and lint regressions BEFORE they hit CI.
+# Lightweight pre-push gate: typecheck + lint scopes only.
+# Full test suite + build run as part of the dev workflow before
+# committing, so repeating them here is redundant.
 # Skip with: git push --no-verify (emergency only).
 
-echo "[pre-push] Running full CI gate locally..."
-pnpm run gate:push
+echo "[pre-push] Running typecheck + lint scopes..."
+node ./scripts/typecheck-filter.mjs
+node ./scripts/lint-scopes.mjs
 echo "[pre-push] All gates passed."

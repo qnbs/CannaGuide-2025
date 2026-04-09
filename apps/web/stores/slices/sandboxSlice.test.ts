@@ -10,7 +10,13 @@ import simulationReducer from '@/stores/slices/simulationSlice'
 import settingsReducer, { defaultSettings } from '@/stores/slices/settingsSlice'
 import { workerBus } from '@/services/workerBus'
 import { plantSimulationService } from '@/services/plantSimulationService'
-import { StrainType, type Strain } from '@/types'
+import {
+    StrainType,
+    type Strain,
+    type ExperimentResult,
+    type SavedExperiment,
+    type Scenario,
+} from '@/types'
 
 const initial = { currentExperiment: null, status: 'idle' as const, savedExperiments: [] }
 
@@ -56,7 +62,7 @@ describe('sandboxSlice', () => {
         const running = {
             ...initial,
             status: 'succeeded' as const,
-            currentExperiment: { id: 'exp-1' } as any,
+            currentExperiment: { id: 'exp-1' } as unknown as ExperimentResult,
         }
         const state = sandboxReducer(running, clearCurrentExperiment())
         expect(state.currentExperiment).toBeNull()
@@ -66,7 +72,10 @@ describe('sandboxSlice', () => {
     it('deleteExperiment removes by id', () => {
         const withExps = {
             ...initial,
-            savedExperiments: [{ id: 'exp-1' } as any, { id: 'exp-2' } as any],
+            savedExperiments: [
+                { id: 'exp-1' } as unknown as SavedExperiment,
+                { id: 'exp-2' } as unknown as SavedExperiment,
+            ],
         }
         const state = sandboxReducer(withExps, deleteExperiment('exp-1'))
         expect(state.savedExperiments).toHaveLength(1)
@@ -77,11 +86,14 @@ describe('sandboxSlice', () => {
         const withExp = {
             ...initial,
             status: 'succeeded' as const,
-            currentExperiment: { plantA: {}, plantB: {} } as any,
+            currentExperiment: { plantA: {}, plantB: {} } as unknown as ExperimentResult,
         }
         const state = sandboxReducer(
             withExp,
-            saveExperiment({ scenario: { id: 'sc-1' } as any, basePlantName: 'TestPlant' }),
+            saveExperiment({
+                scenario: { id: 'sc-1' } as unknown as Scenario,
+                basePlantName: 'TestPlant',
+            }),
         )
         expect(state.savedExperiments).toHaveLength(1)
         expect(state.savedExperiments[0]!.basePlantName).toBe('TestPlant')

@@ -20,6 +20,7 @@ const openDB = (): Promise<IDBDatabase> => {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
 
         request.onupgradeneeded = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- IDB event target
             const dbInstance = (event.target as IDBOpenDBRequest).result
             if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
                 dbInstance.createObjectStore(STORE_NAME)
@@ -27,6 +28,7 @@ const openDB = (): Promise<IDBDatabase> => {
         }
 
         request.onsuccess = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- IDB event target
             db = (event.target as IDBOpenDBRequest).result
             // Handle connection loss (storage pressure, version upgrade from another tab)
             db.onclose = () => {
@@ -43,8 +45,10 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onerror = (event) => {
             dbPromise = null
+            /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- IDB event target */
             console.debug('IndexedDB error:', (event.target as IDBOpenDBRequest).error)
             reject((event.target as IDBOpenDBRequest).error)
+            /* eslint-enable @typescript-eslint/no-unsafe-type-assertion */
         }
     })
 
@@ -79,6 +83,7 @@ const performTx = async <T>(
 export const indexedDBStorage: StateStorage = {
     getItem: async (name: string): Promise<string | null> => {
         const result = await performTx('readonly', (store) => store.get(name))
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- IDB returns unknown
         return (result as string) || null
     },
     setItem: async (name: string, value: string): Promise<void> => {

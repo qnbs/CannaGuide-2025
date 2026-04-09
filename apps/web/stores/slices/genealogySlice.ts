@@ -49,6 +49,7 @@ const toZoomTransform = (raw: unknown): SerializableZoomTransform | null => {
         return null
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated object above
     const zt = raw as Record<string, unknown>
     if (!isFiniteNumber(zt.k) || zt.k <= 0) {
         return null
@@ -64,10 +65,12 @@ const isValidCachedTreeRoot = (tree: unknown): boolean => {
     if (!tree || typeof tree !== 'object') {
         return false
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated object above
     const t = tree as Record<string, unknown>
     if (typeof t.id !== 'string' || typeof t.name !== 'string') {
         return false
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- checked in Set below
     return VALID_STRAIN_TYPES.has(t.type as string)
 }
 
@@ -84,14 +87,17 @@ const sanitizeGenealogyChildren = (raw: unknown, depth: number): GenealogyNode[]
 const sanitizeNode = (raw: unknown, depth = 0): GenealogyNode | null => {
     // Guard: max depth 25 prevents stack overflow on circular-looking data
     if (depth > 25 || !raw || typeof raw !== 'object') return null
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated object above
     const n = raw as Record<string, unknown>
 
     if (typeof n.id !== 'string' || !n.id) return null
     if (typeof n.name !== 'string' || !n.name) return null
 
+    /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- validated type guard */
     const type: StrainType = VALID_STRAIN_TYPES.has(n.type as string)
         ? (n.type as StrainType)
         : StrainType.Hybrid
+    /* eslint-enable @typescript-eslint/no-unsafe-type-assertion */
     const thc = typeof n.thc === 'number' && Number.isFinite(n.thc) ? n.thc : 0
     const isLandrace = typeof n.isLandrace === 'boolean' ? n.isLandrace : false
 
@@ -124,6 +130,7 @@ const sanitizeComputedTrees = (rawTrees: unknown): GenealogyState['computedTrees
         return computedTrees
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated object above
     for (const [id, tree] of Object.entries(rawTrees as Record<string, unknown>)) {
         if (typeof id !== 'string') {
             continue
@@ -161,6 +168,7 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
         return { ...initialGenealogyState }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated object above
     const s = raw as Record<string, unknown>
 
     // Extract preferences first so we can preserve them on version mismatch
@@ -205,6 +213,7 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
 // ---------------------------------------------------------------------------
 export const isGenealogyStateCorrupt = (state: unknown): boolean => {
     if (!state || typeof state !== 'object') return true
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated object above
     const s = state as Record<string, unknown>
 
     // Version mismatch → stale cache from old bundle
@@ -222,6 +231,7 @@ export const isGenealogyStateCorrupt = (state: unknown): boolean => {
         return true
 
     // Spot-check: any cached tree root must have id+name+type
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrowing after object check
     const trees = s.computedTrees as Record<string, unknown>
     for (const tree of Object.values(trees)) {
         if (tree === null) continue // null = "strain not found" sentinel

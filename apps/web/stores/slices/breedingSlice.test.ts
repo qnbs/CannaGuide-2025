@@ -6,16 +6,16 @@ import breedingReducer, {
     clearBreedingSlots,
     setCollectedSeeds,
 } from '@/stores/slices/breedingSlice'
+import type { Seed } from '@/types'
 
 const initial = { collectedSeeds: [], breedingSlots: { parentA: null, parentB: null } }
 
-const mockSeed = {
+const mockSeed: Seed = {
     id: 'seed-1',
-    name: 'Test Seed',
     strainId: 'strain-1',
-    generation: 1,
-    parentAId: 'pa',
-    parentBId: 'pb',
+    strainName: 'Test Seed',
+    quality: 0.8,
+    createdAt: Date.now(),
 }
 
 describe('breedingSlice', () => {
@@ -25,7 +25,7 @@ describe('breedingSlice', () => {
     })
 
     it('addSeed adds a seed to the collection', () => {
-        const state = breedingReducer(initial, addSeed(mockSeed as any))
+        const state = breedingReducer(initial, addSeed(mockSeed))
         expect(state.collectedSeeds).toHaveLength(1)
         expect(state.collectedSeeds[0]!.id).toBe('seed-1')
     })
@@ -48,9 +48,9 @@ describe('breedingSlice', () => {
     })
 
     it('setCollectedSeeds replaces entire seed collection', () => {
-        let state = breedingReducer(initial, addSeed(mockSeed as any))
-        const newSeeds = [{ ...mockSeed, id: 'seed-new' }]
-        state = breedingReducer(state, setCollectedSeeds(newSeeds as any))
+        let state = breedingReducer(initial, addSeed(mockSeed))
+        const newSeeds: Seed[] = [{ ...mockSeed, id: 'seed-new' }]
+        state = breedingReducer(state, setCollectedSeeds(newSeeds))
         expect(state.collectedSeeds).toHaveLength(1)
         expect(state.collectedSeeds[0]!.id).toBe('seed-new')
     })

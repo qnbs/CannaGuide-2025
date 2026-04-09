@@ -37,7 +37,7 @@ describe('settingsSlice', () => {
             setSetting({ path: '__proto__.polluted', value: true }),
         )
         // State should be unchanged; no prototype pollution
-        expect((Object.prototype as any).polluted).toBeUndefined()
+        expect((Object.prototype as unknown as Record<string, unknown>).polluted).toBeUndefined()
         expect(state.settings).toEqual(initial.settings)
     })
 

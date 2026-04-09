@@ -32,6 +32,7 @@ import { addMultipleToFavorites, removeMultipleFromFavorites } from './slices/fa
 export const listenerMiddleware = createListenerMiddleware()
 
 type AppStartListening = TypedStartListening<RootState, AppDispatch>
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- RTK typed listener pattern
 export const startAppListening = listenerMiddleware.startListening as AppStartListening
 
 const getAiService = async () => {
@@ -63,13 +64,16 @@ startAppListening({
     actionCreator: setSetting,
     effect: async (action) => {
         if (action.payload.path === 'aiMode') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dispatch payload narrowing
             await syncAiMode(action.payload.value as AiMode)
         }
         if (action.payload.path === 'privacy.localOnlyMode') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dispatch payload narrowing
             await syncLocalOnlyMode(action.payload.value as boolean)
         }
         if (action.payload.path === 'localAi.ecoMode') {
             const { setEcoModeExplicit } = await import('@/services/aiEcoModeService')
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dispatch payload narrowing
             setEcoModeExplicit(action.payload.value as boolean)
         }
     },
@@ -82,6 +86,7 @@ startAppListening({
     actionCreator: setSetting,
     effect: async (action) => {
         if (action.payload.path === 'general.language') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dispatch payload narrowing
             const newLang = action.payload.value as Language
             if (i18nInstance.language !== newLang) {
                 // Load the new language bundle on demand if not already loaded
@@ -300,6 +305,7 @@ startAppListening({
         const t = getT()
         const type = action.type.includes('addUser') ? 'add' : 'update'
         // The payload for userStrainsAdapter actions is the strain object itself.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- adapter payload narrowing
         const strain = action.payload as Strain
         getUISnapshot().addNotification({
             message: t(`strainsView.addStrainModal.validation.${type}Success`, {
@@ -348,6 +354,7 @@ startAppListening({
     matcher: isAnyOf(updateSetup, updateStrainTip),
     effect: (action) => {
         const t = getT()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- adapter payload narrowing
         const p = action.payload as {
             id?: string
             changes?: { name?: string; title?: string }
@@ -427,9 +434,10 @@ startAppListening({
             try {
                 const registration = await navigator.serviceWorker.ready
                 if ('sync' in registration) {
-                    await (
-                        registration.sync as { register: (tag: string) => Promise<void> }
-                    ).register('data-sync')
+                    await // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Background Sync API
+                    (registration.sync as { register: (tag: string) => Promise<void> }).register(
+                        'data-sync',
+                    )
                     getUISnapshot().addNotification({
                         message: getT()('common.offlineQueued'),
                         type: 'info',

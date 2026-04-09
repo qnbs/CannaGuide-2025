@@ -254,6 +254,7 @@ const settingsSlice = createSlice({
         setSetting: (state, action: PayloadAction<{ path: string; value: unknown }>) => {
             const { path, value } = action.payload
             if (path === 'simulation.simulationProfile' && typeof value === 'string') {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- guarded by string check above
                 const nextProfile = value as AppSettings['simulation']['simulationProfile']
                 const preset = simulationProfilePresets[nextProfile]
                 if (!preset) return
@@ -267,6 +268,7 @@ const settingsSlice = createSlice({
             // Guard against prototype pollution via crafted paths
             if (keys.some((k) => k === '__proto__' || k === 'constructor' || k === 'prototype'))
                 return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dynamic path traversal
             let current: Record<string, unknown> = state.settings as unknown as Record<
                 string,
                 unknown
@@ -274,6 +276,7 @@ const settingsSlice = createSlice({
             for (let i = 0; i < keys.length - 1; i++) {
                 const k = keys[i]
                 if (!k || !Object.prototype.hasOwnProperty.call(current, k)) return
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dynamic path traversal
                 current = current[k] as Record<string, unknown>
             }
             const lastKey = keys[keys.length - 1]
@@ -284,6 +287,7 @@ const settingsSlice = createSlice({
             const keys = path.split('.')
             if (keys.some((k) => k === '__proto__' || k === 'constructor' || k === 'prototype'))
                 return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dynamic path traversal
             let current: Record<string, unknown> = state.settings as unknown as Record<
                 string,
                 unknown
@@ -291,6 +295,7 @@ const settingsSlice = createSlice({
             for (let i = 0; i < keys.length - 1; i++) {
                 const k = keys[i]
                 if (!k || !Object.prototype.hasOwnProperty.call(current, k)) return
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dynamic path traversal
                 current = current[k] as Record<string, unknown>
             }
             const finalKey = keys[keys.length - 1]

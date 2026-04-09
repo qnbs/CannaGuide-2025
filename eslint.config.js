@@ -117,10 +117,12 @@ export default [
     },
 
     // ── Test files – relax strict rules ────────────────────────────────────
+    // no-explicit-any stays 'error' (same as production) -- tests must be
+    // properly typed.  no-unsafe-type-assertion is 'off' because partial
+    // mock objects legitimately narrow via 'as Type'.
     {
         files: ['**/*.test.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
         rules: {
-            '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off',
             '@typescript-eslint/no-unsafe-type-assertion': 'off',
         },

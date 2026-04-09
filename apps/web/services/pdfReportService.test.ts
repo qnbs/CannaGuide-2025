@@ -26,7 +26,7 @@ const mockDoc = {
 }
 
 vi.mock('jspdf', () => ({
-    default: vi.fn(function JsPDF(this: any) {
+    default: vi.fn(function JsPDF(this: Record<string, unknown>) {
         Object.assign(this, mockDoc)
         return mockDoc
     }),

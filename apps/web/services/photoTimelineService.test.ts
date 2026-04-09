@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PlantStage } from '@/types'
+import { PlantStage, type Plant } from '@/types'
 import { buildPhotoTimelineMetadata, photoTimelineService } from './photoTimelineService'
 
 const DAY_MS = 86_400_000
@@ -11,7 +11,7 @@ const makePlant = (createdAt: number) =>
         createdAt,
         age: 10,
         stage: PlantStage.Vegetative,
-    }) as any
+    }) as unknown as Plant
 
 describe('photoTimelineService', () => {
     describe('buildPhotoTimelineMetadata', () => {

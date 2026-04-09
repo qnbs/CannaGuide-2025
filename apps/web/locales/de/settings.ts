@@ -173,9 +173,9 @@ export const settingsView = {
             downloadSize: '{{size}} MB Download',
             largeDownload: 'Grosser Download',
             loading: 'Modell wird geladen...',
-            'model_0.5B_desc':
+            model_05B_desc:
                 'Ultraleichtes Modell fuer jedes Geraet. Schnell, aber begrenzte Qualitaet.',
-            'model_1.5B_desc':
+            model_15B_desc:
                 'Ausgewogenes Modell fuer mittlere GPUs. Gute mehrsprachige Unterstuetzung.',
             model_3B_desc: 'Hohe Qualitaet beim Reasoning. Beste Wahl fuer leistungsfaehige GPUs.',
             model_4B_desc: 'Starkes Reasoning und Instruktionsbefolgung. Groesste Option.',

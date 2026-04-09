@@ -338,12 +338,12 @@ class GrowReminderService {
         }
 
         if ('sync' in registration) {
-            await (
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- SW Background Sync API
+            const syncReg =
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- SW Background Sync API not typed
                 registration as ServiceWorkerRegistration & {
                     sync: { register: (tag: string) => Promise<void> }
                 }
-            ).sync.register('grow-reminders-sync')
+            await syncReg.sync.register('grow-reminders-sync')
         }
     }
 

@@ -376,6 +376,14 @@ Tracked separately in [`docs/refactor-roadmap-2026-q1.md`](docs/refactor-roadmap
 
 ---
 
+## Related Documentation
+
+- [Audit-driven priorities](docs/PRIORITY_ROADMAP.md) | [Audit backlog](docs/AUDIT_BACKLOG.md)
+- [Session Handoff](docs/next-session-handoff.md) | [UX Audit](ui-ux-audit.md) | [Lint Burndown](docs/lint-burndown.md)
+- [Architecture](docs/ARCHITECTURE.md) | [Worker Bus](docs/worker-bus.md) | [ADRs](docs/adr/)
+
+---
+
 ## How to Contribute
 
 1. Check the roadmap for items you'd like to work on.

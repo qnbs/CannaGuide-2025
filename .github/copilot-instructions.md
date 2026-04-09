@@ -206,9 +206,11 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 2. **Tests pass:** `pnpm --filter @cannaguide/web test:run` -- 0 failures
 3. **Build succeeds:** `pnpm run build`
 4. **Lint zero warnings:** `eslint --max-warnings 0` on staged files (enforced by lint-staged)
-5. **i18n complete:** new user-facing strings present in all 5 languages (EN/DE/ES/FR/NL)
-6. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
-7. **Pre-commit hook runs:** `.husky/pre-commit` executes typecheck + lint-staged automatically
+5. **Lint scopes pass:** `node ./scripts/lint-scopes.mjs` -- strict scopes enforced (hooks, components/common, services)
+6. **i18n complete:** new user-facing strings present in all 5 languages (EN/DE/ES/FR/NL)
+7. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
+8. **Pre-commit hook runs:** `.husky/pre-commit` executes typecheck + lint-staged automatically
+9. **Pre-push hook runs:** `.husky/pre-push` executes `gate:push` (typecheck + tests + lint scopes + build) -- full CI mirror
 
 ### AI Integration
 

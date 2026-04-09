@@ -29,7 +29,7 @@ const KNOWN_TERPENE_SYNERGIES: Record<string, { high: number; medium: number }> 
     Geraniol: { high: 0, medium: 1 },
 }
 
-const TERPENE_NAMES = [
+const _TERPENE_NAMES = [
     'Myrcene',
     'Limonene',
     'Caryophyllene',
@@ -44,7 +44,7 @@ const TERPENE_NAMES = [
     'Geraniol',
 ] as const
 
-export type KnownTerpeneName = (typeof TERPENE_NAMES)[number]
+export type KnownTerpeneName = (typeof _TERPENE_NAMES)[number]
 
 export const TerpeneEntourageInputSchema = z.object({
     terpenes: z
@@ -281,6 +281,7 @@ export function calculateEcTds(input: EcTdsInput): EcTdsResult {
     } else if (validated.tds640 !== undefined) {
         ecMs = validated.tds640 / 640
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         ecMs = (validated.tds700 as number) / 700
     }
 

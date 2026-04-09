@@ -60,6 +60,7 @@ export async function generateGrowReport(
     const { default: JsPDFBase } = await import('jspdf')
     await import('jspdf-autotable')
     // Safe cast: jspdf-autotable augments JsPDF at runtime but lacks merged types
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const doc = new JsPDFBase() as unknown as JsPDFWithAutoTable
 
     const today = formatDate(Date.now())

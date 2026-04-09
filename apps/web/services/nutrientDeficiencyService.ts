@@ -185,6 +185,7 @@ for (const res of r) nodes.set(res.id, res)
 
 /** Return the root question node. */
 export function getStartNode(): DiagnosisNode {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     return nodes.get('root') as DiagnosisNode
 }
 

@@ -71,11 +71,13 @@ export const registerWorkerResultHandler = <T = unknown>(
         handlers.set(key, list)
     }
     // Cast: runtime type safety guaranteed by caller's TResponse annotation
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     list.push(handler as WorkerResultHandler)
 
     return () => {
         const current = handlers.get(key)
         if (!current) return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const idx = current.indexOf(handler as WorkerResultHandler)
         if (idx !== -1) current.splice(idx, 1)
         if (current.length === 0) handlers.delete(key)

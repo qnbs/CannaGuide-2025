@@ -49,6 +49,7 @@ export const getKnownDatabaseNames = (): readonly string[] => INDEXED_DB_NAMES
  * @returns true if deletion succeeded (or DB did not exist)
  */
 export const eraseSingleDatabase = async (dbName: string): Promise<boolean> => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     if (!INDEXED_DB_NAMES.includes(dbName as (typeof INDEXED_DB_NAMES)[number])) {
         return false
     }
@@ -139,6 +140,7 @@ export const exportAllUserData = async (): Promise<string> => {
     }
 
     // localStorage
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const ls = dump['localStorage'] as Record<string, string>
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i)
@@ -148,6 +150,7 @@ export const exportAllUserData = async (): Promise<string> => {
     }
 
     // IndexedDB databases
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const dbs = dump['databases'] as Record<string, Record<string, unknown[]>>
     for (const dbName of INDEXED_DB_NAMES) {
         try {

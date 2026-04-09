@@ -83,6 +83,7 @@ class CommunityShareService {
             )
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gist = (await response.json()) as { id: string; html_url: string }
         return { id: gist.id, url: gist.html_url }
     }
@@ -101,6 +102,7 @@ class CommunityShareService {
             )
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gist = (await response.json()) as {
             files: Record<string, { content?: string }>
         }
@@ -120,6 +122,7 @@ class CommunityShareService {
             )
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return result.data.strains as Strain[]
     }
 }

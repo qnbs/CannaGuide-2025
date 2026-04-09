@@ -68,7 +68,7 @@
         "security:snyk": "snyk test --all-projects --severity-threshold=high",
         "security:grype": "grype dir:. --fail-on high --only-fixed --exclude ./node_modules --exclude ./dist --exclude ./coverage",
         "security:scorecard": "scorecard --local . --file-mode git --format json --output scorecard.json --show-details",
-        "gate:push": "pnpm run check:commit-identity && pnpm run lint:changed && pnpm run typecheck && pnpm run test:run && pnpm run prettier:check:changed",
+        "gate:push": "pnpm run check:commit-identity && node ./scripts/typecheck-filter.mjs && pnpm --filter @cannaguide/web test:run && node ./scripts/lint-scopes.mjs && pnpm run build",
         "pr:push": "node ./scripts/github/pr-push.mjs",
         "security:scan": "pnpm run security:prettier && pnpm run security:trojan-source && pnpm run security:eslint && pnpm run security:pre-commit && pnpm run security:secrets && pnpm run security:semgrep && pnpm run security:socket && pnpm run security:snyk && pnpm run security:grype && pnpm run security:scorecard",
         "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0",

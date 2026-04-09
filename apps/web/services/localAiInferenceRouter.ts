@@ -80,9 +80,11 @@ type GeneratedTextOutput = { generated_text?: string }
 
 export const extractGeneratedText = (value: unknown): string | undefined => {
     if (Array.isArray(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const first = value[0] as GeneratedTextOutput | undefined
         return first?.generated_text
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     return (value as GeneratedTextOutput | undefined)?.generated_text
 }
 

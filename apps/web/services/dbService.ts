@@ -182,12 +182,15 @@ const openDB = (): Promise<IDBDatabase> => {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
 
         request.onupgradeneeded = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const dbInstance = (event.target as IDBOpenDBRequest).result
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const transaction = (event.target as IDBOpenDBRequest).transaction
             runMigrations(dbInstance, transaction, event.oldVersion)
         }
 
         request.onsuccess = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             db = (event.target as IDBOpenDBRequest).result
             // Handle connection loss (storage pressure, version upgrade from another tab)
             db.onclose = () => {
@@ -204,6 +207,7 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onerror = (event) => {
             dbPromise = null
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const idbError = (event.target as IDBOpenDBRequest).error
             console.debug('[dbService] IndexedDB connection error:', idbError)
             reject(toIndexedDbError(idbError, '[dbService] Failed to open IndexedDB connection.'))
@@ -327,6 +331,7 @@ const isQuotaExceededError = (error: unknown): boolean => {
 
 const stripSimulationDerivedData = (simulationState: SimulationState): SimulationState => {
     const { vpdProfiles: _vp, ...rest } = simulationState
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     return rest as SimulationState
 }
 
@@ -376,6 +381,7 @@ const collectIdsForToken = (
     request.onsuccess = () => {
         const cursor = request.result
         if (cursor) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const value = cursor.value as { ids?: unknown }
             if (Array.isArray(value.ids)) {
                 value.ids.forEach((id) => {
@@ -480,6 +486,7 @@ export const dbService = {
                 const cursor = request.result
                 if (cursor) {
                     if (cursor.value && typeof cursor.value === 'object') {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                         const normalized = createStrainObject(cursor.value as Partial<Strain>)
                         if (!seenIds.has(normalized.id)) {
                             seenIds.add(normalized.id)
@@ -814,6 +821,7 @@ export const dbService = {
             const request = store.getAll()
             transaction.onerror = () => reject(transaction.error)
             request.onsuccess = () => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const all = (request.result as CalculatorHistoryEntry[]).filter(
                     (e) => e.calculatorId === calculatorId,
                 )

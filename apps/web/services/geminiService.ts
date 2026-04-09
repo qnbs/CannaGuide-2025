@@ -458,15 +458,19 @@ class GeminiService implements BaseAIProvider {
         if (typeof value === 'string') {
             // Strip all HTML tags from structured API data to prevent XSS
             // without corrupting angle-bracket content in plain-text fields.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             return DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }) as T
         }
         if (Array.isArray(value)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             return value.map((item) => this.sanitizeValue(item)) as T
         }
         if (value && typeof value === 'object') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const nextEntries = Object.entries(value as Record<string, unknown>).map(
                 ([key, val]) => [key, this.sanitizeValue(val)],
             )
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             return Object.fromEntries(nextEntries) as T
         }
         return value
@@ -521,6 +525,7 @@ class GeminiService implements BaseAIProvider {
         config?: T,
     ): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } {
         return {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             ...(config ?? ({} as T)),
             safetySettings: GEMINI_SAFETY_SETTINGS,
         }
@@ -615,6 +620,7 @@ class GeminiService implements BaseAIProvider {
         type ModelsWithStream = typeof ai.models & {
             generateContentStream?: (options: Record<string, unknown>) => Promise<unknown>
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const streamFn = (ai.models as ModelsWithStream).generateContentStream
 
         if (typeof streamFn !== 'function') {
@@ -623,6 +629,7 @@ class GeminiService implements BaseAIProvider {
         }
 
         type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<{ text?: string }> }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const streamResult = (await streamFn.call(ai.models, {
             model,
             contents,
@@ -683,6 +690,7 @@ class GeminiService implements BaseAIProvider {
                 .replace(/^```(?:json)?\s*\n?/i, '')
                 .replace(/\n?```\s*$/i, '')
                 .trim()
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             parsed = JSON.parse(cleaned) as T
         } catch {
             throw new Error(errorKey)

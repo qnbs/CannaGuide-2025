@@ -57,6 +57,7 @@ const idbGet = async <T>(key: string): Promise<T | null> => {
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readonly')
         const req = tx.objectStore(STORE_NAME).get(key)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         req.onsuccess = () => resolve((req.result as T | undefined) ?? null)
         req.onerror = () => reject(req.error)
         tx.oncomplete = () => db.close()

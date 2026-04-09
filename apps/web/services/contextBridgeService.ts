@@ -122,6 +122,7 @@ class ContextBridge {
             plantId: params.selectedPlant?.id,
             currentStage: params.selectedPlant?.stage,
             currentView: params.currentView,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             currentTab: params.currentTab as KnowledgeViewTab | undefined,
             keywords: extractKeywords(params.selectedPlant, params.activePlants),
             maxResults: 8,

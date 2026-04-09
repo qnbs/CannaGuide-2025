@@ -23,6 +23,7 @@ const GROWTECH_TO_GENETIC: Record<GrowTechCategory, GeneticTrendCategory[]> = Ob
     GENETIC_TO_GROWTECH,
 ).reduce<Record<string, GeneticTrendCategory[]>>((acc, [genetic, techs]) => {
     techs.forEach((tech) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         acc[tech] = [...(acc[tech] ?? []), genetic as GeneticTrendCategory]
     })
     return acc

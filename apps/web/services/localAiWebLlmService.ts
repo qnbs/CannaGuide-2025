@@ -118,6 +118,7 @@ export const loadWebLlmEngine = (): Promise<LocalWebLlmEngine | null> => {
             for (let attempt = 0; attempt <= PRELOAD_RETRIES; attempt++) {
                 try {
                     const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const engine = (await CreateMLCEngine(webLlmId, {
                         initProgressCallback: (report: {
                             progress?: number

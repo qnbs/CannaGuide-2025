@@ -99,6 +99,7 @@ export const getCacheBreakdown = async (): Promise<Record<string, number>> => {
             cursor.onsuccess = () => {
                 const c = cursor.result
                 if (c) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const entry = c.value as CacheEntry
                     breakdown[entry.model] = (breakdown[entry.model] ?? 0) + 1
                     c.continue()

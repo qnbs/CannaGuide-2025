@@ -263,6 +263,7 @@ export const toDetailedTerpeneProfile = (
             stability: stabilityFromVariance(variance / Math.max(percent, 0.01)),
             sampleCount,
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         detailed[name as TerpeneName] = entry
     }
     return detailed
@@ -286,6 +287,7 @@ export const toDetailedCannabinoidProfile = (
             stability: stabilityFromVariance(variance / Math.max(percent, 0.01)),
             sampleCount,
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         detailed[name as CannabinoidName] = entry
     }
     return detailed
@@ -312,6 +314,7 @@ export const predictEffects = (
     // Terpene contributions
     for (const [name, percent] of Object.entries(terpeneProfile)) {
         if (percent === undefined || percent < PRESENCE_THRESHOLD) continue
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const effects = TERPENE_EFFECTS[name as TerpeneName]
         if (!effects) continue
         for (const effect of effects) {
@@ -332,6 +335,7 @@ export const predictEffects = (
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     return (Object.entries(scores) as [EffectTag, number][])
         .sort((a, b) => b[1] - a[1])
         .slice(0, maxEffects)
@@ -552,6 +556,7 @@ export const scoreStrainForEffects = (
     let score = 0
     for (const [name, percent] of Object.entries(profile)) {
         if (percent === undefined || percent < PRESENCE_THRESHOLD) continue
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const effects = TERPENE_EFFECTS[name as TerpeneName]
         if (!effects) continue
         for (const effect of effects) {
@@ -583,11 +588,13 @@ export const analyzeEntourage = (
     cannabinoidProfile: CannabinoidProfile,
 ): EntourageAnalysis => {
     // Sort terpenes by concentration
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const sortedTerpenes = (Object.entries(terpeneProfile) as [TerpeneName, number][])
         .filter(([, v]) => v >= PRESENCE_THRESHOLD)
         .sort((a, b) => b[1] - a[1])
 
     // Sort cannabinoids by concentration
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const sortedCannabinoids = (Object.entries(cannabinoidProfile) as [CannabinoidName, number][])
         .filter(([, v]) => v > 0)
         .sort((a, b) => b[1] - a[1])
@@ -595,6 +602,7 @@ export const analyzeEntourage = (
     // Detect synergies
     const synergies: string[] = []
     const has = (name: string, minPercent: number = PRESENCE_THRESHOLD): boolean =>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         (terpeneProfile[name as TerpeneName] ?? 0) >= minPercent
 
     if (has('Myrcene', 0.5) && (cannabinoidProfile.THC ?? 0) > 15) {

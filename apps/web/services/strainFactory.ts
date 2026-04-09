@@ -141,6 +141,7 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
         safeData.type = StrainType.Hybrid
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const merged = {
         ...defaults,
         ...safeData,

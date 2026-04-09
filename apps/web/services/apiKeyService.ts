@@ -21,6 +21,7 @@ const loadMetadata = (): ApiKeyMetadata | null => {
     try {
         const raw = localStorage.getItem(GEMINI_API_KEY_METADATA_KEY)
         if (!raw) return null
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const parsed = JSON.parse(raw) as ApiKeyMetadata
         if (!parsed || typeof parsed.updatedAt !== 'number') return null
         return parsed

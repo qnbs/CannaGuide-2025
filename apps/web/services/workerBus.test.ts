@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-type-assertion */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // ---------------------------------------------------------------------------

@@ -107,6 +107,7 @@ export const cosineSimilarity = (a: Float32Array, b: Float32Array): number => {
 
 /** Extract the feature embedding from the CLIP pipeline output. */
 const extractFeatures = (raw: unknown): Float32Array => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const output = raw as {
         data?: Float32Array | number[]
         tolist?: () => number[][]
@@ -121,6 +122,7 @@ const extractFeatures = (raw: unknown): Float32Array => {
     if (typeof output.tolist === 'function') {
         const list = output.tolist()
         const first = Array.isArray(list[0]) ? list[0] : list
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return normalize(new Float32Array((first as number[]).slice(0, FEATURE_DIM)))
     }
     return new Float32Array(FEATURE_DIM)

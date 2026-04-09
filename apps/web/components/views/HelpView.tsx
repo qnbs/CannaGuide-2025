@@ -448,9 +448,11 @@ LexiconSection.displayName = 'LexiconSection'
 /* ------------------------------------------------------------------ */
 const ManualSection: React.FC = memo(() => {
     const { t } = useTranslation()
-    const manualContent: Record<string, ManualSectionData> = t('helpView.manual', {
-        returnObjects: true,
-    })
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- i18next returnObjects
+    const manualContent = t('helpView.manual', { returnObjects: true }) as Record<
+        string,
+        ManualSectionData
+    >
 
     const sectionOrder = useMemo(
         () => [
@@ -714,7 +716,11 @@ export const HelpView: React.FC = () => {
                 </span>
             </div>
 
-            <HelpSubNav activeTab={activeTab} onTabChange={setActiveTab} />
+            <HelpSubNav
+                activeTab={activeTab}
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- HelpSubNav uses string
+                onTabChange={(tab) => setActiveTab(tab as HelpTabId)}
+            />
 
             <div className="animate-fade-in" key={`content-${activeTab}`}>
                 {renderContent()}

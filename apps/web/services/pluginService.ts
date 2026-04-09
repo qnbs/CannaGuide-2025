@@ -168,6 +168,7 @@ const loadPlugins = (): void => {
     try {
         const raw = localStorage.getItem(PLUGINS_STORAGE_KEY)
         if (raw) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const parsed = JSON.parse(raw) as InstalledPlugin[]
             if (Array.isArray(parsed)) {
                 plugins = new Map(parsed.map((p) => [p.manifest.id, p]))
@@ -307,6 +308,7 @@ export const pluginService = {
      */
     getNutrientSchedules(): NutrientSchedulePlugin[] {
         return this.listEnabled('nutrient-schedule').map(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             (p) => p.manifest as NutrientSchedulePlugin,
         )
     },
@@ -315,6 +317,7 @@ export const pluginService = {
      * Get all hardware plugins (enabled only).
      */
     getHardwarePlugins(): HardwarePlugin[] {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return this.listEnabled('hardware').map((p) => p.manifest as HardwarePlugin)
     },
 
@@ -322,6 +325,7 @@ export const pluginService = {
      * Get all grow profile plugins (enabled only).
      */
     getGrowProfiles(): GrowProfilePlugin[] {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return this.listEnabled('grow-profile').map((p) => p.manifest as GrowProfilePlugin)
     },
 
@@ -362,6 +366,7 @@ export const pluginService = {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return this.install(parsed as CannaGuidePlugin)
     },
 

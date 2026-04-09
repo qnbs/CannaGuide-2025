@@ -571,6 +571,7 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
         flags.isSilent,
         lang,
     )
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const tentItem = tent[lang as 'en' | 'de'] ?? tent['en']
 
     return {

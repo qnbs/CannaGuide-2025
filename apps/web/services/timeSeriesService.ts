@@ -168,6 +168,7 @@ const openTsDb = (): Promise<IDBDatabase> => {
         const request = indexedDB.open(TS_DB_NAME, TS_DB_VERSION)
 
         request.onupgradeneeded = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const db = (event.target as IDBOpenDBRequest).result
             if (!db.objectStoreNames.contains(TS_STORE)) {
                 const store = db.createObjectStore(TS_STORE, {
@@ -187,6 +188,7 @@ const openTsDb = (): Promise<IDBDatabase> => {
         }
 
         request.onsuccess = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             tsDb = (event.target as IDBOpenDBRequest).result
             tsDb.onclose = () => {
                 tsDb = null
@@ -204,8 +206,10 @@ const openTsDb = (): Promise<IDBDatabase> => {
             tsDbPromise = null
             console.debug(
                 '[timeSeriesService] IndexedDB error:',
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 (event.target as IDBOpenDBRequest).error,
             )
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             reject((event.target as IDBOpenDBRequest).error)
         }
     })
@@ -309,11 +313,13 @@ const readEligibleEntries = async (
 
         const req = index.openCursor(range)
         req.onsuccess = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>).result
             if (!cursor) {
                 resolve(results)
                 return
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             results.push(cursor.value as TimeSeriesEntry)
             cursor.continue()
         }
@@ -413,12 +419,14 @@ export const timeSeriesService = {
 
             const request = index.openCursor(range)
             request.onsuccess = (event) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>).result
                 if (!cursor) {
                     resolve(results)
                     return
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const entry = cursor.value as TimeSeriesEntry
                 if (entry.resolution === resolution) {
                     results.push(entry)
@@ -540,6 +548,7 @@ export const timeSeriesService = {
 
             const req = index.openCursor(range)
             req.onsuccess = (event) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>).result
                 if (!cursor) return
                 cursor.delete()

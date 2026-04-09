@@ -22,6 +22,11 @@
 
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion --
+ * API responses arrive as Record<string, unknown>. The normalizer functions
+ * extract fields with ?? fallbacks, making the casts safe at runtime.
+ * A Zod-based parser is tracked as a future improvement. */
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------

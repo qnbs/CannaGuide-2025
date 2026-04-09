@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react'
+import React, { memo, useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -17,6 +17,18 @@ import { useGetGardenStatusSummaryMutation } from '@/stores/api'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { Speakable } from '@/components/common/Speakable'
+import { useUIStore } from '@/stores/useUIStore'
+
+const QRScannerModal = lazy(() =>
+    import('@/components/common/QRScannerModal').then((m) => ({
+        default: m.QRScannerModal,
+    })),
+)
+const PlantTagGenerator = lazy(() =>
+    import('./PlantTagGenerator').then((m) => ({
+        default: m.PlantTagGenerator,
+    })),
+)
 
 const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = ({
     icon,
@@ -58,6 +70,8 @@ const DashboardSummaryComponent: React.FC = () => {
     ] = useGetGardenStatusSummaryMutation()
 
     const [wateringState, setWateringState] = useState<'idle' | 'pending' | 'success'>('idle')
+    const [isQrScannerOpen, setIsQrScannerOpen] = useState(false)
+    const [showTagGenerator, setShowTagGenerator] = useState(false)
 
     useEffect(() => {
         let timer: ReturnType<typeof setTimeout> | undefined
@@ -108,6 +122,20 @@ const DashboardSummaryComponent: React.FC = () => {
                 )
         }
     }
+
+    const handleQrScan = useCallback(
+        (plantId: string) => {
+            setIsQrScannerOpen(false)
+            const matchedPlant = activePlants.find((p) => p.id === plantId)
+            if (matchedPlant) {
+                useUIStore.getState().addNotification({
+                    message: `${matchedPlant.name}`,
+                    type: 'success',
+                })
+            }
+        },
+        [activePlants],
+    )
 
     const aiErrorMessage = resolveApiErrorMessage(aiError, t('ai.error.unknown'))
 
@@ -225,6 +253,50 @@ const DashboardSummaryComponent: React.FC = () => {
                     {renderWaterButtonContent()}
                 </Button>
             </div>
+
+            <div className="mb-4 grid grid-cols-2 gap-2">
+                <Button
+                    onClick={() => setIsQrScannerOpen(true)}
+                    variant="secondary"
+                    size="sm"
+                    className="w-full"
+                >
+                    <PhosphorIcons.QrCode className="w-4 h-4 mr-1.5" />
+                    {t('plantsView.qrScanner.scanButton', { defaultValue: 'QR Scan' })}
+                </Button>
+                <Button
+                    onClick={() => setShowTagGenerator(!showTagGenerator)}
+                    variant="secondary"
+                    size="sm"
+                    disabled={!hasActiveGrows}
+                    className="w-full"
+                >
+                    <PhosphorIcons.Tag className="w-4 h-4 mr-1.5" />
+                    {t('plantsView.tags.generateButton', { defaultValue: 'Plant Tags' })}
+                </Button>
+            </div>
+
+            {showTagGenerator && hasActiveGrows && (
+                <div className="mb-4">
+                    <Suspense
+                        fallback={
+                            <div className="text-center py-4 text-slate-400 text-sm">...</div>
+                        }
+                    >
+                        <PlantTagGenerator plants={activePlants} />
+                    </Suspense>
+                </div>
+            )}
+
+            <Suspense fallback={null}>
+                {isQrScannerOpen && (
+                    <QRScannerModal
+                        isOpen={isQrScannerOpen}
+                        onClose={() => setIsQrScannerOpen(false)}
+                        onScan={handleQrScan}
+                    />
+                )}
+            </Suspense>
 
             {/* AI Status Section */}
             <div className="stat-tile space-y-3 p-3">{renderAiStatusSection()}</div>

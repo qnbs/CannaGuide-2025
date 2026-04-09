@@ -10,6 +10,9 @@ import { PhotosTab } from './detailedPlantViewTabs/PhotosTab'
 import { AiTab } from './detailedPlantViewTabs/AiTab'
 import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab'
 import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab'
+import { MetricsOverviewTab } from './detailedPlantViewTabs/MetricsOverviewTab'
+import { PhotoTimelineTab } from './detailedPlantViewTabs/PhotoTimelineTab'
+import { GrowPlannerView } from './GrowPlannerView'
 import { useAppDispatch } from '@/stores/store'
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
@@ -126,6 +129,13 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 }),
                 icon: <PhosphorIcons.ChartLineUp />,
             },
+            {
+                id: 'metrics',
+                label: t('plantsView.detailedView.tabs.metrics', {
+                    defaultValue: 'Metrics',
+                }),
+                icon: <PhosphorIcons.Ruler />,
+            },
             ...(isPostHarvest
                 ? [
                       {
@@ -156,6 +166,20 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 id: 'photos',
                 label: t('plantsView.detailedView.tabs.photos'),
                 icon: <PhosphorIcons.Camera />,
+            },
+            {
+                id: 'timeline',
+                label: t('plantsView.detailedView.tabs.timeline', {
+                    defaultValue: 'Timeline',
+                }),
+                icon: <PhosphorIcons.Clock />,
+            },
+            {
+                id: 'planner',
+                label: t('plantsView.detailedView.tabs.planner', {
+                    defaultValue: 'Planner',
+                }),
+                icon: <PhosphorIcons.CalendarBlank />,
             },
             {
                 id: 'ai',
@@ -192,7 +216,8 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 const target = tabs[nextIndex]
                 if (target) {
                     setActiveTab(target.id)
-                    ;(tabListRef.current?.children[nextIndex] as HTMLElement)?.focus()
+                    const child = tabListRef.current?.children[nextIndex]
+                    if (child instanceof HTMLElement) child.focus()
                 }
             }
         }
@@ -353,6 +378,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 {activeTab === 'overview' && <OverviewTab plant={plant} />}
                 {activeTab === 'environment' && <EnvironmentControlPanel plant={plant} />}
                 {activeTab === 'analytics' && <EnvironmentDashboard plantId={plant.id} />}
+                {activeTab === 'metrics' && <MetricsOverviewTab plant={plant} />}
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
                 {activeTab === 'simulation' && <SimulationDebugTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}
@@ -360,6 +386,12 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                     <TasksTab tasks={plant.tasks} onCompleteTask={handleCompleteTask} />
                 )}
                 {activeTab === 'photos' && <PhotosTab journal={plant.journal} />}
+                {activeTab === 'timeline' && (
+                    <PhotoTimelineTab journal={plant.journal} plantName={plant.name} />
+                )}
+                {activeTab === 'planner' && (
+                    <GrowPlannerView plantId={plant.id} plantName={plant.name} />
+                )}
                 {activeTab === 'ai' && <AiTab plant={plant} />}
             </div>
         </div>

@@ -17,6 +17,9 @@ import nutrientPlannerReducer from './slices/nutrientPlannerSlice'
 import workerMetricsReducer from './slices/workerMetricsSlice'
 import hydroReducer from './slices/hydroSlice'
 import growsReducer from './slices/growsSlice'
+import metricsReducer from './slices/metricsSlice'
+import growPlannerReducer from './slices/growPlannerSlice'
+import diagnosisHistoryReducer from './slices/diagnosisHistorySlice'
 import { geminiApi } from './api'
 import {
     listenerMiddleware,
@@ -46,6 +49,9 @@ const rootReducer = combineReducers({
     nutrientPlanner: nutrientPlannerReducer,
     hydro: hydroReducer,
     grows: growsReducer,
+    metrics: metricsReducer,
+    growPlanner: growPlannerReducer,
+    diagnosisHistory: diagnosisHistoryReducer,
     // Runtime-only -- excluded from stateToSave in indexedDBStorage
     workerMetrics: workerMetricsReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,

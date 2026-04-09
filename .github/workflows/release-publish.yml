@@ -49,11 +49,15 @@ jobs:
             - name: Resolve tag name
               id: tag
               shell: bash
+              env:
+                  EVENT_NAME: ${{ github.event_name }}
+                  INPUT_TAG: ${{ github.event.inputs.tag }}
+                  WR_BRANCH: ${{ github.event.workflow_run.head_branch }}
               run: |
-                  if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-                    TAG="${{ github.event.inputs.tag }}"
+                  if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+                    TAG="${INPUT_TAG}"
                   else
-                    TAG="${{ github.event.workflow_run.head_branch }}"
+                    TAG="${WR_BRANCH}"
                   fi
                   # Strip refs/tags/ prefix if present
                   TAG="${TAG#refs/tags/}"
@@ -71,8 +75,10 @@ jobs:
             - name: Create release tarball
               id: tarball
               shell: bash
+              env:
+                  RELEASE_TAG: ${{ steps.tag.outputs.name }}
               run: |
-                  TARBALL="cannaguide-${{ steps.tag.outputs.name }}-dist.tar.gz"
+                  TARBALL="cannaguide-${RELEASE_TAG}-dist.tar.gz"
                   tar -czf "${TARBALL}" -C apps/web/dist .
                   SHA256=$(sha256sum "${TARBALL}" | cut -d ' ' -f 1)
                   echo "path=${TARBALL}" >> "$GITHUB_OUTPUT"
@@ -87,11 +93,11 @@ jobs:
             - name: Create GitHub Release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAG: ${{ steps.tag.outputs.name }}
+                  TARBALL: ${{ steps.tarball.outputs.path }}
+                  SHA256: ${{ steps.tarball.outputs.sha256 }}
               shell: bash
               run: |
-                  TAG="${{ steps.tag.outputs.name }}"
-                  TARBALL="${{ steps.tarball.outputs.path }}"
-                  SHA256="${{ steps.tarball.outputs.sha256 }}"
 
                   NOTES="## CannaGuide ${TAG}
 

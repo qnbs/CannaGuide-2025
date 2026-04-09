@@ -88,8 +88,9 @@ for (const viewport of MOBILE_VIEWPORTS) {
             // Open command palette via header button (keyboard shortcut unreliable on mobile emulation)
             const openBtn = page.locator('button[aria-label*="ommand"]')
             await openBtn.click()
-            const dialog = page.locator('[cmdk-dialog]')
-            await expect(dialog).toBeVisible({ timeout: 10_000 })
+            // cmdk library sets visibility:hidden on [cmdk-dialog]; check DOM presence instead
+            const dialog = page.locator('[cmdk-dialog][data-state="open"]')
+            await expect(dialog).toHaveCount(1, { timeout: 10_000 })
 
             const overflows = await page.evaluate(() => {
                 const vw = document.documentElement.clientWidth

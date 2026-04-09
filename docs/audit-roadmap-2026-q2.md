@@ -5,8 +5,9 @@
 > Dedizierte Roadmap zur Umsetzung aller Maßnahmen aus dem **Full-Scale Deep Audit, Critical Evaluation & Action-Plan** (Stand: 23. März 2026, Commit `473044d`).
 > Dieses Dokument ist der zentrale Übergabe- und Anknüpfungspunkt für alle zukünftigen Sessions.
 
-**Letzte Aktualisierung:** 2026-04-06
+**Letzte Aktualisierung:** 2026-04-09
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
+**Aktuell:** v1.6.0 | 1884 Tests (163 Dateien) | SLSA L1 Provenance | CI gruen | 0 Security Alerts
 
 ---
 
@@ -30,18 +31,18 @@
 
 ## Gesamtübersicht & Zielzustand
 
-### Ist-Zustand (2026-04-07)
+### Ist-Zustand (2026-04-09)
 
-| Metrik            | Wert                    | Bewertung           |
-| ----------------- | ----------------------- | ------------------- |
-| App-Version       | v1.4.1                  | ✅ Stabil           |
-| Tests             | 1663/1663 (149 Dateien) | ✅ Grün             |
-| OpenSSF Scorecard | 8.5/10                  | ⚠ Ziel: 10/10       |
-| Test-Coverage     | ~22-28 %                | ⚠ Ziel: >30 %       |
-| Duplicate Code    | ~115 Major-Bloecke      | ⚠ Technische Schuld |
-| Security Alerts   | 0                       | ✅                  |
-| CI Workflows      | 21 (alle gruen)         | ✅                  |
-| Stryker Mutation  | Baseline erstellt       | ✅ Neu (Session 63) |
+| Metrik            | Wert                    | Bewertung              |
+| ----------------- | ----------------------- | ---------------------- |
+| App-Version       | v1.6.0                  | ✅ Stabil              |
+| Tests             | 1884/1884 (163 Dateien) | ✅ Gruen               |
+| OpenSSF Scorecard | SLSA L1 Provenance      | ✅ release-publish     |
+| Test-Coverage     | ~33.66 %                | ✅ Ziel >30 % erreicht |
+| Duplicate Code    | ~115 Major-Bloecke      | ⚠ Technische Schuld    |
+| Security Alerts   | 0                       | ✅                     |
+| CI Workflows      | 22 (alle gruen)         | ✅                     |
+| Stryker Mutation  | Baseline erstellt       | ✅ Neu (Session 63)    |
 
 ### Soll-Zustand (nach vollständiger Roadmap)
 

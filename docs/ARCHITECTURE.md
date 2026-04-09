@@ -60,7 +60,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     useAlertsStore.ts     Zustand store for proactive smart coach alerts
     selectors.ts          Memoized selectors (map-based cache by ID)
     listenerMiddleware.ts Side effects: i18n sync, persistence triggers
-    slices/               15 Redux slices (simulation, settings, strains, workerMetrics, hydro, grows, etc.)
+    slices/               18 Redux slices (simulation, settings, strains, workerMetrics, hydro, grows, etc.)
     indexedDBStorage.ts   CannaGuideStateDB adapter
 
   services/

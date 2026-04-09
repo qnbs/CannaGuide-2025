@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+---
+
+## [1.6.1] - 2026-04-09
+
 ### Fixed
 
 - **i18n(settings):** corrected 13 `t()` key paths in

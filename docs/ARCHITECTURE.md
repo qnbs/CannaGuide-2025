@@ -231,8 +231,12 @@ Multi-device conflict resolution uses [Yjs](https://github.com/yjs/yjs) CRDTs wi
 
 **Bidirectional bridge:**
 
-- Redux -> CRDT: listener middleware intercepts plant/nutrient actions, writes to Y.Doc (skipped when `action.meta.fromCrdt === true`)
+- Redux -> CRDT: listener middleware intercepts plant/nutrient actions, enqueues writes via 100ms batch debounce, flushed as a single `doc.transact()` (skipped when `action.meta.fromCrdt === true`)
 - CRDT -> Redux: Y.Map observers dispatch `upsertPlant`/`removePlant` with `{ meta: { fromCrdt: true } }` (skipped when transaction origin is `'redux-bridge'`)
+
+**Differential encoding:** `encodeSyncPayload()` uses the stored remote state vector (captured after each pull) to produce delta-only updates. Falls back to full-state encoding when no remote state vector is available (first sync or after `forceLocalToGist`).
+
+**CRDT telemetry:** `reportCrdtTelemetry()` accumulates divergence count, sync payload bytes, conflicts resolved, and last sync duration. Metrics are pushed fire-and-forget to WorkerBus W-03 via `setCrdtMetrics()` and included in `exportTelemetry()`.
 
 **Failure isolation:** CRDT failure does not crash the app. All initialization and observation is `try/catch` wrapped. See [ADR-0004](adr/0004-crdt-yjs-offline-sync.md).
 

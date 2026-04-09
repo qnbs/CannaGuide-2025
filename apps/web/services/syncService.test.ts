@@ -45,6 +45,7 @@ vi.mock('@/services/crdtService', () => ({
         isFallbackMode: () => isFallbackModeMock(),
         getDoc: () => getDocMock(),
         applyUpdate: (u: Uint8Array) => applyUpdateMock(u),
+        setRemoteStateVector: vi.fn(),
     },
     base64ToUint8Array: (b64: string) => {
         const bin = atob(b64)
@@ -56,6 +57,14 @@ vi.mock('@/services/crdtService', () => ({
 
 vi.mock('@sentry/react', () => ({
     addBreadcrumb: vi.fn(),
+}))
+
+vi.mock('@/services/crdtSyncBridge', () => ({
+    reportCrdtTelemetry: vi.fn(),
+}))
+
+vi.mock('yjs', () => ({
+    encodeStateVector: vi.fn(() => new Uint8Array([0])),
 }))
 
 const loadService = async () => (await import('./syncService')).syncService

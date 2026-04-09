@@ -73,6 +73,10 @@ const {
     destroyCrdtSyncBridge,
     _getLoopDetectorState,
     _resetLoopDetector,
+    _flushBridgeBatch,
+    _getBatchQueueLength,
+    _getCrdtTelemetryState,
+    _resetCrdtTelemetry,
 } = await import('./crdtSyncBridge')
 const { startAppListening } = await import('@/stores/listenerMiddleware')
 const { listenerMiddleware } = await import('@/stores/listenerMiddleware')
@@ -198,6 +202,7 @@ describe('crdtSyncBridge', () => {
     beforeEach(() => {
         // Reset loop detector state
         _resetLoopDetector()
+        _resetCrdtTelemetry()
 
         // Clear Y.Doc between tests
         const plantsMap = testDoc.getMap('plants')
@@ -223,6 +228,7 @@ describe('crdtSyncBridge', () => {
         it('addPlant writes to Y.Map', () => {
             const plant = makePlant()
             store.dispatch(addPlant({ plant, slotIndex: 0 }))
+            _flushBridgeBatch()
 
             const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
             expect(plantsMap.has('plant-1')).toBe(true)
@@ -233,6 +239,7 @@ describe('crdtSyncBridge', () => {
         it('upsertPlant (non-CRDT) writes to Y.Map', () => {
             const plant = makePlant('plant-upsert')
             store.dispatch(upsertPlant(plant))
+            _flushBridgeBatch()
 
             const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
             expect(plantsMap.has('plant-upsert')).toBe(true)
@@ -242,12 +249,14 @@ describe('crdtSyncBridge', () => {
             // First add a plant
             const plant = makePlant('plant-remove')
             store.dispatch(addPlant({ plant, slotIndex: 0 }))
+            _flushBridgeBatch()
             expect((testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>).has('plant-remove')).toBe(
                 true,
             )
 
             // Then remove it
             store.dispatch(removePlant('plant-remove'))
+            _flushBridgeBatch()
             expect((testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>).has('plant-remove')).toBe(
                 false,
             )
@@ -281,6 +290,7 @@ describe('crdtSyncBridge', () => {
             // First add via Redux so it exists
             const plant = makePlant('to-delete-remote')
             store.dispatch(addPlant({ plant, slotIndex: 1 }))
+            _flushBridgeBatch()
             expect(store.getState().simulation.plants.entities['to-delete-remote']).toBeDefined()
 
             // Simulate remote deletion
@@ -324,6 +334,7 @@ describe('crdtSyncBridge', () => {
 
             const plant = makePlant('crdt-origin-plant')
             store.dispatch(upsertPlant(plant, { fromCrdt: true }))
+            _flushBridgeBatch()
 
             // The plant should be in Redux
             expect(store.getState().simulation.plants.entities['crdt-origin-plant']).toBeDefined()
@@ -346,6 +357,7 @@ describe('crdtSyncBridge', () => {
 
             // Now dispatch removePlant with fromCrdt=true
             store.dispatch(removePlant('crdt-remove-test', { fromCrdt: true }))
+            _flushBridgeBatch()
 
             // Plant should be removed from Redux
             expect(store.getState().simulation.plants.entities['crdt-remove-test']).toBeUndefined()
@@ -444,17 +456,20 @@ describe('crdtSyncBridge', () => {
         it('updatePlant syncs changed fields to existing Y.Map entry', () => {
             const plant = makePlant('plant-update')
             store.dispatch(addPlant({ plant, slotIndex: 0 }))
+            _flushBridgeBatch()
 
             const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
             expect(plantsMap.get('plant-update')!.get('name')).toBe('Test Plant plant-update')
 
             store.dispatch(updatePlant({ id: 'plant-update', changes: { name: 'Renamed Plant' } }))
+            _flushBridgeBatch()
             expect(plantsMap.get('plant-update')!.get('name')).toBe('Renamed Plant')
         })
 
         it('updatePlant serialises object changes as JSON', () => {
             const plant = makePlant('plant-obj')
             store.dispatch(addPlant({ plant, slotIndex: 0 }))
+            _flushBridgeBatch()
 
             store.dispatch(
                 updatePlant({
@@ -462,6 +477,7 @@ describe('crdtSyncBridge', () => {
                     changes: { nutrientPool: { nitrogen: 99, phosphorus: 88, potassium: 77 } },
                 }),
             )
+            _flushBridgeBatch()
 
             const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
             const raw = plantsMap.get('plant-obj')!.get('nutrientPool')
@@ -487,6 +503,7 @@ describe('crdtSyncBridge', () => {
         it('syncs journal array to CRDT after addJournalEntry', () => {
             const plant = makePlant('plant-journal')
             store.dispatch(addPlant({ plant, slotIndex: 0 }))
+            _flushBridgeBatch()
 
             store.dispatch(
                 addJournalEntry({
@@ -497,6 +514,7 @@ describe('crdtSyncBridge', () => {
                     },
                 }),
             )
+            _flushBridgeBatch()
 
             const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
             const journalRaw = plantsMap.get('plant-journal')!.get('journal')
@@ -529,6 +547,7 @@ describe('crdtSyncBridge', () => {
             // Dispatch updateScheduleEntry
             store.dispatch(upsertScheduleEntry(entry))
             store.dispatch(updateScheduleEntry({ id: 'sched-update', changes: { targetEc: 2.0 } }))
+            _flushBridgeBatch()
 
             // The CRDT map should have the updated schedule entry
             const updatedYMap = scheduleMap.get('sched-update')
@@ -539,12 +558,14 @@ describe('crdtSyncBridge', () => {
             const entry = makeScheduleEntry('sched-remove')
             // Add entry to Redux store first
             store.dispatch(upsertScheduleEntry(entry))
+            _flushBridgeBatch()
 
             const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
             expect(scheduleMap.has('sched-remove')).toBe(true)
 
             // Remove it
             store.dispatch(removeScheduleEntry('sched-remove'))
+            _flushBridgeBatch()
             expect(scheduleMap.has('sched-remove')).toBe(false)
         })
 
@@ -553,6 +574,7 @@ describe('crdtSyncBridge', () => {
             const scheduleMap = testDoc.getMap('nutrient-schedule') as Y.Map<Y.Map<unknown>>
 
             store.dispatch(upsertScheduleEntry(entry, { fromCrdt: true }))
+            _flushBridgeBatch()
 
             // Should be in Redux but NOT in CRDT (bridge skipped due to fromCrdt)
             const state = store.getState()
@@ -575,6 +597,7 @@ describe('crdtSyncBridge', () => {
                     notes: '',
                 }),
             )
+            _flushBridgeBatch()
 
             const readingsMap = testDoc.getMap('nutrient-readings') as Y.Map<Y.Map<unknown>>
             // addReading generates id in reducer, so we check the map has at least one entry
@@ -589,6 +612,7 @@ describe('crdtSyncBridge', () => {
             const entry = makeScheduleEntry('sched-remote-del')
             // Add via Redux first
             store.dispatch(upsertScheduleEntry(entry))
+            _flushBridgeBatch()
             expect(
                 store.getState().nutrientPlanner.schedule.find((e) => e.id === 'sched-remote-del'),
             ).toBeDefined()
@@ -722,6 +746,84 @@ describe('crdtSyncBridge', () => {
             destroyCrdtSyncBridge()
             destroyCrdtSyncBridge()
             // should not throw on double-destroy
+        })
+    })
+
+    // -- Batch debounce -------------------------------------------------------
+
+    describe('bridge batching', () => {
+        it('dispatches are queued and not written until flush', () => {
+            _flushBridgeBatch() // clear any pending from setup
+
+            const plant = makePlant('batch-test')
+            store.dispatch(addPlant({ plant, slotIndex: 0 }))
+
+            // Before flush: queue should have entries, Y.Doc should NOT
+            expect(_getBatchQueueLength()).toBeGreaterThan(0)
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+            expect(plantsMap.has('batch-test')).toBe(false)
+
+            // After flush: queue empty, Y.Doc has the plant
+            _flushBridgeBatch()
+            expect(_getBatchQueueLength()).toBe(0)
+            expect(plantsMap.has('batch-test')).toBe(true)
+        })
+
+        it('multiple dispatches are flushed in a single transaction', () => {
+            _flushBridgeBatch() // clear any pending from setup
+
+            const transactSpy = vi.spyOn(testDoc, 'transact')
+            const countBefore = transactSpy.mock.calls.length
+
+            const plant1 = makePlant('batch-a')
+            const plant2 = makePlant('batch-b')
+            store.dispatch(addPlant({ plant: plant1, slotIndex: 0 }))
+            store.dispatch(addPlant({ plant: plant2, slotIndex: 1 }))
+
+            // Queue should have entries from both dispatches
+            expect(_getBatchQueueLength()).toBeGreaterThan(0)
+
+            _flushBridgeBatch()
+
+            // Only one transact() call should have been made for the flush
+            const transactCalls = transactSpy.mock.calls.slice(countBefore)
+            expect(transactCalls).toHaveLength(1)
+
+            const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
+            expect(plantsMap.has('batch-a')).toBe(true)
+            expect(plantsMap.has('batch-b')).toBe(true)
+
+            transactSpy.mockRestore()
+        })
+
+        it('fromCrdt actions are not enqueued', () => {
+            _flushBridgeBatch() // clear any pending from setup
+            const queueBefore = _getBatchQueueLength()
+
+            const plant = makePlant('batch-skip')
+            store.dispatch(upsertPlant(plant, { fromCrdt: true }))
+
+            // Queue should not grow -- fromCrdt check prevents enqueue
+            expect(_getBatchQueueLength()).toBe(queueBefore)
+        })
+    })
+
+    // -- CRDT telemetry accumulator -------------------------------------------
+
+    describe('CRDT telemetry', () => {
+        it('starts with zeroed telemetry state', () => {
+            _resetCrdtTelemetry()
+            const state = _getCrdtTelemetryState()
+            expect(state.divergenceCount).toBe(0)
+            expect(state.syncPayloadBytes).toBe(0)
+            expect(state.conflictsResolved).toBe(0)
+            expect(state.lastSyncMs).toBe(0)
+        })
+
+        it('resets telemetry cleanly', () => {
+            _resetCrdtTelemetry()
+            const state = _getCrdtTelemetryState()
+            expect(state.divergenceCount).toBe(0)
         })
     })
 })

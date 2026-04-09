@@ -146,14 +146,13 @@ export interface HydroForecastMessages {
 
 /**
  * Map from registered worker name to its typed message definitions.
- * Workers not listed here are still callable -- they fall back to
- * `{ [type: string]: { payload: unknown; response: unknown } }`.
+ * Workers not listed here are still callable via the generic `dispatch`
+ * overload -- they fall back to `unknown` payload/response.
  */
 export interface WorkerMessageMap {
     simulation: SimulationMessages
     visionInference: VisionInferenceMessages
     hydroForecast: HydroForecastMessages
-    [workerName: string]: { [type: string]: { payload: unknown; response: unknown } }
 }
 
 /**

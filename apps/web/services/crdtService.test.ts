@@ -159,4 +159,74 @@ describe('crdtService', () => {
         await crdtService.initialize()
         expect(crdtService.isInitialized()).toBe(true)
     })
+
+    // -- Differential encoding ------------------------------------------------
+
+    describe('differential encoding', () => {
+        it('encodeSyncPayload produces full state when no remoteStateVector set', async () => {
+            await crdtService.initialize()
+            const plantsMap = crdtService.getPlantsMap()
+            const Y = await import('yjs')
+            const yMap = new Y.Map<unknown>()
+            yMap.set('name', 'Plant A')
+            plantsMap.set('p-diff-1', yMap as never)
+
+            // No remoteStateVector => full state
+            expect(crdtService.getRemoteStateVector()).toBeNull()
+            const fullPayload = crdtService.encodeSyncPayload()
+            expect(fullPayload.length).toBeGreaterThan(0)
+        })
+
+        it('differential payload is smaller than or equal to full payload', async () => {
+            await crdtService.initialize()
+            const plantsMap = crdtService.getPlantsMap()
+            const Y = await import('yjs')
+
+            // Add initial data
+            const yMap1 = new Y.Map<unknown>()
+            yMap1.set('name', 'Plant Base')
+            plantsMap.set('p-base', yMap1 as never)
+
+            // Capture state vector after initial data
+            const sv = Y.encodeStateVector(crdtService.getDoc())
+            crdtService.setRemoteStateVector(sv)
+
+            // Add a small change
+            const yMap2 = new Y.Map<unknown>()
+            yMap2.set('name', 'Plant New')
+            plantsMap.set('p-new', yMap2 as never)
+
+            // Differential encode (only the new change)
+            const diffPayload = crdtService.encodeSyncPayload()
+
+            // Differential should be smaller than or equal to a fresh full encode
+            const freshFull = crdtService.encodeFullSyncPayload()
+            expect(diffPayload.length).toBeLessThanOrEqual(freshFull.length)
+        })
+
+        it('setRemoteStateVector / getRemoteStateVector round-trips', async () => {
+            await crdtService.initialize()
+            expect(crdtService.getRemoteStateVector()).toBeNull()
+
+            const Y = await import('yjs')
+            const sv = Y.encodeStateVector(crdtService.getDoc())
+            crdtService.setRemoteStateVector(sv)
+            expect(crdtService.getRemoteStateVector()).toEqual(sv)
+
+            crdtService.setRemoteStateVector(null)
+            expect(crdtService.getRemoteStateVector()).toBeNull()
+        })
+
+        it('destroy resets remoteStateVector to null', async () => {
+            await crdtService.initialize()
+            const Y = await import('yjs')
+            crdtService.setRemoteStateVector(Y.encodeStateVector(crdtService.getDoc()))
+            expect(crdtService.getRemoteStateVector()).not.toBeNull()
+
+            await crdtService.destroy()
+            // After re-init, should be null
+            await crdtService.initialize()
+            expect(crdtService.getRemoteStateVector()).toBeNull()
+        })
+    })
 })

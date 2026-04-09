@@ -7,6 +7,8 @@ import {
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { crdtService, base64ToUint8Array } from '@/services/crdtService'
 import type { CrdtSyncResult, DivergenceInfo } from '@/services/crdtService'
+import { reportCrdtTelemetry } from '@/services/crdtSyncBridge'
+import * as Y from 'yjs'
 import * as Sentry from '@sentry/react'
 
 const SYNC_FILE_NAME = 'cannaguide-sync.json'
@@ -137,6 +139,13 @@ class SyncService {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gist = (await response.json()) as GistResponse
         logSyncDecision('push', { gistId: gist.id, format: CRDT_FORMAT_VERSION })
+
+        // CRDT telemetry: track payload size
+        reportCrdtTelemetry({
+            syncPayloadBytes: fileContent.length,
+            lastSyncMs: Date.now(),
+        })
+
         return { gistId: gist.id, url: gist.html_url, syncedAt }
     }
 
@@ -219,10 +228,30 @@ class SyncService {
             // Apply CRDT merge (always lossless)
             crdtService.applySyncPayload(parsed.payload)
 
+            // Store remote state vector for differential encoding on next push
+            crdtService.setRemoteStateVector(
+                 
+                Y.encodeStateVector(crdtService.getDoc()),
+            )
+
             logSyncDecision('pull-crdt', {
                 localOnly: divergenceInfo.localOnlyChanges,
                 remoteOnly: divergenceInfo.remoteOnlyChanges,
                 conflicting: divergenceInfo.conflictingKeys.length,
+            })
+
+            // CRDT telemetry: track divergence and conflicts
+            reportCrdtTelemetry({
+                syncPayloadBytes: remoteUpdate.byteLength,
+                lastSyncMs: Date.now(),
+                divergenceCount:
+                    divergenceInfo.localOnlyChanges > 0 || divergenceInfo.remoteOnlyChanges > 0
+                        ? 1
+                        : 0,
+                conflictsResolved:
+                    divergenceInfo.conflictingKeys.length > 0
+                        ? divergenceInfo.conflictingKeys.length
+                        : 0,
             })
 
             if (divergenceInfo.localOnlyChanges === 0 && divergenceInfo.remoteOnlyChanges === 0) {
@@ -258,12 +287,15 @@ class SyncService {
     /**
      * Force push local CRDT state to Gist (for "Keep Local" resolution).
      * Overwrites whatever is in the Gist with the current local Y.Doc state.
+     * Always sends full state (not differential) to ensure completeness.
      */
     public async forceLocalToGist(
         existingGistId: string,
         encryptionKeyBase64: string | null = null,
     ): Promise<{ syncedAt: number }> {
         logSyncDecision('resolve-keep-local', { gistId: existingGistId })
+        // Reset remote state vector to force full-state encoding
+        crdtService.setRemoteStateVector(null)
         const result = await this.pushToGist(existingGistId, encryptionKeyBase64)
         return { syncedAt: result.syncedAt }
     }

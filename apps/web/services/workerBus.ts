@@ -159,6 +159,20 @@ export interface WorkerTelemetrySnapshot extends WorkerBusMetrics {
 export interface WorkerBusTelemetryExport {
     timestamp: number
     workers: Record<string, WorkerTelemetrySnapshot>
+    /** CRDT sync metrics (populated by crdtSyncBridge when available). */
+    crdtMetrics?: CrdtTelemetryMetrics | undefined
+}
+
+/** CRDT-specific telemetry integrated into W-03 export. */
+export interface CrdtTelemetryMetrics {
+    /** Number of divergence events detected since last reset. */
+    divergenceCount: number
+    /** Total bytes of sync payloads sent (cumulative). */
+    syncPayloadBytes: number
+    /** Number of conflicts auto-resolved via CRDT merge. */
+    conflictsResolved: number
+    /** Timestamp (ms) of last successful sync operation. */
+    lastSyncMs: number
 }
 
 // ---------------------------------------------------------------------------
@@ -276,8 +290,30 @@ class WorkerBusImpl {
     private readonly dispatchHooks: Array<(event: DispatchCompleteEvent) => void> = []
     /** W-04: Active cross-worker MessageChannel instances keyed by sorted pair. */
     private readonly channels = new Map<string, MessageChannel>()
+    /** CRDT telemetry metrics (fire-and-forget updates from crdtSyncBridge). */
+    private crdtMetricsSnapshot: CrdtTelemetryMetrics | undefined
     private defaultTimeoutMs = DEFAULT_TIMEOUT_MS
     private disposed = false
+
+    // -------------------------------------------------------------------
+    // CRDT Telemetry integration (fire-and-forget from bridge)
+    // -------------------------------------------------------------------
+
+    /**
+     * Update the CRDT telemetry metrics snapshot.
+     * Called by crdtSyncBridge after each sync operation.
+     * Must not block the sync path -- fire-and-forget only.
+     */
+    setCrdtMetrics(metrics: CrdtTelemetryMetrics): void {
+        this.crdtMetricsSnapshot = metrics
+    }
+
+    /**
+     * Read the current CRDT telemetry snapshot (if available).
+     */
+    getCrdtMetrics(): CrdtTelemetryMetrics | undefined {
+        return this.crdtMetricsSnapshot
+    }
 
     // -------------------------------------------------------------------
     // W-01: Per-worker rate limiting
@@ -346,7 +382,7 @@ class WorkerBusImpl {
                 lastErrorAt: tel.lastErrorAt > 0 ? tel.lastErrorAt : undefined,
             }
         }
-        return { timestamp: Date.now(), workers }
+        return { timestamp: Date.now(), workers, crdtMetrics: this.crdtMetricsSnapshot }
     }
 
     /**
@@ -740,7 +776,7 @@ class WorkerBusImpl {
     getChannels(): Array<[string, string]> {
         return [...this.channels.keys()].map((key) => {
             const parts = key.split('::')
-             
+
             return [parts[0] ?? '', parts[1] ?? ''] as [string, string]
         })
     }

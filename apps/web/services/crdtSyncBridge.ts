@@ -39,6 +39,56 @@ const BRIDGE_ORIGIN = 'redux-bridge'
 type AppStartListening = TypedStartListening<RootState, AppDispatch>
 
 // ---------------------------------------------------------------------------
+// CRDT Telemetry accumulator (fire-and-forget into WorkerBus W-03)
+// ---------------------------------------------------------------------------
+
+interface CrdtTelemetryState {
+    divergenceCount: number
+    syncPayloadBytes: number
+    conflictsResolved: number
+    lastSyncMs: number
+}
+
+const crdtTelemetry: CrdtTelemetryState = {
+    divergenceCount: 0,
+    syncPayloadBytes: 0,
+    conflictsResolved: 0,
+    lastSyncMs: 0,
+}
+
+/**
+ * Record a sync event in the CRDT telemetry accumulator and
+ * push the snapshot to WorkerBus (async import to avoid circular deps).
+ */
+export function reportCrdtTelemetry(update: Partial<CrdtTelemetryState>): void {
+    if (update.divergenceCount !== undefined)
+        crdtTelemetry.divergenceCount += update.divergenceCount
+    if (update.syncPayloadBytes !== undefined)
+        crdtTelemetry.syncPayloadBytes += update.syncPayloadBytes
+    if (update.conflictsResolved !== undefined)
+        crdtTelemetry.conflictsResolved += update.conflictsResolved
+    if (update.lastSyncMs !== undefined) crdtTelemetry.lastSyncMs = update.lastSyncMs
+
+    // Fire-and-forget push to WorkerBus telemetry
+    void import('./workerBus').then(({ workerBus }) => {
+        workerBus.setCrdtMetrics({ ...crdtTelemetry })
+    })
+}
+
+/** Read the current CRDT telemetry state (for testing). */
+export function _getCrdtTelemetryState(): CrdtTelemetryState {
+    return { ...crdtTelemetry }
+}
+
+/** Reset CRDT telemetry (for testing). */
+export function _resetCrdtTelemetry(): void {
+    crdtTelemetry.divergenceCount = 0
+    crdtTelemetry.syncPayloadBytes = 0
+    crdtTelemetry.conflictsResolved = 0
+    crdtTelemetry.lastSyncMs = 0
+}
+
+// ---------------------------------------------------------------------------
 // Bridge loop detector (safety circuit breaker)
 // ---------------------------------------------------------------------------
 
@@ -110,6 +160,77 @@ type ObserverCleanup = () => void
 const observerCleanups: ObserverCleanup[] = []
 
 // ---------------------------------------------------------------------------
+// Bridge batching: 100ms debounce for Redux -> Y.Doc writes
+// ---------------------------------------------------------------------------
+
+const BATCH_DEBOUNCE_MS = 100
+
+/** Queued write operations to be flushed in a single Y.Doc transaction. */
+const batchQueue: Array<() => void> = []
+let batchTimer: ReturnType<typeof setTimeout> | null = null
+
+/**
+ * Queue a Y.Doc write operation. All queued operations are flushed
+ * together in a single Y.Doc.transact() after BATCH_DEBOUNCE_MS of
+ * quiet time. This reduces Yjs update events from hundreds per second
+ * (during AI spikes or multi-grow bulk edits) to one batched update.
+ *
+ * The fromCrdt check MUST happen before calling this -- only non-CRDT
+ * actions should be queued.
+ */
+function enqueueBridgeWrite(op: () => void): void {
+    batchQueue.push(op)
+
+    if (batchTimer !== null) {
+        clearTimeout(batchTimer)
+    }
+
+    batchTimer = setTimeout(() => {
+        flushBridgeBatch()
+    }, BATCH_DEBOUNCE_MS)
+}
+
+/**
+ * Flush all queued bridge writes as a single Y.Doc transaction.
+ */
+function flushBridgeBatch(): void {
+    batchTimer = null
+    if (batchQueue.length === 0) return
+
+    const ops = batchQueue.splice(0)
+
+    if (!crdtService.isInitialized()) return
+
+    try {
+        const doc = crdtService.getDoc()
+        doc.transact(() => {
+            for (const op of ops) {
+                try {
+                    op()
+                } catch (error) {
+                    console.error('[CrdtBridge] Batched write failed:', error)
+                }
+            }
+        }, BRIDGE_ORIGIN)
+    } catch (error) {
+        console.error('[CrdtBridge] Batch transaction failed:', error)
+    }
+}
+
+/** Test-only: force-flush the pending batch immediately. */
+export function _flushBridgeBatch(): void {
+    if (batchTimer !== null) {
+        clearTimeout(batchTimer)
+    }
+    flushBridgeBatch()
+}
+
+/** Test-only: get current batch queue length. */
+export function _getBatchQueueLength(): number {
+    return batchQueue.length
+}
+
+// ---------------------------------------------------------------------------
 // Helper: write a plain record into a Y.Map
 // ---------------------------------------------------------------------------
 
@@ -134,8 +255,6 @@ function writeRecordToYMap(yMap: Y.Map<unknown>, record: Record<string, unknown>
 export function registerCrdtListeners(startAppListening: AppStartListening): void {
     if (!crdtService.isInitialized()) return
 
-    const doc = crdtService.getDoc()
-
     // -- Plant actions --------------------------------------------------------
 
     startAppListening({
@@ -143,12 +262,12 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
         effect: (action) => {
             try {
                 const plant = action.payload.plant
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const plantsMap = crdtService.getPlantsMap()
                     const yMap = new Y.Map<unknown>()
                     writeRecordToYMap(yMap, plantToYMap(plant))
                     plantsMap.set(plant.id, yMap as Y.Map<unknown>)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync addPlant to CRDT:', error)
             }
@@ -160,7 +279,7 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
         effect: (action) => {
             try {
                 const { id, changes } = action.payload
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const plantsMap = crdtService.getPlantsMap()
                     const existing = plantsMap.get(id)
                     if (!existing) return
@@ -174,7 +293,7 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
                             existing.set(key, value)
                         }
                     }
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync updatePlant to CRDT:', error)
             }
@@ -189,12 +308,12 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
             try {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const plant = action.payload as Plant
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const plantsMap = crdtService.getPlantsMap()
                     const yMap = new Y.Map<unknown>()
                     writeRecordToYMap(yMap, plantToYMap(plant))
                     plantsMap.set(plant.id, yMap as Y.Map<unknown>)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync upsertPlant to CRDT:', error)
             }
@@ -209,9 +328,9 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
             try {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const plantId = action.payload as string
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     crdtService.getPlantsMap().delete(plantId)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync removePlant to CRDT:', error)
             }
@@ -226,13 +345,13 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
                 const state = listenerApi.getState() as RootState
                 const plant = state.simulation.plants.entities[plantId]
                 if (!plant) return
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const plantsMap = crdtService.getPlantsMap()
                     const existing = plantsMap.get(plantId)
                     if (existing) {
                         existing.set('journal', JSON.stringify(plant.journal))
                     }
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync addJournalEntry to CRDT:', error)
             }
@@ -249,12 +368,12 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
                 const state = listenerApi.getState() as RootState
                 const entry = state.nutrientPlanner.schedule.find((e) => e.id === id)
                 if (!entry) return
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const scheduleMap = crdtService.getNutrientScheduleMap()
                     const yMap = new Y.Map<unknown>()
                     writeRecordToYMap(yMap, nutrientEntryToYMap(entry))
                     scheduleMap.set(id, yMap as Y.Map<unknown>)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync updateScheduleEntry to CRDT:', error)
             }
@@ -269,7 +388,7 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
             try {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const entry = action.payload as { id: string }
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const scheduleMap = crdtService.getNutrientScheduleMap()
                     const yMap = new Y.Map<unknown>()
                     writeRecordToYMap(
@@ -280,7 +399,7 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
                         ),
                     )
                     scheduleMap.set(entry.id, yMap as Y.Map<unknown>)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync upsertScheduleEntry to CRDT:', error)
             }
@@ -293,10 +412,10 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             if ((matchedAction as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
             try {
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     crdtService.getNutrientScheduleMap().delete(matchedAction.payload as string)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync removeScheduleEntry to CRDT:', error)
             }
@@ -315,12 +434,12 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
                 const readings = state.nutrientPlanner.readings
                 const latest = readings[readings.length - 1]
                 if (!latest) return
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const readingsMap = crdtService.getNutrientReadingsMap()
                     const yMap = new Y.Map<unknown>()
                     writeRecordToYMap(yMap, ecPhReadingToYMap(latest))
                     readingsMap.set(latest.id, yMap as Y.Map<unknown>)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync addReading to CRDT:', error)
             }
@@ -335,12 +454,12 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
             try {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const reading = action.payload as Parameters<typeof ecPhReadingToYMap>[0]
-                doc.transact(() => {
+                enqueueBridgeWrite(() => {
                     const readingsMap = crdtService.getNutrientReadingsMap()
                     const yMap = new Y.Map<unknown>()
                     writeRecordToYMap(yMap, ecPhReadingToYMap(reading))
                     readingsMap.set(reading.id, yMap as Y.Map<unknown>)
-                }, BRIDGE_ORIGIN)
+                })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync upsertReading to CRDT:', error)
             }

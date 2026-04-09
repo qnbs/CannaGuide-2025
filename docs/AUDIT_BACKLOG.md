@@ -690,11 +690,13 @@ Last updated: 2026-04-08 (Session 78)
 | -------- | --------------- |
 | Severity | Medium          |
 | Effort   | High (3-5 days) |
-| Status   | **Open**        |
+| Status   | **Done**        |
 
 **Finding:** Background Sync queues offline actions but has no conflict resolution strategy for concurrent edits.
 
 **Action:** Implement last-write-wins or CRDT-based conflict resolution for offline sync scenarios. Add conflict UI for manual resolution when needed.
+
+**Resolution:** Yjs CRDT-based conflict resolution implemented across Sessions 77-87. Architecture: `crdtService.ts` (Y.Doc lifecycle, divergence detection, differential encoding), `crdtSyncBridge.ts` (bidirectional Redux<->Y.Doc bridge with 3-layer loop prevention and 100ms batch debounce), `syncService.ts` (CRDT-aware Gist push/pull with E2EE), `SyncConflictModal.tsx` (3-way conflict resolution UI: Smart Merge / Keep Local / Use Cloud). CRDT telemetry integrated into WorkerBus W-03. See ADR-0004.
 
 ---
 
@@ -831,6 +833,6 @@ Recommended implementation order based on impact and effort:
 - [ ] S-03 -- CSP nonce implementation
 - [ ] C-04 -- Deployment preview validation
 - [ ] F-02 -- Social sharing
-- [ ] F-06 -- Offline sync conflict resolution
+- [x] F-06 -- Offline sync conflict resolution
 - [ ] I-02 -- RTL language preparation
 - [ ] A-03 -- AI cost tracking

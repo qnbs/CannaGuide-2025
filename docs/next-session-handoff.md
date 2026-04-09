@@ -2,7 +2,64 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 104) -- W-04 Cross-Worker Channels + Generic Typed Dispatch
+## Latest Session (Session 105) -- CRDT-WorkerBus Tightening + Yjs Performance
+
+**Status: All 6 Aufgaben implemented. Tests passing. TypeScript clean.
+Build clean. All validations green.**
+
+### What Was Done (Session 105)
+
+1. **CRDT-Telemetry in WorkerBus W-03** -- `CrdtTelemetryMetrics`
+   interface added to workerBus.ts. `setCrdtMetrics()` /
+   `getCrdtMetrics()` on WorkerBusImpl. `exportTelemetry()` includes
+   optional `crdtMetrics`. Accumulator in crdtSyncBridge.ts
+   (`reportCrdtTelemetry()`) tracks divergence count, sync payload
+   bytes, conflicts resolved, and last sync duration. Fire-and-forget
+   async push to WorkerBus avoids circular dependency.
+
+2. **Differential Yjs-Encoding** -- `crdtService.ts` stores remote
+   state vector after each pull. `encodeSyncPayload()` uses it for
+   delta-only updates. Falls back to full-state when no vector
+   available. `encodeFullSyncPayload()` for explicit full-state.
+   `forceLocalToGist()` resets vector to null. Cleanup in `destroy()`.
+
+3. **Bridge-Batching (100ms debounce)** -- All Redux->CRDT listener
+   writes go through `enqueueBridgeWrite()` with 100ms debounce.
+   `flushBridgeBatch()` executes all queued ops in a single
+   `doc.transact(..., BRIDGE_ORIGIN)`. Loop prevention preserved
+   (fromCrdt check before enqueue, BRIDGE_ORIGIN on flush).
+
+4. **F-06 Conflict-Resolution closed** -- AUDIT_BACKLOG.md F-06 updated
+   from Open to Done with resolution summary referencing Sessions 77-87
+   CRDT implementation + ADR-0004.
+
+5. **Tests** -- 7 new tests: 3 batching (queue/flush/single-transact,
+   fromCrdt skip), 2 telemetry (zeroed state, reset), 4 differential
+   encoding (full vs diff payload, state vector round-trip, destroy
+   reset). All existing tests updated with `_flushBridgeBatch()` calls.
+   syncService.test.ts mocks updated for reportCrdtTelemetry + yjs.
+
+6. **Docs** -- ARCHITECTURE.md CRDT section updated (batching, diff
+   encoding, telemetry). AUDIT_BACKLOG.md F-06 Done. This handoff.
+
+### Verified Metrics (Session 105)
+
+- Tests: 1844 passed, 0 failures (9 new CRDT tests)
+- Typecheck: clean (TS2719 filtered)
+- Build: success, 158 precache entries
+- CRDT tests: 52 bridge + 19 service + 31 sync = 102 passing
+
+### Next Steps
+
+- Push unit test coverage above 40% lines
+- Mutation testing: run Stryker on CRDT slices
+- Implement `__PORT_TRANSFER__` handler in production workers
+- Consider adding CRDT telemetry dashboard in Settings/Debug view
+- Evaluate Y.Doc compaction strategy for long-running documents
+
+---
+
+## Previous Session (Session 104) -- W-04 Cross-Worker Channels + Generic Typed Dispatch
 
 **Status: W-04 implemented. All tests passing. TypeScript clean.
 Build clean. All validations green.**

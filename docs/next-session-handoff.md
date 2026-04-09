@@ -2,7 +2,54 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 97) -- Security/UX/CI Multi-Fix
+## Latest Session (Session 99) -- LlmModelSelector i18n + Layout Fix
+
+**Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.
+Lint: 3 strict scopes enforced (hooks, components/common, services).**
+
+### What Was Done (Session 99)
+
+1. **LlmModelSelector i18n fix** -- Renamed locale keys
+   `'model_0.5B_desc'` and `'model_1.5B_desc'` to `model_05B_desc`
+   and `model_15B_desc` across all 5 languages (EN/DE/ES/FR/NL).
+   Root cause: dots in key names conflicted with i18next default
+   `keySeparator: '.'`, causing `t()` to split the path incorrectly
+   (e.g. `model_0` -> `5B_desc` instead of literal key lookup).
+   Updated `LlmModelSelector.tsx` to use
+   `model.sizeTier.replace('.', '')` in the dynamic key construction.
+
+2. **LlmModelSelector layout overflow fix** -- Added `min-w-0` and
+   `overflow-hidden` on card containers, `truncate` on model labels,
+   `flex-shrink-0` and `flex-wrap` on badge rows, and `gap-2` on
+   flex header. Prevents cards from breaking out of the settings
+   panel on narrow viewports.
+
+3. **Carried forward E1 changes** -- Lint Phase 3 services to
+   strictScopes, docs consolidation links, growReminderService
+   eslint-disable placement, lint-burndown.md phase updates.
+
+### Verified Metrics (Session 99)
+
+- Typecheck: clean (TS2719 filtered)
+- Tests: 1766 passed, 0 failures
+- Lint scopes: 3 strict (hooks, components/common, services)
+
+### Next Steps (E2)
+
+- Lint Phase 4: stores/\*_/_.ts (fix warnings, promote to strict)
+- Test coverage baseline + improvements to >30% lines
+- Stryker mutation score verification
+
+### Planned Executions
+
+- **E2:** Lint Phase 4 stores + test coverage >30%
+- **E3:** WorkerBus W-02 (preemption) + Generic WorkerMessage types
+- **E4:** WorkerBus W-04 (cross-worker) + API docs completion
+- **E5:** Release v1.5.1 + Lighthouse + security scan
+
+---
+
+## Session 97 -- Security/UX/CI Multi-Fix
 
 **Status: v1.5.0. 1766 tests passing. TypeScript clean. Build clean.
 51 E2E passed (Chromium).**
@@ -51,13 +98,6 @@
 - Strains: 776
 - Services: 108
 - CI Workflows: 22
-
-### Next Steps
-
-- W-02: Worker preemption (v1.6 target, High effort)
-- W-04: Cross-worker communication (v1.6 target, High effort)
-- lint-burndown Phase 3: stores/slices strict scope
-- E2E visual regression baseline refresh for v1.5.0
 - v1.6 Scholarly Knowledge features (encyclopedia, video hub)
 - Help i18n: add manual subsections to ES/FR/NL locales
 - Generate actual screenshot PNGs for a future gallery feature

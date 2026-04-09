@@ -424,6 +424,8 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 ## Roadmap
 
 > Full details: [ROADMAP.md](ROADMAP.md) | Audit-driven priorities: [docs/PRIORITY_ROADMAP.md](docs/PRIORITY_ROADMAP.md) | Audit backlog: [docs/AUDIT_BACKLOG.md](docs/AUDIT_BACKLOG.md) | ADRs: [docs/adr/](docs/adr/)
+>
+> Developer resources: [Session Handoff](docs/next-session-handoff.md) | [UX Audit](ui-ux-audit.md) | [Lint Burndown](docs/lint-burndown.md) | [Architecture](docs/ARCHITECTURE.md) | [Worker Bus](docs/worker-bus.md)
 
 | Version  | Status      | Highlights                                                                                                                                                                                                                         |
 | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

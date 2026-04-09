@@ -4,6 +4,35 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Lint Phase 3: services strict scope (Session 98)** -- Fixed 290
+  `no-unsafe-type-assertion` warnings across ~60 service files.
+  Promoted `apps/web/services/**/*.ts` to strictScopes. 3 enforced
+  scopes: hooks, components/common, services.
+- **Pre-push CI gate (Session 98)** -- `.husky/pre-push` now runs
+  full `gate:push` (typecheck + tests + lint scopes + build).
+- **Docs consolidation (Session 98)** -- Developer resource links
+  added to README.md and ROADMAP.md. lint-burndown.md Phases 2+3
+  marked Done.
+
+### Fixed
+
+- **HelpView TS2322 CI fix (Session 98)** -- Fixed i18next
+  `returnObjects` type mismatch and HelpSubNav callback type.
+- **LlmModelSelector i18n keys (Session 99)** -- Renamed
+  `model_0.5B_desc` / `model_1.5B_desc` locale keys to
+  `model_05B_desc` / `model_15B_desc` across all 5 languages. Dots
+  in key names conflicted with i18next default `keySeparator: '.'`.
+- **LlmModelSelector layout overflow (Session 99)** -- Added
+  `min-w-0`, `truncate`, `flex-shrink-0`, `flex-wrap` and
+  `overflow-hidden` to prevent card content from breaking out of
+  the settings panel on narrow viewports.
+
+---
+
 ## [1.5.0] - 2026-04-08
 
 ### Fixed

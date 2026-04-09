@@ -173,8 +173,8 @@ export const settingsView = {
             downloadSize: '{{size}} MB download',
             largeDownload: 'Grote download',
             loading: 'Model laden...',
-            'model_0.5B_desc': 'Ultralicht model voor elk apparaat. Snel maar beperkte kwaliteit.',
-            'model_1.5B_desc':
+            model_05B_desc: 'Ultralicht model voor elk apparaat. Snel maar beperkte kwaliteit.',
+            model_15B_desc:
                 'Gebalanceerd model voor middenklasse GPUs. Goede meertalige ondersteuning.',
             model_3B_desc: 'Hoge kwaliteit redenering. Beste keuze voor krachtige GPUs.',
             model_4B_desc: 'Sterk redeneren en instructies volgen. Grootste optie.',

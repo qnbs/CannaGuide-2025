@@ -27,16 +27,18 @@ const ModelCard = memo(function ModelCard({ model, isSelected, onSelect }: Model
             onClick={handleClick}
             aria-pressed={isSelected}
             className={cn(
-                'w-full text-left rounded-lg border p-3 transition-colors',
+                'w-full min-w-0 text-left rounded-lg border p-3 transition-colors',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500',
                 isSelected
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : 'border-slate-700 bg-slate-800/60 hover:border-slate-500',
             )}
         >
-            <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-slate-100">{model.label}</span>
-                <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-sm font-medium text-slate-100 truncate min-w-0">
+                    {model.label}
+                </span>
+                <div className="flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
                     <span className="text-xs rounded bg-slate-700 px-1.5 py-0.5 text-slate-300">
                         {model.sizeTier}
                     </span>
@@ -53,7 +55,7 @@ const ModelCard = memo(function ModelCard({ model, isSelected, onSelect }: Model
                 </div>
             </div>
             <p className="text-xs text-slate-400 mb-1.5">
-                {t(`settingsView.modelSelector.model_${model.sizeTier}_desc`)}
+                {t(`settingsView.modelSelector.model_${model.sizeTier.replace('.', '')}_desc`)}
             </p>
             <div className="flex items-center gap-2 text-xs text-slate-500">
                 <span>
@@ -87,18 +89,18 @@ const AutoCard = memo(function AutoCard({ isSelected, autoModel, onSelect }: Aut
             onClick={onSelect}
             aria-pressed={isSelected}
             className={cn(
-                'w-full text-left rounded-lg border p-3 transition-colors',
+                'w-full min-w-0 text-left rounded-lg border p-3 transition-colors',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500',
                 isSelected
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : 'border-slate-700 bg-slate-800/60 hover:border-slate-500',
             )}
         >
-            <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-slate-100">
+            <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-sm font-medium text-slate-100 truncate min-w-0">
                     {t('settingsView.modelSelector.autoLabel')}
                 </span>
-                <span className="text-xs rounded bg-blue-800/50 px-1.5 py-0.5 text-blue-300">
+                <span className="text-xs rounded bg-blue-800/50 px-1.5 py-0.5 text-blue-300 flex-shrink-0">
                     {t('settingsView.modelSelector.recommended')}
                 </span>
             </div>
@@ -159,7 +161,7 @@ export const LlmModelSelector = memo(function LlmModelSelector({
     const handleAutoSelect = useCallback(() => onSelect('auto'), [onSelect])
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 overflow-hidden">
             <div>
                 <h4 className="text-sm font-medium text-slate-200 mb-1">
                     {t('settingsView.modelSelector.title')}

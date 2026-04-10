@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+---
+
+## [1.6.2] - 2026-04-10
+
 ### Fixed
 
 - **ci(release):** fixed `release-publish.yml` job skip caused by

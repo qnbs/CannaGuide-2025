@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-04-09 (Session 79)
+Last updated: 2026-04-10 (Session 113)
 
 ---
 
@@ -15,8 +15,8 @@ Last updated: 2026-04-09 (Session 79)
 | -------- | ----- | ---- | ---- | -------- |
 | Critical | 3     | 3    | 0    | 0        |
 | High     | 12    | 12   | 0    | 0        |
-| Medium   | 28    | 27   | 1    | 0        |
-| Low      | 10    | 5    | 4    | 1        |
+| Medium   | 28    | 28   | 0    | 0        |
+| Low      | 10    | 7    | 0    | 3        |
 
 ---
 
@@ -372,11 +372,11 @@ Last updated: 2026-04-09 (Session 79)
 | -------- | ----------------- |
 | Severity | Low               |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** Netlify PR previews exist but no automated smoke test runs against them.
 
-**Action:** Add lightweight Playwright smoke test that runs against the Netlify preview URL after deployment. Integrate with `playwright.deploy.config.ts`.
+**Resolution:** `.github/workflows/preview-validation.yml` runs Playwright E2E smoke tests and Lighthouse performance audits against Netlify preview URLs on `deployment_status` events. Assertions: FCP <2s, LCP <4s, TBT <300ms, CLS <0.1, Performance/Accessibility/Best-Practices >=90%. Chromium-only. Traces uploaded on failure (7-day retention). Session 113.
 
 ---
 
@@ -416,13 +416,11 @@ Last updated: 2026-04-09 (Session 79)
 | -------- | ----------------- |
 | Severity | Low               |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** BYOK users have no visibility into token usage or estimated costs per AI call.
 
-**Action:** Track token counts from AI provider responses. Display cumulative usage in Settings. Add optional budget limit with warning.
-
-**Progress (Session 79):** Infrastructure is done -- `aiRateLimiter.ts` implements `reportActualUsage()` tracking prompt/completion tokens, computing per-model costs, and updating monthly budget counters. Missing: Settings UI component to expose cost/usage data to users.
+**Resolution:** `CostTrackingSection` in `SettingsView.tsx` displays today's token count, estimated USD cost, 7-day usage history bar chart, monthly budget progress bar with setter, and clear history button. `GeminiSecurityCard` shows last 5 audit log entries with clear button. Infrastructure in `aiRateLimiter.ts`: `reportActualUsage()` tracks prompt/completion tokens and computes per-model costs, `setMonthlyBudgetLimit()` / `getBudgetUsagePercent()` for budget management, `getAuditLog()` for request history. Session 113.
 
 ---
 
@@ -550,11 +548,11 @@ Last updated: 2026-04-09 (Session 79)
 | -------- | ----------------- |
 | Severity | Low               |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Deferred**      |
 
 **Finding:** Current languages are all LTR. If Arabic or Hebrew support is planned, RTL layout support needs groundwork.
 
-**Action:** Evaluate Tailwind RTL plugin. Add `dir` attribute handling. Low priority unless RTL languages are on the roadmap.
+**Deferred (Session 113):** No RTL languages on the roadmap. All 5 supported languages (EN/DE/ES/FR/NL) are LTR. Re-evaluate if RTL language support is requested. Deferred to v2.0.
 
 ---
 
@@ -638,11 +636,11 @@ Last updated: 2026-04-09 (Session 79)
 | -------- | ----------------- |
 | Severity | Medium            |
 | Effort   | Medium (2-3 days) |
-| Status   | **Open**          |
+| Status   | **Done**          |
 
 **Finding:** Community strain sharing via Gists exists, but broader social sharing (grow results, achievements) is missing.
 
-**Action:** Add Web Share API integration for sharing grow summaries and strain info. Design shareable card templates.
+**Resolution:** Web Share API integrated in 2 locations: (1) `StrainLookupSection.tsx` -- share strain lookup results with name, type, THC/CBD, description, source URL; (2) `GrowStatsDashboard.tsx` -- share grow summary with yield forecast, cost tracker, total cost, active plant count. Conditional rendering via `'share' in navigator` feature detection. i18n keys added across all 5 locales (EN/DE/ES/FR/NL). Shareable card templates deferred to v2.0. Session 113.
 
 ---
 

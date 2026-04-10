@@ -581,6 +581,8 @@ export const plantsView = {
         noEvents: 'No upcoming events yet.',
         taskPrefix: 'Task: {{title}} ({{plantName}})',
         harvestEta: '{{name}}: harvest ETA ~{{days}} day(s)',
+        shareGrowSummary: 'Share Grow Summary',
+        activePlantsCount: 'active plants',
     },
     comparison: {
         errorNotFound: 'Error: Scenario not found.',

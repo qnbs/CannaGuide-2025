@@ -39,14 +39,29 @@ Strict scope configuration is stored in `scripts/lint-burndown.config.json`.
 
 ## Suggested phase order
 
-| Phase | Scope                        | Status                     |
-| ----- | ---------------------------- | -------------------------- |
-| 1     | `hooks/**/*.ts`              | Done (enforced in CI)      |
-| 2     | `components/common/**/*.tsx` | Done (enforced in CI)      |
-| 3     | `services/**/*.ts`           | Done (enforced in CI)      |
-| 4     | `stores/**/*.ts`             | Done (enforced in CI)      |
-| 5     | Full-project strict lint     | Planned (end-state target) |
+| Phase | Scope                        | Status                   |
+| ----- | ---------------------------- | ------------------------ |
+| 1     | `hooks/**/*.ts`              | Done (enforced in CI)    |
+| 2     | `components/common/**/*.tsx` | Done (enforced in CI)    |
+| 3     | `services/**/*.ts`           | Done (enforced in CI)    |
+| 4     | `stores/**/*.ts`             | Done (enforced in CI)    |
+| 5     | Full-project strict lint     | Evaluated (123 warnings) |
 
-Phase 1 is enforced via `pnpm run lint:scopes` in both `ci.yml` and `deploy.yml`.
+Phase 1-4 are enforced via `pnpm run lint:scopes` in both `ci.yml` and `deploy.yml`.
 The script `scripts/lint-scopes.mjs` runs ESLint with `--max-warnings 0` on all
 paths listed in `strictScopes`.
+
+### Phase 5 Evaluation (Session 113)
+
+Full-project strict lint (`--max-warnings 0`) across all source directories:
+
+- **0 errors**, **123 warnings**
+- All 123 warnings are `@typescript-eslint/no-unsafe-type-assertion`
+- Concentrated in: workers (type-narrowing from `MessageEvent.data`),
+  components (event handler casts), services (API response casts)
+- **Blocker:** Workers require `as` casts for `MessageEvent.data` since
+  TypeScript cannot infer worker message types from `postMessage`. These
+  are structurally safe but ESLint cannot verify them statically.
+- **Path forward:** Suppress per-line in workers with `// eslint-disable-next-line`
+  or configure `no-unsafe-type-assertion` to `warn` project-wide (already the case).
+  Full zero-warning is achievable with ~123 targeted suppressions.

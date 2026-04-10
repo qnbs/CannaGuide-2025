@@ -29,8 +29,7 @@ jobs:
         timeout-minutes: 15
         if: >-
             github.event_name == 'workflow_dispatch' ||
-            (github.event.workflow_run.conclusion == 'success' &&
-             startsWith(github.event.workflow_run.head_branch, 'v'))
+            github.event.workflow_run.conclusion == 'success'
         permissions:
             contents: write
             id-token: write

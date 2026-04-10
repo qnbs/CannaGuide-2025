@@ -50,9 +50,9 @@
 | ---- | -------------------------------- | ------ | ---------------------------------------------------------- |
 | S-03 | CSP nonce implementation         | Medium | Won't Fix (strict-dynamic infeasible, S70)                 |
 | C-04 | Deployment preview validation    | Medium | Done (Session 84)                                          |
-| F-02 | Social sharing                   | Medium | Open                                                       |
+| F-02 | Social sharing                   | Medium | Done (Session 113 -- GrowStatsDashboard + StrainLookup)    |
 | F-06 | Offline sync conflict resolution | High   | Done (Session 87 -- CRDT sync + SyncConflictModal)         |
-| I-02 | RTL language preparation         | Medium | Done (Session 84) -- infra only                            |
+| I-02 | RTL language preparation         | Medium | Deferred v2.0 (no RTL languages on roadmap)                |
 | A-03 | AI cost tracking                 | Medium | Done (Session 83)                                          |
 | W-01 | WorkerBus per-worker rate limit  | Medium | Done (Session 94 -- sliding-window limiter)                |
 | W-02 | WorkerBus priority preemption    | High   | Done (ADR-0007 -- AbortController preemption + re-queue)   |

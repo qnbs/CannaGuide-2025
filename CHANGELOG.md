@@ -6,6 +6,31 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **ci(release):** fixed `release-publish.yml` job skip caused by
+  `startsWith(head_branch, 'v')` condition failing for `workflow_run`
+  events from tag-triggered workflows (GitHub Actions quirk where
+  `head_branch` maps to branch, not tag)
+- **ci:** resolved CodeQL code injection finding and E2E command
+  palette mobile test (button click instead of Ctrl+K)
+
+### Added
+
+- **plants:** Web Share API button in `GrowStatsDashboard` for
+  sharing grow summary (yield, cost, plant count) via native share
+  sheet (F-02)
+- **i18n:** `shareGrowSummary` key across all 5 locales (EN/DE/ES/FR/NL)
+
+### Changed
+
+- **docs:** AUDIT_BACKLOG fully resolved -- C-04 Done
+  (`preview-validation.yml` already active), A-03 Done
+  (`CostTrackingSection` already implemented), F-02 Done
+  (Web Share extended to GrowStatsDashboard), I-02 Deferred (v2.0)
+- **docs:** session 113 handoff, lint-burndown Phase 5 evaluation
+  (0 errors, 123 warnings remaining)
+
 ---
 
 ## [1.6.1] - 2026-04-09

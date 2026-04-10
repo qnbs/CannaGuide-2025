@@ -2,6 +2,69 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 128) -- Vercel Deployment Fix
+
+**Status: Fixed Vercel "No Output Directory" error by removing
+`framework: "vite"` from vercel.json. Vercel's Vite builder was
+overriding the explicit `outputDirectory` path in the monorepo.
+Updated distribution docs with correct Dashboard instructions.
+2063 tests passing, build OK.**
+
+### What Was Done (Session 128)
+
+1. **Vercel Deployment Fix** -- Removed `"framework": "vite"` from
+   `vercel.json`. This was the root cause: Vercel's Vite builder
+   overrides `outputDirectory` and looks for `dist/` at repo root
+   instead of `apps/web/dist/`. Without framework detection, Vercel
+   respects the explicit `outputDirectory: "apps/web/dist"`.
+
+2. **Build Command Optimized** -- Changed buildCommand from
+   `corepack enable && pnpm install && pnpm run build` to
+   `BUILD_BASE_PATH=/ turbo run build --filter=@cannaguide/web`.
+   Removes redundant install (already in installCommand), sets
+   correct base path for Vercel (`/` instead of `/CannaGuide-2025/`),
+   and filters to only build the web workspace (faster).
+
+3. **Distribution Docs Updated** -- `docs/distribution.md` now has
+   correct Vercel Dashboard instructions: Framework Preset = "Other",
+   Root Directory = ".", all commands empty (from vercel.json).
+   Cloudflare setup also updated with Root Directory = "." note.
+
+4. **ARCHITECTURE.md Updated** -- Distribution row now lists all
+   4 targets: GitHub Pages, Netlify, Vercel, Cloudflare Pages.
+
+### Vercel Dashboard Settings (Manual, One-Time)
+
+- Framework Preset: **Other** (NOT Vite)
+- Root Directory: `.`
+- Build/Output/Install Commands: all **empty** (from vercel.json)
+- Environment Variable: `BUILD_BASE_PATH=/`
+- Node.js Version: 20.x or 22.x
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2063 passing, 0 failures
+- Build: successful
+
+### Next Steps
+
+1. **Verify Vercel Deploy** -- Push triggers auto-deploy; confirm
+   green build in Vercel Dashboard after adjusting settings above
+2. **Test Coverage Push** -- Target >30% via coverage-v8 on 6
+   priority services
+3. **Performance Comparison** -- TTFB/Lighthouse across all 4 targets
+4. **v2.0 Planning** -- Digital Twin architecture spike
+
+### Planned Executions
+
+- **Execution N+1:** Verify Vercel deploy is green, compare TTFB
+  across GitHub Pages / Netlify / Vercel / Cloudflare
+- **Execution N+2:** Test coverage sprint (6 service test files)
+- **Execution N+3:** v2.0 Digital Twin architecture spike document
+
+---
+
 ## Latest Session (Session 127) -- Korrekturlauf: Optimization & Perfection Sprint
 
 **Status: Onboarding-seeding wired downstream, audit backlog

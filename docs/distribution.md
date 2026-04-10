@@ -19,14 +19,20 @@ Vercel deployment is configured via `vercel.json` in the repository root. Connec
 **Setup (5 minutes):**
 
 1. Go to [vercel.com](https://vercel.com) -> "New Project" -> connect `qnbs/CannaGuide-2025`
-2. Framework Preset: **Vite** (auto-detected)
-3. Build Command: `pnpm run build`
-4. Output Directory: `apps/web/dist`
-5. Environment Variables: `BUILD_BASE_PATH=/`, `NODE_VERSION=20`
-6. Deploy
+2. Framework Preset: **Other** (do NOT select "Vite" -- the monorepo build is controlled via `vercel.json`)
+3. Root Directory: `.` (dot -- entire repo root, required for pnpm workspaces)
+4. Build Command: **leave empty** (taken from `vercel.json`)
+5. Output Directory: **leave empty** (taken from `vercel.json`)
+6. Install Command: **leave empty** (taken from `vercel.json`)
+7. Environment Variables: `BUILD_BASE_PATH=/`, `NODE_VERSION=20`
+8. Deploy
+
+**Important:** Do NOT set Framework Preset to "Vite". Vercel's Vite builder overrides `outputDirectory` and looks for `dist/` at the repo root instead of `apps/web/dist/`. Setting "Other" lets Vercel respect the explicit `vercel.json` config.
 
 **Key config in `vercel.json`:**
 
+- Build: `turbo run build --filter=@cannaguide/web` with `BUILD_BASE_PATH=/`
+- Output: `apps/web/dist` (Vite build output for the web workspace)
 - SPA rewrite: all routes -> `/index.html`
 - Security headers: CSP, Permissions-Policy, COOP, X-Frame-Options (synced with `securityHeaders.ts`)
 - Asset caching: `/assets/*` immutable (1 year), `/sw.js` no-cache, `/manifest.json` 1h
@@ -41,9 +47,10 @@ Cloudflare Pages deployment uses `_headers` and `_redirects` files in `apps/web/
 
 1. Go to [pages.cloudflare.com](https://pages.cloudflare.com) -> "Connect to Git" -> select `qnbs/CannaGuide-2025`
 2. Framework Preset: **Vite**
-3. Build Command: `corepack enable && pnpm install --frozen-lockfile && pnpm run build`
-4. Output Directory: `apps/web/dist`
-5. Deploy
+3. Root Directory: `.` (dot -- entire repo root, required for pnpm workspaces)
+4. Build Command: `corepack enable && pnpm install --frozen-lockfile && pnpm run build`
+5. Output Directory: `apps/web/dist`
+6. Deploy
 
 **Key config:**
 

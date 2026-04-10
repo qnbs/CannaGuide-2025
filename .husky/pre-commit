@@ -3,6 +3,7 @@ set -e
 
 node ./scripts/check-commit-identity.mjs
 
-node ./scripts/typecheck-filter.mjs
+# Run typecheck via turbo to match CI (root tsc checks nothing)
+pnpm exec turbo run typecheck
 
 pnpm exec lint-staged

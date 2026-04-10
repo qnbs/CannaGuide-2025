@@ -7,6 +7,6 @@ set -e
 # Skip with: git push --no-verify (emergency only).
 
 echo "[pre-push] Running typecheck + lint scopes..."
-node ./scripts/typecheck-filter.mjs
+pnpm exec turbo run typecheck
 node ./scripts/lint-scopes.mjs
 echo "[pre-push] All gates passed."

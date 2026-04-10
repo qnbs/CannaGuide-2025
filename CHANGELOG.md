@@ -6,6 +6,19 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **fix(equipment):** resolve 8 TS errors in SetupConfigurator caused by
+  `&&` short-circuit producing `"" | object` union types for growSpace
+  and budget state; use ternary narrowing instead
+- **fix(equipment):** add missing `growSpace` and
+  `floweringTypePreference` to PresetSetupsView fallback sourceDetails
+- **fix(strains):** move `selectedStrainId` declaration before useEffect
+  that references it (TS2448/TS2454)
+- **fix(ci):** harden pre-commit and pre-push hooks to use
+  `turbo run typecheck` instead of root-level tsc which checked zero
+  files due to empty `include` in root tsconfig
+
 ### Added
 
 - **feat(equipment):** new Preset Setups sub-page with 12

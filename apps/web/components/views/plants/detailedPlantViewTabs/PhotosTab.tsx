@@ -15,13 +15,17 @@ const PhotoItem: React.FC<{
     onOpen: (url: string, entry: JournalEntry) => void
 }> = memo(({ entry, onOpen }) => {
     const [imageUrl, setImageUrl] = useState(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         (entry.details as PhotoDetails)?.imageUrl || null,
     )
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const [isLoading, setIsLoading] = useState(!(entry.details as PhotoDetails)?.imageUrl)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const details = entry.details as PhotoDetails
 
     useEffect(() => {
         let isMounted = true
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const photoDetails = entry.details as PhotoDetails
         if (photoDetails?.imageId && !imageUrl) {
             setIsLoading(true)
@@ -88,6 +92,7 @@ PhotoItem.displayName = 'PhotoItem'
 const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () => void }> = memo(
     ({ imageUrl, entry, onClose }) => {
         const { t } = useTranslation()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const details = entry.details as PhotoDetails
 
         useEffect(() => {
@@ -146,7 +151,9 @@ export const PhotosTab: React.FC<PhotoTabProps> = memo(({ journal }) => {
             journal.filter(
                 (entry) =>
                     entry.type === JournalEntryType.Photo &&
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     ((entry.details as PhotoDetails)?.imageUrl ||
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                         (entry.details as PhotoDetails)?.imageId),
             ),
         [journal],

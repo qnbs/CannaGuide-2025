@@ -53,6 +53,7 @@ export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance)
 const detectedLang =
     typeof navigator !== 'undefined' ? (navigator.language.split('-')[0] ?? 'en') : 'en'
 const initialLang: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(detectedLang)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     ? (detectedLang as SupportedLocale)
     : 'en'
 

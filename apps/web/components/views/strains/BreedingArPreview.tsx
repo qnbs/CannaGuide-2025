@@ -83,6 +83,7 @@ const appendArButton = (
     const button = ARButton.createButton(renderer, {
         requiredFeatures: ['hit-test'],
         optionalFeatures: ['dom-overlay'],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         domOverlay: { root: root as HTMLElement },
     })
 

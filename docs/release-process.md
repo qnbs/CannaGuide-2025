@@ -106,6 +106,8 @@ workflow (PR #122 accidentally downgraded the version from 1.6.0 to 1.5.0).
 
 | Version | Date       | Theme                                     |
 | ------- | ---------- | ----------------------------------------- |
+| v1.6.3  | 2026-04-10 | SLSA L3 + CycloneDX SBOM + Lint Phase 5   |
+| v1.6.2  | 2026-04-10 | Release pipeline fix + SLSA L1 provenance |
 | v1.6.0  | 2026-04-10 | WorkerBus W-02/W-04, CRDT Sync, API Docs  |
 | v1.5.1  | 2026-04-09 | Quality & Polish                          |
 | v1.5.0  | 2026-04-08 | Multi-Grow, CRDT Sync, Dead Infra Cleanup |

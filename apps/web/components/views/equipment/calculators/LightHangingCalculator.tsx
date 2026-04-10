@@ -80,6 +80,7 @@ export const LightHangingCalculator: React.FC = memo(() => {
                 label={t('equipmentView.calculators.lightHanging.lightType')}
                 options={lightTypeOptions}
                 value={lightType}
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 onChange={(e) => setLightType(e.target.value as LightType)}
             />
             <div className="grid grid-cols-2 gap-4">

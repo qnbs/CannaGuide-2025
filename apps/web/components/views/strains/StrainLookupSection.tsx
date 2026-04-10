@@ -134,6 +134,7 @@ const CannabinoidPie: React.FC<CannabinoidPieProps> = memo(({ thc, cbd }) => {
                         {data.map((_entry, index) => (
                             <Cell
                                 key={index}
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 fill={PIE_COLORS[index % PIE_COLORS.length] as string}
                             />
                         ))}
@@ -275,6 +276,7 @@ const CannabinoidBar: React.FC<CannabinoidBarProps> = memo(({ cannabinoids }) =>
                                 key={i}
                                 fill={
                                     BAR_COLORS[c.name] !== undefined
+                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                         ? (BAR_COLORS[c.name] as string)
                                         : '#6366f1'
                                 }
@@ -885,8 +887,10 @@ export const StrainLookupSection: React.FC = memo(() => {
         const handler = (e: MouseEvent) => {
             if (
                 suggestionsRef.current &&
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 !suggestionsRef.current.contains(e.target as Node) &&
                 inputRef.current &&
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 !inputRef.current.contains(e.target as Node)
             ) {
                 setShowSuggestions(false)
@@ -968,6 +972,7 @@ export const StrainLookupSection: React.FC = memo(() => {
             const fullStrain = r.fullStrain ?? resolveDiscoveredToStrain(discovered)
             void dispatch(addUserStrainWithValidation(fullStrain))
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [dispatch, t],
     )
 

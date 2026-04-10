@@ -23,14 +23,18 @@ export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, In
                 <UiTextarea
                     id={id}
                     className={className}
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     ref={ref as React.Ref<HTMLTextAreaElement>}
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
                 />
             ) : (
                 <UiInput
                     id={id}
                     className={className}
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     ref={ref as React.Ref<HTMLInputElement>}
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
                 />
             )

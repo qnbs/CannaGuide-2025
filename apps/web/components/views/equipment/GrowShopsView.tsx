@@ -223,12 +223,14 @@ export const GrowShopsView: React.FC = () => {
     const [sortMode, setSortMode] = useState<SortMode>('rating')
 
     const allShops = useMemo(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         () => t('equipmentView.growShops.shops', { returnObjects: true }) as Record<string, Shop>,
         [t],
     )
 
     const filteredAndSortedShops = useMemo(() => {
         const regionKey = region === 'europe' ? 'european' : 'us'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const shopKeys = t(`equipmentView.growShops.${regionKey}.shopKeys`, {
             returnObjects: true,
         }) as string[]

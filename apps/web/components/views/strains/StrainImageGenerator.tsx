@@ -86,6 +86,7 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
                 {
                     id: `gallery-${strain.id}-${Date.now()}`,
                     strain,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     style: imageStyle as
                         | 'random'
                         | 'fantasy'
@@ -108,10 +109,12 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
     }, [strain, imageStyle, imageCriteria, lang, onImageGenerated, t])
 
     const styleOptions = Object.keys(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         t('strainsView.tips.form.imageStyles', { returnObjects: true }) as Record<string, string>,
     ).map((k) => ({ value: k, label: t(`strainsView.tips.form.imageStyles.${k}`) }))
 
     const focusOptions = Object.keys(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         t('strainsView.tips.form.imageFocusOptions', { returnObjects: true }) as Record<
             string,
             string
@@ -119,6 +122,7 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
     ).map((k) => ({ value: k, label: t(`strainsView.tips.form.imageFocusOptions.${k}`) }))
 
     const compositionOptions = Object.keys(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         t('strainsView.tips.form.imageCompositionOptions', { returnObjects: true }) as Record<
             string,
             string
@@ -126,6 +130,7 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
     ).map((k) => ({ value: k, label: t(`strainsView.tips.form.imageCompositionOptions.${k}`) }))
 
     const moodOptions = Object.keys(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         t('strainsView.tips.form.imageMoodOptions', { returnObjects: true }) as Record<
             string,
             string

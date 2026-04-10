@@ -16,6 +16,7 @@ export const AlphabeticalFilter: React.FC<AlphabeticalFilterProps> = memo(({ act
             const buttons = Array.from(
                 groupRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? [],
             );
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const currentIndex = buttons.indexOf(e.target as HTMLButtonElement);
             if (currentIndex < 0) return;
 

@@ -278,6 +278,7 @@ const GuideViewComponent: React.FC = () => {
                                                 open={index === 0}
                                                 onToggle={(e) => {
                                                     if (
+                                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                                         (e.target as HTMLDetailsElement).open &&
                                                         !isRead
                                                     ) {

@@ -120,6 +120,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 
     // ---- INIT ---------------------------------------------------------------
     if (type === 'INIT') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const p = payload as InitPayload | undefined
         if (!p?.modelBuffer || !(p.modelBuffer instanceof ArrayBuffer)) {
             self.postMessage(workerErr(messageId, 'INIT requires modelBuffer: ArrayBuffer'))
@@ -143,6 +144,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 
     // ---- FORECAST -----------------------------------------------------------
     if (type === 'FORECAST') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const p = payload as ForecastPayload | undefined
         if (!p?.input) {
             // No input -- return sensible defaults via fallback
@@ -181,6 +183,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
                 if (output.data instanceof Float32Array) {
                     data = output.data
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const raw = output.data as ArrayLike<number>
                     data = new Float32Array(raw.length)
                     for (let i = 0; i < raw.length; i++) {

@@ -67,6 +67,7 @@ const SeedbankProfileComponent: React.FC<{
     isOpen?: boolean
 }> = ({ bankKey, displayIndex, isOpen }) => {
     const { t } = useTranslation()
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const bank = t(`equipmentView.seedbanks.${bankKey}`, { returnObjects: true }) as BankData
 
     if (!bank?.title) return null
@@ -234,6 +235,7 @@ const SeedbanksView: React.FC = () => {
 
     const allBanksData = useMemo(
         () =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             t('equipmentView.seedbanks', { returnObjects: true }) as Record<
                 string,
                 BankData & {
@@ -269,6 +271,7 @@ const SeedbanksView: React.FC = () => {
         if (!searchQuery.trim()) return allBankKeys
         const q = searchQuery.toLowerCase()
         return allBankKeys.filter((key) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const bank = allBanksData[key] as BankData
             if (!bank?.title) return false
             const title = stripNumericPrefix(bank.title).toLowerCase()
@@ -281,6 +284,7 @@ const SeedbanksView: React.FC = () => {
     }, [allBankKeys, allBanksData, searchQuery])
 
     const conclusions = allBanksData.conclusions
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const geneticTrends = allBanksData.geneticTrends2026 as unknown as
         | GeneticTrends2026Data
         | undefined

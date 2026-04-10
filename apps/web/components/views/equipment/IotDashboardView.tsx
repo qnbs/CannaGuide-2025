@@ -241,6 +241,7 @@ function IotDashboardViewComponent(): React.JSX.Element {
         [deferredHistory],
     )
     const phData = useMemo(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         () => deferredHistory.filter((r) => r.ph != null).map((r) => r.ph as number),
         [deferredHistory],
     )
@@ -273,6 +274,7 @@ function IotDashboardViewComponent(): React.JSX.Element {
         if (seconds < 5) return 'just now'
         if (seconds < 60) return `${seconds}s`
         return `${Math.floor(seconds / 60)}m`
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentReading, t])
 
     if (!isEnabled) {

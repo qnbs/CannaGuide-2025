@@ -225,23 +225,27 @@ self.onmessage = (
 
     try {
         if (type === 'SIMULATE_VPD') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             self.postMessage(workerOk(messageId, simulateVpd(payload as SimulateVpdPayload)))
             return
         }
         if (type === 'SIMULATE_TRANSPIRATION') {
             self.postMessage(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 workerOk(messageId, simulateTranspiration(payload as SimulateTranspirationPayload)),
             )
             return
         }
         if (type === 'SIMULATE_EC_DRIFT') {
             self.postMessage(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 workerOk(messageId, simulateEcDrift(payload as SimulateEcDriftPayload)),
             )
             return
         }
         if (type === 'SIMULATE_LIGHT_SPECTRUM') {
             self.postMessage(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 workerOk(messageId, simulateLightSpectrum(payload as SimulateLightSpectrumPayload)),
             )
             return

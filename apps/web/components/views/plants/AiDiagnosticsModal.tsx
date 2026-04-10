@@ -214,10 +214,12 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             reader.onload = async () => {
                 try {
                     // browser-image-compression re-encodes via canvas -> strips EXIF/GPS metadata
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const resizedImage = await resizeImage(reader.result as string)
                     setImage(resizedImage)
                 } catch (err) {
                     console.debug('[AiDiagnosticsModal] Image resizing failed:', err)
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     setImage(reader.result as string) // fallback to original
                     getUISnapshot().addNotification({
                         message: t('common.imageResizeFailed'),
@@ -293,6 +295,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
 
     const errorMessage =
         error && typeof error === 'object' && 'message' in error
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             ? (error as { message: string }).message
             : t('ai.error.unknown')
 

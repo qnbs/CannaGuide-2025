@@ -154,7 +154,9 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
                 | LightSpectrumSimulationResult
             >('calculation', command, payload)
             // All result types expose a `points` array
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const anyRaw = raw as unknown as Record<string, unknown>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const rawPoints = anyRaw['points'] as Array<{ day: number; value: number }> | undefined
             if (Array.isArray(rawPoints)) setPoints(rawPoints)
         } catch {
@@ -408,6 +410,7 @@ const NutrientRatioPanel: React.FC = () => {
                     <select
                         value={stage}
                         onChange={(e) => {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             setStage(e.target.value as typeof stage)
                         }}
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 py-1.5 px-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
@@ -1190,6 +1193,7 @@ const LightSpectrumPanel: React.FC = () => {
                 <select
                     value={stage}
                     onChange={(e) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                         setStage(e.target.value as typeof stage)
                     }}
                     className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 py-1.5 px-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"

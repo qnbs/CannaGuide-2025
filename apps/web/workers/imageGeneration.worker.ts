@@ -78,6 +78,7 @@ const rawImageToDataUrl = async (rawImage: {
             const blob = await canvas.convertToBlob({ type: 'image/png' })
             return new Promise<string>((resolve, reject) => {
                 const reader = new FileReader()
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 reader.onload = () => resolve(reader.result as string)
                 reader.onerror = () => reject(new Error('Failed to convert blob to data URL'))
                 reader.readAsDataURL(blob)
@@ -137,6 +138,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<ImageGenPayload>>) => {
         // Load the diffusion pipeline
         // SD-Turbo uses AutoPipelineForText2Image in Transformers.js v3
         const pipeline = await (
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             transformers as unknown as {
                 AutoPipelineForText2Image: {
                     from_pretrained: (

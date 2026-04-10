@@ -69,6 +69,7 @@ export const LightCalculator: React.FC = memo(() => {
                 label={t('equipmentView.calculators.light.stage')}
                 options={stageOptions}
                 value={stage}
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 onChange={(e) => setStage(e.target.value as PlantStage)}
             />
             <ResultDisplay

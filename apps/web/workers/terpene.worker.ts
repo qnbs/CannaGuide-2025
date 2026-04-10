@@ -79,6 +79,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
     try {
         switch (type) {
             case 'FIND_SIMILAR': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const p = payload as FindSimilarPayload
                 if (!p?.referenceProfile || !Array.isArray(p.strains)) {
                     self.postMessage(workerErr(messageId, 'Invalid FIND_SIMILAR payload'))
@@ -95,6 +96,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
             }
 
             case 'BUILD_CHEMOVAR': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const p = payload as BuildChemovarPayload
                 if (!p?.strain) {
                     self.postMessage(workerErr(messageId, 'Invalid BUILD_CHEMOVAR payload'))
@@ -106,6 +108,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
             }
 
             case 'BATCH_CHEMOVAR': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const p = payload as BatchChemovarPayload
                 if (!Array.isArray(p?.strains)) {
                     self.postMessage(workerErr(messageId, 'Invalid BATCH_CHEMOVAR payload'))
@@ -120,6 +123,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
             }
 
             case 'PREDICT_BREEDING': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const p = payload as PredictBreedingPayload
                 if (!p?.parentA || !p?.parentB) {
                     self.postMessage(workerErr(messageId, 'Invalid PREDICT_BREEDING payload'))
@@ -131,6 +135,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
             }
 
             case 'SCORE_EFFECTS': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const p = payload as ScoreEffectsPayload
                 if (!Array.isArray(p?.strains) || !Array.isArray(p?.desiredEffects)) {
                     self.postMessage(workerErr(messageId, 'Invalid SCORE_EFFECTS payload'))
@@ -149,6 +154,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
             }
 
             case 'ANALYZE_ENTOURAGE': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const p = payload as AnalyzeEntouragePayload
                 if (!p?.terpeneProfile || !p?.cannabinoidProfile) {
                     self.postMessage(workerErr(messageId, 'Invalid ANALYZE_ENTOURAGE payload'))

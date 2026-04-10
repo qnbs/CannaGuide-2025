@@ -171,6 +171,7 @@ test.describe('WebGPU AI Vision Pipeline', () => {
             const adapter = await navigator.gpu.requestAdapter()
             if (!adapter) return null
             return {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 name: (adapter as unknown as { name: string }).name,
                 isFallback: adapter.isFallbackAdapter,
                 hasShaderF16: adapter.features?.has('shader-f16') ?? false,

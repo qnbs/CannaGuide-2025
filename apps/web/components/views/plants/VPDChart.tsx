@@ -109,6 +109,7 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
                             <YAxis tick={{ fontSize: 12 }} domain={[0, 2.2]} tickMargin={6} />
                             <Tooltip
                                 formatter={
+                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                     ((value: number | undefined, name: string | undefined) => {
                                         if (value == null) return ['-', name ?? '']
                                         if (name === 'vpd' || name === 'targetVPD')

@@ -405,6 +405,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                                     returnObjects: true,
                                 }),
                             ).map((k) => ({
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 value: k as ExperienceLevel,
                                 label: t(`strainsView.tips.form.experienceOptions.${k}`),
                             }))}
@@ -499,6 +500,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                                         returnObjects: true,
                                     }),
                                 ).map((k) => ({
+                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                     value: k as GrowPriority,
                                     label: t(`equipmentView.configurator.priorities.${k}`),
                                 }))}

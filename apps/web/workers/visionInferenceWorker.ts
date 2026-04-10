@@ -245,6 +245,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 
     // ---- INIT ---------------------------------------------------------------
     if (type === 'INIT') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const p = payload as InitPayload | undefined
         if (!p?.modelBuffer || !(p.modelBuffer instanceof ArrayBuffer)) {
             self.postMessage(workerErr(messageId, 'INIT requires modelBuffer: ArrayBuffer'))
@@ -273,6 +274,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
             self.postMessage(workerErr(messageId, 'Session not initialised. Call INIT first.'))
             return
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const p = payload as ClassifyPayload | undefined
         if (!p?.imageData?.data || !p.imageData.width || !p.imageData.height) {
             self.postMessage(
@@ -301,6 +303,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
                 logits = output.data
             } else {
                 // Fallback: tolist() or typed array
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const raw = output.data as ArrayLike<number>
                 logits = new Float32Array(raw.length)
                 for (let i = 0; i < raw.length; i++) {

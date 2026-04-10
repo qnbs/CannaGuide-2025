@@ -20,6 +20,7 @@ const GrowCreateModal: React.FC<GrowCreateModalProps> = memo(({ isOpen, onClose 
     const growCount = useAppSelector(selectGrowCount)
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
     const [color, setColor] = useState<string>(GROW_COLORS[0] ?? '#22c55e')
 
     const canCreate = name.trim().length > 0 && growCount < MAX_GROWS

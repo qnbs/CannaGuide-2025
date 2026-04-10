@@ -59,6 +59,7 @@ export const HumidityDeficitCalculator: React.FC = memo(() => {
                 label={t('equipmentView.calculators.humidityDeficit.stage')}
                 options={stageOptions}
                 value={stage}
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 onChange={(e) => setStage(e.target.value as HdGrowthStage)}
             />
             <div className="flex justify-between items-center">

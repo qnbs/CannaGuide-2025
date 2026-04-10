@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-04-10 (Session 121)
+Last updated: 2026-04-10 (Session 122)
 
 ---
 
@@ -16,7 +16,7 @@ Last updated: 2026-04-10 (Session 121)
 | Critical | 3     | 3    | 0    | 0        |
 | High     | 12    | 12   | 0    | 0        |
 | Medium   | 29    | 28   | 1    | 0        |
-| Low      | 12    | 7    | 2    | 3        |
+| Low      | 12    | 8    | 1    | 3        |
 
 ---
 
@@ -808,15 +808,15 @@ Last updated: 2026-04-10 (Session 121)
 
 ### SC-02 -- Onboarding Data Consumption
 
-| Field    | Value       |
-| -------- | ----------- |
-| Severity | Low         |
-| Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Field    | Value        |
+| -------- | ------------ |
+| Severity | Low          |
+| Effort   | Low (1 day)  |
+| Status   | **Resolved** |
 
 **Finding:** The onboarding wizard Step 8 (Space & Budget) collects `spaceSize` (small/medium/large) and `budget` (low/mid/high) into localStorage. These values are never read or consumed by any service. The wizard promises "We will suggest the best starter setup and top 3 strains for you" but no recommendation engine exists downstream. The step renders correctly across all 5 languages.
 
-**Action:** Either (a) add a retrieval service that reads `cg.onboarding.spaceSize` and `cg.onboarding.budget` from localStorage and feeds into the equipment configurator or strain recommendation engine, or (b) migrate the data from localStorage into Redux settings for persistence and AI context enrichment.
+**Resolution (Session 122):** `SetupConfigurator.tsx` now reads `cg.onboarding.spaceSize` and `cg.onboarding.budget` from localStorage on mount via `useMemo`. Values are mapped to configurator defaults: spaceSize small=60x60cm, medium=80x80cm, large=120x120cm; budget low=200, mid=400, high=1000. Falls back to previous defaults (80x80, 1000) when no onboarding data exists.
 
 ---
 

@@ -2,21 +2,63 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 121) -- Supply-Chain Audit Verification + README Restructure
+## Latest Session (Session 122) -- CI Fix + Scroll-to-Top + Onboarding Data Wiring
+
+**Status: 8 files changed. Fixed CI typecheck failure (2 missing stage union values). Scroll-to-top on all view/tab/detail navigation for mobile. Onboarding data (SC-02) wired to SetupConfigurator. 2028 tests passing.**
+
+### What Was Done (Session 122)
+
+1. **CI Typecheck Fix** -- Added `preload-storage-check` and
+   `webllm-storage-check` to `captureLocalAiError` stage union in
+   `sentryService.ts`. These values were introduced in Session 120
+   but the type was not updated, causing CI failure in PR #879.
+
+2. **Scroll-to-Top** -- Added `useEffect` scroll-to-top for all
+   view/tab/detail navigation transitions:
+    - `StrainsView.tsx`: on `selectedStrainId` change (detail open)
+    - `StrainDetailView.tsx`: on `strain` change (mount + switch)
+    - `DetailedPlantView.tsx`: on `plant.id` change (mount + switch)
+    - `SettingsView.tsx`: on `activeTab` change
+    - `HelpView.tsx`: on `activeTab` change (+ added `useEffect`
+      import)
+      All use the established `#main-content` pattern.
+
+3. **Onboarding Data Consumption (SC-02 Resolved)** --
+   `SetupConfigurator.tsx` now reads `cg.onboarding.spaceSize` and
+   `cg.onboarding.budget` from localStorage via `useMemo` on mount.
+   Mapping: small=60x60cm, medium=80x80cm, large=120x120cm; budget
+   low=200, mid=400, high=1000. Falls back to defaults when no
+   onboarding data exists. AUDIT_BACKLOG SC-02 marked Resolved.
+
+4. **CHANGELOG.md** -- Added feat(ui) scroll-to-top, feat(equipment)
+   onboarding wiring, fix(ai) stage union entries.
+
+### Verified Metrics
+
+- Tests: **2028 passing**, 0 failures (172 files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: succeeds
+
+### Next Steps
+
+- Implement SC-01: Add slsa-verifier CI step post-release
+- Consider SC-03: Release pipeline dry-run workflow
+- Consider wiring `cg.onboarding.growGoal` to AI personality/tone
+- Continue items from Session 120/121 Next Steps
+
+---
+
+## Previous Session (Session 121) -- Supply-Chain Audit Verification + README Restructure
 
 **Status: 6 files changed. Independent verification of SBOM/SLSA/Onboarding audits (all found already implemented). README restructured from 933 to 595 lines aligned with DeepWiki TOC. 3 new AUDIT_BACKLOG entries. Pipeline SBOM SHA-256 improvement. 2028 tests passing.**
 
 ### What Was Done (Session 121)
 
-1. **Audit Verification** -- Three external audit claims independently
-   verified against actual codebase:
-    - "SBOM fehlt komplett" -> INCORRECT: CycloneDX SBOM fully
-      implemented via anchore/sbom-action@v0.18.0 since commit 2d7faf2
-    - "Nur 1-Job Pipeline" -> INCORRECT: 3-job architecture
-      (build -> provenance -> release) with SLSA L3 via
-      slsa-github-generator@v2.1.0
-    - "Onboarding Step 8 fehlt" -> INCORRECT: Step 8 "Space & Budget"
-      exists in OnboardingModal.tsx line 362, gates at step < 8
+verified against actual codebase: - "SBOM fehlt komplett" -> INCORRECT: CycloneDX SBOM fully
+implemented via anchore/sbom-action@v0.18.0 since commit 2d7faf2 - "Nur 1-Job Pipeline" -> INCORRECT: 3-job architecture
+(build -> provenance -> release) with SLSA L3 via
+slsa-github-generator@v2.1.0 - "Onboarding Step 8 fehlt" -> INCORRECT: Step 8 "Space & Budget"
+exists in OnboardingModal.tsx line 362, gates at step < 8
 
 2. **AUDIT_BACKLOG.md** -- 3 new supply-chain entries:
     - SC-01: SLSA Verifier CI Integration (Medium, Open)

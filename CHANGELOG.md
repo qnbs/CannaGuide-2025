@@ -20,6 +20,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(ui):** scroll-to-top on all view/tab/detail navigation
+  transitions (StrainsView, StrainDetailView, DetailedPlantView,
+  SettingsView, HelpView) for consistent mobile experience
+- **feat(equipment):** SetupConfigurator seeds budget and grow space
+  defaults from onboarding wizard localStorage data (SC-02 resolved)
 - **feat(ai):** Mobile-optimized Local AI stack -- `isMobileDevice()`,
   `checkStorageQuota()`, `getEffectiveDeviceMemoryGB()` in browserApis.ts
   for hybrid UA+touch+screen+deviceMemory detection
@@ -39,6 +44,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(ai):** add `preload-storage-check` and `webllm-storage-check`
+  to captureLocalAiError stage union type (CI typecheck failure)
 - **fix(ai):** Mobile memory pressure threshold 80% (was 90%), max
   concurrent model loads 1 on mobile (was cores\*0.5)
 - **fix(ai):** WebGPU visibility race condition -- timer cancelled on

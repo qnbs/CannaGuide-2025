@@ -77,6 +77,14 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
         dispatch(updatePlantToNow(plant.id))
     }, [plant.id, dispatch])
 
+    // Scroll to top when plant detail opens or plant changes
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [plant.id])
+
     const handlePdfExport = useCallback(async () => {
         if (isPdfLoading) return
         setIsPdfLoading(true)

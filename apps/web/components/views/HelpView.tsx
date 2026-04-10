@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef, memo } from 'react'
+import React, { useState, useMemo, useCallback, useRef, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -637,6 +637,14 @@ type HelpTabId = 'manual' | 'lexicon' | 'guides' | 'faq'
 export const HelpView: React.FC = () => {
     const { t } = useTranslation()
     const [activeTab, setActiveTab] = useState<HelpTabId>('manual')
+
+    // Scroll to top on tab change
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [activeTab])
 
     const tabMeta = useMemo(
         () => ({

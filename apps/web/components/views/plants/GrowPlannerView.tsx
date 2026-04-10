@@ -8,8 +8,11 @@ import {
     addPlannerTask,
     completePlannerTask,
     removePlannerTask,
+    bulkAddTasks,
 } from '@/stores/slices/growPlannerSlice'
+import { selectPlantById } from '@/stores/selectors'
 import { secureRandom } from '@/utils/random'
+import { taskSchedulerService } from '@/services/taskSchedulerService'
 
 interface GrowPlannerViewProps {
     plantId?: string | undefined
@@ -44,6 +47,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
     const dispatch = useAppDispatch()
     const allTasks = useAppSelector(selectAllPlannerTasks)
     const overdueTasks = useAppSelector(selectOverdueTasks(plantId))
+    const plant = useAppSelector(selectPlantById(plantId ?? null))
 
     const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
     const [selectedDate, setSelectedDate] = useState(new Date())
@@ -141,6 +145,26 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
         [dispatch],
     )
 
+    const handleAutoSchedule = useCallback(() => {
+        if (!plantId || !plant) return
+        const result = taskSchedulerService.generateTasks({
+            plantId,
+            strainType: plant.strain?.type ?? 'Hybrid',
+            floweringType: plant.strain?.floweringType ?? 'Photoperiod',
+            currentStage: plant.stage,
+            stageStartDate: Date.now(),
+            medium:
+                plant.mediumType === 'Soil' ||
+                plant.mediumType === 'Coco' ||
+                plant.mediumType === 'Hydro'
+                    ? plant.mediumType
+                    : undefined,
+        })
+        if (result.tasks.length > 0) {
+            dispatch(bulkAddTasks(result.tasks))
+        }
+    }, [dispatch, plantId, plant])
+
     const navigateCalendar = useCallback(
         (direction: -1 | 1) => {
             const next = new Date(selectedDate)
@@ -179,13 +203,22 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                             : t('plantsView.planner.weekView', { defaultValue: 'Week' })}
                     </button>
                     {plantId != null && (
-                        <button
-                            type="button"
-                            onClick={() => setShowAddForm(true)}
-                            className="rounded-lg bg-primary-600 hover:bg-primary-500 px-3 py-1.5 text-xs font-medium text-white transition-colors"
-                        >
-                            + {t('plantsView.planner.addTask', { defaultValue: 'Add Task' })}
-                        </button>
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => setShowAddForm(true)}
+                                className="rounded-lg bg-primary-600 hover:bg-primary-500 px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                            >
+                                + {t('plantsView.planner.addTask', { defaultValue: 'Add Task' })}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleAutoSchedule}
+                                className="rounded-lg bg-emerald-700 hover:bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                            >
+                                {t('autoScheduler.generate', { defaultValue: 'Generate Tasks' })}
+                            </button>
+                        </>
                     )}
                 </div>
             </div>

@@ -53,6 +53,7 @@ const initialState: NutrientPlannerState = {
     lastAiRecommendation: null,
     activePluginId: null,
     autoAdjustRecommendation: null,
+    activeBrandId: null,
 }
 
 describe('nutrientPlannerSlice', () => {

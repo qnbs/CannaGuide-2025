@@ -12,6 +12,11 @@ export const CURRENT_STRAIN_DATA_VERSION = 7
 // --- MULTI-GROW ---
 /** Legal limit: max 3 concurrent grows (CanG -- German Cannabis Act) */
 export const MAX_GROWS = 3
+/**
+ * Legal limit: max 3 simultaneous living plants across ALL grows.
+ * KCanG Section 9 (1) Nr. 1 -- NEVER increase without legal review.
+ */
+export const MAX_PLANTS_CANG = 3
 export const DEFAULT_GROW_ID = 'default-grow'
 export const DEFAULT_GROW_NAME = 'Mein Grow'
 

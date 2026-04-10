@@ -203,10 +203,14 @@ const mountHydratedApp = async () => {
             initCrdtSyncBridge(hydratedStore)
 
             // Cleanup bridge observers on page unload to prevent memory leaks
-            window.addEventListener('pagehide', () => {
-                destroyCrdtSyncBridge()
-                crdtService.destroy()
-            }, { once: true })
+            window.addEventListener(
+                'pagehide',
+                () => {
+                    destroyCrdtSyncBridge()
+                    crdtService.destroy()
+                },
+                { once: true },
+            )
         } catch (crdtError) {
             console.error('[CRDT] Initialization failed, continuing without sync:', crdtError)
         }
@@ -241,6 +245,7 @@ const mountHydratedApp = async () => {
                         autoAdjustEnabled: state.nutrientPlanner.autoAdjustEnabled,
                         medium: state.nutrientPlanner.medium,
                         activePluginId: state.nutrientPlanner.activePluginId,
+                        activeBrandId: state.nutrientPlanner.activeBrandId,
                         // Strip transient AI loading state
                         isAiLoading: false,
                         lastAiRecommendation: state.nutrientPlanner.lastAiRecommendation,
@@ -254,6 +259,10 @@ const mountHydratedApp = async () => {
                     },
                     hydro: state.hydro,
                     grows: state.grows,
+                    metrics: state.metrics,
+                    growPlanner: state.growPlanner,
+                    diagnosisHistory: state.diagnosisHistory,
+                    problemTracker: state.problemTracker,
                     ui: {
                         // Only persist essential, non-transient UI state
                         lastActiveView: getUISnapshot().lastActiveView,

@@ -736,4 +736,20 @@ export const equipmentView = {
         clickToDownload:
             'Je bestand "{{filename}}" is klaar. Klik op de knop hieronder om te downloaden.',
     },
+    nutrientBrands: {
+        title: 'Voedingsmerken Schema\'s',
+        selectBrand: 'Voedingsmerk selecteren',
+        noBrand: 'Handmatig (geen merkschema)',
+        applySchedule: 'Schema toepassen',
+        appliedSuccess: 'Merkschema toegepast: {{brand}}',
+        weekLabel: 'Week {{week}}',
+        stageLabel: 'Fase: {{stage}}',
+        ecTarget: 'EC doel: {{value}}',
+        phRange: 'pH bereik: {{min}} - {{max}}',
+        products: 'Producten',
+        dosage: '{{dosage}} ml/L',
+        flushWeek: 'Spoelweek',
+        medium: 'Medium: {{medium}}',
+        viewSchedule: 'Volledig schema bekijken',
+    },
 }

@@ -52,6 +52,11 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
             label: t('strainsView.tabs.breedingLab'),
         },
         {
+            id: StrainViewTab.SeedVault,
+            icon: <PhosphorIcons.ArchiveBox />,
+            label: t('strainsView.tabs.seedVault'),
+        },
+        {
             id: StrainViewTab.Exports,
             icon: <PhosphorIcons.FileText />,
             label: t('strainsView.tabs.exports', { count: counts.exports }),

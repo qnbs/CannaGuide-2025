@@ -64,6 +64,9 @@ const ExportsManagerView = lazy(() => import('./ExportsManagerView'))
 const BreedingLabView = lazy(() =>
     import('./BreedingLab').then((m) => ({ default: m.BreedingLab })),
 )
+const SeedVaultView = lazy(() =>
+    import('./SeedVaultTab').then((m) => ({ default: m.SeedVaultTab })),
+)
 const GeneticTrendsView = lazy(() =>
     import('./GeneticTrendsView').then((m) => ({ default: m.GeneticTrendsView })),
 )
@@ -222,6 +225,9 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.Trends]: (
                 <PhosphorIcons.Sparkle className="w-16 h-16 mx-auto text-pink-400" />
             ),
+            [StrainViewTab.SeedVault]: (
+                <PhosphorIcons.ArchiveBox className="w-16 h-16 mx-auto text-amber-500" />
+            ),
         }),
         [],
     )
@@ -235,6 +241,7 @@ export const StrainsView: React.FC = () => {
             [StrainViewTab.Comparison]: t('strainsView.tabs.comparison'),
             [StrainViewTab.Genealogy]: t('strainsView.tabs.genealogy'),
             [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab'),
+            [StrainViewTab.SeedVault]: t('strainsView.tabs.seedVault'),
             [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
             [StrainViewTab.Tips]: t('strainsView.tabs.tips', { count: savedTips.length }),
             [StrainViewTab.Trends]: t('strainsView.tabs.trends'),
@@ -655,6 +662,14 @@ export const StrainsView: React.FC = () => {
                     <ErrorBoundary>
                         <Suspense fallback={<SkeletonLoader count={3} />}>
                             <BreedingLabView allStrains={allStrains} />
+                        </Suspense>
+                    </ErrorBoundary>
+                )
+            case StrainViewTab.SeedVault:
+                return (
+                    <ErrorBoundary>
+                        <Suspense fallback={<SkeletonLoader count={3} />}>
+                            <SeedVaultView />
                         </Suspense>
                     </ErrorBoundary>
                 )

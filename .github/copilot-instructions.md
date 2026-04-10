@@ -146,6 +146,35 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 ---
 
+## Legal Compliance (CanG -- German Cannabis Act)
+
+**STRICT GLOBAL RULE -- NO EXCEPTIONS:**
+
+The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits as hard-coded constants. These limits **must never be increased, bypassed, or made configurable** without explicit legal review:
+
+| Constant     | Value | Enforcement                                                | Legal Basis                                                |
+| ------------ | ----- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| `MAX_PLANTS` | **3** | Max 3 simultaneous living plants across ALL grows app-wide | KCanG Section 9 (1) Nr. 1                                  |
+| `MAX_GROWS`  | **3** | Max 3 concurrent grow projects                             | Derived from MAX_PLANTS (one plant per grow = 3 grows max) |
+
+### Rules for all contributors and AI agents:
+
+1. **Never increase MAX_PLANTS or MAX_GROWS.** The value 3 is a legal hard cap, not a product decision.
+2. **Never make these limits configurable** via settings, environment variables, feature flags, or any other mechanism.
+3. **Enforce at the data layer:** `addPlant()` in `simulationSlice` and `addGrow()` in `growsSlice` must reject additions above the limit. UI must show a clear legal-compliance warning.
+4. **Count across all grows:** The 3-plant limit is **global** (total active plants across all grows), not per-grow.
+5. **Archived/finished plants do not count** toward the limit -- only plants in active stages (Seed through Curing).
+6. **All new features** (Multi-Tent, Zone Planner, Automation, etc.) must respect these limits. Adding zones or tents does not increase the plant cap.
+7. **Documentation and UI** must always reference the legal basis (CanG / KCanG) when displaying limit warnings.
+
+### Where limits are enforced:
+
+- `apps/web/stores/slices/growsSlice.ts` -- `MAX_GROWS = 3`
+- `apps/web/stores/slices/simulationSlice.ts` -- plant addition validation
+- `apps/web/constants.ts` -- `MAX_PLANTS_CANG = 3` (canonical constant)
+
+---
+
 ## Coding Standards
 
 ### TypeScript

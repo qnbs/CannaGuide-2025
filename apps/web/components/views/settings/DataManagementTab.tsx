@@ -26,6 +26,7 @@ import { getUISnapshot } from '@/stores/useUIStore'
 import { dbService } from '@/services/dbService'
 import { selectSettings, selectSimulation } from '@/stores/selectors'
 import { selectActiveGrow, selectActiveGrowPlants } from '@/stores/selectors'
+import { selectAllPlannerTasks } from '@/stores/slices/growPlannerSlice'
 import type { GrowExportData } from '@/types'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import {
@@ -38,6 +39,8 @@ import * as Sentry from '@sentry/react'
 import { getDbStats, type DbStoreStats } from '@/services/indexedDbMonitorService'
 import { pruneOnQuotaThreshold } from '@/services/indexedDbPruneService'
 import { CommunitySharePanel } from './CommunitySharePanel'
+import { backupService } from '@/services/backupService'
+import { csvExportService } from '@/services/csvExportService'
 const CloudSyncPanel = lazy(() => import('./CloudSyncPanel'))
 import {
     Select,
@@ -220,7 +223,10 @@ const CrdtStorageInfo: React.FC = memo(() => {
         return (
             <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-md">
                 <p className="text-xs text-amber-300">
-                    {t('settingsView.data.crdtFallback', 'CRDT sync in fallback mode (LWW). Offline merge disabled.')}
+                    {t(
+                        'settingsView.data.crdtFallback',
+                        'CRDT sync in fallback mode (LWW). Offline merge disabled.',
+                    )}
                 </p>
             </div>
         )
@@ -236,7 +242,10 @@ const CrdtStorageInfo: React.FC = memo(() => {
             </div>
             {crdtSize > 1_048_576 && (
                 <p className="text-xs text-amber-300 mt-1">
-                    {t('settingsView.data.crdtSizeWarning', 'CRDT document exceeds 1 MB. Consider running storage cleanup.')}
+                    {t(
+                        'settingsView.data.crdtSizeWarning',
+                        'CRDT document exceeds 1 MB. Consider running storage cleanup.',
+                    )}
                 </p>
             )}
         </div>
@@ -251,6 +260,7 @@ const DataManagementTab: React.FC = () => {
     const settings = useAppSelector(selectSettings)
     const activeGrow = useAppSelector(selectActiveGrow)
     const activeGrowPlants = useAppSelector(selectActiveGrowPlants)
+    const plannerTasks = useAppSelector(selectAllPlannerTasks)
     const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false)
     const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
     const [fileToImport, setFileToImport] = useState<string | null>(null)
@@ -669,6 +679,125 @@ const DataManagementTab: React.FC = () => {
                         <p className="text-xs text-slate-400">
                             {t('settingsView.data.importDataDesc')}
                         </p>
+                    </div>
+                </FormSection>
+            </Card>
+
+            {/* ZIP Backup & CSV Export */}
+            <Card>
+                <FormSection
+                    title={t('settingsView.zipBackup.title')}
+                    icon={<PhosphorIcons.Archive />}
+                    defaultOpen
+                >
+                    <div className="sm:col-span-2 space-y-4">
+                        <p className="text-xs text-slate-400">
+                            {t('settingsView.zipBackup.description')}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                                onClick={async () => {
+                                    const result = await backupService.exportBackup()
+                                    if (result.success && result.blob) {
+                                        backupService.downloadBlob(result.blob, result.filename)
+                                    }
+                                }}
+                                className="flex-1 justify-center"
+                            >
+                                <PhosphorIcons.DownloadSimple className="mr-2" />
+                                {t('settingsView.zipBackup.exportZip')}
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    const input = document.getElementById('import-zip-file-input')
+                                    if (input instanceof HTMLInputElement) {
+                                        input.click()
+                                    }
+                                }}
+                                variant="secondary"
+                                className="flex-1 justify-center"
+                            >
+                                <PhosphorIcons.UploadSimple className="mr-2" />
+                                {t('settingsView.zipBackup.importZip')}
+                            </Button>
+                        </div>
+                        <input
+                            type="file"
+                            id="import-zip-file-input"
+                            accept=".zip"
+                            className="hidden"
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0]
+                                if (!file) return
+                                const result = await backupService.importBackup(file)
+                                if (result.success) {
+                                    window.location.reload()
+                                }
+                                e.target.value = ''
+                            }}
+                        />
+                    </div>
+                </FormSection>
+            </Card>
+
+            <Card>
+                <FormSection
+                    title={t('settingsView.csvExport.title')}
+                    icon={<PhosphorIcons.FileText />}
+                    defaultOpen
+                >
+                    <div className="sm:col-span-2 space-y-4">
+                        <p className="text-xs text-slate-400">
+                            {t('settingsView.csvExport.description')}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                                onClick={() => {
+                                    const plants = activeGrowPlants.map((p) => ({
+                                        id: p.id,
+                                        name: p.name,
+                                        strain: p.strain.name,
+                                        stage: p.stage,
+                                        startDate: p.createdAt,
+                                        notes: '',
+                                        growId: p.growId,
+                                    }))
+                                    const csv = csvExportService.exportPlants(plants)
+                                    csvExportService.downloadCsv(
+                                        csv,
+                                        `cannaguide-plants-${new Date().toISOString().slice(0, 10)}.csv`,
+                                    )
+                                }}
+                                variant="secondary"
+                                className="flex-1 justify-center"
+                            >
+                                <PhosphorIcons.DownloadSimple className="mr-2" />
+                                {t('settingsView.csvExport.exportPlants')}
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    const tasks = plannerTasks.map((task) => ({
+                                        id: task.id,
+                                        plantId: task.plantId,
+                                        type: task.type,
+                                        scheduledAt: task.scheduledAt,
+                                        completedAt: task.completedAt,
+                                        recurring: task.recurring,
+                                        notes: task.notes,
+                                    }))
+                                    const csv = csvExportService.exportTasks(tasks)
+                                    csvExportService.downloadCsv(
+                                        csv,
+                                        `cannaguide-tasks-${new Date().toISOString().slice(0, 10)}.csv`,
+                                    )
+                                }}
+                                variant="secondary"
+                                className="flex-1 justify-center"
+                            >
+                                <PhosphorIcons.DownloadSimple className="mr-2" />
+                                {t('settingsView.csvExport.exportTasks')}
+                            </Button>
+                        </div>
                     </div>
                 </FormSection>
             </Card>

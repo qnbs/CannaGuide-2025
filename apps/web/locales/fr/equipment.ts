@@ -741,4 +741,20 @@ export const equipmentView = {
         clickToDownload:
             'Votre fichier "{{filename}}" est pret. Cliquez sur le bouton ci-dessous pour telecharger.',
     },
+    nutrientBrands: {
+        title: 'Programmes de marques nutritives',
+        selectBrand: 'Selectionner une marque nutritive',
+        noBrand: 'Manuel (pas de programme de marque)',
+        applySchedule: 'Appliquer le programme',
+        appliedSuccess: 'Programme de marque applique : {{brand}}',
+        weekLabel: 'Semaine {{week}}',
+        stageLabel: 'Phase : {{stage}}',
+        ecTarget: 'EC cible : {{value}}',
+        phRange: 'Plage pH : {{min}} - {{max}}',
+        products: 'Produits',
+        dosage: '{{dosage}} ml/L',
+        flushWeek: 'Semaine de rincage',
+        medium: 'Milieu : {{medium}}',
+        viewSchedule: 'Voir le programme complet',
+    },
 }

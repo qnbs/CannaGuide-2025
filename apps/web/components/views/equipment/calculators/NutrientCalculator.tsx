@@ -1,8 +1,9 @@
-import React, { useState, memo } from 'react'
+import React, { useState, memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CalculatorSection, Input, ResultDisplay } from './common'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { NUTRIENT_BRAND_SCHEDULES, findBrandSchedule } from '@/data/nutrientBrands'
 
 interface Component {
     id: string
@@ -13,10 +14,26 @@ interface Component {
 export const NutrientCalculator: React.FC = memo(() => {
     const { t } = useTranslation()
     const [waterAmount, setWaterAmount] = useState(5) // in Liters
+    const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null)
+    const [selectedWeek, setSelectedWeek] = useState(1)
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
     const [components, setComponents] = useState<Component[]>([
         { id: `comp-${Date.now()}`, name: 'Grow', dose: 2 },
     ])
+
+    const selectedSchedule = selectedBrandId ? findBrandSchedule(selectedBrandId) : undefined
+    const weekData = selectedSchedule?.data.weeks.find((w) => w.week === selectedWeek)
+    const maxWeek = selectedSchedule?.data.weeks.length ?? 0
+
+    const handleApplyBrandWeek = useCallback(() => {
+        if (!weekData) return
+        const brandComponents: Component[] = weekData.products.map((p, i) => ({
+            id: `brand-${Date.now()}-${i}`,
+            name: p.name,
+            dose: p.dosageMlPerLiter,
+        }))
+        setComponents(brandComponents)
+    }, [weekData])
 
     const handleAddComponent = () => {
         setComponents((prev) => [
@@ -46,6 +63,85 @@ export const NutrientCalculator: React.FC = memo(() => {
             title={t('equipmentView.calculators.nutrients.title')}
             description={t('equipmentView.calculators.nutrients.description')}
         >
+            {/* Brand schedule selector */}
+            <div className="space-y-2 p-3 bg-slate-800/40 rounded-lg border border-slate-700/50">
+                <label className="block text-xs font-medium text-slate-300">
+                    {t('equipmentView.nutrientBrands.selectBrand')}
+                </label>
+                <select
+                    className="w-full rounded-md bg-slate-900/60 border border-slate-600 text-sm text-slate-200 px-3 py-2"
+                    value={selectedBrandId ?? ''}
+                    onChange={(e) => {
+                        const val = e.target.value || null
+                        setSelectedBrandId(val)
+                        setSelectedWeek(1)
+                    }}
+                >
+                    <option value="">{t('equipmentView.nutrientBrands.noBrand')}</option>
+                    {NUTRIENT_BRAND_SCHEDULES.map((s) => (
+                        <option key={s.id} value={s.id}>
+                            {s.data.brand} -- {s.data.scheduleName}
+                        </option>
+                    ))}
+                </select>
+                {selectedSchedule && maxWeek > 0 && (
+                    <div className="flex items-end gap-2">
+                        <div className="flex-1">
+                            <label className="block text-xs font-medium text-slate-300 mb-1">
+                                {t('equipmentView.nutrientBrands.weekLabel', {
+                                    week: selectedWeek,
+                                })}
+                                {weekData && (
+                                    <span className="ml-2 text-slate-400">
+                                        (
+                                        {t('equipmentView.nutrientBrands.stageLabel', {
+                                            stage: weekData.stage,
+                                        })}
+                                        )
+                                    </span>
+                                )}
+                            </label>
+                            <input
+                                type="range"
+                                min={1}
+                                max={maxWeek}
+                                value={selectedWeek}
+                                onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                                className="w-full accent-emerald-500"
+                            />
+                        </div>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={handleApplyBrandWeek}
+                            className="shrink-0"
+                        >
+                            <PhosphorIcons.ArrowRight className="w-3 h-3 mr-1" />
+                            {t('equipmentView.nutrientBrands.applySchedule')}
+                        </Button>
+                    </div>
+                )}
+                {weekData && (
+                    <div className="flex gap-3 text-xs text-slate-400">
+                        {weekData.ecTarget !== undefined && (
+                            <span>
+                                {t('equipmentView.nutrientBrands.ecTarget', {
+                                    value: weekData.ecTarget,
+                                })}
+                            </span>
+                        )}
+                        {weekData.phTarget && (
+                            <span>
+                                {t('equipmentView.nutrientBrands.phRange', {
+                                    min: weekData.phTarget[0],
+                                    max: weekData.phTarget[1],
+                                })}
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
+
             <Input
                 label={t('equipmentView.calculators.nutrients.reservoir')}
                 type="number"

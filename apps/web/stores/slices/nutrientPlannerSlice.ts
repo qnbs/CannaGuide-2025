@@ -69,6 +69,8 @@ export interface NutrientPlannerState {
     lastAiRecommendation: string | null
     /** ID of the currently applied nutrient-schedule plugin (null = manual) */
     activePluginId: string | null
+    /** ID of the loaded built-in brand schedule (null = none) */
+    activeBrandId: string | null
     /** Auto-generated adjustment recommendation based on recent readings */
     autoAdjustRecommendation: string | null
 }
@@ -158,6 +160,7 @@ const initialState: NutrientPlannerState = {
     isAiLoading: false,
     lastAiRecommendation: null,
     activePluginId: null,
+    activeBrandId: null,
     autoAdjustRecommendation: null,
 }
 
@@ -388,7 +391,39 @@ const nutrientPlannerSlice = createSlice({
         /** Detach plugin and revert to default schedule */
         detachPlugin(state) {
             state.activePluginId = null
+            state.activeBrandId = null
             state.schedule = createDefaultSchedule()
+        },
+
+        /** Load a built-in brand schedule by ID and apply it */
+        loadBrandSchedule(
+            state,
+            action: PayloadAction<{
+                brandId: string
+                weeks: NutrientWeek[]
+            }>,
+        ) {
+            const { brandId, weeks } = action.payload
+            state.activeBrandId = brandId
+            state.activePluginId = brandId
+
+            // Group weeks by mapped stage, take the last week per stage as representative
+            const stageMap = new Map<PlantStage, NutrientWeek>()
+            for (const week of weeks) {
+                stageMap.set(mapPluginStage(week.stage), week)
+            }
+
+            state.schedule = Array.from(stageMap.entries()).map(([stage, week]) => ({
+                id: `brand-${brandId}-${stage}`,
+                growId: DEFAULT_GROW_ID,
+                stage,
+                targetEc: week.ecTarget ?? getOptimalRange(state.medium, stage).ecMin,
+                targetPh: week.phTarget
+                    ? (week.phTarget[0] + week.phTarget[1]) / 2
+                    : getOptimalRange(state.medium, stage).phMin,
+                npkRatio: { n: 1, p: 1, k: 1 },
+                notes: week.products.map((p) => `${p.name} ${p.dosageMlPerLiter} ml/L`).join(', '),
+            }))
         },
 
         // --- CRDT sync actions (Session I) ---
@@ -448,6 +483,7 @@ export const {
     setAiRecommendation,
     applyPluginSchedule,
     detachPlugin,
+    loadBrandSchedule,
     upsertScheduleEntry,
     removeScheduleEntry,
     upsertReading,

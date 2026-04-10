@@ -2,7 +2,61 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 116) -- i18n Fixes + About Overhaul + Coverage Sprint
+## Latest Session (Session 117) -- Enhanced PDF Reports + Netlify Distribution
+
+**Status: Enhanced PDF grow reports with metrics charts, diagnosis trends, and AI summaries. Netlify promoted as primary distribution. 19 new tests.**
+
+### What Was Done (Session 117)
+
+1. **Enhanced PDF Reports** -- New `generateEnhancedGrowReport()`
+   function in `pdfReportService.ts` providing:
+    - Canvas-rendered metrics line charts (height green, CO2 blue)
+    - Canvas-rendered diagnosis severity bar charts (color-coded)
+    - Metric statistics table (min/max/avg for height, pot weight, CO2)
+    - Color-coded diagnosis history table with confidence percentages
+    - AI-generated plant summary via `aiService.getPlantAdvice()`
+    - Offline template fallback via `buildOfflineSummary()`
+    - Exported helpers: `computeMetricStats`, `buildDiagnosisRows`,
+      `buildOfflineSummary` (all pure functions, fully tested)
+
+2. **Enhanced Report UI** -- New emerald-themed button in
+   `DetailedPlantView.tsx` with FileText icon, loading spinner,
+   dynamic import for code-splitting, and Redux selector integration
+   for metrics and diagnosis data.
+
+3. **i18n (5 Languages)** -- 15 new export keys per language
+   (enhancedReport, generatingEnhanced, enhancedReady, noMetrics,
+   noDiagnosis, metricsSection, diagnosisSection, aiSummarySection,
+   recommendations, metricStats, min, max, avg, severity, confidence)
+   added to EN/DE/ES/FR/NL locale files.
+
+4. **Unit Tests (+19)** -- Tests for `computeMetricStats` (5),
+   `buildDiagnosisRows` (5), `buildOfflineSummary` (9) covering
+   edge cases, empty data, low health, severe diagnosis, and
+   healthy plant scenarios.
+
+5. **Netlify Distribution** -- README distribution table updated
+   with Netlify as primary (with live URL) and GitHub Pages as
+   secondary. Enhanced PDF Reports added to Plants feature section.
+
+### Verified Metrics
+
+- Tests: **1980 passing**, 0 failures
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- Version: 1.6.3 in package.json (root + web)
+
+### Next Steps
+
+- Edge Functions for API key proxy (Netlify serverless)
+- PDF: Add terpene/cannabinoid profile charts section
+- PDF: QR code linking back to plant in app
+- Visual regression tests for Enhanced Report button
+- Lighthouse CI assertions for Netlify deployment
+
+---
+
+## Previous Session (Session 116) -- i18n Fixes + About Overhaul + Coverage Sprint
 
 **Status: All CI gates pass (1961 tests, TS clean, build clean). Humidity Deficit i18n fixed, About/README overhauled across 5 languages, 77 new tests added.**
 

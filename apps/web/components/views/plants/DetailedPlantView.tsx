@@ -13,7 +13,7 @@ import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab'
 import { MetricsOverviewTab } from './detailedPlantViewTabs/MetricsOverviewTab'
 import { PhotoTimelineTab } from './detailedPlantViewTabs/PhotoTimelineTab'
 import { GrowPlannerView } from './GrowPlannerView'
-import { useAppDispatch } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
 import { EnvironmentDashboard } from './analytics/EnvironmentDashboard'
@@ -21,6 +21,8 @@ import { ProactiveAlertBanner } from './ProactiveAlertBanner'
 import { RelatedKnowledgePanel } from '@/components/common/RelatedKnowledgePanel'
 import { calculateVPD } from '@/lib/vpd/calculator'
 import { useUIStore } from '@/stores/useUIStore'
+import { selectMetricsForPlant } from '@/stores/slices/metricsSlice'
+import { selectDiagnosisForPlant } from '@/stores/slices/diagnosisHistorySlice'
 
 interface DetailedPlantViewProps {
     plant: Plant
@@ -65,7 +67,11 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     const dispatch = useAppDispatch()
     const [activeTab, setActiveTab] = useState('overview')
     const [isPdfLoading, setIsPdfLoading] = useState(false)
+    const [isEnhancedPdfLoading, setIsEnhancedPdfLoading] = useState(false)
     const tabListRef = useRef<HTMLDivElement>(null)
+
+    const metricsForPlant = useAppSelector(selectMetricsForPlant(plant.id))
+    const diagnosisForPlant = useAppSelector(selectDiagnosisForPlant(plant.id))
 
     useEffect(() => {
         dispatch(updatePlantToNow(plant.id))
@@ -96,6 +102,37 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
             setIsPdfLoading(false)
         }
     }, [plant, isPdfLoading, t])
+
+    const handleEnhancedPdfExport = useCallback(async () => {
+        if (isEnhancedPdfLoading) return
+        setIsEnhancedPdfLoading(true)
+        try {
+            const { generateEnhancedGrowReport } = await import('@/services/pdfReportService')
+            const { blob, filename } = await generateEnhancedGrowReport(
+                plant,
+                plant.journal,
+                metricsForPlant,
+                diagnosisForPlant,
+            )
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = filename
+            a.click()
+            URL.revokeObjectURL(url)
+            useUIStore.getState().addNotification({
+                message: t('plantsView.export.enhancedReady'),
+                type: 'success',
+            })
+        } catch {
+            useUIStore.getState().addNotification({
+                message: t('plantsView.export.error'),
+                type: 'error',
+            })
+        } finally {
+            setIsEnhancedPdfLoading(false)
+        }
+    }, [plant, metricsForPlant, diagnosisForPlant, isEnhancedPdfLoading, t])
 
     const isPostHarvest = useMemo(
         () =>
@@ -296,6 +333,23 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                         <span className="text-xs text-slate-300 hidden sm:inline">PDF</span>
                     </button>
                 )}
+                <button
+                    type="button"
+                    onClick={handleEnhancedPdfExport}
+                    disabled={isEnhancedPdfLoading}
+                    aria-label={t('plantsView.export.enhancedReport')}
+                    title={t('plantsView.export.enhancedReport')}
+                    className="flex items-center gap-1 rounded-full bg-emerald-700/40 hover:bg-emerald-600/60 disabled:opacity-50 disabled:cursor-wait px-2.5 py-1.5 ring-1 ring-inset ring-emerald-500/40 transition-colors"
+                >
+                    {isEnhancedPdfLoading ? (
+                        <span className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-300 rounded-full animate-spin" />
+                    ) : (
+                        <PhosphorIcons.FileText className="w-4 h-4 text-emerald-300" />
+                    )}
+                    <span className="text-xs text-emerald-300 hidden sm:inline">
+                        {t('plantsView.export.enhancedReport')}
+                    </span>
+                </button>
             </div>
             <div className="mt-4 text-center space-y-3">
                 <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">

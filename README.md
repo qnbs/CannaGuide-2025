@@ -173,7 +173,7 @@ Three-tier client-side architecture with offline-first design:
 
 ### Plants
 
-Grow simulation from seed to harvest. VPD-based transpiration modeling, biomass growth curves, environmental monitoring. Multi-step new grow wizard, plant dashboard with lifecycle stages, journal system with photo timeline, AI diagnostics with image analysis, post-harvest drying/curing tracker. Yield prediction via ML regression. **Vision AI Leaf Diagnosis** -- ONNX PlantVillage MobileNetV2 classifier with drag-and-drop upload and camera capture for 38-class plant disease detection, severity scoring, and RAG-enriched treatment recommendations. **Nutrient Deficiency Wizard** -- interactive 8-node decision tree for visual diagnosis (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl). **Proactive Smart Coach** -- real-time threshold monitoring of temperature, humidity, VPD, pH, and EC with AI-generated per-plant alerts (2-hour cooldown) and browser push notifications. **3D Grow Room** -- Three.js OrbitControls 3D visualization for equipment placement and grow space planning. **Multi-Grow Management** -- up to 3 independent grows per German CanG compliance, grow-scoped selectors, AI context, and per-grow data export/import.
+Grow simulation from seed to harvest. VPD-based transpiration modeling, biomass growth curves, environmental monitoring. Multi-step new grow wizard, plant dashboard with lifecycle stages, journal system with photo timeline, AI diagnostics with image analysis, post-harvest drying/curing tracker. Yield prediction via ML regression. **Vision AI Leaf Diagnosis** -- ONNX PlantVillage MobileNetV2 classifier with drag-and-drop upload and camera capture for 38-class plant disease detection, severity scoring, and RAG-enriched treatment recommendations. **Nutrient Deficiency Wizard** -- interactive 8-node decision tree for visual diagnosis (N/P/K/Mg/Ca/Fe/Mn/Mo/Cl). **Proactive Smart Coach** -- real-time threshold monitoring of temperature, humidity, VPD, pH, and EC with AI-generated per-plant alerts (2-hour cooldown) and browser push notifications. **3D Grow Room** -- Three.js OrbitControls 3D visualization for equipment placement and grow space planning. **Multi-Grow Management** -- up to 3 independent grows per German CanG compliance, grow-scoped selectors, AI context, and per-grow data export/import. **Enhanced PDF Reports** -- jsPDF-based grow reports with canvas-rendered metrics charts (height/CO2 trends), diagnosis severity trend charts, metric statistics tables, AI-generated plant summaries with offline template fallback, and color-coded diagnosis history.
 
 ### Strains
 
@@ -407,10 +407,10 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 ## Distribution
 
-| Target           | Method         | Trigger            |
-| ---------------- | -------------- | ------------------ |
-| **GitHub Pages** | `deploy.yml`   | Push to `main`     |
-| **Netlify**      | `netlify.toml` | PR preview deploys |
+| Target           | Method         | Trigger            | URL                                                                       |
+| ---------------- | -------------- | ------------------ | ------------------------------------------------------------------------- |
+| **Netlify**      | `netlify.toml` | Push + PR previews | [cannaguide2025.netlify.app](https://cannaguide2025.netlify.app)          |
+| **GitHub Pages** | `deploy.yml`   | Push to `main`     | [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) |
 
 ---
 

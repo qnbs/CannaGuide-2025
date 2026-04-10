@@ -54,7 +54,7 @@ apps/
     stores/              # Redux: slices/, selectors/, middleware, store config
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
     hooks/               # Custom React hooks (25)
-    data/                # Static data: 776 strains, FAQ, lexicon (83 entries), guides, diseases (22 entries), learningPaths (5 paths)
+    data/                # Static data: 776 strains, FAQ, lexicon (91 entries), guides, diseases (22 entries), learningPaths (5 paths)
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 source files each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation
     utils/               # Shared utilities
@@ -491,7 +491,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/simulation.worker.ts`                                                 | VPD simulation Web Worker                                                                                                                                                  |
 | `apps/web/data/diseases.ts`                                                     | 22 DiseaseEntry objects (deficiency/toxicity/environmental/pest/disease)                                                                                                   |
 | `apps/web/data/learningPaths.ts`                                                | 5 LearningPath objects with step-by-step grow education programs                                                                                                           |
-| `apps/web/data/lexicon.ts`                                                      | 83-entry grower glossary (6 categories: General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease)                                                                            |
+| `apps/web/data/lexicon.ts`                                                      | 91-entry grower glossary (6 categories: General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease)                                                                            |
 | `apps/web/components/views/knowledge/LexikonView.tsx`                           | Searchable 83-term Knowledge glossary sub-view                                                                                                                             |
 | `apps/web/components/views/knowledge/DiseaseAtlasView.tsx`                      | 22-entry plant disease diagnostic atlas sub-view                                                                                                                           |
 | `apps/web/components/views/knowledge/CalculatorHubView.tsx`                     | VPD + Nutrient Ratio + pH/EC calculator hub sub-view                                                                                                                       |

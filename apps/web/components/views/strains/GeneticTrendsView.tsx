@@ -16,12 +16,16 @@ const CATEGORIES: Array<{
     iconKey: keyof typeof categoryIcons
     color: string
 }> = [
-    { id: 'terpeneDiversity', iconKey: 'terpeneDiversity', color: 'text-pink-400' },
-    { id: 'ultraPotency', iconKey: 'ultraPotency', color: 'text-red-400' },
-    { id: 'balancedHybrids', iconKey: 'balancedHybrids', color: 'text-blue-400' },
-    { id: 'autofloweringRevolution', iconKey: 'autofloweringRevolution', color: 'text-amber-400' },
-    { id: 'advancedBreeding', iconKey: 'advancedBreeding', color: 'text-purple-400' },
-    { id: 'landraceRevival', iconKey: 'landraceRevival', color: 'text-green-400' },
+    { id: 'terpeneDiversity', iconKey: 'terpeneDiversity', color: 'text-primary-400' },
+    { id: 'ultraPotency', iconKey: 'ultraPotency', color: 'text-accent-400' },
+    { id: 'balancedHybrids', iconKey: 'balancedHybrids', color: 'text-secondary-400' },
+    {
+        id: 'autofloweringRevolution',
+        iconKey: 'autofloweringRevolution',
+        color: 'text-primary-400',
+    },
+    { id: 'advancedBreeding', iconKey: 'advancedBreeding', color: 'text-accent-400' },
+    { id: 'landraceRevival', iconKey: 'landraceRevival', color: 'text-secondary-400' },
 ]
 
 const categoryIcons = {
@@ -196,10 +200,10 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
                                         )
                                         const matchColor =
                                             match.score >= 80
-                                                ? 'bg-emerald-900/50 text-emerald-300 border-emerald-700/50'
+                                                ? 'bg-secondary-900/50 text-secondary-300 border-secondary-700/50'
                                                 : match.score >= 60
-                                                  ? 'bg-amber-900/50 text-amber-300 border-amber-700/50'
-                                                  : 'bg-slate-700/50 text-slate-400 border-slate-600/50'
+                                                  ? 'bg-accent-900/50 text-accent-300 border-accent-700/50'
+                                                  : 'bg-neutral-700/50 text-neutral-400 border-neutral-600/50'
                                         return (
                                             <span
                                                 className={`text-xs px-2 py-0.5 rounded border font-mono shrink-0 ${matchColor}`}
@@ -246,7 +250,7 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
                                             {getRelatedGrowTechForGenetic(cat.id).map((tech) => (
                                                 <span
                                                     key={tech}
-                                                    className="text-xs px-2 py-0.5 rounded-full bg-blue-900/40 border border-blue-700/40 text-blue-300"
+                                                    className="text-xs px-2 py-0.5 rounded-full bg-primary-900/40 border border-primary-700/40 text-primary-300"
                                                 >
                                                     {tech}
                                                 </span>
@@ -259,7 +263,7 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
                                             type="button"
                                             onClick={() => void handleAiAnalyze(cat.id)}
                                             disabled={isAiLoading && aiCategory === cat.id}
-                                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-accent-900/40 border border-accent-700/40 text-accent-300 hover:bg-accent-900/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             <PhosphorIcons.Sparkle
                                                 className="w-3.5 h-3.5"
@@ -270,7 +274,7 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
                                                 : t('strainsView.geneticTrends.aiAnalyze')}
                                         </button>
                                         {aiResult !== null && aiCategory === cat.id && (
-                                            <div className="mt-2 p-3 rounded-lg bg-purple-950/30 border border-purple-800/30 text-xs text-purple-200 leading-relaxed">
+                                            <div className="mt-2 p-3 rounded-lg bg-accent-950/30 border border-accent-800/30 text-xs text-accent-200 leading-relaxed">
                                                 <span className="font-semibold block mb-1">
                                                     {t('strainsView.geneticTrends.aiInsightLabel')}
                                                 </span>
@@ -321,7 +325,7 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
             </div>
 
             {/* Implications */}
-            <div className="p-4 rounded-lg bg-gradient-to-br from-primary-900/20 to-purple-900/20 border border-primary-800/30">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-primary-900/20 to-accent-900/20 border border-primary-800/30">
                 <h3 className="text-sm font-bold text-primary-300 mb-2">
                     {t('strainsView.geneticTrends.implications.title')}
                 </h3>
@@ -335,7 +339,7 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
             {/* Conclusion */}
             <div className="p-4 rounded-lg bg-slate-800/60 border border-slate-700/50 text-sm text-slate-300 leading-relaxed">
                 <PhosphorIcons.Sparkle
-                    className="w-5 h-5 text-purple-400 inline mr-2"
+                    className="w-5 h-5 text-accent-400 inline mr-2"
                     aria-hidden="true"
                 />
                 {t('strainsView.geneticTrends.conclusion')}

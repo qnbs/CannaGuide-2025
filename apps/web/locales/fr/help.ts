@@ -273,6 +273,106 @@ export const helpView = {
                 definition:
                     "Une variete de cannabis pure et originale qui s'est naturellement adaptee et stabilisee dans une region geographique specifique sur une longue periode.",
             },
+            mainlining: {
+                term: 'Mainlining (Manifolding)',
+                definition:
+                    "Une technique avancee d'entrainement a haut stress ou toutes les branches laterales sont supprimees tot et la plante est etee a plusieurs reprises pour creer un collecteur symetrique avec 8-16 tetes de taille uniforme. Produit des tetes de taille uniforme et maximise le rendement par plante.",
+            },
+            superCropping: {
+                term: 'Super Cropping',
+                definition:
+                    "Une technique d'entrainement a haut stress ou les tiges sont delicatement pincees et pliees pour creer un cal similaire a un noeud. Cela renforce la branche, ameliore le flux de nutriments et peut augmenter la production de cannabinoides par une reponse au stress controlee.",
+            },
+            defoliation: {
+                term: 'Defoliation',
+                definition:
+                    "Le retrait strategique de feuilles nourriceres selectionnees pendant la phase vegetative ou de floraison precoce pour ameliorer la penetration de la lumiere vers les sites de fleurs inferieurs et augmenter la circulation d'air, reduisant le risque de moisissure.",
+            },
+            runoff: {
+                term: 'Eau de Drainage (Runoff)',
+                definition:
+                    "L'exces d'eau qui s'ecoule du fond d'un conteneur apres l'arrosage. Mesurer le pH et l'EC du drainage aide a surveiller les conditions de la zone racinaire. Un objectif de 10-20% de volume de drainage est la pratique standard.",
+            },
+            rootBound: {
+                term: 'Racines Encerclees',
+                definition:
+                    "Un etat ou une plante a depasse son conteneur et les racines s'enroulent etroitement autour de l'interieur du pot, restreignant la croissance et l'absorption des nutriments. Rempoter dans un conteneur plus grand ou utiliser des pots en tissu previent cela.",
+            },
+            dlt: {
+                term: 'DLT (Technique de Litiere Profonde)',
+                definition:
+                    "Une methode de sol vivant ou la matiere organique est superposee au-dessus du milieu de culture, creant un ecosysteme d'auto-compostage. Les microbes benefiques decomposent la litiere, fournissant des nutriments a liberation lente a la plante.",
+            },
+            ppfd: {
+                term: 'PPFD (Densite de Flux de Photons Photosynth.)',
+                definition:
+                    "Une mesure de la quantite de rayonnement photosynth. actif (PAR) atteignant une surface par seconde, mesuree en umol/m2/s. La metrique cle pour evaluer les performances d'eclairage de culture.",
+            },
+            dli: {
+                term: 'DLI (Integrale de Lumiere Quotidienne)',
+                definition:
+                    "La quantite totale de photons photosynth. actifs atteignant une surface sur 24 heures, mesuree en mol/m2/jour. Combine PPFD et photoperiode pour quantifier l'energie lumineuse totale.",
+            },
+            ipm: {
+                term: 'IPM (Lutte Integree)',
+                definition:
+                    'Une approche systematique de la lutte antiparasitaire combinant prevention, surveillance, controles biologiques et traitements cibles en dernier recours. Privilegie les insectes benefiques, les cultures associees et les controles environnementaux aux pesticides chimiques.',
+            },
+            autoflower: {
+                term: 'Autofloraison',
+                definition:
+                    "Genetique de cannabis portant des traits Ruderalis qui fleurit selon l'age plutot que les changements de cycle lumineux. Les autofloraisons modernes (2026) egalent les varietes a photoperiode en puissance et richesse terpenique avec des cycles de 75-90 jours de la graine a la recolte.",
+            },
+            feminized: {
+                term: 'Graines Feminisees',
+                definition:
+                    "Graines genetiquement manipulees (typiquement via argent colloidal ou STS) pour produire uniquement des plantes femelles (99,9%). Elimine le besoin d'identifier et de supprimer les plantes males, maximisant la canopee productive.",
+            },
+            cloning: {
+                term: 'Clonage (Bouturage)',
+                definition:
+                    "Le processus de prelevement d'une bouture d'une plante mere et de son enracinement pour creer une copie genetiquement identique. Assure la regularite des schemos de croissance, de la puissance et des profils terpeniques sur plusieurs cultures.",
+            },
+            dynamicLighting: {
+                term: 'Eclairage Dynamique',
+                definition:
+                    "Systemes d'eclairage LED qui ajustent automatiquement leur sortie spectrale en fonction de la phase de croissance et des conditions environnementales (VPD). Dominance bleue pour la croissance vegetative, dominance rouge pour la floraison.",
+            },
+            digitalTwin: {
+                term: 'Jumeau Numerique',
+                definition:
+                    "Une replique virtuelle d'un environnement de culture construite a partir de donnees de capteurs en temps reel. Utilise pour simuler des scenarios hypothetiques (changements de CO2, ajustements de temperature) et predire leur impact sur le rendement avant de faire des changements reels.",
+            },
+            aeroponics: {
+                term: 'Aeroponie',
+                definition:
+                    "Une methode de culture sans sol ou les racines des plantes sont suspendues dans l'air et les nutriments sont distribues par brumisation fine. Atteint jusqu'a 30% de croissance plus rapide avec 90% moins d'eau que les methodes traditionnelles.",
+            },
+            smartFertigation: {
+                term: 'Fertigation Intelligente',
+                definition:
+                    "Un systeme automatise qui combine l'irrigation avec un dosage precis des nutriments, utilisant des capteurs EC/pH et un controle en boucle fermee pour maintenir des niveaux de nutriments optimaux en temps reel.",
+            },
+            tissueCulture: {
+                term: 'Culture de Tissus',
+                definition:
+                    "Une technique de laboratoire sterile (micropropagation) pour produire des clones exempts de virus et genetiquement identiques a partir de minuscules echantillons de tissu vegetal, permettant une mise a l'echelle massive de genetique d'elite.",
+            },
+            polyploidy: {
+                term: 'Polyploidie',
+                definition:
+                    "Un etat ou les organismes possedent plus de deux jeux complets de chromosomes. Chez le cannabis, les plantes triploides (3n), tetraploides (4n) et hexaploides (6n) peuvent produire jusqu'a 65% plus de cannabinoides et une biomasse superieure. Les triploides sont steriles au pollen.",
+            },
+            chemovar: {
+                term: 'Chemovar',
+                definition:
+                    'Un systeme de classification base sur la composition chimique (profils de cannabinoides et de terpenes) plutot que la morphologie. Type I (dominance THC), Type II (equilibre), Type III (dominance CBD), Type IV (dominance CBG), Type V (sans cannabinoides).',
+            },
+            f1Hybrid: {
+                term: 'Hybride F1',
+                definition:
+                    "Premiere generation filiale issue d'un croisement entre deux lignees parentales genetiquement distinctes et stables. Les hybrides F1 presentent une vigueur hybride (heterosis) avec une croissance uniforme, des rendements superieurs et des profils de cannabinoides reguliers.",
+            },
         },
     },
     manual: {

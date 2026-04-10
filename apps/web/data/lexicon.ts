@@ -62,6 +62,14 @@ export const lexiconData: LexiconEntry[] = [
     { key: 'autoflower', category: 'General' },
     { key: 'feminized', category: 'General' },
     { key: 'cloning', category: 'General' },
+    { key: 'dynamicLighting', category: 'General' },
+    { key: 'digitalTwin', category: 'General' },
+    { key: 'aeroponics', category: 'General' },
+    { key: 'smartFertigation', category: 'General' },
+    { key: 'tissueCulture', category: 'General' },
+    { key: 'polyploidy', category: 'General' },
+    { key: 'chemovar', category: 'General' },
+    { key: 'f1Hybrid', category: 'General' },
 
     // Naehrstoffe
     { key: 'nitrogen', category: 'Nutrient' },

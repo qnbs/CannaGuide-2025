@@ -6,6 +6,11 @@ import { lexiconData } from '@/data/lexicon'
 
 type CategoryFilter = 'All' | LexiconEntry['category']
 
+const getCategoryI18nKey = (category: string): string => {
+    if (category === 'General') return 'general'
+    return `${category.toLowerCase()}s`
+}
+
 const CATEGORY_COLORS: Record<LexiconEntry['category'], string> = {
     Cannabinoid: 'bg-purple-800 text-purple-200 border-purple-600',
     Terpene: 'bg-green-800 text-green-200 border-green-600',
@@ -34,13 +39,13 @@ const LexikonViewComponent: React.FC = () => {
     const filtered = useMemo(() => {
         const q = query.toLowerCase().trim()
         return lexiconData.filter((entry) => {
-            const term = t(`helpView.lexicon.${entry.category.toLowerCase()}s.${entry.key}.term`, {
+            const catKey = getCategoryI18nKey(entry.category)
+            const term = t(`helpView.lexicon.${catKey}.${entry.key}.term`, {
                 defaultValue: entry.key,
             }).toLowerCase()
-            const definition = t(
-                `helpView.lexicon.${entry.category.toLowerCase()}s.${entry.key}.definition`,
-                { defaultValue: '' },
-            ).toLowerCase()
+            const definition = t(`helpView.lexicon.${catKey}.${entry.key}.definition`, {
+                defaultValue: '',
+            }).toLowerCase()
             const matchesQuery = !q || term.includes(q) || definition.includes(q)
             const matchesCategory = activeCategory === 'All' || entry.category === activeCategory
             return matchesQuery && matchesCategory
@@ -105,14 +110,13 @@ const LexikonViewComponent: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {filtered.map((entry) => {
-                        const term = t(
-                            `helpView.lexicon.${entry.category.toLowerCase()}s.${entry.key}.term`,
-                            { defaultValue: entry.key },
-                        )
-                        const definition = t(
-                            `helpView.lexicon.${entry.category.toLowerCase()}s.${entry.key}.definition`,
-                            { defaultValue: '' },
-                        )
+                        const catKey = getCategoryI18nKey(entry.category)
+                        const term = t(`helpView.lexicon.${catKey}.${entry.key}.term`, {
+                            defaultValue: entry.key,
+                        })
+                        const definition = t(`helpView.lexicon.${catKey}.${entry.key}.definition`, {
+                            defaultValue: '',
+                        })
                         const colorCls =
                             CATEGORY_COLORS[entry.category] ??
                             'bg-slate-700 text-slate-200 border-slate-500'

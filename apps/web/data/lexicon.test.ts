@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { lexiconData } from './lexicon'
 
 describe('lexiconData', () => {
-    it('contains 83 entries', () => {
-        expect(lexiconData).toHaveLength(83)
+    it('contains 91 entries', () => {
+        expect(lexiconData).toHaveLength(91)
     })
 
     it('every entry has a unique key', () => {
@@ -55,7 +55,7 @@ describe('lexiconData', () => {
 
     it('keys use camelCase or lowercase format', () => {
         for (const entry of lexiconData) {
-            expect(entry.key).toMatch(/^[a-zA-Z]+$/)
+            expect(entry.key).toMatch(/^[a-zA-Z][a-zA-Z0-9]*$/)
         }
     })
 })

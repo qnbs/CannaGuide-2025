@@ -272,7 +272,52 @@ export const helpView = {
             landrace: {
                 term: 'Landrasse',
                 definition:
-                    'Eine reine, ursprüngliche Cannabis-Sorte, die sich über einen langen Zeitraum in einer bestimmten geografischen Region natürlich angepasst und stabilisiert hat.',
+                    'Eine reine, urspruengliche Cannabis-Sorte, die sich ueber einen langen Zeitraum in einer bestimmten geografischen Region natuerlich angepasst und stabilisiert hat.',
+            },
+            mainlining: {
+                term: 'Mainlining (Manifolding)',
+                definition:
+                    'Eine fortgeschrittene High-Stress-Trainingstechnik, bei der alle Seitentriebe frueh entfernt und die Pflanze wiederholt getoppt wird, um einen symmetrischen Verteiler mit 8-16 gleichmaessig grossen Colas zu erzeugen. Produziert einheitliche Bluetengroesse und maximiert den Ertrag pro Pflanze.',
+            },
+            superCropping: {
+                term: 'Super Cropping',
+                definition:
+                    'Eine High-Stress-Trainingstechnik, bei der Staengel vorsichtig gequetscht und gebogen werden, um eine knotenaehnliche Verdickung zu erzeugen. Dies staerkt den Ast, verbessert den Naehrstofffluss und kann die Cannabinoid-Produktion durch kontrollierte Stressreaktion steigern.',
+            },
+            defoliation: {
+                term: 'Defoliation (Entlaubung)',
+                definition:
+                    'Das strategische Entfernen ausgewaehlter Faecherblaetter waehrend der vegetativen oder fruehen Bluetephase, um die Lichtdurchdringung zu tieferen Bluetenstaenden zu verbessern und die Luftzirkulation zu erhoehen, wodurch das Schimmelrisiko sinkt.',
+            },
+            runoff: {
+                term: 'Ablaufwasser (Runoff)',
+                definition:
+                    'Das ueberschuessige Wasser, das nach dem Giessen aus dem Boden des Behaelters ablaeuft. Die Messung von pH und EC des Ablaufwassers hilft, die Bedingungen in der Wurzelzone zu ueberwachen. Ein Zielwert von 10-20% Ablaufvolumen ist gaengige Praxis.',
+            },
+            rootBound: {
+                term: 'Wurzelgebunden',
+                definition:
+                    'Ein Zustand, bei dem eine Pflanze ihren Topf ueberwaechst und die Wurzeln sich eng an der Innenseite des Topfes entlangwinden, was Wachstum und Naehrstoffaufnahme einschraenkt. Umtopfen in einen groesseren Behaelter oder die Verwendung von Stofftoepfen verhindert dies.',
+            },
+            dlt: {
+                term: 'DLT (Deep Litter Technique)',
+                definition:
+                    'Eine Living-Soil-Methode, bei der organisches Material auf das Substrat geschichtet wird und ein sich selbst kompostierendes Oekosystem entsteht. Nuetzliche Mikroben zersetzen die Streu und versorgen die Pflanze mit langsam freigesetzten Naehrstoffen.',
+            },
+            ipm: {
+                term: 'IPM (Integriertes Schaedlingsmanagement)',
+                definition:
+                    'Ein systematischer Ansatz zur Schaedlingsbekaempfung, der Praevention, Ueberwachung, biologische Kontrollen und gezielte Behandlungen als letztes Mittel kombiniert. Betont Nuetzlinge, Mischkultur und Umweltkontrollen gegenueber chemischen Pestiziden.',
+            },
+            feminized: {
+                term: 'Feminisierte Samen',
+                definition:
+                    'Samen, die genetisch manipuliert werden (typischerweise mit kolloidalem Silber oder STS), um ausschliesslich weibliche Pflanzen (99,9%) hervorzubringen. Eliminiert die Notwendigkeit, maennliche Pflanzen zu identifizieren und zu entfernen, und maximiert das produktive Blattdach.',
+            },
+            cloning: {
+                term: 'Klonen (Stecklinge)',
+                definition:
+                    'Der Prozess, einen Steckling von einer Mutterpflanze zu nehmen und ihn zu bewurzeln, um eine genetisch identische Kopie zu erzeugen. Stellt Konsistenz in Wuchsmuster, Potenz und Terpenprofilen ueber mehrere Grows hinweg sicher.',
             },
             dynamicLighting: {
                 term: 'Dynamische Beleuchtung',
@@ -314,10 +359,10 @@ export const helpView = {
                 definition:
                     'Ein Zustand, bei dem Organismen mehr als zwei vollständige Chromosomensätze besitzen. Bei Cannabis können triploide (3n), tetraploide (4n) und hexaploide (6n) Pflanzen bis zu 65% mehr Cannabinoide und höhere Biomasse produzieren. Triploide sind pollen-steril.',
             },
-            autoflowering: {
+            autoflower: {
                 term: 'Autoflowering',
                 definition:
-                    'Cannabis-Genetik mit Ruderalis-Merkmalen, die basierend auf dem Alter statt auf Lichtzyklusänderungen blüht. Moderne Autoflower (2026) erreichen Photoperiod-Qualität in Potenz und Terpen-Reichtum mit 75-90-Tage Samen-bis-Ernte-Zyklen.',
+                    'Cannabis-Genetik mit Ruderalis-Merkmalen, die basierend auf dem Alter statt auf Lichtzyklusaenderungen blueht. Moderne Autoflower (2026) erreichen Photoperiod-Qualitaet in Potenz und Terpen-Reichtum mit 75-90-Tage Samen-bis-Ernte-Zyklen.',
             },
             chemovar: {
                 term: 'Chemovar',

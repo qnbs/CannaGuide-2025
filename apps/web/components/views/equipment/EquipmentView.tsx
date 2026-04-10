@@ -48,28 +48,28 @@ export const EquipmentView: React.FC = () => {
     const viewIcons = useMemo(
         () => ({
             [EquipmentViewTab.Configurator]: (
-                <PhosphorIcons.MagicWand className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-purple-400" />
+                <PhosphorIcons.MagicWand className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-accent-400" />
             ),
             [EquipmentViewTab.Setups]: (
-                <PhosphorIcons.ArchiveBox className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-orange-400" />
+                <PhosphorIcons.ArchiveBox className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-primary-400" />
             ),
             [EquipmentViewTab.Calculators]: (
-                <PhosphorIcons.Calculator className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-cyan-400" />
+                <PhosphorIcons.Calculator className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-secondary-400" />
             ),
             [EquipmentViewTab.GrowShops]: (
-                <PhosphorIcons.Storefront className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-lime-400" />
+                <PhosphorIcons.Storefront className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-accent-400" />
             ),
             [EquipmentViewTab.Seedbanks]: (
-                <PhosphorIcons.Cannabis className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-green-400" />
+                <PhosphorIcons.Cannabis className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-secondary-400" />
             ),
             [EquipmentViewTab.GrowTech]: (
-                <PhosphorIcons.Lightning className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-yellow-400" />
+                <PhosphorIcons.Lightning className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-primary-400" />
             ),
             [EquipmentViewTab.IotDashboard]: (
-                <PhosphorIcons.WifiHigh className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-cyan-400" />
+                <PhosphorIcons.WifiHigh className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-accent-400" />
             ),
             [EquipmentViewTab.HydroMonitoring]: (
-                <PhosphorIcons.Drop className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-blue-400" />
+                <PhosphorIcons.Drop className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-secondary-400" />
             ),
         }),
         [],

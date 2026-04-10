@@ -899,6 +899,14 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({
         setActiveTab('overview')
     }, [strain])
 
+    // Scroll to top when strain detail opens or strain changes
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [strain])
+
     const tabs: { id: string; label: string; icon: React.ReactNode }[] = [
         {
             id: 'overview',

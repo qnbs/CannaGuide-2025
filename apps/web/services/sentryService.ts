@@ -153,6 +153,8 @@ export const captureLocalAiError = (
             | 'worker-inference-fallthrough'
             | 'preload-embedding'
             | 'preload-nlp'
+            | 'preload-storage-check'
+            | 'webllm-storage-check'
             | 'response-validation'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number

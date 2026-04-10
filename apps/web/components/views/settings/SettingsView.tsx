@@ -2271,6 +2271,14 @@ const SettingsViewComponent: React.FC = () => {
     const [activeTab, setActiveTab] = useState('plants')
     const [searchQuery, setSearchQuery] = useState('')
 
+    // Scroll to top on tab change
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [activeTab])
+
     const searchResults = useMemo(() => {
         if (!searchQuery.trim()) return []
         const q = searchQuery.toLowerCase()

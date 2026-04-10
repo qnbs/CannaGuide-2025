@@ -220,14 +220,38 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
     const [getEquipmentRecommendation, { data: recommendation, isLoading, error, reset }] =
         useGetEquipmentRecommendationMutation()
 
+    // Seed defaults from onboarding wizard (SC-02)
+    const onboardingDefaults = useMemo(() => {
+        try {
+            const spaceSize = localStorage.getItem('cg.onboarding.spaceSize')
+            const budgetTier = localStorage.getItem('cg.onboarding.budget')
+            const spaceDimensions: Record<string, { width: number; depth: number }> = {
+                small: { width: 60, depth: 60 },
+                medium: { width: 80, depth: 80 },
+                large: { width: 120, depth: 120 },
+            }
+            const budgetValues: Record<string, number> = {
+                low: 200,
+                mid: 400,
+                high: 1000,
+            }
+            return {
+                growSpace: (spaceSize && spaceDimensions[spaceSize]) ?? { width: 80, depth: 80 },
+                budget: (budgetTier && budgetValues[budgetTier]) ?? 1000,
+            }
+        } catch {
+            return { growSpace: { width: 80, depth: 80 }, budget: 1000 }
+        }
+    }, [])
+
     const [step, setStep] = useState(1)
     const [plantCount, setPlantCount] = useState<PlantCount>('1')
     const [experience, setExperience] = useState<ExperienceLevel>('beginner')
-    const [growSpace, setGrowSpace] = useState({ width: 80, depth: 80 })
+    const [growSpace, setGrowSpace] = useState(onboardingDefaults.growSpace)
     const [floweringTypePreference, setFloweringTypePreference] = useState<
         'autoflower' | 'photoperiod' | 'any'
     >('any')
-    const [budget, setBudget] = useState(1000)
+    const [budget, setBudget] = useState(onboardingDefaults.budget)
     const [priorities, setPriorities] = useState<GrowPriority[]>([])
     const [customNotes, setCustomNotes] = useState('')
 

@@ -144,6 +144,14 @@ export const StrainsView: React.FC = () => {
         }
     }, [strainsViewTab])
 
+    // Scroll to top when navigating into/out of strain detail
+    useEffect(() => {
+        const mainEl = document.getElementById('main-content')
+        if (mainEl) {
+            mainEl.scrollTop = 0
+        }
+    }, [selectedStrainId])
+
     const selectedStrainIds = useMemo(
         () => strainsViewState.selectedStrainIds,
         [strainsViewState.selectedStrainIds],

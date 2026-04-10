@@ -259,6 +259,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `pnpm run pr:push` (branch -> PR -> auto-merge).
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
+- **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. The pre-commit (typecheck + lint-staged) and pre-push (typecheck + lint-scopes) hooks exist to prevent broken code from reaching `main`. If an emergency forces `--no-verify`, the developer **must** manually run `pnpm --filter @cannaguide/web typecheck && pnpm run lint:scopes` before pushing and document the reason in the commit body.
 
 ### Dev Container
 

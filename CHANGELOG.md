@@ -6,6 +6,17 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **feat(equipment):** new Preset Setups sub-page with 12
+  pre-configured standard grow setups (Micro Stealth, Beginner Soil,
+  Autoflower Express, Standard Soil, Coco Performance, High-Yield Pro,
+  Premium LED, DWC Hydro, Ultra Budget, Organic Living Soil, Energy
+  Saver, Full Spectrum Pro) with category filtering, difficulty badges,
+  and copy-to-my-setups functionality
+- **i18n(equipment):** preset setups keys in all 5 languages
+  (EN/DE/ES/FR/NL)
+
 ### Changed
 
 - **docs:** restructure README.md aligned with DeepWiki TOC (933 -> 595

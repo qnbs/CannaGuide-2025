@@ -2,7 +2,51 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 122) -- CI Fix + Scroll-to-Top + Onboarding Data Wiring
+## Latest Session (Session 123) -- Preset Setups Sub-Page
+
+**Status: New Equipment sub-page "Preset Setups" with 12 pre-configured
+grow setups. Typecheck clean, 2028 tests passing, build OK.**
+
+### What Was Done (Session 123)
+
+1. **Preset Setups Data** -- Created `data/presetSetups.ts` with 12
+   market-researched standard setups spanning Micro (40x40) through
+   Large (120x120), plus Specialty (DWC Hydro). Each has complete
+   Recommendation with real product names, prices, wattages, and
+   detailed rationales. Covers beginner/intermediate/expert levels.
+
+2. **PresetSetupsView Component** -- New lazy-loaded view with:
+    - Category filter chips (All/Micro/Small/Medium/Large/Specialty)
+    - Difficulty badges (beginner/intermediate/expert)
+    - Size + tag display per preset
+    - SetupCard integration for accordion display
+    - "Copy to My Setups" button (saves to Redux savedItems)
+    - Info footer with pricing disclaimer
+
+3. **EquipmentView Wiring** -- Added `PresetSetups` enum value between
+   Configurator and Setups. Lazy import, viewIcon (Cube), viewTitle,
+   renderContent switch case. SubNav entry with Cube icon.
+
+4. **i18n (5 languages)** -- Tab label + full presetSetups section
+   (subtitle, count, categories, difficulty, copyToMySetups, copied,
+   footer) in EN/DE/ES/FR/NL.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2028 passing, 0 failures
+- Build: OK (163 precache entries)
+
+### Next Steps
+
+- Preset setups could be enhanced with photos/thumbnails
+- Could add search/text filter across preset names and tags
+- Cross-link "Apply to Grow" to create a new Grow with the preset
+- Consider adding preset setup recommendations in AI advisor flow
+
+---
+
+## Previous Session (Session 122) -- CI Fix + Scroll-to-Top + Onboarding Data Wiring
 
 **Status: 8 files changed. Fixed CI typecheck failure (2 missing stage union values). Scroll-to-top on all view/tab/detail navigation for mobile. Onboarding data (SC-02) wired to SetupConfigurator. 2028 tests passing.**
 

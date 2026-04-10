@@ -354,6 +354,7 @@ export type ModalType =
 
 export enum EquipmentViewTab {
     Configurator = 'configurator',
+    PresetSetups = 'presetSetups',
     Setups = 'setups',
     Calculators = 'calculators',
     GrowShops = 'growShops',

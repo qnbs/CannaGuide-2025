@@ -22,6 +22,11 @@ export const EquipmentSubNav: React.FC<EquipmentSubNavProps> = ({ activeTab, onT
             icon: <PhosphorIcons.MagicWand />,
         },
         {
+            id: EquipmentViewTab.PresetSetups,
+            label: t('equipmentView.tabs.presetSetups'),
+            icon: <PhosphorIcons.Cube />,
+        },
+        {
             id: EquipmentViewTab.Setups,
             label: t('equipmentView.tabs.setups'),
             icon: <PhosphorIcons.ArchiveBox />,

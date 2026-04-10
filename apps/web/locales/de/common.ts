@@ -192,11 +192,33 @@ export const common = {
         hotwordDetected: 'Aktivierungswort erkannt -- bitte sprechen.',
         noPlantContext: 'Für den Sprachassistenten ist kein aktiver Pflanzenkontext verfügbar.',
         assistantFailed: 'Sprachassistent-Anfrage fehlgeschlagen.',
+        readAloud: 'Vorlesen',
+        mode: {
+            idle: 'Bereit',
+            listening: 'Höre zu',
+            processing: 'Verarbeite',
+            speaking: 'Spricht',
+            confirmation: 'Warte auf Bestätigung',
+        },
+        hud: {
+            title: 'Sprachsteuerung',
+            collapse: 'Sprach-HUD einklappen',
+            expand: 'Sprach-HUD ausklappen',
+        },
+        confirmation: {
+            question: '"{{command}}" ausführen?',
+            yes: 'Ja',
+            no: 'Nein',
+            cancelled: 'Befehl abgebrochen.',
+            yesOrNo: 'Bitte antworte mit Ja oder Nein.',
+        },
         errors: {
             generic: 'Ein Fehler bei der Spracherkennung ist aufgetreten.',
             noSpeech: 'Keine Sprache erkannt.',
             notAllowed: 'Mikrofonzugriff verweigert.',
             startFailed: 'Zuhören konnte nicht gestartet werden.',
+            notUnderstood: 'Nicht verstanden. Bitte versuche es erneut.',
+            maxRetries: 'Nach mehreren Versuchen nicht verstanden. Bitte später erneut versuchen.',
         },
     },
     pagination: {

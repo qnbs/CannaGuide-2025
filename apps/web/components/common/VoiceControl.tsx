@@ -58,6 +58,7 @@ export const VoiceControl: React.FC = () => {
     const lang = useAppSelector(selectLanguage)
     const settings = useAppSelector(selectSettings)
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
+    const continuousListening = settings.voiceControl.continuousListening
     const isListening = useUIStore((s) => s.voiceControl.isListening)
     const isAvailable = useUIStore((s) => s.voiceControl.isAvailable)
     const statusMessage = useUIStore((s) => s.voiceControl.statusMessage)
@@ -86,12 +87,12 @@ export const VoiceControl: React.FC = () => {
                 setVoiceStatusMessage(t('common.voiceControl.processing', { transcript }))
                 processVoiceCommand(transcript)
             }
-            // Stop listening after a command is processed
-            if (recognitionRef.current) {
+            // In continuous mode, keep listening; otherwise stop after a command
+            if (!continuousListening && recognitionRef.current) {
                 recognitionRef.current.stop()
             }
         },
-        [setVoiceStatusMessage, processVoiceCommand, t],
+        [setVoiceStatusMessage, processVoiceCommand, t, continuousListening],
     )
 
     const handleError = useCallback(
@@ -111,15 +112,24 @@ export const VoiceControl: React.FC = () => {
     )
 
     const handleEnd = useCallback(() => {
+        // In continuous listening mode, auto-restart recognition
+        if (continuousListening && isListening && recognitionRef.current) {
+            try {
+                recognitionRef.current.start()
+                return
+            } catch {
+                // Recognition may already be running -- fall through to idle
+            }
+        }
         setVoiceListening(false)
         setVoiceStatusMessage(null)
-    }, [setVoiceListening, setVoiceStatusMessage])
+    }, [continuousListening, isListening, setVoiceListening, setVoiceStatusMessage])
 
     useEffect(() => {
         if (!isAvailable || !hasSpeechRecognitionSupport) return
 
         const recognition = new SpeechRecognitionAPI()
-        recognition.continuous = false
+        recognition.continuous = continuousListening
         recognition.interimResults = true
 
         recognition.addEventListener('result', handleResult)
@@ -137,7 +147,7 @@ export const VoiceControl: React.FC = () => {
                 recognitionRef.current = null
             }
         }
-    }, [isAvailable, handleResult, handleError, handleEnd])
+    }, [isAvailable, continuousListening, handleResult, handleError, handleEnd])
 
     useEffect(() => {
         if (recognitionRef.current) {

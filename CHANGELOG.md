@@ -8,6 +8,38 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(voice):** VoiceOrchestratorService -- central voice state
+  machine (IDLE/LISTENING/PROCESSING/SPEAKING/CONFIRMATION) composing
+  ttsService, voiceCommandRegistry, and Zustand stores. Replaces
+  initVoiceCommandSubscription from listenerMiddleware.
+- **feat(voice):** useVoiceStore (Zustand) -- transient voice session
+  state (mode, transcriptHistory, confirmationPending, error) with
+  devtools + subscribeWithSelector middleware.
+- **feat(voice):** +14 new voice commands (total 37) -- Calculator
+  (VPD, humidity, pH), Hydro (EC), GrowPlanner (next task, add task),
+  Plant CRUD (add, status), Export (grow log), Knowledge tabs
+  (lexikon, atlas), TTS (read aloud, stop reading).
+- **feat(voice):** Confirmation loops for destructive commands --
+  TTS question + STT yes/no in 5+ languages, VoiceHUD fallback
+  buttons.
+- **feat(voice):** Continuous listening mode -- settings toggle,
+  auto-restart recognition, recognition.continuous flag.
+- **feat(voice):** VoiceHUD floating overlay -- mode indicator, CSS
+  waveform animation, confirmation controls, error display,
+  transcript preview, collapse/expand, ARIA role="status".
+- **feat(voice):** ReadAloudButton shared component -- icon button
+  for TTS content playback, conditionally rendered.
+- **feat(voice):** Voice error recovery (MAX_ERROR_RETRIES=3) and
+  voice auto-selection (Google > Microsoft > default priority).
+- **i18n(common):** 16 new voiceControl keys per language
+  (mode/hud/confirmation/errors/readAloud) across EN/DE/ES/FR/NL.
+  Full voiceControl blocks added to ES/FR/NL common.ts.
+- **i18n(settings):** continuousListening toggle labels in all 5
+  languages.
+- **test(voice):** 51 new tests -- useVoiceStore (13),
+  voiceOrchestratorService (21), VoiceHUD (11), ReadAloudButton (6).
+  Total: 2031 tests.
+
 - **feat(pdf):** Enhanced PDF Reports with metrics charts, diagnosis
   trend visualization, AI-generated plant summary, and offline
   template fallback. Canvas-rendered line charts (height/CO2) and

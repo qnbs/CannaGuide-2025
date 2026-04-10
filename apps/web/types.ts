@@ -1058,6 +1058,7 @@ export interface AppSettings {
         enabled: boolean
         hotwordEnabled: boolean
         confirmationSound: boolean
+        continuousListening: boolean
     }
     tts: TTSSettings
     strainsView: {
@@ -1162,6 +1163,37 @@ export interface TTSSettings {
     pitch: number
     volume: number
     highlightSpeakingText: boolean
+}
+
+// ---------------------------------------------------------------------------
+// Voice Orchestrator types (v1.7 Voice-First)
+// ---------------------------------------------------------------------------
+
+/** Voice orchestrator modes (finite state machine). */
+export enum VoiceMode {
+    IDLE = 'idle',
+    LISTENING = 'listening',
+    PROCESSING = 'processing',
+    SPEAKING = 'speaking',
+    CONFIRMATION = 'confirmation',
+}
+
+/** Pending confirmation waiting for user yes/no response. */
+export interface VoiceConfirmation {
+    commandId: string
+    question: string
+    onConfirm: () => void
+    onCancel: () => void
+}
+
+/** Transient voice session state (managed by useVoiceStore). */
+export interface VoiceSessionState {
+    mode: VoiceMode
+    transcriptHistory: string[]
+    lastMatchedCommand: string | null
+    confirmationPending: VoiceConfirmation | null
+    continuousListeningEnabled: boolean
+    error: string | null
 }
 
 /** Provider interface for text-to-speech engines. */

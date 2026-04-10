@@ -2,7 +2,81 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 117) -- Enhanced PDF Reports + Netlify Distribution
+## Latest Session (Session 118) -- Voice-First USP Sprint (v1.7.0)
+
+**Status: Full Voice-First system implemented. VoiceOrchestratorService state machine, VoiceHUD overlay, 37 voice commands, confirmation loops, continuous listening, read-aloud buttons, voice auto-selection, 51 new tests (2031 total).**
+
+### What Was Done (Session 118)
+
+1. **VoiceOrchestratorService** -- Central voice state machine
+   (`voiceOrchestratorService.ts`) composing ttsService,
+   voiceCommandRegistry, useVoiceStore, useTtsStore, useUIStore.
+   States: IDLE -> LISTENING -> PROCESSING -> SPEAKING -> CONFIRMATION.
+   Replaces old `initVoiceCommandSubscription` from listenerMiddleware.
+
+2. **useVoiceStore (Zustand)** -- Transient voice session state store
+   (mode, transcriptHistory, confirmationPending, error). Devtools +
+   subscribeWithSelector middleware. getInitialVoiceState() for tests.
+
+3. **+14 New Voice Commands** -- Calculator (VPD, humidity, pH),
+   Hydro (EC), GrowPlanner (next task, add task), Plant CRUD (add,
+   status), Export (grow log), Knowledge (lexikon, atlas tabs),
+   TTS (read aloud, stop reading). Total now 37 commands.
+
+4. **Confirmation Loops** -- `requiresConfirmation` flag on destructive
+   commands (e.g. water all). TTS asks question, STT listens for
+   yes/no in 5+ languages. VoiceHUD shows Yes/No buttons as fallback.
+
+5. **Continuous Listening Mode** -- Settings toggle, VoiceControl.tsx
+   auto-restarts recognition after each command, `recognition.continuous`
+   flag set from settings.
+
+6. **VoiceHUD Component** -- Floating overlay with mode indicator,
+   CSS waveform animation (5 bars), confirmation Yes/No buttons,
+   error display, transcript preview (last 2), collapse/expand,
+   glass-pane styling, ARIA role="status".
+
+7. **ReadAloudButton Component** -- Shared icon button for content
+   areas. Calls `voiceOrchestratorService.readContent()`. Only
+   renders when TTS enabled.
+
+8. **Voice Error Recovery** -- MAX_ERROR_RETRIES=3 in orchestrator.
+   "Not understood" feedback via TTS. Goes IDLE after max retries.
+
+9. **Voice Auto-Selection** -- `getBestVoice()` prioritizes:
+   user-selected > Google > Microsoft > default > any match.
+
+10. **i18n (5 Languages)** -- 16 new keys per language in common.ts
+    (mode/hud/confirmation/errors/readAloud) + 2 new keys per
+    language in settings.ts (continuousListening/Desc). Full
+    voiceControl blocks added to ES/FR/NL common.ts.
+
+11. **Unit Tests (+51)** -- 4 new test files:
+    - useVoiceStore.test.ts (13 tests)
+    - voiceOrchestratorService.test.ts (21 tests)
+    - VoiceHUD.test.tsx (11 tests)
+    - ReadAloudButton.test.tsx (6 tests)
+    - VoiceControl.test.tsx mock updated for continuousListening
+
+### Verified Metrics
+
+- Tests: **2031 passing**, 0 failures (172 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: pending final verification
+- Version: 1.6.3 (patch bump to 1.7.0 recommended)
+
+### Next Steps
+
+- Integrate ReadAloudButton into Lexikon, Disease Atlas, Strain Cards
+- Add voice command for theme switching
+- E2E tests for Voice HUD + confirmation flow
+- Bump version to 1.7.0
+- Voice command reference docs for users
+- Performance profiling of continuous listening mode
+
+---
+
+## Previous Session (Session 117) -- Enhanced PDF Reports + Netlify Distribution
 
 **Status: Enhanced PDF grow reports with metrics charts, diagnosis trends, and AI summaries. Netlify promoted as primary distribution. 19 new tests.**
 

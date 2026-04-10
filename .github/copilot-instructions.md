@@ -22,7 +22,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
-- **Testing:** Vitest (1961 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (2031 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Netlify (PR previews)
@@ -140,7 +140,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 
 12. **State Management Split:**
     - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner, grows. RTK Query for AI API caching (9 endpoints). `workerMetrics` is a runtime-only slice (not persisted) for WorkerBus telemetry visibility in Redux DevTools.
-    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite). All 8 stores have `devtools` middleware (`enabled: import.meta.env.DEV`). No Zustand IndexedDB persist -- persistence is exclusively Redux + IndexedDB.
+    - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useVoiceStore` (voice session state, mode, transcriptHistory), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite). All 9 stores have `devtools` middleware (`enabled: import.meta.env.DEV`). No Zustand IndexedDB persist -- persistence is exclusively Redux + IndexedDB.
     - **Redux <-> Zustand Bridge:** `services/uiStateBridge.ts` -- single init call `initUIStateBridgeFull(getState, dispatch, subscribe)` from `store.ts`; `getReduxSnapshot(selector)` for synchronous reads from Zustand actions; `subscribeToRedux(selector, handler)` for reactive subscriptions; `dispatchToRedux(action)` for dispatch from Zustand context.
     - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. Components must import AI services from `aiFacade`, not from individual service files.
 
@@ -239,7 +239,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 1961 tests, 0 failures
+- Baseline: 2031 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
@@ -457,6 +457,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/workerStateSyncService.ts`                                   | Framework-agnostic handler registry -- auto-wires WorkerBus results to Redux/Zustand                                                                                       |
 | `apps/web/services/workerTelemetryService.ts`                                   | Sentry 10% error-rate alerts + 5s debounced Redux DevTools metrics flush                                                                                                   |
 | `apps/web/services/proactiveCoachService.ts`                                    | Smart coach: threshold monitoring + AI advice + cooldown                                                                                                                   |
+| `apps/web/services/voiceOrchestratorService.ts`                                 | Central voice state machine (IDLE/LISTENING/PROCESSING/SPEAKING/CONFIRMATION), command matching, confirmation loops, error recovery                                        |
 | `apps/web/services/nativeBridgeService.ts`                                      | Web Notification API dispatch (browser-only)                                                                                                                               |
 | `apps/web/services/strainLookupService.ts`                                      | 5-source Strain Intelligence Lookup cascade + entourage effect science                                                                                                     |
 | `apps/web/services/indexedDbMonitorService.ts`                                  | IndexedDB quota inspection, per-store entry counts, health warnings                                                                                                        |
@@ -469,6 +470,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/gpuResourceManager.ts`                                       | GPU mutex v2: string registry, GpuPriority queue (high/normal/low), auto-release 30s, getQueueState()                                                                      |
 | `apps/web/services/uiStateBridge.ts`                                            | Central Redux<->Zustand bridge: `initUIStateBridgeFull`, `getReduxSnapshot`, `subscribeToRedux`, `dispatchToRedux`                                                         |
 | `apps/web/stores/useAlertsStore.ts`                                             | Zustand store for transient smart coach alerts                                                                                                                             |
+| `apps/web/stores/useVoiceStore.ts`                                              | Zustand store for transient voice session state (mode, transcriptHistory, confirmationPending, error)                                                                      |
 | `apps/web/stores/slices/workerMetricsSlice.ts`                                  | Runtime-only RTK slice for WorkerBus telemetry (DevTools visibility, not persisted to IndexedDB)                                                                           |
 | `apps/web/stores/slices/growsSlice.ts`                                          | Grow lifecycle CRUD (EntityAdapter, MAX_GROWS=3 per CanG), default grow seeded, grow-scoped selectors                                                                      |
 | `apps/web/stores/slices/hydroSlice.ts`                                          | Hydroponic monitoring Redux slice: readings FIFO (168 cap), thresholds, alerts, system type                                                                                |

@@ -351,6 +351,9 @@ export const settingsView = {
             hotwordEnabled: 'Permanentes Hotword',
             hotwordEnabledDesc:
                 'Hält das Mikrofon für freihändige Aktivierungswörter bereit, sofern der Browser dies unterstützt.',
+            continuousListening: 'Dauerhaftes Zuhören',
+            continuousListeningDesc:
+                'Hört nach jedem Befehl weiter zu, sodass mehrere Sprachbefehle ohne erneute Aktivierung verkettet werden können.',
             confirmationSound: 'Bestätigungstöne',
             confirmationSoundDesc:
                 'Spielt einen kurzen Ton ab, wenn ein Sprachbefehl erfolgreich erkannt wurde.',

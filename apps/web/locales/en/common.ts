@@ -189,11 +189,33 @@ export const common = {
         hotwordDetected: 'Hotword detected -- speak now.',
         noPlantContext: 'No active plant context is available for the voice assistant.',
         assistantFailed: 'Voice assistant request failed.',
+        readAloud: 'Read aloud',
+        mode: {
+            idle: 'Idle',
+            listening: 'Listening',
+            processing: 'Processing',
+            speaking: 'Speaking',
+            confirmation: 'Awaiting confirmation',
+        },
+        hud: {
+            title: 'Voice Control',
+            collapse: 'Collapse voice HUD',
+            expand: 'Expand voice HUD',
+        },
+        confirmation: {
+            question: 'Execute "{{command}}"?',
+            yes: 'Yes',
+            no: 'No',
+            cancelled: 'Command cancelled.',
+            yesOrNo: 'Please answer yes or no.',
+        },
         errors: {
             generic: 'A speech recognition error occurred.',
             noSpeech: 'No speech was detected.',
             notAllowed: 'Microphone access denied.',
             startFailed: 'Could not start listening.',
+            notUnderstood: 'Not understood. Please try again.',
+            maxRetries: 'Could not understand after several attempts. Please try later.',
         },
     },
     pagination: {

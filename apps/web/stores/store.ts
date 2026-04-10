@@ -24,9 +24,9 @@ import { geminiApi } from './api'
 import {
     listenerMiddleware,
     initFilterUrlSync,
-    initVoiceCommandSubscription,
     initOnboardingSubscription,
 } from './listenerMiddleware'
+import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
 import { migrateState } from '../services/migrationLogic'
 import { REDUX_STATE_KEY } from '@/constants'
@@ -154,7 +154,7 @@ export const createAppStore = async (): Promise<AppStore> => {
     // Wire up Zustand <-> Redux bridges
     initUIStateBridgeFull(() => store.getState(), store.dispatch, store.subscribe)
     initFilterUrlSync()
-    initVoiceCommandSubscription(store.dispatch, () => store.getState())
+    voiceOrchestratorService.init(store)
     initOnboardingSubscription(() => store.getState())
 
     // Hydrate Zustand UI state from persisted data

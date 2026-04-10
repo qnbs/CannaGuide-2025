@@ -14,6 +14,7 @@ import { View, StrainType, StrainViewTab, EquipmentViewTab, KnowledgeViewTab } f
 import { getUISnapshot } from '@/stores/useUIStore'
 import { useFiltersStore } from '@/stores/useFiltersStore'
 import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
+import { useTtsStore } from '@/stores/useTtsStore'
 import { setSetting, toggleSetting } from '@/stores/slices/settingsSlice'
 import { waterAllPlants } from '@/stores/slices/simulationSlice'
 import { getReduxSnapshot } from '@/services/uiStateBridge'
@@ -36,6 +37,8 @@ export interface VoiceCommandDef {
     keywords: string
     /** Action to execute. Receives the full lowercased transcript. */
     action: (transcript: string) => void
+    /** When true, the orchestrator asks for spoken yes/no confirmation before executing. */
+    requiresConfirmation?: boolean | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -300,6 +303,7 @@ export function buildVoiceCommands(dispatch: AppDispatch): VoiceCommandDef[] {
             aliases: ['water all plants', 'water all', 'alle pflanzen gießen', 'alles gießen'],
             keywords: 'water irrigate hydrate all plants',
             action: () => dispatch(waterAllPlants()),
+            requiresConfirmation: true,
         },
 
         // ── Equipment Tabs ────────────────────────────────────────────────
@@ -494,6 +498,199 @@ export function buildVoiceCommands(dispatch: AppDispatch): VoiceCommandDef[] {
             action: () => {
                 getUISnapshot().setActiveView(View.Equipment)
                 getUISnapshot().setEquipmentViewTab(EquipmentViewTab.HydroMonitoring)
+            },
+        },
+
+        // ── Calculator Commands ───────────────────────────────────────────
+        {
+            id: 'calc_vpd',
+            group: 'Equipment',
+            label: 'Calculate VPD',
+            aliases: [
+                'calculate vpd',
+                'berechne vpd',
+                'vpd calculator',
+                'vpd rechner',
+                'check vpd',
+            ],
+            keywords: 'calculate vpd vapor pressure deficit rechner',
+            action: () => {
+                getUISnapshot().setActiveView(View.Knowledge)
+                getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Rechner)
+            },
+        },
+        {
+            id: 'calc_humidity',
+            group: 'Equipment',
+            label: 'Check Humidity Deficit',
+            aliases: [
+                'humidity deficit',
+                'check humidity',
+                'feuchtigkeitsdefizit',
+                'luftfeuchtigkeit pruefen',
+            ],
+            keywords: 'humidity deficit moisture check feuchte',
+            action: () => {
+                getUISnapshot().setActiveView(View.Knowledge)
+                getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Rechner)
+            },
+        },
+        {
+            id: 'calc_ph',
+            group: 'Equipment',
+            label: 'pH Check',
+            aliases: ['ph check', 'ph pruefen', 'check ph level', 'ph wert', 'ph wert pruefen'],
+            keywords: 'ph check level value wert pruefen',
+            action: () => {
+                getUISnapshot().setActiveView(View.Equipment)
+                getUISnapshot().setEquipmentViewTab(EquipmentViewTab.HydroMonitoring)
+            },
+        },
+
+        // ── Hydro Commands ────────────────────────────────────────────────
+        {
+            id: 'hydro_ec',
+            group: 'Equipment',
+            label: 'EC Reading',
+            aliases: ['ec reading', 'ec wert', 'show ec', 'zeige ec', 'check ec'],
+            keywords: 'ec reading conductivity nutrient strength',
+            action: () => {
+                getUISnapshot().setActiveView(View.Equipment)
+                getUISnapshot().setEquipmentViewTab(EquipmentViewTab.HydroMonitoring)
+            },
+        },
+
+        // ── Grow Planner Commands ─────────────────────────────────────────
+        {
+            id: 'planner_next_task',
+            group: 'Plants',
+            label: 'Next Task',
+            aliases: [
+                'next task',
+                'naechste aufgabe',
+                'show tasks',
+                'aufgaben zeigen',
+                'what should i do',
+            ],
+            keywords: 'next task aufgabe todo planner schedule',
+            action: () => {
+                getUISnapshot().setActiveView(View.Plants)
+            },
+        },
+        {
+            id: 'planner_add_task',
+            group: 'Plants',
+            label: 'Add Task',
+            aliases: ['add task', 'aufgabe hinzufuegen', 'new task', 'neue aufgabe'],
+            keywords: 'add new task aufgabe create planner',
+            action: () => {
+                getUISnapshot().setActiveView(View.Plants)
+            },
+        },
+
+        // ── Plant CRUD Commands ───────────────────────────────────────────
+        {
+            id: 'plant_add',
+            group: 'Plants',
+            label: 'Add Plant',
+            aliases: [
+                'add plant',
+                'pflanze hinzufuegen',
+                'new plant',
+                'neue pflanze',
+                'add a plant',
+            ],
+            keywords: 'add new plant pflanze create grow',
+            action: () => {
+                getUISnapshot().setActiveView(View.Plants)
+            },
+        },
+        {
+            id: 'plant_status',
+            group: 'Plants',
+            label: 'Plant Status',
+            aliases: [
+                'plant status',
+                'pflanzenstatus',
+                'how are my plants',
+                'wie geht es meinen pflanzen',
+            ],
+            keywords: 'plant status health condition check pflanzen',
+            action: () => {
+                getUISnapshot().setActiveView(View.Plants)
+            },
+        },
+
+        // ── Export Command ────────────────────────────────────────────────
+        {
+            id: 'export_grow_log',
+            group: 'Plants',
+            label: 'Export Grow Log',
+            aliases: [
+                'export grow log',
+                'grow log exportieren',
+                'export data',
+                'daten exportieren',
+            ],
+            keywords: 'export data grow log download backup',
+            action: () => {
+                getUISnapshot().setActiveView(View.Settings)
+            },
+        },
+
+        // ── Knowledge Tabs ────────────────────────────────────────────────
+        {
+            id: 'know_tab_lexikon',
+            group: 'Knowledge',
+            label: 'Open Lexikon',
+            aliases: ['open lexikon', 'show lexikon', 'lexikon oeffnen', 'glossary', 'glossar'],
+            keywords: 'lexikon glossary terms definitions wiki',
+            action: () => {
+                getUISnapshot().setActiveView(View.Knowledge)
+                getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Lexikon)
+            },
+        },
+        {
+            id: 'know_tab_atlas',
+            group: 'Knowledge',
+            label: 'Disease Atlas',
+            aliases: [
+                'disease atlas',
+                'krankheitsatlas',
+                'show diseases',
+                'zeige krankheiten',
+                'plant diseases',
+            ],
+            keywords: 'disease atlas diagnosis illness pest deficiency',
+            action: () => {
+                getUISnapshot().setActiveView(View.Knowledge)
+                getUISnapshot().setKnowledgeViewTab(KnowledgeViewTab.Atlas)
+            },
+        },
+
+        // ── Read Aloud / Stop Reading ─────────────────────────────────────
+        {
+            id: 'tts_read_aloud',
+            group: 'Accessibility',
+            label: 'Read Aloud',
+            aliases: ['read aloud', 'vorlesen', 'read this', 'lies vor'],
+            keywords: 'read aloud speak text voice output vorlesen',
+            action: () => {
+                // Trigger TTS for currently visible content (handled by ReadAloudButton in views)
+                getUISnapshot().addNotification({
+                    message: 'Use the read-aloud button on any content card.',
+                    type: 'info',
+                })
+            },
+        },
+        {
+            id: 'tts_stop_reading',
+            group: 'Accessibility',
+            label: 'Stop Reading',
+            aliases: ['stop reading', 'aufhoeren', 'stop vorlesen', 'be quiet', 'sei still'],
+            keywords: 'stop reading silence quiet mute aufhoeren',
+            action: () => {
+                useTtsStore.getState().stop()
             },
         },
     ]

@@ -106,6 +106,30 @@ The SBOM covers:
 - The full monorepo dependency tree from `pnpm-lock.yaml`
 - NTIA minimum elements compliant
 
+```bash
+# Inspect SBOM component count and root component
+jq '.metadata.component.name, (.components | length)' cannaguide-sbom.cyclonedx.json
+
+# Verify SBOM attestation
+gh attestation verify cannaguide-v*.tar.gz \
+  --repo qnbs/CannaGuide-2025 \
+  --predicate-type https://cyclonedx.org/bom
+```
+
+### Audit Verification Status (2026-04-10)
+
+Independent audit verified on 2026-04-10 (Session 121):
+
+- **SLSA L3 Provenance:** Fully implemented via 3-job architecture
+  (`build` -> `provenance` -> `release`) in `release-publish.yml`
+- **CycloneDX SBOM:** Generated via `anchore/sbom-action@v0.18.0`,
+  signed via `actions/attest-sbom@v4.1.0`, uploaded as release asset
+- **SHA-Pinning:** All 10 GitHub Actions pinned to 40-char commit SHAs
+- **Isolated Runner:** Provenance job runs on separate GitHub-hosted
+  runner via `slsa-framework/slsa-github-generator` reusable workflow
+- **Backward Compat:** L1 attestation via `actions/attest-build-provenance`
+  alongside L3 provenance for `gh attestation verify` support
+
 ### Actions Allowlist
 
 GitHub Actions are restricted to a curated allowlist (`allowed_actions: selected`):

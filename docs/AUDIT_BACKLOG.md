@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-04-10 (Session 113)
+Last updated: 2026-04-10 (Session 121)
 
 ---
 
@@ -15,8 +15,8 @@ Last updated: 2026-04-10 (Session 113)
 | -------- | ----- | ---- | ---- | -------- |
 | Critical | 3     | 3    | 0    | 0        |
 | High     | 12    | 12   | 0    | 0        |
-| Medium   | 28    | 28   | 0    | 0        |
-| Low      | 10    | 7    | 0    | 3        |
+| Medium   | 29    | 28   | 1    | 0        |
+| Low      | 12    | 7    | 2    | 3        |
 
 ---
 
@@ -787,6 +787,50 @@ Last updated: 2026-04-10 (Session 113)
 **Finding:** TTS and STT are entirely dependent on browser-native APIs (`SpeechSynthesis`, `SpeechRecognition`). No offline fallback exists. On Chrome Android, `SpeechRecognition` requires internet connection (Google servers). `SpeechSynthesis` voice quality varies wildly by platform.
 
 **Action (P3/v1.5):** Integrate ONNX speech models via existing `inference.worker.ts` / `LocalAIInfrastructure`. Candidates: Kokoro (TTS, ONNX, high quality), Whisper-Tiny (STT, `@xenova/transformers`). Follow ML isolation pattern in `packages/ai-core`.
+
+---
+
+## Supply Chain (SC)
+
+### SC-01 -- SLSA Verifier CI Integration
+
+| Field    | Value       |
+| -------- | ----------- |
+| Severity | Medium      |
+| Effort   | Low (1 day) |
+| Status   | **Open**    |
+
+**Finding:** `release-publish.yml` generates SLSA L3 provenance and CycloneDX SBOM correctly (verified 2026-04-10). However, no automated `slsa-verifier` step validates the provenance post-release within CI. Verification is documented as a manual step only (`docs/release-process.md`, `SECURITY.md`). Adding an automated verifier step would close the verification loop and strengthen auditability.
+
+**Action:** Add a post-release step in `release-publish.yml` Job 3 (release) that installs `slsa-verifier` and runs `verify-artifact` against the just-published tarball. Use `continue-on-error: true` initially. Document pass/fail in release summary output.
+
+---
+
+### SC-02 -- Onboarding Data Consumption
+
+| Field    | Value       |
+| -------- | ----------- |
+| Severity | Low         |
+| Effort   | Low (1 day) |
+| Status   | **Open**    |
+
+**Finding:** The onboarding wizard Step 8 (Space & Budget) collects `spaceSize` (small/medium/large) and `budget` (low/mid/high) into localStorage. These values are never read or consumed by any service. The wizard promises "We will suggest the best starter setup and top 3 strains for you" but no recommendation engine exists downstream. The step renders correctly across all 5 languages.
+
+**Action:** Either (a) add a retrieval service that reads `cg.onboarding.spaceSize` and `cg.onboarding.budget` from localStorage and feeds into the equipment configurator or strain recommendation engine, or (b) migrate the data from localStorage into Redux settings for persistence and AI context enrichment.
+
+---
+
+### SC-03 -- Release Pipeline Dry-Run Verification
+
+| Field    | Value       |
+| -------- | ----------- |
+| Severity | Low         |
+| Effort   | Low (1 day) |
+| Status   | **Open**    |
+
+**Finding:** The 3-job release pipeline (`build` -> `provenance` -> `release`) in `release-publish.yml` was refactored from single-job in v1.6.3. No dry-run or test-release mechanism exists to validate the full pipeline without creating a public release. A workflow_dispatch dry-run mode would allow pre-release verification.
+
+**Action:** Add a `dry-run` boolean input to `release-publish.yml` `workflow_dispatch`. When true, skip `gh release create` and instead output a summary of what would be published (tarball name, SBOM presence, provenance presence, checksums).
 
 ---
 

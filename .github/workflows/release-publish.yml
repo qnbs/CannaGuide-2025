@@ -193,6 +193,7 @@ jobs:
               shell: bash
               run: |
                   PROVENANCE_FILE=$(ls provenance/*.intoto.jsonl 2>/dev/null | head -1)
+                  SBOM_SHA256=$(sha256sum cannaguide-sbom.cyclonedx.json | cut -d ' ' -f 1)
 
                   NOTES="## CannaGuide ${TAG}
 
@@ -202,6 +203,7 @@ jobs:
                   | File | SHA-256 |
                   |------|---------|
                   | ${TARBALL} | \`${SHA256}\` |
+                  | cannaguide-sbom.cyclonedx.json | \`${SBOM_SHA256}\` |
 
                   ### Supply-Chain Verification
 
@@ -242,5 +244,3 @@ jobs:
                   fi
 
                   echo "[OK] Release ${TAG} published with SLSA L3 provenance + SBOM"
-
-                  echo "[OK] Release ${TAG} published with provenance attestation"

@@ -5,9 +5,15 @@ import { SetupCard } from './SetupCard'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { useAppDispatch } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { addSetup } from '@/stores/slices/savedItemsSlice'
-import { PRESET_SETUPS, PRESET_CATEGORIES, type PresetCategory } from '@/data/presetSetups'
+import { selectDefaultSpaceSize, selectDefaultBudget } from '@/stores/selectors'
+import {
+    PRESET_SETUPS,
+    PRESET_CATEGORIES,
+    type PresetCategory,
+    type PresetSetup,
+} from '@/data/presetSetups'
 
 const CATEGORY_FILTERS: Array<{ key: PresetCategory | 'all'; order: number }> = [
     { key: 'all', order: 0 },
@@ -18,9 +24,39 @@ const CATEGORY_FILTERS: Array<{ key: PresetCategory | 'all'; order: number }> = 
     { key: 'specialty', order: 5 },
 ]
 
+const SPACE_TO_CATEGORIES: Record<string, PresetCategory[]> = {
+    small: ['micro', 'small'],
+    medium: ['medium'],
+    large: ['large'],
+}
+
+const BUDGET_RANGES: Record<string, { min: number; max: number }> = {
+    low: { min: 0, max: 400 },
+    mid: { min: 200, max: 1000 },
+    high: { min: 500, max: Infinity },
+}
+
+function isPresetRecommended(
+    preset: PresetSetup,
+    spaceSize: string | null,
+    budget: string | null,
+): boolean {
+    if (!spaceSize && !budget) return false
+    const categoryMatch = spaceSize
+        ? (SPACE_TO_CATEGORIES[spaceSize]?.includes(preset.category) ?? false)
+        : true
+    const budgetMatch = budget
+        ? preset.totalCost >= (BUDGET_RANGES[budget]?.min ?? 0) &&
+          preset.totalCost <= (BUDGET_RANGES[budget]?.max ?? Infinity)
+        : true
+    return categoryMatch && budgetMatch
+}
+
 const PresetSetupsViewComponent: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
+    const defaultSpaceSize = useAppSelector(selectDefaultSpaceSize)
+    const defaultBudget = useAppSelector(selectDefaultBudget)
     const [activeFilter, setActiveFilter] = useState<PresetCategory | 'all'>('all')
     const [copiedId, setCopiedId] = useState<string | null>(null)
 
@@ -29,12 +65,16 @@ const PresetSetupsViewComponent: React.FC = () => {
             activeFilter === 'all'
                 ? PRESET_SETUPS
                 : PRESET_SETUPS.filter((p) => p.category === activeFilter)
-        return filtered.toSorted(
-            (a, b) =>
+        return filtered.toSorted((a, b) => {
+            const aRec = isPresetRecommended(a, defaultSpaceSize, defaultBudget)
+            const bRec = isPresetRecommended(b, defaultSpaceSize, defaultBudget)
+            if (aRec !== bRec) return aRec ? -1 : 1
+            return (
                 (PRESET_CATEGORIES[a.category]?.order ?? 99) -
-                (PRESET_CATEGORIES[b.category]?.order ?? 99),
-        )
-    }, [activeFilter])
+                (PRESET_CATEGORIES[b.category]?.order ?? 99)
+            )
+        })
+    }, [activeFilter, defaultSpaceSize, defaultBudget])
 
     const handleCopyToMySetups = async (presetId: string): Promise<void> => {
         const preset = PRESET_SETUPS.find((p) => p.presetId === presetId)
@@ -128,6 +168,11 @@ const PresetSetupsViewComponent: React.FC = () => {
                 <div key={preset.presetId} className="relative">
                     {/* Tags row */}
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {isPresetRecommended(preset, defaultSpaceSize, defaultBudget) && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-primary-600/60 text-primary-200 ring-1 ring-primary-400/40">
+                                {t('equipmentView.presetSetups.recommended')}
+                            </span>
+                        )}
                         <span
                             className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide ${
                                 preset.difficulty === 'beginner'

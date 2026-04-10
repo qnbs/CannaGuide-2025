@@ -2,6 +2,76 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 127) -- Korrekturlauf: Optimization & Perfection Sprint
+
+**Status: Onboarding-seeding wired downstream, audit backlog
+53/56 resolved (95%), i18n gaps fixed (FR/NL plants + settings),
+Lighthouse assertions tightened to 95%+, release pipeline gains
+dry-run mode + SLSA verification. 2063 tests passing, build OK.**
+
+### What Was Done (Session 127)
+
+1. **Onboarding-Seeding Downstream Wiring** -- `growGoal`,
+   `defaultSpaceSize`, `defaultBudget` from onboarding are now
+   consumed in `PresetSetupsView.tsx`. Presets matching the user's
+   space size and budget are sorted to the top with a "Recommended
+   for You" badge. Added memoized selectors (`selectGrowGoal`,
+   `selectDefaultSpaceSize`, `selectDefaultBudget`) to
+   `stores/selectors.ts`. i18n key `recommended` added to all
+   5 locales.
+
+2. **Audit Backlog SC-01 Resolved** -- Added Job 4 (`verify`) to
+   `release-publish.yml` that installs `slsa-verifier` and runs
+   `verify-artifact` against the tarball after provenance generation.
+   Runs regardless of whether the release job executes.
+
+3. **Audit Backlog SC-03 Resolved** -- Added `dry-run` boolean input
+   to `workflow_dispatch` in `release-publish.yml`. When true, the
+   release job is skipped while build, provenance, and verification
+   jobs still execute.
+
+4. **i18n Fixes** -- Added 5 missing tab keys to FR plants.ts
+   (metrics, timeline, planner, environment, analytics) and 5 to
+   NL plants.ts. Added 3 CRDT settings keys to both FR and NL
+   settings.ts (crdtDocSize, crdtFallback, crdtSizeWarning).
+
+5. **Lighthouse CI Tightened** -- Performance/accessibility/
+   best-practices assertions raised from 0.9 to 0.95. FCP budget
+   reduced from 2000ms to 1500ms, LCP from 4000ms to 3500ms, TBT
+   from 300ms to 250ms. Added SEO category assertion (0.9 min).
+
+6. **Documentation Sync** -- ARCHITECTURE.md test count updated
+   (1884 -> 2063). AUDIT_BACKLOG.md summary updated (53 done,
+   0 open, 3 deferred). PRIORITY_ROADMAP.md current.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2063 passing, 0 failures
+- Build: successful (42s, 165 precache entries)
+- i18n: all 5 languages passing completeness check
+
+### Next Steps
+
+1. **Test Coverage Push** -- Target >30% via coverage-v8 on 6
+   priority services (aiService, localAiInferenceRouter,
+   plantSimulationService, workerBus, syncService, voiceOrchestrator)
+2. **Property-Based Fuzzing** -- Expand commandService.test.fuzz.ts
+   patterns to cover more edge cases
+3. **CII Badge** -- Complete email verification on bestpractices.dev
+4. **v2.0 Planning** -- Digital Twin architecture spike, WebXR
+   feasibility assessment, AR overlay prototype
+
+### Planned Executions
+
+- **Execution N+1:** Test coverage sprint (6 service test files,
+  targeting >30% coverage with coverage-v8)
+- **Execution N+2:** CII Badge email verification + branch protection
+  "Include administrators" toggle
+- **Execution N+3:** v2.0 Digital Twin architecture spike document
+
+---
+
 ## Latest Session (Session 126) -- Onboarding Legal Gate + Vercel & Cloudflare Deployment
 
 **Status: Restored age-gate/consent as onboarding step 0, fixed

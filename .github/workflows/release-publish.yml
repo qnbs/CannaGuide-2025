@@ -10,6 +10,11 @@ on:
                 description: 'Tag to release (e.g. v1.6.0)'
                 required: true
                 type: string
+            dry-run:
+                description: 'Dry-run mode (build + verify only, no publish)'
+                required: false
+                type: boolean
+                default: false
 
 concurrency:
     group: release-publish-${{ github.ref }}
@@ -147,6 +152,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         needs: [build, provenance]
+        if: ${{ !(github.event.inputs.dry-run == 'true') }}
         permissions:
             contents: write
             id-token: write
@@ -244,3 +250,49 @@ jobs:
                   fi
 
                   echo "[OK] Release ${TAG} published with SLSA L3 provenance + SBOM"
+
+    # -----------------------------------------------------------------
+    # Job 4: SLSA Verification -- post-release artifact verification
+    # -----------------------------------------------------------------
+    verify:
+        name: SLSA Verify
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        needs: [build, provenance]
+        if: ${{ always() && needs.build.result == 'success' && needs.provenance.result == 'success' }}
+        permissions:
+            contents: read
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+              with:
+                  egress-policy: audit
+
+            - name: Download tarball
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+              with:
+                  name: release-tarball
+
+            - name: Download SLSA provenance
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+              with:
+                  name: cannaguide-provenance.intoto.jsonl
+                  path: provenance
+
+            - name: Install slsa-verifier
+              uses: slsa-framework/slsa-verifier/actions/installer@3714a2a4684014deb874a0b737dfef0f02044571 # v2.7.0
+
+            - name: Verify SLSA L3 provenance
+              env:
+                  TARBALL: ${{ needs.build.outputs.tarball-name }}
+              shell: bash
+              run: |
+                  PROVENANCE_FILE=$(ls provenance/*.intoto.jsonl 2>/dev/null | head -1)
+                  if [[ -z "${PROVENANCE_FILE}" ]]; then
+                    echo "[FAIL] No provenance file found"
+                    exit 1
+                  fi
+                  slsa-verifier verify-artifact "${TARBALL}" \
+                    --provenance-path "${PROVENANCE_FILE}" \
+                    --source-uri github.com/qnbs/CannaGuide-2025
+                  echo "[OK] SLSA L3 provenance verified for ${TARBALL}"

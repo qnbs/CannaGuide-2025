@@ -21,6 +21,7 @@ import {
     Seed,
     SavedExperiment,
     PlantStage,
+    GrowGoal,
 } from '@/types'
 import { SavedItemsState } from './slices/savedItemsSlice'
 import { FavoritesState } from './slices/favoritesSlice'
@@ -77,6 +78,19 @@ export const selectTtsSettings = createSelector(
 export const selectTtsEnabled = createSelector(
     [selectTtsSettings],
     (tts: TTSSettings): boolean => tts.enabled,
+)
+export const selectGrowGoal = createSelector(
+    [selectSettings],
+    (settings: AppSettings): GrowGoal | null => settings.general.growGoal,
+)
+export const selectDefaultSpaceSize = createSelector(
+    [selectSettings],
+    (settings: AppSettings): 'small' | 'medium' | 'large' | null =>
+        settings.general.defaultSpaceSize,
+)
+export const selectDefaultBudget = createSelector(
+    [selectSettings],
+    (settings: AppSettings): 'low' | 'mid' | 'high' | null => settings.general.defaultBudget,
 )
 
 // --- Safe entity adapter fallback ---

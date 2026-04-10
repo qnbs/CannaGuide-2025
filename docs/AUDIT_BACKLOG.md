@@ -15,8 +15,8 @@ Last updated: 2026-04-10 (Session 122)
 | -------- | ----- | ---- | ---- | -------- |
 | Critical | 3     | 3    | 0    | 0        |
 | High     | 12    | 12   | 0    | 0        |
-| Medium   | 29    | 28   | 1    | 0        |
-| Low      | 12    | 8    | 1    | 3        |
+| Medium   | 29    | 29   | 0    | 0        |
+| Low      | 12    | 9    | 0    | 3        |
 
 ---
 
@@ -794,15 +794,15 @@ Last updated: 2026-04-10 (Session 122)
 
 ### SC-01 -- SLSA Verifier CI Integration
 
-| Field    | Value       |
-| -------- | ----------- |
-| Severity | Medium      |
-| Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Field    | Value        |
+| -------- | ------------ |
+| Severity | Medium       |
+| Effort   | Low (1 day)  |
+| Status   | **Resolved** |
 
 **Finding:** `release-publish.yml` generates SLSA L3 provenance and CycloneDX SBOM correctly (verified 2026-04-10). However, no automated `slsa-verifier` step validates the provenance post-release within CI. Verification is documented as a manual step only (`docs/release-process.md`, `SECURITY.md`). Adding an automated verifier step would close the verification loop and strengthen auditability.
 
-**Action:** Add a post-release step in `release-publish.yml` Job 3 (release) that installs `slsa-verifier` and runs `verify-artifact` against the just-published tarball. Use `continue-on-error: true` initially. Document pass/fail in release summary output.
+**Resolution (Session 127):** Added Job 4 (`verify`) to `release-publish.yml` that installs `slsa-verifier` via official action and runs `verify-artifact` against the tarball with provenance. Runs after provenance generation regardless of whether the release job executes (supports dry-run mode).
 
 ---
 
@@ -822,15 +822,15 @@ Last updated: 2026-04-10 (Session 122)
 
 ### SC-03 -- Release Pipeline Dry-Run Verification
 
-| Field    | Value       |
-| -------- | ----------- |
-| Severity | Low         |
-| Effort   | Low (1 day) |
-| Status   | **Open**    |
+| Field    | Value        |
+| -------- | ------------ |
+| Severity | Low          |
+| Effort   | Low (1 day)  |
+| Status   | **Resolved** |
 
 **Finding:** The 3-job release pipeline (`build` -> `provenance` -> `release`) in `release-publish.yml` was refactored from single-job in v1.6.3. No dry-run or test-release mechanism exists to validate the full pipeline without creating a public release. A workflow_dispatch dry-run mode would allow pre-release verification.
 
-**Action:** Add a `dry-run` boolean input to `release-publish.yml` `workflow_dispatch`. When true, skip `gh release create` and instead output a summary of what would be published (tarball name, SBOM presence, provenance presence, checksums).
+**Resolution (Session 127):** Added `dry-run` boolean input to `workflow_dispatch`. When `true`, the `release` job is skipped via `if` condition (`inputs.dry-run != 'true'`). Build + provenance + verification jobs still execute, validating the full pipeline without publishing.
 
 ---
 

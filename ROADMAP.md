@@ -193,13 +193,16 @@ Released: **2026-Q3**
 
 Target: **2027-Q2**
 
-| Feature                                                       | Category      | Priority   | Issue |
-| ------------------------------------------------------------- | ------------- | ---------- | ----- |
-| Real-time multi-device sync (CRDTs)                           | Sync          | ~~High~~   | done  |
-| Plugin/extension system                                       | Architecture  | ~~Medium~~ | done  |
-| Grow community forums & profiles                              | Community     | Medium     | —     |
-| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium     | —     |
-| AR plant overlay (WebXR)                                      | Visualization | Low        | —     |
+| Feature                                                       | Category      | Priority   | Issue    |
+| ------------------------------------------------------------- | ------------- | ---------- | -------- |
+| Real-time multi-device sync (CRDTs)                           | Sync          | ~~High~~   | done     |
+| Plugin/extension system                                       | Architecture  | ~~Medium~~ | done     |
+| Grow community forums & profiles                              | Community     | Medium     | --       |
+| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium     | --       |
+| AR plant overlay (WebXR)                                      | Visualization | Low        | --       |
+| Onboarding completion telemetry (U-05)                        | Observability | Low        | deferred |
+| RTL language preparation (I-02)                               | i18n          | Low        | deferred |
+| Offline ONNX TTS/STT (V-06)                                   | Local AI      | Low        | deferred |
 
 ---
 

@@ -8,6 +8,32 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(equipment):** onboarding-seeding downstream wiring --
+  preset setups now sorted by user's onboarding space/budget
+  choices with "Recommended for You" badge, memoized selectors
+  for growGoal/defaultSpaceSize/defaultBudget
+- **feat(ci):** SLSA verifier CI integration (SC-01) -- automated
+  post-release `slsa-verifier verify-artifact` in release pipeline
+- **feat(ci):** release pipeline dry-run mode (SC-03) --
+  `workflow_dispatch` `dry-run` input skips publish, runs full
+  build + provenance + verification
+- **feat(ci):** Lighthouse CI assertions tightened -- performance/
+  accessibility/best-practices raised to 0.95, FCP 1500ms,
+  LCP 3500ms, TBT 250ms, SEO category added (0.9)
+- **i18n(plants):** 5 missing tab keys added to FR + NL (metrics,
+  timeline, planner, environment, analytics)
+- **i18n(settings):** 3 CRDT keys added to FR + NL (crdtDocSize,
+  crdtFallback, crdtSizeWarning)
+- **i18n(equipment):** recommended-for-you key added to all 5
+  locales (EN/DE/ES/FR/NL)
+
+### Fixed
+
+- **fix(docs):** ARCHITECTURE.md stale test count (1884 -> 2063)
+- **fix(docs):** AUDIT_BACKLOG.md summary updated (53/56 resolved)
+
+### Added
+
 - **feat(voice):** Porcupine WASM wake-word detection service with
   BYOK AccessKey, 11 built-in keywords, dual-engine support
   (regex/porcupine) -- 100% on-device, no data leaves client

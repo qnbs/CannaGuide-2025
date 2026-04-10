@@ -599,6 +599,10 @@ export const settingsView = {
             loading: 'Opslaggegevens laden...',
             empty: 'Opslaginformatie niet beschikbaar.',
         },
+        crdtDocSize: 'CRDT-document',
+        crdtFallback:
+            'CRDT-synchronisatie in terugvalmodus (LWW). Offline samenvoegen uitgeschakeld.',
+        crdtSizeWarning: 'CRDT-document overschrijdt 1 MB. Overweeg opslagruiming.',
         backupAndRestore: 'Back-up & Herstel',
         dangerZone: 'Gevarenzone',
         importData: 'Gegevens importeren',

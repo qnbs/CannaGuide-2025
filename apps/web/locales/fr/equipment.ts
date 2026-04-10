@@ -79,6 +79,7 @@ export const equipmentView = {
         count: '{{count}} configurations',
         copyToMySetups: 'Copier dans Mes Configurations',
         copied: 'Copie !',
+        recommended: 'Recommande pour vous',
         footer: "Les prix sont des valeurs approximatives de vente au detail dans l'UE (2025). Les couts reels peuvent varier selon la region et le vendeur.",
         categories: {
             all: 'Toutes',

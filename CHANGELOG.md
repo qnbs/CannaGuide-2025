@@ -6,6 +6,20 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **ci(security):** upgrade SLSA provenance from L1 to L3 via
+  `slsa-framework/slsa-github-generator` (isolated runner,
+  non-falsifiable provenance, `generator_generic_slsa3.yml`)
+- **ci(security):** add CycloneDX SBOM generation via
+  `anchore/sbom-action` (Syft) + signed attestation via
+  `actions/attest-sbom` -- SBOM included as release asset
+- **ci(release):** refactor `release-publish.yml` from single-job
+  pipeline to 3-job architecture (build -> provenance -> release)
+  for supply-chain isolation
+- **ci(release):** release assets now include tarball + SBOM +
+  SLSA L3 provenance `.intoto.jsonl`
+
 ---
 
 ## [1.6.2] - 2026-04-10

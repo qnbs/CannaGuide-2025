@@ -36,6 +36,7 @@
 
 <!-- Code Quality & Security -->
 
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/qnbs/CannaGuide-2025?label=OpenSSF%20Scorecard)](https://scorecard.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 [![ESLint](https://img.shields.io/badge/ESLint-flat%20config-4B32C3?logo=eslint&logoColor=white)](https://eslint.org/)

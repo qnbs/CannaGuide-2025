@@ -22,18 +22,22 @@ env:
     NODE_VERSION: '20'
     TURBO_TELEMETRY_DISABLED: 1
 
+# -----------------------------------------------------------------
+# Job 1: Build -- produces tarball + CycloneDX SBOM + hash digest
+# -----------------------------------------------------------------
 jobs:
-    publish:
-        name: Build and Publish Release
+    build:
+        name: Build + SBOM
         runs-on: ubuntu-latest
         timeout-minutes: 15
         if: >-
             github.event_name == 'workflow_dispatch' ||
             github.event.workflow_run.conclusion == 'success'
-        permissions:
-            contents: write
-            id-token: write
-            attestations: write
+        outputs:
+            hashes: ${{ steps.hash.outputs.hashes }}
+            tag: ${{ steps.tag.outputs.name }}
+            tarball-name: ${{ steps.tarball.outputs.name }}
+            sha256: ${{ steps.tarball.outputs.sha256 }}
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
@@ -80,52 +84,163 @@ jobs:
                   TARBALL="cannaguide-${RELEASE_TAG}-dist.tar.gz"
                   tar -czf "${TARBALL}" -C apps/web/dist .
                   SHA256=$(sha256sum "${TARBALL}" | cut -d ' ' -f 1)
-                  echo "path=${TARBALL}" >> "$GITHUB_OUTPUT"
+                  echo "name=${TARBALL}" >> "$GITHUB_OUTPUT"
                   echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
                   echo "[INFO] Tarball: ${TARBALL} (sha256: ${SHA256})"
 
-            - name: Generate SLSA provenance attestation
+            - name: Generate CycloneDX SBOM
+              uses: anchore/sbom-action@f325610c9f50a54015d37c8d16cb3b0e2c8f4de0 # v0.18.0
+              with:
+                  path: .
+                  format: cyclonedx-json
+                  output-file: cannaguide-sbom.cyclonedx.json
+                  upload-artifact: false
+
+            - name: Compute base64 hash for SLSA provenance
+              id: hash
+              shell: bash
+              env:
+                  TARBALL: ${{ steps.tarball.outputs.name }}
+                  SHA256: ${{ steps.tarball.outputs.sha256 }}
+              run: |
+                  HASHES=$(echo "sha256:${SHA256}  ${TARBALL}" | base64 -w0)
+                  echo "hashes=${HASHES}" >> "$GITHUB_OUTPUT"
+                  echo "[INFO] Base64 hashes for SLSA: ${HASHES}"
+
+            - name: Upload tarball artifact
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              with:
+                  name: release-tarball
+                  path: ${{ steps.tarball.outputs.name }}
+                  if-no-files-found: error
+                  retention-days: 5
+
+            - name: Upload SBOM artifact
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              with:
+                  name: release-sbom
+                  path: cannaguide-sbom.cyclonedx.json
+                  if-no-files-found: error
+                  retention-days: 5
+
+    # -----------------------------------------------------------------
+    # Job 2: SLSA L3 Provenance -- isolated runner via reusable workflow
+    # -----------------------------------------------------------------
+    provenance:
+        name: SLSA L3 Provenance
+        needs: [build]
+        permissions:
+            actions: read
+            id-token: write
+            contents: write
+        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
+        with:
+            base64-subjects: '${{ needs.build.outputs.hashes }}'
+            upload-assets: false
+            provenance-name: cannaguide-provenance.intoto.jsonl
+
+    # -----------------------------------------------------------------
+    # Job 3: Release -- download all artifacts + sign SBOM + publish
+    # -----------------------------------------------------------------
+    release:
+        name: Publish Release
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        needs: [build, provenance]
+        permissions:
+            contents: write
+            id-token: write
+            attestations: write
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+              with:
+                  egress-policy: audit
+
+            - name: Download tarball
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+              with:
+                  name: release-tarball
+
+            - name: Download SBOM
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+              with:
+                  name: release-sbom
+
+            - name: Download SLSA provenance
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+              with:
+                  name: cannaguide-provenance.intoto.jsonl
+                  path: provenance
+
+            - name: Generate SBOM attestation
+              uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+              with:
+                  subject-path: ${{ needs.build.outputs.tarball-name }}
+                  sbom-path: cannaguide-sbom.cyclonedx.json
+
+            - name: Generate SLSA L1 attestation (backward compat)
               uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
               with:
-                  subject-path: ${{ steps.tarball.outputs.path }}
+                  subject-path: ${{ needs.build.outputs.tarball-name }}
 
             - name: Create GitHub Release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  TAG: ${{ steps.tag.outputs.name }}
-                  TARBALL: ${{ steps.tarball.outputs.path }}
-                  SHA256: ${{ steps.tarball.outputs.sha256 }}
+                  TAG: ${{ needs.build.outputs.tag }}
+                  TARBALL: ${{ needs.build.outputs.tarball-name }}
+                  SHA256: ${{ needs.build.outputs.sha256 }}
               shell: bash
               run: |
+                  PROVENANCE_FILE=$(ls provenance/*.intoto.jsonl 2>/dev/null | head -1)
 
                   NOTES="## CannaGuide ${TAG}
 
-                  **PWA Distribution** -- built from commit ${GITHUB_SHA::8}
+                  **PWA Distribution** -- SLSA L3 provenance + CycloneDX SBOM
 
                   ### Artifact Checksums
                   | File | SHA-256 |
                   |------|---------|
                   | ${TARBALL} | \`${SHA256}\` |
 
-                  ### Verification
+                  ### Supply-Chain Verification
+
+                  **SLSA L1 (GitHub Attestation):**
                   \`\`\`bash
                   gh attestation verify ${TARBALL} --repo qnbs/CannaGuide-2025
                   \`\`\`
+
+                  **SLSA L3 (slsa-verifier):**
+                  \`\`\`bash
+                  slsa-verifier verify-artifact ${TARBALL} \\
+                    --provenance-path cannaguide-provenance.intoto.jsonl \\
+                    --source-uri github.com/qnbs/CannaGuide-2025
+                  \`\`\`
+
+                  **SBOM:** \`cannaguide-sbom.cyclonedx.json\` (CycloneDX JSON)
 
                   ### Install
                   This is a Progressive Web App. Visit https://qnbs.github.io/CannaGuide-2025/
                   "
 
+                  # Collect release assets
+                  ASSETS=("${TARBALL}" "cannaguide-sbom.cyclonedx.json")
+                  if [[ -n "${PROVENANCE_FILE}" ]]; then
+                    ASSETS+=("${PROVENANCE_FILE}")
+                  fi
+
                   # Create release (draft=false, prerelease auto-detected from tag)
                   if echo "${TAG}" | grep -qE '(alpha|beta|rc)'; then
-                    gh release create "${TAG}" "${TARBALL}" \
+                    gh release create "${TAG}" "${ASSETS[@]}" \
                       --title "CannaGuide ${TAG}" \
                       --notes "${NOTES}" \
                       --prerelease
                   else
-                    gh release create "${TAG}" "${TARBALL}" \
+                    gh release create "${TAG}" "${ASSETS[@]}" \
                       --title "CannaGuide ${TAG}" \
                       --notes "${NOTES}"
                   fi
+
+                  echo "[OK] Release ${TAG} published with SLSA L3 provenance + SBOM"
 
                   echo "[OK] Release ${TAG} published with provenance attestation"

@@ -2,7 +2,70 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 114) -- v1.6.2 Release + SLSA L1 Provenance
+## Latest Session (Session 115) -- SLSA L3 + CycloneDX SBOM
+
+**Status: release-publish.yml refactored from 1-job (L1) to 3-job pipeline (L3 + SBOM). All CI gates pass (1884 tests, TS clean, build clean). Awaiting tag push for end-to-end verification.**
+
+### What Was Done (Session 115)
+
+1. **SLSA L3 Provenance** -- `release-publish.yml` refactored into
+   3-job architecture (build -> provenance -> release). Provenance
+   job uses `slsa-framework/slsa-github-generator` reusable workflow
+   (`generator_generic_slsa3.yml@v2.1.0`, SHA-pinned) for
+   non-falsifiable, isolated-runner L3 provenance.
+
+2. **CycloneDX SBOM** -- Build job now generates a CycloneDX JSON
+   SBOM via `anchore/sbom-action@v0.18.0` (Syft, SHA-pinned).
+   Scans monorepo root (`.`) to capture all pnpm workspaces +
+   lockfile dependencies. SBOM signed via `actions/attest-sbom@v4.1.0`.
+
+3. **Release Assets Expanded** -- Each release now includes 3 assets:
+   tarball (`cannaguide-vX.Y.Z-dist.tar.gz`), SBOM
+   (`cannaguide-sbom.cyclonedx.json`), and L3 provenance
+   (`cannaguide-provenance.intoto.jsonl`).
+
+4. **Dual Attestation** -- Both L1 (`attest-build-provenance`) and
+   L3 (`slsa-github-generator`) attestations are generated for
+   backward compatibility. `gh attestation verify` (L1) and
+   `slsa-verifier verify-artifact` (L3) both work.
+
+5. **Documentation** -- CHANGELOG [Unreleased] filled, README SLSA L3
+   badge added, SECURITY.md supply-chain section expanded (L3 + SBOM),
+   release-process.md verification commands added,
+   copilot-instructions.md updated.
+
+### Verified Metrics
+
+- Tests: **1884 passing**, 0 failures (163 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds, turbo cached)
+- Version: 1.6.2 in package.json (root + web)
+
+### Next Steps
+
+- **Tag `v1.6.3-rc.1`** to dry-run the new 3-job pipeline end-to-end
+- **Add `slsa-framework/*`** to GitHub Actions allowlist (Settings >
+  Actions > General) before tagging -- required for the reusable
+  workflow call to succeed
+- Complete Branch Protection via GitHub Web UI
+- Complete CII Best Practices questionnaire at bestpractices.dev
+- Re-run OpenSSF Scorecard after Branch Protection propagates
+- Push unit test coverage above 40% lines
+- Lint Phase 5: resolve 123 `no-unsafe-type-assertion` warnings
+
+### Planned Executions
+
+- **Execution N+1:** Tag `v1.6.3-rc.1` to verify SLSA L3 pipeline
+  end-to-end (build -> provenance -> release with 3 assets)
+- **Execution N+2:** Coverage sprint -- target 40% lines via
+  service/util test expansion
+- **Execution N+3:** Lint Phase 5 completion -- resolve 123
+  `no-unsafe-type-assertion` warnings
+- **Execution N+4:** v2.0 feature planning + PRIORITY_ROADMAP update
+
+---
+
+## Previous Session (Session 114) -- v1.6.2 Release + SLSA L1 Provenance
 
 **Status: v1.6.2 tagged + released with SLSA L1 provenance attestation. Version bumped in package.json. AUDIT_BACKLOG zero open. 1884 tests passing. TypeScript clean. Build clean.**
 

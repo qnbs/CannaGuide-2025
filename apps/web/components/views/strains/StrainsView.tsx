@@ -144,6 +144,12 @@ export const StrainsView: React.FC = () => {
         }
     }, [strainsViewTab])
 
+    const selectedStrainIds = useMemo(
+        () => strainsViewState.selectedStrainIds,
+        [strainsViewState.selectedStrainIds],
+    )
+    const selectedStrainId = strainsViewState.selectedStrainId
+
     // Scroll to top when navigating into/out of strain detail
     useEffect(() => {
         const mainEl = document.getElementById('main-content')
@@ -151,12 +157,6 @@ export const StrainsView: React.FC = () => {
             mainEl.scrollTop = 0
         }
     }, [selectedStrainId])
-
-    const selectedStrainIds = useMemo(
-        () => strainsViewState.selectedStrainIds,
-        [strainsViewState.selectedStrainIds],
-    )
-    const selectedStrainId = strainsViewState.selectedStrainId
     const selectedStrainForDetail = useMemo(
         () => allStrains.find((s) => s.id === selectedStrainId) || null,
         [allStrains, selectedStrainId],

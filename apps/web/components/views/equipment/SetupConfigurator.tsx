@@ -236,8 +236,11 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                 high: 1000,
             }
             return {
-                growSpace: (spaceSize && spaceDimensions[spaceSize]) ?? { width: 80, depth: 80 },
-                budget: (budgetTier && budgetValues[budgetTier]) ?? 1000,
+                growSpace: (spaceSize ? spaceDimensions[spaceSize] : undefined) ?? {
+                    width: 80,
+                    depth: 80,
+                },
+                budget: (budgetTier ? budgetValues[budgetTier] : undefined) ?? 1000,
             }
         } catch {
             return { growSpace: { width: 80, depth: 80 }, budget: 1000 }

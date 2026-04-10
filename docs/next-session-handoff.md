@@ -2,7 +2,55 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 123) -- Preset Setups Sub-Page
+## Latest Session (Session 124) -- CI Typecheck Fixes + Hook Hardening
+
+**Status: Fixed all CI typecheck failures (12 errors across 3 files).
+Hardened pre-commit/pre-push hooks to run turbo typecheck (matches CI).
+2028 tests passing, build OK.**
+
+### What Was Done (Session 124)
+
+1. **SetupConfigurator.tsx** -- Fixed `growSpace` and `budget` type
+   narrowing. The `&&` short-circuit with `localStorage.getItem()`
+   produced `"" | { width; depth }` and `"" | number` unions. Replaced
+   with ternary expressions to yield clean `{ width; depth }` / `number`
+   types. Eliminates 8 TS errors (TS2339, TS2322, TS2345).
+
+2. **PresetSetupsView.tsx** -- Added missing `growSpace` and
+   `floweringTypePreference` to fallback `sourceDetails` object.
+   Eliminates TS2739.
+
+3. **StrainsView.tsx** -- Moved `selectedStrainId` declaration before
+   the `useEffect` that references it. Variable was used before its
+   block-scoped declaration. Eliminates TS2448/TS2454.
+
+4. **Pre-commit/pre-push hook hardening** -- Root cause of undetected
+   errors: hooks ran `node ./scripts/typecheck-filter.mjs` from repo
+   root, which spawns `tsc --noEmit` against the root `tsconfig.json`
+   that has `"include": []` (references-only). This checked zero files.
+   CI runs `turbo run typecheck` which delegates to each package.
+   Fixed both hooks to use `pnpm exec turbo run typecheck` to match
+   the CI pipeline exactly.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (turbo run typecheck, all 3 packages)
+- Tests: 2028 passing, 0 failures
+- Build: OK (163 precache entries)
+
+### Root Cause Analysis
+
+The pre-commit and pre-push hooks ran typecheck from the monorepo root.
+The root `tsconfig.json` is a `references`-only config with
+`"include": []`, so `tsc --noEmit` reported zero errors regardless of
+the actual code state. CI uses `turbo run typecheck` which runs tsc from
+each package directory (`apps/web/`, `packages/ai-core/`,
+`packages/ui/`), where the real tsconfigs live. With the hooks now using
+turbo, local and CI typecheck behavior are identical.
+
+---
+
+## Previous Session (Session 123) -- Preset Setups Sub-Page
 
 **Status: New Equipment sub-page "Preset Setups" with 12 pre-configured
 grow setups. Typecheck clean, 2028 tests passing, build OK.**

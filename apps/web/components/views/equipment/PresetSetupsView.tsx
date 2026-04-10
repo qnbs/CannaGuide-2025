@@ -78,6 +78,8 @@ const PresetSetupsViewComponent: React.FC = () => {
                     budget: 0,
                     priorities: [],
                     customNotes: '',
+                    growSpace: { width: 0, depth: 0 },
+                    floweringTypePreference: 'any',
                 },
             }
         }

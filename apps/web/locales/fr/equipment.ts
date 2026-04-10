@@ -4,6 +4,7 @@ import { seedbanks } from './seedbanks'
 export const equipmentView = {
     tabs: {
         configurator: 'Configurateur',
+        presetSetups: 'Configurations Predefinies',
         setups: 'Configurations Sauvegardees',
         calculators: 'Calculateurs',
         growShops: 'Grow Shops',
@@ -71,6 +72,27 @@ export const equipmentView = {
         customNotesPlaceholder: "Ex. : j'ai besoin que ce soit silencieux, j'ai deja une tente...",
         setupNamePrompt: 'Donnez un nom a votre nouvelle configuration.',
         setupSaveSuccess: 'Configuration "{{name}}" sauvegardee avec succes !',
+    },
+    presetSetups: {
+        subtitle:
+            'Configurations de culture preconcues pour chaque niveau et budget. Copiez un preset dans vos configurations sauvegardees pour le personnaliser.',
+        count: '{{count}} configurations',
+        copyToMySetups: 'Copier dans Mes Configurations',
+        copied: 'Copie !',
+        footer: "Les prix sont des valeurs approximatives de vente au detail dans l'UE (2025). Les couts reels peuvent varier selon la region et le vendeur.",
+        categories: {
+            all: 'Toutes',
+            micro: 'Micro',
+            small: 'Petit',
+            medium: 'Moyen',
+            large: 'Grand',
+            specialty: 'Specialite',
+        },
+        difficulty: {
+            beginner: 'Debutant',
+            intermediate: 'Intermediaire',
+            expert: 'Expert',
+        },
     },
     savedSetups: {
         noSetups: {

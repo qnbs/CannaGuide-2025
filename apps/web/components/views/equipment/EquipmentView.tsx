@@ -13,6 +13,9 @@ import { EquipmentSubNav } from './EquipmentSubNav'
 const SetupConfigurator = lazy(() =>
     import('./SetupConfigurator').then((m) => ({ default: m.SetupConfigurator })),
 )
+const PresetSetupsView = lazy(() =>
+    import('./PresetSetupsView').then((m) => ({ default: m.PresetSetupsView })),
+)
 const SavedSetupsView = lazy(() =>
     import('./SavedSetupsView').then((m) => ({ default: m.SavedSetupsView })),
 )
@@ -50,6 +53,9 @@ export const EquipmentView: React.FC = () => {
             [EquipmentViewTab.Configurator]: (
                 <PhosphorIcons.MagicWand className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-accent-400" />
             ),
+            [EquipmentViewTab.PresetSetups]: (
+                <PhosphorIcons.Cube className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-secondary-400" />
+            ),
             [EquipmentViewTab.Setups]: (
                 <PhosphorIcons.ArchiveBox className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-primary-400" />
             ),
@@ -78,6 +84,7 @@ export const EquipmentView: React.FC = () => {
     const viewTitles = useMemo(
         () => ({
             [EquipmentViewTab.Configurator]: t('equipmentView.tabs.configurator'),
+            [EquipmentViewTab.PresetSetups]: t('equipmentView.tabs.presetSetups'),
             [EquipmentViewTab.Setups]: t('equipmentView.tabs.setups'),
             [EquipmentViewTab.Calculators]: t('equipmentView.tabs.calculators'),
             [EquipmentViewTab.GrowShops]: t('equipmentView.tabs.growShops'),
@@ -103,6 +110,8 @@ export const EquipmentView: React.FC = () => {
         switch (activeTab) {
             case EquipmentViewTab.Configurator:
                 return <SetupConfigurator onSaveSetup={handleSaveGeneratedSetup} />
+            case EquipmentViewTab.PresetSetups:
+                return <PresetSetupsView />
             case EquipmentViewTab.Setups:
                 return (
                     <SavedSetupsView

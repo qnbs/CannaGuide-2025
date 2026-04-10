@@ -4,6 +4,7 @@ import { seedbanks } from './seedbanks'
 export const equipmentView = {
     tabs: {
         configurator: 'Konfigurator',
+        presetSetups: 'Vorgefertigte Setups',
         setups: 'Gespeicherte Setups',
         calculators: 'Rechner',
         growShops: 'Grow Shops',
@@ -75,6 +76,27 @@ export const equipmentView = {
         customNotesPlaceholder: 'z.B. Ich brauche es leise, ich habe bereits ein Zelt...',
         setupNamePrompt: 'Gib deinem neuen Setup einen Namen.',
         setupSaveSuccess: 'Setup "{{name}}" erfolgreich gespeichert!',
+    },
+    presetSetups: {
+        subtitle:
+            'Vorkonfigurierte Grow-Setups fuer jedes Level und Budget. Kopiere ein Preset in deine gespeicherten Setups, um es anzupassen.',
+        count: '{{count}} Setups',
+        copyToMySetups: 'In meine Setups kopieren',
+        copied: 'Kopiert!',
+        footer: 'Preise sind ungefaehre EU-Einzelhandelspreise (2025). Tatsaechliche Kosten koennen je nach Region und Haendler abweichen.',
+        categories: {
+            all: 'Alle',
+            micro: 'Mikro',
+            small: 'Klein',
+            medium: 'Mittel',
+            large: 'Gross',
+            specialty: 'Spezial',
+        },
+        difficulty: {
+            beginner: 'Anfaenger',
+            intermediate: 'Fortgeschritten',
+            expert: 'Experte',
+        },
     },
     savedSetups: {
         noSetups: {

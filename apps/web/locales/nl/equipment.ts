@@ -4,6 +4,7 @@ import { seedbanks } from './seedbanks'
 export const equipmentView = {
     tabs: {
         configurator: 'Configurator',
+        presetSetups: 'Vooraf Ingestelde Configuraties',
         setups: 'Opgeslagen Configuraties',
         calculators: 'Calculators',
         growShops: 'Grow Shops',
@@ -71,6 +72,27 @@ export const equipmentView = {
         customNotesPlaceholder: 'Bijv. het moet stil zijn, ik heb al een tent...',
         setupNamePrompt: 'Geef je nieuwe configuratie een naam.',
         setupSaveSuccess: 'Configuratie "{{name}}" succesvol opgeslagen!',
+    },
+    presetSetups: {
+        subtitle:
+            'Voorgeconfigureerde kweekopstellingen voor elk niveau en budget. Kopieer een preset naar je opgeslagen configuraties om het aan te passen.',
+        count: '{{count}} configuraties',
+        copyToMySetups: 'Kopieren naar Mijn Configuraties',
+        copied: 'Gekopieerd!',
+        footer: 'Prijzen zijn geschatte EU-retailwaarden (2025). Werkelijke kosten kunnen afwijken per regio en leverancier.',
+        categories: {
+            all: 'Alle',
+            micro: 'Micro',
+            small: 'Klein',
+            medium: 'Middel',
+            large: 'Groot',
+            specialty: 'Specialiteit',
+        },
+        difficulty: {
+            beginner: 'Beginner',
+            intermediate: 'Gemiddeld',
+            expert: 'Expert',
+        },
     },
     savedSetups: {
         noSetups: {

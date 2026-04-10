@@ -232,6 +232,14 @@ function computeWaveform(payload: ComputeWaveformPayload): ComputeWaveformResult
 }
 
 // ---------------------------------------------------------------------------
+// Security: origin check
+// ---------------------------------------------------------------------------
+
+const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
+    return !event.origin || event.origin === self.location.origin
+}
+
+// ---------------------------------------------------------------------------
 // Message handler (WorkerBus protocol)
 // ---------------------------------------------------------------------------
 interface WorkerMessage {
@@ -241,6 +249,9 @@ interface WorkerMessage {
 }
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
+    // Security: reject messages from untrusted origins
+    if (!isTrustedWorkerMessage(event)) return
+
     // Security: ignore messages without expected structure
     const { messageId, type, payload } = event.data
     if (!messageId || !type) return

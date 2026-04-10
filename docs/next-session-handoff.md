@@ -2,7 +2,57 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 113) -- Post-v1.6.1 Audit Closure + Release Fix + F-02
+## Latest Session (Session 114) -- v1.6.2 Release + SLSA L1 Provenance
+
+**Status: v1.6.2 tagged + released with SLSA L1 provenance attestation. Version bumped in package.json. AUDIT_BACKLOG zero open. 1884 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 114)
+
+1. **v1.6.2 Release** -- Version bumped in `package.json` (root +
+   web) from 1.6.0 to 1.6.2. CHANGELOG `[Unreleased]` converted to
+   `[1.6.2] - 2026-04-10`. Tag `v1.6.2` created and pushed to
+   trigger `release-publish.yml` with SLSA provenance attestation.
+
+2. **Release Pipeline Verification** -- Confirmed release-publish
+   workflow runs correctly after the `startsWith(head_branch, 'v')`
+   fix from Session 113. Pipeline now correctly triggers on
+   `workflow_run` success from Release Gate.
+
+3. **SLSA L1 Provenance** -- `actions/attest-build-provenance@v4.1.0`
+   generates signed in-toto attestation with:
+    - Builder ID: `release-publish.yml@refs/heads/main`
+    - Subject: `cannaguide-v1.6.2-dist.tar.gz` with SHA-256 digest
+    - Verification: `gh attestation verify` validates the chain
+
+### Verified Metrics
+
+- Tests: **1884 passing**, 0 failures (163 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- Lint scopes: clean (4 strict scopes enforced)
+- Version: 1.6.2 in package.json (root + web)
+- AUDIT_BACKLOG: 0 open items
+
+### Next Steps
+
+- Complete Branch Protection via GitHub Web UI (unchecked for admins)
+- Complete CII Best Practices questionnaire at bestpractices.dev
+- Re-run OpenSSF Scorecard after Branch Protection propagates
+- Push unit test coverage above 40% lines
+- Lint Phase 5: resolve 123 `no-unsafe-type-assertion` warnings
+- v2.0 feature planning: Scholarly Lexicon, Video-Hub, AR/VR
+
+### Planned Executions
+
+- **Execution N+1:** Coverage sprint -- target 40% lines via
+  service/util test expansion (stores already well-covered)
+- **Execution N+2:** Lint Phase 5 completion -- resolve 123
+  `no-unsafe-type-assertion` warnings in workers/components/services
+- **Execution N+3:** v2.0 feature planning + PRIORITY_ROADMAP update
+
+---
+
+## Previous Session (Session 113) -- Post-v1.6.1 Audit Closure + Release Fix + F-02
 
 **Status: AUDIT_BACKLOG fully resolved (0 Critical/High/Medium open, 0 Low open, 3 deferred). Release-publish.yml bug fixed. F-02 Web Share extended. 1884 tests passing. TypeScript clean. Build clean.**
 

@@ -374,10 +374,10 @@ async function generatePlantSummary(
     try {
         const { aiService } = await import('@/services/aiFacade')
         const response = await aiService.getPlantAdvice(plant, 'en')
-        if (response?.text) {
-            const lines = response.text.split('\n').filter((l) => l.trim())
+        if (response?.content) {
+            const lines = response.content.split('\n').filter((l: string) => l.trim())
             const summary = lines.slice(0, 3).join(' ')
-            const recommendations = lines.slice(3, 8).map((l) => l.replace(/^[-*]\s*/, ''))
+            const recommendations = lines.slice(3, 8).map((l: string) => l.replace(/^[-*]\s*/, ''))
             if (summary.length > 20) {
                 return {
                     summary: truncate(summary, 500),
@@ -796,7 +796,7 @@ export async function generateEnhancedGrowReport(
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(40)
     const summaryLines = doc.splitTextToSize(summary, CONTENT_W)
-    doc.text(summaryLines, LM, y)
+    doc.text(summaryLines.join('\n'), LM, y)
     y += summaryLines.length * 5 + 6
 
     if (recommendations.length > 0) {
@@ -813,7 +813,7 @@ export async function generateEnhancedGrowReport(
         for (const rec of recommendations) {
             y = ensureSpace(doc, y, 8)
             const recLines = doc.splitTextToSize(`-- ${rec}`, CONTENT_W - 5)
-            doc.text(recLines, LM + 3, y)
+            doc.text(recLines.join('\n'), LM + 3, y)
             y += recLines.length * 4.5 + 2
         }
     }

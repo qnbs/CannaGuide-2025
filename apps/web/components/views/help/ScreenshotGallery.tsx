@@ -199,6 +199,12 @@ export const ScreenshotGallery: React.FC = memo(() => {
             .join(' ')
     }
 
+    const lightboxAlt = useMemo(() => {
+        if (!lightboxImg) return ''
+        const match = SCREENSHOTS.find((s) => s.path === lightboxImg)
+        return match ? `${formatScreenName(match.name)} (${match.viewport})` : 'Screenshot'
+    }, [lightboxImg])
+
     return (
         <Card>
             <h3 className="text-xl font-bold font-display text-primary-400 mb-2">
@@ -341,7 +347,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
                     </button>
                     <img
                         src={`${import.meta.env.BASE_URL}${lightboxImg}`}
-                        alt="Screenshot"
+                        alt={lightboxAlt}
                         className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
                         onClick={(e) => e.stopPropagation()}
                     />

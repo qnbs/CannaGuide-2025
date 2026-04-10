@@ -496,6 +496,7 @@ export const strainsView = {
         addedToFavorites_other: 'Added {{count}} strains to favorites.',
         removedFromFavorites_one: 'Removed 1 strain from favorites.',
         removedFromFavorites_other: 'Removed {{count}} strains from favorites.',
+        removeFavoritesConfirm: 'Remove {{count}} strains from favorites?',
     },
     accessibility: {
         selectStrain: 'Select {{name}}',

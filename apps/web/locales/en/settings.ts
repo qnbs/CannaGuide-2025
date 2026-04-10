@@ -1072,6 +1072,8 @@ export const settingsView = {
         archive: 'Archive',
         delete: 'Delete',
         confirmDelete: 'Confirm Delete',
+        archiveConfirmTitle: 'Archive Grow',
+        archiveConfirmDesc: 'Are you sure you want to archive this grow? You can restore it later.',
         archived: 'Archived Grows',
         limitReached: 'Maximum of {{max}} grows reached (German CanG limit).',
         activeGrow: 'Active grow: {{name}}',

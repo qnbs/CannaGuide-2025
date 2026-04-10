@@ -403,6 +403,8 @@ export const equipmentView = {
             ppfd: 'PPFD at Canopy',
             targetDli: 'Target DLI',
             optional: 'optional',
+            ppfdPlaceholder: 'e.g. 600',
+            dliPlaceholder: 'e.g. 30',
             recommended: 'Recommended Schedule',
             onHours: 'Light On',
             offHours: 'Dark Period',

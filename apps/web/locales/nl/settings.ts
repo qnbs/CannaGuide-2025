@@ -1092,6 +1092,8 @@ export const settingsView = {
         archive: 'Archiveren',
         delete: 'Verwijderen',
         confirmDelete: 'Verwijderen bevestigen',
+        archiveConfirmTitle: 'Teelt archiveren',
+        archiveConfirmDesc: 'Weet je zeker dat je deze teelt wilt archiveren? Je kunt deze later herstellen.',
         archived: 'Gearchiveerde teelten',
         limitReached: 'Maximum van {{max}} teelten bereikt (Duitse CanG-limiet).',
         activeGrow: 'Actieve teelt: {{name}}',

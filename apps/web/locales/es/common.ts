@@ -14,6 +14,7 @@ export const common = {
     export: 'Exportar',
     downloadAgain: 'Descargar de nuevo',
     all: 'Todo',
+    loadingGeneric: 'Cargando...',
     none: 'Ninguno',
     growDeleted: 'Grow eliminado.',
     outOfStock: 'Agotado',

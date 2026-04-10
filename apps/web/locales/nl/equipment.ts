@@ -399,6 +399,8 @@ export const equipmentView = {
             ppfd: 'PPFD op het bladerdak',
             targetDli: 'Doel-DLI',
             optional: 'optioneel',
+            ppfdPlaceholder: 'bijv. 600',
+            dliPlaceholder: 'bijv. 30',
             recommended: 'Aanbevolen schema',
             onHours: 'Licht aan',
             offHours: 'Donkerperiode',

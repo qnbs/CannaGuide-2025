@@ -98,7 +98,7 @@ export const TimerScheduleCalculator: React.FC = memo(() => {
                     type="number"
                     unit="umol/m2/s"
                     value={ppfdValue}
-                    placeholder="e.g. 600"
+                    placeholder={t('equipmentView.calculators.timerSchedule.ppfdPlaceholder')}
                     min={50}
                     max={2000}
                     step={10}
@@ -109,7 +109,7 @@ export const TimerScheduleCalculator: React.FC = memo(() => {
                     type="number"
                     unit="mol/m2/day"
                     value={targetDliValue}
-                    placeholder="e.g. 30"
+                    placeholder={t('equipmentView.calculators.timerSchedule.dliPlaceholder')}
                     min={1}
                     max={80}
                     step={1}

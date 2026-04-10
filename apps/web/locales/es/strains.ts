@@ -414,6 +414,7 @@ export const strainsView = {
         addedToFavorites_other: '{{count}} variedades agregadas a favoritos.',
         removedFromFavorites_one: '1 variedad quitada de favoritos.',
         removedFromFavorites_other: '{{count}} variedades quitadas de favoritos.',
+        removeFavoritesConfirm: 'Quitar {{count}} variedades de favoritos?',
     },
     accessibility: {
         selectStrain: 'Seleccionar {{name}}',

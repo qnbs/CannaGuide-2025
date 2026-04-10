@@ -1118,6 +1118,8 @@ export const settingsView = {
         archive: 'Archiver',
         delete: 'Supprimer',
         confirmDelete: 'Confirmer la suppression',
+        archiveConfirmTitle: 'Archiver la culture',
+        archiveConfirmDesc: 'Voulez-vous vraiment archiver cette culture? Vous pourrez la restaurer plus tard.',
         archived: 'Cultures archivees',
         limitReached: 'Maximum de {{max}} cultures atteint (limite CanG allemande).',
         activeGrow: 'Culture active: {{name}}',

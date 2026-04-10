@@ -502,6 +502,7 @@ export const strainsView = {
         addedToFavorites_other: '{{count}} Sorten zu Favoriten hinzugefügt.',
         removedFromFavorites_one: '1 Sorte aus Favoriten entfernt.',
         removedFromFavorites_other: '{{count}} Sorten aus Favoriten entfernt.',
+        removeFavoritesConfirm: '{{count}} Sorten aus Favoriten entfernen?',
     },
     accessibility: {
         selectStrain: '{{name}} auswählen',

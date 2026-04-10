@@ -403,6 +403,8 @@ export const equipmentView = {
             ppfd: 'PPFD en el dosel',
             targetDli: 'DLI objetivo',
             optional: 'opcional',
+            ppfdPlaceholder: 'p. ej. 600',
+            dliPlaceholder: 'p. ej. 30',
             recommended: 'Horario recomendado',
             onHours: 'Luz encendida',
             offHours: 'Periodo oscuro',

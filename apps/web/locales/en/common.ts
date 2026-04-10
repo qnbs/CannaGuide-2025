@@ -10,6 +10,7 @@ export const common = {
     downloadAgain: 'Download Again',
     all: 'All',
     none: 'None',
+    loadingGeneric: 'Loading...',
     growDeleted: 'Grow deleted.',
     outOfStock: 'Out of stock',
     imageGenCapability: {

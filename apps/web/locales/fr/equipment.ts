@@ -407,6 +407,8 @@ export const equipmentView = {
             ppfd: 'PPFD au niveau de la canopee',
             targetDli: 'DLI cible',
             optional: 'optionnel',
+            ppfdPlaceholder: 'p. ex. 600',
+            dliPlaceholder: 'p. ex. 30',
             recommended: 'Calendrier recommande',
             onHours: 'Lumiere allumee',
             offHours: 'Periode nocturne',

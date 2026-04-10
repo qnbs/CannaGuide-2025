@@ -8,6 +8,30 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(ui):** confirmation dialog for grow archive action in
+  GrowEditModal (ConfirmDialog pattern)
+- **feat(ui):** confirmation modal for bulk favorite removal in
+  StrainsView (ConfirmModal pattern)
+- **feat(a11y):** PhotosTab lightbox migrated from `<dialog open>`
+  to Radix DialogWrapper (focus trap, escape, screen reader)
+- **feat(a11y):** ScreenshotGallery lightbox dynamic alt text from
+  screenshot metadata instead of generic string
+- **feat(i18n):** 20+ new translation keys across EN/DE/ES/FR/NL
+  (archive confirm, remove favorites confirm, loading generic,
+  calculator placeholders)
+- **feat(ui):** empty state icons for MetricsOverviewTab
+  (ChartLineUp) and InlineStrainSelector (MagnifyingGlass)
+
+### Fixed
+
+- **fix(security):** CodeQL #280 -- added isTrustedWorkerMessage
+  origin check to voiceWorker (was the only worker missing it)
+- **fix(security):** Dependabot #50 -- pinned basic-ftp to 5.2.2
+  (CRLF injection fix)
+- **fix(i18n):** replaced hardcoded "Loading..." in
+  LeafDiagnosisPanel Suspense fallback with i18n key
+- **fix(i18n):** replaced hardcoded "e.g. 600" / "e.g. 30"
+  placeholders in TimerScheduleCalculator with i18n keys
 - **feat(equipment):** onboarding-seeding downstream wiring --
   preset setups now sorted by user's onboarding space/budget
   choices with "Recommended for You" badge, memoized selectors

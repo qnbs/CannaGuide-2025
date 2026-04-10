@@ -213,7 +213,11 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
             {/* --- Manual Diagnosis Tab --- */}
             {activeTab === 'manual' && (
                 <Suspense
-                    fallback={<p className="text-xs text-slate-500 text-center py-4">Loading...</p>}
+                    fallback={
+                        <p className="text-xs text-slate-500 text-center py-4">
+                            {t('common.loadingGeneric')}
+                        </p>
+                    }
                 >
                     <LazyNutrientDeficiencyWizard />
                 </Suspense>

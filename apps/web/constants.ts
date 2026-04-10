@@ -89,6 +89,39 @@ export const IMAGE_MAX_WIDTH = 1280
 export const IMAGE_MAX_HEIGHT = 1280
 export const IMAGE_JPEG_QUALITY = 0.8
 
+// --- VOICE (v1.8 CannaVoice Pro) ---
+/** Safe built-in Porcupine wake-word keywords (no brand names). */
+export const PORCUPINE_BUILTIN_KEYWORDS = [
+    'ALEXA',
+    'AMERICANO',
+    'BLUEBERRY',
+    'BUMBLEBEE',
+    'COMPUTER',
+    'GRAPEFRUIT',
+    'GRASSHOPPER',
+    'JARVIS',
+    'PICOVOICE',
+    'PORCUPINE',
+    'TERMINATOR',
+] as const
+
+/** Max voice analytics events in ring buffer. */
+export const VOICE_ANALYTICS_MAX_EVENTS = 500
+/** Auto-prune voice analytics events older than N days. */
+export const VOICE_ANALYTICS_RETENTION_DAYS = 30
+/** Max characters per Cloud TTS request. */
+export const CLOUD_TTS_MAX_CHARS = 5000
+/** Cloud TTS fetch timeout (ms). */
+export const CLOUD_TTS_TIMEOUT_MS = 10000
+/** Cloud TTS rate limit (requests per minute). */
+export const CLOUD_TTS_RATE_LIMIT = 5
+/** speakNatural pause insertion hints (ms). */
+export const SPEAK_NATURAL_PAUSE_MS = {
+    sentence: 400,
+    comma: 200,
+    list: 150,
+} as const
+
 // --- FILTERS ---
 export const INITIAL_ADVANCED_FILTERS: AdvancedFilterState = {
     thcRange: [0, 35],

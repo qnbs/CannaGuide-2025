@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from 'react'
+import React, { memo, useMemo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
@@ -20,6 +20,9 @@ import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SettingsRow } from './SettingsShared'
+import { PORCUPINE_BUILTIN_KEYWORDS } from '@/constants'
+import { voiceTelemetryService } from '@/services/voiceTelemetryService'
+import type { VoiceTelemetrySnapshot } from '@/types'
 
 const CommandItem: React.FC<{
     icon: React.ReactNode
@@ -63,10 +66,31 @@ const VoiceSettingsTab: React.FC = () => {
     const settings = useAppSelector(selectSettings)
     const availableVoices = useAvailableVoices()
     const [commandSearch, setCommandSearch] = useState('')
+    const [analyticsSnapshot, setAnalyticsSnapshot] = useState<VoiceTelemetrySnapshot | null>(null)
 
     const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path, value }))
     }
+
+    const refreshAnalytics = useCallback(() => {
+        setAnalyticsSnapshot(voiceTelemetryService.getVoiceTelemetrySnapshot())
+    }, [])
+
+    const handleExportAnalytics = useCallback(() => {
+        const events = voiceTelemetryService.exportVoiceEvents()
+        const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `voice-analytics-${Date.now()}.json`
+        a.click()
+        URL.revokeObjectURL(url)
+    }, [])
+
+    const handleClearAnalytics = useCallback(() => {
+        voiceTelemetryService.clearVoiceEvents()
+        setAnalyticsSnapshot(null)
+    }, [])
 
     const handleTestVoice = () => {
         if (!settings.tts.enabled) return
@@ -272,6 +296,223 @@ const VoiceSettingsTab: React.FC = () => {
                                 }
                             />
                         </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+            {/* Wake-Word Engine */}
+            <Card>
+                <FormSection
+                    title={t('settingsView.voice.wakeWord.title')}
+                    icon={<PhosphorIcons.Microphone />}
+                >
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow
+                            label={t('settingsView.voice.wakeWord.engine')}
+                            description={t('settingsView.voice.wakeWord.engineDesc')}
+                        >
+                            <VoiceSelect
+                                value={settings.voiceControl.wakeWordEngine}
+                                onChange={(val) =>
+                                    handleSetSetting('voiceControl.wakeWordEngine', val)
+                                }
+                                options={[
+                                    {
+                                        value: 'regex',
+                                        label: t('settingsView.voice.wakeWord.regex'),
+                                    },
+                                    {
+                                        value: 'porcupine',
+                                        label: t('settingsView.voice.wakeWord.porcupine'),
+                                    },
+                                ]}
+                            />
+                        </SettingsRow>
+                        {settings.voiceControl.wakeWordEngine === 'porcupine' && (
+                            <>
+                                <SettingsRow
+                                    label={t('settingsView.voice.wakeWord.accessKey')}
+                                    description={t('settingsView.voice.wakeWord.accessKeyDesc')}
+                                >
+                                    <input
+                                        type="password"
+                                        className="w-full px-3 py-2 rounded-md bg-slate-900/50 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                        value={settings.voiceControl.porcupineAccessKey ?? ''}
+                                        onChange={(e) =>
+                                            handleSetSetting(
+                                                'voiceControl.porcupineAccessKey',
+                                                e.target.value || null,
+                                            )
+                                        }
+                                        placeholder={t(
+                                            'settingsView.voice.wakeWord.accessKeyPlaceholder',
+                                        )}
+                                        autoComplete="off"
+                                    />
+                                </SettingsRow>
+                                <SettingsRow label={t('settingsView.voice.wakeWord.keyword')}>
+                                    <VoiceSelect
+                                        value={settings.voiceControl.porcupineKeyword}
+                                        onChange={(val) =>
+                                            handleSetSetting('voiceControl.porcupineKeyword', val)
+                                        }
+                                        options={PORCUPINE_BUILTIN_KEYWORDS.map((kw) => ({
+                                            value: kw,
+                                            label: kw,
+                                        }))}
+                                    />
+                                </SettingsRow>
+                            </>
+                        )}
+                    </div>
+                </FormSection>
+            </Card>
+            {/* Cloud TTS */}
+            <Card>
+                <FormSection
+                    title={t('settingsView.voice.cloudTts.title')}
+                    icon={<PhosphorIcons.SpeakerHigh />}
+                >
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow
+                            label={t('settingsView.voice.cloudTts.enabled')}
+                            description={t('settingsView.voice.cloudTts.enabledDesc')}
+                        >
+                            <Switch
+                                checked={settings.tts.cloudTtsEnabled}
+                                onChange={(val) => handleSetSetting('tts.cloudTtsEnabled', val)}
+                            />
+                        </SettingsRow>
+                        {settings.tts.cloudTtsEnabled && (
+                            <>
+                                <SettingsRow label={t('settingsView.voice.cloudTts.provider')}>
+                                    <VoiceSelect
+                                        value={settings.tts.cloudTtsProvider}
+                                        onChange={(val) =>
+                                            handleSetSetting('tts.cloudTtsProvider', val)
+                                        }
+                                        options={[{ value: 'elevenlabs', label: 'ElevenLabs' }]}
+                                    />
+                                </SettingsRow>
+                                <SettingsRow
+                                    label={t('settingsView.voice.cloudTts.apiKey')}
+                                    description={t('settingsView.voice.cloudTts.apiKeyDesc')}
+                                >
+                                    <input
+                                        type="password"
+                                        className="w-full px-3 py-2 rounded-md bg-slate-900/50 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                        value={settings.tts.cloudTtsApiKey ?? ''}
+                                        onChange={(e) =>
+                                            handleSetSetting(
+                                                'tts.cloudTtsApiKey',
+                                                e.target.value || null,
+                                            )
+                                        }
+                                        placeholder={t(
+                                            'settingsView.voice.cloudTts.apiKeyPlaceholder',
+                                        )}
+                                        autoComplete="off"
+                                    />
+                                </SettingsRow>
+                                <p className="text-xs text-slate-500">
+                                    {t('settingsView.voice.cloudTts.privacyNote')}
+                                </p>
+                            </>
+                        )}
+                    </div>
+                </FormSection>
+            </Card>
+            {/* Voice Worker + Analytics */}
+            <Card>
+                <FormSection
+                    title={t('settingsView.voice.advanced.title')}
+                    icon={<PhosphorIcons.Gear />}
+                >
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow
+                            label={t('settingsView.voice.advanced.workerEnabled')}
+                            description={t('settingsView.voice.advanced.workerEnabledDesc')}
+                        >
+                            <Switch
+                                checked={settings.voiceControl.voiceWorkerEnabled}
+                                onChange={(val) =>
+                                    handleSetSetting('voiceControl.voiceWorkerEnabled', val)
+                                }
+                            />
+                        </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.voice.advanced.analyticsEnabled')}
+                            description={t('settingsView.voice.advanced.analyticsEnabledDesc')}
+                        >
+                            <Switch
+                                checked={settings.voiceControl.voiceAnalyticsEnabled}
+                                onChange={(val) =>
+                                    handleSetSetting('voiceControl.voiceAnalyticsEnabled', val)
+                                }
+                            />
+                        </SettingsRow>
+                        {settings.voiceControl.voiceAnalyticsEnabled && (
+                            <div className="space-y-3">
+                                <div className="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={refreshAnalytics}
+                                    >
+                                        {t('settingsView.voice.advanced.refreshStats')}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={handleExportAnalytics}
+                                    >
+                                        {t('settingsView.voice.advanced.export')}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={handleClearAnalytics}
+                                    >
+                                        {t('settingsView.voice.advanced.clear')}
+                                    </Button>
+                                </div>
+                                {analyticsSnapshot && (
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="p-2 bg-slate-900/50 rounded">
+                                            <span className="text-slate-500">
+                                                {t('settingsView.voice.advanced.totalCommands')}
+                                            </span>
+                                            <p className="text-lg font-medium">
+                                                {analyticsSnapshot.totalCommands}
+                                            </p>
+                                        </div>
+                                        <div className="p-2 bg-slate-900/50 rounded">
+                                            <span className="text-slate-500">
+                                                {t('settingsView.voice.advanced.successRate')}
+                                            </span>
+                                            <p className="text-lg font-medium">
+                                                {(analyticsSnapshot.successRate * 100).toFixed(0)}%
+                                            </p>
+                                        </div>
+                                        <div className="p-2 bg-slate-900/50 rounded">
+                                            <span className="text-slate-500">
+                                                {t('settingsView.voice.advanced.avgLatency')}
+                                            </span>
+                                            <p className="text-lg font-medium">
+                                                {analyticsSnapshot.avgMatchLatencyMs.toFixed(0)} ms
+                                            </p>
+                                        </div>
+                                        <div className="p-2 bg-slate-900/50 rounded">
+                                            <span className="text-slate-500">
+                                                {t('settingsView.voice.advanced.hotwordCount')}
+                                            </span>
+                                            <p className="text-lg font-medium">
+                                                {analyticsSnapshot.hotwordDetections}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </FormSection>
             </Card>

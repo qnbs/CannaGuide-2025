@@ -411,6 +411,47 @@ export const settingsView = {
         next: 'Nächster',
         stop: 'Stopp',
     },
+    voice: {
+        wakeWord: {
+            title: 'Wake-Word-Engine',
+            engine: 'Wake-Word-Engine',
+            engineDesc: 'Waehle die Engine, die auf das Aktivierungswort hoert.',
+            regex: 'Regex (integriert)',
+            porcupine: 'Porcupine (WASM)',
+            accessKey: 'Porcupine Access Key',
+            accessKeyDesc: 'Dein Picovoice-Access-Key. Wird lokal verschluesselt gespeichert.',
+            accessKeyPlaceholder: 'Porcupine Access Key eingeben...',
+            keyword: 'Aktivierungswort',
+        },
+        cloudTts: {
+            title: 'Cloud-TTS (optional)',
+            enabled: 'Cloud-TTS aktivieren',
+            enabledDesc: 'Verwende einen Cloud-Sprachanbieter fuer hoehere Sprachqualitaet.',
+            provider: 'Anbieter',
+            apiKey: 'API-Schluessel',
+            apiKeyDesc:
+                'Dein Provider-API-Schluessel. Lokal verschluesselt, wird nie an unsere Server gesendet.',
+            apiKeyPlaceholder: 'API-Schluessel eingeben...',
+            privacyNote:
+                'Dein API-Schluessel wird lokal verschluesselt. Keine Daten werden an unsere Server gesendet.',
+        },
+        advanced: {
+            title: 'Erweiterte Sprachoptionen',
+            workerEnabled: 'Voice Worker (Hintergrund)',
+            workerEnabledDesc:
+                'Verarbeite Sprachbefehle in einem Hintergrund-Worker. Aktiviert dynamische Wellenform und fluessigerere UI.',
+            analyticsEnabled: 'Sprachanalyse (Opt-in)',
+            analyticsEnabledDesc:
+                'Sammle anonyme Nutzungsstatistiken. Keine Transkripte oder persoenlichen Daten werden gespeichert.',
+            refreshStats: 'Aktualisieren',
+            export: 'Exportieren',
+            clear: 'Loeschen',
+            totalCommands: 'Befehle gesamt',
+            successRate: 'Erfolgsrate',
+            avgLatency: 'Durchschn. Latenz',
+            hotwordCount: 'Hotword-Erkennungen',
+        },
+    },
     strains: {
         title: 'Sorten-Ansicht',
         defaultSort: 'Standard-Sortierung',

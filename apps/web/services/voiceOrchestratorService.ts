@@ -22,6 +22,8 @@ import { getUISnapshot, useUIStore } from '@/stores/useUIStore'
 import { ttsService } from '@/services/ttsService'
 import { buildVoiceCommands, matchVoiceCommand } from '@/services/voiceCommandRegistry'
 import type { VoiceCommandDef } from '@/services/voiceCommandRegistry'
+import { workerBus } from '@/services/workerBus'
+import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -51,6 +53,22 @@ const ASSISTANT_PREFIXES = [
 let store: AppStore | null = null
 let errorRetryCount = 0
 let unsubscribe: (() => void) | null = null
+let voiceWorkerRegistered = false
+
+// ---------------------------------------------------------------------------
+// Voice worker (lazy registration)
+// ---------------------------------------------------------------------------
+
+function ensureVoiceWorkerRegistered(): void {
+    if (voiceWorkerRegistered) return
+    voiceWorkerRegistered = true
+    workerBus.register(
+        'voice',
+        new Worker(new URL('../workers/voiceWorker.ts', import.meta.url), {
+            type: 'module',
+        }),
+    )
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -150,6 +168,7 @@ async function handleAssistantQuery(query: string): Promise<void> {
 async function processTranscript(transcript: string): Promise<void> {
     const voiceStore = useVoiceStore.getState()
     const mode = voiceStore.mode
+    const startTime = Date.now()
 
     // In confirmation mode, interpret as yes/no
     if (mode === VoiceMode.CONFIRMATION) {
@@ -162,7 +181,25 @@ async function processTranscript(transcript: string): Promise<void> {
 
     if (!store) return
 
-    const lowered = transcript.toLowerCase().trim()
+    let lowered = transcript.toLowerCase().trim()
+    const settings = getSettings()
+
+    // Optional: off-main-thread transcript cleaning via voice worker
+    if (settings.voiceControl.voiceWorkerEnabled) {
+        try {
+            ensureVoiceWorkerRegistered()
+            const cleaned = await workerBus.dispatch<{
+                cleaned: string
+                detectedLang: string
+            }>('voice', 'PROCESS_TRANSCRIPT', {
+                transcript: lowered,
+                lang: getLanguage(),
+            })
+            lowered = cleaned.cleaned
+        } catch {
+            // Worker unavailable -- proceed with main-thread processing
+        }
+    }
 
     // Check for assistant query first (e.g. "gemini what is VPD")
     const assistantQuery = parseAssistantQuery(lowered)
@@ -173,11 +210,22 @@ async function processTranscript(transcript: string): Promise<void> {
 
     const commands = buildVoiceCommands(store.dispatch)
     const matched = matchVoiceCommand(lowered, commands)
+    const latencyMs = Date.now() - startTime
 
     if (!matched) {
+        voiceTelemetryService.recordVoiceEvent('commandFailed', {
+            latencyMs,
+            transcript: lowered.slice(0, 50),
+        })
         handleNotUnderstood()
         return
     }
+
+    voiceTelemetryService.recordVoiceEvent('commandMatched', {
+        commandId: matched.id,
+        latencyMs,
+        matchType: 'main-thread',
+    })
 
     errorRetryCount = 0
     useVoiceStore.getState().setLastMatchedCommand(matched.id)
@@ -247,6 +295,10 @@ async function executeCommand(command: VoiceCommandDef, transcript: string): Pro
     } catch (err) {
         console.debug('[VoiceOrchestrator] Command execution error:', err)
         const t = getT()
+        voiceTelemetryService.recordVoiceEvent('errorOccurred', {
+            commandId: command.id,
+            errorCode: 'executionError',
+        })
         useVoiceStore.getState().setError(t('voiceControl.errors.generic'))
     } finally {
         useVoiceStore.getState().setMode(VoiceMode.IDLE)
@@ -369,6 +421,10 @@ function dispose(): void {
     if (unsubscribe) {
         unsubscribe()
         unsubscribe = null
+    }
+    if (voiceWorkerRegistered) {
+        workerBus.unregister('voice')
+        voiceWorkerRegistered = false
     }
     store = null
     errorRetryCount = 0

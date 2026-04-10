@@ -5,6 +5,8 @@ import { selectLanguage, selectSettings } from '@/stores/selectors'
 import { useUIStore } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
+import { porcupineWakeWordService } from '@/services/porcupineWakeWordService'
+import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 
 // Web Speech API – not yet fully standardized in TypeScript's DOM lib
 interface WSpeechRecognitionResult {
@@ -208,6 +210,9 @@ export const VoiceControl: React.FC = () => {
                     const first = item[0]
                     if (!first) continue
                     if (HOTWORD_REGEX.test(first.transcript)) {
+                        voiceTelemetryService.recordVoiceEvent('hotwordDetected', {
+                            engine: 'regex',
+                        })
                         activateFromHotword()
                         return
                     }
@@ -245,6 +250,68 @@ export const VoiceControl: React.FC = () => {
             }
         }
     }, [isAvailable, hotwordEnabled, lang, activateFromHotword])
+
+    // ---------------------------------------------------------------------------
+    // V-03b: Porcupine WASM Wake-Word Detection (optional upgrade)
+    // When wakeWordEngine === 'porcupine' and an access key is set, use
+    // Porcupine for low-CPU always-on keyword detection. Falls back to regex.
+    // ---------------------------------------------------------------------------
+    const porcupineInitRef = useRef(false)
+
+    useEffect(() => {
+        const usePorcupine =
+            settings.voiceControl.wakeWordEngine === 'porcupine' &&
+            settings.voiceControl.porcupineAccessKey &&
+            hotwordEnabled &&
+            isAvailable
+
+        if (!usePorcupine) {
+            if (porcupineInitRef.current) {
+                porcupineWakeWordService.stop().catch(() => {})
+                porcupineInitRef.current = false
+            }
+            return
+        }
+
+        let disposed = false
+
+        const initPorcupine = async () => {
+            try {
+                await porcupineWakeWordService.init(
+                    String(settings.voiceControl.porcupineAccessKey ?? ''),
+                    settings.voiceControl.porcupineKeyword,
+                )
+                porcupineWakeWordService.setCallback(() => {
+                    if (disposed) return
+                    voiceTelemetryService.recordVoiceEvent('hotwordDetected', {
+                        engine: 'porcupine',
+                    })
+                    activateFromHotword()
+                })
+                await porcupineWakeWordService.start()
+                porcupineInitRef.current = true
+            } catch {
+                console.debug('[VoiceControl] Porcupine init failed -- regex fallback active')
+            }
+        }
+
+        void initPorcupine()
+
+        return () => {
+            disposed = true
+            if (porcupineInitRef.current) {
+                porcupineWakeWordService.stop().catch(() => {})
+                porcupineInitRef.current = false
+            }
+        }
+    }, [
+        settings.voiceControl.wakeWordEngine,
+        settings.voiceControl.porcupineAccessKey,
+        settings.voiceControl.porcupineKeyword,
+        hotwordEnabled,
+        isAvailable,
+        activateFromHotword,
+    ])
 
     const toggleListening = () => {
         if (!isAvailable || !hasSpeechRecognitionSupport || !recognitionRef.current) return

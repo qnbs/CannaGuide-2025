@@ -2,7 +2,89 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 124) -- CI Typecheck Fixes + Hook Hardening
+## Latest Session (Session 125) -- v1.8 CannaVoice Pro
+
+**Status: Full implementation of 5 voice subsystems (Porcupine
+wake-word, Cloud TTS ElevenLabs, speakNatural normalization, voice
+worker, voice analytics). 2063 tests passing, build OK.**
+
+### What Was Done (Session 125)
+
+1. **Porcupine Wake-Word Service** -- `porcupineWakeWordService.ts`
+   with WASM on-device detection, 11 built-in keywords, BYOK
+   AccessKey. Dual-engine support (regex/porcupine) in VoiceControl.
+   Ambient type declarations for `@picovoice/*` packages.
+
+2. **Cloud TTS (ElevenLabs BYOK)** -- `cloudTtsService.ts` implements
+   ITTSProvider with AES-256-GCM encrypted API key, rate limiting
+   (5 req/min), AudioContext playback. TTS routing in `ttsService.ts`
+   dispatches to cloud or webspeech based on settings.
+
+3. **speakNatural Text Normalization** -- `speakNaturalService.ts`
+   with 30+ cannabis/science abbreviation expansions, markdown
+   stripping, German decimal handling. Applied before all TTS output.
+
+4. **Voice Worker** -- `voiceWorker.ts` for off-main-thread transcript
+   processing. 3-pass command matching (exact alias, fuzzy Levenshtein,
+   keyword scoring). Filler word removal for 5 languages. Waveform
+   amplitude computation. Typed via `WorkerMessageMap`.
+
+5. **Voice Telemetry** -- `voiceTelemetryService.ts` with opt-in
+   anonymous analytics (no PII). Ring buffer (500 events), localStorage
+   persistence (2s debounce, 30-day retention). Integrated across
+   orchestrator, TTS, and VoiceControl.
+
+6. **VoiceHUD Dynamic Waveform** -- AnalyserNode-based real-time
+   waveform using mic stream when voice worker enabled, CSS animation
+   fallback otherwise.
+
+7. **VoiceSettingsTab** -- 3 new Card sections: Wake-Word Engine
+   (regex/porcupine selector, access key, keyword dropdown), Cloud TTS
+   (toggle, provider, API key), Advanced Voice Options (worker toggle,
+   analytics toggle, stats grid with refresh/export/clear).
+
+8. **i18n** -- 28 new voice settings keys across all 5 languages.
+
+9. **Tests** -- 35 new tests in 5 files. Total: 2063 tests, 0 failures.
+
+10. **CSP** -- `https://api.elevenlabs.io` added to `connect-src` in
+    securityHeaders.ts, index.html, netlify.toml.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (turbo run typecheck)
+- Tests: 2063 passing, 0 failures (177 test files)
+- Build: OK (165 precache entries)
+- New services: 5 (porcupine, cloudTts, speakNatural, voiceTelemetry,
+  voiceWorker)
+- New tests: 35 across 5 test files
+
+### New Files
+
+- `services/porcupineWakeWordService.ts`
+- `services/speakNaturalService.ts`
+- `services/cloudTtsService.ts`
+- `services/voiceTelemetryService.ts`
+- `workers/voiceWorker.ts`
+- `types/porcupine.d.ts`
+- `services/porcupineWakeWordService.test.ts`
+- `services/speakNaturalService.test.ts`
+- `services/cloudTtsService.test.ts`
+- `services/voiceTelemetryService.test.ts`
+- `workers/voiceWorker.test.ts`
+
+### Next Steps
+
+- E2E tests for voice HUD + wake-word + confirmation flow
+- Voice command for theme switching
+- Integrate ReadAloudButton with speakNatural in Lexikon/Disease Atlas
+- Consider WebLLM voice-to-action pipeline
+- Cloud TTS voice selection UI (fetch available voices from API)
+- Performance profiling for Porcupine WASM on mobile devices
+
+---
+
+## Previous Session (Session 124) -- CI Typecheck Fixes + Hook Hardening
 
 **Status: Fixed all CI typecheck failures (12 errors across 3 files).
 Hardened pre-commit/pre-push hooks to run turbo typecheck (matches CI).

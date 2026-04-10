@@ -58,6 +58,10 @@
         "zod": "^3.25.76",
         "zustand": "^5.0.12"
     },
+    "optionalDependencies": {
+        "@picovoice/porcupine-web": "^3.0.3",
+        "@picovoice/web-voice-processor": "^4.0.8"
+    },
     "devDependencies": {
         "@axe-core/playwright": "^4.11.1",
         "@playwright/experimental-ct-react": "^1.58.2",

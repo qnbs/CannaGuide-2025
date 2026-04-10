@@ -69,6 +69,11 @@ export const defaultSettings: AppSettings = {
         hotwordEnabled: false,
         confirmationSound: true,
         continuousListening: false,
+        wakeWordEngine: 'regex',
+        porcupineAccessKey: null,
+        porcupineKeyword: 'COMPUTER',
+        voiceWorkerEnabled: false,
+        voiceAnalyticsEnabled: false,
     },
 
     tts: {
@@ -78,6 +83,9 @@ export const defaultSettings: AppSettings = {
         pitch: 1,
         volume: 1,
         highlightSpeakingText: true,
+        cloudTtsEnabled: false,
+        cloudTtsProvider: 'elevenlabs',
+        cloudTtsApiKey: null,
     },
 
     strainsView: {

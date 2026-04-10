@@ -8,6 +8,9 @@ const baseSettings: TTSSettings = {
     pitch: 1,
     volume: 1,
     highlightSpeakingText: true,
+    cloudTtsEnabled: false,
+    cloudTtsProvider: 'elevenlabs',
+    cloudTtsApiKey: null,
 }
 
 const setupSpeechEnvironment = () => {

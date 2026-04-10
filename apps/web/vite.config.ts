@@ -16,6 +16,8 @@ const OPTIONAL_ML_EXTERNALS = [
     '@xenova/transformers',
     '@mlc-ai/web-llm',
     'onnxruntime-web',
+    '@picovoice/porcupine-web',
+    '@picovoice/web-voice-processor',
 ]
 
 // Resolve which ML modules are actually missing so we can stub them at build time.

@@ -6,6 +6,27 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **i18n(equipment):** fix Humidity Deficit Calculator using wrong
+  i18n key path `plants.stage.*` -- corrected to
+  `equipmentView.calculators.humidityDeficit.stages.*` with
+  proper translations in all 5 languages (EN/DE/ES/FR/NL)
+- **i18n(settings):** update About/README section across all 5
+  languages -- whatsNew bumped to v1.6 (was v1.2 EN/DE, v1.1
+  ES/FR/NL), test count 1000->1961, strain count ->776,
+  techStack extended with multi-provider BYOK, 22 AI modules,
+  CRDT sync, WorkerBus, ONNX
+
+### Added
+
+- **test(data):** add validation tests for diseases (10), lexicon (8),
+  learningPaths (9), terpeneDatabase (16) data modules
+- **test(utils):** add comprehensive vpdCalculator tests (34) covering
+  SVP calculation, leaf offset, target VPD, status, transpiration,
+  full VPD calculation, and daily simulation
+- Total tests: 1884 -> 1961 (+77)
+
 ---
 
 ## [1.6.3] - 2026-04-10

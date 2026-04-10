@@ -302,6 +302,12 @@ export const equipmentView = {
                 optimal: 'HD optimal für die Wachstumsphase',
                 high: 'HD zu hoch -- Pflanzen transpirieren übermäßig',
             },
+            stages: {
+                seedling: 'Sämling',
+                vegetative: 'Vegetativ',
+                earlyFlower: 'Frühe Blüte',
+                lateFlower: 'Späte Blüte',
+            },
         },
         lightHanging: {
             title: 'Lampenh\u00f6hen-Rechner',

@@ -295,6 +295,12 @@ export const equipmentView = {
                 optimal: 'HD optimaal voor groeifase',
                 high: 'HD te hoog -- overmatige verdamping',
             },
+            stages: {
+                seedling: 'Zaailing',
+                vegetative: 'Vegetatief',
+                earlyFlower: 'Vroege bloei',
+                lateFlower: 'Late bloei',
+            },
         },
         lightHanging: {
             title: 'Lichtophoogte-calculator',

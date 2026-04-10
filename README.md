@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1884%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1961%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-33.7%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity (dynamic) -->
@@ -108,7 +108,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 22-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 776 strains -- 1884 tests -- 109 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
+**Key numbers:** 776 strains -- 1961 tests -- 109 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
 
 ---
 
@@ -164,7 +164,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1884 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1961 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 
 ---
@@ -314,7 +314,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite dev server on localhost:5173)
 pnpm run build            # turbo run build (all workspaces)
 pnpm test                 # turbo run test (Vitest, watch mode)
-pnpm run test:run         # turbo run test:run (single run, 1884 tests)
+pnpm run test:run         # turbo run test:run (single run, 1961 tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -370,7 +370,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 | Job                | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
-| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1884 tests, production build |
+| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1961 tests, production build |
 | 🛡 Security        | pnpm audit (critical), trojan-source scan, Gitleaks secret scan             |
 | 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
 | 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |
@@ -438,7 +438,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 | **v1.3** | ✅ Released | IoT real-time dashboard, 3D OrbitControls, strain recommendation scoring, E2E test optimization                                                                                                                                    |
 | **v1.4** | ✅ Released | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1826 tests                                   |
 | **v1.5** | ✅ Released | CRDT offline sync, Multi-Grow management (3 per CanG), AI cost tracking, Netlify preview validation, RTL infrastructure, pnpm migration, CI hardening, 1826 tests                                                                  |
-| **v1.6** | ✅ Released | Forensic audit fixes, i18n completeness (5 languages), Intl.DateTimeFormat weekdays, metrics/diagnosis/planner slices, documentation sync, 1884 tests                                                                              |
+| **v1.6** | ✅ Released | Forensic audit fixes, i18n completeness (5 languages), Intl.DateTimeFormat weekdays, metrics/diagnosis/planner slices, documentation sync, 1961 tests                                                                              |
 | **v2.0** | 📋 Planned  | AR/VR plant overlay, digital twin architecture for user plants, next-gen What-if Sandbox and BreedingLab                                                                                                                           |
 
 ### Strategic Expansion Focus (2026-2028)
@@ -461,7 +461,7 @@ CannaGuide 2025 was built iteratively through an AI-assisted development process
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App scaffolding, initial feature set, rapid prototyping via natural language — exported to GitHub                             | v0.1 → v1.0  |
 | **2. Evaluation & Advisory**     | xAI Grok 4.20                                         | Continuous architecture evaluation, security consulting, quality audit advisory, and strategic guidance                       | Throughout   |
-| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1884 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.6 |
+| **3. Core Development**          | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primary iteration engine -- feature refinement, security hardening, 1961 tests, CI/CD pipeline, local AI stack, documentation | v1.0 -> v1.6 |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Production deployment, PR previews, OpenSSF compliance                                                                        | Continuous   |
 
 > **Secondary contributions:** GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance during Phase 3.
@@ -507,7 +507,7 @@ CannaGuide 2025 relies on many excellent open-source projects and external servi
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-1884%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-1961%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- KI-Entwicklungs-Stack -->
 
@@ -547,7 +547,7 @@ KI-gestützte, offline-first Progressive Web App für Cannabis-Anbau-Management.
 
 CannaGuide 2025 ist eine produktionsreife PWA, die vollständig clientseitig arbeitet. Alle Daten werden lokal in IndexedDB gespeichert, der Service Worker bietet volle Offline-Funktionalität. KI-Funktionen integrieren mehrere Anbieter (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), mit einem 22-Service lokalen KI-Fallback-Stack für vollständig offline Inferenz.
 
-**Kennzahlen:** 776 Sorten -- 1884 Tests -- 109 Services -- 18 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 21 CI-Workflows
+**Kennzahlen:** 776 Sorten -- 1961 Tests -- 109 Services -- 18 Redux Slices + 8 Zustand Stores -- 25 Custom Hooks -- 12 i18n-Namensraeume -- 9 Themes -- 21 CI-Workflows
 
 ---
 
@@ -602,7 +602,7 @@ Dreischichtige clientseitige Architektur mit Offline-First-Design:
 | **Persistenz**     | IndexedDB (nativ)                    | Dual-Datenbank, kein Backend                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 Namensräume                |
 | **Sicherheit**     | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Prävention, verschlüsselte API-Keys       |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1884 Unit-, E2E-, Komponenten-Tests           |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 1961 Unit-, E2E-, Komponenten-Tests           |
 | **Fehlertracking** | Sentry                               | Runtime-Fehler, Session Replay                |
 
 ---
@@ -752,7 +752,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite Dev-Server auf localhost:5173)
 pnpm run build            # turbo run build (alle Workspaces)
 pnpm test                 # turbo run test (Vitest, Watch-Modus)
-pnpm run test:run         # turbo run test:run (Einzellauf, 1884 Tests)
+pnpm run test:run         # turbo run test:run (Einzellauf, 1961 Tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -808,7 +808,7 @@ docker/                     IoT-Mock-Server (ESP32-Sensor-Simulator)
 
 | Job                | Beschreibung                                                                 |
 | ------------------ | ---------------------------------------------------------------------------- |
-| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1884 Tests, Produktions-Build |
+| Quality Gates      | Lint, Typecheck (Root + Workspaces via Turbo), 1961 Tests, Produktions-Build |
 | 🛡 Security        | pnpm audit (critical), Trojan-Source-Scan, Gitleaks-Secret-Scan              |
 | 🎭 E2E Tests       | Playwright Chromium (benötigt Quality-Artefakt)                              |
 | 🌡 IoT-Integration | ESP32-Mock Healthcheck, Sensor-Endpunkt-Validierung                          |
@@ -874,7 +874,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 | **v1.3** | ✅ Veröffentlicht | Strain Intelligence Lookup (5-Quellen-Kaskade), Entourage-Effekt-Wissenschaft, AES-256-GCM IoT-Verschluesselung, IndexedDB-Monitor, Knowledge Lexikon/Disease Atlas/Calculator Hub/Learning Paths                                                               |
 | **v1.4** | ✅ Veröffentlicht | Vision AI Leaf Diagnosis (ONNX), Hydro Forecast, WebLLM Model Catalog, Nutrient Deficiency Wizard, 5-Layer Prompt Injection Defense, WorkerBus Priority Queue, Multi-Grow Management, 1826 Tests                                                                |
 | **v1.5** | ✅ Veröffentlicht | CRDT-Offline-Sync, Multi-Grow-Verwaltung (3 pro CanG), KI-Kostentracking, Netlify-Preview-Validierung, RTL-Infrastruktur, pnpm-Migration, CI-Haertung, 1826 Tests                                                                                               |
-| **v1.6** | ✅ Veröffentlicht | Forensic-Audit-Fixes, i18n-Vollstaendigkeit (5 Sprachen), Intl.DateTimeFormat-Wochentage, Metrics/Diagnosis/Planner-Slices, Dokumentations-Sync, 1884 Tests                                                                                                     |
+| **v1.6** | ✅ Veröffentlicht | Forensic-Audit-Fixes, i18n-Vollstaendigkeit (5 Sprachen), Intl.DateTimeFormat-Wochentage, Metrics/Diagnosis/Planner-Slices, Dokumentations-Sync, 1961 Tests                                                                                                     |
 | **v2.0** | 📋 Geplant        | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur für Nutzerpflanzen, nächste Ausbaustufe für What-if-Sandbox und BreedingLab                                                                                                                                     |
 
 ### Strategische Ausbau-Schwerpunkte (2026-2028)
@@ -897,7 +897,7 @@ CannaGuide 2025 wurde iterativ in einem KI-gestützten Entwicklungsprozess über
 | -------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | **1. Prototyping**               | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | App-Grundgerüst, initiales Feature-Set, Rapid Prototyping via natürlicher Sprache — Export nach GitHub                              | v0.1 → v1.0    |
 | **2. Evaluation & Beratung**     | xAI Grok 4.20                                         | Kontinuierliche Architektur-Evaluation, Sicherheitsberatung, Qualitäts-Audit-Beratung und strategische Führung                      | Durchgehend    |
-| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1884 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.6   |
+| **3. Kernentwicklung**           | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | Primaere Iterations-Engine -- Feature-Verfeinerung, Security-Hardening, 1961 Tests, CI/CD-Pipeline, lokaler KI-Stack, Dokumentation | v1.0 -> v1.6   |
 | **4. Deployment & Distribution** | GitHub Pages, Netlify                                 | Produktions-Deployment, PR-Previews, OpenSSF-Compliance                                                                             | Kontinuierlich |
 
 > **Sekundäre Beiträge:** GPT-4 Mini und GPT-5.3 Codex leisteten minimale ergänzende Unterstützung in Phase 3.

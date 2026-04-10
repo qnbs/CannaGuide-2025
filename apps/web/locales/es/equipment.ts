@@ -296,6 +296,12 @@ export const equipmentView = {
                 optimal: 'HD optimo para la fase de crecimiento',
                 high: 'HD demasiado alto -- transpiracion excesiva',
             },
+            stages: {
+                seedling: 'Plantula',
+                vegetative: 'Vegetativo',
+                earlyFlower: 'Floracion temprana',
+                lateFlower: 'Floracion tardia',
+            },
         },
         lightHanging: {
             title: 'Calculadora de Altura de Iluminacion',

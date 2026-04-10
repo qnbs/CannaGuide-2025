@@ -298,6 +298,12 @@ export const equipmentView = {
                 optimal: 'HD optimal for growth stage',
                 high: 'HD too high -- plants transpire excessively',
             },
+            stages: {
+                seedling: 'Seedling',
+                vegetative: 'Vegetative',
+                earlyFlower: 'Early Flower',
+                lateFlower: 'Late Flower',
+            },
         },
         lightHanging: {
             title: 'Light Hanging Height Calculator',

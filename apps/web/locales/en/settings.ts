@@ -727,25 +727,27 @@ export const settingsView = {
         projectInfo: 'Project Info & README',
         version: 'Version',
         whatsNew: {
-            title: "What's New in v1.2",
+            title: "What's New in v1.6",
             items: {
                 simulation:
-                    'IoT real-time dashboard with sparkline charts, gauge cards, and telemetry panel for live sensor monitoring.',
+                    'SLSA Level 3 supply-chain security with CycloneDX SBOM generation and non-falsifiable provenance for every release.',
                 strains:
-                    'Daily Strains now feature personalized recommendation scoring with match percentage badges based on your library preferences.',
-                help: '3D GrowRoom visualization with interactive OrbitControls, auto-orbit camera, and live IoT sensor badge overlay.',
+                    '22 local AI service modules with 3-layer fallback (WebLLM -> Transformers.js -> Heuristics) and WebGPU/ONNX acceleration.',
+                help: '9 cannabis themes, 5 languages (EN/DE/ES/FR/NL), full-project strict lint with zero warnings, and 1961 automated tests.',
                 settings:
-                    'E2E test optimization: replaced hard waits with proper visibility assertions for faster, more reliable test execution.',
+                    'CRDT-based cloud sync with conflict resolution, hydroponic ONNX forecast worker, and priority-preemptive WorkerBus.',
             },
         },
         techStack: {
             title: 'Technology Stack',
             geminiLabel: 'Google Gemini:',
-            gemini: 'Powers all AI features for intelligent diagnostics and advice.',
-            react: 'For a modern, performant, and responsive user interface.',
-            indexedDb: 'Robust client-side database for 100% offline functionality.',
+            gemini: 'Powers all AI features -- multi-provider BYOK (Gemini, OpenAI, xAI, Anthropic) with 22 local AI service modules.',
+            react: 'React 19 + TypeScript (strict), Redux Toolkit, Zustand, RTK Query, 9 cannabis themes.',
+            indexedDb:
+                'Dual IndexedDB persistence for 100% offline functionality with CRDT cloud sync.',
             webWorkersLabel: 'Web Workers:',
-            webWorkers: 'Runs complex simulations off the main thread to keep the UI smooth.',
+            webWorkers:
+                '9 priority-preemptive workers (VPD, genealogy, inference, vision, hydro forecast) via typed WorkerBus.',
         },
         credits: {
             title: 'Acknowledgements & Links',
@@ -814,7 +816,7 @@ export const settingsView = {
             </ul>
             <h4>2. The Strain Encyclopedia (<code>Strains</code> View)</h4>
             <ul>
-                <li><strong>Vast Library</strong>: Access detailed information on <strong>800+ cannabis strains</strong>.</li>
+                <li><strong>Vast Library</strong>: Access detailed information on <strong>776 cannabis strains</strong>.</li>
                 <li><strong>Interactive Genealogy Tree</strong>: Visualize the complete genetic lineage of any strain.</li>
                 <li><strong>AI Grow Tips</strong>: Generate unique, AI-powered cultivation advice for any strain.</li>
             </ul>
@@ -891,7 +893,7 @@ export const settingsView = {
             <ol>
                 <li><strong>Prototyping</strong>: Initial app scaffolding and feature set built with <strong>Google Gemini 2.5 Pro & 3.1 Pro</strong> in <strong>Google AI Studio</strong>, then exported to GitHub.</li>
                 <li><strong>Evaluation & Advisory</strong>: Continuous architecture review, security consulting, and quality guidance by <strong>xAI Grok 4.20</strong> throughout the entire process.</li>
-                <li><strong>Core Development</strong>: Primary iteration in <strong>GitHub Codespaces</strong> with <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — the majority of feature refinement, security hardening, 1000 tests, CI/CD, and the local AI stack.</li>
+                <li><strong>Core Development</strong>: Primary iteration in <strong>GitHub Codespaces</strong> with <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — the majority of feature refinement, security hardening, 1961 tests, CI/CD, and the local AI stack.</li>
                 <li><strong>Deployment</strong>: Production via GitHub Pages and Netlify.</li>
             </ol>
             <p><em>Minor contributions by GPT-4 Mini and GPT-5.3 Codex.</em></p>

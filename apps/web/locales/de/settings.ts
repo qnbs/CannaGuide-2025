@@ -745,25 +745,27 @@ export const settingsView = {
         projectInfo: 'Projekt-Infos & README',
         version: 'Version',
         whatsNew: {
-            title: 'Was ist neu in v1.2',
+            title: 'Was ist neu in v1.6',
             items: {
                 simulation:
-                    'IoT-Echtzeit-Dashboard mit Sparkline-Diagrammen, Gauge-Karten und Telemetrie-Panel für Live-Sensor-Monitoring.',
+                    'SLSA Level 3 Supply-Chain-Sicherheit mit CycloneDX-SBOM-Generierung und nicht-faelschbarer Provenienz fuer jedes Release.',
                 strains:
-                    'Tägliche Sorten jetzt mit personalisiertem Empfehlungs-Scoring und Match-Prozent-Badges basierend auf deiner Bibliothek.',
-                help: '3D-GrowRoom-Visualisierung mit interaktiven OrbitControls, Auto-Orbit-Kamera und Live-IoT-Sensor-Badge-Overlay.',
+                    '22 lokale KI-Service-Module mit 3-Schicht-Fallback (WebLLM -> Transformers.js -> Heuristiken) und WebGPU/ONNX-Beschleunigung.',
+                help: '9 Cannabis-Themes, 5 Sprachen (EN/DE/ES/FR/NL), vollstaendig striktes Lint mit null Warnungen und 1961 automatisierte Tests.',
                 settings:
-                    'E2E-Test-Optimierung: Hard-Waits durch Sichtbarkeits-Assertions ersetzt für schnellere, zuverlässigere Testausführung.',
+                    'CRDT-basierte Cloud-Synchronisation mit Konfliktloesung, hydroponischer ONNX-Forecast-Worker und prioritaets-praeemptiver WorkerBus.',
             },
         },
         techStack: {
             title: 'Technologie-Stack',
             geminiLabel: 'Google Gemini:',
-            gemini: 'Treiber aller KI-Funktionen für intelligente Diagnosen und Ratschläge.',
-            react: 'Für eine moderne, performante und reaktionsschnelle Benutzeroberfläche.',
-            indexedDb: 'Robuste clientseitige Datenbank für 100% Offline-Funktionalität.',
+            gemini: 'Treiber aller KI-Funktionen -- Multi-Provider BYOK (Gemini, OpenAI, xAI, Anthropic) mit 22 lokalen KI-Service-Modulen.',
+            react: 'React 19 + TypeScript (strikt), Redux Toolkit, Zustand, RTK Query, 9 Cannabis-Themes.',
+            indexedDb:
+                'Duale IndexedDB-Persistenz fuer 100% Offline-Funktionalitaet mit CRDT-Cloud-Sync.',
             webWorkersLabel: 'Web Workers:',
-            webWorkers: 'Lagert komplexe Simulationen aus, um die UI flüssig zu halten.',
+            webWorkers:
+                '9 prioritaets-praeemptive Worker (VPD, Genealogie, Inferenz, Vision, Hydro-Forecast) via typisiertem WorkerBus.',
         },
         credits: {
             title: 'Danksagungen & Links',
@@ -832,7 +834,7 @@ export const settingsView = {
             </ul>
             <h4>2. Die Sorten-Enzyklopädie (<code>Sorten</code>-Ansicht)</h4>
             <ul>
-                <li><strong>Riesige Bibliothek</strong>: Greifen Sie auf detaillierte Informationen zu <strong>800+ Cannabissorten</strong> zu.</li>
+                <li><strong>Riesige Bibliothek</strong>: Greifen Sie auf detaillierte Informationen zu <strong>776 Cannabissorten</strong> zu.</li>
                 <li><strong>Interaktiver Stammbaum</strong>: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte.</li>
                 <li><strong>KI-Anbau-Tipps</strong>: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte.</li>
             </ul>
@@ -909,7 +911,7 @@ export const settingsView = {
             <ol>
                 <li><strong>Prototyping</strong>: App-Grundgerüst und initiales Feature-Set mit <strong>Google Gemini 2.5 Pro & 3.1 Pro</strong> in <strong>Google AI Studio</strong> erstellt, dann nach GitHub exportiert.</li>
                 <li><strong>Evaluation & Beratung</strong>: Kontinuierliche Architektur-Review, Sicherheitsberatung und Qualitätsführung durch <strong>xAI Grok 4.20</strong> über den gesamten Prozess.</li>
-                <li><strong>Kernentwicklung</strong>: Primäre Iteration in <strong>GitHub Codespaces</strong> mit <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — der Großteil der Feature-Verfeinerung, Security-Hardening, 1000 Tests, CI/CD und lokaler KI-Stack.</li>
+                <li><strong>Kernentwicklung</strong>: Primäre Iteration in <strong>GitHub Codespaces</strong> mit <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — der Großteil der Feature-Verfeinerung, Security-Hardening, 1961 Tests, CI/CD und lokaler KI-Stack.</li>
                 <li><strong>Deployment</strong>: Produktion via GitHub Pages und Netlify.</li>
             </ol>
             <p><em>Minimale Beiträge von GPT-4 Mini und GPT-5.3 Codex.</em></p>

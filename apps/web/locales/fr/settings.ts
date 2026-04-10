@@ -758,26 +758,27 @@ export const settingsView = {
         projectInfo: 'Infos du projet & README',
         version: 'Version',
         whatsNew: {
-            title: 'Nouveautes de la v1.1',
+            title: 'Nouveautes de la v1.6',
             items: {
                 simulation:
-                    "Shell de simulation adapte au mobile : Transitions de vue plus rapides, meilleure resilience hors ligne et espacement inferieur plus propre dans toute l'application.",
+                    'Securite de la chaine d approvisionnement SLSA Niveau 3 avec generation de SBOM CycloneDX et provenance non falsifiable pour chaque release.',
                 strains:
-                    'Renforcement de la bibliotheque de varietes : Les champs de varietes herites manquants reviennent maintenant en securite au lieu de faire planter la page.',
-                help: "Structure du centre d'aide : La FAQ et les guides visuels sont separes en sujets d'application et de culture pour une navigation plus rapide.",
+                    '22 modules de service IA local avec repli 3 couches (WebLLM -> Transformers.js -> Heuristiques) et acceleration WebGPU/ONNX.',
+                help: '9 themes cannabis, 5 langues (EN/DE/ES/FR/NL), lint strict complet avec zero avertissement et 1961 tests automatises.',
                 settings:
-                    "Rafraichissement A propos & README : Informations de version mises a jour, portee actuelle de l'application et documentation du projet plus claire.",
+                    'Synchronisation cloud basee sur CRDT avec resolution de conflits, worker de prevision ONNX hydroponique et WorkerBus a preemption par priorite.',
             },
         },
         techStack: {
             title: 'Pile technologique',
             geminiLabel: 'Google Gemini:',
-            gemini: 'Alimente toutes les fonctionnalites IA pour des diagnostics et conseils intelligents.',
-            react: 'Pour une interface utilisateur moderne, performante et reactive.',
-            indexedDb: 'Base de donnees client robuste pour une fonctionnalite 100% hors ligne.',
+            gemini: 'Alimente toutes les fonctionnalites IA -- Multi-fournisseur BYOK (Gemini, OpenAI, xAI, Anthropic) avec 22 modules de service IA local.',
+            react: 'React 19 + TypeScript (strict), Redux Toolkit, Zustand, RTK Query, 9 themes cannabis.',
+            indexedDb:
+                'Double persistance IndexedDB pour une fonctionnalite 100% hors ligne avec sync cloud CRDT.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
-                "Execute les simulations complexes hors du thread principal pour garder l'interface fluide.",
+                '9 workers a preemption par priorite (VPD, genealogie, inference, vision, prevision hydro) via WorkerBus type.',
         },
         credits: {
             title: 'Remerciements & Liens',
@@ -847,7 +848,7 @@ export const settingsView = {
             </ul>
             <h4>2. L'encyclopedie des varietes (Vue <code>Strains</code>)</h4>
             <ul>
-                <li><strong>Vaste bibliotheque</strong> : Accedez a des informations detaillees sur <strong>plus de 700 varietes de cannabis</strong>.</li>
+                <li><strong>Vaste bibliotheque</strong> : Accedez a des informations detaillees sur <strong>776 varietes de cannabis</strong>.</li>
                 <li><strong>Arbre genealogique interactif</strong> : Visualisez la lignee genetique complete de n'importe quelle variete.</li>
                 <li><strong>Conseils de culture IA</strong> : Generez des conseils de culture uniques propulses par l'IA pour n'importe quelle variete.</li>
             </ul>

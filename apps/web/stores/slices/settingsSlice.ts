@@ -62,6 +62,9 @@ export const defaultSettings: AppSettings = {
         reducedMotion: false,
         highContrastMode: false,
         colorblindMode: 'none',
+        growGoal: null,
+        defaultSpaceSize: null,
+        defaultBudget: null,
     },
 
     voiceControl: {

@@ -1,19 +1,24 @@
 import { expect, Page } from '@playwright/test'
 
 /**
- * Legacy helper kept for deploy-smoke and accessibility tests.
- * With gates removed, this is a no-op.
+ * Seed legal gate state (age verification + GDPR consent) so the
+ * onboarding wizard skips the legal step automatically.
+ * Must be called BEFORE page.goto() to set localStorage/cookies before hydration.
  */
-export const seedLegalGateState = async (_page: Page) => {
-    // No-op: consent and age gates auto-granted at boot
+export const seedLegalGateState = async (page: Page) => {
+    await page.addInitScript(() => {
+        localStorage.setItem('cg.ageVerified.v1', '1')
+        // Grant GDPR consent via cookie (matches consentService v2 format)
+        document.cookie = 'cg.gdpr.consent.v2=1; Max-Age=31536000; Path=/; SameSite=Lax'
+    })
 }
 
 /**
  * Boot the app with a fresh browser context (Playwright default).
- * No database or localStorage seeding needed -- each test context is clean.
- * The app boots directly (consent auto-granted, no age gate).
+ * Seeds legal gates so tests are not blocked by the age/consent step.
  */
 export const bootFreshAppWithLegalGates = async (page: Page) => {
+    await seedLegalGateState(page)
     await page.goto('/', { waitUntil: 'networkidle' })
 }
 
@@ -22,6 +27,7 @@ export const bootFreshAppWithLegalGates = async (page: Page) => {
  * Uses the same simple-navigation pattern as the passing screenshot tests.
  */
 export const bootFreshAppPastOnboarding = async (page: Page) => {
+    await seedLegalGateState(page)
     await page.goto('/', { waitUntil: 'networkidle' })
     await closeOnboardingIfVisible(page)
 }

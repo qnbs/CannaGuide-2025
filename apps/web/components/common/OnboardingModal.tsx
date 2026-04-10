@@ -10,10 +10,23 @@ import { useUIStore } from '@/stores/useUIStore'
 import { FlagDE, FlagEN, FlagES, FlagFR, FlagNL } from '@/components/icons/Flags'
 import { i18nInstance, loadLocale, SupportedLocale } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
+import { consentService } from '@/services/consentService'
 
-// Wizard steps: 1–5 are feature slides, 6 = experience, 7 = goal, 8 = setup
+// Wizard steps: 0 = legal gate, 1 = language, 2-6 = feature slides, 7 = experience, 8 = goal, 9 = setup
+const FEATURE_STEP_START = 2
 const FEATURE_STEP_COUNT = 5
-const TOTAL_STEPS = 8
+/** Total number of onboarding steps (0-based, inclusive). Exported for App.tsx gate check. */
+export const ONBOARDING_TOTAL_STEPS = 9
+
+const AGE_VERIFIED_KEY = 'cg.ageVerified.v1'
+
+function isLegalGateCompleted(): boolean {
+    try {
+        return localStorage.getItem(AGE_VERIFIED_KEY) === '1' && consentService.hasConsent()
+    } catch {
+        return false
+    }
+}
 
 interface OnboardingModalProps {
     onClose: () => void
@@ -73,8 +86,9 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
     const [growGoal, setGrowGoal] = useState<GrowGoal>('recreational')
     const [spaceSize, setSpaceSize] = useState<SpaceSize>('medium')
     const [budget, setBudget] = useState<Budget>('mid')
+    const [ageDenied, setAgeDenied] = useState(false)
     const stepIndicators = useMemo(
-        () => Array.from({ length: TOTAL_STEPS }, (_, idx) => idx + 1),
+        () => Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, idx) => idx + 1),
         [],
     )
     const getStepIndicatorClassName = (stepNumber: number): string =>
@@ -118,11 +132,21 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         }
         await i18nInstance.changeLanguage(lang)
         dispatch(setSetting({ path: 'general.language', value: lang }))
-        setOnboardingStep(1)
+        setOnboardingStep(FEATURE_STEP_START)
     }
 
     const handleNext = () => setOnboardingStep(step + 1)
     const handleBack = () => setOnboardingStep(step - 1)
+
+    const handleLegalAccept = () => {
+        try {
+            localStorage.setItem(AGE_VERIFIED_KEY, '1')
+        } catch {
+            /* ignore */
+        }
+        consentService.grantConsent()
+        setOnboardingStep(1)
+    }
 
     const handleFinish = () => {
         const aiTipsExperienceByLevel: Record<
@@ -142,7 +166,10 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                 value: aiTipsExperienceByLevel[experience],
             }),
         )
-        // Persist goal + space info for future AI personalisation
+        // Persist goal + space info for AI personalisation (Redux + localStorage fallback)
+        dispatch(setSetting({ path: 'general.growGoal', value: growGoal }))
+        dispatch(setSetting({ path: 'general.defaultSpaceSize', value: spaceSize }))
+        dispatch(setSetting({ path: 'general.defaultBudget', value: budget }))
         try {
             localStorage.setItem('cg.onboarding.growGoal', growGoal)
         } catch {
@@ -161,8 +188,115 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         onClose()
     }
 
-    // ---- Step 0: Language picker ----
+    // ---- Step 0: Legal gate (age + consent + geo) ----
+    // Auto-skip if already verified (e.g. returning user or E2E test seeding)
+    if (step === 0 && isLegalGateCompleted()) {
+        setOnboardingStep(1)
+        return null
+    }
+
     if (step === 0) {
+        if (ageDenied) {
+            return (
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgb(var(--color-bg-primary))] p-6"
+                    role="alert"
+                >
+                    <div className="text-center max-w-md">
+                        <CannabisLeafIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                        <p className="text-lg text-red-400 font-semibold">
+                            {t('onboarding.legalStep.denied')}
+                        </p>
+                    </div>
+                </div>
+            )
+        }
+
+        return (
+            <Modal isOpen={true} onClose={() => {}} showCloseButton={false} title="" description="">
+                <div className="p-2 space-y-5">
+                    <div className="text-center">
+                        <CannabisLeafIcon className="w-14 h-14 text-primary-500 mx-auto mb-3" />
+                        <h2 className="text-2xl font-bold font-display text-slate-100">
+                            {t('onboarding.legalStep.title')}
+                        </h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                            {t('onboarding.legalStep.subtitle')}
+                        </p>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-3">
+                            <div className="flex items-start gap-2.5">
+                                <PhosphorIcons.ShieldCheck
+                                    weight="fill"
+                                    className="w-5 h-5 text-primary-400 mt-0.5 shrink-0"
+                                />
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-200">
+                                        {t('onboarding.legalStep.ageLabel')}
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                                        {t('onboarding.legalStep.ageText')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-3">
+                            <div className="flex items-start gap-2.5">
+                                <PhosphorIcons.Lock
+                                    weight="fill"
+                                    className="w-5 h-5 text-primary-400 mt-0.5 shrink-0"
+                                />
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-200">
+                                        {t('onboarding.legalStep.consentLabel')}
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                                        {t('onboarding.legalStep.consentText')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-3">
+                            <div className="flex items-start gap-2.5">
+                                <PhosphorIcons.Globe
+                                    weight="fill"
+                                    className="w-5 h-5 text-amber-400 mt-0.5 shrink-0"
+                                />
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-200">
+                                        {t('onboarding.legalStep.geoLabel')}
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                                        {t('onboarding.legalStep.geoText')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 pt-1">
+                        <Button onClick={handleLegalAccept} glow>
+                            {t('onboarding.legalStep.accept')}
+                        </Button>
+                        <button
+                            type="button"
+                            onClick={() => setAgeDenied(true)}
+                            className="text-sm text-slate-500 hover:text-slate-300 transition-colors py-2"
+                        >
+                            {t('onboarding.legalStep.deny')}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+        )
+    }
+
+    // ---- Step 1: Language picker ----
+    if (step === 1) {
         return (
             <Modal
                 isOpen={true}
@@ -225,13 +359,18 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         )
     }
 
-    // ---- Steps 1–4: Feature slides ----
-    if (step >= 1 && step <= FEATURE_STEP_COUNT) {
-        const currentStepContent = featureSteps[step - 1]
-        const isLastFeatureStep = step === FEATURE_STEP_COUNT
+    // ---- Steps 2-6: Feature slides ----
+    const featureStepEnd = FEATURE_STEP_START + FEATURE_STEP_COUNT - 1
+    if (step >= FEATURE_STEP_START && step <= featureStepEnd) {
+        const currentStepContent = featureSteps[step - FEATURE_STEP_START]
+        const isLastFeatureStep = step === featureStepEnd
         const footer = (
             <div className="w-full flex justify-between items-center">
-                <Button variant="secondary" onClick={handleBack} disabled={step === 1}>
+                <Button
+                    variant="secondary"
+                    onClick={handleBack}
+                    disabled={step === FEATURE_STEP_START}
+                >
                     {t('common.back')}
                 </Button>
                 <div className="flex items-center gap-2">
@@ -263,8 +402,8 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         )
     }
 
-    // ---- Step 6: Experience level ----
-    if (step === 6) {
+    // ---- Step 7: Experience level ----
+    if (step === 7) {
         const expOptions: { value: ExperienceLevel; icon: React.ReactNode }[] = [
             { value: 'beginner', icon: <PhosphorIcons.Leafy className="w-6 h-6" /> },
             { value: 'intermediate', icon: <PhosphorIcons.Plant className="w-6 h-6" /> },
@@ -311,8 +450,8 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         )
     }
 
-    // ---- Step 7: Grow goal ----
-    if (step === 7) {
+    // ---- Step 8: Grow goal ----
+    if (step === 8) {
         const goalOptions: { value: GrowGoal; icon: React.ReactNode }[] = [
             { value: 'medical', icon: <PhosphorIcons.FirstAidKit className="w-6 h-6" /> },
             { value: 'recreational', icon: <PhosphorIcons.Cannabis className="w-6 h-6" /> },
@@ -359,7 +498,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         )
     }
 
-    // ---- Step 8: Space + Budget (last wizard step) ----
+    // ---- Step 9: Space + Budget (last wizard step) ----
     const spaceOptions: { value: SpaceSize; icon: React.ReactNode }[] = [
         { value: 'small', icon: <PhosphorIcons.Minus className="w-6 h-6" /> },
         { value: 'medium', icon: <PhosphorIcons.Cube className="w-6 h-6" /> },

@@ -25,7 +25,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Testing:** Vitest (2063 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
-- **Distribution:** GitHub Pages, Netlify (PR previews)
+- **Distribution:** GitHub Pages, Netlify (PR previews), Vercel, Cloudflare Pages
 
 ### Monorepo Layout
 
@@ -179,7 +179,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 - **AES-256-GCM** encryption for API keys at rest (cryptoService.ts)
 - **EXIF/GPS stripping** before image AI transmission
 - **30+ regex patterns** block prompt injection in AI prompts
-- **CSP hardened** across 3 delivery paths (`securityHeaders.ts`, `index.html`, `netlify.toml`) with `'self' 'unsafe-inline' 'wasm-unsafe-eval'` (static Vite PWA -- nonce plugin deferred to S-03)
+- **CSP hardened** across 5 delivery paths (`securityHeaders.ts`, `index.html`, `netlify.toml`, `vercel.json`, `public/_headers`) with `'self' 'unsafe-inline' 'wasm-unsafe-eval'` (static Vite PWA -- nonce plugin deferred to S-03)
 - **Local-only mode guard**: All outbound network services must check `isLocalOnlyMode()` before fetch
 - **No `console.log`** in production — use `console.debug` (stripped) or `console.warn`/`console.error`
 - **No `console.warn`** for error detail logging — use `console.debug` to prevent info leaks
@@ -322,11 +322,13 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Deployment
 
-| Target         | Method                                  | Trigger                                                                |
-| -------------- | --------------------------------------- | ---------------------------------------------------------------------- |
-| GitHub Pages   | `.github/workflows/deploy.yml`          | Push to `main`                                                         |
-| Netlify        | `netlify.toml`                          | Push + PR (preview deploys)                                            |
-| GitHub Release | `.github/workflows/release-publish.yml` | Tag push `v*` (after gate pass) -- SLSA L3 provenance + CycloneDX SBOM |
+| Target           | Method                                  | Trigger                                                                |
+| ---------------- | --------------------------------------- | ---------------------------------------------------------------------- |
+| GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                         |
+| Netlify          | `netlify.toml`                          | Push + PR (preview deploys)                                            |
+| Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                          |
+| Cloudflare Pages | `_headers` + `_redirects` + Git         | Push to `main` (connect via Cloudflare Dashboard)                      |
+| GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (after gate pass) -- SLSA L3 provenance + CycloneDX SBOM |
 
 ---
 
@@ -514,6 +516,10 @@ After implementation is complete with all validations passing, update **all affe
 | `packages/ui/src/tokens.css`                                                    | 9 cannabis theme CSS custom properties (RGB triplets)                                                                                                                      |
 | `packages/ui/src/tailwind-preset.cjs`                                           | Shared Tailwind preset (colors, keyframes, animations)                                                                                                                     |
 | `lighthouserc.json`                                                             | Lighthouse CI config + performance budget assertions                                                                                                                       |
+| `vercel.json`                                                                   | Vercel deployment config (SPA rewrite, security headers, asset caching)                                                                                                    |
+| `netlify.toml`                                                                  | Netlify deployment config (build, redirects, security headers)                                                                                                             |
+| `apps/web/public/_headers`                                                      | Netlify/Cloudflare Pages HTTP headers (CSP, caching -- synced with securityHeaders.ts)                                                                                     |
+| `apps/web/public/_redirects`                                                    | Cloudflare Pages SPA routing (`/* /index.html 200`)                                                                                                                        |
 | `pnpm-workspace.yaml`                                                           | pnpm workspace definition (packages/_, apps/_)                                                                                                                             |
 | `.npmrc`                                                                        | pnpm config (shamefully-hoist, auto-install-peers, strict-peer-dependencies=false)                                                                                         |
 | `stryker.conf.json`                                                             | Stryker mutation testing config (Redux slices, 50% break)                                                                                                                  |

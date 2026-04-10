@@ -1054,6 +1054,12 @@ export interface AppSettings {
         reducedMotion: boolean
         highContrastMode: boolean
         colorblindMode: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia'
+        /** Grow goal selected during onboarding. */
+        growGoal: GrowGoal | null
+        /** Default space size selected during onboarding. */
+        defaultSpaceSize: 'small' | 'medium' | 'large' | null
+        /** Default budget tier selected during onboarding. */
+        defaultBudget: 'low' | 'mid' | 'high' | null
     }
     voiceControl: {
         enabled: boolean

@@ -2,7 +2,75 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 125) -- v1.8 CannaVoice Pro
+## Latest Session (Session 126) -- Onboarding Legal Gate + Vercel & Cloudflare Deployment
+
+**Status: Restored age-gate/consent as onboarding step 0, fixed
+step-8 bug, added Vercel + Cloudflare deployment configs, synced
+CSP headers across all 5 delivery paths. 2063 tests passing,
+build OK.**
+
+### What Was Done (Session 126)
+
+1. **Onboarding Legal Gate (Step 0)** -- Integrated age verification
+   (18+ / KCanG), GDPR/privacy consent, and geo-legal disclaimer
+   as the first onboarding step. Uses existing `consentService.ts`
+   and `cg.ageVerified.v1` localStorage key. Auto-skips if already
+   verified (returning users, E2E tests). Denied state blocks app.
+
+2. **Step-8 Bug Fix** -- `App.tsx` gate condition changed from
+   `onboardingStep < 8` to `onboardingStep <= ONBOARDING_TOTAL_STEPS`
+   so the Space & Budget step (now step 9) is actually rendered.
+
+3. **Onboarding Step Renumbering** -- TOTAL_STEPS bumped from 8 to 9:
+   0=Legal, 1=Language, 2-6=Features, 7=Experience, 8=Goal, 9=Setup.
+
+4. **Settings Redux Migration** -- `growGoal`, `defaultSpaceSize`,
+   `defaultBudget` added to `AppSettings.general` (typed, persisted
+   in IndexedDB). `handleFinish()` dispatches to Redux + localStorage
+   fallback for backward compat with `SetupConfigurator`.
+
+5. **E2E Test Compatibility** -- `seedLegalGateState()` helper seeds
+   `cg.ageVerified.v1` + GDPR consent cookie via `page.addInitScript()`
+   before navigation. All E2E helpers updated to call this.
+
+6. **CSP Sync** -- `public/_headers` synced with `securityHeaders.ts`
+   (added `'unsafe-inline' 'wasm-unsafe-eval'`, `manifest-src`,
+   `cdn.jsdelivr.net`, `api.elevenlabs.io`, `frame-ancestors`).
+
+7. **Vercel Deployment** -- Created `vercel.json` with SPA rewrite,
+   security headers (matching securityHeaders.ts), PWA caching
+   strategy (immutable assets, no-cache SW, 1h manifest).
+
+8. **Cloudflare Pages Deployment** -- Created `public/_redirects`
+   for SPA routing. `_headers` already existed and is now CSP-synced.
+
+9. **i18n** -- Legal step keys added to all 5 languages (EN/DE/ES/FR/NL)
+   in `locales/{lang}/onboarding.ts`.
+
+10. **index.tsx Cleanup** -- Removed consent auto-grant (now handled
+    by onboarding legal step).
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2063 passing, 0 failures
+- Build: successful (44s)
+- `_headers` + `_redirects` present in `dist/` output
+
+### Next Steps
+
+1. Connect Vercel Dashboard to `qnbs/CannaGuide-2025` repo
+   (Framework: Vite, Output: `apps/web/dist`, Env: `BUILD_BASE_PATH=/`)
+2. Connect Cloudflare Pages Dashboard (same build settings)
+3. Activate Vercel Speed Insights + Cloudflare Web Analytics
+4. Hydro-Dashboard wiring from onboarding budget/space selections
+5. Theme suggestion based on experience level (beginner -> simpler)
+6. Proactive coach threshold adjustment for medical grow goal
+7. Add Lighthouse CI targets for Vercel + Cloudflare URLs
+
+---
+
+## Previous Session (Session 125) -- v1.8 CannaVoice Pro
 
 **Status: Full implementation of 5 voice subsystems (Porcupine
 wake-word, Cloud TTS ElevenLabs, speakNatural normalization, voice

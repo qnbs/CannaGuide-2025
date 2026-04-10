@@ -110,6 +110,72 @@ export const plantsView = {
         error: 'Escaneo fallido. Por favor intentalo de nuevo.',
         clearImage: 'Eliminar imagen',
         capturePhoto: 'Capturar foto con camara',
+        healthyPlant: 'La planta parece generalmente sana en el escaneo del modelo local.',
+        nitrogenDeficiency:
+            'Posible deficiencia de nitrogeno: las hojas viejas pueden desvanecerse o amarillear primero.',
+        phosphorusDeficiency:
+            'Posible deficiencia de fosforo: busca crecimiento lento y follaje mas oscuro.',
+        potassiumDeficiency:
+            'Posible deficiencia de potasio: los bordes de las hojas pueden secarse o descolorarse.',
+        calciumDeficiency:
+            'Posible deficiencia de calcio: el nuevo crecimiento puede torcerse o mancharse.',
+        magnesiumDeficiency:
+            'Posible deficiencia de magnesio: la clorosis intervenal puede aparecer primero en hojas viejas.',
+        overwatering:
+            'Posible exceso de riego: crecimiento caido y recuperacion lenta indican sustrato saturado.',
+        underwatering:
+            'Posible falta de riego: las hojas pueden enrollarse, curvarse o perder turgencia.',
+        heatStress:
+            'Posible estres por calor: las hojas pueden curvarse hacia arriba con transpiracion rapida.',
+        lightStress:
+            'Posible estres luminico: blanqueamiento o postura de hojas elevada pueden indicar exceso de intensidad.',
+        nutrientBurn:
+            'Posible quemadura de nutrientes: puntas oscuras y bordes crujientes pueden indicar sobrealimentacion.',
+        powderyMildew:
+            'Posible mildiu polvoriento: busca manchas blancas polvorientas en superficies superiores.',
+        spiderMites:
+            'Posible presencia de acaros: punteado fino y telaranas deben inspeccionarse de cerca.',
+        fungalLeafSpot:
+            'Posible mancha foliar fungica: lesiones circulares pueden indicar enfermedad por humedad.',
+        ironDeficiency:
+            'Posible deficiencia de hierro: el nuevo crecimiento se vuelve amarillo palido, las venas se mantienen verdes.',
+        zincDeficiency:
+            'Posible deficiencia de zinc: clorosis intervenal en hojas nuevas con crecimiento atrofiado.',
+        sulfurDeficiency:
+            'Posible deficiencia de azufre: amarillamiento uniforme de las hojas nuevas.',
+        manganeseDeficiency:
+            'Posible deficiencia de manganeso: areas amarillo claro entre las venas de hojas jovenes.',
+        boronDeficiency:
+            'Posible deficiencia de boro: tallos huecos y nuevo crecimiento distorsionado y grueso.',
+        lightBurn:
+            'Posible quemadura de luz: canopia superior blanqueada con puntas crujientes cerca de la lampara.',
+        coldStress:
+            'Posible estres por frio: tallos morados y crecimiento lento pueden indicar bajas temperaturas.',
+        windBurn:
+            'Posible quemadura de viento: hojas curvadas y canopia desigual por flujo de aire excesivo.',
+        nutrientLockout:
+            'Posible bloqueo de nutrientes: sintomas de deficiencia pese a la fertilizacion -- revisar pH y EC.',
+        rootRot:
+            'Posible pudricion de raices: raices marrones y viscosas con marchitez persistente.',
+        botrytisBudRot:
+            'Posible botrytis (podredumbre de cogollos): moho gris en cogollos, a menudo empieza en colas densas.',
+        fungusGnats:
+            'Posibles mosquitos del hongo: pequenos mosquitos negros cerca del sustrato; larvas danan las raices.',
+        aphids: 'Posible presencia de pulgones: grupos de insectos pequenos en tallos y enveses de hojas.',
+        thrips: 'Posible presencia de trips: rayas plateadas en hojas e insectos diminutos alargados.',
+        whiteflies:
+            'Posible presencia de moscas blancas: polillas blancas en enveses de hojas; residuos pegajosos.',
+        septoriaLeafSpot:
+            'Posible septoria: manchas amarillo-marrones con bordes oscuros en hojas inferiores.',
+        tobaccoMosaicVirus:
+            'Posible TMV: descoloracion en patron mosaico con hojas enrolladas y atrofiadas.',
+        phImbalance:
+            'Posible desequilibrio de pH: multiples sintomas de deficiencia a la vez, revisar pH en la zona radicular.',
+        revegetationStress:
+            'Posible estres por revegetacion: formas de hojas inusuales por interrupcion del ciclo luminico.',
+        localDiagnosisTitle: 'Diagnostico Local: {{name}}',
+        preventionTrack: 'Registrar luz, riego, VPD y alimentacion a lo largo del tiempo.',
+        preventionCheck: 'Verificar VPD, pH, EC y humedad del sustrato regularmente.',
     },
     nutrientWizard: {
         tabAiScanner: 'Escaner IA',

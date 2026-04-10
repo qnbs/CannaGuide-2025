@@ -1,6 +1,7 @@
 type TransformersModule = typeof import('@xenova/transformers')
 import { acquireGpu, releaseGpu } from './gpuResourceManager'
 import { getModelById } from './webLlmModelCatalog'
+import { isMobileDevice, isHighEndTablet, checkStorageQuota } from '@/utils/browserApis'
 
 export type LocalAiPipeline = (
     input: unknown,
@@ -37,8 +38,9 @@ export const setVramInsufficientOverride = (insufficient: boolean): void => {
 export const detectOnnxBackend = (): OnnxBackend => {
     if (forceWasmOverride || vramInsufficientOverride) return 'wasm'
     if (detectedBackend) return detectedBackend
-    // Mobile devices default to WASM for stability and battery savings
-    if (typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    // Mobile devices default to WASM for stability and battery savings,
+    // UNLESS they are a high-end tablet (e.g. iPad Pro) with sufficient GPU
+    if (isMobileDevice() && !isHighEndTablet()) {
         detectedBackend = 'wasm'
         return detectedBackend
     }
@@ -46,8 +48,9 @@ export const detectOnnxBackend = (): OnnxBackend => {
     return detectedBackend
 }
 
-/** Adaptive concurrency: scale with hardware, capped at 2-5. */
+/** Adaptive concurrency: scale with hardware, capped at 1-5. Mobile uses max 1. */
 const getMaxConcurrentLoads = (): number => {
+    if (isMobileDevice()) return 1
     const cores = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency ?? 2) : 2
     return Math.max(2, Math.min(5, Math.floor(cores * 0.5)))
 }
@@ -63,9 +66,11 @@ const checkMemoryPressure = (): void => {
     }
     if (perf.memory) {
         const usagePercent = (perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit) * 100
-        if (usagePercent > 90) {
+        // Mobile has tighter memory constraints -- use lower threshold
+        const threshold = isMobileDevice() ? 80 : 90
+        if (usagePercent > threshold) {
             throw new Error(
-                `Memory pressure too high (${usagePercent.toFixed(0)}%) — aborting model load to prevent OOM.`,
+                `Memory pressure too high (${usagePercent.toFixed(0)}%) -- aborting model load to prevent OOM.`,
             )
         }
     }
@@ -216,6 +221,14 @@ export const loadTransformersPipeline = async (
 
     const promise = (async () => {
         checkMemoryPressure()
+        // Verify sufficient storage before downloading model files
+        const quota = await checkStorageQuota(200) // ~200 MB minimum for ONNX models
+        if (!quota.ok) {
+            const avail = quota.availableMB !== null ? `${quota.availableMB} MB` : 'unknown'
+            throw new Error(
+                `Insufficient storage for model download (available: ${avail}, needed: ~200 MB). Free up space and try again.`,
+            )
+        }
         await acquireLoadSlot()
         const backend = detectOnnxBackend()
         // Acquire GPU mutex when using Weber backend to prevent VRAM collision with WebLLM

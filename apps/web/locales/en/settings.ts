@@ -250,6 +250,35 @@ export const settingsView = {
             'Inference speed has dropped. Switching to a lighter model is recommended.',
         perfDegradedCloseTabs:
             'Inference speed has dropped. Closing unused tabs may free GPU memory.',
+        // Error Messages (detailed, stage-specific)
+        errorModelDownload: 'Model download failed. Check your connection and free storage.',
+        errorQuotaExceeded:
+            'Not enough storage space ({{available}} MB free, ~{{required}} MB needed). Free up space and try again.',
+        errorDeviceLost: 'GPU connection lost. The model will be reloaded automatically.',
+        errorInferenceTimeout: 'AI inference timed out. Falling back to quick analysis.',
+        errorNetworkRequired: 'Initial model download requires an internet connection.',
+        errorMemoryPressure: 'Device memory is low. Using lightweight analysis mode.',
+        errorBatteryLow: 'Battery below 15%. GPU acceleration paused to save power.',
+        errorModelCorrupted: 'Cached model data appears corrupted. Re-downloading...',
+        // Warnings & Info
+        warningFallbackActive: 'Using quick analysis (offline mode)',
+        warningMobileData: 'This will download approximately {{size}} MB. Continue on mobile data?',
+        warningMobileDataTitle: 'Large Download',
+        warningMobileDataConfirm: 'Download',
+        warningMobileDataCancel: 'Cancel',
+        infoUsingLocal: 'Running locally on your device',
+        infoUsingCloud: 'Using cloud AI',
+        infoUsingHeuristic: 'Using quick analysis',
+        // Download Progress Stages
+        downloadStageDownloading: 'Downloading model...',
+        downloadStageInitializing: 'Initializing model...',
+        downloadStageReady: 'Model ready',
+        downloadStageFailed: 'Download failed',
+        downloadCancelButton: 'Cancel download',
+        downloadRetryButton: 'Retry download',
+        // Storage Info
+        storageAvailable: 'Available storage: {{value}} MB',
+        storageInsufficient: 'Insufficient storage for model download',
     },
     localAiDiag: {
         reasons: {

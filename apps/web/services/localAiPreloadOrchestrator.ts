@@ -1,6 +1,7 @@
 import { loadWebLlmEngine } from './localAiWebLlmService'
 import { captureLocalAiError } from './sentryService'
 import type { LocalAiModelManager } from './localAiModelManager'
+import { isMobileDevice, getBatteryManager, checkStorageQuota } from '@/utils/browserApis'
 
 export interface LocalAiPreloadReport {
     textModelReady: boolean
@@ -19,6 +20,37 @@ export interface LocalAiPreloadReport {
 type ProgressCallback = (loaded: number, total: number, label: string) => void
 
 const supportsWebGpu = (): boolean => typeof navigator !== 'undefined' && 'gpu' in navigator
+
+/** Stage-level timeout: shorter on mobile to avoid UI freezes. */
+const getStageTimeoutMs = (): number => (isMobileDevice() ? 15_000 : 30_000)
+
+/** Wrap a promise with a per-stage timeout. */
+const withStageTimeout = <T>(promise: Promise<T>, label: string): Promise<T> => {
+    const ms = getStageTimeoutMs()
+    return new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(
+            () => reject(new Error(`Preload stage '${label}' timed out after ${ms}ms`)),
+            ms,
+        )
+        promise.then(
+            (v) => {
+                clearTimeout(timer)
+                resolve(v)
+            },
+            (e) => {
+                clearTimeout(timer)
+                reject(e)
+            },
+        )
+    })
+}
+
+/** Check battery level -- if below 20% and not charging, force eco mode. */
+const shouldForceBatteryEco = async (): Promise<boolean> => {
+    const battery = await getBatteryManager()
+    if (!battery) return false
+    return !battery.charging && battery.level < 0.2
+}
 
 const calculatePreloadTotalSteps = (
     hasEmbeddings: boolean,
@@ -42,8 +74,12 @@ export async function preloadOfflineAssets(
     onProgress?: ProgressCallback,
     ecoOnly = false,
 ): Promise<LocalAiPreloadReport> {
-    // ── Eco mode: only load the small 0.5B text model ──
-    if (ecoOnly) {
+    // Battery gating: if battery < 20% and not charging, force eco mode
+    const batteryEco = await shouldForceBatteryEco()
+    const effectiveEcoOnly = ecoOnly || batteryEco
+
+    // -- Eco mode: only load the small 0.5B text model --
+    if (effectiveEcoOnly) {
         const totalSteps = 1
         let loaded = 0
         onProgress?.(loaded, totalSteps, 'text-model-eco')
@@ -72,13 +108,25 @@ export async function preloadOfflineAssets(
     const totalSteps = calculatePreloadTotalSteps(hasEmbeddings, hasNlp, hasWebLlm)
     let loaded = 0
 
+    // Pre-flight: check storage quota before any downloads
+    const quota = await checkStorageQuota(300) // ~300 MB baseline for all models
+    if (!quota.ok) {
+        const avail = quota.availableMB !== null ? `${quota.availableMB}` : 'unknown'
+        captureLocalAiError(new Error(`Insufficient storage for preload (${avail} MB available)`), {
+            stage: 'preload-storage-check',
+        })
+        // Continue with best effort -- individual loads will fail gracefully
+    }
+
     onProgress?.(loaded, totalSteps, 'text-model')
-    const textResult = await Promise.allSettled([modelManager.loadTextPipeline()]).then((r) => r[0])
+    const textResult = await Promise.allSettled([
+        withStageTimeout(modelManager.loadTextPipeline(), 'text-model'),
+    ]).then((r) => r[0])
     onProgress?.(++loaded, totalSteps, 'vision-model')
 
-    const visionResult = await Promise.allSettled([modelManager.loadVisionPipeline()]).then(
-        (r) => r[0],
-    )
+    const visionResult = await Promise.allSettled([
+        withStageTimeout(modelManager.loadVisionPipeline(), 'vision-model'),
+    ]).then((r) => r[0])
     onProgress?.(++loaded, totalSteps, 'vision-model')
 
     // Embedding model

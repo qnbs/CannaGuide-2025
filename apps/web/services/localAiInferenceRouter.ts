@@ -11,12 +11,22 @@ import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { generateWithWebLlm, type WebLlmDeps } from './localAiWebLlmService'
 import { detectOnnxBackend, getResolvedProfile, type LocalAiPipeline } from './localAIModelLoader'
 import { captureLocalAiError } from '@/services/sentryService'
+import { isMobileDevice } from '@/utils/browserApis'
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// -- Constants ----------------------------------------------------------------
 
 const MAX_RETRIES = 2
-const WEBLLM_TIMEOUT_MS = 45_000
-const TRANSFORMERS_TIMEOUT_MS = 15_000
+const WEBLLM_TIMEOUT_MS_DESKTOP = 45_000
+const WEBLLM_TIMEOUT_MS_MOBILE = 20_000
+const TRANSFORMERS_TIMEOUT_MS_DESKTOP = 15_000
+const TRANSFORMERS_TIMEOUT_MS_MOBILE = 10_000
+
+/** Resolved timeouts -- mobile uses shorter values to avoid UI freezes. */
+const getWebLlmTimeoutMs = (): number =>
+    isMobileDevice() ? WEBLLM_TIMEOUT_MS_MOBILE : WEBLLM_TIMEOUT_MS_DESKTOP
+
+const getTransformersTimeoutMs = (): number =>
+    isMobileDevice() ? TRANSFORMERS_TIMEOUT_MS_MOBILE : TRANSFORMERS_TIMEOUT_MS_DESKTOP
 
 /** Simple LRU-style inference cache keyed by truncated prompt hash. */
 const INFERENCE_CACHE_MAX = 64
@@ -114,6 +124,7 @@ async function tryGenerateWithTransformers(
     const activeProfile = getResolvedProfile()
     const activeTextId = activeProfile.transformersModelId
 
+    const transformersTimeoutMs = getTransformersTimeoutMs()
     try {
         const timer = createInferenceTimer()
         let generated: string | undefined
@@ -133,9 +144,9 @@ async function tryGenerateWithTransformers(
                             return_full_text: false,
                         },
                         priority: 'normal',
-                        timeoutMs: TRANSFORMERS_TIMEOUT_MS,
+                        timeoutMs: transformersTimeoutMs,
                     }),
-                    TRANSFORMERS_TIMEOUT_MS,
+                    transformersTimeoutMs,
                 )
                 generated = extractGeneratedText(workerResult)
             } catch (workerError) {
@@ -159,7 +170,7 @@ async function tryGenerateWithTransformers(
                     temperature: 0.6,
                     return_full_text: false,
                 }),
-                TRANSFORMERS_TIMEOUT_MS,
+                transformersTimeoutMs,
             )
             generated = extractGeneratedText(output)
         }
@@ -238,4 +249,9 @@ export async function routeInference(
     return null
 }
 
-export { WEBLLM_TIMEOUT_MS, TRANSFORMERS_TIMEOUT_MS }
+export {
+    WEBLLM_TIMEOUT_MS_DESKTOP as WEBLLM_TIMEOUT_MS,
+    TRANSFORMERS_TIMEOUT_MS_DESKTOP as TRANSFORMERS_TIMEOUT_MS,
+    getWebLlmTimeoutMs,
+    getTransformersTimeoutMs,
+}

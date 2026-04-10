@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-2031%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-2028%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-33.7%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity (dynamic) -->
@@ -108,7 +108,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 22-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 776 strains -- 2031 tests -- 109 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
+**Key numbers:** 776 strains -- 2028 tests -- 109 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
 
 ---
 
@@ -314,7 +314,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite dev server on localhost:5173)
 pnpm run build            # turbo run build (all workspaces)
 pnpm test                 # turbo run test (Vitest, watch mode)
-pnpm run test:run         # turbo run test:run (single run, 2031 tests)
+pnpm run test:run         # turbo run test:run (single run, 2028 tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -370,7 +370,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 | Job                | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
-| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 2031 tests, production build |
+| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 2028 tests, production build |
 | 🛡 Security        | pnpm audit (critical), trojan-source scan, Gitleaks secret scan             |
 | 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
 | 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |

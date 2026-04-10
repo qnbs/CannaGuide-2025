@@ -260,6 +260,40 @@ export const settingsView = {
             "La vitesse d'inference a diminue. Il est recommande de passer a un modele plus leger.",
         perfDegradedCloseTabs:
             "La vitesse d'inference a diminue. Fermer les onglets inutilises peut liberer de la memoire GPU.",
+        // Error Messages (detailed, stage-specific)
+        errorModelDownload:
+            "Echec du telechargement du modele. Verifiez votre connexion et l'espace libre.",
+        errorQuotaExceeded:
+            "Espace de stockage insuffisant ({{available}} Mo libres, ~{{required}} Mo necessaires). Liberez de l'espace et reessayez.",
+        errorDeviceLost: 'Connexion GPU perdue. Le modele sera recharge automatiquement.',
+        errorInferenceTimeout: "L'inference IA a expire. Passage a l'analyse rapide.",
+        errorNetworkRequired:
+            'Le telechargement initial du modele necessite une connexion internet.',
+        errorMemoryPressure: "Memoire du dispositif faible. Mode d'analyse leger en cours.",
+        errorBatteryLow:
+            "Batterie en dessous de 15%. Acceleration GPU en pause pour economiser l'energie.",
+        errorModelCorrupted:
+            'Les donnees du modele en cache semblent corrompues. Re-telechargement...',
+        // Warnings & Info
+        warningFallbackActive: 'Analyse rapide active (mode hors ligne)',
+        warningMobileData:
+            'Ceci telechargera environ {{size}} Mo. Continuer sur les donnees mobiles?',
+        warningMobileDataTitle: 'Gros telechargement',
+        warningMobileDataConfirm: 'Telecharger',
+        warningMobileDataCancel: 'Annuler',
+        infoUsingLocal: 'Execution locale sur votre appareil',
+        infoUsingCloud: "Utilisation de l'IA cloud",
+        infoUsingHeuristic: "Utilisation de l'analyse rapide",
+        // Download Progress Stages
+        downloadStageDownloading: 'Telechargement du modele...',
+        downloadStageInitializing: 'Initialisation du modele...',
+        downloadStageReady: 'Modele pret',
+        downloadStageFailed: 'Echec du telechargement',
+        downloadCancelButton: 'Annuler le telechargement',
+        downloadRetryButton: 'Reessayer le telechargement',
+        // Storage Info
+        storageAvailable: 'Stockage disponible: {{value}} Mo',
+        storageInsufficient: 'Stockage insuffisant pour le telechargement du modele',
     },
     localAiDiag: {
         reasons: {

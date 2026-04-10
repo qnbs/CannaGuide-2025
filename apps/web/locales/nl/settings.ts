@@ -257,6 +257,35 @@ export const settingsView = {
             'Inferentiesnelheid is gedaald. Overschakelen naar een lichter model wordt aanbevolen.',
         perfDegradedCloseTabs:
             'Inferentiesnelheid is gedaald. Het sluiten van ongebruikte tabbladen kan GPU-geheugen vrijmaken.',
+        // Error Messages (detailed, stage-specific)
+        errorModelDownload: 'Model download mislukt. Controleer je verbinding en vrije opslag.',
+        errorQuotaExceeded:
+            'Onvoldoende opslagruimte ({{available}} MB vrij, ~{{required}} MB nodig). Maak ruimte vrij en probeer opnieuw.',
+        errorDeviceLost: 'GPU-verbinding verloren. Het model wordt automatisch opnieuw geladen.',
+        errorInferenceTimeout: 'AI-inferentie verlopen. Terugvallen op snelle analyse.',
+        errorNetworkRequired: 'Eerste model-download vereist een internetverbinding.',
+        errorMemoryPressure: 'Apparaatgeheugen is laag. Lichtgewicht analysemodus wordt gebruikt.',
+        errorBatteryLow: 'Batterij onder 15%. GPU-versnelling gepauzeerd om stroom te besparen.',
+        errorModelCorrupted: 'Gecachte modelgegevens lijken beschadigd. Opnieuw downloaden...',
+        // Warnings & Info
+        warningFallbackActive: 'Snelle analyse actief (offline modus)',
+        warningMobileData: 'Dit downloadt ongeveer {{size}} MB. Doorgaan op mobiele data?',
+        warningMobileDataTitle: 'Grote download',
+        warningMobileDataConfirm: 'Downloaden',
+        warningMobileDataCancel: 'Annuleren',
+        infoUsingLocal: 'Draait lokaal op je apparaat',
+        infoUsingCloud: 'Cloud-AI wordt gebruikt',
+        infoUsingHeuristic: 'Snelle analyse wordt gebruikt',
+        // Download Progress Stages
+        downloadStageDownloading: 'Model wordt gedownload...',
+        downloadStageInitializing: 'Model wordt geinitialiseerd...',
+        downloadStageReady: 'Model gereed',
+        downloadStageFailed: 'Download mislukt',
+        downloadCancelButton: 'Download annuleren',
+        downloadRetryButton: 'Opnieuw proberen',
+        // Storage Info
+        storageAvailable: 'Beschikbare opslag: {{value}} MB',
+        storageInsufficient: 'Onvoldoende opslag voor model-download',
     },
     localAiDiag: {
         reasons: {

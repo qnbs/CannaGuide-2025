@@ -87,8 +87,17 @@ export const getCacheSize = async (): Promise<number> => {
 
 /**
  * Get breakdown of cached entries by model.
+ * Throttled to at most one full scan every 30 seconds.
  */
+let _breakdownCache: Record<string, number> | null = null
+let _breakdownTimestamp = 0
+const BREAKDOWN_THROTTLE_MS = 30_000
+
 export const getCacheBreakdown = async (): Promise<Record<string, number>> => {
+    const now = Date.now()
+    if (_breakdownCache && now - _breakdownTimestamp < BREAKDOWN_THROTTLE_MS) {
+        return _breakdownCache
+    }
     try {
         const db = await cache.openDb()
         return new Promise<Record<string, number>>((resolve) => {
@@ -104,6 +113,8 @@ export const getCacheBreakdown = async (): Promise<Record<string, number>> => {
                     breakdown[entry.model] = (breakdown[entry.model] ?? 0) + 1
                     c.continue()
                 } else {
+                    _breakdownCache = breakdown
+                    _breakdownTimestamp = Date.now()
                     resolve(breakdown)
                 }
             }

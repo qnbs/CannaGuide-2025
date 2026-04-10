@@ -1287,7 +1287,7 @@ const buildStrainImageSvg = (
     const metadataMainY = footerY + (hasDescription ? 60 : 34)
     const metadataSubY = footerY + (hasDescription ? 88 : 62)
     const signatureDotsY = footerY + (hasDescription ? 75 : 50)
-    const geneticsSuffix = genetics.length > 0 ? ` \u00b7 ${genetics}` : ''
+    const geneticsSuffix = genetics.length > 0 ? ` -- ${genetics}` : ''
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 ${svgHeight}" role="img" aria-label="${cleanName} — ${typeLabel} ${flowerTypeLabel} cannabis strain poster, ${escapeXml(style)} style, ${escapeXml(criteria.focus)} focus, ${escapeXml(criteria.mood)} mood">
     <defs>
@@ -1378,7 +1378,7 @@ const buildStrainImageSvg = (
     <!-- Metadata -->
     <g fill="${p.textDim}" font-family="'Inter',sans-serif" opacity="0.55">
         <text x="86" y="${metadataMainY}" font-size="20">${floweringText}${geneticsSuffix}</text>
-        <text x="86" y="${metadataSubY}" font-size="16" opacity="0.7">${escapeXml(criteria.focus)} \u00b7 ${escapeXml(criteria.composition)} \u00b7 ${escapeXml(criteria.mood)}</text>
+        <text x="86" y="${metadataSubY}" font-size="16" opacity="0.7">${escapeXml(criteria.focus)} -- ${escapeXml(criteria.composition)} -- ${escapeXml(criteria.mood)}</text>
     </g>
 
     <!-- Signature dots -->

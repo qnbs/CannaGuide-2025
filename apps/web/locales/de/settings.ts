@@ -258,6 +258,37 @@ export const settingsView = {
             'Die Inferenzgeschwindigkeit ist gesunken. Ein Wechsel zu einem leichteren Modell wird empfohlen.',
         perfDegradedCloseTabs:
             'Die Inferenzgeschwindigkeit ist gesunken. Das Schließen ungenutzter Tabs kann GPU-Speicher freigeben.',
+        // Error Messages (detailed, stage-specific)
+        errorModelDownload:
+            'Modell-Download fehlgeschlagen. Verbindung und freien Speicher prüfen.',
+        errorQuotaExceeded:
+            'Nicht genügend Speicherplatz ({{available}} MB frei, ca. {{required}} MB benötigt). Speicher freigeben und erneut versuchen.',
+        errorDeviceLost: 'GPU-Verbindung verloren. Das Modell wird automatisch neu geladen.',
+        errorInferenceTimeout: 'KI-Inferenz abgelaufen. Wechsel zur Schnellanalyse.',
+        errorNetworkRequired: 'Erstmaliger Modell-Download benötigt eine Internetverbindung.',
+        errorMemoryPressure:
+            'Gerätespeicher ist knapp. Leichtgewichtiger Analysemodus wird verwendet.',
+        errorBatteryLow: 'Akku unter 15%. GPU-Beschleunigung pausiert um Strom zu sparen.',
+        errorModelCorrupted: 'Gecachte Modelldaten scheinen beschädigt. Erneuter Download...',
+        // Warnings & Info
+        warningFallbackActive: 'Schnellanalyse aktiv (Offline-Modus)',
+        warningMobileData: 'Dies wird ca. {{size}} MB herunterladen. Auf mobilen Daten fortfahren?',
+        warningMobileDataTitle: 'Großer Download',
+        warningMobileDataConfirm: 'Herunterladen',
+        warningMobileDataCancel: 'Abbrechen',
+        infoUsingLocal: 'Wird lokal auf Ihrem Gerät ausgeführt',
+        infoUsingCloud: 'Cloud-KI wird verwendet',
+        infoUsingHeuristic: 'Schnellanalyse wird verwendet',
+        // Download Progress Stages
+        downloadStageDownloading: 'Modell wird heruntergeladen...',
+        downloadStageInitializing: 'Modell wird initialisiert...',
+        downloadStageReady: 'Modell bereit',
+        downloadStageFailed: 'Download fehlgeschlagen',
+        downloadCancelButton: 'Download abbrechen',
+        downloadRetryButton: 'Erneut versuchen',
+        // Storage Info
+        storageAvailable: 'Verfügbarer Speicher: {{value}} MB',
+        storageInsufficient: 'Nicht genügend Speicher für Modell-Download',
     },
     localAiDiag: {
         reasons: {

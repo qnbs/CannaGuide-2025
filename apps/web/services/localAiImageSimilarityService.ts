@@ -1,5 +1,6 @@
 import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { captureLocalAiError } from './sentryService'
+import { isMobileDevice } from '@/utils/browserApis'
 
 /**
  * Local AI Image Similarity Service — uses CLIP vision features to compare
@@ -136,6 +137,13 @@ export const extractImageFeatures = async (
     base64Image: string,
     mimeType: string,
 ): Promise<ImageFeatureVector> => {
+    // Guard: reject images over 2 MB base64 to prevent memory spikes on mobile
+    const MAX_BASE64_LENGTH = 2_800_000 // ~2 MB decoded
+    if (base64Image.length > MAX_BASE64_LENGTH) {
+        throw new Error(
+            `Image too large for local feature extraction (${Math.round(base64Image.length / 1000)}KB base64)`,
+        )
+    }
     try {
         const imageBlob = await fetch(toDataUrl(base64Image, mimeType)).then((r) => r.blob())
         const result = await dispatchFeatureExtraction(imageBlob, {
@@ -178,8 +186,9 @@ export const findSimilarImages = async (
 ): Promise<SimilarityResult[]> => {
     if (candidates.length === 0) return []
 
-    // Cap candidates to prevent memory exhaustion on large collections
-    const maxCandidates = Math.min(candidates.length, 100)
+    // Cap candidates to prevent memory exhaustion (lower on mobile)
+    const absoluteMax = isMobileDevice() ? 50 : 100
+    const maxCandidates = Math.min(candidates.length, absoluteMax)
     const queryFeatures = await extractImageFeatures(queryImage.base64, queryImage.mimeType)
 
     // Process candidates sequentially to avoid memory pressure

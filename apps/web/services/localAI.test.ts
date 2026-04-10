@@ -15,8 +15,34 @@ vi.mock('@xenova/transformers', () => ({
     pipeline: (...args: unknown[]) => pipelineMock(...args),
 }))
 
+// Mock i18n -- return realistic translations for diagnosis keys
+const MOCK_TRANSLATIONS: Record<string, string> = {
+    'plantsView.diagnosis.localDiagnosisTitle': 'Local Diagnosis: {{name}}',
+    'plantsView.diagnosis.preventionTrack': 'Track light, watering, VPD, and feeding over time.',
+    'plantsView.diagnosis.preventionCheck': 'Check VPD, pH, EC, and substrate moisture regularly.',
+    'plantsView.diagnosis.nitrogenDeficiency':
+        'Possible nitrogen deficiency: older leaves may fade or yellow first.',
+    'plantsView.diagnosis.rootRot':
+        'Possible root rot: brown mushy roots and foul smell indicate anaerobic conditions.',
+    'plantsView.diagnosis.botrytisBudRot':
+        'Possible botrytis bud rot: grey fuzzy mold inside dense colas.',
+    'plantsView.diagnosis.overwatering':
+        'Possible overwatering: droopy growth and slow recovery often point to saturated media.',
+    'plantsView.diagnosis.healthyPlant':
+        'The plant appears generally healthy in the local model scan.',
+}
+
 vi.mock('@/i18n', () => ({
-    getT: () => (key: string) => key,
+    getT: () => (key: string, opts?: Record<string, string>) => {
+        let val = MOCK_TRANSLATIONS[key]
+        if (!val) return key
+        if (opts) {
+            for (const [k, v] of Object.entries(opts)) {
+                val = val.replace(`{{${k}}}`, v)
+            }
+        }
+        return val
+    },
 }))
 
 const buildPlant = (): Plant => ({
@@ -316,6 +342,6 @@ describe('localAiService', () => {
         )
 
         expect(result.diagnosis.toLowerCase()).toContain('botrytis')
-        expect(result.title).toContain('Lokale Diagnose')
+        expect(result.title).toContain('Local Diagnosis')
     })
 })

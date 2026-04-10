@@ -108,6 +108,67 @@ export const plantsView = {
         error: 'Scan mislukt. Probeer het opnieuw.',
         clearImage: 'Afbeelding wissen',
         capturePhoto: 'Foto maken met camera',
+        healthyPlant: 'De plant lijkt over het algemeen gezond bij de lokale modelscan.',
+        nitrogenDeficiency:
+            'Mogelijk stikstoftekort: oudere bladeren kunnen eerst verbleken of vergelen.',
+        phosphorusDeficiency: 'Mogelijk fosfaattekort: let op vertraagde groei en donkerder blad.',
+        potassiumDeficiency: 'Mogelijk kaliumtekort: bladranden kunnen verdrogen of verkleuren.',
+        calciumDeficiency: 'Mogelijk calciumtekort: nieuw blad kan vervormen of vlekken vertonen.',
+        magnesiumDeficiency:
+            'Mogelijk magnesiumtekort: intervenale chlorose kan eerst op oude bladeren verschijnen.',
+        overwatering:
+            'Mogelijk te veel water: slappe groei en trage recuperatie wijzen op verzadigd substraat.',
+        underwatering:
+            'Mogelijk te weinig water: bladeren kunnen krullen, klauwen of hun stevigheid verliezen.',
+        heatStress:
+            'Mogelijke hittestress: omhoog krullende bladeren en snelle verdamping kunnen optreden.',
+        lightStress:
+            'Mogelijke lichtstress: bleking of omhoog gerichte bladeren kunnen te hoge intensiteit aangeven.',
+        nutrientBurn:
+            'Mogelijke voedingsverbranding: donkere punten en brosse randen wijzen op overbemesting.',
+        powderyMildew:
+            'Mogelijke meeldauw: let op witte poederachtige vlekken op de bovenkant van bladeren.',
+        spiderMites:
+            'Mogelijke spintmijten: fijne spikkels en spinrag moeten nauwkeurig worden geinspecteerd.',
+        fungalLeafSpot:
+            'Mogelijke schimmel-bladvlekken: ronde lesies kunnen wijzen op een vochtgerelateerde ziekte.',
+        ironDeficiency:
+            'Mogelijk ijzertekort: nieuw blad wordt bleekgeel terwijl nerven groen blijven.',
+        zincDeficiency:
+            'Mogelijk zinktekort: intervenale chlorose op jonge bladeren met vertraagde groei.',
+        sulfurDeficiency: 'Mogelijk zwaveltekort: gelijkmatige vergeling van jonge bladeren.',
+        manganeseDeficiency:
+            'Mogelijk mangaantekort: lichtgele gebieden tussen de nerven van jonge bladeren.',
+        boronDeficiency: 'Mogelijk boorgebrek: holle stengels en vervormd, verdikt nieuw blad.',
+        lightBurn:
+            'Mogelijke lichtverbranding: gebleekte bovenste bladerdek met droge bladpunten dicht bij de lamp.',
+        coldStress:
+            'Mogelijke koudestress: paarse stengels en vertraagde groei kunnen lage temperaturen aangeven.',
+        windBurn:
+            'Mogelijke windschade: gekrulde bladeren en ongelijkmatig bladerdek door te veel luchtstroom.',
+        nutrientLockout:
+            'Mogelijke voedingsblokkade: gebreksymptomen ondanks bemesting -- controleer pH en EC.',
+        rootRot:
+            'Mogelijke wortelrot: bruine, slijmerige wortels en aanhoudend verwelken ondanks voldoende vocht.',
+        botrytisBudRot:
+            'Mogelijke botrytis (toprot): grijze schimmel op toppen, begint vaak in dichte knoppen.',
+        fungusGnats:
+            'Mogelijke varenrouwmuggen: kleine zwarte vliegjes bij het substraatoppervlak; larven beschadigen wortels.',
+        aphids: 'Mogelijke bladluizen: groepjes kleine insecten op stengels en onderkanten van bladeren.',
+        thrips: 'Mogelijke trips: zilveren strepen op bladeren en zeer kleine langwerpige insecten.',
+        whiteflies:
+            'Mogelijke witte vlieg: kleine witte motjes aan bladonderkanten; kleverige honingdauwresten.',
+        septoriaLeafSpot:
+            'Mogelijke septoria: geel-bruine vlekken met donkere randen op lagere bladeren.',
+        tobaccoMosaicVirus:
+            'Mogelijk TMV: mozaiekachtige verkleuring met gekrulde en vergroeide bladeren.',
+        phImbalance:
+            'Mogelijk pH-onevenwicht: meerdere gebreksymptomen tegelijk, pH in de wortelzone controleren en aanpassen.',
+        revegetationStress:
+            'Mogelijke revegetatiestress: ongewone bladvormen door onderbreking van de lichtcyclus.',
+        localDiagnosisTitle: 'Lokale Diagnose: {{name}}',
+        preventionTrack: 'Licht, bewateringssysteem, VPD en voeding in de tijd bijhouden.',
+        preventionCheck: 'Controleer regelmatig VPD, pH, EC en substraatvocht.',
     },
     nutrientWizard: {
         tabAiScanner: 'AI Scanner',

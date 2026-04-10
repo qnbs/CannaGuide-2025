@@ -8,6 +8,48 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(ai):** Mobile-optimized Local AI stack -- `isMobileDevice()`,
+  `checkStorageQuota()`, `getEffectiveDeviceMemoryGB()` in browserApis.ts
+  for hybrid UA+touch+screen+deviceMemory detection
+- **feat(ai):** Cancelable WebLLM downloads via `cancelWebLlmDownload()`
+  with AbortController integration
+- **feat(ai):** Preload orchestrator battery gating (<20% forces eco
+  mode) and per-stage mobile timeouts (15s mobile, 30s desktop)
+- **feat(ai):** RAF-throttled streaming token callbacks on mobile to
+  prevent excessive re-renders
+- **feat(ai):** Diagnosis i18n migration -- 33 zero-shot labels now use
+  i18n keys (LABEL_TO_I18N_KEY) instead of hardcoded en/de dictionaries
+- **i18n(settings):** 12 new local AI error/warning keys per language
+  (storageInsufficient, mobileDataWarning, memoryPressure, batteryLow,
+  fallbackActive, etc.) across EN/DE/ES/FR/NL
+- **i18n(plants):** 36 diagnosis label keys per language across
+  EN/DE/ES/FR/NL (nitrogenDeficiency, rootRot, botrytisBudRot, etc.)
+
+### Fixed
+
+- **fix(ai):** Mobile memory pressure threshold 80% (was 90%), max
+  concurrent model loads 1 on mobile (was cores\*0.5)
+- **fix(ai):** WebGPU visibility race condition -- timer cancelled on
+  return to visible, mobile timeout 5s (desktop 30s)
+- **fix(ai):** Device-lost regex expanded for Safari, Firefox, Android
+  WebGPU error patterns
+- **fix(ai):** Inference router mobile timeouts -- WebLLM 20s (was 45s),
+  Transformers 15s (was 30s), heuristic fallback added directly in router
+- **fix(ai):** Image similarity memory guard -- 2MB image size limit,
+  mobile candidate cap 50 (was 100)
+- **fix(ai):** Cache breakdown throttled to 30s to prevent IndexedDB
+  churn
+- **fix(ai):** Settings bounds validation -- inferenceTimeoutMs
+  (5000-120000), maxInferenceCacheSize (16-1024)
+- **fix(ai):** gpuResourceManager console.warn replaced with
+  console.debug per security policy
+- **fix(ai):** localAiFallbackService Unicode middle-dots replaced with
+  ASCII per text encoding rules
+- **fix(ui):** WebLlmPreloadBanner cancel button + accessibility
+  improvements (aria-live, role)
+
+### Added
+
 - **feat(knowledge):** 9 missing lexikon definitions (mainlining,
   superCropping, defoliation, runoff, rootBound, dlt, ipm, feminized,
   cloning) in all 5 languages (EN/DE/ES/FR/NL)

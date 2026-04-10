@@ -94,7 +94,7 @@ function startAutoReleaseTimer(consumer: GpuConsumer): void {
     clearAutoReleaseTimer()
     autoReleaseTimer = setTimeout(() => {
         if (currentHolder === consumer) {
-            console.warn(
+            console.debug(
                 `[GpuMutex] Auto-releasing GPU from '${consumer}' after ${AUTO_RELEASE_TIMEOUT_MS}ms (deadlock prevention)`,
             )
             captureLocalAiError(

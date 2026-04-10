@@ -1,9 +1,8 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
-    "buildCommand": "corepack enable && pnpm install --frozen-lockfile && pnpm run build",
+    "buildCommand": "BUILD_BASE_PATH=/ turbo run build --filter=@cannaguide/web",
     "outputDirectory": "apps/web/dist",
     "installCommand": "corepack enable && pnpm install --frozen-lockfile",
-    "framework": "vite",
     "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
     "headers": [
         {

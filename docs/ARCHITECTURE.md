@@ -18,7 +18,7 @@
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                            |
 | Workers      | WorkerBus (promise-based, 9 workers, heap-based priority queue, messageId, auto-timeout) |
 | Testing      | Vitest 2063 unit tests, Playwright E2E + Component tests                                 |
-| Distribution | GitHub Pages, Netlify (PR previews)                                                      |
+| Distribution | GitHub Pages, Netlify (PR previews), Vercel, Cloudflare Pages                            |
 
 ---
 

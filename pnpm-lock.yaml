@@ -285,6 +285,13 @@ importers:
             vitest:
                 specifier: ^4.1.0
                 version: 4.1.2(@types/node@25.5.2)(jsdom@24.1.3)(msw@2.13.0(@types/node@25.5.2)(typescript@5.9.3))(vite@7.3.2(@types/node@25.5.2)(jiti@1.21.7)(terser@5.46.1)(yaml@2.8.3))
+        optionalDependencies:
+            '@picovoice/porcupine-web':
+                specifier: ^3.0.3
+                version: 3.0.3
+            '@picovoice/web-voice-processor':
+                specifier: ^4.0.8
+                version: 4.0.9
 
     packages/ai-core:
         dependencies:
@@ -2367,6 +2374,26 @@ packages:
         resolution:
             {
                 integrity: sha512-PUl/vlfo08Oj804VI5nDPeSk9vyslnBlVzDDwFt8SUVxY8+KdGMkra/vrXjEEHe8gb7+RqVTfOIlGw0nyrEelA==,
+            }
+
+    '@picovoice/porcupine-web@3.0.3':
+        resolution:
+            {
+                integrity: sha512-xVFR0TO0FwM/pumxMxevP550yj9JFlmJuaFgT0CHXjtsInqBrBTZHdJDoj8f5qTHZ4khffh1lW4kiPYf2g8dBQ==,
+            }
+        engines: { node: '>=16' }
+
+    '@picovoice/web-utils@1.3.1':
+        resolution:
+            {
+                integrity: sha512-jcDqdULtTm+yJrnHDjg64hARup+Z4wNkYuXHNx6EM8+qZkweBq9UA6XJrHAlUkPnlkso4JWjaIKhz3x8vZcd3g==,
+            }
+        hasBin: true
+
+    '@picovoice/web-voice-processor@4.0.9':
+        resolution:
+            {
+                integrity: sha512-20pdkFjtuiojAdLIkNHXt4YgpRnlUePFW+gfkeCb+J+2XTRDGOI50+aJzL95p6QjDzGXsO7PZhlz7yDofOvZtg==,
             }
 
     '@playwright/experimental-ct-core@1.59.1':
@@ -5214,6 +5241,13 @@ packages:
                 integrity: sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==,
             }
         engines: { node: '>= 10' }
+
+    commander@9.5.0:
+        resolution:
+            {
+                integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==,
+            }
+        engines: { node: ^12.20.0 || >=14 }
 
     commist@3.2.0:
         resolution:
@@ -13609,6 +13643,21 @@ snapshots:
             legacy-javascript: 0.0.1
             third-party-web: 0.29.0
 
+    '@picovoice/porcupine-web@3.0.3':
+        dependencies:
+            '@picovoice/web-utils': 1.3.1
+        optional: true
+
+    '@picovoice/web-utils@1.3.1':
+        dependencies:
+            commander: 9.5.0
+        optional: true
+
+    '@picovoice/web-voice-processor@4.0.9':
+        dependencies:
+            '@picovoice/web-utils': 1.3.1
+        optional: true
+
     '@playwright/experimental-ct-core@1.59.1(@types/node@25.5.2)(jiti@1.21.7)(terser@5.46.1)(yaml@2.8.3)':
         dependencies:
             playwright: 1.59.1
@@ -15486,6 +15535,9 @@ snapshots:
     commander@4.1.1: {}
 
     commander@7.2.0: {}
+
+    commander@9.5.0:
+        optional: true
 
     commist@3.2.0: {}
 

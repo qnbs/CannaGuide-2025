@@ -65,6 +65,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPaylo
 
     try {
         if (type === 'RUN_DAILY') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const p = payload as RunDailyPayload
             const result = runDailySimulation(p.baseInput, p.tempProfile, p.rhProfile)
             self.postMessage(workerOk(messageId, result))
@@ -72,6 +73,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPaylo
         }
 
         if (type === 'RUN_GROWTH') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const p = payload as RunGrowthPayload
             let plant: PlantState = p.plant
             const days = Math.max(1, p.days || 7)

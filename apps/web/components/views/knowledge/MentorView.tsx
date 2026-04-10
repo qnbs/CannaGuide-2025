@@ -85,6 +85,7 @@ export const MentorView: React.FC = () => {
                             label={t('knowledgeView.hub.selectPlant')}
                             value={selectedPlantId ?? ''}
                             onChange={(e: { target: { value: string | number } }) =>
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 setSelectedPlantId(e.target.value as string)
                             }
                             options={activePlants.map((p) => {

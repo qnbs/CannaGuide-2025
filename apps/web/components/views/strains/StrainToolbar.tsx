@@ -41,8 +41,11 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
     } = props
 
     const typeOptions = [
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         { value: 'Indica' as StrainType, label: t('strainsView.indica') },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
     ]
 
@@ -102,6 +105,7 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                     <select
                         id="strain-sort-select"
                         value={sort.key}
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                         onChange={(e) => handleSort(e.target.value as SortKey)}
                         aria-label={`${t('strainsView.sortBy')}: ${currentSortLabel}`}
                         className="h-10 rounded-md border border-slate-700 bg-slate-800 px-3 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-400"

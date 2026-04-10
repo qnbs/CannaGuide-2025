@@ -296,6 +296,7 @@ interface GrowRoom3DProps {
 
 const disposeScene = (scene: THREE.Scene, renderer: THREE.WebGLRenderer): void => {
     scene.traverse((obj) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const mesh = obj as THREE.Mesh
         if (mesh.geometry) {
             mesh.geometry.dispose()

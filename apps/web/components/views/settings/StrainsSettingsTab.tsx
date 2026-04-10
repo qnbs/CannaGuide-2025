@@ -25,6 +25,7 @@ const StrainsSettingsTab: React.FC = () => {
     const sortKeyOptions = Object.keys(
         t('settingsView.strains.sortKeys', { returnObjects: true }),
     ).map((key) => ({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         value: key as SortKey,
         label: t(`settingsView.strains.sortKeys.${key}`),
     }))
@@ -32,6 +33,7 @@ const StrainsSettingsTab: React.FC = () => {
     const sortDirectionOptions = Object.keys(
         t('settingsView.strains.sortDirections', { returnObjects: true }),
     ).map((key) => ({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         value: key as SortDirection,
         label: t(`settingsView.strains.sortDirections.${key}`),
     }))

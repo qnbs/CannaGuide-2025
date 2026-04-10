@@ -50,6 +50,7 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
 
     try {
         if (type === 'LAYOUT') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const p = payload as LayoutPayload
             const root = d3.hierarchy(p.tree, (node) => node?.children)
             const treeLayout = d3
@@ -68,6 +69,7 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
 
             treeLayout(root)
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const descendants = root.descendants() as d3.HierarchyPointNode<GenealogyNode>[]
             const indexByNode = new Map(descendants.map((node, index) => [node, index]))
 
@@ -80,8 +82,10 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
 
             const links: GenealogyLayoutLink[] = root.links().map((link) => ({
                 sourceIndex:
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     indexByNode.get(link.source as d3.HierarchyPointNode<GenealogyNode>) ?? 0,
                 targetIndex:
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     indexByNode.get(link.target as d3.HierarchyPointNode<GenealogyNode>) ?? 0,
             }))
 
@@ -90,6 +94,7 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
         }
 
         if (type === 'CONTRIBUTIONS') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const p = payload as ContributionsPayload
             const contributions = p.tree ? geneticsService.calculateGeneticContribution(p.tree) : []
             self.postMessage(workerOk(messageId, { contributions }))
@@ -97,6 +102,7 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
         }
 
         if (type === 'OFFSPRING_PROFILE') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const p = payload as OffspringProfilePayload
             const result = geneticsService.estimateOffspringProfile(
                 p.parentA,

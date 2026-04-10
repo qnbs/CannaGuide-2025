@@ -76,6 +76,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = memo(({ plant }) => {
 
             const photoDataUrls: string[] = []
             for (const entry of photoEntries) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const details = entry.details as { imageUrl?: string; imageId?: string } | undefined
                 if (details?.imageUrl) {
                     photoDataUrls.push(details.imageUrl)

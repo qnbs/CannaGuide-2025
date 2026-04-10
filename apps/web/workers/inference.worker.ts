@@ -48,6 +48,7 @@ const loadPipeline = async (
 
     const promise = (async () => {
         const { pipeline } = await getTransformers()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return pipeline(task as never, modelId, options as never) as Promise<Pipeline>
     })()
 

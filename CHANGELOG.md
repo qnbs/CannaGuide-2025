@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+---
+
+## [1.6.3] - 2026-04-10
+
 ### Changed
 
 - **ci(security):** upgrade SLSA provenance from L1 to L3 via
@@ -19,6 +23,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   for supply-chain isolation
 - **ci(release):** release assets now include tarball + SBOM +
   SLSA L3 provenance `.intoto.jsonl`
+- **lint:** complete Phase 5 -- full-project strict lint with 0
+  warnings (132 per-line suppressions for `no-unsafe-type-assertion`
+  in workers, services, stores, components)
 
 ---
 

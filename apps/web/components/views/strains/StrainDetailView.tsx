@@ -280,6 +280,7 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 
     // Minor cannabinoids beyond THC/CBD
     const minorCannabinoids = useMemo(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const entries = Object.entries(cannabinoidProfile) as [CannabinoidName, number][]
         return entries
             .filter(([name, val]) => name !== 'THC' && name !== 'CBD' && val > 0)
@@ -422,6 +423,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     // Sort terpenes by percentage for display
     const sortedTerpenes = useMemo(
         () =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             (Object.entries(terpeneProfile) as [TerpeneName, number][])
                 .filter(([, v]) => v >= 0.01)
                 .sort((a, b) => b[1] - a[1]),
@@ -557,6 +559,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                         const exclusives = (
                             Object.entries(flavonoidProfile) as [string, number][]
                         ).filter(([name]) => {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             const ref = FLAVONOID_DATABASE[name as FlavonoidName]
                             return ref?.cannabisExclusive
                         })
@@ -574,6 +577,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     {exclusives.map(([name, val]) => {
+                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                         const ref = FLAVONOID_DATABASE[name as FlavonoidName]
                                         return (
                                             <div
@@ -610,6 +614,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                             .filter(([, v]) => v > 0)
                             .sort((a, b) => b[1] - a[1])
                             .map(([name, val]) => {
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 const ref = FLAVONOID_DATABASE[name as FlavonoidName]
                                 const barWidth = Math.min((val / 0.1) * 100, 100)
                                 const isExclusive = ref?.cannabisExclusive ?? false

@@ -33,16 +33,16 @@
 
 ### Ist-Zustand (2026-04-09)
 
-| Metrik            | Wert                    | Bewertung              |
-| ----------------- | ----------------------- | ---------------------- |
-| App-Version       | v1.6.0                  | ✅ Stabil              |
-| Tests             | 1884/1884 (163 Dateien) | ✅ Gruen               |
-| OpenSSF Scorecard | SLSA L1 Provenance      | ✅ release-publish     |
-| Test-Coverage     | ~33.66 %                | ✅ Ziel >30 % erreicht |
-| Duplicate Code    | ~115 Major-Bloecke      | ⚠ Technische Schuld    |
-| Security Alerts   | 0                       | ✅                     |
-| CI Workflows      | 22 (alle gruen)         | ✅                     |
-| Stryker Mutation  | Baseline erstellt       | ✅ Neu (Session 63)    |
+| Metrik            | Wert                     | Bewertung              |
+| ----------------- | ------------------------ | ---------------------- |
+| App-Version       | v1.6.3                   | ✅ Stabil              |
+| Tests             | 1884/1884 (163 Dateien)  | ✅ Gruen               |
+| OpenSSF Scorecard | SLSA L3 + CycloneDX SBOM | ✅ release-publish     |
+| Test-Coverage     | ~33.66 %                 | ✅ Ziel >30 % erreicht |
+| Duplicate Code    | ~115 Major-Bloecke       | ⚠ Technische Schuld    |
+| Security Alerts   | 0                        | ✅                     |
+| CI Workflows      | 22 (alle gruen)          | ✅                     |
+| Stryker Mutation  | Baseline erstellt        | ✅ Neu (Session 63)    |
 
 ### Soll-Zustand (nach vollständiger Roadmap)
 

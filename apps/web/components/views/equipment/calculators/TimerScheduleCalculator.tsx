@@ -84,6 +84,7 @@ export const TimerScheduleCalculator: React.FC = memo(() => {
             <Select
                 label={t('equipmentView.calculators.timerSchedule.growthStage')}
                 value={growthStage}
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 onChange={(e) => setGrowthStage(e.target.value as TimerGrowthStage)}
                 options={STAGE_OPTIONS.map((s) => ({
                     value: s.value,

@@ -39,6 +39,7 @@ const rootReducer = combineReducers({
 export function createTestStore(preloadedState?: Partial<RootState>) {
     return configureStore({
         reducer: rootReducer,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         preloadedState: preloadedState as Partial<RootState>,
     })
 }

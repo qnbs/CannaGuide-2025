@@ -110,6 +110,7 @@ const SandboxView: React.FC = () => {
                     fallback={<div className="h-64 animate-pulse bg-slate-700/30 rounded-lg" />}
                 >
                     <ComparisonView
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                         experiment={currentExperiment as SavedExperiment}
                         onFinish={() => dispatch(clearCurrentExperiment())}
                     />

@@ -336,6 +336,7 @@ export const FLAVONOID_DATABASE: Record<FlavonoidName, FlavonoidReference> = {
 // Derived lookups
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
 export const ALL_FLAVONOID_NAMES: FlavonoidName[] = Object.keys(
     FLAVONOID_DATABASE,
 ) as FlavonoidName[]
@@ -352,8 +353,10 @@ export const EFFECT_FLAVONOIDS: Partial<Record<EffectTag, FlavonoidName[]>> = ((
         for (const effect of ref.effects) {
             const list = map[effect]
             if (list) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 list.push(name as FlavonoidName)
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 map[effect] = [name as FlavonoidName]
             }
         }

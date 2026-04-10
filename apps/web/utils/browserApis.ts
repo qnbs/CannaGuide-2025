@@ -18,6 +18,7 @@ interface ChromePerformanceMemory {
  * Non-standard API -- only present in Chromium-based browsers.
  */
 export function getPerformanceMemory(): ChromePerformanceMemory | null {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const perf = performance as Partial<{ memory: ChromePerformanceMemory }>
     return perf.memory ?? null
 }
@@ -29,6 +30,7 @@ export function getPerformanceMemory(): ChromePerformanceMemory | null {
  * Non-standard API -- only present in Chromium-based browsers.
  */
 export function getDeviceMemoryGB(): number | null {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const nav = navigator as Partial<{ deviceMemory: number }>
     return nav.deviceMemory ?? null
 }
@@ -46,6 +48,7 @@ interface BatteryManager {
  */
 export async function getBatteryManager(): Promise<BatteryManager | null> {
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const nav = navigator as Partial<{
             getBattery: () => Promise<BatteryManager>
         }>

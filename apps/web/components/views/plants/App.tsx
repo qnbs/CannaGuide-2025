@@ -253,6 +253,7 @@ export const App: React.FC = () => {
 
     useEffect(() => {
         const handleSwUpdate = (event: Event) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const registration = (event as CustomEvent).detail
             if (registration?.waiting) {
                 waitingWorkerRef.current = registration.waiting

@@ -37,10 +37,14 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
             if (!prev.recommendation) return prev;
             const newRecommendation = { ...prev.recommendation };
             if (field === 'proTip' && category === 'proTip') {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 newRecommendation.proTip = value as string;
             } else if (category !== 'proTip' && newRecommendation[category]) {
+                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                  const item = { ...newRecommendation[category] } as Record<string, string | number | undefined>;
+                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                  item[field] = (field === 'price' || field === 'watts') ? Number(value) : value as string;
+                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                  newRecommendation[category] = item as unknown as RecommendationItem;
             }
             return { ...prev, recommendation: newRecommendation };

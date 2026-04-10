@@ -80,6 +80,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
             const imageId = `photo-${plant.id}-${Date.now()}`
             try {
                 await dbService.addImage({ id: imageId, data: image, createdAt: Date.now() })
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const photoDetails = finalDetails as Partial<PhotoDetailsType>
                 photoDetails.imageId = imageId
                 photoDetails.imageUrl = image // For immediate optimistic UI update
@@ -153,6 +154,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         entry: {
                             type: entryType,
                             notes: finalNotes,
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             details: finalDetails as JournalEntryDetails,
                         },
                     }),
@@ -212,8 +214,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     {type === 'training' && (
                         <Select
                             label={t('plantsView.actionModals.logTraining')}
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             value={(details as Partial<TrainingDetails>)?.type ?? ''}
                             onChange={(e: { target: { value: string | number } }) =>
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 setDetails({ type: e.target.value as TrainingType })
                             }
                             options={(
@@ -227,8 +231,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     {type === 'amendment' && (
                         <Select
                             label={t('plantsView.actionModals.logAmendment')}
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             value={(details as Partial<AmendmentDetails>)?.type ?? ''}
                             onChange={(e: { target: { value: string | number } }) =>
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 setDetails({ type: e.target.value as AmendmentType })
                             }
                             options={(['Mycorrhizae', 'WormCastings'] as AmendmentType[]).map(
@@ -243,9 +249,11 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         <>
                             <Select
                                 label={t('plantsView.actionModals.photo.category')}
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 value={(details as PhotoDetailsType)?.photoCategory ?? ''}
                                 onChange={(e: { target: { value: string | number } }) =>
                                     setDetails({
+                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                         photoCategory: e.target.value as PhotoCategory,
                                     })
                                 }
@@ -298,6 +306,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                                     (resolve, reject) => {
                                                         const reader = new FileReader()
                                                         reader.onload = () =>
+                                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                                             resolve(reader.result as string)
                                                         reader.onerror = () =>
                                                             reject(

@@ -360,6 +360,7 @@ const DataManagementTab: React.FC = () => {
                     ) {
                         throw new Error('Invalid grow export format')
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const data = parsed as GrowExportData
                     dispatch(addGrow(data.grow))
                     getUISnapshot().addNotification({

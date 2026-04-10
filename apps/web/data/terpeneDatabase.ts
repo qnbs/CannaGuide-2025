@@ -547,9 +547,11 @@ export const TERPENE_DATABASE: Record<TerpeneName, TerpeneReference> = {
 // ---------------------------------------------------------------------------
 
 /** All known terpene names */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
 export const ALL_TERPENE_NAMES: TerpeneName[] = Object.keys(TERPENE_DATABASE) as TerpeneName[]
 
 /** Terpene effect lookup: terpene -> effects */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
 export const TERPENE_EFFECTS: Record<TerpeneName, EffectTag[]> = Object.fromEntries(
     ALL_TERPENE_NAMES.map((name) => [name, TERPENE_DATABASE[name].effects]),
 ) as Record<TerpeneName, EffectTag[]>
@@ -563,6 +565,7 @@ export const EFFECT_TERPENES: Record<EffectTag, TerpeneName[]> = (() => {
             map[effect]?.push(terpene)
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     return map as Record<EffectTag, TerpeneName[]>
 })()
 

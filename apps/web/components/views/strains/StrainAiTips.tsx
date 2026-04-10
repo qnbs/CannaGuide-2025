@@ -51,6 +51,7 @@ const StructuredTipDisplay: React.FC<{
         <Card className="bg-slate-800 animate-fade-in">
             <div className="space-y-4">
                 {tipCategories.map((cat) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const tipContent = tips[cat.key as keyof StructuredGrowTips]
                     if (!tipContent) return null
                     return (
@@ -279,6 +280,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                         label={t('strainsView.tips.form.focus')}
                         value={tipRequest.focus}
                         onChange={(e) =>
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             setTipRequest((p) => ({ ...p, focus: e.target.value as string }))
                         }
                         options={Object.keys(
@@ -292,6 +294,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                         label={t('strainsView.tips.form.stage')}
                         value={tipRequest.stage}
                         onChange={(e) =>
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             setTipRequest((p) => ({ ...p, stage: e.target.value as string }))
                         }
                         options={Object.keys(
@@ -307,6 +310,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                         onChange={(e) =>
                             setTipRequest((p) => ({
                                 ...p,
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 experienceLevel: e.target.value as string,
                             }))
                         }

@@ -35,6 +35,7 @@ const ListItem: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> =
 
 const AboutAppContent = memo(() => {
     const { t } = useTranslation()
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const whatsNewItems = t('settingsView.about.whatsNew.items', { returnObjects: true }) as Record<
         string,
         string
@@ -232,6 +233,7 @@ const AboutAppContent = memo(() => {
 
 const ReadmeProjectContent = memo(() => {
     const { t } = useTranslation()
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const readmeContent = t('settingsView.about.readmeContent', { returnObjects: true }) as Record<
         string,
         string

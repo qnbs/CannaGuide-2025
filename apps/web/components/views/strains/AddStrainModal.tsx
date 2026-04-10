@@ -306,6 +306,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                             <SegmentedControl
                                 aria-label={t('strainsView.addStrainModal.typeLegend')}
                                 value={[values.type]}
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 onToggle={(value) => handleChange('type', value as StrainType)}
                                 options={typeOptions}
                                 buttonClassName="min-h-11"

@@ -51,13 +51,17 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
     const yieldLabels: Record<YieldLevel, string> = { Low: t('strainsView.addStrainModal.yields.low'), Medium: t('strainsView.addStrainModal.yields.medium'), High: t('strainsView.addStrainModal.yields.high') };
     const heightLabels: Record<HeightLevel, string> = { Short: t('strainsView.addStrainModal.heights.short'), Medium: t('strainsView.addStrainModal.heights.medium'), Tall: t('strainsView.addStrainModal.heights.tall') };
     const typeOptions = [
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         { value: 'Indica' as StrainType, label: t('strainsView.indica') },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
     ];
 
     const handleToggleArray = (key: keyof AdvancedFilterState, value: string) => {
         const current = tempFilterState[key];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const currentArray = Array.isArray(current) ? (current as string[]) : [];
         const newArray = currentArray.includes(value)
             ? currentArray.filter((item: string) => item !== value)

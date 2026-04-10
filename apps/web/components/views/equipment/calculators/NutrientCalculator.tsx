@@ -13,6 +13,7 @@ interface Component {
 export const NutrientCalculator: React.FC = memo(() => {
     const { t } = useTranslation()
     const [waterAmount, setWaterAmount] = useState(5) // in Liters
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
     const [components, setComponents] = useState<Component[]>([
         { id: `comp-${Date.now()}`, name: 'Grow', dose: 2 },
     ])

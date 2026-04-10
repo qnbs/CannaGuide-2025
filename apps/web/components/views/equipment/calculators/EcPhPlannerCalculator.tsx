@@ -386,6 +386,7 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
                             ]}
                             value={readingType}
                             onChange={(e) =>
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 setReadingType(String(e.target.value) as 'input' | 'runoff')
                             }
                         />

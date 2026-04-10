@@ -33,6 +33,7 @@ export const SideNav: React.FC = () => {
     useLayoutEffect(() => {
         const calculateStyle = () => {
             if (navRef.current) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                 const activeButton = navRef.current.querySelector(
                     `[data-view-id="${activeView}"]`,
                 ) as HTMLElement

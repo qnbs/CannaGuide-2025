@@ -338,6 +338,9 @@ export const settingsView = {
             hotwordEnabled: 'Always-On Hotword',
             hotwordEnabledDesc:
                 'Keeps the microphone ready for hands-free wake words when supported by the browser.',
+            continuousListening: 'Continuous Listening',
+            continuousListeningDesc:
+                'Keeps listening after each command so you can chain multiple voice commands without reactivating.',
             confirmationSound: 'Confirmation Sounds',
             confirmationSoundDesc:
                 'Plays a short sound when a voice command is successfully recognized.',

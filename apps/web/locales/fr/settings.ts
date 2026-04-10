@@ -356,6 +356,9 @@ export const settingsView = {
             hotwordEnabled: 'Mot-cle permanent',
             hotwordEnabledDesc:
                 'Garde le microphone pret pour les mots de reveil mains libres lorsque le navigateur le prend en charge.',
+            continuousListening: 'Ecoute Continue',
+            continuousListeningDesc:
+                "Continue d'ecouter apres chaque commande pour enchainer plusieurs commandes vocales sans reactiver.",
             confirmationSound: 'Sons de confirmation',
             confirmationSoundDesc:
                 "Joue un court son lorsqu'une commande vocale est reconnue avec succes.",

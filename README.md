@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-1961%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-2031%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-33.7%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity (dynamic) -->
@@ -108,7 +108,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 CannaGuide 2025 is a production-grade PWA that operates entirely client-side. All data persists locally in IndexedDB, and the service worker provides full offline functionality. AI capabilities integrate with multiple providers (Gemini, OpenAI, Claude, Grok) via BYOK (Bring Your Own Key), with a 22-service local AI fallback stack for fully offline inference.
 
-**Key numbers:** 776 strains -- 1961 tests -- 109 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
+**Key numbers:** 776 strains -- 2031 tests -- 109 services -- 18 Redux slices + 8 Zustand stores -- 25 custom hooks -- 12 i18n namespaces -- 9 themes -- 21 CI workflows
 
 ---
 
@@ -164,7 +164,7 @@ Three-tier client-side architecture with offline-first design:
 | **Persistence**    | IndexedDB (native)                   | Dual-database, no backend                                  |
 | **i18n**           | i18next 26                           | EN/DE/ES/FR/NL, 12 namespaces                              |
 | **Security**       | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys                         |
-| **Testing**        | Vitest 4.1, Playwright 1.58          | 1961 unit, E2E, component tests                            |
+| **Testing**        | Vitest 4.1, Playwright 1.58          | 2031 unit, E2E, component tests                            |
 | **Error Tracking** | Sentry                               | Runtime errors, session replay                             |
 
 ---
@@ -189,7 +189,7 @@ AI Mentor chat with RAG (retrieval-augmented generation) pulling context from th
 
 ### Settings
 
-9 visual themes, colorblind modes (deuteranopia, protanopia, tritanopia), WCAG 2.1 AA accessibility. BYOK API key management with AES-256-GCM encryption at rest. **AI Cost Tracking** -- per-provider token usage extraction, 7-day cost bar chart, monthly budget progress with color-coded thresholds. **WebLLM Model Selector** -- card-based UI for local LLM model selection (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) with GPU-tier auto-selection and download progress tracking. Data export/import (JSON). **CRDT Cloud Sync** -- Yjs-powered conflict-free replication with encrypted GitHub Gists, 3-way conflict resolution UI (Smart Merge / Keep Local / Use Cloud), offline sync queue with exponential backoff. Local-only mode toggle. TTS (text-to-speech) for AI responses. Voice commands (6 extended, fuzzy matching). IoT device configuration (MQTT). **Grow Manager** -- multi-grow CRUD with archive, color picker, and CanG compliance limits.
+9 visual themes, colorblind modes (deuteranopia, protanopia, tritanopia), WCAG 2.1 AA accessibility. BYOK API key management with AES-256-GCM encryption at rest. **AI Cost Tracking** -- per-provider token usage extraction, 7-day cost bar chart, monthly budget progress with color-coded thresholds. **WebLLM Model Selector** -- card-based UI for local LLM model selection (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini) with GPU-tier auto-selection and download progress tracking. Data export/import (JSON). **CRDT Cloud Sync** -- Yjs-powered conflict-free replication with encrypted GitHub Gists, 3-way conflict resolution UI (Smart Merge / Keep Local / Use Cloud), offline sync queue with exponential backoff. Local-only mode toggle. TTS (text-to-speech) for AI responses. **Voice-First Control** -- 37 voice commands with fuzzy matching, Voice HUD overlay, confirmation loops for destructive actions, continuous listening mode, read-aloud buttons, voice auto-selection. IoT device configuration (MQTT). **Grow Manager** -- multi-grow CRUD with archive, color picker, and CanG compliance limits.
 
 ### Help
 
@@ -314,7 +314,7 @@ Node.js 20+, pnpm 10+ (via Corepack: `corepack enable`)
 pnpm run dev              # turbo run dev (Vite dev server on localhost:5173)
 pnpm run build            # turbo run build (all workspaces)
 pnpm test                 # turbo run test (Vitest, watch mode)
-pnpm run test:run         # turbo run test:run (single run, 1961 tests)
+pnpm run test:run         # turbo run test:run (single run, 2031 tests)
 pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier
@@ -370,7 +370,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 | Job                | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
-| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 1961 tests, production build |
+| Quality Gates      | Lint, typecheck (root + workspaces via Turbo), 2031 tests, production build |
 | 🛡 Security        | pnpm audit (critical), trojan-source scan, Gitleaks secret scan             |
 | 🎭 E2E Tests       | Playwright Chromium (needs quality artifact)                                |
 | 🌡 IoT Integration | ESP32-mock healthcheck, sensor endpoint validation                          |

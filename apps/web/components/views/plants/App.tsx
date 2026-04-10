@@ -12,6 +12,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { useBadgeApi } from '@/hooks/useBadgeApi'
 import { TTSControls } from '@/components/common/TTSControls'
+import { VoiceHUD } from '@/components/common/VoiceHUD'
 import { useDocumentEffects } from '@/hooks/useDocumentEffects'
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -397,6 +398,7 @@ export const App: React.FC = () => {
             <ToastManager />
             <DevTelemetryPanel />
             <TTSControls />
+            <VoiceHUD />
             <OfflineIndicator />
             <WebLlmPreloadBanner />
             <PwaInstallBanner

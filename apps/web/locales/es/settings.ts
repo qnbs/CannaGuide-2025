@@ -356,6 +356,9 @@ export const settingsView = {
             hotwordEnabled: 'Palabra Clave Siempre Activa',
             hotwordEnabledDesc:
                 'Mantiene el microfono listo para palabras de activacion manos libres cuando el navegador lo soporta.',
+            continuousListening: 'Escucha Continua',
+            continuousListeningDesc:
+                'Sigue escuchando despues de cada comando para encadenar multiples comandos de voz sin reactivar.',
             confirmationSound: 'Sonidos de Confirmacion',
             confirmationSoundDesc:
                 'Reproduce un sonido corto cuando un comando de voz se reconoce exitosamente.',

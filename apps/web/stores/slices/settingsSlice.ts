@@ -68,6 +68,7 @@ export const defaultSettings: AppSettings = {
         enabled: true,
         hotwordEnabled: false,
         confirmationSound: true,
+        continuousListening: false,
     },
 
     tts: {

@@ -251,6 +251,17 @@ const VoiceSettingsTab: React.FC = () => {
                             />
                         </SettingsRow>
                         <SettingsRow
+                            label={t('settingsView.tts.voiceControl.continuousListening')}
+                            description={t('settingsView.tts.voiceControl.continuousListeningDesc')}
+                        >
+                            <Switch
+                                checked={settings.voiceControl.continuousListening}
+                                onChange={(val) =>
+                                    handleSetSetting('voiceControl.continuousListening', val)
+                                }
+                            />
+                        </SettingsRow>
+                        <SettingsRow
                             label={t('settingsView.tts.voiceControl.confirmationSound')}
                             description={t('settingsView.tts.voiceControl.confirmationSoundDesc')}
                         >

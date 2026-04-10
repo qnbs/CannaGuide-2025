@@ -106,7 +106,7 @@ vi.mock('@/stores/store', () => ({
             settings: {
                 settings: {
                     general: { language: 'en' },
-                    voiceControl: { hotwordEnabled: false },
+                    voiceControl: { hotwordEnabled: false, continuousListening: false },
                 },
             },
         }),

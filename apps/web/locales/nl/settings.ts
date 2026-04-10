@@ -350,6 +350,9 @@ export const settingsView = {
             hotwordEnabled: 'Altijd-aan wekwoord',
             hotwordEnabledDesc:
                 'Houdt de microfoon gereed voor handsfree wekwoorden wanneer ondersteund door de browser.',
+            continuousListening: 'Doorlopend Luisteren',
+            continuousListeningDesc:
+                'Blijft luisteren na elke opdracht zodat meerdere spraakopdrachten zonder heractivering kunnen worden gekoppeld.',
             confirmationSound: 'Bevestigingsgeluiden',
             confirmationSoundDesc:
                 'Speelt een kort geluid af wanneer een spraakopdracht succesvol wordt herkend.',

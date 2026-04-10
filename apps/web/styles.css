@@ -633,6 +633,15 @@ body {
     animation: empty-slot-wave 3.2s ease-in-out infinite;
 }
 
+@keyframes voice-bar {
+    0% {
+        height: 4px;
+    }
+    100% {
+        height: 20px;
+    }
+}
+
 .high-contrast {
     --color-border: 255 255 255;
     --color-neutral-300: 241 245 249;

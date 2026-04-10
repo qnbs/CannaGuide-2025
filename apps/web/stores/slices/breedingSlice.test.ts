@@ -8,7 +8,12 @@ import breedingReducer, {
 } from '@/stores/slices/breedingSlice'
 import type { Seed } from '@/types'
 
-const initial = { collectedSeeds: [], breedingSlots: { parentA: null, parentB: null } }
+const initial = {
+    collectedSeeds: [],
+    breedingSlots: { parentA: null, parentB: null },
+    seedInventory: [],
+    pollenRecords: [],
+}
 
 const mockSeed: Seed = {
     id: 'seed-1',

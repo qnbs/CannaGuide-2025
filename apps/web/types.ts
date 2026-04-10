@@ -511,6 +511,7 @@ export enum StrainViewTab {
     Comparison = 'comparison',
     Genealogy = 'genealogy',
     BreedingLab = 'breeding-lab',
+    SeedVault = 'seed-vault',
     Exports = 'exports',
     Tips = 'tips',
     Trends = 'trends',
@@ -617,7 +618,7 @@ export interface Strain {
     availability?: SeedAvailability[] | undefined
 }
 
-export type SeedType = 'Feminized' | 'Regular' | 'Autoflowering'
+export type SeedType = 'Feminized' | 'Regular' | 'Autoflowering' | 'Clone'
 
 export interface Seedbank {
     id: string
@@ -1592,4 +1593,133 @@ export interface OfflineAction {
     idempotencyKey: string
     type: string
     payload?: unknown | undefined
+}
+
+// ---------------------------------------------------------------------------
+// Seed Inventory types (extended from basic Seed)
+// ---------------------------------------------------------------------------
+
+/** Extended seed inventory entry with stock tracking */
+export interface SeedInventoryEntry {
+    id: string
+    strainId: string
+    strainName: string
+    /** Number of seeds in stock */
+    quantity: number
+    /** Seed type classification */
+    seedType: SeedType
+    /** Breeder / source name */
+    breeder: string
+    /** Quality rating 0-1 */
+    quality: number
+    /** Acquisition date (timestamp) */
+    acquiredAt: number
+    /** User notes */
+    notes?: string | undefined
+    /** Tags for filtering */
+    tags?: string[] | undefined
+}
+
+/** Pollen record for breeding documentation */
+export interface PollenRecord {
+    id: string
+    /** Strain ID of pollen donor */
+    donorStrainId: string
+    /** Display name of pollen donor */
+    donorStrainName: string
+    /** Collection date (timestamp) */
+    collectedAt: number
+    /** Storage location description */
+    storageLocation?: string | undefined
+    /** Viability status */
+    viable: boolean
+    /** User notes */
+    notes?: string | undefined
+}
+
+// ---------------------------------------------------------------------------
+// Problem Tracker types
+// ---------------------------------------------------------------------------
+
+/** Category of plant issue */
+export type IssueCategory = 'pest' | 'deficiency' | 'toxicity' | 'disease' | 'environmental'
+
+/** Status of a tracked issue */
+export type IssueStatus = 'detected' | 'treating' | 'resolved'
+
+/** Severity level for issues */
+export type IssueSeverity = 'mild' | 'moderate' | 'severe'
+
+/** Treatment log entry for a plant issue */
+export interface IssueTreatment {
+    id: string
+    /** Timestamp of treatment */
+    timestamp: number
+    /** Description of what was done */
+    action: string
+    /** Optional product/substance used */
+    product?: string | undefined
+    /** Outcome notes */
+    notes?: string | undefined
+}
+
+/** Tracked plant issue with lifecycle */
+export interface PlantIssue {
+    id: string
+    plantId: string
+    /** Category of the issue */
+    category: IssueCategory
+    /** Current status */
+    status: IssueStatus
+    /** Severity level */
+    severity: IssueSeverity
+    /** Short title / label */
+    title: string
+    /** Detailed description */
+    description?: string | undefined
+    /** Timestamp when issue was first detected */
+    detectedAt: number
+    /** Timestamp when issue was resolved (if applicable) */
+    resolvedAt?: number | undefined
+    /** Treatment log */
+    treatments: IssueTreatment[]
+    /** Optional linked diagnosis record ID */
+    diagnosisId?: string | undefined
+    /** Optional linked image IDs (before/after) */
+    imageIds?: string[] | undefined
+}
+
+/** Redux state for problem tracker */
+export interface ProblemTrackerState {
+    issues: PlantIssue[]
+}
+
+// ---------------------------------------------------------------------------
+// Nutrient Brand types
+// ---------------------------------------------------------------------------
+
+/** Nutrient product within a brand schedule */
+export interface NutrientProduct {
+    name: string
+    dosageMlPerLiter: number
+}
+
+/** Weekly nutrient schedule entry */
+export interface NutrientWeekSchedule {
+    week: number
+    stage: string
+    products: NutrientProduct[]
+    ecTarget?: number | undefined
+    phTarget?: [number, number] | undefined
+    notes?: string | undefined
+}
+
+/** Complete nutrient brand schedule definition */
+export interface NutrientBrandSchedule {
+    id: string
+    brand: string
+    scheduleName: string
+    mediumTypes: Array<'Soil' | 'Coco' | 'Hydro'>
+    weeks: NutrientWeekSchedule[]
+    flushWeeks?: number[] | undefined
 }

@@ -13,6 +13,7 @@ import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab'
 import { MetricsOverviewTab } from './detailedPlantViewTabs/MetricsOverviewTab'
 import { PhotoTimelineTab } from './detailedPlantViewTabs/PhotoTimelineTab'
 import { GrowPlannerView } from './GrowPlannerView'
+import { ProblemTrackerTab } from './detailedPlantViewTabs/ProblemTrackerTab'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 import { EnvironmentControlPanel } from './controls/EnvironmentControlPanel'
@@ -225,6 +226,13 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                     defaultValue: 'Planner',
                 }),
                 icon: <PhosphorIcons.CalendarBlank />,
+            },
+            {
+                id: 'problems',
+                label: t('plantsView.detailedView.tabs.problems', {
+                    defaultValue: 'Problems',
+                }),
+                icon: <PhosphorIcons.WarningCircle />,
             },
             {
                 id: 'ai',
@@ -454,6 +462,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 {activeTab === 'planner' && (
                     <GrowPlannerView plantId={plant.id} plantName={plant.name} />
                 )}
+                {activeTab === 'problems' && <ProblemTrackerTab plantId={plant.id} />}
                 {activeTab === 'ai' && <AiTab plant={plant} />}
             </div>
         </div>

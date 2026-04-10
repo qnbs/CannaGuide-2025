@@ -59,6 +59,13 @@ const growPlannerSlice = createSlice({
         clearTasksForPlant(state, action: PayloadAction<string>) {
             state.tasks = state.tasks.filter((t) => t.plantId !== action.payload)
         },
+        bulkAddTasks(state, action: PayloadAction<PlannerTask[]>) {
+            state.tasks.push(...action.payload)
+            // FIFO cap
+            if (state.tasks.length > MAX_TASKS) {
+                state.tasks = state.tasks.slice(state.tasks.length - MAX_TASKS)
+            }
+        },
     },
 })
 
@@ -69,6 +76,7 @@ export const {
     updatePlannerTask,
     clearCompletedTasks,
     clearTasksForPlant,
+    bulkAddTasks,
 } = growPlannerSlice.actions
 
 // ---------------------------------------------------------------------------

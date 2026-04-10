@@ -20,6 +20,7 @@ import growsReducer from './slices/growsSlice'
 import metricsReducer from './slices/metricsSlice'
 import growPlannerReducer from './slices/growPlannerSlice'
 import diagnosisHistoryReducer from './slices/diagnosisHistorySlice'
+import problemTrackerReducer from './slices/problemTrackerSlice'
 import { geminiApi } from './api'
 import {
     listenerMiddleware,
@@ -52,6 +53,7 @@ const rootReducer = combineReducers({
     metrics: metricsReducer, // Persisted -- plant metrics readings (FIFO 168/plant)
     growPlanner: growPlannerReducer, // Persisted -- planner tasks (FIFO 500)
     diagnosisHistory: diagnosisHistoryReducer, // Persisted -- diagnosis records (FIFO 100/plant)
+    problemTracker: problemTrackerReducer, // Persisted -- plant issues (FIFO 200)
     // Runtime-only -- excluded from stateToSave in indexedDBStorage
     workerMetrics: workerMetricsReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,

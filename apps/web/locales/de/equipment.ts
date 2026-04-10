@@ -745,4 +745,20 @@ export const equipmentView = {
         clickToDownload:
             'Deine Datei "{{filename}}" ist bereit. Klicke auf den Button, um sie herunterzuladen.',
     },
+    nutrientBrands: {
+        title: 'Naehrstoff-Marken-Zeitplaene',
+        selectBrand: 'Naehrstoff-Marke waehlen',
+        noBrand: 'Manuell (kein Marken-Zeitplan)',
+        applySchedule: 'Zeitplan anwenden',
+        appliedSuccess: 'Marken-Zeitplan angewendet: {{brand}}',
+        weekLabel: 'Woche {{week}}',
+        stageLabel: 'Phase: {{stage}}',
+        ecTarget: 'EC-Ziel: {{value}}',
+        phRange: 'pH-Bereich: {{min}} - {{max}}',
+        products: 'Produkte',
+        dosage: '{{dosage}} ml/L',
+        flushWeek: 'Spuelwoche',
+        medium: 'Medium: {{medium}}',
+        viewSchedule: 'Vollstaendigen Zeitplan anzeigen',
+    },
 }

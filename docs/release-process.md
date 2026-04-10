@@ -55,6 +55,44 @@ Both files **must** have the same version:
 - `package.json` (root workspace)
 - `apps/web/package.json`
 
+## Supply-Chain Verification
+
+Every release produces three assets:
+
+| Asset                                | Description            |
+| ------------------------------------ | ---------------------- |
+| `cannaguide-vX.Y.Z-dist.tar.gz`      | Production PWA tarball |
+| `cannaguide-sbom.cyclonedx.json`     | CycloneDX SBOM (Syft)  |
+| `cannaguide-provenance.intoto.jsonl` | SLSA L3 provenance     |
+
+### Verify SLSA L3 Provenance
+
+```bash
+# Install slsa-verifier (requires Go)
+go install github.com/slsa-framework/slsa-verifier/v2/cli/slsa-verifier@latest
+
+# Download release assets
+gh release download vX.Y.Z --repo qnbs/CannaGuide-2025
+
+# Verify L3 provenance
+slsa-verifier verify-artifact cannaguide-vX.Y.Z-dist.tar.gz \
+  --provenance-path cannaguide-provenance.intoto.jsonl \
+  --source-uri github.com/qnbs/CannaGuide-2025
+```
+
+### Verify GitHub Attestation (L1)
+
+```bash
+gh attestation verify cannaguide-vX.Y.Z-dist.tar.gz --repo qnbs/CannaGuide-2025
+```
+
+### Inspect SBOM
+
+```bash
+# View SBOM summary (requires jq)
+jq '.metadata.component.name, (.components | length)' cannaguide-sbom.cyclonedx.json
+```
+
 ## No Automation
 
 This project does **not** use release-please, semantic-release, or similar tools.

@@ -63,6 +63,8 @@
 
 [![GitHub Pages](https://img.shields.io/badge/Hosted-GitHub%20Pages-222222?logo=githubpages&logoColor=white)](https://qnbs.github.io/CannaGuide-2025/)
 [![Netlify](https://img.shields.io/badge/Preview-Netlify-00C7B7?logo=netlify&logoColor=white)](https://netlify.com/)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
+[![Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020?logo=cloudflarepages&logoColor=white)](https://pages.cloudflare.com/)
 
 <!-- Project Metrics -->
 
@@ -357,10 +359,12 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ## Distribution & Deployment
 
-| Target           | Method                       | URL                                                                       |
-| ---------------- | ---------------------------- | ------------------------------------------------------------------------- |
-| **GitHub Pages** | `deploy.yml` on push to main | [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) |
-| **Netlify**      | `netlify.toml`, PR previews  | [cannaguide2025.netlify.app](https://cannaguide2025.netlify.app)          |
+| Target               | Method                         | URL / Config                                                              |
+| -------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| **GitHub Pages**     | `deploy.yml` on push to main   | [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) |
+| **Netlify**          | `netlify.toml`, PR previews    | [cannaguide2025.netlify.app](https://cannaguide2025.netlify.app)          |
+| **Vercel**           | `vercel.json`, Git integration | Connect via Vercel Dashboard                                              |
+| **Cloudflare Pages** | `_headers` + `_redirects`, Git | Connect via Cloudflare Dashboard                                          |
 
 > Details: [Distribution](docs/distribution.md) · [Release Process](docs/release-process.md)
 

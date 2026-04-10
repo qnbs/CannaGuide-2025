@@ -1,4 +1,20 @@
 export const onboarding = {
+    legalStep: {
+        title: 'Welkom bij CannaGuide 2025',
+        subtitle: 'Bevestig het volgende voordat we beginnen.',
+        ageLabel: 'Leeftijdsverificatie',
+        ageText:
+            'Volgens de Duitse Cannabiswet (KCanG) is toegang beperkt tot personen van 18 jaar en ouder. Door verder te gaan, bevestig je dat je minimaal 18 jaar oud bent.',
+        consentLabel: 'Privacy en gegevens',
+        consentText:
+            'Al je gegevens worden lokaal op je apparaat opgeslagen (IndexedDB en localStorage). Geen account nodig. Optionele AI-functies sturen verzoeken rechtstreeks naar de provider van jouw keuze -- er worden geen gegevens op onze servers opgeslagen.',
+        geoLabel: 'Juridische kennisgeving',
+        geoText:
+            'De wetten voor cannabisteelt varieren per land en regio. Deze app is ontworpen voor gebruik in rechtsgebieden waar persoonlijke cannabisteelt legaal is.',
+        accept: 'Ik ben 18+ en ga akkoord',
+        deny: 'Ik ben jonger dan 18',
+        denied: 'Toegang tot deze applicatie is beperkt tot personen van 18 jaar en ouder.',
+    },
     languageTitle: 'Kies Je Taal',
     languageSubtitle: 'Selecteer je voorkeurstaal om verder te gaan.',
     german: 'Duits',

@@ -17,7 +17,6 @@ import { REDUX_STATE_KEY, SLICE_SCHEMA_VERSIONS } from './constants'
 import { workerBus } from './services/workerBus'
 import { dbService } from './services/dbService'
 import { growReminderService } from './services/growReminderService'
-import { consentService } from './services/consentService'
 import { initSentry, Sentry } from './services/sentryService'
 
 // Initialize Sentry as early as possible
@@ -367,10 +366,8 @@ const mountHydratedApp = async () => {
 const startApp = async () => {
     await i18nPromise
 
-    // Auto-grant consent on boot (gate removed -- can be re-introduced later)
-    if (!consentService.hasConsent()) {
-        consentService.grantConsent()
-    }
+    // Consent is now granted via the onboarding legal gate (step 0).
+    // No auto-grant -- the onboarding wizard handles age verification and consent.
 
     registerServiceWorker()
     await mountHydratedApp()

@@ -1,4 +1,20 @@
 export const onboarding = {
+    legalStep: {
+        title: 'Bienvenido a CannaGuide 2025',
+        subtitle: 'Antes de comenzar, confirma lo siguiente.',
+        ageLabel: 'Verificacion de edad',
+        ageText:
+            'Segun la Ley Alemana del Cannabis (KCanG), el acceso esta restringido a personas mayores de 18 anos. Al continuar, confirmas que tienes al menos 18 anos.',
+        consentLabel: 'Privacidad y datos',
+        consentText:
+            'Todos tus datos se almacenan localmente en tu dispositivo (IndexedDB y localStorage). No se requiere cuenta. Las funciones opcionales de IA envian consultas directamente al proveedor que elijas -- no se almacenan datos en nuestros servidores.',
+        geoLabel: 'Aviso legal',
+        geoText:
+            'Las leyes de cultivo de cannabis varian segun el pais y la region. Esta aplicacion esta disenada para su uso en jurisdicciones donde el cultivo personal de cannabis es legal.',
+        accept: 'Tengo 18+ y acepto',
+        deny: 'Soy menor de 18',
+        denied: 'El acceso a esta aplicacion esta restringido a personas mayores de 18 anos.',
+    },
     languageTitle: 'Elige Tu Idioma',
     languageSubtitle: 'Selecciona tu idioma preferido para continuar.',
     german: 'Aleman',

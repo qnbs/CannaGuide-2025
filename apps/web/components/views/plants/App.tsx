@@ -6,7 +6,7 @@ import { ReloadPrompt } from '@/components/common/ReloadPrompt'
 import { Header } from '@/components/navigation/Header'
 import { BottomNav } from '@/components/navigation/BottomNav'
 import { SideNav } from '@/components/navigation/SideNav'
-import { OnboardingModal } from '@/components/common/OnboardingModal'
+import { OnboardingModal, ONBOARDING_TOTAL_STEPS } from '@/components/common/OnboardingModal'
 import { CommandPalette } from '@/components/common/CommandPalette'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
@@ -342,7 +342,7 @@ export const App: React.FC = () => {
         return <PinLockScreen onUnlock={handleUnlockWithPin} />
     }
 
-    if (!settings.onboardingCompleted && onboardingStep < 8) {
+    if (!settings.onboardingCompleted && onboardingStep <= ONBOARDING_TOTAL_STEPS) {
         return (
             <OnboardingModal
                 onClose={() => dispatch(setSetting({ path: 'onboardingCompleted', value: true }))}

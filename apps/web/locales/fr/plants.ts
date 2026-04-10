@@ -110,6 +110,72 @@ export const plantsView = {
         error: 'Echec du scan. Veuillez reessayer.',
         clearImage: 'Supprimer image',
         capturePhoto: 'Prendre une photo avec la camera',
+        healthyPlant: 'La plante semble globalement saine lors du scan par le modele local.',
+        nitrogenDeficiency:
+            'Possible carence en azote : les feuilles agees peuvent jaunir en premier.',
+        phosphorusDeficiency:
+            'Possible carence en phosphore : recherchez une croissance ralentie et un feuillage plus sombre.',
+        potassiumDeficiency:
+            'Possible carence en potassium : les bords des feuilles peuvent brunir ou se dessecher.',
+        calciumDeficiency:
+            'Possible carence en calcium : la nouvelle croissance peut se deformer ou presenter des taches.',
+        magnesiumDeficiency:
+            "Possible carence en magnesium : la chlorose internervaire peut apparaitre d'abord sur les feuilles agees.",
+        overwatering:
+            "Possible exces d'arrosage : croissance tombante et recuperation lente indiquent un substrat sature.",
+        underwatering:
+            "Possible manque d'arrosage : les feuilles peuvent s'enrouler, se recroqueviller ou perdre leur turgescence.",
+        heatStress:
+            'Possible stress thermique : les feuilles recourbees vers le haut et une transpiration rapide peuvent apparaitre.',
+        lightStress:
+            'Possible stress lumineux : blanchiment ou posture elevee des feuilles peuvent indiquer une intensite excessive.',
+        nutrientBurn:
+            'Possible brulure nutritive : pointes sombres et bords cassants peuvent indiquer un exces de nutriments.',
+        powderyMildew:
+            'Possible oidium : verifiez la presence de taches blanches poudreuses sur les surfaces superieures.',
+        spiderMites:
+            "Possible presence d'acariens : petits points et toiles doivent etre inspectes de pres.",
+        fungalLeafSpot:
+            "Possible tache foliaire fongique : des lesions circulaires peuvent indiquer une maladie liee a l'humidite.",
+        ironDeficiency:
+            'Possible carence en fer : la nouvelle croissance jaunit tandis que les nervures restent vertes.',
+        zincDeficiency:
+            'Possible carence en zinc : chlorose internervaire sur les feuilles jeunes avec croissance ralentie.',
+        sulfurDeficiency:
+            'Possible carence en soufre : jaunissement uniforme des nouvelles feuilles.',
+        manganeseDeficiency:
+            'Possible carence en manganese : zones jaune clair entre les nervures des jeunes feuilles.',
+        boronDeficiency:
+            'Possible carence en bore : tiges creuses et nouvelle croissance deformee et epaisse.',
+        lightBurn:
+            'Possible brulure lumineuse : canopee superieure blanchie avec pointes croustillantes pres de la lampe.',
+        coldStress:
+            'Possible stress du froid : tiges violettes et croissance ralentie peuvent indiquer des temperatures basses.',
+        windBurn:
+            "Possible brulure eolienne : feuilles griffues et canopee inegale due a un flux d'air excessif.",
+        nutrientLockout:
+            'Possible blocage nutritif : symptomes de carence malgre la fertilisation -- verifier pH et EC.',
+        rootRot:
+            'Possible pourriture racinaire : racines brunes et visqueuses avec fletrissement persistant.',
+        botrytisBudRot:
+            'Possible botrytis (pourriture des tetes) : moisissure grise sur les tetes, commence souvent dans les colas denses.',
+        fungusGnats:
+            'Possibles moucherons fongiques : petites mouches noires pres du substrat ; les larves endommagent les racines.',
+        aphids: 'Possible presence de pucerons : groupes de petits insectes sur les tiges et le dessous des feuilles.',
+        thrips: 'Possible presence de thrips : stries argentees sur les feuilles et minuscules insectes allonges.',
+        whiteflies:
+            'Possible presence de mouches blanches : petits papillons blancs sous les feuilles ; residus collants.',
+        septoriaLeafSpot:
+            'Possible septoriose : taches jaune-brun avec bordures sombres sur les feuilles inferieures.',
+        tobaccoMosaicVirus:
+            'Possible VMT : decoloration en mosaique avec feuilles enroulees et rabougries.',
+        phImbalance:
+            'Possible desequilibre du pH : multiples symptomes de carence simultanes, verifier le pH en zone racinaire.',
+        revegetationStress:
+            'Possible stress de revegetation : formes de feuilles inhabituelles dues a une interruption du cycle lumineux.',
+        localDiagnosisTitle: 'Diagnostic Local: {{name}}',
+        preventionTrack: "Suivre la lumiere, l'arrosage, le VPD et l'alimentation dans le temps.",
+        preventionCheck: "Verifier regulierement le VPD, le pH, l'EC et l'humidite du substrat.",
     },
     nutrientWizard: {
         tabAiScanner: 'Scanner IA',

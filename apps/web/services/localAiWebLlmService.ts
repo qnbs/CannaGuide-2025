@@ -15,6 +15,7 @@ import {
     releaseGpu,
 } from './gpuResourceManager'
 import { reportWebLlmProgress, reportWebLlmReady, reportWebLlmError } from './webLlmProgressEmitter'
+import { checkStorageQuota, isMobileDevice, getConnectionInfo } from '@/utils/browserApis'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -80,6 +81,22 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
 
 let enginePromise: Promise<LocalWebLlmEngine | null> | null = null
 let evicted = false
+let activeAbortController: AbortController | null = null
+
+/** Cancel an in-progress WebLLM model download. */
+export const cancelWebLlmDownload = (): void => {
+    if (activeAbortController) {
+        activeAbortController.abort()
+        activeAbortController = null
+    }
+    if (enginePromise) {
+        enginePromise = null
+        releaseGpu('webllm')
+    }
+}
+
+/** Whether a download is currently in progress. */
+export const isWebLlmDownloading = (): boolean => activeAbortController !== null
 
 const evictEngine = async (): Promise<void> => {
     console.debug('[WebLLM] Evicting engine to free VRAM')
@@ -112,10 +129,36 @@ export const loadWebLlmEngine = (): Promise<LocalWebLlmEngine | null> => {
         })
 
         enginePromise = (async () => {
+            // Pre-flight: check storage quota before large download
+            const quota = await checkStorageQuota(500) // WebLLM models are 500MB+
+            if (!quota.ok) {
+                const avail = quota.availableMB !== null ? `${quota.availableMB}` : 'unknown'
+                const errorMsg = `Insufficient storage for WebLLM model (${avail} MB available, ~500 MB needed)`
+                reportWebLlmError(errorMsg)
+                captureLocalAiError(new Error(errorMsg), { stage: 'webllm-storage-check' })
+                return null
+            }
+
+            // Pre-flight: warn about mobile data usage
+            const conn = getConnectionInfo()
+            if (conn.isCellular || conn.saveData) {
+                console.debug('[WebLLM] Skipping auto-load on cellular/data-saver connection')
+                return null
+            }
+
             await acquireGpu('webllm')
-            const PRELOAD_RETRIES = 2
+            activeAbortController = new AbortController()
+            const PRELOAD_RETRIES = isMobileDevice() ? 1 : 2
             const loadStartTime = performance.now()
             for (let attempt = 0; attempt <= PRELOAD_RETRIES; attempt++) {
+                // Check if download was cancelled
+                if (activeAbortController?.signal.aborted) {
+                    console.debug('[WebLLM] Download cancelled by user')
+                    activeAbortController = null
+                    releaseGpu('webllm')
+                    enginePromise = null
+                    return null
+                }
                 try {
                     const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
@@ -140,6 +183,7 @@ export const loadWebLlmEngine = (): Promise<LocalWebLlmEngine | null> => {
                         // @mlc-ai/web-llm types diverge from our LocalWebLlmEngine interface
                     })) as unknown as LocalWebLlmEngine
                     reportWebLlmReady()
+                    activeAbortController = null
                     return engine
                 } catch (error) {
                     captureLocalAiError(error, {
@@ -156,6 +200,7 @@ export const loadWebLlmEngine = (): Promise<LocalWebLlmEngine | null> => {
                         error,
                     )
                     reportWebLlmError('WebLLM failed to load after retries')
+                    activeAbortController = null
                     releaseGpu('webllm')
                     enginePromise = null
                     return null
@@ -173,7 +218,9 @@ export const isWebLlmEvicted = (): boolean => evicted
 /** Whether an error indicates the underlying GPU device was lost. */
 const isDeviceLostError = (error: unknown): boolean =>
     error instanceof Error &&
-    /device\s*lost|gpu.*lost|lost.*gpu|webgpu.*invalid/i.test(error.message)
+    /device\s*lost|gpu.*lost|lost.*gpu|webgpu.*invalid|context\s*lost|out\s*of\s*memory|OOM|system\s*pressure|adapter.*lost|buffer.*exhausted/i.test(
+        error.message,
+    )
 
 /** Generate text via WebLLM chat completions (single-shot, non-streaming). */
 export const generateWithWebLlm = async (

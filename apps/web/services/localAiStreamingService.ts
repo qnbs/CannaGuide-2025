@@ -14,6 +14,7 @@ import {
     recordCacheMiss,
     debouncedPersistSnapshot,
 } from './localAiInfrastructureService'
+import { isMobileDevice } from '@/utils/browserApis'
 
 // ---------------------------------------------------------------------------
 // Types for dependency injection (keeps localAI private members private)
@@ -68,6 +69,37 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
     })
 
 // ---------------------------------------------------------------------------
+// Mobile-friendly token callback throttle
+// ---------------------------------------------------------------------------
+
+/**
+ * Wrap an onToken callback so it fires at most once per animation frame
+ * on mobile devices, preventing excessive UI re-renders during streaming.
+ * On desktop the callback fires immediately for every token.
+ */
+const throttleOnToken = (
+    onToken: (token: string, accumulated: string) => void,
+): ((token: string, accumulated: string) => void) => {
+    if (!isMobileDevice()) return onToken
+
+    let rafPending = false
+    let latestToken = ''
+    let latestAccumulated = ''
+
+    return (token: string, accumulated: string): void => {
+        latestToken = token
+        latestAccumulated = accumulated
+        if (!rafPending) {
+            rafPending = true
+            requestAnimationFrame(() => {
+                rafPending = false
+                onToken(latestToken, latestAccumulated)
+            })
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Core streaming function
 // ---------------------------------------------------------------------------
 
@@ -82,11 +114,13 @@ export async function streamTextGeneration(
     onToken: (token: string, accumulated: string) => void,
     deps: StreamingDeps,
 ): Promise<string | null> {
+    const throttledOnToken = throttleOnToken(onToken)
+
     // -- Check in-memory cache --
     const cached = deps.getCached(prompt)
     if (cached) {
         recordCacheHit()
-        onToken(cached, cached)
+        throttledOnToken(cached, cached)
         return cached
     }
 
@@ -95,7 +129,7 @@ export async function streamTextGeneration(
     if (persisted) {
         deps.setCached(prompt, persisted)
         recordCacheHit()
-        onToken(persisted, persisted)
+        throttledOnToken(persisted, persisted)
         return persisted
     }
 
@@ -126,7 +160,7 @@ export async function streamTextGeneration(
                 if (typeof delta === 'string' && delta.length > 0) {
                     accumulated += delta
                     tokenCount++
-                    onToken(delta, accumulated)
+                    throttledOnToken(delta, accumulated)
                 }
             }
 
@@ -158,7 +192,7 @@ export async function streamTextGeneration(
     // -- Fall back to batch generateText --
     const result = await deps.generateText(prompt)
     if (result) {
-        onToken(result, result)
+        throttledOnToken(result, result)
     }
     return result
 }

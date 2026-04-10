@@ -260,6 +260,38 @@ export const settingsView = {
             'La velocidad de inferencia ha disminuido. Se recomienda cambiar a un modelo mas ligero.',
         perfDegradedCloseTabs:
             'La velocidad de inferencia ha disminuido. Cerrar pestanas no utilizadas puede liberar memoria GPU.',
+        // Error Messages (detailed, stage-specific)
+        errorModelDownload: 'Descarga del modelo fallida. Verifica tu conexion y el espacio libre.',
+        errorQuotaExceeded:
+            'Espacio de almacenamiento insuficiente ({{available}} MB libres, se necesitan ~{{required}} MB). Libera espacio e intentalo de nuevo.',
+        errorDeviceLost: 'Conexion GPU perdida. El modelo se recargara automaticamente.',
+        errorInferenceTimeout: 'La inferencia de IA ha expirado. Cambiando a analisis rapido.',
+        errorNetworkRequired: 'La descarga inicial del modelo requiere una conexion a internet.',
+        errorMemoryPressure: 'Memoria del dispositivo baja. Usando modo de analisis ligero.',
+        errorBatteryLow:
+            'Bateria por debajo del 15%. Aceleracion GPU pausada para ahorrar energia.',
+        errorModelCorrupted:
+            'Los datos del modelo en cache parecen danados. Descargando de nuevo...',
+        // Warnings & Info
+        warningFallbackActive: 'Usando analisis rapido (modo sin conexion)',
+        warningMobileData:
+            'Se descargaran aproximadamente {{size}} MB. Continuar con datos moviles?',
+        warningMobileDataTitle: 'Descarga grande',
+        warningMobileDataConfirm: 'Descargar',
+        warningMobileDataCancel: 'Cancelar',
+        infoUsingLocal: 'Ejecutandose localmente en tu dispositivo',
+        infoUsingCloud: 'Usando IA en la nube',
+        infoUsingHeuristic: 'Usando analisis rapido',
+        // Download Progress Stages
+        downloadStageDownloading: 'Descargando modelo...',
+        downloadStageInitializing: 'Inicializando modelo...',
+        downloadStageReady: 'Modelo listo',
+        downloadStageFailed: 'Descarga fallida',
+        downloadCancelButton: 'Cancelar descarga',
+        downloadRetryButton: 'Reintentar descarga',
+        // Storage Info
+        storageAvailable: 'Almacenamiento disponible: {{value}} MB',
+        storageInsufficient: 'Almacenamiento insuficiente para la descarga del modelo',
     },
     localAiDiag: {
         reasons: {

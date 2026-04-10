@@ -281,7 +281,16 @@ const settingsSlice = createSlice({
                 current = current[k] as Record<string, unknown>
             }
             const lastKey = keys[keys.length - 1]
-            if (lastKey) current[lastKey] = value
+            if (lastKey) {
+                // Bounds-clamp Local AI numeric settings to prevent invalid values
+                if (path === 'localAi.inferenceTimeoutMs' && typeof value === 'number') {
+                    current[lastKey] = Math.max(5000, Math.min(120000, value))
+                } else if (path === 'localAi.maxInferenceCacheSize' && typeof value === 'number') {
+                    current[lastKey] = Math.max(16, Math.min(1024, value))
+                } else {
+                    current[lastKey] = value
+                }
+            }
         },
         toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
             const { path } = action.payload

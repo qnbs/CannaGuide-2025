@@ -116,6 +116,72 @@ export const plantsView = {
         error: 'Scan fehlgeschlagen. Bitte erneut versuchen.',
         clearImage: 'Bild entfernen',
         capturePhoto: 'Foto mit Kamera aufnehmen',
+        healthyPlant: 'Die Pflanze wirkt im lokalen Modellscan insgesamt gesund.',
+        nitrogenDeficiency:
+            'M\u00f6glicher Stickstoffmangel: \u00c4ltere Bl\u00e4tter hellen oft zuerst auf.',
+        phosphorusDeficiency:
+            'M\u00f6glicher Phosphormangel: Auf verlangsamtes Wachstum und dunkleres Laub achten.',
+        potassiumDeficiency:
+            'M\u00f6glicher Kaliummangel: Blattr\u00e4nder k\u00f6nnen br\u00e4unen oder austrocknen.',
+        calciumDeficiency:
+            'M\u00f6glicher Calciummangel: Neues Wachstum kann sich verformen oder fleckig werden.',
+        magnesiumDeficiency:
+            'M\u00f6glicher Magnesiummangel: Zwischenadernvergilbung tritt oft zuerst an \u00e4lteren Bl\u00e4ttern auf.',
+        overwatering:
+            'M\u00f6gliche \u00dcberw\u00e4sserung: H\u00e4ngendes Wachstum und langsame Erholung sprechen oft f\u00fcr zu nasses Substrat.',
+        underwatering:
+            'M\u00f6gliche Unterw\u00e4sserung: Bl\u00e4tter k\u00f6nnen rollen, krallen oder an Spannung verlieren.',
+        heatStress:
+            'M\u00f6glicher Hitzestress: Aufw\u00e4rts gew\u00f6lbte Bl\u00e4tter und hohe Transpiration sind typische Hinweise.',
+        lightStress:
+            'M\u00f6glicher Lichtstress: Aufhellung oder aufgestellte Bl\u00e4tter k\u00f6nnen auf zu hohe Intensit\u00e4t hinweisen.',
+        nutrientBurn:
+            'M\u00f6glicher N\u00e4hrstoffbrand: Dunkle Spitzen und spr\u00f6de R\u00e4nder deuten oft auf \u00dcberd\u00fcngung hin.',
+        powderyMildew:
+            'M\u00f6glicher Mehltau: Achte auf wei\u00dfe, staubige Bel\u00e4ge auf den Blattoberfl\u00e4chen.',
+        spiderMites: 'M\u00f6gliche Spinnmilben: Auf feine Sprenkelung und Gespinste achten.',
+        fungalLeafSpot:
+            'M\u00f6gliche Blattfleckenpilze: Kreisf\u00f6rmige L\u00e4sionen k\u00f6nnen auf feuchtebedingte Probleme hindeuten.',
+        ironDeficiency:
+            'M\u00f6glicher Eisenmangel: Neues Wachstum wird blassgelb, w\u00e4hrend Blattadern gr\u00fcn bleiben.',
+        zincDeficiency:
+            'M\u00f6glicher Zinkmangel: Zwischenadernvergilbung an jungen Bl\u00e4ttern mit gehemmtem Wachstum.',
+        sulfurDeficiency:
+            'M\u00f6glicher Schwefelmangel: Gleichm\u00e4\u00dfige Vergilbung junger Bl\u00e4tter.',
+        manganeseDeficiency:
+            'M\u00f6glicher Manganmangel: Hellgelbe Bereiche zwischen den Adern junger Bl\u00e4tter.',
+        boronDeficiency:
+            'M\u00f6glicher Bormangel: Hohle St\u00e4ngel und verformtes, verdicktes Neuwachstum.',
+        lightBurn:
+            'M\u00f6gliche Lichtverbrennung: Gebleichte obere Krone mit verbrannten Blattspitzen nahe der Lampe.',
+        coldStress:
+            'M\u00f6glicher K\u00e4ltestress: Violette St\u00e4ngel und verlangsamtes Wachstum deuten auf zu niedrige Temperaturen.',
+        windBurn:
+            'M\u00f6glicher Windschaden: Gekrallte Bl\u00e4tter und ungleichm\u00e4\u00dfiges Bl\u00e4tterdach durch zu starke Bel\u00fcftung.',
+        nutrientLockout:
+            'M\u00f6gliche N\u00e4hrstoffblockade: Mangelsymptome trotz D\u00fcngung -- pH und EC pr\u00fcfen.',
+        rootRot:
+            'M\u00f6gliche Wurzelf\u00e4ule: Braune, schleimige Wurzeln und anhaltendes Welken trotz ausreichend Feuchtigkeit.',
+        botrytisBudRot:
+            'M\u00f6gliche Botrytis (Bl\u00fctef\u00e4ule): Grauschimmel an Buds, beginnt oft in dichten Bl\u00fcten.',
+        fungusGnats:
+            'M\u00f6gliche Trauerm\u00fccken: Kleine schwarze Fliegen an der Substratoberfl\u00e4che; Larven sch\u00e4digen Wurzeln.',
+        aphids: 'M\u00f6gliche Blattl\u00e4use: Ansammlungen kleiner Insekten an St\u00e4ngeln und Blattunterseiten.',
+        thrips: 'M\u00f6gliche Thripse: Silberne Streifen auf Bl\u00e4ttern und winzige, l\u00e4ngliche Insekten.',
+        whiteflies:
+            'M\u00f6gliche Wei\u00dfe Fliegen: Kleine wei\u00dfe Falter an Blattunterseiten; klebrige Honigtau-R\u00fcckst\u00e4nde.',
+        septoriaLeafSpot:
+            'M\u00f6gliche Septoria: Gelb-braune Flecken mit dunklem Rand an unteren Bl\u00e4ttern.',
+        tobaccoMosaicVirus:
+            'M\u00f6glicher Tabakmosaikvirus: Mosaik-artige Verf\u00e4rbungen mit eingerollten und verk\u00fcmmerten Bl\u00e4ttern.',
+        phImbalance:
+            'M\u00f6gliches pH-Ungleichgewicht: Mehrere Mangelsymptome gleichzeitig -- pH in der Wurzelzone pr\u00fcfen und anpassen.',
+        revegetationStress:
+            'M\u00f6glicher Revegetationsstress: Ungew\u00f6hnliche Blattformen durch Unterbrechung des Lichtzyklus.',
+        localDiagnosisTitle: 'Lokale Diagnose: {{name}}',
+        preventionTrack:
+            'Licht, Bew\u00e4sserung, VPD und N\u00e4hrstoffversorgung im Verlauf dokumentieren.',
+        preventionCheck: 'Regelm\u00e4\u00dfig VPD, pH, EC und Substratfeuchte pr\u00fcfen.',
     },
     nutrientWizard: {
         tabAiScanner: 'KI-Scanner',

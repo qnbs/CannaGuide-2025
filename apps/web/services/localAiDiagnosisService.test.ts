@@ -26,6 +26,42 @@ vi.mock('@/services/localAiFallbackService', () => ({
         mockDiagnoseWithRules(...args),
 }))
 
+// Mock i18n -- return realistic translations for diagnosis keys
+const MOCK_TRANSLATIONS: Record<string, string> = {
+    'plantsView.diagnosis.localDiagnosisTitle': 'Local Diagnosis: {{name}}',
+    'plantsView.diagnosis.preventionTrack': 'Track light, watering, VPD, and feeding over time.',
+    'plantsView.diagnosis.preventionCheck': 'Check VPD, pH, EC, and substrate moisture regularly.',
+    'plantsView.diagnosis.nitrogenDeficiency':
+        'Possible nitrogen deficiency: older leaves may fade or yellow first.',
+    'plantsView.diagnosis.overwatering':
+        'Possible overwatering: droopy growth and slow recovery often point to saturated media.',
+    'plantsView.diagnosis.healthyPlant':
+        'The plant appears generally healthy in the local model scan.',
+    'plantsView.diagnosis.phosphorusDeficiency':
+        'Possible phosphorus deficiency: look for slowed growth and darker foliage.',
+    'plantsView.diagnosis.potassiumDeficiency':
+        'Possible potassium deficiency: leaf edges may crisp or discolor.',
+    'plantsView.diagnosis.calciumDeficiency':
+        'Possible calcium deficiency: new growth may twist or spot.',
+    'plantsView.diagnosis.magnesiumDeficiency':
+        'Possible magnesium deficiency: interveinal chlorosis can appear first on older leaves.',
+    'plantsView.diagnosis.ironDeficiency':
+        'Possible iron deficiency: new growth turns pale yellow while veins stay green.',
+}
+
+vi.mock('@/i18n', () => ({
+    getT: () => (key: string, opts?: Record<string, string>) => {
+        let val = MOCK_TRANSLATIONS[key]
+        if (!val) return key
+        if (opts) {
+            for (const [k, v] of Object.entries(opts)) {
+                val = val.replace(`{{${k}}}`, v)
+            }
+        }
+        return val
+    },
+}))
+
 // Mock plantDiseaseModelService for classifyLeafImage tests
 vi.mock('@/services/plantDiseaseModelService', () => ({
     isModelCached: vi.fn().mockResolvedValue(false),
@@ -156,17 +192,18 @@ describe('localAiDiagnosisService', () => {
     // ── mapIssueLabel ────────────────────────────────────────────────
 
     describe('mapIssueLabel', () => {
-        it('returns English description for known label', () => {
+        it('returns description for known label', () => {
             const result = mapIssueLabel('nitrogen deficiency', 'en')
             expect(result).toContain('nitrogen deficiency')
         })
 
-        it('returns German description for known label', () => {
+        it('returns translated description via i18n for known label', () => {
             const result = mapIssueLabel('nitrogen deficiency', 'de')
-            expect(result).toContain('Stickstoffmangel')
+            // In test env the i18n mock returns EN text; in prod, i18n resolves to active lang
+            expect(result).toContain('nitrogen deficiency')
         })
 
-        it('falls back to English for unsupported language', () => {
+        it('returns description for any supported language param', () => {
             const result = mapIssueLabel('overwatering', 'es')
             expect(result).toContain('overwatering')
         })
@@ -251,16 +288,17 @@ describe('localAiDiagnosisService', () => {
             expect(result.confidence).toBeGreaterThan(0)
         })
 
-        it('uses German title for de language', () => {
+        it('uses i18n for title translation (de maps via i18n)', () => {
             const labels = [{ label: 'overwatering', score: 0.8 }]
             const result = buildDiagnosisContent(buildPlant(), 'de', labels)
-            expect(result.title).toContain('Lokale Diagnose')
+            // i18n mock returns EN interpolation for all languages in tests
+            expect(result.title).toContain('DiagPlant')
         })
 
-        it('uses Spanish title for es language', () => {
+        it('uses i18n for title translation (es maps via i18n)', () => {
             const labels = [{ label: 'overwatering', score: 0.8 }]
             const result = buildDiagnosisContent(buildPlant(), 'es', labels)
-            expect(result.title).toContain('Diagnostico Local')
+            expect(result.title).toContain('DiagPlant')
         })
 
         it('filters out healthy plant from ranked issues', () => {
@@ -291,18 +329,19 @@ describe('localAiDiagnosisService', () => {
     // ── fallbackDiagnosis ────────────────────────────────────────────
 
     describe('fallbackDiagnosis', () => {
-        const TITLE_LANGUAGES: Array<[Language, string]> = [
-            ['en', 'Local Diagnosis'],
-            ['de', 'Lokale Diagnose'],
-            ['es', 'Diagnostico Local'],
-            ['fr', 'Diagnostic Local'],
-            ['nl', 'Lokale Diagnose'],
-        ]
-
-        it.each(TITLE_LANGUAGES)('returns localized title for %s', (lang, expectedTitle) => {
-            const result = fallbackDiagnosis(buildPlant(), lang)
-            expect(result.title).toContain(expectedTitle)
+        it('returns title with plant name via i18n', () => {
+            const result = fallbackDiagnosis(buildPlant(), 'en')
+            expect(result.title).toContain('Local Diagnosis')
             expect(result.title).toContain('DiagPlant')
+        })
+
+        it('returns title with plant name for any language', () => {
+            // i18n mock returns EN template for all languages
+            const languages: Language[] = ['de', 'es', 'fr', 'nl']
+            for (const lang of languages) {
+                const result = fallbackDiagnosis(buildPlant(), lang)
+                expect(result.title).toContain('DiagPlant')
+            }
         })
 
         it('returns heuristic issues as content', () => {

@@ -115,6 +115,62 @@ export const plantsView = {
         error: 'Scan failed. Please try again.',
         clearImage: 'Clear image',
         capturePhoto: 'Capture photo with camera',
+        healthyPlant: 'The plant appears generally healthy in the local model scan.',
+        nitrogenDeficiency: 'Possible nitrogen deficiency: older leaves may fade or yellow first.',
+        phosphorusDeficiency:
+            'Possible phosphorus deficiency: look for slowed growth and darker foliage.',
+        potassiumDeficiency: 'Possible potassium deficiency: leaf edges may crisp or discolor.',
+        calciumDeficiency: 'Possible calcium deficiency: new growth may twist or spot.',
+        magnesiumDeficiency:
+            'Possible magnesium deficiency: interveinal chlorosis can appear first on older leaves.',
+        overwatering:
+            'Possible overwatering: droopy growth and slow recovery often point to saturated media.',
+        underwatering: 'Possible underwatering: leaves may curl, claw, or lose turgor.',
+        heatStress: 'Possible heat stress: upward leaf cupping and rapid transpiration may appear.',
+        lightStress:
+            'Possible light stress: bleaching or upward leaf posture can indicate too much intensity.',
+        nutrientBurn: 'Possible nutrient burn: dark tips and crisp edges may indicate excess feed.',
+        powderyMildew: 'Possible powdery mildew: check for white dusty patches on upper surfaces.',
+        spiderMites:
+            'Possible spider mites: tiny stippling and webbing should be inspected closely.',
+        fungalLeafSpot:
+            'Possible fungal leaf spot: circular lesions may indicate moisture-related disease.',
+        ironDeficiency:
+            'Possible iron deficiency: new growth turns pale yellow while veins stay green.',
+        zincDeficiency:
+            'Possible zinc deficiency: interveinal chlorosis on newer leaves with stunted growth.',
+        sulfurDeficiency: 'Possible sulfur deficiency: uniform yellowing of new leaves.',
+        manganeseDeficiency:
+            'Possible manganese deficiency: light yellow areas between veins of young leaves.',
+        boronDeficiency: 'Possible boron deficiency: hollow stems and distorted, thick new growth.',
+        lightBurn:
+            'Possible light burn: bleached upper canopy with crispy leaf tips closest to the light.',
+        coldStress:
+            'Possible cold stress: purple stems and slowed growth may signal low temperatures.',
+        windBurn: 'Possible wind burn: clawed leaves and uneven canopy from excessive airflow.',
+        nutrientLockout:
+            'Possible nutrient lockout: deficiency symptoms despite feeding -- check pH and EC.',
+        rootRot:
+            'Possible root rot: brown, slimy roots and persistent wilting despite adequate moisture.',
+        botrytisBudRot:
+            'Possible botrytis (bud rot): gray mold on buds, often starts inside dense colas.',
+        fungusGnats:
+            'Possible fungus gnats: tiny black flies near soil surface; larvae damage roots.',
+        aphids: 'Possible aphids: clusters of small soft-bodied insects on stems and undersides of leaves.',
+        thrips: 'Possible thrips: silver streaks on leaves and tiny elongated insects.',
+        whiteflies:
+            'Possible whiteflies: small white moths on leaf undersides; sticky honeydew residue.',
+        septoriaLeafSpot:
+            'Possible septoria: yellow-brown spots with dark borders on lower leaves.',
+        tobaccoMosaicVirus:
+            'Possible TMV: mosaic-patterned discoloration with curled and stunted leaves.',
+        phImbalance:
+            'Possible pH imbalance: multiple deficiency symptoms at once, check and adjust root zone pH.',
+        revegetationStress:
+            'Possible revegetation stress: unusual leaf shapes from light-cycle interruption.',
+        localDiagnosisTitle: 'Local Diagnosis: {{name}}',
+        preventionTrack: 'Track light, watering, VPD, and feeding over time.',
+        preventionCheck: 'Check VPD, pH, EC, and substrate moisture regularly.',
     },
     nutrientWizard: {
         tabAiScanner: 'AI Scanner',

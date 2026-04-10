@@ -15,7 +15,7 @@
  */
 
 import { captureLocalAiError } from './sentryService'
-import { getBatteryManager, getGpuAdapterInfo } from '@/utils/browserApis'
+import { getBatteryManager, getGpuAdapterInfo, isMobileDevice } from '@/utils/browserApis'
 
 // --------------------------------------------------------------------------
 // WebGPU type shims (lib.dom may lack full WebGPU definitions)
@@ -151,7 +151,8 @@ const onPageHide = (): void => {
 
 const onVisibilityChange = (): void => {
     if (document.visibilityState === 'hidden' && sharedDevice) {
-        // Defer destroy by 30s -- if user returns quickly, no re-init needed
+        // Defer destroy -- mobile uses 5s (OS suspends apps faster), desktop 30s
+        const destroyDelayMs = isMobileDevice() ? 5_000 : 30_000
         const device = sharedDevice
         const timer = setTimeout(() => {
             if (document.visibilityState === 'hidden' && sharedDevice === device) {
@@ -161,10 +162,10 @@ const onVisibilityChange = (): void => {
                     captureLocalAiError(error, { stage: 'webgpu-device-destroy-hidden' })
                 }
                 sharedDevice = null
-                console.debug('[WebGPU] Device destroyed after 30s hidden')
+                console.debug(`[WebGPU] Device destroyed after ${destroyDelayMs}ms hidden`)
             }
-        }, 30_000)
-        // If user comes back, cancel the destroy
+        }, destroyDelayMs)
+        // If user comes back, cancel the destroy immediately
         const cancel = (): void => {
             clearTimeout(timer)
             document.removeEventListener('visibilitychange', cancel)

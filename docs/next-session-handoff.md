@@ -2,7 +2,75 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 119) -- Lexikon + Design Consistency Fix
+## Latest Session (Session 120) -- Local AI Mobile Optimization
+
+**Status: 26 files changed, 999 insertions. Mobile-first Local AI stack with 3-layer fallback (WebLLM -> Transformers.js -> Heuristics) optimized for Redmi/Samsung A56 Chrome. Diagnosis i18n migration (33 labels). 2028 tests passing.**
+
+### What Was Done (Session 120)
+
+1. **Mobile Device Detection** -- New `browserApis.ts` utilities:
+   `isMobileDevice()` (hybrid UA+touch+screen+deviceMemory),
+   `checkStorageQuota(requiredMB)`, `getEffectiveDeviceMemoryGB()`.
+   Used by 6 services for adaptive behavior.
+
+2. **Model Loader Mobile Hardening** -- Memory pressure threshold
+   80% on mobile (was 90%), max concurrent loads 1 (was cores\*0.5),
+   storage quota check before pipeline load.
+
+3. **WebGPU Stability** -- Visibility race condition fix (timer
+   cancelled on return to visible), mobile timeout 5s, active GPU
+   jobs checked before destroy. Device-lost regex expanded for
+   Safari/Firefox/Android patterns.
+
+4. **WebLLM Download Control** -- AbortController-based cancelable
+   downloads via `cancelWebLlmDownload()`, storage quota pre-check,
+   mobile data warning support.
+
+5. **Inference Router Mobile Timeouts** -- WebLLM 20s (desktop 45s),
+   Transformers 15s (desktop 30s), heuristic fallback added directly
+   in router (eliminates 30s wait).
+
+6. **Preload Orchestrator** -- Per-stage timeouts (15s mobile, 30s
+   desktop), battery gating (<20% forces eco mode, text model only),
+   storage quota pre-check.
+
+7. **Diagnosis i18n Migration** -- ISSUE_DICTIONARY (hardcoded en/de)
+   replaced with LABEL_TO_I18N_KEY (33 entries) using `getT()`.
+   36 diagnosis keys added per language (EN/DE/ES/FR/NL).
+
+8. **Streaming Throttle** -- RAF-throttled `onToken` callback on
+   mobile to prevent excessive re-renders in streaming responses.
+
+9. **Service Hardening** -- Image similarity 2MB guard + mobile
+   candidate cap 50, cache breakdown 30s throttle, settings bounds
+   validation, console.warn -> console.debug, Unicode -> ASCII.
+
+10. **i18n** -- 12 new settings error/warning keys + 36 diagnosis
+    keys per language across all 5 languages.
+
+11. **UI** -- WebLlmPreloadBanner cancel button + accessibility
+    (aria-live, role).
+
+12. **Test Fixes** -- i18n mocks updated in localAiDiagnosisService
+    and localAI test files. 2028 tests passing, 0 failures.
+
+### Verified Metrics
+
+- Tests: **2028 passing**, 0 failures (172 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: successful (161 precache entries)
+
+### Next Steps
+
+- Add E2E tests for mobile Local AI fallback behavior
+- Integrate ReadAloudButton into Lexikon, Disease Atlas, Strain Cards
+- Add voice command for theme switching
+- E2E tests for Voice HUD + confirmation flow
+- Consider WebLLM model auto-selection based on device tier at runtime
+
+---
+
+## Previous Session (Session 119) -- Lexikon + Design Consistency Fix
 
 **Status: Lexikon completed (83->91 entries), i18n key bug fixed, 20 missing translations added across 5 languages, ~34 hardcoded colors replaced with theme-aware classes in GrowTech/GeneticTrends/Equipment views. 2031 tests passing.**
 

@@ -545,6 +545,8 @@ export const plantsView = {
         noEvents: 'Aucun evenement a venir pour le moment.',
         taskPrefix: 'Tache: {{title}} ({{plantName}})',
         harvestEta: '{{name}}: recolte ETA ~{{days}} jour(s)',
+        shareGrowSummary: 'Partager resume de culture',
+        activePlantsCount: 'plantes actives',
     },
     comparison: {
         errorNotFound: 'Erreur: Scenario introuvable.',

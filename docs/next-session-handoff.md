@@ -2,7 +2,78 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 112) -- Post-v1.6 Audit Polish + v1.6.1 Release
+## Latest Session (Session 113) -- Post-v1.6.1 Audit Closure + Release Fix + F-02
+
+**Status: AUDIT_BACKLOG fully resolved (0 Critical/High/Medium open, 0 Low open, 3 deferred). Release-publish.yml bug fixed. F-02 Web Share extended. 1884 tests passing. TypeScript clean. Build clean.**
+
+### What Was Done (Session 113)
+
+1. **Release-Publish Workflow Fix** -- Fixed `release-publish.yml`
+   job skip bug: removed `startsWith(head_branch, 'v')` condition
+   that fails for `workflow_run` events from tag-triggered workflows
+   (GitHub Actions quirk where `head_branch` maps to branch, not
+   tag). Release Gate success is now sufficient to trigger publish.
+
+2. **AUDIT_BACKLOG Fully Resolved** -- All items closed or deferred:
+    - C-04 (Deployment Preview Validation): **Done** --
+      `preview-validation.yml` already runs Playwright + Lighthouse
+      against Netlify preview URLs
+    - A-03 (AI Cost Tracking): **Done** -- `CostTrackingSection`
+      in SettingsView already implemented with today's tokens/cost,
+      7-day history, monthly budget bar, and audit log
+    - F-02 (Social Sharing): **Done** -- Web Share API extended to
+      `GrowStatsDashboard.tsx` with grow summary sharing
+    - I-02 (RTL Language Preparation): **Deferred** to v2.0 (no
+      RTL languages on roadmap)
+    - Summary: 3 Critical done, 12 High done, 28 Medium done,
+      7 Low done, 3 deferred (S-03 Won't Fix, U-05, I-02)
+
+3. **F-02 Web Share Extension** -- Added share button to
+   `GrowStatsDashboard.tsx` using `navigator.share()` with
+   yield forecast, cost tracker, total cost, and active plant
+   count. Feature-detected via `'share' in navigator`. i18n key
+   `shareGrowSummary` added to all 5 locales.
+
+4. **Lint Phase 5 Evaluation** -- Full-project strict lint shows
+   0 errors, 123 warnings (all `no-unsafe-type-assertion`).
+   Workers and API response casts are the primary sources.
+   Phase 5 achievable with targeted suppressions.
+
+5. **CHANGELOG + Docs** -- [Unreleased] section filled with CI
+   fixes, F-02 share extension, audit closures. All docs synced.
+
+### Verified Metrics
+
+- Tests: **1884 passing**, 0 failures (163 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- Lint scopes: clean (4 strict scopes enforced)
+- AUDIT_BACKLOG: **0 open items** (28/28 Medium, 12/12 High,
+  3/3 Critical done; 7/10 Low done, 3 deferred)
+
+### Next Steps
+
+- Re-trigger `release-publish.yml` for v1.6.1 via `workflow_dispatch`
+  to upload tarball + SLSA attestation (release exists but has no assets)
+- Complete Branch Protection via GitHub Web UI
+- Complete CII Best Practices questionnaire
+- Re-run OpenSSF Scorecard after changes propagate
+- Push unit test coverage above 40% lines
+- Lint Phase 5: resolve 123 `no-unsafe-type-assertion` warnings
+- Enhanced PDF reports (metrics charts, AI summary, diagnosis trend)
+- v1.6.2 tag after release-publish verification succeeds
+
+### Planned Executions
+
+- **Execution N+1:** Coverage sprint -- target 40% lines via
+  service/util test expansion (stores already well-covered)
+- **Execution N+2:** Lint Phase 5 completion -- resolve 123
+  `no-unsafe-type-assertion` warnings in workers/components/services
+- **Execution N+3:** v1.6.2 release -- tag after pipeline validated
+
+---
+
+## Previous Session (Session 112) -- Post-v1.6 Audit Polish + v1.6.1 Release
 
 **Status: Docs corrected, CHANGELOG released as v1.6.1, tag pushed. 1884 tests passing. TypeScript clean. Build clean.**
 

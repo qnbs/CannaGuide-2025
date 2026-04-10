@@ -542,6 +542,8 @@ export const plantsView = {
         noEvents: 'Aun no hay eventos proximos.',
         taskPrefix: 'Tarea: {{title}} ({{plantName}})',
         harvestEta: '{{name}}: cosecha ETA ~{{days}} dia(s)',
+        shareGrowSummary: 'Compartir resumen de cultivo',
+        activePlantsCount: 'plantas activas',
     },
     comparison: {
         errorNotFound: 'Error: Escenario no encontrado.',

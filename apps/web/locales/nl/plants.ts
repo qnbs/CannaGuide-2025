@@ -533,6 +533,8 @@ export const plantsView = {
         noEvents: 'Nog geen aankomende gebeurtenissen.',
         taskPrefix: 'Taak: {{title}} ({{plantName}})',
         harvestEta: '{{name}}: oogst ETA ~{{days}} dag(en)',
+        shareGrowSummary: 'Groei-samenvatting delen',
+        activePlantsCount: 'actieve planten',
     },
     comparison: {
         errorNotFound: 'Fout: Scenario niet gevonden.',

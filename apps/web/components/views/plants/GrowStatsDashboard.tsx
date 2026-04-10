@@ -1,6 +1,7 @@
-import React, { memo, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
+import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppSelector } from '@/stores/store'
 import { selectActivePlants, selectAllPlants, selectOpenTasksSummary } from '@/stores/selectors'
@@ -90,13 +91,44 @@ const GrowStatsDashboardComponent: React.FC = () => {
         }
     }, [activePlants, openTasks, t])
 
+    const handleShareSummary = useCallback(() => {
+        const lines = [
+            t('plantsView.growStats.title'),
+            `${t('plantsView.growStats.yieldForecast')}: ${yieldForecast.toFixed(1)} g`,
+            `${t('plantsView.growStats.costTracker')}: ${energyCostPerDay.toFixed(2)} EUR`,
+            `${t('plantsView.growStats.trackedTotal')}: ${totalTrackedCost.toFixed(0)} EUR`,
+            `${activePlants.length} ${t('plantsView.growStats.activePlantsCount')}`,
+        ]
+        void navigator
+            .share({
+                title: t('plantsView.growStats.title'),
+                text: lines.join('\n'),
+                url: window.location.href,
+            })
+            .catch(() => {
+                // user cancelled or share not supported -- silently ignore
+            })
+    }, [t, yieldForecast, energyCostPerDay, totalTrackedCost, activePlants.length])
+
     return (
         <Card>
             <div className="flex items-center justify-between gap-4 mb-4">
                 <h3 className="text-xl font-bold font-display text-primary-300">
                     {t('plantsView.growStats.title')}
                 </h3>
-                <PhosphorIcons.ChartLineUp className="w-6 h-6 text-primary-300" />
+                <div className="flex items-center gap-2">
+                    {'share' in navigator && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleShareSummary}
+                            aria-label={t('plantsView.growStats.shareGrowSummary')}
+                        >
+                            <PhosphorIcons.ShareNetwork className="w-5 h-5 text-primary-300" />
+                        </Button>
+                    )}
+                    <PhosphorIcons.ChartLineUp className="w-6 h-6 text-primary-300" />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

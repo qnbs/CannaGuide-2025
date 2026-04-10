@@ -741,26 +741,27 @@ export const settingsView = {
         projectInfo: 'Projectinfo & README',
         version: 'Versie',
         whatsNew: {
-            title: 'Nieuw in v1.1',
+            title: 'Nieuw in v1.6',
             items: {
                 simulation:
-                    'Mobielveilige simulatieshell: Snellere weergaveovergangen, sterkere offline veerkracht en schonere ondermarge in de hele app.',
+                    'SLSA Niveau 3 supply-chain beveiliging met CycloneDX SBOM-generatie en niet-vervalsbare herkomst voor elke release.',
                 strains:
-                    'Rassenbibliotheek versterkt: Ontbrekende verouderde rasvelden vallen nu veilig terug in plaats van de pagina te laten crashen.',
-                help: 'Helpcentrumstructuur: FAQ en visuele gidsen zijn gescheiden in app- en kweekonderwerpen voor snellere navigatie.',
+                    '22 lokale AI-servicemodules met 3-laags terugval (WebLLM -> Transformers.js -> Heuristieken) en WebGPU/ONNX-versnelling.',
+                help: '9 cannabisthema s, 5 talen (EN/DE/ES/FR/NL), volledig strikt lint met nul waarschuwingen en 1961 geautomatiseerde tests.',
                 settings:
-                    'Over & README vernieuwd: Bijgewerkte release-informatie, huidige app-scope en duidelijkere projectdocumentatie.',
+                    'CRDT-gebaseerde cloudsynchronisatie met conflictoplossing, hydroponische ONNX-voorspellingsworker en prioriteitspreemptieve WorkerBus.',
             },
         },
         techStack: {
             title: 'Technologiestack',
             geminiLabel: 'Google Gemini:',
-            gemini: 'Drijft alle AI-functies aan voor intelligente diagnoses en advies.',
-            react: 'Voor een moderne, performante en responsieve gebruikersinterface.',
-            indexedDb: 'Robuuste clientzijde database voor 100% offline functionaliteit.',
+            gemini: 'Drijft alle AI-functies aan -- Multi-provider BYOK (Gemini, OpenAI, xAI, Anthropic) met 22 lokale AI-servicemodules.',
+            react: 'React 19 + TypeScript (strikt), Redux Toolkit, Zustand, RTK Query, 9 cannabisthema s.',
+            indexedDb:
+                'Dubbele IndexedDB-persistentie voor 100% offline functionaliteit met CRDT-cloudsync.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
-                'Voert complexe simulaties uit buiten de hoofdthread om de UI soepel te houden.',
+                '9 prioriteitspreemptieve workers (VPD, genealogie, inferentie, visie, hydro-voorspelling) via getypeerde WorkerBus.',
         },
         credits: {
             title: 'Dankbetuigingen & Links',

@@ -756,27 +756,27 @@ export const settingsView = {
         projectInfo: 'Informacion del Proyecto y README',
         version: 'Version',
         whatsNew: {
-            title: 'Novedades en v1.1',
+            title: 'Novedades en v1.6',
             items: {
                 simulation:
-                    'Shell de simulacion segura para moviles: Transiciones de vista mas rapidas, mayor resistencia sin conexion y mejor espaciado inferior en toda la aplicacion.',
+                    'Seguridad de cadena de suministro SLSA Nivel 3 con generacion de SBOM CycloneDX y procedencia no falsificable para cada lanzamiento.',
                 strains:
-                    'Fortalecimiento de la biblioteca de variedades: Los campos de variedades heredados faltantes ahora recurren a valores seguros en lugar de bloquear la pagina.',
-                help: 'Estructura del centro de ayuda: Las preguntas frecuentes y las guias visuales estan separadas en temas de la aplicacion y de cultivo para una navegacion mas rapida.',
+                    '22 modulos de servicio de IA local con respaldo de 3 capas (WebLLM -> Transformers.js -> Heuristicas) y aceleracion WebGPU/ONNX.',
+                help: '9 temas de cannabis, 5 idiomas (EN/DE/ES/FR/NL), lint estricto completo con cero advertencias y 1961 pruebas automatizadas.',
                 settings:
-                    'Acerca de y actualizacion del README: Informacion de version actualizada, alcance actual de la aplicacion y documentacion del proyecto mas clara.',
+                    'Sincronizacion en la nube basada en CRDT con resolucion de conflictos, worker de pronostico ONNX hidroponico y WorkerBus con preempcion por prioridad.',
             },
         },
         techStack: {
             title: 'Pila Tecnologica',
             geminiLabel: 'Google Gemini:',
-            gemini: 'Potencia todas las funciones AI para diagnosticos inteligentes y consejos.',
-            react: 'Para una interfaz de usuario moderna, eficiente y responsiva.',
+            gemini: 'Potencia todas las funciones AI -- Multi-proveedor BYOK (Gemini, OpenAI, xAI, Anthropic) con 22 modulos de servicio AI local.',
+            react: 'React 19 + TypeScript (estricto), Redux Toolkit, Zustand, RTK Query, 9 temas de cannabis.',
             indexedDb:
-                'Base de datos robusta del lado del cliente para funcionalidad 100% sin conexion.',
+                'Doble persistencia IndexedDB para funcionalidad 100% sin conexion con sincronizacion CRDT en la nube.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
-                'Ejecuta simulaciones complejas fuera del hilo principal para mantener la interfaz fluida.',
+                '9 workers con preempcion por prioridad (VPD, genealogia, inferencia, vision, pronostico hidro) via WorkerBus tipado.',
         },
         credits: {
             title: 'Agradecimientos y Enlaces',
@@ -846,7 +846,7 @@ export const settingsView = {
             </ul>
             <h4>2. La Enciclopedia de Variedades (Vista <code>Strains</code>)</h4>
             <ul>
-                <li><strong>Biblioteca Extensa</strong>: Accede a informacion detallada sobre <strong>mas de 700 variedades de cannabis</strong>.</li>
+                <li><strong>Biblioteca Extensa</strong>: Accede a informacion detallada sobre <strong>776 variedades de cannabis</strong>.</li>
                 <li><strong>Arbol Genealogico Interactivo</strong>: Visualiza el linaje genetico completo de cualquier variedad.</li>
                 <li><strong>Consejos de Cultivo AI</strong>: Genera consejos de cultivo unicos potenciados por AI para cualquier variedad.</li>
             </ul>

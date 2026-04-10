@@ -22,7 +22,7 @@ export const HumidityDeficitCalculator: React.FC = memo(() => {
 
     const stageOptions = STAGES.map((s) => ({
         value: s,
-        label: t(`plants.stage.${s}`),
+        label: t(`equipmentView.calculators.humidityDeficit.stages.${s}`),
     }))
 
     const handleIotSync = useCallback(() => {

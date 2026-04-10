@@ -301,6 +301,12 @@ export const equipmentView = {
                 optimal: 'HD optimal pour le stade de croissance',
                 high: 'HD trop eleve -- transpiration excessive',
             },
+            stages: {
+                seedling: 'Semis',
+                vegetative: 'Vegetatif',
+                earlyFlower: 'Debut floraison',
+                lateFlower: 'Fin floraison',
+            },
         },
         lightHanging: {
             title: 'Calculateur de Hauteur d Eclairage',

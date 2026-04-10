@@ -2,7 +2,64 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 115) -- SLSA L3 + Lint Phase 5 + v1.6.3
+## Latest Session (Session 116) -- i18n Fixes + About Overhaul + Coverage Sprint
+
+**Status: All CI gates pass (1961 tests, TS clean, build clean). Humidity Deficit i18n fixed, About/README overhauled across 5 languages, 77 new tests added.**
+
+### What Was Done (Session 116)
+
+1. **Deploy Diagnosis** -- CI pipeline verified working. Previous
+   deploy skips caused by concurrency-cancelled CI runs (not a bug).
+   Deploy triggers correctly on CI success.
+
+2. **Humidity Deficit Calculator i18n Fix** -- Component used wrong
+   key path `plants.stage.*` (keys never existed). Fixed to
+   `equipmentView.calculators.humidityDeficit.stages.*` with
+   proper translations in EN/DE/ES/FR/NL.
+
+3. **About/README Overhaul (5 Languages)** -- Updated whatsNew
+   to v1.6 content (SLSA L3, 22 AI services, 9 themes, CRDT sync).
+   Fixed test count (1000->1961), strain count (800+->776).
+   Extended techStack with multi-provider BYOK, dual IndexedDB+CRDT,
+   9 workers via WorkerBus. EN/DE were at v1.2, ES/FR/NL at v1.1.
+
+4. **Coverage Sprint (+77 Tests)** -- Added 5 new test files:
+    - `data/diseases.test.ts` (10 tests) -- 22 disease entries validation
+    - `data/lexicon.test.ts` (8 tests) -- 83 glossary entries validation
+    - `data/learningPaths.test.ts` (9 tests) -- 5 learning paths validation
+    - `data/terpeneDatabase.test.ts` (16 tests) -- terpene DB validation
+    - `utils/vpdCalculator.test.ts` (34 tests) -- 7 pure functions tested
+
+### Verified Metrics
+
+- Tests: **1961 passing**, 0 failures (168 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: clean (Vite production build succeeds)
+- Lint: **0 warnings** (`eslint --max-warnings 0` passes)
+- Version: 1.6.3 in package.json (root + web)
+
+### Next Steps
+
+- Push unit test coverage above 40% statements (currently 33.91%)
+- Enhanced PDF Reports (P2) -- multi-page grow journal export
+- V-06 Offline Voice (P3) -- ONNX TTS/STT pipeline
+- U-05 Telemetry Dashboard v2.0 -- worker metrics visualization
+- Complete CII Best Practices questionnaire
+- Re-run OpenSSF Scorecard after Branch Protection propagates
+
+### Planned Executions
+
+- **Execution N+1:** Coverage sprint phase 2 -- target 40% statements
+  via service/store/hook test expansion (services at 65%, stores
+  at 39%, hooks at 38% -- focus on stores + hooks)
+- **Execution N+2:** Enhanced PDF Reports -- multi-page grow journal
+  export with charts, photos, timeline
+- **Execution N+3:** V-06 Offline Voice -- ONNX TTS/STT pipeline
+  for voice-controlled grow assistant
+
+---
+
+## Session 115 -- SLSA L3 + Lint Phase 5 + v1.6.3
 
 **Status: v1.6.3 released. SLSA L3 + CycloneDX SBOM pipeline live. Lint Phase 5 complete (132 warnings -> 0). All CI gates pass (1884 tests, TS clean, build clean, lint strict clean).**
 

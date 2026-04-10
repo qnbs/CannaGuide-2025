@@ -117,7 +117,7 @@
             "tmp": "0.2.5",
             "lodash-es": "4.18.1",
             "lodash": ">=4.18.0",
-            "basic-ftp": ">=5.2.1"
+            "basic-ftp": "5.2.2"
         },
         "onlyBuiltDependencies": [
             "esbuild",

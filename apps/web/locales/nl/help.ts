@@ -271,6 +271,106 @@ export const helpView = {
                 definition:
                     'Een pure, originele cannabisvarieteit die zich op natuurlijke wijze heeft aangepast en gestabiliseerd in een specifiek geografisch gebied over een lange periode.',
             },
+            mainlining: {
+                term: 'Mainlining (Manifolding)',
+                definition:
+                    'Een geavanceerde high-stress trainingstechniek waarbij alle zijtakken vroeg worden verwijderd en de plant herhaaldelijk wordt getopt om een symmetrisch verdeelstuk met 8-16 gelijkmatig grote toppen te creeren. Produceert uniforme topgrootte en maximaliseert de opbrengst per plant.',
+            },
+            superCropping: {
+                term: 'Super Cropping',
+                definition:
+                    'Een high-stress trainingstechniek waarbij stengels voorzichtig worden geknepen en gebogen om een knobbelvormig eelt te creeren. Dit versterkt de tak, verbetert de voedingsstofstroom en kan de cannabinoideproductie verhogen door gecontroleerde stressreactie.',
+            },
+            defoliation: {
+                term: 'Defoliatie (Ontbladering)',
+                definition:
+                    'Het strategisch verwijderen van geselecteerde waaierbladen tijdens de vegetatieve of vroege bloeifase om de lichtdoordringing naar lagere bloemplekken te verbeteren en de luchtcirculatie te verhogen, waardoor het schimmelrisico afneemt.',
+            },
+            runoff: {
+                term: 'Afvoerwater (Runoff)',
+                definition:
+                    'Het overtollige water dat na het gieten uit de bodem van een container loopt. Het meten van de pH en EC van het afvoerwater helpt de omstandigheden in de wortelzone te monitoren. Een streefwaarde van 10-20% afvoervolume is standaardpraktijk.',
+            },
+            rootBound: {
+                term: 'Wortelgebonden (Potgebonden)',
+                definition:
+                    'Een toestand waarbij een plant zijn pot is ontgroeid en de wortels strak rond de binnenkant van de pot draaien, waardoor groei en voedingsopname worden beperkt. Verplanten naar een grotere pot of het gebruik van stoffen potten voorkomt dit.',
+            },
+            dlt: {
+                term: 'DLT (Diepe Strooiseltechniek)',
+                definition:
+                    'Een living-soil methode waarbij organisch materiaal op het substraat wordt gelaagd, waardoor een zelfcomposteerend ecosysteem ontstaat. Nuttige microben breken het strooisel af en voorzien de plant van langzaam vrijkomende voedingsstoffen.',
+            },
+            ppfd: {
+                term: 'PPFD (Fotosynthetische Fotonfluxdichtheid)',
+                definition:
+                    'Een maat voor de hoeveelheid fotosynthetisch actieve straling (PAR) die per seconde een oppervlak bereikt, gemeten in umol/m2/s. De belangrijkste metriek voor het beoordelen van kweeklamprestaties.',
+            },
+            dli: {
+                term: 'DLI (Dagelijks Lichtintegraal)',
+                definition:
+                    'De totale hoeveelheid fotosynthetisch actieve fotonen die een oppervlak bereiken over een periode van 24 uur, gemeten in mol/m2/dag. Combineert PPFD en fotoperiode om de totale lichtenergie te kwantificeren.',
+            },
+            ipm: {
+                term: 'IPM (Geintegreerde Plaagbestrijding)',
+                definition:
+                    'Een systematische benadering van ongediertebestrijding die preventie, monitoring, biologische bestrijding en gerichte behandelingen als laatste redmiddel combineert. Benadrukt nuttige insecten, mengteelt en omgevingscontroles boven chemische pesticiden.',
+            },
+            autoflower: {
+                term: 'Autoflower',
+                definition:
+                    'Cannabisgenetica met Ruderalis-eigenschappen die bloeien op basis van leeftijd in plaats van veranderingen in de lichtcyclus. Moderne autoflowers (2026) evenaren fotoperiode-varieteiten in potentie en terpeenrijkdom met 75-90 dagen zaad-tot-oogst cycli.',
+            },
+            feminized: {
+                term: 'Gefeminiseerde Zaden',
+                definition:
+                    'Zaden die genetisch gemanipuleerd zijn (doorgaans via colloidal zilver of STS) om uitsluitend vrouwelijke planten (99,9%) te produceren. Elimineert de noodzaak om mannelijke planten te identificeren en te verwijderen, maximaliseert het productieve bladerdak.',
+            },
+            cloning: {
+                term: 'Klonen (Stekken)',
+                definition:
+                    'Het proces van het nemen van een stek van een moederplant en het bewortelen ervan om een genetisch identieke kopie te creeren. Zorgt voor consistentie in groeipatronen, potentie en terpeenprofielen over meerdere kweeksessies.',
+            },
+            dynamicLighting: {
+                term: 'Dynamische Verlichting',
+                definition:
+                    'LED-verlichtingssystemen die automatisch hun spectrale output aanpassen op basis van de groeifase en omgevingscondities (VPD). Blauw-dominant voor vegetatieve groei, rood-dominant voor bloei.',
+            },
+            digitalTwin: {
+                term: 'Digitale Tweeling',
+                definition:
+                    'Een virtuele replica van een kweekruimte opgebouwd uit realtime sensordata. Wordt gebruikt om wat-als-scenarios (CO2-wijzigingen, temperatuuraanpassingen) te simuleren en hun impact op de opbrengst te voorspellen voordat echte wijzigingen worden doorgevoerd.',
+            },
+            aeroponics: {
+                term: 'Aeroponiek',
+                definition:
+                    'Een grondloze kweekmethode waarbij plantenwortels in de lucht hangen en voedingsstoffen worden toegediend via een fijne nevel. Bereikt tot 30% snellere groei met 90% minder water dan traditionele methoden.',
+            },
+            smartFertigation: {
+                term: 'Slimme Fertigatie',
+                definition:
+                    'Een geautomatiseerd systeem dat irrigatie combineert met nauwkeurige voedingsdosering, waarbij EC/pH-sensoren en gesloten-lus-regeling worden gebruikt om optimale voedingsniveaus in realtime te handhaven.',
+            },
+            tissueCulture: {
+                term: 'Weefselkweek',
+                definition:
+                    'Een steriele laboratoriumtechniek (microvermeerdering) voor het produceren van virusvrije, genetisch identieke klonen uit minuscule plantenweefselmonsters, waardoor massale opschaling van elite-genetica mogelijk wordt.',
+            },
+            polyploidy: {
+                term: 'Polyploidie',
+                definition:
+                    'Een toestand waarbij organismen meer dan twee volledige sets chromosomen bezitten. Bij cannabis kunnen triploide (3n), tetraploide (4n) en hexaploide (6n) planten tot 65% meer cannabinoiden en hogere biomassa produceren. Triploiden zijn pollenstieriel.',
+            },
+            chemovar: {
+                term: 'Chemovar',
+                definition:
+                    'Een classificatiesysteem gebaseerd op chemische samenstelling (cannabinoide- en terpeenprofielen) in plaats van morfologie. Type I (THC-dominant), Type II (gebalanceerd), Type III (CBD-dominant), Type IV (CBG-dominant), Type V (geen cannabinoiden).',
+            },
+            f1Hybrid: {
+                term: 'F1-Hybride',
+                definition:
+                    'Eerste filiaal-generatie kruising tussen twee genetisch verschillende, stabiele ouderlijnen. F1-hybriden vertonen hybride kracht (heterosis) met uniforme groei, hogere opbrengsten en consistente cannabinoideprofielen.',
+            },
         },
     },
     manual: {

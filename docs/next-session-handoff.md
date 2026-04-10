@@ -2,11 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 118) -- Voice-First USP Sprint (v1.7.0)
+## Latest Session (Session 119) -- Lexikon + Design Consistency Fix
 
-**Status: Full Voice-First system implemented. VoiceOrchestratorService state machine, VoiceHUD overlay, 37 voice commands, confirmation loops, continuous listening, read-aloud buttons, voice auto-selection, 51 new tests (2031 total).**
+**Status: Lexikon completed (83->91 entries), i18n key bug fixed, 20 missing translations added across 5 languages, ~34 hardcoded colors replaced with theme-aware classes in GrowTech/GeneticTrends/Equipment views. 2031 tests passing.**
 
-### What Was Done (Session 118)
+### What Was Done (Session 119)
+
+1. **LexikonView i18n Key Bug Fix** -- `getCategoryI18nKey()` helper
+   fixes "generals" vs "general" namespace mismatch in LexikonView.tsx.
+   "General" category entries now resolve correctly across all views.
+
+2. **autoflower Key Mismatch** -- Renamed `autoflowering` to `autoflower`
+   in EN/DE help.ts to match authoritative lexicon.ts key.
+
+3. **9 Missing Lexikon Definitions** -- Added to all 5 languages
+   (EN/DE/ES/FR/NL): mainlining, superCropping, defoliation, runoff,
+   rootBound, dlt, ipm, feminized, cloning.
+
+4. **3 Entries Added to ES/FR/NL** -- ppfd, dli, autoflower were
+   only in EN/DE, now complete across all 5 languages.
+
+5. **8 Orphaned Entries Integrated** -- dynamicLighting, digitalTwin,
+   aeroponics, smartFertigation, tissueCulture, polyploidy, chemovar,
+   f1Hybrid added to lexicon.ts and translated in ES/FR/NL.
+   Total: 83 -> 91 lexikon entries.
+
+6. **Design Consistency (Theme-Aware Colors)** -- Replaced ~34
+   hardcoded Tailwind colors with theme-aware classes:
+    - GrowTechView: 8 category icons, AI button, match badges, tags
+    - GeneticTrendsView: 6 category icons, AI button, match badges, tags
+    - EquipmentView: 8 tab icons
+      All use primary-400/accent-400/secondary-400 rotation.
+
+7. **Test Update** -- lexicon.test.ts count 83->91, regex updated
+   to allow alphanumeric keys (f1Hybrid).
+
+### Verified Metrics
+
+- Tests: **2031 passing**, 0 failures (172 test files)
+- TypeScript: clean (typecheck-filter passes)
+- Build: successful (162 precache entries)
+
+### Next Steps
+
+- Integrate ReadAloudButton into Lexikon, Disease Atlas, Strain Cards
+- Add voice command for theme switching
+- E2E tests for Voice HUD + confirmation flow
+- Bump version to 1.7.0
+- Voice command reference docs for users
+- Performance profiling of continuous listening mode
+
+---
+
+## Previous Session (Session 118) -- Voice-First USP Sprint (v1.7.0)
 
 1. **VoiceOrchestratorService** -- Central voice state machine
    (`voiceOrchestratorService.ts`) composing ttsService,

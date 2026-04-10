@@ -271,6 +271,51 @@ export const helpView = {
                 definition:
                     'A pure, original cannabis variety that has naturally adapted and stabilized in a specific geographic region over a long period.',
             },
+            mainlining: {
+                term: 'Mainlining (Manifolding)',
+                definition:
+                    'An advanced high-stress training technique where all side branches are removed early and the plant is topped repeatedly to create a symmetrical manifold with 8-16 evenly sized colas. Produces uniform bud size and maximizes yield per plant.',
+            },
+            superCropping: {
+                term: 'Super Cropping',
+                definition:
+                    'A high-stress training technique where stems are gently squeezed and bent to create a knuckle-like callus. This strengthens the branch, improves nutrient flow, and can increase cannabinoid production through controlled stress response.',
+            },
+            defoliation: {
+                term: 'Defoliation',
+                definition:
+                    'The strategic removal of select fan leaves during vegetative or early flowering stages to improve light penetration to lower bud sites and increase airflow, reducing the risk of mold.',
+            },
+            runoff: {
+                term: 'Runoff',
+                definition:
+                    'The excess water that drains from the bottom of a container after watering. Measuring the pH and EC of runoff helps monitor root zone conditions. A target of 10-20% runoff volume is standard practice.',
+            },
+            rootBound: {
+                term: 'Root Bound',
+                definition:
+                    'A condition where a plant has outgrown its container and the roots circle tightly around the inside of the pot, restricting growth and nutrient uptake. Transplanting to a larger container or using fabric pots prevents this.',
+            },
+            dlt: {
+                term: 'DLT (Deep Litter Technique)',
+                definition:
+                    'A living soil method where organic matter is layered on top of the growing medium, creating a self-composting ecosystem. Beneficial microbes break down the litter, providing slow-release nutrients to the plant.',
+            },
+            ipm: {
+                term: 'IPM (Integrated Pest Management)',
+                definition:
+                    'A systematic approach to pest control that combines prevention, monitoring, biological controls, and targeted treatments as a last resort. Emphasizes beneficial insects, companion planting, and environmental controls over chemical pesticides.',
+            },
+            feminized: {
+                term: 'Feminized Seeds',
+                definition:
+                    'Seeds that are genetically manipulated (typically via colloidal silver or STS) to produce only female plants (99.9%). Eliminates the need to identify and remove male plants, maximizing the productive canopy.',
+            },
+            cloning: {
+                term: 'Cloning',
+                definition:
+                    'The process of taking a cutting from a mother plant and rooting it to create a genetically identical copy. Ensures consistency in growth patterns, potency, and terpene profiles across multiple grows.',
+            },
             dynamicLighting: {
                 term: 'Dynamic Lighting',
                 definition:
@@ -311,7 +356,7 @@ export const helpView = {
                 definition:
                     'A condition where organisms have more than two complete sets of chromosomes. In cannabis, triploid (3n), tetraploid (4n), and hexaploid (6n) plants can produce up to 65% more cannabinoids and higher biomass. Triploids are pollen-sterile.',
             },
-            autoflowering: {
+            autoflower: {
                 term: 'Autoflowering',
                 definition:
                     'Cannabis genetics carrying Ruderalis traits that flower based on age rather than light cycle changes. Modern autoflowers (2026) match photoperiod strains in potency and terpene richness with 75-90 day seed-to-harvest cycles.',

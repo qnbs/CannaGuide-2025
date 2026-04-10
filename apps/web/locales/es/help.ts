@@ -270,6 +270,106 @@ export const helpView = {
                 definition:
                     'Una variedad de cannabis pura y original que se ha adaptado y estabilizado naturalmente en una region geografica especifica durante un largo periodo.',
             },
+            mainlining: {
+                term: 'Mainlining (Manifolding)',
+                definition:
+                    'Una tecnica avanzada de entrenamiento de alto estres donde se eliminan todas las ramas laterales tempranamente y se poda repetidamente para crear un colector simetrico con 8-16 colas de tamano uniforme. Produce tamano de cogollos uniforme y maximiza el rendimiento por planta.',
+            },
+            superCropping: {
+                term: 'Super Cropping',
+                definition:
+                    'Una tecnica de entrenamiento de alto estres donde los tallos se aprietan y doblan suavemente para crear un callo similar a un nudo. Esto fortalece la rama, mejora el flujo de nutrientes y puede aumentar la produccion de cannabinoides a traves de la respuesta al estres controlado.',
+            },
+            defoliation: {
+                term: 'Defoliacion',
+                definition:
+                    'La eliminacion estrategica de hojas de abanico seleccionadas durante la etapa vegetativa o de floracion temprana para mejorar la penetracion de la luz a los sitios de cogollos inferiores y aumentar el flujo de aire, reduciendo el riesgo de moho.',
+            },
+            runoff: {
+                term: 'Escorrentia (Runoff)',
+                definition:
+                    'El exceso de agua que drena del fondo de un contenedor despues del riego. Medir el pH y EC de la escorrentia ayuda a monitorear las condiciones de la zona radicular. Un objetivo de 10-20% de volumen de escorrentia es practica estandar.',
+            },
+            rootBound: {
+                term: 'Raices Enredadas',
+                definition:
+                    'Una condicion donde una planta ha superado su contenedor y las raices giran firmemente alrededor del interior de la maceta, restringiendo el crecimiento y la absorcion de nutrientes. Trasplantar a un contenedor mas grande o usar macetas de tela lo previene.',
+            },
+            dlt: {
+                term: 'DLT (Tecnica de Cama Profunda)',
+                definition:
+                    'Un metodo de suelo vivo donde la materia organica se coloca en capas sobre el medio de cultivo, creando un ecosistema de auto-compostaje. Los microbios beneficiosos descomponen la cama, proporcionando nutrientes de liberacion lenta a la planta.',
+            },
+            ppfd: {
+                term: 'PPFD (Densidad de Flujo de Fotones Fotosinteticos)',
+                definition:
+                    'Una medida de la cantidad de radiacion fotosinteticamente activa (PAR) que llega a una superficie por segundo, medida en umol/m2/s. La metrica clave para evaluar el rendimiento de las luces de cultivo.',
+            },
+            dli: {
+                term: 'DLI (Integral de Luz Diaria)',
+                definition:
+                    'La cantidad total de fotones fotosinteticamente activos que llegan a una superficie durante un periodo de 24 horas, medida en mol/m2/dia. Combina PPFD y fotoperiodo para cuantificar la energia luminica total.',
+            },
+            ipm: {
+                term: 'IPM (Manejo Integrado de Plagas)',
+                definition:
+                    'Un enfoque sistematico para el control de plagas que combina prevencion, monitoreo, controles biologicos y tratamientos dirigidos como ultimo recurso. Enfatiza insectos beneficiosos, cultivos asociados y controles ambientales sobre los pesticidas quimicos.',
+            },
+            autoflower: {
+                term: 'Autofloreciente',
+                definition:
+                    'Genetica de cannabis con rasgos de Ruderalis que florece segun la edad en lugar de cambios en el ciclo de luz. Las autoflorecientes modernas (2026) igualan a las fotoperiodicas en potencia y riqueza de terpenos con ciclos de 75-90 dias de semilla a cosecha.',
+            },
+            feminized: {
+                term: 'Semillas Feminizadas',
+                definition:
+                    'Semillas que se manipulan geneticamente (tipicamente con plata coloidal o STS) para producir solo plantas femeninas (99,9%). Elimina la necesidad de identificar y remover plantas masculinas, maximizando el dosel productivo.',
+            },
+            cloning: {
+                term: 'Clonacion',
+                definition:
+                    'El proceso de tomar un esqueje de una planta madre y enraizarlo para crear una copia geneticamente identica. Asegura consistencia en patrones de crecimiento, potencia y perfiles de terpenos a traves de multiples cultivos.',
+            },
+            dynamicLighting: {
+                term: 'Iluminacion Dinamica',
+                definition:
+                    'Sistemas de iluminacion LED que ajustan automaticamente su salida espectral segun la fase de crecimiento y las condiciones ambientales (VPD). Dominante en azul para crecimiento vegetativo, dominante en rojo para floracion.',
+            },
+            digitalTwin: {
+                term: 'Gemelo Digital',
+                definition:
+                    'Una replica virtual de un entorno de cultivo construida a partir de datos de sensores en tiempo real. Se usa para simular escenarios hipoteticos (cambios de CO2, ajustes de temperatura) y predecir su impacto en el rendimiento antes de realizar cambios reales.',
+            },
+            aeroponics: {
+                term: 'Aeroponia',
+                definition:
+                    'Un metodo de cultivo sin suelo donde las raices de las plantas estan suspendidas en el aire y los nutrientes se suministran mediante una neblina fina. Logra hasta un 30% de crecimiento mas rapido con un 90% menos de agua que los metodos tradicionales.',
+            },
+            smartFertigation: {
+                term: 'Fertigacion Inteligente',
+                definition:
+                    'Un sistema automatizado que combina riego con dosificacion precisa de nutrientes, usando sensores de EC/pH y control de lazo cerrado para mantener niveles optimos de nutrientes en tiempo real.',
+            },
+            tissueCulture: {
+                term: 'Cultivo de Tejidos',
+                definition:
+                    'Una tecnica de laboratorio esteril (micropropagacion) para producir clones libres de virus y geneticamente identicos a partir de muestras de tejido vegetal diminutas, permitiendo la escalacion masiva de genetica elite.',
+            },
+            polyploidy: {
+                term: 'Poliploidia',
+                definition:
+                    'Una condicion donde los organismos tienen mas de dos juegos completos de cromosomas. En cannabis, las plantas triploides (3n), tetraploides (4n) y hexaploides (6n) pueden producir hasta un 65% mas de cannabinoides y mayor biomasa. Los triploides son esteriles al polen.',
+            },
+            chemovar: {
+                term: 'Quimiovar',
+                definition:
+                    'Un sistema de clasificacion basado en la composicion quimica (perfiles de cannabinoides y terpenos) en lugar de la morfologia. Tipo I (dominante THC), Tipo II (equilibrado), Tipo III (dominante CBD), Tipo IV (dominante CBG), Tipo V (sin cannabinoides).',
+            },
+            f1Hybrid: {
+                term: 'Hibrido F1',
+                definition:
+                    'Primera generacion filial de un cruce entre dos lineas parentales geneticamente distintas y estables. Los hibridos F1 exhiben vigor hibrido (heterosis) con crecimiento uniforme, mayores rendimientos y perfiles de cannabinoides consistentes.',
+            },
         },
     },
     manual: {

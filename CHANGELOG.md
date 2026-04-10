@@ -8,6 +8,29 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(knowledge):** 9 missing lexikon definitions (mainlining,
+  superCropping, defoliation, runoff, rootBound, dlt, ipm, feminized,
+  cloning) in all 5 languages (EN/DE/ES/FR/NL)
+- **feat(knowledge):** 8 orphaned entries integrated into lexicon.ts
+  (dynamicLighting, digitalTwin, aeroponics, smartFertigation,
+  tissueCulture, polyploidy, chemovar, f1Hybrid) with ES/FR/NL
+  translations -- total 83 -> 91 entries
+- **feat(i18n):** ppfd, dli, autoflower entries added to ES/FR/NL
+
+### Fixed
+
+- **fix(knowledge):** LexikonView i18n key resolution bug -- "General"
+  category generated `helpView.lexicon.generals.*` instead of
+  `helpView.lexicon.general.*`, causing raw keys to display
+- **fix(i18n):** autoflower/autoflowering key mismatch between
+  lexicon.ts and help.ts (now unified as `autoflower`)
+- **fix(ui):** replaced ~34 hardcoded Tailwind colors with theme-aware
+  classes (primary/accent/secondary) in GrowTechView,
+  GeneticTrendsView, and EquipmentView for consistent theming across
+  all 9 cannabis themes
+
+### Added
+
 - **feat(voice):** VoiceOrchestratorService -- central voice state
   machine (IDLE/LISTENING/PROCESSING/SPEAKING/CONFIRMATION) composing
   ttsService, voiceCommandRegistry, and Zustand stores. Replaces

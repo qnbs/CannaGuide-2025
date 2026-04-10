@@ -413,6 +413,7 @@ export const strainsView = {
         addedToFavorites_other: '{{count}} soorten toegevoegd aan favorieten.',
         removedFromFavorites_one: '1 soort verwijderd uit favorieten.',
         removedFromFavorites_other: '{{count}} soorten verwijderd uit favorieten.',
+        removeFavoritesConfirm: '{{count}} soorten verwijderen uit favorieten?',
     },
     accessibility: {
         selectStrain: '{{name}} selecteren',

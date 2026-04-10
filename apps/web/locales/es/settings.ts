@@ -1109,6 +1109,9 @@ export const settingsView = {
         archive: 'Archivar',
         delete: 'Eliminar',
         confirmDelete: 'Confirmar eliminacion',
+        archiveConfirmTitle: 'Archivar cultivo',
+        archiveConfirmDesc:
+            'Estas seguro de que quieres archivar este cultivo? Puedes restaurarlo mas tarde.',
         archived: 'Cultivos archivados',
         limitReached: 'Maximo de {{max}} cultivos alcanzado (limite CanG aleman).',
         activeGrow: 'Cultivo activo: {{name}}',

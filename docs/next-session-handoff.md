@@ -2,70 +2,67 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 128) -- Vercel Deployment Fix
+## Latest Session (Session 129) -- Korrekturlauf: App-wide Improvement Sprint
 
-**Status: Fixed Vercel "No Output Directory" error by removing
-`framework: "vite"` from vercel.json. Vercel's Vite builder was
-overriding the explicit `outputDirectory` path in the monorepo.
-Updated distribution docs with correct Dashboard instructions.
-2063 tests passing, build OK.**
+**Status: Comprehensive correction run across 25+ files. Security fixes
+(CodeQL #280, Dependabot #50), user confirmations, i18n completeness,
+accessibility improvements, and UX polish. 2063 tests passing, build OK.**
 
-### What Was Done (Session 128)
+### What Was Done (Session 129)
 
-1. **Vercel Deployment Fix** -- Removed `"framework": "vite"` from
-   `vercel.json`. This was the root cause: Vercel's Vite builder
-   overrides `outputDirectory` and looks for `dist/` at repo root
-   instead of `apps/web/dist/`. Without framework detection, Vercel
-   respects the explicit `outputDirectory: "apps/web/dist"`.
+1. **Security Fix: CodeQL #280** -- Added `isTrustedWorkerMessage()` origin
+   check to `voiceWorker.ts` (was the only worker missing it out of 10).
 
-2. **Build Command Optimized** -- Changed buildCommand from
-   `corepack enable && pnpm install && pnpm run build` to
-   `BUILD_BASE_PATH=/ turbo run build --filter=@cannaguide/web`.
-   Removes redundant install (already in installCommand), sets
-   correct base path for Vercel (`/` instead of `/CannaGuide-2025/`),
-   and filters to only build the web workspace (faster).
+2. **Security Fix: Dependabot #50** -- Pinned `basic-ftp` override to
+   `5.2.2` (CRLF injection fix). Pushed as separate commit `65af867c`.
 
-3. **Distribution Docs Updated** -- `docs/distribution.md` now has
-   correct Vercel Dashboard instructions: Framework Preset = "Other",
-   Root Directory = ".", all commands empty (from vercel.json).
-   Cloudflare setup also updated with Root Directory = "." note.
+3. **Phase A: User Confirmations** --
+    - `GrowEditModal.tsx`: Added `ConfirmDialog` for grow archive action
+    - `StrainsView.tsx`: Added `ConfirmModal` for bulk favorite removal
 
-4. **ARCHITECTURE.md Updated** -- Distribution row now lists all
-   4 targets: GitHub Pages, Netlify, Vercel, Cloudflare Pages.
+4. **Phase B: Accessibility** --
+    - `PhotosTab.tsx`: Migrated lightbox from `<dialog open>` to Radix
+      `DialogWrapper` (focus trapping, Escape, screen reader support)
+    - `ScreenshotGallery.tsx`: Dynamic alt text from screenshot metadata
+      instead of generic `alt="Screenshot"`
 
-### Vercel Dashboard Settings (Manual, One-Time)
+5. **Phase C: i18n Hardcoded Strings** --
+    - `LeafDiagnosisPanel.tsx`: `Loading...` -> `t('common.loadingGeneric')`
+    - `TimerScheduleCalculator.tsx`: Placeholder `"e.g. 600"` / `"e.g. 30"`
+      -> i18n keys in all 5 languages
+    - 20+ new i18n keys across EN/DE/ES/FR/NL (settings, strains, common,
+      equipment)
 
-- Framework Preset: **Other** (NOT Vite)
-- Root Directory: `.`
-- Build/Output/Install Commands: all **empty** (from vercel.json)
-- Environment Variable: `BUILD_BASE_PATH=/`
-- Node.js Version: 20.x or 22.x
+6. **Phase D: UX Polish** --
+    - `MetricsOverviewTab.tsx`: Added ChartLineUp icon to empty state
+    - `InlineStrainSelector.tsx`: Added MagnifyingGlass icon to no-results
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
-- Tests: 2063 passing, 0 failures
-- Build: successful
+- Tests: 2063 passing, 0 failures (177 test files)
+- Build: successful (165 precache entries)
 
 ### Next Steps
 
-1. **Verify Vercel Deploy** -- Push triggers auto-deploy; confirm
-   green build in Vercel Dashboard after adjusting settings above
-2. **Test Coverage Push** -- Target >30% via coverage-v8 on 6
-   priority services
-3. **Performance Comparison** -- TTFB/Lighthouse across all 4 targets
+1. **Phase B2: aria-invalid** -- Add `aria-invalid` + `aria-describedby`
+   to form Input components (requires shared Input component refactor)
+2. **Phase B1: eslint-plugin-jsx-a11y** -- Install and configure as
+   warn-level rules, document initial violations
+3. **Test Coverage Push** -- Target >30% via coverage-v8 on 6 priority
+   services
 4. **v2.0 Planning** -- Digital Twin architecture spike
 
 ### Planned Executions
 
-- **Execution N+1:** Verify Vercel deploy is green, compare TTFB
-  across GitHub Pages / Netlify / Vercel / Cloudflare
+- **Execution N+1:** aria-invalid pattern for shared Input component +
+  eslint-plugin-jsx-a11y installation
 - **Execution N+2:** Test coverage sprint (6 service test files)
 - **Execution N+3:** v2.0 Digital Twin architecture spike document
 
 ---
 
-## Latest Session (Session 127) -- Korrekturlauf: Optimization & Perfection Sprint
+## Previous Session (Session 128) -- Vercel Deployment Fix
 
 **Status: Onboarding-seeding wired downstream, audit backlog
 53/56 resolved (95%), i18n gaps fixed (FR/NL plants + settings),

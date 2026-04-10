@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { dbService } from '@/services/dbService'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { DialogWrapper } from '@/components/common/DialogWrapper'
 
 interface PhotoTabProps {
     journal: JournalEntry[]
@@ -95,33 +96,21 @@ const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () =>
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const details = entry.details as PhotoDetails
 
-        useEffect(() => {
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key === 'Escape') onClose()
-            }
-            document.addEventListener('keydown', handleKeyDown)
-            return () => document.removeEventListener('keydown', handleKeyDown)
-        }, [onClose])
-
         return (
-            <dialog
-                open
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in"
-                aria-label={entry.notes}
+            <DialogWrapper
+                isOpen={true}
+                onClose={onClose}
+                title={entry.notes ?? t('common.close')}
+                size="4xl"
+                containerClassName="bg-black/95 border-none"
+                bodyClassName="flex flex-col items-center"
+                showCloseButton={true}
             >
-                <div className="relative max-w-[90vw] max-h-[90vh]">
-                    <button
-                        type="button"
-                        className="absolute -top-3 -right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white ring-1 ring-white/20 hover:bg-slate-700 transition-colors"
-                        onClick={onClose}
-                        aria-label={t('common.close')}
-                    >
-                        <PhosphorIcons.X className="w-5 h-5" />
-                    </button>
+                <div className="relative max-w-[90vw] max-h-[80vh] flex flex-col items-center">
                     <img
                         src={imageUrl}
                         alt={entry.notes}
-                        className="max-w-full max-h-[85vh] rounded-lg object-contain"
+                        className="max-w-full max-h-[75vh] rounded-lg object-contain"
                     />
                     <div className="mt-3 text-center space-y-1">
                         <p className="text-white font-semibold">{entry.notes}</p>
@@ -135,7 +124,7 @@ const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () =>
                         </p>
                     </div>
                 </div>
-            </dialog>
+            </DialogWrapper>
         )
     },
 )

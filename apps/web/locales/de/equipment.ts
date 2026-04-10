@@ -408,6 +408,8 @@ export const equipmentView = {
             ppfd: 'PPFD am Baldachin',
             targetDli: 'Ziel-DLI',
             optional: 'optional',
+            ppfdPlaceholder: 'z.B. 600',
+            dliPlaceholder: 'z.B. 30',
             recommended: 'Empfohlener Zeitplan',
             onHours: 'Licht an',
             offHours: 'Dunkelphase',

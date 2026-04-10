@@ -1095,6 +1095,9 @@ export const settingsView = {
         archive: 'Archivieren',
         delete: 'Löschen',
         confirmDelete: 'Löschen bestätigen',
+        archiveConfirmTitle: 'Grow archivieren',
+        archiveConfirmDesc:
+            'Moechtest du diesen Grow wirklich archivieren? Du kannst ihn spaeter wiederherstellen.',
         archived: 'Archivierte Grows',
         limitReached: 'Maximum von {{max}} Grows erreicht (deutsches CanG-Limit).',
         activeGrow: 'Aktiver Grow: {{name}}',

@@ -130,6 +130,7 @@ export const StrainsView: React.FC = () => {
     const [_currentPage, setCurrentPage] = useState(1)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+    const [confirmRemoveFavorites, setConfirmRemoveFavorites] = useState(false)
 
     const settings = useAppSelector(selectSettings)
     const strainsViewState = useStrainsViewStore()
@@ -449,8 +450,8 @@ export const StrainsView: React.FC = () => {
     }, [dispatch, selectedStrainIds])
 
     const handleRemoveSelectedFromFavorites = useCallback(() => {
-        dispatch(removeMultipleFromFavorites(selectedStrainIds))
-    }, [dispatch, selectedStrainIds])
+        setConfirmRemoveFavorites(true)
+    }, [])
 
     const isUserStrain = useCallback((id: string) => userStrainIds.has(id), [userStrainIds])
 
@@ -736,6 +737,19 @@ export const StrainsView: React.FC = () => {
                 message={t('strainsView.exportsManager.deleteConfirmPlural_other', {
                     count: selectedIdsSet.size,
                 })}
+            />
+            <ConfirmModal
+                isOpen={confirmRemoveFavorites}
+                onClose={() => setConfirmRemoveFavorites(false)}
+                onConfirm={() => {
+                    dispatch(removeMultipleFromFavorites(selectedStrainIds))
+                    strainsViewState.clearStrainSelection()
+                }}
+                title={t('strainsView.bulkActions.removeFromFavorites')}
+                message={t('strainsView.bulkActions.removeFavoritesConfirm', {
+                    count: selectedIdsSet.size,
+                })}
+                isDestructive={false}
             />
             {isExportModalOpen && (
                 <DataExportModal

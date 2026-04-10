@@ -17,6 +17,7 @@ import { selectHydroReadings } from '@/stores/slices/hydroSlice'
 import { calculateVPD } from '@/lib/vpd/calculator'
 import { VPDZoneMap } from '../VPDZoneMap'
 import { secureRandom } from '@/utils/random'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import type { GrowthStage } from '@/types/simulation.types'
 import { PlantStage } from '@/types'
 
@@ -287,6 +288,10 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                         </div>
                     ) : (
                         <div className="rounded-xl bg-slate-800/40 p-8 text-center">
+                            <PhosphorIcons.ChartLineUp
+                                className="w-10 h-10 mx-auto text-slate-600 mb-2"
+                                aria-hidden="true"
+                            />
                             <p className="text-sm text-slate-500">
                                 {t('plantsView.metrics.noData', {
                                     defaultValue:

@@ -1060,6 +1060,11 @@ export interface AppSettings {
         hotwordEnabled: boolean
         confirmationSound: boolean
         continuousListening: boolean
+        wakeWordEngine: WakeWordEngine
+        porcupineAccessKey: string | null
+        porcupineKeyword: string
+        voiceWorkerEnabled: boolean
+        voiceAnalyticsEnabled: boolean
     }
     tts: TTSSettings
     strainsView: {
@@ -1157,6 +1162,12 @@ export interface AppSettings {
     }
 }
 
+/** Cloud TTS provider identifier (BYOK). */
+export type CloudTtsProvider = 'elevenlabs' | 'azure' | 'google'
+
+/** Wake-word detection engine. */
+export type WakeWordEngine = 'regex' | 'porcupine'
+
 export interface TTSSettings {
     enabled: boolean
     voiceName: string | null
@@ -1164,6 +1175,40 @@ export interface TTSSettings {
     pitch: number
     volume: number
     highlightSpeakingText: boolean
+    cloudTtsEnabled: boolean
+    cloudTtsProvider: CloudTtsProvider
+    cloudTtsApiKey: string | null
+}
+
+// ---------------------------------------------------------------------------
+// Voice Analytics types (v1.8 CannaVoice Pro)
+// ---------------------------------------------------------------------------
+
+/** Event types tracked by voice telemetry (opt-in, anonymous, no PII). */
+export type VoiceAnalyticsEventType =
+    | 'commandMatched'
+    | 'commandFailed'
+    | 'ttsPlayed'
+    | 'hotwordDetected'
+    | 'errorOccurred'
+
+/** Single anonymous voice analytics event. */
+export interface VoiceAnalyticsEvent {
+    eventType: VoiceAnalyticsEventType
+    timestamp: number
+    metadata: Record<string, string | number | boolean>
+}
+
+/** Aggregated voice telemetry snapshot. */
+export interface VoiceTelemetrySnapshot {
+    totalCommands: number
+    successRate: number
+    avgMatchLatencyMs: number
+    ttsPlayCount: number
+    hotwordDetections: number
+    errorCount: number
+    topCommands: Array<{ id: string; count: number }>
+    lastUpdated: number
 }
 
 // ---------------------------------------------------------------------------
@@ -1199,6 +1244,7 @@ export interface VoiceSessionState {
 
 /** Provider interface for text-to-speech engines. */
 export interface ITTSProvider {
+    readonly providerName: string
     isSupported(): boolean
     init(): void
     getVoices(lang: Language): SpeechSynthesisVoice[]

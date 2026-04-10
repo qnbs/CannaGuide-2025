@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
@@ -23,6 +23,87 @@ export const VoiceHUD: React.FC = () => {
     const error = useVoiceStore((s) => s.error)
     const isListening = useUIStore((s) => s.voiceControl.isListening)
     const [collapsed, setCollapsed] = useState(false)
+    const [waveformAmplitudes, setWaveformAmplitudes] = useState<number[]>([])
+    const audioContextRef = useRef<AudioContext | null>(null)
+    const analyserRef = useRef<AnalyserNode | null>(null)
+    const rafRef = useRef(0)
+    const streamRef = useRef<MediaStream | null>(null)
+
+    // Dynamic waveform via AnalyserNode (when voiceWorkerEnabled)
+    const voiceWorkerEnabled = settings.voiceControl.voiceWorkerEnabled
+    const showDynamicWaveform =
+        voiceWorkerEnabled && (mode === VoiceMode.LISTENING || mode === VoiceMode.SPEAKING)
+
+    useEffect(() => {
+        if (!showDynamicWaveform) {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current)
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach((tr) => tr.stop())
+                streamRef.current = null
+            }
+            if (audioContextRef.current) {
+                audioContextRef.current.close().catch(() => {})
+                audioContextRef.current = null
+                analyserRef.current = null
+            }
+            setWaveformAmplitudes([])
+            return
+        }
+
+        let cancelled = false
+
+        const startWaveform = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                if (cancelled) {
+                    stream.getTracks().forEach((tr) => tr.stop())
+                    return
+                }
+                streamRef.current = stream
+                const ctx = new AudioContext()
+                audioContextRef.current = ctx
+                const source = ctx.createMediaStreamSource(stream)
+                const analyser = ctx.createAnalyser()
+                analyser.fftSize = 64
+                source.connect(analyser)
+                analyserRef.current = analyser
+
+                const dataArray = new Float32Array(analyser.fftSize)
+
+                const tick = () => {
+                    if (cancelled) return
+                    analyser.getFloatTimeDomainData(dataArray)
+                    const step = Math.floor(dataArray.length / 5)
+                    const amps: number[] = []
+                    for (let i = 0; i < 5; i++) {
+                        const val = dataArray[i * step]
+                        amps.push(Math.min(1, Math.abs(val ?? 0) * 4))
+                    }
+                    setWaveformAmplitudes(amps)
+                    rafRef.current = requestAnimationFrame(tick)
+                }
+                rafRef.current = requestAnimationFrame(tick)
+            } catch {
+                // Mic access denied or unavailable -- fall back to CSS animation
+            }
+        }
+
+        void startWaveform()
+
+        return () => {
+            cancelled = true
+            if (rafRef.current) cancelAnimationFrame(rafRef.current)
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach((tr) => tr.stop())
+                streamRef.current = null
+            }
+            if (audioContextRef.current) {
+                audioContextRef.current.close().catch(() => {})
+                audioContextRef.current = null
+                analyserRef.current = null
+            }
+        }
+    }, [showDynamicWaveform])
 
     // Only show HUD when voice is active
     const isActive =
@@ -76,21 +157,29 @@ export const VoiceHUD: React.FC = () => {
                 </Button>
             </div>
 
-            {/* Waveform animation (CSS-based) */}
+            {/* Waveform animation (dynamic from mic or CSS fallback) */}
             {(mode === VoiceMode.LISTENING || mode === VoiceMode.SPEAKING) && (
                 <div className="flex items-end justify-center gap-[3px] h-6 mb-2" aria-hidden>
-                    {[0, 1, 2, 3, 4].map((i) => (
-                        <span
-                            key={i}
-                            className={`w-1 rounded-full ${
-                                mode === VoiceMode.SPEAKING ? 'bg-green-400' : 'bg-red-400'
-                            }`}
-                            style={{
-                                animation: `voice-bar 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
-                                height: '6px',
-                            }}
-                        />
-                    ))}
+                    {[0, 1, 2, 3, 4].map((i) => {
+                        const dynamicAmp = waveformAmplitudes[i]
+                        const hasDynamic = showDynamicWaveform && dynamicAmp != null
+                        return (
+                            <span
+                                key={i}
+                                className={`w-1 rounded-full ${
+                                    mode === VoiceMode.SPEAKING ? 'bg-green-400' : 'bg-red-400'
+                                }`}
+                                style={
+                                    hasDynamic
+                                        ? { height: `${Math.max(4, dynamicAmp * 24)}px` }
+                                        : {
+                                              animation: `voice-bar 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
+                                              height: '6px',
+                                          }
+                                }
+                            />
+                        )
+                    })}
                 </div>
             )}
 

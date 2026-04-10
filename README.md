@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-2028%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-2063%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-33.7%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity -->
@@ -67,7 +67,7 @@
 <!-- Project Metrics -->
 
 [![Strains](https://img.shields.io/badge/strains-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/services-109-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/services-114-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-18-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
@@ -106,7 +106,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2028 tests · 109 services · 18 Redux slices + 8 Zustand stores · 25 hooks · 12 i18n namespaces · 9 themes · 21 CI workflows
+776 strains · 2063 tests · 114 services · 18 Redux slices + 8 Zustand stores · 25 hooks · 12 i18n namespaces · 9 themes · 21 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -134,7 +134,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite dev server on localhost:5173
 pnpm run build              # Production build (all workspaces)
-pnpm run test:run           # 2028 tests, single run
+pnpm run test:run           # 2063 tests, single run
 pnpm run typecheck          # tsc --noEmit (TS2719 filtered)
 pnpm run lint               # ESLint (flat config, 0 warnings)
 ```
@@ -309,11 +309,11 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ## CI/CD, Testing & Security
 
-### Testing (2028 tests, 0 failures)
+### Testing (2063 tests, 0 failures)
 
 | Type                  | Framework       | Scope                                           |
 | --------------------- | --------------- | ----------------------------------------------- |
-| **Unit/Integration**  | Vitest          | 2028 tests, colocated `*.test.ts(x)`            |
+| **Unit/Integration**  | Vitest          | 2063 tests, colocated `*.test.ts(x)`            |
 | **E2E**               | Playwright      | Chromium + Firefox (CI), `tests/e2e/*.e2e.ts`   |
 | **Component**         | Playwright CT   | `tests/ct/*.ct.tsx`                             |
 | **Mutation**          | Stryker         | Redux slices, 50% break threshold               |
@@ -339,7 +339,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 | Workflow           | Trigger          | Purpose                                                   |
 | ------------------ | ---------------- | --------------------------------------------------------- |
-| CI                 | push, PR         | Lint, typecheck, 2028 tests, build, security, E2E, IoT    |
+| CI                 | push, PR         | Lint, typecheck, 2063 tests, build, security, E2E, IoT    |
 | CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                              |
 | Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                     |
 | Release Publish    | tag v\*          | SLSA L3 provenance + CycloneDX SBOM + GitHub Release      |
@@ -427,7 +427,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-2028%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-2063%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/Coverage-33.7%25%20Zeilen-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository-Aktivitaet -->
@@ -483,7 +483,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 <!-- Projekt-Metriken -->
 
 [![Sorten](https://img.shields.io/badge/Sorten-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/Services-109-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/Services-114-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20Slices-18-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/Themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
@@ -499,7 +499,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2028 Tests · 109 Services · 18 Redux Slices + 8 Zustand Stores · 25 Hooks · 12 i18n-Namensraeume · 9 Themes · 21 CI-Workflows
+776 Sorten · 2063 Tests · 114 Services · 18 Redux Slices + 8 Zustand Stores · 25 Hooks · 12 i18n-Namensraeume · 9 Themes · 21 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
@@ -525,7 +525,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite Dev-Server auf localhost:5173
 pnpm run build              # Produktions-Build
-pnpm run test:run           # 2028 Tests, Einzellauf
+pnpm run test:run           # 2063 Tests, Einzellauf
 pnpm run typecheck          # tsc --noEmit
 ```
 

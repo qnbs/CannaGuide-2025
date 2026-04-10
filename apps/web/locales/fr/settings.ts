@@ -419,6 +419,47 @@ export const settingsView = {
         next: 'Suivant',
         stop: 'Arreter',
     },
+    voice: {
+        wakeWord: {
+            title: "Moteur de Mot d'Activation",
+            engine: "Moteur de Mot d'Activation",
+            engineDesc: "Choisissez le moteur qui ecoute le mot d'activation.",
+            regex: 'Regex (integre)',
+            porcupine: 'Porcupine (WASM)',
+            accessKey: "Cle d'Acces Porcupine",
+            accessKeyDesc: "Votre cle d'acces Picovoice. Stockee chiffree localement.",
+            accessKeyPlaceholder: "Entrez la cle d'acces...",
+            keyword: "Mot d'Activation",
+        },
+        cloudTts: {
+            title: 'TTS Cloud (optionnel)',
+            enabled: 'Activer le TTS Cloud',
+            enabledDesc: 'Utilisez un fournisseur vocal cloud pour une meilleure qualite vocale.',
+            provider: 'Fournisseur',
+            apiKey: 'Cle API',
+            apiKeyDesc:
+                'Votre cle API fournisseur. Chiffree localement, jamais envoyee a nos serveurs.',
+            apiKeyPlaceholder: 'Entrez la cle API...',
+            privacyNote:
+                'Votre cle API est chiffree localement. Aucune donnee nest envoyee a nos serveurs.',
+        },
+        advanced: {
+            title: 'Options Vocales Avancees',
+            workerEnabled: 'Worker Vocal (arriere-plan)',
+            workerEnabledDesc:
+                "Traite les commandes vocales dans un worker en arriere-plan. Active la forme d'onde dynamique et une UI plus fluide.",
+            analyticsEnabled: 'Analyse Vocale (opt-in)',
+            analyticsEnabledDesc:
+                "Collecte des statistiques d'utilisation anonymes. Aucune transcription ni donnee personnelle n'est stockee.",
+            refreshStats: 'Actualiser',
+            export: 'Exporter',
+            clear: 'Effacer',
+            totalCommands: 'Commandes Totales',
+            successRate: 'Taux de Reussite',
+            avgLatency: 'Latence Moy.',
+            hotwordCount: 'Detections de Hotword',
+        },
+    },
     strains: {
         title: 'Parametres de la vue des varietes',
         defaultSort: 'Ordre de tri par defaut',

@@ -1,6 +1,11 @@
 import { TTSSettings, Language, ITTSProvider } from '@/types'
+import { cloudTtsService } from '@/services/cloudTtsService'
+import { speakNatural } from '@/services/speakNaturalService'
+import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 
 class TTSService implements ITTSProvider {
+    readonly providerName = 'webspeech'
+
     private readonly synth: SpeechSynthesis | null =
         typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis
             ? window.speechSynthesis
@@ -36,6 +41,19 @@ class TTSService implements ITTSProvider {
     }
 
     speak(text: string, lang: Language, onEnd: () => void, settings: TTSSettings) {
+        // Apply text normalization for better TTS output
+        const normalizedText = speakNatural(text, lang)
+
+        // Route to Cloud TTS if enabled and available
+        if (settings.cloudTtsEnabled && cloudTtsService.isSupported()) {
+            voiceTelemetryService.recordVoiceEvent('ttsPlayed', { provider: 'elevenlabs' })
+            cloudTtsService.setEncryptedApiKey(settings.cloudTtsApiKey)
+            cloudTtsService.speak(normalizedText, lang, onEnd, settings)
+            return
+        }
+
+        voiceTelemetryService.recordVoiceEvent('ttsPlayed', { provider: 'webspeech' })
+
         if (!this.synth || typeof SpeechSynthesisUtterance === 'undefined') {
             onEnd()
             return
@@ -45,7 +63,7 @@ class TTSService implements ITTSProvider {
             this.synth.cancel()
         }
 
-        const utterance = new SpeechSynthesisUtterance(text)
+        const utterance = new SpeechSynthesisUtterance(normalizedText)
         this.onEndCallback = onEnd
 
         utterance.onend = () => {

@@ -417,6 +417,47 @@ export const settingsView = {
         next: 'Siguiente',
         stop: 'Detener',
     },
+    voice: {
+        wakeWord: {
+            title: 'Motor de Palabra Clave',
+            engine: 'Motor de Palabra Clave',
+            engineDesc: 'Elige el motor que escucha la palabra de activacion.',
+            regex: 'Regex (integrado)',
+            porcupine: 'Porcupine (WASM)',
+            accessKey: 'Clave de Acceso Porcupine',
+            accessKeyDesc: 'Tu clave de acceso Picovoice. Se almacena cifrada localmente.',
+            accessKeyPlaceholder: 'Introduce la clave de acceso...',
+            keyword: 'Palabra de Activacion',
+        },
+        cloudTts: {
+            title: 'TTS en la Nube (opcional)',
+            enabled: 'Activar TTS en la Nube',
+            enabledDesc: 'Usa un proveedor de voz en la nube para mayor calidad de voz.',
+            provider: 'Proveedor',
+            apiKey: 'Clave API',
+            apiKeyDesc:
+                'Tu clave API del proveedor. Cifrada localmente, nunca se envia a nuestros servidores.',
+            apiKeyPlaceholder: 'Introduce la clave API...',
+            privacyNote:
+                'Tu clave API se cifra localmente. No se envian datos a nuestros servidores.',
+        },
+        advanced: {
+            title: 'Opciones de Voz Avanzadas',
+            workerEnabled: 'Worker de Voz (segundo plano)',
+            workerEnabledDesc:
+                'Procesa comandos de voz en un worker en segundo plano. Activa forma de onda dinamica y UI mas fluida.',
+            analyticsEnabled: 'Analiticas de Voz (opt-in)',
+            analyticsEnabledDesc:
+                'Recopila estadisticas de uso anonimas. No se almacenan transcripciones ni datos personales.',
+            refreshStats: 'Actualizar',
+            export: 'Exportar',
+            clear: 'Borrar',
+            totalCommands: 'Comandos Totales',
+            successRate: 'Tasa de Exito',
+            avgLatency: 'Latencia Prom.',
+            hotwordCount: 'Detecciones de Hotword',
+        },
+    },
     strains: {
         title: 'Configuracion de Vista de Variedades',
         defaultSort: 'Orden Predeterminado',

@@ -6,6 +6,35 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **feat(voice):** Porcupine WASM wake-word detection service with
+  BYOK AccessKey, 11 built-in keywords, dual-engine support
+  (regex/porcupine) -- 100% on-device, no data leaves client
+- **feat(voice):** Cloud TTS via ElevenLabs BYOK -- AES-256-GCM
+  encrypted API key at rest, rate-limited (5 req/min), 5 language
+  support
+- **feat(voice):** speakNatural() text normalization for TTS -- 30+
+  cannabis/science abbreviation expansions, markdown stripping, unit
+  conversion, German decimal handling
+- **feat(voice):** voice worker for off-main-thread transcript
+  processing -- filler word removal (5 languages), 3-pass command
+  matching (exact/fuzzy Levenshtein/keyword scoring), waveform
+  computation
+- **feat(voice):** opt-in anonymous voice analytics telemetry -- ring
+  buffer (500 events), localStorage persistence, per-metric snapshots,
+  export/clear, no PII or transcript storage
+- **feat(voice):** VoiceHUD dynamic waveform visualization via
+  AnalyserNode when voice worker enabled, CSS animation fallback
+- **feat(voice):** VoiceSettingsTab three new sections -- Wake-Word
+  Engine (regex/porcupine), Cloud TTS (toggle/provider/key), Advanced
+  Voice Options (worker toggle, analytics with stats grid)
+- **i18n(voice):** 28 new voice settings keys in all 5 languages
+  (EN/DE/ES/FR/NL) -- wakeWord, cloudTts, advanced subsections
+- **test(voice):** 35 new tests across 5 test files
+  (porcupineWakeWordService, speakNaturalService, cloudTtsService,
+  voiceTelemetryService, voiceWorker)
+
 ### Fixed
 
 - **fix(equipment):** resolve 8 TS errors in SetupConfigurator caused by

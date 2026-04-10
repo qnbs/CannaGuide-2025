@@ -408,6 +408,47 @@ export const settingsView = {
         next: 'Volgende',
         stop: 'Stoppen',
     },
+    voice: {
+        wakeWord: {
+            title: 'Wake-Word Engine',
+            engine: 'Wake-Word Engine',
+            engineDesc: 'Kies de engine die luistert naar het activeringswoord.',
+            regex: 'Regex (ingebouwd)',
+            porcupine: 'Porcupine (WASM)',
+            accessKey: 'Porcupine Toegangssleutel',
+            accessKeyDesc: 'Je Picovoice-toegangssleutel. Lokaal versleuteld opgeslagen.',
+            accessKeyPlaceholder: 'Voer toegangssleutel in...',
+            keyword: 'Activeringswoord',
+        },
+        cloudTts: {
+            title: 'Cloud TTS (optioneel)',
+            enabled: 'Cloud TTS inschakelen',
+            enabledDesc: 'Gebruik een cloud-spraakprovider voor hogere spraakkwaliteit.',
+            provider: 'Provider',
+            apiKey: 'API-sleutel',
+            apiKeyDesc:
+                'Je provider API-sleutel. Lokaal versleuteld, wordt nooit naar onze servers gestuurd.',
+            apiKeyPlaceholder: 'Voer API-sleutel in...',
+            privacyNote:
+                'Je API-sleutel wordt lokaal versleuteld. Er worden geen gegevens naar onze servers gestuurd.',
+        },
+        advanced: {
+            title: 'Geavanceerde Spraakopties',
+            workerEnabled: 'Spraak Worker (achtergrond)',
+            workerEnabledDesc:
+                'Verwerk spraakopdrachten in een achtergrond-worker. Schakelt dynamische golfvorm en vloeiendere UI in.',
+            analyticsEnabled: 'Spraakanalyse (opt-in)',
+            analyticsEnabledDesc:
+                'Verzamel anonieme gebruiksstatistieken. Er worden geen transcripties of persoonlijke gegevens opgeslagen.',
+            refreshStats: 'Vernieuwen',
+            export: 'Exporteren',
+            clear: 'Wissen',
+            totalCommands: 'Totaal Opdrachten',
+            successRate: 'Slagingspercentage',
+            avgLatency: 'Gem. Latentie',
+            hotwordCount: 'Hotword Detecties',
+        },
+    },
     strains: {
         title: 'Instellingen rassenweergave',
         defaultSort: 'Standaard sorteervolgorde',

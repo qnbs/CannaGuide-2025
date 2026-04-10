@@ -144,6 +144,33 @@ export interface HydroForecastMessages {
     }
 }
 
+/** Serializable voice command definition for worker-side matching. */
+export interface SerializedVoiceCommand {
+    id: string
+    aliases: string[]
+    keywords: string
+}
+
+/** Voice processing worker messages (`voice`). */
+export interface VoiceWorkerMessages {
+    PARSE_COMMAND: {
+        payload: { transcript: string; commands: SerializedVoiceCommand[] }
+        response: {
+            commandId: string | null
+            confidence: number
+            matchType: 'exact' | 'fuzzy' | 'keyword' | 'none'
+        }
+    }
+    PROCESS_TRANSCRIPT: {
+        payload: { transcript: string; lang: string }
+        response: { cleaned: string; detectedLang: string }
+    }
+    COMPUTE_WAVEFORM: {
+        payload: { samples: Float32Array; barCount: number }
+        response: { amplitudes: Uint8Array }
+    }
+}
+
 /**
  * Map from registered worker name to its typed message definitions.
  * Workers not listed here are still callable via the generic `dispatch`
@@ -153,6 +180,7 @@ export interface WorkerMessageMap {
     simulation: SimulationMessages
     visionInference: VisionInferenceMessages
     hydroForecast: HydroForecastMessages
+    voice: VoiceWorkerMessages
 }
 
 /**

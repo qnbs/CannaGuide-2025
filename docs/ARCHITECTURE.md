@@ -133,7 +133,7 @@ The app uses a **dual-store architecture** with clear separation of concerns:
 Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, grows, metrics, hydro, growPlanner, diagnosisHistory, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
 
 **Zustand (8 stores, transient/never persisted):**
-`useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite).
+`useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useVoiceStore` (voice session state, mode, transcriptHistory, confirmationPending, error), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite).
 
 **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
 
@@ -157,6 +157,18 @@ All AI capabilities are exposed through a single facade (`aiFacade.ts`):
 - **`setAiMode` / `getAiMode` / `isEcoMode`** -- execution mode helpers
 
 Components and hooks must import from `aiFacade`, not from individual service files.
+
+## Voice Architecture (v1.8 CannaVoice Pro)
+
+Voice interaction is a layered system with 5 subsystems:
+
+- **Wake-Word Detection:** dual engine -- regex hotword (`HOTWORD_REGEX` in `VoiceControl.tsx`) or Porcupine WASM (`porcupineWakeWordService.ts`). Porcupine runs 100% on-device with no data leaving the client. Requires BYOK AccessKey.
+- **Speech Recognition:** Web Speech API (`SpeechRecognition`), with mic stream routed through `VoiceControl.tsx`. Transcript cleaning via `voiceWorker.ts` (filler removal, normalization).
+- **Voice Orchestrator:** `voiceOrchestratorService.ts` -- finite state machine (IDLE/LISTENING/PROCESSING/SPEAKING/CONFIRMATION). Matches commands via `voiceCommandRegistry`, executes actions, and handles confirmation flows.
+- **TTS Pipeline:** `ttsService.ts` routes through `speakNatural()` for text normalization (abbreviation expansion, markdown stripping, unit conversion), then dispatches to WebSpeech or `cloudTtsService.ts` (ElevenLabs BYOK, AES-256-GCM encrypted key).
+- **Telemetry:** `voiceTelemetryService.ts` -- opt-in anonymous analytics (no PII/transcripts). Ring buffer (500 events), localStorage persistence, per-metric snapshots.
+- **Voice Worker:** `voiceWorker.ts` -- off-main-thread transcript processing (filler removal, command matching via Levenshtein + keyword scoring, waveform computation).
+- **VoiceHUD:** `VoiceHUD.tsx` -- dynamic waveform visualization via `AnalyserNode` when voice worker is enabled, CSS animation fallback otherwise.
 
 ## Monorepo Package Responsibilities
 

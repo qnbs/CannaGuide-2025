@@ -6,6 +6,18 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **docs:** restructure README.md aligned with DeepWiki TOC (933 -> 595
+  lines, tables over prose, all doc links preserved)
+- **ci(release):** add SBOM SHA-256 checksum row to release notes in
+  release-publish.yml
+- **docs(security):** add SBOM inspection commands and audit
+  verification status section to SECURITY.md
+- **docs(audit):** add supply-chain audit entries SC-01 (SLSA Verifier
+  CI), SC-02 (Onboarding Data Consumption), SC-03 (Release Pipeline
+  Dry-Run) to AUDIT_BACKLOG.md
+
 ### Added
 
 - **feat(ai):** Mobile-optimized Local AI stack -- `isMobileDevice()`,

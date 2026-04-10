@@ -2,7 +2,70 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 120) -- Local AI Mobile Optimization
+## Latest Session (Session 121) -- Supply-Chain Audit Verification + README Restructure
+
+**Status: 6 files changed. Independent verification of SBOM/SLSA/Onboarding audits (all found already implemented). README restructured from 933 to 595 lines aligned with DeepWiki TOC. 3 new AUDIT_BACKLOG entries. Pipeline SBOM SHA-256 improvement. 2028 tests passing.**
+
+### What Was Done (Session 121)
+
+1. **Audit Verification** -- Three external audit claims independently
+   verified against actual codebase:
+    - "SBOM fehlt komplett" -> INCORRECT: CycloneDX SBOM fully
+      implemented via anchore/sbom-action@v0.18.0 since commit 2d7faf2
+    - "Nur 1-Job Pipeline" -> INCORRECT: 3-job architecture
+      (build -> provenance -> release) with SLSA L3 via
+      slsa-github-generator@v2.1.0
+    - "Onboarding Step 8 fehlt" -> INCORRECT: Step 8 "Space & Budget"
+      exists in OnboardingModal.tsx line 362, gates at step < 8
+
+2. **AUDIT_BACKLOG.md** -- 3 new supply-chain entries:
+    - SC-01: SLSA Verifier CI Integration (Medium, Open)
+    - SC-02: Onboarding Data Consumption (Low, Open)
+    - SC-03: Release Pipeline Dry-Run Verification (Low, Open)
+    - Summary table updated (Medium 28->29, Low 10->12)
+
+3. **release-publish.yml** -- Added SBOM SHA-256 computation and
+   second checksum row in release notes table. Removed duplicate
+   echo line.
+
+4. **SECURITY.md** -- Added SBOM inspection commands (jq component
+   count, gh attestation verify). Added "Audit Verification Status
+   (2026-04-10)" section documenting independent verification
+   results.
+
+5. **README.md Restructure** -- Complete rewrite aligned with
+   DeepWiki TOC: 933 -> 595 lines, tables over prose, all badges
+   preserved (EN + DE), all doc links kept, 17 sections matching
+   DeepWiki navigation. German version compacted as summary tables.
+
+6. **CHANGELOG.md** -- 4 new entries under [Unreleased] Changed
+   section.
+
+### Verified Metrics
+
+- Tests: **2028 passing**, 0 failures
+- TypeScript: clean (typecheck-filter passes)
+- Build: succeeds
+- README: 595 lines (was 933)
+
+### Real Gaps Found (For Future Sessions)
+
+- SC-01: No automated `slsa-verifier verify-artifact` step in CI
+  (currently manual-only verification)
+- SC-02: Onboarding Step 8 collects spaceSize/budget to localStorage
+  but data is never consumed downstream by any service
+- SC-03: No dry-run/canary mode for release pipeline testing
+
+### Next Steps
+
+- Implement SC-01: Add slsa-verifier CI step post-release
+- Implement SC-02: Wire onboarding data to equipment configurator
+- Consider SC-03: Release pipeline dry-run workflow
+- Continue items from Session 120 Next Steps
+
+---
+
+## Previous Session (Session 120) -- Local AI Mobile Optimization
 
 **Status: 26 files changed, 999 insertions. Mobile-first Local AI stack with 3-layer fallback (WebLLM -> Transformers.js -> Heuristics) optimized for Redmi/Samsung A56 Chrome. Diagnosis i18n migration (33 labels). 2028 tests passing.**
 

@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { generateGrowReport } from './pdfReportService'
-import type { Plant, JournalEntry, JournalEntryType } from '@/types'
+import {
+    generateGrowReport,
+    buildOfflineSummary,
+    computeMetricStats,
+    buildDiagnosisRows,
+} from './pdfReportService'
+import type {
+    Plant,
+    JournalEntry,
+    JournalEntryType,
+    MetricsReading,
+    DiagnosisRecord,
+} from '@/types'
 import { PlantStage, StrainType } from '@/types'
 
 // ---------------------------------------------------------------------------
@@ -195,6 +206,205 @@ describe('generateGrowReport', () => {
             const noteCell = body[0]?.[2]
             expect(noteCell).toBeDefined()
             expect(noteCell?.length).toBeLessThanOrEqual(83) // 80 + '...'
+        }
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Enhanced report helpers
+// ---------------------------------------------------------------------------
+
+function makeReading(overrides?: Partial<MetricsReading>): MetricsReading {
+    return {
+        id: 'reading-1',
+        plantId: 'plant-1',
+        timestamp: Date.now(),
+        height: 30,
+        co2: 400,
+        ...overrides,
+         
+    } as MetricsReading
+}
+
+function makeDiagnosis(overrides?: Partial<DiagnosisRecord>): DiagnosisRecord {
+    return {
+        id: 'diag-1',
+        plantId: 'plant-1',
+        timestamp: Date.now(),
+        label: 'Nitrogen deficiency',
+        confidence: 0.85,
+        severity: 'mild',
+        harvestScore: 75,
+        ...overrides,
+         
+    } as DiagnosisRecord
+}
+
+// ---------------------------------------------------------------------------
+// computeMetricStats
+// ---------------------------------------------------------------------------
+
+describe('computeMetricStats', () => {
+    it('returns empty array for no readings', () => {
+        expect(computeMetricStats([])).toEqual([])
+    })
+
+    it('computes height stats from readings', () => {
+        const readings = [
+            makeReading({ height: 20 }),
+            makeReading({ id: 'r2', height: 40 }),
+            makeReading({ id: 'r3', height: 30 }),
+        ]
+        const stats = computeMetricStats(readings)
+        const heightStat = stats.find((s) => s.label === 'Height')
+        expect(heightStat).toBeDefined()
+        expect(heightStat?.min).toBe('20.0')
+        expect(heightStat?.max).toBe('40.0')
+        expect(heightStat?.avg).toBe('30.0')
+        expect(heightStat?.unit).toBe('cm')
+    })
+
+    it('computes CO2 stats from readings', () => {
+        const readings = [makeReading({ co2: 300 }), makeReading({ id: 'r2', co2: 600 })]
+        const stats = computeMetricStats(readings)
+        const co2Stat = stats.find((s) => s.label === 'CO2')
+        expect(co2Stat).toBeDefined()
+        expect(co2Stat?.min).toBe('300')
+        expect(co2Stat?.max).toBe('600')
+        expect(co2Stat?.avg).toBe('450')
+        expect(co2Stat?.unit).toBe('ppm')
+    })
+
+    it('skips fields with no values', () => {
+        const readings = [makeReading({ height: 25, co2: undefined, potWeight: undefined })]
+        const stats = computeMetricStats(readings)
+        expect(stats).toHaveLength(1)
+        expect(stats[0]?.label).toBe('Height')
+    })
+
+    it('handles single reading correctly', () => {
+        const readings = [makeReading({ height: 50 })]
+        const stats = computeMetricStats(readings)
+        const heightStat = stats.find((s) => s.label === 'Height')
+        expect(heightStat?.min).toBe('50.0')
+        expect(heightStat?.max).toBe('50.0')
+        expect(heightStat?.avg).toBe('50.0')
+    })
+})
+
+// ---------------------------------------------------------------------------
+// buildDiagnosisRows
+// ---------------------------------------------------------------------------
+
+describe('buildDiagnosisRows', () => {
+    it('returns empty array for no records', () => {
+        expect(buildDiagnosisRows([])).toEqual([])
+    })
+
+    it('sorts records by timestamp ascending', () => {
+        const records = [
+            makeDiagnosis({ id: 'd1', timestamp: 3000, label: 'Third' }),
+            makeDiagnosis({ id: 'd2', timestamp: 1000, label: 'First' }),
+            makeDiagnosis({ id: 'd3', timestamp: 2000, label: 'Second' }),
+        ]
+        const rows = buildDiagnosisRows(records)
+        expect(rows[0]?.label).toBe('First')
+        expect(rows[1]?.label).toBe('Second')
+        expect(rows[2]?.label).toBe('Third')
+    })
+
+    it('formats confidence as percentage', () => {
+        const records = [makeDiagnosis({ confidence: 0.923 })]
+        const rows = buildDiagnosisRows(records)
+        expect(rows[0]?.confidence).toBe('92%')
+    })
+
+    it('truncates long labels to 40 chars', () => {
+        const longLabel = 'A'.repeat(60)
+        const records = [makeDiagnosis({ label: longLabel })]
+        const rows = buildDiagnosisRows(records)
+        expect(rows[0]?.label.length).toBeLessThanOrEqual(43) // 40 + '...'
+    })
+
+    it('preserves severity string as-is', () => {
+        const records = [makeDiagnosis({ severity: 'severe' })]
+        const rows = buildDiagnosisRows(records)
+        expect(rows[0]?.severity).toBe('severe')
+    })
+})
+
+// ---------------------------------------------------------------------------
+// buildOfflineSummary
+// ---------------------------------------------------------------------------
+
+describe('buildOfflineSummary', () => {
+    it('includes plant name, stage, and health', () => {
+        const result = buildOfflineSummary(basePlant, [], [])
+        expect(result.summary).toContain('White Widow')
+        expect(result.summary).toContain(PlantStage.Flowering)
+        expect(result.summary).toContain('85%')
+    })
+
+    it('includes height range when metrics are available', () => {
+        const metrics = [makeReading({ height: 20 }), makeReading({ id: 'r2', height: 40 })]
+        const result = buildOfflineSummary(basePlant, metrics, [])
+        expect(result.summary).toContain('20.0')
+        expect(result.summary).toContain('40.0')
+    })
+
+    it('includes latest diagnosis info', () => {
+        const diagnosis = [
+            makeDiagnosis({
+                label: 'Calcium deficiency',
+                severity: 'moderate',
+                confidence: 0.9,
+            }),
+        ]
+        const result = buildOfflineSummary(basePlant, [], diagnosis)
+        expect(result.summary).toContain('Calcium deficiency')
+        expect(result.summary).toContain('moderate')
+    })
+
+    it('recommends monitoring when health is low', () => {
+        const lowHealthPlant = { ...basePlant, health: 50 }
+        const result = buildOfflineSummary(lowHealthPlant, [], [])
+        expect(result.recommendations).toContainEqual(
+            expect.stringContaining('Monitor plant health'),
+        )
+    })
+
+    it('recommends addressing severe diagnosis', () => {
+        const diagnosis = [makeDiagnosis({ severity: 'severe' })]
+        const result = buildOfflineSummary(basePlant, [], diagnosis)
+        expect(result.recommendations).toContainEqual(expect.stringContaining('severe diagnosis'))
+    })
+
+    it('recommends more metrics when few readings exist', () => {
+        const metrics = [makeReading()]
+        const result = buildOfflineSummary(basePlant, metrics, [])
+        expect(result.recommendations).toContainEqual(expect.stringContaining('Log more metrics'))
+    })
+
+    it('gives positive feedback when plant is healthy', () => {
+        const healthyPlant = { ...basePlant, health: 95 }
+        const metrics = Array.from({ length: 10 }, (_, i) =>
+            makeReading({ id: `r-${i}`, height: 25 + i }),
+        )
+        const result = buildOfflineSummary(healthyPlant, metrics, [])
+        expect(result.recommendations).toContainEqual(expect.stringContaining('progressing well'))
+    })
+
+    it('always returns at least one recommendation', () => {
+        const result = buildOfflineSummary(basePlant, [], [])
+        expect(result.recommendations.length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('summary and recommendations are strings', () => {
+        const result = buildOfflineSummary(basePlant, [], [])
+        expect(typeof result.summary).toBe('string')
+        expect(result.summary.length).toBeGreaterThan(10)
+        for (const rec of result.recommendations) {
+            expect(typeof rec).toBe('string')
         }
     })
 })

@@ -6,6 +6,21 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **feat(pdf):** Enhanced PDF Reports with metrics charts, diagnosis
+  trend visualization, AI-generated plant summary, and offline
+  template fallback. Canvas-rendered line charts (height/CO2) and
+  severity bar charts. Metric statistics table (min/max/avg).
+  Color-coded diagnosis history. New `generateEnhancedGrowReport()`
+    - 3 exported helper functions with 19 unit tests.
+- **feat(pdf):** Enhanced Report button in DetailedPlantView with
+  emerald theme, loading spinner, and dynamic import
+- **i18n(plants):** 15 new export keys for enhanced PDF reports across
+  all 5 languages (EN/DE/ES/FR/NL)
+- **docs(readme):** Distribution table with Netlify primary URL and
+  GitHub Pages secondary. Enhanced PDF Reports feature description.
+
 ### Fixed
 
 - **i18n(equipment):** fix Humidity Deficit Calculator using wrong

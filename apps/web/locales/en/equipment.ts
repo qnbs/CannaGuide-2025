@@ -82,6 +82,7 @@ export const equipmentView = {
         count: '{{count}} setups',
         copyToMySetups: 'Copy to My Setups',
         copied: 'Copied!',
+        recommended: 'Recommended for You',
         footer: 'Prices are approximate EU retail values (2025). Actual costs may vary by region and vendor.',
         categories: {
             all: 'All',

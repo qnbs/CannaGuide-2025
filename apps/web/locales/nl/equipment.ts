@@ -79,6 +79,7 @@ export const equipmentView = {
         count: '{{count}} configuraties',
         copyToMySetups: 'Kopieren naar Mijn Configuraties',
         copied: 'Gekopieerd!',
+        recommended: 'Aanbevolen voor jou',
         footer: 'Prijzen zijn geschatte EU-retailwaarden (2025). Werkelijke kosten kunnen afwijken per regio en leverancier.',
         categories: {
             all: 'Alle',

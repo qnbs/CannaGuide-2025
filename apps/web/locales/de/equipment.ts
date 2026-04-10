@@ -83,6 +83,7 @@ export const equipmentView = {
         count: '{{count}} Setups',
         copyToMySetups: 'In meine Setups kopieren',
         copied: 'Kopiert!',
+        recommended: 'Empfohlen fuer dich',
         footer: 'Preise sind ungefaehre EU-Einzelhandelspreise (2025). Tatsaechliche Kosten koennen je nach Region und Haendler abweichen.',
         categories: {
             all: 'Alle',

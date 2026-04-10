@@ -613,6 +613,10 @@ export const settingsView = {
             loading: 'Chargement des donnees...',
             empty: 'Informations de stockage indisponibles.',
         },
+        crdtDocSize: 'Document CRDT',
+        crdtFallback:
+            'Synchronisation CRDT en mode de secours (LWW). Fusion hors ligne desactivee.',
+        crdtSizeWarning: 'Le document CRDT depasse 1 Mo. Envisagez un nettoyage du stockage.',
         backupAndRestore: 'Sauvegarde & Restauration',
         dangerZone: 'Zone de danger',
         importData: 'Importer des donnees',

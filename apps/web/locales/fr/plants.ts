@@ -288,6 +288,11 @@ export const plantsView = {
             photos: 'Photos',
             ai: 'Outils IA',
             postHarvest: 'Post-Recolte',
+            metrics: 'Metriques',
+            timeline: 'Chronologie',
+            planner: 'Planificateur',
+            environment: 'Environnement',
+            analytics: 'Analytique',
         },
         journalFilters: {
             watering: 'Arrosage',

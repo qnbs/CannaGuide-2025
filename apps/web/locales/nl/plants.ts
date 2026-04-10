@@ -277,6 +277,11 @@ export const plantsView = {
             photos: "Foto's",
             ai: 'AI Gereedschap',
             postHarvest: 'Na-oogst',
+            metrics: 'Metrieken',
+            timeline: 'Tijdlijn',
+            planner: 'Planner',
+            environment: 'Omgeving',
+            analytics: 'Analyse',
         },
         journalFilters: {
             watering: 'Bewatering',

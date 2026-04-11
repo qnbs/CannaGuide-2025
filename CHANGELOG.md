@@ -8,6 +8,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(pwa):** `robots.txt` and `.nojekyll` added to `public/` for
+  proper GitHub Pages handling and web crawler access
 - **feat(workers):** VPD SAB consumer hook `useVpdSabStream` -- polls
   AtomicsChannel signals and LockFreeRingBuffer values from the VPD
   simulation worker at 250ms intervals. Progressive enhancement:
@@ -24,6 +26,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **fix(pwa):** manifest.json `id`/`start_url`/`scope` changed from
+  hardcoded `/CannaGuide-2025/` to relative `"./"` -- fixes PWA install
+  on Netlify/Vercel/Cloudflare Pages (base=`/`)
 - **refactor(workers):** Demoted voice worker from `hot: true` to
   `hot: false` in workerFactories.ts -- SAB channels were allocated
   on spawn but never used (W-07 will re-enable for waveform streaming)
@@ -33,6 +38,17 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(security):** Added `Strict-Transport-Security: max-age=31536000;
+includeSubDomains` to all 5 deployment configs (securityHeaders.ts,
+  netlify.toml, vercel.json, public/\_headers, vite.config.ts)
+- **fix(security):** Added `X-DNS-Prefetch-Control: on` to all configs
+  for proactive DNS resolution of AI provider endpoints
+- **fix(pwa):** SW Cache-Control in `_headers` aligned to `no-cache,
+no-store, must-revalidate` (was `public, max-age=0, must-revalidate`)
+- **fix(pwa):** HTML `index.html` Cache-Control rules added to
+  netlify.toml and vercel.json (previously only in \_headers)
+- **fix(ci):** CSP consistency checker extended from 3 to 5 delivery
+  paths (added vercel.json and public/\_headers validation)
 - **fix(ci):** Snyk workflow HAS_TOKEN env -- added missing
   `${{ secrets.SNYK_TOKEN != '' }}` evaluation so token-conditional
   steps work correctly. Snyk remains advisory-only (weekly schedule)

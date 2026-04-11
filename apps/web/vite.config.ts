@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 import type { PluginOption } from 'vite'
 
 const __webRoot = path.dirname(fileURLToPath(import.meta.url))
-import { CSP, DEV_CSP, PERMISSIONS_POLICY, COEP } from './securityHeaders'
+import { CSP, DEV_CSP, PERMISSIONS_POLICY, COEP, HSTS } from './securityHeaders'
 
 // ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
 // When missing, dynamic imports at runtime will fail gracefully — the app guards these.
@@ -162,6 +162,8 @@ export default defineConfig({
             'Permissions-Policy': PERMISSIONS_POLICY,
             'Cross-Origin-Embedder-Policy': COEP,
             'Cross-Origin-Opener-Policy': 'same-origin',
+            'Strict-Transport-Security': HSTS,
+            'X-DNS-Prefetch-Control': 'on',
         },
     },
     preview: {
@@ -170,6 +172,8 @@ export default defineConfig({
             'Permissions-Policy': PERMISSIONS_POLICY,
             'Cross-Origin-Embedder-Policy': COEP,
             'Cross-Origin-Opener-Policy': 'same-origin',
+            'Strict-Transport-Security': HSTS,
+            'X-DNS-Prefetch-Control': 'on',
         },
     },
 

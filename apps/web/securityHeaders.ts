@@ -62,3 +62,10 @@ export const PERMISSIONS_POLICY = [
  * available on Netlify/Vercel/Cloudflare Pages deployments.
  */
 export const COEP = 'credentialless'
+
+/**
+ * HTTP Strict Transport Security.
+ * All deployment targets serve over HTTPS. HSTS instructs browsers to
+ * always use HTTPS for subsequent requests (1 year, include subdomains).
+ */
+export const HSTS = 'max-age=31536000; includeSubDomains'

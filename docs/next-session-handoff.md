@@ -2,7 +2,57 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 142) -- Post-W-06 SAB Audit & Consumer
+## Latest Session (Session 143) -- Deployment Audit & Optimization
+
+**Status: All 4 deployment targets (GitHub Pages, Netlify, Vercel,
+Cloudflare Pages) audited and hardened. 8 issues fixed. Tests
+passing (2198), typecheck clean, build OK.**
+
+### What Was Done (Session 143)
+
+1. **manifest.json PWA fix (CRITICAL):** Changed `id`, `start_url`,
+   `scope` from hardcoded `/CannaGuide-2025/` to relative `"./"`.
+   Previously PWA install was broken on Netlify/Vercel/Cloudflare
+   (all use base `/`). Relative paths resolve correctly per-platform.
+
+2. **SW Cache-Control alignment:** `_headers` SW rule changed from
+   `public, max-age=0, must-revalidate` to `no-cache, no-store,
+must-revalidate` to match netlify.toml/vercel.json.
+
+3. **HSTS added to all 4 configs:** `Strict-Transport-Security:
+max-age=31536000; includeSubDomains` added to securityHeaders.ts,
+   vite.config.ts, netlify.toml, vercel.json, and public/\_headers.
+
+4. **X-DNS-Prefetch-Control: on** added to all configs for proactive
+   DNS resolution of AI provider endpoints.
+
+5. **HTML Cache-Control:** Explicit `index.html` no-cache rules added
+   to netlify.toml and vercel.json (previously only in \_headers).
+
+6. **CSP consistency checker extended:** `check-csp-consistency.mjs`
+   now validates all 5 delivery paths (securityHeaders.ts,
+   index.html, netlify.toml, vercel.json, public/\_headers). Was 3.
+
+7. **Static files:** Created `.nojekyll` (GitHub Pages underscore-
+   prefix safety) and `robots.txt` (Allow: /).
+
+### Verified Metrics
+
+- Typecheck: clean (0 errors)
+- Tests: 2198 passing (191 files)
+- Build: success (171 precache entries)
+- CSP checker: all 5 paths consistent
+
+### Next Steps
+
+- Monitor PWA install behavior on Netlify/Vercel/Cloudflare deploys
+- Consider `Referrer-Policy: same-origin` (stricter than current
+  `strict-origin-when-cross-origin`) after testing
+- W-07 (voice SAB waveform streaming) per docs/worker-bus.md
+
+---
+
+## Previous Session (Session 142) -- Post-W-06 SAB Audit & Consumer
 
 **Status: SAB dead-end fixed, dead code cleaned up, telemetry
 enhanced. Tests passing (2198), typecheck clean, build OK.**

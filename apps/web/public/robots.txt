@@ -1,0 +1,3 @@
+# CannaGuide 2025 -- PWA robots policy
+User-agent: *
+Allow: /

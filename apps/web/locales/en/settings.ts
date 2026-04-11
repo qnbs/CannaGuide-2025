@@ -1162,5 +1162,10 @@ export const settingsView = {
         preemptions: 'Preemptions',
         concurrency: 'Concurrency',
         lastUpdated: 'Last updated',
+        sabLiveData: 'Live SAB Data',
+        sabVpdStatus: 'VPD Status',
+        sabVpdValue: 'VPD Value',
+        sabNoData: 'No SAB data available (requires cross-origin isolation)',
+        sabBufferUtil: 'Buffer Utilization',
     },
 }

@@ -1184,5 +1184,10 @@ export const settingsView = {
         preemptions: 'Verdringingen',
         concurrency: 'Gelijktijdigheid',
         lastUpdated: 'Laatst bijgewerkt',
+        sabLiveData: 'Live SAB-gegevens',
+        sabVpdStatus: 'VPD Status',
+        sabVpdValue: 'VPD Waarde',
+        sabNoData: 'Geen SAB-gegevens beschikbaar (vereist cross-origin isolatie)',
+        sabBufferUtil: 'Buffergebruik',
     },
 }

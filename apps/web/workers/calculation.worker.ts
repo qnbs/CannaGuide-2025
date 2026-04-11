@@ -14,7 +14,7 @@
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
 import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
-import { initSabHandler } from '@/utils/workerSabHandler'
+// SAB: not needed for batch curve computation (no streaming use case)
 
 // ---------------------------------------------------------------------------
 // Security: trusted-origin guard
@@ -273,6 +273,3 @@ self.onmessage = (
 
 // W-02.1: Install cooperative abort handler (must be after self.onmessage)
 initAbortHandler()
-
-// W-06/SAB: Install SAB handler (must be after initAbortHandler)
-initSabHandler()

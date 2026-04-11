@@ -76,6 +76,7 @@ describe('WorkerTelemetryTab', () => {
             totalTerminated: 7,
             maxPoolSize: 8,
             sabAvailable: false,
+            sabBufferUtilization: {},
         }
         renderTab({}, pool)
 

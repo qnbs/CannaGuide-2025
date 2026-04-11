@@ -1202,5 +1202,10 @@ export const settingsView = {
         preemptions: 'Apropiaciones',
         concurrency: 'Concurrencia',
         lastUpdated: 'Ultima actualizacion',
+        sabLiveData: 'Datos SAB en vivo',
+        sabVpdStatus: 'Estado VPD',
+        sabVpdValue: 'Valor VPD',
+        sabNoData: 'Sin datos SAB disponibles (requiere aislamiento de origen cruzado)',
+        sabBufferUtil: 'Utilizacion del buffer',
     },
 }

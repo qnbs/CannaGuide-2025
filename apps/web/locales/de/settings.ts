@@ -1189,5 +1189,10 @@ export const settingsView = {
         preemptions: 'Verdraengungen',
         concurrency: 'Parallelitaet',
         lastUpdated: 'Zuletzt aktualisiert',
+        sabLiveData: 'Live-SAB-Daten',
+        sabVpdStatus: 'VPD-Status',
+        sabVpdValue: 'VPD-Wert',
+        sabNoData: 'Keine SAB-Daten verfuegbar (erfordert Cross-Origin-Isolation)',
+        sabBufferUtil: 'Puffer-Auslastung',
     },
 }

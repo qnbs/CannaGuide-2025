@@ -42,22 +42,15 @@ const SAFE_TEMP_MAX = 24
 // ---------------------------------------------------------------------------
 
 let _modelReady = false
-let _workerRegistered = false
 let _initPromise: Promise<void> | null = null
 
 // ---------------------------------------------------------------------------
-// Worker registration (lazy)
+// Worker registration (W-06: delegated to WorkerPool auto-spawn)
 // ---------------------------------------------------------------------------
 
+/** No-op -- W-06 WorkerPool auto-spawns on first dispatch. */
 function ensureWorkerRegistered(): void {
-    if (_workerRegistered) return
-    _workerRegistered = true
-    workerBus.register(
-        WORKER_NAME,
-        new Worker(new URL('../workers/hydroForecastWorker.ts', import.meta.url), {
-            type: 'module',
-        }),
-    )
+    // Retained for call-site compatibility within this module.
 }
 
 // ---------------------------------------------------------------------------
@@ -291,7 +284,7 @@ export async function forecastNextHour(readings: HydroReading[]): Promise<HydroF
     }
 
     // Try worker-based forecast (ONNX or worker-side moving average)
-    if (_workerRegistered) {
+    if (workerBus.has(WORKER_NAME)) {
         try {
             const input = readingsToInput(readings)
             const result = await workerBus.dispatch<{

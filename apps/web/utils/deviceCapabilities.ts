@@ -25,6 +25,12 @@ const LOW_BATTERY_THRESHOLD = 0.2
 /** Fallback core count when navigator.hardwareConcurrency is unavailable. */
 const FALLBACK_CORES = 4
 
+/** Minimum pool size regardless of device capabilities. */
+const MIN_POOL_SIZE = 4
+
+/** Maximum pool size cap (even on high-end hardware). */
+const MAX_POOL_SIZE = 16
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -75,4 +81,19 @@ export async function getAdaptiveConcurrencyLimit(): Promise<number> {
     }
 
     return limit
+}
+
+/**
+ * Maximum number of Worker instances the pool may keep alive.
+ *
+ * Based on `navigator.hardwareConcurrency` clamped to [MIN_POOL_SIZE, MAX_POOL_SIZE].
+ * Synchronous -- no side effects.
+ */
+export function getMaxPoolSize(): number {
+    const cores =
+        typeof navigator !== 'undefined' && typeof navigator.hardwareConcurrency === 'number'
+            ? navigator.hardwareConcurrency
+            : FALLBACK_CORES
+
+    return Math.max(MIN_POOL_SIZE, Math.min(MAX_POOL_SIZE, cores))
 }

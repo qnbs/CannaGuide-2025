@@ -33,6 +33,7 @@ const VoiceSettingsTab = lazy(() => import('./VoiceSettingsTab'))
 const DataManagementTab = lazy(() => import('./DataManagementTab'))
 const IotSettingsTab = lazy(() => import('./IotSettingsTab'))
 const GrowManagerTab = lazy(() => import('./GrowManagerTab'))
+const WorkerTelemetryTab = lazy(() => import('./WorkerTelemetryTab'))
 
 const timeOptions = [
     { value: '12', label: '12/12' },
@@ -2322,6 +2323,9 @@ const SettingsViewComponent: React.FC = () => {
             iot: <PhosphorIcons.WifiHigh className="w-14 h-14 mx-auto text-sky-400" />,
             data: <PhosphorIcons.Archive className="w-14 h-14 mx-auto text-orange-400" />,
             about: <PhosphorIcons.Info className="w-14 h-14 mx-auto text-cyan-400" />,
+            workerTelemetry: (
+                <PhosphorIcons.ChartLineUp className="w-14 h-14 mx-auto text-indigo-400" />
+            ),
         }),
         [],
     )
@@ -2340,6 +2344,9 @@ const SettingsViewComponent: React.FC = () => {
             iot: t('settingsView.categories.iot', { defaultValue: 'Hardware & IoT' }),
             data: t('settingsView.categories.data'),
             about: t('settingsView.categories.about'),
+            workerTelemetry: t('settingsView.categories.workerTelemetry', {
+                defaultValue: 'Worker Telemetry',
+            }),
         }),
         [t],
     )
@@ -2428,6 +2435,18 @@ const SettingsViewComponent: React.FC = () => {
                         }
                     >
                         <AboutTab />
+                    </Suspense>
+                )
+            case 'workerTelemetry':
+                return (
+                    <Suspense
+                        fallback={
+                            <Card>
+                                <SkeletonLoader count={3} />
+                            </Card>
+                        }
+                    >
+                        <WorkerTelemetryTab />
                     </Suspense>
                 )
             default:

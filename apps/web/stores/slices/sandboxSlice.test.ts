@@ -156,6 +156,9 @@ describe('sandboxSlice', () => {
 
         vi.stubGlobal('Worker', MockWorker)
 
+        // W-06: WorkerPool auto-spawn not wired in tests; register manually.
+        workerBus.register('scenario', new MockWorker() as unknown as Worker)
+
         const store = configureStore({
             reducer: rootReducer,
             preloadedState: {

@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                       |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                             |
 | Workers      | WorkerBus (promise-based, 11 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 2140 unit tests, Playwright E2E + Component tests                                  |
+| Testing      | Vitest 2187 unit tests, Playwright E2E + Component tests                                  |
 | Distribution | GitHub Pages, Netlify (PR previews), Vercel, Cloudflare Pages                             |
 
 ---
@@ -190,6 +190,7 @@ The `workerBus.ts` singleton provides centralized, promise-based communication w
 - **SharedArrayBuffer (W-03 COEP):** Progressive enhancement via COEP `credentialless` (ADR-0009). `crossOriginIsolation.ts` detects, `sharedBufferPool.ts` acquires/releases SAB or ArrayBuffer fallback
 - **AtomicsChannel (W-04.1):** Lock-free main-worker signaling via SAB + Int32Array + Atomics (8 slots: 2 signal + 6 data). Falls back to null when SAB unavailable
 - **Lock-Free Ring Buffer (W-05):** SPSC ring buffer on SAB for high-frequency data streaming. Power-of-2 capacity, bitmask arithmetic, batch push/pop, blocking `waitForData()`
+- **Worker Pool (W-06):** `workerPool.ts` provides centralized lifecycle management -- lazy spawning via `getOrCreate()`, 45s idle timeout with `release()`, hot-worker exemption (VPD, voice), device-aware pool sizing via `getMaxPoolSize()`. Factory registry in `workerFactories.ts` with 10 entries. SAB hot-path auto-init on spawn for hot workers (AtomicsChannel + LockFreeRingBuffer). Pool metrics (active/idle/spawned/terminated) flushed to Redux DevTools + Sentry. See ADR-0010.
 - **Abort Support:** AbortController per dispatch, automatic cleanup on cancel
 - **Transferable Objects:** zero-copy transfers for ArrayBuffer/ImageBitmap payloads
 - **State Sync:** `workerStateSyncService.ts` auto-wires dispatch results to Redux/Zustand via handler registry

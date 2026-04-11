@@ -336,6 +336,12 @@ const mountHydratedApp = async () => {
         initWorkerStateSync()
         initWorkerTelemetry(hydratedStore.dispatch)
 
+        // W-06: Initialize WorkerPool with factory registry + attach to WorkerBus
+        const { workerPool } = await import('@/services/workerPool')
+        const { registerAllWorkerFactories } = await import('@/services/workerFactories')
+        registerAllWorkerFactories()
+        workerBus.setWorkerPool(workerPool)
+
         // Initialize proactive smart coach (monitors sensor thresholds -> AI advice)
         const { proactiveCoachService } = await import('@/services/proactiveCoachService')
         proactiveCoachService.init(hydratedStore)

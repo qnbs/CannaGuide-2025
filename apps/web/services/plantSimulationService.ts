@@ -1780,21 +1780,14 @@ const VPD_WORKER_NAME = 'vpd'
 class VPDSimulationService {
     private registered = false
 
+    /** W-06: WorkerPool handles lazy spawning. Just check Worker API exists. */
     private ensureWorker(): boolean {
         if (typeof Worker === 'undefined') {
             return false
         }
 
-        if (!this.registered) {
-            workerBus.register(
-                VPD_WORKER_NAME,
-                new Worker(new URL('../workers/vpdSimulation.worker.ts', import.meta.url), {
-                    type: 'module',
-                }),
-            )
-            this.registered = true
-        }
-
+        // W-06: Pool auto-spawns on first dispatch -- mark as ready
+        this.registered = true
         return true
     }
 

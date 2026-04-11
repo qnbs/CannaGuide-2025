@@ -6,6 +6,7 @@ vi.mock('@/services/workerBus', () => ({
     workerBus: {
         register: vi.fn(),
         dispatch: vi.fn(),
+        has: vi.fn().mockReturnValue(false),
     },
 }))
 

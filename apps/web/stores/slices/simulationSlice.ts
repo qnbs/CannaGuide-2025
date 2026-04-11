@@ -558,14 +558,7 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                         }
 
                         const SIM_WORKER = 'simulation'
-                        if (!workerBus.has(SIM_WORKER)) {
-                            workerBus.register(
-                                SIM_WORKER,
-                                new Worker(new URL('../../simulation.worker.ts', import.meta.url), {
-                                    type: 'module',
-                                }),
-                            )
-                        }
+                        // W-06: WorkerPool auto-spawns on first dispatch
 
                         return workerBus.dispatch<{
                             updatedPlant: Plant

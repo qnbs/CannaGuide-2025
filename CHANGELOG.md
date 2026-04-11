@@ -8,6 +8,30 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(worker-bus):** W-06 Dynamic Worker Pool -- centralized
+  `WorkerPool` class with lazy spawning, 45s idle timeout,
+  hot-worker exemption (VPD, voice), device-aware pool sizing,
+  on-spawn SAB hook. Factory registry in `workerFactories.ts`
+  consolidates all 10 worker factories (ADR-0010)
+- **feat(worker-bus):** SAB hot-path integration -- VPD simulation
+  worker writes zone status signals + VPD values to AtomicsChannel
+    - LockFreeRingBuffer during RUN_GROWTH loop. Voice and calculation
+      workers receive SAB handles via `initSabHandler()`. Progressive
+      enhancement: falls back to postMessage on GitHub Pages
+- **feat(ui):** Worker Telemetry Dashboard (A-03) in Settings view
+  -- SAB mode badge, pool status grid (active/idle/spawned/terminated),
+  per-worker metrics table (dispatches/errors/avgLatency/preemptions),
+  last-updated timestamp. Lazy-loaded, i18n in all 5 languages
+- **test(worker-bus):** Load test CI gate -- 6 tests covering 100
+  concurrent dispatches, multi-worker concurrency, priority ordering,
+  metrics accuracy, pending leak check, abort under backpressure
+- **test(worker-bus):** 24 WorkerPool unit tests (lazy spawn, idle
+  timeout, hot-worker exempt, eviction, dispose, pool metrics)
+- **test(utils):** 10 AtomicsChannel tests + 2 workerSabHandler tests
+- **test(ui):** 5 WorkerTelemetryTab component tests
+- **docs:** ADR-0010 Worker Pool with Dynamic Spawning
+- **docs:** worker-bus.md W-06 section, updated overview + planned
+  improvements
 - **feat(worker-bus):** Dynamic concurrency -- auto-scales per device
   hardware via `deviceCapabilities.ts` (hardwareConcurrency \* 0.6,
   clamped [2, 12], battery-aware halving below 20%)

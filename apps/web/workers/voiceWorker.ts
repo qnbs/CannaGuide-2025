@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 
 import { initAbortHandler } from '@/utils/workerAbort'
+import { initSabHandler } from '@/utils/workerSabHandler'
 
 /** Serializable command definition for off-main-thread matching. */
 interface SerializedCommand {
@@ -304,3 +305,6 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 
 // W-02.1: Install cooperative abort handler (must be after self.onmessage)
 initAbortHandler()
+
+// W-06/SAB: Install SAB handler for voice hot-path (must be after initAbortHandler)
+initSabHandler()

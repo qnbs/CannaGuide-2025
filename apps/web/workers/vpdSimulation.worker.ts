@@ -4,6 +4,7 @@ import { calculateVPD, getVPDStatus, runDailySimulation } from '@/utils/vpdCalcu
 import type { PlantState, RunDailyPayload, RunGrowthPayload } from '@/types/simulation.types'
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
 
 const growthFactorByStage = {
     seedling: 0.012,
@@ -79,11 +80,15 @@ self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPaylo
             const days = Math.max(1, p.days || 7)
 
             for (let day = 0; day < days; day += 1) {
+                // W-02.1: Cooperative preemption -- abort early if preempted
+                checkAborted(messageId)
+
                 const vpd = calculateVPD(p.env)
                 const status = getVPDStatus(vpd, 1.2)
                 plant = updatePlantForDay(plant, vpd, status)
             }
 
+            clearAborted(messageId)
             self.postMessage(workerOk(messageId, plant))
             return
         }
@@ -95,3 +100,6 @@ self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPaylo
         )
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

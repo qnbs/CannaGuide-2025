@@ -16,8 +16,8 @@
 | Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                                  |
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                       |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                             |
-| Workers      | WorkerBus (promise-based, 10 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 2105 unit tests, Playwright E2E + Component tests                                  |
+| Workers      | WorkerBus (promise-based, 11 workers, heap-based priority queue, messageId, auto-timeout) |
+| Testing      | Vitest 2140 unit tests, Playwright E2E + Component tests                                  |
 | Distribution | GitHub Pages, Netlify (PR previews), Vercel, Cloudflare Pages                             |
 
 ---
@@ -94,7 +94,7 @@ apps/web/                 Main PWA (@cannaguide/web)
   locales/                i18n translations: en/, de/, es/, fr/, nl/
   hooks/                  25 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation, voice
-  services/workerBus.ts   Centralized promise-based WorkerBus (10 workers, priority queue, timeout)
+  services/workerBus.ts   Centralized promise-based WorkerBus (11 workers, priority queue, timeout)
   utils/priorityQueue.ts  Generic min-heap PriorityQueue<T> with WorkerPriority type
   services/ragEmbeddingCacheService.ts  Persistent IndexedDB LRU embedding cache (MiniLM-L6, model versioning, telemetry)
   services/equipmentCalculatorService.ts  Pure-formula service: CO2, Humidity Deficit, Light Hanging Height (Zod-validated)
@@ -177,20 +177,25 @@ Voice interaction is a layered system with 5 subsystems:
 
 ## WorkerBus Architecture
 
-The `workerBus.ts` singleton provides centralized, promise-based communication with all 10 Web Workers:
+The `workerBus.ts` singleton provides centralized, promise-based communication with all 11 Web Workers:
 
 - **Priority Queue:** min-heap with 4 levels (`critical` > `high` > `normal` > `low`), FIFO tiebreaking
 - **Backpressure:** max 3 concurrent dispatches per worker, queued beyond that
+- **Dynamic Concurrency (W-01.1):** auto-scales concurrency per device hardware via `deviceCapabilities.ts` (`hardwareConcurrency * 0.6`, clamped [2, 12]). Battery-aware halving below 20%. Toggle: `setDynamicConcurrency()`
 - **Priority Preemption (W-02):** when all slots are full and a higher-priority job arrives, the lowest-priority running job is preempted (AbortController-based, main-thread only) and automatically re-queued (max 3 retries before PREEMPTED rejection)
+- **Cooperative Preemption (W-02.1):** `__CANCEL__` message sent to worker on preemption. `workerAbort.ts` intercepts in worker, `checkAborted(messageId)` throws in loops for early termination. All 11 workers updated.
 - **Per-Worker Rate Limiting (W-01):** sliding-window limiter (`setRateLimit`/`getRateLimit`), rejects with non-retryable `RATE_LIMITED` error
-- **Telemetry Export (W-03):** `exportTelemetry()` returns JSON-serializable `WorkerBusTelemetryExport` with per-worker snapshots (peakLatencyMs, errorRate, timestamps, preemptionCount), integrated with Sentry context (60s interval)
+- **Telemetry Export (W-03):** `exportTelemetry()` returns JSON-serializable `WorkerBusTelemetryExport` with per-worker snapshots (peakLatencyMs, errorRate, timestamps, preemptionCount, cooperativePreemptions, concurrencyLimit), integrated with Sentry context (60s interval)
 - **Cross-Worker Channels (W-04):** `createChannel(workerA, workerB)` creates a MessageChannel and transfers ports to both workers via `__PORT_TRANSFER__` message; `closeChannel()` tears down; auto-cleanup on unregister/dispose. `WorkerMessageMap` in `workerBus.types.ts` maps worker names to per-message payload/response types; `dispatch()` overloads enforce compile-time type safety for typed workers
+- **SharedArrayBuffer (W-03 COEP):** Progressive enhancement via COEP `credentialless` (ADR-0009). `crossOriginIsolation.ts` detects, `sharedBufferPool.ts` acquires/releases SAB or ArrayBuffer fallback
+- **AtomicsChannel (W-04.1):** Lock-free main-worker signaling via SAB + Int32Array + Atomics (8 slots: 2 signal + 6 data). Falls back to null when SAB unavailable
+- **Lock-Free Ring Buffer (W-05):** SPSC ring buffer on SAB for high-frequency data streaming. Power-of-2 capacity, bitmask arithmetic, batch push/pop, blocking `waitForData()`
 - **Abort Support:** AbortController per dispatch, automatic cleanup on cancel
 - **Transferable Objects:** zero-copy transfers for ArrayBuffer/ImageBitmap payloads
 - **State Sync:** `workerStateSyncService.ts` auto-wires dispatch results to Redux/Zustand via handler registry
 - **Telemetry Service:** `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`)
 
-Workers: VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation, voice.
+Workers: VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation, voice, simulation.
 
 ## Hydro Monitor Architecture
 
@@ -342,7 +347,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 pnpm run dev              # Vite dev server (localhost:5173)
 pnpm run build            # Production build (Vite 7 + PWA manifest injection)
-pnpm test                 # Vitest unit/integration (2105 tests)
+pnpm test                 # Vitest unit/integration (2140 tests)
 pnpm run test:e2e         # Playwright E2E
 pnpm run test:ct          # Playwright Component tests
 pnpm run lint:full        # ESLint entire project

@@ -51,3 +51,14 @@ export const PERMISSIONS_POLICY = [
     'xr-spatial-tracking=()',
     'gyroscope=()',
 ].join(', ')
+
+/**
+ * W-03: Cross-Origin Embedder Policy.
+ * `credentialless` enables SharedArrayBuffer without breaking CDN-hosted
+ * resources (AI models, ONNX WASM, Sentry). Preferred over `require-corp`
+ * which would break third-party fetches. See ADR-0009.
+ *
+ * GitHub Pages does not support custom HTTP headers -- SAB is only
+ * available on Netlify/Vercel/Cloudflare Pages deployments.
+ */
+export const COEP = 'credentialless'

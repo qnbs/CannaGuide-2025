@@ -3,6 +3,7 @@ import { plantSimulationService } from '@/services/plantSimulationService'
 import { SIM_SECONDS_PER_DAY } from '@/constants'
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
 
 const applyAction = (
     plant: Plant,
@@ -63,6 +64,9 @@ self.onmessage = (e: MessageEvent<WorkerRequest<ScenarioPayload>>) => {
         const oneDayInMillis = SIM_SECONDS_PER_DAY * 1000
 
         for (let day = 1; day <= scenario.durationDays; day++) {
+            // W-02.1: Cooperative preemption -- abort early if preempted
+            checkAborted(messageId)
+
             if (day === scenario.plantAModifier.day) {
                 plantA = applyAction(plantA, scenario.plantAModifier.action, simulationSettings)
             }
@@ -108,6 +112,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest<ScenarioPayload>>) => {
             })
         }
 
+        clearAborted(messageId)
         self.postMessage(
             workerOk(messageId, {
                 originalHistory: historyA,
@@ -121,3 +126,6 @@ self.onmessage = (e: MessageEvent<WorkerRequest<ScenarioPayload>>) => {
         self.postMessage(workerErr(messageId, message))
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

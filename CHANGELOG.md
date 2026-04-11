@@ -6,6 +6,29 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **feat(worker-bus):** Dynamic concurrency -- auto-scales per device
+  hardware via `deviceCapabilities.ts` (hardwareConcurrency \* 0.6,
+  clamped [2, 12], battery-aware halving below 20%)
+- **feat(worker-bus):** Cooperative preemption -- `workerAbort.ts`
+  with `__CANCEL__` protocol; all 11 workers updated with
+  `initAbortHandler()`; long-loop workers (scenario, vpdSimulation,
+  imageGeneration, terpene) check `checkAborted(messageId)` in loops
+- **feat(worker-bus):** SharedArrayBuffer progressive enhancement --
+  COEP `credentialless` on Netlify/Vercel/Cloudflare; runtime
+  detection via `crossOriginIsolation.ts`; `sharedBufferPool.ts`
+  for acquire/release with ArrayBuffer fallback (ADR-0009)
+- **feat(worker-bus):** AtomicsChannel -- lock-free bidirectional
+  signaling (8 Int32 slots on SAB, Atomics.store/load/notify/wait)
+  with progressive enhancement fallback
+- **feat(worker-bus):** Lock-free SPSC ring buffer on SAB -- power-of-2
+  capacity, bitmask arithmetic, batch push/pop, blocking waitForData
+- **test(worker-bus):** 35 new unit tests for deviceCapabilities,
+  workerAbort, crossOriginIsolation, sharedBufferPool,
+  lockFreeRingBuffer (2140 total passing)
+- **docs:** ADR-0009 SharedArrayBuffer progressive enhancement
+
 ---
 
 ## [1.7.0] - 2026-04-11

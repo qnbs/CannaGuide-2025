@@ -2,47 +2,57 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 135) -- i18n Audit + SLSA Fix + Docs Metrics
+## Latest Session (Session 136) -- WorkerBus Optimization (5 Phases)
 
-**Status: Fixed 24+ missing i18n keys (SeedVault + ProblemTracker)
-across all 5 locales. Corrected SLSA L3 -> L1 references in
-README badges and ARCHITECTURE.md supply-chain table. Updated
-stale test count 2063 -> 2105 across README, ARCHITECTURE,
-copilot-instructions, release notes, and ROADMAP. 2105 tests
-passing, build OK.**
+**Status: Full 5-phase WorkerBus optimization implemented. Dynamic
+concurrency, cooperative preemption, SharedArrayBuffer progressive
+enhancement, AtomicsChannel, lock-free ring buffer. All 11 workers
+updated. 2140 tests passing, typecheck clean, build OK.**
 
-### What Was Done (Session 135)
+### What Was Done (Session 136)
 
-1. **SeedVault i18n keys** -- Added 14 missing keys to all 5
-   locales (EN/DE/ES/FR/NL): `addEntry`, `strainName`,
-   `strainNamePlaceholder`, `cancel`, `save`, `searchPlaceholder`,
-   `allTypes`, `decrease`, `increase`, `remove`, and capitalized
-   type keys `Regular`, `Feminized`, `Autoflowering`, `Clone`.
+1. **W-01.1 Dynamic Concurrency** -- `deviceCapabilities.ts`:
+   `getDeviceConcurrencyLimit()` (sync, hardwareConcurrency \* 0.6,
+   clamped [2, 12]), `getAdaptiveConcurrencyLimit()` (async,
+   battery-aware). WorkerBus auto-applies at register() time.
+   Toggle: `setDynamicConcurrency(enabled)`.
 
-2. **ProblemTracker i18n keys** -- Added 14 missing keys to all
-   5 locales: `activeCount_one/_other`, `issueTitlePlaceholder`,
-   `cancel`, `save`, `noActiveIssues`, `resolvedCount_one/_other`,
-   `treatments`, `treatmentPlaceholder`, `productPlaceholder`,
-   `markAs.treating`, `markAs.resolved`, `delete`.
+2. **W-02.1 Cooperative Preemption** -- `workerAbort.ts`:
+   `initAbortHandler()` intercepts `__CANCEL__` messages,
+   `checkAborted(messageId)` throws in loops. All 11 workers
+   updated. Long-loop workers (scenario, vpdSimulation,
+   imageGeneration, terpene) have granular checkAborted calls.
+   WorkerBus tracks `cooperativePreemptions` in telemetry.
 
-3. **SLSA badge correction** -- README badges (2x) changed from
-   SLSA 3 / level3.svg to SLSA 1 / level1.svg. ARCHITECTURE.md
-   supply-chain table corrected: Level 1 via `attest-build-
-provenance`, 2-job pipeline, removed L3 verification row,
-   updated release assets description.
+3. **W-03 COEP SharedArrayBuffer** -- `crossOriginIsolation.ts`
+   (feature detection), `sharedBufferPool.ts` (SAB/ArrayBuffer
+   pool). COEP `credentialless` deployed in securityHeaders.ts,
+   vite.config.ts, \_headers, netlify.toml, vercel.json.
+   ADR-0009 documents progressive enhancement strategy.
 
-4. **Test count metrics** -- Updated 2063 -> 2105 in README (9x),
-   ARCHITECTURE (2x), copilot-instructions (2x), v1.7.0 release
-   notes (1x), ROADMAP (1x).
+4. **W-04.1 AtomicsChannel** -- `atomicsChannel.ts`: lock-free
+   bidirectional signaling via SAB + Int32Array + Atomics. 8 slots
+   (2 signal + 6 data). Progressive enhancement fallback.
+
+5. **W-05 Lock-Free Ring Buffer** -- `lockFreeRingBuffer.ts`:
+   SPSC ring buffer on SAB. Power-of-2 capacity, bitmask
+   arithmetic, batch push/pop, blocking waitForData.
+
+6. **Tests** -- 35 new tests (deviceCapabilities, workerAbort,
+   crossOriginIsolation, sharedBufferPool, lockFreeRingBuffer).
+   2140 total passing, 0 failures.
+
+7. **Docs** -- Updated worker-bus.md, ARCHITECTURE.md,
+   CHANGELOG.md, copilot-instructions.md, next-session-handoff.md.
 
 ### Verified Metrics
 
 - Version: 1.7.0
 - Typecheck: 0 errors (TS2719 filtered)
-- Tests: 2105 passing, 0 failures (180 test files)
-- Build: successful
-- i18n: SeedVault + ProblemTracker complete across 5 locales
-- SLSA: L1 (correct, via GitHub-native attestation)
+- Tests: 2140 passing, 0 failures (185 test files)
+- Build: successful (43.79s)
+- New files: 7 (5 utils + ADR-0009 + DevTelemetryPanel fix)
+- Modified files: ~20 (workerBus, 11 workers, headers, docs)
 
 ### Next Steps
 
@@ -51,16 +61,19 @@ provenance`, 2-job pipeline, removed L3 verification row,
    control-has-associated-label. Goal: reduce from 169 to <100
 2. **Test Coverage Push** -- Target >35% via coverage-v8
 3. **v2.0 Planning** -- Digital Twin architecture spike
+4. **IoT sensor streaming** -- Use AtomicsChannel + Ring Buffer
+   for real-time ESP32 sensor data via WorkerBus
 
 ---
 
-## Previous Session (Session 134) -- CI Guard + v1.7.0 Release Verification
+## Previous Session (Session 135) -- i18n Audit + SLSA Fix + Docs Metrics
 
-**Status: Added CI status guard step to release-publish.yml.
-Verified v1.7.0 workflow_dispatch run (ID 24279437626) completed
-successfully with Tarball + SBOM assets on GitHub Release.
-Release Publish now checks CI passed on tagged commit before
-building. Guard skipped for workflow_dispatch (manual control).**
+**Status: Fixed 24+ missing i18n keys (SeedVault + ProblemTracker)
+across all 5 locales. Corrected SLSA L3 -> L1 references in
+README badges and ARCHITECTURE.md supply-chain table. Updated
+stale test count 2063 -> 2105 across README, ARCHITECTURE,
+copilot-instructions, release notes, and ROADMAP. 2105 tests
+passing, build OK.**
 
 ### What Was Done (Session 134)
 

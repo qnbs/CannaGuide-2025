@@ -47,6 +47,7 @@ import type {
 } from '@/types/workerBus.types'
 import { WorkerErrorCode, WorkerBusError } from '@/types/workerBus.types'
 import { PriorityQueue, PRIORITY_VALUES, type WorkerPriority } from '@/utils/priorityQueue'
+import { getDeviceConcurrencyLimit } from '@/utils/deviceCapabilities'
 
 export type { WorkerPriority } from '@/utils/priorityQueue'
 
@@ -145,6 +146,10 @@ export interface WorkerBusMetrics {
     averageLatencyMs: number
     /** W-02: Number of times a job for this worker was preempted. */
     preemptionCount: number
+    /** W-02.1: Jobs that cooperatively aborted early after CANCEL signal. */
+    cooperativePreemptions: number
+    /** W-01.1: Effective concurrency limit for this worker. */
+    concurrencyLimit: number
 }
 
 /** W-03: Extended per-worker telemetry snapshot for external export. */
@@ -188,6 +193,9 @@ const MAX_PREEMPTION_RETRIES = 3
 
 /** W-04: Internal message type used to transfer a MessageChannel port to a worker. */
 const PORT_TRANSFER_TYPE = '__PORT_TRANSFER__'
+
+/** W-02.1: Internal message type sent to workers to request cooperative abort. */
+const CANCEL_TYPE = '__CANCEL__'
 
 // Non-retryable error markers (avoid brittle string matching)
 const NON_RETRYABLE = ['No worker registered', 'disposed', 'unregistered', 'Queue full'] as const
@@ -254,6 +262,8 @@ interface WorkerTelemetry {
     lastErrorAt: number
     /** W-02: Total preemption events for this worker. */
     preemptionCount: number
+    /** W-02.1: Jobs that cooperatively aborted early after CANCEL signal. */
+    cooperativePreemptions: number
 }
 
 const telemetryMap = new Map<string, WorkerTelemetry>()
@@ -271,6 +281,7 @@ const getTelemetry = (name: string): WorkerTelemetry => {
             lastSuccessAt: 0,
             lastErrorAt: 0,
             preemptionCount: 0,
+            cooperativePreemptions: 0,
         }
         telemetryMap.set(name, t)
     }
@@ -294,6 +305,8 @@ class WorkerBusImpl {
     private crdtMetricsSnapshot: CrdtTelemetryMetrics | undefined
     private defaultTimeoutMs = DEFAULT_TIMEOUT_MS
     private disposed = false
+    /** W-01.1: When true, register() auto-sets concurrency from device capabilities. */
+    private dynamicConcurrency = true
 
     // -------------------------------------------------------------------
     // CRDT Telemetry integration (fire-and-forget from bridge)
@@ -376,6 +389,8 @@ class WorkerBusImpl {
                         ? Math.round((tel.totalErrors / tel.totalDispatches) * 10000) / 10000
                         : 0,
                 preemptionCount: tel.preemptionCount,
+                cooperativePreemptions: tel.cooperativePreemptions,
+                concurrencyLimit: this.concurrencyLimits.get(name) ?? DEFAULT_MAX_CONCURRENT,
                 pendingCount,
                 queuedCount: queue?.size ?? 0,
                 lastSuccessAt: tel.lastSuccessAt > 0 ? tel.lastSuccessAt : undefined,
@@ -407,6 +422,22 @@ class WorkerBusImpl {
     }
 
     /**
+     * W-01.1: Enable or disable dynamic concurrency auto-detection.
+     * When enabled, newly registered workers get concurrency limits
+     * based on `navigator.hardwareConcurrency`.
+     */
+    setDynamicConcurrency(enabled: boolean): void {
+        this.dynamicConcurrency = enabled
+    }
+
+    /**
+     * W-01.1: Check if dynamic concurrency is enabled.
+     */
+    isDynamicConcurrencyEnabled(): boolean {
+        return this.dynamicConcurrency
+    }
+
+    /**
      * Subscribe to all dispatch completion events (success and failure).
      * Returns a cleanup function -- call it to unsubscribe.
      *
@@ -432,6 +463,11 @@ class WorkerBusImpl {
         }
         this.workers.set(name, worker)
         this.activeCount.set(name, 0)
+
+        // W-01.1: Auto-set concurrency limit from device capabilities
+        if (this.dynamicConcurrency && !this.concurrencyLimits.has(name)) {
+            this.concurrencyLimits.set(name, getDeviceConcurrencyLimit())
+        }
 
         worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
             this.handleMessage(event.data)
@@ -634,6 +670,8 @@ class WorkerBusImpl {
                 averageLatencyMs:
                     tel.latencyCount > 0 ? Math.round(tel.latencySum / tel.latencyCount) : 0,
                 preemptionCount: tel.preemptionCount,
+                cooperativePreemptions: tel.cooperativePreemptions,
+                concurrencyLimit: this.concurrencyLimits.get(n) ?? DEFAULT_MAX_CONCURRENT,
             }
         }
         return result
@@ -658,6 +696,8 @@ class WorkerBusImpl {
         current: Array<{ workerName: string; type: string; priority: WorkerPriority }>
         queued: Array<{ workerName: string; type: string; priority: WorkerPriority }>
         byPriority: Record<WorkerPriority, number>
+        /** W-01.1: Effective concurrency limit per registered worker. */
+        effectiveConcurrency: Record<string, number>
     } {
         const current: Array<{ workerName: string; type: string; priority: WorkerPriority }> = []
         for (const entry of this.pending.values()) {
@@ -686,7 +726,13 @@ class WorkerBusImpl {
             }
         }
 
-        return { current, queued, byPriority }
+        // W-01.1: Include effective concurrency per worker
+        const effectiveConcurrency: Record<string, number> = {}
+        for (const name of this.workers.keys()) {
+            effectiveConcurrency[name] = this.concurrencyLimits.get(name) ?? DEFAULT_MAX_CONCURRENT
+        }
+
+        return { current, queued, byPriority, effectiveConcurrency }
     }
 
     // -------------------------------------------------------------------
@@ -864,6 +910,14 @@ class WorkerBusImpl {
         priority: WorkerPriority,
     ): Promise<TResponse> {
         const { messageId, entry } = candidate
+
+        // W-02.1: Send cooperative CANCEL signal to the worker so it can
+        // abort long-running loops early instead of wasting CPU.
+        try {
+            worker.postMessage({ type: CANCEL_TYPE, messageId })
+        } catch {
+            // Worker may already be terminated -- safe to ignore.
+        }
 
         // Remove preempted job from pending map -- its worker response will be
         // silently ignored when it eventually arrives (no matching messageId).
@@ -1282,7 +1336,14 @@ class WorkerBusImpl {
         this.decrementActive(entry.workerName)
 
         if (data.error) {
-            tel.totalErrors++
+            // W-02.1: Detect cooperative cancellation from worker-side checkAborted()
+            const isCancelled =
+                data.error === 'CANCELLED' || data.errorCode === WorkerErrorCode.PREEMPTED
+            if (isCancelled) {
+                tel.cooperativePreemptions++
+            } else {
+                tel.totalErrors++
+            }
             tel.lastErrorAt = Date.now()
             this.fireDispatchHooks({
                 workerName: entry.workerName,

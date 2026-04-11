@@ -323,6 +323,11 @@ sequenceDiagram
 - ~~W-03: External telemetry export~~ -- DONE (Session 94)
 - ~~W-02: Priority preemption for running workers~~ -- DONE (ADR-0007)
 - ~~W-04: Cross-worker communication channel (SharedArrayBuffer or MessageChannel)~~ -- DONE (ADR-0008): MessageChannel chosen over SharedArrayBuffer (COOP/COEP incompatible)
+- ~~W-01.1: Dynamic Concurrency~~ -- DONE: `deviceCapabilities.ts` auto-scales concurrency per hardware
+- ~~W-02.1: Cooperative Preemption~~ -- DONE: All 11 workers use `workerAbort.ts` + `__CANCEL__` protocol
+- ~~W-03 COEP: SharedArrayBuffer enablement~~ -- DONE (ADR-0009): COEP `credentialless` on Netlify/Vercel/Cloudflare
+- ~~W-04.1: AtomicsChannel~~ -- DONE: Lock-free Int32 signaling via SAB + Atomics (progressive enhancement)
+- ~~W-05: Lock-free Ring Buffer~~ -- DONE: SPSC ring buffer for high-frequency data streaming
 - Event emitter for real-time IoT sensor streaming
 - Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
 
@@ -332,3 +337,72 @@ sequenceDiagram
 - WebGPU worker support + advanced ONNX Runtime integration
 - AR/VR extension (Three.js + WorkerBus for real-time 3D plant rendering)
 - Eco-Mode: Auto-throttle retry/backpressure on low-power devices
+
+---
+
+## W-01.1: Dynamic Concurrency
+
+**File:** `apps/web/utils/deviceCapabilities.ts`
+
+Concurrency limits are auto-detected based on device hardware at worker registration time:
+
+- Formula: `Math.floor(navigator.hardwareConcurrency * 0.6)` clamped to [2, 12]
+- Battery-aware: `getAdaptiveConcurrencyLimit()` halves the limit below 20% battery
+- Configurable: `workerBus.setDynamicConcurrency(false)` disables auto-detection
+- Telemetry: `getMetrics()` returns `concurrencyLimit` per worker
+
+## W-02.1: Cooperative Preemption
+
+**Files:**
+
+- `apps/web/utils/workerAbort.ts` -- Worker-side abort tracking
+- `apps/web/services/workerBus.ts` -- Main-thread CANCEL signal dispatch
+
+When a higher-priority job preempts a running job:
+
+1. WorkerBus sends `{ type: '__CANCEL__', messageId }` to the worker
+2. `initAbortHandler()` intercepts the message and marks the messageId
+3. Worker calls `checkAborted(messageId)` in loops -- throws 'CANCELLED' if aborted
+4. Worker's error handler sends `workerErr(messageId, 'CANCELLED')` back
+5. WorkerBus detects cooperative cancellation and increments `cooperativePreemptions`
+
+All 11 workers are updated with `initAbortHandler()`. Workers with long loops
+(scenario, vpdSimulation, imageGeneration, terpene) have `checkAborted()` calls
+inside their processing loops for early termination.
+
+## W-03: SharedArrayBuffer (Progressive Enhancement)
+
+**Files:**
+
+- `apps/web/utils/crossOriginIsolation.ts` -- Feature detection
+- `apps/web/utils/sharedBufferPool.ts` -- SAB/ArrayBuffer pool
+- `docs/adr/0009-sharedarraybuffer-progressive-enhancement.md`
+
+COEP `credentialless` is deployed on Netlify/Vercel/Cloudflare Pages, enabling
+SharedArrayBuffer where COOP `same-origin` is already present. GitHub Pages
+cannot serve custom headers, so all SAB consumers fall back to ArrayBuffer.
+
+Detection: `canUseSharedArrayBuffer()` checks `self.crossOriginIsolated` + SAB constructor.
+
+## W-04.1: AtomicsChannel
+
+**File:** `apps/web/utils/atomicsChannel.ts`
+
+Lock-free bidirectional signaling between main thread and worker:
+
+- 8 Int32 slots on SharedArrayBuffer (2 signal + 6 data)
+- `Atomics.store/load` for zero-copy reads/writes
+- `Atomics.notify/wait` for efficient wake-up (worker-side blocking only)
+- Falls back to null when SAB is unavailable
+
+## W-05: Lock-Free Ring Buffer
+
+**File:** `apps/web/utils/lockFreeRingBuffer.ts`
+
+Single-Producer Single-Consumer (SPSC) ring buffer on SharedArrayBuffer:
+
+- Power-of-2 capacity for O(1) modular arithmetic (bitmask)
+- `push()`/`pop()` with Atomics when SAB available, plain Int32Array otherwise
+- `pushBatch()`/`popBatch()` for bulk operations
+- `waitForData()` (worker-side Atomics.wait) for blocking consumers
+- Falls back to ArrayBuffer-backed mode transparently

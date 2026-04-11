@@ -2,7 +2,68 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 131) -- Post-v1.7.0 Supply-Chain Docs Correction
+## Latest Session (Session 132) -- Release Publish Trigger Refactor
+
+**Status: Switched release-publish.yml from fragile workflow_run
+trigger (caused startup_failure) to direct push:tags trigger.
+Both Release Gate and Release Publish now trigger in parallel on
+tag push. workflow_dispatch fallback preserved. Documentation
+updated across 3 files. 2063 tests passing, build OK.**
+
+### What Was Done (Session 132)
+
+1. **release-publish.yml trigger refactor** --
+   Replaced `workflow_run` (chained to Release Gate) with direct
+   `push: tags: ['v*']` trigger. Root cause: `workflow_run`
+   caused persistent `startup_failure` errors due to timing
+   issues, exact name matching, and permission inheritance.
+   Changes:
+    - Trigger: `workflow_run` -> `push: tags: ['v*']`
+    - Build job `if:` condition: `workflow_run.conclusion` ->
+      `event_name == 'push'`
+    - Tag resolution: `WR_BRANCH` -> `REF_NAME` (github.ref_name)
+    - Concurrency group: tag-based key for deduplication
+    - `workflow_dispatch` fallback fully preserved (tag + dry-run)
+
+2. **Documentation updated (3 files)** --
+    - `docs/release-process.md`: Rewrote "Release Publish
+      Workflow" section (parallel trigger, history note)
+    - `.github/copilot-instructions.md`: Deployment table trigger
+      updated ("parallel to gate")
+    - `docs/next-session-handoff.md`: Session 132 entry
+
+### Verified Metrics
+
+- Version: 1.7.0
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2063 passing, 0 failures (177 test files)
+- Build: successful
+
+### Next Steps
+
+1. **Trigger v1.7.0 release publish** -- In GitHub Actions UI,
+   trigger "Release Publish" workflow_dispatch with tag=v1.7.0
+   to generate build attestation + SBOM artifacts on the release.
+   Alternatively: delete and re-push v1.7.0 tag to test the new
+   automatic push:tags trigger end-to-end.
+2. **Post-Release Browser Verification** -- Manual checks:
+    - [ ] VoiceHUD visible and functional
+    - [ ] Voice Presets loadable and applicable
+    - [ ] ConfirmDialog on Grow archive (GrowEditModal)
+    - [ ] ConfirmModal on bulk favorites removal (StrainsView)
+    - [ ] PhotosTab Lightbox: focus trap, Escape, screen reader
+    - [ ] Sentry dashboard: cannaguide@1.7.0 in Releases tab
+3. **Phase B2: aria-invalid** -- Add `aria-invalid` +
+   `aria-describedby` to form Input components
+4. **Phase B1: eslint-plugin-jsx-a11y** -- Install and configure
+   as warn-level rules
+5. **Test Coverage Push** -- Target >35% via coverage-v8 on
+   6 priority services
+6. **v2.0 Planning** -- Digital Twin architecture spike
+
+---
+
+## Previous Session (Session 131) -- Post-v1.7.0 Supply-Chain Docs Correction
 
 **Status: Corrected all SLSA L3 references across 7 documentation
 files. slsa-github-generator was removed from release-publish.yml

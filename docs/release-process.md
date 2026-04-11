@@ -97,12 +97,14 @@ gh attestation verify cannaguide-vX.Y.Z-dist.tar.gz \
 
 ## Release Publish Workflow
 
-The `release-publish.yml` workflow runs automatically after
-`release-gate.yml` succeeds (via `workflow_run` trigger) or can be
-triggered manually:
+The `release-publish.yml` workflow triggers directly on tag push
+(`v*`) -- the same event that triggers `release-gate.yml`. Both
+workflows run **in parallel**. Release Gate is informational
+(quality checks); Release Publish is the release path. It can also
+be triggered manually via `workflow_dispatch`:
 
 ```bash
-# Manual trigger (if workflow_run chain fails)
+# Manual trigger (fallback)
 # GitHub Actions UI -> "Release Publish" -> Run workflow
 #   Input: tag = vX.Y.Z
 #   Input: dry-run = false (default)
@@ -111,16 +113,21 @@ triggered manually:
 **Dry-run mode:** Set `dry-run: true` to build + generate SBOM +
 verify attestations without publishing the release.
 
-**Workflow chain:**
+**Workflow flow:**
 
-1. `git push --tags` triggers `release-gate.yml` (tag `v*`)
+1. `git push --tags` triggers both `release-gate.yml` and
+   `release-publish.yml` in parallel (tag `v*`)
 2. Release Gate runs pre-flight + tests + build verify
-3. On success, `release-publish.yml` auto-triggers (workflow_run)
-4. Build job creates tarball + CycloneDX SBOM
-5. Release job generates attestations + publishes GitHub Release
+   (informational -- does not block publish)
+3. Release Publish build job creates tarball + CycloneDX SBOM
+4. Release Publish release job generates attestations + publishes
+   GitHub Release
 
-If the `workflow_run` chain fails (startup_failure), use the manual
-`workflow_dispatch` trigger in the GitHub Actions UI.
+> **History:** Prior to April 2026, `release-publish.yml` used a
+> `workflow_run` trigger chained to Release Gate. This was replaced
+> with a direct `push: tags` trigger because `workflow_run` caused
+> persistent `startup_failure` errors (timing issues, exact name
+> matching, permission inheritance).
 
 ## No Automation
 

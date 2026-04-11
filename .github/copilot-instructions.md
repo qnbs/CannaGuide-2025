@@ -351,13 +351,13 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Deployment
 
-| Target           | Method                                  | Trigger                                                                      |
-| ---------------- | --------------------------------------- | ---------------------------------------------------------------------------- |
-| GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                               |
-| Netlify          | `netlify.toml`                          | Push + PR (preview deploys)                                                  |
-| Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                                |
-| Cloudflare Pages | `_headers` + `_redirects` + Git         | Push to `main` (connect via Cloudflare Dashboard)                            |
-| GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (after gate pass) -- GitHub build attestation + CycloneDX SBOM |
+| Target           | Method                                  | Trigger                                                                       |
+| ---------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                                |
+| Netlify          | `netlify.toml`                          | Push + PR (preview deploys)                                                   |
+| Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                                 |
+| Cloudflare Pages | `_headers` + `_redirects` + Git         | Push to `main` (connect via Cloudflare Dashboard)                             |
+| GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (parallel to gate) -- GitHub build attestation + CycloneDX SBOM |
 
 ---
 

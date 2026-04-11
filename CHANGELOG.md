@@ -4,6 +4,22 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.7.2] -- 2025-07-11
+
+### Security
+
+- **security(headers):** Referrer-Policy upgraded from
+  `strict-origin-when-cross-origin` to `same-origin` across all 5
+  delivery paths (securityHeaders.ts, vite.config.ts, netlify.toml,
+  vercel.json, public/\_headers)
+- **security(ci):** CSP consistency checker extended to verify
+  Referrer-Policy consistency across deployment targets
+
+### Changed
+
+- **chore(settings):** WorkerTelemetryTab hidden behind `import.meta.env.DEV`
+  guard -- no longer visible in production builds (dev-only diagnostics)
+
 ## [1.7.1] -- 2026-04-11
 
 ### Fixed

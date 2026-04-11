@@ -23,7 +23,7 @@
   Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
+  Referrer-Policy: same-origin
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: credentialless
   Strict-Transport-Security: max-age=31536000; includeSubDomains

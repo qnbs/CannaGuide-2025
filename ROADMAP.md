@@ -214,7 +214,7 @@ Released: **2026-04-11**
 | PhotosTab + ScreenshotGallery -> Radix DialogWrapper (a11y)         | Accessibility | ✅     |
 | SLSA Verifier CI (SC-01) + Release Dry-Run (SC-03)                  | CI            | ✅     |
 | Lighthouse CI 0.95+ (performance/a11y/best-practices)               | CI            | ✅     |
-| 2063 tests (0 failures), 86 new voice tests                         | Testing       | ✅     |
+| 2105 tests (0 failures), 86 new voice tests                         | Testing       | ✅     |
 
 ---
 

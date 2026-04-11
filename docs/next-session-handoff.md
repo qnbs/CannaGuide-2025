@@ -2,7 +2,74 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 138) -- Full Documentation Audit
+## Latest Session (Session 139) -- i18n Audit & Completeness Script
+
+**Status: Comprehensive i18n audit complete. Missing locale keys
+added across all 5 languages, hardcoded strings fixed, syntax
+errors repaired, 13 missing DE strain entries added, and the
+check-i18n-completeness.mjs script rewritten to work with tsx.
+2140 tests passing, typecheck clean, build OK.**
+
+### What Was Done (Session 139)
+
+1. **Phase 1 -- Settings keys:** Added 8 missing keys to all 5
+   language settings.ts files: zipBackup.title/description,
+   csvExport.title/description/exportPlants/exportTasks. Added
+   complete IoT section (22 keys) to all 5 languages.
+
+2. **Phase 2 -- Plants keys:** Added analytics section (13 keys),
+   vpd.targetRange/zoneMap/humidity (3 keys), tasks.ago (1 key)
+   to all 5 language plants.ts files.
+
+3. **Phase 3 -- Redux defaults fix:** Changed settingsSlice.ts
+   journalNotes watering/feeding from hardcoded English to empty
+   strings. Added i18n placeholders to SettingsView.tsx inputs.
+
+4. **Phase 4 -- CloudSync fix:** Replaced hardcoded "Push failed"
+   and "Pull failed" in CloudSyncPanel.tsx with t() calls.
+
+5. **Phase 5 -- Remaining defaultValue gaps:**
+    - Added common.remove/previous/complete to all 5 languages
+    - Added detailedView.tabs.problems to all 5 languages
+    - Added photoTimeline.compare to all 5 languages
+    - Added 6 missing ES tabs (metrics/timeline/planner/
+      environment/analytics/problems)
+    - Fixed autoScheduler.generate key path in GrowPlannerView
+    - Fixed syntax errors (missing commas) in ES/FR/NL plants.ts
+      and all 5 common.ts files
+
+6. **Phase 6 -- DE strainsData completion:** Added 7 missing
+   strain entries (lowryder, orange-punch, reina-madre, rocket-
+   fuel, royal-highness, rs11-rainbow-sherbert-11, rockbud) with
+   German descriptions to DE locale. DE now 100% complete.
+
+7. **Phase 7 -- i18n completeness script rewrite:** Rewrote
+   scripts/check-i18n-completeness.mjs to use tsx for direct TS
+   imports of barrel locale files. Features: --verbose and --json
+   flags, per-language summaries, missing + extra key detection,
+   DE as required (hard fail), ES/FR/NL as community (warn only).
+   Added pnpm check:i18n script to root package.json.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2140 passing, 0 failures (185 test files)
+- Build: successful
+- i18n: EN reference 5602 keys, DE 100% complete, ES/FR/NL 96%
+  (community langs, fallback to EN at runtime)
+- check:i18n: DE passes, ES/FR/NL warn-only (non-blocking)
+
+### Next Steps
+
+1. **Community language gap-fill** -- ES/FR/NL each ~250 missing
+   keys (mostly strainsView, helpView/lexicon, faq sections)
+2. **jsx-a11y violation reduction** -- Target top categories
+   to reach <100 warnings
+3. **Test Coverage Push** -- Target >35% via coverage-v8
+
+---
+
+## Previous Session (Session 138) -- Full Documentation Audit
 
 **Status: Complete documentation synchronization with v1.7.0
 codebase state. All 25+ doc files audited, 10 high-severity

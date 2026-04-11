@@ -1111,6 +1111,9 @@ export const settingsView = {
         statsAge: 'Aelteste: {{days}}T',
     },
     zipBackup: {
+        title: 'ZIP-Sicherung',
+        description:
+            'Exportiere und stelle deine kompletten Anbaudaten inklusive Fotos wieder her.',
         exportZip: 'ZIP-Backup exportieren',
         exportZipDesc: 'Alle Daten inklusive Fotos als ZIP-Archiv exportieren.',
         importZip: 'ZIP-Backup importieren',
@@ -1127,6 +1130,11 @@ export const settingsView = {
         photoCount_other: '{{count}} Fotos',
     },
     csvExport: {
+        title: 'CSV-Export',
+        description:
+            'Exportiere Pflanzen- und Aufgabendaten als CSV-Dateien f\u00fcr Tabellenkalkulationen.',
+        exportPlants: 'Pflanzen exportieren (CSV)',
+        exportTasks: 'Aufgaben exportieren (CSV)',
         exportCsv: 'CSV exportieren',
         exportMetrics: 'Pflanzen-Messwerte exportieren (CSV)',
         exportJournal: 'Journal-Eintraege exportieren (CSV)',
@@ -1134,5 +1142,30 @@ export const settingsView = {
         exportSuccess: 'CSV erfolgreich exportiert.',
         exportError: 'CSV-Export fehlgeschlagen.',
         noData: 'Keine Daten zum Exportieren vorhanden.',
+    },
+    iot: {
+        title: 'Hardware & IoT-Sensoren',
+        description:
+            'Verbinde ESP32 oder andere MQTT-kompatible Sensoren per WebSocket, um Umgebungsdaten automatisch zu erfassen.',
+        enableLabel: 'IoT-Sensoren aktivieren',
+        enableDesc: 'Wenn aktiviert, abonniert die App MQTT-Topics f\u00fcr Live-Sensordaten.',
+        statusLabel: 'Verbindungsstatus',
+        statusDisconnected: 'Getrennt',
+        statusConnecting: 'Verbinde...',
+        statusConnected: 'Verbunden',
+        statusError: 'Fehler',
+        brokerUrl: 'MQTT-Broker-URL',
+        brokerUrlHint: 'WebSocket-URL (ws:// oder wss://) deines MQTT-Brokers',
+        username: 'Benutzername (optional)',
+        password: 'Passwort (optional)',
+        topicPrefix: 'Topic-Pr\u00e4fix',
+        topicPrefixHint: 'Die App abonniert {prefix}/+/temperature, {prefix}/+/humidity usw.',
+        testing: 'Teste...',
+        testConnection: 'Verbindung testen',
+        telemetryTitle: 'MQTT-Telemetrie',
+        messages: 'Nachrichten',
+        validRate: 'G\u00fcltigkeitsrate',
+        latencyMs: 'Latenz (ms)',
+        errors: 'Fehler',
     },
 }

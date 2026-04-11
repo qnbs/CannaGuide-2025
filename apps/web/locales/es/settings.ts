@@ -1125,6 +1125,8 @@ export const settingsView = {
         statsAge: 'Mas antigua: {{days}}d',
     },
     zipBackup: {
+        title: 'Copia ZIP',
+        description: 'Exporta y restaura tus datos completos de cultivo incluyendo fotos.',
         exportZip: 'Exportar copia ZIP',
         exportZipDesc: 'Exportar todos los datos incluyendo fotos como archivo ZIP.',
         importZip: 'Importar copia ZIP',
@@ -1140,6 +1142,11 @@ export const settingsView = {
         photoCount_other: '{{count}} fotos',
     },
     csvExport: {
+        title: 'Exportar CSV',
+        description:
+            'Exporta datos de plantas y tareas como archivos CSV para analisis en hojas de calculo.',
+        exportPlants: 'Exportar Plantas (CSV)',
+        exportTasks: 'Exportar Tareas (CSV)',
         exportCsv: 'Exportar CSV',
         exportMetrics: 'Exportar metricas de plantas (CSV)',
         exportJournal: 'Exportar entradas del diario (CSV)',
@@ -1147,5 +1154,31 @@ export const settingsView = {
         exportSuccess: 'CSV exportado con exito.',
         exportError: 'Error al exportar CSV.',
         noData: 'No hay datos disponibles para exportar.',
+    },
+    iot: {
+        title: 'Hardware y Sensores IoT',
+        description:
+            'Conecta sensores ESP32 u otros compatibles con MQTT via WebSocket para registrar datos ambientales automaticamente.',
+        enableLabel: 'Activar sensores IoT',
+        enableDesc:
+            'Cuando esta activado, la app se suscribe a topics MQTT para datos de sensores en vivo.',
+        statusLabel: 'Estado de Conexion',
+        statusDisconnected: 'Desconectado',
+        statusConnecting: 'Conectando...',
+        statusConnected: 'Conectado',
+        statusError: 'Error',
+        brokerUrl: 'URL del Broker MQTT',
+        brokerUrlHint: 'URL WebSocket (ws:// o wss://) de tu broker MQTT',
+        username: 'Usuario (opcional)',
+        password: 'Contrasena (opcional)',
+        topicPrefix: 'Prefijo de Topic',
+        topicPrefixHint: 'La app se suscribe a {prefix}/+/temperature, {prefix}/+/humidity, etc.',
+        testing: 'Probando...',
+        testConnection: 'Probar Conexion',
+        telemetryTitle: 'Telemetria MQTT',
+        messages: 'Mensajes',
+        validRate: 'Tasa Valida',
+        latencyMs: 'Latencia (ms)',
+        errors: 'Errores',
     },
 }

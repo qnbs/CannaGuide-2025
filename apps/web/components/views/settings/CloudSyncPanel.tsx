@@ -98,7 +98,12 @@ const CloudSyncPanel: React.FC = () => {
                     cloudSync.encryptionKeyBase64,
                 )
             } else {
-                setSyncStatus('error', error instanceof Error ? error.message : 'Push failed')
+                setSyncStatus(
+                    'error',
+                    error instanceof Error
+                        ? error.message
+                        : String(t('settingsView.data.sync.pushFailed', { status: 'unknown' })),
+                )
                 getUISnapshot().addNotification({
                     type: 'error',
                     message:
@@ -170,7 +175,12 @@ const CloudSyncPanel: React.FC = () => {
             }
         } catch (error) {
             console.debug('[CloudSync] Pull failed:', error)
-            setSyncStatus('error', error instanceof Error ? error.message : 'Pull failed')
+            setSyncStatus(
+                'error',
+                error instanceof Error
+                    ? error.message
+                    : String(t('settingsView.data.sync.pullFailed', { status: 'unknown' })),
+            )
             getUISnapshot().addNotification({
                 type: 'error',
                 message:

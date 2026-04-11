@@ -25,22 +25,12 @@ import type {
 } from '@/workers/calculation.worker'
 
 // ---------------------------------------------------------------------------
-// Lazy worker registration
+// Lazy worker registration (W-06: delegated to WorkerPool auto-spawn)
 // ---------------------------------------------------------------------------
 
+/** W-06: WorkerPool auto-spawns on first dispatch -- always returns true. */
 function ensureCalcWorker(): boolean {
-    if (workerBus.has('calculation')) return true
-    try {
-        workerBus.register(
-            'calculation',
-            new Worker(new URL('../../../workers/calculation.worker.ts', import.meta.url), {
-                type: 'module',
-            }),
-        )
-        return true
-    } catch {
-        return false
-    }
+    return typeof Worker !== 'undefined'
 }
 
 // ---------------------------------------------------------------------------

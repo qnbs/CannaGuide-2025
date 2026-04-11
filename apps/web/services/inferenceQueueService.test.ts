@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
     enqueueInference,
     isWorkerAvailable,
@@ -42,6 +42,13 @@ class MockWorker {
 vi.stubGlobal('Worker', MockWorker)
 
 describe('inferenceQueueService', () => {
+    beforeEach(() => {
+        workerBus.reset()
+        // W-06: WorkerPool auto-spawn is not wired in tests, so register
+        // a MockWorker manually to satisfy workerBus.dispatch().
+        workerBus.register('inference', new MockWorker() as unknown as Worker)
+    })
+
     afterEach(() => {
         terminateInferenceWorker()
         resetWorkerState()
@@ -143,6 +150,6 @@ describe('inferenceQueueService', () => {
 
         terminateInferenceWorker()
 
-        await expect(promise).rejects.toThrow(/terminated|unregistered/)
+        await expect(promise).rejects.toThrow(/terminated|unregistered|No worker registered/)
     })
 })

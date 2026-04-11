@@ -11,6 +11,7 @@
 
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { WorkerBusMetrics } from '../../services/workerBus'
+import type { PoolMetrics } from '../../services/workerPool'
 
 // ---------------------------------------------------------------------------
 // State
@@ -19,12 +20,15 @@ import type { WorkerBusMetrics } from '../../services/workerBus'
 export interface WorkerMetricsState {
     /** Snapshot of workerBus.getMetrics() -- keyed by worker name */
     metrics: Record<string, WorkerBusMetrics>
+    /** W-06: Pool-level metrics (active, idle, spawned, terminated) */
+    poolMetrics: PoolMetrics | undefined
     /** Unix ms timestamp of the last metrics snapshot -- 0 if never set */
     lastUpdatedAt: number
 }
 
 const initialState: WorkerMetricsState = {
     metrics: {},
+    poolMetrics: undefined,
     lastUpdatedAt: 0,
 }
 
@@ -41,8 +45,15 @@ const workerMetricsSlice = createSlice({
          * Typically dispatched by workerTelemetryService on a 5-second debounce
          * or immediately after an error event.
          */
-        updateWorkerMetrics: (state, action: PayloadAction<Record<string, WorkerBusMetrics>>) => {
-            state.metrics = action.payload
+        updateWorkerMetrics: (
+            state,
+            action: PayloadAction<{
+                metrics: Record<string, WorkerBusMetrics>
+                poolMetrics: PoolMetrics | undefined
+            }>,
+        ) => {
+            state.metrics = action.payload.metrics
+            state.poolMetrics = action.payload.poolMetrics
             state.lastUpdatedAt = Date.now()
         },
     },

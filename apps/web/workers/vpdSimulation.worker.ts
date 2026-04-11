@@ -5,6 +5,28 @@ import type { PlantState, RunDailyPayload, RunGrowthPayload } from '@/types/simu
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
 import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
+import { initSabHandler, getWorkerChannel, getWorkerRingBuffer } from '@/utils/workerSabHandler'
+
+// ---------------------------------------------------------------------------
+// W-06/SAB: VPD status signal codes for AtomicsChannel (main reads these)
+// ---------------------------------------------------------------------------
+
+/** VPD status codes written to AtomicsChannel slot 0 by the worker. */
+export const VPD_SIGNAL = {
+    NONE: 0,
+    OPTIMAL: 1,
+    LOW: 2,
+    HIGH: 3,
+    DANGER: 4,
+} as const
+
+/** Map VPD status string to signal code. */
+const STATUS_TO_SIGNAL: Record<string, number> = {
+    optimal: VPD_SIGNAL.OPTIMAL,
+    low: VPD_SIGNAL.LOW,
+    high: VPD_SIGNAL.HIGH,
+    danger: VPD_SIGNAL.DANGER,
+}
 
 const growthFactorByStage = {
     seedling: 0.012,
@@ -79,6 +101,10 @@ self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPaylo
             let plant: PlantState = p.plant
             const days = Math.max(1, p.days || 7)
 
+            // W-06/SAB: Get hot-path primitives (null when SAB unavailable)
+            const sabChannel = getWorkerChannel()
+            const sabRing = getWorkerRingBuffer()
+
             for (let day = 0; day < days; day += 1) {
                 // W-02.1: Cooperative preemption -- abort early if preempted
                 checkAborted(messageId)
@@ -86,6 +112,16 @@ self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPaylo
                 const vpd = calculateVPD(p.env)
                 const status = getVPDStatus(vpd, 1.2)
                 plant = updatePlantForDay(plant, vpd, status)
+
+                // W-06/SAB: Signal VPD status to main thread via Atomics (< 1us)
+                if (sabChannel) {
+                    sabChannel.signal(STATUS_TO_SIGNAL[status] ?? VPD_SIGNAL.NONE)
+                }
+                // W-06/SAB: Stream VPD value to ring buffer (main consumes async)
+                // Encode as integer: vpd * 1000 (e.g. 1.234 -> 1234)
+                if (sabRing) {
+                    sabRing.push(Math.round(vpd * 1000))
+                }
             }
 
             clearAborted(messageId)
@@ -103,3 +139,6 @@ self.onmessage = (e: MessageEvent<WorkerRequest<RunDailyPayload | RunGrowthPaylo
 
 // W-02.1: Install cooperative abort handler (must be after self.onmessage)
 initAbortHandler()
+
+// W-06/SAB: Install SAB handler (must be after initAbortHandler)
+initSabHandler()

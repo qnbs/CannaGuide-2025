@@ -37,7 +37,12 @@ let sentryContextTimer: ReturnType<typeof setInterval> | undefined
 const flushMetrics = (dispatch: AppDispatch): void => {
     clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => {
-        dispatch(updateWorkerMetrics(workerBus.getMetrics()))
+        dispatch(
+            updateWorkerMetrics({
+                metrics: workerBus.getMetrics(),
+                poolMetrics: workerBus.getPoolMetrics(),
+            }),
+        )
         debounceTimer = undefined
     }, DEBOUNCE_MS)
 }
@@ -77,7 +82,12 @@ export const initWorkerTelemetry = (dispatch: AppDispatch): void => {
             // Flush metrics immediately on every error for fast DevTools
             // visibility, then check whether the error rate crossed threshold.
             clearTimeout(debounceTimer)
-            dispatch(updateWorkerMetrics(workerBus.getMetrics()))
+            dispatch(
+                updateWorkerMetrics({
+                    metrics: workerBus.getMetrics(),
+                    poolMetrics: workerBus.getPoolMetrics(),
+                }),
+            )
             checkErrorRate(event.workerName)
             return
         }

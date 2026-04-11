@@ -15,7 +15,6 @@
 import type { ModelStatus } from '@/types'
 import { captureLocalAiError } from '@/services/sentryService'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
-import { workerBus } from '@/services/workerBus'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -34,7 +33,6 @@ const MODEL_KEY = 'modelBuffer'
 // ---------------------------------------------------------------------------
 
 let _status: ModelStatus = 'not-cached'
-let _workerRegistered = false
 
 // ---------------------------------------------------------------------------
 // IndexedDB helpers
@@ -87,18 +85,16 @@ const idbDelete = async (key: string): Promise<void> => {
 }
 
 // ---------------------------------------------------------------------------
-// Worker registration (lazy -- first classify call)
+// Worker registration (W-06: delegated to WorkerPool auto-spawn)
 // ---------------------------------------------------------------------------
 
+/**
+ * Ensure the visionInference worker is available.
+ * With W-06 WorkerPool, the worker is auto-spawned on first dispatch.
+ * This function is retained for backward compatibility with callers.
+ */
 export const ensureWorkerRegistered = (): void => {
-    if (_workerRegistered) return
-    _workerRegistered = true
-    workerBus.register(
-        'visionInference',
-        new Worker(new URL('../workers/visionInferenceWorker.ts', import.meta.url), {
-            type: 'module',
-        }),
-    )
+    // W-06: No-op -- WorkerPool auto-spawns on first workerBus.dispatch()
 }
 
 // ---------------------------------------------------------------------------

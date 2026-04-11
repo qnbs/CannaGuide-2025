@@ -29,6 +29,7 @@ import {
 import { getCachedGeneratedImage, setCachedGeneratedImage } from './imageGenerationCacheService'
 import { acquireGpu, releaseGpu, getGpuLockState } from './gpuResourceManager'
 import { workerBus } from '@/services/workerBus'
+import { workerPool } from '@/services/workerPool'
 import { getT } from '@/i18n'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -237,16 +238,13 @@ export const checkImageGenCapability = (): ImageGenCapability => {
     }
 }
 
-// ─── Worker Registration ─────────────────────────────────────────────────────
+// ─── Worker Registration (W-06: delegated to WorkerPool auto-spawn) ─────────
 
+/** Ensure the image generation worker is available and return it. */
 const ensureWorker = (): Worker => {
+    // W-06: If not yet spawned, trigger pool creation eagerly
     if (!workerBus.has(WORKER_NAME)) {
-        workerBus.register(
-            WORKER_NAME,
-            new Worker(new URL('../workers/imageGeneration.worker.ts', import.meta.url), {
-                type: 'module',
-            }),
-        )
+        workerPool.getOrCreate(WORKER_NAME)
     }
     return workerBus.getWorker(WORKER_NAME)
 }

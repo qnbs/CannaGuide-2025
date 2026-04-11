@@ -53,21 +53,14 @@ const ASSISTANT_PREFIXES = [
 let store: AppStore | null = null
 let errorRetryCount = 0
 let unsubscribe: (() => void) | null = null
-let voiceWorkerRegistered = false
 
 // ---------------------------------------------------------------------------
-// Voice worker (lazy registration)
+// Voice worker (W-06: delegated to WorkerPool auto-spawn)
 // ---------------------------------------------------------------------------
 
+/** No-op -- W-06 WorkerPool auto-spawns on first dispatch. */
 function ensureVoiceWorkerRegistered(): void {
-    if (voiceWorkerRegistered) return
-    voiceWorkerRegistered = true
-    workerBus.register(
-        'voice',
-        new Worker(new URL('../workers/voiceWorker.ts', import.meta.url), {
-            type: 'module',
-        }),
-    )
+    // Retained for call-site compatibility within this module.
 }
 
 // ---------------------------------------------------------------------------
@@ -422,9 +415,8 @@ function dispose(): void {
         unsubscribe()
         unsubscribe = null
     }
-    if (voiceWorkerRegistered) {
+    if (workerBus.has('voice')) {
         workerBus.unregister('voice')
-        voiceWorkerRegistered = false
     }
     store = null
     errorRetryCount = 0

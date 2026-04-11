@@ -48,6 +48,7 @@ import type {
 import { WorkerErrorCode, WorkerBusError } from '@/types/workerBus.types'
 import { PriorityQueue, PRIORITY_VALUES, type WorkerPriority } from '@/utils/priorityQueue'
 import { getDeviceConcurrencyLimit } from '@/utils/deviceCapabilities'
+import type { WorkerPool, PoolMetrics } from './workerPool'
 
 export type { WorkerPriority } from '@/utils/priorityQueue'
 
@@ -166,6 +167,8 @@ export interface WorkerBusTelemetryExport {
     workers: Record<string, WorkerTelemetrySnapshot>
     /** CRDT sync metrics (populated by crdtSyncBridge when available). */
     crdtMetrics?: CrdtTelemetryMetrics | undefined
+    /** W-06: Worker pool metrics (populated when pool is attached). */
+    poolMetrics?: PoolMetrics | undefined
 }
 
 /** CRDT-specific telemetry integrated into W-03 export. */
@@ -307,6 +310,51 @@ class WorkerBusImpl {
     private disposed = false
     /** W-01.1: When true, register() auto-sets concurrency from device capabilities. */
     private dynamicConcurrency = true
+    /** W-06: Optional WorkerPool for lazy spawning + idle management. */
+    private pool: WorkerPool | undefined
+
+    // -------------------------------------------------------------------
+    // W-06: WorkerPool integration (lazy spawning + idle management)
+    // -------------------------------------------------------------------
+
+    /**
+     * Attach a WorkerPool for lazy worker spawning.
+     * When set, `dispatch()` to an unregistered worker will auto-spawn
+     * via the pool's factory registry, then register transparently.
+     */
+    setWorkerPool(pool: WorkerPool): void {
+        this.pool = pool
+        // Wire the spawn hook so newly created workers auto-register
+        pool.setOnSpawnHook((name: string, worker: Worker) => {
+            this.register(name, worker)
+        })
+    }
+
+    /**
+     * Get pool-level metrics (active, idle, spawned, terminated counts).
+     * Returns undefined when no pool is attached.
+     */
+    getPoolMetrics(): PoolMetrics | undefined {
+        return this.pool?.getPoolMetrics()
+    }
+
+    /**
+     * Notify the pool that a worker is idle (no pending dispatches).
+     * Called after all pending requests for a worker have settled.
+     */
+    private notifyPoolIdle(workerName: string): void {
+        if (!this.pool) return
+        // Only release to pool if zero pending + zero queued
+        let pending = 0
+        for (const entry of this.pending.values()) {
+            if (entry.workerName === workerName) pending++
+        }
+        const queue = this.queues.get(workerName)
+        const queued = queue?.size ?? 0
+        if (pending === 0 && queued === 0) {
+            this.pool.release(workerName)
+        }
+    }
 
     // -------------------------------------------------------------------
     // CRDT Telemetry integration (fire-and-forget from bridge)
@@ -397,7 +445,12 @@ class WorkerBusImpl {
                 lastErrorAt: tel.lastErrorAt > 0 ? tel.lastErrorAt : undefined,
             }
         }
-        return { timestamp: Date.now(), workers, crdtMetrics: this.crdtMetricsSnapshot }
+        return {
+            timestamp: Date.now(),
+            workers,
+            crdtMetrics: this.crdtMetricsSnapshot,
+            poolMetrics: this.pool?.getPoolMetrics(),
+        }
     }
 
     /**
@@ -853,6 +906,8 @@ class WorkerBusImpl {
         rateLimitWindows.clear()
         rateLimitConfigs.clear()
         this.dispatchHooks.splice(0)
+        // W-06: Cascade dispose to pool
+        this.pool?.dispose()
     }
 
     /**
@@ -1016,6 +1071,23 @@ class WorkerBusImpl {
 
         const worker = this.workers.get(workerName)
         if (!worker) {
+            // W-06: Auto-spawn via pool if available
+            if (this.pool?.hasFactory(workerName)) {
+                this.pool.getOrCreate(workerName)
+                // getOrCreate fires onSpawnHook -> register(), so worker is now available
+                const spawned = this.workers.get(workerName)
+                if (spawned) {
+                    return this.dispatchOnce<TResponse>(
+                        workerName,
+                        type,
+                        payload,
+                        timeoutMs,
+                        signal,
+                        transferable,
+                        priority,
+                    )
+                }
+            }
             return Promise.reject(
                 new WorkerBusError(
                     `No worker registered with name "${workerName}"`,
@@ -1198,6 +1270,8 @@ class WorkerBusImpl {
         const current = this.activeCount.get(workerName) ?? 0
         this.activeCount.set(workerName, Math.max(0, current - 1))
         this.drainQueue(workerName)
+        // W-06: Notify pool when worker becomes fully idle
+        this.notifyPoolIdle(workerName)
     }
 
     private drainQueue(workerName: string): void {

@@ -54,21 +54,11 @@ let isProcessing = false
 
 // ─── Worker Registration ─────────────────────────────────────────────────────
 
+/** Ensure the inference worker is available. W-06: auto-spawned by pool. */
 const ensureWorker = (): boolean => {
     if (typeof Worker === 'undefined') return false
-    if (workerBus.has(WORKER_NAME)) return true
-    try {
-        workerBus.register(
-            WORKER_NAME,
-            new Worker(new URL('../workers/inference.worker.ts', import.meta.url), {
-                type: 'module',
-                name: 'cannaGuideInference',
-            }),
-        )
-        return true
-    } catch {
-        return false
-    }
+    // W-06: WorkerPool auto-spawns on first dispatch -- always return true
+    return true
 }
 
 // ─── Queue Processing ────────────────────────────────────────────────────────

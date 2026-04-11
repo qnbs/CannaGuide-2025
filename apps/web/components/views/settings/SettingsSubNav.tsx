@@ -20,6 +20,7 @@ const navItemIds = [
     'privacy',
     'iot',
     'data',
+    'workerTelemetry',
     'about',
 ] as const
 
@@ -35,6 +36,7 @@ const navIcons: Record<string, React.ReactNode> = {
     privacy: <PhosphorIcons.ShieldCheck />,
     iot: <PhosphorIcons.WifiHigh />,
     data: <PhosphorIcons.Archive />,
+    workerTelemetry: <PhosphorIcons.ChartLineUp />,
     about: <PhosphorIcons.Info />,
 }
 

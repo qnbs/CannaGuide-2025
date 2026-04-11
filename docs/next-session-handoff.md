@@ -2,7 +2,81 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 139) -- i18n Audit & Completeness Script
+## Latest Session (Session 140) -- WorkerBus Pool, SAB Hot-Paths, Telemetry UI
+
+**Status: W-06 Worker Pool, SAB hot-path integration, A-03
+Telemetry Dashboard, load tests, and ADR-0010 all implemented.
+Tests passing, typecheck clean, build OK.**
+
+### What Was Done (Session 140)
+
+1. **Phase 1 -- Worker Pool (W-06):** Created `workerPool.ts`
+   (WorkerPool class with lazy spawn, 45s idle timeout,
+   hot-worker exemption, device-aware sizing, on-spawn hook)
+   and `workerFactories.ts` (10 factory registrations).
+   Integrated into WorkerBus via `setWorkerPool()`. Refactored
+   6 service files to remove scattered `new Worker()` boilerplate.
+   Extended `deviceCapabilities.ts` with `getMaxPoolSize()`.
+   Extended `workerMetricsSlice` and `workerTelemetryService`
+   with pool metrics. 24 unit tests passing.
+
+2. **Phase 2 -- SAB Hot-Path:** Created `workerSabHandler.ts`
+   (worker-side SAB init). Extended `workerPool.ts` with SAB
+   channel creation (AtomicsChannel + LockFreeRingBuffer) on
+   hot worker spawn. Modified `vpdSimulation.worker.ts` to
+   write VPD zone signals + values to SAB during RUN_GROWTH
+   loop. Added `initSabHandler()` to voice and calculation
+   workers. 12 tests (10 AtomicsChannel + 2 SAB handler).
+
+3. **Phase 3 -- Telemetry Dashboard (A-03):** Created
+   `WorkerTelemetryTab.tsx` with SAB mode badge, pool status
+   grid, per-worker metrics table, last-updated timestamp.
+   Integrated into SettingsView (lazy load) and SettingsSubNav.
+   Added i18n keys (17 per language) to all 5 languages. 5
+   component tests passing.
+
+4. **Phase 4 -- Load Tests:** Created `workerBus.load.test.ts`
+   with 6 tests: 100 concurrent dispatches (concurrency=50),
+   multi-worker concurrency, priority ordering, metrics accuracy,
+   pending leak check, abort under backpressure. All 6 passing.
+
+5. **Phase 5 -- Documentation:** ADR-0010 (Worker Pool with
+   Dynamic Spawning). Updated worker-bus.md (W-06 section,
+   overview, planned improvements). Updated CHANGELOG, handoff,
+   ARCHITECTURE, copilot-instructions, README.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2187 passing, 0 failures
+- Build: successful
+
+### New Files
+
+- `apps/web/services/workerPool.ts`
+- `apps/web/services/workerFactories.ts`
+- `apps/web/services/workerPool.test.ts`
+- `apps/web/services/workerBus.load.test.ts`
+- `apps/web/utils/workerSabHandler.ts`
+- `apps/web/utils/workerSabHandler.test.ts`
+- `apps/web/utils/atomicsChannel.test.ts`
+- `apps/web/components/views/settings/WorkerTelemetryTab.tsx`
+- `apps/web/components/views/settings/WorkerTelemetryTab.test.tsx`
+- `docs/adr/0010-worker-pool-dynamic-spawning.md`
+
+### Next Steps
+
+1. **Worker pool E2E test** -- Playwright test verifying pool
+   lifecycle in a real browser (spawn on dispatch, idle cleanup)
+2. **Ring buffer consumer on main thread** -- Read VPD SAB data
+   in React (useEffect polling or requestAnimationFrame)
+3. **Community language gap-fill** -- ES/FR/NL ~250 missing keys
+4. **jsx-a11y violation reduction** -- Target <100 warnings
+5. **Test Coverage Push** -- Target >35% via coverage-v8
+
+---
+
+## Previous Session (Session 139) -- i18n Audit & Completeness Script
 
 **Status: Comprehensive i18n audit complete. Missing locale keys
 added across all 5 languages, hardcoded strings fixed, syntax

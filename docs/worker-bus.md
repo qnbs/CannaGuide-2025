@@ -4,7 +4,7 @@
 
 ## Overview
 
-`workerBus.ts` is the centralized, promise-based Web Worker communication dispatcher for CannaGuide 2025. It manages all 8 application workers through a single singleton instance, providing type-safe request/response messaging with automatic timeout, backpressure, retry, AbortController support, Transferable zero-copy transfers, and dispatch-complete hooks.
+`workerBus.ts` is the centralized, promise-based Web Worker communication dispatcher for CannaGuide 2025. It manages all 11 application workers through a single singleton instance backed by a `WorkerPool` (W-06) with lazy spawning and idle-timeout cleanup. Provides type-safe request/response messaging with automatic timeout, backpressure, retry, AbortController support, Transferable zero-copy transfers, SAB hot-paths, and dispatch-complete hooks.
 
 **Location:** `apps/web/services/workerBus.ts`
 **Types:** `apps/web/types/workerBus.types.ts`
@@ -332,7 +332,7 @@ sequenceDiagram
 - ~~W-04.1: AtomicsChannel~~ -- DONE: Lock-free Int32 signaling via SAB + Atomics (progressive enhancement)
 - ~~W-05: Lock-free Ring Buffer~~ -- DONE: SPSC ring buffer for high-frequency data streaming
 - Event emitter for real-time IoT sensor streaming
-- Dynamic worker spawning (on-demand Three.js worker for 3D visualization)
+- ~~Dynamic worker spawning (on-demand Three.js worker for 3D visualization)~~ -- DONE (W-06): Centralized WorkerPool with lazy spawn + idle timeout (ADR-0010)
 
 **Long-term (v2.0+):**
 
@@ -409,3 +409,64 @@ Single-Producer Single-Consumer (SPSC) ring buffer on SharedArrayBuffer:
 - `pushBatch()`/`popBatch()` for bulk operations
 - `waitForData()` (worker-side Atomics.wait) for blocking consumers
 - Falls back to ArrayBuffer-backed mode transparently
+
+## W-06: Dynamic Worker Pool
+
+**Files:**
+
+- `apps/web/services/workerPool.ts` -- WorkerPool class
+- `apps/web/services/workerFactories.ts` -- Centralized factory registry
+- `apps/web/utils/workerSabHandler.ts` -- Worker-side SAB init handler
+- `docs/adr/0010-worker-pool-dynamic-spawning.md`
+
+Centralized lifecycle management for all 11 workers:
+
+### WorkerPool
+
+- **Lazy spawning:** Workers are created via `getOrCreate(name, factory)` on first
+  dispatch. No eager instantiation.
+- **Idle timeout:** `release(name)` starts a 45-second timer. If no new dispatch
+  arrives, the worker is terminated and removed from the pool.
+- **Hot-worker exemption:** VPD simulation and voice workers are marked `hot` in the
+  factory registry and exempt from idle timeout (always alive once spawned).
+- **Device-aware sizing:** `getMaxPoolSize()` from `deviceCapabilities.ts` caps total
+  workers based on `navigator.hardwareConcurrency` (clamped [4, 16], battery-aware).
+- **On-spawn hook:** `setOnSpawnHook(hook)` injects SAB initialization (AtomicsChannel
+    - LockFreeRingBuffer) when hot workers are first created.
+- **Pool metrics:** `getPoolMetrics()` returns `{ active, idle, totalSpawned, totalTerminated }`.
+
+### WorkerBus Integration
+
+- `workerBus.setWorkerPool(pool)` connects the pool to the dispatch pipeline.
+- `dispatch()` auto-creates missing workers via the pool when a factory exists.
+- `dispose()` cascades to `pool.dispose()` for full cleanup.
+- Pool metrics are included in `exportTelemetry()`.
+
+### Factory Registry
+
+`workerFactories.ts` provides a `FACTORIES` record mapping worker names to:
+
+```typescript
+interface WorkerFactoryEntry {
+    factory: () => Worker // Lazy new URL() import
+    hot: boolean // Exempt from idle timeout
+    priority: WorkerPriority // Default dispatch priority
+}
+```
+
+`registerAllWorkerFactories(pool)` registers all 10 factories with the pool.
+Genealogy workers use ephemeral UUID names and are excluded.
+
+### SAB Hot-Path
+
+When `canUseSharedArrayBuffer()` is true:
+
+1. Pool creates an `AtomicsChannel` and `LockFreeRingBuffer(256)` per hot worker.
+2. SAB handles are transferred to the worker via `__ATOMICS_CHANNEL__` and
+   `__RING_BUFFER__` messages, intercepted by `initSabHandler()`.
+3. VPD simulation worker writes zone status signals and VPD values to SAB
+   during its `RUN_GROWTH` loop.
+4. `getSabChannel(name)` / `getSabRingBuffer(name)` provide main-thread access.
+
+Fallback: On GitHub Pages (no COEP headers), standard `postMessage` is used.
+SAB channels are `undefined` and all code paths handle this gracefully.

@@ -24,14 +24,7 @@ export const runComparisonScenario = createAsyncThunk<
         throw new Error('Base plant not found for scenario.')
     }
 
-    if (!workerBus.has(SCENARIO_WORKER)) {
-        workerBus.register(
-            SCENARIO_WORKER,
-            new Worker(new URL('../../workers/scenario.worker.ts', import.meta.url), {
-                type: 'module',
-            }),
-        )
-    }
+    // W-06: WorkerPool auto-spawns the scenario worker on first dispatch
 
     const result = await workerBus.dispatch<ExperimentResult>(
         SCENARIO_WORKER,

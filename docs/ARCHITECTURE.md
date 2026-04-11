@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                       |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                             |
 | Workers      | WorkerBus (promise-based, 11 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 2187 unit tests, Playwright E2E + Component tests                                  |
+| Testing      | Vitest 2221 unit tests, Playwright E2E + Component tests                                  |
 | Distribution | GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0)                        |
 
 ---

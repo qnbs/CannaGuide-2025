@@ -4,28 +4,98 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [Unreleased]
+
 ## [1.7.2] -- 2026-04-11
 
-### Fixed
+### Added
 
-- **fix(ci):** release-publish workflow: tag creation for workflow_dispatch
-  fixed -- build job now creates annotated tag before release job runs;
-  `--verify-tag` prevents `gh release create` from auto-creating tags
-  that fail against repository rulesets (HTTP 422 pre_receive error)
-- **fix(ci):** release job: added checkout step + tag verification guard
-  with clear error messages and 3 remediation paths
-
-### Security
-
-- **security(headers):** Referrer-Policy upgraded from
-  `strict-origin-when-cross-origin` to `same-origin` across all 5
-  delivery paths (securityHeaders.ts, vite.config.ts, netlify.toml,
-  vercel.json, public/\_headers)
-- **security(ci):** CSP consistency checker extended to verify
-  Referrer-Policy consistency across deployment targets
+- **feat(worker-bus):** W-06 Dynamic Worker Pool -- centralized
+  `WorkerPool` class with lazy spawning, 45s idle timeout,
+  hot-worker exemption (VPD, voice), device-aware pool sizing,
+  on-spawn SAB hook. Factory registry in `workerFactories.ts`
+  consolidates all 10 worker factories (ADR-0010)
+- **feat(worker-bus):** SAB hot-path integration -- VPD simulation
+  worker writes zone status signals + VPD values to AtomicsChannel
+    - LockFreeRingBuffer during RUN_GROWTH loop. Voice and calculation
+      workers receive SAB handles via `initSabHandler()`. Progressive
+      enhancement: falls back to postMessage on GitHub Pages
+- **feat(worker-bus):** Dynamic concurrency -- auto-scales per device
+  hardware via `deviceCapabilities.ts` (hardwareConcurrency \* 0.6,
+  clamped [2, 12], battery-aware halving below 20%)
+- **feat(worker-bus):** Cooperative preemption -- `workerAbort.ts`
+  with `__CANCEL__` protocol; all 11 workers updated with
+  `initAbortHandler()`; long-loop workers (scenario, vpdSimulation,
+  imageGeneration, terpene) check `checkAborted(messageId)` in loops
+- **feat(worker-bus):** SharedArrayBuffer progressive enhancement --
+  COEP `credentialless` on Netlify/Vercel/Cloudflare; runtime
+  detection via `crossOriginIsolation.ts`; `sharedBufferPool.ts`
+  for acquire/release with ArrayBuffer fallback (ADR-0009)
+- **feat(worker-bus):** AtomicsChannel -- lock-free bidirectional
+  signaling (8 Int32 slots on SAB, Atomics.store/load/notify/wait)
+  with progressive enhancement fallback
+- **feat(worker-bus):** Lock-free SPSC ring buffer on SAB -- power-of-2
+  capacity, bitmask arithmetic, batch push/pop, blocking waitForData
+- **feat(ui):** Worker Telemetry Dashboard (A-03) in Settings view
+  -- SAB mode badge, pool status grid (active/idle/spawned/terminated),
+  per-worker metrics table (dispatches/errors/avgLatency/preemptions),
+  last-updated timestamp. Lazy-loaded, i18n in all 5 languages
+- **feat(ui):** Live SAB Data section in WorkerTelemetryTab -- displays
+  real-time VPD status (optimal/low/high/danger) and VPD value (kPa)
+  from the SAB pipeline. Buffer utilization bars with color coding
+- **feat(workers):** VPD SAB consumer hook `useVpdSabStream` -- polls
+  AtomicsChannel signals and LockFreeRingBuffer values from the VPD
+  simulation worker at 250ms intervals. Progressive enhancement:
+  returns idle state when SAB is unavailable (11 new tests)
+- **feat(workers):** SAB buffer utilization in PoolMetrics -- ring buffer
+  size/capacity exposed via `getPoolMetrics().sabBufferUtilization`
+- **a11y(ui):** ARIA chart labels on 4 Recharts components --
+  VPDChart, MetricsOverviewTab, HydroMonitorView, StrainComparisonView
+  wrapped with `role="img"` + `aria-label` for screen reader access.
+  i18n keys added in all 5 languages (EN/DE/ES/FR/NL)
+- **a11y(ui):** WorkerTelemetryTab ARIA improvements -- `aria-label` on
+  metrics table, `aria-live="polite"` on SAB badge and live data,
+  `role="status"` on pool status grid, `role="progressbar"` on
+  buffer utilization bars
+- **test(worker-bus):** Load test CI gate -- 6 tests covering 100
+  concurrent dispatches, multi-worker concurrency, priority ordering,
+  metrics accuracy, pending leak check, abort under backpressure
+- **test(worker-bus):** 24 WorkerPool unit tests (lazy spawn, idle
+  timeout, hot-worker exempt, eviction, dispose, pool metrics)
+- **test(worker-bus):** 35 new unit tests for deviceCapabilities,
+  workerAbort, crossOriginIsolation, sharedBufferPool,
+  lockFreeRingBuffer
+- **test(workers):** WorkerPool SAB hot-path tests (13 new tests) --
+  AtomicsChannel/LockFreeRingBuffer auto-init on spawn, getSabChannel/
+  getSabRingBuffer accessors, sabBufferUtilization metrics, cleanup
+- **test(utils):** LockFreeRingBuffer SAB path tests (4 new tests) --
+  SharedArrayBuffer producer/consumer, wrap-around, batch ops
+- **test(utils):** AtomicsChannel edge-case tests (5 new tests) --
+  data slot boundary, all-slots iteration, signal overwrite, SAB
+  create path verification
+- **test(utils):** 10 AtomicsChannel tests + 2 workerSabHandler tests
+- **test(ui):** 5 WorkerTelemetryTab component tests
+- **chore(stryker):** Extended Stryker mutation targets to include
+  `lockFreeRingBuffer.ts`, `atomicsChannel.ts`, and `workerPool.ts`
+  with proper test exclusion patterns
+- **docs:** ADR-0009 SharedArrayBuffer progressive enhancement
+- **docs:** ADR-0010 Worker Pool with Dynamic Spawning
+- **docs:** worker-bus.md W-06 section, updated overview + planned
+  improvements
 
 ### Changed
 
+- **feat(pwa):** `robots.txt` and `.nojekyll` added to `public/` for
+  proper GitHub Pages handling and web crawler access
+- **fix(pwa):** manifest.json `id`/`start_url`/`scope` changed from
+  hardcoded `/CannaGuide-2025/` to relative `"./"` -- fixes PWA install
+  on Netlify/Vercel/Cloudflare Pages (base=`/`)
+- **refactor(workers):** Demoted voice worker from `hot: true` to
+  `hot: false` in workerFactories.ts -- SAB channels were allocated
+  on spawn but never used (W-07 will re-enable for waveform streaming)
+- **refactor(workers):** Removed dead `initSabHandler()` call from
+  calculation.worker.ts -- worker is not hot, never receives SAB
+  messages, call was a no-op
 - **chore(settings):** WorkerTelemetryTab hidden behind `import.meta.env.DEV`
   guard -- no longer visible in production builds (dev-only diagnostics)
 - **chore(ci):** release-publish: optional `RELEASE_PAT` secret support
@@ -39,6 +109,49 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **chore(docs):** README, distribution.md, ARCHITECTURE.md,
   ROADMAP.md, CONTRIBUTING.md, copilot-instructions.md updated
   to reflect Netlify pause
+
+### Fixed
+
+- **fix(security):** Added `Strict-Transport-Security: max-age=31536000;
+includeSubDomains` to all 5 deployment configs (securityHeaders.ts,
+  netlify.toml, vercel.json, public/\_headers, vite.config.ts)
+- **fix(security):** Added `X-DNS-Prefetch-Control: on` to all configs
+  for proactive DNS resolution of AI provider endpoints
+- **fix(security):** CodeQL #281 -- added origin verification to
+  `initAbortHandler()` in `workerAbort.ts`; rejects cross-origin
+  messages before processing `__CANCEL__` cooperative preemption
+  signals (CWE-20, CWE-940)
+- **fix(pwa):** SW Cache-Control in `_headers` aligned to `no-cache,
+no-store, must-revalidate` (was `public, max-age=0, must-revalidate`)
+- **fix(pwa):** HTML `index.html` Cache-Control rules added to
+  netlify.toml and vercel.json (previously only in \_headers)
+- **fix(ci):** release-publish workflow: tag creation for workflow_dispatch
+  fixed -- build job now creates annotated tag before release job runs;
+  `--verify-tag` prevents `gh release create` from auto-creating tags
+  that fail against repository rulesets (HTTP 422 pre_receive error)
+- **fix(ci):** release job: added checkout step + tag verification guard
+  with clear error messages and 3 remediation paths
+- **fix(ci):** CSP consistency checker extended from 3 to 5 delivery
+  paths (added vercel.json and public/\_headers validation)
+- **fix(ci):** Snyk workflow HAS_TOKEN env -- added missing
+  `${{ secrets.SNYK_TOKEN != '' }}` evaluation so token-conditional
+  steps work correctly. Snyk remains advisory-only (weekly schedule)
+- **fix(ci):** Snyk SARIF upload -- changed condition from
+  `outcome != 'skipped'` to `outcome == 'success'` to prevent
+  `Path does not exist` error when scan fails without producing
+  the SARIF file
+- **fix(ci):** i18n completeness check -- added `tsx` as root
+  devDependency and changed CI step to `pnpm run check:i18n`
+  so Node 20 can import `.ts` locale barrel files
+
+### Security
+
+- **security(headers):** Referrer-Policy upgraded from
+  `strict-origin-when-cross-origin` to `same-origin` across all 5
+  delivery paths (securityHeaders.ts, vite.config.ts, netlify.toml,
+  vercel.json, public/\_headers)
+- **security(ci):** CSP consistency checker extended to verify
+  Referrer-Policy consistency across deployment targets
 
 ## [1.7.1] -- 2026-04-11
 
@@ -70,137 +183,6 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   references all `t()` calls in source against EN locale keys. Detects
   keys used in code but missing from locale files. Prevents SeedVault-
   class namespace mismatch bugs. Supports `--json` and `--verbose` flags.
-
-## [Unreleased]
-
-### Added
-
-- **a11y(ui):** ARIA chart labels on 4 Recharts components --
-  VPDChart, MetricsOverviewTab, HydroMonitorView, StrainComparisonView
-  wrapped with `role="img"` + `aria-label` for screen reader access.
-  i18n keys added in all 5 languages (EN/DE/ES/FR/NL).
-- **test(workers):** WorkerPool SAB hot-path tests (13 new tests) --
-  AtomicsChannel/LockFreeRingBuffer auto-init on spawn, getSabChannel/
-  getSabRingBuffer accessors, sabBufferUtilization metrics, cleanup.
-- **test(utils):** LockFreeRingBuffer SAB path tests (4 new tests) --
-  SharedArrayBuffer producer/consumer, wrap-around, batch ops.
-- **test(utils):** AtomicsChannel edge-case tests (5 new tests) --
-  data slot boundary, all-slots iteration, signal overwrite, SAB
-  create path verification.
-- **chore(stryker):** Extended Stryker mutation targets to include
-  `lockFreeRingBuffer.ts`, `atomicsChannel.ts`, and `workerPool.ts`
-  with proper test exclusion patterns.
-
-### Changed
-
-- **feat(pwa):** `robots.txt` and `.nojekyll` added to `public/` for
-  proper GitHub Pages handling and web crawler access
-- **feat(workers):** VPD SAB consumer hook `useVpdSabStream` -- polls
-  AtomicsChannel signals and LockFreeRingBuffer values from the VPD
-  simulation worker at 250ms intervals. Progressive enhancement:
-  returns idle state when SAB is unavailable (11 new tests)
-- **feat(ui):** Live SAB Data section in WorkerTelemetryTab -- displays
-  real-time VPD status (optimal/low/high/danger) and VPD value (kPa)
-  from the SAB pipeline. Buffer utilization bars with color coding.
-- **feat(workers):** SAB buffer utilization in PoolMetrics -- ring buffer
-  size/capacity exposed via `getPoolMetrics().sabBufferUtilization`
-- **a11y(ui):** WorkerTelemetryTab ARIA improvements -- `aria-label` on
-  metrics table, `aria-live="polite"` on SAB badge and live data,
-  `role="status"` on pool status grid, `role="progressbar"` on
-  buffer utilization bars
-
-### Changed
-
-- **fix(pwa):** manifest.json `id`/`start_url`/`scope` changed from
-  hardcoded `/CannaGuide-2025/` to relative `"./"` -- fixes PWA install
-  on Netlify/Vercel/Cloudflare Pages (base=`/`)
-- **refactor(workers):** Demoted voice worker from `hot: true` to
-  `hot: false` in workerFactories.ts -- SAB channels were allocated
-  on spawn but never used (W-07 will re-enable for waveform streaming)
-- **refactor(workers):** Removed dead `initSabHandler()` call from
-  calculation.worker.ts -- worker is not hot, never receives SAB
-  messages, call was a no-op
-
-### Fixed
-
-- **fix(security):** Added `Strict-Transport-Security: max-age=31536000;
-includeSubDomains` to all 5 deployment configs (securityHeaders.ts,
-  netlify.toml, vercel.json, public/\_headers, vite.config.ts)
-- **fix(security):** Added `X-DNS-Prefetch-Control: on` to all configs
-  for proactive DNS resolution of AI provider endpoints
-- **fix(pwa):** SW Cache-Control in `_headers` aligned to `no-cache,
-no-store, must-revalidate` (was `public, max-age=0, must-revalidate`)
-- **fix(pwa):** HTML `index.html` Cache-Control rules added to
-  netlify.toml and vercel.json (previously only in \_headers)
-- **fix(ci):** CSP consistency checker extended from 3 to 5 delivery
-  paths (added vercel.json and public/\_headers validation)
-- **fix(ci):** Snyk workflow HAS_TOKEN env -- added missing
-  `${{ secrets.SNYK_TOKEN != '' }}` evaluation so token-conditional
-  steps work correctly. Snyk remains advisory-only (weekly schedule)
-
-### Fixed
-
-- **fix(ci):** i18n completeness check -- added `tsx` as root
-  devDependency and changed CI step to `pnpm run check:i18n`
-  so Node 20 can import `.ts` locale barrel files
-- **fix(ci):** Snyk SARIF upload -- changed condition from
-  `outcome != 'skipped'` to `outcome == 'success'` to prevent
-  `Path does not exist` error when scan fails without producing
-  the SARIF file
-
-### Added
-
-- **feat(worker-bus):** W-06 Dynamic Worker Pool -- centralized
-  `WorkerPool` class with lazy spawning, 45s idle timeout,
-  hot-worker exemption (VPD, voice), device-aware pool sizing,
-  on-spawn SAB hook. Factory registry in `workerFactories.ts`
-  consolidates all 10 worker factories (ADR-0010)
-- **feat(worker-bus):** SAB hot-path integration -- VPD simulation
-  worker writes zone status signals + VPD values to AtomicsChannel
-    - LockFreeRingBuffer during RUN_GROWTH loop. Voice and calculation
-      workers receive SAB handles via `initSabHandler()`. Progressive
-      enhancement: falls back to postMessage on GitHub Pages
-- **feat(ui):** Worker Telemetry Dashboard (A-03) in Settings view
-  -- SAB mode badge, pool status grid (active/idle/spawned/terminated),
-  per-worker metrics table (dispatches/errors/avgLatency/preemptions),
-  last-updated timestamp. Lazy-loaded, i18n in all 5 languages
-- **test(worker-bus):** Load test CI gate -- 6 tests covering 100
-  concurrent dispatches, multi-worker concurrency, priority ordering,
-  metrics accuracy, pending leak check, abort under backpressure
-- **test(worker-bus):** 24 WorkerPool unit tests (lazy spawn, idle
-  timeout, hot-worker exempt, eviction, dispose, pool metrics)
-- **test(utils):** 10 AtomicsChannel tests + 2 workerSabHandler tests
-- **test(ui):** 5 WorkerTelemetryTab component tests
-- **docs:** ADR-0010 Worker Pool with Dynamic Spawning
-- **docs:** worker-bus.md W-06 section, updated overview + planned
-  improvements
-- **feat(worker-bus):** Dynamic concurrency -- auto-scales per device
-  hardware via `deviceCapabilities.ts` (hardwareConcurrency \* 0.6,
-  clamped [2, 12], battery-aware halving below 20%)
-- **feat(worker-bus):** Cooperative preemption -- `workerAbort.ts`
-  with `__CANCEL__` protocol; all 11 workers updated with
-  `initAbortHandler()`; long-loop workers (scenario, vpdSimulation,
-  imageGeneration, terpene) check `checkAborted(messageId)` in loops
-- **feat(worker-bus):** SharedArrayBuffer progressive enhancement --
-  COEP `credentialless` on Netlify/Vercel/Cloudflare; runtime
-  detection via `crossOriginIsolation.ts`; `sharedBufferPool.ts`
-  for acquire/release with ArrayBuffer fallback (ADR-0009)
-- **feat(worker-bus):** AtomicsChannel -- lock-free bidirectional
-  signaling (8 Int32 slots on SAB, Atomics.store/load/notify/wait)
-  with progressive enhancement fallback
-- **feat(worker-bus):** Lock-free SPSC ring buffer on SAB -- power-of-2
-  capacity, bitmask arithmetic, batch push/pop, blocking waitForData
-- **test(worker-bus):** 35 new unit tests for deviceCapabilities,
-  workerAbort, crossOriginIsolation, sharedBufferPool,
-  lockFreeRingBuffer (2140 total passing)
-- **docs:** ADR-0009 SharedArrayBuffer progressive enhancement
-
-### Fixed
-
-- **fix(security):** CodeQL #281 -- added origin verification to
-  `initAbortHandler()` in `workerAbort.ts`; rejects cross-origin
-  messages before processing `__CANCEL__` cooperative preemption
-  signals (CWE-20, CWE-940)
 
 ---
 

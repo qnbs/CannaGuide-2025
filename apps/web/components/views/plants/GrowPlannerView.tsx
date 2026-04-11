@@ -216,7 +216,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                 onClick={handleAutoSchedule}
                                 className="rounded-lg bg-emerald-700 hover:bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors"
                             >
-                                {t('autoScheduler.generate', { defaultValue: 'Generate Tasks' })}
+                                {t('plantsView.autoScheduler.generate', {
+                                    defaultValue: 'Generate Tasks',
+                                })}
                             </button>
                         </>
                     )}

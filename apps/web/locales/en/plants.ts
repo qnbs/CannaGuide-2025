@@ -38,6 +38,7 @@ export const plantsView = {
     },
     tasks: {
         title: 'Tasks',
+        ago: 'ago',
         none: 'No open tasks. Your garden is happy!',
         priority: 'Priority',
         priorities: {
@@ -291,6 +292,7 @@ export const plantsView = {
             planner: 'Planner',
             environment: 'Environment',
             analytics: 'Analytics',
+            problems: 'Problems',
         },
         journalFilters: {
             watering: 'Watering',
@@ -328,6 +330,21 @@ export const plantsView = {
     },
     lifecycle: {
         remaining: 'remaining',
+    },
+    analytics: {
+        noData: 'No environment data logged yet. Use the Environment tab to add readings.',
+        dashboardLabel: 'Environment Analytics Dashboard',
+        dashboardTitle: 'Environment Analytics',
+        dataPoints: '{{count}} data points',
+        tempHumidity: 'Temperature and Humidity over time',
+        tempHumidityTitle: 'Temperature & Humidity',
+        temperature: 'Temp (\u00b0C)',
+        humidity: 'Humidity (%)',
+        vpdOverTime: 'Vapor Pressure Deficit over time',
+        vpdTitle: 'VPD (Vapor Pressure Deficit)',
+        nutrientWatering: 'pH, EC and watering over time',
+        nutrientTitle: 'Nutrients & Watering',
+        waterVolume: 'Water (ml)',
     },
     postHarvest: {
         title: 'Post-Harvest Processing',
@@ -657,6 +674,9 @@ export const plantsView = {
     },
     vpd: {
         currentVpd: 'Current VPD',
+        targetRange: 'Target',
+        zoneMap: 'VPD Zone Map',
+        humidity: 'RH %',
         targetBand: 'Target Band ({{band}})',
         status: 'Status',
         outsideIdealRange: 'Outside ideal range',
@@ -863,6 +883,7 @@ export const plantsView = {
         title: 'Photo Timeline',
         noPhotos: 'No photos in journal yet.',
         compareMode: 'Compare',
+        compare: 'Compare Mode',
         exitCompare: 'Exit Compare',
         selectTwo: 'Select 2 photos to compare',
         day: 'Day',

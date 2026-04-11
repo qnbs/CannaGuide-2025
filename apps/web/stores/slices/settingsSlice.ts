@@ -156,8 +156,8 @@ export const defaultSettings: AppSettings = {
             medium: 'Soil',
         },
         journalNotes: {
-            watering: 'Standard watering.',
-            feeding: 'Standard feeding.',
+            watering: '',
+            feeding: '',
         },
     },
 

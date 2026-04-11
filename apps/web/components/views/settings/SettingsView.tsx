@@ -2022,6 +2022,7 @@ const DefaultsSettingsTab: React.FC = () => {
                         <SettingsRow label={t('settingsView.defaults.wateringNoteLabel')}>
                             <Input
                                 value={defaults.journalNotes.watering}
+                                placeholder={t('plantsView.actionModals.defaultNotes.watering')}
                                 onChange={(event) =>
                                     handleSetSetting('journalNotes.watering', event.target.value)
                                 }
@@ -2030,6 +2031,7 @@ const DefaultsSettingsTab: React.FC = () => {
                         <SettingsRow label={t('settingsView.defaults.feedingNoteLabel')}>
                             <Input
                                 value={defaults.journalNotes.feeding}
+                                placeholder={t('plantsView.actionModals.defaultNotes.feeding')}
                                 onChange={(event) =>
                                     handleSetSetting('journalNotes.feeding', event.target.value)
                                 }

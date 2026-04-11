@@ -43,6 +43,7 @@
         "lint:strict": "eslint . --report-unused-disable-directives --quiet",
         "lint:scopes": "node ./scripts/lint-scopes.mjs",
         "lint:i18n": "node ./scripts/check-i18n-hardcoded.mjs",
+        "check:i18n": "npx tsx ./scripts/check-i18n-completeness.mjs",
         "lint:a11y": "LINT_A11Y=1 eslint . --report-unused-disable-directives",
         "format": "prettier --write .",
         "preview": "pnpm --filter @cannaguide/web preview",

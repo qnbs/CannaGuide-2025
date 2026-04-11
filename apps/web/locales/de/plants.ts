@@ -38,6 +38,7 @@ export const plantsView = {
     },
     tasks: {
         title: 'Aufgaben',
+        ago: 'her',
         none: 'Keine offenen Aufgaben. Dein Garten ist glücklich!',
         priority: 'Priorität',
         priorities: {
@@ -304,6 +305,7 @@ export const plantsView = {
             planner: 'Planer',
             environment: 'Umgebung',
             analytics: 'Analytik',
+            problems: 'Probleme',
         },
         journalFilters: {
             watering: 'Gießen',
@@ -341,6 +343,21 @@ export const plantsView = {
     },
     lifecycle: {
         remaining: 'verbleibend',
+    },
+    analytics: {
+        noData: 'Noch keine Umgebungsdaten erfasst. Nutze den Umgebungs-Tab, um Messwerte hinzuzuf\u00fcgen.',
+        dashboardLabel: 'Umgebungsanalyse-Dashboard',
+        dashboardTitle: 'Umgebungsanalyse',
+        dataPoints: '{{count}} Datenpunkte',
+        tempHumidity: 'Temperatur und Luftfeuchtigkeit im Zeitverlauf',
+        tempHumidityTitle: 'Temperatur & Luftfeuchtigkeit',
+        temperature: 'Temp (\u00b0C)',
+        humidity: 'Luftfeuchtigkeit (%)',
+        vpdOverTime: 'Dampfdruckdefizit im Zeitverlauf',
+        vpdTitle: 'VPD (Dampfdruckdefizit)',
+        nutrientWatering: 'pH, EC und Bew\u00e4sserung im Zeitverlauf',
+        nutrientTitle: 'N\u00e4hrstoffe & Bew\u00e4sserung',
+        waterVolume: 'Wasser (ml)',
     },
     postHarvest: {
         title: 'Nachernte-Verarbeitung',
@@ -681,6 +698,9 @@ export const plantsView = {
     },
     vpd: {
         currentVpd: 'Aktueller VPD',
+        targetRange: 'Ziel',
+        zoneMap: 'VPD-Zonendiagramm',
+        humidity: 'RH %',
         targetBand: 'Zielbereich ({{band}})',
         status: 'Status',
         outsideIdealRange: 'Außerhalb des Idealbereichs',
@@ -887,6 +907,7 @@ export const plantsView = {
         title: 'Foto-Zeitstrahl',
         noPhotos: 'Noch keine Fotos im Journal.',
         compareMode: 'Vergleichen',
+        compare: 'Vergleichsmodus',
         exitCompare: 'Vergleich beenden',
         selectTwo: '2 Fotos zum Vergleichen ausw\u00e4hlen',
         day: 'Tag',

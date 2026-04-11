@@ -195,17 +195,27 @@ jobs:
 
                   # Collect release assets
                   ASSETS=("${TARBALL}" "cannaguide-sbom.cyclonedx.json")
+                  REPO="${{ github.repository }}"
 
-                  # Create release (draft=false, prerelease auto-detected from tag)
+                  # Determine prerelease flag
+                  PRE_FLAG=""
                   if echo "${TAG}" | grep -qE '(alpha|beta|rc)'; then
-                    gh release create "${TAG}" "${ASSETS[@]}" \
+                    PRE_FLAG="--prerelease"
+                  fi
+
+                  # Create or update release (--clobber overwrites existing assets)
+                  if gh release view "${TAG}" --repo "${REPO}" > /dev/null 2>&1; then
+                    echo "[INFO] Release ${TAG} exists -- updating notes and uploading assets"
+                    gh release edit "${TAG}" --repo "${REPO}" \
                       --title "CannaGuide ${TAG}" \
-                      --notes "${NOTES}" \
-                      --prerelease
+                      --notes "${NOTES}" ${PRE_FLAG}
+                    gh release upload "${TAG}" "${ASSETS[@]}" --repo "${REPO}" --clobber
                   else
+                    echo "[INFO] Creating new release ${TAG}"
                     gh release create "${TAG}" "${ASSETS[@]}" \
+                      --repo "${REPO}" \
                       --title "CannaGuide ${TAG}" \
-                      --notes "${NOTES}"
+                      --notes "${NOTES}" ${PRE_FLAG}
                   fi
 
                   echo "[OK] Release ${TAG} published with build provenance + SBOM"

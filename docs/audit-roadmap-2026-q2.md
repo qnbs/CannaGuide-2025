@@ -7,7 +7,7 @@
 
 **Letzte Aktualisierung:** 2026-04-11
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
-**Aktuell:** v1.7.0 | 2063 Tests (177 Dateien) | SLSA L3 Provenance | 22 CI Workflows gruen | 0 Security Alerts
+**Aktuell:** v1.7.0 | 2063 Tests (177 Dateien) | GitHub Attestation + CycloneDX SBOM | 22 CI Workflows gruen | 0 Security Alerts
 
 ---
 
@@ -33,16 +33,16 @@
 
 ### Ist-Zustand (2026-04-09)
 
-| Metrik            | Wert                     | Bewertung              |
-| ----------------- | ------------------------ | ---------------------- |
-| App-Version       | v1.6.3                   | ✅ Stabil              |
-| Tests             | 1884/1884 (163 Dateien)  | ✅ Gruen               |
-| OpenSSF Scorecard | SLSA L3 + CycloneDX SBOM | ✅ release-publish     |
-| Test-Coverage     | ~33.66 %                 | ✅ Ziel >30 % erreicht |
-| Duplicate Code    | ~115 Major-Bloecke       | ⚠ Technische Schuld    |
-| Security Alerts   | 0                        | ✅                     |
-| CI Workflows      | 22 (alle gruen)          | ✅                     |
-| Stryker Mutation  | Baseline erstellt        | ✅ Neu (Session 63)    |
+| Metrik            | Wert                                | Bewertung              |
+| ----------------- | ----------------------------------- | ---------------------- |
+| App-Version       | v1.7.0                              | ✅ Stabil              |
+| Tests             | 2063/2063 (177 Dateien)             | ✅ Gruen               |
+| OpenSSF Scorecard | GitHub Attestation + CycloneDX SBOM | ✅ release-publish     |
+| Test-Coverage     | ~33.66 %                            | ✅ Ziel >30 % erreicht |
+| Duplicate Code    | ~115 Major-Bloecke                  | ⚠ Technische Schuld    |
+| Security Alerts   | 0                                   | ✅                     |
+| CI Workflows      | 22 (alle gruen)                     | ✅                     |
+| Stryker Mutation  | Baseline erstellt                   | ✅ Neu (Session 63)    |
 
 ### Soll-Zustand (nach vollständiger Roadmap)
 

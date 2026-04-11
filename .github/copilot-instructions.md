@@ -351,13 +351,13 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Deployment
 
-| Target           | Method                                  | Trigger                                                                |
-| ---------------- | --------------------------------------- | ---------------------------------------------------------------------- |
-| GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                         |
-| Netlify          | `netlify.toml`                          | Push + PR (preview deploys)                                            |
-| Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                          |
-| Cloudflare Pages | `_headers` + `_redirects` + Git         | Push to `main` (connect via Cloudflare Dashboard)                      |
-| GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (after gate pass) -- SLSA L3 provenance + CycloneDX SBOM |
+| Target           | Method                                  | Trigger                                                                      |
+| ---------------- | --------------------------------------- | ---------------------------------------------------------------------------- |
+| GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                               |
+| Netlify          | `netlify.toml`                          | Push + PR (preview deploys)                                                  |
+| Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                                |
+| Cloudflare Pages | `_headers` + `_redirects` + Git         | Push to `main` (connect via Cloudflare Dashboard)                            |
+| GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (after gate pass) -- GitHub build attestation + CycloneDX SBOM |
 
 ---
 
@@ -562,7 +562,7 @@ After implementation is complete with all validations passing, update **all affe
 | `.devcontainer/setup.sh`                                                        | postCreateCommand (workspace-filtered install, no ML)                                                                                                                      |
 | `.devcontainer/start.sh`                                                        | postStartCommand (IoT mock servers)                                                                                                                                        |
 | `.github/workflows/config-guard.yml`                                            | CI scan for RCE patterns in config files                                                                                                                                   |
-| `.github/workflows/release-publish.yml`                                         | 3-job release pipeline: build+SBOM -> SLSA L3 provenance (slsa-github-generator) -> release (attest-sbom + attest-build-provenance + gh release)                           |
+| `.github/workflows/release-publish.yml`                                         | 2-job release pipeline: build+SBOM -> release (attest-sbom + attest-build-provenance + gh release)                                                                         |
 | `docs/ACCESSIBILITY.md`                                                         | WCAG 2.1 AA accessibility statement                                                                                                                                        |
 | `docs/api/ai-facade.md`                                                         | AI Facade API reference (24 aiService methods, routing logic, mode helpers)                                                                                                |
 | `docs/api/rag-pipeline.md`                                                      | RAG pipeline API (growLogRagService, ragEmbeddingCacheService)                                                                                                             |

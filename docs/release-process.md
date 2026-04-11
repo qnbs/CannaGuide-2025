@@ -57,32 +57,29 @@ Both files **must** have the same version:
 
 ## Supply-Chain Verification
 
-Every release produces three assets:
+Every release produces two assets (via `release-publish.yml`):
 
-| Asset                                | Description            |
-| ------------------------------------ | ---------------------- |
-| `cannaguide-vX.Y.Z-dist.tar.gz`      | Production PWA tarball |
-| `cannaguide-sbom.cyclonedx.json`     | CycloneDX SBOM (Syft)  |
-| `cannaguide-provenance.intoto.jsonl` | SLSA L3 provenance     |
+| Asset                            | Description            |
+| -------------------------------- | ---------------------- |
+| `cannaguide-vX.Y.Z-dist.tar.gz`  | Production PWA tarball |
+| `cannaguide-sbom.cyclonedx.json` | CycloneDX SBOM (Syft)  |
 
-### Verify SLSA L3 Provenance
+Both artifacts receive **GitHub Attestations** (build provenance +
+SBOM attestation) via `actions/attest-build-provenance` and
+`actions/attest-sbom`. These are verifiable via the `gh` CLI.
+
+> **Note:** `slsa-framework/slsa-github-generator` (SLSA L3) was
+> removed in April 2026 due to Go build failures on ubuntu-24.04
+> runners. GitHub-native attestations provide equivalent build
+> provenance that is verifiable via `gh attestation verify`.
+
+### Verify Build Provenance
 
 ```bash
-# Install slsa-verifier (requires Go)
-go install github.com/slsa-framework/slsa-verifier/v2/cli/slsa-verifier@latest
-
 # Download release assets
 gh release download vX.Y.Z --repo qnbs/CannaGuide-2025
 
-# Verify L3 provenance
-slsa-verifier verify-artifact cannaguide-vX.Y.Z-dist.tar.gz \
-  --provenance-path cannaguide-provenance.intoto.jsonl \
-  --source-uri github.com/qnbs/CannaGuide-2025
-```
-
-### Verify GitHub Attestation (L1)
-
-```bash
+# Verify build provenance attestation
 gh attestation verify cannaguide-vX.Y.Z-dist.tar.gz --repo qnbs/CannaGuide-2025
 ```
 
@@ -91,7 +88,39 @@ gh attestation verify cannaguide-vX.Y.Z-dist.tar.gz --repo qnbs/CannaGuide-2025
 ```bash
 # View SBOM summary (requires jq)
 jq '.metadata.component.name, (.components | length)' cannaguide-sbom.cyclonedx.json
+
+# Verify SBOM attestation
+gh attestation verify cannaguide-vX.Y.Z-dist.tar.gz \
+  --repo qnbs/CannaGuide-2025 \
+  --predicate-type https://cyclonedx.org/bom
 ```
+
+## Release Publish Workflow
+
+The `release-publish.yml` workflow runs automatically after
+`release-gate.yml` succeeds (via `workflow_run` trigger) or can be
+triggered manually:
+
+```bash
+# Manual trigger (if workflow_run chain fails)
+# GitHub Actions UI -> "Release Publish" -> Run workflow
+#   Input: tag = vX.Y.Z
+#   Input: dry-run = false (default)
+```
+
+**Dry-run mode:** Set `dry-run: true` to build + generate SBOM +
+verify attestations without publishing the release.
+
+**Workflow chain:**
+
+1. `git push --tags` triggers `release-gate.yml` (tag `v*`)
+2. Release Gate runs pre-flight + tests + build verify
+3. On success, `release-publish.yml` auto-triggers (workflow_run)
+4. Build job creates tarball + CycloneDX SBOM
+5. Release job generates attestations + publishes GitHub Release
+
+If the `workflow_run` chain fails (startup_failure), use the manual
+`workflow_dispatch` trigger in the GitHub Actions UI.
 
 ## No Automation
 
@@ -106,7 +135,8 @@ workflow (PR #122 accidentally downgraded the version from 1.6.0 to 1.5.0).
 
 | Version | Date       | Theme                                     |
 | ------- | ---------- | ----------------------------------------- |
-| v1.6.3  | 2026-04-10 | SLSA L3 + CycloneDX SBOM + Lint Phase 5   |
+| v1.7.0  | 2026-04-11 | Voice-First Edition                       |
+| v1.6.3  | 2026-04-10 | Build Attestation + CycloneDX + Lint Ph5  |
 | v1.6.2  | 2026-04-10 | Release pipeline fix + SLSA L1 provenance |
 | v1.6.0  | 2026-04-10 | WorkerBus W-02/W-04, CRDT Sync, API Docs  |
 | v1.5.1  | 2026-04-09 | Quality & Polish                          |

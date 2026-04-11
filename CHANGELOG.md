@@ -11,7 +11,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 ## [1.7.0] - 2026-04-11
 
 **Release Name: "Voice-First Edition"** -- Voice Pro v1.8 + 12 Preset
-Setups + Enhanced PDF Reports + SLSA L3 Production + a11y Polish.
+Setups + Enhanced PDF Reports + GitHub Build Attestation + a11y Polish.
 
 ### Added
 

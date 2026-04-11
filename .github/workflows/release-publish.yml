@@ -39,7 +39,6 @@ jobs:
             github.event_name == 'workflow_dispatch' ||
             github.event.workflow_run.conclusion == 'success'
         outputs:
-            hashes: ${{ steps.hash.outputs.hashes }}
             tag: ${{ steps.tag.outputs.name }}
             tarball-name: ${{ steps.tarball.outputs.name }}
             sha256: ${{ steps.tarball.outputs.sha256 }}
@@ -101,17 +100,6 @@ jobs:
                   output-file: cannaguide-sbom.cyclonedx.json
                   upload-artifact: false
 
-            - name: Compute base64 hash for SLSA provenance
-              id: hash
-              shell: bash
-              env:
-                  TARBALL: ${{ steps.tarball.outputs.name }}
-                  SHA256: ${{ steps.tarball.outputs.sha256 }}
-              run: |
-                  HASHES=$(echo "sha256:${SHA256}  ${TARBALL}" | base64 -w0)
-                  echo "hashes=${HASHES}" >> "$GITHUB_OUTPUT"
-                  echo "[INFO] Base64 hashes for SLSA: ${HASHES}"
-
             - name: Upload tarball artifact
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:
@@ -129,30 +117,17 @@ jobs:
                   retention-days: 5
 
     # -----------------------------------------------------------------
-    # Job 2: SLSA L3 Provenance -- isolated runner via reusable workflow
-    # -----------------------------------------------------------------
-    provenance:
-        name: SLSA L3 Provenance
-        needs: [build]
-        permissions:
-            actions: read
-            id-token: write
-            contents: write
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
-        with:
-            base64-subjects: '${{ needs.build.outputs.hashes }}'
-            upload-assets: false
-            provenance-name: cannaguide-provenance.intoto.jsonl
-            private-repository: true
-
-    # -----------------------------------------------------------------
-    # Job 3: Release -- download all artifacts + sign SBOM + publish
+    # Job 2: Release -- attestations (SBOM + build provenance) + publish
+    # NOTE: slsa-framework/slsa-github-generator L3 removed -- its
+    #   internal Go build fails on ubuntu-24.04 runners (Apr 2026).
+    #   GitHub-native actions/attest-build-provenance provides SLSA
+    #   build provenance that is verifiable via `gh attestation verify`.
     # -----------------------------------------------------------------
     release:
         name: Publish Release
         runs-on: ubuntu-latest
         timeout-minutes: 10
-        needs: [build, provenance]
+        needs: [build]
         if: ${{ !(github.event.inputs.dry-run == 'true') }}
         permissions:
             contents: write
@@ -174,19 +149,13 @@ jobs:
               with:
                   name: release-sbom
 
-            - name: Download SLSA provenance
-              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-              with:
-                  name: cannaguide-provenance.intoto.jsonl
-                  path: provenance
-
             - name: Generate SBOM attestation
               uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
               with:
                   subject-path: ${{ needs.build.outputs.tarball-name }}
                   sbom-path: cannaguide-sbom.cyclonedx.json
 
-            - name: Generate SLSA L1 attestation (backward compat)
+            - name: Generate build provenance attestation
               uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
               with:
                   subject-path: ${{ needs.build.outputs.tarball-name }}
@@ -199,12 +168,11 @@ jobs:
                   SHA256: ${{ needs.build.outputs.sha256 }}
               shell: bash
               run: |
-                  PROVENANCE_FILE=$(ls provenance/*.intoto.jsonl 2>/dev/null | head -1)
                   SBOM_SHA256=$(sha256sum cannaguide-sbom.cyclonedx.json | cut -d ' ' -f 1)
 
                   NOTES="## CannaGuide ${TAG}
 
-                  **PWA Distribution** -- SLSA L3 provenance + CycloneDX SBOM
+                  **PWA Distribution** -- Build provenance + CycloneDX SBOM
 
                   ### Artifact Checksums
                   | File | SHA-256 |
@@ -214,16 +182,9 @@ jobs:
 
                   ### Supply-Chain Verification
 
-                  **SLSA L1 (GitHub Attestation):**
+                  **Build Provenance (GitHub Attestation):**
                   \`\`\`bash
                   gh attestation verify ${TARBALL} --repo qnbs/CannaGuide-2025
-                  \`\`\`
-
-                  **SLSA L3 (slsa-verifier):**
-                  \`\`\`bash
-                  slsa-verifier verify-artifact ${TARBALL} \\
-                    --provenance-path cannaguide-provenance.intoto.jsonl \\
-                    --source-uri github.com/qnbs/CannaGuide-2025
                   \`\`\`
 
                   **SBOM:** \`cannaguide-sbom.cyclonedx.json\` (CycloneDX JSON)
@@ -234,9 +195,6 @@ jobs:
 
                   # Collect release assets
                   ASSETS=("${TARBALL}" "cannaguide-sbom.cyclonedx.json")
-                  if [[ -n "${PROVENANCE_FILE}" ]]; then
-                    ASSETS+=("${PROVENANCE_FILE}")
-                  fi
 
                   # Create release (draft=false, prerelease auto-detected from tag)
                   if echo "${TAG}" | grep -qE '(alpha|beta|rc)'; then
@@ -250,50 +208,4 @@ jobs:
                       --notes "${NOTES}"
                   fi
 
-                  echo "[OK] Release ${TAG} published with SLSA L3 provenance + SBOM"
-
-    # -----------------------------------------------------------------
-    # Job 4: SLSA Verification -- post-release artifact verification
-    # -----------------------------------------------------------------
-    verify:
-        name: SLSA Verify
-        runs-on: ubuntu-latest
-        timeout-minutes: 5
-        needs: [build, provenance]
-        if: ${{ always() && needs.build.result == 'success' && needs.provenance.result == 'success' }}
-        permissions:
-            contents: read
-        steps:
-            - name: Harden runner
-              uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
-              with:
-                  egress-policy: audit
-
-            - name: Download tarball
-              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-              with:
-                  name: release-tarball
-
-            - name: Download SLSA provenance
-              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-              with:
-                  name: cannaguide-provenance.intoto.jsonl
-                  path: provenance
-
-            - name: Install slsa-verifier
-              uses: slsa-framework/slsa-verifier/actions/installer@3714a2a4684014deb874a0b737dfef0f02044571 # v2.7.0
-
-            - name: Verify SLSA L3 provenance
-              env:
-                  TARBALL: ${{ needs.build.outputs.tarball-name }}
-              shell: bash
-              run: |
-                  PROVENANCE_FILE=$(ls provenance/*.intoto.jsonl 2>/dev/null | head -1)
-                  if [[ -z "${PROVENANCE_FILE}" ]]; then
-                    echo "[FAIL] No provenance file found"
-                    exit 1
-                  fi
-                  slsa-verifier verify-artifact "${TARBALL}" \
-                    --provenance-path "${PROVENANCE_FILE}" \
-                    --source-uri github.com/qnbs/CannaGuide-2025
-                  echo "[OK] SLSA L3 provenance verified for ${TARBALL}"
+                  echo "[OK] Release ${TAG} published with build provenance + SBOM"

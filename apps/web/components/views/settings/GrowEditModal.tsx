@@ -123,6 +123,7 @@ const GrowEditModal: React.FC<GrowEditModalProps> = memo(({ isOpen, onClose, gro
                             placeholder={t('settingsView.grows.namePlaceholder')}
                             maxLength={40}
                             autoFocus
+                            aria-invalid={name.trim().length === 0 ? true : undefined}
                         />
                     </div>
                     <div>

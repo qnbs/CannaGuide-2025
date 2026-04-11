@@ -6,6 +6,7 @@ import tsParser from '@typescript-eslint/parser'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
 import importPlugin from 'eslint-plugin-import'
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y'
 import prettierConfig from 'eslint-config-prettier'
 import globals from 'globals'
 
@@ -127,6 +128,29 @@ export default [
             '@typescript-eslint/no-unsafe-type-assertion': 'off',
         },
     },
+
+    // ── JSX Accessibility (jsx-a11y) – warn-only baseline ─────────────────
+    // Phase B1: all recommended rules as warn. Only active when LINT_A11Y=1
+    // is set to avoid blocking lint-staged (--max-warnings 0).
+    // Run: LINT_A11Y=1 eslint . --report-unused-disable-directives
+    // Or:  pnpm run lint:a11y
+    // eslint-disable-next-line no-undef -- Node.js global in config file
+    ...(process.env.LINT_A11Y === '1'
+        ? [
+              {
+                  files: ['**/*.{tsx,jsx}'],
+                  plugins: {
+                      'jsx-a11y': jsxA11yPlugin,
+                  },
+                  rules: Object.fromEntries(
+                      Object.entries(jsxA11yPlugin.configs.recommended.rules).map(([key]) => [
+                          key,
+                          'warn',
+                      ]),
+                  ),
+              },
+          ]
+        : []),
 
     // ── Prettier integration (disables conflicting formatting rules) ────────
     prettierConfig,

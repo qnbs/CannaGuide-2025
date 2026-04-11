@@ -150,6 +150,12 @@ const GeminiSecurityCard: React.FC = () => {
     const [hasStoredKey, setHasStoredKey] = useState(false)
     const [maskedStoredKey, setMaskedStoredKey] = useState<string | null>(null)
     const [statusMessage, setStatusMessage] = useState<string | null>(null)
+    const [statusType, setStatusType] = useState<'success' | 'error'>('success')
+
+    const setStatus = (message: string | null, type: 'success' | 'error' = 'success') => {
+        setStatusMessage(message)
+        setStatusType(type)
+    }
     const [isBusy, setIsBusy] = useState(false)
     const [auditLogRevision, setAuditLogRevision] = useState(0)
     const [activeProvider, setActiveProvider] = useState<AiProvider>(
@@ -204,7 +210,7 @@ const GeminiSecurityCard: React.FC = () => {
                 setMaskedStoredKey(await aiProviderService.getMaskedProviderApiKey(provider))
             }
         } catch {
-            setStatusMessage(t('settingsView.security.loadError'))
+            setStatus(t('settingsView.security.loadError'), 'error')
         }
     }
 
@@ -230,7 +236,7 @@ const GeminiSecurityCard: React.FC = () => {
                 }
             } catch {
                 if (isMounted) {
-                    setStatusMessage(t('settingsView.security.loadError'))
+                    setStatus(t('settingsView.security.loadError'), 'error')
                 }
             }
         }
@@ -249,7 +255,7 @@ const GeminiSecurityCard: React.FC = () => {
         setActiveProvider(provider)
         aiProviderService.setActiveProviderId(provider)
         setApiKeyInput('')
-        setStatusMessage(null)
+        setStatus(null)
         loadKeyStatus(provider)
     }
 
@@ -275,12 +281,12 @@ const GeminiSecurityCard: React.FC = () => {
         const trimmed = apiKeyInput.trim()
         if (activeProvider === 'gemini') {
             if (!apiKeyService.isValidApiKeyFormat(trimmed)) {
-                setStatusMessage(t('settingsView.security.invalid'))
+                setStatus(t('settingsView.security.invalid'), 'error')
                 return
             }
         } else {
             if (!aiProviderService.isValidProviderKeyFormat(activeProvider, trimmed)) {
-                setStatusMessage(t('settingsView.security.invalid'))
+                setStatus(t('settingsView.security.invalid'), 'error')
                 return
             }
         }
@@ -296,9 +302,9 @@ const GeminiSecurityCard: React.FC = () => {
             }
             setApiKeyInput('')
             setHasStoredKey(true)
-            setStatusMessage(t('settingsView.security.saved'))
+            setStatus(t('settingsView.security.saved'))
         } catch (error) {
-            setStatusMessage(getErrorMessage(error, 'settingsView.security.saveError'))
+            setStatus(getErrorMessage(error, 'settingsView.security.saveError'), 'error')
         } finally {
             setIsBusy(false)
         }
@@ -311,10 +317,10 @@ const GeminiSecurityCard: React.FC = () => {
             if (activeProvider === 'gemini') {
                 if (candidate.length > 0) {
                     await apiKeyService.validateApiKey(candidate)
-                    setStatusMessage(t('settingsView.security.testSuccessUnsaved'))
+                    setStatus(t('settingsView.security.testSuccessUnsaved'))
                 } else {
                     await apiKeyService.validateStoredApiKey()
-                    setStatusMessage(t('settingsView.security.testSuccessStored'))
+                    setStatus(t('settingsView.security.testSuccessStored'))
                 }
             } else {
                 // For non-Gemini providers, just validate format
@@ -323,19 +329,19 @@ const GeminiSecurityCard: React.FC = () => {
                         ? candidate
                         : await aiProviderService.getProviderApiKey(activeProvider)
                 if (!keyToTest) {
-                    setStatusMessage(t('ai.error.missingApiKey'))
+                    setStatus(t('ai.error.missingApiKey'), 'error')
                 } else if (aiProviderService.isValidProviderKeyFormat(activeProvider, keyToTest)) {
-                    setStatusMessage(
+                    setStatus(
                         candidate.length > 0
                             ? t('settingsView.security.testSuccessUnsaved')
                             : t('settingsView.security.testSuccessStored'),
                     )
                 } else {
-                    setStatusMessage(t('settingsView.security.invalid'))
+                    setStatus(t('settingsView.security.invalid'), 'error')
                 }
             }
         } catch (error) {
-            setStatusMessage(getErrorMessage(error, 'settingsView.security.testError'))
+            setStatus(getErrorMessage(error, 'settingsView.security.testError'), 'error')
         } finally {
             setIsBusy(false)
         }
@@ -352,9 +358,9 @@ const GeminiSecurityCard: React.FC = () => {
             setApiKeyInput('')
             setHasStoredKey(false)
             setMaskedStoredKey(null)
-            setStatusMessage(t('settingsView.security.cleared'))
+            setStatus(t('settingsView.security.cleared'))
         } catch (error) {
-            setStatusMessage(getErrorMessage(error, 'settingsView.security.clearError'))
+            setStatus(getErrorMessage(error, 'settingsView.security.clearError'), 'error')
         } finally {
             setIsBusy(false)
         }
@@ -395,6 +401,10 @@ const GeminiSecurityCard: React.FC = () => {
                             placeholder={activeConfig.placeholder}
                             autoComplete="off"
                             spellCheck={false}
+                            error={
+                                statusType === 'error' ? (statusMessage ?? undefined) : undefined
+                            }
+                            errorId="api-key-error"
                         />
                     </SettingsRow>
                     {maskedStoredKey && (
@@ -456,7 +466,9 @@ const GeminiSecurityCard: React.FC = () => {
                             ? t('settingsView.security.stored')
                             : t('settingsView.security.notStored')}
                     </p>
-                    {statusMessage && <p className="text-sm text-slate-300">{statusMessage}</p>}
+                    {statusMessage && statusType === 'success' && (
+                        <p className="text-sm text-emerald-300">{statusMessage}</p>
+                    )}
                     <div className="border-t border-slate-700/50 pt-3 mt-3">
                         <p className="text-xs text-slate-500">
                             {t('settingsView.security.usageToday', {

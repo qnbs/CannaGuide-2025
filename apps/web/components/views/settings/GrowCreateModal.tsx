@@ -91,6 +91,7 @@ const GrowCreateModal: React.FC<GrowCreateModalProps> = memo(({ isOpen, onClose 
                         placeholder={t('settingsView.grows.namePlaceholder')}
                         maxLength={40}
                         autoFocus
+                        aria-invalid={name.trim().length === 0 ? true : undefined}
                     />
                 </div>
                 <div>

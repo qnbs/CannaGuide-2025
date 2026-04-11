@@ -53,10 +53,10 @@ All `FROM` directives in Dockerfiles **must** include an `@sha256:` digest along
 
 ```dockerfile
 # ✅ CORRECT
-FROM node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617...
+FROM node:24-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617...
 
 # ❌ FORBIDDEN
-FROM node:20-alpine
+FROM node:24-alpine
 ```
 
 ### Rationale

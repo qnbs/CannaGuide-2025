@@ -49,8 +49,8 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 
 ### Prerequisites
 
-- **Node.js** ≥ 20
-- **pnpm** ≥ 10 (via Corepack: `corepack enable`)
+- **Node.js** >= 24
+- **pnpm** >= 10 (via Corepack: `corepack enable`)
 
 ### Tech Stack
 

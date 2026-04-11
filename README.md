@@ -128,7 +128,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Getting Started
 
-**Prerequisites:** Node.js 20+, pnpm 10+ (via Corepack)
+**Prerequisites:** Node.js 24+, pnpm 10+ (via Corepack)
 
 ```bash
 corepack enable

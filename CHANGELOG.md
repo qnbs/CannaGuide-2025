@@ -6,6 +6,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **chore(node):** Upgrade minimum Node.js from 20 to 24 (Active LTS)
+  -- all 14 CI workflows, custom action, package.json engines, README,
+  CONTRIBUTING, SECURITY updated
+
 ## [1.7.2] -- 2026-04-11
 
 ### Added

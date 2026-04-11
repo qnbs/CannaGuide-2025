@@ -2,7 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 134) -- CI Guard + v1.7.0 Release Verification
+## Latest Session (Session 135) -- i18n Audit + SLSA Fix + Docs Metrics
+
+**Status: Fixed 24+ missing i18n keys (SeedVault + ProblemTracker)
+across all 5 locales. Corrected SLSA L3 -> L1 references in
+README badges and ARCHITECTURE.md supply-chain table. Updated
+stale test count 2063 -> 2105 across README, ARCHITECTURE,
+copilot-instructions, release notes, and ROADMAP. 2105 tests
+passing, build OK.**
+
+### What Was Done (Session 135)
+
+1. **SeedVault i18n keys** -- Added 14 missing keys to all 5
+   locales (EN/DE/ES/FR/NL): `addEntry`, `strainName`,
+   `strainNamePlaceholder`, `cancel`, `save`, `searchPlaceholder`,
+   `allTypes`, `decrease`, `increase`, `remove`, and capitalized
+   type keys `Regular`, `Feminized`, `Autoflowering`, `Clone`.
+
+2. **ProblemTracker i18n keys** -- Added 14 missing keys to all
+   5 locales: `activeCount_one/_other`, `issueTitlePlaceholder`,
+   `cancel`, `save`, `noActiveIssues`, `resolvedCount_one/_other`,
+   `treatments`, `treatmentPlaceholder`, `productPlaceholder`,
+   `markAs.treating`, `markAs.resolved`, `delete`.
+
+3. **SLSA badge correction** -- README badges (2x) changed from
+   SLSA 3 / level3.svg to SLSA 1 / level1.svg. ARCHITECTURE.md
+   supply-chain table corrected: Level 1 via `attest-build-
+provenance`, 2-job pipeline, removed L3 verification row,
+   updated release assets description.
+
+4. **Test count metrics** -- Updated 2063 -> 2105 in README (9x),
+   ARCHITECTURE (2x), copilot-instructions (2x), v1.7.0 release
+   notes (1x), ROADMAP (1x).
+
+### Verified Metrics
+
+- Version: 1.7.0
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2105 passing, 0 failures (180 test files)
+- Build: successful
+- i18n: SeedVault + ProblemTracker complete across 5 locales
+- SLSA: L1 (correct, via GitHub-native attestation)
+
+### Next Steps
+
+1. **jsx-a11y violation reduction** -- Target top categories:
+   label-has-for, click-events-have-key-events,
+   control-has-associated-label. Goal: reduce from 169 to <100
+2. **Test Coverage Push** -- Target >35% via coverage-v8
+3. **v2.0 Planning** -- Digital Twin architecture spike
+
+---
+
+## Previous Session (Session 134) -- CI Guard + v1.7.0 Release Verification
 
 **Status: Added CI status guard step to release-publish.yml.
 Verified v1.7.0 workflow_dispatch run (ID 24279437626) completed

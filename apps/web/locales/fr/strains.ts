@@ -49,6 +49,7 @@ export const strainsView = {
         exports: 'Exports ({{count}})',
         tips: 'Conseils ({{count}})',
         trends: 'Genetique 2026',
+        seedVault: 'Coffre a Graines',
     },
     dailyStrains: {
         title: '4:20 Daily Drop',

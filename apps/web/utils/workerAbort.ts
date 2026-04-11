@@ -43,6 +43,11 @@ export function initAbortHandler(): void {
     const originalHandler = self.onmessage
 
     self.onmessage = (event: MessageEvent) => {
+        // Origin verification -- reject cross-origin messages (CodeQL #281)
+        if (event.origin && event.origin !== self.location.origin) {
+            return
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const data = event.data as { type?: string; messageId?: string } | undefined
         if (data?.type === '__CANCEL__' && typeof data.messageId === 'string') {

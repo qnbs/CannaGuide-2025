@@ -7,7 +7,7 @@
 
 **Letzte Aktualisierung:** 2026-04-11
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
-**Aktuell:** v1.7.0 | 2140 Tests (185 Dateien) | GitHub Attestation + CycloneDX SBOM | 22 CI Workflows gruen | 0 Security Alerts
+**Aktuell:** v1.7.0 | 2221 Tests (192 Dateien) | GitHub Attestation + CycloneDX SBOM | 22 CI Workflows gruen | 0 Security Alerts
 
 ---
 
@@ -485,6 +485,7 @@ npm run security:scan                 # Security-Scan (Semgrep, Gitleaks, etc.)
 
 | Datum      | Session-Fokus                    | Sprint       | Fortschritt                                            | Review-Doc                                      |
 | ---------- | -------------------------------- | ------------ | ------------------------------------------------------ | ----------------------------------------------- |
+| 2026-04-11 | Quality Polish + Test Hardening  | S3 + S5      | ARIA chart a11y, 23 new tests (SAB/Pool), Stryker +3   | Session 147                                     |
 | 2026-04-05 | P0/P1 Audit: Stryker + Tests     | S2 + S3      | 29 neue Tests, Stryker Baseline, Retry-After Parsing   | Session 63                                      |
 | 2026-03-28 | Deep Cleanup + 5-Feature Batch   | S3 + S5      | 18 files, eco-mode sync, plugin UI, DSGVO, i18n, dedup | [review](session-activity-review-2026-03-28.md) |
 | 2026-03-27 | Full Audit Plan (12 Phases)      | S3 + S5      | 24 files modified, 11 new, 12/12 phases done           | [review](session-activity-review-2026-03-27.md) |

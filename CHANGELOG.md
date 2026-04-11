@@ -75,6 +75,24 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **a11y(ui):** ARIA chart labels on 4 Recharts components --
+  VPDChart, MetricsOverviewTab, HydroMonitorView, StrainComparisonView
+  wrapped with `role="img"` + `aria-label` for screen reader access.
+  i18n keys added in all 5 languages (EN/DE/ES/FR/NL).
+- **test(workers):** WorkerPool SAB hot-path tests (13 new tests) --
+  AtomicsChannel/LockFreeRingBuffer auto-init on spawn, getSabChannel/
+  getSabRingBuffer accessors, sabBufferUtilization metrics, cleanup.
+- **test(utils):** LockFreeRingBuffer SAB path tests (4 new tests) --
+  SharedArrayBuffer producer/consumer, wrap-around, batch ops.
+- **test(utils):** AtomicsChannel edge-case tests (5 new tests) --
+  data slot boundary, all-slots iteration, signal overwrite, SAB
+  create path verification.
+- **chore(stryker):** Extended Stryker mutation targets to include
+  `lockFreeRingBuffer.ts`, `atomicsChannel.ts`, and `workerPool.ts`
+  with proper test exclusion patterns.
+
+### Changed
+
 - **feat(pwa):** `robots.txt` and `.nojekyll` added to `public/` for
   proper GitHub Pages handling and web crawler access
 - **feat(workers):** VPD SAB consumer hook `useVpdSabStream` -- polls

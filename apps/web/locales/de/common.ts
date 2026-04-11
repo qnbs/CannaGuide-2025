@@ -317,6 +317,10 @@ export const common = {
         harvestingTechnique: 'Erntetechnik',
         toggleViewMode: 'Zwischen Wochen- und Monatsansicht wechseln',
         selectTimeRange: 'Zeitraum auswaehlen: {{range}}',
+        vpdChart: 'VPD-Diagramm mit Dampfdruckdefizit ueber 24 Stunden',
+        metricsChart: 'Pflanzenmetriken-Diagramm mit pH, EC und Hoehe ueber die Zeit',
+        hydroChart: 'Hydroponik-Diagramm mit pH-, EC- und Temperaturverlauf',
+        strainRadarChart: 'Radardiagramm zum Vergleich der Sorteneigenschaften',
     },
 }
 

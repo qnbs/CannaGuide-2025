@@ -200,6 +200,14 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - `cn()` from `lib/utils.ts` for conditional classes (clsx + tailwind-merge)
 - Theme via CSS custom properties (9 themes)
 
+### Accessibility
+
+- **Shared Input/Textarea** support `error` + `errorId` props for `aria-invalid`, `aria-describedby`, `role="alert"` error paragraphs
+- **FormInput** (`form.tsx`) auto-generates `errorId` via `useId()` when `error` is passed
+- **eslint-plugin-jsx-a11y**: recommended rules at `warn` level, opt-in via `LINT_A11Y=1` (not in lint-staged/CI gate). Run: `pnpm run lint:a11y`
+- **axe-core**: automated a11y scanning in Playwright E2E
+- **WCAG 2.1 AA** target (see `docs/ACCESSIBILITY.md`)
+
 ### Security (Critical)
 
 - **ESLint hardened:** `@typescript-eslint/no-explicit-any: error`, `no-unsafe-type-assertion: warn`, `no-unnecessary-type-arguments: warn` with type-aware linting (`projectService: true`)

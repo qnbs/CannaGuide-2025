@@ -11,18 +11,30 @@ import { Textarea as UiTextarea } from '@/components/ui/textarea'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 type InputProps =
-    | ({ as?: 'input' } & React.InputHTMLAttributes<HTMLInputElement> & { label?: string })
-    | ({ as: 'textarea' } & React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string })
+    | ({ as?: 'input' } & React.InputHTMLAttributes<HTMLInputElement> & {
+              label?: string
+              error?: string | undefined
+              errorId?: string | undefined
+          })
+    | ({ as: 'textarea' } & React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+              label?: string
+              error?: string | undefined
+              errorId?: string | undefined
+          })
 
 export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
-    ({ as = 'input', label, className, ...props }, ref) => {
+    ({ as = 'input', label, className, error, errorId, ...props }, ref) => {
         const id = useId()
+        const generatedErrorId = useId()
+        const resolvedErrorId = errorId ?? (error ? generatedErrorId : undefined)
 
         const control =
             as === 'textarea' ? (
                 <UiTextarea
                     id={id}
                     className={className}
+                    error={error}
+                    errorId={resolvedErrorId}
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     ref={ref as React.Ref<HTMLTextAreaElement>}
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
@@ -32,6 +44,8 @@ export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, In
                 <UiInput
                     id={id}
                     className={className}
+                    error={error}
+                    errorId={resolvedErrorId}
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     ref={ref as React.Ref<HTMLInputElement>}
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion

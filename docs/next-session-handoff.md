@@ -2,7 +2,74 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 132) -- Release Publish Trigger Refactor
+## Latest Session (Session 133) -- A11y Phase B2 + B1
+
+**Status: Added aria-invalid/aria-describedby/role="alert" to
+shared Input, Textarea, and FormInput components. Migrated 4
+downstream form components (AddStrainModal 5 fields, SettingsView
+API key, GrowCreateModal, GrowEditModal). Installed
+eslint-plugin-jsx-a11y (recommended rules, warn-level, opt-in
+via LINT_A11Y=1). Baseline: 169 warnings. 16 new tests added.
+Total: 2079 tests passing, build OK.**
+
+### What Was Done (Session 133)
+
+1. **Phase B2: aria-invalid on shared Input component** --
+   Extended `components/ui/input.tsx` and `textarea.tsx` with
+   `error` and `errorId` props. When set:
+    - `aria-invalid="true"` on the input element
+    - `aria-describedby` points to error element id
+    - Error paragraph with `role="alert"` rendered below input
+    - `border-rose-500/60` visual indicator on error state
+      Extended `components/ui/form.tsx` (FormInput) to pass error
+      props through, with auto-generated errorId via useId().
+
+2. **Downstream form migration (4 components)** --
+    - `AddStrainModal`: Removed local `ErrorText` component,
+      migrated 5 validation fields to use `error` prop
+    - `SettingsView`: Added `statusType` state to differentiate
+      success/error, API key input gets `error` prop on error,
+      success messages shown in emerald color
+    - `GrowCreateModal` + `GrowEditModal`: Added `aria-invalid`
+      on name input when empty
+
+3. **Phase B1: eslint-plugin-jsx-a11y** --
+    - Installed `eslint-plugin-jsx-a11y@6.10.2` as root devDep
+    - ESLint config: opt-in via `LINT_A11Y=1` env var (prevents
+      blocking lint-staged which uses `--max-warnings 0`)
+    - All recommended rules at `warn` level
+    - New `pnpm run lint:a11y` command
+    - Baseline: 169 warnings (documented in ACCESSIBILITY.md)
+
+4. **Tests: 16 new tests** --
+    - `input.test.tsx`: 9 tests (aria-invalid, aria-describedby,
+      role="alert", error border, ref forwarding)
+    - `textarea.test.tsx`: 7 tests (same coverage)
+
+### Verified Metrics
+
+- Version: 1.7.0
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2079 passing, 0 failures
+- Build: successful
+- Standard lint: 0 errors, 0 warnings
+- A11y lint (LINT_A11Y=1): 169 warnings baseline
+
+### Next Steps
+
+1. **Trigger v1.7.0 release publish** -- In GitHub Actions UI,
+   trigger "Release Publish" workflow_dispatch with tag=v1.7.0
+2. **jsx-a11y violation reduction** -- Target top categories: - `label-has-for`: associate labels with inputs via htmlFor - `click-events-have-key-events` + `no-static-element-
+interactions`: add keyboard handlers or use semantic buttons - `control-has-associated-label`: add aria-label to controls - Goal: reduce from 169 to <100 warnings
+3. **Phase B2 extension** -- Add error prop support to:
+    - Equipment calculator Input (common.tsx) -- own wrapper
+    - SearchBar component -- validation on empty submit
+4. **Test Coverage Push** -- Target >35% via coverage-v8
+5. **v2.0 Planning** -- Digital Twin architecture spike
+
+---
+
+## Previous Session (Session 132) -- Release Publish Trigger Refactor
 
 **Status: Switched release-publish.yml from fragile workflow_run
 trigger (caused startup_failure) to direct push:tags trigger.

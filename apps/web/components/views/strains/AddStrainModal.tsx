@@ -65,11 +65,6 @@ const parseCommaSeparatedTokens = (value: string): string[] =>
         .map((token) => token.trim())
         .filter(Boolean)
 
-const ErrorText: React.FC<{ message?: string | undefined }> = ({ message }) => {
-    if (!message) return null
-    return <p className="mt-1 text-xs font-medium text-rose-300">{message}</p>
-}
-
 const TokenPreview: React.FC<{ title: string; values: string[] }> = ({ title, values }) => (
     <div className="rounded-2xl border border-white/10 bg-slate-900/45 p-3">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -295,9 +290,9 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 value={values.name}
                                 onChange={(e) => handleChange('name', e.target.value)}
                                 placeholder={t('strainsView.addStrainModal.strainNamePlaceholder')}
+                                error={errors.name}
                                 required
                             />
-                            <ErrorText message={errors.name} />
                         </div>
                         <div className="sm:col-span-2">
                             <p className="mb-2 text-sm font-semibold text-slate-300">
@@ -362,9 +357,9 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 step="0.1"
                                 value={values.thc}
                                 onChange={(e) => handleChange('thc', Number(e.target.value))}
+                                error={errors.thc}
                                 required
                             />
-                            <ErrorText message={errors.thc} />
                         </div>
                         <Input
                             label={t('strainsView.addStrainModal.cbdPercent')}
@@ -379,8 +374,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 value={values.thcRange}
                                 onChange={(e) => handleChange('thcRange', e.target.value)}
                                 placeholder={t('strainsView.addStrainModal.thcRangePlaceholder')}
+                                error={errors.thcRange}
                             />
-                            <ErrorText message={errors.thcRange} />
                         </div>
                         <div>
                             <Input
@@ -388,8 +383,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 value={values.cbdRange}
                                 onChange={(e) => handleChange('cbdRange', e.target.value)}
                                 placeholder={t('strainsView.addStrainModal.cbdRangePlaceholder')}
+                                error={errors.cbdRange}
                             />
-                            <ErrorText message={errors.cbdRange} />
                         </div>
                     </FormSection>
 
@@ -406,9 +401,9 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 onChange={(e) =>
                                     handleChange('floweringTime', Number(e.target.value))
                                 }
+                                error={errors.floweringTime}
                                 required
                             />
-                            <ErrorText message={errors.floweringTime} />
                         </div>
                         <Input
                             label={t('strainsView.addStrainModal.floweringTimeRange')}

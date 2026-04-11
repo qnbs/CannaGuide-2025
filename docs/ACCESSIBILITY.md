@@ -29,8 +29,28 @@ We aim to conform to **WCAG 2.1 Level AA** where applicable, specifically:
 ## Testing
 
 - **Automated**: axe-core via `@axe-core/playwright` in E2E tests
+- **ESLint**: `eslint-plugin-jsx-a11y` (recommended rules as warn-level, opt-in via `LINT_A11Y=1`)
 - **Manual**: Periodic testing with VoiceOver (macOS) and NVDA (Windows)
 - **CI**: Lighthouse accessibility audits in `lighthouserc.json`
+
+### ESLint jsx-a11y Baseline (2026-04-11)
+
+- **169 warnings** across the codebase (0 errors)
+- Rules: all `eslint-plugin-jsx-a11y` recommended rules at `warn` level
+- Activation: `pnpm run lint:a11y` (or `LINT_A11Y=1 eslint .`)
+- Not included in lint-staged or CI gate (to avoid blocking commits)
+- Top violation categories: `label-has-for`, `click-events-have-key-events`,
+  `no-static-element-interactions`, `control-has-associated-label`
+
+### Form Accessibility (Phase B2, 2026-04-11)
+
+- Shared `Input` and `Textarea` components support `error`/`errorId` props
+- `aria-invalid="true"` set automatically when `error` prop is provided
+- `aria-describedby` points to error element with matching `id`
+- Error messages rendered with `role="alert"` for screen reader announcement
+- `FormInput` wrapper auto-generates `errorId` via `useId()`
+- Migrated: AddStrainModal (5 fields), SettingsView API key, GrowCreateModal,
+  GrowEditModal
 
 ## Known Limitations
 
@@ -59,4 +79,4 @@ We aim to respond to accessibility feedback within 5 business days.
 
 ---
 
-_Last updated: 2026-04-07_
+_Last updated: 2026-04-11_

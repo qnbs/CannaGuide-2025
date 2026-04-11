@@ -890,8 +890,7 @@ export const settingsView = {
             phase3Desc:
                 'Iteracion y refinamiento principales en GitHub Codespaces con VS Code Copilot potenciado por Claude Opus 4.6 -- la mayoria del desarrollo de funciones, fortalecimiento de seguridad, pruebas y trabajo de pipeline CI/CD.',
             phase4Title: 'Despliegue y Distribucion',
-            phase4Desc:
-                'Despliegue de produccion en GitHub Pages y vistas previas de PR en Netlify.',
+            phase4Desc: 'Despliegue de produccion en GitHub Pages, Vercel y Cloudflare Pages.',
             secondaryNote: 'Contribuciones menores de GPT-4 Mini y GPT-5.3 Codex.',
         },
         disclaimer: {
@@ -1001,7 +1000,7 @@ export const settingsView = {
                 <li><strong>Prototipado</strong>: Estructura inicial de la aplicacion y conjunto de funciones construidos con <strong>Google Gemini 2.5 Pro y 3.1 Pro</strong> en <strong>Google AI Studio</strong>, luego exportado a GitHub.</li>
                 <li><strong>Evaluacion y Asesoria</strong>: Revision continua de arquitectura, consultoria de seguridad y guia de calidad por <strong>xAI Grok 4.20</strong> a lo largo de todo el proceso.</li>
                 <li><strong>Desarrollo Principal</strong>: Iteracion principal en <strong>GitHub Codespaces</strong> con <strong>VS Code Copilot potenciado por Claude Opus 4.6</strong> -- la mayoria del refinamiento de funciones, fortalecimiento de seguridad, mas de 643 pruebas, CI/CD y la pila AI local.</li>
-                <li><strong>Despliegue</strong>: Produccion via GitHub Pages y Netlify.</li>
+                <li><strong>Despliegue</strong>: Produccion via GitHub Pages, Vercel y Cloudflare Pages.</li>
             </ol>
             <p><em>Contribuciones menores de GPT-4 Mini y GPT-5.3 Codex.</em></p>
             <p>Este proyecto es completamente de codigo abierto. Explora el codigo, bifurca el proyecto o contribuye en GitHub.</p>

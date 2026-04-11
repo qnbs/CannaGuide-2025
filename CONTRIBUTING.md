@@ -342,7 +342,7 @@ When removing or replacing a public API, component, or feature, follow this proc
 2. Generate CHANGELOG: `pnpm run changelog:latest` (or `pnpm run changelog` for full rebuild).
 3. Create a tag: `git tag v1.x.0 && git push --tags`.
 4. GitHub Actions automatically:
-    - Deploys to GitHub Pages and Netlify.
+    - Deploys to GitHub Pages, Vercel, and Cloudflare Pages (Netlify paused).
 5. Create a GitHub Release with the CHANGELOG excerpt.
 
 ---

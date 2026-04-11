@@ -1,10 +1,21 @@
-[build]
-  command = "corepack enable && pnpm install --frozen-lockfile && pnpm run build"
-  publish = "apps/web/dist"
+# =========================================================================
+# NETLIFY DEPLOYMENTS PAUSED -- Project disabled on Netlify dashboard.
+# Bandwidth limit (50%) reached. Paused until v2.0.
+# Active targets: GitHub Pages, Vercel, Cloudflare Pages.
+# Re-enable: Netlify Dashboard > Project > Enable + uncomment build below.
+# =========================================================================
 
-[build.environment]
-  NODE_VERSION = "20"
-  BUILD_BASE_PATH = "/"
+# [build]
+#   command = "corepack enable && pnpm install --frozen-lockfile && pnpm run build"
+#   publish = "apps/web/dist"
+#
+# [build.environment]
+#   NODE_VERSION = "20"
+#   BUILD_BASE_PATH = "/"
+
+[build]
+  command = "echo 'Netlify deployments paused -- see netlify.toml' && exit 1"
+  publish = "apps/web/dist"
 
 # Redirect all routes to index.html for SPA
 [[redirects]]
@@ -50,9 +61,9 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-# Deploy previews for PRs are enabled by default on Netlify
-[context.deploy-preview]
-  command = "corepack enable && pnpm install --frozen-lockfile && pnpm run build"
-
-[context.deploy-preview.environment]
-  BUILD_BASE_PATH = "/"
+# Deploy previews disabled (project paused on Netlify dashboard)
+# [context.deploy-preview]
+#   command = "corepack enable && pnpm install --frozen-lockfile && pnpm run build"
+#
+# [context.deploy-preview.environment]
+#   BUILD_BASE_PATH = "/"

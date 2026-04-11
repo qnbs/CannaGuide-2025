@@ -4,7 +4,16 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
-## [1.7.2] -- 2025-07-11
+## [1.7.2] -- 2026-04-11
+
+### Fixed
+
+- **fix(ci):** release-publish workflow: tag creation for workflow_dispatch
+  fixed -- build job now creates annotated tag before release job runs;
+  `--verify-tag` prevents `gh release create` from auto-creating tags
+  that fail against repository rulesets (HTTP 422 pre_receive error)
+- **fix(ci):** release job: added checkout step + tag verification guard
+  with clear error messages and 3 remediation paths
 
 ### Security
 
@@ -19,6 +28,17 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 - **chore(settings):** WorkerTelemetryTab hidden behind `import.meta.env.DEV`
   guard -- no longer visible in production builds (dev-only diagnostics)
+- **chore(ci):** release-publish: optional `RELEASE_PAT` secret support
+  for repos with restrictive tag rulesets
+- **chore(deploy):** Netlify deployments paused until v2.0 --
+  bandwidth limit (50%) reached; build command fails intentionally;
+  preview-validation workflow disabled; deploy-preview context
+  commented out; active targets: GitHub Pages, Vercel, Cloudflare
+- **chore(i18n):** deployment references updated from Netlify to
+  Vercel + Cloudflare Pages in all 5 locales (EN/DE/ES/FR/NL)
+- **chore(docs):** README, distribution.md, ARCHITECTURE.md,
+  ROADMAP.md, CONTRIBUTING.md, copilot-instructions.md updated
+  to reflect Netlify pause
 
 ## [1.7.1] -- 2026-04-11
 

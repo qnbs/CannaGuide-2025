@@ -110,6 +110,19 @@ be triggered manually via `workflow_dispatch`:
 #   Input: dry-run = false (default)
 ```
 
+**Manual dispatch without pre-pushed tag:** The workflow automatically
+creates an annotated tag on HEAD when the tag does not exist yet. This
+requires the checkout token to have tag-push permissions. If repository
+rulesets block tag creation by `GITHUB_TOKEN`, choose one of:
+
+1. **Push the tag manually first:**
+   `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`
+2. **Add a `RELEASE_PAT` repository secret** (classic PAT with `repo`
+   scope) that can bypass tag rulesets. The workflow uses it
+   automatically when available.
+3. **Add `github-actions[bot]` to the tag ruleset bypass list:**
+   Settings > Rules > Rulesets > (tag rule) > Bypass list.
+
 **Dry-run mode:** Set `dry-run: true` to build + generate SBOM +
 verify attestations without publishing the release.
 

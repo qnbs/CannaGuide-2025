@@ -25,7 +25,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Testing:** Vitest (2198 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
-- **Distribution:** GitHub Pages, Netlify (PR previews), Vercel, Cloudflare Pages
+- **Distribution:** GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0)
 
 ### Monorepo Layout
 
@@ -362,7 +362,7 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | Target           | Method                                  | Trigger                                                                       |
 | ---------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
 | GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                                |
-| Netlify          | `netlify.toml`                          | Push + PR (preview deploys)                                                   |
+| Netlify          | `netlify.toml`                          | **PAUSED** -- project disabled on dashboard (bandwidth limit, until v2.0)     |
 | Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                                 |
 | Cloudflare Pages | `_headers` + `_redirects` + Git         | Push to `main` (connect via Cloudflare Dashboard)                             |
 | GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (parallel to gate) -- GitHub build attestation + CycloneDX SBOM |
@@ -566,8 +566,8 @@ After implementation is complete with all validations passing, update **all affe
 | `packages/ui/src/tailwind-preset.cjs`                                           | Shared Tailwind preset (colors, keyframes, animations)                                                                                                                       |
 | `lighthouserc.json`                                                             | Lighthouse CI config + performance budget assertions                                                                                                                         |
 | `vercel.json`                                                                   | Vercel deployment config (SPA rewrite, security headers, asset caching)                                                                                                      |
-| `netlify.toml`                                                                  | Netlify deployment config (build, redirects, security headers)                                                                                                               |
-| `apps/web/public/_headers`                                                      | Netlify/Cloudflare Pages HTTP headers (CSP, caching -- synced with securityHeaders.ts)                                                                                       |
+| `netlify.toml`                                                                  | Netlify deployment config -- **PAUSED** (build fails intentionally, re-enable for v2.0)                                                                                      |
+| `apps/web/public/_headers`                                                      | Cloudflare Pages HTTP headers (CSP, caching -- synced with securityHeaders.ts; Netlify paused)                                                                               |
 | `apps/web/public/_redirects`                                                    | Cloudflare Pages SPA routing (`/* /index.html 200`)                                                                                                                          |
 | `pnpm-workspace.yaml`                                                           | pnpm workspace definition (packages/_, apps/_)                                                                                                                               |
 | `.npmrc`                                                                        | pnpm config (shamefully-hoist, auto-install-peers, strict-peer-dependencies=false)                                                                                           |

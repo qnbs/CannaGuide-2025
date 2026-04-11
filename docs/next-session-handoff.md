@@ -2,43 +2,68 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 145) -- Referrer-Policy Hardening + WorkerTelemetry Dev Guard
+## Latest Session (Session 146) -- Release Fix + Referrer-Policy + Netlify Pause
 
-**Status: v1.7.2. Referrer-Policy upgraded to same-origin across all 5
-delivery paths. WorkerTelemetryTab hidden in production builds. CSP
-checker extended for Referrer-Policy consistency.**
+**Status: v1.7.2. Release-publish workflow fixed. Referrer-Policy
+hardened. WorkerTelemetryTab production guard. Netlify deployments
+fully paused until v2.0.**
 
-### What Was Done (Session 145)
+### What Was Done (Session 146)
 
-1. **Referrer-Policy upgrade (all 5 configs):** Changed from
+1. **Release-publish workflow fix (CRITICAL):** Fixed HTTP 422 error
+   when running workflow_dispatch. Root cause: `gh release create`
+   tried to auto-create tag, blocked by repository rulesets. Fix:
+    - Build job gets `contents: write` + creates annotated tag on
+      HEAD before release job runs
+    - Checkout token uses `RELEASE_PAT || github.token` for ruleset
+      bypass (optional PAT secret)
+    - Release job adds checkout + tag verification step
+    - `--verify-tag` flag prevents auto-tag creation in gh CLI
+    - Clear 3-path error messages if tag push still fails
+    - Updated `docs/release-process.md` with RELEASE_PAT docs
+
+2. **Referrer-Policy upgrade (all 5 configs):** Changed from
    `strict-origin-when-cross-origin` to `same-origin` in
-   securityHeaders.ts (new REFERRER_POLICY export), vite.config.ts
-   (server + preview headers), netlify.toml, vercel.json,
+   securityHeaders.ts, vite.config.ts, netlify.toml, vercel.json,
    public/\_headers.
 
-2. **CSP consistency checker extended:** Added Referrer-Policy
-   extraction + comparison to `check-csp-consistency.mjs`. Verifies
-   netlify.toml, vercel.json, public/\_headers match
-   securityHeaders.ts REFERRER_POLICY value.
+3. **CSP consistency checker extended:** Referrer-Policy extraction
+    - comparison added to `check-csp-consistency.mjs`.
 
-3. **WorkerTelemetryTab dev-only guard:** SettingsSubNav.tsx
-   conditionally includes `workerTelemetry` nav item only when
-   `import.meta.env.DEV`. SettingsView.tsx lazy import is null in
-   production, switch case returns null when component unavailable.
+4. **WorkerTelemetryTab dev-only guard:** Hidden in production via
+   `import.meta.env.DEV` in SettingsSubNav + SettingsView.
+
+5. **Netlify deployments fully paused (bandwidth limit reached):**
+    - `netlify.toml`: build command replaced with intentional fail,
+      deploy-preview context commented out, prominent notice added
+    - `preview-validation.yml`: disabled (trigger changed to
+      manual workflow_dispatch with notice)
+    - `public/_headers` + `public/_redirects`: comments updated
+    - All 5 locale files (EN/DE/ES/FR/NL): deployment references
+      updated from "GitHub Pages + Netlify" to "GitHub Pages,
+      Vercel, and Cloudflare Pages"
+    - README.md: Netlify badge removed (EN + DE), distribution
+      table updated, acknowledgments updated
+    - copilot-instructions.md: distribution, deployment table,
+      and important files table updated
+    - docs: distribution.md, ARCHITECTURE.md, ROADMAP.md,
+      CONTRIBUTING.md all updated
+    - crossOriginIsolation.ts comment updated
+    - Project already disabled on Netlify dashboard
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
 - Tests: 2198 passed, 0 failures
-- Build: successful (171 precache entries)
-- CSP checker: [OK] all 5 paths consistent
-- Referrer-Policy checker: [OK] all targets consistent
+- Build: successful (170 precache entries)
+- CSP + Referrer-Policy checker: [OK] consistent
 
 ### Next Steps
 
+- Re-run Release Publish workflow for v1.7.1 (or create v1.7.2)
+- Consider adding RELEASE_PAT secret if tag push still fails
 - i18n completeness audit (run check-i18n-completeness.mjs)
-- Consider version bump to 1.7.2 in package.json
-- Review remaining audit-roadmap-2026-q2.md items
+- Version bump to 1.7.2 in package.json
 
 ---
 

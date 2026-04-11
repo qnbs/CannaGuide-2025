@@ -57,7 +57,7 @@ Released: **2026-Q1**
 | -------------------------------------------------------- | ------------- | ------ | ------- |
 | Sentry error tracking integration                        | Observability | ✅     | —       |
 | Playwright Component Tests infrastructure                | Testing       | ✅     | —       |
-| Netlify deployment with automatic PR previews            | Deployment    | ✅     | —       |
+| Netlify deployment with automatic PR previews            | Deployment    | --     | Paused  |
 | Capacitor mobile build CI workflow                       | CI/CD         | ❌     | Removed |
 | PWA auto-update notification with changelog              | PWA           | ✅     | —       |
 | Docker-Compose ESP32-Mock sensor simulation              | DevOps        | ❌     | Removed |
@@ -264,17 +264,17 @@ Released: **2026-Q4**
 
 Released: **2026-04-08**
 
-| Feature                                                                         | Category | Priority | Issue |
-| ------------------------------------------------------------------------------- | -------- | -------- | ----- |
-| CRDT offline sync protocol + conflict UI (Y.js, 3-way merge)                    | Sync     | High     | —     |
-| Multi-Grow state layer + UI (EntityAdapter, MAX_GROWS=3 per CanG)               | Grows    | High     | —     |
-| Multi-Grow AI integration + per-grow data export/import                         | AI/Grows | High     | —     |
-| AI cost tracking for BYOK users (token usage, 7-day chart, monthly budget)      | AI       | High     | —     |
-| Netlify preview validation workflow (Playwright + Lighthouse on previews)       | CI       | Medium   | —     |
-| RTL language infrastructure (dir/lang attributes, smoke E2E)                    | i18n     | Medium   | —     |
-| Permanent CI hardening pass (lint-staged strict, E2E selectors, typecheck gate) | CI       | High     | —     |
-| Complete pnpm migration sweep (all npm references replaced)                     | Build    | Medium   | —     |
-| @types/three replaces custom stubs (full Three.js type safety)                  | Types    | Low      | —     |
+| Feature                                                                         | Category | Priority | Issue  |
+| ------------------------------------------------------------------------------- | -------- | -------- | ------ |
+| CRDT offline sync protocol + conflict UI (Y.js, 3-way merge)                    | Sync     | High     | —      |
+| Multi-Grow state layer + UI (EntityAdapter, MAX_GROWS=3 per CanG)               | Grows    | High     | —      |
+| Multi-Grow AI integration + per-grow data export/import                         | AI/Grows | High     | —      |
+| AI cost tracking for BYOK users (token usage, 7-day chart, monthly budget)      | AI       | High     | —      |
+| Netlify preview validation workflow (Playwright + Lighthouse on previews)       | CI       | --       | Paused |
+| RTL language infrastructure (dir/lang attributes, smoke E2E)                    | i18n     | Medium   | —      |
+| Permanent CI hardening pass (lint-staged strict, E2E selectors, typecheck gate) | CI       | High     | —      |
+| Complete pnpm migration sweep (all npm references replaced)                     | Build    | Medium   | —      |
+| @types/three replaces custom stubs (full Three.js type safety)                  | Types    | Low      | —      |
 
 ### v1.5 Exit Criteria
 

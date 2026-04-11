@@ -10,7 +10,7 @@
             "headers": [
                 { "key": "X-Frame-Options", "value": "DENY" },
                 { "key": "X-Content-Type-Options", "value": "nosniff" },
-                { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+                { "key": "Referrer-Policy", "value": "same-origin" },
                 {
                     "key": "Permissions-Policy",
                     "value": "accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()"

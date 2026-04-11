@@ -20,7 +20,7 @@ const navItemIds = [
     'privacy',
     'iot',
     'data',
-    'workerTelemetry',
+    ...(import.meta.env.DEV ? (['workerTelemetry'] as const) : []),
     'about',
 ] as const
 

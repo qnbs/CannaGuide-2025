@@ -33,7 +33,7 @@ const VoiceSettingsTab = lazy(() => import('./VoiceSettingsTab'))
 const DataManagementTab = lazy(() => import('./DataManagementTab'))
 const IotSettingsTab = lazy(() => import('./IotSettingsTab'))
 const GrowManagerTab = lazy(() => import('./GrowManagerTab'))
-const WorkerTelemetryTab = lazy(() => import('./WorkerTelemetryTab'))
+const WorkerTelemetryTab = import.meta.env.DEV ? lazy(() => import('./WorkerTelemetryTab')) : null
 
 const timeOptions = [
     { value: '12', label: '12/12' },
@@ -2438,7 +2438,7 @@ const SettingsViewComponent: React.FC = () => {
                     </Suspense>
                 )
             case 'workerTelemetry':
-                return (
+                return WorkerTelemetryTab ? (
                     <Suspense
                         fallback={
                             <Card>
@@ -2448,7 +2448,7 @@ const SettingsViewComponent: React.FC = () => {
                     >
                         <WorkerTelemetryTab />
                     </Suspense>
-                )
+                ) : null
             default:
                 return null
         }

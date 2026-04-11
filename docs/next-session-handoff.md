@@ -2,7 +2,47 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 144) -- i18n Fixes, Mobile Overlap, Bilingual Onboarding
+## Latest Session (Session 145) -- Referrer-Policy Hardening + WorkerTelemetry Dev Guard
+
+**Status: v1.7.2. Referrer-Policy upgraded to same-origin across all 5
+delivery paths. WorkerTelemetryTab hidden in production builds. CSP
+checker extended for Referrer-Policy consistency.**
+
+### What Was Done (Session 145)
+
+1. **Referrer-Policy upgrade (all 5 configs):** Changed from
+   `strict-origin-when-cross-origin` to `same-origin` in
+   securityHeaders.ts (new REFERRER_POLICY export), vite.config.ts
+   (server + preview headers), netlify.toml, vercel.json,
+   public/\_headers.
+
+2. **CSP consistency checker extended:** Added Referrer-Policy
+   extraction + comparison to `check-csp-consistency.mjs`. Verifies
+   netlify.toml, vercel.json, public/\_headers match
+   securityHeaders.ts REFERRER_POLICY value.
+
+3. **WorkerTelemetryTab dev-only guard:** SettingsSubNav.tsx
+   conditionally includes `workerTelemetry` nav item only when
+   `import.meta.env.DEV`. SettingsView.tsx lazy import is null in
+   production, switch case returns null when component unavailable.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2198 passed, 0 failures
+- Build: successful (171 precache entries)
+- CSP checker: [OK] all 5 paths consistent
+- Referrer-Policy checker: [OK] all targets consistent
+
+### Next Steps
+
+- i18n completeness audit (run check-i18n-completeness.mjs)
+- Consider version bump to 1.7.2 in package.json
+- Review remaining audit-roadmap-2026-q2.md items
+
+---
+
+## Previous Session (Session 144) -- i18n Fixes, Mobile Overlap, Bilingual Onboarding
 
 **Status: v1.7.1 released. SeedVault i18n fixed, mobile floating
 element overlaps resolved, bilingual language switcher added to

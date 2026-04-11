@@ -69,3 +69,11 @@ export const COEP = 'credentialless'
  * always use HTTPS for subsequent requests (1 year, include subdomains).
  */
 export const HSTS = 'max-age=31536000; includeSubDomains'
+
+/**
+ * Referrer-Policy.
+ * `same-origin` sends the full referrer for same-origin requests and no
+ * referrer for cross-origin requests. Strictest practical policy --
+ * prevents leaking paths to AI providers and CDN hosts.
+ */
+export const REFERRER_POLICY = 'same-origin'

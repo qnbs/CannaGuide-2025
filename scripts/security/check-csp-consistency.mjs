@@ -173,9 +173,66 @@ for (const [name, directives] of Object.entries(parsed)) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Referrer-Policy Consistency Check
+// ---------------------------------------------------------------------------
+
+function extractReferrerPolicyFromSecurityHeaders() {
+    const ts = readFileSync(resolve(ROOT, 'apps/web/securityHeaders.ts'), 'utf-8')
+    const match = ts.match(/REFERRER_POLICY\s*=\s*['"]([^'"]+)['"]/m)
+    if (!match) {
+        console.error('[FAIL] Could not find REFERRER_POLICY in securityHeaders.ts')
+        process.exit(1)
+    }
+    return match[1]
+}
+
+function extractReferrerPolicyFromNetlify() {
+    const toml = readFileSync(resolve(ROOT, 'netlify.toml'), 'utf-8')
+    const match = toml.match(/Referrer-Policy\s*=\s*"([^"]*)"/i)
+    return match ? match[1] : undefined
+}
+
+function extractReferrerPolicyFromVercel() {
+    const json = readFileSync(resolve(ROOT, 'vercel.json'), 'utf-8')
+    const config = JSON.parse(json)
+    for (const rule of config.headers ?? []) {
+        for (const h of rule.headers ?? []) {
+            if (h.key === 'Referrer-Policy') return h.value
+        }
+    }
+    return undefined
+}
+
+function extractReferrerPolicyFromPublicHeaders() {
+    const text = readFileSync(resolve(ROOT, 'apps/web/public/_headers'), 'utf-8')
+    const match = text.match(/Referrer-Policy:\s*(.+)/i)
+    return match ? match[1].trim() : undefined
+}
+
+const rpReference = extractReferrerPolicyFromSecurityHeaders()
+const rpSources = {
+    'netlify.toml': extractReferrerPolicyFromNetlify(),
+    'vercel.json': extractReferrerPolicyFromVercel(),
+    'public/_headers': extractReferrerPolicyFromPublicHeaders(),
+}
+
+for (const [name, value] of Object.entries(rpSources)) {
+    if (!value) {
+        console.error(`[FAIL] ${name}: missing Referrer-Policy header`)
+        hasErrors = true
+    } else if (value !== rpReference) {
+        console.error(
+            `[FAIL] ${name}: Referrer-Policy differs\n  expected: ${rpReference}\n  actual:   ${value}`,
+        )
+        hasErrors = true
+    }
+}
+
 if (hasErrors) {
-    console.error('\n[FAIL] CSP inconsistencies detected. Fix the above issues.')
+    console.error('\n[FAIL] Security header inconsistencies detected. Fix the above issues.')
     process.exit(1)
 } else {
     console.log('[OK] All 5 CSP delivery paths are consistent with securityHeaders.ts.')
+    console.log('[OK] Referrer-Policy consistent across all deployment targets.')
 }

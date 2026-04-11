@@ -4,10 +4,11 @@
 
 ## Latest Session (Session 130) -- v1.7.0 Release: Voice-First Edition
 
-**Status: v1.7.0 release finalized. CHANGELOG consolidated, version
-bumped (1.6.3 -> 1.7.0), comprehensive documentation deep-audit with
-6 metric corrections across 12+ files. All docs synchronized to actual
-app state. 2063 tests passing, build OK.**
+**Status: v1.7.0 RELEASED. Tag pushed, Release Gate passed, GitHub
+Release published, GitHub Pages deployed. CHANGELOG consolidated,
+version bumped (1.6.3 -> 1.7.0), comprehensive documentation
+deep-audit with 6 metric corrections across 14 files. 2063 tests
+passing, build OK. Sentry auto-tags `cannaguide@1.7.0`.**
 
 ### What Was Done (Session 130)
 
@@ -65,12 +66,29 @@ app state. 2063 tests passing, build OK.**
 - Custom Hooks: 25
 - Services: 109+
 
+### Post-Push Steps Completed
+
+- **Git Tag:** `v1.7.0` annotated tag created and pushed
+- **Release Gate CI:** passed (all checks green)
+- **GitHub Release:** published at
+  https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.7.0
+  with full bilingual release notes
+- **Deploy:** GitHub Pages serving 200, Netlify/Vercel via
+  git-integration auto-deploy
+- **Sentry Release:** automatic via `cannaguide@1.7.0` tag
+  in `sentryService.ts` (reads `__APP_VERSION__` from build)
+- **Release Publish workflow:** startup_failure on workflow_run
+  chain -- needs manual trigger via GitHub Actions UI
+  (workflow_dispatch with tag=v1.7.0) for SLSA L3 provenance
+    - CycloneDX SBOM artifacts
+
 ### Next Steps
 
-1. **Git Tag + GitHub Release** -- `git tag v1.7.0` + push tag
-   to trigger `release-publish.yml` (SLSA L3 + SBOM + Release)
+1. **Release Publish manual trigger** -- In GitHub Actions UI,
+   trigger "Release Publish" workflow_dispatch with tag=v1.7.0
+   to generate SLSA provenance + SBOM artifacts on the release
 2. **Post-Release Verification** -- Live site check (VoiceHUD,
-   Presets, a11y), Sentry release tag `cannaguide@1.7.0`
+   Presets, a11y), verify Sentry shows `cannaguide@1.7.0`
 3. **Phase B2: aria-invalid** -- Add `aria-invalid` +
    `aria-describedby` to form Input components
 4. **Phase B1: eslint-plugin-jsx-a11y** -- Install and configure

@@ -4,7 +4,7 @@ inputs:
     node-version:
         description: Node.js version to install
         required: false
-        default: '20'
+        default: '24'
     install-command:
         description: Install command to run after setup
         required: false

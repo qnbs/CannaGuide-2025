@@ -2,7 +2,64 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 148) -- v1.7.2 Release + Deployment Hardening
+## Latest Session (Session 149) -- Node.js 20 -> 24 Migration
+
+**Status: Node.js minimum version upgraded from 20 to 24
+(Active LTS until Apr 2028) across the entire repository.
+All CI workflows, documentation, and configs updated.**
+
+### What Was Done (Session 149)
+
+1. **CI workflows (14 files):** NODE_VERSION env var changed
+   from '20' to '24' in all workflow files (ci, deploy,
+   release-publish, e2e-integration, benchmark, snyk,
+   fuzzing, security-full, security-scan, preview-validation,
+   strains-merge, release-gate, strains-daily-update,
+   mutation-testing).
+
+2. **Custom action:** .github/actions/setup-node-ci/action.yml
+   default changed from '20' to '24'.
+
+3. **package.json engines:** ">=20" -> ">=24".
+
+4. **README:** Node.js badge >=24, prerequisites Node.js 24+.
+
+5. **CONTRIBUTING.md:** Prerequisites Node.js >= 24.
+
+6. **SECURITY.md:** Docker example node:24-alpine.
+
+7. **vitest.setup.ts:** Comment updated Node 20 -> Node 24.
+
+8. **CHANGELOG:** [Unreleased] entry for Node 24 migration.
+
+9. **Weakness audit conclusions (no code changes needed):**
+    - SAB/COEP: Progressive enhancement (ADR-0009), no fix
+    - CSP unsafe-inline: Won't Fix (S-03, strict-dynamic broke
+      all scripts in Session 70)
+    - i18n ES/FR/NL: ~250 keys partial, warn-only in CI
+    - ui-ux-audit: Phase 1-6 validated (Session 79)
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2221 passed, 0 failures (192 files)
+- Build: successful (170 precache entries, 9280 KiB)
+- Node 20 references: 0 in CI/config (2 historical in
+  handoff + scorecard.json)
+
+### Next Steps
+
+- Run Stryker baseline on new targets:
+  `pnpm exec stryker run` -- verify >= 50% mutation score
+  for lockFreeRingBuffer, atomicsChannel, workerPool
+- Local AI Stack refactoring (Multi-Session project):
+  21 modules, 5000+ LOC, 9 tightly coupled
+- W-07 voice SAB waveform streaming per docs/worker-bus.md
+- Version bump to v1.8.0 when user-facing features added
+
+---
+
+## Session 148 -- v1.7.2 Release + Deployment Hardening
 
 **Status: v1.7.2 released. CHANGELOG consolidated, version bumped,
 docs synced, v1.7.1 + v1.7.2 tagged and published as GitHub Releases

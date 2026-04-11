@@ -11,7 +11,7 @@
 
 # Service Worker — never cache (browsers enforce this, but explicit is better)
 /sw.js
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
 
 # Manifest — short cache for PWA install prompt freshness
 /manifest.json
@@ -26,3 +26,5 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: credentialless
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-DNS-Prefetch-Control: on

@@ -2,7 +2,7 @@
 // ---------------------------------------------------------------------------
 // CSP Consistency Checker
 // ---------------------------------------------------------------------------
-// Extracts CSP directives from all 3 delivery paths and compares them.
+// Extracts CSP directives from all 5 delivery paths and compares them.
 // Exits with code 1 if any directives differ.
 // ---------------------------------------------------------------------------
 
@@ -63,6 +63,36 @@ function extractFromNetlify() {
 }
 
 /**
+ * Extract CSP from vercel.json headers.
+ */
+function extractFromVercel() {
+    const json = readFileSync(resolve(ROOT, 'vercel.json'), 'utf-8')
+    const config = JSON.parse(json)
+    for (const rule of config.headers ?? []) {
+        for (const h of rule.headers ?? []) {
+            if (h.key === 'Content-Security-Policy') {
+                return h.value
+            }
+        }
+    }
+    console.error('[FAIL] Could not find CSP in vercel.json')
+    process.exit(1)
+}
+
+/**
+ * Extract CSP from public/_headers (Cloudflare Pages / Netlify fallback).
+ */
+function extractFromPublicHeaders() {
+    const text = readFileSync(resolve(ROOT, 'apps/web/public/_headers'), 'utf-8')
+    const match = text.match(/Content-Security-Policy:\s*(.+)/i)
+    if (!match) {
+        console.error('[FAIL] Could not find CSP in public/_headers')
+        process.exit(1)
+    }
+    return match[1].trim()
+}
+
+/**
  * Extract CSP from securityHeaders.ts (the single source of truth).
  * Parses the CSP_DIRECTIVES array and joins them like the runtime does.
  */
@@ -100,13 +130,15 @@ function extractFromSecurityHeaders() {
 // Main
 // ---------------------------------------------------------------------------
 
-// Netlify adds frame-ancestors which others may not have
-const NETLIFY_EXTRAS = new Set(['frame-ancestors'])
+// Netlify/vercel add frame-ancestors which securityHeaders.ts may not have
+const PLATFORM_EXTRAS = new Set(['frame-ancestors'])
 
 const sources = {
     'securityHeaders.ts': extractFromSecurityHeaders(),
     'index.html': extractFromIndexHtml(),
     'netlify.toml': extractFromNetlify(),
+    'vercel.json': extractFromVercel(),
+    'public/_headers': extractFromPublicHeaders(),
 }
 
 const parsed = Object.fromEntries(
@@ -135,7 +167,7 @@ for (const [name, directives] of Object.entries(parsed)) {
     // Check for extra directives not in reference (except known extras)
     for (const directive of directives.keys()) {
         if (!reference.has(directive)) {
-            if (name === 'netlify.toml' && NETLIFY_EXTRAS.has(directive)) continue
+            if (PLATFORM_EXTRAS.has(directive)) continue
             console.warn(`[WARN] ${name}: extra directive '${directive}' not in securityHeaders.ts`)
         }
     }
@@ -145,5 +177,5 @@ if (hasErrors) {
     console.error('\n[FAIL] CSP inconsistencies detected. Fix the above issues.')
     process.exit(1)
 } else {
-    console.log('[OK] All CSP delivery paths are consistent with securityHeaders.ts.')
+    console.log('[OK] All 5 CSP delivery paths are consistent with securityHeaders.ts.')
 }

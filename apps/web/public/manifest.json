@@ -1,9 +1,9 @@
 {
-    "id": "/CannaGuide-2025/",
+    "id": "./",
     "name": "CannaGuide 2025",
     "short_name": "CannaGuide",
-    "start_url": "/CannaGuide-2025/",
-    "scope": "/CannaGuide-2025/",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
     "display_override": ["standalone", "minimal-ui"],
     "orientation": "any",

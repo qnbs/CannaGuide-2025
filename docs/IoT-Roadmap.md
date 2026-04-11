@@ -49,17 +49,17 @@ hardware-ready Smart-Grow-Telemetrie-Loesung.
 
 | Service         | Datei                                            | LOC | Funktion                                                                                              |
 | --------------- | ------------------------------------------------ | --- | ----------------------------------------------------------------------------------------------------- |
-| MQTT Client     | `apps/web/services/mqttClientService.ts`         | 238 | Singleton MQTT-Client, subscribt Topics, dispatcht Redux `addJournalEntry` mit `source: 'iot_sensor'` |
-| MQTT Sensor     | `apps/web/services/mqttSensorService.ts`         | 356 | Callback-basierter Sensor-Mapper, fuettert `sensorStore` (Zustand), validiert Payloads inline         |
-| Web Bluetooth   | `apps/web/services/webBluetoothSensorService.ts` | 105 | One-Shot BLE-Read via `navigator.bluetooth.requestDevice()`, ESP32 GATT Characteristics               |
-| Proactive Coach | `apps/web/services/proactiveCoachService.ts`     | 226 | Threshold-Monitoring -> AI-Advice -> Alerts (2h Cooldown, max 2 concurrent AI calls)                  |
+| MQTT Client     | `apps/web/services/mqttClientService.ts`         | 262 | Singleton MQTT-Client, subscribt Topics, dispatcht Redux `addJournalEntry` mit `source: 'iot_sensor'` |
+| MQTT Sensor     | `apps/web/services/mqttSensorService.ts`         | 563 | Callback-basierter Sensor-Mapper, fuettert `sensorStore` (Zustand), validiert Payloads inline         |
+| Web Bluetooth   | `apps/web/services/webBluetoothSensorService.ts` | 94  | One-Shot BLE-Read via `navigator.bluetooth.requestDevice()`, ESP32 GATT Characteristics               |
+| Proactive Coach | `apps/web/services/proactiveCoachService.ts`     | 329 | Threshold-Monitoring -> AI-Advice -> Alerts (2h Cooldown, max 2 concurrent AI calls)                  |
 
 ### 2.2 State Stores (2 Module, ~194 LOC)
 
 | Store        | Datei                            | LOC | Persistenz                             | Funktion                                                 |
 | ------------ | -------------------------------- | --- | -------------------------------------- | -------------------------------------------------------- |
-| IoT Settings | `apps/web/stores/useIotStore.ts` | 99  | localStorage `cannaguide-iot-settings` | Broker-URL, Credentials, Topic-Prefix, Connection-Status |
-| Sensor Data  | `apps/web/stores/sensorStore.ts` | 95  | Keine (transient)                      | Live-Readings, 120-Entry FIFO History, Connection-State  |
+| IoT Settings | `apps/web/stores/useIotStore.ts` | 138 | localStorage `cannaguide-iot-settings` | Broker-URL, Credentials, Topic-Prefix, Connection-Status |
+| Sensor Data  | `apps/web/stores/sensorStore.ts` | 145 | Keine (transient)                      | Live-Readings, 120-Entry FIFO History, Connection-State  |
 
 **Default-Konfiguration:**
 

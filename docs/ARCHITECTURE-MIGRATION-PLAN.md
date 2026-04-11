@@ -1,10 +1,10 @@
 # Architecture Migration Plan
 
-<!-- Audited: Session 62 (2026-04-05) -->
+<!-- Audited: Session 138 (2026-04-11) -->
 
 ## Context
 
-The monorepo has 99 non-test service files in `apps/web/services/`. This document
+The monorepo has 117 non-test service files in `apps/web/services/`. This document
 assesses which services could theoretically be moved to shared packages and
 establishes that the current architecture is correct for the project's needs.
 
@@ -23,7 +23,7 @@ a package designed to be platform-independent.
 
 ## Service Classification
 
-### NOT MOVABLE (95 services)
+### NOT MOVABLE (113 services)
 
 These depend on one or more browser/framework APIs:
 
@@ -32,7 +32,7 @@ These depend on one or more browser/framework APIs:
 | IndexedDB     | localAiCacheService, ragEmbeddingCacheService, indexedDbMonitorService | Persistent inference cache        |
 | localStorage  | localAiTelemetryService, localAiPreloadService                         | Telemetry snapshots               |
 | Browser APIs  | localAiHealthService, localAiWebGpuService                             | navigator.gpu, performance.memory |
-| Web Workers   | workerBus, inferenceQueueService, all 10 workers                       | Worker communication              |
+| Web Workers   | workerBus, inferenceQueueService, all 11 workers                       | Worker communication              |
 | Sentry        | 20+ services via captureLocalAiError                                   | Error tracking                    |
 | Redux/Zustand | proactiveCoachService, uiStateBridge, all slices                       | State management                  |
 | DOM/React     | All component-facing services                                          | UI integration                    |

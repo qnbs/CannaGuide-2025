@@ -1,6 +1,6 @@
 # Monorepo Dependency Graph
 
-<!-- Audited: Session 62 (2026-04-05) -->
+<!-- Audited: Session 138 (2026-04-11) -->
 
 ## Package Topology
 
@@ -20,7 +20,7 @@ cannaguide-2025 (workspace root)
 +-- apps/
     +-- @cannaguide/web           Main PWA (React 19 + Vite 7)
     |   deps: @cannaguide/ai-core, @cannaguide/ui
-    |   99 service files, 25 hooks, 9 themes
+    |   117 service files, 25 hooks, 9 themes
 ```
 
 ## Dependency Direction

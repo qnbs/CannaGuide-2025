@@ -33,7 +33,7 @@ Released: **2025-07-07**
 | Local AI fallback (heuristic-based)                            | AI           | ✅     |
 | Photo diagnosis with EXIF/GPS stripping                        | AI           | ✅     |
 | Full DSGVO/GDPR compliance (Age Gate, Consent, Privacy Policy) | Legal        | ✅     |
-| WCAG 2.2 AA accessibility                                      | A11y         | ✅     |
+| WCAG 2.1 AA accessibility                                      | A11y         | ✅     |
 | 307 tests (Vitest + Playwright E2E)                            | Quality      | ✅     |
 | PWA with 100% offline capability                               | PWA          | ✅     |
 | ESP32 sensor integration via WebBluetooth                      | IoT          | ✅     |
@@ -281,7 +281,7 @@ Released: **2026-04-08**
 - CRDT sync is operational with conflict resolution UI.
 - Multi-Grow lifecycle supports 3 grows per CanG with scoped AI context.
 - All npm references replaced with pnpm across the entire repo.
-- 1884 tests pass, build succeeds, typecheck clean.
+- 2140 tests pass, build succeeds, typecheck clean.
 
 ---
 
@@ -300,8 +300,8 @@ Target: **2027-Q1**
 | CRDT differential encoding (remote state vector, delta-only sync)               | Sync          | done   |
 | CRDT bridge batching (100ms debounce, single Y.Doc transaction)                 | Sync          | done   |
 | CRDT telemetry integration (WorkerBus W-03 setCrdtMetrics)                      | Observability | done   |
-| API reference documentation (8 docs in docs/api/)                               | Documentation | done   |
-| ARCHITECTURE.md sync (109 services, 1884 tests, full WorkerBus section)         | Documentation | done   |
+| API reference documentation (9 docs in docs/api/)                               | Documentation | done   |
+| ARCHITECTURE.md sync (117 services, 2140 tests, full WorkerBus section)         | Documentation | done   |
 | Audit backlog closure (D-01 API docs, F-05 Multi-Grow, F-06 CRDT sync)          | Quality       | done   |
 
 ### Content Track (planned)

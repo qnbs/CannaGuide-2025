@@ -8,9 +8,11 @@ Production builds are deployed automatically via `.github/workflows/deploy.yml` 
 
 URL: <https://qnbs.github.io/CannaGuide-2025/>
 
-## Netlify (PR previews)
+## Netlify (PAUSED until v2.0)
 
-Every pull request gets a deploy preview via `netlify.toml`. Build settings and security headers are configured there.
+> **Status:** Project disabled on Netlify dashboard (bandwidth limit 50% reached). Build command in `netlify.toml` intentionally fails. Re-enable on Netlify dashboard + uncomment build config when ready.
+
+Previously, every pull request got a deploy preview via `netlify.toml`. Build settings and security headers remain configured there for re-enablement.
 
 ## Vercel
 

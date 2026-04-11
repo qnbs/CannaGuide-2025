@@ -1,4 +1,4 @@
-# Netlify / Cloudflare Pages HTTP-Header
+# Cloudflare Pages HTTP-Header (Netlify paused until v2.0)
 # GitHub Pages ignoriert diese Datei – dort greift stattdessen das CSP-Meta-Tag in index.html.
 
 # Hashed assets from Vite are immutable — cache aggressively

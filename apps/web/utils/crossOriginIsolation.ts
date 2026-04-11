@@ -6,7 +6,7 @@
  *   - Cross-Origin-Embedder-Policy: credentialless (or require-corp)
  *
  * GitHub Pages does not support custom HTTP headers, so SAB is
- * only available on Netlify/Vercel/Cloudflare Pages deployments.
+ * only available on Vercel/Cloudflare Pages deployments.
  * All SAB consumers must feature-detect and fall back gracefully.
  *
  * See ADR-0009 for the architectural decision.

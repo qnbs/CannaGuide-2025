@@ -62,7 +62,6 @@
 <!-- Distribution -->
 
 [![GitHub Pages](https://img.shields.io/badge/Hosted-GitHub%20Pages-222222?logo=githubpages&logoColor=white)](https://qnbs.github.io/CannaGuide-2025/)
-[![Netlify](https://img.shields.io/badge/Preview-Netlify-00C7B7?logo=netlify&logoColor=white)](https://netlify.com/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
 [![Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020?logo=cloudflarepages&logoColor=white)](https://pages.cloudflare.com/)
 
@@ -352,7 +351,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | Scorecard          | push, weekly     | OpenSSF Scorecard                                          |
 | Config Guard       | push, PR         | RCE pattern scanning in configs                            |
 | Mutation Testing   | push, PR         | Stryker Redux slice mutation testing                       |
-| Preview Validation | deploy           | Playwright + Lighthouse on Netlify previews                |
+| Preview Validation | deploy           | Playwright + Lighthouse on deploy previews (paused)        |
 | + 10 more          | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup   |
 
 ---
@@ -362,9 +361,9 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | Target               | Method                         | URL / Config                                                              |
 | -------------------- | ------------------------------ | ------------------------------------------------------------------------- |
 | **GitHub Pages**     | `deploy.yml` on push to main   | [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) |
-| **Netlify**          | `netlify.toml`, PR previews    | [cannaguide2025.netlify.app](https://cannaguide2025.netlify.app)          |
 | **Vercel**           | `vercel.json`, Git integration | Connect via Vercel Dashboard                                              |
 | **Cloudflare Pages** | `_headers` + `_redirects`, Git | Connect via Cloudflare Dashboard                                          |
+| ~~Netlify~~          | `netlify.toml`                 | **PAUSED** until v2.0 (bandwidth limit)                                   |
 
 > Details: [Distribution](docs/distribution.md) · [Release Process](docs/release-process.md)
 
@@ -379,7 +378,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | **v1.2** | Released | Terpene profiles (27), chemovar, flavonoids (12), ES/FR/NL, WorkerBus                  |
 | **v1.3** | Released | IoT dashboard, 3D OrbitControls, strain recommendation, Knowledge suite                |
 | **v1.4** | Released | Vision AI Leaf Diagnosis, Hydro Forecast, WebLLM Catalog, Multi-Grow                   |
-| **v1.5** | Released | CRDT sync, AI cost tracking, Netlify validation, pnpm migration                        |
+| **v1.5** | Released | CRDT sync, AI cost tracking, preview validation, pnpm migration                        |
 | **v1.6** | Released | Forensic audit, i18n completeness, metrics/diagnosis/planner slices, build attestation |
 | **v1.7** | Released | Voice Pro (wake-word, Cloud TTS), 12 Preset Setups, Enhanced PDF, a11y                 |
 | **v2.0** | Planned  | AR/VR plant overlay, digital twin architecture, next-gen Sandbox/BreedingLab           |
@@ -400,7 +399,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 
 ## Acknowledgments
 
-**AI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web · **Strain Data:** AI-assisted research (Gemini, Opus) based on publicly available breeder/seedbank/community information · **Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand · **Security:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, ClusterFuzzLite, OpenSSF Scorecard · **Infrastructure:** GitHub Pages, Netlify, TurboRepo · **Icons:** Phosphor Icons
+**AI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web · **Strain Data:** AI-assisted research (Gemini, Opus) based on publicly available breeder/seedbank/community information · **Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand · **Security:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, ClusterFuzzLite, OpenSSF Scorecard · **Infrastructure:** GitHub Pages, Vercel, Cloudflare Pages, TurboRepo · **Icons:** Phosphor Icons
 
 ### Development Journey
 
@@ -409,7 +408,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 | Prototyping           | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | v0.1 -> v1.0 |
 | Evaluation & Advisory | xAI Grok 4.20                                         | Throughout   |
 | Core Development      | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | v1.0 -> v1.7 |
-| Deployment            | GitHub Pages, Netlify                                 | Continuous   |
+| Deployment            | GitHub Pages, Vercel, Cloudflare Pages                | Continuous   |
 
 > Secondary contributions: GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance.
 
@@ -483,7 +482,6 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 <!-- Distribution -->
 
 [![GitHub Pages](https://img.shields.io/badge/Gehostet-GitHub%20Pages-222222?logo=githubpages&logoColor=white)](https://qnbs.github.io/CannaGuide-2025/)
-[![Netlify](https://img.shields.io/badge/Preview-Netlify-00C7B7?logo=netlify&logoColor=white)](https://netlify.com/)
 
 <!-- Projekt-Metriken -->
 
@@ -570,7 +568,7 @@ pnpm run typecheck          # tsc --noEmit
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM |
 | **CI/CD**        | 22 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard                |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                            |
-| **Distribution** | GitHub Pages (Push auf main) + Netlify (PR-Previews)                                                    |
+| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                  |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit-Backlog](docs/AUDIT_BACKLOG.md) · [Release-Prozess](docs/release-process.md)
 

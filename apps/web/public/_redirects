@@ -1,3 +1,3 @@
 # SPA Client-Side Routing (all routes -> index.html with 200 status)
-# Used by Cloudflare Pages. Netlify uses netlify.toml redirects instead.
+# Used by Cloudflare Pages. Netlify paused until v2.0.
 /* /index.html 200

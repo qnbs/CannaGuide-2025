@@ -1,13 +1,20 @@
 name: Preview Validation
 
 # ---------------------------------------------------------------------------
-# Runs Playwright smoke tests + Lighthouse CI against Netlify deploy-preview
-# URLs. Triggered automatically when Netlify finishes a PR preview deploy.
-# Non-blocking (continue-on-error) -- results are informational.
+# DISABLED -- Netlify deployments paused until v2.0 (bandwidth limit reached).
+# This workflow ran Playwright smoke tests + Lighthouse CI against Netlify
+# deploy-preview URLs. Re-enable when Netlify deployments resume.
 # ---------------------------------------------------------------------------
+# Previously triggered on: deployment_status
+# See: docs/distribution.md for current active deployment targets.
 
 on:
-    deployment_status:
+    workflow_dispatch:
+        inputs:
+            note:
+                description: 'Workflow disabled -- Netlify paused until v2.0'
+                required: false
+                type: string
 
 permissions:
     contents: read

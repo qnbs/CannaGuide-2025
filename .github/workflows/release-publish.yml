@@ -6,7 +6,7 @@ on:
     workflow_dispatch:
         inputs:
             tag:
-                description: 'Tag to release (e.g. v1.7.0)'
+                description: 'Tag to release (e.g. v1.7.0). Tag must exist or will be created.'
                 required: true
                 type: string
             dry-run:
@@ -34,6 +34,8 @@ jobs:
         name: Build + SBOM
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        permissions:
+            contents: write
         if: >-
             github.event_name == 'push' ||
             github.event_name == 'workflow_dispatch'
@@ -51,6 +53,9 @@ jobs:
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   fetch-depth: 0
+                  # Use RELEASE_PAT if available (bypasses tag rulesets),
+                  # otherwise fall back to the default GITHUB_TOKEN.
+                  token: ${{ secrets.RELEASE_PAT || github.token }}
 
             # ── CI Status Guard ──────────────────────────────────────
             # Release Publish runs in parallel with Release Gate.
@@ -102,6 +107,45 @@ jobs:
                   TAG="${TAG#refs/tags/}"
                   echo "name=${TAG}" >> "$GITHUB_OUTPUT"
                   echo "[INFO] Resolved tag: ${TAG}"
+
+            # ── Ensure Tag Exists ────────────────────────────────────
+            # For workflow_dispatch the tag may not exist yet.
+            # Create an annotated tag on HEAD and push it.
+            # The checkout token (RELEASE_PAT or GITHUB_TOKEN) is used
+            # for git push.  If repository rulesets block tag creation,
+            # the step fails with a clear error message.
+            - name: Ensure tag exists
+              if: github.event_name == 'workflow_dispatch'
+              env:
+                  TAG: ${{ steps.tag.outputs.name }}
+              shell: bash
+              run: |
+                  if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}"; then
+                    echo "[OK] Tag ${TAG} already exists on remote"
+                    exit 0
+                  fi
+
+                  echo "[INFO] Tag ${TAG} does not exist on remote -- creating annotated tag"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git config user.name "github-actions[bot]"
+                  git tag -a "${TAG}" -m "Release ${TAG}" HEAD
+
+                  if git push origin "refs/tags/${TAG}"; then
+                    echo "[OK] Tag ${TAG} created and pushed"
+                  else
+                    echo ""
+                    echo "[FAIL] Could not push tag ${TAG}."
+                    echo "[FAIL] Repository rulesets likely block tag creation by GITHUB_TOKEN."
+                    echo ""
+                    echo "[FIX] Choose one of the following:"
+                    echo "  1. Push the tag manually before triggering this workflow:"
+                    echo "     git tag -a ${TAG} -m 'Release ${TAG}' && git push origin ${TAG}"
+                    echo "  2. Add a RELEASE_PAT repository secret (classic PAT with repo scope)"
+                    echo "     that has permission to bypass tag rulesets."
+                    echo "  3. Add 'github-actions[bot]' to the tag ruleset bypass list:"
+                    echo "     Settings > Rules > Rulesets > Tags > Bypass list"
+                    exit 1
+                  fi
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -171,6 +215,27 @@ jobs:
               with:
                   egress-policy: audit
 
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.RELEASE_PAT || github.token }}
+
+            - name: Verify tag exists on remote
+              env:
+                  TAG: ${{ needs.build.outputs.tag }}
+              shell: bash
+              run: |
+                  if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}"; then
+                    echo "[OK] Tag ${TAG} verified on remote"
+                  else
+                    echo "[FAIL] Tag ${TAG} does not exist on remote."
+                    echo "[FAIL] The build job should have created it."
+                    echo "[FAIL] Push the tag manually:"
+                    echo "  git tag -a ${TAG} -m 'Release ${TAG}' && git push origin ${TAG}"
+                    exit 1
+                  fi
+
             - name: Download tarball
               uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
               with:
@@ -194,7 +259,7 @@ jobs:
 
             - name: Create GitHub Release
               env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
                   TAG: ${{ needs.build.outputs.tag }}
                   TARBALL: ${{ needs.build.outputs.tarball-name }}
                   SHA256: ${{ needs.build.outputs.sha256 }}
@@ -235,7 +300,9 @@ jobs:
                     PRE_FLAG="--prerelease"
                   fi
 
-                  # Create or update release (--clobber overwrites existing assets)
+                  # Create or update release
+                  # --verify-tag: never auto-create tags (tag must exist from build job)
+                  # --clobber: overwrite existing assets on retry
                   if gh release view "${TAG}" --repo "${REPO}" > /dev/null 2>&1; then
                     echo "[INFO] Release ${TAG} exists -- updating notes and uploading assets"
                     gh release edit "${TAG}" --repo "${REPO}" \
@@ -247,7 +314,8 @@ jobs:
                     gh release create "${TAG}" "${ASSETS[@]}" \
                       --repo "${REPO}" \
                       --title "CannaGuide ${TAG}" \
-                      --notes "${NOTES}" ${PRE_FLAG}
+                      --notes "${NOTES}" \
+                      --verify-tag ${PRE_FLAG}
                   fi
 
                   echo "[OK] Release ${TAG} published with build provenance + SBOM"

@@ -878,7 +878,7 @@ export const settingsView = {
             phase3Desc:
                 'Primäre Iteration und Verfeinerung in GitHub Codespaces mit VS Code Copilot powered by Claude Opus 4.6 — der Großteil der Feature-Entwicklung, Security-Hardening, Tests und CI/CD-Pipeline.',
             phase4Title: 'Deployment & Distribution',
-            phase4Desc: 'Produktions-Deployment auf GitHub Pages und Netlify PR-Previews.',
+            phase4Desc: 'Produktions-Deployment auf GitHub Pages, Vercel und Cloudflare Pages.',
             secondaryNote: 'Minimale Beiträge von GPT-4 Mini und GPT-5.3 Codex.',
         },
         disclaimer: {
@@ -988,7 +988,7 @@ export const settingsView = {
                 <li><strong>Prototyping</strong>: App-Grundgerüst und initiales Feature-Set mit <strong>Google Gemini 2.5 Pro & 3.1 Pro</strong> in <strong>Google AI Studio</strong> erstellt, dann nach GitHub exportiert.</li>
                 <li><strong>Evaluation & Beratung</strong>: Kontinuierliche Architektur-Review, Sicherheitsberatung und Qualitätsführung durch <strong>xAI Grok 4.20</strong> über den gesamten Prozess.</li>
                 <li><strong>Kernentwicklung</strong>: Primäre Iteration in <strong>GitHub Codespaces</strong> mit <strong>VS Code Copilot powered by Claude Opus 4.6</strong> — der Großteil der Feature-Verfeinerung, Security-Hardening, 1961 Tests, CI/CD und lokaler KI-Stack.</li>
-                <li><strong>Deployment</strong>: Produktion via GitHub Pages und Netlify.</li>
+                <li><strong>Deployment</strong>: Produktion via GitHub Pages, Vercel und Cloudflare Pages.</li>
             </ol>
             <p><em>Minimale Beiträge von GPT-4 Mini und GPT-5.3 Codex.</em></p>
             <p>Dieses Projekt ist vollständig Open Source. Tauchen Sie in den Code ein, forken Sie das Projekt oder tragen Sie auf GitHub bei.</p>

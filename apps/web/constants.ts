@@ -49,7 +49,7 @@ export type VersionedSliceName = keyof typeof SLICE_SCHEMA_VERSIONS
 export const APP_METADATA = {
     name: 'CannaGuide 2025 - Cannabis Grow Guide with Gemini',
     description:
-        'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 806+ strains, get AI equipment advice, and master your grow with an interactive guide.',
+        'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 776+ strains, get AI equipment advice, and master your grow with an interactive guide.',
     prompt: '',
     requestFramePermissions: ['camera', 'microphone'],
 }

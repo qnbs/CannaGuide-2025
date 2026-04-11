@@ -57,16 +57,19 @@ interface WorkerResponse {
 
 ## Managed Workers
 
-| Worker           | File                                | Purpose                    | Concurrency |
-| ---------------- | ----------------------------------- | -------------------------- | ----------- |
-| `vpd-sim`        | `simulation.worker.ts`              | VPD environment simulation | Default (8) |
-| `genealogy`      | `workers/genealogy.worker.ts`       | Strain family tree layout  | Default (8) |
-| `scenario`       | `workers/scenario.worker.ts`        | Grow scenario planning     | Default (8) |
-| `inference`      | `workers/inference.worker.ts`       | Local ML inference (ONNX)  | Default (8) |
-| `image-gen`      | `workers/imageGeneration.worker.ts` | SD-Turbo text-to-image     | Default (8) |
-| `strain-hydrate` | `workers/strainHydration.worker.ts` | Strain data hydration      | Default (8) |
-| `terpene`        | `workers/terpene.worker.ts`         | Terpene profile analysis   | Default (8) |
-| `calculation`    | `workers/calculation.worker.ts`     | VPD/EC/light math offload  | Default (8) |
+| Worker             | File                                | Purpose                        | Concurrency |
+| ------------------ | ----------------------------------- | ------------------------------ | ----------- |
+| `vpd-sim`          | `simulation.worker.ts`              | VPD environment simulation     | Default (8) |
+| `genealogy`        | `workers/genealogy.worker.ts`       | Strain family tree layout      | Default (8) |
+| `scenario`         | `workers/scenario.worker.ts`        | Grow scenario planning         | Default (8) |
+| `inference`        | `workers/inference.worker.ts`       | Local ML inference (ONNX)      | Default (8) |
+| `image-gen`        | `workers/imageGeneration.worker.ts` | SD-Turbo text-to-image         | Default (8) |
+| `terpene`          | `workers/terpene.worker.ts`         | Terpene profile analysis       | Default (8) |
+| `calculation`      | `workers/calculation.worker.ts`     | VPD/EC/light math offload      | Default (8) |
+| `hydro-forecast`   | `workers/hydroForecastWorker.ts`    | ONNX hydro pH/EC/Temp forecast | Default (8) |
+| `vision-inference` | `workers/visionInferenceWorker.ts`  | PlantVillage leaf diagnosis    | Default (8) |
+| `voice`            | `workers/voiceWorker.ts`            | Voice transcript processing    | Default (8) |
+| `vpd-simulation`   | `workers/vpdSimulation.worker.ts`   | VPD simulation (worker dir)    | Default (8) |
 
 ## API Reference
 

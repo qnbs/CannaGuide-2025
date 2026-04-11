@@ -69,7 +69,7 @@
 <!-- Project Metrics -->
 
 [![Strains](https://img.shields.io/badge/strains-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/services-114-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/services-117-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
@@ -108,7 +108,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2140 tests · 114 services · 19 Redux slices + 9 Zustand stores · 25 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
+776 strains · 2140 tests · 117 services · 19 Redux slices + 9 Zustand stores · 25 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -121,7 +121,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 | **Persistence** | IndexedDB (dual-database)            | Offline-first, no backend                   |
 | **i18n**        | i18next                              | EN/DE/ES/FR/NL, 12 namespaces               |
 | **Security**    | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**     | Vitest + Playwright                  | 2028 unit/E2E/component tests               |
+| **Testing**     | Vitest + Playwright                  | 2140 unit/E2E/component tests               |
 
 > Deep-dive: [Architecture](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Accessibility](docs/ACCESSIBILITY.md)
 
@@ -153,12 +153,12 @@ pnpm workspaces + TurboRepo with ML dependencies isolated in `@cannaguide/ai-cor
 apps/web/                  Main PWA (@cannaguide/web)
   components/               React components (common/, icons/, navigation/, ui/, views/)
   stores/                   Redux (19 slices) + Zustand (9 stores), selectors, middleware
-  services/                 109 service modules (AI, simulation, DB, crypto, IoT)
+  services/                 117 service modules (AI, simulation, DB, crypto, IoT)
   hooks/                    25 custom hooks
   data/                     Static data: 776 strains, FAQ, lexicon (91), guides, diseases (22)
   locales/                  i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
-  workers/                  10 Web Workers (VPD, genealogy, scenarios, inference, image gen,
-                            hydro forecast, terpene, vision inference, calculation, voice)
+  workers/                  11 Web Workers (VPD, genealogy, scenarios, inference, image gen,
+                            hydro forecast, terpene, vision inference, calculation, voice, VPD sim)
 packages/ai-core/           Shared AI types, provider configs, ML isolation (optionalDeps)
 packages/ui/                Shared design tokens (9 themes) + Tailwind preset
 scripts/                    Build/lint/security/merge scripts
@@ -197,7 +197,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 - **VPD Modeling:** Transpiration simulation, biomass growth curves, environmental monitoring via Web Worker (`simulation.worker.ts`)
 - **IoT Integration:** ESP32 sensors via MQTT/BLE, sparkline gauges, real-time telemetry ([IoT Roadmap](docs/IoT-Roadmap.md))
-- **WorkerBus:** Centralized promise-based dispatcher for 10 workers with priority queue, backpressure, retry, AbortController, Transferable zero-copy, telemetry ([Worker Bus Docs](docs/worker-bus.md))
+- **WorkerBus:** Centralized promise-based dispatcher for 11 workers with priority queue, backpressure, retry, AbortController, Transferable zero-copy, telemetry ([Worker Bus Docs](docs/worker-bus.md))
 
 ---
 
@@ -488,7 +488,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 <!-- Projekt-Metriken -->
 
 [![Sorten](https://img.shields.io/badge/Sorten-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/Services-114-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/Services-117-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20Slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/Themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
@@ -504,7 +504,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2140 Tests · 114 Services · 19 Redux Slices + 9 Zustand Stores · 25 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
+776 Sorten · 2140 Tests · 117 Services · 19 Redux Slices + 9 Zustand Stores · 25 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
@@ -517,7 +517,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 | **Persistenz** | IndexedDB (Dual-Datenbank)           | Offline-first, kein Backend                   |
 | **i18n**       | i18next                              | EN/DE/ES/FR/NL, 12 Namensraeume               |
 | **Sicherheit** | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Praevention, verschluesselte API-Keys     |
-| **Testing**    | Vitest + Playwright                  | 2028 Unit-/E2E-/Komponenten-Tests             |
+| **Testing**    | Vitest + Playwright                  | 2140 Unit-/E2E-/Komponenten-Tests             |
 
 > Architektur: [ARCHITECTURE.md](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Barrierefreiheit](docs/ACCESSIBILITY.md)
 
@@ -566,7 +566,7 @@ pnpm run typecheck          # tsc --noEmit
 
 | Bereich          | Details                                                                                                 |
 | ---------------- | ------------------------------------------------------------------------------------------------------- |
-| **Tests**        | 2028 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)           |
+| **Tests**        | 2140 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)           |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM |
 | **CI/CD**        | 22 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard                |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                            |

@@ -2,7 +2,87 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 137) -- CodeQL Security Fix
+## Latest Session (Session 138) -- Full Documentation Audit
+
+**Status: Complete documentation synchronization with v1.7.0
+codebase state. All 25+ doc files audited, 10 high-severity
+metric discrepancies fixed, all counts verified against actual
+filesystem. 2140 tests passing, typecheck clean, build OK.**
+
+### What Was Done (Session 138)
+
+1. **Phase 1 -- Verification:** Ran full filesystem counts to
+   establish canonical metrics: 117 service files, 776 strains,
+   25 hooks, 11 workers, 22 workflows, 19 slices, 185 test files,
+   2140 tests passing.
+
+2. **Phase 2 -- High-Severity Fixes:**
+    - CONTRIBUTING.md: test baseline 1766->2140 (185 test files)
+    - README.md: service count 114->117 (EN + DE badges + tables),
+      test count 2028->2140 (EN + DE tables)
+    - constants.ts: APP_METADATA strain count 806+->776+
+    - audit-roadmap-2026-q2.md: test count 2063->2140, files
+      177->185
+    - ARCHITECTURE-MIGRATION-PLAN.md: service count 99->117,
+      worker count 10->11
+    - worker-bus.md: managed workers table 8->11 entries (added
+      hydro-forecast, vision-inference, voice, vpd-simulation;
+      removed nonexistent strainHydration)
+    - ROADMAP.md: WCAG 2.2->2.1 AA (matches ACCESSIBILITY.md)
+    - copilot-instructions.md: workerBus worker count 10->11
+    - docs/api/README.md: service dependency graph 108->117
+
+3. **Phase 3 -- Medium-Severity Gaps:**
+    - DEPENDENCY-GRAPH.md: service count 99->117, audit date
+      Session 62->138
+    - ARCHITECTURE-MIGRATION-PLAN.md: audit date Session 62->138
+    - next-session-handoff.md: Session 138 entry added
+
+4. **Phase 4 -- Low-Severity Items:**
+    - Cross-verified jsx-a11y count, lint-burndown Phase 5 status,
+      IoT LOC counts, local AI guide model references
+    - README.md: worker count 10->11
+    - ROADMAP.md: test count 1884->2140, service count 109->117,
+      api docs 8->9 in v1.5 release table
+    - IoT-Roadmap.md: 6 LOC counts updated (mqttClient 238->262,
+      mqttSensor 356->563, webBluetooth 105->94, proactiveCoach
+      226->329, useIotStore 99->138, sensorStore 95->145)
+    - copilot-instructions.md: migration-plan description 99->117
+    - audit-roadmap-2026-q2.md: test count 2063->2140, files
+      177->185
+
+5. **Phase 5 -- Cross-Reference Validation:**
+    - Grep verified: 0 remaining refs to old counts (1766, 2028,
+      2063, 114 services, 109 services, 108 services, 10 workers,
+      806 strains, 99 services)
+    - All file paths in copilot-instructions.md verified to exist
+    - WebLLM model catalog (4 models) consistent across source,
+      copilot-instructions, and local-ai-developer-guide
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2140 passing, 0 failures (185 test files)
+- Build: successful
+- Service files: 117 (non-test .ts in services/)
+- Strains: 776 (JSON source)
+- Workers: 11 (10 in workers/ + simulation.worker.ts)
+- Redux slices: 19 (18 persisted + 1 runtime-only)
+- Zustand stores: 9
+- Custom hooks: 25
+- CI workflows: 22
+- i18n: 5 languages, 12 source files each
+
+### Next Steps
+
+1. **jsx-a11y violation reduction** -- Target top categories
+   to reach <100 warnings
+2. **Test Coverage Push** -- Target >35% via coverage-v8
+3. **v2.0 Planning** -- Digital Twin architecture spike
+
+---
+
+## Previous Session (Session 137) -- CodeQL Security Fix
 
 **Status: CodeQL alert #281 resolved. Origin verification added to
 initAbortHandler() in workerAbort.ts. 2140 tests passing, typecheck

@@ -20,7 +20,7 @@ Developer reference documentation for CannaGuide 2025 service APIs.
 - [Worker Bus Guide](../worker-bus.md) -- Developer guide for WorkerBus patterns and usage
 - [Local AI Developer Guide](../local-ai-developer-guide.md) -- Runtime selection, streaming, WebLLM diagnostics, GPU management
 - [Architecture Overview](../ARCHITECTURE.md) -- High-level stack, directory structure, data flow
-- [Service Dependency Graph](../architecture/service-dependencies.md) -- Auto-generated Mermaid flowchart (108 services)
+- [Service Dependency Graph](../architecture/service-dependencies.md) -- Auto-generated Mermaid flowchart (117 services)
 
 ## Convention
 

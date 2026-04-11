@@ -2,7 +2,7 @@
  * WorkerTelemetryTab -- Worker efficiency dashboard (A-03).
  *
  * Displays WorkerBus pool metrics, per-worker dispatch statistics,
- * SAB mode indicator, and concurrency information.
+ * SAB mode indicator, live SAB data stream, and concurrency information.
  * Reads data from Redux `workerMetrics` slice (5s refresh via telemetry service).
  */
 
@@ -10,6 +10,8 @@ import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/stores/store'
 import { getCrossOriginIsolationStatus } from '@/utils/crossOriginIsolation'
+import { useVpdSabStream } from '@/hooks/useVpdSabStream'
+import type { VpdSabStatus } from '@/hooks/useVpdSabStream'
 import type { WorkerBusMetrics } from '@/services/workerBus'
 import type { PoolMetrics } from '@/services/workerPool'
 
@@ -30,6 +32,7 @@ const SabBadge: React.FC = memo(() => {
                         : 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30'
                 }`}
                 role="status"
+                aria-live="polite"
             >
                 <span
                     className={`h-2 w-2 rounded-full ${
@@ -91,7 +94,7 @@ const PoolStatus: React.FC<PoolStatusProps> = memo(({ poolMetrics }) => {
     ]
 
     return (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" role="status">
             {stats.map((s) => (
                 <div key={s.label} className="rounded-lg bg-slate-800/50 p-3 text-center">
                     <div className={`text-2xl font-bold tabular-nums ${s.color}`}>{s.value}</div>
@@ -128,7 +131,11 @@ const WorkerTable: React.FC<WorkerTableProps> = memo(({ metrics }) => {
 
     return (
         <div className="overflow-x-auto rounded-lg bg-slate-800/50">
-            <table className="w-full text-sm" role="table">
+            <table
+                className="w-full text-sm"
+                role="table"
+                aria-label={t('workerTelemetry.perWorker', { defaultValue: 'Per-Worker Metrics' })}
+            >
                 <thead className="border-b border-slate-700">
                     <tr>
                         <th
@@ -205,6 +212,123 @@ const WorkerTable: React.FC<WorkerTableProps> = memo(({ metrics }) => {
 WorkerTable.displayName = 'WorkerTable'
 
 // ---------------------------------------------------------------------------
+// Live SAB Data (VPD stream consumer)
+// ---------------------------------------------------------------------------
+
+const VPD_STATUS_COLORS: Record<VpdSabStatus, string> = {
+    none: 'bg-slate-500',
+    optimal: 'bg-green-500',
+    low: 'bg-blue-400',
+    high: 'bg-amber-400',
+    danger: 'bg-red-500',
+}
+
+const VPD_STATUS_TEXT_COLORS: Record<VpdSabStatus, string> = {
+    none: 'text-slate-400',
+    optimal: 'text-green-400',
+    low: 'text-blue-400',
+    high: 'text-amber-400',
+    danger: 'text-red-400',
+}
+
+const SabLiveData: React.FC = memo(() => {
+    const { t } = useTranslation()
+    const { vpdStatus, latestVpd, isStreaming } = useVpdSabStream()
+
+    if (!isStreaming) {
+        return (
+            <div className="rounded-lg bg-slate-800/50 p-4 text-sm text-slate-400">
+                {t('workerTelemetry.sabNoData', {
+                    defaultValue: 'No SAB data available (requires cross-origin isolation)',
+                })}
+            </div>
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-2 gap-3" role="status" aria-live="polite">
+            <div className="rounded-lg bg-slate-800/50 p-3">
+                <div className="text-xs text-slate-400 mb-1">
+                    {t('workerTelemetry.sabVpdStatus', { defaultValue: 'VPD Status' })}
+                </div>
+                <div className="flex items-center gap-2">
+                    <span
+                        className={`h-2.5 w-2.5 rounded-full ${VPD_STATUS_COLORS[vpdStatus]}`}
+                        aria-hidden="true"
+                    />
+                    <span
+                        className={`text-sm font-medium capitalize ${VPD_STATUS_TEXT_COLORS[vpdStatus]}`}
+                    >
+                        {vpdStatus}
+                    </span>
+                </div>
+            </div>
+            <div className="rounded-lg bg-slate-800/50 p-3">
+                <div className="text-xs text-slate-400 mb-1">
+                    {t('workerTelemetry.sabVpdValue', { defaultValue: 'VPD Value' })}
+                </div>
+                <div className="text-sm font-medium tabular-nums text-slate-200">
+                    {latestVpd !== null ? `${latestVpd.toFixed(2)} kPa` : '--'}
+                </div>
+            </div>
+        </div>
+    )
+})
+SabLiveData.displayName = 'SabLiveData'
+
+// ---------------------------------------------------------------------------
+// SAB Buffer Utilization
+// ---------------------------------------------------------------------------
+
+interface SabBufferUtilProps {
+    utilization: Record<string, { size: number; capacity: number }> | undefined
+}
+
+const SabBufferUtil: React.FC<SabBufferUtilProps> = memo(({ utilization }) => {
+    const entries = useMemo(() => Object.entries(utilization ?? {}), [utilization])
+
+    if (entries.length === 0) return null
+
+    return (
+        <div className="space-y-2">
+            {entries.map(([name, { size, capacity }]) => {
+                const pct = capacity > 0 ? Math.round((size / capacity) * 100) : 0
+                return (
+                    <div key={name} className="flex items-center gap-3">
+                        <span className="font-mono text-xs text-slate-400 w-24 shrink-0">
+                            {name}
+                        </span>
+                        <div
+                            className="flex-1 h-2 rounded-full bg-slate-700 overflow-hidden"
+                            role="progressbar"
+                            aria-valuenow={pct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`${name} buffer ${pct}%`}
+                        >
+                            <div
+                                className={`h-full rounded-full transition-all ${
+                                    pct > 80
+                                        ? 'bg-red-500'
+                                        : pct > 50
+                                          ? 'bg-amber-500'
+                                          : 'bg-cyan-500'
+                                }`}
+                                style={{ width: `${pct}%` }}
+                            />
+                        </div>
+                        <span className="text-xs tabular-nums text-slate-400 w-16 text-right">
+                            {size}/{capacity}
+                        </span>
+                    </div>
+                )
+            })}
+        </div>
+    )
+})
+SabBufferUtil.displayName = 'SabBufferUtil'
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -252,6 +376,30 @@ const WorkerTelemetryTab: React.FC = () => {
                 </h4>
                 <WorkerTable metrics={metrics} />
             </section>
+
+            {/* Live SAB data stream */}
+            <section aria-labelledby="sab-live-heading">
+                <h4 id="sab-live-heading" className="text-sm font-medium text-slate-300 mb-2">
+                    {t('workerTelemetry.sabLiveData', { defaultValue: 'Live SAB Data' })}
+                </h4>
+                <SabLiveData />
+            </section>
+
+            {/* SAB buffer utilization */}
+            {poolMetrics?.sabBufferUtilization &&
+                Object.keys(poolMetrics.sabBufferUtilization).length > 0 && (
+                    <section aria-labelledby="sab-buffer-heading">
+                        <h4
+                            id="sab-buffer-heading"
+                            className="text-sm font-medium text-slate-300 mb-2"
+                        >
+                            {t('workerTelemetry.sabBufferUtil', {
+                                defaultValue: 'Buffer Utilization',
+                            })}
+                        </h4>
+                        <SabBufferUtil utilization={poolMetrics.sabBufferUtilization} />
+                    </section>
+                )}
 
             {/* Last updated timestamp */}
             <div className="text-xs text-slate-500 text-right">

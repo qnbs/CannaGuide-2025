@@ -46,18 +46,21 @@
 
 ## Long-term (Backlog)
 
-| ID   | Finding                          | Effort | Status                                                     |
-| ---- | -------------------------------- | ------ | ---------------------------------------------------------- |
-| S-03 | CSP nonce implementation         | Medium | Won't Fix (strict-dynamic infeasible, S70)                 |
-| C-04 | Deployment preview validation    | Medium | Done (Session 84)                                          |
-| F-02 | Social sharing                   | Medium | Done (Session 113 -- GrowStatsDashboard + StrainLookup)    |
-| F-06 | Offline sync conflict resolution | High   | Done (Session 87 -- CRDT sync + SyncConflictModal)         |
-| I-02 | RTL language preparation         | Medium | Deferred v2.0 (no RTL languages on roadmap)                |
-| A-03 | AI cost tracking                 | Medium | Done (Session 83)                                          |
-| W-01 | WorkerBus per-worker rate limit  | Medium | Done (Session 94 -- sliding-window limiter)                |
-| W-02 | WorkerBus priority preemption    | High   | Done (ADR-0007 -- AbortController preemption + re-queue)   |
-| W-03 | WorkerBus external telemetry     | Low    | Done (Session 94 -- exportTelemetry + Sentry context)      |
-| W-04 | WorkerBus cross-worker comms     | High   | Done (ADR-0008 -- MessageChannel + generic typed dispatch) |
+| ID   | Finding                          | Effort | Status                                                                  |
+| ---- | -------------------------------- | ------ | ----------------------------------------------------------------------- |
+| S-03 | CSP nonce implementation         | Medium | Won't Fix (strict-dynamic infeasible, S70)                              |
+| C-04 | Deployment preview validation    | Medium | Done (Session 84)                                                       |
+| F-02 | Social sharing                   | Medium | Done (Session 113 -- GrowStatsDashboard + StrainLookup)                 |
+| F-06 | Offline sync conflict resolution | High   | Done (Session 87 -- CRDT sync + SyncConflictModal)                      |
+| I-02 | RTL language preparation         | Medium | Deferred v2.0 (no RTL languages on roadmap)                             |
+| A-03 | AI cost tracking                 | Medium | Done (Session 83)                                                       |
+| W-01 | WorkerBus per-worker rate limit  | Medium | Done (Session 94 -- sliding-window limiter)                             |
+| W-02 | WorkerBus priority preemption    | High   | Done (ADR-0007 -- AbortController preemption + re-queue)                |
+| W-03 | WorkerBus external telemetry     | Low    | Done (Session 94 -- exportTelemetry + Sentry context)                   |
+| W-04 | WorkerBus cross-worker comms     | High   | Done (ADR-0008 -- MessageChannel + generic typed dispatch)              |
+| W-05 | Lock-free ring buffer            | Medium | Done (SPSC ring buffer on SAB, 256 capacity, progressive enhancement)   |
+| W-06 | Dynamic worker pool              | High   | Done (ADR-0010 -- lazy spawning, idle timeout, SAB hot-path, telemetry) |
+| W-07 | SAB streaming expansion          | Medium | Planned v2.0 (voice waveform, MPMC queue, advanced lock-free)           |
 
 ## Already Resolved
 

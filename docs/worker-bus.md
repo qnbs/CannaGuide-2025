@@ -467,6 +467,42 @@ When `canUseSharedArrayBuffer()` is true:
 3. VPD simulation worker writes zone status signals and VPD values to SAB
    during its `RUN_GROWTH` loop.
 4. `getSabChannel(name)` / `getSabRingBuffer(name)` provide main-thread access.
+5. `useVpdSabStream()` hook polls SAB at 250ms intervals, draining the ring buffer
+   and reading the signal channel. Returns `{ vpdStatus, latestVpd, isStreaming }`.
+6. WorkerTelemetryTab displays live SAB data and per-worker buffer utilization.
 
 Fallback: On GitHub Pages (no COEP headers), standard `postMessage` is used.
 SAB channels are `undefined` and all code paths handle this gracefully.
+
+---
+
+## W-07: SAB Streaming Expansion (Planned -- v2.0)
+
+**Status:** Planned
+
+Future enhancements for the SAB streaming infrastructure:
+
+### Voice Waveform Streaming
+
+Wire `voiceWorker.ts` to stream waveform amplitude data via LockFreeRingBuffer
+instead of Transferable `postMessage`. Currently voice uses `hot: false` since
+Transferable zero-copy is already efficient for ~60fps waveform data. Re-evaluate
+when voice processing latency becomes a bottleneck.
+
+### MPMC Queue
+
+Multi-Producer Multi-Consumer ring buffer for scenarios where multiple workers
+need to write to the same buffer. Current SPSC design covers all existing use
+cases. MPMC would require CAS-loop atomic compare-and-swap which adds complexity.
+Only implement if a concrete multi-producer scenario emerges (e.g. distributed
+sensor aggregation from multiple IoT workers).
+
+### Advanced Lock-Free Patterns
+
+- Lock-free hash maps for shared worker state
+- Seqlock for reader-optimized concurrent access
+- Hazard pointers for safe memory reclamation
+
+These patterns are academically interesting but not needed for the current
+application scale. Document and defer to v2.0+ unless profiling reveals
+a concrete bottleneck.

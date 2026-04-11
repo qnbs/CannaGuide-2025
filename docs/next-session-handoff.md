@@ -2,7 +2,91 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 141) -- CI Failure Fixes
+## Latest Session (Session 142) -- Post-W-06 SAB Audit & Consumer
+
+**Status: SAB dead-end fixed, dead code cleaned up, telemetry
+enhanced. Tests passing (2198), typecheck clean, build OK.**
+
+### What Was Done (Session 142)
+
+1. **Full post-W-06 audit:** All core files (workerBus, workerPool,
+   lockFreeRingBuffer, atomicsChannel, WorkerTelemetryTab,
+   workerFactories, vpdSimulation/voice/calculation workers)
+   reviewed. Finding: 0 TODOs/FIXMEs, W-01 through W-06 are 100%
+   complete. Real gap was dead SAB infrastructure.
+
+2. **VPD SAB consumer hook (G-1 fix):** Created `useVpdSabStream`
+   hook that polls `workerPool.getSabChannel('VPD')` and
+   `getSabRingBuffer('VPD')` at 250ms intervals. Decodes VPD
+   signal codes (optimal/low/high/danger) and ring buffer values
+   (Math.round(vpd \* 1000) -> kPa). Progressive enhancement:
+   returns idle state when SAB unavailable. 11 unit tests.
+
+3. **WorkerTelemetryTab enhanced:** Added Live SAB Data section
+   (SabLiveData component), SAB Buffer Utilization bars
+   (SabBufferUtil component with progressbar), ARIA improvements
+   (aria-label on table, aria-live on badge+live data,
+   role="status" on pool grid, role="progressbar" on bars).
+
+4. **SAB cleanup (G-2, G-3 fixes):** Demoted voice worker from
+   hot:true to hot:false (SAB channels allocated but unused --
+   deferred to W-07 waveform streaming). Removed dead
+   `initSabHandler()` from calculation.worker.ts (not hot, never
+   receives SAB messages).
+
+5. **PoolMetrics extended:** Added `sabBufferUtilization` field
+   (Record<string, {size, capacity}>) to PoolMetrics. Populated
+   from sabRingBuffers map in `getPoolMetrics()`.
+
+6. **Snyk workflow fix:** Added missing `HAS_TOKEN` env evaluation
+   (`secrets.SNYK_TOKEN != ''`) so token-conditional steps work.
+   Workflow remains advisory-only, weekly schedule.
+
+7. **i18n:** Added 5 new keys (sabLiveData, sabVpdStatus,
+   sabVpdValue, sabNoData, sabBufferUtil) to all 5 languages.
+
+8. **W-07 roadmap:** Added SAB Streaming Expansion section to
+   docs/worker-bus.md covering voice waveform streaming, MPMC
+   queue, and advanced lock-free patterns (all planned v2.0+).
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2198 passing, 0 failures (191 test files)
+- Build: successful
+- i18n: all 5 languages updated
+
+### Changed Files
+
+- `apps/web/hooks/useVpdSabStream.ts` -- NEW: SAB consumer hook
+- `apps/web/hooks/useVpdSabStream.test.ts` -- NEW: 11 tests
+- `apps/web/components/views/settings/WorkerTelemetryTab.tsx` --
+  Live SAB Data, Buffer Utilization, ARIA improvements
+- `apps/web/services/workerPool.ts` -- sabBufferUtilization in
+  PoolMetrics
+- `apps/web/services/workerPool.test.ts` -- assertion for new field
+- `apps/web/services/workerFactories.ts` -- voice hot:false
+- `apps/web/workers/calculation.worker.ts` -- removed dead SAB init
+- `apps/web/locales/{en,de,es,fr,nl}/settings.ts` -- 5 new keys
+- `.github/workflows/snyk.yml` -- HAS_TOKEN env fix
+- `docs/worker-bus.md` -- W-07 roadmap section
+- `CHANGELOG.md` -- new entries
+- `docs/next-session-handoff.md` -- this file
+
+### Next Steps
+
+1. **W-07 voice SAB waveform streaming** -- wire voice worker
+   to stream waveform via LockFreeRingBuffer (if latency
+   profiling shows benefit over Transferable postMessage)
+2. **Community language gap-fill** -- ES/FR/NL ~250 missing keys
+3. **jsx-a11y violation reduction** -- target <100 warnings
+4. **Test coverage push** -- target >35% via coverage-v8
+5. **Worker pool E2E test** -- Playwright test verifying pool
+   lifecycle in a real browser
+
+---
+
+## Previous Session (Session 141) -- CI Failure Fixes
 
 **Status: All 3 CI failures from commit eb1a4650 fixed.
 Tests passing (2187), typecheck clean, build OK.**

@@ -319,6 +319,7 @@ describe('WorkerPool', () => {
         expect(initial.totalTerminated).toBe(0)
         expect(initial.maxPoolSize).toBe(4)
         expect(initial.sabAvailable).toBe(false)
+        expect(initial.sabBufferUtilization).toEqual({})
 
         // Spawn two workers
         pool.getOrCreate('a')

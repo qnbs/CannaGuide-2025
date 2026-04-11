@@ -6,6 +6,37 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **feat(workers):** VPD SAB consumer hook `useVpdSabStream` -- polls
+  AtomicsChannel signals and LockFreeRingBuffer values from the VPD
+  simulation worker at 250ms intervals. Progressive enhancement:
+  returns idle state when SAB is unavailable (11 new tests)
+- **feat(ui):** Live SAB Data section in WorkerTelemetryTab -- displays
+  real-time VPD status (optimal/low/high/danger) and VPD value (kPa)
+  from the SAB pipeline. Buffer utilization bars with color coding.
+- **feat(workers):** SAB buffer utilization in PoolMetrics -- ring buffer
+  size/capacity exposed via `getPoolMetrics().sabBufferUtilization`
+- **a11y(ui):** WorkerTelemetryTab ARIA improvements -- `aria-label` on
+  metrics table, `aria-live="polite"` on SAB badge and live data,
+  `role="status"` on pool status grid, `role="progressbar"` on
+  buffer utilization bars
+
+### Changed
+
+- **refactor(workers):** Demoted voice worker from `hot: true` to
+  `hot: false` in workerFactories.ts -- SAB channels were allocated
+  on spawn but never used (W-07 will re-enable for waveform streaming)
+- **refactor(workers):** Removed dead `initSabHandler()` call from
+  calculation.worker.ts -- worker is not hot, never receives SAB
+  messages, call was a no-op
+
+### Fixed
+
+- **fix(ci):** Snyk workflow HAS_TOKEN env -- added missing
+  `${{ secrets.SNYK_TOKEN != '' }}` evaluation so token-conditional
+  steps work correctly. Snyk remains advisory-only (weekly schedule)
+
 ### Fixed
 
 - **fix(ci):** i18n completeness check -- added `tsx` as root

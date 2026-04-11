@@ -49,7 +49,8 @@ const FACTORIES: Record<string, WorkerFactoryEntry> = {
             new Worker(new URL('../workers/voiceWorker.ts', import.meta.url), {
                 type: 'module',
             }),
-        hot: true,
+        // SAB hot-path deferred until waveform streaming is implemented (W-07)
+        hot: false,
     },
     [WORKER_NAMES.VISION_INFERENCE]: {
         factory: () =>

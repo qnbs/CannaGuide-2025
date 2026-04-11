@@ -1,12 +1,10 @@
 name: Snyk Security
 
-# Runs on PRs (advisory) and weekly for continuous monitoring.
+# Advisory-only weekly scan. Non-blocking (continue-on-error) because
+# Snyk has intermittent 503 outages that must not break CI.
+# Primary security scanning is handled by CodeQL + Grype + Semgrep.
 # Requires SNYK_TOKEN secret from Snyk App integration.
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
     schedule:
         - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
     workflow_dispatch:
@@ -20,6 +18,7 @@ permissions:
 
 env:
     NODE_VERSION: '20'
+    HAS_TOKEN: ${{ secrets.SNYK_TOKEN != '' }}
 
 jobs:
     snyk:
@@ -53,6 +52,7 @@ jobs:
             - name: Snyk Open Source scan
               if: ${{ env.HAS_TOKEN == 'true' }}
               id: snyk-scan
+              continue-on-error: true # Advisory-only -- transient Snyk 503s must not fail CI
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

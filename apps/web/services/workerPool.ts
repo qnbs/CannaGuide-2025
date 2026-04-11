@@ -48,6 +48,8 @@ export interface PoolMetrics {
     maxPoolSize: number
     /** Whether SAB hot-paths are available. */
     sabAvailable: boolean
+    /** SAB ring buffer utilization per hot-path worker (name -> size/capacity). */
+    sabBufferUtilization: Record<string, { size: number; capacity: number }>
 }
 
 /** Callback invoked when a worker is freshly spawned by the pool. */
@@ -282,6 +284,14 @@ export class WorkerPool {
 
     /** Return a JSON-serializable snapshot of pool-level metrics. */
     getPoolMetrics(): PoolMetrics {
+        const sabBufferUtilization: Record<string, { size: number; capacity: number }> = {}
+        for (const [name, ring] of this.sabRingBuffers) {
+            sabBufferUtilization[name] = {
+                size: ring.size,
+                capacity: ring.getCapacity(),
+            }
+        }
+
         return {
             activeCount: this.instances.size - this.idleSet.size,
             idleCount: this.idleSet.size,
@@ -289,6 +299,7 @@ export class WorkerPool {
             totalTerminated: this.terminatedTotal,
             maxPoolSize: getMaxPoolSize(),
             sabAvailable: canUseSharedArrayBuffer(),
+            sabBufferUtilization,
         }
     }
 

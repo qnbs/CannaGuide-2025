@@ -7,18 +7,18 @@
 
 ## High-Level Stack
 
-| Layer        | Technology                                                                               |
-| ------------ | ---------------------------------------------------------------------------------------- |
-| UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                      |
-| State        | Redux Toolkit 2.11 (18 slices), Zustand 5 (8 stores), RTK Query, memoized selectors      |
-| AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                              |
-| AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                     |
-| Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                                 |
-| Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                      |
-| i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                            |
-| Workers      | WorkerBus (promise-based, 9 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 2063 unit tests, Playwright E2E + Component tests                                 |
-| Distribution | GitHub Pages, Netlify (PR previews), Vercel, Cloudflare Pages                            |
+| Layer        | Technology                                                                                |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| UI           | React 19, Tailwind CSS, Radix UI, 9 cannabis themes                                       |
+| State        | Redux Toolkit 2.11 (19 slices), Zustand 5 (9 stores), RTK Query, memoized selectors       |
+| AI (Cloud)   | Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (BYOK)                               |
+| AI (Local)   | @xenova/transformers (ONNX), @mlc-ai/web-llm (WebGPU), TensorFlow.js                      |
+| Build        | Vite 7, vite-plugin-pwa (InjectManifest), React Compiler                                  |
+| Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                       |
+| i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                             |
+| Workers      | WorkerBus (promise-based, 10 workers, heap-based priority queue, messageId, auto-timeout) |
+| Testing      | Vitest 2063 unit tests, Playwright E2E + Component tests                                  |
+| Distribution | GitHub Pages, Netlify (PR previews), Vercel, Cloudflare Pages                             |
 
 ---
 
@@ -60,7 +60,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     useAlertsStore.ts     Zustand store for proactive smart coach alerts
     selectors.ts          Memoized selectors (map-based cache by ID)
     listenerMiddleware.ts Side effects: i18n sync, persistence triggers
-    slices/               18 Redux slices (simulation, settings, strains, workerMetrics, hydro, grows, etc.)
+    slices/               19 Redux slices (simulation, settings, strains, workerMetrics, hydro, grows, problemTracker, etc.)
     indexedDBStorage.ts   CannaGuideStateDB adapter
 
   services/
@@ -93,8 +93,8 @@ apps/web/                 Main PWA (@cannaguide/web)
   data/                   Static data: 776 strains, FAQ, lexicon (91 entries, 6 categories), guides, diseases (22 entries), learningPaths (5 paths)
   locales/                i18n translations: en/, de/, es/, fr/, nl/
   hooks/                  25 custom React hooks
-  workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation
-  services/workerBus.ts   Centralized promise-based WorkerBus (9 workers, priority queue, timeout)
+  workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation, voice
+  services/workerBus.ts   Centralized promise-based WorkerBus (10 workers, priority queue, timeout)
   utils/priorityQueue.ts  Generic min-heap PriorityQueue<T> with WorkerPriority type
   services/ragEmbeddingCacheService.ts  Persistent IndexedDB LRU embedding cache (MiniLM-L6, model versioning, telemetry)
   services/equipmentCalculatorService.ts  Pure-formula service: CO2, Humidity Deficit, Light Hanging Height (Zod-validated)
@@ -129,10 +129,10 @@ docker/                   IoT mock servers (ESP32 sensor simulator)
 
 The app uses a **dual-store architecture** with clear separation of concerns:
 
-**Redux Toolkit (18 slices, persisted in IndexedDB):**
-Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, grows, metrics, hydro, growPlanner, diagnosisHistory, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
+**Redux Toolkit (19 slices, persisted in IndexedDB):**
+Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, grows, problemTracker, metrics, hydro, growPlanner, diagnosisHistory, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
 
-**Zustand (8 stores, transient/never persisted):**
+**Zustand (9 stores, transient/never persisted):**
 `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useVoiceStore` (voice session state, mode, transcriptHistory, confirmationPending, error), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite).
 
 **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
@@ -177,7 +177,7 @@ Voice interaction is a layered system with 5 subsystems:
 
 ## WorkerBus Architecture
 
-The `workerBus.ts` singleton provides centralized, promise-based communication with all 9 Web Workers:
+The `workerBus.ts` singleton provides centralized, promise-based communication with all 10 Web Workers:
 
 - **Priority Queue:** min-heap with 4 levels (`critical` > `high` > `normal` > `low`), FIFO tiebreaking
 - **Backpressure:** max 3 concurrent dispatches per worker, queued beyond that
@@ -190,7 +190,7 @@ The `workerBus.ts` singleton provides centralized, promise-based communication w
 - **State Sync:** `workerStateSyncService.ts` auto-wires dispatch results to Redux/Zustand via handler registry
 - **Telemetry Service:** `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`)
 
-Workers: VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation.
+Workers: VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation, voice.
 
 ## Hydro Monitor Architecture
 

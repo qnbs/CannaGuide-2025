@@ -5,7 +5,7 @@
 CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for cannabis cultivation management. Built with React 19, TypeScript (strict), Redux Toolkit, and Google Gemini AI. The app is 100% offline-first with dual IndexedDB persistence.
 
 **Live:** https://qnbs.github.io/CannaGuide-2025/
-**Version:** 1.6.0
+**Version:** 1.7.0
 
 ---
 
@@ -56,7 +56,7 @@ apps/
     hooks/               # Custom React hooks (25)
     data/                # Static data: 776 strains, FAQ, lexicon (91 entries), guides, diseases (22 entries), learningPaths (5 paths)
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 source files each)
-    workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation
+    workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation, voice
     utils/               # Shared utilities
     types/               # Zod schemas for AI response validation
     lib/                 # Utility library (cn(), VPD calculations)
@@ -82,7 +82,7 @@ packages/
 scripts/                 # Build/lint/merge scripts
 docker/                  # IoT mock servers (ESP32 sensor simulator)
 docs/                    # Developer guides, roadmap
-.github/                 # 21 CI/CD workflows, issue templates
+.github/                 # 22 CI/CD workflows, issue templates
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
 
@@ -139,7 +139,7 @@ Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-w
 11. **Notification Service:** `nativeBridgeService.ts` provides browser notification dispatch via the Web Notification API. Permissions requested at app bootstrap. Gracefully degrades to no-op when permissions are denied.
 
 12. **State Management Split:**
-    - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner, grows. RTK Query for AI API caching (9 endpoints). `workerMetrics` is a runtime-only slice (not persisted) for WorkerBus telemetry visibility in Redux DevTools.
+    - **Redux Toolkit** (persisted in IndexedDB): simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, genealogy, sandbox, nutrientPlanner, grows, problemTracker, metrics, hydro, growPlanner, diagnosisHistory. RTK Query for AI API caching (9 endpoints). `workerMetrics` is a runtime-only slice (not persisted) for WorkerBus telemetry visibility in Redux DevTools.
     - **Zustand** (transient, never persisted): `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useVoiceStore` (voice session state, mode, transcriptHistory), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view UI), `useIotStore` (IoT device UI -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite). All 9 stores have `devtools` middleware (`enabled: import.meta.env.DEV`). No Zustand IndexedDB persist -- persistence is exclusively Redux + IndexedDB.
     - **Redux <-> Zustand Bridge:** `services/uiStateBridge.ts` -- single init call `initUIStateBridgeFull(getState, dispatch, subscribe)` from `store.ts`; `getReduxSnapshot(selector)` for synchronous reads from Zustand actions; `subscribeToRedux(selector, handler)` for reactive subscriptions; `dispatchToRedux(action)` for dispatch from Zustand context.
     - **Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. Components must import AI services from `aiFacade`, not from individual service files.
@@ -483,6 +483,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/components/common/SyncConflictModal.tsx`                              | 3-way conflict resolution UI (Smart Merge/Keep Local/Use Cloud) with double-confirmation                                                                                   |
 | `apps/web/services/nutrientDeficiencyService.ts`                                | Decision tree for visual nutrient deficiency diagnosis (8 nodes, 9 results: N/P/K/Mg/Ca/Fe/Mn/Mo/Cl)                                                                       |
 | `apps/web/services/imageGenerationService.ts`                                   | SD-Turbo text-to-image (WebGPU, worker-offloaded)                                                                                                                          |
+| `apps/web/services/pdfReportService.ts`                                         | Enhanced PDF reports: metrics charts, diagnosis trends, AI summary, offline template fallback                                                                              |
 | `apps/web/services/dailyStrainsService.ts`                                      | 4:20 Daily Drop: seeded PRNG daily picks, AI search, resolveDiscoveredToStrain                                                                                             |
 | `apps/web/services/workerBus.ts`                                                | Promise-based worker communication bus (10 workers), AbortController, Transferable, onDispatchComplete hook                                                                |
 | `apps/web/services/workerStateSyncService.ts`                                   | Framework-agnostic handler registry -- auto-wires WorkerBus results to Redux/Zustand                                                                                       |
@@ -513,6 +514,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/stores/slices/metricsSlice.ts`                                        | Plant metrics Redux slice: readings FIFO (168/plant), memoized selectors via createSelector                                                                                |
 | `apps/web/stores/slices/growPlannerSlice.ts`                                    | Grow planner Redux slice: tasks FIFO (500), 9 action types, memoized selectors, plant-scoped clearCompletedTasks                                                           |
 | `apps/web/stores/slices/diagnosisHistorySlice.ts`                               | Diagnosis history Redux slice: records FIFO (100/plant), memoized selectors, trend extraction                                                                              |
+| `apps/web/stores/slices/problemTrackerSlice.ts`                                 | Plant issue tracking Redux slice: issues FIFO (200), treatments, status transitions, plant-scoped selectors                                                                |
 | `apps/web/components/views/plants/detailedPlantViewTabs/MetricsOverviewTab.tsx` | Plant metrics dashboard: VPD zone map, multi-metric Recharts, quick log form                                                                                               |
 | `apps/web/components/views/plants/detailedPlantViewTabs/PhotoTimelineTab.tsx`   | Photo timeline with compare mode, type-guarded PhotoDetails extraction                                                                                                     |
 | `apps/web/components/views/plants/PlantTagGenerator.tsx`                        | QR code plant tag generator with Print and PDF export, accessible QR wrapper                                                                                               |
@@ -528,7 +530,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/data/diseases.ts`                                                     | 22 DiseaseEntry objects (deficiency/toxicity/environmental/pest/disease)                                                                                                   |
 | `apps/web/data/learningPaths.ts`                                                | 5 LearningPath objects with step-by-step grow education programs                                                                                                           |
 | `apps/web/data/lexicon.ts`                                                      | 91-entry grower glossary (6 categories: General/Cannabinoid/Terpene/Flavonoid/Nutrient/Disease)                                                                            |
-| `apps/web/components/views/knowledge/LexikonView.tsx`                           | Searchable 83-term Knowledge glossary sub-view                                                                                                                             |
+| `apps/web/components/views/knowledge/LexikonView.tsx`                           | Searchable 91-entry Knowledge glossary sub-view                                                                                                                            |
 | `apps/web/components/views/knowledge/DiseaseAtlasView.tsx`                      | 22-entry plant disease diagnostic atlas sub-view                                                                                                                           |
 | `apps/web/components/views/knowledge/CalculatorHubView.tsx`                     | VPD + Nutrient Ratio + pH/EC calculator hub sub-view                                                                                                                       |
 | `apps/web/components/views/knowledge/LearningPathView.tsx`                      | 5-path grow education learning paths sub-view (Redux progress)                                                                                                             |

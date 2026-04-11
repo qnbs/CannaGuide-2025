@@ -15,7 +15,8 @@
 | **v1.4** | 2026-Q4    | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus                      |
 | **v1.5** | 2026-Q4    | ✅ Released | Sync & Multi-Grow — CRDT offline sync, multi-grow, AI cost tracking, CI hardening |
 | **v1.6** | 2027-Q1    | ✅ Released | Engineering audit, i18n completeness, documentation sync                          |
-| **v2.0** | 2027-Q2    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                        |
+| **v1.7** | 2027-Q2    | ✅ Released | Voice-First Edition -- Voice Pro, Preset Setups, Enhanced PDF, a11y               |
+| **v2.0** | 2027-Q3    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                        |
 
 ---
 
@@ -168,7 +169,7 @@ Released: **2026-Q3**
 | Multi-source strain lookup (5 APIs, entourage science, flavonoid charts)  | Strains       | done   | —     |
 | AES-256-GCM IoT credential encryption + IndexedDB monitor service         | Security      | done   | —     |
 | Entourage score SVG ring, FlavonoidBar chart, TerpeneDetailList           | Strains/UI    | done   | —     |
-| Knowledge Lexikon 2.0 (83-term searchable glossary, 6 categories)         | Knowledge     | done   | —     |
+| Knowledge Lexikon 2.0 (91-entry searchable glossary, 6 categories)        | Knowledge     | done   | —     |
 | Knowledge Disease Atlas (22 entries, urgency filter, detail modal)        | Knowledge     | done   | —     |
 | Knowledge Calculator Hub (VPD + Nutrient Ratio + pH/EC sub-tabs)          | Knowledge     | done   | —     |
 | Knowledge Learning Paths (5 paths, Redux progress tracking)               | Knowledge     | done   | —     |
@@ -189,9 +190,37 @@ Released: **2026-Q3**
 
 ---
 
+## v1.7 — Voice-First Edition ✅
+
+Released: **2026-04-11**
+
+| Feature                                                             | Category      | Status |
+| ------------------------------------------------------------------- | ------------- | ------ |
+| Voice Orchestrator state machine (37 commands)                      | Voice         | ✅     |
+| Porcupine WASM wake-word detection (11 keywords, BYOK)              | Voice         | ✅     |
+| ElevenLabs Cloud TTS (AES-256-GCM encrypted key)                    | Voice         | ✅     |
+| speakNatural() text normalization (30+ abbreviations)               | Voice         | ✅     |
+| Voice Worker (off-main-thread, 3-pass matching, waveform)           | Voice         | ✅     |
+| VoiceHUD floating overlay with AnalyserNode waveform                | Voice         | ✅     |
+| Voice telemetry (opt-in, ring buffer, no PII)                       | Voice         | ✅     |
+| 12 Preset Setups (Micro Stealth to Full Spectrum Pro)               | Equipment     | ✅     |
+| Onboarding -> Preset seeding (budget/space/goal -> sorted Presets)  | Equipment     | ✅     |
+| Enhanced PDF Reports (metrics charts, diagnosis trends, AI summary) | Plants        | ✅     |
+| Mobile-optimized Local AI (battery gating, RAF throttling)          | AI            | ✅     |
+| Diagnosis i18n migration (33 zero-shot labels)                      | i18n          | ✅     |
+| 91 lexikon entries (was 83, +8 orphaned integrated)                 | Knowledge     | ✅     |
+| Scroll-to-top on all views/tabs                                     | UX            | ✅     |
+| Confirmation dialogs (Grow Archive, Bulk Favorite Remove)           | UX            | ✅     |
+| PhotosTab + ScreenshotGallery -> Radix DialogWrapper (a11y)         | Accessibility | ✅     |
+| SLSA Verifier CI (SC-01) + Release Dry-Run (SC-03)                  | CI            | ✅     |
+| Lighthouse CI 0.95+ (performance/a11y/best-practices)               | CI            | ✅     |
+| 2063 tests (0 failures), 86 new voice tests                         | Testing       | ✅     |
+
+---
+
 ## v2.0 — Platform 📋
 
-Target: **2027-Q2**
+Target: **2027-Q3**
 
 | Feature                                                       | Category      | Priority   | Issue    |
 | ------------------------------------------------------------- | ------------- | ---------- | -------- |

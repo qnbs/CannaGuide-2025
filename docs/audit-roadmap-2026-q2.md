@@ -5,9 +5,9 @@
 > Dedizierte Roadmap zur Umsetzung aller Maßnahmen aus dem **Full-Scale Deep Audit, Critical Evaluation & Action-Plan** (Stand: 23. März 2026, Commit `473044d`).
 > Dieses Dokument ist der zentrale Übergabe- und Anknüpfungspunkt für alle zukünftigen Sessions.
 
-**Letzte Aktualisierung:** 2026-04-09
+**Letzte Aktualisierung:** 2026-04-11
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
-**Aktuell:** v1.6.0 | 1884 Tests (163 Dateien) | SLSA L1 Provenance | CI gruen | 0 Security Alerts
+**Aktuell:** v1.7.0 | 2063 Tests (177 Dateien) | SLSA L3 Provenance | 22 CI Workflows gruen | 0 Security Alerts
 
 ---
 

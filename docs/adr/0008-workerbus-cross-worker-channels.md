@@ -6,7 +6,7 @@
 
 ## Context
 
-WorkerBus (W-04 in PRIORITY_ROADMAP) manages 9 Web Workers, but workers
+WorkerBus (W-04 in PRIORITY_ROADMAP) manages 10 Web Workers, but workers
 could only communicate via the main thread. For example, the vision
 inference worker diagnosing a leaf image could not directly request VPD
 context from the simulation worker without a main-thread round-trip.

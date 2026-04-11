@@ -29,6 +29,13 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   lockFreeRingBuffer (2140 total passing)
 - **docs:** ADR-0009 SharedArrayBuffer progressive enhancement
 
+### Fixed
+
+- **fix(security):** CodeQL #281 -- added origin verification to
+  `initAbortHandler()` in `workerAbort.ts`; rejects cross-origin
+  messages before processing `__CANCEL__` cooperative preemption
+  signals (CWE-20, CWE-940)
+
 ---
 
 ## [1.7.0] - 2026-04-11

@@ -2,7 +2,35 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 136) -- WorkerBus Optimization (5 Phases)
+## Latest Session (Session 137) -- CodeQL Security Fix
+
+**Status: CodeQL alert #281 resolved. Origin verification added to
+initAbortHandler() in workerAbort.ts. 2140 tests passing, typecheck
+clean, build OK.**
+
+### What Was Done (Session 137)
+
+1. **fix(security): CodeQL #281** -- Added origin check to
+   `initAbortHandler()` in `workerAbort.ts`. The cooperative
+   preemption `__CANCEL__` handler now validates message origin
+   before processing, consistent with `isTrustedWorkerMessage`
+   pattern used in all 11 workers. (CWE-20, CWE-940)
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2140 passing, 0 failures (185 test files)
+- Build: successful
+
+### Next Steps
+
+1. **jsx-a11y violation reduction** -- Target top categories
+2. **Test Coverage Push** -- Target >35% via coverage-v8
+3. **v2.0 Planning** -- Digital Twin architecture spike
+
+---
+
+## Session 136 -- WorkerBus Optimization (5 Phases)
 
 **Status: Full 5-phase WorkerBus optimization implemented. Dynamic
 concurrency, cooperative preemption, SharedArrayBuffer progressive

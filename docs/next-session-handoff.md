@@ -2,7 +2,54 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 147) -- Quality Polish + Test Hardening
+## Latest Session (Session 148) -- v1.7.2 Release + Deployment Hardening
+
+**Status: v1.7.2 released. CHANGELOG consolidated, version bumped,
+docs synced, v1.7.1 + v1.7.2 tagged and published as GitHub Releases
+with SBOM + build provenance.**
+
+### What Was Done (Session 148)
+
+1. **CHANGELOG consolidation:** Merged [Unreleased] section into
+   [1.7.2] -- deduplicated Added/Changed/Fixed/Security sections,
+   correct Keep-a-Changelog ordering. Empty [Unreleased] placeholder
+   restored at top.
+
+2. **Version bump:** 1.7.1 -> 1.7.2 in root package.json and
+   apps/web/package.json.
+
+3. **Docs sync:** README badges (v1.7.2), ARCHITECTURE.md test count
+   (2187 -> 2221), copilot-instructions.md version (1.7.0 -> 1.7.2),
+   next-session-handoff.md session entry.
+
+4. **GitHub Releases:** v1.7.1 (tagged on commit 681eb48f) and
+   v1.7.2 (tagged on release commit) both published via
+   `gh release create` with proper release notes.
+
+5. **Verification:** CSP consistency (5 paths OK), typecheck clean,
+   2221 tests passing, build successful.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2221 passed, 0 failures (192 files)
+- Build: successful (170 precache entries)
+- CSP: consistent across all 5 deployment paths
+- Referrer-Policy: same-origin on all targets
+
+### Next Steps
+
+- Run Stryker baseline on new targets:
+  `pnpm exec stryker run` -- verify >= 50% mutation score
+  for lockFreeRingBuffer, atomicsChannel, workerPool
+- Local AI Stack refactoring (Multi-Session project):
+  21 modules, 5000+ LOC, 9 tightly coupled
+- W-07 voice SAB waveform streaming per docs/worker-bus.md
+- Version bump to v1.8.0 when user-facing features added
+
+---
+
+## Session 147 -- Quality Polish + Test Hardening
 
 **Status: v1.7.2. ARIA chart accessibility, 23 new tests
 (WorkerPool SAB, LockFreeRingBuffer SAB, AtomicsChannel edge

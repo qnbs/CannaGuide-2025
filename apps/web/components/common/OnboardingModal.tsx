@@ -135,6 +135,15 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         setOnboardingStep(FEATURE_STEP_START)
     }
 
+    const handleLanguageSwitch = async (lang: Language) => {
+        if (!i18nInstance.hasResourceBundle(lang, 'translation')) {
+            const translations = await loadLocale(lang as SupportedLocale)
+            i18nInstance.addResourceBundle(lang, 'translation', translations)
+        }
+        await i18nInstance.changeLanguage(lang)
+        dispatch(setSetting({ path: 'general.language', value: lang }))
+    }
+
     const handleNext = () => setOnboardingStep(step + 1)
     const handleBack = () => setOnboardingStep(step - 1)
 
@@ -215,6 +224,36 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         return (
             <Modal isOpen={true} onClose={() => {}} showCloseButton={false} title="" description="">
                 <div className="p-2 space-y-5">
+                    {/* Language switcher top-right */}
+                    <div className="flex justify-end gap-1.5">
+                        <button
+                            type="button"
+                            onClick={() => handleLanguageSwitch('de')}
+                            className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                                i18nInstance.language === 'de'
+                                    ? 'bg-primary-600/30 text-primary-300 border border-primary-500/40'
+                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                            }`}
+                            aria-label="Deutsch"
+                        >
+                            <FlagDE className="w-4 h-4" />
+                            DE
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleLanguageSwitch('en')}
+                            className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                                i18nInstance.language === 'en'
+                                    ? 'bg-primary-600/30 text-primary-300 border border-primary-500/40'
+                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                            }`}
+                            aria-label="English"
+                        >
+                            <FlagEN className="w-4 h-4" />
+                            EN
+                        </button>
+                    </div>
+
                     <div className="text-center">
                         <CannabisLeafIcon className="w-14 h-14 text-primary-500 mx-auto mb-3" />
                         <h2 className="text-2xl font-bold font-display text-slate-100">
@@ -222,6 +261,9 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                         </h2>
                         <p className="text-sm text-slate-400 mt-1">
                             {t('onboarding.legalStep.subtitle')}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1 italic">
+                            {t('onboarding.legalStep.bilingualHint')}
                         </p>
                     </div>
 

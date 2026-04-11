@@ -27,7 +27,7 @@ export const UpdateBanner: React.FC<UpdateBannerProps> = ({ updateAvailable }) =
     }
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-lg animate-fade-in">
+        <div className="fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-4 left-4 right-4 z-50 mx-auto max-w-lg animate-fade-in">
             <div className="rounded-2xl bg-blue-900/95 backdrop-blur-sm border border-blue-500/30 p-4 shadow-xl ring-1 ring-inset ring-white/10">
                 <div className="flex items-center gap-3">
                     <PhosphorIcons.ArrowClockwise className="w-6 h-6 text-blue-300 flex-shrink-0" />

@@ -14,6 +14,7 @@ export const onboarding = {
         accept: 'Ik ben 18+ en ga akkoord',
         deny: 'Ik ben jonger dan 18',
         denied: 'Toegang tot deze applicatie is beperkt tot personen van 18 jaar en ouder.',
+        bilingualHint: 'Welcome / Willkommen -- Select language above',
     },
     languageTitle: 'Kies Je Taal',
     languageSubtitle: 'Selecteer je voorkeurstaal om verder te gaan.',

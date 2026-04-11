@@ -4,6 +4,37 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.7.1] -- 2026-04-11
+
+### Fixed
+
+- **fix(i18n):** SeedVault translations moved from `strainLookup.seedVault`
+  to `strainsView.seedVault` in all 5 locales (EN/DE/ES/FR/NL) -- fixes
+  raw i18n keys showing in the Seed Vault UI
+- **fix(i18n):** Removed orphaned duplicate lowercase seed type keys
+  (`feminized`, `regular`, `autoflower`) from all locale files -- component
+  uses PascalCase keys (`Regular`, `Feminized`, `Autoflowering`, `Clone`)
+- **fix(i18n):** Added `totalSeeds` fallback key alongside plural forms
+  (`totalSeeds_one`/`totalSeeds_other`) for robust count display
+- **fix(ui):** PwaInstallBanner mobile overlap -- added BottomNav-aware
+  offset `bottom-[calc(7rem+env(safe-area-inset-bottom))]` so the install
+  banner renders above the bottom navigation on mobile
+- **fix(ui):** ReloadPrompt mobile overlap -- same BottomNav-aware offset
+- **fix(ui):** UpdateBanner mobile overlap -- same BottomNav-aware offset
+
+### Added
+
+- **feat(i18n):** Bilingual DE/EN language switcher on onboarding legal
+  gate (Step 0) -- users can switch language before accepting terms.
+  Compact flag-button toggle in top-right corner with active state
+  indicator. Bilingual hint text shows the other language subtitle.
+- **feat(i18n):** New `onboarding.legalStep.bilingualHint` key added to
+  all 5 locales for cross-language guidance on the legal gate
+- **feat(tooling):** New `scripts/check-i18n-keys-usage.mjs` -- cross-
+  references all `t()` calls in source against EN locale keys. Detects
+  keys used in code but missing from locale files. Prevents SeedVault-
+  class namespace mismatch bugs. Supports `--json` and `--verbose` flags.
+
 ## [Unreleased]
 
 ### Added

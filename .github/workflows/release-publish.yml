@@ -143,6 +143,7 @@ jobs:
             base64-subjects: '${{ needs.build.outputs.hashes }}'
             upload-assets: false
             provenance-name: cannaguide-provenance.intoto.jsonl
+            private-repository: true
 
     # -----------------------------------------------------------------
     # Job 3: Release -- download all artifacts + sign SBOM + publish

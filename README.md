@@ -324,36 +324,36 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ### Security
 
-| Layer                  | Implementation                                         |
-| ---------------------- | ------------------------------------------------------ |
-| **Input Sanitization** | DOMPurify v3, ALLOWED_TAGS/ATTR                        |
-| **Prompt Injection**   | 30+ regex patterns (SQL, XSS, command, jailbreak)      |
-| **API Key Encryption** | AES-256-GCM via Web Crypto, 96-bit IV                  |
-| **CSP**                | `'self' 'unsafe-inline' 'wasm-unsafe-eval'`, no `eval` |
-| **EXIF Stripping**     | Canvas re-encode removes GPS/metadata                  |
-| **SAST**               | CodeQL, Grype, Semgrep, Gitleaks, trojan-source        |
-| **Supply Chain**       | SLSA L3 provenance, CycloneDX SBOM, SHA-pinned actions |
-| **Access Gates**       | Age verification (KCanG), PIN lock, DSGVO consent      |
+| Layer                  | Implementation                                               |
+| ---------------------- | ------------------------------------------------------------ |
+| **Input Sanitization** | DOMPurify v3, ALLOWED_TAGS/ATTR                              |
+| **Prompt Injection**   | 30+ regex patterns (SQL, XSS, command, jailbreak)            |
+| **API Key Encryption** | AES-256-GCM via Web Crypto, 96-bit IV                        |
+| **CSP**                | `'self' 'unsafe-inline' 'wasm-unsafe-eval'`, no `eval`       |
+| **EXIF Stripping**     | Canvas re-encode removes GPS/metadata                        |
+| **SAST**               | CodeQL, Grype, Semgrep, Gitleaks, trojan-source              |
+| **Supply Chain**       | GitHub build attestation, CycloneDX SBOM, SHA-pinned actions |
+| **Access Gates**       | Age verification (KCanG), PIN lock, DSGVO consent            |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md)
 
 ### CI/CD Workflows (22)
 
-| Workflow           | Trigger          | Purpose                                                   |
-| ------------------ | ---------------- | --------------------------------------------------------- |
-| CI                 | push, PR         | Lint, typecheck, 2063 tests, build, security, E2E, IoT    |
-| CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                              |
-| Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                     |
-| Release Publish    | tag v\*          | SLSA L3 provenance + CycloneDX SBOM + GitHub Release      |
-| Release Gate       | tag v\*          | Pre-release quality gate (typecheck, tests, build, audit) |
-| Security Full      | push, PR, weekly | Comprehensive security scan suite                         |
-| Snyk               | push, PR         | Vulnerability scanning                                    |
-| ClusterFuzzLite    | PR               | Continuous fuzzing                                        |
-| Scorecard          | push, weekly     | OpenSSF Scorecard                                         |
-| Config Guard       | push, PR         | RCE pattern scanning in configs                           |
-| Mutation Testing   | push, PR         | Stryker Redux slice mutation testing                      |
-| Preview Validation | deploy           | Playwright + Lighthouse on Netlify previews               |
-| + 10 more          | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup  |
+| Workflow           | Trigger          | Purpose                                                    |
+| ------------------ | ---------------- | ---------------------------------------------------------- |
+| CI                 | push, PR         | Lint, typecheck, 2063 tests, build, security, E2E, IoT     |
+| CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                               |
+| Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                      |
+| Release Publish    | tag v\*          | GitHub build attestation + CycloneDX SBOM + GitHub Release |
+| Release Gate       | tag v\*          | Pre-release quality gate (typecheck, tests, build, audit)  |
+| Security Full      | push, PR, weekly | Comprehensive security scan suite                          |
+| Snyk               | push, PR         | Vulnerability scanning                                     |
+| ClusterFuzzLite    | PR               | Continuous fuzzing                                         |
+| Scorecard          | push, weekly     | OpenSSF Scorecard                                          |
+| Config Guard       | push, PR         | RCE pattern scanning in configs                            |
+| Mutation Testing   | push, PR         | Stryker Redux slice mutation testing                       |
+| Preview Validation | deploy           | Playwright + Lighthouse on Netlify previews                |
+| + 10 more          | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup   |
 
 ---
 
@@ -372,17 +372,17 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ## Roadmap
 
-| Version  | Status   | Highlights                                                                   |
-| -------- | -------- | ---------------------------------------------------------------------------- |
-| **v1.0** | Released | 776 strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32            |
-| **v1.1** | Released | Local AI stack (WebLLM + Transformers.js + CLIP), Sentry, cloud sync         |
-| **v1.2** | Released | Terpene profiles (27), chemovar, flavonoids (12), ES/FR/NL, WorkerBus        |
-| **v1.3** | Released | IoT dashboard, 3D OrbitControls, strain recommendation, Knowledge suite      |
-| **v1.4** | Released | Vision AI Leaf Diagnosis, Hydro Forecast, WebLLM Catalog, Multi-Grow         |
-| **v1.5** | Released | CRDT sync, AI cost tracking, Netlify validation, pnpm migration              |
-| **v1.6** | Released | Forensic audit, i18n completeness, metrics/diagnosis/planner slices, SLSA L3 |
-| **v1.7** | Released | Voice Pro (wake-word, Cloud TTS), 12 Preset Setups, Enhanced PDF, a11y       |
-| **v2.0** | Planned  | AR/VR plant overlay, digital twin architecture, next-gen Sandbox/BreedingLab |
+| Version  | Status   | Highlights                                                                             |
+| -------- | -------- | -------------------------------------------------------------------------------------- |
+| **v1.0** | Released | 776 strains, VPD simulation, multi-provider AI, DSGVO/WCAG, ESP32                      |
+| **v1.1** | Released | Local AI stack (WebLLM + Transformers.js + CLIP), Sentry, cloud sync                   |
+| **v1.2** | Released | Terpene profiles (27), chemovar, flavonoids (12), ES/FR/NL, WorkerBus                  |
+| **v1.3** | Released | IoT dashboard, 3D OrbitControls, strain recommendation, Knowledge suite                |
+| **v1.4** | Released | Vision AI Leaf Diagnosis, Hydro Forecast, WebLLM Catalog, Multi-Grow                   |
+| **v1.5** | Released | CRDT sync, AI cost tracking, Netlify validation, pnpm migration                        |
+| **v1.6** | Released | Forensic audit, i18n completeness, metrics/diagnosis/planner slices, build attestation |
+| **v1.7** | Released | Voice Pro (wake-word, Cloud TTS), 12 Preset Setups, Enhanced PDF, a11y                 |
+| **v2.0** | Planned  | AR/VR plant overlay, digital twin architecture, next-gen Sandbox/BreedingLab           |
 
 > Full roadmap: [ROADMAP.md](ROADMAP.md) · [Priority Roadmap](docs/PRIORITY_ROADMAP.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md) · [ADRs](docs/adr/) · [Session Handoff](docs/next-session-handoff.md) · [UX Audit](ui-ux-audit.md) · [Lint Burndown](docs/lint-burndown.md) · [Worker Bus](docs/worker-bus.md)
 
@@ -564,13 +564,13 @@ pnpm run typecheck          # tsc --noEmit
 
 ### CI/CD, Testing & Sicherheit
 
-| Bereich          | Details                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| **Tests**        | 2028 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing) |
-| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, SLSA L3, CycloneDX SBOM  |
-| **CI/CD**        | 22 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard      |
-| **Supply Chain** | SLSA L3 Provenance + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                        |
-| **Distribution** | GitHub Pages (Push auf main) + Netlify (PR-Previews)                                          |
+| Bereich          | Details                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------- |
+| **Tests**        | 2028 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)           |
+| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM |
+| **CI/CD**        | 22 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard                |
+| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                            |
+| **Distribution** | GitHub Pages (Push auf main) + Netlify (PR-Previews)                                                    |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit-Backlog](docs/AUDIT_BACKLOG.md) · [Release-Prozess](docs/release-process.md)
 
@@ -578,10 +578,10 @@ pnpm run typecheck          # tsc --noEmit
 
 ### Roadmap (DE)
 
-| Version       | Status          | Highlights                                                                               |
-| ------------- | --------------- | ---------------------------------------------------------------------------------------- |
-| **v1.0-v1.7** | Veroeffentlicht | 776 Sorten, VPD, Multi-Provider KI, lokaler KI-Stack, CRDT-Sync, SLSA L3, Voice Pro      |
-| **v2.0**      | Geplant         | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur, naechste Sandbox/BreedingLab-Generation |
+| Version       | Status          | Highlights                                                                                    |
+| ------------- | --------------- | --------------------------------------------------------------------------------------------- |
+| **v1.0-v1.7** | Veroeffentlicht | 776 Sorten, VPD, Multi-Provider KI, lokaler KI-Stack, CRDT-Sync, Build Attestation, Voice Pro |
+| **v2.0**      | Geplant         | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur, naechste Sandbox/BreedingLab-Generation      |
 
 > Vollstaendige Roadmap: [ROADMAP.md](ROADMAP.md) · [Priority Roadmap](docs/PRIORITY_ROADMAP.md) · [Session-Handoff](docs/next-session-handoff.md)
 

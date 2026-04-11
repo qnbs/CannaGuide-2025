@@ -2,93 +2,70 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 130) -- v1.7.0 Release: Voice-First Edition
+## Latest Session (Session 131) -- Post-v1.7.0 Supply-Chain Docs Correction
 
-**Status: v1.7.0 RELEASED. Tag pushed, Release Gate passed, GitHub
-Release published, GitHub Pages deployed. CHANGELOG consolidated,
-version bumped (1.6.3 -> 1.7.0), comprehensive documentation
-deep-audit with 6 metric corrections across 14 files. 2063 tests
-passing, build OK. Sentry auto-tags `cannaguide@1.7.0`.**
+**Status: Corrected all SLSA L3 references across 7 documentation
+files. slsa-github-generator was removed from release-publish.yml
+(Go build failures on ubuntu-24.04, Apr 2026) and replaced by
+GitHub-native actions/attest-build-provenance. Documentation now
+accurately reflects the current 2-job pipeline with GitHub
+Attestation + CycloneDX SBOM. Post-release verification completed
+(live site HTTP 200, CSP headers consistent). 2063 tests passing,
+build OK.**
 
-### What Was Done (Session 130)
+### What Was Done (Session 131)
 
-1. **CHANGELOG Finalization** -- Consolidated `[Unreleased]` into
-   `[1.7.0] - 2026-04-11` with deduplicated headers (Added/Fixed/
-   Changed), chronologically sorted entries, release summary
-   "Voice-First Edition".
+1. **SLSA L3 Documentation Correction (7 files)** --
+   `slsa-github-generator` was removed from `release-publish.yml`
+   (comment at line 121-124) but docs still referenced SLSA L3.
+   Corrected all references across:
+    - `docs/release-process.md`: Rewrote Supply-Chain section
+      (removed intoto.jsonl, slsa-verifier, added workflow chain
+      docs, dry-run documentation)
+    - `SECURITY.md`: Replaced "SLSA Provenance (Level 3)" section
+      with "GitHub Build Attestation" section, updated audit
+      verification status
+    - `README.md`: 6 SLSA L3 references corrected (EN + DE
+      sections, security table, CI table, roadmap)
+    - `.github/copilot-instructions.md`: Deployment table +
+      Important Files table (3-job -> 2-job pipeline)
+    - `docs/audit-roadmap-2026-q2.md`: Baseline + Ist-Zustand
+    - `CHANGELOG.md`: v1.7.0 release name corrected
 
-2. **Version Bump** -- `1.6.3` -> `1.7.0` in root `package.json`
-   and `apps/web/package.json`. `APP_VERSION = 6` in constants.ts
-   unchanged (DB schema version, not SemVer).
+2. **i18n Fix (5 files)** -- Added missing
+   `strainsView.tabs.seedVault` to all 5 locale files (EN/DE/ES/
+   FR/NL). Tab label sourced from existing `seedVault.title`
+   values. Fixed CI E2E failure (i18n-smoke NL leaked key).
 
-3. **Metrics Corrections (6 discrepancies fixed)** --
-    - Redux Slices: `18` -> `19` (problemTrackerSlice was in code
-      but missing from all docs)
-    - CI Workflows: `21` -> `22` (config-guard.yml not counted)
-    - Zustand Stores: `8` -> `9` (useCalculatorSessionStore missing)
-    - Workers: `9` -> `10` (voiceWorker added in Session 124)
-    - Lexikon Entries: `83` -> `91` (8 orphaned entries integrated
-      in Session 123)
-    - Redux slice list: added metrics, hydro, growPlanner,
-      diagnosisHistory, problemTracker to documented lists
-
-4. **Documentation Deep-Update** -- 12+ files updated:
-    - `README.md`: Version badges, metric badges (EN + DE sections),
-      Roadmap table (v1.7 added), development journey period
-    - `.github/copilot-instructions.md`: Version 1.6.0 -> 1.7.0,
-      Redux list, worker list, workflow count, Important Files table
-      (problemTrackerSlice + pdfReportService added), lexikon count
-    - `docs/ARCHITECTURE.md`: All metric counts, slice/worker lists
-    - `ROADMAP.md`: v1.7 release overview row + full feature table
-    - `SECURITY.md`: Supported versions (1.7.x added, <1.6 dropped)
-    - `docs/audit-roadmap-2026-q2.md`: Baseline updated to v1.7.0,
-      2063 tests, SLSA L3, 22 CI workflows
-
-5. **Release Notes** -- Created
-   `docs/release-notes/2026-04-11-v1.7.0-voice-first.md` (DE/EN).
-
-6. **Cross-Reference Audit** -- Verified no stale `18 Redux`,
-   `21 CI`, `8 Zustand`, `83-term` references remain in any docs.
+3. **Post-Release Verification** --
+    - Live site: HTTP 200 confirmed
+    - CSP headers: worker-src blob: present (Voice API compatible)
+    - Sentry: **APP_VERSION** auto-tags cannaguide@1.7.0 via build
+    - Release Publish: manual workflow_dispatch trigger still
+      required via GitHub Actions UI (startup_failure on
+      workflow_run chain persists)
 
 ### Verified Metrics
 
-- Version: 1.7.0 (root + web package.json + copilot-instructions)
+- Version: 1.7.0
 - Typecheck: 0 errors (TS2719 filtered)
 - Tests: 2063 passing, 0 failures (177 test files)
 - Build: successful
-- Redux Slices: 19 (18 persisted + 1 runtime)
-- Zustand Stores: 9
-- Workers: 10
-- CI Workflows: 22
-- Lexikon: 91 entries
-- Strains: 776
-- Themes: 9
-- Custom Hooks: 25
-- Services: 109+
-
-### Post-Push Steps Completed
-
-- **Git Tag:** `v1.7.0` annotated tag created and pushed
-- **Release Gate CI:** passed (all checks green)
-- **GitHub Release:** published at
-  https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.7.0
-  with full bilingual release notes
-- **Deploy:** GitHub Pages serving 200, Netlify/Vercel via
-  git-integration auto-deploy
-- **Sentry Release:** automatic via `cannaguide@1.7.0` tag
-  in `sentryService.ts` (reads `__APP_VERSION__` from build)
-- **Release Publish workflow:** startup_failure on workflow_run
-  chain -- needs manual trigger via GitHub Actions UI
-  (workflow_dispatch with tag=v1.7.0) for SLSA L3 provenance
-    - CycloneDX SBOM artifacts
 
 ### Next Steps
 
 1. **Release Publish manual trigger** -- In GitHub Actions UI,
    trigger "Release Publish" workflow_dispatch with tag=v1.7.0
-   to generate SLSA provenance + SBOM artifacts on the release
-2. **Post-Release Verification** -- Live site check (VoiceHUD,
-   Presets, a11y), verify Sentry shows `cannaguide@1.7.0`
+   to generate build attestation + SBOM artifacts on the release
+2. **Post-Release Browser Verification** -- Manual checks:
+    - [ ] VoiceHUD visible and functional (Mic button, Preset)
+    - [ ] Voice Presets loadable and applicable
+    - [ ] VoiceWorker isTrustedWorkerMessage() no console errors
+    - [ ] ConfirmDialog on Grow archive (GrowEditModal)
+    - [ ] ConfirmModal on bulk favorites removal (StrainsView)
+    - [ ] PhotosTab Lightbox: focus trap, Escape, screen reader
+    - [ ] Sentry dashboard: cannaguide@1.7.0 in Releases tab
+    - [ ] axe DevTools: PhotosTab + ScreenshotGallery clean
 3. **Phase B2: aria-invalid** -- Add `aria-invalid` +
    `aria-describedby` to form Input components
 4. **Phase B1: eslint-plugin-jsx-a11y** -- Install and configure
@@ -99,20 +76,26 @@ passing, build OK. Sentry auto-tags `cannaguide@1.7.0`.**
 
 ### Planned Executions
 
-- **Execution N+1:** Post-release verification + Sentry release tag
-- **Execution N+2:** aria-invalid pattern for shared Input + a11y lint
+- **Execution N+1:** Release Publish manual trigger + browser
+  verification checklist
+- **Execution N+2:** aria-invalid pattern for shared Input +
+  a11y lint
 - **Execution N+3:** Test coverage sprint (6 service test files)
 - **Execution N+4:** v2.0 Digital Twin architecture spike document
 
 ---
 
+## Previous Session (Session 130) -- v1.7.0 Release: Voice-First Edition
+
+**Status: v1.7.0 RELEASED. Tag pushed, Release Gate passed, GitHub
+Release published, GitHub Pages deployed. CHANGELOG consolidated,
+version bumped (1.6.3 -> 1.7.0), comprehensive documentation
+deep-audit with 6 metric corrections across 14 files. 2063 tests
+passing, build OK. Sentry auto-tags `cannaguide@1.7.0`.**
+
+---
+
 ## Previous Session (Session 129) -- Korrekturlauf: App-wide Improvement Sprint
-
-**Status: Comprehensive correction run across 25+ files. Security fixes
-(CodeQL #280, Dependabot #50), user confirmations, i18n completeness,
-accessibility improvements, and UX polish. 2063 tests passing, build OK.**
-
-### What Was Done (Session 129)
 
 1. **Security Fix: CodeQL #280** -- Added `isTrustedWorkerMessage()` origin
    check to `voiceWorker.ts` (was the only worker missing it out of 10).

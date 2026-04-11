@@ -67,30 +67,28 @@ These policies were adopted on 2026-03-24 in response to the [Trivy supply-chain
 
 - **Trivy** (`aquasecurity/trivy-action`): Removed from all workflows on 2026-03-24 due to the supply-chain attack ([GHSA-69fq-xp46-6x23](https://github.com/advisories/GHSA-69fq-xp46-6x23)). This was the second compromise of the Aqua Security service account within one month, rendering the entire Trivy ecosystem unreliable. Replaced by **Grype** (`anchore/scan-action`) for container image and filesystem scanning in `docker.yml` and `security-full.yml`. Remaining filesystem coverage is provided by CodeQL, Snyk, Semgrep, Gitleaks, and `pnpm audit`.
 
-### SLSA Provenance (Level 3)
+### GitHub Build Attestation
 
-Every tagged release generates **SLSA Level 3** provenance via the
-[slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator)
-reusable workflow (`generator_generic_slsa3.yml`). The provenance
-attests build integrity with non-falsifiable guarantees:
+Every tagged release generates **GitHub build provenance attestation**
+via `actions/attest-build-provenance` and **SBOM attestation** via
+`actions/attest-sbom`. These attestations are stored in the GitHub
+Attestations database and verifiable via the `gh` CLI.
 
-- **Isolated runner:** Provenance is generated on a separate,
-  hermetic GitHub-hosted runner (not the build runner)
-- **Non-falsifiable:** The provenance document cannot be modified
-  by the build job or repository maintainers
-- **Verification:** Use `slsa-verifier` to validate the chain:
+> **Note:** `slsa-framework/slsa-github-generator` (SLSA L3) was
+> removed in April 2026 due to Go build failures on ubuntu-24.04
+> runners. GitHub-native attestations provide equivalent build
+> provenance verification.
+
+- **Verification:** Use `gh attestation verify` to validate:
 
 ```bash
-# Install slsa-verifier
-go install github.com/slsa-framework/slsa-verifier/v2/cli/slsa-verifier@latest
-
-# Verify artifact provenance (L3)
-slsa-verifier verify-artifact cannaguide-v*.tar.gz \
-  --provenance-path cannaguide-provenance.intoto.jsonl \
-  --source-uri github.com/qnbs/CannaGuide-2025
-
-# Verify via GitHub attestation API (L1 backward compat)
+# Verify build provenance
 gh attestation verify cannaguide-v*.tar.gz --repo qnbs/CannaGuide-2025
+
+# Verify SBOM attestation
+gh attestation verify cannaguide-v*.tar.gz \
+  --repo qnbs/CannaGuide-2025 \
+  --predicate-type https://cyclonedx.org/bom
 ```
 
 ### CycloneDX SBOM
@@ -120,15 +118,18 @@ gh attestation verify cannaguide-v*.tar.gz \
 
 Independent audit verified on 2026-04-10 (Session 121):
 
-- **SLSA L3 Provenance:** Fully implemented via 3-job architecture
-  (`build` -> `provenance` -> `release`) in `release-publish.yml`
+- **SLSA L3 Provenance:** Replaced by GitHub-native build attestation
+  via `actions/attest-build-provenance@v4.1.0` (2-job architecture:
+  `build` -> `release`) in `release-publish.yml`. SLSA L3 via
+  `slsa-github-generator` removed April 2026 (Go build failures
+  on ubuntu-24.04 runners).
 - **CycloneDX SBOM:** Generated via `anchore/sbom-action@v0.18.0`,
   signed via `actions/attest-sbom@v4.1.0`, uploaded as release asset
 - **SHA-Pinning:** All 10 GitHub Actions pinned to 40-char commit SHAs
-- **Isolated Runner:** Provenance job runs on separate GitHub-hosted
-  runner via `slsa-framework/slsa-github-generator` reusable workflow
-- **Backward Compat:** L1 attestation via `actions/attest-build-provenance`
-  alongside L3 provenance for `gh attestation verify` support
+- **Build Provenance:** Generated on GitHub-hosted runner via
+  `actions/attest-build-provenance` reusable action
+- **Backward Compat:** `gh attestation verify` provides full
+  attestation verification for both build provenance and SBOM
 
 ### Actions Allowlist
 

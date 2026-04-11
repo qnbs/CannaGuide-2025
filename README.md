@@ -7,7 +7,7 @@
 <!-- Status & Quality -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/release-v1.6.3-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![Release](https://img.shields.io/badge/release-v1.7.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
@@ -70,10 +70,10 @@
 
 [![Strains](https://img.shields.io/badge/strains-776-green)](https://qnbs.github.io/CannaGuide-2025/)
 [![Services](https://img.shields.io/badge/services-114-blue)](https://qnbs.github.io/CannaGuide-2025/)
-[![Redux Slices](https://img.shields.io/badge/Redux%20slices-18-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
-[![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
+[![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
+[![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-21-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/hooks-25-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -108,13 +108,13 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2063 tests · 114 services · 18 Redux slices + 8 Zustand stores · 25 hooks · 12 i18n namespaces · 9 themes · 21 CI workflows
+776 strains · 2063 tests · 114 services · 19 Redux slices + 9 Zustand stores · 25 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
 | **Runtime**     | React 19 + TypeScript (strict)       | Zero `any`, `exactOptionalPropertyTypes`    |
 | **Build**       | Vite 7 + vite-plugin-pwa             | InjectManifest SW, fast HMR                 |
-| **State**       | Redux Toolkit 2 + Zustand 5          | 18 persisted slices + 8 transient stores    |
+| **State**       | Redux Toolkit 2 + Zustand 5          | 19 persisted slices + 9 transient stores    |
 | **AI (Cloud)**  | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction             |
 | **AI (Local)**  | Transformers.js, WebLLM, TF.js, ONNX | 22 services, 8 ML models, 3-layer fallback  |
 | **Styling**     | Tailwind CSS + Radix UI              | 9 cannabis themes via CSS custom properties |
@@ -152,13 +152,13 @@ pnpm workspaces + TurboRepo with ML dependencies isolated in `@cannaguide/ai-cor
 ```text
 apps/web/                  Main PWA (@cannaguide/web)
   components/               React components (common/, icons/, navigation/, ui/, views/)
-  stores/                   Redux (18 slices) + Zustand (8 stores), selectors, middleware
+  stores/                   Redux (19 slices) + Zustand (9 stores), selectors, middleware
   services/                 109 service modules (AI, simulation, DB, crypto, IoT)
   hooks/                    25 custom hooks
   data/                     Static data: 776 strains, FAQ, lexicon (91), guides, diseases (22)
   locales/                  i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
-  workers/                  9 Web Workers (VPD, genealogy, scenarios, inference, image gen,
-                            hydro forecast, terpene, vision inference, calculation)
+  workers/                  10 Web Workers (VPD, genealogy, scenarios, inference, image gen,
+                            hydro forecast, terpene, vision inference, calculation, voice)
 packages/ai-core/           Shared AI types, provider configs, ML isolation (optionalDeps)
 packages/ui/                Shared design tokens (9 themes) + Tailwind preset
 scripts/                    Build/lint/security/merge scripts
@@ -183,11 +183,11 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 ## State Management & Data Persistence
 
-| Store                         | Purpose                                                                                                                                                                             | Persistence                     |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| **Redux Toolkit** (18 slices) | Simulation, settings, strains, favorites, notes, archives, breeding, genealogy, grows, metrics, diagnosis, planner, hydro, nutrients, sandbox, knowledge, savedItems, workerMetrics | IndexedDB (`CannaGuideStateDB`) |
-| **Zustand** (8 stores)        | UI, TTS, voice, filters, strains view, IoT, sensors, alerts, calculator session                                                                                                     | Transient (never persisted)     |
-| **RTK Query**                 | AI API caching (9 endpoints)                                                                                                                                                        | In-memory                       |
+| Store                         | Purpose                                                                                                                                                                                             | Persistence                     |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| **Redux Toolkit** (19 slices) | Simulation, settings, strains, favorites, notes, archives, breeding, genealogy, grows, problemTracker, metrics, diagnosis, planner, hydro, nutrients, sandbox, knowledge, savedItems, workerMetrics | IndexedDB (`CannaGuideStateDB`) |
+| **Zustand** (9 stores)        | UI, TTS, voice, filters, strains view, IoT, sensors, alerts, calculator session                                                                                                                     | Transient (never persisted)     |
+| **RTK Query**                 | AI API caching (9 endpoints)                                                                                                                                                                        | In-memory                       |
 
 **Bridge:** `uiStateBridge.ts` syncs Redux <-> Zustand via `getReduxSnapshot`, `subscribeToRedux`, `dispatchToRedux`.
 
@@ -197,7 +197,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 - **VPD Modeling:** Transpiration simulation, biomass growth curves, environmental monitoring via Web Worker (`simulation.worker.ts`)
 - **IoT Integration:** ESP32 sensors via MQTT/BLE, sparkline gauges, real-time telemetry ([IoT Roadmap](docs/IoT-Roadmap.md))
-- **WorkerBus:** Centralized promise-based dispatcher for 9 workers with priority queue, backpressure, retry, AbortController, Transferable zero-copy, telemetry ([Worker Bus Docs](docs/worker-bus.md))
+- **WorkerBus:** Centralized promise-based dispatcher for 10 workers with priority queue, backpressure, retry, AbortController, Transferable zero-copy, telemetry ([Worker Bus Docs](docs/worker-bus.md))
 
 ---
 
@@ -302,7 +302,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | **Themes**       | 9 cannabis themes, 3 colorblind modes (deuteranopia, protanopia, tritanopia)                       |
 | **BYOK**         | AES-256-GCM encrypted API key management, 90-day rotation, cost tracking                           |
 | **WebLLM**       | Card-based model selector (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini), GPU-tier auto-selection |
-| **Voice**        | 37 voice commands with fuzzy matching, Voice HUD, confirmation loops, continuous listening         |
+| **Voice**        | 37 voice commands, Porcupine wake-word, ElevenLabs Cloud TTS, Voice HUD, continuous listening      |
 | **CRDT Sync**    | Yjs + encrypted GitHub Gists, 3-way conflict resolution, offline queue with exponential backoff    |
 | **Data**         | JSON export/import, local-only mode toggle, TTS for AI responses                                   |
 | **Grow Manager** | Multi-grow CRUD with archive, color picker, CanG compliance limits                                 |
@@ -337,7 +337,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md)
 
-### CI/CD Workflows (21)
+### CI/CD Workflows (22)
 
 | Workflow           | Trigger          | Purpose                                                   |
 | ------------------ | ---------------- | --------------------------------------------------------- |
@@ -353,7 +353,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | Config Guard       | push, PR         | RCE pattern scanning in configs                           |
 | Mutation Testing   | push, PR         | Stryker Redux slice mutation testing                      |
 | Preview Validation | deploy           | Playwright + Lighthouse on Netlify previews               |
-| + 9 more           | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup  |
+| + 10 more          | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup  |
 
 ---
 
@@ -381,6 +381,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | **v1.4** | Released | Vision AI Leaf Diagnosis, Hydro Forecast, WebLLM Catalog, Multi-Grow         |
 | **v1.5** | Released | CRDT sync, AI cost tracking, Netlify validation, pnpm migration              |
 | **v1.6** | Released | Forensic audit, i18n completeness, metrics/diagnosis/planner slices, SLSA L3 |
+| **v1.7** | Released | Voice Pro (wake-word, Cloud TTS), 12 Preset Setups, Enhanced PDF, a11y       |
 | **v2.0** | Planned  | AR/VR plant overlay, digital twin architecture, next-gen Sandbox/BreedingLab |
 
 > Full roadmap: [ROADMAP.md](ROADMAP.md) · [Priority Roadmap](docs/PRIORITY_ROADMAP.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md) · [ADRs](docs/adr/) · [Session Handoff](docs/next-session-handoff.md) · [UX Audit](ui-ux-audit.md) · [Lint Burndown](docs/lint-burndown.md) · [Worker Bus](docs/worker-bus.md)
@@ -407,7 +408,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 | --------------------- | ----------------------------------------------------- | ------------ |
 | Prototyping           | Google AI Studio (Gemini 2.5 Pro & 3.1 Pro)           | v0.1 -> v1.0 |
 | Evaluation & Advisory | xAI Grok 4.20                                         | Throughout   |
-| Core Development      | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | v1.0 -> v1.6 |
+| Core Development      | GitHub Codespaces + VS Code Copilot (Claude Opus 4.6) | v1.0 -> v1.7 |
 | Deployment            | GitHub Pages, Netlify                                 | Continuous   |
 
 > Secondary contributions: GPT-4 Mini and GPT-5.3 Codex provided minimal supplementary assistance.
@@ -427,7 +428,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 <!-- Status & Qualitaet -->
 
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/Release-v1.6.3-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![Release](https://img.shields.io/badge/Release-v1.7.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
@@ -488,10 +489,10 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 
 [![Sorten](https://img.shields.io/badge/Sorten-776-green)](https://qnbs.github.io/CannaGuide-2025/)
 [![Services](https://img.shields.io/badge/Services-114-blue)](https://qnbs.github.io/CannaGuide-2025/)
-[![Redux Slices](https://img.shields.io/badge/Redux%20Slices-18-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
-[![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-8-443E38)](https://qnbs.github.io/CannaGuide-2025/)
+[![Redux Slices](https://img.shields.io/badge/Redux%20Slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
+[![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/Themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-21-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/Hooks-25-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n-Namensraeume](https://img.shields.io/badge/i18n%20Namensraeume-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -503,13 +504,13 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2063 Tests · 114 Services · 18 Redux Slices + 8 Zustand Stores · 25 Hooks · 12 i18n-Namensraeume · 9 Themes · 21 CI-Workflows
+776 Sorten · 2063 Tests · 114 Services · 19 Redux Slices + 9 Zustand Stores · 25 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
 | **Runtime**    | React 19 + TypeScript (strict)       | Null `any`, `exactOptionalPropertyTypes`      |
 | **Build**      | Vite 7 + vite-plugin-pwa             | InjectManifest SW, schnelles HMR              |
-| **State**      | Redux Toolkit 2 + Zustand 5          | 18 persistierte Slices + 8 transiente Stores  |
+| **State**      | Redux Toolkit 2 + Zustand 5          | 19 persistierte Slices + 9 transiente Stores  |
 | **KI (Cloud)** | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
 | **KI (Lokal)** | Transformers.js, WebLLM, TF.js, ONNX | 22 Services, 8 ML-Modelle, 3-Schicht-Fallback |
 | **Styling**    | Tailwind CSS + Radix UI              | 9 Cannabis-Themes via CSS Custom Properties   |
@@ -567,7 +568,7 @@ pnpm run typecheck          # tsc --noEmit
 | ---------------- | --------------------------------------------------------------------------------------------- |
 | **Tests**        | 2028 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing) |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, SLSA L3, CycloneDX SBOM  |
-| **CI/CD**        | 21 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard      |
+| **CI/CD**        | 22 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard      |
 | **Supply Chain** | SLSA L3 Provenance + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                        |
 | **Distribution** | GitHub Pages (Push auf main) + Netlify (PR-Previews)                                          |
 
@@ -579,7 +580,7 @@ pnpm run typecheck          # tsc --noEmit
 
 | Version       | Status          | Highlights                                                                               |
 | ------------- | --------------- | ---------------------------------------------------------------------------------------- |
-| **v1.0-v1.6** | Veroeffentlicht | 776 Sorten, VPD, Multi-Provider KI, lokaler KI-Stack, CRDT-Sync, SLSA L3                 |
+| **v1.0-v1.7** | Veroeffentlicht | 776 Sorten, VPD, Multi-Provider KI, lokaler KI-Stack, CRDT-Sync, SLSA L3, Voice Pro      |
 | **v2.0**      | Geplant         | AR/VR-Pflanzenoverlay, Digital-Twin-Architektur, naechste Sandbox/BreedingLab-Generation |
 
 > Vollstaendige Roadmap: [ROADMAP.md](ROADMAP.md) · [Priority Roadmap](docs/PRIORITY_ROADMAP.md) · [Session-Handoff](docs/next-session-handoff.md)

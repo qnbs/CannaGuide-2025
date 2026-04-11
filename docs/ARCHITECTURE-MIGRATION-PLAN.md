@@ -32,7 +32,7 @@ These depend on one or more browser/framework APIs:
 | IndexedDB     | localAiCacheService, ragEmbeddingCacheService, indexedDbMonitorService | Persistent inference cache        |
 | localStorage  | localAiTelemetryService, localAiPreloadService                         | Telemetry snapshots               |
 | Browser APIs  | localAiHealthService, localAiWebGpuService                             | navigator.gpu, performance.memory |
-| Web Workers   | workerBus, inferenceQueueService, all 9 workers                        | Worker communication              |
+| Web Workers   | workerBus, inferenceQueueService, all 10 workers                       | Worker communication              |
 | Sentry        | 20+ services via captureLocalAiError                                   | Error tracking                    |
 | Redux/Zustand | proactiveCoachService, uiStateBridge, all slices                       | State management                  |
 | DOM/React     | All component-facing services                                          | UI integration                    |

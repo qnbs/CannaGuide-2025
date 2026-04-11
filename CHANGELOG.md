@@ -6,192 +6,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
-### Added
+---
 
-- **feat(ui):** confirmation dialog for grow archive action in
-  GrowEditModal (ConfirmDialog pattern)
-- **feat(ui):** confirmation modal for bulk favorite removal in
-  StrainsView (ConfirmModal pattern)
-- **feat(a11y):** PhotosTab lightbox migrated from `<dialog open>`
-  to Radix DialogWrapper (focus trap, escape, screen reader)
-- **feat(a11y):** ScreenshotGallery lightbox dynamic alt text from
-  screenshot metadata instead of generic string
-- **feat(i18n):** 20+ new translation keys across EN/DE/ES/FR/NL
-  (archive confirm, remove favorites confirm, loading generic,
-  calculator placeholders)
-- **feat(ui):** empty state icons for MetricsOverviewTab
-  (ChartLineUp) and InlineStrainSelector (MagnifyingGlass)
+## [1.7.0] - 2026-04-11
 
-### Fixed
-
-- **fix(security):** CodeQL #280 -- added isTrustedWorkerMessage
-  origin check to voiceWorker (was the only worker missing it)
-- **fix(security):** Dependabot #50 -- pinned basic-ftp to 5.2.2
-  (CRLF injection fix)
-- **fix(i18n):** replaced hardcoded "Loading..." in
-  LeafDiagnosisPanel Suspense fallback with i18n key
-- **fix(i18n):** replaced hardcoded "e.g. 600" / "e.g. 30"
-  placeholders in TimerScheduleCalculator with i18n keys
-- **feat(equipment):** onboarding-seeding downstream wiring --
-  preset setups now sorted by user's onboarding space/budget
-  choices with "Recommended for You" badge, memoized selectors
-  for growGoal/defaultSpaceSize/defaultBudget
-- **feat(ci):** SLSA verifier CI integration (SC-01) -- automated
-  post-release `slsa-verifier verify-artifact` in release pipeline
-- **feat(ci):** release pipeline dry-run mode (SC-03) --
-  `workflow_dispatch` `dry-run` input skips publish, runs full
-  build + provenance + verification
-- **feat(ci):** Lighthouse CI assertions tightened -- performance/
-  accessibility/best-practices raised to 0.95, FCP 1500ms,
-  LCP 3500ms, TBT 250ms, SEO category added (0.9)
-- **i18n(plants):** 5 missing tab keys added to FR + NL (metrics,
-  timeline, planner, environment, analytics)
-- **i18n(settings):** 3 CRDT keys added to FR + NL (crdtDocSize,
-  crdtFallback, crdtSizeWarning)
-- **i18n(equipment):** recommended-for-you key added to all 5
-  locales (EN/DE/ES/FR/NL)
-
-### Fixed
-
-- **fix(docs):** ARCHITECTURE.md stale test count (1884 -> 2063)
-- **fix(docs):** AUDIT_BACKLOG.md summary updated (53/56 resolved)
-
-### Added
-
-- **feat(voice):** Porcupine WASM wake-word detection service with
-  BYOK AccessKey, 11 built-in keywords, dual-engine support
-  (regex/porcupine) -- 100% on-device, no data leaves client
-- **feat(voice):** Cloud TTS via ElevenLabs BYOK -- AES-256-GCM
-  encrypted API key at rest, rate-limited (5 req/min), 5 language
-  support
-- **feat(voice):** speakNatural() text normalization for TTS -- 30+
-  cannabis/science abbreviation expansions, markdown stripping, unit
-  conversion, German decimal handling
-- **feat(voice):** voice worker for off-main-thread transcript
-  processing -- filler word removal (5 languages), 3-pass command
-  matching (exact/fuzzy Levenshtein/keyword scoring), waveform
-  computation
-- **feat(voice):** opt-in anonymous voice analytics telemetry -- ring
-  buffer (500 events), localStorage persistence, per-metric snapshots,
-  export/clear, no PII or transcript storage
-- **feat(voice):** VoiceHUD dynamic waveform visualization via
-  AnalyserNode when voice worker enabled, CSS animation fallback
-- **feat(voice):** VoiceSettingsTab three new sections -- Wake-Word
-  Engine (regex/porcupine), Cloud TTS (toggle/provider/key), Advanced
-  Voice Options (worker toggle, analytics with stats grid)
-- **i18n(voice):** 28 new voice settings keys in all 5 languages
-  (EN/DE/ES/FR/NL) -- wakeWord, cloudTts, advanced subsections
-- **test(voice):** 35 new tests across 5 test files
-  (porcupineWakeWordService, speakNaturalService, cloudTtsService,
-  voiceTelemetryService, voiceWorker)
-
-### Fixed
-
-- **fix(equipment):** resolve 8 TS errors in SetupConfigurator caused by
-  `&&` short-circuit producing `"" | object` union types for growSpace
-  and budget state; use ternary narrowing instead
-- **fix(equipment):** add missing `growSpace` and
-  `floweringTypePreference` to PresetSetupsView fallback sourceDetails
-- **fix(strains):** move `selectedStrainId` declaration before useEffect
-  that references it (TS2448/TS2454)
-- **fix(ci):** harden pre-commit and pre-push hooks to use
-  `turbo run typecheck` instead of root-level tsc which checked zero
-  files due to empty `include` in root tsconfig
-
-### Added
-
-- **feat(equipment):** new Preset Setups sub-page with 12
-  pre-configured standard grow setups (Micro Stealth, Beginner Soil,
-  Autoflower Express, Standard Soil, Coco Performance, High-Yield Pro,
-  Premium LED, DWC Hydro, Ultra Budget, Organic Living Soil, Energy
-  Saver, Full Spectrum Pro) with category filtering, difficulty badges,
-  and copy-to-my-setups functionality
-- **i18n(equipment):** preset setups keys in all 5 languages
-  (EN/DE/ES/FR/NL)
-
-### Changed
-
-- **docs:** restructure README.md aligned with DeepWiki TOC (933 -> 595
-  lines, tables over prose, all doc links preserved)
-- **ci(release):** add SBOM SHA-256 checksum row to release notes in
-  release-publish.yml
-- **docs(security):** add SBOM inspection commands and audit
-  verification status section to SECURITY.md
-- **docs(audit):** add supply-chain audit entries SC-01 (SLSA Verifier
-  CI), SC-02 (Onboarding Data Consumption), SC-03 (Release Pipeline
-  Dry-Run) to AUDIT_BACKLOG.md
-
-### Added
-
-- **feat(ui):** scroll-to-top on all view/tab/detail navigation
-  transitions (StrainsView, StrainDetailView, DetailedPlantView,
-  SettingsView, HelpView) for consistent mobile experience
-- **feat(equipment):** SetupConfigurator seeds budget and grow space
-  defaults from onboarding wizard localStorage data (SC-02 resolved)
-- **feat(ai):** Mobile-optimized Local AI stack -- `isMobileDevice()`,
-  `checkStorageQuota()`, `getEffectiveDeviceMemoryGB()` in browserApis.ts
-  for hybrid UA+touch+screen+deviceMemory detection
-- **feat(ai):** Cancelable WebLLM downloads via `cancelWebLlmDownload()`
-  with AbortController integration
-- **feat(ai):** Preload orchestrator battery gating (<20% forces eco
-  mode) and per-stage mobile timeouts (15s mobile, 30s desktop)
-- **feat(ai):** RAF-throttled streaming token callbacks on mobile to
-  prevent excessive re-renders
-- **feat(ai):** Diagnosis i18n migration -- 33 zero-shot labels now use
-  i18n keys (LABEL_TO_I18N_KEY) instead of hardcoded en/de dictionaries
-- **i18n(settings):** 12 new local AI error/warning keys per language
-  (storageInsufficient, mobileDataWarning, memoryPressure, batteryLow,
-  fallbackActive, etc.) across EN/DE/ES/FR/NL
-- **i18n(plants):** 36 diagnosis label keys per language across
-  EN/DE/ES/FR/NL (nitrogenDeficiency, rootRot, botrytisBudRot, etc.)
-
-### Fixed
-
-- **fix(ai):** add `preload-storage-check` and `webllm-storage-check`
-  to captureLocalAiError stage union type (CI typecheck failure)
-- **fix(ai):** Mobile memory pressure threshold 80% (was 90%), max
-  concurrent model loads 1 on mobile (was cores\*0.5)
-- **fix(ai):** WebGPU visibility race condition -- timer cancelled on
-  return to visible, mobile timeout 5s (desktop 30s)
-- **fix(ai):** Device-lost regex expanded for Safari, Firefox, Android
-  WebGPU error patterns
-- **fix(ai):** Inference router mobile timeouts -- WebLLM 20s (was 45s),
-  Transformers 15s (was 30s), heuristic fallback added directly in router
-- **fix(ai):** Image similarity memory guard -- 2MB image size limit,
-  mobile candidate cap 50 (was 100)
-- **fix(ai):** Cache breakdown throttled to 30s to prevent IndexedDB
-  churn
-- **fix(ai):** Settings bounds validation -- inferenceTimeoutMs
-  (5000-120000), maxInferenceCacheSize (16-1024)
-- **fix(ai):** gpuResourceManager console.warn replaced with
-  console.debug per security policy
-- **fix(ai):** localAiFallbackService Unicode middle-dots replaced with
-  ASCII per text encoding rules
-- **fix(ui):** WebLlmPreloadBanner cancel button + accessibility
-  improvements (aria-live, role)
-
-### Added
-
-- **feat(knowledge):** 9 missing lexikon definitions (mainlining,
-  superCropping, defoliation, runoff, rootBound, dlt, ipm, feminized,
-  cloning) in all 5 languages (EN/DE/ES/FR/NL)
-- **feat(knowledge):** 8 orphaned entries integrated into lexicon.ts
-  (dynamicLighting, digitalTwin, aeroponics, smartFertigation,
-  tissueCulture, polyploidy, chemovar, f1Hybrid) with ES/FR/NL
-  translations -- total 83 -> 91 entries
-- **feat(i18n):** ppfd, dli, autoflower entries added to ES/FR/NL
-
-### Fixed
-
-- **fix(knowledge):** LexikonView i18n key resolution bug -- "General"
-  category generated `helpView.lexicon.generals.*` instead of
-  `helpView.lexicon.general.*`, causing raw keys to display
-- **fix(i18n):** autoflower/autoflowering key mismatch between
-  lexicon.ts and help.ts (now unified as `autoflower`)
-- **fix(ui):** replaced ~34 hardcoded Tailwind colors with theme-aware
-  classes (primary/accent/secondary) in GrowTechView,
-  GeneticTrendsView, and EquipmentView for consistent theming across
-  all 9 cannabis themes
+**Release Name: "Voice-First Edition"** -- Voice Pro v1.8 + 12 Preset
+Setups + Enhanced PDF Reports + SLSA L3 Production + a11y Polish.
 
 ### Added
 
@@ -218,48 +38,179 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   for TTS content playback, conditionally rendered.
 - **feat(voice):** Voice error recovery (MAX_ERROR_RETRIES=3) and
   voice auto-selection (Google > Microsoft > default priority).
-- **i18n(common):** 16 new voiceControl keys per language
-  (mode/hud/confirmation/errors/readAloud) across EN/DE/ES/FR/NL.
-  Full voiceControl blocks added to ES/FR/NL common.ts.
-- **i18n(settings):** continuousListening toggle labels in all 5
-  languages.
-- **test(voice):** 51 new tests -- useVoiceStore (13),
-  voiceOrchestratorService (21), VoiceHUD (11), ReadAloudButton (6).
-  Total: 2031 tests.
-
+- **feat(voice):** Porcupine WASM wake-word detection service with
+  BYOK AccessKey, 11 built-in keywords, dual-engine support
+  (regex/porcupine) -- 100% on-device, no data leaves client
+- **feat(voice):** Cloud TTS via ElevenLabs BYOK -- AES-256-GCM
+  encrypted API key at rest, rate-limited (5 req/min), 5 language
+  support
+- **feat(voice):** speakNatural() text normalization for TTS -- 30+
+  cannabis/science abbreviation expansions, markdown stripping, unit
+  conversion, German decimal handling
+- **feat(voice):** voice worker for off-main-thread transcript
+  processing -- filler word removal (5 languages), 3-pass command
+  matching (exact/fuzzy Levenshtein/keyword scoring), waveform
+  computation
+- **feat(voice):** opt-in anonymous voice analytics telemetry -- ring
+  buffer (500 events), localStorage persistence, per-metric snapshots,
+  export/clear, no PII or transcript storage
+- **feat(voice):** VoiceHUD dynamic waveform visualization via
+  AnalyserNode when voice worker enabled, CSS animation fallback
+- **feat(voice):** VoiceSettingsTab three new sections -- Wake-Word
+  Engine (regex/porcupine), Cloud TTS (toggle/provider/key), Advanced
+  Voice Options (worker toggle, analytics with stats grid)
 - **feat(pdf):** Enhanced PDF Reports with metrics charts, diagnosis
   trend visualization, AI-generated plant summary, and offline
   template fallback. Canvas-rendered line charts (height/CO2) and
   severity bar charts. Metric statistics table (min/max/avg).
   Color-coded diagnosis history. New `generateEnhancedGrowReport()`
-    - 3 exported helper functions with 19 unit tests.
+  with 3 exported helper functions and 19 unit tests.
 - **feat(pdf):** Enhanced Report button in DetailedPlantView with
   emerald theme, loading spinner, and dynamic import
-- **i18n(plants):** 15 new export keys for enhanced PDF reports across
-  all 5 languages (EN/DE/ES/FR/NL)
-- **docs(readme):** Distribution table with Netlify primary URL and
-  GitHub Pages secondary. Enhanced PDF Reports feature description.
+- **feat(equipment):** new Preset Setups sub-page with 12
+  pre-configured standard grow setups (Micro Stealth, Beginner Soil,
+  Autoflower Express, Standard Soil, Coco Performance, High-Yield Pro,
+  Premium LED, DWC Hydro, Ultra Budget, Organic Living Soil, Energy
+  Saver, Full Spectrum Pro) with category filtering, difficulty badges,
+  and copy-to-my-setups functionality
+- **feat(equipment):** SetupConfigurator seeds budget and grow space
+  defaults from onboarding wizard localStorage data (SC-02 resolved)
+- **feat(equipment):** onboarding-seeding downstream wiring --
+  preset setups now sorted by user's onboarding space/budget
+  choices with "Recommended for You" badge, memoized selectors
+  for growGoal/defaultSpaceSize/defaultBudget
+- **feat(ai):** Mobile-optimized Local AI stack -- `isMobileDevice()`,
+  `checkStorageQuota()`, `getEffectiveDeviceMemoryGB()` in browserApis.ts
+  for hybrid UA+touch+screen+deviceMemory detection
+- **feat(ai):** Cancelable WebLLM downloads via `cancelWebLlmDownload()`
+  with AbortController integration
+- **feat(ai):** Preload orchestrator battery gating (<20% forces eco
+  mode) and per-stage mobile timeouts (15s mobile, 30s desktop)
+- **feat(ai):** RAF-throttled streaming token callbacks on mobile to
+  prevent excessive re-renders
+- **feat(ai):** Diagnosis i18n migration -- 33 zero-shot labels now use
+  i18n keys (LABEL_TO_I18N_KEY) instead of hardcoded en/de dictionaries
+- **feat(knowledge):** 9 missing lexikon definitions (mainlining,
+  superCropping, defoliation, runoff, rootBound, dlt, ipm, feminized,
+  cloning) in all 5 languages (EN/DE/ES/FR/NL)
+- **feat(knowledge):** 8 orphaned entries integrated into lexicon.ts
+  (dynamicLighting, digitalTwin, aeroponics, smartFertigation,
+  tissueCulture, polyploidy, chemovar, f1Hybrid) with ES/FR/NL
+  translations -- total 83 -> 91 entries
+- **feat(ui):** scroll-to-top on all view/tab/detail navigation
+  transitions (StrainsView, StrainDetailView, DetailedPlantView,
+  SettingsView, HelpView) for consistent mobile experience
+- **feat(ui):** confirmation dialog for grow archive action in
+  GrowEditModal (ConfirmDialog pattern)
+- **feat(ui):** confirmation modal for bulk favorite removal in
+  StrainsView (ConfirmModal pattern)
+- **feat(ui):** empty state icons for MetricsOverviewTab
+  (ChartLineUp) and InlineStrainSelector (MagnifyingGlass)
+- **feat(a11y):** PhotosTab lightbox migrated from `<dialog open>`
+  to Radix DialogWrapper (focus trap, escape, screen reader)
+- **feat(a11y):** ScreenshotGallery lightbox dynamic alt text from
+  screenshot metadata instead of generic string
+- **feat(ci):** SLSA verifier CI integration (SC-01) -- automated
+  post-release `slsa-verifier verify-artifact` in release pipeline
+- **feat(ci):** release pipeline dry-run mode (SC-03) --
+  `workflow_dispatch` `dry-run` input skips publish, runs full
+  build + provenance + verification
+- **feat(ci):** Lighthouse CI assertions tightened -- performance/
+  accessibility/best-practices raised to 0.95, FCP 1500ms,
+  LCP 3500ms, TBT 250ms, SEO category added (0.9)
+- **test(voice):** 86 new tests across voice services
+  (voiceOrchestratorService, useVoiceStore, VoiceHUD,
+  ReadAloudButton, porcupineWakeWordService, speakNaturalService,
+  cloudTtsService, voiceTelemetryService, voiceWorker)
+- **test(data):** add validation tests for diseases (10), lexicon (8),
+  learningPaths (9), terpeneDatabase (16) data modules
+- **test(utils):** add comprehensive vpdCalculator tests (34)
+- **i18n(voice):** 28 new voice settings keys in all 5 languages
+  (EN/DE/ES/FR/NL) -- wakeWord, cloudTts, advanced subsections
+- **i18n(common):** 16 new voiceControl keys per language
+  (mode/hud/confirmation/errors/readAloud) across EN/DE/ES/FR/NL
+- **i18n(settings):** 12 new local AI error/warning keys per language
+    - continuousListening toggle labels in all 5 languages
+- **i18n(plants):** 36 diagnosis label keys + 15 export keys for
+  enhanced PDF reports across EN/DE/ES/FR/NL
+- **i18n(equipment):** preset setups keys + recommended-for-you key
+  in all 5 locales (EN/DE/ES/FR/NL)
+- **i18n:** 20+ additional translation keys across EN/DE/ES/FR/NL
+  (archive confirm, remove favorites confirm, loading generic,
+  calculator placeholders, ppfd, dli, autoflower)
 
 ### Fixed
 
-- **i18n(equipment):** fix Humidity Deficit Calculator using wrong
-  i18n key path `plants.stage.*` -- corrected to
-  `equipmentView.calculators.humidityDeficit.stages.*` with
-  proper translations in all 5 languages (EN/DE/ES/FR/NL)
+- **fix(security):** CodeQL #280 -- added isTrustedWorkerMessage
+  origin check to voiceWorker (was the only worker missing it)
+- **fix(security):** Dependabot #50 -- pinned basic-ftp to 5.2.2
+  (CRLF injection fix)
+- **fix(ai):** add `preload-storage-check` and `webllm-storage-check`
+  to captureLocalAiError stage union type (CI typecheck failure)
+- **fix(ai):** Mobile memory pressure threshold 80% (was 90%), max
+  concurrent model loads 1 on mobile (was cores\*0.5)
+- **fix(ai):** WebGPU visibility race condition -- timer cancelled on
+  return to visible, mobile timeout 5s (desktop 30s)
+- **fix(ai):** Device-lost regex expanded for Safari, Firefox, Android
+  WebGPU error patterns
+- **fix(ai):** Inference router mobile timeouts -- WebLLM 20s (was 45s),
+  Transformers 15s (was 30s), heuristic fallback added directly in router
+- **fix(ai):** Image similarity memory guard -- 2MB image size limit,
+  mobile candidate cap 50 (was 100)
+- **fix(ai):** Cache breakdown throttled to 30s to prevent IndexedDB
+  churn
+- **fix(ai):** Settings bounds validation -- inferenceTimeoutMs
+  (5000-120000), maxInferenceCacheSize (16-1024)
+- **fix(ai):** gpuResourceManager console.warn replaced with
+  console.debug per security policy
+- **fix(ai):** localAiFallbackService Unicode middle-dots replaced with
+  ASCII per text encoding rules
+- **fix(equipment):** resolve 8 TS errors in SetupConfigurator caused by
+  `&&` short-circuit producing `"" | object` union types for growSpace
+  and budget state; use ternary narrowing instead
+- **fix(equipment):** add missing `growSpace` and
+  `floweringTypePreference` to PresetSetupsView fallback sourceDetails
+- **fix(strains):** move `selectedStrainId` declaration before useEffect
+  that references it (TS2448/TS2454)
+- **fix(ci):** harden pre-commit and pre-push hooks to use
+  `turbo run typecheck` instead of root-level tsc which checked zero
+  files due to empty `include` in root tsconfig
+- **fix(knowledge):** LexikonView i18n key resolution bug -- "General"
+  category generated `helpView.lexicon.generals.*` instead of
+  `helpView.lexicon.general.*`, causing raw keys to display
+- **fix(i18n):** autoflower/autoflowering key mismatch between
+  lexicon.ts and help.ts (now unified as `autoflower`)
+- **fix(i18n):** replaced hardcoded "Loading..." in
+  LeafDiagnosisPanel Suspense fallback with i18n key
+- **fix(i18n):** replaced hardcoded "e.g. 600" / "e.g. 30"
+  placeholders in TimerScheduleCalculator with i18n keys
+- **fix(i18n):** Humidity Deficit Calculator using wrong i18n key path
+  `plants.stage.*` -- corrected to
+  `equipmentView.calculators.humidityDeficit.stages.*`
+- **fix(ui):** replaced ~34 hardcoded Tailwind colors with theme-aware
+  classes (primary/accent/secondary) in GrowTechView,
+  GeneticTrendsView, and EquipmentView for consistent theming
+- **fix(ui):** WebLlmPreloadBanner cancel button + accessibility
+  improvements (aria-live, role)
+- **fix(docs):** ARCHITECTURE.md stale test count (1884 -> 2063)
+- **fix(docs):** AUDIT_BACKLOG.md summary updated (53/56 resolved)
+
+### Changed
+
+- **docs:** restructure README.md aligned with DeepWiki TOC (933 -> 595
+  lines, tables over prose, all doc links preserved)
+- **ci(release):** add SBOM SHA-256 checksum row to release notes in
+  release-publish.yml
+- **docs(security):** add SBOM inspection commands and audit
+  verification status section to SECURITY.md
+- **docs(audit):** add supply-chain audit entries SC-01 (SLSA Verifier
+  CI), SC-02 (Onboarding Data Consumption), SC-03 (Release Pipeline
+  Dry-Run) to AUDIT_BACKLOG.md
 - **i18n(settings):** update About/README section across all 5
-  languages -- whatsNew bumped to v1.6 (was v1.2 EN/DE, v1.1
-  ES/FR/NL), test count 1000->1961, strain count ->776,
-  techStack extended with multi-provider BYOK, 22 AI modules,
-  CRDT sync, WorkerBus, ONNX
-
-### Added
-
-- **test(data):** add validation tests for diseases (10), lexicon (8),
-  learningPaths (9), terpeneDatabase (16) data modules
-- **test(utils):** add comprehensive vpdCalculator tests (34) covering
-  SVP calculation, leaf offset, target VPD, status, transpiration,
-  full VPD calculation, and daily simulation
-- Total tests: 1884 -> 1961 (+77)
+  languages -- whatsNew bumped to v1.6, test count 1000->1961,
+  strain count ->776, techStack extended with multi-provider BYOK,
+  22 AI modules, CRDT sync, WorkerBus, ONNX
+- Total tests: 1884 -> 2063 (+179)
 
 ---
 

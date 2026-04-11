@@ -37,7 +37,7 @@ CannaGuide-2025/
       hooks/                # Custom React hooks (25)
       data/                 # Static data: 776 strains, FAQ, lexicon
       locales/              # i18n: en/, de/, es/, fr/, nl/ (12 namespaces)
-      workers/              # 9 Web Workers
+      workers/              # 10 Web Workers
       utils/                # Shared utilities
       types/                # Zod schemas for AI validation
       lib/                  # cn(), VPD calculations

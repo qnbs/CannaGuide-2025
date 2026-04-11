@@ -6,6 +6,8 @@
 // Registered with WorkerBus as 'voice' worker.
 // ---------------------------------------------------------------------------
 
+import { initAbortHandler } from '@/utils/workerAbort'
+
 /** Serializable command definition for off-main-thread matching. */
 interface SerializedCommand {
     id: string
@@ -299,3 +301,6 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
         })
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

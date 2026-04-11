@@ -17,6 +17,7 @@
 
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler } from '@/utils/workerAbort'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -359,3 +360,6 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 
     self.postMessage(workerErr(messageId, `Unknown message type: ${String(type)}`))
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

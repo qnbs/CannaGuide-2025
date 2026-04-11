@@ -13,6 +13,7 @@
 
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
 
 // ---------------------------------------------------------------------------
 // Security: trusted-origin guard
@@ -225,29 +226,37 @@ self.onmessage = (
 
     try {
         if (type === 'SIMULATE_VPD') {
+            checkAborted(messageId)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            self.postMessage(workerOk(messageId, simulateVpd(payload as SimulateVpdPayload)))
+            const result = simulateVpd(payload as SimulateVpdPayload)
+            clearAborted(messageId)
+            self.postMessage(workerOk(messageId, result))
             return
         }
         if (type === 'SIMULATE_TRANSPIRATION') {
-            self.postMessage(
+            checkAborted(messageId)
+            const result = simulateTranspiration(
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                workerOk(messageId, simulateTranspiration(payload as SimulateTranspirationPayload)),
+                payload as SimulateTranspirationPayload,
             )
+            clearAborted(messageId)
+            self.postMessage(workerOk(messageId, result))
             return
         }
         if (type === 'SIMULATE_EC_DRIFT') {
-            self.postMessage(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                workerOk(messageId, simulateEcDrift(payload as SimulateEcDriftPayload)),
-            )
+            checkAborted(messageId)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+            const result = simulateEcDrift(payload as SimulateEcDriftPayload)
+            clearAborted(messageId)
+            self.postMessage(workerOk(messageId, result))
             return
         }
         if (type === 'SIMULATE_LIGHT_SPECTRUM') {
-            self.postMessage(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                workerOk(messageId, simulateLightSpectrum(payload as SimulateLightSpectrumPayload)),
-            )
+            checkAborted(messageId)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+            const result = simulateLightSpectrum(payload as SimulateLightSpectrumPayload)
+            clearAborted(messageId)
+            self.postMessage(workerOk(messageId, result))
             return
         }
         self.postMessage(workerErr(messageId, `Unknown command: ${type}`))
@@ -260,3 +269,6 @@ self.onmessage = (
         )
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

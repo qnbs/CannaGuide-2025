@@ -14,6 +14,7 @@
 
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
 
 type TransformersModule = typeof import('@xenova/transformers')
 
@@ -133,32 +134,35 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<ImageGenPayload>>) => {
 
         const transformers = await getTransformers()
 
+        // W-02.1: Abort early if preempted during model loading
+        checkAborted(messageId)
+
         sendProgress('loading', 50, startTime)
 
         // Load the diffusion pipeline
         // SD-Turbo uses AutoPipelineForText2Image in Transformers.js v3
-        const pipeline = await (
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            transformers as unknown as {
-                AutoPipelineForText2Image: {
-                    from_pretrained: (
-                        modelId: string,
+        /* eslint-disable @typescript-eslint/no-unsafe-type-assertion */
+        const sdModule = transformers as unknown as {
+            AutoPipelineForText2Image: {
+                from_pretrained: (
+                    modelId: string,
+                    options: Record<string, unknown>,
+                ) => Promise<{
+                    (
+                        prompt: string,
                         options: Record<string, unknown>,
-                    ) => Promise<{
-                        (
-                            prompt: string,
-                            options: Record<string, unknown>,
-                        ): Promise<{
-                            images: Array<{
-                                data: Uint8ClampedArray
-                                width: number
-                                height: number
-                            }>
+                    ): Promise<{
+                        images: Array<{
+                            data: Uint8ClampedArray
+                            width: number
+                            height: number
                         }>
                     }>
-                }
+                }>
             }
-        ).AutoPipelineForText2Image.from_pretrained(modelId, {
+        }
+        /* eslint-enable @typescript-eslint/no-unsafe-type-assertion */
+        const pipeline = await sdModule.AutoPipelineForText2Image.from_pretrained(modelId, {
             dtype: 'fp32',
             device: typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm',
             progress_callback: (progress: { status: string; progress?: number }) => {
@@ -169,6 +173,9 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<ImageGenPayload>>) => {
         })
 
         sendProgress('encoding', 0, startTime)
+
+        // W-02.1: Abort early if preempted before denoising
+        checkAborted(messageId)
 
         // Phase 2-4: Run diffusion
         sendProgress('denoising', 0, startTime)
@@ -201,6 +208,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<ImageGenPayload>>) => {
 
         sendProgress('complete', 100, startTime)
 
+        clearAborted(messageId)
         self.postMessage(
             workerOk(messageId, {
                 dataUrl,
@@ -217,3 +225,6 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<ImageGenPayload>>) => {
         )
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

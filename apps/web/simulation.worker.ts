@@ -6,6 +6,7 @@ import type { Plant, AppSettings } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler } from '@/utils/workerAbort'
 
 export interface SimulationWorkerInput {
     plant: Plant
@@ -43,3 +44,6 @@ self.onmessage = (e: MessageEvent<WorkerRequest<SimulationWorkerInput>>) => {
         self.postMessage(workerErr(messageId, message))
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

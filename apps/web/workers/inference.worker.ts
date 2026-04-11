@@ -9,6 +9,7 @@
 
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
 
 type TransformersModule = typeof import('@xenova/transformers')
 type Pipeline = (input: unknown, options?: Record<string, unknown>) => Promise<unknown> | undefined
@@ -80,8 +81,11 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
     }
     const { task, modelId, input, pipelineOptions, inferenceOptions } = payload
     try {
+        checkAborted(messageId)
         const pipe = await loadPipeline(task, modelId, pipelineOptions ?? { quantized: true })
+        checkAborted(messageId)
         const result = await pipe(input, inferenceOptions)
+        clearAborted(messageId)
         self.postMessage(workerOk(messageId, result))
     } catch (err) {
         self.postMessage(
@@ -89,3 +93,6 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
         )
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

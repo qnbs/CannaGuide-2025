@@ -6,6 +6,7 @@ import { GENEALOGY_NODE_SIZE, GENEALOGY_NODE_SEPARATION } from '@/constants'
 import type { GenealogyNode, Strain } from '@/types'
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler } from '@/utils/workerAbort'
 
 interface GenealogyLayoutNode {
     data: GenealogyNode
@@ -123,5 +124,8 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
         )
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()
 
 export {}

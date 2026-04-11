@@ -14,6 +14,7 @@
 
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
+import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
 import type { TerpeneProfile, CannabinoidProfile, EffectTag, Strain } from '@/types'
 import {
     findSimilarStrains,
@@ -114,10 +115,19 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
                     self.postMessage(workerErr(messageId, 'Invalid BATCH_CHEMOVAR payload'))
                     return
                 }
-                const profiles = p.strains.map((strain) => ({
-                    strainId: strain.id,
-                    profile: buildChemovarProfile(strain),
-                }))
+                // W-02.1: Use for-loop with cooperative abort check for large batches
+                const profiles: Array<{
+                    strainId: string
+                    profile: ReturnType<typeof buildChemovarProfile>
+                }> = []
+                for (const strain of p.strains) {
+                    checkAborted(messageId)
+                    profiles.push({
+                        strainId: strain.id,
+                        profile: buildChemovarProfile(strain),
+                    })
+                }
+                clearAborted(messageId)
                 self.postMessage(workerOk(messageId, profiles))
                 return
             }
@@ -173,3 +183,6 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
         self.postMessage(workerErr(messageId, message))
     }
 }
+
+// W-02.1: Install cooperative abort handler (must be after self.onmessage)
+initAbortHandler()

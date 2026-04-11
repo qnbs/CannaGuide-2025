@@ -51,14 +51,12 @@ const DevTelemetryPanelInner: React.FC = memo(() => {
     const refresh = useCallback(async () => {
         const gpu = safeCall(() => getGpuLockState(), EMPTY_STATE.gpu)
 
-        const workerQ = safeCall(
-            () => workerBus.getQueueState(),
-            {
-                current: [],
-                queued: [],
-                byPriority: EMPTY_STATE.workerByPriority,
-            },
-        )
+        const workerQ = safeCall(() => workerBus.getQueueState(), {
+            current: [],
+            queued: [],
+            byPriority: EMPTY_STATE.workerByPriority,
+            effectiveConcurrency: {},
+        })
 
         let rag: TelemetryState['rag'] = null
         try {

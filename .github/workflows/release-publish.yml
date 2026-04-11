@@ -52,6 +52,38 @@ jobs:
               with:
                   fetch-depth: 0
 
+            # ── CI Status Guard ──────────────────────────────────────
+            # Release Publish runs in parallel with Release Gate.
+            # No cross-workflow dependency is possible in GitHub Actions.
+            # This guard queries the Checks API to verify the CI status
+            # job passed on the tagged commit before proceeding.
+            # Skipped for workflow_dispatch (maintainer is in control).
+            - name: Verify CI passed on tagged commit
+              if: github.event_name == 'push'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  REF: ${{ github.ref_name }}
+              shell: bash
+              run: |
+                  COMMIT_SHA=$(git rev-list -n 1 "${REF}")
+                  echo "[INFO] Checking CI status for ${REF} (${COMMIT_SHA})"
+
+                  CONCLUSION=$(gh api "repos/${REPO}/commits/${COMMIT_SHA}/check-runs" \
+                    --jq '[.check_runs[] | select(.name | contains("CI Status"))] | .[0].conclusion // empty')
+
+                  if [ -z "${CONCLUSION}" ]; then
+                    echo "[WARN] No CI Status check found for ${COMMIT_SHA}."
+                    echo "[WARN] This can happen for docs-only commits (paths-ignore)."
+                    echo "[WARN] Proceeding with caution."
+                  elif [ "${CONCLUSION}" != "success" ]; then
+                    echo "[FAIL] CI Status check is '${CONCLUSION}' -- not success."
+                    echo "[FAIL] Aborting release. Push tag only after CI is green."
+                    exit 1
+                  else
+                    echo "[OK] CI Status check passed (${CONCLUSION})."
+                  fi
+
             - name: Resolve tag name
               id: tag
               shell: bash

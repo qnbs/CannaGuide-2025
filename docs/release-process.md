@@ -123,6 +123,14 @@ verify attestations without publishing the release.
 4. Release Publish release job generates attestations + publishes
    GitHub Release
 
+**CI Status Guard:** On tag push events, the build job queries the
+GitHub Checks API to verify that the CI status check passed on the
+tagged commit before proceeding. If CI is not green, the release
+aborts. For `workflow_dispatch` (manual trigger), the guard is
+skipped -- the maintainer is responsible for verifying CI status.
+Docs-only commits (where CI is skipped via `paths-ignore`) produce
+a warning but do not block the release.
+
 > **History:** Prior to April 2026, `release-publish.yml` used a
 > `workflow_run` trigger chained to Release Gate. This was replaced
 > with a direct `push: tags` trigger because `workflow_run` caused

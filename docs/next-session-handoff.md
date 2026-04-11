@@ -2,7 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 133) -- A11y Phase B2 + B1
+## Latest Session (Session 134) -- CI Guard + v1.7.0 Release Verification
+
+**Status: Added CI status guard step to release-publish.yml.
+Verified v1.7.0 workflow_dispatch run (ID 24279437626) completed
+successfully with Tarball + SBOM assets on GitHub Release.
+Release Publish now checks CI passed on tagged commit before
+building. Guard skipped for workflow_dispatch (manual control).**
+
+### What Was Done (Session 134)
+
+1. **CI Status Guard in release-publish.yml** --
+   New step "Verify CI passed on tagged commit" after Checkout,
+   before Resolve tag name. Queries GitHub Checks API for the
+   CI Status check on the tagged commit. Behavior:
+    - Push events: hard-fail if CI Status is not success
+    - workflow_dispatch: guard skipped (maintainer in control)
+    - Docs-only commits (no CI run): warning, not blocking
+      This closes the last gap where Release Publish could run
+      on a commit where CI had not passed.
+
+2. **v1.7.0 Release Dispatch Verification** --
+    - Run ID: 24279437626 (workflow_dispatch, 2026-04-11)
+    - Build + SBOM: success
+    - Publish Release: success
+    - Release assets: cannaguide-v1.7.0-dist.tar.gz + SBOM
+    - Release Gate (tag push): success (ID 24270245792)
+    - Confirmed: Release Publish works fully automated on
+      tag push and via manual workflow_dispatch
+
+3. **release-process.md updated** -- Added CI Status Guard
+   paragraph documenting the guard behavior and rationale.
+
+### Verified Metrics
+
+- Version: 1.7.0
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2079 passing, 0 failures
+- Build: successful
+- YAML validation: release-publish.yml valid
+
+### Next Steps
+
+1. **jsx-a11y violation reduction** -- Target top categories: - `label-has-for`: associate labels with inputs via htmlFor - `click-events-have-key-events` + `no-static-element-
+interactions`: add keyboard handlers or use semantic buttons - `control-has-associated-label`: add aria-label to controls - Goal: reduce from 169 to <100 warnings
+2. **Phase B2 extension** -- Add error prop support to:
+    - Equipment calculator Input (common.tsx) -- own wrapper
+    - SearchBar component -- validation on empty submit
+3. **Test Coverage Push** -- Target >35% via coverage-v8
+4. **v2.0 Planning** -- Digital Twin architecture spike
+
+---
+
+## Previous Session (Session 133) -- A11y Phase B2 + B1
 
 **Status: Added aria-invalid/aria-describedby/role="alert" to
 shared Input, Textarea, and FormInput components. Migrated 4
@@ -66,8 +118,6 @@ interactions`: add keyboard handlers or use semantic buttons - `control-has-asso
     - SearchBar component -- validation on empty submit
 4. **Test Coverage Push** -- Target >35% via coverage-v8
 5. **v2.0 Planning** -- Digital Twin architecture spike
-
----
 
 ## Previous Session (Session 132) -- Release Publish Trigger Refactor
 

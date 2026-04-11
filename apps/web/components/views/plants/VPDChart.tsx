@@ -75,7 +75,11 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
     try {
         return (
             <div className="space-y-3">
-                <div className="h-64 w-full rounded-lg bg-slate-900/60 p-2">
+                <div
+                    className="h-64 w-full rounded-lg bg-slate-900/60 p-2"
+                    role="img"
+                    aria-label={t('common.accessibility.vpdChart')}
+                >
                     <ResponsiveContainer
                         width="100%"
                         height="100%"

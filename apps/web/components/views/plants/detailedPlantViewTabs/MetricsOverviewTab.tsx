@@ -236,7 +236,11 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
 
                     {/* Chart */}
                     {chartData.length > 0 ? (
-                        <div className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-inset ring-slate-700/50">
+                        <div
+                            className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-inset ring-slate-700/50"
+                            role="img"
+                            aria-label={t('common.accessibility.metricsChart')}
+                        >
                             <ResponsiveContainer width="100%" height={250}>
                                 <LineChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />

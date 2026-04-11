@@ -314,6 +314,10 @@ export const common = {
         harvestingTechnique: 'Harvesting technique',
         toggleViewMode: 'Toggle between week and month view',
         selectTimeRange: 'Select time range: {{range}}',
+        vpdChart: 'VPD chart showing vapor pressure deficit over 24 hours',
+        metricsChart: 'Plant metrics chart showing pH, EC, and height over time',
+        hydroChart: 'Hydroponic monitoring chart showing pH, EC, and temperature trends',
+        strainRadarChart: 'Radar chart comparing strain characteristics',
     },
 }
 

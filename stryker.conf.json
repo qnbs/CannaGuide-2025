@@ -6,8 +6,13 @@
         "apps/web/services/equipmentCalculatorService.ts",
         "apps/web/services/knowledgeCalculatorService.ts",
         "apps/web/services/knowledgeRagService.ts",
+        "apps/web/utils/lockFreeRingBuffer.ts",
+        "apps/web/utils/atomicsChannel.ts",
+        "apps/web/services/workerPool.ts",
         "!apps/web/stores/slices/**/*.test.ts",
-        "!apps/web/stores/**/*.test.ts"
+        "!apps/web/stores/**/*.test.ts",
+        "!apps/web/utils/**/*.test.ts",
+        "!apps/web/services/**/*.test.ts"
     ],
     "testRunner": "vitest",
     "checkers": [],

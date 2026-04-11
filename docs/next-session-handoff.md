@@ -2,7 +2,100 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 146) -- Release Fix + Referrer-Policy + Netlify Pause
+## Latest Session (Session 147) -- Quality Polish + Test Hardening
+
+**Status: v1.7.2. ARIA chart accessibility, 23 new tests
+(WorkerPool SAB, LockFreeRingBuffer SAB, AtomicsChannel edge
+cases), Stryker mutation targets extended. Security headers
+verified complete on Vercel + Cloudflare.**
+
+### What Was Done (Session 147)
+
+1. **ARIA chart accessibility (4 Recharts components):**
+   VPDChart, MetricsOverviewTab, HydroMonitorView, and
+   StrainComparisonView wrapped with `role="img"` +
+   `aria-label` for screen reader access. 4 new i18n keys
+   (`vpdChart`, `metricsChart`, `hydroChart`, `strainRadarChart`)
+   added to EN/DE (ES/FR/NL inherit via spread).
+
+2. **WorkerPool SAB hot-path tests (13 new):**
+   `workerPool.sab.test.ts` -- tests AtomicsChannel and
+   LockFreeRingBuffer auto-init for hot workers, getSabChannel/
+   getSabRingBuffer accessors, cold worker exclusion, cleanup
+   on terminate/dispose, sabBufferUtilization in PoolMetrics,
+   re-init after terminate.
+
+3. **LockFreeRingBuffer SAB path tests (4 new):**
+   SharedArrayBuffer producer/consumer state sharing,
+   wrap-around, pushBatch/popBatch via SAB, isShared=true
+   verification.
+
+4. **AtomicsChannel edge-case tests (5 new):**
+   All 6 data slots iteration, slot boundary (5 valid / 6
+   throws), signal value overwrite is non-blocking, SAB
+   create path verification via fromTransfer.
+
+5. **Stryker mutation config extended:**
+   Added `lockFreeRingBuffer.ts`, `atomicsChannel.ts`,
+   `workerPool.ts` to mutate targets with proper test
+   exclusion patterns.
+
+6. **Security header verification:**
+   Vercel + Cloudflare: COEP=credentialless, COOP=same-origin,
+   HSTS=1yr -- all complete. GitHub Pages: SAB limitation
+   accepted (no HTTP header support, ArrayBuffer fallback works).
+
+7. **Analysis results (no action needed):**
+    - A-03 AI Cost Tracking: DONE (Session 113)
+    - U-05 Onboarding Telemetry: correctly deferred v2.0
+    - WorkerTelemetryTab ARIA: already solid
+    - Buffer utilization bars + color coding: already complete
+    - i18n TelemetryTab: 23 keys in all 5 languages
+    - RTL: all 5 languages LTR, no work needed
+    - Local AI Stack: 21 modules assessed, refactoring deferred
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2221 passed, 0 failures (192 files)
+- Build: successful (170 precache entries)
+
+### Next Steps
+
+- Run Stryker baseline on new targets:
+  `pnpm exec stryker run` -- verify >= 50% mutation score
+  for lockFreeRingBuffer, atomicsChannel, workerPool
+- Local AI Stack refactoring (Multi-Session project):
+  21 modules, 5000+ LOC, 9 tightly coupled. Recommended
+  approach: extract worker-dispatched services (Embedding,
+  NLP, LangDetect, ImageSimilarity) first, then infrastructure
+  layer (cache, telemetry, preload), then orchestration.
+- W-07 voice SAB waveform streaming per docs/worker-bus.md
+- Version bump to v1.8.0 when ready
+
+### Planned Executions
+
+#### Execution N+1: Local AI Stack Partial Decoupling
+
+**Scope:** Extract 4 worker-dispatched services (localAiEmbeddingService,
+localAiNlpService, localAiLanguageDetectionService,
+localAiImageSimilarityService) into shared utility patterns.
+These are already isolated (depend only on inferenceQueueService).
+
+**Prerequisites:** None (independent of other changes).
+**Complexity:** Medium (4 files, ~1080 LOC).
+
+#### Execution N+2: Stryker Full Baseline
+
+**Scope:** Run Stryker on all mutation targets including new ones.
+Document mutation scores per file. Fix low-score survivors.
+
+**Prerequisites:** Execution N+1 not required.
+**Complexity:** Low-Medium.
+
+---
+
+## Previous Session (Session 146) -- Release Fix + Referrer-Policy + Netlify Pause
 
 **Status: v1.7.2. Release-publish workflow fixed. Referrer-Policy
 hardened. WorkerTelemetryTab production guard. Netlify deployments

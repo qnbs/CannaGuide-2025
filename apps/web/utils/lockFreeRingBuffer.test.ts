@@ -127,4 +127,82 @@ describe('LockFreeRingBuffer', () => {
             expect(ring.isFull()).toBe(false)
         })
     })
+
+    describe('SharedArrayBuffer path', () => {
+        it('fromTransfer with real SAB reports isShared=true', () => {
+            // Manually construct a SAB-backed ring buffer (bypasses canUseSharedArrayBuffer guard)
+            const capacity = 16
+            const byteLength = (2 + capacity) * Int32Array.BYTES_PER_ELEMENT
+            const sab = new SharedArrayBuffer(byteLength)
+            const view = new Int32Array(sab)
+            // Initialize write/read indices to 0
+            Atomics.store(view, 0, 0)
+            Atomics.store(view, 1, 0)
+
+            const ring = LockFreeRingBuffer.fromTransfer(sab, 'producer')
+            expect(ring.isShared()).toBe(true)
+        })
+
+        it('producer/consumer via SAB share state', () => {
+            const capacity = 16
+            const byteLength = (2 + capacity) * Int32Array.BYTES_PER_ELEMENT
+            const sab = new SharedArrayBuffer(byteLength)
+            const view = new Int32Array(sab)
+            Atomics.store(view, 0, 0)
+            Atomics.store(view, 1, 0)
+
+            const producer = LockFreeRingBuffer.fromTransfer(sab, 'producer')
+            const consumer = LockFreeRingBuffer.fromTransfer(sab, 'consumer')
+
+            producer.push(123)
+            producer.push(456)
+
+            expect(consumer.size).toBe(2)
+            expect(consumer.pop()).toBe(123)
+            expect(consumer.pop()).toBe(456)
+            expect(consumer.isEmpty()).toBe(true)
+        })
+
+        it('SAB-backed buffer wraps around correctly', () => {
+            const capacity = 4 // capacity = 4, usable = 3
+            const byteLength = (2 + capacity) * Int32Array.BYTES_PER_ELEMENT
+            const sab = new SharedArrayBuffer(byteLength)
+            const view = new Int32Array(sab)
+            Atomics.store(view, 0, 0)
+            Atomics.store(view, 1, 0)
+
+            const producer = LockFreeRingBuffer.fromTransfer(sab, 'producer')
+            const consumer = LockFreeRingBuffer.fromTransfer(sab, 'consumer')
+
+            producer.push(1)
+            producer.push(2)
+            producer.push(3)
+            expect(consumer.pop()).toBe(1)
+            expect(consumer.pop()).toBe(2)
+            producer.push(4)
+            producer.push(5)
+            expect(consumer.pop()).toBe(3)
+            expect(consumer.pop()).toBe(4)
+            expect(consumer.pop()).toBe(5)
+            expect(consumer.pop()).toBe(null)
+        })
+
+        it('SAB-backed pushBatch/popBatch', () => {
+            const capacity = 16
+            const byteLength = (2 + capacity) * Int32Array.BYTES_PER_ELEMENT
+            const sab = new SharedArrayBuffer(byteLength)
+            const view = new Int32Array(sab)
+            Atomics.store(view, 0, 0)
+            Atomics.store(view, 1, 0)
+
+            const producer = LockFreeRingBuffer.fromTransfer(sab, 'producer')
+            const consumer = LockFreeRingBuffer.fromTransfer(sab, 'consumer')
+
+            const written = producer.pushBatch([10, 20, 30, 40, 50])
+            expect(written).toBe(5)
+
+            const batch = consumer.popBatch(10)
+            expect(batch).toEqual([10, 20, 30, 40, 50])
+        })
+    })
 })

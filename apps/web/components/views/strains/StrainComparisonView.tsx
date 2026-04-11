@@ -202,7 +202,11 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
             {selectedStrains.length > 0 && (
                 <>
                     {/* Radar chart */}
-                    <div className="bg-slate-800/50 rounded-xl p-4">
+                    <div
+                        className="bg-slate-800/50 rounded-xl p-4"
+                        role="img"
+                        aria-label={t('common.accessibility.strainRadarChart')}
+                    >
                         <ResponsiveContainer width="100%" minHeight={280}>
                             <RadarChart data={radarData} outerRadius="60%">
                                 <PolarGrid stroke="#334155" />

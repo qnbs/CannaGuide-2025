@@ -347,68 +347,70 @@ export const HydroMonitorView: React.FC = memo(() => {
                             ))}
                         </div>
                     </div>
-                    <ResponsiveContainer width="100%" height={220}>
-                        <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                            <XAxis
-                                dataKey="time"
-                                tick={{ fontSize: 10, fill: '#94a3b8' }}
-                                stroke="#475569"
-                            />
-                            <YAxis
-                                yAxisId="ph"
-                                orientation="left"
-                                domain={[4, 8]}
-                                tick={{ fontSize: 10, fill: '#94a3b8' }}
-                                stroke="#475569"
-                                label={{
-                                    value: t('equipmentView.hydroMonitoring.chart.axisLabelPh'),
-                                    angle: -90,
-                                    position: 'insideLeft',
-                                    style: { fontSize: 10, fill: '#94a3b8' },
-                                }}
-                            />
-                            <YAxis
-                                yAxisId="ec"
-                                orientation="right"
-                                domain={[0, 4]}
-                                tick={{ fontSize: 10, fill: '#94a3b8' }}
-                                stroke="#475569"
-                                label={{
-                                    value: t('equipmentView.hydroMonitoring.chart.axisLabelEc'),
-                                    angle: 90,
-                                    position: 'insideRight',
-                                    style: { fontSize: 10, fill: '#94a3b8' },
-                                }}
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: '#1e293b',
-                                    border: '1px solid #334155',
-                                    borderRadius: '6px',
-                                    fontSize: 12,
-                                }}
-                            />
-                            <Line
-                                yAxisId="ph"
-                                type="monotone"
-                                dataKey="ph"
-                                stroke="#22c55e"
-                                strokeWidth={2}
-                                dot={false}
-                                name={t('equipmentView.hydroMonitoring.chart.legendPh')}
-                            />
-                            <Line
-                                yAxisId="ec"
-                                type="monotone"
-                                dataKey="ec"
-                                stroke="#3b82f6"
-                                strokeWidth={2}
-                                dot={false}
-                                name={t('equipmentView.hydroMonitoring.chart.legendEc')}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <div role="img" aria-label={t('common.accessibility.hydroChart')}>
+                        <ResponsiveContainer width="100%" height={220}>
+                            <LineChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                <XAxis
+                                    dataKey="time"
+                                    tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                    stroke="#475569"
+                                />
+                                <YAxis
+                                    yAxisId="ph"
+                                    orientation="left"
+                                    domain={[4, 8]}
+                                    tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                    stroke="#475569"
+                                    label={{
+                                        value: t('equipmentView.hydroMonitoring.chart.axisLabelPh'),
+                                        angle: -90,
+                                        position: 'insideLeft',
+                                        style: { fontSize: 10, fill: '#94a3b8' },
+                                    }}
+                                />
+                                <YAxis
+                                    yAxisId="ec"
+                                    orientation="right"
+                                    domain={[0, 4]}
+                                    tick={{ fontSize: 10, fill: '#94a3b8' }}
+                                    stroke="#475569"
+                                    label={{
+                                        value: t('equipmentView.hydroMonitoring.chart.axisLabelEc'),
+                                        angle: 90,
+                                        position: 'insideRight',
+                                        style: { fontSize: 10, fill: '#94a3b8' },
+                                    }}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#1e293b',
+                                        border: '1px solid #334155',
+                                        borderRadius: '6px',
+                                        fontSize: 12,
+                                    }}
+                                />
+                                <Line
+                                    yAxisId="ph"
+                                    type="monotone"
+                                    dataKey="ph"
+                                    stroke="#22c55e"
+                                    strokeWidth={2}
+                                    dot={false}
+                                    name={t('equipmentView.hydroMonitoring.chart.legendPh')}
+                                />
+                                <Line
+                                    yAxisId="ec"
+                                    type="monotone"
+                                    dataKey="ec"
+                                    stroke="#3b82f6"
+                                    strokeWidth={2}
+                                    dot={false}
+                                    name={t('equipmentView.hydroMonitoring.chart.legendEc')}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             )}
 

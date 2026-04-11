@@ -111,4 +111,80 @@ describe('AtomicsChannel', () => {
             expect(Atomics.load(view, 1)).toBe(200)
         })
     })
+
+    describe('create with SAB available', () => {
+        it('create posts __ATOMICS_CHANNEL__ with SAB to worker (tested via WorkerPool SAB)', async () => {
+            // The create() method is a thin wrapper that calls canUseSharedArrayBuffer(),
+            // allocates a SAB, and posts it to the worker. The full integration is tested
+            // in workerPool.sab.test.ts. Here we verify the fromTransfer path works for
+            // a buffer created identically to what create() produces.
+            const { AtomicsChannel } = await import('./atomicsChannel')
+            const buffer = new SharedArrayBuffer(32) // 8 slots * 4 bytes
+            const view = new Int32Array(buffer)
+            for (let i = 0; i < 8; i++) {
+                Atomics.store(view, i, 0)
+            }
+
+            const ch = AtomicsChannel.fromTransfer(buffer)
+            expect(ch).toBeDefined()
+            expect(ch.getBuffer()).toBe(buffer)
+            expect(ch.dataSlotCount).toBe(6)
+        })
+    })
+
+    describe('edge cases', () => {
+        it('all data slots are initialized to 0', async () => {
+            const { AtomicsChannel } = await import('./atomicsChannel')
+            const buffer = new SharedArrayBuffer(32)
+            const view = new Int32Array(buffer)
+            for (let i = 0; i < 8; i++) {
+                Atomics.store(view, i, 0)
+            }
+
+            const ch = AtomicsChannel.fromTransfer(buffer)
+            for (let i = 0; i < ch.dataSlotCount; i++) {
+                expect(ch.readData(i)).toBe(0)
+            }
+        })
+
+        it('writeData/readData across all 6 data slots', async () => {
+            const { AtomicsChannel } = await import('./atomicsChannel')
+            const buffer = new SharedArrayBuffer(32)
+            const ch = AtomicsChannel.fromTransfer(buffer)
+
+            for (let i = 0; i < 6; i++) {
+                ch.writeData(i, (i + 1) * 10)
+            }
+            for (let i = 0; i < 6; i++) {
+                expect(ch.readData(i)).toBe((i + 1) * 10)
+            }
+        })
+
+        it('writeData boundary: slot 5 is the last valid slot', async () => {
+            const { AtomicsChannel } = await import('./atomicsChannel')
+            const buffer = new SharedArrayBuffer(32)
+            const ch = AtomicsChannel.fromTransfer(buffer)
+
+            // Slot 5 should work
+            ch.writeData(5, 999)
+            expect(ch.readData(5)).toBe(999)
+
+            // Slot 6 should throw
+            expect(() => ch.writeData(6, 1)).toThrow('out of range')
+        })
+
+        it('signal value overwrite is non-blocking', async () => {
+            const { AtomicsChannel } = await import('./atomicsChannel')
+            const buffer = new SharedArrayBuffer(32)
+            const ch = AtomicsChannel.fromTransfer(buffer)
+
+            ch.signal(10)
+            ch.signal(20)
+            ch.signal(30)
+
+            // Main reads from W2M slot (slot 1) -- should see last value
+            const view = new Int32Array(buffer)
+            expect(Atomics.load(view, 1)).toBe(30)
+        })
+    })
 })

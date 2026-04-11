@@ -14,6 +14,7 @@ export const onboarding = {
         accept: 'I am 18+ and I agree',
         deny: 'I am under 18',
         denied: 'Access to this application is restricted to persons aged 18 and older.',
+        bilingualHint: 'Willkommen -- Bitte oben rechts die Sprache waehlen',
     },
     languageTitle: 'Choose Your Language',
     languageSubtitle: 'Select your preferred language to continue.',

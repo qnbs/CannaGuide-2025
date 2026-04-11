@@ -15,7 +15,7 @@ export function ReloadPrompt(): ReactNode | null {
     }
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 max-w-sm rounded-lg border border-emerald-600/50 bg-slate-900/95 p-4 shadow-xl backdrop-blur-sm">
+        <div className="fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-4 right-4 z-50 max-w-sm rounded-lg border border-emerald-600/50 bg-slate-900/95 p-4 shadow-xl backdrop-blur-sm">
             <p className="mb-3 text-sm text-slate-200">
                 {t('common.pwaUpdate.message', 'Neues Update verfuegbar!')}
             </p>

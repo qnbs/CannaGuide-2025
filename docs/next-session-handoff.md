@@ -2,7 +2,59 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 143) -- Deployment Audit & Optimization
+## Latest Session (Session 144) -- i18n Fixes, Mobile Overlap, Bilingual Onboarding
+
+**Status: v1.7.1 released. SeedVault i18n fixed, mobile floating
+element overlaps resolved, bilingual language switcher added to
+onboarding legal gate. New i18n tooling script added.**
+
+### What Was Done (Session 144)
+
+1. **SeedVault i18n namespace fix (CRITICAL):** Moved `seedVault`
+   translation block from `strainLookup.seedVault` to
+   `strainsView.seedVault` in all 5 locale files (EN/DE/ES/FR/NL).
+   The component accesses `t('strainsView.seedVault.*')` so the
+   keys must live under `strainsView`. Cleaned up orphaned duplicate
+   lowercase seed type keys. Added `totalSeeds` fallback key.
+
+2. **Mobile floating element overlap fix:** Added BottomNav-aware
+   offset `bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-4`
+   to PwaInstallBanner, ReloadPrompt, and UpdateBanner. These were
+   hidden behind the BottomNav (z-90) on mobile. Follows established
+   pattern used by TTSControls, GeoLegalBanner, VoiceHUD.
+
+3. **Bilingual onboarding language switcher:** Added compact DE/EN
+   flag-button toggle to the legal gate (Step 0) top-right corner.
+   New `handleLanguageSwitch()` function switches language without
+   advancing to Step 1. Bilingual hint text shows guidance in the
+   other language. New i18n key `onboarding.legalStep.bilingualHint`
+   added to all 5 locales.
+
+4. **i18n tooling:** Created `scripts/check-i18n-keys-usage.mjs` --
+   cross-references all `t()` calls in source code against EN locale
+   keys. Reports keys used in code but missing from locales. Prevents
+   SeedVault-class namespace mismatch bugs.
+
+5. **Version bump:** v1.7.0 -> v1.7.1 (patch release, all bugfixes).
+
+### Verified Metrics
+
+- Typecheck: clean (0 errors)
+- Tests: passing
+- Build: success
+
+### Next Steps
+
+- Run `npx tsx scripts/check-i18n-keys-usage.mjs` to audit remaining
+  i18n key mismatches across the entire codebase
+- W-07 (voice SAB waveform streaming) per docs/worker-bus.md
+- Monitor PWA install behavior on mobile after overlap fix
+- Consider adding ES/FR/NL language options to onboarding legal gate
+  switcher (currently DE/EN only per primary user base)
+
+---
+
+## Previous Session (Session 143) -- Deployment Audit & Optimization
 
 **Status: All 4 deployment targets (GitHub Pages, Netlify, Vercel,
 Cloudflare Pages) audited and hardened. 8 issues fixed. Tests

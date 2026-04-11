@@ -64,7 +64,7 @@ export const PwaInstallBanner: React.FC<PwaInstallBannerProps> = ({
     if (!visible) return null
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-lg animate-fade-in">
+        <div className="fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-4 left-4 right-4 z-50 mx-auto max-w-lg animate-fade-in">
             <div className="rounded-2xl bg-slate-900/95 backdrop-blur-sm border border-primary-500/30 p-4 shadow-xl ring-1 ring-inset ring-white/10">
                 <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 rounded-xl bg-primary-600/20 p-2">

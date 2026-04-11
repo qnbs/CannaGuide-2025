@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 140) -- WorkerBus Pool, SAB Hot-Paths, Telemetry UI
+## Latest Session (Session 141) -- CI Failure Fixes
+
+**Status: All 3 CI failures from commit eb1a4650 fixed.
+Tests passing (2187), typecheck clean, build OK.**
+
+### What Was Done (Session 141)
+
+1. **Fix 1 -- i18n completeness script CI failure:** Added `tsx`
+   as explicit root devDependency (v4.21.0). Changed ci.yml
+   i18n step from `node scripts/check-i18n-completeness.mjs`
+   to `pnpm run check:i18n` (which calls `npx tsx ...`).
+   Node 20 cannot import `.ts` files natively -- tsx resolves
+   this.
+
+2. **Fix 2 -- Snyk SARIF upload failure:** Changed snyk.yml
+   upload condition from `steps.snyk-scan.outcome != 'skipped'`
+   to `steps.snyk-scan.outcome == 'success'`. The SARIF file
+   is only produced on successful scan; uploading on failure
+   caused `Path does not exist` errors.
+
+3. **Fix 3 -- TS6133 (unused imports):** Confirmed already
+   fixed in Session 139 before the commit. No action needed.
+   typecheck-filter.mjs correctly filters only TS2719 (RTK
+   upstream bug), not TS6133.
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2187 passing, 0 failures (190 test files)
+- Build: successful
+- i18n: `pnpm run check:i18n` passes (DE 100%, ES/FR/NL warn)
+
+### Changed Files
+
+- `package.json` -- added tsx ^4.21.0 to devDependencies
+- `pnpm-lock.yaml` -- lockfile updated
+- `.github/workflows/ci.yml` -- i18n step uses pnpm run check:i18n
+- `.github/workflows/snyk.yml` -- SARIF upload only on success
+
+### Next Steps
+
+1. **Community language gap-fill** -- ES/FR/NL ~250 missing keys
+2. **jsx-a11y violation reduction** -- Target <100 warnings
+3. **Test Coverage Push** -- Target >35% via coverage-v8
+4. **Worker pool E2E test** -- Playwright test verifying pool
+   lifecycle in a real browser
+
+---
+
+## Previous Session (Session 140) -- WorkerBus Pool, SAB Hot-Paths, Telemetry UI
 
 **Status: W-06 Worker Pool, SAB hot-path integration, A-03
 Telemetry Dashboard, load tests, and ADR-0010 all implemented.

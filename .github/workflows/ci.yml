@@ -108,7 +108,7 @@ jobs:
               run: node scripts/generate-service-map.mjs
 
             - name: Check i18n completeness
-              run: node scripts/check-i18n-completeness.mjs
+              run: pnpm run check:i18n
 
             - name: Audit backlog check (blocks on open HIGH items)
               run: node scripts/check-audit-backlog.mjs

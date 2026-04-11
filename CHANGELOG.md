@@ -6,6 +6,16 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **fix(ci):** i18n completeness check -- added `tsx` as root
+  devDependency and changed CI step to `pnpm run check:i18n`
+  so Node 20 can import `.ts` locale barrel files
+- **fix(ci):** Snyk SARIF upload -- changed condition from
+  `outcome != 'skipped'` to `outcome == 'success'` to prevent
+  `Path does not exist` error when scan fails without producing
+  the SARIF file
+
 ### Added
 
 - **feat(worker-bus):** W-06 Dynamic Worker Pool -- centralized

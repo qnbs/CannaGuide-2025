@@ -7,7 +7,7 @@
 
 **Letzte Aktualisierung:** 2026-04-11
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
-**Aktuell:** v1.7.0 | 2221 Tests (192 Dateien) | GitHub Attestation + CycloneDX SBOM | 22 CI Workflows gruen | 0 Security Alerts
+**Aktuell:** v1.8.0 | 2253 Tests (192 Dateien) | GitHub Attestation + CycloneDX SBOM | 22 CI Workflows gruen | 0 Security Alerts
 
 ---
 
@@ -35,8 +35,8 @@
 
 | Metrik            | Wert                                | Bewertung              |
 | ----------------- | ----------------------------------- | ---------------------- |
-| App-Version       | v1.7.0                              | ✅ Stabil              |
-| Tests             | 2140/2140 (185 Dateien)             | ✅ Gruen               |
+| App-Version       | v1.8.0                              | ✅ Stabil              |
+| Tests             | 2253/2253 (192 Dateien)             | ✅ Gruen               |
 | OpenSSF Scorecard | GitHub Attestation + CycloneDX SBOM | ✅ release-publish     |
 | Test-Coverage     | ~33.66 %                            | ✅ Ziel >30 % erreicht |
 | Duplicate Code    | ~115 Major-Bloecke                  | ⚠ Technische Schuld    |
@@ -64,13 +64,13 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-04-07 (CI Typecheck Fix + Vitest Hang Fix + Doc Audit)
-App-Version:        v1.4.1
-Tests:              1663/1663 (149 files)
-Naechste Prioritaet:  Test Coverage >30%, F-05 Multi-grow, D-01 API Docs
-Sprint-Fortschritt: S1 [0/3] | S2 [1/4] | S3 [3/5] | S4 [0/2] | S5 [6/8] | S6 [0/7]
-Gesamtfortschritt:  ██████████░░░░░░░░░░ 10/29 Tasks (~34%)
-Blocker:            CII Badge (Email)
+Letzte Session:     2026-04-14 (Documentation Overhaul + UI Reorder)
+App-Version:        v1.8.0
+Tests:              2253/2253 (192 files)
+Naechste Prioritaet:  Stryker CI Baseline, a11y control-has-associated-label
+Sprint-Fortschritt: S1 [3/3] | S2 [4/4] | S3 [5/5] | S4 [2/2] | S5 [8/8] | S6 [0/7]
+Gesamtfortschritt:  ████████████████████ 22/29 Tasks (~76%)
+Blocker:            --
 ```
 
                         createCachedPipelineLoader-Dedup (4 Services, ~75 LOC)

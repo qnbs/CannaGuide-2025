@@ -16,6 +16,7 @@
 | **v1.5** | 2026-Q4    | ✅ Released | Sync & Multi-Grow — CRDT offline sync, multi-grow, AI cost tracking, CI hardening |
 | **v1.6** | 2027-Q1    | ✅ Released | Engineering audit, i18n completeness, documentation sync                          |
 | **v1.7** | 2027-Q2    | ✅ Released | Voice-First Edition -- Voice Pro, Preset Setups, Enhanced PDF, a11y               |
+| **v1.8** | 2027-Q2    | ✅ Released | HydroMonitor, Predictive Analytics, Glassmorphism, Worker Pool W-06               |
 | **v2.0** | 2027-Q3    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                        |
 
 ---
@@ -215,6 +216,29 @@ Released: **2026-04-11**
 | SLSA Verifier CI (SC-01) + Release Dry-Run (SC-03)                  | CI            | ✅     |
 | Lighthouse CI 0.95+ (performance/a11y/best-practices)               | CI            | ✅     |
 | 2140 tests (0 failures), 86 new voice tests                         | Testing       | ✅     |
+
+---
+
+## v1.8 -- HydroMonitor & Analytics Edition ✅
+
+Released: **2026-04-12**
+
+| Feature                                                                | Category      | Status |
+| ---------------------------------------------------------------------- | ------------- | ------ |
+| HydroMonitor glassmorphism dashboard (pH/EC/Temp gauges, trend charts) | Equipment     | ✅     |
+| ONNX hydro forecast panel (pH/EC/Temp prediction, moving-average)      | AI            | ✅     |
+| Predictive Analytics panel wired into Equipment HydroMonitor           | Analytics     | ✅     |
+| Seed Vault with harvest results, pollen log, and seed storage          | Plants        | ✅     |
+| Glassmorphism UI overhaul (Seed Vault, Equipment, Grow Planner)        | UX            | ✅     |
+| Worker Pool W-06 (lazy spawn, 45s idle timeout, hot-worker exemption)  | Architecture  | ✅     |
+| Worker factory registry (10 entries, hot flag, priority)               | Architecture  | ✅     |
+| Worker state sync service (Redux/Zustand auto-wiring)                  | Architecture  | ✅     |
+| Worker telemetry (Sentry 10% error-rate alerts, DevTools flush)        | Observability | ✅     |
+| Accessibility warnings reduced 202 -> 83 (jsx-a11y)                    | Accessibility | ✅     |
+| Stryker mutation testing config (Redux slices, 50% break threshold)    | Testing       | ✅     |
+| Grow-Slots mobile order above Live-Umgebung in PlantsView              | UX            | ✅     |
+| Documentation overhaul (README, Help manual, About, all .md files)     | Documentation | ✅     |
+| 2253 tests (0 failures)                                                | Testing       | ✅     |
 
 ---
 

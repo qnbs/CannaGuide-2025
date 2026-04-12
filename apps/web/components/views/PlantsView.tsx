@@ -276,14 +276,8 @@ export const PlantsView: React.FC = () => {
                         </div>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Mobile: Live-Umgebung first */}
-                        <div className="order-1 lg:order-none lg:col-span-2">
-                            <DashboardSummary />
-                        </div>
-
-                        {/* Mobile: Garten-Kommandozentrale (hero stats already above) */}
-                        {/* Mobile: Grow Slots */}
-                        <div className="order-2 lg:order-none lg:col-span-2 space-y-6">
+                        {/* Mobile: Grow Slots first (primary feature) */}
+                        <div className="order-1 lg:order-none lg:col-span-2 space-y-6">
                             {showGrowFromStrainBanner && (
                                 <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
                                     <div className="flex-grow">
@@ -313,6 +307,11 @@ export const PlantsView: React.FC = () => {
                                     )}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Mobile: Live-Umgebung second */}
+                        <div className="order-2 lg:order-none lg:col-span-2">
+                            <DashboardSummary />
                         </div>
 
                         {/* Mobile: 3D Grow Room */}

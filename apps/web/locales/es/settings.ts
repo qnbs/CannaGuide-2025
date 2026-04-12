@@ -833,15 +833,15 @@ export const settingsView = {
         projectInfo: 'Informacion del Proyecto y README',
         version: 'Version',
         whatsNew: {
-            title: 'Novedades en v1.6',
+            title: 'Novedades en v1.8',
             items: {
                 simulation:
-                    'Seguridad de cadena de suministro SLSA Nivel 3 con generacion de SBOM CycloneDX y procedencia no falsificable para cada lanzamiento.',
+                    'Voice Pro: Deteccion de palabra clave WASM Porcupine (11 palabras), ElevenLabs Cloud TTS y orquestador de voz de 37 comandos con HUD de forma de onda.',
                 strains:
-                    '22 modulos de servicio de IA local con respaldo de 3 capas (WebLLM -> Transformers.js -> Heuristicas) y aceleracion WebGPU/ONNX.',
-                help: '9 temas de cannabis, 5 idiomas (EN/DE/ES/FR/NL), lint estricto completo con cero advertencias y 1961 pruebas automatizadas.',
+                    'Boveda de Semillas con resultados de cosecha, registro de polen y almacenamiento de semillas. Rediseno UI glassmorphism en todas las vistas principales.',
+                help: 'HydroMonitor con pronostico ONNX pH/EC/Temp, panel de analisis predictivo y panel de indicadores en tiempo real con graficos de tendencias.',
                 settings:
-                    'Sincronizacion en la nube basada en CRDT con resolucion de conflictos, worker de pronostico ONNX hidroponico y WorkerBus con preempcion por prioridad.',
+                    'Worker Pool W-06 con generacion lazy, timeout inactivo y exencion hot-worker. Advertencias de accesibilidad reducidas de 202 a 83. 2253 pruebas automatizadas.',
             },
         },
         techStack: {

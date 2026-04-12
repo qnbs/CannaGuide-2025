@@ -33,9 +33,9 @@ We aim to conform to **WCAG 2.1 Level AA** where applicable, specifically:
 - **Manual**: Periodic testing with VoiceOver (macOS) and NVDA (Windows)
 - **CI**: Lighthouse accessibility audits in `lighthouserc.json`
 
-### ESLint jsx-a11y Baseline (2026-04-11)
+### ESLint jsx-a11y Baseline (2026-04-14)
 
-- **169 warnings** across the codebase (0 errors)
+- **83 warnings** across the codebase (0 errors)
 - Rules: all `eslint-plugin-jsx-a11y` recommended rules at `warn` level
 - Activation: `pnpm run lint:a11y` (or `LINT_A11Y=1 eslint .`)
 - Not included in lint-staged or CI gate (to avoid blocking commits)

@@ -430,6 +430,16 @@ export const helpView = {
                 content:
                     'La bibliotheque de varietes est rafraichie automatiquement chaque jour a 04:20 UTC via un workflow GitHub Actions.',
             },
+            proactiveCoach: {
+                title: 'Coach Intelligent Proactif',
+                content:
+                    'Le Smart Coach surveille les valeurs environnementales de vos plantes (temperature, humidite, VPD, pH, EC) en temps reel. Lorsqu une metrique depasse les limites, le coach demande des conseils IA specifiques a la plante et envoie une <strong>Alerte Intelligente</strong>. Un temps de refroidissement de 2 heures par metrique et par plante previent la fatigue des alertes.',
+            },
+            voiceCommands: {
+                title: 'Reference des Commandes Vocales',
+                content:
+                    'Le systeme vocal supporte 37 commandes de navigation, d actions et de requetes. Exemples : <ul><li><strong>Navigation :</strong> "Aller aux Varietes", "Ouvrir Parametres"</li><li><strong>Actions :</strong> "Arroser toutes les plantes", "Chercher Blue Dream"</li><li><strong>Controle :</strong> "Arreter d ecouter", "Annuler", "Oui/Confirmer"</li></ul>',
+            },
         },
         strains: {
             title: 'Vue Varietes',
@@ -455,6 +465,11 @@ export const helpView = {
                 content:
                     "Selectionnez une ou plusieurs varietes et utilisez le bouton d'exportation pour generer un fichier PDF ou TXT.",
             },
+            seedVault: {
+                title: 'Coffre a Graines',
+                content:
+                    'Suivez vos resultats de recolte, gerez un journal de pollen et stockez les graines collectees de vos cultures. Le Coffre a Graines fournit un registre centralise de tout le materiel genetique que vous avez produit ou collecte.',
+            },
         },
         plants: {
             title: 'Vue Plantes (La Salle de Culture)',
@@ -479,6 +494,26 @@ export const helpView = {
                 title: 'Journal Complet',
                 content:
                     "Enregistrez chaque action -- de l'arrosage a l'entrainement en passant par le controle des parasites.",
+            },
+            growPlanner: {
+                title: 'Planificateur de Culture',
+                content:
+                    'Planifiez votre culture avec un calendrier base sur les taches. Creez des taches avec dates d echeance, marquez-les comme terminees et suivez les elements en retard avec des avertissements visuels.',
+            },
+            problemTracker: {
+                title: 'Suivi des Problemes',
+                content:
+                    'Enregistrez et suivez les problemes de sante des plantes de l identification a la resolution. Creez des problemes avec descriptions et niveaux de gravite, ajoutez des enregistrements de traitement.',
+            },
+            qrTags: {
+                title: 'Etiquettes QR de Plantes',
+                content:
+                    'Generez des etiquettes QR pour le suivi physique. Chaque etiquette encode le nom de la plante, la variete et un identifiant unique. Imprimez ou exportez en PDF.',
+            },
+            growRoom3d: {
+                title: 'Salle de Culture 3D',
+                content:
+                    'Visualisez votre espace de culture dans un canevas 3D interactif avec camera orbitale automatique. Integre les badges de capteurs IoT pour le contexte environnemental en temps reel.',
             },
         },
         equipment: {

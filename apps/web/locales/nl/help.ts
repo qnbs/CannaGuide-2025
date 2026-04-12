@@ -428,6 +428,16 @@ export const helpView = {
                 content:
                     'De varieteitenbibliotheek wordt dagelijks automatisch vernieuwd om 04:20 UTC via een GitHub Actions workflow.',
             },
+            proactiveCoach: {
+                title: 'Proactieve Slimme Coach',
+                content:
+                    'De Smart Coach bewaakt je plantenomgevingswaarden (temperatuur, luchtvochtigheid, VPD, pH, EC) in realtime en vergelijkt ze met veilige drempels. Bij overschrijding vraagt de coach plantspecifiek AI-advies aan en stuurt een <strong>Slimme Alert</strong> naar je dashboard. Een 2-uurs afkoelperiode per meting en plant voorkomt alertmoeheid.',
+            },
+            voiceCommands: {
+                title: 'Spraakcommando Referentie',
+                content:
+                    'Het spraaksysteem ondersteunt 37 commando\'s voor navigatie, acties en queries. Voorbeelden: <ul><li><strong>Navigatie:</strong> "Ga naar Varieteiten", "Open Instellingen"</li><li><strong>Acties:</strong> "Alle planten water geven", "Zoek Blue Dream"</li><li><strong>Controle:</strong> "Stop met luisteren", "Annuleren", "Ja/Bevestigen"</li></ul>',
+            },
         },
         strains: {
             title: 'Varieteitenoverzicht',
@@ -453,6 +463,11 @@ export const helpView = {
                 content:
                     'Selecteer een of meer varieteiten en gebruik de exportknop om een PDF- of TXT-bestand te genereren.',
             },
+            seedVault: {
+                title: 'Zaadkluis',
+                content:
+                    'Volg je oogstresultaten, beheer een pollenlogboek en sla verzamelde zaden op van je kweken. De Zaadkluis biedt een centraal register van al het genetische materiaal dat je hebt geproduceerd of verzameld.',
+            },
         },
         plants: {
             title: 'Plantenoverzicht (De Kweekruimte)',
@@ -477,6 +492,26 @@ export const helpView = {
                 title: 'Uitgebreid Dagboek',
                 content:
                     'Registreer elke actie -- van water geven en training tot plaagbestrijding en toevoegingen.',
+            },
+            growPlanner: {
+                title: 'Kweekplanner',
+                content:
+                    'Plan je kweek met een taakgebaseerde kalender. Maak taken met vervaldata, markeer ze als voltooid en volg achterstallige items met visuele waarschuwingen.',
+            },
+            problemTracker: {
+                title: 'Probleemtracker',
+                content:
+                    'Registreer en volg plantgezondheidsproblemen van identificatie tot oplossing. Maak problemen aan met beschrijvingen en ernstniveaus, voeg behandelingsrecords toe.',
+            },
+            qrTags: {
+                title: 'QR Plantenlabels',
+                content:
+                    'Genereer QR-code plantenlabels voor fysieke tracking. Elk label codeert de plantnaam, varieteit en uniek ID. Print of exporteer als PDF.',
+            },
+            growRoom3d: {
+                title: '3D Kweekruimte',
+                content:
+                    'Visualiseer je kweekruimte in een interactief 3D-canvas met automatische orbitcamera. Integreert IoT-sensorbadges voor realtime omgevingscontext.',
             },
         },
         equipment: {

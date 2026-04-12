@@ -821,15 +821,15 @@ export const settingsView = {
         projectInfo: 'Projekt-Infos & README',
         version: 'Version',
         whatsNew: {
-            title: 'Was ist neu in v1.6',
+            title: 'Was ist neu in v1.8',
             items: {
                 simulation:
-                    'SLSA Level 3 Supply-Chain-Sicherheit mit CycloneDX-SBOM-Generierung und nicht-faelschbarer Provenienz fuer jedes Release.',
+                    'Voice Pro: Porcupine WASM Wake-Word-Erkennung (11 Schluesselwoerter), ElevenLabs Cloud TTS und ein 37-Befehle-Sprachorchestrierer mit Wellenform-HUD.',
                 strains:
-                    '22 lokale KI-Service-Module mit 3-Schicht-Fallback (WebLLM -> Transformers.js -> Heuristiken) und WebGPU/ONNX-Beschleunigung.',
-                help: '9 Cannabis-Themes, 5 Sprachen (EN/DE/ES/FR/NL), vollstaendig striktes Lint mit null Warnungen und 1961 automatisierte Tests.',
+                    'Saatgut-Tresor mit Ernteergebnissen, Pollen-Logbuch und Saatgut-Lagerung. Glassmorphism-UI-Ueberarbeitung aller Hauptansichten.',
+                help: 'HydroMonitor mit ONNX pH/EC/Temp-Vorhersage, Predictive-Analytics-Panel und Echtzeit-Anzeige-Dashboard mit Trenddiagrammen.',
                 settings:
-                    'CRDT-basierte Cloud-Synchronisation mit Konfliktloesung, hydroponischer ONNX-Forecast-Worker und prioritaets-praeemptiver WorkerBus.',
+                    'Worker Pool W-06 mit Lazy Spawning, Idle-Timeout und Hot-Worker-Ausnahme. Barrierefreiheits-Warnungen von 202 auf 83 reduziert. 2253 automatisierte Tests.',
             },
         },
         techStack: {

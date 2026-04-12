@@ -598,6 +598,16 @@ export const helpView = {
                 content:
                     'The strain library is refreshed automatically every day at 04:20 UTC via a GitHub Actions workflow. New community-contributed strains are validated for duplicates and merged into the catalog. You receive the latest additions through the next PWA update without any manual action.',
             },
+            proactiveCoach: {
+                title: 'Proactive Smart Coach',
+                content:
+                    'The Smart Coach monitors your plant environment values (temperature, humidity, VPD, pH, EC) in real-time and compares them against safe thresholds. When a metric breaches its limits, the coach requests plant-specific AI advice and pushes a <strong>Smart Alert</strong> to your dashboard. A 2-hour per-metric per-plant cooldown prevents alert fatigue. Configure thresholds in <strong>Settings -> Notifications</strong>. Alerts also trigger browser push notifications when permissions are granted.',
+            },
+            voiceCommands: {
+                title: 'Voice Command Reference',
+                content:
+                    'The voice system supports 37 commands across navigation, actions, and queries. Examples: <ul><li><strong>Navigation:</strong> "Go to Strains", "Open Settings", "Show Equipment", "Switch to Plants"</li><li><strong>Actions:</strong> "Water all plants", "Add a plant", "Search for Blue Dream", "Open command palette"</li><li><strong>Queries:</strong> "What is the VPD?", "Show plant status", "Get AI advice"</li><li><strong>Control:</strong> "Stop listening", "Cancel", "Yes/Confirm"</li></ul>Commands are processed with 3-pass matching (exact -> fuzzy -> intent) in the off-main-thread Voice Worker.',
+            },
         },
         strains: {
             title: 'Strains View',
@@ -628,6 +638,11 @@ export const helpView = {
                 content:
                     'Explore the latest cannabis genetic trends for 2026 in a dedicated tab. Covers terpene diversity (savory/gassy aromas), ultra-high potency with full-spectrum effects, balanced hybrids for intentional consumption, the autoflowering revolution, advanced breeding techniques (polyploidy, F1 hybrids, marker-assisted selection), and the landrace revival movement. Each trend includes detailed descriptions, key examples, and relevance ratings.',
             },
+            seedVault: {
+                title: 'Seed Vault',
+                content:
+                    'Track your harvest results, manage a pollen log, and store collected seeds from your grows. The Seed Vault provides a centralized record of all genetic material you have produced or collected, making it easy to plan future breeding projects in the Breeding Lab.',
+            },
         },
         plants: {
             title: 'Plants View (The Grow Room)',
@@ -652,6 +667,26 @@ export const helpView = {
                 title: 'Comprehensive Journaling',
                 content:
                     "Log every action—from watering and training to pest control and amendments. The journal is your detailed, timestamped record of the plant's entire lifecycle, which can be filtered by event type.",
+            },
+            growPlanner: {
+                title: 'Grow Planner',
+                content:
+                    'Plan your cultivation with a task-based calendar. Create tasks with due dates, mark them complete, and track overdue items with visual warnings. The planner supports week and month views and stores up to 500 tasks per plant with FIFO culling. Use it to schedule waterings, feedings, training sessions, and harvest milestones.',
+            },
+            problemTracker: {
+                title: 'Problem Tracker',
+                content:
+                    'Log and track plant health issues from identification to resolution. Create issues with descriptions and severity levels, add treatment records, and transition issue status (open -> in-progress -> resolved). The tracker stores up to 200 issues with plant-scoped selectors for filtering. Combine it with the AI Photo Diagnosis for data-driven issue management.',
+            },
+            qrTags: {
+                title: 'QR Plant Tags',
+                content:
+                    'Generate QR code plant tags for physical tracking. Each tag encodes the plant name, strain, and unique identifier. Print tags directly from the browser or export them as PDF files for labeling your pots and containers.',
+            },
+            growRoom3d: {
+                title: '3D Grow Room',
+                content:
+                    'Visualize your grow space in an interactive 3D canvas with auto-orbit camera. The 3D view displays plant positions and integrates IoT sensor badges for real-time environment context. Powered by Three.js with OrbitControls.',
             },
         },
         equipment: {
@@ -735,7 +770,12 @@ export const helpView = {
             lexikon: {
                 title: 'Knowledge Glossary',
                 content:
-                    'Search through 83 grower terms organized in 6 categories: General, Cannabinoid, Terpene, Flavonoid, Nutrient, and Disease. Each term includes a clear definition and is available in all 5 languages.',
+                    'Search through 91 grower terms organized in 6 categories: General, Cannabinoid, Terpene, Flavonoid, Nutrient, and Disease. Each term includes a clear definition and is available in all 5 languages.',
+            },
+            analytics: {
+                title: 'Analytics Dashboard',
+                content:
+                    'View grow statistics, trend analysis, and performance metrics across your cultivation history. The analytics dashboard visualizes data from your plant metrics, journal entries, and environment readings to help you identify patterns and optimize future grows.',
             },
         },
         settings: {

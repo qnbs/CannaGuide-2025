@@ -1167,6 +1167,22 @@ export const analytics = {
         severeProblem: '{{name}}: {{problem}} (severite {{severity}}/10)',
         overdueTask: '{{name}}: Tache en retard -- {{task}}',
     },
+    predictive: {
+        title: 'Analyses Predictives',
+        analyzing: 'Analyse des donnees du capteur...',
+        noData: 'Pas assez de donnees pour les predictions',
+        samples: 'echantillons',
+        botrytisRisk: 'Risque de Botrytis',
+        envAlerts: 'Alertes Environnementales',
+        yieldImpact: 'Impact sur le Rendement',
+        selectPlant: 'Selectionner une plante',
+        risk: {
+            low: 'Faible',
+            moderate: 'Modere',
+            high: 'Eleve',
+            critical: 'Critique',
+        },
+    },
 }
 
 export const growBible = {

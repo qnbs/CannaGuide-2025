@@ -8,9 +8,13 @@
  *
  * Extracted from aiService.ts (Phase 2 -- Core Decoupling).
  */
-import { localAiPreloadService } from '@/services/local-ai'
+import {
+    localAiPreloadService,
+    setEcoModeExplicit,
+    registerModeAccessors,
+    isEcoMode,
+} from '@/services/local-ai'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
-import { setEcoModeExplicit, registerModeAccessors, isEcoMode } from '@/services/aiEcoModeService'
 import { captureLocalAiError } from '@/services/sentryService'
 import type { AiMode } from '@/types'
 

@@ -1,34 +1,34 @@
 {
     "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker/master/packages/core/schema/stryker-core.schema.json",
     "mutate": [
-        "apps/web/stores/slices/**/*.ts",
-        "apps/web/stores/useIotStore.ts",
-        "apps/web/services/equipmentCalculatorService.ts",
-        "apps/web/services/knowledgeCalculatorService.ts",
-        "apps/web/services/knowledgeRagService.ts",
-        "apps/web/utils/lockFreeRingBuffer.ts",
-        "apps/web/utils/atomicsChannel.ts",
-        "apps/web/services/workerPool.ts",
-        "apps/web/services/local-ai/**/*.ts",
-        "!apps/web/services/local-ai/**/index.ts",
-        "!apps/web/services/local-ai/**/interfaces.ts",
-        "!apps/web/stores/slices/**/*.test.ts",
-        "!apps/web/stores/**/*.test.ts",
-        "!apps/web/utils/**/*.test.ts",
-        "!apps/web/services/**/*.test.ts"
+        "stores/slices/**/*.ts",
+        "stores/useIotStore.ts",
+        "services/equipmentCalculatorService.ts",
+        "services/knowledgeCalculatorService.ts",
+        "services/knowledgeRagService.ts",
+        "utils/lockFreeRingBuffer.ts",
+        "utils/atomicsChannel.ts",
+        "services/workerPool.ts",
+        "services/local-ai/**/*.ts",
+        "!services/local-ai/**/index.ts",
+        "!services/local-ai/**/interfaces.ts",
+        "!stores/slices/**/*.test.ts",
+        "!stores/**/*.test.ts",
+        "!utils/**/*.test.ts",
+        "!services/**/*.test.ts"
     ],
     "testRunner": "vitest",
     "plugins": ["@stryker-mutator/vitest-runner"],
     "checkers": [],
     "coverageAnalysis": "off",
     "vitest": {
-        "configFile": "apps/web/vite.config.ts",
-        "dir": "apps/web"
+        "configFile": "vite.config.ts",
+        "dir": "."
     },
-    "testFiles": ["apps/web/**/*.test.ts", "apps/web/**/*.test.tsx"],
+    "testFiles": ["**/*.test.ts", "**/*.test.tsx"],
     "reporters": ["clear-text", "html"],
     "htmlReporter": {
-        "fileName": "reports/mutation/mutation-report.html"
+        "fileName": "../../reports/mutation/mutation-report.html"
     },
     "thresholds": {
         "high": 80,

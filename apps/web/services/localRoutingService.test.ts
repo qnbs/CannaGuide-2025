@@ -4,16 +4,13 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 vi.mock('@/services/local-ai', () => ({
     localAiPreloadService: { isReady: vi.fn(() => false) },
     localAiService: { test: vi.fn() },
+    setEcoModeExplicit: vi.fn(),
+    registerModeAccessors: vi.fn(),
+    isEcoMode: vi.fn(() => false),
 }))
 
 vi.mock('@/services/localOnlyModeService', () => ({
     isLocalOnlyMode: vi.fn(() => false),
-}))
-
-vi.mock('@/services/aiEcoModeService', () => ({
-    setEcoModeExplicit: vi.fn(),
-    registerModeAccessors: vi.fn(),
-    isEcoMode: vi.fn(() => false),
 }))
 
 vi.mock('@/services/sentryService', () => ({

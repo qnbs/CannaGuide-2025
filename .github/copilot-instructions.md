@@ -22,7 +22,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
-- **Testing:** Vitest (2284 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (2290 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0)
@@ -264,7 +264,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 2284 tests, 0 failures
+- Baseline: 2290 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
@@ -518,6 +518,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/indexedDbPruneService.ts`                                    | Quota-aware IndexedDB store pruning (images 500 cap, search 5000 cap), cursor-based oldest-first deletion                                                                    |
 | `apps/web/services/trendsEcosystemService.ts`                                   | Cross-hub match scores (genetic trends <-> grow tech), 5-min cache, static relationship maps                                                                                 |
 | `apps/web/components/common/WebLlmPreloadBanner.tsx`                            | Global toast showing WebLLM model download progress during auto-preload (dismissible)                                                                                        |
+| `apps/web/components/common/PredictiveInsightsPanel.tsx`                        | Shared predictive insights UI: Botrytis risk card, env alerts, yield impact (configurable i18nPrefix)                                                                        |
 | `apps/web/services/uiStateBridge.ts`                                            | Central Redux<->Zustand bridge: `initUIStateBridgeFull`, `getReduxSnapshot`, `subscribeToRedux`, `dispatchToRedux`                                                           |
 | `apps/web/stores/useAlertsStore.ts`                                             | Zustand store for transient smart coach alerts                                                                                                                               |
 | `apps/web/stores/useVoiceStore.ts`                                              | Zustand store for transient voice session state (mode, transcriptHistory, confirmationPending, error)                                                                        |
@@ -538,6 +539,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/workers/hydroForecastWorker.ts`                                       | Off-main-thread ONNX hydro inference: pH/EC/Temp prediction, WASM backend, weighted moving average fallback                                                                  |
 | `apps/web/components/views/settings/LlmModelSelector.tsx`                       | Card-based WebLLM model selector UI: auto/manual model selection, GPU tier awareness, download progress                                                                      |
 | `apps/web/hooks/useStreamingResponse.ts`                                        | Shared RAF-debounced streaming hook used by MentorChatView, AiTab (advisor + diagnosis)                                                                                      |
+| `apps/web/hooks/usePredictiveAnalytics.ts`                                      | Predictive analytics hook: auto-refresh 5min, stable plantsKey, worst-risk, Sentry breadcrumbs                                                                               |
 | `apps/web/hooks/useVpdSabStream.ts`                                             | Main-thread SAB consumer: polls VPD AtomicsChannel signals + LockFreeRingBuffer values at 250ms intervals                                                                    |
 | `apps/web/hooks/useStateHealthCheck.ts`                                         | Dev-only hook: detects Redux<->Zustand state inconsistencies; zero production overhead (tree-shaken)                                                                         |
 | `apps/web/simulation.worker.ts`                                                 | VPD simulation Web Worker                                                                                                                                                    |

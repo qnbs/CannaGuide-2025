@@ -72,7 +72,7 @@ startAppListening({
             await syncLocalOnlyMode(action.payload.value as boolean)
         }
         if (action.payload.path === 'localAi.ecoMode') {
-            const { setEcoModeExplicit } = await import('@/services/aiEcoModeService')
+            const { setEcoModeExplicit } = await import('@/services/local-ai')
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dispatch payload narrowing
             setEcoModeExplicit(action.payload.value as boolean)
         }

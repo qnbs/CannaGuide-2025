@@ -198,7 +198,10 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
 
     if (plants.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-center text-white/60">
+            <div
+                data-testid="analytics-empty-state"
+                className="flex flex-col items-center justify-center py-16 text-center text-white/60"
+            >
                 <p className="text-lg">
                     {t('analytics.analyticsEmpty', 'Add plants to see analytics')}
                 </p>
@@ -226,7 +229,10 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
             </div>
 
             {/* -- Garden Score Gauge ---------------------------------------- */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-sm">
+            <div
+                data-testid="analytics-garden-score"
+                className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-sm"
+            >
                 <p className="mb-2 text-sm text-white/60">
                     {t('analytics.gardenScore', 'Garden Score')}
                 </p>

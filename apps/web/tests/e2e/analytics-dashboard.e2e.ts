@@ -58,14 +58,14 @@ test.describe('Analytics Dashboard Critical Path', () => {
 
         const mainContent = page.locator('main').first()
 
-        // Should show Garden Score or an empty state message
-        const gardenScore = mainContent
-            .getByText(/Garden Score|Garten-Score|Score|No plants|Keine Pflanzen/i)
-            .first()
-        const hasContent = await gardenScore.isVisible().catch(() => false)
+        // Should show Garden Score card or empty state -- both valid on fresh boot
+        const gardenScore = mainContent.locator('[data-testid="analytics-garden-score"]')
+        const emptyState = mainContent.locator('[data-testid="analytics-empty-state"]')
+        const hasGardenScore = await gardenScore.isVisible().catch(() => false)
+        const hasEmptyState = await emptyState.isVisible().catch(() => false)
 
         // Either the dashboard renders with data or shows empty state -- both valid
-        expect(hasContent).toBeTruthy()
+        expect(hasGardenScore || hasEmptyState).toBeTruthy()
 
         await expectNoCrashPatterns(page)
         tracker.detach()

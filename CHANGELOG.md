@@ -39,6 +39,13 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **fix(e2e):** Analytics Dashboard "Garden Score section" test --
+  replaced brittle text-regex selector with data-testid attributes
+  (`analytics-empty-state`, `analytics-garden-score`). Fixes CI
+  failure when no plants exist on fresh app boot (PR #924).
+
 ### Added
 
 - **feat(knowledge):** Predictive Insights section in Analytics Dashboard --

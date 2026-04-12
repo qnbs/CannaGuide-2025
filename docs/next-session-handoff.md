@@ -2,7 +2,43 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 159) -- Stryker CI Perf + i18n + Local AI 5-Language
+## Latest Session (Session 160) -- Fix Analytics Dashboard E2E CI Failure
+
+**Status: Fixed failing E2E test "Analytics Dashboard renders Garden Score
+section" (PR #924). Root cause: text-based regex selector did not match
+the actual empty-state text rendered when no plants exist. Added
+data-testid attributes to AnalyticsDashboardView, updated E2E test to
+use reliable data-testid selectors. All verified: 0 TS errors, 2290
+tests, build OK.**
+
+### What Was Done (Session 160)
+
+1. **E2E CI Fix (Critical -- PR #924):**
+    - Root cause: `bootFreshAppPastOnboarding` starts with 0 plants,
+      component renders empty state with `t('analytics.analyticsEmpty')`,
+      but test regex `/Garden Score|...No plants|Keine Pflanzen/i`
+      matched none of the 5-language empty-state texts
+    - Added `data-testid="analytics-empty-state"` to empty state div
+    - Added `data-testid="analytics-garden-score"` to Garden Score card
+    - Updated E2E test to use `data-testid` selectors per project
+      standards (avoid hardcoded text selectors)
+    - Test now checks: garden-score visible OR empty-state visible
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2290 passing, 0 failures (197 files)
+- Build: clean, 172 precache entries
+
+### Next Steps
+
+- Audit remaining E2E tests for brittle text-based selectors
+- Add `data-testid` attributes to other dashboard sections
+- Continue with Priority Roadmap items
+
+---
+
+## Session 159 -- Stryker CI Perf + i18n + Local AI 5-Language
 
 **Status: Stryker CI timeout + concurrency fixed. GrowPlanner i18n wired.
 Local AI fallback + stream prompts expanded from EN/DE to all 5 languages

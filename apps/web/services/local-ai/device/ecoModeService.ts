@@ -7,13 +7,24 @@
 // OOM on mobile / low-end hardware.
 // ---------------------------------------------------------------------------
 
+/** Battery level below which WebGPU/WebLLM are hard-disabled. */
+const CRITICAL_BATTERY_THRESHOLD = 0.15
+
 // ── Module state ──────────────────────────────────────────
 let _ecoActive = false
+let _criticalBattery = false
 let _modeGetter: (() => string) | null = null
 let _modeSetter: ((mode: string) => void) | null = null
 
 /** True when eco mode is active — callers can use this to skip heavy models. */
 export const isEcoMode = (): boolean => _ecoActive
+
+/**
+ * True when battery is critically low (<15%, not charging).
+ * In this state, WebGPU/WebLLM must NOT be used at all — route to
+ * cloud or heuristic fallback only.
+ */
+export const isCriticalBattery = (): boolean => _criticalBattery
 
 /** Explicitly set eco mode state (used when the user selects 'eco' manually). */
 export const setEcoModeExplicit = (active: boolean): void => {
@@ -65,10 +76,42 @@ export const detectEcoCondition = async (): Promise<boolean> => {
 }
 
 /**
+ * Detect critical battery state (<15%, not charging).
+ * When critical, WebGPU/WebLLM are hard-disabled regardless of mode.
+ */
+export const detectCriticalBattery = async (): Promise<boolean> => {
+    if (typeof navigator === 'undefined') return false
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrowing navigator for Battery API
+        const nav = navigator as unknown as {
+            getBattery?: () => Promise<{ level: number; charging: boolean }>
+        }
+        const battery = await nav.getBattery?.()
+        if (battery && !battery.charging && battery.level < CRITICAL_BATTERY_THRESHOLD) {
+            return true
+        }
+    } catch {
+        // Battery API unavailable
+    }
+    return false
+}
+
+/**
  * If the current mode is 'hybrid', probe the device and auto-switch to 'eco'
  * when constrained. Requires `registerModeAccessors()` to have been called.
+ *
+ * Also detects critical battery and sets the hard-gate flag.
  */
 export const applyAdaptiveMode = async (): Promise<void> => {
+    // Check critical battery first (applies to all modes)
+    const critical = await detectCriticalBattery()
+    if (critical !== _criticalBattery) {
+        _criticalBattery = critical
+        if (critical) {
+            console.debug('[AI] Critical battery (<15%) -- WebGPU/WebLLM hard-disabled.')
+        }
+    }
+
     const currentMode = _modeGetter?.()
     if (currentMode !== 'hybrid') return
     if (await detectEcoCondition()) {

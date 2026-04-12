@@ -13,6 +13,7 @@ import {
     setEcoModeExplicit,
     registerModeAccessors,
     isEcoMode,
+    isCriticalBattery,
 } from '@/services/local-ai'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { captureLocalAiError } from '@/services/sentryService'
@@ -82,6 +83,8 @@ export { isEcoMode }
  * - **hybrid**: route locally when offline OR when local models are pre-loaded
  */
 export const shouldRouteLocally = (): boolean => {
+    // Critical battery: force cloud/heuristic, never run local ML inference
+    if (isCriticalBattery() && !isOffline()) return false
     if (isLocalOnlyMode()) return true
     if (_aiMode === 'local' || _aiMode === 'eco') return true
     if (_aiMode === 'cloud') return isOffline()

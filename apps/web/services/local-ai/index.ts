@@ -240,9 +240,11 @@ export type {
 
 export {
     isEcoMode,
+    isCriticalBattery,
     setEcoModeExplicit,
     registerModeAccessors,
     detectEcoCondition,
+    detectCriticalBattery,
     applyAdaptiveMode,
 } from './device/ecoModeService'
 

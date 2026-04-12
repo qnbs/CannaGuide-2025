@@ -7,6 +7,7 @@ vi.mock('@/services/local-ai', () => ({
     setEcoModeExplicit: vi.fn(),
     registerModeAccessors: vi.fn(),
     isEcoMode: vi.fn(() => false),
+    isCriticalBattery: vi.fn(() => false),
 }))
 
 vi.mock('@/services/localOnlyModeService', () => ({

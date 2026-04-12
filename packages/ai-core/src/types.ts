@@ -13,6 +13,8 @@ export interface AiUsageMetadata {
 export interface AIResponse {
     title: string
     content: string
+    /** Optional confidence score (0-1). Responses below 0.7 should be flagged as uncertain. */
+    confidence?: number | undefined
 }
 
 /** Structured plant diagnosis result from image analysis. */
@@ -44,11 +46,20 @@ export interface DeepDiveGuide {
 
 /** A single message in the AI mentor conversation. */
 export interface MentorMessage {
-    id?: string
+    id?: string | undefined
     role: 'user' | 'model'
     title: string
     content: string
-    uiHighlights?: { elementId: string; plantId?: string }[]
+    uiHighlights?: { elementId: string; plantId?: string | undefined }[] | undefined
+}
+
+/** Product link for equipment recommendations. */
+export interface ProductLink {
+    vendor: string
+    url: string
+    price?: number | undefined
+    currency?: string | undefined
+    inStock?: boolean | undefined
 }
 
 /** Equipment recommendation item. */
@@ -56,7 +67,9 @@ export interface RecommendationItem {
     name: string
     price: number
     rationale: string
-    watts?: number
+    watts?: number | undefined
+    manufacturer?: string | undefined
+    productLinks?: ProductLink[] | undefined
 }
 
 /** Equipment category keys. */

@@ -2,7 +2,138 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 160) -- Fix Analytics Dashboard E2E CI Failure
+## Latest Session (Session 161) -- Domain Type Consolidation + Security + WorkerBus + AI Battery
+
+**Status: Major architecture milestone -- domain types extracted from
+monolithic apps/web/types.ts (1869 lines) to @cannaguide/ai-core/src/domain/
+(11 files). Bridge pattern ensures 0 breaking changes for 150+ importers.
+IoT WSS enforcement, WorkerBus OOM monitoring, and AI critical battery
+gating implemented. All verified: 0 TS errors, 2290 tests, build OK.**
+
+### What Was Done (Session 161)
+
+1. **Phase 1: Domain Type Consolidation (Architecture)**
+    - Created 11 domain type files in `packages/ai-core/src/domain/`:
+      enums.ts, strain.ts, plant.ts, grow.ts, hydro.ts, knowledge.ts,
+      diagnosis.ts, breeding.ts, issue.ts, shared.ts, index.ts
+    - 120+ domain types (Plant, Strain, Recommendation, etc.) now
+      canonical in @cannaguide/ai-core
+    - Deduplicated 10+ types previously defined in both ai-core and
+      web app (AIResponse, PlantDiagnosisResponse, Recommendation, etc.)
+    - Bridge: apps/web/types.ts re-exports all domain types from
+      ai-core -- 150+ consumers unchanged, 0 breaking changes
+    - Reduced apps/web/types.ts from 1869 to 583 lines (UI-only types)
+    - Updated packages/ai-core/src/index.ts to export domain barrel
+    - Updated packages/ai-core/src/types.ts to import from domain/
+
+2. **Phase 2.1: IoT MQTT WSS Enforcement (Security)**
+    - mqttClientService.ts: ws:// + credentials now throws Error
+      instead of only logging a debug warning
+    - Unencrypted connections with auth are rejected at connect time
+    - Default broker remains wss://test.mosquitto.org:8081
+
+3. **Phase 3.1: WorkerBus OOM Monitoring (Stability)**
+    - workerPool.ts: Added periodic memory pressure monitoring (30s)
+    - > 85% heap: terminates low-priority workers + Sentry warning
+    - > 90% heap: terminates all non-hot workers + Sentry error
+    - Auto-starts on first getOrCreate(), stops on dispose()
+
+4. **Phase 4.1: AI Critical Battery Gating (Battery)**
+    - ecoModeService.ts: New isCriticalBattery() (<15% + not charging)
+    - localRoutingService.ts: shouldRouteLocally() returns false on
+      critical battery (forces cloud/heuristic, skips local ML)
+    - Exported from local-ai barrel + interfaces.ts
+    - localRoutingService.test.ts: Added isCriticalBattery mock
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2290 passing, 0 failures (197 files)
+- Build: clean, 172 precache entries
+- apps/web/types.ts: 1869 -> 583 lines (-69%)
+
+### Planned Executions (Future Sessions)
+
+**Execution 2: IoT Worker + Rate Limiting**
+
+- Create mqttWorker.ts (MQTT client in worker context)
+- Register in workerFactories.ts (priority: normal, hot: false)
+- Add Ring-Buffer backpressure for high-frequency sensor data
+- Implement 10 msg/s throttle with sensor aggregation
+- Prerequisites: Phase 1 complete (done)
+- Estimated complexity: Medium-High
+
+**Execution 3: Critical Test Coverage**
+
+- cacheService.test.ts (LRU eviction, TTL, max value)
+- indexedDbPruneService.test.ts (quota threshold, oldest-first)
+- modelLoader.test.ts (memory pressure, concurrent loads)
+- healthService.test.ts (device classification)
+- SAB fallback E2E test (without COEP headers)
+- Prerequisites: None
+- Estimated complexity: Medium
+
+**Execution 4: Cache Maintenance + Battery Telemetry**
+
+- cacheMaintenanceWorker.ts (background TTL pruning, 5min delay)
+- Battery-level transitions as Sentry breadcrumbs
+- Eco-mode transition telemetry
+- Prerequisites: None
+- Estimated complexity: Low-Medium
+
+**Execution 5: Roadmap v2.0 Restructuring**
+
+- AR/VR -> v2.x (Low Priority Backlog)
+- v2.0 Core: IoT Plug&Play (QR -> Flash -> Dashboard)
+- Automation engine: telemetry-based rules (VPD > 1.5 -> alert)
+- Federated Community Data (anonymized growth telemetry sharing)
+
+### Next Steps
+
+- Execute Planned Execution 2 (MQTT Worker)
+- Execute Planned Execution 3 (Critical Tests)
+- Gradually migrate individual importers from `@/types` to
+  `@cannaguide/ai-core` for types they directly use
+
+---
+
+## Previous Session (Session 160) -- Fix Analytics Dashboard E2E CI Failure
+
+**Status: Fixed failing E2E test "Analytics Dashboard renders Garden Score
+section" (PR #924). Root cause: text-based regex selector did not match
+the actual empty-state text rendered when no plants exist. Added
+data-testid attributes to AnalyticsDashboardView, updated E2E test to
+use reliable data-testid selectors. All verified: 0 TS errors, 2290
+tests, build OK.**
+
+### What Was Done (Session 160)
+
+1. **E2E CI Fix (Critical -- PR #924):**
+    - Root cause: `bootFreshAppPastOnboarding` starts with 0 plants,
+      component renders empty state with `t('analytics.analyticsEmpty')`,
+      but test regex `/Garden Score|...No plants|Keine Pflanzen/i`
+      matched none of the 5-language empty-state texts
+    - Added `data-testid="analytics-empty-state"` to empty state div
+    - Added `data-testid="analytics-garden-score"` to Garden Score card
+    - Updated E2E test to use `data-testid` selectors per project
+      standards (avoid hardcoded text selectors)
+    - Test now checks: garden-score visible OR empty-state visible
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2290 passing, 0 failures (197 files)
+- Build: clean, 172 precache entries
+
+### Next Steps
+
+- Audit remaining E2E tests for brittle text-based selectors
+- Add `data-testid` attributes to other dashboard sections
+- Continue with Priority Roadmap items
+
+---
+
+## Session 159 -- Fix Analytics Dashboard E2E CI Failure
 
 **Status: Fixed failing E2E test "Analytics Dashboard renders Garden Score
 section" (PR #924). Root cause: text-based regex selector did not match

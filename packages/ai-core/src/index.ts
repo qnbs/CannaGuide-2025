@@ -23,6 +23,7 @@ export type {
     Recommendation,
     RecommendationCategory,
     RecommendationItem,
+    ProductLink,
     ImageStyle,
     AiMode,
 } from './types'
@@ -34,3 +35,9 @@ export {
     RecommendationItemSchema,
     RecommendationSchema,
 } from './schemas'
+
+// ---------------------------------------------------------------------------
+// Domain types -- canonical domain model definitions
+// ---------------------------------------------------------------------------
+
+export * from './domain'

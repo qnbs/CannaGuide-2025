@@ -1,7 +1,7 @@
 /**
  * voiceOrchestratorService.ts
  *
- * Central voice orchestrator (v1.7 Voice-First USP).
+ * Central voice orchestrator (v1.7 Voice & Accessibility).
  * Finite state machine that coordinates STT, TTS, command matching,
  * confirmation loops, and error recovery. Composes existing services:
  * - ttsService (SpeechSynthesis)

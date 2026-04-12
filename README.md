@@ -107,7 +107,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2290 tests · 117 services · 19 Redux slices + 9 Zustand stores · 26 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
+776 strains · 2294 tests · 117 services · 19 Redux slices + 9 Zustand stores · 26 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -135,7 +135,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite dev server on localhost:5173
 pnpm run build              # Production build (all workspaces)
-pnpm run test:run           # 2290 tests, single run
+pnpm run test:run           # 2294 tests, single run
 pnpm run typecheck          # tsc --noEmit (TS2719 filtered)
 pnpm run lint               # ESLint (flat config, 0 warnings)
 ```
@@ -310,11 +310,11 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ## CI/CD, Testing & Security
 
-### Testing (2290 tests, 0 failures)
+### Testing (2294 tests, 0 failures)
 
 | Type                  | Framework       | Scope                                           |
 | --------------------- | --------------- | ----------------------------------------------- |
-| **Unit/Integration**  | Vitest          | 2290 tests, colocated `*.test.ts(x)`            |
+| **Unit/Integration**  | Vitest          | 2294 tests, colocated `*.test.ts(x)`            |
 | **E2E**               | Playwright      | Chromium + Firefox (CI), `tests/e2e/*.e2e.ts`   |
 | **Component**         | Playwright CT   | `tests/ct/*.ct.tsx`                             |
 | **Mutation**          | Stryker         | Redux slices, 50% break threshold               |
@@ -340,7 +340,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 | Workflow           | Trigger          | Purpose                                                    |
 | ------------------ | ---------------- | ---------------------------------------------------------- |
-| CI                 | push, PR         | Lint, typecheck, 2290 tests, build, security, E2E, IoT     |
+| CI                 | push, PR         | Lint, typecheck, 2294 tests, build, security, E2E, IoT     |
 | CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                               |
 | Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                      |
 | Release Publish    | tag v\*          | GitHub build attestation + CycloneDX SBOM + GitHub Release |
@@ -502,7 +502,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2290 Tests · 117 Services · 19 Redux Slices + 9 Zustand Stores · 26 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
+776 Sorten · 2294 Tests · 117 Services · 19 Redux Slices + 9 Zustand Stores · 26 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
@@ -528,7 +528,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite Dev-Server auf localhost:5173
 pnpm run build              # Produktions-Build
-pnpm run test:run           # 2290 Tests, Einzellauf
+pnpm run test:run           # 2294 Tests, Einzellauf
 pnpm run typecheck          # tsc --noEmit
 ```
 

@@ -1,0 +1,53 @@
+name: Deploy to Cloudflare Pages
+
+on:
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    deployments: write
+
+concurrency:
+    group: cloudflare-pages-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    NODE_VERSION: '24'
+
+jobs:
+    deploy:
+        name: Build & Deploy
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Build for Cloudflare Pages
+              run: |
+                  echo "::group::vite build (base=/)"
+                  BUILD_BASE_PATH=/ pnpm run build
+                  echo "::endgroup::"
+                  echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
+
+            - name: Deploy to Cloudflare Pages
+              uses: cloudflare/wrangler-action@da0e0235e90e4a4cdba8e7c5e30261f1d887bfc6 # v3.14.0
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  command: pages deploy apps/web/dist --project-name=cannaguide --branch=main

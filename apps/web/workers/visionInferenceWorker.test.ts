@@ -6,7 +6,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 // before calling preprocessImage() in a test body, not at import time.)
 // ---------------------------------------------------------------------------
 
-import { mapToCannabisTerm, preprocessImage } from '@/workers/visionInferenceWorker'
+import {
+    autoWhiteBalance,
+    mapToCannabisTerm,
+    preprocessImage,
+} from '@/workers/visionInferenceWorker'
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -95,6 +99,98 @@ describe('visionInferenceWorker utilities', () => {
                 expect(v).toBeGreaterThanOrEqual(-3)
                 expect(v).toBeLessThanOrEqual(3)
             }
+        })
+    })
+
+    // ---- autoWhiteBalance ---------------------------------------------------
+
+    describe('autoWhiteBalance', () => {
+        beforeAll(() => {
+            class MockImageData {
+                data: Uint8ClampedArray
+                width: number
+                height: number
+                constructor(data: Uint8ClampedArray, w: number, h: number) {
+                    this.data = data
+                    this.width = w
+                    this.height = h
+                }
+            }
+            vi.stubGlobal('ImageData', MockImageData)
+        })
+
+        afterAll(() => {
+            vi.unstubAllGlobals()
+        })
+
+        it('neutralises a strong red/purple LED tint towards equal channels', () => {
+            // Simulate 2x2 image with heavy red/purple cast (LED grow light)
+            // R=200, G=60, B=120 -> strong red bias
+            const data = new Uint8ClampedArray(2 * 2 * 4)
+            for (let i = 0; i < 4; i++) {
+                data[i * 4] = 200 // R
+                data[i * 4 + 1] = 60 // G
+                data[i * 4 + 2] = 120 // B
+                data[i * 4 + 3] = 255 // A
+            }
+            const input = { data, width: 2, height: 2 } as ImageData
+
+            const result = autoWhiteBalance(input)
+
+            // After white balance, all channels should converge toward the same avg
+            // The global average is (200+60+120)/3 = ~126.67
+            // R should decrease, G should increase, B should stay similar
+            const r = result.data[0] ?? 0
+            const g = result.data[1] ?? 0
+            const b = result.data[2] ?? 0
+
+            // Channels should be much closer to each other than the original
+            const spread = Math.max(r, g, b) - Math.min(r, g, b)
+            const originalSpread = 200 - 60 // 140
+            expect(spread).toBeLessThan(originalSpread / 2)
+
+            // All values should equal ~127 (the global mean)
+            expect(r).toBeGreaterThanOrEqual(120)
+            expect(r).toBeLessThanOrEqual(135)
+            expect(g).toBeGreaterThanOrEqual(120)
+            expect(g).toBeLessThanOrEqual(135)
+            expect(b).toBeGreaterThanOrEqual(120)
+            expect(b).toBeLessThanOrEqual(135)
+        })
+
+        it('preserves alpha channel unchanged', () => {
+            const data = new Uint8ClampedArray([100, 150, 200, 128])
+            const input = { data, width: 1, height: 1 } as ImageData
+
+            const result = autoWhiteBalance(input)
+            expect(result.data[3]).toBe(128)
+        })
+
+        it('returns input unchanged for near-black images', () => {
+            const data = new Uint8ClampedArray([0, 0, 0, 255])
+            const input = { data, width: 1, height: 1 } as ImageData
+
+            const result = autoWhiteBalance(input)
+            expect(result.data[0]).toBe(0)
+            expect(result.data[1]).toBe(0)
+            expect(result.data[2]).toBe(0)
+        })
+
+        it('leaves neutral images mostly unchanged', () => {
+            // Gray image: R=G=B=128 -> no correction needed
+            const data = new Uint8ClampedArray(4 * 4 * 4)
+            for (let i = 0; i < 16; i++) {
+                data[i * 4] = 128
+                data[i * 4 + 1] = 128
+                data[i * 4 + 2] = 128
+                data[i * 4 + 3] = 255
+            }
+            const input = { data, width: 4, height: 4 } as ImageData
+
+            const result = autoWhiteBalance(input)
+            expect(result.data[0]).toBe(128)
+            expect(result.data[1]).toBe(128)
+            expect(result.data[2]).toBe(128)
         })
     })
 })

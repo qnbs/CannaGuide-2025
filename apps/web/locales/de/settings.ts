@@ -386,9 +386,17 @@ export const settingsView = {
             continuousListening: 'Dauerhaftes Zuhören',
             continuousListeningDesc:
                 'Hört nach jedem Befehl weiter zu, sodass mehrere Sprachbefehle ohne erneute Aktivierung verkettet werden können.',
-            confirmationSound: 'Bestätigungstöne',
+            confirmationSound: 'Bestaetigungstoene',
             confirmationSoundDesc:
                 'Spielt einen kurzen Ton ab, wenn ein Sprachbefehl erfolgreich erkannt wurde.',
+            offlineStt: 'Offline-Spracherkennung',
+            offlineSttDesc:
+                'Nutzt Whisper-Tiny (75 MB) fuer geraetelokale Spracherkennung im Offline-Modus. Erstmalige Nutzung erfordert einen einmaligen Modell-Download.',
+            offlineSttStatus: 'Modell-Status',
+            offlineSttReady: 'Bereit',
+            offlineSttLoading: 'Wird geladen...',
+            offlineSttNotLoaded: 'Nicht geladen',
+            offlineSttUnavailable: 'In diesem Browser nicht unterstuetzt',
         },
         commands: {
             title: 'Befehlsreferenz',

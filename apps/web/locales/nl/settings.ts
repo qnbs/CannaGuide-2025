@@ -386,6 +386,14 @@ export const settingsView = {
             confirmationSound: 'Bevestigingsgeluiden',
             confirmationSoundDesc:
                 'Speelt een kort geluid af wanneer een spraakopdracht succesvol wordt herkend.',
+            offlineStt: 'Offline Spraakherkenning',
+            offlineSttDesc:
+                'Gebruikt Whisper-Tiny (75 MB) voor spraakherkenning op het apparaat wanneer offline. Eerste gebruik vereist een eenmalige modeldownload.',
+            offlineSttStatus: 'Modelstatus',
+            offlineSttReady: 'Gereed',
+            offlineSttLoading: 'Laden...',
+            offlineSttNotLoaded: 'Niet geladen',
+            offlineSttUnavailable: 'Niet ondersteund in deze browser',
         },
         commands: {
             title: 'Opdrachtenoverzicht',

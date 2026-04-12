@@ -161,8 +161,63 @@ const MODEL_SIZE = 224
 // ---------------------------------------------------------------------------
 
 /**
+ * Apply Gray World Assumption auto white balance to an ImageData.
+ * Neutralises extreme color casts from grow-tent LEDs (purple, red, yellow,
+ * sodium vapor) that confuse classification models.
+ *
+ * Algorithm: compute per-channel average, then scale each channel so its
+ * average matches the global mean across all three channels. Pixel values
+ * are clamped to [0, 255].
+ */
+export const autoWhiteBalance = (imageData: ImageData): ImageData => {
+    const { data, width, height } = imageData
+    const pixelCount = width * height
+    if (pixelCount === 0) return imageData
+
+    let sumR = 0
+    let sumG = 0
+    let sumB = 0
+
+    for (let i = 0; i < pixelCount; i++) {
+        sumR += data[i * 4] ?? 0
+        sumG += data[i * 4 + 1] ?? 0
+        sumB += data[i * 4 + 2] ?? 0
+    }
+
+    const avgR = sumR / pixelCount
+    const avgG = sumG / pixelCount
+    const avgB = sumB / pixelCount
+    const avgAll = (avgR + avgG + avgB) / 3
+
+    // Skip correction when averages are near-zero (solid black) to avoid
+    // division-by-zero or extreme amplification.
+    const MIN_AVG = 1
+    if (avgR < MIN_AVG || avgG < MIN_AVG || avgB < MIN_AVG) return imageData
+
+    const scaleR = avgAll / avgR
+    const scaleG = avgAll / avgG
+    const scaleB = avgAll / avgB
+
+    const out = new Uint8ClampedArray(data.length)
+    for (let i = 0; i < pixelCount; i++) {
+        const off = i * 4
+        out[off] = Math.min(255, Math.max(0, Math.round((data[off] ?? 0) * scaleR)))
+        out[off + 1] = Math.min(255, Math.max(0, Math.round((data[off + 1] ?? 0) * scaleG)))
+        out[off + 2] = Math.min(255, Math.max(0, Math.round((data[off + 2] ?? 0) * scaleB)))
+        out[off + 3] = data[off + 3] ?? 255 // alpha unchanged
+    }
+
+    return new ImageData(out, width, height)
+}
+
+/**
  * Resize imageData to 224x224 and apply ImageNet normalisation.
  * Output: Float32Array in CHW layout [1, 3, 224, 224].
+ *
+ * Pipeline: resize -> auto white balance -> ImageNet normalise.
+ * The white balance step neutralises grow-tent LED color casts
+ * (purple HPS, blurple LEDs) that would otherwise confuse the
+ * MobileNetV2 classifier.
  */
 export const preprocessImage = (src: ImageDataLike): Float32Array => {
     // Resize using OffscreenCanvas
@@ -178,7 +233,10 @@ export const preprocessImage = (src: ImageDataLike): Float32Array => {
     if (!dstCtx)
         throw new Error('[VisionWorker] Could not get destination OffscreenCanvas context.')
     dstCtx.drawImage(srcCanvas, 0, 0, MODEL_SIZE, MODEL_SIZE)
-    const resized = dstCtx.getImageData(0, 0, MODEL_SIZE, MODEL_SIZE)
+    const resizedRaw = dstCtx.getImageData(0, 0, MODEL_SIZE, MODEL_SIZE)
+
+    // Apply auto white balance to neutralise grow-tent LED colour casts
+    const resized = autoWhiteBalance(resizedRaw)
 
     // Build CHW Float32Array with ImageNet normalisation
     const pixelCount = MODEL_SIZE * MODEL_SIZE

@@ -13,6 +13,24 @@ export const equipmentView = {
         hydroMonitoring: 'Hydro Monitor',
         iotDashboard: 'IoT Dashboard',
     },
+    iotDashboard: {
+        readingsBuffer: '{{count}} metingen / {{max}} buffer',
+        predictive: {
+            title: 'Voorspellende Analyse',
+            analyzing: 'Sensorgegevens worden geanalyseerd...',
+            noData: 'Nog niet genoeg sensorgegevens voor voorspellingen.',
+            samples: 'metingen',
+            botrytisRisk: 'Botrytis-risico',
+            envAlerts: 'Omgevingswaarschuwingen',
+            yieldImpact: 'Opbrengstimpact',
+            risk: {
+                low: 'Laag',
+                moderate: 'Matig',
+                high: 'Hoog',
+                critical: 'Kritiek',
+            },
+        },
+    },
     configurator: {
         title: 'AI Apparatuur Configurator',
         subtitle: 'Krijg een gepersonaliseerde apparatuurlijst op basis van jouw behoeften.',
@@ -474,6 +492,7 @@ export const equipmentView = {
             axisLabelEc: 'EC (mS/cm)',
             legendPh: 'pH',
             legendEc: 'EC',
+            legendTemp: 'Temp. (C)',
         },
         input: {
             title: 'Meting Toevoegen',
@@ -498,6 +517,8 @@ export const equipmentView = {
             seedling: 'Zaailing',
             vegetative: 'Vegetatief',
             flowering: 'Bloei',
+            lateFlower: 'Late Bloei',
+            flush: 'Spoeling',
             ecColumn: 'EC (mS/cm)',
             phColumn: 'pH',
         },
@@ -737,7 +758,7 @@ export const equipmentView = {
             'Je bestand "{{filename}}" is klaar. Klik op de knop hieronder om te downloaden.',
     },
     nutrientBrands: {
-        title: 'Voedingsmerken Schema\'s',
+        title: "Voedingsmerken Schema's",
         selectBrand: 'Voedingsmerk selecteren',
         noBrand: 'Handmatig (geen merkschema)',
         applySchedule: 'Schema toepassen',

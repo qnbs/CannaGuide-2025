@@ -142,12 +142,18 @@ export default [
                   plugins: {
                       'jsx-a11y': jsxA11yPlugin,
                   },
-                  rules: Object.fromEntries(
-                      Object.entries(jsxA11yPlugin.configs.recommended.rules).map(([key]) => [
-                          key,
-                          'warn',
-                      ]),
-                  ),
+                  rules: {
+                      ...Object.fromEntries(
+                          Object.entries(jsxA11yPlugin.configs.recommended.rules).map(([key]) => [
+                              key,
+                              'warn',
+                          ]),
+                      ),
+                      // label-has-for is deprecated in favor of
+                      // label-has-associated-control -- disable to avoid
+                      // duplicate noise
+                      'jsx-a11y/label-has-for': 'off',
+                  },
               },
           ]
         : []),

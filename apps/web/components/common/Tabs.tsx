@@ -62,7 +62,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
     )
 
     return (
-        <nav
+        <div
             ref={navRef}
             className={`glass-pane relative flex items-center gap-1 overflow-x-auto rounded-[1.25rem] p-1.5 no-scrollbar ${className}`}
             role="tablist"
@@ -97,6 +97,6 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                 }}
                 aria-hidden="true"
             />
-        </nav>
+        </div>
     )
 }

@@ -86,10 +86,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                     aria-label={safeName}
                     aria-pressed={isSelected}
                 />
-                <div
-                    onClick={handleSelect}
-                    className="relative z-20 p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 rounded-lg pointer-events-none"
-                >
+                <div className="relative z-20 p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 rounded-lg pointer-events-none">
                     {/* Checkbox */}
                     <div className="pointer-events-auto">
                         <input

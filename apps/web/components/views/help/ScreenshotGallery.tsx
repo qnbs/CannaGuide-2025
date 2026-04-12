@@ -1,4 +1,4 @@
-import React, { useState, useMemo, memo } from 'react'
+import React, { useState, useMemo, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -172,6 +172,15 @@ export const ScreenshotGallery: React.FC = memo(() => {
     const [viewportFilter, setViewportFilter] = useState<'all' | 'desktop' | 'mobile'>('all')
     const [lightboxImg, setLightboxImg] = useState<string | null>(null)
 
+    useEffect(() => {
+        if (!lightboxImg) return
+        const handler = (e: KeyboardEvent): void => {
+            if (e.key === 'Escape') setLightboxImg(null)
+        }
+        document.addEventListener('keydown', handler)
+        return () => document.removeEventListener('keydown', handler)
+    }, [lightboxImg])
+
     const filtered = useMemo(() => {
         let items = SCREENSHOTS
         if (activeCategory !== 'all') {
@@ -331,12 +340,16 @@ export const ScreenshotGallery: React.FC = memo(() => {
             {/* Lightbox */}
             {lightboxImg && (
                 <div
-                    className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-                    onClick={() => setLightboxImg(null)}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     role="dialog"
                     aria-modal="true"
                     aria-label={t('helpView.screenshots.lightboxLabel')}
                 >
+                    <div
+                        className="absolute inset-0 bg-black/90"
+                        aria-hidden="true"
+                        onClick={() => setLightboxImg(null)}
+                    />
                     <button
                         type="button"
                         onClick={() => setLightboxImg(null)}
@@ -348,8 +361,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
                     <img
                         src={`${import.meta.env.BASE_URL}${lightboxImg}`}
                         alt={lightboxAlt}
-                        className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
+                        className="relative max-w-full max-h-[90vh] rounded-lg shadow-2xl"
                     />
                 </div>
             )}

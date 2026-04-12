@@ -15,6 +15,21 @@ export const equipmentView = {
     },
     iotDashboard: {
         readingsBuffer: '{{count}} Messwerte / {{max}} Puffer',
+        predictive: {
+            title: 'Vorausschauende Analyse',
+            analyzing: 'Sensordaten werden analysiert...',
+            noData: 'Noch nicht genuegend Sensordaten fuer Vorhersagen.',
+            samples: 'Messwerte',
+            botrytisRisk: 'Botrytis-Risiko',
+            envAlerts: 'Umgebungswarnungen',
+            yieldImpact: 'Ertragseinfluss',
+            risk: {
+                low: 'Niedrig',
+                moderate: 'Mittel',
+                high: 'Hoch',
+                critical: 'Kritisch',
+            },
+        },
     },
     configurator: {
         title: 'KI-Setup-Konfigurator',
@@ -482,6 +497,7 @@ export const equipmentView = {
             axisLabelEc: 'EC',
             legendPh: 'pH',
             legendEc: 'EC (mS/cm)',
+            legendTemp: 'Temp. (C)',
         },
         input: {
             title: 'Messwert hinzufuegen',
@@ -506,6 +522,8 @@ export const equipmentView = {
             seedling: 'Saemling',
             vegetative: 'Vegetativ',
             flowering: 'Bluete',
+            lateFlower: 'Spaete Bluete',
+            flush: 'Spuelung',
             ecColumn: 'EC (mS/cm)',
             phColumn: 'pH',
         },

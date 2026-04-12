@@ -146,13 +146,18 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                 )}
                 {/* Autocomplete suggestions */}
                 {filteredSuggestions.length > 0 && (
-                    <ul
+                    <div
                         role="listbox"
                         aria-label={t('strainsView.comparison.addStrain')}
                         className="absolute z-10 mt-1 w-full bg-slate-800 border border-slate-600 rounded-lg shadow-lg overflow-hidden"
                     >
                         {filteredSuggestions.map((strain) => (
-                            <li key={strain.id} role="option" aria-selected={false}>
+                            <div
+                                key={strain.id}
+                                role="option"
+                                aria-selected={false}
+                                aria-label={strain.name}
+                            >
                                 <button
                                     type="button"
                                     onClick={() => handleAddStrain(strain)}
@@ -161,9 +166,9 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                     <span>{strain.name}</span>
                                     <span className="text-xs text-slate-400">{strain.type}</span>
                                 </button>
-                            </li>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 )}
             </div>
 

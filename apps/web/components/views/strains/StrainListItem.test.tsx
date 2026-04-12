@@ -49,7 +49,7 @@ describe('StrainListItem', () => {
             />,
         )
 
-        fireEvent.click(screen.getByText('Silver Orbit'))
+        fireEvent.click(screen.getByRole('button', { name: 'Silver Orbit' }))
 
         expect(onSelect).toHaveBeenCalledTimes(1)
         expect(onSelect).toHaveBeenCalledWith(strainFixture)

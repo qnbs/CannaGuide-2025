@@ -145,7 +145,7 @@ const MetricControl: React.FC<MetricControlProps> = React.memo(({ config, value,
                         min={config.min}
                         max={config.max}
                         step={config.step}
-                        className="w-20 bg-slate-800 border border-slate-600 rounded-md px-2 py-1 text-right text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-20 rounded-xl border border-white/[0.1] bg-white/[0.06] px-2 py-1 text-right text-sm text-slate-100 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 transition-colors"
                     />
                     <span className="text-xs text-slate-500 w-12">{config.unit}</span>
                 </div>
@@ -157,7 +157,7 @@ const MetricControl: React.FC<MetricControlProps> = React.memo(({ config, value,
                 step={config.step}
                 value={value}
                 onChange={handleSlider}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-white/[0.08] accent-primary-500"
             />
         </div>
     )
@@ -301,15 +301,96 @@ export const EnvironmentControlPanel: React.FC<EnvironmentControlPanelProps> = (
     const temp = values['temperature'] ?? 25
     const hum = values['humidity'] ?? 60
 
+    // Stage-based environment presets
+    const PRESETS = useMemo(
+        () => [
+            {
+                label: t('plantsView.environment.presetSeedling', { defaultValue: 'Seedling' }),
+                values: {
+                    temperature: 24,
+                    humidity: 70,
+                    lightPpfd: 200,
+                    ph: 6.3,
+                    ec: 0.4,
+                    waterVolume: 200,
+                },
+                color: 'bg-lime-500/15 text-lime-300 ring-lime-400/20',
+            },
+            {
+                label: t('plantsView.environment.presetVeg', { defaultValue: 'Vegetative' }),
+                values: {
+                    temperature: 26,
+                    humidity: 55,
+                    lightPpfd: 600,
+                    ph: 6.0,
+                    ec: 1.2,
+                    waterVolume: 500,
+                },
+                color: 'bg-green-500/15 text-green-300 ring-green-400/20',
+            },
+            {
+                label: t('plantsView.environment.presetFlower', { defaultValue: 'Flowering' }),
+                values: {
+                    temperature: 24,
+                    humidity: 45,
+                    lightPpfd: 900,
+                    ph: 6.2,
+                    ec: 1.8,
+                    waterVolume: 800,
+                },
+                color: 'bg-amber-500/15 text-amber-300 ring-amber-400/20',
+            },
+            {
+                label: t('plantsView.environment.presetLateFlower', {
+                    defaultValue: 'Late Flower',
+                }),
+                values: {
+                    temperature: 22,
+                    humidity: 40,
+                    lightPpfd: 800,
+                    ph: 6.4,
+                    ec: 1.0,
+                    waterVolume: 600,
+                },
+                color: 'bg-orange-500/15 text-orange-300 ring-orange-400/20',
+            },
+        ],
+        [t],
+    )
+
+    const applyPreset = useCallback((preset: Record<string, number>) => {
+        setValues(preset)
+    }, [])
+
     return (
         <div className="space-y-4">
             {/* VPD Live */}
             <VpdIndicator temperature={temp} humidity={hum} stage={plant.stage} />
 
+            {/* Environment Presets */}
+            <div className="flex flex-wrap gap-2">
+                <span className="text-xs text-slate-500 self-center mr-1">
+                    {t('plantsView.environment.presets', { defaultValue: 'Presets:' })}
+                </span>
+                {PRESETS.map((preset) => (
+                    <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => applyPreset(preset.values)}
+                        className={`rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-all hover:-translate-y-0.5 active:translate-y-0 ${preset.color}`}
+                    >
+                        {preset.label}
+                    </button>
+                ))}
+            </div>
+
             {/* Metric grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {metrics.map((config) => (
-                    <Card key={config.key} className="bg-slate-800/60 border border-slate-700/50">
+                    <Card
+                        key={config.key}
+                        className="bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.06] transition-colors"
+                    >
                         <MetricControl
                             config={config}
                             value={values[config.key] ?? config.defaultValue}

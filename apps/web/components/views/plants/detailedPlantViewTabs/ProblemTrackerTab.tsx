@@ -27,15 +27,15 @@ const CATEGORIES: IssueCategory[] = ['pest', 'deficiency', 'toxicity', 'disease'
 const SEVERITIES: IssueSeverity[] = ['mild', 'moderate', 'severe']
 
 const STATUS_COLORS: Record<IssueStatus, string> = {
-    detected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    treating: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-    resolved: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    detected: 'bg-red-500/15 text-red-300 ring-1 ring-inset ring-red-400/20',
+    treating: 'bg-amber-500/15 text-amber-300 ring-1 ring-inset ring-amber-400/20',
+    resolved: 'bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-400/20',
 }
 
 const SEVERITY_COLORS: Record<IssueSeverity, string> = {
-    mild: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    moderate: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    severe: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    mild: 'bg-sky-500/15 text-sky-300 ring-1 ring-inset ring-sky-400/20',
+    moderate: 'bg-orange-500/15 text-orange-300 ring-1 ring-inset ring-orange-400/20',
+    severe: 'bg-red-500/15 text-red-300 ring-1 ring-inset ring-red-400/20',
 }
 
 // ---------------------------------------------------------------------------
@@ -127,10 +127,10 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-base font-semibold text-text-primary">
+                    <h3 className="text-base font-semibold text-slate-100">
                         {t('plantsView.problemTracker.title')}
                     </h3>
-                    <p className="text-xs text-text-secondary">
+                    <p className="text-xs text-slate-400">
                         {t('plantsView.problemTracker.activeCount', {
                             count: activeIssues.length,
                         })}
@@ -139,7 +139,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                 <button
                     type="button"
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] text-white text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0"
                 >
                     <PhosphorIcons.Plus className="h-4 w-4" />
                     {t('plantsView.problemTracker.addIssue')}
@@ -148,10 +148,10 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
 
             {/* Add Issue Form */}
             {showAddForm && (
-                <div className="p-4 rounded-lg border border-border bg-surface space-y-3">
+                <div className="p-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md space-y-3 animate-fade-in">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="sm:col-span-2">
-                            <label className="block text-xs font-medium text-text-secondary mb-1">
+                            <label className="block text-xs font-medium text-slate-400 mb-1.5">
                                 {t('plantsView.problemTracker.issueTitle')}
                             </label>
                             <input
@@ -159,12 +159,12 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                                 value={formTitle}
                                 onChange={(e) => setFormTitle(e.target.value)}
                                 maxLength={200}
-                                className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-sm text-slate-100 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                                 placeholder={t('plantsView.problemTracker.issueTitlePlaceholder')}
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">
+                            <label className="block text-xs font-medium text-slate-400 mb-1.5">
                                 {t('plantsView.problemTracker.category')}
                             </label>
                             <select
@@ -173,7 +173,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                     setFormCategory(e.target.value as IssueCategory)
                                 }
-                                className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-sm text-slate-100 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                             >
                                 {CATEGORIES.map((c) => (
                                     <option key={c} value={c}>
@@ -183,7 +183,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">
+                            <label className="block text-xs font-medium text-slate-400 mb-1.5">
                                 {t('plantsView.problemTracker.severity')}
                             </label>
                             <select
@@ -192,7 +192,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                     setFormSeverity(e.target.value as IssueSeverity)
                                 }
-                                className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-sm text-slate-100 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                             >
                                 {SEVERITIES.map((s) => (
                                     <option key={s} value={s}>
@@ -203,7 +203,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('plantsView.problemTracker.description')}
                         </label>
                         <textarea
@@ -211,7 +211,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                             onChange={(e) => setFormDescription(e.target.value)}
                             maxLength={1000}
                             rows={2}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary resize-none"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-sm text-slate-100 resize-none backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                         />
                     </div>
                     <div className="flex gap-2 justify-end">
@@ -221,7 +221,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                                 resetForm()
                                 setShowAddForm(false)
                             }}
-                            className="px-3 py-1.5 rounded-md text-sm text-text-secondary hover:bg-surface-hover transition-colors"
+                            className="px-3 py-1.5 rounded-xl text-sm text-slate-400 border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] transition-all"
                         >
                             {t('plantsView.problemTracker.cancel')}
                         </button>
@@ -229,7 +229,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                             type="button"
                             onClick={handleAddIssue}
                             disabled={!formTitle.trim()}
-                            className="px-3 py-1.5 rounded-md bg-accent text-white text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+                            className="px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-sm font-semibold hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 transition-all"
                         >
                             {t('plantsView.problemTracker.save')}
                         </button>
@@ -239,8 +239,8 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
 
             {/* Active Issues */}
             {activeIssues.length === 0 && !showAddForm ? (
-                <div className="text-center py-8 text-text-secondary">
-                    <PhosphorIcons.CheckCircle className="h-12 w-12 mx-auto mb-2 opacity-40" />
+                <div className="text-center py-8 text-slate-400">
+                    <PhosphorIcons.CheckCircle className="h-12 w-12 mx-auto mb-2 opacity-30" />
                     <p className="text-sm">{t('plantsView.problemTracker.noActiveIssues')}</p>
                 </div>
             ) : (
@@ -267,7 +267,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                     <button
                         type="button"
                         onClick={() => setShowResolved(!showResolved)}
-                        className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
+                        className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors"
                     >
                         <PhosphorIcons.ChevronDown
                             className={`h-3 w-3 transition-transform ${showResolved ? 'rotate-180' : ''}`}
@@ -337,26 +337,26 @@ const IssueCard: React.FC<IssueCardProps> = memo(
                   : null
 
         return (
-            <div className="rounded-lg border border-border bg-surface overflow-hidden">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md overflow-hidden transition-all hover:bg-white/[0.06]">
                 {/* Header */}
                 <button
                     type="button"
                     onClick={onToggle}
-                    className="w-full flex items-center gap-2 p-3 text-left hover:bg-surface-hover transition-colors"
+                    className="w-full flex items-center gap-2 p-3 text-left hover:bg-white/[0.04] transition-colors"
                 >
                     <PhosphorIcons.ChevronDown
-                        className={`h-3.5 w-3.5 text-text-secondary shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`h-3.5 w-3.5 text-slate-500 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     />
-                    <span className="flex-1 font-medium text-sm text-text-primary truncate">
+                    <span className="flex-1 font-medium text-sm text-slate-100 truncate">
                         {issue.title}
                     </span>
                     <span
-                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${SEVERITY_COLORS[issue.severity]}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${SEVERITY_COLORS[issue.severity]}`}
                     >
                         {t(`plantsView.problemTracker.severities.${issue.severity}`)}
                     </span>
                     <span
-                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[issue.status]}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[issue.status]}`}
                     >
                         {t(`plantsView.problemTracker.statuses.${issue.status}`)}
                     </span>
@@ -364,8 +364,8 @@ const IssueCard: React.FC<IssueCardProps> = memo(
 
                 {/* Expanded Content */}
                 {isExpanded && (
-                    <div className="px-3 pb-3 space-y-3 border-t border-border pt-3">
-                        <div className="flex flex-wrap gap-2 text-xs text-text-secondary">
+                    <div className="px-3 pb-3 space-y-3 border-t border-white/[0.06] pt-3">
+                        <div className="flex flex-wrap gap-2 text-xs text-slate-400">
                             <span>
                                 {t(`plantsView.problemTracker.categories.${issue.category}`)}
                             </span>
@@ -388,23 +388,25 @@ const IssueCard: React.FC<IssueCardProps> = memo(
                         </div>
 
                         {issue.description && (
-                            <p className="text-sm text-text-secondary">{issue.description}</p>
+                            <p className="text-sm text-slate-400">{issue.description}</p>
                         )}
 
                         {/* Treatments */}
                         {issue.treatments.length > 0 && (
                             <div className="space-y-1">
-                                <h4 className="text-xs font-medium text-text-secondary">
+                                <h4 className="text-xs font-medium text-slate-400">
                                     {t('plantsView.problemTracker.treatments')}
                                 </h4>
                                 {issue.treatments.map((treat) => (
                                     <div
                                         key={treat.id}
-                                        className="flex items-center gap-2 text-xs text-text-secondary bg-surface-hover rounded px-2 py-1"
+                                        className="flex items-center gap-2 text-xs text-slate-400 bg-white/[0.04] rounded-lg px-2.5 py-1.5 ring-1 ring-inset ring-white/[0.06]"
                                     >
-                                        <span className="text-text-primary">{treat.action}</span>
+                                        <span className="text-slate-200">{treat.action}</span>
                                         {treat.product && (
-                                            <span className="text-accent">({treat.product})</span>
+                                            <span className="text-primary-400">
+                                                ({treat.product})
+                                            </span>
                                         )}
                                         <span className="ml-auto">
                                             {new Date(treat.timestamp).toLocaleDateString()}
@@ -425,7 +427,7 @@ const IssueCard: React.FC<IssueCardProps> = memo(
                                     placeholder={t(
                                         'plantsView.problemTracker.treatmentPlaceholder',
                                     )}
-                                    className="flex-1 rounded-md border border-border bg-surface px-2 py-1 text-xs text-text-primary"
+                                    className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.06] px-2 py-1 text-xs text-slate-100 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                                 />
                                 <input
                                     type="text"
@@ -433,13 +435,13 @@ const IssueCard: React.FC<IssueCardProps> = memo(
                                     onChange={(e) => setTreatmentProduct(e.target.value)}
                                     maxLength={100}
                                     placeholder={t('plantsView.problemTracker.productPlaceholder')}
-                                    className="w-28 rounded-md border border-border bg-surface px-2 py-1 text-xs text-text-primary"
+                                    className="w-28 rounded-xl border border-white/[0.1] bg-white/[0.06] px-2 py-1 text-xs text-slate-100 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                                 />
                                 <button
                                     type="button"
                                     onClick={handleSubmitTreatment}
                                     disabled={!treatmentAction.trim()}
-                                    className="px-2 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+                                    className="px-2 py-1 rounded-xl bg-primary-500/20 text-primary-300 ring-1 ring-inset ring-primary-400/20 text-xs font-medium hover:bg-primary-500/30 disabled:opacity-50 transition-colors"
                                 >
                                     <PhosphorIcons.Plus className="h-3 w-3" />
                                 </button>
@@ -452,7 +454,7 @@ const IssueCard: React.FC<IssueCardProps> = memo(
                                 <button
                                     type="button"
                                     onClick={() => onStatusChange(issue.id, nextStatus)}
-                                    className="px-2.5 py-1 rounded-md bg-accent/10 text-accent text-xs font-medium hover:bg-accent/20 transition-colors"
+                                    className="px-2.5 py-1 rounded-xl bg-primary-500/15 text-primary-300 ring-1 ring-inset ring-primary-400/20 text-xs font-medium hover:bg-primary-500/25 transition-colors"
                                 >
                                     {t(`plantsView.problemTracker.markAs.${nextStatus}`)}
                                 </button>
@@ -460,7 +462,7 @@ const IssueCard: React.FC<IssueCardProps> = memo(
                             <button
                                 type="button"
                                 onClick={() => onRemove(issue.id)}
-                                className="px-2.5 py-1 rounded-md text-red-500 text-xs font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                className="px-2.5 py-1 rounded-xl text-red-400 text-xs font-medium hover:bg-red-500/15 transition-colors"
                             >
                                 {t('plantsView.problemTracker.delete')}
                             </button>

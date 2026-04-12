@@ -25,11 +25,11 @@ export const SeedVaultStats: React.FC = memo(() => {
     const maxTypeCount = Math.max(1, ...Object.values(stats.byType))
 
     return (
-        <div className="rounded-lg border border-border bg-surface">
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md">
             <button
                 type="button"
                 onClick={toggle}
-                className="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium text-text-primary hover:bg-surface-hover transition-colors rounded-lg"
+                className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-slate-200 hover:bg-white/[0.04] transition-colors rounded-2xl"
                 aria-expanded={!collapsed}
             >
                 <span>{t('strainsView.seedVault.stats.title')}</span>
@@ -101,22 +101,22 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = memo(({ label, value, variant = 'default' }) => {
     const variantClasses =
         variant === 'danger'
-            ? 'border-red-200 dark:border-red-900/40'
+            ? 'border-red-500/20 bg-gradient-to-br from-red-500/10 to-red-600/5'
             : variant === 'warning'
-              ? 'border-yellow-200 dark:border-yellow-900/40'
-              : 'border-border'
+              ? 'border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-amber-600/5'
+              : 'border-white/[0.08] bg-gradient-to-br from-white/[0.06] to-white/[0.02]'
 
     const valueClasses =
         variant === 'danger'
-            ? 'text-red-600 dark:text-red-400'
+            ? 'text-red-400'
             : variant === 'warning'
-              ? 'text-yellow-600 dark:text-yellow-400'
-              : 'text-text-primary'
+              ? 'text-amber-400'
+              : 'text-slate-100'
 
     return (
-        <div className={`rounded-md border ${variantClasses} bg-surface p-2.5 text-center`}>
+        <div className={`rounded-xl border ${variantClasses} p-3 text-center backdrop-blur-sm`}>
             <p className={`text-xl font-bold tabular-nums ${valueClasses}`}>{value}</p>
-            <p className="text-xs text-text-secondary truncate">{label}</p>
+            <p className="text-xs text-slate-400 truncate">{label}</p>
         </div>
     )
 })
@@ -128,10 +128,10 @@ StatCard.displayName = 'StatCard'
 // ---------------------------------------------------------------------------
 
 const TYPE_BAR_COLORS: Record<SeedType, string> = {
-    Feminized: 'bg-pink-500 dark:bg-pink-400',
-    Regular: 'bg-gray-500 dark:bg-gray-400',
-    Autoflowering: 'bg-green-500 dark:bg-green-400',
-    Clone: 'bg-blue-500 dark:bg-blue-400',
+    Feminized: 'bg-pink-500',
+    Regular: 'bg-slate-400',
+    Autoflowering: 'bg-emerald-500',
+    Clone: 'bg-sky-500',
 }
 
 interface TypeBarProps {
@@ -145,14 +145,14 @@ const TypeBar: React.FC<TypeBarProps> = memo(({ label, count, max, seedType }) =
     const pct = max > 0 ? (count / max) * 100 : 0
     return (
         <div className="flex items-center gap-2">
-            <span className="text-xs text-text-secondary w-24 truncate">{label}</span>
-            <div className="flex-1 h-2 rounded-full bg-surface-hover overflow-hidden">
+            <span className="text-xs text-slate-400 w-24 truncate">{label}</span>
+            <div className="flex-1 h-2 rounded-full bg-white/[0.06] overflow-hidden">
                 <div
                     className={`h-full rounded-full transition-all ${TYPE_BAR_COLORS[seedType]}`}
                     style={{ width: `${pct}%` }}
                 />
             </div>
-            <span className="text-xs font-medium text-text-primary tabular-nums w-8 text-right">
+            <span className="text-xs font-medium text-slate-200 tabular-nums w-8 text-right">
                 {count}
             </span>
         </div>

@@ -194,7 +194,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                     <button
                         type="button"
                         onClick={() => setViewMode(viewMode === 'week' ? 'month' : 'week')}
-                        className="rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-1.5 text-xs text-white transition-colors min-h-[44px]"
+                        className="rounded-xl border border-white/[0.1] bg-white/[0.05] hover:bg-white/[0.1] px-3 py-1.5 text-xs text-slate-300 backdrop-blur-sm transition-all min-h-[44px]"
                         aria-label={t('common.accessibility.toggleViewMode')}
                         aria-pressed={viewMode === 'month'}
                     >
@@ -207,14 +207,14 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                             <button
                                 type="button"
                                 onClick={() => setShowAddForm(true)}
-                                className="rounded-lg bg-primary-600 hover:bg-primary-500 px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                                className="rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] px-3 py-1.5 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 active:translate-y-0"
                             >
                                 + {t('plantsView.planner.addTask', { defaultValue: 'Add Task' })}
                             </button>
                             <button
                                 type="button"
                                 onClick={handleAutoSchedule}
-                                className="rounded-lg bg-emerald-700 hover:bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                                className="rounded-xl bg-emerald-500/20 text-emerald-300 ring-1 ring-inset ring-emerald-400/30 hover:bg-emerald-500/30 px-3 py-1.5 text-xs font-medium transition-all hover:-translate-y-0.5 active:translate-y-0"
                             >
                                 {t('plantsView.autoScheduler.generate', {
                                     defaultValue: 'Generate Tasks',
@@ -280,7 +280,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                 <button
                     type="button"
                     onClick={() => navigateCalendar(-1)}
-                    className="rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-1 text-sm text-white"
+                    className="rounded-xl border border-white/[0.1] bg-white/[0.05] hover:bg-white/[0.1] px-3 py-1 text-sm text-slate-300 backdrop-blur-sm transition-all"
                     aria-label={t('common.previous', { defaultValue: 'Previous' })}
                 >
                     {'<'}
@@ -295,7 +295,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                 <button
                     type="button"
                     onClick={() => navigateCalendar(1)}
-                    className="rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-1 text-sm text-white"
+                    className="rounded-xl border border-white/[0.1] bg-white/[0.05] hover:bg-white/[0.1] px-3 py-1 text-sm text-slate-300 backdrop-blur-sm transition-all"
                     aria-label={t('common.next', { defaultValue: 'Next' })}
                 >
                     {'>'}
@@ -303,9 +303,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
             </div>
 
             {/* Calendar grid */}
-            <div className="rounded-xl bg-slate-800/60 ring-1 ring-inset ring-slate-700/50 overflow-hidden">
+            <div className="rounded-2xl bg-white/[0.04] ring-1 ring-inset ring-white/[0.08] backdrop-blur-sm overflow-hidden">
                 {/* Day headers */}
-                <div className="grid grid-cols-7 border-b border-slate-700">
+                <div className="grid grid-cols-7 border-b border-white/[0.08]">
                     {Array.from({ length: 7 }, (_, idx) =>
                         new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }).format(
                             new Date(2024, 0, 1 + idx),
@@ -329,11 +329,11 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                         return (
                             <div
                                 key={key}
-                                className={`min-h-[4rem] sm:min-h-[5rem] border-b border-r border-slate-700/50 p-1 ${
+                                className={`min-h-[4rem] sm:min-h-[5rem] border-b border-r border-white/[0.06] p-1 transition-colors ${
                                     isToday
-                                        ? 'bg-primary-500/10'
+                                        ? 'bg-primary-500/10 ring-1 ring-inset ring-primary-400/30'
                                         : isCurrentMonth
-                                          ? ''
+                                          ? 'hover:bg-white/[0.03]'
                                           : 'bg-slate-900/40'
                                 }`}
                             >
@@ -394,7 +394,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
 
             {/* Add task form modal */}
             {showAddForm && plantId != null && (
-                <div className="rounded-xl bg-slate-800/80 p-4 ring-1 ring-inset ring-slate-700/50 space-y-3">
+                <div className="rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm p-4 ring-1 ring-inset ring-white/[0.08] space-y-3 animate-fade-in">
                     <h4 className="text-sm font-semibold text-white">
                         {t('plantsView.planner.newTask', { defaultValue: 'New Task' })}
                     </h4>
@@ -414,7 +414,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                     const match = GROW_ACTIONS.find((a) => a.type === val)
                                     if (match) setNewTaskType(match.type)
                                 }}
-                                className="w-full rounded-lg bg-slate-700/60 border-0 px-3 py-2 text-sm text-white ring-1 ring-inset ring-slate-600 focus:ring-2 focus:ring-primary-500"
+                                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-sm text-white backdrop-blur-sm ring-0 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                             >
                                 {GROW_ACTIONS.map((a) => (
                                     <option key={a.type} value={a.type}>
@@ -435,7 +435,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                 type="datetime-local"
                                 value={newTaskDate}
                                 onChange={(e) => setNewTaskDate(e.target.value)}
-                                className="w-full rounded-lg bg-slate-700/60 border-0 px-3 py-2 text-sm text-white ring-1 ring-inset ring-slate-600 focus:ring-2 focus:ring-primary-500"
+                                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-sm text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                             />
                         </div>
                     </div>
@@ -460,7 +460,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                     onChange={(e) => setNewTaskInterval(e.target.value)}
                                     min="1"
                                     max="90"
-                                    className="w-14 rounded bg-slate-700/60 border-0 px-2 py-1 text-sm text-white ring-1 ring-inset ring-slate-600"
+                                    className="w-14 rounded-xl border border-white/[0.1] bg-white/[0.06] px-2 py-1 text-sm text-white backdrop-blur-sm"
                                 />
                                 <span className="text-xs text-slate-400">
                                     {t('plantsView.planner.days', { defaultValue: 'days' })}
@@ -478,7 +478,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                             value={newTaskNotes}
                             onChange={(e) => setNewTaskNotes(e.target.value)}
                             maxLength={200}
-                            className="w-full rounded-lg bg-slate-700/60 border-0 px-3 py-2 text-sm text-white placeholder-slate-500 ring-1 ring-inset ring-slate-600 focus:ring-2 focus:ring-primary-500"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-sm text-white placeholder-slate-500 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                             placeholder={t('plantsView.planner.notesPlaceholder', {
                                 defaultValue: 'Optional notes...',
                             })}
@@ -488,14 +488,14 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                         <button
                             type="button"
                             onClick={() => setShowAddForm(false)}
-                            className="rounded-lg bg-slate-700 hover:bg-slate-600 px-4 py-2 text-sm text-white transition-colors"
+                            className="rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] px-4 py-2 text-sm text-slate-400 transition-all"
                         >
                             {t('common.cancel', { defaultValue: 'Cancel' })}
                         </button>
                         <button
                             type="button"
                             onClick={handleAddTask}
-                            className="rounded-lg bg-primary-600 hover:bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors"
+                            className="rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_12px_rgba(var(--color-primary-500),0.25)] px-4 py-2 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 active:translate-y-0"
                         >
                             {t('plantsView.planner.addTask', { defaultValue: 'Add Task' })}
                         </button>

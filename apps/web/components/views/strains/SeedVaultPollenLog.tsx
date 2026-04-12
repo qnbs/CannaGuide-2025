@@ -85,11 +85,11 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
     const filteredRecords = filterViable ? records.filter((r) => r.viable) : records
 
     return (
-        <div className="rounded-lg border border-border bg-surface">
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md">
             <button
                 type="button"
                 onClick={() => setCollapsed((p) => !p)}
-                className="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium text-text-primary hover:bg-surface-hover transition-colors rounded-lg"
+                className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-slate-200 hover:bg-white/[0.04] transition-colors rounded-2xl"
                 aria-expanded={!collapsed}
             >
                 <div className="flex items-center gap-2">
@@ -110,7 +110,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                         <button
                             type="button"
                             onClick={() => setShowAddForm(!showAddForm)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent/90 transition-colors"
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-xs font-semibold shadow-[0_4px_16px_rgba(var(--color-primary-500),0.2)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                         >
                             <PhosphorIcons.Plus className="h-3.5 w-3.5" />
                             {t('strainsView.seedVault.pollenSection.addRecord')}
@@ -119,7 +119,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                         <button
                             type="button"
                             onClick={() => setFilterViable((p) => !p)}
-                            className={`px-2 py-1 rounded text-xs transition-colors ${filterViable ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'text-text-secondary hover:bg-surface-hover'}`}
+                            className={`px-2.5 py-1 rounded-lg text-xs transition-all ${filterViable ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-400/20' : 'text-slate-400 hover:bg-white/[0.06]'}`}
                         >
                             {filterViable
                                 ? t('strainsView.seedVault.pollenSection.filterViable')
@@ -129,10 +129,10 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
 
                     {/* Add form */}
                     {showAddForm && (
-                        <div className="p-3 rounded-md border border-border/50 bg-surface space-y-2">
+                        <div className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] space-y-3 animate-fade-in">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
-                                    <label className="block text-xs font-medium text-text-secondary mb-1">
+                                    <label className="block text-xs font-medium text-slate-400 mb-1.5">
                                         {t('strainsView.seedVault.pollenSection.donor')}
                                     </label>
                                     <input
@@ -143,24 +143,24 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                         placeholder={t(
                                             'strainsView.seedVault.pollenSection.donorPlaceholder',
                                         )}
-                                        className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                                        className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 backdrop-blur-sm transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-text-secondary mb-1">
+                                    <label className="block text-xs font-medium text-slate-400 mb-1.5">
                                         {t('strainsView.seedVault.pollenSection.collectedDate')}
                                     </label>
                                     <input
                                         type="date"
                                         value={collectedDate}
                                         onChange={(e) => setCollectedDate(e.target.value)}
-                                        className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                                        className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 backdrop-blur-sm transition-colors"
                                     />
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
-                                    <label className="block text-xs font-medium text-text-secondary mb-1">
+                                    <label className="block text-xs font-medium text-slate-400 mb-1.5">
                                         {t('strainsView.seedVault.pollenSection.storageLocation')}
                                     </label>
                                     <input
@@ -171,7 +171,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                         placeholder={t(
                                             'strainsView.seedVault.pollenSection.storagePlaceholder',
                                         )}
-                                        className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                                        className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 backdrop-blur-sm transition-colors"
                                     />
                                 </div>
                                 <div className="flex items-end gap-3 pb-0.5">
@@ -187,7 +187,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-text-secondary mb-1">
+                                <label className="block text-xs font-medium text-slate-400 mb-1.5">
                                     {t('strainsView.seedVault.pollenSection.notes')}
                                 </label>
                                 <textarea
@@ -195,7 +195,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                     onChange={(e) => setNotes(e.target.value)}
                                     maxLength={300}
                                     rows={2}
-                                    className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary resize-none"
+                                    className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 backdrop-blur-sm transition-colors resize-none"
                                 />
                             </div>
                             <div className="flex gap-2 justify-end">
@@ -205,7 +205,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                         resetForm()
                                         setShowAddForm(false)
                                     }}
-                                    className="px-3 py-1 rounded-md text-xs text-text-secondary hover:bg-surface-hover transition-colors"
+                                    className="px-3 py-1.5 rounded-xl text-xs text-slate-400 border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] transition-all"
                                 >
                                     {t('strainsView.seedVault.cancel')}
                                 </button>
@@ -213,7 +213,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                     type="button"
                                     onClick={handleAdd}
                                     disabled={!donorName.trim()}
-                                    className="px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+                                    className="px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-xs font-semibold hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 transition-all duration-200"
                                 >
                                     {t('strainsView.seedVault.save')}
                                 </button>
@@ -231,7 +231,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                             {filteredRecords.map((r) => (
                                 <div
                                     key={r.id}
-                                    className="flex items-center gap-3 p-2.5 rounded-md border border-border/50 bg-surface"
+                                    className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all"
                                 >
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
@@ -239,7 +239,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                                 {r.donorStrainName}
                                             </span>
                                             <span
-                                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${r.viable ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}
+                                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${r.viable ? 'bg-emerald-500/15 text-emerald-300 ring-emerald-400/20' : 'bg-red-500/15 text-red-300 ring-red-400/20'}`}
                                             >
                                                 {r.viable
                                                     ? t(
@@ -266,14 +266,14 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                             <button
                                                 type="button"
                                                 onClick={() => handleConfirmDelete(r.id)}
-                                                className="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600 transition-colors"
+                                                className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 border border-red-500/20 text-xs hover:bg-red-500/30 transition-colors"
                                             >
                                                 {t('strainsView.seedVault.confirmDelete')}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setConfirmDeleteId(null)}
-                                                className="px-2 py-1 rounded text-xs text-text-secondary hover:bg-surface-hover transition-colors"
+                                                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 hover:bg-white/[0.06] transition-colors"
                                             >
                                                 {t('strainsView.seedVault.cancel')}
                                             </button>
@@ -282,7 +282,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                         <button
                                             type="button"
                                             onClick={() => setConfirmDeleteId(r.id)}
-                                            className="h-7 w-7 flex items-center justify-center rounded text-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shrink-0"
+                                            className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/15 transition-all shrink-0"
                                             aria-label={t(
                                                 'strainsView.seedVault.pollenSection.remove',
                                             )}

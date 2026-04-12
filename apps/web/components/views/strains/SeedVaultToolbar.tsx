@@ -71,21 +71,24 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
         }, [sortDir, onSortDirChange])
 
         return (
-            <div className="space-y-2">
+            <div className="space-y-3">
                 {/* Row 1: Search + View toggle */}
                 <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder={t('strainsView.seedVault.searchPlaceholder')}
-                        className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
-                    />
-                    <div className="flex rounded-md border border-border overflow-hidden">
+                    <div className="relative flex-1">
+                        <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            placeholder={t('strainsView.seedVault.searchPlaceholder')}
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] pl-9 pr-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
+                        />
+                    </div>
+                    <div className="flex rounded-xl border border-white/[0.1] overflow-hidden bg-white/[0.03]">
                         <button
                             type="button"
                             onClick={() => onViewModeChange('list')}
-                            className={`h-8 w-8 flex items-center justify-center transition-colors ${viewMode === 'list' ? 'bg-accent text-white' : 'bg-surface text-text-secondary hover:bg-surface-hover'}`}
+                            className={`h-9 w-9 flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-primary-500/20 text-primary-300 shadow-[inset_0_0_12px_rgba(var(--color-primary-400),0.15)]' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]'}`}
                             aria-label={t('strainsView.seedVault.listView')}
                         >
                             <PhosphorIcons.ListBullets className="h-4 w-4" />
@@ -93,7 +96,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                         <button
                             type="button"
                             onClick={() => onViewModeChange('grid')}
-                            className={`h-8 w-8 flex items-center justify-center transition-colors ${viewMode === 'grid' ? 'bg-accent text-white' : 'bg-surface text-text-secondary hover:bg-surface-hover'}`}
+                            className={`h-9 w-9 flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-primary-500/20 text-primary-300 shadow-[inset_0_0_12px_rgba(var(--color-primary-400),0.15)]' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]'}`}
                             aria-label={t('strainsView.seedVault.gridView')}
                         >
                             <PhosphorIcons.GridFour className="h-4 w-4" />
@@ -110,7 +113,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             onFilterTypeChange(e.target.value as SeedType | 'all')
                         }
-                        className="rounded-md border border-border bg-surface px-2 py-1.5 text-xs text-text-primary"
+                        className="rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-xs text-slate-200 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                     >
                         <option value="all">{t('strainsView.seedVault.allTypes')}</option>
                         {SEED_TYPES.map((st) => (
@@ -127,7 +130,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             onFilterStockChange(e.target.value as StockFilter)
                         }
-                        className="rounded-md border border-border bg-surface px-2 py-1.5 text-xs text-text-primary"
+                        className="rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-xs text-slate-200 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                     >
                         <option value="all">{t('strainsView.seedVault.stockAll')}</option>
                         <option value="inStock">{t('strainsView.seedVault.stockInStock')}</option>
@@ -142,7 +145,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                             onSortKeyChange(e.target.value as SeedSortKey)
                         }
-                        className="rounded-md border border-border bg-surface px-2 py-1.5 text-xs text-text-primary"
+                        className="rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-xs text-slate-200 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                     >
                         <option value="name">{t('strainsView.seedVault.sort.name')}</option>
                         <option value="quantity">{t('strainsView.seedVault.sort.quantity')}</option>
@@ -157,7 +160,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                     <button
                         type="button"
                         onClick={handleSortDirToggle}
-                        className="h-8 w-8 flex items-center justify-center rounded-md border border-border bg-surface text-text-secondary hover:bg-surface-hover transition-colors"
+                        className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.05] text-slate-400 hover:bg-white/[0.1] hover:text-slate-200 transition-all"
                         aria-label={
                             sortDir === 'asc'
                                 ? t('strainsView.seedVault.sortDirection.asc')
@@ -178,7 +181,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                     <button
                         type="button"
                         onClick={onBulkModeToggle}
-                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${bulkMode ? 'bg-accent text-white' : 'border border-border bg-surface text-text-secondary hover:bg-surface-hover'}`}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${bulkMode ? 'bg-primary-500/20 text-primary-300 ring-1 ring-inset ring-primary-400/30' : 'border border-white/[0.1] bg-white/[0.05] text-slate-400 hover:bg-white/[0.1] hover:text-slate-200'}`}
                     >
                         {t('strainsView.seedVault.bulkActions')}
                     </button>
@@ -186,22 +189,22 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
 
                 {/* Bulk actions bar */}
                 {bulkMode && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-accent/10 border border-accent/20">
-                        <span className="text-xs font-medium text-text-primary">
+                    <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500/10 border border-primary-400/20 backdrop-blur-sm">
+                        <span className="text-xs font-medium text-slate-200">
                             {t('strainsView.seedVault.selectedCount', { count: selectedCount })}
                         </span>
                         <div className="flex-1" />
                         <button
                             type="button"
                             onClick={onSelectAll}
-                            className="text-xs text-accent hover:underline"
+                            className="text-xs text-primary-400 hover:text-primary-300 hover:underline"
                         >
                             {t('strainsView.seedVault.selectAll')}
                         </button>
                         <button
                             type="button"
                             onClick={onDeselectAll}
-                            className="text-xs text-text-secondary hover:underline"
+                            className="text-xs text-slate-400 hover:text-slate-300 hover:underline"
                         >
                             {t('strainsView.seedVault.deselectAll')}
                         </button>
@@ -209,7 +212,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                             <button
                                 type="button"
                                 onClick={onBulkDelete}
-                                className="px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition-colors"
+                                className="px-3 py-1 rounded-xl bg-red-500/20 text-red-300 border border-red-500/20 text-xs font-medium hover:bg-red-500/30 transition-colors"
                             >
                                 {t('strainsView.seedVault.bulkDelete')}
                             </button>

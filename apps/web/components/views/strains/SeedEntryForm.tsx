@@ -163,8 +163,8 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
         ])
 
         return (
-            <div className="p-4 rounded-lg border border-border bg-surface space-y-3">
-                <h3 className="text-sm font-semibold text-text-primary">
+            <div className="p-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md space-y-4 animate-fade-in">
+                <h3 className="text-sm font-bold text-slate-100">
                     {mode === 'edit'
                         ? t('strainsView.seedVault.editEntry')
                         : t('strainsView.seedVault.addEntry')}
@@ -173,7 +173,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* Strain with autocomplete */}
                     <div className="relative" ref={inputRef}>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.strainName')}
                         </label>
                         <input
@@ -186,17 +186,17 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                             }}
                             onFocus={() => setShowSuggestions(true)}
                             maxLength={100}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                             placeholder={t('strainsView.seedVault.strainNamePlaceholder')}
                         />
                         {showSuggestions && suggestions.length > 0 && (
-                            <div className="absolute z-20 mt-1 w-full rounded-md border border-border bg-surface shadow-lg max-h-48 overflow-y-auto">
+                            <div className="absolute z-20 mt-1 w-full rounded-xl border border-white/[0.1] bg-slate-800/95 backdrop-blur-lg shadow-[0_12px_40px_rgba(0,0,0,0.5)] max-h-48 overflow-y-auto">
                                 {suggestions.map((s) => (
                                     <button
                                         key={s.id}
                                         type="button"
                                         onClick={() => handleSelectStrain(s.id, s.name)}
-                                        className="w-full px-3 py-1.5 text-sm text-left text-text-primary hover:bg-surface-hover transition-colors"
+                                        className="w-full px-3 py-2 text-sm text-left text-slate-200 hover:bg-primary-500/15 hover:text-white transition-colors first:rounded-t-xl last:rounded-b-xl"
                                     >
                                         {s.name}
                                     </button>
@@ -211,7 +211,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.quantity')}
                         </label>
                         <input
@@ -222,7 +222,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                             onChange={(e) =>
                                 setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))
                             }
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         />
                     </div>
                 </div>
@@ -230,7 +230,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                 {/* Row 2: Seed Type + Breeder */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.seedType')}
                         </label>
                         <select
@@ -239,7 +239,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 setSeedType(e.target.value as SeedType)
                             }
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         >
                             {SEED_TYPES.map((st) => (
                                 <option key={st} value={st}>
@@ -249,7 +249,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.breeder')}
                         </label>
                         <input
@@ -257,7 +257,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                             value={breeder}
                             onChange={(e) => setBreeder(e.target.value)}
                             maxLength={100}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         />
                     </div>
                 </div>
@@ -265,7 +265,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                 {/* Row 3: Source + Date + Storage */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.source')}
                         </label>
                         <select
@@ -274,7 +274,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                                 setSource(e.target.value as SeedSource | '')
                             }
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         >
                             <option value="">--</option>
                             {SEED_SOURCES.map((s) => (
@@ -285,18 +285,18 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.acquiredDate')}
                         </label>
                         <input
                             type="date"
                             value={acquiredDate}
                             onChange={(e) => setAcquiredDate(e.target.value)}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.storageLocation')}
                         </label>
                         <input
@@ -305,7 +305,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                             onChange={(e) => setStorageLocation(e.target.value)}
                             maxLength={100}
                             placeholder={t('strainsView.seedVault.storageLocationPlaceholder')}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         />
                     </div>
                 </div>
@@ -314,7 +314,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* Quality star rating */}
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.qualityRating')}
                         </label>
                         <div className="flex gap-0.5">
@@ -335,7 +335,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.germinationRate')} (%)
                         </label>
                         <input
@@ -344,11 +344,11 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                             max={100}
                             value={germinationRate}
                             onChange={(e) => setGerminationRate(e.target.value)}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5">
                             {t('strainsView.seedVault.batchNumber')}
                         </label>
                         <input
@@ -356,27 +356,27 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                             value={batchNumber}
                             onChange={(e) => setBatchNumber(e.target.value)}
                             maxLength={50}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                         />
                     </div>
                 </div>
 
                 {/* Tags */}
                 <div>
-                    <label className="block text-xs font-medium text-text-secondary mb-1">
+                    <label className="block text-xs font-medium text-slate-400 mb-1.5">
                         {t('strainsView.seedVault.tags')}
                     </label>
                     <div className="flex flex-wrap gap-1.5 mb-1.5">
                         {tags.map((tag) => (
                             <span
                                 key={tag}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 text-accent text-xs"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-500/15 text-primary-300 text-xs ring-1 ring-inset ring-primary-400/20"
                             >
                                 {tag}
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveTag(tag)}
-                                    className="hover:text-red-500"
+                                    className="hover:text-red-400 transition-colors"
                                     aria-label={t('strainsView.seedVault.removeTag')}
                                 >
                                     <PhosphorIcons.X className="h-3 w-3" />
@@ -391,13 +391,13 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                         onKeyDown={handleTagKeyDown}
                         maxLength={30}
                         placeholder={t('strainsView.seedVault.tagPlaceholder')}
-                        className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
+                        className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors"
                     />
                 </div>
 
                 {/* Notes */}
                 <div>
-                    <label className="block text-xs font-medium text-text-secondary mb-1">
+                    <label className="block text-xs font-medium text-slate-400 mb-1.5">
                         {t('strainsView.seedVault.notes')}
                     </label>
                     <textarea
@@ -405,16 +405,16 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                         onChange={(e) => setNotes(e.target.value)}
                         maxLength={500}
                         rows={2}
-                        className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary resize-none"
+                        className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 backdrop-blur-sm transition-colors resize-none"
                     />
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2 justify-end pt-1">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-3 py-1.5 rounded-md text-sm text-text-secondary hover:bg-surface-hover transition-colors"
+                        className="px-4 py-2 rounded-xl text-sm text-slate-400 border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] transition-all"
                     >
                         {t('strainsView.seedVault.cancel')}
                     </button>
@@ -422,7 +422,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                         type="button"
                         onClick={handleSubmit}
                         disabled={!strainName.trim()}
-                        className="px-3 py-1.5 rounded-md bg-accent text-white text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+                        className="px-4 py-2 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-sm font-semibold shadow-[0_8px_24px_rgba(var(--color-primary-500),0.25)] hover:shadow-[0_12px_32px_rgba(var(--color-primary-500),0.35)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none transition-all duration-200"
                     >
                         {t('strainsView.seedVault.save')}
                     </button>

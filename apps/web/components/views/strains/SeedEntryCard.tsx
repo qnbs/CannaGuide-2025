@@ -13,10 +13,10 @@ import { LOW_STOCK_THRESHOLD } from '@/stores/slices/breedingSlice'
 // ---------------------------------------------------------------------------
 
 const TYPE_COLORS: Record<SeedType, string> = {
-    Regular: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-    Feminized: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
-    Autoflowering: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    Clone: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    Regular: 'bg-slate-500/15 text-slate-300 ring-1 ring-inset ring-slate-400/20',
+    Feminized: 'bg-pink-500/15 text-pink-300 ring-1 ring-inset ring-pink-400/20',
+    Autoflowering: 'bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-400/20',
+    Clone: 'bg-sky-500/15 text-sky-300 ring-1 ring-inset ring-sky-400/20',
 }
 
 const TWO_YEARS_MS = 2 * 365.25 * 24 * 60 * 60 * 1000
@@ -75,17 +75,17 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
 
         const viabilityClasses =
             viability === 'good'
-                ? 'text-green-600 dark:text-green-400'
+                ? 'text-emerald-400'
                 : viability === 'declining'
-                  ? 'text-yellow-600 dark:text-yellow-400'
-                  : 'text-red-600 dark:text-red-400'
+                  ? 'text-amber-400'
+                  : 'text-red-400'
 
         const stockDotClasses =
             stock === 'ok' ? 'bg-green-500' : stock === 'low' ? 'bg-yellow-500' : 'bg-red-500'
 
         return (
             <div
-                className={`rounded-lg border bg-surface transition-colors ${selected ? 'border-accent bg-accent/5' : 'border-border hover:bg-surface-hover'}`}
+                className={`rounded-2xl border backdrop-blur-md transition-all duration-200 ${selected ? 'border-primary-400/40 bg-primary-500/10 shadow-[0_0_20px_rgba(var(--color-primary-400),0.12)]' : 'border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.07] hover:border-white/[0.14] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(0,0,0,0.25)]'}`}
             >
                 {/* Main row */}
                 <div className="flex items-center gap-3 p-3">
@@ -164,7 +164,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
                             type="button"
                             onClick={() => onAdjust(entry.id, -1)}
                             disabled={entry.quantity <= 0}
-                            className="h-7 w-7 flex items-center justify-center rounded border border-border hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                            className="h-7 w-7 flex items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.1] disabled:opacity-30 transition-all"
                             aria-label={t('strainsView.seedVault.decrease')}
                         >
                             <PhosphorIcons.Minus className="h-3 w-3" />
@@ -175,7 +175,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
                         <button
                             type="button"
                             onClick={() => onAdjust(entry.id, 1)}
-                            className="h-7 w-7 flex items-center justify-center rounded border border-border hover:bg-surface-hover transition-colors"
+                            className="h-7 w-7 flex items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.1] transition-all"
                             aria-label={t('strainsView.seedVault.increase')}
                         >
                             <PhosphorIcons.Plus className="h-3 w-3" />
@@ -188,7 +188,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
                             type="button"
                             onClick={() => onConsume(entry.id)}
                             disabled={entry.quantity <= 0}
-                            className="h-7 w-7 flex items-center justify-center rounded text-text-secondary hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-30 transition-colors"
+                            className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/15 disabled:opacity-30 transition-all"
                             aria-label={t('strainsView.seedVault.consumeForGrow')}
                             title={t('strainsView.seedVault.consumeForGrow')}
                         >
@@ -197,7 +197,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
                         <button
                             type="button"
                             onClick={() => onEdit(entry)}
-                            className="h-7 w-7 flex items-center justify-center rounded text-text-secondary hover:text-accent hover:bg-accent/10 transition-colors"
+                            className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-primary-400 hover:bg-primary-500/15 transition-all"
                             aria-label={t('strainsView.seedVault.editEntry')}
                         >
                             <PhosphorIcons.PencilSimple className="h-4 w-4" />
@@ -205,7 +205,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
                         <button
                             type="button"
                             onClick={() => onRemove(entry.id)}
-                            className="h-7 w-7 flex items-center justify-center rounded text-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/15 transition-all"
                             aria-label={t('strainsView.seedVault.remove')}
                         >
                             <PhosphorIcons.TrashSimple className="h-4 w-4" />
@@ -215,7 +215,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
 
                 {/* Expanded details */}
                 {expanded && (
-                    <div className="px-3 pb-3 pt-0 border-t border-border">
+                    <div className="px-3 pb-3 pt-0 border-t border-white/[0.06] animate-fade-in">
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 pt-2.5 text-xs">
                             {/* Acquired date */}
                             <div>
@@ -238,7 +238,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
                                             <PhosphorIcons.Star
                                                 key={s}
                                                 weight={s <= entry.quality ? 'fill' : 'regular'}
-                                                className={`h-3.5 w-3.5 ${s <= entry.quality ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
+                                                className={`h-3.5 w-3.5 ${s <= entry.quality ? 'text-amber-400' : 'text-slate-600'}`}
                                             />
                                         ))}
                                     </div>
@@ -296,7 +296,7 @@ export const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(
 
                         {/* Notes */}
                         {entry.notes && (
-                            <div className="mt-2 pt-2 border-t border-border/50">
+                            <div className="mt-2 pt-2 border-t border-white/[0.06]">
                                 <span className="text-xs text-text-secondary">
                                     {t('strainsView.seedVault.notes')}
                                 </span>
@@ -329,11 +329,15 @@ export const SeedGridCard: React.FC<SeedGridCardProps> = memo(
         const { t } = useTranslation()
         const stock = getStockStatus(entry.quantity)
         const stockDotClasses =
-            stock === 'ok' ? 'bg-green-500' : stock === 'low' ? 'bg-yellow-500' : 'bg-red-500'
+            stock === 'ok'
+                ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]'
+                : stock === 'low'
+                  ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]'
+                  : 'bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.5)]'
 
         return (
             <div
-                className={`rounded-lg border p-3 cursor-pointer transition-colors ${selected ? 'border-accent bg-accent/5' : 'border-border bg-surface hover:bg-surface-hover'}`}
+                className={`rounded-2xl border p-3 cursor-pointer backdrop-blur-md transition-all duration-200 ${selected ? 'border-primary-400/40 bg-primary-500/10 shadow-[0_0_20px_rgba(var(--color-primary-400),0.12)]' : 'border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.07] hover:border-white/[0.14] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(0,0,0,0.25)]'}`}
                 onClick={() => (bulkMode ? onToggleSelect(entry.id) : onClick(entry))}
                 role="button"
                 tabIndex={0}

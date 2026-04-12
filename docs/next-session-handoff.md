@@ -2,7 +2,58 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 153) -- v1.8.0 Release
+## Latest Session (Session 154) -- Documentation Overhaul
+
+**Status: Comprehensive documentation overhaul + mobile UI
+reorder (grow-slots above live-umgebung).**
+
+### What Was Done (Session 154)
+
+1. **Mobile UI Reorder (PlantsView.tsx):**
+    - Grow Slots section moved from order-2 to order-1
+    - DashboardSummary moved from order-1 to order-2
+    - Grow slots now appear directly under garden header
+      in mobile view, above Live-Umgebung
+
+2. **README/SECURITY/ROADMAP Updates:**
+    - README badge v1.7.2 -> v1.8.0
+    - SECURITY.md supported versions: 1.8.x/1.7.x
+    - ROADMAP.md: v1.8 HydroMonitor & Analytics section
+      with 14 feature rows added
+
+3. **What's New (All 5 Languages):**
+    - settings.ts whatsNew updated from v1.6 to v1.8
+      in EN, DE, ES, FR, NL with v1.8 feature highlights
+
+4. **Help Manual (Bedienungsanleitung) -- All 5 Languages:**
+    - EN/DE: proactiveCoach, voiceCommands, seedVault,
+      growPlanner, problemTracker, qrTags, growRoom3d,
+      analytics sections added; lexikon count 83->91
+    - ES/FR/NL: proactiveCoach, voiceCommands, seedVault,
+      growPlanner, problemTracker, qrTags, growRoom3d added
+
+5. **Docs Metrics Sync:**
+    - ARCHITECTURE.md: test count 2221/2140 -> 2253
+    - ACCESSIBILITY.md: a11y baseline 169 -> 83 warnings
+    - audit-roadmap: version v1.7.0 -> v1.8.0, tests
+      1663/2140 -> 2253, dashboard fully refreshed
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2253 passed, 0 failures (192 files)
+- Build: successful
+- a11y warnings: 83
+
+### Next Steps
+
+- Run Stryker baseline in CI (DevContainer too slow)
+- Reduce control-has-associated-label (77) with label wiring
+- Wire predictiveAnalyticsService to cloud AI provider
+- Local AI Stack refactoring (Multi-Session project)
+- Add E2E tests for PredictiveInsightsPanel
+
+## Previous Session (Session 153) -- v1.8.0 Release
 
 **Status: Multi-phase enhancement -- mobile fixes, HydroMonitor
 glass-morphism, PredictiveAnalytics UI wiring, a11y reduction

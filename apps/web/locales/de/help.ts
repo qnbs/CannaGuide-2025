@@ -601,6 +601,16 @@ export const helpView = {
                 content:
                     'Die Sortenbibliothek wird automatisch jeden Tag um 04:20 UTC über einen GitHub-Actions-Workflow aktualisiert. Neue von der Community beigetragene Sorten werden auf Duplikate geprüft und in den Katalog integriert. Sie erhalten die neuesten Ergänzungen mit dem nächsten PWA-Update ohne manuelles Zutun.',
             },
+            proactiveCoach: {
+                title: 'Proaktiver Smart Coach',
+                content:
+                    'Der Smart Coach ueberwacht Ihre Pflanzen-Umgebungswerte (Temperatur, Luftfeuchtigkeit, VPD, pH, EC) in Echtzeit und vergleicht sie mit sicheren Schwellwerten. Bei Ueberschreitung fordert der Coach pflanzenspezifische KI-Ratschlaege an und sendet einen <strong>Smart Alert</strong> an Ihr Dashboard. Eine 2-Stunden-Abklingzeit pro Messwert und Pflanze verhindert Alarm-Muedigkeit. Konfigurieren Sie Schwellwerte unter <strong>Einstellungen -> Benachrichtigungen</strong>. Alarme loesen auch Browser-Push-Benachrichtigungen aus, wenn die Berechtigung erteilt wurde.',
+            },
+            voiceCommands: {
+                title: 'Sprachbefehl-Referenz',
+                content:
+                    'Das Sprachsystem unterstuetzt 37 Befehle fuer Navigation, Aktionen und Abfragen. Beispiele: <ul><li><strong>Navigation:</strong> "Gehe zu Sorten", "Oeffne Einstellungen", "Zeige Ausruestung", "Wechsle zu Pflanzen"</li><li><strong>Aktionen:</strong> "Alle Pflanzen giessen", "Pflanze hinzufuegen", "Suche Blue Dream", "Oeffne Befehlspalette"</li><li><strong>Abfragen:</strong> "Was ist der VPD?", "Zeige Pflanzenstatus", "KI-Ratschlag holen"</li><li><strong>Steuerung:</strong> "Aufhoeren", "Abbrechen", "Ja/Bestaetigen"</li></ul>Befehle werden mit 3-Pass-Matching (exakt -> fuzzy -> Intent) im Off-Main-Thread Voice Worker verarbeitet.',
+            },
         },
         strains: {
             title: 'Sorten-Ansicht',
@@ -631,6 +641,11 @@ export const helpView = {
                 content:
                     'Entdecken Sie die neuesten Cannabis-Genetik-Trends für 2026 in einem eigenen Tab. Umfasst Terpen-Diversität (herzhafte/gassige Aromen), ultra-hohe Potenz mit Full-Spectrum-Effekten, ausgewogene Hybride für bewussten Konsum, die Autoflowering-Revolution, fortgeschrittene Züchtertechniken (Polyploidie, F1-Hybride, Marker-gestützte Selektion) und die Landrace-Revival-Bewegung. Jeder Trend beinhaltet detaillierte Beschreibungen, Schlüsselbeispiele und Relevanz-Bewertungen.',
             },
+            seedVault: {
+                title: 'Saatgut-Tresor',
+                content:
+                    'Verfolgen Sie Ihre Ernteergebnisse, fuehren Sie ein Pollen-Logbuch und lagern Sie gesammelte Samen aus Ihren Anbauten. Der Saatgut-Tresor bietet eine zentrale Uebersicht ueber Ihr gesamtes gewonnenes oder gesammeltes genetisches Material, um zukuenftige Zuchtprojekte im Zuchtlabor zu planen.',
+            },
         },
         plants: {
             title: 'Pflanzen-Ansicht (Der Grow Room)',
@@ -655,6 +670,26 @@ export const helpView = {
                 title: 'Umfassendes Journaling',
                 content:
                     'Protokollieren Sie jede Aktion – von der Bewässerung über das Training bis hin zur Schädlingsbekämpfung und Bodenverbesserungen. Das Journal ist Ihre detaillierte, mit Zeitstempel versehene Aufzeichnung des gesamten Lebenszyklus der Pflanze, die nach Ereignistyp gefiltert werden kann.',
+            },
+            growPlanner: {
+                title: 'Grow-Planer',
+                content:
+                    'Planen Sie Ihren Anbau mit einem aufgabenbasierten Kalender. Erstellen Sie Aufgaben mit Faelligkeitsdaten, markieren Sie sie als erledigt und verfolgen Sie ueberfaellige Eintraege mit visuellen Warnungen. Der Planer unterstuetzt Wochen- und Monatsansichten und speichert bis zu 500 Aufgaben pro Pflanze mit FIFO-Bereinigung. Planen Sie Bewaesserungen, Duengungen, Trainingseinheiten und Ernte-Meilensteine.',
+            },
+            problemTracker: {
+                title: 'Problem-Tracker',
+                content:
+                    'Protokollieren und verfolgen Sie Pflanzengesundheitsprobleme von der Identifizierung bis zur Loesung. Erstellen Sie Eintraege mit Beschreibungen und Schweregrad, fuegen Sie Behandlungsaufzeichnungen hinzu und aendern Sie den Status (offen -> in Bearbeitung -> geloest). Der Tracker speichert bis zu 200 Probleme mit pflanzenspezifischen Selektoren zum Filtern. Kombinieren Sie ihn mit der KI-Fotodiagnose fuer datengestuetztes Problemmanagement.',
+            },
+            qrTags: {
+                title: 'QR-Pflanzenschilder',
+                content:
+                    'Erstellen Sie QR-Code-Pflanzenschilder zur physischen Nachverfolgung. Jedes Schild kodiert den Pflanzennamen, die Sorte und eine eindeutige Kennung. Drucken Sie Schilder direkt aus dem Browser oder exportieren Sie sie als PDF-Dateien zum Beschriften Ihrer Toepfe und Behaelter.',
+            },
+            growRoom3d: {
+                title: '3D Grow Room',
+                content:
+                    'Visualisieren Sie Ihren Anbauraum in einem interaktiven 3D-Canvas mit automatischer Orbit-Kamera. Die 3D-Ansicht zeigt Pflanzenpositionen und integriert IoT-Sensor-Badges fuer Echtzeit-Umgebungskontext. Basiert auf Three.js mit OrbitControls.',
             },
         },
         equipment: {
@@ -737,7 +772,12 @@ export const helpView = {
             lexikon: {
                 title: 'Wissensglossar',
                 content:
-                    'Durchsuchen Sie 83 Grower-Begriffe in 6 Kategorien: Allgemein, Cannabinoid, Terpen, Flavonoid, Nährstoff und Krankheit. Jeder Begriff enthält eine klare Definition und ist in allen 5 Sprachen verfügbar.',
+                    'Durchsuchen Sie 91 Grower-Begriffe in 6 Kategorien: Allgemein, Cannabinoid, Terpen, Flavonoid, Naehrstoff und Krankheit. Jeder Begriff enthaelt eine klare Definition und ist in allen 5 Sprachen verfuegbar.',
+            },
+            analytics: {
+                title: 'Analyse-Dashboard',
+                content:
+                    'Sehen Sie Anbaustatistiken, Trendanalysen und Leistungskennzahlen ueber Ihre gesamte Anbauhistorie. Das Analyse-Dashboard visualisiert Daten aus Ihren Pflanzenmetriken, Journaleintraegen und Umgebungsmesswerten, um Muster zu erkennen und zukuenftige Anbauten zu optimieren.',
             },
         },
         settings: {

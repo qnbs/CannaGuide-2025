@@ -799,15 +799,15 @@ export const settingsView = {
         projectInfo: 'Project Info & README',
         version: 'Version',
         whatsNew: {
-            title: "What's New in v1.6",
+            title: "What's New in v1.8",
             items: {
                 simulation:
-                    'SLSA Level 3 supply-chain security with CycloneDX SBOM generation and non-falsifiable provenance for every release.',
+                    'Voice Pro: Porcupine WASM wake-word detection (11 keywords), ElevenLabs Cloud TTS, and a 37-command voice orchestrator with waveform HUD.',
                 strains:
-                    '22 local AI service modules with 3-layer fallback (WebLLM -> Transformers.js -> Heuristics) and WebGPU/ONNX acceleration.',
-                help: '9 cannabis themes, 5 languages (EN/DE/ES/FR/NL), full-project strict lint with zero warnings, and 1961 automated tests.',
+                    'Seed Vault with harvest results, pollen log, and seed storage. Glassmorphism UI overhaul across all major views.',
+                help: 'HydroMonitor with ONNX pH/EC/Temp forecasting, predictive analytics panel, and real-time gauge dashboard with trend charts.',
                 settings:
-                    'CRDT-based cloud sync with conflict resolution, hydroponic ONNX forecast worker, and priority-preemptive WorkerBus.',
+                    'Worker Pool W-06 with lazy spawning, idle timeout, and hot-worker exemption. Accessibility warnings reduced from 202 to 83. 2253 automated tests.',
             },
         },
         techStack: {

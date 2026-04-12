@@ -819,15 +819,15 @@ export const settingsView = {
         projectInfo: 'Projectinfo & README',
         version: 'Versie',
         whatsNew: {
-            title: 'Nieuw in v1.6',
+            title: 'Nieuw in v1.8',
             items: {
                 simulation:
-                    'SLSA Niveau 3 supply-chain beveiliging met CycloneDX SBOM-generatie en niet-vervalsbare herkomst voor elke release.',
+                    'Voice Pro: Porcupine WASM wake-word detectie (11 trefwoorden), ElevenLabs Cloud TTS en 37-commando spraakorchestratie met golfvorm-HUD.',
                 strains:
-                    '22 lokale AI-servicemodules met 3-laags terugval (WebLLM -> Transformers.js -> Heuristieken) en WebGPU/ONNX-versnelling.',
-                help: '9 cannabisthema s, 5 talen (EN/DE/ES/FR/NL), volledig strikt lint met nul waarschuwingen en 1961 geautomatiseerde tests.',
+                    'Zaadkluis met oogstresultaten, pollenlogboek en zaadopslag. Glassmorphism UI-herziening voor alle hoofdweergaven.',
+                help: 'HydroMonitor met ONNX pH/EC/Temp-voorspelling, voorspellend analysepaneel en realtime meterdashboard met trendgrafieken.',
                 settings:
-                    'CRDT-gebaseerde cloudsynchronisatie met conflictoplossing, hydroponische ONNX-voorspellingsworker en prioriteitspreemptieve WorkerBus.',
+                    'Worker Pool W-06 met lazy spawning, idle timeout en hot-worker-vrijstelling. Toegankelijkheidswaarschuwingen verminderd van 202 naar 83. 2253 geautomatiseerde tests.',
             },
         },
         techStack: {

@@ -427,6 +427,16 @@ export const helpView = {
                 content:
                     'La biblioteca de variedades se actualiza automaticamente cada dia a las 04:20 UTC a traves de un flujo de trabajo de GitHub Actions. Las nuevas variedades contribuidas por la comunidad se validan contra duplicados y se fusionan en el catalogo. Recibes las ultimas adiciones a traves de la proxima actualizacion PWA sin ninguna accion manual.',
             },
+            proactiveCoach: {
+                title: 'Coach Inteligente Proactivo',
+                content:
+                    'El Smart Coach monitorea los valores ambientales de tus plantas (temperatura, humedad, VPD, pH, EC) en tiempo real y los compara con umbrales seguros. Cuando una metrica supera los limites, el coach solicita consejo de IA especifico para la planta y envia una <strong>Alerta Inteligente</strong> a tu panel. Un tiempo de enfriamiento de 2 horas por metrica y planta previene la fatiga de alertas. Configura umbrales en <strong>Configuracion -> Notificaciones</strong>.',
+            },
+            voiceCommands: {
+                title: 'Referencia de Comandos de Voz',
+                content:
+                    'El sistema de voz soporta 37 comandos de navegacion, acciones y consultas. Ejemplos: <ul><li><strong>Navegacion:</strong> "Ir a Variedades", "Abrir Configuracion"</li><li><strong>Acciones:</strong> "Regar todas las plantas", "Buscar Blue Dream"</li><li><strong>Consultas:</strong> "Cual es el VPD?", "Mostrar estado de planta"</li><li><strong>Control:</strong> "Dejar de escuchar", "Cancelar", "Si/Confirmar"</li></ul>',
+            },
         },
         strains: {
             title: 'Vista de Variedades',
@@ -452,6 +462,11 @@ export const helpView = {
                 content:
                     'Selecciona una o mas variedades y usa el boton de exportacion en la barra de herramientas para generar un archivo PDF o TXT. Gestiona todas tus exportaciones pasadas en la pestana "Exportaciones", donde puedes volver a descargar o eliminarlas.',
             },
+            seedVault: {
+                title: 'Boveda de Semillas',
+                content:
+                    'Rastrea tus resultados de cosecha, gestiona un registro de polen y almacena semillas recolectadas de tus cultivos. La Boveda de Semillas proporciona un registro centralizado de todo el material genetico que has producido o recolectado.',
+            },
         },
         plants: {
             title: 'Vista de Plantas (La Sala de Cultivo)',
@@ -475,6 +490,26 @@ export const helpView = {
                 title: 'Diario Completo',
                 content:
                     'Registra cada accion -- desde riego y entrenamiento hasta control de plagas y enmiendas. El diario es tu registro detallado y con marca de tiempo del ciclo de vida completo de la planta, que se puede filtrar por tipo de evento.',
+            },
+            growPlanner: {
+                title: 'Planificador de Cultivo',
+                content:
+                    'Planifica tu cultivo con un calendario basado en tareas. Crea tareas con fechas de vencimiento, marcalas como completadas y rastrea elementos vencidos con advertencias visuales. El planificador soporta vistas semanal y mensual y almacena hasta 500 tareas por planta.',
+            },
+            problemTracker: {
+                title: 'Rastreador de Problemas',
+                content:
+                    'Registra y rastrea problemas de salud de plantas desde su identificacion hasta la resolucion. Crea problemas con descripciones y niveles de gravedad, agrega registros de tratamiento y transiciona el estado (abierto -> en progreso -> resuelto).',
+            },
+            qrTags: {
+                title: 'Etiquetas QR de Plantas',
+                content:
+                    'Genera etiquetas QR de plantas para seguimiento fisico. Cada etiqueta codifica el nombre de la planta, variedad e identificador unico. Imprime etiquetas desde el navegador o exportalas como PDF.',
+            },
+            growRoom3d: {
+                title: 'Sala de Cultivo 3D',
+                content:
+                    'Visualiza tu espacio de cultivo en un lienzo 3D interactivo con camara orbital automatica. La vista 3D muestra posiciones de plantas e integra badges de sensores IoT para contexto ambiental en tiempo real.',
             },
         },
         equipment: {

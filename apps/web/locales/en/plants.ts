@@ -861,6 +861,7 @@ export const plantsView = {
             transplant: 'Transplant',
             photo: 'Photo',
             other: 'Other',
+            pest_control: 'Pest Control',
         },
         recurring: 'Recurring',
         intervalDays: 'Every X days',

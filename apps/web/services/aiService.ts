@@ -23,6 +23,7 @@ import {
     GeneticTrendCategory,
     GrowSetup,
 } from '@/types'
+import { localizeStr } from '@/services/local-ai'
 
 // Re-export routing API so existing consumers keep working
 export { setAiMode, getAiMode, isEcoMode } from '@/services/localRoutingService'
@@ -71,10 +72,13 @@ const buildMentorStreamPrompt = (
     ragContext: string,
     growName?: string,
 ): string => {
-    const isDE = lang === 'de'
-    const instruction = isDE
-        ? 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.'
-        : 'Answer as CannaGuide AI in English, structured, factual, and without HTML.'
+    const instruction = localizeStr(lang, {
+        en: 'Answer as CannaGuide AI in English, structured, factual, and without HTML.',
+        de: 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.',
+        es: 'Responde como CannaGuide AI en espanol, estructurado, factual y sin HTML.',
+        fr: 'Reponds en tant que CannaGuide AI en francais, structure, factuel et sans HTML.',
+        nl: 'Antwoord als CannaGuide AI in het Nederlands, gestructureerd, feitelijk en zonder HTML.',
+    })
 
     return [
         instruction,
@@ -105,15 +109,24 @@ const parseMentorStreamResult = (result: string, lang: Language): Omit<MentorMes
     }
 
     return {
-        title: lang === 'de' ? 'KI-Mentor' : 'AI Mentor',
+        title: localizeStr(lang, {
+            en: 'AI Mentor',
+            de: 'KI-Mentor',
+            es: 'Mentor IA',
+            fr: 'Mentor IA',
+            nl: 'AI Mentor',
+        }),
         content: result,
     }
 }
 const buildAdviceStreamPrompt = (plant: Plant, lang: Language): string => {
-    const isDE = lang === 'de'
-    const instruction = isDE
-        ? 'Gib kurze, strukturierte Anbautipps als CannaGuide AI auf Deutsch. Kein HTML.'
-        : 'Give concise, structured growing advice as CannaGuide AI. No HTML.'
+    const instruction = localizeStr(lang, {
+        en: 'Give concise, structured growing advice as CannaGuide AI. No HTML.',
+        de: 'Gib kurze, strukturierte Anbautipps als CannaGuide AI auf Deutsch. Kein HTML.',
+        es: 'Da consejos de cultivo concisos y estructurados como CannaGuide AI. Sin HTML.',
+        fr: 'Donne des conseils de culture concis et structures en tant que CannaGuide AI. Pas de HTML.',
+        nl: 'Geef beknopte, gestructureerde kweektips als CannaGuide AI. Geen HTML.',
+    })
 
     return [
         instruction,
@@ -124,10 +137,13 @@ const buildAdviceStreamPrompt = (plant: Plant, lang: Language): string => {
 }
 
 const buildDiagnosisStreamPrompt = (plant: Plant, lang: Language): string => {
-    const isDE = lang === 'de'
-    const instruction = isDE
-        ? 'Analysiere den Pflanzenstatus als CannaGuide AI und identifiziere Probleme. Kein HTML.'
-        : 'Analyze plant status as CannaGuide AI and identify issues. No HTML.'
+    const instruction = localizeStr(lang, {
+        en: 'Analyze plant status as CannaGuide AI and identify issues. No HTML.',
+        de: 'Analysiere den Pflanzenstatus als CannaGuide AI und identifiziere Probleme. Kein HTML.',
+        es: 'Analiza el estado de la planta como CannaGuide AI e identifica problemas. Sin HTML.',
+        fr: 'Analyse le statut de la plante en tant que CannaGuide AI et identifie les problemes. Pas de HTML.',
+        nl: 'Analyseer de plantstatus als CannaGuide AI en identificeer problemen. Geen HTML.',
+    })
 
     return [
         instruction,
@@ -158,12 +174,20 @@ const parseAiStreamResult = (
     }
     const defaultTitle =
         kind === 'advisor'
-            ? lang === 'de'
-                ? 'KI-Berater'
-                : 'AI Advisor'
-            : lang === 'de'
-              ? 'KI-Diagnose'
-              : 'AI Diagnosis'
+            ? localizeStr(lang, {
+                  en: 'AI Advisor',
+                  de: 'KI-Berater',
+                  es: 'Asesor IA',
+                  fr: 'Conseiller IA',
+                  nl: 'AI Adviseur',
+              })
+            : localizeStr(lang, {
+                  en: 'AI Diagnosis',
+                  de: 'KI-Diagnose',
+                  es: 'Diagnostico IA',
+                  fr: 'Diagnostic IA',
+                  nl: 'AI Diagnose',
+              })
     return { title: defaultTitle, content: result }
 }
 export const aiService = {
@@ -517,16 +541,29 @@ export const aiService = {
         category: GeneticTrendCategory,
         lang: Language,
     ): Promise<AIResponse> {
-        const isDE = lang === 'de'
-        const prompt = isDE
-            ? `Erklaere den Cannabis-Genetik-Trend 2026 "${category}" in 3-4 Saetzen. Fokus: praktischer Mehrwert fuer Heimanbauer, neue Zuchtfortschritte und welche Sorten am staerksten betroffen sind. Antwort auf Deutsch.`
-            : `Explain the 2026 cannabis genetic trend "${category}" in 3-4 sentences. Focus on practical value for home growers, recent breeding advances, and which strain types are most affected.`
-        const title = isDE ? `Genetik-Trend: ${category}` : `Genetic Trend: ${category}`
+        const prompt = localizeStr(lang, {
+            en: `Explain the 2026 cannabis genetic trend "${category}" in 3-4 sentences. Focus on practical value for home growers, recent breeding advances, and which strain types are most affected.`,
+            de: `Erklaere den Cannabis-Genetik-Trend 2026 "${category}" in 3-4 Saetzen. Fokus: praktischer Mehrwert fuer Heimanbauer, neue Zuchtfortschritte und welche Sorten am staerksten betroffen sind. Antwort auf Deutsch.`,
+            es: `Explica la tendencia genetica cannabis 2026 "${category}" en 3-4 oraciones. Enfocate en el valor practico para cultivadores caseros, avances recientes y que tipos de cepas son mas afectados.`,
+            fr: `Explique la tendance genetique cannabis 2026 "${category}" en 3-4 phrases. Focus sur la valeur pratique pour les cultivateurs, les avances recentes et les types de varietes les plus affectes.`,
+            nl: `Leg de cannabis genetische trend 2026 "${category}" uit in 3-4 zinnen. Focus op praktische waarde voor thuiskwekers, recente kweekvooruitgang en welke soorten het meest worden beinvloed.`,
+        })
+        const title = localizeStr(lang, {
+            en: `Genetic Trend: ${category}`,
+            de: `Genetik-Trend: ${category}`,
+            es: `Tendencia Genetica: ${category}`,
+            fr: `Tendance Genetique: ${category}`,
+            nl: `Genetische Trend: ${category}`,
+        })
         const fallback: AIResponse = {
             title,
-            content: isDE
-                ? `${category} ist ein zentraler Genetik-Trend 2026 -- aktuelle Zuechtungen optimieren Terpen- und Cannabinoid-Profile fuer home growers.`
-                : `${category} is a key 2026 genetic trend -- modern breeding refines terpene and cannabinoid profiles for home growers.`,
+            content: localizeStr(lang, {
+                en: `${category} is a key 2026 genetic trend -- modern breeding refines terpene and cannabinoid profiles for home growers.`,
+                de: `${category} ist ein zentraler Genetik-Trend 2026 -- aktuelle Zuechtungen optimieren Terpen- und Cannabinoid-Profile fuer home growers.`,
+                es: `${category} es una tendencia genetica clave 2026 -- la cria moderna refina perfiles de terpenos y cannabinoides para cultivadores caseros.`,
+                fr: `${category} est une tendance genetique cle 2026 -- la selection moderne affine les profils de terpenes et cannabinoides pour les cultivateurs.`,
+                nl: `${category} is een belangrijke genetische trend 2026 -- moderne veredeling verfijnt terpeen- en cannabinoidprofielen voor thuiskwekers.`,
+            }),
             confidence: 0.5,
         }
         try {
@@ -539,19 +576,44 @@ export const aiService = {
 
     /** Recommend grow technology based on current grow setup. */
     async getGrowTechRecommendation(setup: GrowSetup, lang: Language): Promise<AIResponse> {
-        const isDE = lang === 'de'
-        const setupDesc = isDE
-            ? `Medium: ${setup.medium}, Beleuchtung: ${setup.lightType} (${setup.lightWattage}W), dynamisch: ${setup.dynamicLighting ? 'ja' : 'nein'}`
-            : `Medium: ${setup.medium}, Light: ${setup.lightType} (${setup.lightWattage}W), dynamic: ${setup.dynamicLighting ? 'yes' : 'no'}`
-        const prompt = isDE
-            ? `Empfehle die beste Cannabis-Grow-Technologie 2026 fuer dieses Setup: ${setupDesc}. Erklaere in 3-4 Saetzen welche Technologien den groessten Mehrwert bringen und warum.`
-            : `Recommend the best 2026 cannabis grow technology for this setup: ${setupDesc}. Explain in 3-4 sentences which technologies provide the most value and why.`
-        const title = isDE ? 'Grow-Tech-Empfehlung 2026' : 'Grow Tech Recommendation 2026'
+        const yesNo = (v: boolean): string =>
+            localizeStr(lang, {
+                en: v ? 'yes' : 'no',
+                de: v ? 'ja' : 'nein',
+                es: v ? 'si' : 'no',
+                fr: v ? 'oui' : 'non',
+                nl: v ? 'ja' : 'nee',
+            })
+        const setupDesc = localizeStr(lang, {
+            en: `Medium: ${setup.medium}, Light: ${setup.lightType} (${setup.lightWattage}W), dynamic: ${yesNo(setup.dynamicLighting)}`,
+            de: `Medium: ${setup.medium}, Beleuchtung: ${setup.lightType} (${setup.lightWattage}W), dynamisch: ${yesNo(setup.dynamicLighting)}`,
+            es: `Medio: ${setup.medium}, Luz: ${setup.lightType} (${setup.lightWattage}W), dinamico: ${yesNo(setup.dynamicLighting)}`,
+            fr: `Substrat: ${setup.medium}, Eclairage: ${setup.lightType} (${setup.lightWattage}W), dynamique: ${yesNo(setup.dynamicLighting)}`,
+            nl: `Medium: ${setup.medium}, Licht: ${setup.lightType} (${setup.lightWattage}W), dynamisch: ${yesNo(setup.dynamicLighting)}`,
+        })
+        const prompt = localizeStr(lang, {
+            en: `Recommend the best 2026 cannabis grow technology for this setup: ${setupDesc}. Explain in 3-4 sentences which technologies provide the most value and why.`,
+            de: `Empfehle die beste Cannabis-Grow-Technologie 2026 fuer dieses Setup: ${setupDesc}. Erklaere in 3-4 Saetzen welche Technologien den groessten Mehrwert bringen und warum.`,
+            es: `Recomienda la mejor tecnologia de cultivo cannabis 2026 para esta configuracion: ${setupDesc}. Explica en 3-4 oraciones que tecnologias aportan mas valor y por que.`,
+            fr: `Recommande la meilleure technologie de culture cannabis 2026 pour cette configuration: ${setupDesc}. Explique en 3-4 phrases quelles technologies apportent le plus de valeur et pourquoi.`,
+            nl: `Beveel de beste cannabis kweektechnologie 2026 aan voor deze setup: ${setupDesc}. Leg in 3-4 zinnen uit welke technologieen de meeste waarde bieden en waarom.`,
+        })
+        const title = localizeStr(lang, {
+            en: 'Grow Tech Recommendation 2026',
+            de: 'Grow-Tech-Empfehlung 2026',
+            es: 'Recomendacion Grow Tech 2026',
+            fr: 'Recommandation Grow Tech 2026',
+            nl: 'Grow Tech Aanbeveling 2026',
+        })
         const fallback: AIResponse = {
             title,
-            content: isDE
-                ? `Fuer dein Setup empfehlen sich IoT-Sensoren zur Echtzeitkontrolle und -- bei LED -- dynamisches Spektrum-Scheduling fuer maximale Effizienz in 2026.`
-                : `For your setup, IoT sensors for real-time monitoring and -- with LED -- dynamic spectrum scheduling offer the best 2026 efficiency gains.`,
+            content: localizeStr(lang, {
+                en: `For your setup, IoT sensors for real-time monitoring and -- with LED -- dynamic spectrum scheduling offer the best 2026 efficiency gains.`,
+                de: `Fuer dein Setup empfehlen sich IoT-Sensoren zur Echtzeitkontrolle und -- bei LED -- dynamisches Spektrum-Scheduling fuer maximale Effizienz in 2026.`,
+                es: `Para tu configuracion, sensores IoT para monitoreo en tiempo real y -- con LED -- programacion dinamica de espectro ofrecen las mejores ganancias de eficiencia 2026.`,
+                fr: `Pour votre configuration, les capteurs IoT pour le monitoring en temps reel et -- avec LED -- le scheduling dynamique du spectre offrent les meilleurs gains d'efficacite 2026.`,
+                nl: `Voor jouw setup bieden IoT-sensoren voor realtime monitoring en -- met LED -- dynamisch spectrum scheduling de beste 2026 efficientiewinsten.`,
+            }),
             confidence: 0.5,
         }
         try {

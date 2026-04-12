@@ -2,7 +2,72 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 158) -- Predictive Analytics Dashboard + Stryker Fix + Stub Removal
+## Latest Session (Session 159) -- Stryker CI Perf + i18n + Local AI 5-Language
+
+**Status: Stryker CI timeout + concurrency fixed. GrowPlanner i18n wired.
+Local AI fallback + stream prompts expanded from EN/DE to all 5 languages
+(EN/DE/ES/FR/NL). Shared localeHelpers extracted. All verified: 0 TS errors,
+2290 tests, build OK, lint-scopes clean.**
+
+### What Was Done (Session 159)
+
+1. **Stryker Mutation Testing CI Fix (Critical):**
+    - `mutation-testing.yml`: `timeout-minutes: 30` -> `120`
+    - `stryker.conf.json`: `concurrency: 1` -> `4` (4 vCPU runner)
+    - `stryker.conf.json`: `coverageAnalysis: off` -> `perTest`
+    - `stryker.conf.json`: Added `"incremental": true` (Stryker 9.x)
+
+2. **GrowPlanner i18n Wiring:**
+    - 4 hardcoded `task.type` / `a.type.replace('_', ' ')` locations in
+      `GrowPlannerView.tsx` replaced with `t('plantsView.planner.taskTypes.' + type)`
+    - Added missing `pest_control` key to all 5 locale files
+
+3. **Local AI 5-Language Support (Major):**
+    - Created `services/local-ai/fallback/localeHelpers.ts`:
+      shared `localizeStr()` + `languageConstraint()` helpers
+    - Converted `diagnosisFallback.ts` (8 analysis functions) from
+      `isGerman()` binary to `localizeStr()` 5-language
+    - Converted `nutrientFallback.ts` (8 builder functions) to 5-lang
+    - Converted `equipmentFallback.ts` (`bilingual()` + LocalizedItem)
+      to 5-lang
+    - Converted `strainImageFallback.ts` (SVG labels) to 5-lang
+    - Converted `fallbackService.ts` (5 content methods) to 5-lang
+    - Converted `aiService.ts` stream prompt builders
+      (`buildMentorStreamPrompt`, `buildAdviceStreamPrompt`,
+      `buildDiagnosisStreamPrompt`) from `isDE` binary to multi-lang
+    - Added `localizeStr` to local-ai barrel export (`index.ts`)
+
+4. **Code Quality:**
+    - Eliminated 5x duplicated `isGerman()` helper across fallback files
+    - Replaced `bilingual()` anti-pattern with type-safe
+      `localizeStr(lang, Record<Language, string>)`
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2290 passing, 0 failures (197 files)
+- Build: clean, 172 precache entries
+- Lint-scopes: 0 warnings
+
+### Next Steps
+
+- E2E tests for v1.8 features: GrowPlanner, LeafDiagnosis, DiseaseAtlas,
+  Lexikon, LearningPath, PhotoTimeline, MetricsOverview, LlmModelSelector
+- A11y: Reduce 77 `control-has-associated-label` warnings
+- PredictiveAnalytics: Cloud AI enrichment binding
+- Bundle optimization: Recharts/D3 lazy-load per interaction
+- growScheduleTemplates.ts: i18n for template names + step notes
+
+### Planned Executions
+
+- **Execution 160:** E2E test coverage for 8 missing v1.8 features
+- **Execution 161:** A11y warning reduction (target: <30 warnings)
+- **Execution 162:** PredictiveAnalytics cloud AI hybrid routing
+- **Execution 163:** Bundle size optimization pass
+
+---
+
+## Previous Session (Session 158) -- Predictive Analytics Dashboard + Stryker Fix + Stub Removal
 
 **Status: Predictive analytics wired into Knowledge Hub Analytics Dashboard.
 Stryker CI config fixed (path resolution). Last 2 local-ai stubs removed.

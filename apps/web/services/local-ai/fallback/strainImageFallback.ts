@@ -8,8 +8,7 @@ import type { Strain, Language } from '@/types'
 import type { ImageStyle } from '@/types/aiProvider'
 import DOMPurify from 'dompurify'
 import { secureRandom } from '@/utils/random'
-
-const isGerman = (lang: Language): boolean => lang === 'de'
+import { localizeStr } from './localeHelpers'
 
 const safe = (text: string): string =>
     DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
@@ -435,9 +434,27 @@ const buildStrainDataBars = (
     const diffVal = DIFFICULTY_VAL[strain.agronomic.difficulty] ?? 50
     const yieldVal = YIELD_VAL[strain.agronomic.yield] ?? 50
     const heightVal = HEIGHT_VAL[strain.agronomic.height] ?? 50
-    const diffLabel = isGerman(lang) ? 'Schwierigkeit' : 'Difficulty'
-    const yieldLabel = isGerman(lang) ? 'Ertrag' : 'Yield'
-    const heightLabel = isGerman(lang) ? 'H\u00f6he' : 'Height'
+    const diffLabel = localizeStr(lang, {
+        en: 'Difficulty',
+        de: 'Schwierigkeit',
+        es: 'Dificultad',
+        fr: 'Difficulte',
+        nl: 'Moeilijkheid',
+    })
+    const yieldLabel = localizeStr(lang, {
+        en: 'Yield',
+        de: 'Ertrag',
+        es: 'Rendimiento',
+        fr: 'Rendement',
+        nl: 'Opbrengst',
+    })
+    const heightLabel = localizeStr(lang, {
+        en: 'Height',
+        de: 'H\u00f6he',
+        es: 'Altura',
+        fr: 'Hauteur',
+        nl: 'Hoogte',
+    })
 
     let dataY = 820
     const bars: string[] = []
@@ -554,7 +571,13 @@ const buildTerpenesBlock = (
         return { block: '', nextY: dataY }
     }
 
-    const terpeneLabel = isGerman(lang) ? 'Terpene' : 'Terpenes'
+    const terpeneLabel = localizeStr(lang, {
+        en: 'Terpenes',
+        de: 'Terpene',
+        es: 'Terpenos',
+        fr: 'Terpenes',
+        nl: 'Terpenen',
+    })
 
     const block = `<g transform="translate(86, ${dataY})">
         <text x="0" y="0" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.6">${terpeneLabel}</text>
@@ -574,7 +597,13 @@ const buildAromasBlock = (
         return { block: '', nextY: dataY }
     }
 
-    const aromasLabel = isGerman(lang) ? 'Aromen' : 'Aromas'
+    const aromasLabel = localizeStr(lang, {
+        en: 'Aromas',
+        de: 'Aromen',
+        es: 'Aromas',
+        fr: 'Aromes',
+        nl: "Aroma's",
+    })
 
     const block = `<text x="86" y="${dataY}" font-size="16" fill="${palette.textDim}" font-family="'Inter',sans-serif" opacity="0.55">${aromasLabel}: ${aromas}</text>`
     return { block, nextY: dataY + 30 }
@@ -612,10 +641,20 @@ const buildStrainImageSvg = (
     }
     const typeLabel = escapeXml(strain.type)
     const flowerTypeLabel = escapeXml(strain.floweringType)
-    const title = isGerman(lang) ? 'LOKALE STRAIN-VORSCHAU' : 'LOCAL STRAIN PREVIEW'
-    const subtitle = isGerman(lang)
-        ? 'SVG-Poster \u00b7 Lokaler Fallback'
-        : 'SVG poster \u00b7 Local fallback'
+    const title = localizeStr(lang, {
+        en: 'LOCAL STRAIN PREVIEW',
+        de: 'LOKALE STRAIN-VORSCHAU',
+        es: 'VISTA PREVIA LOCAL',
+        fr: 'APERCU LOCAL DE VARIETE',
+        nl: 'LOKAAL STRAIN VOORBEELD',
+    })
+    const subtitle = localizeStr(lang, {
+        en: 'SVG poster \u00b7 Local fallback',
+        de: 'SVG-Poster \u00b7 Lokaler Fallback',
+        es: 'Poster SVG \u00b7 Alternativa local',
+        fr: 'Poster SVG \u00b7 Secours local',
+        nl: 'SVG-poster \u00b7 Lokale terugval',
+    })
 
     // -- Terpenes, aromas, metadata
     const terpenes = strain.dominantTerpenes ?? []
@@ -623,9 +662,13 @@ const buildStrainImageSvg = (
         .slice(0, 5)
         .map((a) => escapeXml(a))
         .join(' \u00b7 ')
-    const floweringText = isGerman(lang)
-        ? `${strain.floweringTime} Tage Bl\u00fcte`
-        : `${strain.floweringTime}d flowering`
+    const floweringText = localizeStr(lang, {
+        en: `${strain.floweringTime}d flowering`,
+        de: `${strain.floweringTime} Tage Bl\u00fcte`,
+        es: `${strain.floweringTime}d floracion`,
+        fr: `${strain.floweringTime}j floraison`,
+        nl: `${strain.floweringTime}d bloei`,
+    })
     const genetics = strain.genetics ? escapeXml(strain.genetics.slice(0, 55)) : ''
     const description = strain.description ? escapeXml(strain.description.slice(0, 100)) : ''
 

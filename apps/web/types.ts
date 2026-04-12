@@ -1478,7 +1478,18 @@ export interface Scenario {
     plantAModifier: { day: number; action: ScenarioAction }
     plantBModifier: { day: number; action: ScenarioAction }
 }
-export type ScenarioAction = 'TOP' | 'LST' | 'NONE' | 'TEMP_PLUS_2' | 'TEMP_MINUS_2'
+export type ScenarioAction =
+    | 'TOP'
+    | 'LST'
+    | 'NONE'
+    | 'TEMP_PLUS_2'
+    | 'TEMP_MINUS_2'
+    | 'HUMIDITY_PLUS_10'
+    | 'HUMIDITY_MINUS_10'
+    | 'LIGHT_BOOST'
+    | 'PH_DRIFT_ACIDIC'
+    | 'EC_RAMP'
+    | 'DEFOLIATE'
 
 export interface ExperimentResult {
     originalHistory: PlantHistoryEntry[]

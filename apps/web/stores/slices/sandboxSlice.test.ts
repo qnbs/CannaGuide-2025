@@ -4,6 +4,7 @@ import sandboxReducer, {
     saveExperiment,
     clearCurrentExperiment,
     deleteExperiment,
+    loadSavedExperiment,
     runComparisonScenario,
 } from '@/stores/slices/sandboxSlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
@@ -206,5 +207,32 @@ describe('sandboxSlice', () => {
                 altitudeM: 1350,
             }),
         })
+    })
+
+    it('loadSavedExperiment sets currentExperiment from saved list', () => {
+        const mockExperiment: SavedExperiment = {
+            id: 'exp-replay-1',
+            scenarioId: 'topping-vs-lst',
+            basePlantName: 'ReplayPlant',
+            createdAt: Date.now(),
+            originalHistory: [],
+            modifiedHistory: [],
+            originalFinalState: {} as never,
+            modifiedFinalState: {} as never,
+        }
+        const withSaved = {
+            ...initial,
+            savedExperiments: [mockExperiment],
+        }
+        const state = sandboxReducer(withSaved, loadSavedExperiment('exp-replay-1'))
+        expect(state.currentExperiment).not.toBeNull()
+        expect(state.currentExperiment?.scenarioId).toBe('topping-vs-lst')
+        expect(state.status).toBe('succeeded')
+    })
+
+    it('loadSavedExperiment does nothing for unknown id', () => {
+        const state = sandboxReducer(initial, loadSavedExperiment('non-existent'))
+        expect(state.currentExperiment).toBeNull()
+        expect(state.status).toBe('idle')
     })
 })

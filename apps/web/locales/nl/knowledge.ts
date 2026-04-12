@@ -86,6 +86,33 @@ export const knowledgeView = {
             description:
                 'Simuleert een groeiperiode van 14 dagen waarbij basiscondities worden vergeleken met een +2\u00b0C verhoging van de bladerdaktemperatuur.',
         },
+        humidityPlus10: {
+            title: 'Luchtvochtigheid +10% Experiment',
+            description:
+                'Simuleert 14 dagen met +10% relatieve luchtvochtigheid voor schimmelrisicoanalyse.',
+        },
+        humidityMinus10: {
+            title: 'Luchtvochtigheid -10% Experiment',
+            description:
+                'Simuleert 14 dagen met -10% relatieve luchtvochtigheid voor VPD-optimalisatie.',
+        },
+        lightBoost: {
+            title: 'Lichtintensiteit +200 PPFD',
+            description: 'Simuleert 14 dagen met verhoogde lichtintensiteit (+200 PPFD).',
+        },
+        phDriftAcidic: {
+            title: 'pH-drift naar 5.5',
+            description: 'Simuleert een geleidelijke pH-drift naar 5.5 over 14 dagen.',
+        },
+        ecRampUp: {
+            title: 'EC-stijging +0.5',
+            description: 'Simuleert een geleidelijke EC-stijging van 0.5 over 14 dagen.',
+        },
+        defoliationDay7: {
+            title: 'Ontbladering op Dag 7',
+            description:
+                'Simuleert een ontbladeringsgebeurtenis op dag 7 en de effecten over 14 dagen.',
+        },
     },
     knowledgebase: {
         'phase1-prep': {
@@ -207,6 +234,32 @@ export const knowledgeView = {
         noExperiments: 'Nog geen opgeslagen experimenten.',
         basedOn: 'Gebaseerd op: {{name}}',
         run: 'Uitvoering: {{date}}',
+        viewResults: 'Resultaten Bekijken',
+        customExperiment: 'Aangepast Experiment',
+        customDuration: 'Duur (dagen)',
+        customActionA: 'Actie A',
+        customActionB: 'Actie B',
+        customDayA: 'Dag A',
+        customDayB: 'Dag B',
+        actionLabels: {
+            TOP: 'Topping',
+            LST: 'LST',
+            NONE: 'Geen (Controle)',
+            TEMP_PLUS_2: 'Temp +2C',
+            TEMP_MINUS_2: 'Temp -2C',
+            HUMIDITY_PLUS_10: 'Vochtigheid +10%',
+            HUMIDITY_MINUS_10: 'Vochtigheid -10%',
+            LIGHT_BOOST: 'Licht +200 PPFD',
+            PH_DRIFT_ACIDIC: 'pH-drift (zuur)',
+            EC_RAMP: 'EC-stijging',
+            DEFOLIATE: 'Ontbladering',
+        },
+        chartTabs: {
+            height: 'Hoogte',
+            health: 'Gezondheid',
+            stress: 'Stress',
+            nutrients: 'pH / EC',
+        },
     },
     guide: {
         phases: 'Fases',
@@ -1059,7 +1112,34 @@ export const analytics = {
         improveHealth: 'Plantgezondheid Verbeteren',
         improveHealthDesc:
             'Plantgezondheid is onder optimaal. Controleer voedingsstoffen, pH en omgeving.',
+        phDrift: 'pH-drift gedetecteerd',
+        phDriftDesc: 'pH drijft buiten het optimale bereik 5.8-6.8. Kalibreren en aanpassen.',
+        ecRampUp: 'EC verhogen voor bloei',
+        ecRampUpDesc: 'EC is laag voor de bloeifase. Voedingsconcentratie geleidelijk verhogen.',
+        defoliation: 'Ontbladering overwegen',
+        defoliationDesc:
+            'Plant is volwassen met goede gezondheid. Selectieve ontbladering kan lichtpenetratie verbeteren.',
     },
+    healthTrend: 'Gezondheidstrend (14d)',
+    nutrientConsistency: 'Voedingsconsistentie',
+    nutrientRating: {
+        stable: 'Stabiel',
+        moderate: 'Matig',
+        unstable: 'Instabiel',
+    },
+    growDuration: 'Kweekduur per Soort',
+    growDurationMin: 'Min',
+    growDurationMax: 'Max',
+    growDurationAvg: 'Gem',
+    growDurationCount: 'Oogsten',
+    noFinishedGrows: 'Nog geen voltooide kweek.',
+    journalTrend: 'Dagboekactiviteit (14d)',
+    journalEntries: 'Invoer',
+    exportCsv: 'CSV Exporteren',
+    chartDay: 'Dag',
+    chartHealth: 'Gezondheid',
+    phLabel: 'pH',
+    ecLabel: 'EC',
     riskType: {
         health: 'Gezondheid',
         environment: 'Omgeving',

@@ -87,6 +87,32 @@ export const knowledgeView = {
             description:
                 'Simule une periode de croissance de 14 jours comparant les conditions de base a une augmentation de +2\u00b0C de la temperature de la canopee.',
         },
+        humidityPlus10: {
+            title: 'Humidite +10% Experience',
+            description:
+                "Simule 14 jours avec +10% d'humidite relative pour analyser le risque de moisissure.",
+        },
+        humidityMinus10: {
+            title: 'Humidite -10% Experience',
+            description:
+                "Simule 14 jours avec -10% d'humidite relative pour l'optimisation du VPD.",
+        },
+        lightBoost: {
+            title: 'Intensite Lumineuse +200 PPFD',
+            description: 'Simule 14 jours avec une intensite lumineuse accrue (+200 PPFD).',
+        },
+        phDriftAcidic: {
+            title: 'Derive du pH a 5.5',
+            description: 'Simule une derive progressive du pH a 5.5 sur 14 jours.',
+        },
+        ecRampUp: {
+            title: 'Augmentation EC +0.5',
+            description: "Simule une augmentation progressive de l'EC de 0.5 sur 14 jours.",
+        },
+        defoliationDay7: {
+            title: 'Defoliation au Jour 7',
+            description: 'Simule un evenement de defoliation au jour 7 et ses effets sur 14 jours.',
+        },
     },
     knowledgebase: {
         'phase1-prep': {
@@ -208,6 +234,32 @@ export const knowledgeView = {
         noExperiments: 'Aucune experience sauvegardee.',
         basedOn: 'Base sur : {{name}}',
         run: 'Execution : {{date}}',
+        viewResults: 'Voir les Resultats',
+        customExperiment: 'Experience Personnalisee',
+        customDuration: 'Duree (jours)',
+        customActionA: 'Action A',
+        customActionB: 'Action B',
+        customDayA: 'Jour A',
+        customDayB: 'Jour B',
+        actionLabels: {
+            TOP: 'Topping',
+            LST: 'LST',
+            NONE: 'Aucune (Controle)',
+            TEMP_PLUS_2: 'Temp +2C',
+            TEMP_MINUS_2: 'Temp -2C',
+            HUMIDITY_PLUS_10: 'Humidite +10%',
+            HUMIDITY_MINUS_10: 'Humidite -10%',
+            LIGHT_BOOST: 'Lumiere +200 PPFD',
+            PH_DRIFT_ACIDIC: 'Derive pH (acide)',
+            EC_RAMP: 'Augmentation EC',
+            DEFOLIATE: 'Defoliation',
+        },
+        chartTabs: {
+            height: 'Hauteur',
+            health: 'Sante',
+            stress: 'Stress',
+            nutrients: 'pH / EC',
+        },
     },
     guide: {
         phases: 'Phases',
@@ -1073,7 +1125,35 @@ export const analytics = {
         improveHealth: 'Ameliorer la Sante de la Plante',
         improveHealthDesc:
             "La sante de la plante est en dessous de l'optimal. Verifiez les nutriments, le pH et l'environnement.",
+        phDrift: 'Derive de pH detectee',
+        phDriftDesc: 'Le pH est en dehors de la plage optimale 5.8-6.8. Calibrer et ajuster.',
+        ecRampUp: 'Augmenter EC pour la floraison',
+        ecRampUpDesc:
+            'EC est faible pour la phase de floraison. Augmenter la concentration en nutriments progressivement.',
+        defoliation: 'Envisager la defoliation',
+        defoliationDesc:
+            'Plante mature avec bonne sante. La defoliation selective peut ameliorer la penetration de la lumiere.',
     },
+    healthTrend: 'Tendance Sante (14j)',
+    nutrientConsistency: 'Consistance des Nutriments',
+    nutrientRating: {
+        stable: 'Stable',
+        moderate: 'Modere',
+        unstable: 'Instable',
+    },
+    growDuration: 'Duree de Culture par Variete',
+    growDurationMin: 'Min',
+    growDurationMax: 'Max',
+    growDurationAvg: 'Moy',
+    growDurationCount: 'Recoltes',
+    noFinishedGrows: 'Aucune culture terminee.',
+    journalTrend: 'Activite du Journal (14j)',
+    journalEntries: 'Entrees',
+    exportCsv: 'Exporter CSV',
+    chartDay: 'Jour',
+    chartHealth: 'Sante',
+    phLabel: 'pH',
+    ecLabel: 'EC',
     riskType: {
         health: 'Sante',
         environment: 'Environnement',

@@ -276,6 +276,9 @@ export type { FallbackLayer } from './telemetry/telemetryService'
 // ---------------------------------------------------------------------------
 export { localAiFallbackService, diagnosePlant } from './fallback/fallbackService'
 export type { PlantDiagnostic } from './fallback/fallbackService'
+export { buildEquipmentRecommendation } from './fallback/equipmentFallback'
+export { buildNutrientRecommendation } from './fallback/nutrientFallback'
+export { buildStrainImage } from './fallback/strainImageFallback'
 
 // ---------------------------------------------------------------------------
 // Interfaces (for DI / testing)

@@ -2,58 +2,58 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 155) -- Local AI Stack Restructuring Phase 1
+## Latest Session (Session 156) -- Local AI Stack Phase 2: Core Decoupling
 
-**Status: Complete layered restructuring of the Local AI stack
-(29 source files, 26 test files) into `services/local-ai/` with
-9 sub-directories, interfaces, barrel, stubs, and ADR-0011.**
+**Status: fallbackService.ts split into 4 domain modules + slim
+orchestrator, routing infrastructure extracted to localRoutingService.ts,
+31 new tests added. All verified: 0 TS errors, 2284 tests passing,
+build successful.**
 
-### What Was Done (Session 155)
+### What Was Done (Session 156)
 
-1. **Directory Structure (ADR-0011):**
-    - Created `services/local-ai/` with 9 sub-dirs:
-      core/, models/, inference/, vision/, nlp/, device/,
-      cache/, telemetry/, fallback/
-    - Moved 29 source files via `git mv`
-    - Moved 26 co-located test files alongside source
-    - All internal imports fixed (relative cross-layer)
+1. **fallbackService.ts Split (1582 LOC -> 5 files):**
+    - `fallback/diagnosisFallback.ts` (~170 LOC): Plant diagnosis heuristics
+      (VPD, pH, EC, temp, moisture, root health, CO2, light hours)
+    - `fallback/nutrientFallback.ts` (~200 LOC): Nutrient recommendation builder
+      (medium-specific advice, EC/pH warnings, trend summaries)
+    - `fallback/equipmentFallback.ts` (~230 LOC): Equipment recommendation builder
+      (tent, light, ventilation configs, budget/large variants)
+    - `fallback/strainImageFallback.ts` (~700 LOC): SVG strain poster generation
+      (terpene bars, leaf paths, style palettes)
+    - `fallback/fallbackService.ts` (~210 LOC): Slim orchestrator class that
+      delegates to domain modules, tracks telemetry via `this.track()`
 
-2. **Public API:**
-    - `interfaces.ts` -- 20+ TypeScript interface contracts
-      (ICacheService, ITelemetryService, IGpuResourceManager,
-      IHealthService, IModelLoader, IModelManager, IWebLlmService,
-      IInferenceRouter, IPreloadOrchestrator, IFallbackService,
-      INlpService, IEmbeddingService, ILanguageDetectionService,
-      IDiagnosisService, IImageSimilarityService, IStreamingService,
-      IEcoModeService)
-    - `index.ts` -- public barrel re-export (canonical import)
+2. **Routing Service Extraction (aiService.ts -> localRoutingService.ts):**
+    - New `services/localRoutingService.ts` (~140 LOC): AI mode state,
+      `shouldRouteLocally()`, `withLocalFallback()`, `runRouted()`,
+      `withLocalService()`, lazy service loaders
+    - `aiService.ts` reduced by ~100 LOC, now imports routing from new service
+    - Re-exports `setAiMode`, `getAiMode`, `isEcoMode` for backward compat
 
-3. **Backward Compatibility:**
-    - 29 re-export stubs at old paths in `services/`
-    - External consumers unchanged (aiService, aiFacade,
-      components, hooks, workers all resolve via stubs)
+3. **Handler Registry (promptHandlers.ts): Skipped**
+    - Evaluated and dropped: 9 handlers have different signatures/return types,
+      a registry map would be over-engineering without practical benefit
+    - File is already well-organized (506 LOC, section headers, clear naming)
 
-4. **Test Mock Paths:**
-    - All `vi.mock()` paths in 12+ test files updated
-      to match new source import paths
-    - 2253/2253 tests passing, 0 failures
+4. **New Tests (+31 tests, 4 files):**
+    - `diagnosisFallback.test.ts` (7 tests): VPD, pH, EC, root health, seedling ranges
+    - `equipmentFallback.test.ts` (6 tests): complete output, German, large/budget, watts
+    - `nutrientFallback.test.ts` (7 tests): medium variants, EC/pH warnings, plant info
+    - `localRoutingService.test.ts` (11 tests): mode state, routing decisions, fallback
 
-5. **ESLint Boundary (ADR-0011):**
-    - New override block: files outside local-ai/ cannot
-      deep-import local-ai/core/_, local-ai/models/_, etc.
-    - Warn level (Phase 2 will escalate to error)
-
-6. **ADR-0011:** Documented decision, alternatives, consequences
+5. **Barrel/Stub Updates:**
+    - `local-ai/index.ts` updated with new domain module exports
+    - Backward-compat stub at `localAiFallbackService.ts` verified working
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
-- Tests: 2253 passed, 0 failures (192 files)
-- Build: successful (3 tasks, 170 precache entries)
+- Tests: 2284 passed, 0 failures (196 files)
+- Build: successful (171 precache entries)
 
 ### Next Steps -- Planned Executions
 
-**Phase 2 (Session N+1): Stub Migration**
+**Phase 2b (Session N+1): Stub Migration**
 
 - Migrate external consumers from stubs to barrel imports
 - Update aiService.ts, aiFacade.ts, components, hooks
@@ -73,8 +73,9 @@
 - Reduce control-has-associated-label (77) with label wiring
 - Wire predictiveAnalyticsService to cloud AI provider
 - Add E2E tests for PredictiveInsightsPanel
+- Delete `fallbackService.ts.bak` backup file
 
-## Previous Session (Session 154) -- Documentation Overhaul
+## Previous Session (Session 155) -- Local AI Stack Restructuring Phase 1
 
 **Status: Multi-phase enhancement -- mobile fixes, HydroMonitor
 glass-morphism, PredictiveAnalytics UI wiring, a11y reduction

@@ -4,6 +4,8 @@
         "module": "ESNext",
         "moduleResolution": "bundler",
         "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "noUncheckedIndexedAccess": true,
         "noImplicitAny": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,

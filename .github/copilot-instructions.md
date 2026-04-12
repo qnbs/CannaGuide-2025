@@ -46,7 +46,7 @@ apps/
     index.html           # Entry HTML
     index.tsx            # App bootstrap, SW registration, safe recovery
     constants.ts         # App-wide constants
-    types.ts             # Core TypeScript types
+    types.ts             # UI-only types (583 lines). Domain types re-exported from @cannaguide/ai-core
     i18n.ts              # i18next initialization
     styles.css           # Tailwind entry point
     simulation.worker.ts # VPD simulation Web Worker
@@ -67,11 +67,23 @@ packages/
   ai-core/               # Shared AI types, provider configs, key validation, ML isolation
     package.json         # @cannaguide/ai-core -- ML libs as optionalDependencies
     src/
-      index.ts           # Re-exports types, configs, validation, schemas
+      index.ts           # Re-exports types, configs, validation, schemas, domain barrel
       providers.ts       # PROVIDER_CONFIGS, key validation (isKeyRotationDue, isValidProviderKeyFormat)
       schemas.ts         # Zod schemas for AI response validation
-      types.ts           # AI response types (AIResponse, PlantDiagnosisResponse, etc.)
+      types.ts           # AI response types (imports from domain/, re-exports)
       ml.ts              # Lazy loaders: loadTransformers(), loadWebLlm(), loadGenAI()
+      domain/            # Canonical domain types (120+ types in 10 files)
+        index.ts         # Barrel re-export for all domain types
+        enums.ts         # PlantStage, StrainType, ProblemType, JournalEntryType, etc.
+        strain.ts        # Strain, TerpeneName/Profile, CannabinoidName/Profile, etc.
+        plant.ts         # Plant, GrowSetup, PlantEnvironment, JournalEntry, etc.
+        grow.ts          # Grow, GrowExportData, GrowSummary, PlannerTask, etc.
+        hydro.ts         # HydroReading, HydroAlert, HydroForecast, MetricsReading, etc.
+        knowledge.ts     # LexiconEntry, DiseaseEntry, LearningPath, FAQItem, etc.
+        diagnosis.ts     # DiagnosisRecord, LeafDiagnosisResult, PredictiveInsight, etc.
+        breeding.ts      # Seed, SeedInventoryEntry, GenealogyNode, PollenRecord, etc.
+        issue.ts         # PlantIssue, IssueTreatment, ProblemTrackerState
+        shared.ts        # Archives, Sandbox, Nutrients, Plugins, IoT, Knowledge progress
   ui/                    # Shared design system tokens + Tailwind preset
     src/
       theme.ts           # Theme type + ThemeTokens interface
@@ -561,7 +573,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/utils/random.ts`                                                      | `secureRandom()` -- Web Crypto replacement for Math.random                                                                                                                   |
 | `apps/web/utils/browserApis.ts`                                                 | Typed helpers for browser APIs (performance.memory, deviceMemory, battery, GPU adapter, isMobileDevice, checkStorageQuota)                                                   |
 | `apps/web/constants.ts`                                                         | App-wide constants                                                                                                                                                           |
-| `apps/web/types.ts`                                                             | Core TypeScript types                                                                                                                                                        |
+| `apps/web/types.ts`                                                             | UI-only types (583 lines). Domain types re-exported from @cannaguide/ai-core                                                                                                 |
 | `apps/web/i18n.ts`                                                              | i18next initialization                                                                                                                                                       |
 | `packages/ai-core/src/providers.ts`                                             | PROVIDER_CONFIGS map + key rotation/validation functions                                                                                                                     |
 | `packages/ai-core/src/schemas.ts`                                               | Zod schemas for AI response validation                                                                                                                                       |

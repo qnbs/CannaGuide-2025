@@ -18,12 +18,12 @@ import type { ImageStyle } from '@/types/aiProvider'
 
 /** Persistent inference cache backed by IndexedDB LRU. */
 export interface ICacheService {
-  getCachedInference(prompt: string): Promise<string | null>
-  setCachedInference(prompt: string, value: string, meta?: { model?: string }): Promise<void>
-  clearPersistentCache(): Promise<void>
-  getCacheSize(): Promise<number>
-  getCacheBreakdown(): Promise<Record<string, number>>
-  applyCacheSettings(maxEntries: number): void
+    getCachedInference(prompt: string): Promise<string | null>
+    setCachedInference(prompt: string, value: string, meta?: { model?: string }): Promise<void>
+    clearPersistentCache(): Promise<void>
+    getCacheSize(): Promise<number>
+    getCacheBreakdown(): Promise<Record<string, number>>
+    applyCacheSettings(maxEntries: number): void
 }
 
 // ---------------------------------------------------------------------------
@@ -33,32 +33,32 @@ export interface ICacheService {
 export type FallbackLayer = 'cache' | 'webllm' | 'transformers' | 'heuristic' | 'cloud'
 
 export interface IInferenceRecord {
-  model: string
-  task: string
-  latencyMs: number
-  tokensPerSecond: number | null
-  backend: string
-  success: boolean
-  cached: boolean
-  fallbackLayer?: FallbackLayer | undefined
+    model: string
+    task: string
+    latencyMs: number
+    tokensPerSecond: number | null
+    backend: string
+    success: boolean
+    cached: boolean
+    fallbackLayer?: FallbackLayer | undefined
 }
 
 export interface ITelemetrySnapshot {
-  totalInferences: number
-  avgLatencyMs: number
-  cacheHitRate: number
-  modelBreakdown: Record<string, number>
-  backendBreakdown: Record<string, number>
+    totalInferences: number
+    avgLatencyMs: number
+    cacheHitRate: number
+    modelBreakdown: Record<string, number>
+    backendBreakdown: Record<string, number>
 }
 
 export interface ITelemetryService {
-  recordInference(record: IInferenceRecord): void
-  recordCacheHit(): void
-  recordCacheMiss(): void
-  recordFallbackEvent(layer: FallbackLayer, reason?: string): void
-  getSnapshot(): ITelemetrySnapshot
-  checkPerformanceDegradation(): { degraded: boolean; recommendation?: string }
-  createInferenceTimer(): { stop(meta: Partial<IInferenceRecord>): IInferenceRecord }
+    recordInference(record: IInferenceRecord): void
+    recordCacheHit(): void
+    recordCacheMiss(): void
+    recordFallbackEvent(layer: FallbackLayer, reason?: string): void
+    getSnapshot(): ITelemetrySnapshot
+    checkPerformanceDegradation(): { degraded: boolean; recommendation?: string }
+    createInferenceTimer(): { stop(meta: Partial<IInferenceRecord>): IInferenceRecord }
 }
 
 // ---------------------------------------------------------------------------
@@ -69,17 +69,17 @@ export type GpuConsumer = string
 export type GpuPriority = 'high' | 'normal' | 'low'
 
 export interface IGpuLockState {
-  holder: string | null
-  waiting: number
-  autoReleaseActive: boolean
+    holder: string | null
+    waiting: number
+    autoReleaseActive: boolean
 }
 
 export interface IGpuResourceManager {
-  acquireGpu(consumer: GpuConsumer, priority?: GpuPriority): Promise<void>
-  releaseGpu(consumer: GpuConsumer): void
-  getGpuLockState(): IGpuLockState
-  getQueueState(): { current: string | null; queue: string[] }
-  isGpuHeldBy(consumer: GpuConsumer): boolean
+    acquireGpu(consumer: GpuConsumer, priority?: GpuPriority): Promise<void>
+    releaseGpu(consumer: GpuConsumer): void
+    getGpuLockState(): IGpuLockState
+    getQueueState(): { current: string | null; queue: string[] }
+    isGpuHeldBy(consumer: GpuConsumer): boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -89,25 +89,25 @@ export interface IGpuResourceManager {
 export type DeviceClass = 'high-end' | 'mid-range' | 'low-end' | 'unknown'
 
 export interface IVramInfo {
-  vramMB: number | null
-  probed: boolean
-  adapterDescription: string | null
+    vramMB: number | null
+    probed: boolean
+    adapterDescription: string | null
 }
 
 export interface IHealthReport {
-  deviceClass: DeviceClass
-  memory: { usedHeapMB: number; heapLimitMB: number; usagePercent: number }
-  storage: { usageMB: number; quotaMB: number; usagePercent: number }
-  vram: IVramInfo
+    deviceClass: DeviceClass
+    memory: { usedHeapMB: number; heapLimitMB: number; usagePercent: number }
+    storage: { usageMB: number; quotaMB: number; usagePercent: number }
+    vram: IVramInfo
 }
 
 export interface IHealthService {
-  generateHealthReport(): Promise<IHealthReport>
-  quickHealthCheck(): { status: string; memoryPressure: boolean; modelsReady: boolean }
-  classifyDevice(): DeviceClass
-  probeGpuVram(): Promise<IVramInfo>
-  isVramInsufficient(): boolean
-  shouldForceHeuristics(): boolean
+    generateHealthReport(): Promise<IHealthReport>
+    quickHealthCheck(): { status: string; memoryPressure: boolean; modelsReady: boolean }
+    classifyDevice(): DeviceClass
+    probeGpuVram(): Promise<IVramInfo>
+    isVramInsufficient(): boolean
+    shouldForceHeuristics(): boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -117,10 +117,10 @@ export interface IHealthService {
 export type OnnxBackend = 'webgpu' | 'wasm'
 
 export interface IModelLoader {
-  loadTransformersPipeline(task: string, modelId: string): Promise<unknown>
-  detectOnnxBackend(): OnnxBackend
-  clearPipelineCache(): void
-  getLoadedPipelineCount(): number
+    loadTransformersPipeline(task: string, modelId: string): Promise<unknown>
+    detectOnnxBackend(): OnnxBackend
+    clearPipelineCache(): void
+    getLoadedPipelineCount(): number
 }
 
 // ---------------------------------------------------------------------------
@@ -128,10 +128,10 @@ export interface IModelLoader {
 // ---------------------------------------------------------------------------
 
 export interface IModelManager {
-  loadTextPipeline(): Promise<unknown>
-  loadVisionPipeline(): Promise<unknown>
-  dispose(): void
-  switchModel(modelId: string): Promise<void>
+    loadTextPipeline(): Promise<unknown>
+    loadVisionPipeline(): Promise<unknown>
+    dispose(): void
+    switchModel(modelId: string): Promise<void>
 }
 
 // ---------------------------------------------------------------------------
@@ -139,12 +139,12 @@ export interface IModelManager {
 // ---------------------------------------------------------------------------
 
 export interface IWebLlmService {
-  loadWebLlmEngine(): Promise<unknown | null>
-  generateWithWebLlm(prompt: string, attempt?: number): Promise<string | null>
-  disposeWebLlm(): void
-  getWebLlmModelId(): string | null
-  cancelWebLlmDownload(): void
-  isWebLlmDownloading(): boolean
+    loadWebLlmEngine(): Promise<unknown | null>
+    generateWithWebLlm(prompt: string, attempt?: number): Promise<string | null>
+    disposeWebLlm(): void
+    getWebLlmModelId(): string | null
+    cancelWebLlmDownload(): void
+    isWebLlmDownloading(): boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -152,10 +152,10 @@ export interface IWebLlmService {
 // ---------------------------------------------------------------------------
 
 export interface IInferenceRouter {
-  routeInference(prompt: string, deps: unknown): Promise<string | null>
-  getCached(prompt: string): string | null
-  setCached(prompt: string, value: string): void
-  clearInferenceCache(): void
+    routeInference(prompt: string, deps: unknown): Promise<string | null>
+    getCached(prompt: string): string | null
+    setCached(prompt: string, value: string): void
+    clearInferenceCache(): void
 }
 
 // ---------------------------------------------------------------------------
@@ -163,21 +163,21 @@ export interface IInferenceRouter {
 // ---------------------------------------------------------------------------
 
 export interface IPreloadReport {
-  textModelReady: boolean
-  visionModelReady: boolean
-  embeddingReady: boolean
-  nlpReady: boolean
-  webLlmReady: boolean
-  errorCount: number
+    textModelReady: boolean
+    visionModelReady: boolean
+    embeddingReady: boolean
+    nlpReady: boolean
+    webLlmReady: boolean
+    errorCount: number
 }
 
 export interface IPreloadOrchestrator {
-  preloadOfflineAssets(
-    modelManager: IModelManager,
-    includeWebLlm: boolean,
-    onProgress?: (step: string, pct: number) => void,
-    ecoOnly?: boolean,
-  ): Promise<IPreloadReport>
+    preloadOfflineAssets(
+        modelManager: IModelManager,
+        includeWebLlm: boolean,
+        onProgress?: (step: string, pct: number) => void,
+        ecoOnly?: boolean,
+    ): Promise<IPreloadReport>
 }
 
 // ---------------------------------------------------------------------------
@@ -185,18 +185,18 @@ export interface IPreloadOrchestrator {
 // ---------------------------------------------------------------------------
 
 export interface IFallbackService {
-  diagnosePlant(plant: Plant, lang: Language): PlantDiagnosisResponse
-  getMentorResponse(
-    plant: Plant | undefined,
-    query: string,
-    ragContext: string | undefined,
-    lang: Language,
-  ): AIResponse
-  getPlantAdvice(plant: Plant, lang: Language): AIResponse
-  getGardenStatusSummary(plants: readonly Plant[], lang: Language): AIResponse
-  getStrainTips(strain: Strain, lang: Language): StructuredGrowTips
-  getEquipmentRecommendation(prompt: string, lang: Language): unknown
-  getNutrientRecommendation(context: unknown, lang: Language): string
+    diagnosePlant(plant: Plant, lang: Language): PlantDiagnosisResponse
+    getMentorResponse(
+        plant: Plant | undefined,
+        query: string,
+        ragContext: string | undefined,
+        lang: Language,
+    ): AIResponse
+    getPlantAdvice(plant: Plant, lang: Language): AIResponse
+    getGardenStatusSummary(plants: readonly Plant[], lang: Language): AIResponse
+    getStrainTips(strain: Strain, lang: Language): StructuredGrowTips
+    getEquipmentRecommendation(prompt: string, lang: Language): unknown
+    getNutrientRecommendation(context: unknown, lang: Language): string
 }
 
 // ---------------------------------------------------------------------------
@@ -204,15 +204,15 @@ export interface IFallbackService {
 // ---------------------------------------------------------------------------
 
 export interface ISentimentResult {
-  label: 'POSITIVE' | 'NEGATIVE'
-  score: number
-  normalized: number
+    label: 'POSITIVE' | 'NEGATIVE'
+    score: number
+    normalized: number
 }
 
 export interface INlpService {
-  analyzeSentiment(text: string): Promise<ISentimentResult>
-  summarizeText(text: string, maxLength?: number): Promise<{ summary: string }>
-  classifyGrowTopic(text: string): Promise<{ topLabel: string; topScore: number }>
+    analyzeSentiment(text: string): Promise<ISentimentResult>
+    summarizeText(text: string, maxLength?: number): Promise<{ summary: string }>
+    classifyGrowTopic(text: string): Promise<{ topLabel: string; topScore: number }>
 }
 
 // ---------------------------------------------------------------------------
@@ -220,10 +220,10 @@ export interface INlpService {
 // ---------------------------------------------------------------------------
 
 export interface IEmbeddingService {
-  embedText(text: string): Promise<Float32Array>
-  cosineSimilarity(a: Float32Array, b: Float32Array): number
-  isEmbeddingModelReady(): boolean
-  preloadEmbeddingModel(): Promise<boolean>
+    embedText(text: string): Promise<Float32Array>
+    cosineSimilarity(a: Float32Array, b: Float32Array): number
+    isEmbeddingModelReady(): boolean
+    preloadEmbeddingModel(): Promise<boolean>
 }
 
 // ---------------------------------------------------------------------------
@@ -233,14 +233,14 @@ export interface IEmbeddingService {
 export type DetectedLanguage = 'en' | 'de' | 'unknown'
 
 export interface ILanguageDetectionResult {
-  language: DetectedLanguage
-  confidence: number
-  method: 'model' | 'heuristic'
+    language: DetectedLanguage
+    confidence: number
+    method: 'model' | 'heuristic'
 }
 
 export interface ILanguageDetectionService {
-  detectLanguage(text: string): Promise<ILanguageDetectionResult>
-  detectLanguageHeuristic(text: string): ILanguageDetectionResult
+    detectLanguage(text: string): Promise<ILanguageDetectionResult>
+    detectLanguageHeuristic(text: string): ILanguageDetectionResult
 }
 
 // ---------------------------------------------------------------------------
@@ -248,15 +248,15 @@ export interface ILanguageDetectionService {
 // ---------------------------------------------------------------------------
 
 export interface IDiagnosisService {
-  classifyPlantImage(
-    base64: string,
-    mimeType: string,
-    loadVisionPipeline: () => Promise<unknown>,
-    timeoutMs?: number,
-  ): Promise<Array<{ label: string; score: number }>>
-  buildDiagnosisContent(plant: Plant, lang: Language, labels: unknown): PlantDiagnosisResponse
-  fallbackDiagnosis(plant: Plant, lang: Language): PlantDiagnosisResponse
-  classifyLeafImage(imageData: ImageData): Promise<unknown>
+    classifyPlantImage(
+        base64: string,
+        mimeType: string,
+        loadVisionPipeline: () => Promise<unknown>,
+        timeoutMs?: number,
+    ): Promise<Array<{ label: string; score: number }>>
+    buildDiagnosisContent(plant: Plant, lang: Language, labels: unknown): PlantDiagnosisResponse
+    fallbackDiagnosis(plant: Plant, lang: Language): PlantDiagnosisResponse
+    classifyLeafImage(imageData: ImageData): Promise<unknown>
 }
 
 // ---------------------------------------------------------------------------
@@ -264,9 +264,11 @@ export interface IDiagnosisService {
 // ---------------------------------------------------------------------------
 
 export interface IImageSimilarityService {
-  compareImages(imageA: string, imageB: string): Promise<number>
-  analyzeGrowthProgression(photos: readonly string[]): Promise<{ averageChange: number; trend: string }>
-  preloadImageSimilarityModel(): Promise<boolean>
+    compareImages(imageA: string, imageB: string): Promise<number>
+    analyzeGrowthProgression(
+        photos: readonly string[],
+    ): Promise<{ averageChange: number; trend: string }>
+    preloadImageSimilarityModel(): Promise<boolean>
 }
 
 // ---------------------------------------------------------------------------
@@ -274,11 +276,11 @@ export interface IImageSimilarityService {
 // ---------------------------------------------------------------------------
 
 export interface IStreamingService {
-  streamTextGeneration(
-    prompt: string,
-    onToken: (token: string) => void,
-    deps: unknown,
-  ): Promise<string | null>
+    streamTextGeneration(
+        prompt: string,
+        onToken: (token: string) => void,
+        deps: unknown,
+    ): Promise<string | null>
 }
 
 // ---------------------------------------------------------------------------
@@ -286,10 +288,12 @@ export interface IStreamingService {
 // ---------------------------------------------------------------------------
 
 export interface IEcoModeService {
-  isEcoMode(): boolean
-  setEcoModeExplicit(active: boolean): void
-  detectEcoCondition(): Promise<boolean>
-  applyAdaptiveMode(): Promise<void>
+    isEcoMode(): boolean
+    isCriticalBattery(): boolean
+    setEcoModeExplicit(active: boolean): void
+    detectEcoCondition(): Promise<boolean>
+    detectCriticalBattery(): Promise<boolean>
+    applyAdaptiveMode(): Promise<void>
 }
 
 // ---------------------------------------------------------------------------

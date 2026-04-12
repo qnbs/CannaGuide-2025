@@ -98,13 +98,18 @@ class MqttClientService {
             return
         }
 
-        // WSS warning: credentials over unencrypted ws://
+        // WSS enforcement: block credentials over unencrypted ws://
         try {
             const parsed = new URL(brokerUrl)
             if (parsed.protocol === 'ws:' && (username || password)) {
-                console.debug(
-                    '[MQTT] WARNING: credentials sent over unencrypted ws:// -- use wss://',
-                )
+                useIotStore
+                    .getState()
+                    .setConnectionStatus(
+                        'error',
+                        'Credentials require wss:// (encrypted). Plain ws:// with credentials is blocked for security.',
+                    )
+                console.debug('[MQTT] BLOCKED: credentials over unencrypted ws:// -- use wss://')
+                return
             }
         } catch {
             // URL validation already handled above

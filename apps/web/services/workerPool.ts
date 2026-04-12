@@ -18,6 +18,7 @@ import { canUseSharedArrayBuffer } from '@/utils/crossOriginIsolation'
 import { getMaxPoolSize } from '@/utils/deviceCapabilities'
 import { AtomicsChannel } from '@/utils/atomicsChannel'
 import { LockFreeRingBuffer } from '@/utils/lockFreeRingBuffer'
+import { getPerformanceMemory } from '@/utils/browserApis'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -62,6 +63,15 @@ export type OnSpawnHook = (name: string, worker: Worker) => void
 /** Default idle timeout before a cold worker is terminated (ms). */
 const IDLE_TIMEOUT_MS = 45_000
 
+/** Interval between memory pressure checks (ms). */
+const MEMORY_CHECK_INTERVAL_MS = 30_000
+
+/** Heap usage threshold: terminate low-priority idle workers. */
+const HEAP_WARN_THRESHOLD = 0.85
+
+/** Heap usage threshold: terminate all non-hot workers. */
+const HEAP_CRITICAL_THRESHOLD = 0.9
+
 // ---------------------------------------------------------------------------
 // WorkerPool
 // ---------------------------------------------------------------------------
@@ -85,7 +95,8 @@ export class WorkerPool {
 
     /** Optional hook called after every lazy spawn. */
     private onSpawnHook: OnSpawnHook | undefined
-
+    /** Handle for the periodic memory pressure check interval. */
+    private memoryCheckHandle: ReturnType<typeof setInterval> | null = null
     /** W-06/SAB: AtomicsChannels keyed by worker name (main-thread side). */
     private readonly sabChannels = new Map<string, AtomicsChannel>()
 
@@ -148,6 +159,9 @@ export class WorkerPool {
         this.instances.set(name, worker)
         this.spawnedTotal++
 
+        // Start OOM monitor on first worker spawn
+        this.startMemoryMonitor()
+
         // W-06/SAB: Initialize hot-path primitives before notifying hook
         this.initSabHotPath(name, worker)
 
@@ -208,6 +222,7 @@ export class WorkerPool {
 
     /** Terminate all workers and clear all timers. */
     dispose(): void {
+        this.stopMemoryMonitor()
         for (const [name] of this.idleTimers) {
             this.cancelIdleTimer(name)
         }
@@ -224,6 +239,84 @@ export class WorkerPool {
     /** Set a hook called after every lazy spawn event. */
     setOnSpawnHook(hook: OnSpawnHook): void {
         this.onSpawnHook = hook
+    }
+
+    // -------------------------------------------------------------------
+    // OOM Memory Pressure Monitor (W-06.1)
+    // -------------------------------------------------------------------
+
+    /**
+     * Start periodic heap memory monitoring. When heap usage exceeds
+     * HEAP_WARN_THRESHOLD (85%), idle and low-priority workers are
+     * terminated. At HEAP_CRITICAL_THRESHOLD (90%), all non-hot workers
+     * are terminated to prevent OOM crashes.
+     *
+     * Safe to call multiple times -- subsequent calls are no-ops.
+     * Only effective in Chromium (requires `performance.memory`).
+     */
+    startMemoryMonitor(): void {
+        if (this.memoryCheckHandle) return
+        // Only useful in browsers that expose performance.memory (Chromium)
+        if (!getPerformanceMemory()) return
+
+        this.memoryCheckHandle = setInterval(() => {
+            this.checkMemoryPressure()
+        }, MEMORY_CHECK_INTERVAL_MS)
+    }
+
+    /** Stop the periodic memory pressure monitor. */
+    stopMemoryMonitor(): void {
+        if (this.memoryCheckHandle) {
+            clearInterval(this.memoryCheckHandle)
+            this.memoryCheckHandle = null
+        }
+    }
+
+    /**
+     * Check current JS heap usage and terminate workers if pressure is
+     * detected. Returns the current heap usage ratio (0-1) or null if
+     * the performance.memory API is unavailable.
+     */
+    checkMemoryPressure(): number | null {
+        const mem = getPerformanceMemory()
+        if (!mem || mem.jsHeapSizeLimit === 0) return null
+
+        const ratio = mem.usedJSHeapSize / mem.jsHeapSizeLimit
+        if (ratio < HEAP_WARN_THRESHOLD) return ratio
+
+        if (ratio >= HEAP_CRITICAL_THRESHOLD) {
+            // Critical: terminate ALL non-hot workers
+            console.debug(
+                `[WorkerPool] CRITICAL memory pressure (${(ratio * 100).toFixed(1)}%) -- terminating all non-hot workers`,
+            )
+            this.terminateNonHotWorkers()
+        } else {
+            // Warning: terminate idle workers only
+            console.debug(
+                `[WorkerPool] Memory pressure (${(ratio * 100).toFixed(1)}%) -- terminating idle workers`,
+            )
+            this.terminateIdleWorkers()
+        }
+        return ratio
+    }
+
+    /** Terminate all workers that are currently idle (timer running). */
+    private terminateIdleWorkers(): void {
+        const names = [...this.idleSet]
+        for (const name of names) {
+            this.terminateWorker(name)
+        }
+    }
+
+    /** Terminate all workers except those marked as hot. */
+    private terminateNonHotWorkers(): void {
+        const names = [...this.instances.keys()]
+        for (const name of names) {
+            const entry = this.factories.get(name)
+            if (!entry?.hot) {
+                this.terminateWorker(name)
+            }
+        }
     }
 
     // -------------------------------------------------------------------

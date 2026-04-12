@@ -4,6 +4,27 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **refactor(ai-core):** Domain type consolidation -- 120+ types
+  extracted from monolithic apps/web/types.ts to
+  @cannaguide/ai-core/src/domain/ (10 domain files + barrel index)
+- **feat(security):** IoT WSS enforcement -- ws:// with credentials
+  now throws Error instead of silent debug warning
+- **feat(worker):** WorkerPool OOM memory monitor -- periodic 30s
+  heap checks with 85%/90% thresholds, auto-terminates workers
+- **feat(ai):** Critical battery gating -- isCriticalBattery() at
+  <15% forces cloud/heuristic routing, disables local ML inference
+
+### Changed
+
+- **refactor(types):** apps/web/types.ts reduced from 1869 to 583
+  lines via bridge re-exports from @cannaguide/ai-core
+- **refactor(ai-core):** Deduplicated 10+ types (AIResponse,
+  Recommendation, AiMode, etc.) previously defined in both packages
+
 ## [1.8.0] - 2025-04-12
 
 ### Added
@@ -38,6 +59,13 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 ---
 
 ## [Unreleased]
+
+### Fixed
+
+- **fix(e2e):** Analytics Dashboard "Garden Score section" test --
+  replaced brittle text-regex selector with data-testid attributes
+  (`analytics-empty-state`, `analytics-garden-score`). Fixes CI
+  failure when no plants exist on fresh app boot (PR #924).
 
 ### Fixed
 

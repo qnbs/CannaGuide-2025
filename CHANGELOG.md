@@ -6,6 +6,19 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **feat(strains):** Seed Vault overhaul -- 5 new sub-components
+  (SeedVaultStats, SeedVaultToolbar, SeedEntryForm, SeedEntryCard,
+  SeedVaultPollenLog), extended data model (SeedSource, storageLocation,
+  germinationRate, batchNumber, expiryEstimate), 3 new Redux actions
+  (batchRemoveSeedEntries, batchUpdateTags, consumeSeedForGrow),
+  3 new selectors, grid/list view, bulk operations, pollen log,
+  776-strain autocomplete, 5-star quality rating, viability indicators
+- **test(breeding):** breedingSlice tests expanded from 6 to 30
+  (seed vault actions, pollen records, selectors, edge cases)
+- **i18n(strains):** ~80 new Seed Vault keys across all 5 languages
+
 ### Changed
 
 - **chore(node):** Upgrade minimum Node.js from 20 to 24 (Active LTS)

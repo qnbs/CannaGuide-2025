@@ -117,6 +117,38 @@ export default [
         },
     },
 
+    // ── Local AI boundary – prevent deep imports from outside local-ai/ ───
+    // Files outside services/local-ai/ must use the barrel (local-ai/index)
+    // or backward-compat stubs, never deep sub-paths (ADR-0011).
+    {
+        files: ['apps/web/**/*.{ts,tsx}'],
+        ignores: ['apps/web/services/local-ai/**'],
+        rules: {
+            'no-restricted-imports': [
+                'warn',
+                {
+                    patterns: [
+                        {
+                            group: [
+                                '**/services/local-ai/core/*',
+                                '**/services/local-ai/models/*',
+                                '**/services/local-ai/inference/*',
+                                '**/services/local-ai/vision/*',
+                                '**/services/local-ai/nlp/*',
+                                '**/services/local-ai/device/*',
+                                '**/services/local-ai/cache/*',
+                                '**/services/local-ai/telemetry/*',
+                                '**/services/local-ai/fallback/*',
+                            ],
+                            message:
+                                'Import from @/services/local-ai (barrel) or backward-compat stubs instead of deep local-ai sub-paths (ADR-0011).',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+
     // ── Test files – relax strict rules ────────────────────────────────────
     // no-explicit-any stays 'error' (same as production) -- tests must be
     // properly typed.  no-unsafe-type-assertion is 'off' because partial

@@ -30,6 +30,7 @@ import {
 import { SeedEntryForm } from '@/components/views/strains/SeedEntryForm'
 import { SeedEntryCard, SeedGridCard } from '@/components/views/strains/SeedEntryCard'
 import { SeedVaultPollenLog } from '@/components/views/strains/SeedVaultPollenLog'
+
 import type { SeedInventoryEntry, SeedType } from '@/types'
 
 // ---------------------------------------------------------------------------
@@ -215,21 +216,22 @@ export const SeedVaultTab: React.FC = memo(() => {
     }, [])
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-5 animate-fade-in">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-primary-600/10 via-accent-600/5 to-transparent border border-white/[0.06] px-5 py-4">
                 <div>
-                    <h2 className="text-lg font-semibold text-text-primary">
+                    <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                        <PhosphorIcons.ArchiveBox className="h-5 w-5 text-primary-400" />
                         {t('strainsView.seedVault.title')}
                     </h2>
-                    <p className="text-sm text-text-secondary">
+                    <p className="text-sm text-slate-400 mt-0.5">
                         {t('strainsView.seedVault.totalSeeds', { count: totalSeeds })}
                     </p>
                 </div>
                 <button
                     type="button"
                     onClick={openAddForm}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-sm font-semibold shadow-[0_8px_24px_rgba(var(--color-primary-500),0.25)] hover:shadow-[0_12px_32px_rgba(var(--color-primary-500),0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                 >
                     <PhosphorIcons.Plus className="h-4 w-4" />
                     {t('strainsView.seedVault.addEntry')}
@@ -273,9 +275,9 @@ export const SeedVaultTab: React.FC = memo(() => {
 
             {/* Bulk delete confirmation */}
             {confirmBulkDelete && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
-                    <PhosphorIcons.Warning className="h-4 w-4 text-red-500 shrink-0" />
-                    <span className="text-sm text-red-700 dark:text-red-300 flex-1">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-red-500/20 bg-red-500/10 backdrop-blur-sm animate-fade-in">
+                    <PhosphorIcons.Warning className="h-4 w-4 text-red-400 shrink-0" />
+                    <span className="text-sm text-red-300 flex-1">
                         {t('strainsView.seedVault.confirmDeleteBulkMsg', {
                             count: selectedIds.size,
                         })}
@@ -283,14 +285,14 @@ export const SeedVaultTab: React.FC = memo(() => {
                     <button
                         type="button"
                         onClick={handleBulkDelete}
-                        className="px-2.5 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600 transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-red-500/20 text-red-300 border border-red-500/20 text-xs font-medium hover:bg-red-500/30 transition-colors"
                     >
                         {t('strainsView.seedVault.confirmDelete')}
                     </button>
                     <button
                         type="button"
                         onClick={() => setConfirmBulkDelete(false)}
-                        className="px-2.5 py-1 rounded text-xs text-text-secondary hover:bg-surface-hover transition-colors"
+                        className="px-3 py-1.5 rounded-xl text-xs text-slate-400 hover:bg-white/[0.06] transition-colors"
                     >
                         {t('strainsView.seedVault.cancel')}
                     </button>
@@ -299,9 +301,11 @@ export const SeedVaultTab: React.FC = memo(() => {
 
             {/* Inventory */}
             {processedInventory.length === 0 ? (
-                <div className="text-center py-8 text-text-secondary">
-                    <PhosphorIcons.ArchiveBox className="h-12 w-12 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">{t('strainsView.seedVault.empty')}</p>
+                <div className="text-center py-12 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-500/10 flex items-center justify-center">
+                        <PhosphorIcons.ArchiveBox className="h-8 w-8 text-primary-400" />
+                    </div>
+                    <p className="text-sm text-slate-400">{t('strainsView.seedVault.empty')}</p>
                 </div>
             ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -335,21 +339,21 @@ export const SeedVaultTab: React.FC = memo(() => {
                                 onToggleSelect={toggleSelect}
                             />
                             {confirmDeleteId === entry.id && (
-                                <div className="flex items-center gap-2 ml-4 px-3 py-1.5 rounded border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30 text-xs">
-                                    <span className="text-red-700 dark:text-red-300 flex-1">
+                                <div className="flex items-center gap-2 ml-4 px-3 py-2 rounded-xl border border-red-500/20 bg-red-500/10 backdrop-blur-sm text-xs animate-fade-in">
+                                    <span className="text-red-300 flex-1">
                                         {t('strainsView.seedVault.confirmDeleteMsg')}
                                     </span>
                                     <button
                                         type="button"
                                         onClick={() => handleRemove(entry.id)}
-                                        className="px-2 py-0.5 rounded bg-red-500 text-white hover:bg-red-600"
+                                        className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 border border-red-500/20 hover:bg-red-500/30 transition-colors"
                                     >
                                         {t('strainsView.seedVault.confirmDelete')}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setConfirmDeleteId(null)}
-                                        className="px-2 py-0.5 rounded text-text-secondary hover:bg-surface-hover"
+                                        className="px-2.5 py-1 rounded-lg text-slate-400 hover:bg-white/[0.06] transition-colors"
                                     >
                                         {t('strainsView.seedVault.cancel')}
                                     </button>

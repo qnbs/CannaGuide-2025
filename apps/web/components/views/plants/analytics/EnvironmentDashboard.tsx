@@ -16,6 +16,8 @@ import {
 } from 'recharts'
 import type { ReactNode } from 'react'
 
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+
 interface EnvironmentDashboardProps {
     plantId: string
 }
@@ -50,7 +52,7 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
 
     return (
         <div
-            className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700/50"
+            className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm"
             role="img"
             aria-label={t('plantsView.analytics.tempHumidity', {
                 defaultValue: 'Temperature and Humidity over time',
@@ -149,7 +151,7 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
 
     return (
         <div
-            className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700/50"
+            className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm"
             role="img"
             aria-label={t('plantsView.analytics.vpdOverTime', {
                 defaultValue: 'Vapor Pressure Deficit over time',
@@ -253,7 +255,7 @@ const NutrientWateringChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({
 
     return (
         <div
-            className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700/50"
+            className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm"
             role="img"
             aria-label={t('plantsView.analytics.nutrientWatering', {
                 defaultValue: 'pH, EC and watering over time',
@@ -345,7 +347,8 @@ export const EnvironmentDashboard: React.FC<EnvironmentDashboardProps> = memo(({
 
     if (envLogs.length === 0) {
         return (
-            <div className="rounded-xl bg-slate-800/40 p-8 text-center text-slate-400">
+            <div className="rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm p-8 text-center text-slate-400">
+                <PhosphorIcons.ChartLineUp className="h-12 w-12 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">
                     {t('plantsView.analytics.noData', {
                         defaultValue:
@@ -355,6 +358,8 @@ export const EnvironmentDashboard: React.FC<EnvironmentDashboardProps> = memo(({
             </div>
         )
     }
+
+    const latestLog = envLogs[envLogs.length - 1]
 
     return (
         <section
@@ -374,6 +379,53 @@ export const EnvironmentDashboard: React.FC<EnvironmentDashboardProps> = memo(({
                     count: envLogs.length,
                 })}
             </p>
+
+            {/* Summary Stats Row */}
+            {latestLog != null && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {latestLog.temp != null && (
+                        <div className="rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/5 p-3 ring-1 ring-inset ring-orange-400/20">
+                            <div className="text-[10px] uppercase tracking-wider text-orange-400/70 mb-1">
+                                {t('plantsView.analytics.temperature', { defaultValue: 'Temp' })}
+                            </div>
+                            <div className="text-lg font-bold tabular-nums text-orange-300">
+                                {latestLog.temp.toFixed(1)}\u00B0C
+                            </div>
+                        </div>
+                    )}
+                    {latestLog.humidity != null && (
+                        <div className="rounded-xl bg-gradient-to-br from-sky-500/10 to-sky-600/5 p-3 ring-1 ring-inset ring-sky-400/20">
+                            <div className="text-[10px] uppercase tracking-wider text-sky-400/70 mb-1">
+                                {t('plantsView.analytics.humidity', { defaultValue: 'Humidity' })}
+                            </div>
+                            <div className="text-lg font-bold tabular-nums text-sky-300">
+                                {latestLog.humidity.toFixed(0)}%
+                            </div>
+                        </div>
+                    )}
+                    {latestLog.vpd != null && (
+                        <div className="rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 p-3 ring-1 ring-inset ring-purple-400/20">
+                            <div className="text-[10px] uppercase tracking-wider text-purple-400/70 mb-1">
+                                VPD
+                            </div>
+                            <div className="text-lg font-bold tabular-nums text-purple-300">
+                                {latestLog.vpd.toFixed(2)} kPa
+                            </div>
+                        </div>
+                    )}
+                    {latestLog.ph != null && (
+                        <div className="rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/5 p-3 ring-1 ring-inset ring-green-400/20">
+                            <div className="text-[10px] uppercase tracking-wider text-green-400/70 mb-1">
+                                pH
+                            </div>
+                            <div className="text-lg font-bold tabular-nums text-green-300">
+                                {latestLog.ph.toFixed(1)}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <div className="grid gap-4 lg:grid-cols-2">
                 <TemperatureHumidityChart data={envLogs} />
                 <VpdChart data={envLogs} />

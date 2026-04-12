@@ -353,11 +353,11 @@ const SandboxView: React.FC = () => {
                 </Modal>
             )}
 
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-3 mb-4">
                 <h3 className="text-xl font-bold font-display text-primary-400">
                     {t('knowledgeView.sandbox.title')}
                 </h3>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <Button
                         variant="secondary"
                         onClick={() => setShowCustom(!showCustom)}
@@ -382,7 +382,7 @@ const SandboxView: React.FC = () => {
                     <select
                         value={selectedPlantId ?? ''}
                         onChange={(e) => setSelectedPlantId(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-sm"
+                        className="w-full rounded-xl border border-white/[0.1] bg-white/[0.06] backdrop-blur-sm p-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors"
                     >
                         {activePlants.map((p) => (
                             <option key={p.id} value={p.id}>

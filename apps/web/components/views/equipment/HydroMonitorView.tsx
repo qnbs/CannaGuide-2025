@@ -6,6 +6,7 @@ import {
     XAxis,
     YAxis,
     Tooltip,
+    Legend,
     ResponsiveContainer,
     CartesianGrid,
 } from 'recharts'
@@ -68,10 +69,10 @@ const GaugeCard: React.FC<GaugeProps> = memo(({ label, value, unit, min, max, de
         value === undefined ? 'unknown' : value < min ? 'low' : value > max ? 'high' : 'ok'
 
     const colorMap = {
-        ok: 'border-emerald-500/40 bg-emerald-900/20',
-        low: 'border-amber-500/40 bg-amber-900/20',
-        high: 'border-red-500/40 bg-red-900/20',
-        unknown: 'border-slate-600/40 bg-slate-800/20',
+        ok: 'ring-emerald-400/30 bg-emerald-500/10',
+        low: 'ring-amber-400/30 bg-amber-500/10',
+        high: 'ring-red-400/30 bg-red-500/10',
+        unknown: 'ring-white/[0.08] bg-white/[0.04]',
     }
 
     const textColor = {
@@ -83,7 +84,10 @@ const GaugeCard: React.FC<GaugeProps> = memo(({ label, value, unit, min, max, de
 
     return (
         <div
-            className={cn('rounded-lg border p-3 text-center transition-colors', colorMap[status])}
+            className={cn(
+                'rounded-2xl p-3 text-center transition-all duration-300 ring-1 ring-inset backdrop-blur-sm',
+                colorMap[status],
+            )}
         >
             <p className="text-xs text-slate-400 mb-1">{label}</p>
             <p className={cn('text-2xl font-bold tabular-nums', textColor[status])}>
@@ -235,7 +239,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                         id="hydro-system-select"
                         value={systemType}
                         onChange={handleSystemChange}
-                        className="text-xs bg-slate-800 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                        className="text-xs rounded-xl border-white/[0.1] bg-white/[0.06] backdrop-blur-sm px-2.5 py-1.5 text-slate-200 focus:ring-2 focus:ring-primary-500/50 focus:outline-none"
                     >
                         {SYSTEM_TYPES.map((st) => (
                             <option key={st} value={st}>
@@ -295,7 +299,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                     {alerts.map((alert) => (
                         <div
                             key={alert.id}
-                            className="flex items-center justify-between bg-red-900/20 border border-red-700/30 rounded-md px-3 py-2"
+                            className="flex items-center justify-between rounded-xl bg-red-500/10 ring-1 ring-inset ring-red-400/20 backdrop-blur-sm px-3 py-2"
                         >
                             <span className="text-xs text-red-300">
                                 {t(`equipmentView.hydroMonitoring.gauges.${alert.metric}`)} ={' '}
@@ -320,7 +324,7 @@ export const HydroMonitorView: React.FC = memo(() => {
 
             {/* Chart */}
             {chartData.length > 1 && (
-                <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+                <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] backdrop-blur-sm p-4">
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-semibold text-slate-200">
                             {t('equipmentView.hydroMonitoring.chart.title')}
@@ -338,8 +342,8 @@ export const HydroMonitorView: React.FC = memo(() => {
                                     className={cn(
                                         'text-xs px-2.5 py-1 rounded min-h-[44px] min-w-[44px]',
                                         timeRange === tr
-                                            ? 'bg-primary-600 text-white'
-                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600',
+                                            ? 'bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white shadow-[0_0_12px_rgba(var(--color-primary-500),0.25)]'
+                                            : 'bg-white/[0.06] text-slate-400 ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.1]',
                                     )}
                                 >
                                     {t(`equipmentView.hydroMonitoring.chart.${tr}`)}
@@ -384,9 +388,10 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: '#1e293b',
-                                        border: '1px solid #334155',
-                                        borderRadius: '6px',
+                                        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                                        borderRadius: '12px',
+                                        backdropFilter: 'blur(8px)',
                                         fontSize: 12,
                                     }}
                                 />
@@ -408,6 +413,21 @@ export const HydroMonitorView: React.FC = memo(() => {
                                     dot={false}
                                     name={t('equipmentView.hydroMonitoring.chart.legendEc')}
                                 />
+                                <YAxis yAxisId="temp" hide domain={[10, 35]} />
+                                <Line
+                                    yAxisId="temp"
+                                    type="monotone"
+                                    dataKey="waterTemp"
+                                    stroke="#f59e0b"
+                                    strokeWidth={2}
+                                    dot={false}
+                                    name={t('equipmentView.hydroMonitoring.chart.legendTemp')}
+                                    strokeDasharray="5 3"
+                                />
+                                <Legend
+                                    wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+                                    iconType="plainline"
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -415,7 +435,7 @@ export const HydroMonitorView: React.FC = memo(() => {
             )}
 
             {/* Forecast Panel */}
-            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+            <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] backdrop-blur-sm p-4">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-slate-200">
                         <PhosphorIcons.ChartLineUp
@@ -427,10 +447,10 @@ export const HydroMonitorView: React.FC = memo(() => {
                     <span
                         data-testid="forecast-model-badge"
                         className={cn(
-                            'text-xs rounded px-2 py-0.5',
+                            'text-xs rounded-lg px-2.5 py-0.5',
                             forecast?.modelBased
-                                ? 'bg-emerald-800/50 text-emerald-300'
-                                : 'bg-slate-700 text-slate-400',
+                                ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-400/20'
+                                : 'bg-white/[0.06] text-slate-400 ring-1 ring-inset ring-white/[0.08]',
                         )}
                     >
                         {forecast?.modelBased
@@ -454,19 +474,19 @@ export const HydroMonitorView: React.FC = memo(() => {
                 {!forecastLoading && forecast && (
                     <>
                         <div className="grid grid-cols-3 gap-3 mb-3">
-                            <div className="rounded-md bg-slate-900/60 p-2 text-center">
+                            <div className="rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 ring-1 ring-inset ring-emerald-400/20 p-2.5 text-center">
                                 <p className="text-xs text-slate-400">pH</p>
                                 <p className="text-lg font-bold text-emerald-400 tabular-nums">
                                     {forecast.nextHour.ph.toFixed(2)}
                                 </p>
                             </div>
-                            <div className="rounded-md bg-slate-900/60 p-2 text-center">
+                            <div className="rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 ring-1 ring-inset ring-blue-400/20 p-2.5 text-center">
                                 <p className="text-xs text-slate-400">EC</p>
                                 <p className="text-lg font-bold text-blue-400 tabular-nums">
                                     {forecast.nextHour.ec.toFixed(2)}
                                 </p>
                             </div>
-                            <div className="rounded-md bg-slate-900/60 p-2 text-center">
+                            <div className="rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-600/5 ring-1 ring-inset ring-amber-400/20 p-2.5 text-center">
                                 <p className="text-xs text-slate-400">
                                     {t('equipmentView.hydroMonitoring.gauges.waterTemp')}
                                 </p>
@@ -530,11 +550,11 @@ export const HydroMonitorView: React.FC = memo(() => {
             </div>
 
             {/* Manual Input Form */}
-            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+            <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] backdrop-blur-sm p-4">
                 <h3 className="text-sm font-semibold text-slate-200 mb-3">
                     {t('equipmentView.hydroMonitoring.input.title')}
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label htmlFor="hydro-ph" className="text-xs text-slate-400 block mb-1">
                             {t('equipmentView.hydroMonitoring.input.ph')}
@@ -547,7 +567,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                             max="14"
                             value={formPh}
                             onChange={(e) => setFormPh(e.target.value)}
-                            className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                            className="w-full text-sm rounded-xl border-white/[0.1] bg-white/[0.06] backdrop-blur-sm px-2.5 py-1.5 text-slate-200 focus:ring-2 focus:ring-primary-500/50 focus:outline-none"
                             placeholder="6.0"
                         />
                     </div>
@@ -563,7 +583,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                             max="10"
                             value={formEc}
                             onChange={(e) => setFormEc(e.target.value)}
-                            className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                            className="w-full text-sm rounded-xl border-white/[0.1] bg-white/[0.06] backdrop-blur-sm px-2.5 py-1.5 text-slate-200 focus:ring-2 focus:ring-primary-500/50 focus:outline-none"
                             placeholder="1.6"
                         />
                     </div>
@@ -579,7 +599,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                             max="40"
                             value={formTemp}
                             onChange={(e) => setFormTemp(e.target.value)}
-                            className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                            className="w-full text-sm rounded-xl border-white/[0.1] bg-white/[0.06] backdrop-blur-sm px-2.5 py-1.5 text-slate-200 focus:ring-2 focus:ring-primary-500/50 focus:outline-none"
                             placeholder="21.0"
                         />
                     </div>
@@ -589,7 +609,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                         type="button"
                         onClick={handleAddReading}
                         disabled={!formPh || !formEc || !formTemp}
-                        className="text-xs bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-1.5 rounded transition-colors"
+                        className="text-xs bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_0_20px_rgba(var(--color-primary-500),0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none text-white px-4 py-1.5 rounded-xl transition-all duration-300"
                     >
                         {t('equipmentView.hydroMonitoring.input.addReading')}
                     </button>
@@ -600,7 +620,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                 dispatch(clearReadings())
                                 dispatch(clearAlerts())
                             }}
-                            className="text-xs text-slate-500 hover:text-red-400 px-2 py-1.5 transition-colors"
+                            className="text-xs text-slate-500 hover:text-red-400 px-2 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200"
                         >
                             {t('equipmentView.hydroMonitoring.input.clearAll')}
                         </button>
@@ -609,11 +629,11 @@ export const HydroMonitorView: React.FC = memo(() => {
             </div>
 
             {/* Threshold Editor */}
-            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+            <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] backdrop-blur-sm p-4">
                 <button
                     type="button"
                     onClick={() => setShowThresholdEditor(!showThresholdEditor)}
-                    className="flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-slate-100 w-full"
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-slate-100 w-full transition-colors duration-200"
                 >
                     <PhosphorIcons.GearSix className="w-4 h-4" aria-hidden="true" />
                     {t('equipmentView.hydroMonitoring.thresholds.title')}
@@ -652,7 +672,7 @@ export const HydroMonitorView: React.FC = memo(() => {
                                     step="0.1"
                                     value={thresholds[field]}
                                     onChange={(e) => handleThresholdChange(field, e.target.value)}
-                                    className="w-full text-sm bg-slate-900 border border-slate-600 rounded px-2 py-1 text-slate-200"
+                                    className="w-full text-sm rounded-xl border-white/[0.1] bg-white/[0.06] backdrop-blur-sm px-2.5 py-1.5 text-slate-200 focus:ring-2 focus:ring-primary-500/50 focus:outline-none"
                                 />
                             </div>
                         ))}
@@ -661,7 +681,7 @@ export const HydroMonitorView: React.FC = memo(() => {
             </div>
 
             {/* Dosing Reference */}
-            <div className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4">
+            <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] backdrop-blur-sm p-4">
                 <h3 className="text-sm font-semibold text-slate-200 mb-3">
                     <PhosphorIcons.Flask className="w-4 h-4 inline mr-1" aria-hidden="true" />
                     {t('equipmentView.hydroMonitoring.dosing.title')}
@@ -669,39 +689,53 @@ export const HydroMonitorView: React.FC = memo(() => {
                 <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                         <thead>
-                            <tr className="border-b border-slate-700">
-                                <th className="text-left py-1.5 text-slate-400 font-medium">
+                            <tr className="border-b border-white/[0.08]">
+                                <th className="text-left py-2 text-slate-400 font-medium">
                                     {t('equipmentView.hydroMonitoring.dosing.stage')}
                                 </th>
-                                <th className="text-center py-1.5 text-slate-400 font-medium">
+                                <th className="text-center py-2 text-slate-400 font-medium">
                                     {t('equipmentView.hydroMonitoring.dosing.ecColumn')}
                                 </th>
-                                <th className="text-center py-1.5 text-slate-400 font-medium">
+                                <th className="text-center py-2 text-slate-400 font-medium">
                                     {t('equipmentView.hydroMonitoring.dosing.phColumn')}
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr className="border-b border-slate-800">
-                                <td className="py-1.5 text-slate-300">
+                            <tr className="border-b border-white/[0.06]">
+                                <td className="py-2 text-slate-300">
                                     {t('equipmentView.hydroMonitoring.dosing.seedling')}
                                 </td>
                                 <td className="text-center text-slate-400">0.3 - 0.6</td>
                                 <td className="text-center text-slate-400">5.5 - 6.0</td>
                             </tr>
-                            <tr className="border-b border-slate-800">
-                                <td className="py-1.5 text-slate-300">
+                            <tr className="border-b border-white/[0.06]">
+                                <td className="py-2 text-slate-300">
                                     {t('equipmentView.hydroMonitoring.dosing.vegetative')}
                                 </td>
                                 <td className="text-center text-slate-400">0.8 - 1.6</td>
                                 <td className="text-center text-slate-400">5.5 - 6.0</td>
                             </tr>
-                            <tr>
-                                <td className="py-1.5 text-slate-300">
+                            <tr className="border-b border-white/[0.06]">
+                                <td className="py-2 text-slate-300">
                                     {t('equipmentView.hydroMonitoring.dosing.flowering')}
                                 </td>
                                 <td className="text-center text-slate-400">1.4 - 2.4</td>
                                 <td className="text-center text-slate-400">5.5 - 6.0</td>
+                            </tr>
+                            <tr className="border-b border-white/[0.06]">
+                                <td className="py-2 text-slate-300">
+                                    {t('equipmentView.hydroMonitoring.dosing.lateFlower')}
+                                </td>
+                                <td className="text-center text-slate-400">1.0 - 1.8</td>
+                                <td className="text-center text-slate-400">5.8 - 6.2</td>
+                            </tr>
+                            <tr>
+                                <td className="py-2 text-slate-300">
+                                    {t('equipmentView.hydroMonitoring.dosing.flush')}
+                                </td>
+                                <td className="text-center text-slate-400">0.0 - 0.3</td>
+                                <td className="text-center text-slate-400">5.8 - 6.2</td>
                             </tr>
                         </tbody>
                     </table>

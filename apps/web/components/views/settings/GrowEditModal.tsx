@@ -61,15 +61,6 @@ const GrowEditModal: React.FC<GrowEditModalProps> = memo(({ isOpen, onClose, gro
         onClose()
     }, [confirmDelete, grow.id, dispatch, onClose])
 
-    const handleKeyDown = useCallback(
-        (e: React.KeyboardEvent) => {
-            if (e.key === 'Enter' && canSave) {
-                handleSave()
-            }
-        },
-        [canSave, handleSave],
-    )
-
     return (
         <>
             <Modal
@@ -108,7 +99,13 @@ const GrowEditModal: React.FC<GrowEditModalProps> = memo(({ isOpen, onClose, gro
                     </div>
                 }
             >
-                <div className="space-y-4" onKeyDown={handleKeyDown}>
+                <form
+                    className="space-y-4"
+                    onSubmit={(e) => {
+                        e.preventDefault()
+                        if (canSave) handleSave()
+                    }}
+                >
                     <div>
                         <label
                             htmlFor="grow-edit-name"
@@ -163,7 +160,7 @@ const GrowEditModal: React.FC<GrowEditModalProps> = memo(({ isOpen, onClose, gro
                             ))}
                         </div>
                     </div>
-                </div>
+                </form>
             </Modal>
             <ConfirmDialog
                 open={isArchiveConfirmOpen}

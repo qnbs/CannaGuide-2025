@@ -45,15 +45,6 @@ const GrowCreateModal: React.FC<GrowCreateModalProps> = memo(({ isOpen, onClose 
         onClose()
     }, [canCreate, name, description, color, dispatch, onClose])
 
-    const handleKeyDown = useCallback(
-        (e: React.KeyboardEvent) => {
-            if (e.key === 'Enter' && canCreate) {
-                handleCreate()
-            }
-        },
-        [canCreate, handleCreate],
-    )
-
     return (
         <Modal
             isOpen={isOpen}
@@ -71,7 +62,13 @@ const GrowCreateModal: React.FC<GrowCreateModalProps> = memo(({ isOpen, onClose 
                 </div>
             }
         >
-            <div className="space-y-4" onKeyDown={handleKeyDown}>
+            <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                    e.preventDefault()
+                    if (canCreate) handleCreate()
+                }}
+            >
                 {atLimit && (
                     <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-300">
                         {t('settingsView.grows.limitReached', { max: MAX_GROWS })}
@@ -131,7 +128,7 @@ const GrowCreateModal: React.FC<GrowCreateModalProps> = memo(({ isOpen, onClose 
                         ))}
                     </div>
                 </div>
-            </div>
+            </form>
         </Modal>
     )
 })

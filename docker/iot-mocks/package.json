@@ -10,5 +10,8 @@
     "scripts": {
         "start": "node src/server.mjs",
         "dev": "node --watch src/server.mjs"
+    },
+    "engines": {
+        "node": ">=20"
     }
 }

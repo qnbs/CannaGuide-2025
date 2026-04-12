@@ -479,7 +479,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                         </BarChart>
                     </ResponsiveContainer>
                     <div className="mt-2 overflow-x-auto">
-                        <table className="w-full text-left text-sm text-white/80">
+                        <table className="w-full text-left text-xs sm:text-sm text-white/80">
                             <thead className="border-b border-white/10 text-xs text-white/50">
                                 <tr>
                                     <th className="pb-2 pr-4">{t('analytics.strain', 'Strain')}</th>
@@ -512,7 +512,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                         {t('analytics.growDuration', 'Grow Duration by Strain')}
                     </h3>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-white/80">
+                        <table className="w-full text-left text-xs sm:text-sm text-white/80">
                             <thead className="border-b border-white/10 text-xs text-white/50">
                                 <tr>
                                     <th className="pb-2 pr-4">{t('analytics.strain', 'Strain')}</th>

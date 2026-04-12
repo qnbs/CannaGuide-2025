@@ -15,6 +15,21 @@ export const equipmentView = {
     },
     iotDashboard: {
         readingsBuffer: '{{count}} readings / {{max}} buffer',
+        predictive: {
+            title: 'Predictive Insights',
+            analyzing: 'Analyzing sensor data...',
+            noData: 'Not enough sensor data for predictions yet.',
+            samples: 'samples',
+            botrytisRisk: 'Botrytis Risk',
+            envAlerts: 'Environment Alerts',
+            yieldImpact: 'Yield Impact',
+            risk: {
+                low: 'Low',
+                moderate: 'Moderate',
+                high: 'High',
+                critical: 'Critical',
+            },
+        },
     },
     configurator: {
         title: 'AI Setup Configurator',
@@ -477,6 +492,7 @@ export const equipmentView = {
             axisLabelEc: 'EC',
             legendPh: 'pH',
             legendEc: 'EC (mS/cm)',
+            legendTemp: 'Temp (C)',
         },
         input: {
             title: 'Add Reading',
@@ -501,6 +517,8 @@ export const equipmentView = {
             seedling: 'Seedling',
             vegetative: 'Vegetative',
             flowering: 'Flowering',
+            lateFlower: 'Late Flower',
+            flush: 'Flush',
             ecColumn: 'EC (mS/cm)',
             phColumn: 'pH',
         },

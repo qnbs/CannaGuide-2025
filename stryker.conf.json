@@ -15,6 +15,7 @@
         "!apps/web/services/**/*.test.ts"
     ],
     "testRunner": "vitest",
+    "plugins": ["@stryker-mutator/vitest-runner"],
     "checkers": [],
     "coverageAnalysis": "off",
     "vitest": {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { DiseaseCategory, DiseaseEntry, PlantStage } from '@/types'
@@ -39,17 +39,16 @@ const DiseaseDetailPanel: React.FC<DiseaseDetailPanelProps> = ({ entry, onClose 
     const base = `knowledgeView.atlas.diseases.${entry.id}`
     const dialogRef = useFocusTrap(true)
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            onClose()
+    useEffect(() => {
+        const handler = (e: KeyboardEvent): void => {
+            if (e.key === 'Escape') onClose()
         }
-    }
+        document.addEventListener('keydown', handler)
+        return () => document.removeEventListener('keydown', handler)
+    }, [onClose])
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onKeyDown={handleKeyDown}
-        >
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div
                 ref={dialogRef}
                 className="w-full max-w-lg rounded-2xl bg-slate-900 border border-white/10 shadow-2xl overflow-hidden"

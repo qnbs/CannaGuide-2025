@@ -4,6 +4,39 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.8.0] - 2025-04-12
+
+### Added
+
+- **feat(equipment):** HydroMonitor water temperature trend line
+  (dashed amber) with Recharts Legend
+- **feat(equipment):** Dosing reference expanded with Late Flower
+  and Flush stages (5 languages)
+- **feat(equipment):** PredictiveInsightsPanel in IoT Dashboard --
+  Botrytis risk, environment alerts, yield impact from sensor data
+- **feat(equipment):** Sensor bridge -- live readings persisted to
+  timeSeriesService for predictive analytics
+
+### Changed
+
+- **refactor(equipment):** HydroMonitor full glass-morphism overhaul
+  (7 panels, GaugeCards, forecast cards, inputs, buttons, table)
+- **refactor(a11y):** jsx-a11y warnings reduced 202 -> 83 (disabled
+  deprecated label-has-for, fixed 7 components)
+- **refactor(a11y):** Tabs.tsx nav -> div for tablist role, modal
+  keyboard handling improved, StrainListItem click delegation
+- **fix(mobile):** SandboxView, GrowPlanner, HydroMonitor,
+  AnalyticsDashboard mobile overflow fixes
+- **fix(ci):** IoT-Mock engine constraint (Node >=20)
+- **fix(ci):** Stryker plugins config for vitest-runner resolution
+
+### Fixed
+
+- **fix(eslint):** Disabled deprecated jsx-a11y/label-has-for rule
+  in favor of label-has-associated-control
+
+---
+
 ## [Unreleased]
 
 ### Added

@@ -2,12 +2,69 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 152) -- Glass-Morphism UI Overhaul
+## Latest Session (Session 153) -- v1.8.0 Release
 
-**Status: Comprehensive visual modernization across 4 feature areas
-(Seed Vault, Environment, Grow Planner, Problem Tracker). Unified
-glass-morphism design language with theme-aware colors, gradient
-CTAs, backdrop-blur containers, and rounded-2xl border radius.**
+**Status: Multi-phase enhancement -- mobile fixes, HydroMonitor
+glass-morphism, PredictiveAnalytics UI wiring, a11y reduction
+(202 -> 83), Stryker config fix, version bump to v1.8.0.**
+
+### What Was Done (Session 153)
+
+1. **Phase 1 -- Critical Fixes:**
+    - SandboxView/GrowPlanner/HydroMonitor/AnalyticsDashboard
+      mobile overflow fixes (flex-wrap, text-xs sm:text-sm)
+    - IoT-Mock engine constraint (Node >=20)
+
+2. **Phase 2 -- HydroMonitor Glass-Morphism:**
+    - Full glass-morphism overhaul: 7 panels, GaugeCard,
+      forecast cards, inputs, buttons, dosing table
+    - Water temperature line added to trend chart (dashed amber)
+    - Recharts Legend component added
+    - Dosing table expanded: Late Flower + Flush stages
+    - i18n: legendTemp, lateFlower, flush in 5 languages
+
+3. **Phase 3 -- PredictiveAnalytics Wired to IoT Dashboard:**
+    - PredictiveInsightsPanel component in IotDashboardView
+    - Botrytis risk card, environment alerts, yield impact
+    - Sensor bridge: timeSeriesService.recordReading() from
+      live sensorStore data
+    - Plant context via selectActivePlants Redux selector
+    - i18n: 11 predictive keys in 5 languages
+
+4. **Phase 4 -- jsx-a11y Warning Reduction (202 -> 83):**
+    - Disabled deprecated label-has-for (105 warnings removed)
+    - Fixed Tabs.tsx, ScreenshotGallery, DiseaseAtlasView,
+      GrowCreateModal, GrowEditModal, StrainComparisonView,
+      StrainListItem
+    - Remaining: 77 control-has-associated-label, 5 no-autofocus
+
+5. **Phase 5 -- Stryker Config Fix:**
+    - Added plugins: ["@stryker-mutator/vitest-runner"]
+    - Config validated, ready for CI baseline run
+
+6. **Phase 6 -- v1.8.0 Release:**
+    - Version bumped in package.json, apps/web/package.json,
+      copilot-instructions.md
+    - Documentation updated
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2253 passed, 0 failures (192 files)
+- Build: successful (170 precache entries, 9419 KiB)
+- jsx-a11y warnings: 83 (from 202)
+
+### Next Steps
+
+- Run Stryker baseline in CI (DevContainer too slow)
+- Add E2E tests for PredictiveInsightsPanel
+- Reduce control-has-associated-label (77) with label wiring
+- Wire predictiveAnalyticsService to cloud AI provider
+- Local AI Stack refactoring (Multi-Session project)
+
+## Previous Session (Session 152) -- Glass-Morphism UI Overhaul
+
+\*\*Status: Comprehensive visual modernization across 4 feature areas
 
 ### What Was Done (Session 152)
 

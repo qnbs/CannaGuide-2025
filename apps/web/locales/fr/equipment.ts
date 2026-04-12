@@ -13,6 +13,24 @@ export const equipmentView = {
         hydroMonitoring: 'Moniteur Hydro',
         iotDashboard: 'Tableau de Bord IoT',
     },
+    iotDashboard: {
+        readingsBuffer: '{{count}} mesures / {{max}} tampon',
+        predictive: {
+            title: 'Analyses Predictives',
+            analyzing: 'Analyse des donnees capteurs...',
+            noData: 'Pas encore assez de donnees capteurs pour les predictions.',
+            samples: 'echantillons',
+            botrytisRisk: 'Risque de Botrytis',
+            envAlerts: 'Alertes Environnementales',
+            yieldImpact: 'Impact sur le Rendement',
+            risk: {
+                low: 'Faible',
+                moderate: 'Modere',
+                high: 'Eleve',
+                critical: 'Critique',
+            },
+        },
+    },
     configurator: {
         title: "Configurateur IA d'Equipement",
         subtitle: "Obtenez une liste d'equipement personnalisee selon vos besoins.",
@@ -482,6 +500,7 @@ export const equipmentView = {
             axisLabelEc: 'EC (mS/cm)',
             legendPh: 'pH',
             legendEc: 'EC',
+            legendTemp: 'Temp. (C)',
         },
         input: {
             title: 'Ajouter une Mesure',
@@ -506,6 +525,8 @@ export const equipmentView = {
             seedling: 'Semis',
             vegetative: 'Vegetatif',
             flowering: 'Floraison',
+            lateFlower: 'Floraison Tardive',
+            flush: 'Rincage',
             ecColumn: 'EC (mS/cm)',
             phColumn: 'pH',
         },

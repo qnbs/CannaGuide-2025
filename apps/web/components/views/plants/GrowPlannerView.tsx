@@ -183,14 +183,14 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
     return (
         <div className="space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h3 className="text-lg font-semibold text-white">
                         {t('plantsView.planner.title', { defaultValue: 'Grow Planner' })}
                     </h3>
                     {plantName != null && <p className="text-sm text-slate-400">{plantName}</p>}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <button
                         type="button"
                         onClick={() => setViewMode(viewMode === 'week' ? 'month' : 'week')}

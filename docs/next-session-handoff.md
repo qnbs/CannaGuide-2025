@@ -2,7 +2,61 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 157) -- Local AI Stack Phase 3: Polish
+## Latest Session (Session 158) -- Predictive Analytics Dashboard + Stryker Fix + Stub Removal
+
+**Status: Predictive analytics wired into Knowledge Hub Analytics Dashboard.
+Stryker CI config fixed (path resolution). Last 2 local-ai stubs removed.
+E2E + unit tests added. All verified: 0 TS errors, 2290 tests, build OK.**
+
+### What Was Done (Session 158)
+
+1. **Stryker CI Fix:**
+    - All glob paths in `stryker.conf.json` converted from root-relative
+      to `apps/web`-relative (CI uses `working-directory: apps/web`)
+    - `vitest.configFile` -> `vite.config.ts`, `vitest.dir` -> `"."`
+
+2. **Predictive Analytics Dashboard Integration:**
+    - Created `usePredictiveAnalytics` hook (auto-refresh 5min, Sentry
+      breadcrumbs, stable plantsKey to prevent infinite re-renders)
+    - Extracted `PredictiveInsightsPanel` from IoT Dashboard to
+      `components/common/` (shared, configurable i18nPrefix)
+    - Wired into Knowledge Hub `AnalyticsDashboardView`: Botrytis risk
+      badges, environment alerts, yield impact, plant selector dropdown,
+      aggregate worst-risk badge
+    - Enhanced CSV export with predictive data columns
+    - IotDashboardView refactored to use shared component
+
+3. **Local AI Phase 3 Complete (Stub Removal):**
+    - Removed `aiEcoModeService.ts` (consumers: localRoutingService,
+      listenerMiddleware -> direct import from local-ai/device/)
+    - Removed `inferenceQueueService.ts` (0 consumers)
+    - Updated 2 test files (mock path updates)
+
+4. **i18n:**
+    - Added `analytics.predictive.*` keys to all 5 languages (EN/DE/ES/FR/NL)
+
+5. **Tests:**
+    - 6 new unit tests for `usePredictiveAnalytics` hook
+    - E2E test: `analytics-dashboard.e2e.ts` (5 scenarios)
+    - Total: 2290 tests passing (was 2284)
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2290 passing, 0 failures
+- Build: clean, 172 precache entries
+
+### Next Steps
+
+- Playwright Component Tests for PredictiveInsightsPanel
+- Visual regression snapshots for Analytics Dashboard
+- v1.8.1 release tag when ready
+- IoT MockServer improvements (sensor history endpoint)
+- Mutation testing expansion to hooks/ and components/
+
+---
+
+## Previous Session (Session 157) -- Local AI Stack Phase 3: Polish
 
 **Status: All 27 backward-compat stubs removed, consumers migrated
 to barrel imports, bundle-size audit passed, tree-shaking verified,

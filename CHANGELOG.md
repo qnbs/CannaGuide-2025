@@ -41,6 +41,37 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(knowledge):** Predictive Insights section in Analytics Dashboard --
+  Botrytis risk badges, environment alerts, yield impact from
+  predictiveAnalyticsService. Plant selector dropdown + aggregate
+  worst-risk badge.
+- **feat(knowledge):** CSV export enhanced with predictive analytics
+  data (Botrytis risk, alert count, yield impact per plant)
+- **feat(ui):** PredictiveInsightsPanel extracted to shared component
+  (`components/common/`) with configurable i18nPrefix prop
+- **feat(hooks):** usePredictiveAnalytics hook -- auto-refresh every
+  5min, worst-risk computation, Sentry breadcrumbs, stable identity
+  via plantsKey (no infinite re-render on inline arrays)
+- **test(hooks):** 6 unit tests for usePredictiveAnalytics
+  (empty state, single/multi plant, error handling, refresh)
+- **test(e2e):** Analytics Dashboard E2E tests (navigation, Garden
+  Score, CSV export, rapid tab switching, Sandbox sub-tab)
+- **i18n(knowledge):** analytics.predictive.\* keys in all 5 languages
+
+### Changed
+
+- **refactor(local-ai):** Removed last 2 backward-compat stubs
+  (aiEcoModeService.ts, inferenceQueueService.ts) -- consumers
+  migrated to direct imports from local-ai/device/ecoModeService
+  and local-ai/inference/inferenceQueue
+- **refactor(equipment):** IotDashboardView refactored to use shared
+  PredictiveInsightsPanel instead of inline 150-line duplicate
+- **fix(ci):** Stryker mutation testing config -- all glob paths
+  converted from root-relative to apps/web-relative for CI
+  working-directory compatibility
+
+### Added (continued)
+
 - **feat(strains):** Seed Vault overhaul -- 5 new sub-components
   (SeedVaultStats, SeedVaultToolbar, SeedEntryForm, SeedEntryCard,
   SeedVaultPollenLog), extended data model (SeedSource, storageLocation,

@@ -26,8 +26,11 @@ import {
 } from 'recharts'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useActivePlants } from '@/hooks/useSimulationBridge'
+import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics'
+import { PredictiveInsightsPanel } from '@/components/common/PredictiveInsightsPanel'
 import { cn } from '@/lib/utils'
 import type { GrowAnalytics } from '@/services/analyticsService'
+import type { PredictiveInsight } from '@/services/predictiveAnalyticsService'
 
 // -- Constants & Helpers ---------------------------------------------------
 
@@ -81,7 +84,10 @@ function ratingBadge(rating: string): string {
 
 // -- CSV Export helper -----------------------------------------------------
 
-function exportAnalyticsCsv(analytics: GrowAnalytics): void {
+function exportAnalyticsCsv(
+    analytics: GrowAnalytics,
+    predictiveInsights?: ReadonlyMap<string, PredictiveInsight>,
+): void {
     const rows: string[] = []
     rows.push('Section,Key,Value')
     rows.push(`Overview,Garden Score,${analytics.gardenScore}`)
@@ -100,6 +106,16 @@ function exportAnalyticsCsv(analytics: GrowAnalytics): void {
 
     for (const risk of analytics.riskFactors) {
         rows.push(`Risk,${risk.type},${risk.severity}`)
+    }
+
+    if (predictiveInsights) {
+        for (const [plantId, insight] of predictiveInsights) {
+            rows.push(
+                `Predictive,${plantId} Botrytis Risk,${insight.botrytisRisk.riskLevel} (${insight.botrytisRisk.riskScore})`,
+            )
+            rows.push(`Predictive,${plantId} Env Alerts,${insight.environmentAlerts.length}`)
+            rows.push(`Predictive,${plantId} Yield Impact,${insight.yieldImpact.impactPercent}%`)
+        }
     }
 
     for (const nc of analytics.nutrientConsistency) {
@@ -168,11 +184,17 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
     const { t } = useTranslation()
     const plants = useActivePlants()
     const analytics = useAnalytics()
+    const {
+        insights: predictiveInsights,
+        loading: predictiveLoading,
+        worstRisk,
+    } = usePredictiveAnalytics(plants)
     const [activeHealthPlant, setActiveHealthPlant] = useState(0)
+    const [activePredictivePlant, setActivePredictivePlant] = useState(0)
 
     const handleExport = useCallback(() => {
-        exportAnalyticsCsv(analytics)
-    }, [analytics])
+        exportAnalyticsCsv(analytics, predictiveInsights)
+    }, [analytics, predictiveInsights])
 
     if (plants.length === 0) {
         return (
@@ -433,6 +455,57 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             </li>
                         ))}
                     </ul>
+                </div>
+            )}
+
+            {/* -- Predictive Insights -------------------------------------- */}
+            {plants.length > 0 && (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                    <div className="mb-3 flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-white/90">
+                            {t('analytics.predictive.title', 'Predictive Insights')}
+                            {worstRisk !== null && worstRisk !== 'low' && (
+                                <span
+                                    className={cn(
+                                        'ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase',
+                                        worstRisk === 'critical'
+                                            ? 'bg-red-500/20 text-red-300'
+                                            : worstRisk === 'high'
+                                              ? 'bg-orange-500/20 text-orange-300'
+                                              : 'bg-amber-500/20 text-amber-300',
+                                    )}
+                                >
+                                    {t(`analytics.predictive.risk.${worstRisk}`, worstRisk)}
+                                </span>
+                            )}
+                        </h3>
+                        {plants.length > 1 && (
+                            <select
+                                value={activePredictivePlant}
+                                onChange={(e) => setActivePredictivePlant(Number(e.target.value))}
+                                className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/80"
+                                aria-label={t('analytics.predictive.selectPlant', 'Select plant')}
+                            >
+                                {plants.map((p, i) => (
+                                    <option key={p.id} value={i}>
+                                        {p.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+                    <PredictiveInsightsPanel
+                        insight={
+                            plants[activePredictivePlant] !== undefined
+                                ? (predictiveInsights.get(
+                                      plants[activePredictivePlant]?.id ?? '',
+                                  ) ?? null)
+                                : null
+                        }
+                        loading={predictiveLoading}
+                        plantName={plants[activePredictivePlant]?.name}
+                        glass
+                    />
                 </div>
             )}
 

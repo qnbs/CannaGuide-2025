@@ -95,9 +95,13 @@ vi.mock('@/services/sentryService', () => ({
     enableSentry: vi.fn(),
 }))
 
-vi.mock('@/services/aiEcoModeService', () => ({
-    setEcoModeExplicit: vi.fn(),
-}))
+vi.mock('@/services/local-ai', async (importOriginal) => {
+    const actual = await importOriginal<Record<string, unknown>>()
+    return {
+        ...actual,
+        setEcoModeExplicit: vi.fn(),
+    }
+})
 
 vi.mock('@/services/urlService', () => ({
     urlService: { serializeFiltersToQueryString: vi.fn(() => '') },
@@ -275,7 +279,7 @@ describe('listenerMiddleware', () => {
         })
 
         it('syncs eco mode setting', async () => {
-            const { setEcoModeExplicit } = await import('@/services/aiEcoModeService')
+            const { setEcoModeExplicit } = await import('@/services/local-ai')
 
             store.dispatch(setSetting({ path: 'localAi.ecoMode', value: true }))
 

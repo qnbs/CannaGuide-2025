@@ -47,10 +47,7 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
     // Check device capability on mount
     useEffect(() => {
         let cancelled = false
-        Promise.all([
-            import('@/services/imageGenerationService'),
-            import('@/services/gpuResourceManager'),
-        ])
+        Promise.all([import('@/services/imageGenerationService'), import('@/services/local-ai')])
             .then(([{ checkImageGenCapability }, { getGpuLockState }]) => {
                 if (cancelled) return
                 const cap = checkImageGenCapability()

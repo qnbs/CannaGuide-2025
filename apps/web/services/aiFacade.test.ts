@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 describe('LocalAIInfrastructure', () => {
     it('exports a singleton instance with all subsystem methods', async () => {
-        const { localAIInfrastructure } = await import('@/services/LocalAIInfrastructure')
+        const { localAIInfrastructure } = await import('@/services/local-ai')
 
         // Preload subsystem
         expect(localAIInfrastructure.preload).toBeDefined()
@@ -39,7 +39,7 @@ describe('LocalAIInfrastructure', () => {
     })
 
     it('getCachedWithTelemetry records cache miss for unknown key', async () => {
-        const { localAIInfrastructure } = await import('@/services/LocalAIInfrastructure')
+        const { localAIInfrastructure } = await import('@/services/local-ai')
 
         // Reset telemetry state
         localAIInfrastructure.resetTelemetry()

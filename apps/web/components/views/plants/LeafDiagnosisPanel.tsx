@@ -64,8 +64,8 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
     useEffect(() => {
         let active = true
         void (async () => {
-            const { isModelCached } = await import('@/services/plantDiseaseModelService')
-            const { getModelStatus } = await import('@/services/plantDiseaseModelService')
+            const { isModelCached } = await import('@/services/local-ai')
+            const { getModelStatus } = await import('@/services/local-ai')
             await isModelCached()
             if (active) setModelStatus(getModelStatus())
         })()
@@ -76,8 +76,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
 
     // ---- Model download -------------------------------------------------------
     const handleDownload = useCallback(async () => {
-        const { downloadModel, getModelStatus } =
-            await import('@/services/plantDiseaseModelService')
+        const { downloadModel, getModelStatus } = await import('@/services/local-ai')
         setModelStatus('downloading')
         setDownloadProgress(0)
         const ok = await downloadModel((pct) => setDownloadProgress(pct))
@@ -159,7 +158,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
         setError(null)
         setResult(null)
         try {
-            const { classifyLeafImage } = await import('@/services/localAiDiagnosisService')
+            const { classifyLeafImage } = await import('@/services/local-ai')
             const res = await classifyLeafImage(imageData)
             setResult(res)
         } catch {

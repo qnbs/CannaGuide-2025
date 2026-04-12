@@ -5,8 +5,17 @@ import { render, screen, fireEvent } from '@testing-library/react'
 // Module mocks -- must come before component imports
 // ---------------------------------------------------------------------------
 
-vi.mock('@/services/gpuResourceManager', () => ({
+vi.mock('@/services/local-ai', () => ({
     getGpuLockState: vi.fn(() => ({ locked: false, holder: null, queueLength: 0 })),
+    getSnapshot: vi.fn(() => ({
+        averageLatencyMs: 0,
+        averageTokensPerSecond: 0,
+        successRate: 0,
+        totalInferences: 0,
+    })),
+    getStats: vi.fn(() =>
+        Promise.resolve({ total: 0, hits: 0, misses: 0, precomputeComplete: false }),
+    ),
 }))
 
 vi.mock('@/services/workerBus', () => ({
@@ -17,21 +26,6 @@ vi.mock('@/services/workerBus', () => ({
             byPriority: { critical: 0, high: 0, normal: 0, low: 0 },
         })),
     },
-}))
-
-vi.mock('@/services/localAiTelemetryService', () => ({
-    getSnapshot: vi.fn(() => ({
-        averageLatencyMs: 0,
-        averageTokensPerSecond: 0,
-        successRate: 0,
-        totalInferences: 0,
-    })),
-}))
-
-vi.mock('@/services/ragEmbeddingCacheService', () => ({
-    getStats: vi.fn(() =>
-        Promise.resolve({ total: 0, hits: 0, misses: 0, precomputeComplete: false }),
-    ),
 }))
 
 vi.mock('@/stores/store', () => ({

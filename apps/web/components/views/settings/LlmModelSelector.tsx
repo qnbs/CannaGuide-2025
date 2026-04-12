@@ -1,8 +1,7 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
-import { getAllModels, autoSelectModel, type WebLlmModel } from '@/services/webLlmModelCatalog'
-import type { GpuTier } from '@/services/localAiWebGpuService'
+import { getAllModels, autoSelectModel, type WebLlmModel, type GpuTier } from '@/services/local-ai'
 import { useWebLlmLoadProgress } from '@/hooks/useWebLlmLoadProgress'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import type { ImageStyle } from '@/types/aiProvider'
-import { localAiFallbackService } from '@/services/localAiFallbackService'
+import { localAiFallbackService } from '@/services/local-ai'
 import { growLogRagService } from '@/services/growLogRagService'
 import {
     getGeminiService,
@@ -394,7 +394,7 @@ export const aiService = {
         entries: Array<{ notes: string; createdAt: number }>,
     ): Promise<{ overall: string; recentAverage: number; entryCount: number }> {
         try {
-            const { analyzeJournalSentimentTrend } = await import('@/services/localAiNlpService')
+            const { analyzeJournalSentimentTrend } = await import('@/services/local-ai')
             return analyzeJournalSentimentTrend(entries)
         } catch {
             return { overall: 'stable', recentAverage: 0.5, entryCount: entries.length }
@@ -404,7 +404,7 @@ export const aiService = {
     /** Summarize long text locally (grow logs, mentor history). */
     async summarizeText(text: string, maxLength?: number): Promise<string> {
         try {
-            const { summarizeText } = await import('@/services/localAiNlpService')
+            const { summarizeText } = await import('@/services/local-ai')
             const result = await summarizeText(text, maxLength)
             return result.summary
         } catch {
@@ -415,7 +415,7 @@ export const aiService = {
     /** Classify a query into grow topic categories. */
     async classifyQuery(text: string): Promise<{ topLabel: string; topScore: number }> {
         try {
-            const { classifyGrowTopic } = await import('@/services/localAiNlpService')
+            const { classifyGrowTopic } = await import('@/services/local-ai')
             const result = await classifyGrowTopic(text)
             return { topLabel: result.topLabel, topScore: result.topScore }
         } catch {
@@ -428,7 +428,7 @@ export const aiService = {
         text: string,
     ): Promise<{ label: string; score: number; normalized: string }> {
         try {
-            const { analyzeSentiment } = await import('@/services/localAiNlpService')
+            const { analyzeSentiment } = await import('@/services/local-ai')
             return analyzeSentiment(text)
         } catch {
             return { label: 'POSITIVE', score: 0.5, normalized: 'neutral' }
@@ -438,7 +438,7 @@ export const aiService = {
     /** Get local AI telemetry snapshot. */
     async getTelemetrySnapshot(): Promise<Record<string, unknown> | null> {
         try {
-            const { getSnapshot } = await import('@/services/localAiTelemetryService')
+            const { getSnapshot } = await import('@/services/local-ai')
             // Safe widening: TelemetrySnapshot -> Record<string, unknown> for facade decoupling
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             return getSnapshot() as unknown as Record<string, unknown>
@@ -452,11 +452,10 @@ export const aiService = {
         text: string,
     ): Promise<{ language: 'en' | 'de' | 'unknown'; confidence: number; method: string }> {
         try {
-            const { detectLanguage } = await import('@/services/localAiLanguageDetectionService')
+            const { detectLanguage } = await import('@/services/local-ai')
             return detectLanguage(text)
         } catch {
-            const { detectLanguageHeuristic } =
-                await import('@/services/localAiLanguageDetectionService')
+            const { detectLanguageHeuristic } = await import('@/services/local-ai')
             return detectLanguageHeuristic(text)
         }
     },
@@ -467,7 +466,7 @@ export const aiService = {
         imageB: { base64: string; mimeType: string },
     ): Promise<number> {
         try {
-            const { compareImages } = await import('@/services/localAiImageSimilarityService')
+            const { compareImages } = await import('@/services/local-ai')
             return compareImages(imageA, imageB)
         } catch {
             return 0
@@ -479,8 +478,7 @@ export const aiService = {
         photos: Array<{ base64: string; mimeType: string; timestamp: number }>,
     ): Promise<{ averageChange: number; trend: string }> {
         try {
-            const { analyzeGrowthProgression } =
-                await import('@/services/localAiImageSimilarityService')
+            const { analyzeGrowthProgression } = await import('@/services/local-ai')
             const result = await analyzeGrowthProgression(photos)
             return { averageChange: result.averageChange, trend: result.trend }
         } catch {
@@ -491,7 +489,7 @@ export const aiService = {
     /** Get a comprehensive local AI health report. */
     async getHealthReport(): Promise<Record<string, unknown>> {
         try {
-            const { generateHealthReport } = await import('@/services/localAiHealthService')
+            const { generateHealthReport } = await import('@/services/local-ai')
             // Safe widening: HealthReport -> Record<string, unknown> for facade decoupling
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             return (await generateHealthReport()) as unknown as Record<string, unknown>
@@ -507,7 +505,7 @@ export const aiService = {
         modelsReady: boolean
     }> {
         try {
-            const { quickHealthCheck } = await import('./localAiHealthService')
+            const { quickHealthCheck } = await import('@/services/local-ai')
             return quickHealthCheck()
         } catch {
             return { status: 'unknown', memoryPressure: false, modelsReady: false }

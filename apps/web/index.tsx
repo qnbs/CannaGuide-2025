@@ -318,7 +318,7 @@ const mountHydratedApp = async () => {
             (hydratedStore.getState() as RootState).settings.settings.localAi?.selectedLlmModelId ??
             'auto'
         if (persistedLlmModel !== 'auto') {
-            const { setPreferredModelOverride } = await import('@/services/localAIModelLoader')
+            const { setPreferredModelOverride } = await import('@/services/local-ai')
             setPreferredModelOverride(persistedLlmModel)
         }
 
@@ -351,12 +351,11 @@ const mountHydratedApp = async () => {
         void requestNotificationPermission()
 
         // Schedule local AI model preloading during browser idle time
-        const { localAiPreloadService } = await import('@/services/localAiPreloadService')
+        const { localAiPreloadService } = await import('@/services/local-ai')
         localAiPreloadService.scheduleIdlePreload()
 
         // Schedule background embedding precomputation for RAG semantic ranking
-        const { startBackgroundPrecomputation } =
-            await import('@/services/ragEmbeddingCacheService')
+        const { startBackgroundPrecomputation } = await import('@/services/local-ai')
         const plantEntities = (hydratedStore.getState() as RootState).simulation.plants.entities
         const allPlants = Object.values(plantEntities).filter((p): p is Plant => p !== undefined)
         startBackgroundPrecomputation(allPlants)

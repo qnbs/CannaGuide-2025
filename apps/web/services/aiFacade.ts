@@ -22,11 +22,11 @@ export { aiProviderService } from './aiProviderService'
 export type { AiProvider, AiProviderConfig } from './aiProviderService'
 
 // -- Infrastructure (cache, telemetry, preload) -------------------------
-export { localAIInfrastructure } from './LocalAIInfrastructure'
+export { localAIInfrastructure } from './local-ai'
 export type {
     InferenceRecord,
     TelemetrySnapshot,
     PerformanceAlert,
     LocalAiPreloadState,
     LocalAiPreloadStatus,
-} from './LocalAIInfrastructure'
+} from './local-ai'

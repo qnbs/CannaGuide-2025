@@ -1,14 +1,17 @@
 import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 import { Seed } from '@/types'
-import type { SeedInventoryEntry, PollenRecord } from '@/types'
+import type { SeedInventoryEntry, PollenRecord, SeedType } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_SEED_INVENTORY = 500
+export const MAX_SEED_INVENTORY = 500
 const MAX_POLLEN_RECORDS = 200
+
+/** Seed quantity at or below which an entry is considered low-stock */
+export const LOW_STOCK_THRESHOLD = 2
 
 // ---------------------------------------------------------------------------
 // State
@@ -89,6 +92,40 @@ const breedingSlice = createSlice({
                 entry.quantity = Math.max(0, entry.quantity + action.payload.delta)
             }
         },
+        batchRemoveSeedEntries: (state, action: PayloadAction<string[]>) => {
+            const ids = new Set(action.payload)
+            state.seedInventory = state.seedInventory.filter((e) => !ids.has(e.id))
+        },
+        batchUpdateTags: (
+            state,
+            action: PayloadAction<{
+                entryIds: string[]
+                tags: string[]
+                mode: 'add' | 'remove'
+            }>,
+        ) => {
+            const ids = new Set(action.payload.entryIds)
+            for (const entry of state.seedInventory) {
+                if (!ids.has(entry.id)) continue
+                const current = entry.tags ?? []
+                if (action.payload.mode === 'add') {
+                    const merged = new Set([...current, ...action.payload.tags])
+                    entry.tags = [...merged]
+                } else {
+                    const toRemove = new Set(action.payload.tags)
+                    entry.tags = current.filter((t) => !toRemove.has(t))
+                }
+            }
+        },
+        consumeSeedForGrow: (
+            state,
+            action: PayloadAction<{ entryId: string; quantity: number }>,
+        ) => {
+            const entry = state.seedInventory.find((e) => e.id === action.payload.entryId)
+            if (entry) {
+                entry.quantity = Math.max(0, entry.quantity - Math.max(0, action.payload.quantity))
+            }
+        },
 
         // --- Pollen Records ---
         addPollenRecord: (state, action: PayloadAction<PollenRecord>) => {
@@ -127,6 +164,9 @@ export const {
     updateSeedInventoryEntry,
     removeSeedInventoryEntry,
     adjustSeedQuantity,
+    batchRemoveSeedEntries,
+    batchUpdateTags,
+    consumeSeedForGrow,
     addPollenRecord,
     updatePollenRecord,
     removePollenRecord,
@@ -150,6 +190,57 @@ export const selectSeedInventoryByStrain = (
 export const selectTotalSeedCount = createSelector(
     (state: RootState) => state.breeding.seedInventory,
     (inventory) => inventory.reduce((sum, e) => sum + e.quantity, 0),
+)
+
+/** Inventory statistics for the dashboard */
+export interface SeedInventoryStats {
+    totalEntries: number
+    totalSeeds: number
+    uniqueStrains: number
+    lowStockCount: number
+    outOfStockCount: number
+    byType: Record<SeedType, number>
+}
+
+export const selectSeedInventoryStats = createSelector(
+    (state: RootState) => state.breeding.seedInventory,
+    (inventory): SeedInventoryStats => {
+        const strainNames = new Set<string>()
+        const byType: Record<SeedType, number> = {
+            Regular: 0,
+            Feminized: 0,
+            Autoflowering: 0,
+            Clone: 0,
+        }
+        let totalSeeds = 0
+        let lowStockCount = 0
+        let outOfStockCount = 0
+        for (const e of inventory) {
+            strainNames.add(e.strainName)
+            totalSeeds += e.quantity
+            byType[e.seedType] += e.quantity
+            if (e.quantity === 0) outOfStockCount++
+            else if (e.quantity <= LOW_STOCK_THRESHOLD) lowStockCount++
+        }
+        return {
+            totalEntries: inventory.length,
+            totalSeeds,
+            uniqueStrains: strainNames.size,
+            lowStockCount,
+            outOfStockCount,
+            byType,
+        }
+    },
+)
+
+export const selectLowStockEntries = createSelector(
+    (state: RootState) => state.breeding.seedInventory,
+    (inventory) => inventory.filter((e) => e.quantity > 0 && e.quantity <= LOW_STOCK_THRESHOLD),
+)
+
+export const selectOutOfStockEntries = createSelector(
+    (state: RootState) => state.breeding.seedInventory,
+    (inventory) => inventory.filter((e) => e.quantity === 0),
 )
 
 export const selectPollenRecords = (state: RootState): PollenRecord[] =>

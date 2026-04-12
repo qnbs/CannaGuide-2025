@@ -2,7 +2,66 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 149) -- Node.js 20 -> 24 Migration
+## Latest Session (Session 150) -- Seed Vault Overhaul
+
+**Status: Complete overhaul of the Seed Vault feature in Strains view.
+Extended data model, decomposed monolith into 5 sub-components,
+added comprehensive tests, i18n across all 5 languages.**
+
+### What Was Done (Session 150)
+
+1. **Types extended:** `SeedInventoryEntry` gained 5 new fields
+   (storageLocation, germinationRate, source, batchNumber,
+   expiryEstimate). New `SeedSource` type added. Quality
+   changed to 0-5 star rating.
+
+2. **breedingSlice extended:** 3 new actions (batchRemoveSeedEntries,
+   batchUpdateTags, consumeSeedForGrow), 3 new selectors
+   (selectSeedInventoryStats, selectLowStockEntries,
+   selectOutOfStockEntries). Exported MAX_SEED_INVENTORY=500,
+   LOW_STOCK_THRESHOLD=2.
+
+3. **i18n updated:** ~80 new keys per language across all 5
+   locales (EN/DE/ES/FR/NL) covering stats, sort, sources,
+   pollen section, bulk actions, view modes, viability states.
+
+4. **5 new sub-components created:**
+    - SeedVaultStats.tsx -- Statistics dashboard (4 metrics + type bars)
+    - SeedVaultToolbar.tsx -- Search/filter/sort/view-toggle/bulk bar
+    - SeedEntryForm.tsx -- Add/Edit form with 776-strain autocomplete
+    - SeedEntryCard.tsx -- Expandable card + grid variant with viability
+    - SeedVaultPollenLog.tsx -- Collapsible pollen record management
+
+5. **SeedVaultTab.tsx rewritten:** Now an orchestrator integrating all
+   5 sub-components with sorting, filtering (type + stock + search +
+   tags), grid/list view toggle, bulk select/delete, edit mode,
+   consume-for-grow action, delete confirmation dialogs.
+
+6. **Tests expanded:** breedingSlice tests grew from 6 to 30 covering
+   all seed vault actions, pollen records, selectors, edge cases
+   (FIFO cap, zero clamp, batch ops).
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2245 passed, 0 failures (192 files)
+- Build: successful (170 precache entries, 9338 KiB)
+
+### Next Steps
+
+- Run Stryker baseline on breedingSlice:
+  verify >= 50% mutation score for new reducers
+- Add Playwright E2E tests for Seed Vault workflow
+  (add entry, search, filter, bulk delete, pollen log)
+- Add Playwright component tests for SeedEntryForm,
+  SeedEntryCard, SeedVaultPollenLog
+- Local AI Stack refactoring (Multi-Session project):
+  21 modules, 5000+ LOC, 9 tightly coupled
+- Version bump to v1.8.0 when user-facing features added
+
+---
+
+## Session 149 -- Node.js 20 -> 24 Migration
 
 **Status: Node.js minimum version upgraded from 20 to 24
 (Active LTS until Apr 2028) across the entire repository.

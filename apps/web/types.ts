@@ -620,6 +620,9 @@ export interface Strain {
 
 export type SeedType = 'Feminized' | 'Regular' | 'Autoflowering' | 'Clone'
 
+/** How seeds were acquired */
+export type SeedSource = 'purchase' | 'harvest' | 'trade' | 'gift'
+
 export interface Seedbank {
     id: string
     name: string
@@ -1610,7 +1613,7 @@ export interface SeedInventoryEntry {
     seedType: SeedType
     /** Breeder / source name */
     breeder: string
-    /** Quality rating 0-1 */
+    /** Quality rating 0-5 (star rating) */
     quality: number
     /** Acquisition date (timestamp) */
     acquiredAt: number
@@ -1618,6 +1621,16 @@ export interface SeedInventoryEntry {
     notes?: string | undefined
     /** Tags for filtering */
     tags?: string[] | undefined
+    /** Physical storage location */
+    storageLocation?: string | undefined
+    /** Germination rate percentage 0-100 */
+    germinationRate?: number | undefined
+    /** How seeds were acquired */
+    source?: SeedSource | undefined
+    /** Batch / lot number */
+    batchNumber?: string | undefined
+    /** Estimated expiry timestamp */
+    expiryEstimate?: number | undefined
 }
 
 /** Pollen record for breeding documentation */

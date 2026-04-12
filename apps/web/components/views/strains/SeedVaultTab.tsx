@@ -1,8 +1,7 @@
 // ---------------------------------------------------------------------------
-// SeedVaultTab -- Seed Inventory Manager for CannaGuide 2025
+// SeedVaultTab -- Seed Inventory Manager (Orchestrator)
 //
-// Displays a list of seed inventory entries with add/edit/delete and
-// quantity adjustment. Part of the Strains view.
+// Integrates: Stats, Toolbar, Form, Card/GridCard, PollenLog
 // ---------------------------------------------------------------------------
 
 import React, { memo, useState, useCallback, useMemo } from 'react'
@@ -12,17 +11,55 @@ import {
     selectSeedInventory,
     selectTotalSeedCount,
     addSeedInventoryEntry,
+    updateSeedInventoryEntry,
     removeSeedInventoryEntry,
     adjustSeedQuantity,
+    batchRemoveSeedEntries,
+    consumeSeedForGrow,
+    LOW_STOCK_THRESHOLD,
 } from '@/stores/slices/breedingSlice'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { SeedVaultStats } from '@/components/views/strains/SeedVaultStats'
+import {
+    SeedVaultToolbar,
+    type SeedSortKey,
+    type SeedSortDir,
+    type StockFilter,
+    type VaultViewMode,
+} from '@/components/views/strains/SeedVaultToolbar'
+import { SeedEntryForm } from '@/components/views/strains/SeedEntryForm'
+import { SeedEntryCard, SeedGridCard } from '@/components/views/strains/SeedEntryCard'
+import { SeedVaultPollenLog } from '@/components/views/strains/SeedVaultPollenLog'
 import type { SeedInventoryEntry, SeedType } from '@/types'
 
 // ---------------------------------------------------------------------------
-// Constants
+// Sorting helper
 // ---------------------------------------------------------------------------
 
-const SEED_TYPES: SeedType[] = ['Regular', 'Feminized', 'Autoflowering', 'Clone']
+function compareSeedEntries(
+    a: SeedInventoryEntry,
+    b: SeedInventoryEntry,
+    key: SeedSortKey,
+    dir: SeedSortDir,
+): number {
+    const m = dir === 'asc' ? 1 : -1
+    switch (key) {
+        case 'name':
+            return m * a.strainName.localeCompare(b.strainName)
+        case 'quantity':
+            return m * (a.quantity - b.quantity)
+        case 'acquiredAt':
+            return m * (a.acquiredAt - b.acquiredAt)
+        case 'seedType':
+            return m * a.seedType.localeCompare(b.seedType)
+        case 'breeder':
+            return m * (a.breeder ?? '').localeCompare(b.breeder ?? '')
+        case 'quality':
+            return m * ((a.quality ?? 0) - (b.quality ?? 0))
+        default:
+            return 0
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -34,52 +71,53 @@ export const SeedVaultTab: React.FC = memo(() => {
     const inventory = useAppSelector(selectSeedInventory)
     const totalSeeds = useAppSelector(selectTotalSeedCount)
 
-    const [showAddForm, setShowAddForm] = useState(false)
+    // -- UI state --
+    const [showForm, setShowForm] = useState(false)
+    const [editEntry, setEditEntry] = useState<SeedInventoryEntry | undefined>(undefined)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+    const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+
+    // -- Toolbar state --
     const [searchTerm, setSearchTerm] = useState('')
     const [filterType, setFilterType] = useState<SeedType | 'all'>('all')
+    const [filterStock, setFilterStock] = useState<StockFilter>('all')
+    const [sortKey, setSortKey] = useState<SeedSortKey>('acquiredAt')
+    const [sortDir, setSortDir] = useState<SeedSortDir>('desc')
+    const [viewMode, setViewMode] = useState<VaultViewMode>('list')
+    const [bulkMode, setBulkMode] = useState(false)
+    const [selectedIds, setSelectedIds] = useState(new Set<string>())
 
-    // -- Form state --
-    const [formStrainName, setFormStrainName] = useState('')
-    const [formQuantity, setFormQuantity] = useState(1)
-    const [formSeedType, setFormSeedType] = useState<SeedType>('Feminized')
-    const [formBreeder, setFormBreeder] = useState('')
-    const [formNotes, setFormNotes] = useState('')
-
-    const resetForm = useCallback(() => {
-        setFormStrainName('')
-        setFormQuantity(1)
-        setFormSeedType('Feminized')
-        setFormBreeder('')
-        setFormNotes('')
+    // -- Form handlers --
+    const openAddForm = useCallback(() => {
+        setEditEntry(undefined)
+        setShowForm(true)
     }, [])
 
-    const handleAdd = useCallback(() => {
-        if (!formStrainName.trim()) return
+    const openEditForm = useCallback((entry: SeedInventoryEntry) => {
+        setEditEntry(entry)
+        setShowForm(true)
+    }, [])
 
-        const entry: SeedInventoryEntry = {
-            id: `seed-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
-            strainId: '',
-            strainName: formStrainName.trim(),
-            quantity: Math.max(1, formQuantity),
-            seedType: formSeedType,
-            breeder: formBreeder.trim() || '',
-            quality: 5,
-            acquiredAt: Date.now(),
-            notes: formNotes.trim() || undefined,
-        }
-
-        dispatch(addSeedInventoryEntry(entry))
-        resetForm()
-        setShowAddForm(false)
-    }, [dispatch, formStrainName, formQuantity, formSeedType, formBreeder, formNotes, resetForm])
-
-    const handleRemove = useCallback(
-        (id: string) => {
-            dispatch(removeSeedInventoryEntry(id))
+    const handleSave = useCallback(
+        (entry: SeedInventoryEntry) => {
+            if (editEntry) {
+                const { id, ...changes } = entry
+                dispatch(updateSeedInventoryEntry({ entryId: id, changes }))
+            } else {
+                dispatch(addSeedInventoryEntry(entry))
+            }
+            setShowForm(false)
+            setEditEntry(undefined)
         },
-        [dispatch],
+        [dispatch, editEntry],
     )
 
+    const handleCancel = useCallback(() => {
+        setShowForm(false)
+        setEditEntry(undefined)
+    }, [])
+
+    // -- Entry actions --
     const handleAdjust = useCallback(
         (id: string, delta: number) => {
             dispatch(adjustSeedQuantity({ entryId: id, delta }))
@@ -87,22 +125,94 @@ export const SeedVaultTab: React.FC = memo(() => {
         [dispatch],
     )
 
-    // -- Filtering --
-    const filteredInventory = useMemo(() => {
+    const handleRemove = useCallback(
+        (id: string) => {
+            dispatch(removeSeedInventoryEntry(id))
+            setConfirmDeleteId(null)
+        },
+        [dispatch],
+    )
+
+    const handleConsume = useCallback(
+        (id: string) => {
+            dispatch(consumeSeedForGrow({ entryId: id, quantity: 1 }))
+        },
+        [dispatch],
+    )
+
+    // -- Bulk actions --
+    const toggleBulkMode = useCallback(() => {
+        setBulkMode((prev) => {
+            if (prev) setSelectedIds(new Set())
+            return !prev
+        })
+    }, [])
+
+    const toggleSelect = useCallback((id: string) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev)
+            if (next.has(id)) {
+                next.delete(id)
+            } else {
+                next.add(id)
+            }
+            return next
+        })
+    }, [])
+
+    const handleBulkDelete = useCallback(() => {
+        if (selectedIds.size === 0) return
+        if (!confirmBulkDelete) {
+            setConfirmBulkDelete(true)
+            return
+        }
+        dispatch(batchRemoveSeedEntries(Array.from(selectedIds)))
+        setSelectedIds(new Set())
+        setBulkMode(false)
+        setConfirmBulkDelete(false)
+    }, [dispatch, selectedIds, confirmBulkDelete])
+
+    // -- Filtering + Sorting --
+    const processedInventory = useMemo(() => {
         let items = inventory
+
+        // Type filter
         if (filterType !== 'all') {
             items = items.filter((e) => e.seedType === filterType)
         }
+
+        // Stock filter
+        if (filterStock === 'inStock') {
+            items = items.filter((e) => e.quantity > LOW_STOCK_THRESHOLD)
+        } else if (filterStock === 'lowStock') {
+            items = items.filter((e) => e.quantity > 0 && e.quantity <= LOW_STOCK_THRESHOLD)
+        } else if (filterStock === 'outOfStock') {
+            items = items.filter((e) => e.quantity === 0)
+        }
+
+        // Search
         if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase()
             items = items.filter(
                 (e) =>
                     e.strainName.toLowerCase().includes(term) ||
-                    (e.breeder && e.breeder.toLowerCase().includes(term)),
+                    (e.breeder && e.breeder.toLowerCase().includes(term)) ||
+                    (e.tags && e.tags.some((tg) => tg.toLowerCase().includes(term))),
             )
         }
-        return items
-    }, [inventory, filterType, searchTerm])
+
+        // Sort
+        return [...items].sort((a, b) => compareSeedEntries(a, b, sortKey, sortDir))
+    }, [inventory, filterType, filterStock, searchTerm, sortKey, sortDir])
+
+    const selectAll = useCallback(() => {
+        setSelectedIds(new Set(processedInventory.map((e) => e.id)))
+    }, [processedInventory])
+
+    const deselectAll = useCallback(() => {
+        setSelectedIds(new Set())
+        setConfirmBulkDelete(false)
+    }, [])
 
     return (
         <div className="space-y-4">
@@ -118,7 +228,7 @@ export const SeedVaultTab: React.FC = memo(() => {
                 </div>
                 <button
                     type="button"
-                    onClick={() => setShowAddForm(!showAddForm)}
+                    onClick={openAddForm}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors"
                 >
                     <PhosphorIcons.Plus className="h-4 w-4" />
@@ -126,231 +236,134 @@ export const SeedVaultTab: React.FC = memo(() => {
                 </button>
             </div>
 
-            {/* Add Form */}
-            {showAddForm && (
-                <div className="p-4 rounded-lg border border-border bg-surface space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">
-                                {t('strainsView.seedVault.strainName')}
-                            </label>
-                            <input
-                                type="text"
-                                value={formStrainName}
-                                onChange={(e) => setFormStrainName(e.target.value)}
-                                maxLength={100}
-                                className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
-                                placeholder={t('strainsView.seedVault.strainNamePlaceholder')}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">
-                                {t('strainsView.seedVault.quantity')}
-                            </label>
-                            <input
-                                type="number"
-                                min={1}
-                                max={9999}
-                                value={formQuantity}
-                                onChange={(e) =>
-                                    setFormQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))
-                                }
-                                className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">
-                                {t('strainsView.seedVault.seedType')}
-                            </label>
-                            <select
-                                value={formSeedType}
-                                onChange={(e) =>
-                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                                    setFormSeedType(e.target.value as SeedType)
-                                }
-                                className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
-                            >
-                                {SEED_TYPES.map((st) => (
-                                    <option key={st} value={st}>
-                                        {t(`strainsView.seedVault.types.${st}`)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">
-                                {t('strainsView.seedVault.breeder')}
-                            </label>
-                            <input
-                                type="text"
-                                value={formBreeder}
-                                onChange={(e) => setFormBreeder(e.target.value)}
-                                maxLength={100}
-                                className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-text-secondary mb-1">
-                            {t('strainsView.seedVault.notes')}
-                        </label>
-                        <textarea
-                            value={formNotes}
-                            onChange={(e) => setFormNotes(e.target.value)}
-                            maxLength={500}
-                            rows={2}
-                            className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary resize-none"
-                        />
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                resetForm()
-                                setShowAddForm(false)
-                            }}
-                            className="px-3 py-1.5 rounded-md text-sm text-text-secondary hover:bg-surface-hover transition-colors"
-                        >
-                            {t('strainsView.seedVault.cancel')}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleAdd}
-                            disabled={!formStrainName.trim()}
-                            className="px-3 py-1.5 rounded-md bg-accent text-white text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
-                        >
-                            {t('strainsView.seedVault.save')}
-                        </button>
-                    </div>
+            {/* Statistics */}
+            <SeedVaultStats />
+
+            {/* Add / Edit Form */}
+            {showForm && (
+                <SeedEntryForm
+                    mode={editEntry ? 'edit' : 'add'}
+                    entry={editEntry}
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                />
+            )}
+
+            {/* Toolbar */}
+            <SeedVaultToolbar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                filterType={filterType}
+                onFilterTypeChange={setFilterType}
+                filterStock={filterStock}
+                onFilterStockChange={setFilterStock}
+                sortKey={sortKey}
+                onSortKeyChange={setSortKey}
+                sortDir={sortDir}
+                onSortDirChange={setSortDir}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                bulkMode={bulkMode}
+                onBulkModeToggle={toggleBulkMode}
+                selectedCount={selectedIds.size}
+                onBulkDelete={handleBulkDelete}
+                onSelectAll={selectAll}
+                onDeselectAll={deselectAll}
+            />
+
+            {/* Bulk delete confirmation */}
+            {confirmBulkDelete && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
+                    <PhosphorIcons.Warning className="h-4 w-4 text-red-500 shrink-0" />
+                    <span className="text-sm text-red-700 dark:text-red-300 flex-1">
+                        {t('strainsView.seedVault.confirmDeleteBulkMsg', {
+                            count: selectedIds.size,
+                        })}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={handleBulkDelete}
+                        className="px-2.5 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600 transition-colors"
+                    >
+                        {t('strainsView.seedVault.confirmDelete')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setConfirmBulkDelete(false)}
+                        className="px-2.5 py-1 rounded text-xs text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                        {t('strainsView.seedVault.cancel')}
+                    </button>
                 </div>
             )}
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={t('strainsView.seedVault.searchPlaceholder')}
-                    className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
-                />
-                <select
-                    value={filterType}
-                    onChange={(e) =>
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                        setFilterType(e.target.value as SeedType | 'all')
-                    }
-                    className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text-primary"
-                >
-                    <option value="all">{t('strainsView.seedVault.allTypes')}</option>
-                    {SEED_TYPES.map((st) => (
-                        <option key={st} value={st}>
-                            {t(`strainsView.seedVault.types.${st}`)}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Inventory List */}
-            {filteredInventory.length === 0 ? (
+            {/* Inventory */}
+            {processedInventory.length === 0 ? (
                 <div className="text-center py-8 text-text-secondary">
                     <PhosphorIcons.ArchiveBox className="h-12 w-12 mx-auto mb-2 opacity-40" />
                     <p className="text-sm">{t('strainsView.seedVault.empty')}</p>
                 </div>
-            ) : (
-                <div className="space-y-2">
-                    {filteredInventory.map((entry) => (
-                        <SeedEntryCard
+            ) : viewMode === 'grid' ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {processedInventory.map((entry) => (
+                        <SeedGridCard
                             key={entry.id}
                             entry={entry}
-                            onAdjust={handleAdjust}
-                            onRemove={handleRemove}
+                            onClick={openEditForm}
+                            bulkMode={bulkMode}
+                            selected={selectedIds.has(entry.id)}
+                            onToggleSelect={toggleSelect}
                         />
                     ))}
                 </div>
+            ) : (
+                <div className="space-y-2">
+                    {processedInventory.map((entry) => (
+                        <React.Fragment key={entry.id}>
+                            <SeedEntryCard
+                                entry={entry}
+                                onAdjust={handleAdjust}
+                                onRemove={
+                                    confirmDeleteId === entry.id
+                                        ? () => handleRemove(entry.id)
+                                        : () => setConfirmDeleteId(entry.id)
+                                }
+                                onEdit={openEditForm}
+                                onConsume={handleConsume}
+                                bulkMode={bulkMode}
+                                selected={selectedIds.has(entry.id)}
+                                onToggleSelect={toggleSelect}
+                            />
+                            {confirmDeleteId === entry.id && (
+                                <div className="flex items-center gap-2 ml-4 px-3 py-1.5 rounded border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30 text-xs">
+                                    <span className="text-red-700 dark:text-red-300 flex-1">
+                                        {t('strainsView.seedVault.confirmDeleteMsg')}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemove(entry.id)}
+                                        className="px-2 py-0.5 rounded bg-red-500 text-white hover:bg-red-600"
+                                    >
+                                        {t('strainsView.seedVault.confirmDelete')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfirmDeleteId(null)}
+                                        className="px-2 py-0.5 rounded text-text-secondary hover:bg-surface-hover"
+                                    >
+                                        {t('strainsView.seedVault.cancel')}
+                                    </button>
+                                </div>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </div>
             )}
+
+            {/* Pollen Log */}
+            <SeedVaultPollenLog />
         </div>
     )
 })
 
 SeedVaultTab.displayName = 'SeedVaultTab'
-
-// ---------------------------------------------------------------------------
-// SeedEntryCard
-// ---------------------------------------------------------------------------
-
-interface SeedEntryCardProps {
-    entry: SeedInventoryEntry
-    onAdjust: (id: string, delta: number) => void
-    onRemove: (id: string) => void
-}
-
-const SeedEntryCard: React.FC<SeedEntryCardProps> = memo(({ entry, onAdjust, onRemove }) => {
-    const { t } = useTranslation()
-
-    const typeColors: Record<SeedType, string> = {
-        Regular: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-        Feminized: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
-        Autoflowering: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-        Clone: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    }
-
-    return (
-        <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-surface hover:bg-surface-hover transition-colors">
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-medium text-sm text-text-primary truncate">
-                        {entry.strainName}
-                    </span>
-                    <span
-                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${typeColors[entry.seedType]}`}
-                    >
-                        {t(`strainsView.seedVault.types.${entry.seedType}`)}
-                    </span>
-                </div>
-                {entry.breeder && (
-                    <p className="text-xs text-text-secondary truncate">{entry.breeder}</p>
-                )}
-                {entry.notes && (
-                    <p className="text-xs text-text-secondary mt-0.5 truncate">{entry.notes}</p>
-                )}
-            </div>
-
-            {/* Quantity controls */}
-            <div className="flex items-center gap-1.5">
-                <button
-                    type="button"
-                    onClick={() => onAdjust(entry.id, -1)}
-                    disabled={entry.quantity <= 0}
-                    className="h-7 w-7 flex items-center justify-center rounded border border-border hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                    aria-label={t('strainsView.seedVault.decrease')}
-                >
-                    <PhosphorIcons.Minus className="h-3 w-3" />
-                </button>
-                <span className="w-8 text-center text-sm font-semibold text-text-primary tabular-nums">
-                    {entry.quantity}
-                </span>
-                <button
-                    type="button"
-                    onClick={() => onAdjust(entry.id, 1)}
-                    className="h-7 w-7 flex items-center justify-center rounded border border-border hover:bg-surface-hover transition-colors"
-                    aria-label={t('strainsView.seedVault.increase')}
-                >
-                    <PhosphorIcons.Plus className="h-3 w-3" />
-                </button>
-            </div>
-
-            {/* Delete */}
-            <button
-                type="button"
-                onClick={() => onRemove(entry.id)}
-                className="h-7 w-7 flex items-center justify-center rounded text-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                aria-label={t('strainsView.seedVault.remove')}
-            >
-                <PhosphorIcons.TrashSimple className="h-4 w-4" />
-            </button>
-        </div>
-    )
-})
-
-SeedEntryCard.displayName = 'SeedEntryCard'

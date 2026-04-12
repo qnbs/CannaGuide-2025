@@ -19,15 +19,15 @@ import type { ImageStyle } from '@/types/aiProvider'
 import type { ImageGenPayload, ImageGenProgressMessage } from '@/workers/imageGeneration.worker'
 import { secureRandom } from '@/utils/random'
 import { captureLocalAiError } from './sentryService'
-import { detectOnnxBackend } from './localAIModelLoader'
+import { detectOnnxBackend } from '@/services/local-ai'
 import {
     classifyDevice,
     type DeviceClass,
     isVramInsufficient,
     getCachedVramInfo,
-} from './localAiHealthService'
+} from '@/services/local-ai'
 import { getCachedGeneratedImage, setCachedGeneratedImage } from './imageGenerationCacheService'
-import { acquireGpu, releaseGpu, getGpuLockState } from './gpuResourceManager'
+import { acquireGpu, releaseGpu, getGpuLockState } from '@/services/local-ai'
 import { workerBus } from '@/services/workerBus'
 import { workerPool } from '@/services/workerPool'
 import { getT } from '@/i18n'

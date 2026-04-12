@@ -3,7 +3,7 @@ import {
     subscribeWebLlmLoading,
     getWebLlmLoadingSnapshot,
     type WebLlmLoadingState,
-} from '@/services/webLlmProgressEmitter'
+} from '@/services/local-ai'
 
 /**
  * Subscribe to WebLLM model-loading progress via useSyncExternalStore.

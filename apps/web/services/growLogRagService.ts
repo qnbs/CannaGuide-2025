@@ -4,12 +4,10 @@ import {
     embedText,
     embedBatch,
     cosineSimilarity,
-} from '@/services/localAiEmbeddingService'
-import {
     getCachedEmbedding as getCachedEmbeddingPersistent,
     getOrComputeEmbedding,
     isSemanticRankingAvailable as checkSemanticAvailable,
-} from '@/services/ragEmbeddingCacheService'
+} from '@/services/local-ai'
 import DOMPurify from 'dompurify'
 
 interface LogChunk {

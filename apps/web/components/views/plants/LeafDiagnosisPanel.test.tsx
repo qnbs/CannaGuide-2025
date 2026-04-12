@@ -9,14 +9,11 @@ import { LeafDiagnosisPanel } from '@/components/views/plants/LeafDiagnosisPanel
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@/services/plantDiseaseModelService', () => ({
+vi.mock('@/services/local-ai', () => ({
     isModelCached: vi.fn().mockResolvedValue(false),
     getModelStatus: vi.fn(() => 'not-cached' as const),
     downloadModel: vi.fn().mockResolvedValue(false),
     ensureWorkerRegistered: vi.fn(),
-}))
-
-vi.mock('@/services/localAiDiagnosisService', () => ({
     classifyLeafImage: vi.fn().mockResolvedValue({
         label: 'spider_mites',
         confidence: 0.85,

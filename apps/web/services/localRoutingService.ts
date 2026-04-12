@@ -8,7 +8,7 @@
  *
  * Extracted from aiService.ts (Phase 2 -- Core Decoupling).
  */
-import { localAiPreloadService } from '@/services/localAiInfrastructureService'
+import { localAiPreloadService } from '@/services/local-ai'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { setEcoModeExplicit, registerModeAccessors, isEcoMode } from '@/services/aiEcoModeService'
 import { captureLocalAiError } from '@/services/sentryService'
@@ -26,9 +26,9 @@ export const getGeminiService = async (): Promise<
 }
 
 export const getLocalAiService = async (): Promise<
-    (typeof import('@/services/localAI'))['localAiService']
+    (typeof import('@/services/local-ai'))['localAiService']
 > => {
-    const importPromise = import('@/services/localAI').then((m) => m.localAiService)
+    const importPromise = import('@/services/local-ai').then((m) => m.localAiService)
     const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
             () => reject(new Error('Local AI dynamic import timeout')),

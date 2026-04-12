@@ -2,80 +2,70 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 156) -- Local AI Stack Phase 2: Core Decoupling
+## Latest Session (Session 157) -- Local AI Stack Phase 3: Polish
 
-**Status: fallbackService.ts split into 4 domain modules + slim
-orchestrator, routing infrastructure extracted to localRoutingService.ts,
-31 new tests added. All verified: 0 TS errors, 2284 tests passing,
-build successful.**
+**Status: All 27 backward-compat stubs removed, consumers migrated
+to barrel imports, bundle-size audit passed, tree-shaking verified,
+Stryker config covers local-ai/ (CI-only). No version bump (internal
+refactor). All verified: 0 TS errors, 2284 tests, build OK.**
 
-### What Was Done (Session 156)
+### What Was Done (Session 157)
 
-1. **fallbackService.ts Split (1582 LOC -> 5 files):**
-    - `fallback/diagnosisFallback.ts` (~170 LOC): Plant diagnosis heuristics
-      (VPD, pH, EC, temp, moisture, root health, CO2, light hours)
-    - `fallback/nutrientFallback.ts` (~200 LOC): Nutrient recommendation builder
-      (medium-specific advice, EC/pH warnings, trend summaries)
-    - `fallback/equipmentFallback.ts` (~230 LOC): Equipment recommendation builder
-      (tent, light, ventilation configs, budget/large variants)
-    - `fallback/strainImageFallback.ts` (~700 LOC): SVG strain poster generation
-      (terpene bars, leaf paths, style palettes)
-    - `fallback/fallbackService.ts` (~210 LOC): Slim orchestrator class that
-      delegates to domain modules, tracks telemetry via `this.track()`
+1. **Stub Removal (27 stubs deleted):**
+    - All 27 backward-compatibility re-export stubs at
+      `services/` root removed
+    - 20+ consumer files migrated to direct barrel imports
+      from `@/services/local-ai` or relative paths
+    - Affected: aiService.ts, aiFacade.ts, index.tsx,
+      SettingsView, LeafDiagnosisPanel, StrainImageGenerator,
+      DevTelemetryPanel, WebLlmPreloadBanner, LlmModelSelector,
+      imageGenerationService, growLogRagService,
+      diagnosisService, geminiService, useWebLlmLoadProgress,
+        - 4 test files (mock path updates)
 
-2. **Routing Service Extraction (aiService.ts -> localRoutingService.ts):**
-    - New `services/localRoutingService.ts` (~140 LOC): AI mode state,
-      `shouldRouteLocally()`, `withLocalFallback()`, `runRouted()`,
-      `withLocalService()`, lazy service loaders
-    - `aiService.ts` reduced by ~100 LOC, now imports routing from new service
-    - Re-exports `setAiMode`, `getAiMode`, `isEcoMode` for backward compat
+2. **Barrel Expansion (index.ts):**
+    - Added missing exports: getCachedEmbedding, getStats,
+      setPreferredModelOverride, deleteModel,
+      checkImageGenCapability, generateStrainImageLocal
+    - All consumers now resolve through the public barrel
 
-3. **Handler Registry (promptHandlers.ts): Skipped**
-    - Evaluated and dropped: 9 handlers have different signatures/return types,
-      a registry map would be over-engineering without practical benefit
-    - File is already well-organized (506 LOC, section headers, clear naming)
+3. **Stryker Mutation Testing:**
+    - Config already covers `services/local-ai/**/*.ts`
+    - CI workflow exists: `.github/workflows/mutation-testing.yml`
+      (weekly + manual dispatch, 30min timeout, artifact upload)
+    - No local run needed -- too resource-intensive for DevContainer
 
-4. **New Tests (+31 tests, 4 files):**
-    - `diagnosisFallback.test.ts` (7 tests): VPD, pH, EC, root health, seedling ranges
-    - `equipmentFallback.test.ts` (6 tests): complete output, German, large/budget, watts
-    - `nutrientFallback.test.ts` (7 tests): medium variants, EC/pH warnings, plant info
-    - `localRoutingService.test.ts` (11 tests): mode state, routing decisions, fallback
+4. **Bundle-Size Audit:**
+    - Total JS: 9560 KB raw, 3020 KB gzipped
+    - Bundle budget: PASS (all chunks within limits)
+    - Tree-shaking verified: local AI in separate lazy chunk
+      (`localAI-*.js` 20 KB), no dead stub code in output
+    - AI chunks well-split: aiService 16 KB, aiFacade 4 KB,
+      geminiService 32 KB, ai vendor 280 KB
 
-5. **Barrel/Stub Updates:**
-    - `local-ai/index.ts` updated with new domain module exports
-    - Backward-compat stub at `localAiFallbackService.ts` verified working
+5. **Version Bump: None**
+    - Phase 1-3 are internal refactors with no user-facing changes
+    - Version stays at 1.8.0 until features/fixes ship
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
 - Tests: 2284 passed, 0 failures (196 files)
-- Build: successful (171 precache entries)
+- Build: successful (170 precache entries, 9440 KiB)
+- Bundle budget: PASS
+- Stubs remaining: 0
 
-### Next Steps -- Planned Executions
+### Next Steps
 
-**Phase 2b (Session N+1): Stub Migration**
+**Pending Work:**
 
-- Migrate external consumers from stubs to barrel imports
-- Update aiService.ts, aiFacade.ts, components, hooks
-  to import from `@/services/local-ai` or `@/services/local-ai/index`
-- Escalate ESLint boundary rule from warn to error
-- Remove stubs one-by-one as consumers are migrated
-
-**Phase 3 (Session N+2): Stub Removal + CI Gate**
-
-- Remove all 29 backward-compat stubs
-- Add CI check: no stub imports in codebase
-- Run Stryker on local-ai/ modules
-
-**Other Pending:**
-
-- Run Stryker baseline in CI (DevContainer too slow)
 - Reduce control-has-associated-label (77) with label wiring
 - Wire predictiveAnalyticsService to cloud AI provider
 - Add E2E tests for PredictiveInsightsPanel
-- Delete `fallbackService.ts.bak` backup file
+- Trigger Stryker CI run to establish mutation score baseline
+- ESLint boundary rule: escalate from warn to error
 
-## Previous Session (Session 155) -- Local AI Stack Restructuring Phase 1
+## Previous Session (Session 156) -- Local AI Stack Phase 2: Core Decoupling
 
 **Status: Multi-phase enhancement -- mobile fixes, HydroMonitor
 glass-morphism, PredictiveAnalytics UI wiring, a11y reduction

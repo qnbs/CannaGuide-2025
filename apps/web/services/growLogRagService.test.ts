@@ -1,14 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock the embedding service before importing the module
-vi.mock('@/services/localAiEmbeddingService', () => ({
+vi.mock('@/services/local-ai', () => ({
     isEmbeddingModelReady: vi.fn(() => false),
     embedText: vi.fn(),
     embedBatch: vi.fn(),
     cosineSimilarity: vi.fn(),
-}))
-
-vi.mock('@/services/ragEmbeddingCacheService', () => ({
     getCachedEmbedding: vi.fn(() => Promise.resolve(null)),
     getOrComputeEmbedding: vi.fn(() => Promise.resolve(new Float32Array(384))),
     isSemanticRankingAvailable: vi.fn(() => false),
@@ -35,16 +32,11 @@ vi.mock('dompurify', () => ({
 import { growLogRagService } from './growLogRagService'
 import { JournalEntryType } from '@/types'
 import type { Plant, JournalEntry } from '@/types'
-import {
-    isEmbeddingModelReady,
-    embedText,
-    embedBatch,
-    cosineSimilarity,
-} from '@/services/localAiEmbeddingService'
+import { isEmbeddingModelReady, embedText, embedBatch, cosineSimilarity } from '@/services/local-ai'
 import {
     getCachedEmbedding as getCachedEmbeddingPersistent,
     isSemanticRankingAvailable,
-} from '@/services/ragEmbeddingCacheService'
+} from '@/services/local-ai'
 
 function makePlant(id: string, name: string, journal: Partial<JournalEntry>[]): Plant {
     return {
@@ -332,10 +324,18 @@ describe('growLogRagService', () => {
 
         it('retrieveSemanticContextForGrow filters by growId', async () => {
             const p1 = makeGrowPlant('p1', 'PlantA', 'grow-1', [
-                { type: JournalEntryType.Observation, notes: 'green leaves', createdAt: Date.now() },
+                {
+                    type: JournalEntryType.Observation,
+                    notes: 'green leaves',
+                    createdAt: Date.now(),
+                },
             ])
             const p2 = makeGrowPlant('p2', 'PlantB', 'grow-2', [
-                { type: JournalEntryType.Observation, notes: 'yellow spots', createdAt: Date.now() },
+                {
+                    type: JournalEntryType.Observation,
+                    notes: 'yellow spots',
+                    createdAt: Date.now(),
+                },
             ])
             const result = await growLogRagService.retrieveSemanticContextForGrow(
                 [p1, p2],

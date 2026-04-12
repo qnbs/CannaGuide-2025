@@ -62,6 +62,7 @@ export {
     getResolvedProfile,
     setForceWasm,
     setVramInsufficientOverride,
+    setPreferredModelOverride,
     evictIdlePipelines,
 } from './models/modelLoader'
 export type { LocalAiPipeline, OnnxBackend, ModelProfile } from './models/modelLoader'
@@ -186,10 +187,12 @@ export type { DetectedLanguage, LanguageDetectionResult } from './nlp/languageDe
 
 export {
     getOrComputeEmbedding,
+    getCachedEmbedding,
     precomputeEmbeddings,
     startBackgroundPrecomputation,
     isPrecomputationComplete,
     isSemanticRankingAvailable,
+    getStats,
     clearEmbeddingCache,
 } from './nlp/ragEmbeddingCacheService'
 
@@ -222,6 +225,7 @@ export {
     probeGpuVram,
     isVramInsufficient,
     getMemoryInfo,
+    getCachedVramInfo,
     getStorageInfo,
     getModelRecommendation,
 } from './device/healthService'

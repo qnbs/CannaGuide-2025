@@ -2,7 +2,7 @@ import { memo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWebLlmLoadProgress } from '@/hooks/useWebLlmLoadProgress'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { cancelWebLlmDownload } from '@/services/localAiWebLlmService'
+import { cancelWebLlmDownload } from '@/services/local-ai'
 
 /**
  * Global toast banner showing WebLLM model download/loading progress.

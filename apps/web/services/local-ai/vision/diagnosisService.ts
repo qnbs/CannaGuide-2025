@@ -291,8 +291,7 @@ export const classifyLeafImage = async (imageData: ImageData): Promise<LeafDiagn
 
     try {
         // Lazy import to avoid circular dependency at module load time
-        const { isModelCached, ensureWorkerRegistered } =
-            await import('@/services/plantDiseaseModelService')
+        const { isModelCached, ensureWorkerRegistered } = await import('./plantDiseaseModelService')
         const cached = await isModelCached()
 
         if (cached) {

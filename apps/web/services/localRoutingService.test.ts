@@ -1,8 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 // Mock dependencies before importing the module under test
-vi.mock('@/services/localAiInfrastructureService', () => ({
+vi.mock('@/services/local-ai', () => ({
     localAiPreloadService: { isReady: vi.fn(() => false) },
+    localAiService: { test: vi.fn() },
 }))
 
 vi.mock('@/services/localOnlyModeService', () => ({
@@ -21,10 +22,6 @@ vi.mock('@/services/sentryService', () => ({
 
 vi.mock('@/services/geminiService', () => ({
     geminiService: { test: vi.fn() },
-}))
-
-vi.mock('@/services/localAI', () => ({
-    localAiService: { test: vi.fn() },
 }))
 
 describe('localRoutingService', () => {

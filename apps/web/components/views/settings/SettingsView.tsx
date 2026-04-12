@@ -19,9 +19,9 @@ import { cn } from '@/lib/utils'
 import { apiKeyService } from '@/services/apiKeyService'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
-import { localAiPreloadService } from '../../../services/localAiInfrastructureService'
-import { detectOnnxBackend, setForceWasm } from '../../../services/localAIModelLoader'
-import { getGpuTier } from '../../../services/localAiWebGpuService'
+import { localAiPreloadService } from '@/services/local-ai'
+import { detectOnnxBackend, setForceWasm } from '@/services/local-ai'
+import { getGpuTier } from '@/services/local-ai'
 import { LlmModelSelector } from './LlmModelSelector'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
@@ -689,8 +689,7 @@ const LocalAiOfflineCard: React.FC = () => {
         let cancelled = false
         const loadHealth = async () => {
             try {
-                const { quickHealthCheck, classifyDevice } =
-                    await import('../../../services/localAiHealthService')
+                const { quickHealthCheck, classifyDevice } = await import('@/services/local-ai')
                 if (cancelled) return
                 const check = quickHealthCheck()
                 setHealthStatus(check.status)
@@ -743,7 +742,7 @@ const LocalAiOfflineCard: React.FC = () => {
 
     const handleModelChange = (modelId: string) => {
         dispatch(setLlmModel(modelId))
-        import('../../../services/localAIModelLoader').then(({ setPreferredModelOverride }) => {
+        import('@/services/local-ai').then(({ setPreferredModelOverride }) => {
             setPreferredModelOverride(modelId === 'auto' ? null : modelId)
         })
     }
@@ -928,8 +927,7 @@ const LocalAiFeaturesCard: React.FC = () => {
         let cancelled = false
         const loadTelemetry = async () => {
             try {
-                const { getSnapshot } =
-                    await import('../../../services/localAiInfrastructureService')
+                const { getSnapshot } = await import('@/services/local-ai')
                 if (cancelled) return
                 const snap = getSnapshot()
                 setTelemetry({
@@ -946,8 +944,7 @@ const LocalAiFeaturesCard: React.FC = () => {
         }
         const loadCacheCount = async () => {
             try {
-                const { getCacheSize } =
-                    await import('../../../services/localAiInfrastructureService')
+                const { getCacheSize } = await import('@/services/local-ai')
                 if (cancelled) return
                 setCacheCount(await getCacheSize())
             } catch {
@@ -967,8 +964,7 @@ const LocalAiFeaturesCard: React.FC = () => {
 
     const handleClearCache = async () => {
         try {
-            const { clearPersistentCache } =
-                await import('../../../services/localAiInfrastructureService')
+            const { clearPersistentCache } = await import('@/services/local-ai')
             await clearPersistentCache()
             setCacheCount(0)
         } catch {

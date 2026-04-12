@@ -4,10 +4,10 @@
  * Refreshes every 5s while expanded.
  */
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { getGpuLockState } from '@/services/gpuResourceManager'
+import { getGpuLockState } from '@/services/local-ai'
 import { workerBus } from '@/services/workerBus'
-import { getSnapshot } from '@/services/localAiTelemetryService'
-import { getStats as getRagStats } from '@/services/ragEmbeddingCacheService'
+import { getSnapshot } from '@/services/local-ai'
+import { getStats as getRagStats } from '@/services/local-ai'
 import { useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 

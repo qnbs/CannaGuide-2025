@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-2253%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-2284%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-33.7%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity -->
@@ -107,7 +107,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2253 tests · 117 services · 19 Redux slices + 9 Zustand stores · 26 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
+776 strains · 2284 tests · 117 services · 19 Redux slices + 9 Zustand stores · 26 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -120,7 +120,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 | **Persistence** | IndexedDB (dual-database)            | Offline-first, no backend                   |
 | **i18n**        | i18next                              | EN/DE/ES/FR/NL, 12 namespaces               |
 | **Security**    | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**     | Vitest + Playwright                  | 2253 unit/E2E/component tests               |
+| **Testing**     | Vitest + Playwright                  | 2284 unit/E2E/component tests               |
 
 > Deep-dive: [Architecture](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Accessibility](docs/ACCESSIBILITY.md)
 
@@ -135,7 +135,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite dev server on localhost:5173
 pnpm run build              # Production build (all workspaces)
-pnpm run test:run           # 2253 tests, single run
+pnpm run test:run           # 2284 tests, single run
 pnpm run typecheck          # tsc --noEmit (TS2719 filtered)
 pnpm run lint               # ESLint (flat config, 0 warnings)
 ```
@@ -310,11 +310,11 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ## CI/CD, Testing & Security
 
-### Testing (2253 tests, 0 failures)
+### Testing (2284 tests, 0 failures)
 
 | Type                  | Framework       | Scope                                           |
 | --------------------- | --------------- | ----------------------------------------------- |
-| **Unit/Integration**  | Vitest          | 2253 tests, colocated `*.test.ts(x)`            |
+| **Unit/Integration**  | Vitest          | 2284 tests, colocated `*.test.ts(x)`            |
 | **E2E**               | Playwright      | Chromium + Firefox (CI), `tests/e2e/*.e2e.ts`   |
 | **Component**         | Playwright CT   | `tests/ct/*.ct.tsx`                             |
 | **Mutation**          | Stryker         | Redux slices, 50% break threshold               |
@@ -340,7 +340,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 | Workflow           | Trigger          | Purpose                                                    |
 | ------------------ | ---------------- | ---------------------------------------------------------- |
-| CI                 | push, PR         | Lint, typecheck, 2253 tests, build, security, E2E, IoT     |
+| CI                 | push, PR         | Lint, typecheck, 2284 tests, build, security, E2E, IoT     |
 | CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                               |
 | Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                      |
 | Release Publish    | tag v\*          | GitHub build attestation + CycloneDX SBOM + GitHub Release |
@@ -431,7 +431,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-2253%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-2284%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/Coverage-33.7%25%20Zeilen-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository-Aktivitaet -->
@@ -502,7 +502,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2253 Tests · 117 Services · 19 Redux Slices + 9 Zustand Stores · 26 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
+776 Sorten · 2284 Tests · 117 Services · 19 Redux Slices + 9 Zustand Stores · 26 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
@@ -515,7 +515,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 | **Persistenz** | IndexedDB (Dual-Datenbank)           | Offline-first, kein Backend                   |
 | **i18n**       | i18next                              | EN/DE/ES/FR/NL, 12 Namensraeume               |
 | **Sicherheit** | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Praevention, verschluesselte API-Keys     |
-| **Testing**    | Vitest + Playwright                  | 2253 Unit-/E2E-/Komponenten-Tests             |
+| **Testing**    | Vitest + Playwright                  | 2284 Unit-/E2E-/Komponenten-Tests             |
 
 > Architektur: [ARCHITECTURE.md](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Barrierefreiheit](docs/ACCESSIBILITY.md)
 
@@ -528,7 +528,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite Dev-Server auf localhost:5173
 pnpm run build              # Produktions-Build
-pnpm run test:run           # 2253 Tests, Einzellauf
+pnpm run test:run           # 2284 Tests, Einzellauf
 pnpm run typecheck          # tsc --noEmit
 ```
 
@@ -564,7 +564,7 @@ pnpm run typecheck          # tsc --noEmit
 
 | Bereich          | Details                                                                                                 |
 | ---------------- | ------------------------------------------------------------------------------------------------------- |
-| **Tests**        | 2253 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)           |
+| **Tests**        | 2284 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)           |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM |
 | **CI/CD**        | 22 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard                |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                            |

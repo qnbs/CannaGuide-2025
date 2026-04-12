@@ -22,7 +22,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
-- **Testing:** Vitest (2253 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (2284 tests) + Playwright E2E + Playwright Component Tests
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0)
@@ -264,7 +264,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 2253 tests, 0 failures
+- Baseline: 2284 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
@@ -452,6 +452,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/aiRateLimiter.ts`                                            | Rate limiter + cost tracker (reportActualUsage, monthly budget)                                                                                                              |
 | `apps/web/services/aiFacade.ts`                                                 | Public AI facade (re-exports aiService + provider + infra)                                                                                                                   |
 | `apps/web/services/aiService.ts`                                                | Unified AI service (cloud + local routing)                                                                                                                                   |
+| `apps/web/services/localRoutingService.ts`                                      | AI routing infrastructure: mode state, shouldRouteLocally, withLocalFallback, runRouted, lazy loaders                                                                        |
 | `apps/web/services/local-ai/index.ts`                                           | Local AI public barrel re-export (canonical import point)                                                                                                                    |
 | `apps/web/services/local-ai/interfaces.ts`                                      | Local AI TypeScript interface contracts (20+)                                                                                                                                |
 | `apps/web/services/local-ai/core/LocalAIInfrastructure.ts`                      | Unified cache + telemetry + preload class                                                                                                                                    |
@@ -479,7 +480,11 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/local-ai/device/ecoModeService.ts`                           | Battery-aware eco mode detection + enforcement                                                                                                                               |
 | `apps/web/services/local-ai/cache/cacheService.ts`                              | IndexedDB inference cache (256 entries, 7d TTL)                                                                                                                              |
 | `apps/web/services/local-ai/telemetry/telemetryService.ts`                      | Inference latency/success tracking, fallback breakdown                                                                                                                       |
-| `apps/web/services/local-ai/fallback/fallbackService.ts`                        | Heuristic fallback for all AI features (~1600 LOC)                                                                                                                           |
+| `apps/web/services/local-ai/fallback/fallbackService.ts`                        | Slim orchestrator class delegating to domain-specific fallback modules                                                                                                       |
+| `apps/web/services/local-ai/fallback/diagnosisFallback.ts`                      | Heuristic plant diagnosis (VPD, pH, EC, temp, moisture, root health, CO2, light)                                                                                             |
+| `apps/web/services/local-ai/fallback/nutrientFallback.ts`                       | Heuristic nutrient recommendation builder (medium-specific, EC/pH warnings)                                                                                                  |
+| `apps/web/services/local-ai/fallback/equipmentFallback.ts`                      | Heuristic equipment recommendation builder (tent, light, ventilation configs)                                                                                                |
+| `apps/web/services/local-ai/fallback/strainImageFallback.ts`                    | SVG strain poster generation (terpene bars, leaf paths, style palettes)                                                                                                      |
 | `apps/web/workers/visionInferenceWorker.ts`                                     | Off-main-thread ONNX inference: 38-class PlantVillage labels, `CANNABIS_MAP`, `preprocessImage()` (ImageNet CHW), `mapToCannabisTerm()`, WorkerBus INIT/CLASSIFY/TERMINATE   |
 | `apps/web/components/views/plants/LeafDiagnosisPanel.tsx`                       | Leaf diagnosis UI: model status bar, drag-zone upload, camera capture, analyze button, results card with severity badge and RAG recommendations                              |
 | `apps/web/services/equipmentCalculatorService.ts`                               | Pure-formula calculator service: CO2 enrichment, Humidity Deficit (Buck SVP), Light Hanging Height (Zod-validated)                                                           |

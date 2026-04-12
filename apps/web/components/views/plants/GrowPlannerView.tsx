@@ -243,7 +243,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                 <span
                                     className={`rounded-full px-2 py-0.5 ring-1 ring-inset ${getActionStyle(task.type)}`}
                                 >
-                                    {task.type}
+                                    {t(`plantsView.planner.taskTypes.${task.type}`, { defaultValue: task.type })}
                                 </span>
                                 <div className="flex gap-1">
                                     <button
@@ -363,9 +363,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                                     ? 'opacity-40 line-through'
                                                     : ''
                                             }`}
-                                            title={`${task.type}${task.notes ? ': ' + task.notes : ''}`}
+                                            title={`${t(`plantsView.planner.taskTypes.${task.type}`, { defaultValue: task.type })}${task.notes ? ': ' + task.notes : ''}`}
                                         >
-                                            {task.type}
+                                            {t(`plantsView.planner.taskTypes.${task.type}`, { defaultValue: task.type })}
                                         </button>
                                     ))}
                                     {dayTasks.length > 3 && (
@@ -387,7 +387,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                         key={a.type}
                         className={`rounded-full px-2 py-0.5 text-[10px] ring-1 ring-inset ${a.color}`}
                     >
-                        {a.type.replace('_', ' ')}
+                        {t(`plantsView.planner.taskTypes.${a.type}`, { defaultValue: a.type })}
                     </span>
                 ))}
             </div>
@@ -418,7 +418,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                             >
                                 {GROW_ACTIONS.map((a) => (
                                     <option key={a.type} value={a.type}>
-                                        {a.type.replace('_', ' ')}
+                                        {t(`plantsView.planner.taskTypes.${a.type}`, { defaultValue: a.type })}
                                     </option>
                                 ))}
                             </select>

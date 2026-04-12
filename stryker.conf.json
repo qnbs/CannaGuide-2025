@@ -20,7 +20,7 @@
     "testRunner": "vitest",
     "plugins": ["@stryker-mutator/vitest-runner"],
     "checkers": [],
-    "coverageAnalysis": "off",
+    "coverageAnalysis": "perTest",
     "vitest": {
         "configFile": "vite.config.ts",
         "dir": "."
@@ -35,7 +35,8 @@
         "low": 60,
         "break": 50
     },
-    "concurrency": 1,
+    "concurrency": 4,
     "timeoutMS": 30000,
+    "incremental": true,
     "ignorePatterns": ["node_modules", "dist", ".turbo", "coverage"]
 }

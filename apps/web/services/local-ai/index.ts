@@ -283,6 +283,7 @@ export type { PlantDiagnostic } from './fallback/fallbackService'
 export { buildEquipmentRecommendation } from './fallback/equipmentFallback'
 export { buildNutrientRecommendation } from './fallback/nutrientFallback'
 export { buildStrainImage } from './fallback/strainImageFallback'
+export { localizeStr } from './fallback/localeHelpers'
 
 // ---------------------------------------------------------------------------
 // Interfaces (for DI / testing)

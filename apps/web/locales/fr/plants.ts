@@ -840,6 +840,7 @@ export const plantsView = {
             transplant: 'Rempoter',
             photo: 'Photo',
             other: 'Autre',
+            pest_control: 'Lutte Antiparasitaire',
         },
         recurring: 'Recurrent',
         intervalDays: 'Tous les X jours',

@@ -823,6 +823,7 @@ export const plantsView = {
             transplant: 'Verpotten',
             photo: 'Foto',
             other: 'Overig',
+            pest_control: 'Ongediertebestrijding',
         },
         recurring: 'Herhalend',
         intervalDays: 'Elke X dagen',

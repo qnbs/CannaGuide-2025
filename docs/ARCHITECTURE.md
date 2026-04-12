@@ -68,15 +68,19 @@ apps/web/                 Main PWA (@cannaguide/web)
     geminiService.ts      Gemini API abstraction (responseSchema)
     aiProviderService.ts  Multi-provider AI routing (BYOK, imports configs from @cannaguide/ai-core)
     aiService.ts          Unified cloud + local AI entry point
-    LocalAIInfrastructure.ts Unified cache + telemetry + preload class
-    localAI.ts            Pure facade (delegates to router, manager, orchestrator)
-    localAiInferenceRouter.ts  Cache -> WebLLM -> Transformers.js routing (retry + backoff)
-    localAiModelManager.ts     Pipeline lifecycle (text + vision), primary/alt fallback
-    localAiPreloadOrchestrator.ts  8-step preload sequence with progress callbacks
-    localAIModelLoader.ts ONNX pipeline loader (WebGPU/WASM, semaphore)
-    localAi*.ts           15 local AI service modules
-    gpuResourceManager.ts GPU mutex (FIFO queue, WebLLM eviction)
-    inferenceQueueService.ts  Priority queue for inference tasks
+    local-ai/             Layered Local AI stack (ADR-0011)
+      index.ts            Public barrel re-export
+      interfaces.ts       TypeScript interface contracts (20+)
+      core/               Facade, infrastructure singleton, inference router
+      models/             Model lifecycle, loaders, WebLLM, preload orchestrator
+      inference/          Inference queue, streaming, prompt handlers
+      vision/             Diagnosis, image similarity, plant disease model
+      nlp/                NLP pipelines, embeddings, language detection, RAG cache
+      device/             GPU manager, WebGPU, health, eco mode, preload service
+      cache/              IndexedDB inference cache, progress emitter
+      telemetry/          Inference telemetry, fallback tracking
+      fallback/           Heuristic fallback service (~1600 LOC)
+    gpuResourceManager.ts (stub -> local-ai/device/)
     crdtService.ts        Y.Doc lifecycle, differential encoding, divergence detection
     crdtSyncBridge.ts     Bidirectional Redux <-> Y.Doc bridge (batching, loop detection, telemetry)
     crdtAdapters.ts       Zod-validated type adapters (Plant, JournalEntry, NutrientSchedule, EcPhReading)

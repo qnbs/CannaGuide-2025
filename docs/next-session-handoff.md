@@ -2,58 +2,79 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 154) -- Documentation Overhaul
+## Latest Session (Session 155) -- Local AI Stack Restructuring Phase 1
 
-**Status: Comprehensive documentation overhaul + mobile UI
-reorder (grow-slots above live-umgebung).**
+**Status: Complete layered restructuring of the Local AI stack
+(29 source files, 26 test files) into `services/local-ai/` with
+9 sub-directories, interfaces, barrel, stubs, and ADR-0011.**
 
-### What Was Done (Session 154)
+### What Was Done (Session 155)
 
-1. **Mobile UI Reorder (PlantsView.tsx):**
-    - Grow Slots section moved from order-2 to order-1
-    - DashboardSummary moved from order-1 to order-2
-    - Grow slots now appear directly under garden header
-      in mobile view, above Live-Umgebung
+1. **Directory Structure (ADR-0011):**
+    - Created `services/local-ai/` with 9 sub-dirs:
+      core/, models/, inference/, vision/, nlp/, device/,
+      cache/, telemetry/, fallback/
+    - Moved 29 source files via `git mv`
+    - Moved 26 co-located test files alongside source
+    - All internal imports fixed (relative cross-layer)
 
-2. **README/SECURITY/ROADMAP Updates:**
-    - README badge v1.7.2 -> v1.8.0
-    - SECURITY.md supported versions: 1.8.x/1.7.x
-    - ROADMAP.md: v1.8 HydroMonitor & Analytics section
-      with 14 feature rows added
+2. **Public API:**
+    - `interfaces.ts` -- 20+ TypeScript interface contracts
+      (ICacheService, ITelemetryService, IGpuResourceManager,
+      IHealthService, IModelLoader, IModelManager, IWebLlmService,
+      IInferenceRouter, IPreloadOrchestrator, IFallbackService,
+      INlpService, IEmbeddingService, ILanguageDetectionService,
+      IDiagnosisService, IImageSimilarityService, IStreamingService,
+      IEcoModeService)
+    - `index.ts` -- public barrel re-export (canonical import)
 
-3. **What's New (All 5 Languages):**
-    - settings.ts whatsNew updated from v1.6 to v1.8
-      in EN, DE, ES, FR, NL with v1.8 feature highlights
+3. **Backward Compatibility:**
+    - 29 re-export stubs at old paths in `services/`
+    - External consumers unchanged (aiService, aiFacade,
+      components, hooks, workers all resolve via stubs)
 
-4. **Help Manual (Bedienungsanleitung) -- All 5 Languages:**
-    - EN/DE: proactiveCoach, voiceCommands, seedVault,
-      growPlanner, problemTracker, qrTags, growRoom3d,
-      analytics sections added; lexikon count 83->91
-    - ES/FR/NL: proactiveCoach, voiceCommands, seedVault,
-      growPlanner, problemTracker, qrTags, growRoom3d added
+4. **Test Mock Paths:**
+    - All `vi.mock()` paths in 12+ test files updated
+      to match new source import paths
+    - 2253/2253 tests passing, 0 failures
 
-5. **Docs Metrics Sync:**
-    - ARCHITECTURE.md: test count 2221/2140 -> 2253
-    - ACCESSIBILITY.md: a11y baseline 169 -> 83 warnings
-    - audit-roadmap: version v1.7.0 -> v1.8.0, tests
-      1663/2140 -> 2253, dashboard fully refreshed
+5. **ESLint Boundary (ADR-0011):**
+    - New override block: files outside local-ai/ cannot
+      deep-import local-ai/core/_, local-ai/models/_, etc.
+    - Warn level (Phase 2 will escalate to error)
+
+6. **ADR-0011:** Documented decision, alternatives, consequences
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
 - Tests: 2253 passed, 0 failures (192 files)
-- Build: successful
-- a11y warnings: 83
+- Build: successful (3 tasks, 170 precache entries)
 
-### Next Steps
+### Next Steps -- Planned Executions
+
+**Phase 2 (Session N+1): Stub Migration**
+
+- Migrate external consumers from stubs to barrel imports
+- Update aiService.ts, aiFacade.ts, components, hooks
+  to import from `@/services/local-ai` or `@/services/local-ai/index`
+- Escalate ESLint boundary rule from warn to error
+- Remove stubs one-by-one as consumers are migrated
+
+**Phase 3 (Session N+2): Stub Removal + CI Gate**
+
+- Remove all 29 backward-compat stubs
+- Add CI check: no stub imports in codebase
+- Run Stryker on local-ai/ modules
+
+**Other Pending:**
 
 - Run Stryker baseline in CI (DevContainer too slow)
 - Reduce control-has-associated-label (77) with label wiring
 - Wire predictiveAnalyticsService to cloud AI provider
-- Local AI Stack refactoring (Multi-Session project)
 - Add E2E tests for PredictiveInsightsPanel
 
-## Previous Session (Session 153) -- v1.8.0 Release
+## Previous Session (Session 154) -- Documentation Overhaul
 
 **Status: Multi-phase enhancement -- mobile fixes, HydroMonitor
 glass-morphism, PredictiveAnalytics UI wiring, a11y reduction

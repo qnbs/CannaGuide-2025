@@ -97,4 +97,61 @@ describe('analyticsService', () => {
         // Low health should trigger recommendations
         expect(result.recommendations.length).toBeGreaterThanOrEqual(0)
     })
+
+    it('should compute health trend from journal entries', () => {
+        const journal = [
+            {
+                id: 'j1',
+                createdAt: Date.now() - 86400000 * 2,
+                type: 'observation',
+                notes: 'Day 1 update',
+            },
+            {
+                id: 'j2',
+                createdAt: Date.now() - 86400000,
+                type: 'observation',
+                notes: 'Day 2 update',
+            },
+            { id: 'j3', createdAt: Date.now(), type: 'observation', notes: 'Day 3 update' },
+        ] as never[]
+        const plants = [makePlant({ journal })]
+        const result = analyticsService.compute(plants)
+        expect(result.healthTrend).toBeDefined()
+        expect(result.healthTrend.length).toBe(1)
+        expect(result.healthTrend[0]!.plantId).toBe('p1')
+    })
+
+    it('should compute nutrient consistency', () => {
+        const plants = [makePlant({ medium: { ph: 6.2, ec: 1.5, moisture: 60 } as never })]
+        const result = analyticsService.compute(plants)
+        expect(result.nutrientConsistency).toBeDefined()
+        expect(result.nutrientConsistency.length).toBe(1)
+        expect(result.nutrientConsistency[0]!.avgPh).toBeCloseTo(6.2, 1)
+    })
+
+    it('should compute grow duration stats for finished grows', () => {
+        // No finished plants -- should return empty
+        const plants = [makePlant({ stage: PlantStage.Vegetative })]
+        const result = analyticsService.compute(plants)
+        expect(result.growDurationStats).toBeDefined()
+        expect(result.growDurationStats.length).toBe(0)
+    })
+
+    it('should detect pH drift recommendation', () => {
+        const plants = [
+            makePlant({
+                medium: {
+                    ph: 5.0,
+                    ec: 1.5,
+                    moisture: 60,
+                    microbeHealth: 50,
+                    substrateWater: 50,
+                    nutrientConcentration: { nitrogen: 1, phosphorus: 1, potassium: 1 },
+                } as never,
+            }),
+        ]
+        const result = analyticsService.compute(plants)
+        const phRec = result.recommendations.find((r) => r.titleKey === 'recommendations.phDrift')
+        expect(phRec).toBeDefined()
+    })
 })

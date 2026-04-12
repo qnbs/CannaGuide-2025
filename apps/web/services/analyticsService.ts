@@ -35,6 +35,12 @@ export interface GrowAnalytics {
     readonly strainPerformance: StrainPerformanceEntry[]
     /** Actionable recommendations */
     readonly recommendations: AnalyticsRecommendation[]
+    /** 14-day health trend per plant */
+    readonly healthTrend: HealthTrendEntry[]
+    /** pH/EC nutrient consistency analysis per plant */
+    readonly nutrientConsistency: NutrientConsistencyEntry[]
+    /** Grow duration statistics per strain (finished plants) */
+    readonly growDurationStats: GrowDurationStatEntry[]
 }
 
 export interface DailyCount {
@@ -72,6 +78,30 @@ export interface AnalyticsRecommendation {
     readonly relatedPlantId?: string | undefined
 }
 
+export interface HealthTrendEntry {
+    readonly plantId: string
+    readonly plantName: string
+    readonly trend: DailyCount[]
+}
+
+export interface NutrientConsistencyEntry {
+    readonly plantId: string
+    readonly plantName: string
+    readonly avgPh: number
+    readonly avgEc: number
+    readonly phVariance: number
+    readonly ecVariance: number
+    readonly rating: 'stable' | 'moderate' | 'unstable'
+}
+
+export interface GrowDurationStatEntry {
+    readonly strainName: string
+    readonly minDays: number
+    readonly maxDays: number
+    readonly avgDays: number
+    readonly count: number
+}
+
 // ---------------------------------------------------------------------------
 // Analytics Engine
 // ---------------------------------------------------------------------------
@@ -94,6 +124,9 @@ class AnalyticsEngine {
             riskFactors: this.assessRisks(activePlants),
             strainPerformance: this.rankStrainPerformance(plants),
             recommendations: this.generateRecommendations(activePlants),
+            healthTrend: this.getHealthTrend(activePlants),
+            nutrientConsistency: this.getNutrientConsistency(activePlants),
+            growDurationStats: this.getGrowDurationStats(plants),
         }
     }
 
@@ -392,6 +425,54 @@ class AnalyticsEngine {
                     relatedPlantId: plant.id,
                 })
             }
+
+            // pH drift recommendation
+            if (
+                plant.medium?.ph !== undefined &&
+                (plant.medium.ph < 5.8 || plant.medium.ph > 6.8)
+            ) {
+                recs.push({
+                    id: `ph-${plant.id}`,
+                    category: 'nutrition',
+                    priority: plant.medium.ph < 5.5 || plant.medium.ph > 7.0 ? 'high' : 'medium',
+                    titleKey: 'recommendations.phDrift',
+                    descriptionKey: 'recommendations.phDriftDesc',
+                    relatedPlantId: plant.id,
+                })
+            }
+
+            // EC ramp-up for flowering
+            if (
+                plant.stage === PlantStage.Flowering &&
+                plant.medium?.ec !== undefined &&
+                plant.medium.ec < 1.2
+            ) {
+                recs.push({
+                    id: `ec-${plant.id}`,
+                    category: 'nutrition',
+                    priority: 'medium',
+                    titleKey: 'recommendations.ecRampUp',
+                    descriptionKey: 'recommendations.ecRampUpDesc',
+                    relatedPlantId: plant.id,
+                })
+            }
+
+            // Defoliation timing for dense vegetative
+            if (
+                plant.stage === PlantStage.Vegetative &&
+                plant.age !== undefined &&
+                plant.age > 28 &&
+                plant.health >= 70
+            ) {
+                recs.push({
+                    id: `defol-${plant.id}`,
+                    category: 'training',
+                    priority: 'low',
+                    titleKey: 'recommendations.defoliation',
+                    descriptionKey: 'recommendations.defoliationDesc',
+                    relatedPlantId: plant.id,
+                })
+            }
         }
 
         // Deduplicate by category per plant
@@ -403,6 +484,97 @@ class AnalyticsEngine {
                 return true
             })
             .slice(0, 10)
+    }
+
+    private getHealthTrend(plants: Plant[]): HealthTrendEntry[] {
+        const dayMs = 24 * 60 * 60 * 1000
+        const now = Date.now()
+
+        return plants.map((plant) => {
+            const counts = new Map<string, { total: number; count: number }>()
+
+            for (let i = 13; i >= 0; i--) {
+                const d = new Date(now - i * dayMs)
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                counts.set(key, { total: 0, count: 0 })
+            }
+
+            if (plant.journal) {
+                for (const entry of plant.journal) {
+                    const d = new Date(entry.createdAt)
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                    const bucket = counts.get(key)
+                    if (bucket !== undefined) {
+                        bucket.total += plant.health
+                        bucket.count += 1
+                    }
+                }
+            }
+
+            const trend: DailyCount[] = Array.from(counts.entries()).map(([date, data]) => ({
+                date,
+                count: data.count > 0 ? Math.round(data.total / data.count) : plant.health,
+            }))
+
+            return {
+                plantId: plant.id,
+                plantName: plant.name,
+                trend,
+            }
+        })
+    }
+
+    private getNutrientConsistency(plants: Plant[]): NutrientConsistencyEntry[] {
+        return plants
+            .filter((p) => p.medium?.ph !== undefined && p.medium?.ec !== undefined)
+            .map((plant) => {
+                const ph = plant.medium?.ph ?? 6.0
+                const ec = plant.medium?.ec ?? 1.0
+
+                const phIdeal = 6.2
+                const ecIdeal = plant.stage === PlantStage.Flowering ? 1.8 : 1.2
+                const phDeviation = Math.abs(ph - phIdeal)
+                const ecDeviation = Math.abs(ec - ecIdeal)
+
+                let rating: 'stable' | 'moderate' | 'unstable' = 'stable'
+                if (phDeviation > 0.5 || ecDeviation > 0.8) {
+                    rating = 'unstable'
+                } else if (phDeviation > 0.3 || ecDeviation > 0.4) {
+                    rating = 'moderate'
+                }
+
+                return {
+                    plantId: plant.id,
+                    plantName: plant.name,
+                    avgPh: Math.round(ph * 10) / 10,
+                    avgEc: Math.round(ec * 10) / 10,
+                    phVariance: Math.round(phDeviation * 100) / 100,
+                    ecVariance: Math.round(ecDeviation * 100) / 100,
+                    rating,
+                }
+            })
+    }
+
+    private getGrowDurationStats(plants: Plant[]): GrowDurationStatEntry[] {
+        const finishedPlants = plants.filter((p) => isFinishedStage(p.stage))
+        if (finishedPlants.length === 0) return []
+
+        const strainMap = new Map<string, number[]>()
+
+        for (const plant of finishedPlants) {
+            const name = plant.strain?.name ?? 'Unknown'
+            const existing = strainMap.get(name) ?? []
+            existing.push(plant.age ?? 0)
+            strainMap.set(name, existing)
+        }
+
+        return Array.from(strainMap.entries()).map(([strainName, ages]) => ({
+            strainName,
+            minDays: Math.min(...ages),
+            maxDays: Math.max(...ages),
+            avgDays: Math.round(ages.reduce((a, b) => a + b, 0) / ages.length),
+            count: ages.length,
+        }))
     }
 }
 

@@ -37,4 +37,37 @@ describe('ScenarioService', () => {
         expect(scenario!.plantAModifier.action).toBe('LST')
         expect(scenario!.plantBModifier.action).toBe('TOP')
     })
+
+    it('includes all 8 built-in scenarios', () => {
+        const all = scenarioService.getAllScenarios()
+        expect(all.length).toBe(8)
+        const ids = all.map((s) => s.id)
+        expect(ids).toContain('temperature-plus-2c')
+        expect(ids).toContain('topping-vs-lst')
+        expect(ids).toContain('humidity-plus-10')
+        expect(ids).toContain('humidity-minus-10')
+        expect(ids).toContain('light-boost')
+        expect(ids).toContain('ph-drift-acidic')
+        expect(ids).toContain('ec-ramp-up')
+        expect(ids).toContain('defoliation-day-7')
+    })
+
+    it('new scenarios use correct action types', () => {
+        expect(scenarioService.getScenarioById('humidity-plus-10')!.plantBModifier.action).toBe(
+            'HUMIDITY_PLUS_10',
+        )
+        expect(scenarioService.getScenarioById('humidity-minus-10')!.plantBModifier.action).toBe(
+            'HUMIDITY_MINUS_10',
+        )
+        expect(scenarioService.getScenarioById('light-boost')!.plantBModifier.action).toBe(
+            'LIGHT_BOOST',
+        )
+        expect(scenarioService.getScenarioById('ph-drift-acidic')!.plantBModifier.action).toBe(
+            'PH_DRIFT_ACIDIC',
+        )
+        expect(scenarioService.getScenarioById('ec-ramp-up')!.plantBModifier.action).toBe('EC_RAMP')
+        expect(scenarioService.getScenarioById('defoliation-day-7')!.plantBModifier.action).toBe(
+            'DEFOLIATE',
+        )
+    })
 })

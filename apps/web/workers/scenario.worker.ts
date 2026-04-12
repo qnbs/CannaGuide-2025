@@ -25,6 +25,46 @@ const applyAction = (
             updated.environment.internalTemperature -= 2
             return plantSimulationService.applyEnvironmentalCorrections(updated, simulationSettings)
         }
+        case 'HUMIDITY_PLUS_10': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.environment.internalHumidity = Math.min(
+                100,
+                updated.environment.internalHumidity + 10,
+            )
+            return plantSimulationService.applyEnvironmentalCorrections(updated, simulationSettings)
+        }
+        case 'HUMIDITY_MINUS_10': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.environment.internalHumidity = Math.max(
+                0,
+                updated.environment.internalHumidity - 10,
+            )
+            return plantSimulationService.applyEnvironmentalCorrections(updated, simulationSettings)
+        }
+        case 'LIGHT_BOOST': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.equipment.light.wattage = Math.min(
+                2000,
+                Math.round(updated.equipment.light.wattage * 1.25),
+            )
+            return plantSimulationService.applyEnvironmentalCorrections(updated, simulationSettings)
+        }
+        case 'PH_DRIFT_ACIDIC': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.medium.ph = Math.max(3.0, updated.medium.ph - 0.5)
+            return updated
+        }
+        case 'EC_RAMP': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.medium.ec = Math.min(4.0, updated.medium.ec + 0.3)
+            return updated
+        }
+        case 'DEFOLIATE': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.health = Math.max(0, updated.health - 8)
+            updated.stressLevel = Math.min(100, updated.stressLevel + 15)
+            return updated
+        }
         case 'NONE':
         default:
             return plant

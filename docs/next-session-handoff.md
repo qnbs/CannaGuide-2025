@@ -2,7 +2,77 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 150) -- Seed Vault Overhaul
+## Latest Session (Session 151) -- Analytics & Sandbox Enhancement
+
+**Status: Comprehensive enhancement of Analytics Dashboard and
+Sandbox features in the Knowledge Hub. Recharts migration,
+6 new scenarios, custom experiment builder, experiment replay,
+multi-metric chart tabs, CSV export, i18n for all 5 languages.**
+
+### What Was Done (Session 151)
+
+1. **Analytics Engine extended:** 3 new computation methods
+   (getHealthTrend, getNutrientConsistency, getGrowDurationStats),
+   3 new interfaces (HealthTrendEntry, NutrientConsistencyEntry,
+   GrowDurationStatEntry), 3 new recommendation generators
+   (pH drift, EC ramp-up, defoliation timing).
+
+2. **Analytics Dashboard rewritten:** Full Recharts integration --
+   SVG gauge for garden score, PieChart for stage distribution,
+   AreaChart for journal activity trend and health trend,
+   BarChart for strain performance. Nutrient consistency panel,
+   grow duration stats table, CSV export button.
+
+3. **Sandbox extended with 6 new scenarios:** humidity +/-10%,
+   light boost (+25% wattage), pH drift acidic (-0.5),
+   EC ramp-up (+0.3), defoliation (health -8, stress +15).
+   ScenarioAction type extended with 6 new union members.
+
+4. **Scenario worker updated:** 6 new applyAction cases
+   (HUMIDITY_PLUS_10, HUMIDITY_MINUS_10, LIGHT_BOOST,
+   PH_DRIFT_ACIDIC, EC_RAMP, DEFOLIATE) with proper
+   PlantEnvironment/Equipment property access.
+
+5. **Custom Experiment Builder:** New SandboxView component
+   allowing users to create custom scenarios with configurable
+   duration (1-90 days), actions for both plants, and action
+   day selection. 11 action types available.
+
+6. **Experiment Replay:** loadSavedExperiment reducer added
+   to sandboxSlice. Saved experiments now have a "View"
+   button that replays results in ComparisonView.
+
+7. **ComparisonView migrated from D3 to Recharts:** 4 chart
+   tabs (height, health, stress, pH/EC nutrients). LineChart
+   with dual-line comparison per metric. Tabbed UI.
+
+8. **i18n updated:** ~50 new keys per language across all 5
+   locales (EN/DE/ES/FR/NL) covering analytics, scenarios,
+   custom experiment builder, chart tabs.
+
+9. **Tests expanded:** 8 new unit tests -- analytics engine
+   (health trend, nutrient consistency, grow duration stats,
+   pH drift recommendation), scenario service (8 scenarios,
+   new action types), sandbox slice (loadSavedExperiment,
+   unknown id handling).
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2253 passed, 0 failures (192 files)
+- Build: successful (170 precache entries, 9382 KiB)
+
+### Next Steps
+
+- Wire predictiveAnalyticsService to Analytics UI
+  (Botrytis risk, environment alerts, yield estimates)
+- Add Playwright E2E tests for Analytics and Sandbox
+- Add Playwright component tests for ComparisonView tabs
+- Consider removing d3 dependency if no longer used elsewhere
+- Local AI Stack refactoring (Multi-Session project)
+- Version bump to v1.8.0 when user-facing features added
+
+## Previous Session (Session 150) -- Seed Vault Overhaul
 
 **Status: Complete overhaul of the Seed Vault feature in Strains view.
 Extended data model, decomposed monolith into 5 sub-components,

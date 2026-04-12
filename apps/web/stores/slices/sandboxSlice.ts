@@ -65,6 +65,19 @@ const sandboxSlice = createSlice({
                 (exp) => exp.id !== action.payload,
             )
         },
+        loadSavedExperiment: (state, action: PayloadAction<string>) => {
+            const found = state.savedExperiments.find((exp) => exp.id === action.payload)
+            if (found) {
+                state.currentExperiment = {
+                    originalHistory: found.originalHistory,
+                    modifiedHistory: found.modifiedHistory,
+                    originalFinalState: found.originalFinalState,
+                    modifiedFinalState: found.modifiedFinalState,
+                    scenarioId: found.scenarioId,
+                }
+                state.status = 'succeeded'
+            }
+        },
         setSandboxState: (_state, action: PayloadAction<SandboxState>) => {
             return action.payload
         },
@@ -93,6 +106,11 @@ const sandboxSlice = createSlice({
     },
 })
 
-export const { saveExperiment, clearCurrentExperiment, deleteExperiment, setSandboxState } =
-    sandboxSlice.actions
+export const {
+    saveExperiment,
+    clearCurrentExperiment,
+    deleteExperiment,
+    loadSavedExperiment,
+    setSandboxState,
+} = sandboxSlice.actions
 export default sandboxSlice.reducer

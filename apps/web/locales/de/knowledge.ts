@@ -88,6 +88,32 @@ export const knowledgeView = {
             description:
                 'Simuliert eine 14-tägige Wachstumsperiode und vergleicht Ausgangsbedingungen mit einem Anstieg der Dachtemperatur um +2\u00b0C.',
         },
+        humidityPlus10: {
+            title: 'Luftfeuchtigkeit +10% Experiment',
+            description:
+                'Simuliert 14 Tage mit +10% relativer Luftfeuchtigkeit zur Schimmelrisikoanalyse.',
+        },
+        humidityMinus10: {
+            title: 'Luftfeuchtigkeit -10% Experiment',
+            description:
+                'Simuliert 14 Tage mit -10% relativer Luftfeuchtigkeit zur VPD-Optimierung.',
+        },
+        lightBoost: {
+            title: 'Lichtintensität +200 PPFD',
+            description: 'Simuliert 14 Tage mit erhöhter Lichtintensität (+200 PPFD).',
+        },
+        phDriftAcidic: {
+            title: 'pH-Drift auf 5.5',
+            description: 'Simuliert einen allmählichen pH-Drift auf 5.5 über 14 Tage.',
+        },
+        ecRampUp: {
+            title: 'EC-Anstieg +0.5',
+            description: 'Simuliert einen allmählichen EC-Anstieg um 0.5 über 14 Tage.',
+        },
+        defoliationDay7: {
+            title: 'Entlaubung an Tag 7',
+            description: 'Simuliert eine Entlaubung an Tag 7 und deren Auswirkungen über 14 Tage.',
+        },
     },
     knowledgebase: {
         'phase1-prep': {
@@ -234,6 +260,32 @@ export const knowledgeView = {
         noExperiments: 'Noch keine Experimente gespeichert.',
         basedOn: 'Basierend auf: {{name}}',
         run: 'Durchlauf: {{date}}',
+        viewResults: 'Ergebnisse anzeigen',
+        customExperiment: 'Eigenes Experiment',
+        customDuration: 'Dauer (Tage)',
+        customActionA: 'Aktion A',
+        customActionB: 'Aktion B',
+        customDayA: 'Tag A',
+        customDayB: 'Tag B',
+        actionLabels: {
+            TOP: 'Topping',
+            LST: 'LST',
+            NONE: 'Keine (Kontrolle)',
+            TEMP_PLUS_2: 'Temp +2C',
+            TEMP_MINUS_2: 'Temp -2C',
+            HUMIDITY_PLUS_10: 'Feuchtigkeit +10%',
+            HUMIDITY_MINUS_10: 'Feuchtigkeit -10%',
+            LIGHT_BOOST: 'Licht +200 PPFD',
+            PH_DRIFT_ACIDIC: 'pH-Drift (sauer)',
+            EC_RAMP: 'EC-Anstieg',
+            DEFOLIATE: 'Entlaubung',
+        },
+        chartTabs: {
+            height: 'Höhe',
+            health: 'Gesundheit',
+            stress: 'Stress',
+            nutrients: 'pH / EC',
+        },
     },
     guide: {
         phases: 'Phasen',
@@ -1092,7 +1144,35 @@ export const analytics = {
         improveHealth: 'Pflanzengesundheit verbessern',
         improveHealthDesc:
             'Pflanzengesundheit liegt unter dem Optimum. Nährstoffe, pH und Umgebung prüfen.',
+        phDrift: 'pH-Drift erkannt',
+        phDriftDesc: 'pH driftet aus dem optimalen Bereich 5.8-6.8. Kalibrieren und anpassen.',
+        ecRampUp: 'EC für Blüte erhöhen',
+        ecRampUpDesc:
+            'EC ist niedrig für die Blütephase. Nährstoffkonzentration schrittweise erhöhen.',
+        defoliation: 'Entlaubung erwägen',
+        defoliationDesc:
+            'Pflanze ist reif mit guter Gesundheit. Selektive Entlaubung kann Lichtdurchdringung verbessern.',
     },
+    healthTrend: 'Gesundheitstrend (14T)',
+    nutrientConsistency: 'Nährstoffkonsistenz',
+    nutrientRating: {
+        stable: 'Stabil',
+        moderate: 'Mäßig',
+        unstable: 'Instabil',
+    },
+    growDuration: 'Grow-Dauer nach Sorte',
+    growDurationMin: 'Min',
+    growDurationMax: 'Max',
+    growDurationAvg: 'Durchschn.',
+    growDurationCount: 'Ernten',
+    noFinishedGrows: 'Noch keine abgeschlossenen Grows.',
+    journalTrend: 'Journal-Aktivität (14T)',
+    journalEntries: 'Einträge',
+    exportCsv: 'CSV exportieren',
+    chartDay: 'Tag',
+    chartHealth: 'Gesundheit',
+    phLabel: 'pH',
+    ecLabel: 'EC',
     riskType: {
         health: 'Gesundheit',
         environment: 'Umgebung',

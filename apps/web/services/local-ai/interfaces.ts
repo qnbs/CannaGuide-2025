@@ -300,3 +300,22 @@ export interface IEcoModeService {
 // Image Generation (Style type re-export for consumers)
 // ---------------------------------------------------------------------------
 export type { ImageStyle }
+
+// ---------------------------------------------------------------------------
+// Whisper STT (V-06 Offline Voice)
+// ---------------------------------------------------------------------------
+
+export interface IWhisperService {
+    transcribe(
+        audioData: Float32Array,
+        language?: string,
+    ): Promise<{
+        text: string
+        language: string
+        latencyMs: number
+        coldStart: boolean
+    }>
+    getStatus(): { ready: boolean; loading: boolean; available: boolean }
+    dispose(): Promise<void>
+    isAvailable(): boolean
+}

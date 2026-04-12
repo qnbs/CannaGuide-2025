@@ -17,6 +17,18 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   heap checks with 85%/90% thresholds, auto-terminates workers
 - **feat(ai):** Critical battery gating -- isCriticalBattery() at
   <15% forces cloud/heuristic routing, disables local ML inference
+- **feat(ai):** Vision Auto White Balance -- Gray World Assumption
+  color correction in visionInferenceWorker to neutralise grow-tent
+  LED colour casts (purple HPS, blurple LEDs) before classification
+- **feat(ai):** Whisper-Tiny STT service skeleton (V-06) --
+  whisperService.ts in local-ai/nlp/ with lazy pipeline loading,
+  GPU mutex coordination, IWhisperService interface, i18n keys
+  across all 5 languages (EN/DE/ES/FR/NL)
+- **feat(pwa):** OPFS storage utility (utils/opfsStorage.ts) --
+  Origin Private File System wrapper for persistent ML model cache
+  resistant to browser eviction on iOS/Safari
+- **feat(ci):** Cloudflare Pages CI deployment workflow -- builds
+  with BUILD_BASE_PATH=/ and deploys via wrangler pages deploy
 
 ### Changed
 
@@ -24,6 +36,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   lines via bridge re-exports from @cannaguide/ai-core
 - **refactor(ai-core):** Deduplicated 10+ types (AIResponse,
   Recommendation, AiMode, etc.) previously defined in both packages
+- **fix(ci):** Stryker mutation testing -- removed services/local-ai
+  from scope (34 files causing 2h timeout), switched coverageAnalysis
+  from perTest to all, raised timeout to 180min safety net
+- **fix(ci):** Disabled daily strains cron schedule (04:20 UTC) --
+  no external strain source since SeedFinder API shutdown; client-
+  side Daily Drop (seeded PRNG) works independently
+- **refactor(docs):** Voice-First de-branding -- renamed v1.7 from
+  "Voice-First Edition" to "Voice & Accessibility Edition" in active
+  docs (historical release notes preserved)
 
 ## [1.8.0] - 2025-04-12
 

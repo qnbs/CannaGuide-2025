@@ -163,7 +163,7 @@ workflow (PR #122 accidentally downgraded the version from 1.6.0 to 1.5.0).
 
 | Version | Date       | Theme                                     |
 | ------- | ---------- | ----------------------------------------- |
-| v1.7.0  | 2026-04-11 | Voice-First Edition                       |
+| v1.7.0  | 2026-04-11 | Voice & Accessibility Edition             |
 | v1.6.3  | 2026-04-10 | Build Attestation + CycloneDX + Lint Ph5  |
 | v1.6.2  | 2026-04-10 | Release pipeline fix + SLSA L1 provenance |
 | v1.6.0  | 2026-04-10 | WorkerBus W-02/W-04, CRDT Sync, API Docs  |

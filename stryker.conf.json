@@ -9,9 +9,6 @@
         "utils/lockFreeRingBuffer.ts",
         "utils/atomicsChannel.ts",
         "services/workerPool.ts",
-        "services/local-ai/**/*.ts",
-        "!services/local-ai/**/index.ts",
-        "!services/local-ai/**/interfaces.ts",
         "!stores/slices/**/*.test.ts",
         "!stores/**/*.test.ts",
         "!utils/**/*.test.ts",
@@ -20,7 +17,7 @@
     "testRunner": "vitest",
     "plugins": ["@stryker-mutator/vitest-runner"],
     "checkers": [],
-    "coverageAnalysis": "perTest",
+    "coverageAnalysis": "all",
     "vitest": {
         "configFile": "vite.config.ts",
         "dir": "."

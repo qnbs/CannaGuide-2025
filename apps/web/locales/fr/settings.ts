@@ -397,6 +397,14 @@ export const settingsView = {
             confirmationSound: 'Sons de confirmation',
             confirmationSoundDesc:
                 "Joue un court son lorsqu'une commande vocale est reconnue avec succes.",
+            offlineStt: 'Reconnaissance vocale hors ligne',
+            offlineSttDesc:
+                "Utilise Whisper-Tiny (75 Mo) pour la reconnaissance vocale sur l'appareil en mode hors ligne. La premiere utilisation necessite un telechargement unique du modele.",
+            offlineSttStatus: 'Etat du modele',
+            offlineSttReady: 'Pret',
+            offlineSttLoading: 'Chargement...',
+            offlineSttNotLoaded: 'Non charge',
+            offlineSttUnavailable: 'Non pris en charge dans ce navigateur',
         },
         commands: {
             title: 'Reference des commandes',

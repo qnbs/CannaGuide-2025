@@ -1,8 +1,11 @@
 name: Daily Strain Catalog Sync
 
 on:
-    schedule:
-        - cron: '20 4 * * *' # Daily at 04:20 UTC
+    # schedule paused -- no external strain source since SeedFinder API shutdown (mid-2024).
+    # Client-side Daily Drop (dailyStrainsService.ts) works independently via seeded PRNG.
+    # Re-enable when an external strain feed is integrated.
+    # schedule:
+    #     - cron: '20 4 * * *'
     workflow_dispatch:
 
 permissions:

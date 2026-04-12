@@ -196,6 +196,13 @@ export {
     clearEmbeddingCache,
 } from './nlp/ragEmbeddingCacheService'
 
+export { whisperService } from './nlp/whisperService'
+export type {
+    WhisperTranscriptionResult,
+    WhisperServiceStatus,
+    WhisperLanguage,
+} from './nlp/whisperService'
+
 // ---------------------------------------------------------------------------
 // Device
 // ---------------------------------------------------------------------------

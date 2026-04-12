@@ -15,7 +15,7 @@
 | **v1.4** | 2026-Q4    | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus                      |
 | **v1.5** | 2026-Q4    | ✅ Released | Sync & Multi-Grow — CRDT offline sync, multi-grow, AI cost tracking, CI hardening |
 | **v1.6** | 2027-Q1    | ✅ Released | Engineering audit, i18n completeness, documentation sync                          |
-| **v1.7** | 2027-Q2    | ✅ Released | Voice-First Edition -- Voice Pro, Preset Setups, Enhanced PDF, a11y               |
+| **v1.7** | 2027-Q2    | ✅ Released | Voice & Accessibility -- Voice Pro, Preset Setups, Enhanced PDF, a11y             |
 | **v1.8** | 2027-Q2    | ✅ Released | HydroMonitor, Predictive Analytics, Glassmorphism, Worker Pool W-06               |
 | **v2.0** | 2027-Q3    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                        |
 
@@ -191,7 +191,7 @@ Released: **2026-Q3**
 
 ---
 
-## v1.7 — Voice-First Edition ✅
+## v1.7 — Voice & Accessibility Edition ✅
 
 Released: **2026-04-11**
 

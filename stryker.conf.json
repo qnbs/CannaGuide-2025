@@ -33,7 +33,7 @@
         "break": 50
     },
     "concurrency": 4,
-    "timeoutMS": 30000,
+    "timeoutMS": 60000,
     "incremental": true,
     "ignorePatterns": ["node_modules", "dist", ".turbo", "coverage"]
 }

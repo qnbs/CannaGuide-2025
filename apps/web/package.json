@@ -24,7 +24,7 @@
     "dependencies": {
         "@cannaguide/ai-core": "workspace:*",
         "@cannaguide/ui": "workspace:*",
-        "@google/genai": "^1.48.0",
+        "@google/genai": "^1.49.0",
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-dropdown-menu": "^2.1.16",
         "@radix-ui/react-select": "^2.2.6",

@@ -68,7 +68,7 @@
         "@playwright/experimental-ct-react": "^1.58.2",
         "@playwright/test": "^1.58.2",
         "@stryker-mutator/core": "^9.6.0",
-        "@stryker-mutator/typescript-checker": "^9.6.0",
+        "@stryker-mutator/typescript-checker": "^9.6.1",
         "@stryker-mutator/vitest-runner": "^9.6.0",
         "@tailwindcss/typography": "^0.5.19",
         "@testing-library/jest-dom": "^6.9.1",

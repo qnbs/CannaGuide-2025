@@ -15,9 +15,9 @@
         "!services/**/*.test.ts"
     ],
     "testRunner": "vitest",
-    "plugins": ["@stryker-mutator/vitest-runner"],
-    "checkers": [],
-    "coverageAnalysis": "all",
+    "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+    "checkers": ["typescript"],
+    "coverageAnalysis": "perTest",
     "vitest": {
         "configFile": "vite.config.ts",
         "dir": "."
@@ -32,8 +32,9 @@
         "low": 60,
         "break": 50
     },
-    "concurrency": 4,
-    "timeoutMS": 60000,
+    "concurrency": 6,
+    "timeoutMS": 120000,
     "incremental": true,
+    "incrementalFile": "../../reports/mutation/.stryker-incremental.json",
     "ignorePatterns": ["node_modules", "dist", ".turbo", "coverage"]
 }

@@ -2,7 +2,67 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 162) -- Multi-Area Optimization + CI Fixes + V-06 Skeleton
+## Latest Session (Session 163) -- Stryker Mutation Testing Performance Optimization
+
+**Status: Stryker mutation testing optimized from >6h timeout to estimated
+45-90 min (first run) / 15-30 min (incremental). Root cause: coverageAnalysis
+"all" ran 440+ tests per mutant. All verified: 0 TS errors, build OK.**
+
+### What Was Done (Session 163)
+
+1. **Stryker Configuration Optimization (stryker.conf.json)**
+    - `coverageAnalysis`: `"all"` -> `"perTest"` -- only relevant
+      tests (5-20) run per mutant instead of all 440+ (~60-80% faster)
+    - `checkers`: `[]` -> `["typescript"]` -- filters compile-error
+      mutants before test execution (~10-20% faster)
+    - `plugins`: added `@stryker-mutator/typescript-checker` (was
+      installed as devDep but never activated)
+    - `concurrency`: `4` -> `6` (safe for ubuntu-latest 4 vCPU/16GB)
+    - `timeoutMS`: `60000` -> `120000` (safety buffer for slow runners)
+    - `incrementalFile`: explicit path for CI cache persistence
+
+2. **CI Workflow Optimization (mutation-testing.yml)**
+    - Added `actions/cache` step for Stryker incremental report
+      (`reports/mutation/.stryker-incremental.json`)
+    - Cache key based on stryker config + source file hashes
+    - Restore-key fallback for partial cache hits
+    - `timeout-minutes`: `360` -> `480` (safety net only)
+
+### Root Cause Analysis
+
+- ~5000 mutants x 440+ tests/mutant / 4 workers = ~6.9 hours
+- With perTest: ~5000 mutants x 5-20 relevant tests / 6 workers
+  = ~42 minutes (estimated)
+- TypeScript checker eliminates ~10-20% of compile-error mutants
+- Incremental cache skips unchanged mutants on subsequent runs
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Build: OK (172 precache entries)
+- Mutation score breakpoint: 50% (unchanged -- perTest does not
+  affect score, only speed)
+
+### Next Steps
+
+1. **Monitor first optimized CI run:** Trigger manual workflow_dispatch
+   and verify runtime <90 min and mutation score >=50%.
+2. **Post-run analysis:** Review HTML mutation report for low-value
+   StringLiteral mutations on i18n keys -- consider excludedMutations
+   if noise is high.
+
+### Planned Executions
+
+- **Execution N+1:** V-06 full integration (whisperWorker +
+  orchestrator wiring + VoiceControl dual-mode)
+- **Execution N+2:** OPFS model persistence integration
+- **Execution N+3:** IoT Worker + rate limiting
+- **Execution N+4:** Critical test coverage expansion
+- **Execution N+5:** Cache maintenance worker + battery telemetry
+
+---
+
+## Previous Session (Session 162) -- Multi-Area Optimization + CI Fixes + V-06 Skeleton
 
 **Status: 6 work packages implemented. CI fixes (Cloudflare, Stryker,
 Cron), Voice-First de-branding, Vision Auto White Balance, Whisper STT

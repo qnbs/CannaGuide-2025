@@ -1,5 +1,9 @@
 use serde::Serialize;
-use tauri::Manager;
+use tauri::{
+    menu::{MenuBuilder, MenuItemBuilder},
+    tray::TrayIconBuilder,
+    Manager,
+};
 
 #[derive(Serialize)]
 struct AppInfo {
@@ -38,6 +42,44 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_process::init())
         .setup(|app| {
+            // -- Tray icon with context menu --------------------------------
+            let show_item = MenuItemBuilder::with_id("show", "Show Window")
+                .build(app)?;
+            let hide_item = MenuItemBuilder::with_id("hide", "Hide Window")
+                .build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
+                .build(app)?;
+
+            let tray_menu = MenuBuilder::new(app)
+                .item(&show_item)
+                .item(&hide_item)
+                .separator()
+                .item(&quit_item)
+                .build()?;
+
+            TrayIconBuilder::new()
+                .menu(&tray_menu)
+                .on_menu_event(move |app_handle, event| {
+                    match event.id().as_ref() {
+                        "show" => {
+                            if let Some(w) = app_handle.get_webview_window("main") {
+                                let _ = w.show();
+                                let _ = w.set_focus();
+                            }
+                        }
+                        "hide" => {
+                            if let Some(w) = app_handle.get_webview_window("main") {
+                                let _ = w.hide();
+                            }
+                        }
+                        "quit" => {
+                            app_handle.exit(0);
+                        }
+                        _ => {}
+                    }
+                })
+                .build(app)?;
+
             #[cfg(debug_assertions)]
             {
                 if let Some(window) = app.get_webview_window("main") {

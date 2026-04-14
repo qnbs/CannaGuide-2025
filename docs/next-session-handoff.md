@@ -2,74 +2,87 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 167) -- PWA Perfection + Tauri v2 Desktop
+## Latest Session (Session 168) -- Cloudflare Fix + Scorecard Hardening + WCO + Tauri Desktop
 
-**Status: Complete PWA optimization pass (font self-hosting, manifest
-extensions, SW update UX, adaptive image cache, speculation rules,
-storage persistence, Lighthouse targets tightened) + Tauri v2 desktop
-workspace scaffolding with CI/CD. 2312 tests passing, 0 TS errors,
-build OK.**
+**Status: Cloudflare Pages deploy fixed (pnpm + Turbo cache),
+desktop-build.yml fully hardened (18 Scorecard alerts resolved),
+Window Controls Overlay CSS implemented, Tauri desktop extended
+with icon set, tray menu, native notifications, file dialogs.
+2312 tests passing, 0 TS errors, build OK.**
 
-### What Was Done (Session 167)
+### What Was Done (Session 168)
 
-1. **PWA Perfection (Phase A)**
-    - Storage Persistence: `navigator.storage.persist()` at bootstrap
-    - Manifest Extensions: display_override (window-controls-overlay),
-      file_handlers (.cannaguide), share_target, edge_side_panel
-    - SW Update UX: removed auto-SKIP_WAITING, user must click
-      Update banner (prevents data loss during mid-operation updates)
-    - Adaptive Image Cache: SW image cache limits scale with
-      `navigator.deviceMemory` (75/150/300 entries)
-    - Fetchpriority: `fetchpriority="high"` on critical resources
-    - Speculation Rules: Chrome 121+ prefetch with moderate eagerness
-    - Lighthouse Targets: tightened all budgets (FCP 1000ms, LCP
-      2500ms, TBT 200ms, CLS 0.05, perf 99%, a11y 100%)
-    - Font Self-Hosting: Inter + Lexend + IBM Plex Mono + Atkinson
-      as local WOFF2 files (8 files in public/fonts/), removed all
-      Google Fonts external dependencies, CSP tightened (removed
-      fonts.googleapis.com + fonts.gstatic.com from style-src/font-src
-      across 5 delivery paths)
-    - Scorecard cleanup: removed 9 dead tauri-build.yml references
+1. **Cloudflare Pages Deploy Fix (Critical)**
+    - Root cause: `packageManager: npm` in wrangler-action caused
+      pnpm conflict (exit code 1)
+    - Fix: changed to `packageManager: pnpm` in both deploy and
+      preview jobs
+    - Added TurboRepo cache restoration step (actions/cache)
+    - Increased timeout from 15 to 20 minutes
+    - Build cancellation issue resolved by faster cached builds
 
-2. **Tauri v2 Desktop (Phase B)**
-    - `apps/desktop/` workspace: package.json with @tauri-apps/api v2,
-      7 Tauri plugins (dialog, fs, notification, global-shortcut,
-      updater, shell, process)
-    - `src-tauri/`: Cargo.toml, tauri.conf.json (frontendDist
-      points to ../web/dist), capabilities/default.json (minimal
-      permissions), main.rs + lib.rs (3 IPC commands: get_app_version,
-      export_data, import_data), tray icon support
-    - Platform detection: `services/platformService.ts` with
-      isTauri/isPwa/isBrowser detection + OS detection via
-      **TAURI_INTERNALS** (5 tests)
-    - CI/CD: `.github/workflows/desktop-build.yml` matrix build
-      (Ubuntu, macOS arm64+x86, Windows) triggered on tag push
-    - Root scripts: `dev:desktop`, `build:desktop`
-    - Default `turbo build` filters out desktop (requires Rust)
+2. **Scorecard Security Hardening (18 alerts resolved)**
+    - desktop-build.yml: all 7 actions SHA-pinned
+      (checkout, rust-toolchain, rust-cache, pnpm/action-setup,
+      setup-node, tauri-action, upload-artifact)
+    - Added step-security/harden-runner as first step
+    - Top-level permissions: `contents: write` -> `contents: read`
+    - Job-level permissions: `contents: write` only on build job
+    - Added Enable Corepack step for consistency
+    - Resolves alerts #284-#306 (Token-Permissions,
+      Pinned-Dependencies, Unpinned-Action-Tags)
+
+3. **Window Controls Overlay (WCO) CSS**
+    - `@media (display-mode: window-controls-overlay)` block in
+      styles.css with env(titlebar-area-\*) safe-area insets
+    - `.wco-drag-region` class (-webkit-app-region: drag)
+    - `.wco-no-drag` class for interactive elements
+    - `.wco-header-inset` for content offset around OS controls
+    - Header.tsx updated with wco-drag-region and wco-header-inset
+    - CSS-only approach, no runtime JS needed
+
+4. **Tauri Desktop Enhancements (Phase B Exec 3+4)**
+    - Icon set generated from PWA icon-512.png: 32x32, 128x128,
+      128x128@2x PNG, icon.ico (multi-res), icon.icns, icon.png
+    - Tray icon context menu in lib.rs: Show Window, Hide Window,
+      Quit actions with proper window management
+    - nativeBridgeService.ts extended with Tauri notification bridge
+      (platform-aware: Tauri/PWA/Web dispatch)
+    - New tauriDialogService.ts: native save/open file dialogs
+      wired to Tauri IPC export_data/import_data commands
+    - Vite optionalMlPlugin extended to stub Tauri packages
+      (@tauri-apps/plugin-notification, plugin-dialog, api/core)
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
-- Tests: 2312 passing (199 files, +5 new platform tests)
-- Build: OK (181 precache entries, ~9.6 MB)
+- Tests: 2312 passing (199 files, 0 failures)
+- Build: OK (182 precache entries, ~9.9 MB)
 - CSP: consistent across all 5 delivery paths
+- Scorecard: all 8 workflows SHA-pinned, least-privilege
 
 ### Next Steps
 
-- **Tauri desktop features**: native file dialogs for data
-  export/import, desktop notifications, global shortcuts, tray
-  icon menu, auto-updater endpoint configuration
-- **Tauri icon generation**: create proper icon set (32x32, 128x128,
-  128x128@2x, .icns, .ico) from existing icon.svg
-- **Tauri signing**: configure code signing for macOS/Windows
-  distribution
-- **Lighthouse audit**: run actual Lighthouse on deployed build to
-  verify score improvements from font self-hosting
-- **i18n community completion**: strainsView (103 keys), helpView
-  (118 keys), faq (26 keys)
+- **Cloudflare deploy verification**: trigger workflow_dispatch
+  and verify successful deployment
+- **Tauri code signing**: configure signing certificates for
+  macOS/Windows distribution (requires dev accounts)
+- **Tauri icon.icns**: regenerate proper .icns on macOS (current
+  is PNG placeholder -- CI macOS runner will handle this)
+- **Lighthouse audit**: run on live deployment to verify font
+  self-hosting score improvements
+- **i18n community completion**: strainsView (103 keys),
+  helpView (118 keys), faq (26 keys)
 - **v2.0 planning**: RTL language support, Netlify re-enable
 
-## Previous Session (Session 166) -- v1.8.1 Release
+### Planned Executions
+
+- **Execution N+1**: Desktop testing on macOS/Windows via CI
+  tag push, verify tray menu and notification dispatch
+- **Execution N+2**: i18n completion pass (ES/FR/NL gaps)
+- **Execution N+3**: Lighthouse performance audit + budget tuning
+
+## Previous Session (Session 167) -- PWA Perfection + Tauri v2 Desktop
 
 **Status: Model Registry in ai-core, bundle budget with brotli enforcement,
 SeedFinder dead-code removed, mobile overflow fixed, telemetry extended

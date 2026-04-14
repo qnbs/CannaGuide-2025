@@ -3,7 +3,7 @@ import { detectPlatform } from '@/services/nativeBridgeService'
 
 describe('nativeBridgeService', () => {
     describe('detectPlatform', () => {
-        it('always returns "web"', () => {
+        it('returns "web" when not in Tauri or PWA context', () => {
             expect(detectPlatform()).toBe('web')
         })
     })

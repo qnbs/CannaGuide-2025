@@ -8,6 +8,43 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **feat(ci):** Cloudflare deploy fix -- `packageManager: pnpm`,
+  TurboRepo cache restoration, timeout increased to 20 min
+- **feat(security):** desktop-build.yml hardened -- all 7 actions
+  SHA-pinned, harden-runner added, least-privilege permissions
+  (top-level `contents: read`, job-level `contents: write`)
+- **feat(pwa):** Window Controls Overlay CSS -- `@media
+(display-mode: window-controls-overlay)` with `env(titlebar-area-*)`
+  safe-area insets, drag region classes, Header component WCO support
+- **feat(desktop):** Tauri icon set generated -- 32x32, 128x128,
+  128x128@2x PNG, .ico (multi-res), .icns from PWA source icon
+- **feat(desktop):** Tray icon context menu -- Show/Hide Window, Quit
+  actions with proper window management
+- **feat(desktop):** Native notification bridge -- Tauri
+  plugin-notification integration in nativeBridgeService with
+  platform-aware dispatch (Tauri/PWA/Web)
+- **feat(desktop):** Native file dialog service -- tauriDialogService
+  with save/open dialogs wired to Tauri IPC export_data/import_data
+- **feat(build):** Vite optional stub plugin extended to cover Tauri
+  packages (@tauri-apps/plugin-notification, plugin-dialog, api/core)
+
+### Fixed
+
+- **fix(ci):** Cloudflare Pages deploy wrangler install failure --
+  wrong `packageManager: npm` caused pnpm conflict (exit code 1)
+- **fix(ci):** Cloudflare Pages build timeout -- missing TurboRepo
+  cache made builds 2-3x slower, hitting 15 min timeout
+
+### Security
+
+- **security(ci):** Resolved 18 OpenSSF Scorecard alerts:
+  Token-Permissions (#284-#295), Pinned-Dependencies (#296-#302),
+  Unpinned-Action-Tags (#303-#306) in desktop-build.yml
+- **security(ci):** All 8 CI workflows now use SHA-pinned actions
+  and least-privilege permission model
+
+### Previous
+
 - **feat(pwa):** Font self-hosting -- Inter, Lexend, IBM Plex Mono,
   Atkinson Hyperlegible served as local WOFF2 files (8 files in
   public/fonts/), eliminated Google Fonts external dependency

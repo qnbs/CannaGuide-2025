@@ -62,8 +62,8 @@ export const Header: React.FC<HeaderProps> = ({
     }, [activeView])
 
     return (
-        <header className="sticky top-0 z-30 flex-shrink-0 px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8">
-            <div className="mx-auto max-w-7xl rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02)),rgba(15,23,42,0.72)] shadow-[0_24px_80px_rgba(2,6,23,0.36)] backdrop-blur-xl">
+        <header className="wco-drag-region sticky top-0 z-30 flex-shrink-0 px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8">
+            <div className="wco-header-inset mx-auto max-w-7xl rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02)),rgba(15,23,42,0.72)] shadow-[0_24px_80px_rgba(2,6,23,0.36)] backdrop-blur-xl">
                 <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
                 <div className="flex h-[4.5rem] items-center justify-between gap-3 px-3 sm:px-5">
                     <button

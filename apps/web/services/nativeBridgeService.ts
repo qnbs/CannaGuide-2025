@@ -1,15 +1,18 @@
 // ---------------------------------------------------------------------------
-// Native Bridge Service -- Web Notification API dispatch
+// Native Bridge Service -- Notification + Microphone permission API
 //
 // Provides a unified notification + microphone permission API.
-// Web-only: uses the browser Notification API and getUserMedia.
+// Tauri Desktop: delegates to @tauri-apps/plugin-notification.
+// Web/PWA: uses the browser Notification API and getUserMedia.
 // ---------------------------------------------------------------------------
+
+import { platform } from '@/services/platformService'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type NativePlatform = 'web'
+export type NativePlatform = 'tauri' | 'pwa' | 'web'
 
 export interface NativeNotificationOptions {
     title: string
@@ -23,7 +26,39 @@ export interface NativeNotificationOptions {
 // ---------------------------------------------------------------------------
 
 export function detectPlatform(): NativePlatform {
+    if (platform.isTauri) return 'tauri'
+    if (platform.isPwa) return 'pwa'
     return 'web'
+}
+
+// ---------------------------------------------------------------------------
+// Tauri lazy imports (tree-shaken on web builds)
+// ---------------------------------------------------------------------------
+
+async function tauriNotify(
+    options: NativeNotificationOptions,
+): Promise<void> {
+    try {
+        const mod = await import('@tauri-apps/plugin-notification')
+        await mod.sendNotification({ title: options.title, body: options.body })
+    } catch {
+        console.debug('[NativeBridge] Tauri notification dispatch failed')
+    }
+}
+
+async function tauriRequestNotificationPermission(): Promise<boolean> {
+    try {
+        const mod = await import('@tauri-apps/plugin-notification')
+        let perm = await mod.isPermissionGranted()
+        if (!perm) {
+            const result = await mod.requestPermission()
+            perm = result === 'granted'
+        }
+        return perm
+    } catch {
+        console.debug('[NativeBridge] Tauri notification permission failed')
+        return false
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -33,13 +68,20 @@ export function detectPlatform(): NativePlatform {
 let permissionGranted = false
 
 /**
- * Request notification permissions via the Web Notification API.
+ * Request notification permissions via the Web Notification API or Tauri plugin.
  * Safe to call multiple times -- caches the result after the first grant.
  * Returns true if notifications are allowed.
  */
 export async function requestNotificationPermission(): Promise<boolean> {
     if (permissionGranted) return true
 
+    // Tauri Desktop path
+    if (platform.isTauri) {
+        permissionGranted = await tauriRequestNotificationPermission()
+        return permissionGranted
+    }
+
+    // Web / PWA path
     try {
         if (typeof Notification !== 'undefined') {
             if (Notification.permission === 'granted') {
@@ -64,10 +106,18 @@ export async function requestNotificationPermission(): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 /**
- * Send a browser notification.  Gracefully degrades to a no-op when
- * permissions are denied or the browser does not support notifications.
+ * Send a notification.  Delegates to Tauri plugin-notification on desktop,
+ * browser Notification API on web/PWA.  Gracefully degrades to a no-op
+ * when permissions are denied or the platform does not support notifications.
  */
 export async function sendNotification(options: NativeNotificationOptions): Promise<void> {
+    // Tauri Desktop path
+    if (platform.isTauri) {
+        await tauriNotify(options)
+        return
+    }
+
+    // Web / PWA path
     const hasPermission = await requestNotificationPermission()
     if (!hasPermission) return
 

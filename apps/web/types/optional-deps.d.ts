@@ -81,3 +81,39 @@ interface GPUSupportedLimits {
 interface Navigator {
     readonly gpu?: GPU
 }
+
+// -- Tauri v2 optional native packages --
+
+declare module '@tauri-apps/plugin-notification' {
+    export function sendNotification(options: {
+        title: string
+        body?: string | undefined
+    }): Promise<void>
+    export function isPermissionGranted(): Promise<boolean>
+    export function requestPermission(): Promise<
+        'granted' | 'denied' | 'default'
+    >
+}
+
+declare module '@tauri-apps/plugin-dialog' {
+    export interface DialogFilter {
+        name: string
+        extensions: string[]
+    }
+    export function save(options?: {
+        defaultPath?: string | undefined
+        filters?: DialogFilter[] | undefined
+    }): Promise<string | null>
+    export function open(options?: {
+        defaultPath?: string | undefined
+        multiple?: boolean | undefined
+        filters?: DialogFilter[] | undefined
+    }): Promise<string | null>
+}
+
+declare module '@tauri-apps/api/core' {
+    export function invoke<T = void>(
+        cmd: string,
+        args?: Record<string, unknown>,
+    ): Promise<T>
+}

@@ -717,3 +717,37 @@ body {
 .colorblind-tritanopia body {
     filter: url(#tritanopia);
 }
+
+/* --- WINDOW CONTROLS OVERLAY (WCO) --- */
+/* Activated when the PWA runs with display_override: window-controls-overlay */
+@media (display-mode: window-controls-overlay) {
+    /* Reserve space for the OS title-bar controls that float over the app */
+    html {
+        padding-top: env(titlebar-area-height, 0);
+    }
+
+    /* Make the header bar act as a draggable title-bar region */
+    .wco-drag-region {
+        -webkit-app-region: drag;
+        app-region: drag;
+    }
+
+    /* Prevent interactive elements inside the drag region from being draggable */
+    .wco-drag-region button,
+    .wco-drag-region a,
+    .wco-drag-region input,
+    .wco-drag-region select,
+    .wco-drag-region [role='button'],
+    .wco-no-drag {
+        -webkit-app-region: no-drag;
+        app-region: no-drag;
+    }
+
+    /* Offset header content to avoid the OS window controls area */
+    .wco-header-inset {
+        padding-left: env(titlebar-area-x, 0);
+        padding-right: calc(
+            100% - env(titlebar-area-x, 0) - env(titlebar-area-width, 100%)
+        );
+    }
+}

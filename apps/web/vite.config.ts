@@ -20,10 +20,19 @@ const OPTIONAL_ML_EXTERNALS = [
     '@picovoice/web-voice-processor',
 ]
 
-// Resolve which ML modules are actually missing so we can stub them at build time.
+// Tauri packages that are only available in the desktop workspace.
+// When building/testing the web app, these need stubs.
+const OPTIONAL_TAURI_EXTERNALS = [
+    '@tauri-apps/plugin-notification',
+    '@tauri-apps/plugin-dialog',
+    '@tauri-apps/api/core',
+]
+
+// Resolve which optional modules are actually missing so we can stub them at build time.
 function resolveMissingMlModules(): string[] {
+    const all = [...OPTIONAL_ML_EXTERNALS, ...OPTIONAL_TAURI_EXTERNALS]
     const missing: string[] = []
-    for (const mod of OPTIONAL_ML_EXTERNALS) {
+    for (const mod of all) {
         try {
             require.resolve(mod)
         } catch {
@@ -33,8 +42,8 @@ function resolveMissingMlModules(): string[] {
     return missing
 }
 
-// Vite plugin that stubs missing ML modules with a throw at runtime.
-// This allows the build to succeed when heavy ML deps are not installed.
+// Vite plugin that stubs missing optional modules with a throw at runtime.
+// This allows the build to succeed when heavy ML deps or Tauri plugins are not installed.
 function optionalMlPlugin(): PluginOption {
     const missing = resolveMissingMlModules()
     if (missing.length === 0) return null
@@ -48,7 +57,7 @@ function optionalMlPlugin(): PluginOption {
         load(id) {
             if (id.startsWith('\0stub:')) {
                 const mod = id.slice(6)
-                return `throw new Error('[CannaGuide] ML module "${mod}" is not installed. AI features are disabled.');`
+                return `throw new Error('[CannaGuide] Optional module "${mod}" is not installed.');`
             }
             return null
         },

@@ -31,7 +31,7 @@ jobs:
         permissions:
             contents: read
             deployments: write
-        timeout-minutes: 15
+        timeout-minutes: 20
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
@@ -46,6 +46,15 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
+            - name: Restore Turbo cache
+              uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+              with:
+                  path: .turbo
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  restore-keys: |
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-
+
             - name: Build for Cloudflare Pages
               run: |
                   echo "::group::vite build (base=/)"
@@ -59,7 +68,7 @@ jobs:
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: npm
+                  packageManager: pnpm
                   command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=main
 
             - name: Post-deploy health check
@@ -86,7 +95,7 @@ jobs:
             contents: read
             deployments: write
             pull-requests: write
-        timeout-minutes: 15
+        timeout-minutes: 20
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
@@ -101,6 +110,15 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
+            - name: Restore Turbo cache
+              uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+              with:
+                  path: .turbo
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  restore-keys: |
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-
+
             - name: Build for preview
               run: |
                   echo "::group::vite build (base=/)"
@@ -114,7 +132,7 @@ jobs:
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: npm
+                  packageManager: pnpm
                   command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=${{ github.head_ref }}
 
             - name: Comment preview URL on PR

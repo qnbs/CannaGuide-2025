@@ -2,57 +2,74 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 166) -- v1.8.1 Release
+## Latest Session (Session 167) -- PWA Perfection + Tauri v2 Desktop
 
-**Status: i18n CI hardening, Hydro PDF/CSV export, HydroMonitor
-trend badge, Cloudflare fix, Crowdin config, version bump to 1.8.1.
-2307 tests passing, 0 TS errors, build OK.**
+**Status: Complete PWA optimization pass (font self-hosting, manifest
+extensions, SW update UX, adaptive image cache, speculation rules,
+storage persistence, Lighthouse targets tightened) + Tauri v2 desktop
+workspace scaffolding with CI/CD. 2312 tests passing, 0 TS errors,
+build OK.**
 
-### What Was Done (Session 166)
+### What Was Done (Session 167)
 
-1. **i18n Hardening (Phase A)**
-    - Added `pnpm run check:i18n` to release-gate.yml and deploy.yml
-    - Exposed `check:i18n-usage` in root package.json
-    - Populated crowdin.yml with full project config
-    - Fixed missing errorBoundary.retry in ES/FR/NL common.ts
-    - Fixed missing CRDT keys in ES settings.ts
+1. **PWA Perfection (Phase A)**
+    - Storage Persistence: `navigator.storage.persist()` at bootstrap
+    - Manifest Extensions: display_override (window-controls-overlay),
+      file_handlers (.cannaguide), share_target, edge_side_panel
+    - SW Update UX: removed auto-SKIP_WAITING, user must click
+      Update banner (prevents data loss during mid-operation updates)
+    - Adaptive Image Cache: SW image cache limits scale with
+      `navigator.deviceMemory` (75/150/300 entries)
+    - Fetchpriority: `fetchpriority="high"` on critical resources
+    - Speculation Rules: Chrome 121+ prefetch with moderate eagerness
+    - Lighthouse Targets: tightened all budgets (FCP 1000ms, LCP
+      2500ms, TBT 200ms, CLS 0.05, perf 99%, a11y 100%)
+    - Font Self-Hosting: Inter + Lexend + IBM Plex Mono + Atkinson
+      as local WOFF2 files (8 files in public/fonts/), removed all
+      Google Fonts external dependencies, CSP tightened (removed
+      fonts.googleapis.com + fonts.gstatic.com from style-src/font-src
+      across 5 delivery paths)
+    - Scorecard cleanup: removed 9 dead tauri-build.yml references
 
-2. **Predictive Analytics & HydroMonitor (Phase B)**
-    - pdfReportService: optional hydro readings section with
-      pH/EC/Temp min/max/avg summary table
-    - AnalyticsDashboardView: CSV export extended with hydro data
-    - HydroMonitor: trend badge upgraded to color-coded pill
-      (emerald/amber/blue/red per level, role="status", aria-label)
-    - PredictiveInsightsPanel: reviewed, no changes needed
-
-3. **CI & Infrastructure (Phase C)**
-    - Cloudflare wrangler-action SHA pinned to v3.14.1 (da0e0dfe)
-    - Cloudflare project-name corrected to cannaguide-2025
-    - CHANGELOG consolidated (duplicate [Unreleased] merged)
-
-4. **Release v1.8.1**
-    - Version bumped in root + apps/web package.json
-    - CHANGELOG finalized with release date 2026-04-14
-    - Release notes created at docs/release-notes/2026-04-14-v1.8.1.md
-    - README badge + copilot-instructions version updated
+2. **Tauri v2 Desktop (Phase B)**
+    - `apps/desktop/` workspace: package.json with @tauri-apps/api v2,
+      7 Tauri plugins (dialog, fs, notification, global-shortcut,
+      updater, shell, process)
+    - `src-tauri/`: Cargo.toml, tauri.conf.json (frontendDist
+      points to ../web/dist), capabilities/default.json (minimal
+      permissions), main.rs + lib.rs (3 IPC commands: get_app_version,
+      export_data, import_data), tray icon support
+    - Platform detection: `services/platformService.ts` with
+      isTauri/isPwa/isBrowser detection + OS detection via
+      **TAURI_INTERNALS** (5 tests)
+    - CI/CD: `.github/workflows/desktop-build.yml` matrix build
+      (Ubuntu, macOS arm64+x86, Windows) triggered on tag push
+    - Root scripts: `dev:desktop`, `build:desktop`
+    - Default `turbo build` filters out desktop (requires Rust)
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
-- Tests: 2307 passing (198 files)
-- Build: OK (173 precache entries)
-- Lint-Scopes: 0 violations
+- Tests: 2312 passing (199 files, +5 new platform tests)
+- Build: OK (181 precache entries, ~9.6 MB)
+- CSP: consistent across all 5 delivery paths
 
 ### Next Steps
 
+- **Tauri desktop features**: native file dialogs for data
+  export/import, desktop notifications, global shortcuts, tray
+  icon menu, auto-updater endpoint configuration
+- **Tauri icon generation**: create proper icon set (32x32, 128x128,
+  128x128@2x, .icns, .ico) from existing icon.svg
+- **Tauri signing**: configure code signing for macOS/Windows
+  distribution
+- **Lighthouse audit**: run actual Lighthouse on deployed build to
+  verify score improvements from font self-hosting
 - **i18n community completion**: strainsView (103 keys), helpView
-  (118 keys), faq (26 keys) -- use Crowdin for ES/FR/NL
+  (118 keys), faq (26 keys)
 - **v2.0 planning**: RTL language support, Netlify re-enable
-- **Stryker scope expansion**: re-add local-ai modules after
-  timeout optimization
-- **Visual regression baselines**: regenerate after trend badge change
 
-## Previous Session (Session 165) -- Model Registry, Bundle Budget, Bugfixes
+## Previous Session (Session 166) -- v1.8.1 Release
 
 **Status: Model Registry in ai-core, bundle budget with brotli enforcement,
 SeedFinder dead-code removed, mobile overflow fixed, telemetry extended

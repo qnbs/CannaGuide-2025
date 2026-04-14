@@ -237,9 +237,12 @@ self.addEventListener('fetch', (event) => {
                     if (networkResponse && networkResponse.status === 200) {
                         cache.put(request, networkResponse.clone())
 
-                        // Prune image cache to prevent unbounded growth (max 150 entries)
+                        // Adaptive image cache limit based on device memory.
+                        // High-memory devices cache more, low-memory devices less.
                         const keys = await cache.keys()
-                        const MAX_IMAGE_CACHE_ENTRIES = 150
+                        const deviceMem = navigator.deviceMemory || 4
+                        const MAX_IMAGE_CACHE_ENTRIES =
+                            deviceMem >= 8 ? 300 : deviceMem >= 4 ? 150 : 75
                         if (keys.length > MAX_IMAGE_CACHE_ENTRIES) {
                             const entriesToDelete = keys.slice(
                                 0,

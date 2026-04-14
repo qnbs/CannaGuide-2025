@@ -176,8 +176,31 @@ Voice interaction is a layered system with 5 subsystems:
 
 ## Monorepo Package Responsibilities
 
-- **`@cannaguide/ai-core`** -- Canonical source for AI provider types (`AiProvider`, `AiProviderConfig`), `PROVIDER_CONFIGS` map, key validation (`isKeyRotationDue`, `isValidProviderKeyFormat`), Zod schemas for AI response validation, and lazy ML loaders. ML dependencies are `optionalDependencies` to isolate heavy binaries.
+- **`@cannaguide/ai-core`** -- Canonical source for AI provider types (`AiProvider`, `AiProviderConfig`), `PROVIDER_CONFIGS` map, key validation (`isKeyRotationDue`, `isValidProviderKeyFormat`), Zod schemas for AI response validation, lazy ML loaders, and the **Model Registry** (canonical local AI model catalog with version tracking, GPU-tier selection, and deprecation flags). ML dependencies are `optionalDependencies` to isolate heavy binaries.
 - **`@cannaguide/ui`** -- Design system tokens: 9 cannabis theme CSS custom properties (`tokens.css`), shared Tailwind preset with colors, keyframes, animations, and shadows (`tailwind-preset.cjs`), theme TypeScript types.
+
+### Type Bridge Pattern
+
+Domain types (120+ types: Plant, Strain, Grow, HydroReading, DiagnosisRecord, etc.) are defined canonically in `@cannaguide/ai-core/src/domain/` (10 files + barrel). The web app's `apps/web/types.ts` (583 lines) re-exports all domain types from `@cannaguide/ai-core` and adds UI-only types that belong exclusively to the web layer:
+
+- **In ai-core (domain):** All data model types (Plant, Strain, Grow, JournalEntry, enums, etc.)
+- **In web/types.ts (UI-only):** View/Tab enums, AppSettings, SimulationState, VoiceSessionState, Command palette, filter/sort types
+
+Components import from `@/types` -- the bridge ensures a single import path with zero duplication.
+
+### Model Registry
+
+`packages/ai-core/src/modelRegistry.ts` provides the canonical catalog of all supported local AI models with metadata: version, size, GPU tier requirements, checksums, deprecation flags. The web app's `webLlmModelCatalog.ts` derives its `WEB_LLM_MODELS` array from the registry via backward-compatible mapping. Telemetry auto-resolves `modelVersion` from the registry for every inference record.
+
+### Bundle Budget Enforcement
+
+`scripts/check-bundle-budget.mjs` enforces gzip **and** brotli size limits on all JS chunks:
+
+- Main chunk: < 300 KB gzip / < 280 KB brotli
+- Vendor chunks: < 500 KB gzip / < 450 KB brotli
+- Exempt: ai-runtime, strains-data, three, locale-\* (lazy-loaded)
+
+On violation, the script suggests running `pnpm build:analyze` for treemap inspection.
 
 ## WorkerBus Architecture
 

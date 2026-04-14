@@ -2,65 +2,82 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 164) -- Battery-Gating UI + OPFS Cache + CI/CD
+## Latest Session (Session 165) -- Model Registry, Bundle Budget, Bugfixes
 
-**Status: All three features production-ready. 2307 tests passing,
-0 TS errors, build OK. CF PR preview workflow deployed.**
+**Status: Model Registry in ai-core, bundle budget with brotli enforcement,
+SeedFinder dead-code removed, mobile overflow fixed, telemetry extended
+with percentiles + model versioning. 2307 tests passing, 0 TS errors,
+build OK.**
 
-### What Was Done (Session 164)
+### What Was Done (Session 165)
 
-1. **Battery-Gating + OOM UI (Phase 1)**
-    - Sentry events: `battery_critical_gating`, `eco_mode_auto_activated`
-      in ecoModeService; `worker_oom_critical`, `worker_oom_warn` in
-      workerPool
-    - Callback registry in ecoModeService (`registerEcoCallbacks`)
-      and workerPool (`setOnMemoryPressureHook`) for UI notifications
-    - Toast notifications wired in index.tsx boot sequence via
-      `getUISnapshot().addNotification()`
-    - `ecoModeForced` setting: type, default, listenerMiddleware,
-      toggle in SettingsView
-    - `useBatteryStatus` hook + `BatteryEcoStatusBadge` component
-    - i18n keys for battery/eco in all 5 languages
+1. **Bundle Budget Enhancement (Phase A)**
+    - `check-bundle-budget.mjs`: Added brotli size enforcement
+      (Main < 280 KB, Vendor < 450 KB) alongside existing gzip limits
+    - Added actionable suggestions on budget violation (build:analyze hint)
+    - Summary table now shows Raw + Gzip + Brotli columns
+    - Added `analyze:sme` script to apps/web/package.json for
+      source-map-explorer chunk analysis
 
-2. **OPFS ML Model Cache (Phase 2)**
-    - `plantDiseaseModelService.ts`: OPFS primary cache with
-      IndexedDB fallback, opportunistic IDB->OPFS migration
-    - `OpfsCacheSection` component in DataManagementTab: model list,
-      cache size, clear button, availability badge
-    - Determined Transformers.js + WebLLM self-manage caches (N/A)
-    - i18n keys for OPFS UI in all 5 languages
+2. **Bugfixes & Polish (Phase B)**
+    - Deleted `scripts/fetch-daily-strains.mjs` (~200 LOC dead code,
+      SeedFinder API permanently dead since mid-2024)
+    - Fixed AnalyticsDashboardView mobile overflow: responsive gap
+      (`gap-4 sm:gap-8`) on title, responsive padding (`px-2 sm:px-0`)
+      on both table wrappers
+    - Added `testTimeout: 30_000` to vite.config.ts as Stryker
+      mutation safety net
 
-3. **CI/CD Finalization (Phase 3)**
-    - Cloudflare Pages PR preview: branch-scoped deploy on
-      `pull_request`, auto-updating PR comment with preview URL
-    - Post-deploy health check (curl HTTP 200) for CF production
-    - CSP consistency check (`check-csp-consistency.mjs`) added to
-      CI quality gates
+3. **Model Registry (Phase C)**
+    - New `packages/ai-core/src/modelRegistry.ts`: canonical model
+      catalog with ModelRegistryEntry type (id, label, version,
+      sizeBytes, gpuTier, checksumSha256, deprecated, fallbackOnnxId)
+    - MODEL_REGISTRY with 4 models, MODEL_REGISTRY_VERSION = 1.1.0
+    - Helpers: getRegistryModelById, getRegistryModelVersion,
+      getModelsForGpuTier, getRecommendedModel
+    - Re-exported from `@cannaguide/ai-core` barrel
 
-4. **Tests**
-    - ecoModeService: 3 new callback tests (battery gating, eco
-      auto-activation, no-op when unregistered)
-    - opfsStorage: 10 new tests (availability detection, singleton
-      API, mocked OPFS operations)
+4. **WebLLM Catalog Refactor**
+    - `webLlmModelCatalog.ts` now derives WEB_LLM_MODELS from
+      MODEL_REGISTRY via toWebLlmModel() mapping
+    - autoSelectModel() delegates to getRecommendedModel()
+    - MODEL_CATALOG_VERSION delegated to MODEL_REGISTRY_VERSION
+    - Full backward compatibility maintained
+
+5. **Telemetry Enhancement**
+    - Auto-resolves modelVersion from registry in recordInference()
+    - Added latency percentiles (p50, p95, p99) to TelemetrySnapshot
+    - Model breakdown now includes version field
+    - DevTelemetryPanel updated with percentile defaults
+
+6. **Cache Key Versioning**
+    - cacheService.ts: versioned cache keys include model@version
+    - Backward-compatible fallback to unversioned keys
+    - Model upgrades naturally invalidate stale cache entries
+    - Old entries expire via existing 30d TTL
 
 ### Verified Metrics
 
 - Typecheck: 0 errors (TS2719 filtered)
 - Tests: 2307 passing (198 files)
 - Build: OK (173 precache entries)
+- Bundle: All chunks within budget (gzip + brotli)
 
 ### Next Steps
 
-1. **Monitor CF deploy:** Verify Cloudflare secrets work on next
-   push -- check `deploy-cloudflare.yml` run in Actions tab.
-2. **PR preview smoke test:** Create a test PR to verify preview
-   deployment + comment posting works.
-3. **Continue Phase 1.6:** Stryker mutation coverage for eco/OPFS
-   services (add to stryker.conf.json scope if needed).
-4. **OPFS migration task:** Consider background IDB->OPFS migration
-   at app start for existing cached models.
+1. **New ONNX models:** Evaluate terpene-entourage and advanced
+   plant disease models for the registry
+2. **Bundle-size-diff CI:** GitHub Actions workflow to compare
+   bundle sizes between PRs (auto-comment on growth > 5%)
+3. **Model download state machine:** UI showing download/loaded/
+   cached/error states per model in LlmModelSelector
+4. **Model deprecation timeline:** Add UI warnings when a model
+   in user's cache is deprecated
+5. **OPFS expansion:** Migrate Whisper/CLIP models to OPFS
+   primary cache (Transformers.js self-manages, only custom
+   ONNX models benefit)
 
-## Previous Session (Session 163) -- Stryker Mutation Testing Performance Optimization
+## Previous Session (Session 164) -- Battery-Gating UI + OPFS Cache + CI/CD
 
 **Status: Stryker mutation testing optimized from >6h timeout to estimated
 45-90 min (first run) / 15-30 min (incremental). Root cause: coverageAnalysis

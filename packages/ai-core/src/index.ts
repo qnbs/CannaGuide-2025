@@ -41,3 +41,17 @@ export {
 // ---------------------------------------------------------------------------
 
 export * from './domain'
+
+// ---------------------------------------------------------------------------
+// Model Registry -- canonical local AI model catalog & lookup helpers
+// ---------------------------------------------------------------------------
+
+export type { ModelRegistryEntry, GpuTierName, ModelSizeTier } from './modelRegistry'
+export {
+    MODEL_REGISTRY,
+    MODEL_REGISTRY_VERSION,
+    getRegistryModelById,
+    getRegistryModelVersion,
+    getModelsForGpuTier,
+    getRecommendedModel,
+} from './modelRegistry'

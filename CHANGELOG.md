@@ -6,6 +6,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-04-14
+
 ### Added
 
 - **refactor(ai-core):** Domain type consolidation -- 120+ types
@@ -110,26 +112,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 - **fix(eslint):** Disabled deprecated jsx-a11y/label-has-for rule
   in favor of label-has-associated-control
-
----
-
-## [Unreleased]
-
-### Fixed
-
 - **fix(e2e):** Analytics Dashboard "Garden Score section" test --
   replaced brittle text-regex selector with data-testid attributes
   (`analytics-empty-state`, `analytics-garden-score`). Fixes CI
   failure when no plants exist on fresh app boot (PR #924).
 
-### Fixed
-
-- **fix(e2e):** Analytics Dashboard "Garden Score section" test --
-  replaced brittle text-regex selector with data-testid attributes
-  (`analytics-empty-state`, `analytics-garden-score`). Fixes CI
-  failure when no plants exist on fresh app boot (PR #924).
-
-### Added
+### Added (continued)
 
 - **feat(knowledge):** Predictive Insights section in Analytics Dashboard --
   Botrytis risk badges, environment alerts, yield impact from
@@ -147,21 +135,6 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **test(e2e):** Analytics Dashboard E2E tests (navigation, Garden
   Score, CSV export, rapid tab switching, Sandbox sub-tab)
 - **i18n(knowledge):** analytics.predictive.\* keys in all 5 languages
-
-### Changed
-
-- **refactor(local-ai):** Removed last 2 backward-compat stubs
-  (aiEcoModeService.ts, inferenceQueueService.ts) -- consumers
-  migrated to direct imports from local-ai/device/ecoModeService
-  and local-ai/inference/inferenceQueue
-- **refactor(equipment):** IotDashboardView refactored to use shared
-  PredictiveInsightsPanel instead of inline 150-line duplicate
-- **fix(ci):** Stryker mutation testing config -- all glob paths
-  converted from root-relative to apps/web-relative for CI
-  working-directory compatibility
-
-### Added (continued)
-
 - **feat(strains):** Seed Vault overhaul -- 5 new sub-components
   (SeedVaultStats, SeedVaultToolbar, SeedEntryForm, SeedEntryCard,
   SeedVaultPollenLog), extended data model (SeedSource, storageLocation,
@@ -172,9 +145,33 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **test(breeding):** breedingSlice tests expanded from 6 to 30
   (seed vault actions, pollen records, selectors, edge cases)
 - **i18n(strains):** ~80 new Seed Vault keys across all 5 languages
+- **feat(equipment):** Hydroponic readings section in PDF grow reports
+  (pH/EC/Temp min, max, avg summary table)
+- **feat(knowledge):** CSV export enhanced with hydroponic readings
+  data section (pH, EC, temperature time-series)
+- **feat(ci):** i18n completeness check added to release-gate and
+  deploy workflows alongside existing CI pipeline check
+- **chore:** Root script check:i18n-usage exposed in package.json
+- **chore:** Crowdin configuration populated (crowdin.yml) with
+  project mapping for community translation management
+- **fix(i18n):** Missing errorBoundary.retry key added to ES/FR/NL
+  common.ts; missing CRDT keys added to ES settings.ts
+- **fix(ci):** Cloudflare Pages wrangler-action SHA pinned to
+  v3.14.1 (da0e0dfe) and project-name corrected to cannaguide-2025
 
-### Changed
+### Changed (continued)
 
+- **refactor(local-ai):** Removed last 2 backward-compat stubs
+  (aiEcoModeService.ts, inferenceQueueService.ts) -- consumers
+  migrated to direct imports from local-ai/device/ecoModeService
+  and local-ai/inference/inferenceQueue
+- **refactor(equipment):** IotDashboardView refactored to use shared
+  PredictiveInsightsPanel instead of inline 150-line duplicate
+- **refactor(equipment):** HydroMonitor trend badge enhanced with
+  color-coded pill styling and i18n labels per trend level
+- **fix(ci):** Stryker mutation testing config -- all glob paths
+  converted from root-relative to apps/web-relative for CI
+  working-directory compatibility
 - **chore(node):** Upgrade minimum Node.js from 20 to 24 (Active LTS)
   -- all 14 CI workflows, custom action, package.json engines, README,
   CONTRIBUTING, SECURITY updated

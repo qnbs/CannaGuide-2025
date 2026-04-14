@@ -55,15 +55,15 @@ jobs:
 
             - name: Deploy to Cloudflare Pages
               id: deploy
-              uses: cloudflare/wrangler-action@da0e0235e90e4a4cdba8e7c5e30261f1d887bfc6 # v3.14.0
+              uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  command: pages deploy apps/web/dist --project-name=cannaguide --branch=main
+                  command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=main
 
             - name: Post-deploy health check
               run: |
-                  CF_URL="${{ steps.deploy.outputs.deployment-url || 'https://cannaguide.pages.dev' }}"
+                  CF_URL="${{ steps.deploy.outputs.deployment-url || 'https://cannaguide-2025.pages.dev' }}"
                   echo "Health-checking ${CF_URL} ..."
                   STATUS=$(curl -sSo /dev/null -w '%{http_code}' --max-time 15 "${CF_URL}")
                   if [ "$STATUS" -eq 200 ]; then
@@ -75,7 +75,7 @@ jobs:
 
     # -------------------------------------------------------------------------
     # PR PREVIEW -- deploy each PR to a unique branch URL
-    # URL pattern: https://<branch>.cannaguide.pages.dev
+    # URL pattern: https://<branch>.cannaguide-2025.pages.dev
     # -------------------------------------------------------------------------
     preview:
         name: PR Preview Deploy
@@ -109,11 +109,11 @@ jobs:
 
             - name: Deploy preview to Cloudflare Pages
               id: preview-deploy
-              uses: cloudflare/wrangler-action@da0e0235e90e4a4cdba8e7c5e30261f1d887bfc6 # v3.14.0
+              uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  command: pages deploy apps/web/dist --project-name=cannaguide --branch=${{ github.head_ref }}
+                  command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=${{ github.head_ref }}
 
             - name: Comment preview URL on PR
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

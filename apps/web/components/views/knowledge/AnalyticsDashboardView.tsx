@@ -29,8 +29,11 @@ import { useActivePlants } from '@/hooks/useSimulationBridge'
 import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics'
 import { PredictiveInsightsPanel } from '@/components/common/PredictiveInsightsPanel'
 import { cn } from '@/lib/utils'
+import { useAppSelector } from '@/stores/store'
+import { selectHydroReadings } from '@/stores/slices/hydroSlice'
 import type { GrowAnalytics } from '@/services/analyticsService'
 import type { PredictiveInsight } from '@/services/predictiveAnalyticsService'
+import type { HydroReading } from '@/types'
 
 // -- Constants & Helpers ---------------------------------------------------
 
@@ -87,6 +90,7 @@ function ratingBadge(rating: string): string {
 function exportAnalyticsCsv(
     analytics: GrowAnalytics,
     predictiveInsights?: ReadonlyMap<string, PredictiveInsight>,
+    hydroReadings?: readonly HydroReading[],
 ): void {
     const rows: string[] = []
     rows.push('Section,Key,Value')
@@ -120,6 +124,24 @@ function exportAnalyticsCsv(
 
     for (const nc of analytics.nutrientConsistency) {
         rows.push(`Nutrient,${nc.plantName},pH=${nc.avgPh} EC=${nc.avgEc} Rating=${nc.rating}`)
+    }
+
+    if (hydroReadings && hydroReadings.length > 0) {
+        const phVals = hydroReadings.map((r) => r.ph)
+        const ecVals = hydroReadings.map((r) => r.ec)
+        const tempVals = hydroReadings.map((r) => r.waterTemp)
+        const avg = (arr: number[]): string =>
+            (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)
+        rows.push(`Hydro,Readings Count,${hydroReadings.length}`)
+        rows.push(`Hydro,pH Min,${Math.min(...phVals).toFixed(2)}`)
+        rows.push(`Hydro,pH Max,${Math.max(...phVals).toFixed(2)}`)
+        rows.push(`Hydro,pH Avg,${avg(phVals)}`)
+        rows.push(`Hydro,EC Min,${Math.min(...ecVals).toFixed(2)}`)
+        rows.push(`Hydro,EC Max,${Math.max(...ecVals).toFixed(2)}`)
+        rows.push(`Hydro,EC Avg,${avg(ecVals)}`)
+        rows.push(`Hydro,Temp Min,${Math.min(...tempVals).toFixed(1)}`)
+        rows.push(`Hydro,Temp Max,${Math.max(...tempVals).toFixed(1)}`)
+        rows.push(`Hydro,Temp Avg,${avg(tempVals)}`)
     }
 
     const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' })
@@ -184,6 +206,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
     const { t } = useTranslation()
     const plants = useActivePlants()
     const analytics = useAnalytics()
+    const hydroReadings = useAppSelector(selectHydroReadings)
     const {
         insights: predictiveInsights,
         loading: predictiveLoading,
@@ -193,8 +216,8 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
     const [activePredictivePlant, setActivePredictivePlant] = useState(0)
 
     const handleExport = useCallback(() => {
-        exportAnalyticsCsv(analytics, predictiveInsights)
-    }, [analytics, predictiveInsights])
+        exportAnalyticsCsv(analytics, predictiveInsights, hydroReadings)
+    }, [analytics, predictiveInsights, hydroReadings])
 
     if (plants.length === 0) {
         return (

@@ -1,4 +1,4 @@
-import type { Plant, JournalEntry, MetricsReading, DiagnosisRecord } from '@/types'
+import type { Plant, JournalEntry, MetricsReading, DiagnosisRecord, HydroReading } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,6 +59,7 @@ function buildFilename(plant: Plant): string {
 export async function generateGrowReport(
     plant: Plant,
     entries: JournalEntry[],
+    hydroReadings?: HydroReading[] | undefined,
 ): Promise<{ blob: Blob; filename: string }> {
     const { default: JsPDFBase } = await import('jspdf')
     await import('jspdf-autotable')
@@ -212,7 +213,66 @@ export async function generateGrowReport(
     }
 
     // -------------------------------------------------------------------------
-    // 5. Footer on last page
+    // 5. Hydroponic readings summary (optional)
+    // -------------------------------------------------------------------------
+    if (hydroReadings && hydroReadings.length > 0) {
+        if (y > 230) {
+            doc.addPage()
+            y = 20
+        }
+
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(30, 60, 40)
+        doc.text('Hydroponic Readings', LM, y)
+        y += 6
+
+        const phValues = hydroReadings.map((r) => r.ph)
+        const ecValues = hydroReadings.map((r) => r.ec)
+        const tempValues = hydroReadings.map((r) => r.waterTemp)
+
+        const hydroRows: [string, string, string, string][] = [
+            [
+                'pH',
+                Math.min(...phValues).toFixed(2),
+                Math.max(...phValues).toFixed(2),
+                (phValues.reduce((a, b) => a + b, 0) / phValues.length).toFixed(2),
+            ],
+            [
+                'EC (mS/cm)',
+                Math.min(...ecValues).toFixed(2),
+                Math.max(...ecValues).toFixed(2),
+                (ecValues.reduce((a, b) => a + b, 0) / ecValues.length).toFixed(2),
+            ],
+            [
+                'Water Temp (C)',
+                Math.min(...tempValues).toFixed(1),
+                Math.max(...tempValues).toFixed(1),
+                (tempValues.reduce((a, b) => a + b, 0) / tempValues.length).toFixed(1),
+            ],
+        ]
+
+        doc.autoTable({
+            startY: y,
+            head: [['Metric', 'Min', 'Max', 'Avg']],
+            body: hydroRows,
+            theme: 'striped',
+            headStyles: { fillColor: [40, 100, 60], textColor: 255, fontStyle: 'bold' },
+            styles: { fontSize: 10 },
+            columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
+            margin: { left: LM, right: RM },
+        })
+        y = doc.lastAutoTable.finalY + 4
+
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(120)
+        doc.text(`${hydroReadings.length} readings recorded`, LM, y)
+        y = doc.lastAutoTable.finalY + 10
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Footer on last page
     // -------------------------------------------------------------------------
     const totalPages = doc.internal.getNumberOfPages()
     doc.setFontSize(8)

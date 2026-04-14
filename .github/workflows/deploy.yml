@@ -78,6 +78,9 @@ jobs:
             - name: Type check
               run: pnpm exec turbo run typecheck
 
+            - name: Check i18n completeness
+              run: pnpm run check:i18n
+
             - name: Unit tests
               run: |
                   echo "::group::vitest"

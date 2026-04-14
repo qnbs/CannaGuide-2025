@@ -646,6 +646,10 @@ export const settingsView = {
             loading: 'Cargando datos del almacen...',
             empty: 'Informacion del almacen no disponible.',
         },
+        crdtDocSize: 'Documento CRDT',
+        crdtFallback: 'Sincronizacion CRDT en modo alternativo (LWW). Fusion offline desactivada.',
+        crdtSizeWarning:
+            'El documento CRDT supera 1 MB. Considere ejecutar limpieza de almacenamiento.',
         backupAndRestore: 'Copia de Seguridad y Restauracion',
         dangerZone: 'Zona de Peligro',
         importData: 'Importar Datos',

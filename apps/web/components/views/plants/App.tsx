@@ -259,9 +259,8 @@ export const App: React.FC = () => {
             if (registration?.waiting) {
                 waitingWorkerRef.current = registration.waiting
                 setShowUpdateBanner(true)
-                globalThis.setTimeout(() => {
-                    handleUpdate()
-                }, 1200)
+                // User must explicitly click "Update Now" in the banner.
+                // No auto-reload -- prevents interrupting active user sessions.
             }
         }
 

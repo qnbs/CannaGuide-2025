@@ -7,7 +7,7 @@
         <!-- CSP — keep in sync with securityHeaders.ts -->
         <meta
             http-equiv="Content-Security-Policy"
-            content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs.hf.co https://huggingfaceusercontent.com https://cdn.jsdelivr.net https://api.elevenlabs.io; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs.hf.co https://huggingfaceusercontent.com https://cdn.jsdelivr.net https://api.elevenlabs.io; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
         />
         <title>CannaGuide 2025 - Cannabis Grow Guide with Gemini</title>
         <meta
@@ -49,23 +49,9 @@
         <link rel="icon" href="icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <!-- DNS prefetch for AI provider endpoints (resolved early, used at runtime) -->
         <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
         <link rel="dns-prefetch" href="https://huggingface.co" />
-        <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;700&display=swap"
-            media="print"
-            onload="this.media = 'all'"
-        />
-        <noscript>
-            <link
-                rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;700&display=swap"
-            />
-        </noscript>
     </head>
     <body class="bg-bg-primary">
         <svg width="0" height="0" style="position: absolute">
@@ -195,5 +181,19 @@
             </div>
         </noscript>
         <script type="module" src="./index.tsx"></script>
+        <!-- Speculation Rules API: prefetch likely navigation targets for instant SPA transitions.
+             Progressive enhancement -- only Chrome 121+, ignored by other browsers. -->
+        <script type="speculationrules">
+            {
+                "prefetch": [
+                    {
+                        "where": {
+                            "href_matches": "/*"
+                        },
+                        "eagerness": "moderate"
+                    }
+                ]
+            }
+        </script>
     </body>
 </html>

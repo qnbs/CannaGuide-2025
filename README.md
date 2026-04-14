@@ -11,7 +11,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-2307%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-2312%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-33.7%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity -->
@@ -107,7 +107,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2307 tests · 117 services · 19 Redux slices + 9 Zustand stores · 26 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
+776 strains · 2312 tests · 117 services · 19 Redux slices + 9 Zustand stores · 26 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -135,7 +135,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite dev server on localhost:5173
 pnpm run build              # Production build (all workspaces)
-pnpm run test:run           # 2307 tests, single run
+pnpm run test:run           # 2312 tests, single run
 pnpm run typecheck          # tsc --noEmit (TS2719 filtered)
 pnpm run lint               # ESLint (flat config, 0 warnings)
 ```
@@ -310,7 +310,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ## CI/CD, Testing & Security
 
-### Testing (2307 tests, 0 failures)
+### Testing (2312 tests, 0 failures)
 
 | Type                  | Framework       | Scope                                           |
 | --------------------- | --------------- | ----------------------------------------------- |

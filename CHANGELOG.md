@@ -6,6 +6,42 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **feat(pwa):** Font self-hosting -- Inter, Lexend, IBM Plex Mono,
+  Atkinson Hyperlegible served as local WOFF2 files (8 files in
+  public/fonts/), eliminated Google Fonts external dependency
+- **feat(pwa):** Manifest extensions -- display_override with
+  window-controls-overlay, file_handlers (.cannaguide), share_target
+  for image sharing, edge_side_panel
+- **feat(pwa):** Storage persistence -- `navigator.storage.persist()`
+  at app bootstrap for guaranteed IndexedDB durability
+- **feat(pwa):** Adaptive image cache -- SW cache limits scale with
+  `navigator.deviceMemory` (75/150/300 entries)
+- **feat(pwa):** Speculation Rules API -- Chrome 121+ prefetch with
+  moderate eagerness for SPA navigation
+- **feat(desktop):** Tauri v2 workspace scaffolding -- apps/desktop/
+  with IPC commands (get_app_version, export_data, import_data),
+  7 Tauri plugins, capabilities-based security, tray icon
+- **feat(desktop):** Platform detection service -- isTauri/isPwa/
+  isBrowser detection with OS inference via **TAURI_INTERNALS**
+- **feat(ci):** Desktop build workflow -- matrix builds for Linux,
+  macOS (arm64+x86), Windows triggered on tag push
+
+### Changed
+
+- **perf(pwa):** SW update UX -- removed auto-SKIP_WAITING, user
+  must explicitly click Update banner (prevents data loss)
+- **perf(pwa):** Lighthouse targets tightened -- FCP 1000ms, LCP
+  2500ms, TBT 200ms, CLS 0.05, perf 99%, a11y 100%
+- **security(csp):** Removed fonts.googleapis.com and
+  fonts.gstatic.com from CSP across all 5 delivery paths
+
+### Fixed
+
+- **fix(ci):** Removed 9 dead tauri-build.yml references from
+  OpenSSF Scorecard config
+
 ## [1.8.1] - 2026-04-14
 
 ### Added

@@ -5,11 +5,16 @@
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
-    "display_override": ["standalone", "minimal-ui"],
+    "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
     "orientation": "any",
     "lang": "en",
     "background_color": "#0F172A",
     "theme_color": "#0F172A",
+    "prefer_related_applications": false,
+    "handle_links": "preferred",
+    "edge_side_panel": {
+        "preferred_width": 420
+    },
     "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 776 strains, get AI equipment advice, and master your grow with an interactive guide.",
     "icons": [
         {
@@ -100,5 +105,29 @@
                 }
             ]
         }
-    ]
+    ],
+    "file_handlers": [
+        {
+            "action": "./",
+            "accept": {
+                "application/json": [".cannaguide"]
+            }
+        }
+    ],
+    "share_target": {
+        "action": "./?share=true",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "title": "name",
+            "text": "description",
+            "url": "link",
+            "files": [
+                {
+                    "name": "media",
+                    "accept": ["image/png", "image/jpeg", "image/webp"]
+                }
+            ]
+        }
+    }
 }

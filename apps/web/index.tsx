@@ -64,7 +64,9 @@ const registerServiceWorker = () => {
                     console.debug('[SW] Could not register periodic reminder sync:', error)
                 })
 
-                // Only reload on SW update (not first install where controller is null)
+                // Reload page once the new SW takes control (user-initiated via
+                // the update banner in usePwaInstall). Auto-reload is intentionally
+                // NOT triggered here -- only after the user clicks "Update Now".
                 if (navigator.serviceWorker.controller) {
                     navigator.serviceWorker.addEventListener(
                         'controllerchange',
@@ -76,10 +78,12 @@ const registerServiceWorker = () => {
                 }
 
                 const dispatchSwUpdate = () => {
+                    // Notify the app that an update is available so the UI can
+                    // show a non-intrusive banner. The waiting SW is NOT told to
+                    // skip waiting here -- that happens when the user explicitly
+                    // accepts the update via usePwaInstall.handleUpdateClick().
                     const event = new CustomEvent('swUpdate', { detail: registration })
                     window.dispatchEvent(event)
-                    // Fallback: also tell the waiting SW to skip waiting
-                    registration.waiting?.postMessage({ type: 'SKIP_WAITING' })
                 }
 
                 if (registration.waiting && navigator.serviceWorker.controller) {
@@ -392,7 +396,21 @@ const mountHydratedApp = async () => {
         const allPlants = Object.values(plantEntities).filter((p): p is Plant => p !== undefined)
         startBackgroundPrecomputation(allPlants)
 
-        // 6. Signal that the app is fully ready and hide the loading gate.
+        // 6. Request persistent storage so the browser does not evict
+        //    IndexedDB / OPFS data under storage pressure (critical for
+        //    offline-first PWA with ML models).
+        if (navigator.storage?.persist) {
+            navigator.storage
+                .persist()
+                .then((granted) => {
+                    console.debug('[Storage] Persistent storage:', granted ? 'granted' : 'denied')
+                })
+                .catch(() => {
+                    // Non-fatal -- app works without persistent grant
+                })
+        }
+
+        // 7. Signal that the app is fully ready and hide the loading gate.
         getUISnapshot().setAppReady(true)
         document.body.setAttribute('data-app-ready', 'true')
     } catch (error) {

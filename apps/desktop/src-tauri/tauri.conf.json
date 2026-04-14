@@ -1,0 +1,79 @@
+{
+    "$schema": "https://raw.githubusercontent.com/nicehash/tauri/main/packages/tauri-cli/schema.json",
+    "productName": "CannaGuide 2025",
+    "version": "0.1.0",
+    "identifier": "com.cannaguide.desktop",
+    "build": {
+        "frontendDist": "../web/dist",
+        "devUrl": "http://localhost:5173",
+        "beforeDevCommand": "pnpm --filter @cannaguide/web dev",
+        "beforeBuildCommand": "pnpm --filter @cannaguide/web build"
+    },
+    "app": {
+        "withGlobalTauri": false,
+        "windows": [
+            {
+                "title": "CannaGuide 2025",
+                "width": 1280,
+                "height": 800,
+                "minWidth": 480,
+                "minHeight": 600,
+                "center": true,
+                "resizable": true,
+                "fullscreen": false,
+                "decorations": true,
+                "transparent": false
+            }
+        ],
+        "security": {
+            "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https: asset: https://asset.localhost; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs.hf.co https://huggingfaceusercontent.com https://cdn.jsdelivr.net https://api.elevenlabs.io ipc: https://ipc.localhost; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'",
+            "dangerousDisableAssetCspModification": false
+        },
+        "trayIcon": {
+            "iconPath": "icons/icon.png",
+            "iconAsTemplate": true
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "resources": [],
+        "copyright": "Copyright 2025 CannaGuide Team",
+        "category": "Utility",
+        "shortDescription": "AI-powered cannabis cultivation management",
+        "longDescription": "CannaGuide 2025 - Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 800+ strains, get AI equipment advice, and master your grow.",
+        "linux": {
+            "deb": {
+                "depends": []
+            },
+            "appimage": {
+                "bundleMediaFramework": false
+            }
+        },
+        "macOS": {
+            "minimumSystemVersion": "10.15",
+            "signingIdentity": null,
+            "providerShortName": null,
+            "entitlements": null
+        },
+        "windows": {
+            "certificateThumbprint": null,
+            "timestampUrl": ""
+        }
+    },
+    "plugins": {
+        "updater": {
+            "endpoints": [
+                "https://github.com/qnbs/CannaGuide-2025/releases/latest/download/latest.json"
+            ],
+            "pubkey": ""
+        }
+    }
+}

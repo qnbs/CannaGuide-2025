@@ -25,6 +25,8 @@ let _isInstalled: boolean =
               window.matchMedia('(display-mode: standalone)').matches)
         : false
 let _updateAvailable = false
+/** SW registration reference for user-initiated SKIP_WAITING */
+let _swRegistration: ServiceWorkerRegistration | null = null
 /** Deferred install-hint flag: set at event time, flushed when a hook instance mounts. */
 let _pendingInstallHint = false
 
@@ -61,8 +63,11 @@ if (typeof window !== 'undefined') {
         })
     })
 
-    window.addEventListener('swUpdate', () => {
+    window.addEventListener('swUpdate', (e: Event) => {
         _updateAvailable = true
+        if (e instanceof CustomEvent && e.detail instanceof ServiceWorkerRegistration) {
+            _swRegistration = e.detail
+        }
         _emit()
         const lastDismissed = Number(localStorage.getItem(PWA_UPDATE_DISMISSED_KEY) ?? 0)
         if (Date.now() - lastDismissed < UPDATE_DISMISSAL_COOLDOWN_MS) return
@@ -125,9 +130,19 @@ export const usePwaInstall = () => {
         _emit()
     }, [t])
 
+    const handleUpdateClick = useCallback(() => {
+        if (_swRegistration?.waiting) {
+            _swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
+        } else {
+            // Fallback: force reload if no waiting worker is present
+            window.location.reload()
+        }
+    }, [])
+
     return {
         deferredPrompt: _deferredPrompt,
         handleInstallClick,
+        handleUpdateClick,
         isInstalled: _isInstalled,
         updateAvailable: _updateAvailable,
     }

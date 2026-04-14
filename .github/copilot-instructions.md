@@ -22,10 +22,11 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
-- **Testing:** Vitest (2307 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (2312 tests) + Playwright E2E + Playwright Component Tests
+- **Desktop:** Tauri v2 (apps/desktop/) -- 99% code sharing with PWA, CI/CD matrix builds
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
-- **Distribution:** GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0)
+- **Distribution:** GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0), Tauri Desktop (Linux/macOS/Windows)
 
 ### Monorepo Layout
 
@@ -276,7 +277,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 2307 tests, 0 failures
+- Baseline: 2312 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
@@ -526,6 +527,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/voiceTelemetryService.ts`                                    | Opt-in anonymous voice analytics: ring buffer (500), localStorage persist, snapshots                                                                                         |
 | `apps/web/workers/voiceWorker.ts`                                               | Off-main-thread voice processing: filler removal, 3-pass command matching, waveform compute                                                                                  |
 | `apps/web/services/nativeBridgeService.ts`                                      | Web Notification API dispatch (browser-only)                                                                                                                                 |
+| `apps/web/services/platformService.ts`                                          | Platform detection bridge: isTauri/isPwa/isBrowser, OS detection via **TAURI_INTERNALS**                                                                                     |
 | `apps/web/services/strainLookupService.ts`                                      | 5-source Strain Intelligence Lookup cascade + entourage effect science                                                                                                       |
 | `apps/web/services/indexedDbMonitorService.ts`                                  | IndexedDB quota inspection, per-store entry counts, health warnings                                                                                                          |
 | `apps/web/services/indexedDbPruneService.ts`                                    | Quota-aware IndexedDB store pruning (images 500 cap, search 5000 cap), cursor-based oldest-first deletion                                                                    |
@@ -600,6 +602,7 @@ After implementation is complete with all validations passing, update **all affe
 | `.devcontainer/setup.sh`                                                        | postCreateCommand (workspace-filtered install, no ML)                                                                                                                        |
 | `.devcontainer/start.sh`                                                        | postStartCommand (IoT mock servers)                                                                                                                                          |
 | `.github/workflows/config-guard.yml`                                            | CI scan for RCE patterns in config files                                                                                                                                     |
+| `.github/workflows/desktop-build.yml`                                           | Tauri v2 desktop matrix build (Linux/macOS/Windows) triggered on tag push                                                                                                    |
 | `.github/workflows/release-publish.yml`                                         | 2-job release pipeline: build+SBOM -> release (attest-sbom + attest-build-provenance + gh release)                                                                           |
 | `docs/ACCESSIBILITY.md`                                                         | WCAG 2.1 AA accessibility statement                                                                                                                                          |
 | `docs/api/ai-facade.md`                                                         | AI Facade API reference (24 aiService methods, routing logic, mode helpers)                                                                                                  |
@@ -609,3 +612,8 @@ After implementation is complete with all validations passing, update **all affe
 | `docs/ARCHITECTURE-MIGRATION-PLAN.md`                                           | Service classification (117 services) and future migration priorities                                                                                                        |
 | `scripts/security/check-csp-consistency.mjs`                                    | CI: CSP consistency across securityHeaders/index.html/netlify                                                                                                                |
 | `scripts/check-i18n-completeness.mjs`                                           | CI: i18n key coverage checker across all languages                                                                                                                           |
+| `apps/desktop/package.json`                                                     | @cannaguide/desktop -- Tauri v2 desktop app package                                                                                                                          |
+| `apps/desktop/src-tauri/tauri.conf.json`                                        | Tauri v2 config: window, CSP, bundle, updater, frontendDist -> ../web/dist                                                                                                   |
+| `apps/desktop/src-tauri/Cargo.toml`                                             | Rust dependencies: tauri 2, 7 plugins, serde, chrono                                                                                                                         |
+| `apps/desktop/src-tauri/capabilities/default.json`                              | Tauri v2 capability-based permissions (minimal, per-command)                                                                                                                 |
+| `apps/desktop/src-tauri/src/lib.rs`                                             | Tauri IPC commands: get_app_version, export_data, import_data                                                                                                                |

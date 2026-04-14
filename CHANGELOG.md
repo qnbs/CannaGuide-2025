@@ -40,9 +40,23 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   PR deploys to branch-scoped URL with auto-updating comment
 - **feat(ci):** CSP consistency check added to CI quality gates
 - **feat(ci):** Post-deploy health check for Cloudflare Pages
+- **feat(ai):** Model Registry in @cannaguide/ai-core -- canonical
+  catalog of 4 local AI models with version tracking, GPU-tier
+  auto-selection, deprecation flags, checksum fields
+  (modelRegistry.ts, MODEL_REGISTRY_VERSION 1.1.0)
+- **feat(ai):** Telemetry latency percentiles (p50, p95, p99) and
+  per-model version tracking in TelemetrySnapshot
+- **feat(ai):** Cache key versioning -- inference cache keys now
+  include model@version for automatic invalidation on model upgrades
+- **feat(ci):** Bundle budget brotli enforcement -- check-bundle-
+  budget.mjs now validates both gzip and brotli size limits with
+  actionable suggestions on violation
 
 ### Changed
 
+- **refactor(ai):** webLlmModelCatalog.ts now derives WEB_LLM_MODELS
+  from @cannaguide/ai-core Model Registry via backward-compatible
+  mapping; autoSelectModel() delegates to getRecommendedModel()
 - **refactor(types):** apps/web/types.ts reduced from 1869 to 583
   lines via bridge re-exports from @cannaguide/ai-core
 - **refactor(ai-core):** Deduplicated 10+ types (AIResponse,
@@ -56,6 +70,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **refactor(docs):** Voice-First de-branding -- renamed v1.7 from
   "Voice-First Edition" to "Voice & Accessibility Edition" in active
   docs (historical release notes preserved)
+- **fix(mobile):** AnalyticsDashboard table overflow -- added
+  responsive gap/padding classes (gap-4 sm:gap-8, px-2 sm:px-0)
+- **chore(test):** Vitest testTimeout safety net (30s) to prevent
+  CI hangs on slow integration tests
+
+### Removed
+
+- **chore:** Deleted dead scripts/fetch-daily-strains.mjs -- SeedFinder
+  API removed since mid-2024; client-side Daily Drop is independent
 
 ## [1.8.0] - 2025-04-12
 

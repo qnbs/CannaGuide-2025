@@ -1,17 +1,29 @@
 /**
- * WebLLM Model Catalog -- curated list of supported local LLM models
- * with auto-selection based on GPU tier and device capabilities.
+ * WebLLM Model Catalog -- thin wrapper around @cannaguide/ai-core Model Registry
+ * providing backward-compatible exports and auto-selection based on GPU tier.
  *
  * Models use MLC quantized format for WebLLM (q4f16_1-MLC).
  * Transformers.js fallback IDs map to Xenova/HuggingFace ONNX variants.
  */
 
+import {
+    MODEL_REGISTRY,
+    MODEL_REGISTRY_VERSION,
+    getRegistryModelById,
+    getRegistryModelVersion,
+    getModelsForGpuTier,
+    getRecommendedModel,
+    type ModelRegistryEntry,
+    type GpuTierName,
+} from '@cannaguide/ai-core'
 import type { GpuTier } from '../device/webGpuService'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Re-exports from Registry ────────────────────────────────────────────────
 
-/** Catalog-level version (bump when models are added, removed, or updated). */
-export const MODEL_CATALOG_VERSION = '1.0.0'
+/** Catalog-level version (delegated to registry). */
+export const MODEL_CATALOG_VERSION: string = MODEL_REGISTRY_VERSION
+
+// ─── Backward-compatible WebLlmModel type ────────────────────────────────────
 
 export interface WebLlmModel {
     /** WebLLM model string (MLC format). */
@@ -42,70 +54,28 @@ export interface WebLlmModel {
     transformersFallbackId: string | null
 }
 
-// ─── Model Catalog ───────────────────────────────────────────────────────────
+/** Map a registry entry to the backward-compatible WebLlmModel shape. */
+const toWebLlmModel = (entry: ModelRegistryEntry): WebLlmModel => ({
+    id: entry.id,
+    label: entry.label,
+    version: entry.version,
+    releaseDate: entry.releaseDate,
+    sizeBytes: entry.sizeBytes,
+    sizeTier: entry.sizeTier,
+    minVramMb: entry.minVramMb,
+    supportsVision: entry.supportsVision,
+    languages: entry.languages,
+    recommended: entry.recommended,
+    requiresWebGPU: entry.requiresWebGpu,
+    description: entry.description,
+    transformersFallbackId: entry.fallbackOnnxId,
+})
 
-export const WEB_LLM_MODELS: readonly WebLlmModel[] = [
-    {
-        id: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
-        label: 'Qwen 2.5 0.5B',
-        version: '2.5.0',
-        releaseDate: '2024-09-19',
-        sizeBytes: 400_000_000,
-        sizeTier: '0.5B',
-        minVramMb: 0,
-        supportsVision: false,
-        languages: ['en', 'de', 'es', 'fr', 'nl'],
-        recommended: false,
-        requiresWebGPU: false,
-        description: 'Ultra-light model for any device. Fast but limited quality.',
-        transformersFallbackId: 'Xenova/Qwen2.5-0.5B-Instruct',
-    },
-    {
-        id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
-        label: 'Qwen 2.5 1.5B',
-        version: '2.5.0',
-        releaseDate: '2024-09-19',
-        sizeBytes: 1_000_000_000,
-        sizeTier: '1.5B',
-        minVramMb: 2048,
-        supportsVision: false,
-        languages: ['en', 'de', 'es', 'fr', 'nl'],
-        recommended: false,
-        requiresWebGPU: false,
-        description: 'Balanced model for mid-range GPUs. Good multilingual support.',
-        transformersFallbackId: 'Xenova/Qwen2.5-1.5B-Instruct',
-    },
-    {
-        id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
-        label: 'Llama 3.2 3B',
-        version: '3.2.0',
-        releaseDate: '2024-09-25',
-        sizeBytes: 1_800_000_000,
-        sizeTier: '3B',
-        minVramMb: 4096,
-        supportsVision: false,
-        languages: ['en', 'de', 'es', 'fr'],
-        recommended: true,
-        requiresWebGPU: true,
-        description: 'High quality reasoning. Best choice for capable GPUs.',
-        transformersFallbackId: null,
-    },
-    {
-        id: 'Phi-3.5-mini-instruct-q4f16_1-MLC',
-        label: 'Phi 3.5 Mini',
-        version: '3.5.0',
-        releaseDate: '2024-08-20',
-        sizeBytes: 2_200_000_000,
-        sizeTier: '4B',
-        minVramMb: 4096,
-        supportsVision: false,
-        languages: ['en', 'de', 'es', 'fr'],
-        recommended: false,
-        requiresWebGPU: true,
-        description: 'Strong reasoning and instruction following. Largest option.',
-        transformersFallbackId: null,
-    },
-] as const
+// ─── Model Catalog (derived from registry) ───────────────────────────────────
+
+export const WEB_LLM_MODELS: readonly WebLlmModel[] = MODEL_REGISTRY.filter(
+    (m) => !m.deprecated,
+).map(toWebLlmModel)
 
 // ─── Lookup Helpers ──────────────────────────────────────────────────────────
 
@@ -117,7 +87,7 @@ export const getModelById = (id: string): WebLlmModel | undefined =>
     WEB_LLM_MODELS.find((m) => m.id === id)
 
 /** Get the pinned version string for a model ID (returns undefined if not found). */
-export const getModelVersion = (id: string): string | undefined => getModelById(id)?.version
+export const getModelVersion = (id: string): string | undefined => getRegistryModelVersion(id)
 
 /**
  * Automatically select the best model for the given GPU tier.
@@ -128,17 +98,9 @@ export const getModelVersion = (id: string): string | undefined => getModelById(
  * - **none** (no WebGPU):                  Qwen 2.5 0.5B (WASM)
  */
 export const autoSelectModel = (tier: GpuTier): WebLlmModel => {
-    switch (tier) {
-        case 'high':
-            // Llama 3.2 3B -- best quality for high-tier GPUs
-            return WEB_LLM_MODELS[2]!
-        case 'mid':
-            // Qwen 2.5 1.5B -- balanced for mid-range
-            return WEB_LLM_MODELS[1]!
-        case 'low':
-        case 'none':
-        default:
-            // Qwen 2.5 0.5B -- minimal resource usage
-            return WEB_LLM_MODELS[0]!
-    }
+    const registryTier = tier as GpuTierName
+    const entry = getRecommendedModel(registryTier)
+    return toWebLlmModel(entry)
 }
+
+export { getRegistryModelById, getRegistryModelVersion, getModelsForGpuTier }

@@ -7,6 +7,8 @@
  * unless explicitly persisted via `persistSnapshot()`.
  */
 
+import { getRegistryModelVersion } from '@cannaguide/ai-core'
+
 const TELEMETRY_STORAGE_KEY = 'cg.localai.telemetry'
 const MAX_HISTORY = 100
 
@@ -33,10 +35,17 @@ export interface TelemetrySnapshot {
     totalInferences: number
     totalTokensGenerated: number
     averageLatencyMs: number
+    /** Latency percentiles (milliseconds). */
+    latencyP50Ms: number
+    latencyP95Ms: number
+    latencyP99Ms: number
     fallbackBreakdown: Record<FallbackLayer, number>
     averageTokensPerSecond: number
     cacheHitRate: number
-    modelBreakdown: Record<string, { count: number; avgLatencyMs: number; avgTokPerSec: number }>
+    modelBreakdown: Record<
+        string,
+        { count: number; avgLatencyMs: number; avgTokPerSec: number; version: string | undefined }
+    >
     backendBreakdown: Record<string, number>
     successRate: number
     peakTokensPerSecond: number
@@ -60,8 +69,12 @@ let totalCacheMisses = 0
 
 /**
  * Record a completed inference for telemetry tracking.
+ * Auto-resolves modelVersion from the registry if not explicitly provided.
  */
 export const recordInference = (record: InferenceRecord): void => {
+    if (!record.modelVersion) {
+        record.modelVersion = getRegistryModelVersion(record.model)
+    }
     records.push(record)
     if (records.length > MAX_HISTORY) {
         records.shift()
@@ -171,6 +184,16 @@ const estimateTokenCount = (value: unknown): number => {
     return 0
 }
 
+/** Compute the p-th percentile from a sorted array. Returns 0 for empty arrays. */
+const percentile = (sorted: number[], p: number): number => {
+    if (sorted.length === 0) return 0
+    const idx = (p / 100) * (sorted.length - 1)
+    const lo = Math.floor(idx)
+    const hi = Math.ceil(idx)
+    if (lo === hi) return sorted[lo]!
+    return sorted[lo]! + (sorted[hi]! - sorted[lo]!) * (idx - lo)
+}
+
 /**
  * Build a telemetry snapshot from the in-memory records.
  */
@@ -190,13 +213,25 @@ export const getSnapshot = (): TelemetrySnapshot => {
     const cacheHitRate = cacheTotal > 0 ? totalCacheHits / cacheTotal : 0
     const peakTokensPerSecond = successful.reduce((max, r) => Math.max(max, r.tokensPerSecond), 0)
 
+    // Latency percentiles
+    const sortedLatencies = successful.map((r) => r.latencyMs).sort((a, b) => a - b)
+    const latencyP50Ms = percentile(sortedLatencies, 50)
+    const latencyP95Ms = percentile(sortedLatencies, 95)
+    const latencyP99Ms = percentile(sortedLatencies, 99)
+
     const modelBreakdown: TelemetrySnapshot['modelBreakdown'] = {}
     for (const r of successful) {
-        const entry = modelBreakdown[r.model] ?? { count: 0, avgLatencyMs: 0, avgTokPerSec: 0 }
+        const entry = modelBreakdown[r.model] ?? {
+            count: 0,
+            avgLatencyMs: 0,
+            avgTokPerSec: 0,
+            version: undefined,
+        }
         entry.avgLatencyMs = (entry.avgLatencyMs * entry.count + r.latencyMs) / (entry.count + 1)
         entry.avgTokPerSec =
             (entry.avgTokPerSec * entry.count + r.tokensPerSecond) / (entry.count + 1)
         entry.count++
+        entry.version = r.modelVersion
         modelBreakdown[r.model] = entry
     }
 
@@ -209,6 +244,9 @@ export const getSnapshot = (): TelemetrySnapshot => {
         totalInferences,
         totalTokensGenerated,
         averageLatencyMs,
+        latencyP50Ms,
+        latencyP95Ms,
+        latencyP99Ms,
         averageTokensPerSecond,
         cacheHitRate,
         modelBreakdown,

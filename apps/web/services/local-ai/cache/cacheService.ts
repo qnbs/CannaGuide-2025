@@ -3,9 +3,12 @@
  * inference results that survives page reloads.
  *
  * Falls back to the in-memory cache when IndexedDB is unavailable.
+ * Cache keys include model name + version so that model upgrades
+ * naturally invalidate stale entries (old entries expire via 30d TTL).
  */
 
 import { createIndexedDbLruCache } from '@/services/indexedDbLruCache'
+import { getRegistryModelVersion } from '@cannaguide/ai-core'
 
 /** Maximum value size in characters to prevent storage bloat. */
 const MAX_VALUE_SIZE = 50_000
@@ -42,12 +45,34 @@ export const applyCacheSettings = (maxEntries: number): void => {
 }
 
 /**
+ * Build a versioned cache key from prompt + model metadata.
+ * Includes the model version so that model upgrades naturally
+ * invalidate stale entries without explicit purging.
+ * Falls back to plain prompt hash when no registry version exists.
+ */
+const versionedKey = (prompt: string, model?: string | undefined): string => {
+    if (!model) return cache.hashKey(prompt)
+    const version = getRegistryModelVersion(model)
+    if (!version) return cache.hashKey(prompt)
+    return cache.hashKey(`${prompt}::${model}@${version}`)
+}
+
+/**
  * Retrieve a cached inference result by prompt.
  * Returns null on miss or if the DB is unavailable.
  */
-export const getCachedInference = async (prompt: string): Promise<string | null> => {
-    const entry = await cache.get(cache.hashKey(prompt))
-    return entry?.value ?? null
+export const getCachedInference = async (
+    prompt: string,
+    model?: string | undefined,
+): Promise<string | null> => {
+    const entry = await cache.get(versionedKey(prompt, model))
+    if (entry) return entry.value
+    // Fallback: try unversioned key for backward compatibility
+    if (model) {
+        const legacy = await cache.get(cache.hashKey(prompt))
+        return legacy?.value ?? null
+    }
+    return null
 }
 
 /**
@@ -62,7 +87,7 @@ export const setCachedInference = async (
     if (value.length > MAX_VALUE_SIZE) return
     const now = Date.now()
     await cache.set({
-        key: cache.hashKey(prompt),
+        key: versionedKey(prompt, meta.model),
         value,
         accessedAt: now,
         createdAt: now,

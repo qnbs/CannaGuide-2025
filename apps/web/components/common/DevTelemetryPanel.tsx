@@ -77,6 +77,9 @@ const DevTelemetryPanelInner: React.FC = memo(() => {
             modelBreakdown: {},
             backendBreakdown: {},
             peakTokensPerSecond: 0,
+            latencyP50Ms: 0,
+            latencyP95Ms: 0,
+            latencyP99Ms: 0,
             lastUpdated: 0,
         })
 

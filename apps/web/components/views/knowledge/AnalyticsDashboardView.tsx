@@ -238,7 +238,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                 </p>
                 <ScoreGauge score={analytics.gardenScore} />
 
-                <div className="mt-4 flex justify-center gap-8 text-sm text-white/70">
+                <div className="mt-4 flex justify-center gap-4 sm:gap-8 text-sm text-white/70">
                     <div>
                         <span
                             className={cn(
@@ -557,7 +557,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             />
                         </BarChart>
                     </ResponsiveContainer>
-                    <div className="mt-2 overflow-x-auto">
+                    <div className="mt-2 overflow-x-auto px-2 sm:px-0">
                         <table className="w-full text-left text-xs sm:text-sm text-white/80">
                             <thead className="border-b border-white/10 text-xs text-white/50">
                                 <tr>
@@ -590,7 +590,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
                         {t('analytics.growDuration', 'Grow Duration by Strain')}
                     </h3>
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto px-2 sm:px-0">
                         <table className="w-full text-left text-xs sm:text-sm text-white/80">
                             <thead className="border-b border-white/10 text-xs text-white/50">
                                 <tr>

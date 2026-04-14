@@ -2,7 +2,57 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 165) -- Model Registry, Bundle Budget, Bugfixes
+## Latest Session (Session 166) -- v1.8.1 Release
+
+**Status: i18n CI hardening, Hydro PDF/CSV export, HydroMonitor
+trend badge, Cloudflare fix, Crowdin config, version bump to 1.8.1.
+2307 tests passing, 0 TS errors, build OK.**
+
+### What Was Done (Session 166)
+
+1. **i18n Hardening (Phase A)**
+    - Added `pnpm run check:i18n` to release-gate.yml and deploy.yml
+    - Exposed `check:i18n-usage` in root package.json
+    - Populated crowdin.yml with full project config
+    - Fixed missing errorBoundary.retry in ES/FR/NL common.ts
+    - Fixed missing CRDT keys in ES settings.ts
+
+2. **Predictive Analytics & HydroMonitor (Phase B)**
+    - pdfReportService: optional hydro readings section with
+      pH/EC/Temp min/max/avg summary table
+    - AnalyticsDashboardView: CSV export extended with hydro data
+    - HydroMonitor: trend badge upgraded to color-coded pill
+      (emerald/amber/blue/red per level, role="status", aria-label)
+    - PredictiveInsightsPanel: reviewed, no changes needed
+
+3. **CI & Infrastructure (Phase C)**
+    - Cloudflare wrangler-action SHA pinned to v3.14.1 (da0e0dfe)
+    - Cloudflare project-name corrected to cannaguide-2025
+    - CHANGELOG consolidated (duplicate [Unreleased] merged)
+
+4. **Release v1.8.1**
+    - Version bumped in root + apps/web package.json
+    - CHANGELOG finalized with release date 2026-04-14
+    - Release notes created at docs/release-notes/2026-04-14-v1.8.1.md
+    - README badge + copilot-instructions version updated
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2307 passing (198 files)
+- Build: OK (173 precache entries)
+- Lint-Scopes: 0 violations
+
+### Next Steps
+
+- **i18n community completion**: strainsView (103 keys), helpView
+  (118 keys), faq (26 keys) -- use Crowdin for ES/FR/NL
+- **v2.0 planning**: RTL language support, Netlify re-enable
+- **Stryker scope expansion**: re-add local-ai modules after
+  timeout optimization
+- **Visual regression baselines**: regenerate after trend badge change
+
+## Previous Session (Session 165) -- Model Registry, Bundle Budget, Bugfixes
 
 **Status: Model Registry in ai-core, bundle budget with brotli enforcement,
 SeedFinder dead-code removed, mobile overflow fixed, telemetry extended

@@ -50,6 +50,9 @@ jobs:
             - name: Lint
               run: pnpm run lint:changed
 
+            - name: Check i18n completeness
+              run: pnpm run check:i18n
+
     # -----------------------------------------------------------------
     # Test suite -- vitest
     # -----------------------------------------------------------------

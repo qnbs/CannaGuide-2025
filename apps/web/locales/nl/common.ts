@@ -70,6 +70,7 @@ export const common = {
         title: 'Er is iets misgegaan.',
         description:
             'Er is een onverwachte fout opgetreden. Probeer de applicatie opnieuw te laden.',
+        retry: 'Opnieuw proberen',
         reload: 'Applicatie herladen',
         safeRecovery: 'Veilig herstel proberen',
     },

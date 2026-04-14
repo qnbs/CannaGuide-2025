@@ -71,6 +71,7 @@ export const common = {
     errorBoundary: {
         title: 'Une erreur est survenue.',
         description: "Une erreur inattendue s'est produite. Veuillez recharger l'application.",
+        retry: 'Reessayer',
         reload: "Recharger l'application",
         safeRecovery: 'Essayer la recuperation securisee',
     },

@@ -497,28 +497,44 @@ export const HydroMonitorView: React.FC = memo(() => {
                         </div>
 
                         <div className="flex items-center gap-3 text-xs">
-                            <span className="flex items-center gap-1 text-slate-300">
+                            <span
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset',
+                                    forecast.trend === 'stable' &&
+                                        'bg-emerald-500/10 text-emerald-400 ring-emerald-400/20',
+                                    forecast.trend === 'rising' &&
+                                        'bg-amber-500/10 text-amber-400 ring-amber-400/20',
+                                    forecast.trend === 'falling' &&
+                                        'bg-blue-500/10 text-blue-400 ring-blue-400/20',
+                                    forecast.trend === 'critical' &&
+                                        'bg-red-500/10 text-red-400 ring-red-400/20',
+                                )}
+                                role="status"
+                                aria-label={t(
+                                    `equipmentView.hydroMonitoring.forecast.trends.${forecast.trend}`,
+                                )}
+                            >
                                 {forecast.trend === 'rising' && (
                                     <PhosphorIcons.ArrowUp
-                                        className="w-3.5 h-3.5 text-amber-400"
+                                        className="w-3.5 h-3.5"
                                         aria-hidden="true"
                                     />
                                 )}
                                 {forecast.trend === 'falling' && (
                                     <PhosphorIcons.ArrowDown
-                                        className="w-3.5 h-3.5 text-blue-400"
+                                        className="w-3.5 h-3.5"
                                         aria-hidden="true"
                                     />
                                 )}
                                 {forecast.trend === 'stable' && (
                                     <PhosphorIcons.ArrowRight
-                                        className="w-3.5 h-3.5 text-emerald-400"
+                                        className="w-3.5 h-3.5"
                                         aria-hidden="true"
                                     />
                                 )}
                                 {forecast.trend === 'critical' && (
                                     <PhosphorIcons.WarningCircle
-                                        className="w-3.5 h-3.5 text-red-400"
+                                        className="w-3.5 h-3.5"
                                         aria-hidden="true"
                                     />
                                 )}

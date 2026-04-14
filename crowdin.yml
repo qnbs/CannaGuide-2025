@@ -1,1 +1,22 @@
-files: []
+# Crowdin translation management configuration
+# Docs: https://crowdin.github.io/crowdin-cli/configuration
+#
+# To activate: create a Crowdin project, set CROWDIN_PROJECT_ID and
+# CROWDIN_PERSONAL_TOKEN as environment variables, then run:
+#   crowdin upload sources && crowdin download
+#
+# Source language: English (en)
+# Target languages: German (de), Spanish (es), French (fr), Dutch (nl)
+
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+base_path: '.'
+preserve_hierarchy: true
+
+files:
+    - source: /apps/web/locales/en/*.ts
+      translation: /apps/web/locales/%two_letters_code%/%original_file_name%
+      type: js
+      # 12 source files per language:
+      # common, plants, knowledge, strains, equipment, settings,
+      # help, commandPalette, onboarding, seedbanks, strainsData, legal

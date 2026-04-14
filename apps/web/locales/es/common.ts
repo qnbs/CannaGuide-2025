@@ -71,6 +71,7 @@ export const common = {
     errorBoundary: {
         title: 'Algo salio mal.',
         description: 'Ocurrio un error inesperado. Por favor, intenta recargar la aplicacion.',
+        retry: 'Intentar de nuevo',
         reload: 'Recargar aplicacion',
         safeRecovery: 'Intentar recuperacion segura',
     },

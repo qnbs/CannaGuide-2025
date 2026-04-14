@@ -25,6 +25,7 @@ import { getGpuTier } from '@/services/local-ai'
 import { LlmModelSelector } from './LlmModelSelector'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
+import { useBatteryStatus } from '@/hooks/useBatteryStatus'
 import { SearchBar } from '@/components/common/SearchBar'
 
 const AboutTab = lazy(() => import('./AboutTab'))
@@ -34,6 +35,57 @@ const DataManagementTab = lazy(() => import('./DataManagementTab'))
 const IotSettingsTab = lazy(() => import('./IotSettingsTab'))
 const GrowManagerTab = lazy(() => import('./GrowManagerTab'))
 const WorkerTelemetryTab = import.meta.env.DEV ? lazy(() => import('./WorkerTelemetryTab')) : null
+
+const BatteryEcoStatusBadge: React.FC = memo(() => {
+    const { t } = useTranslation()
+    const battery = useBatteryStatus()
+
+    return (
+        <div className="flex flex-wrap gap-2 text-xs">
+            {battery.level != null && (
+                <span
+                    className={cn(
+                        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5',
+                        battery.level <= 15
+                            ? 'bg-red-900/40 text-red-300'
+                            : battery.level <= 25
+                              ? 'bg-amber-900/40 text-amber-300'
+                              : 'bg-slate-700/60 text-slate-300',
+                    )}
+                >
+                    <PhosphorIcons.Lightning className="w-3 h-3" />
+                    {t('settingsView.offlineAi.batteryStatusLabel')}: {battery.level}%
+                    {battery.charging ? ' (+)' : ''}
+                </span>
+            )}
+            <span
+                className={cn(
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5',
+                    battery.ecoActive
+                        ? 'bg-amber-900/40 text-amber-300'
+                        : 'bg-green-900/40 text-green-300',
+                )}
+            >
+                {battery.ecoActive
+                    ? t('settingsView.offlineAi.ecoStatusActive')
+                    : t('settingsView.offlineAi.ecoStatusInactive')}
+            </span>
+            <span
+                className={cn(
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5',
+                    battery.gpuGated
+                        ? 'bg-red-900/40 text-red-300'
+                        : 'bg-green-900/40 text-green-300',
+                )}
+            >
+                {battery.gpuGated
+                    ? t('settingsView.offlineAi.gpuStatusGated')
+                    : t('settingsView.offlineAi.gpuStatusAvailable')}
+            </span>
+        </div>
+    )
+})
+BatteryEcoStatusBadge.displayName = 'BatteryEcoStatusBadge'
 
 const timeOptions = [
     { value: '12', label: '12/12' },
@@ -869,6 +921,7 @@ const LocalAiOfflineCard: React.FC = () => {
                         </p>
                     )}
                     <div className="space-y-3 border-t border-slate-700/60 pt-3">
+                        <BatteryEcoStatusBadge />
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-slate-200">
@@ -1024,6 +1077,15 @@ const LocalAiFeaturesCard: React.FC = () => {
                             <Switch
                                 checked={localAi.ecoMode ?? false}
                                 onChange={(val) => handleToggle('ecoMode', val)}
+                            />
+                        </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.offlineAi.ecoModeForced')}
+                            description={t('settingsView.offlineAi.ecoModeForcedHint')}
+                        >
+                            <Switch
+                                checked={localAi.ecoModeForced ?? false}
+                                onChange={(val) => handleToggle('ecoModeForced', val)}
                             />
                         </SettingsRow>
                     </div>

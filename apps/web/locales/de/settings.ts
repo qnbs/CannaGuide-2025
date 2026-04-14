@@ -209,6 +209,30 @@ export const settingsView = {
         ecoMode: 'Eco-Modus',
         ecoModeHint:
             'WASM-Backend und kleinste Modelle erzwingen, um CPU-/GPU-Auslastung um bis zu 70% zu reduzieren. Ideal für schwache Geräte oder Akkusparen.',
+        ecoModeForced: 'Eco-Modus erzwingen',
+        ecoModeForcedHint:
+            'Immer im Eco-Modus laufen, unabhängig von Akku- oder Speicherzustand. Überschreibt automatische Erkennung.',
+        batteryGatingToast:
+            'Akku bei {{level}}% -- lokale KI pausiert, Weiterleitung an Cloud/Heuristiken.',
+        ecoAutoActivatedToast:
+            'Eco-Modus automatisch aktiviert wegen geringer Ressourcen (Speicher/Akku/Mobil).',
+        oomPressureToast:
+            'Speicherdruck ({{percent}}% Heap) -- {{level}}: Worker beendet um Absturz zu verhindern.',
+        batteryStatusLabel: 'Akku',
+        gpuStatusAvailable: 'GPU: Verfügbar',
+        gpuStatusGated: 'GPU: Pausiert (Akku)',
+        ecoStatusActive: 'Eco: Aktiv',
+        ecoStatusInactive: 'Eco: Inaktiv',
+        // OPFS Model Cache
+        opfsCacheTitle: 'ML-Modell-Cache (OPFS)',
+        opfsAvailable: 'OPFS verfügbar',
+        opfsUnavailable: 'OPFS nicht verfügbar -- Modelle werden bei Kaltstart neu geladen',
+        opfsCachedModels: 'Zwischengespeicherte Modelle: {{count}}',
+        opfsCacheSize: 'Cache-Größe: {{size}}',
+        opfsClearCache: 'Modell-Cache leeren',
+        opfsClearCacheConfirm: 'Modelle werden bei nächster Verwendung neu heruntergeladen.',
+        persistentStorageGranted: 'Persistenter Speicher: Gewährt',
+        persistentStorageDenied: 'Persistenter Speicher: Nicht gewährt (Browser kann Daten räumen)',
         // Persistent Cache
         enablePersistentCache: 'Persistenter Inferenz-Cache',
         enablePersistentCacheHint:

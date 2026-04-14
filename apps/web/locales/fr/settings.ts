@@ -210,6 +210,32 @@ export const settingsView = {
         ecoMode: 'Mode Eco',
         ecoModeHint:
             "Forcer le backend WASM et les modeles les plus petits pour reduire l'utilisation CPU/GPU jusqu'a 70 %. Ideal pour les appareils bas de gamme ou les economies de batterie.",
+        ecoModeForced: 'Forcer le Mode Eco',
+        ecoModeForcedHint:
+            "Toujours executer en mode eco, quel que soit l'etat de la batterie ou de la memoire. Remplace la detection automatique.",
+        batteryGatingToast:
+            'Batterie a {{level}}% -- IA locale en pause, redirection vers cloud/heuristiques.',
+        ecoAutoActivatedToast:
+            'Mode eco active automatiquement en raison de ressources faibles (memoire/batterie/mobile).',
+        oomPressureToast:
+            'Pression memoire ({{percent}}% heap) -- {{level}}: workers termines pour eviter un crash.',
+        batteryStatusLabel: 'Batterie',
+        gpuStatusAvailable: 'GPU : Disponible',
+        gpuStatusGated: 'GPU : En pause (batterie)',
+        ecoStatusActive: 'Eco : Actif',
+        ecoStatusInactive: 'Eco : Inactif',
+        // OPFS Model Cache
+        opfsCacheTitle: 'Cache de modeles ML (OPFS)',
+        opfsAvailable: 'OPFS disponible',
+        opfsUnavailable:
+            'OPFS indisponible -- les modeles seront retelecharges au demarrage a froid',
+        opfsCachedModels: 'Modeles en cache : {{count}}',
+        opfsCacheSize: 'Taille du cache : {{size}}',
+        opfsClearCache: 'Vider le cache de modeles',
+        opfsClearCacheConfirm: 'Les modeles seront retelecharges lors de la prochaine utilisation.',
+        persistentStorageGranted: 'Stockage persistant : Accorde',
+        persistentStorageDenied:
+            'Stockage persistant : Non accorde (le navigateur peut supprimer les donnees)',
         // Persistent Cache
         enablePersistentCache: "Cache d'inference persistant",
         enablePersistentCacheHint:

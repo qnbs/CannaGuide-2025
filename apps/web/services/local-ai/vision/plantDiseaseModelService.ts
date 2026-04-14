@@ -15,6 +15,7 @@
 import type { ModelStatus } from '@/types'
 import { captureLocalAiError } from '@/services/sentryService'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { opfsStorage } from '@/utils/opfsStorage'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -27,6 +28,7 @@ const DB_NAME = 'plantDiseaseModel'
 const DB_VERSION = 1
 const STORE_NAME = 'modelCache'
 const MODEL_KEY = 'modelBuffer'
+const OPFS_MODEL_KEY = 'plant-disease-mobilenetv2.onnx'
 
 // ---------------------------------------------------------------------------
 // Module state
@@ -104,9 +106,18 @@ export const ensureWorkerRegistered = (): void => {
 /** Current download/cache status of the ONNX model (synchronous). */
 export const getModelStatus = (): ModelStatus => _status
 
-/** Returns true if the model ArrayBuffer is present in IndexedDB. */
+/** Returns true if the model ArrayBuffer is present in OPFS or IndexedDB. */
 export const isModelCached = async (): Promise<boolean> => {
     try {
+        // Check OPFS first (more eviction-resistant)
+        if (opfsStorage.isAvailable()) {
+            const info = await opfsStorage.getInfo(OPFS_MODEL_KEY)
+            if (info && info.size > 0) {
+                if (_status === 'not-cached') _status = 'ready'
+                return true
+            }
+        }
+        // Fallback: check IndexedDB
         const buf = await idbGet<ArrayBuffer>(MODEL_KEY)
         const cached = buf !== null && buf.byteLength > 0
         if (cached && _status === 'not-cached') _status = 'ready'
@@ -117,10 +128,26 @@ export const isModelCached = async (): Promise<boolean> => {
     }
 }
 
-/** Retrieves the cached ArrayBuffer, or null if not present. */
+/** Retrieves the cached ArrayBuffer from OPFS (primary) or IndexedDB (fallback). */
 export const getModelBuffer = async (): Promise<ArrayBuffer | null> => {
     try {
-        return await idbGet<ArrayBuffer>(MODEL_KEY)
+        // OPFS: primary cache (eviction-resistant)
+        if (opfsStorage.isAvailable()) {
+            const buf = await opfsStorage.read(OPFS_MODEL_KEY)
+            if (buf && buf.byteLength > 0) return buf
+        }
+        // IndexedDB: fallback
+        const buf = await idbGet<ArrayBuffer>(MODEL_KEY)
+        if (buf && buf.byteLength > 0) {
+            // Opportunistic migration: copy from IndexedDB to OPFS if available
+            if (opfsStorage.isAvailable()) {
+                void opfsStorage.write(OPFS_MODEL_KEY, buf).catch(() => {
+                    // Non-critical: OPFS write failure
+                })
+            }
+            return buf
+        }
+        return null
     } catch (err) {
         captureLocalAiError(err, { consumer: 'plantDiseaseModelService', stage: 'cache-read' })
         return null
@@ -187,6 +214,12 @@ export const downloadModel = async (onProgress?: (pct: number) => void): Promise
         }
 
         await idbPut(MODEL_KEY, buffer)
+        // Persist to OPFS for eviction-resistant caching (non-blocking)
+        if (opfsStorage.isAvailable()) {
+            void opfsStorage.write(OPFS_MODEL_KEY, buffer).catch(() => {
+                // Non-critical: model still available from IndexedDB
+            })
+        }
         _status = 'ready'
         onProgress?.(100)
         return true
@@ -197,10 +230,13 @@ export const downloadModel = async (onProgress?: (pct: number) => void): Promise
     }
 }
 
-/** Removes the cached model from IndexedDB and resets status. */
+/** Removes the cached model from OPFS and IndexedDB, resets status. */
 export const clearModel = async (): Promise<void> => {
     try {
         await idbDelete(MODEL_KEY)
+        if (opfsStorage.isAvailable()) {
+            await opfsStorage.delete(OPFS_MODEL_KEY)
+        }
         _status = 'not-cached'
     } catch (err) {
         captureLocalAiError(err, { consumer: 'plantDiseaseModelService', stage: 'cache-clear' })

@@ -5,6 +5,8 @@ import {
     registerModeAccessors,
     detectEcoCondition,
     applyAdaptiveMode,
+    registerEcoCallbacks,
+    isCriticalBattery,
 } from './ecoModeService'
 
 describe('aiEcoModeService', () => {
@@ -69,6 +71,52 @@ describe('aiEcoModeService', () => {
             registerModeAccessors(() => 'hybrid', setter)
             await applyAdaptiveMode()
             expect(setter).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('registerEcoCallbacks', () => {
+        it('fires onBatteryGating when critical battery detected', async () => {
+            const onGating = vi.fn()
+            registerEcoCallbacks({ onBatteryGating: onGating })
+             
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.1, charging: false })
+            Object.defineProperty(navigator, 'deviceMemory', { value: 8, configurable: true })
+            registerModeAccessors(
+                () => 'cloud',
+                () => {},
+            )
+            // Reset critical state
+            setEcoModeExplicit(false)
+            await applyAdaptiveMode()
+            expect(isCriticalBattery()).toBe(true)
+            expect(onGating).toHaveBeenCalledWith(10)
+            // Cleanup
+            registerEcoCallbacks({})
+            delete nav.getBattery
+        })
+
+        it('fires onEcoAutoActivated when auto-switching to eco', async () => {
+            const onEcoActivated = vi.fn()
+            registerEcoCallbacks({ onEcoAutoActivated: onEcoActivated })
+            Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true })
+            const setter = vi.fn()
+            registerModeAccessors(() => 'hybrid', setter)
+            await applyAdaptiveMode()
+            expect(onEcoActivated).toHaveBeenCalledOnce()
+            // Cleanup
+            registerEcoCallbacks({})
+        })
+
+        it('does not fire callbacks when not registered', async () => {
+            registerEcoCallbacks({})
+            Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true })
+            const setter = vi.fn()
+            registerModeAccessors(() => 'hybrid', setter)
+            // Should not throw
+            await expect(applyAdaptiveMode()).resolves.toBeUndefined()
         })
     })
 })

@@ -250,6 +250,7 @@ export {
     isCriticalBattery,
     setEcoModeExplicit,
     registerModeAccessors,
+    registerEcoCallbacks,
     detectEcoCondition,
     detectCriticalBattery,
     applyAdaptiveMode,

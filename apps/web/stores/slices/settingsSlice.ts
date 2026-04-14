@@ -176,6 +176,7 @@ export const defaultSettings: AppSettings = {
         inferenceTimeoutMs: 60000,
         quantizationLevel: 'auto',
         ecoMode: false,
+        ecoModeForced: false,
     },
 
     data: {

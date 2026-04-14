@@ -342,6 +342,38 @@ const mountHydratedApp = async () => {
         registerAllWorkerFactories()
         workerBus.setWorkerPool(workerPool)
 
+        // Register battery-gating + OOM UI notification callbacks
+        const { registerEcoCallbacks } = await import('@/services/local-ai')
+        const { getT } = await import('@/i18n')
+        registerEcoCallbacks({
+            onBatteryGating: (level: number) => {
+                const t = getT()
+                getUISnapshot().addNotification({
+                    message: t('settingsView.offlineAi.batteryGatingToast', {
+                        level: String(level),
+                    }),
+                    type: 'info',
+                })
+            },
+            onEcoAutoActivated: () => {
+                const t = getT()
+                getUISnapshot().addNotification({
+                    message: t('settingsView.offlineAi.ecoAutoActivatedToast'),
+                    type: 'info',
+                })
+            },
+        })
+        workerPool.setOnMemoryPressureHook((level, heapPercent) => {
+            const t = getT()
+            getUISnapshot().addNotification({
+                message: t('settingsView.offlineAi.oomPressureToast', {
+                    level,
+                    percent: String(heapPercent),
+                }),
+                type: level === 'critical' ? 'error' : 'info',
+            })
+        })
+
         // Initialize proactive smart coach (monitors sensor thresholds -> AI advice)
         const { proactiveCoachService } = await import('@/services/proactiveCoachService')
         proactiveCoachService.init(hydratedStore)

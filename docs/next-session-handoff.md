@@ -2,7 +2,65 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 163) -- Stryker Mutation Testing Performance Optimization
+## Latest Session (Session 164) -- Battery-Gating UI + OPFS Cache + CI/CD
+
+**Status: All three features production-ready. 2307 tests passing,
+0 TS errors, build OK. CF PR preview workflow deployed.**
+
+### What Was Done (Session 164)
+
+1. **Battery-Gating + OOM UI (Phase 1)**
+    - Sentry events: `battery_critical_gating`, `eco_mode_auto_activated`
+      in ecoModeService; `worker_oom_critical`, `worker_oom_warn` in
+      workerPool
+    - Callback registry in ecoModeService (`registerEcoCallbacks`)
+      and workerPool (`setOnMemoryPressureHook`) for UI notifications
+    - Toast notifications wired in index.tsx boot sequence via
+      `getUISnapshot().addNotification()`
+    - `ecoModeForced` setting: type, default, listenerMiddleware,
+      toggle in SettingsView
+    - `useBatteryStatus` hook + `BatteryEcoStatusBadge` component
+    - i18n keys for battery/eco in all 5 languages
+
+2. **OPFS ML Model Cache (Phase 2)**
+    - `plantDiseaseModelService.ts`: OPFS primary cache with
+      IndexedDB fallback, opportunistic IDB->OPFS migration
+    - `OpfsCacheSection` component in DataManagementTab: model list,
+      cache size, clear button, availability badge
+    - Determined Transformers.js + WebLLM self-manage caches (N/A)
+    - i18n keys for OPFS UI in all 5 languages
+
+3. **CI/CD Finalization (Phase 3)**
+    - Cloudflare Pages PR preview: branch-scoped deploy on
+      `pull_request`, auto-updating PR comment with preview URL
+    - Post-deploy health check (curl HTTP 200) for CF production
+    - CSP consistency check (`check-csp-consistency.mjs`) added to
+      CI quality gates
+
+4. **Tests**
+    - ecoModeService: 3 new callback tests (battery gating, eco
+      auto-activation, no-op when unregistered)
+    - opfsStorage: 10 new tests (availability detection, singleton
+      API, mocked OPFS operations)
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2307 passing (198 files)
+- Build: OK (173 precache entries)
+
+### Next Steps
+
+1. **Monitor CF deploy:** Verify Cloudflare secrets work on next
+   push -- check `deploy-cloudflare.yml` run in Actions tab.
+2. **PR preview smoke test:** Create a test PR to verify preview
+   deployment + comment posting works.
+3. **Continue Phase 1.6:** Stryker mutation coverage for eco/OPFS
+   services (add to stryker.conf.json scope if needed).
+4. **OPFS migration task:** Consider background IDB->OPFS migration
+   at app start for existing cached models.
+
+## Previous Session (Session 163) -- Stryker Mutation Testing Performance Optimization
 
 **Status: Stryker mutation testing optimized from >6h timeout to estimated
 45-90 min (first run) / 15-30 min (incremental). Root cause: coverageAnalysis

@@ -7,6 +7,8 @@
 // OOM on mobile / low-end hardware.
 // ---------------------------------------------------------------------------
 
+import { Sentry } from '@/services/sentryService'
+
 /** Battery level below which WebGPU/WebLLM are hard-disabled. */
 const CRITICAL_BATTERY_THRESHOLD = 0.15
 
@@ -15,6 +17,10 @@ let _ecoActive = false
 let _criticalBattery = false
 let _modeGetter: (() => string) | null = null
 let _modeSetter: ((mode: string) => void) | null = null
+
+// ── UI notification callbacks (registered from index.tsx) ──
+let _onBatteryGating: ((level: number) => void) | null = null
+let _onEcoAutoActivated: (() => void) | null = null
 
 /** True when eco mode is active — callers can use this to skip heavy models. */
 export const isEcoMode = (): boolean => _ecoActive
@@ -41,6 +47,18 @@ export const registerModeAccessors = (
 ): void => {
     _modeGetter = getter
     _modeSetter = setter
+}
+
+/**
+ * Register callbacks for UI notifications (toast, native push).
+ * Called from index.tsx during boot to avoid circular service -> store deps.
+ */
+export const registerEcoCallbacks = (callbacks: {
+    onBatteryGating?: (level: number) => void
+    onEcoAutoActivated?: () => void
+}): void => {
+    _onBatteryGating = callbacks.onBatteryGating ?? null
+    _onEcoAutoActivated = callbacks.onEcoAutoActivated ?? null
 }
 
 /**
@@ -109,6 +127,20 @@ export const applyAdaptiveMode = async (): Promise<void> => {
         _criticalBattery = critical
         if (critical) {
             console.debug('[AI] Critical battery (<15%) -- WebGPU/WebLLM hard-disabled.')
+            Sentry.captureMessage('battery_critical_gating', 'warning')
+            // Resolve battery level for notification
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrowing for Battery API
+                const nav = navigator as unknown as {
+                    getBattery?: () => Promise<{ level: number; charging: boolean }>
+                }
+                const battery = await nav.getBattery?.()
+                if (battery) {
+                    _onBatteryGating?.(Math.round(battery.level * 100))
+                }
+            } catch {
+                _onBatteryGating?.(0)
+            }
         }
     }
 
@@ -118,5 +150,7 @@ export const applyAdaptiveMode = async (): Promise<void> => {
         _ecoActive = true
         _modeSetter?.('eco')
         console.debug('[AI] Adaptive routing: auto-switched to eco mode (low resources detected).')
+        Sentry.captureMessage('eco_mode_auto_activated', 'info')
+        _onEcoAutoActivated?.()
     }
 }

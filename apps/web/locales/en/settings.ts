@@ -202,6 +202,30 @@ export const settingsView = {
         ecoMode: 'Eco Mode',
         ecoModeHint:
             'Force WASM backend and smallest models to reduce CPU/GPU usage by up to 70%. Ideal for low-end devices or battery savings.',
+        ecoModeForced: 'Force Eco Mode',
+        ecoModeForcedHint:
+            'Always run in eco mode regardless of battery or memory state. Overrides automatic detection.',
+        batteryGatingToast:
+            'Battery at {{level}}% -- local AI paused, routing to cloud/heuristics.',
+        ecoAutoActivatedToast:
+            'Eco mode auto-activated due to low resources (memory/battery/mobile).',
+        oomPressureToast:
+            'Memory pressure ({{percent}}% heap) -- {{level}}: workers terminated to prevent crash.',
+        batteryStatusLabel: 'Battery',
+        gpuStatusAvailable: 'GPU: Available',
+        gpuStatusGated: 'GPU: Paused (battery)',
+        ecoStatusActive: 'Eco: Active',
+        ecoStatusInactive: 'Eco: Inactive',
+        // OPFS Model Cache
+        opfsCacheTitle: 'ML Model Cache (OPFS)',
+        opfsAvailable: 'OPFS Available',
+        opfsUnavailable: 'OPFS Unavailable -- models will re-download on cold start',
+        opfsCachedModels: 'Cached models: {{count}}',
+        opfsCacheSize: 'Cache size: {{size}}',
+        opfsClearCache: 'Clear Model Cache',
+        opfsClearCacheConfirm: 'Models will be re-downloaded on next use.',
+        persistentStorageGranted: 'Persistent storage: Granted',
+        persistentStorageDenied: 'Persistent storage: Not granted (browser may evict data)',
         // Persistent Cache
         enablePersistentCache: 'Persistent Inference Cache',
         enablePersistentCacheHint:

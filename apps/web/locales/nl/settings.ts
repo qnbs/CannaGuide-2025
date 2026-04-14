@@ -208,6 +208,32 @@ export const settingsView = {
         ecoMode: 'Eco-modus',
         ecoModeHint:
             'Forceer WASM-backend en kleinste modellen om CPU/GPU-gebruik tot 70% te verminderen. Ideaal voor low-end apparaten of batterijbesparing.',
+        ecoModeForced: 'Eco-modus forceren',
+        ecoModeForcedHint:
+            'Altijd in eco-modus draaien, ongeacht batterij- of geheugenstatus. Overschrijft automatische detectie.',
+        batteryGatingToast:
+            'Batterij op {{level}}% -- lokale AI gepauzeerd, doorverwijzing naar cloud/heuristieken.',
+        ecoAutoActivatedToast:
+            'Eco-modus automatisch geactiveerd vanwege lage bronnen (geheugen/batterij/mobiel).',
+        oomPressureToast:
+            'Geheugendruk ({{percent}}% heap) -- {{level}}: workers beeindigd om crash te voorkomen.',
+        batteryStatusLabel: 'Batterij',
+        gpuStatusAvailable: 'GPU: Beschikbaar',
+        gpuStatusGated: 'GPU: Gepauzeerd (batterij)',
+        ecoStatusActive: 'Eco: Actief',
+        ecoStatusInactive: 'Eco: Inactief',
+        // OPFS Model Cache
+        opfsCacheTitle: 'ML-modelcache (OPFS)',
+        opfsAvailable: 'OPFS beschikbaar',
+        opfsUnavailable:
+            'OPFS niet beschikbaar -- modellen worden opnieuw gedownload bij koude start',
+        opfsCachedModels: 'Gecachte modellen: {{count}}',
+        opfsCacheSize: 'Cachegrootte: {{size}}',
+        opfsClearCache: 'Modelcache wissen',
+        opfsClearCacheConfirm: 'Modellen worden opnieuw gedownload bij volgend gebruik.',
+        persistentStorageGranted: 'Persistente opslag: Verleend',
+        persistentStorageDenied:
+            'Persistente opslag: Niet verleend (browser kan gegevens verwijderen)',
         // Persistent Cache
         enablePersistentCache: 'Persistente inferentiecache',
         enablePersistentCacheHint:

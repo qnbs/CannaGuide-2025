@@ -418,6 +418,8 @@ export interface AppSettings {
         quantizationLevel: 'auto' | 'q4f16' | 'q4' | 'none'
         /** Eco-mode: disables WebLLM + image gen, forces WASM backend and smallest model. */
         ecoMode: boolean
+        /** Force eco mode regardless of battery/memory state. */
+        ecoModeForced: boolean
     }
     data: {
         autoBackup: 'off' | 'daily' | 'weekly'

@@ -76,6 +76,13 @@ startAppListening({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dispatch payload narrowing
             setEcoModeExplicit(action.payload.value as boolean)
         }
+        if (action.payload.path === 'localAi.ecoModeForced') {
+            const { setEcoModeExplicit } = await import('@/services/local-ai')
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dispatch payload narrowing
+            const forced = action.payload.value as boolean
+            // When forced, eco mode is always on regardless of device state
+            setEcoModeExplicit(forced)
+        }
     },
 })
 

@@ -210,6 +210,31 @@ export const settingsView = {
         ecoMode: 'Modo Eco',
         ecoModeHint:
             'Fuerza el backend WASM y los modelos mas pequenos para reducir el uso de CPU/GPU hasta un 70%. Ideal para dispositivos de gama baja o ahorro de bateria.',
+        ecoModeForced: 'Forzar Modo Eco',
+        ecoModeForcedHint:
+            'Ejecutar siempre en modo eco, independientemente del estado de bateria o memoria. Anula la deteccion automatica.',
+        batteryGatingToast:
+            'Bateria al {{level}}% -- IA local pausada, redirigiendo a nube/heuristicas.',
+        ecoAutoActivatedToast:
+            'Modo eco activado automaticamente por recursos bajos (memoria/bateria/movil).',
+        oomPressureToast:
+            'Presion de memoria ({{percent}}% heap) -- {{level}}: workers terminados para evitar fallo.',
+        batteryStatusLabel: 'Bateria',
+        gpuStatusAvailable: 'GPU: Disponible',
+        gpuStatusGated: 'GPU: Pausada (bateria)',
+        ecoStatusActive: 'Eco: Activo',
+        ecoStatusInactive: 'Eco: Inactivo',
+        // OPFS Model Cache
+        opfsCacheTitle: 'Cache de Modelos ML (OPFS)',
+        opfsAvailable: 'OPFS disponible',
+        opfsUnavailable: 'OPFS no disponible -- los modelos se descargaran de nuevo en inicio frio',
+        opfsCachedModels: 'Modelos en cache: {{count}}',
+        opfsCacheSize: 'Tamano de cache: {{size}}',
+        opfsClearCache: 'Limpiar cache de modelos',
+        opfsClearCacheConfirm: 'Los modelos se descargaran de nuevo en el proximo uso.',
+        persistentStorageGranted: 'Almacenamiento persistente: Concedido',
+        persistentStorageDenied:
+            'Almacenamiento persistente: No concedido (el navegador puede eliminar datos)',
         // Persistent Cache
         enablePersistentCache: 'Cache de Inferencia Persistente',
         enablePersistentCacheHint:

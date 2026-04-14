@@ -19,6 +19,7 @@ import { getMaxPoolSize } from '@/utils/deviceCapabilities'
 import { AtomicsChannel } from '@/utils/atomicsChannel'
 import { LockFreeRingBuffer } from '@/utils/lockFreeRingBuffer'
 import { getPerformanceMemory } from '@/utils/browserApis'
+import { Sentry } from '@/services/sentryService'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -55,6 +56,9 @@ export interface PoolMetrics {
 
 /** Callback invoked when a worker is freshly spawned by the pool. */
 export type OnSpawnHook = (name: string, worker: Worker) => void
+
+/** Callback invoked when memory pressure is detected. */
+export type OnMemoryPressureHook = (level: 'warn' | 'critical', heapPercent: number) => void
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -95,6 +99,8 @@ export class WorkerPool {
 
     /** Optional hook called after every lazy spawn. */
     private onSpawnHook: OnSpawnHook | undefined
+    /** Optional hook called when memory pressure is detected. */
+    private onMemoryPressureHook: OnMemoryPressureHook | undefined
     /** Handle for the periodic memory pressure check interval. */
     private memoryCheckHandle: ReturnType<typeof setInterval> | null = null
     /** W-06/SAB: AtomicsChannels keyed by worker name (main-thread side). */
@@ -241,6 +247,11 @@ export class WorkerPool {
         this.onSpawnHook = hook
     }
 
+    /** Set a hook called when memory pressure triggers worker termination. */
+    setOnMemoryPressureHook(hook: OnMemoryPressureHook): void {
+        this.onMemoryPressureHook = hook
+    }
+
     // -------------------------------------------------------------------
     // OOM Memory Pressure Monitor (W-06.1)
     // -------------------------------------------------------------------
@@ -284,17 +295,22 @@ export class WorkerPool {
         const ratio = mem.usedJSHeapSize / mem.jsHeapSizeLimit
         if (ratio < HEAP_WARN_THRESHOLD) return ratio
 
+        const heapPercent = Math.round(ratio * 100)
         if (ratio >= HEAP_CRITICAL_THRESHOLD) {
             // Critical: terminate ALL non-hot workers
             console.debug(
                 `[WorkerPool] CRITICAL memory pressure (${(ratio * 100).toFixed(1)}%) -- terminating all non-hot workers`,
             )
+            Sentry.captureMessage(`worker_oom_critical: heap at ${heapPercent}%`, 'error')
+            this.onMemoryPressureHook?.('critical', heapPercent)
             this.terminateNonHotWorkers()
         } else {
             // Warning: terminate idle workers only
             console.debug(
                 `[WorkerPool] Memory pressure (${(ratio * 100).toFixed(1)}%) -- terminating idle workers`,
             )
+            Sentry.captureMessage(`worker_oom_warn: heap at ${heapPercent}%`, 'warning')
+            this.onMemoryPressureHook?.('warn', heapPercent)
             this.terminateIdleWorkers()
         }
         return ratio

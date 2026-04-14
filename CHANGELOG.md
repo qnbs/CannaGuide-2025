@@ -29,6 +29,17 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   resistant to browser eviction on iOS/Safari
 - **feat(ci):** Cloudflare Pages CI deployment workflow -- builds
   with BUILD_BASE_PATH=/ and deploys via wrangler pages deploy
+- **feat(ai):** Battery-gating UI -- Sentry events for critical
+  battery (<15%) and OOM pressure (85%/90%), toast notifications
+  via callback registry, BatteryEcoStatusBadge in Settings,
+  ecoModeForced toggle with listenerMiddleware wiring
+- **feat(ai):** OPFS ML model cache integration -- plantDisease
+  model stored in Origin Private File System with IndexedDB
+  fallback, OPFS cache management UI in DataManagementTab
+- **feat(ci):** Cloudflare Pages PR preview deployments -- each
+  PR deploys to branch-scoped URL with auto-updating comment
+- **feat(ci):** CSP consistency check added to CI quality gates
+- **feat(ci):** Post-deploy health check for Cloudflare Pages
 
 ### Changed
 

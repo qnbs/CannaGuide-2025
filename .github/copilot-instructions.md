@@ -54,7 +54,7 @@ apps/
     components/          # React components: common/, icons/, navigation/, ui/, views/
     stores/              # Redux: slices/, selectors/, middleware, store config
     services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
-    hooks/               # Custom React hooks (25)
+    hooks/               # Custom React hooks (28)
     data/                # Static data: 776 strains, FAQ, lexicon (91 entries), guides, diseases (22 entries), learningPaths (5 paths)
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 source files each)
     workers/             # Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation, voice
@@ -95,7 +95,7 @@ packages/
 scripts/                 # Build/lint/merge scripts
 docker/                  # IoT mock servers (ESP32 sensor simulator)
 docs/                    # Developer guides, roadmap
-.github/                 # 22 CI/CD workflows, issue templates
+.github/                 # 24 CI/CD workflows, issue templates
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
 
@@ -610,7 +610,7 @@ After implementation is complete with all validations passing, update **all affe
 | `docs/api/rag-pipeline.md`                                                      | RAG pipeline API (growLogRagService, ragEmbeddingCacheService)                                                                                                               |
 | `docs/api/local-ai-infrastructure.md`                                           | Local AI infrastructure API (cache, telemetry, preload, 3-layer fallback)                                                                                                    |
 | `docs/DEPENDENCY-GRAPH.md`                                                      | Monorepo package topology, ESLint enforcement, TurboRepo pipeline dependencies                                                                                               |
-| `docs/ARCHITECTURE-MIGRATION-PLAN.md`                                           | Service classification (117 services) and future migration priorities                                                                                                        |
+| `docs/ARCHITECTURE-MIGRATION-PLAN.md`                                           | Service classification (130 services) and future migration priorities                                                                                                        |
 | `scripts/security/check-csp-consistency.mjs`                                    | CI: CSP consistency across securityHeaders/index.html/netlify                                                                                                                |
 | `scripts/check-i18n-completeness.mjs`                                           | CI: i18n key coverage checker across all languages                                                                                                                           |
 | `apps/desktop/package.json`                                                     | @cannaguide/desktop -- Tauri v2 desktop app package                                                                                                                          |

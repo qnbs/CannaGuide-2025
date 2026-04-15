@@ -1,7 +1,7 @@
 # ADR-0006: Equipment Grow Scoping Deferred to Session D
 
 **Date:** 2025-07-14
-**Status:** Proposed
+**Status:** Deferred
 **Deciders:** Core team
 
 ## Context

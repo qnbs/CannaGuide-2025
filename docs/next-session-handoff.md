@@ -2,7 +2,83 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 169) -- Lockfile Sync Fix (CI/Vercel/Codespace)
+## Latest Session (Session 170) -- Comprehensive Documentation Audit
+
+**Status: All documentation files audited and synchronized to actual
+codebase state. 15+ files updated, 30+ metric corrections applied.
+2312 tests passing, 0 TS errors, build OK.**
+
+### What Was Done (Session 170)
+
+1. **Metric Verification (Phase 0)**
+    - Verified all app metrics via terminal: 2312 tests (199 files),
+      24 CI workflows, 130 services (93 root + 37 local-ai),
+      28 hooks, 19 Redux slices, 9 Zustand stores, 11 workers,
+      776 strains, 91 lexikon entries, 22 diseases, 5 learning paths
+
+2. **README.md (Phase 1)** -- 16 corrections
+    - DE version badge v1.7.2 -> v1.8.1, test counts -> 2312,
+      hooks 26/25 -> 28, CI 22 -> 24, services 117 -> 130,
+      added v1.8 to roadmap summary
+
+3. **ARCHITECTURE.md (Phase 2)** -- 3 corrections
+    - Test count 2253 -> 2312 (2 locations), hooks 25 -> 28
+
+4. **ROADMAP.md (Phase 3)** -- 7 corrections
+    - All release dates changed from fake Q-dates to actual
+      CHANGELOG dates (v1.1 through v1.8)
+
+5. **Audit docs (Phase 4)** -- 5 corrections
+    - audit-roadmap-2026-q2.md: version, tests, CI count,
+      S1 dashboard [3/3] -> [1/3] (admin blockers)
+    - ui-ux-audit.md: historical test count annotated
+
+6. **Technical docs (Phase 5)** -- 6 corrections
+    - local-ai-developer-guide.md: ONNX v1.21+ -> v1.20.0
+    - distribution.md: Tauri re-added as active target,
+      new Tauri v2 Desktop section added
+    - DEPENDENCY-GRAPH.md: 117/25 -> 130/28, Session 62 -> 170
+
+7. **ADRs and other docs (Phase 6)** -- 4 corrections
+    - ADR-0001: date 2026-Q2 -> 2026-04-02, services 15 -> 130,
+      workers 7 -> 11
+    - ADR-0006: status Proposed -> Deferred
+    - AUDIT_BACKLOG.md: 15 local AI services -> 37 modules
+    - monorepo-architecture.md: hooks 25 -> 28
+
+8. **copilot-instructions.md (Phase 7)** -- 3 corrections
+    - Hooks 25 -> 28, CI 22 -> 24, migration plan 117 -> 130
+
+9. **ARCHITECTURE-MIGRATION-PLAN.md** -- 1 correction
+    - Services 117 -> 130 (93 root + 37 local-ai)
+
+### Verified Metrics
+
+- Version: 1.8.1
+- Tests: 2312 passing (199 files, 0 failures)
+- CI Workflows: 24
+- Services: 130 (93 root + 37 local-ai)
+- Hooks: 28
+- Redux Slices: 19 (+1 runtime workerMetricsSlice)
+- Zustand Stores: 9
+- Workers: 11
+- Strains: 776, Lexikon: 91, Diseases: 22, Learning Paths: 5
+- Themes: 9, Languages: 5, i18n source files: 12/lang
+
+### Next Steps
+
+- **CI green verification**: confirm all 24 workflows pass
+- **Tauri code signing**: configure signing certificates for
+  macOS/Windows distribution (requires dev accounts)
+- **Lighthouse audit**: run on live deployment to verify scores
+- **i18n community completion**: strainsView (103 keys),
+  helpView (118 keys), faq (26 keys)
+- **S1 audit blockers**: S1.2 CII Badge (admin),
+  S1.3 Branch Protection (admin)
+
+---
+
+## Previous Session (Session 169) -- Lockfile Sync Fix (CI/Vercel/Codespace)
 
 **Status: pnpm-lock.yaml regenerated to include apps/desktop
 workspace with 9 Tauri dependencies. Fixes CI
@@ -27,7 +103,7 @@ build OK.**
     - Codespace: setup.sh creates node_modules correctly,
       @cannaguide/ui/tailwind-preset resolves for Tailwind CSS
 
-### Verified Metrics
+### Verified Metrics (Session 169)
 
 - Typecheck: 0 errors (TS2719 filtered)
 - Tests: 2312 passing (199 files, 0 failures)
@@ -36,7 +112,7 @@ build OK.**
 - Resolution: @cannaguide/ui/tailwind-preset verified
 - Resolution: @tauri-apps/api verified
 
-### Next Steps
+### Next Steps (Session 169)
 
 - **CI green verification**: confirm GitHub Actions passes after push
 - **Vercel deploy verification**: confirm deployment succeeds

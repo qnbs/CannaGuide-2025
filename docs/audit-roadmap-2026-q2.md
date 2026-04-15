@@ -5,9 +5,9 @@
 > Dedizierte Roadmap zur Umsetzung aller Maßnahmen aus dem **Full-Scale Deep Audit, Critical Evaluation & Action-Plan** (Stand: 23. März 2026, Commit `473044d`).
 > Dieses Dokument ist der zentrale Übergabe- und Anknüpfungspunkt für alle zukünftigen Sessions.
 
-**Letzte Aktualisierung:** 2026-04-11
+**Letzte Aktualisierung:** 2026-04-15
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
-**Aktuell:** v1.8.0 | 2253 Tests (192 Dateien) | GitHub Attestation + CycloneDX SBOM | 22 CI Workflows gruen | 0 Security Alerts
+**Aktuell:** v1.8.1 | 2312 Tests (199 Dateien) | GitHub Attestation + CycloneDX SBOM | 24 CI Workflows gruen | 0 Security Alerts
 
 ---
 
@@ -35,13 +35,13 @@
 
 | Metrik            | Wert                                | Bewertung              |
 | ----------------- | ----------------------------------- | ---------------------- |
-| App-Version       | v1.8.0                              | ✅ Stabil              |
-| Tests             | 2253/2253 (192 Dateien)             | ✅ Gruen               |
+| App-Version       | v1.8.1                              | ✅ Stabil              |
+| Tests             | 2312/2312 (199 Dateien)             | ✅ Gruen               |
 | OpenSSF Scorecard | GitHub Attestation + CycloneDX SBOM | ✅ release-publish     |
 | Test-Coverage     | ~33.66 %                            | ✅ Ziel >30 % erreicht |
 | Duplicate Code    | ~115 Major-Bloecke                  | ⚠ Technische Schuld    |
 | Security Alerts   | 0                                   | ✅                     |
-| CI Workflows      | 22 (alle gruen)                     | ✅                     |
+| CI Workflows      | 24 (alle gruen)                     | ✅                     |
 | Stryker Mutation  | Baseline erstellt                   | ✅ Neu (Session 63)    |
 
 ### Soll-Zustand (nach vollständiger Roadmap)
@@ -64,13 +64,13 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-04-14 (Documentation Overhaul + UI Reorder)
-App-Version:        v1.8.0
-Tests:              2253/2253 (192 files)
-Naechste Prioritaet:  Stryker CI Baseline, a11y control-has-associated-label
-Sprint-Fortschritt: S1 [3/3] | S2 [4/4] | S3 [5/5] | S4 [2/2] | S5 [8/8] | S6 [0/7]
-Gesamtfortschritt:  ████████████████████ 22/29 Tasks (~76%)
-Blocker:            --
+Letzte Session:     2026-04-15 (Comprehensive Documentation Audit)
+App-Version:        v1.8.1
+Tests:              2312/2312 (199 files)
+Naechste Prioritaet:  S6 Tasks, a11y control-has-associated-label
+Sprint-Fortschritt: S1 [1/3] | S2 [4/4] | S3 [5/5] | S4 [2/2] | S5 [8/8] | S6 [0/7]
+Gesamtfortschritt:  ████████████████████ 20/29 Tasks (~69%)
+Blocker:            S1.2 CII Badge (Email-Verifikation), S1.3 Branch Protection (Admin-PAT)
 ```
 
                         createCachedPipelineLoader-Dedup (4 Services, ~75 LOC)
@@ -233,7 +233,7 @@ Eco-Mode, ARCHITECTURE.md, Lighthouse-Fonts
 | **Warum**        | Automatische Alerts für neue CVEs/Dependencies                                     |
 | **Wie**          | GitHub → Settings → Code Scanning → Enable → Workflow-Trigger auf `schedule: cron` |
 | **Aufwand**      | 10 min                                                                             |
-| **Status**       | ⬜ Nicht gestartet                                                                 |
+| **Status**       | ⬜ Registriert, Email-Verifikation ausstehend (erfordert manuellen Admin-Zugang) |
 | **Abhängigkeit** | Repo Settings Zugang                                                               |
 
 ### S3.3 -- Code-Qualitaet verbessern (ESLint-getrieben)

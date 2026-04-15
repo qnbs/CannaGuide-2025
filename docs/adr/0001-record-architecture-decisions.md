@@ -1,12 +1,12 @@
 # ADR-0001: Record Architecture Decisions
 
-**Date:** 2026-Q2
+**Date:** 2026-04-02
 **Status:** Accepted
 **Deciders:** Core team
 
 ## Context
 
-CannaGuide 2025 has grown to a complex monorepo with 15 AI services, dual IndexedDB persistence, a 3-layer ML fallback cascade, 7 Web Workers, and native bridge abstractions. Key architectural decisions (why dual IndexedDB, why WorkerBus over direct postMessage, why AI facade pattern) are embedded in code and copilot-instructions but not formally captured in a discoverable, auditable format.
+CannaGuide 2025 has grown to a complex monorepo with 130 services (incl. 37 local-AI), dual IndexedDB persistence, a 3-layer ML fallback cascade, 11 Web Workers, and native bridge abstractions. Key architectural decisions (why dual IndexedDB, why WorkerBus over direct postMessage, why AI facade pattern) are embedded in code and copilot-instructions but not formally captured in a discoverable, auditable format.
 
 An external Deep Audit (2026-Q2) identified this gap as finding D-03 and recommended adopting lightweight Architecture Decision Records.
 

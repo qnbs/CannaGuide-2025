@@ -81,7 +81,7 @@ The model loader (`localAIModelLoader.ts`) automatically detects the best ONNX e
 1. **WebGPU** – used when `navigator.gpu` is available (modern Chrome, Edge).
 2. **WASM** – universal fallback for all browsers.
 
-`onnxruntime-web` is installed as a direct dependency (v1.21+) for stable WebGPU and WASM support.
+`onnxruntime-web` is installed as a direct dependency (v1.20.0) for stable WebGPU and WASM support.
 
 ## Adding or Replacing Models
 

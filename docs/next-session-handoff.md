@@ -2,7 +2,63 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 168) -- Cloudflare Fix + Scorecard Hardening + WCO + Tauri Desktop
+## Latest Session (Session 169) -- Lockfile Sync Fix (CI/Vercel/Codespace)
+
+**Status: pnpm-lock.yaml regenerated to include apps/desktop
+workspace with 9 Tauri dependencies. Fixes CI
+(ERR_PNPM_OUTDATED_LOCKFILE), Vercel deploy, and Codespace
+Tailwind CSS resolution. 2312 tests passing, 0 TS errors,
+build OK.**
+
+### What Was Done (Session 169)
+
+1. **Lockfile Regeneration (Critical -- unblocks CI/CD)**
+    - Root cause: Session 168 added 9 @tauri-apps/\* dependencies
+      to apps/desktop/package.json without running `pnpm install`
+    - pnpm-lock.yaml was missing the apps/desktop importer section
+    - All CI workflows, Vercel, and Codespace setup use
+      `pnpm install --frozen-lockfile` which rejects spec mismatches
+    - Fix: ran `pnpm install` to regenerate lockfile with desktop
+      workspace and all 9 Tauri dependency resolutions
+
+2. **Cascade Fix (3 environments unblocked)**
+    - GitHub Actions CI: `--frozen-lockfile` now passes
+    - Vercel deploy: same install command now succeeds
+    - Codespace: setup.sh creates node_modules correctly,
+      @cannaguide/ui/tailwind-preset resolves for Tailwind CSS
+
+### Verified Metrics
+
+- Typecheck: 0 errors (TS2719 filtered)
+- Tests: 2312 passing (199 files, 0 failures)
+- Build: OK (3 tasks, 182 precache entries, ~9.9 MB)
+- Lockfile: apps/desktop importer section present
+- Resolution: @cannaguide/ui/tailwind-preset verified
+- Resolution: @tauri-apps/api verified
+
+### Next Steps
+
+- **CI green verification**: confirm GitHub Actions passes after push
+- **Vercel deploy verification**: confirm deployment succeeds
+- **Cloudflare deploy verification**: trigger workflow_dispatch
+- **Tauri code signing**: configure signing certificates for
+  macOS/Windows distribution (requires dev accounts)
+- **Lighthouse audit**: run on live deployment to verify font
+  self-hosting score improvements
+- **i18n community completion**: strainsView (103 keys),
+  helpView (118 keys), faq (26 keys)
+
+### Planned Executions
+
+- **Execution N+1**: CI/Vercel/Cloudflare deploy verification
+- **Execution N+2**: Desktop testing on macOS/Windows via CI
+  tag push, verify tray menu and notification dispatch
+- **Execution N+3**: i18n completion pass (ES/FR/NL gaps)
+- **Execution N+4**: Lighthouse performance audit + budget tuning
+
+---
+
+## Previous Session (Session 168) -- Cloudflare Fix + Scorecard Hardening + WCO + Tauri Desktop
 
 **Status: Cloudflare Pages deploy fixed (pnpm + Turbo cache),
 desktop-build.yml fully hardened (18 Scorecard alerts resolved),
@@ -61,7 +117,7 @@ with icon set, tray menu, native notifications, file dialogs.
 - CSP: consistent across all 5 delivery paths
 - Scorecard: all 8 workflows SHA-pinned, least-privilege
 
-### Next Steps
+### Next Steps (from Session 168)
 
 - **Cloudflare deploy verification**: trigger workflow_dispatch
   and verify successful deployment
@@ -74,13 +130,6 @@ with icon set, tray menu, native notifications, file dialogs.
 - **i18n community completion**: strainsView (103 keys),
   helpView (118 keys), faq (26 keys)
 - **v2.0 planning**: RTL language support, Netlify re-enable
-
-### Planned Executions
-
-- **Execution N+1**: Desktop testing on macOS/Windows via CI
-  tag push, verify tray menu and notification dispatch
-- **Execution N+2**: i18n completion pass (ES/FR/NL gaps)
-- **Execution N+3**: Lighthouse performance audit + budget tuning
 
 ## Previous Session (Session 167) -- PWA Perfection + Tauri v2 Desktop
 

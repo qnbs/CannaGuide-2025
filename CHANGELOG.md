@@ -6,6 +6,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **fix(ci):** Regenerate pnpm-lock.yaml -- apps/desktop importer
+  section was missing, causing ERR_PNPM_OUTDATED_LOCKFILE in CI,
+  Vercel, and Codespace (9 @tauri-apps/\* dependencies unresolved)
+
 ### Added
 
 - **feat(ci):** Cloudflare deploy fix -- `packageManager: pnpm`,

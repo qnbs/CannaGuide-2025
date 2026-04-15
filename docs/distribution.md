@@ -1,6 +1,6 @@
 # Distribution Targets
 
-This project is web-first with four active distribution targets.
+This project is web-first with four active web distribution targets plus a Tauri v2 desktop build.
 
 ## GitHub Pages (primary)
 
@@ -61,10 +61,19 @@ Cloudflare Pages deployment uses `_headers` and `_redirects` files in `apps/web/
 
 **Advantages:** 330+ global edge PoPs, unlimited bandwidth (free tier), fastest TTFB for static assets, Workers for future Edge Functions.
 
+## Tauri v2 Desktop
+
+Re-added in v1.6. 99% code sharing with the PWA. Platform-specific code uses `platformService.ts` (`isTauri`, `isPwa`, `isBrowser`). Native features via Tauri plugins (notification, dialog, fs, shell).
+
+**Source:** `apps/desktop/` (package `@cannaguide/desktop`)
+**CI:** `.github/workflows/desktop-build.yml` -- matrix build for Linux / macOS / Windows, triggered on tag push `v*`
+**Config:** `apps/desktop/src-tauri/tauri.conf.json` -- `frontendDist` points to `../web/dist`
+**Capabilities:** `apps/desktop/src-tauri/capabilities/default.json` (minimal per-command permissions)
+**IPC commands:** `get_app_version`, `export_data`, `import_data`
+
 ## Removed Targets
 
 The following distribution targets were removed due to persistent CI failures and maintenance overhead:
 
 - **Docker** (self-hosted) -- Dockerfile, docker-compose.yml, nginx.conf, CI workflow deleted
-- **Tauri** (desktop wrapper) -- src-tauri/, apps/desktop/, CI workflow deleted
 - **Capacitor** (mobile wrapper) -- capacitor.config.ts, CI workflow deleted

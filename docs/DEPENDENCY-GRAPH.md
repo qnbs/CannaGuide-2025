@@ -20,7 +20,7 @@ cannaguide-2025 (workspace root)
 +-- apps/
     +-- @cannaguide/web           Main PWA (React 19 + Vite 7)
     |   deps: @cannaguide/ai-core, @cannaguide/ui
-    |   117 service files, 25 hooks, 9 themes
+    |   130 service files, 28 hooks, 9 themes
 ```
 
 ## Dependency Direction
@@ -70,7 +70,7 @@ CSS/Tailwind integration only:
 - `tailwind.config.cjs` references `@cannaguide/ui/tailwind-preset`
 - `styles.css` imports `@cannaguide/ui/tokens.css`
 
-## Audit Results (Session 62)
+## Audit Results (Session 170)
 
 | Check                               | Result  |
 | ----------------------------------- | ------- |

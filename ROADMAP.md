@@ -6,18 +6,18 @@
 
 ## Release Overview
 
-| Version  | Target     | Status      | Theme                                                                             |
-| -------- | ---------- | ----------- | --------------------------------------------------------------------------------- |
-| **v1.0** | 2025-07-07 | ✅ Released | Foundation — Full-featured cultivation PWA                                        |
-| **v1.1** | 2026-Q1    | ✅ Released | DevOps & Quality — Error tracking, testing, deployment                            |
-| **v1.2** | 2026-Q2    | ✅ Released | Community & Automation -- Languages, scheduling, marketplace                      |
-| **v1.3** | 2026-Q3    | ✅ Released | Analytics & Visualization -- IoT, 3D, dashboards                                  |
-| **v1.4** | 2026-Q4    | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus                      |
-| **v1.5** | 2026-Q4    | ✅ Released | Sync & Multi-Grow — CRDT offline sync, multi-grow, AI cost tracking, CI hardening |
-| **v1.6** | 2027-Q1    | ✅ Released | Engineering audit, i18n completeness, documentation sync                          |
-| **v1.7** | 2027-Q2    | ✅ Released | Voice & Accessibility -- Voice Pro, Preset Setups, Enhanced PDF, a11y             |
-| **v1.8** | 2027-Q2    | ✅ Released | HydroMonitor, Predictive Analytics, Glassmorphism, Worker Pool W-06               |
-| **v2.0** | 2027-Q3    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                        |
+| Version  | Target     | Status      | Theme                                                                              |
+| -------- | ---------- | ----------- | ---------------------------------------------------------------------------------- |
+| **v1.0** | 2025-07-07 | ✅ Released | Foundation -- Full-featured cultivation PWA                                        |
+| **v1.1** | 2026-03-20 | ✅ Released | DevOps & Quality -- Error tracking, testing, deployment                            |
+| **v1.2** | 2026-03-29 | ✅ Released | Community & Automation -- Languages, scheduling, marketplace                       |
+| **v1.3** | 2026-04-01 | ✅ Released | Analytics & Visualization -- IoT, 3D, dashboards                                   |
+| **v1.4** | 2026-04-06 | ✅ Released | Discovery & Knowledge Scale -- Feeds, media, expanded corpus                       |
+| **v1.5** | 2026-04-08 | ✅ Released | Sync & Multi-Grow -- CRDT offline sync, multi-grow, AI cost tracking, CI hardening |
+| **v1.6** | 2026-04-10 | ✅ Released | Engineering audit, i18n completeness, documentation sync                           |
+| **v1.7** | 2026-04-11 | ✅ Released | Voice & Accessibility -- Voice Pro, Preset Setups, Enhanced PDF, a11y              |
+| **v1.8** | 2026-04-14 | ✅ Released | HydroMonitor, Predictive Analytics, Glassmorphism, Worker Pool W-06                |
+| **v2.0** | 2026-Q3    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                         |
 
 ---
 
@@ -52,7 +52,7 @@ Released: **2025-07-07**
 
 ## v1.1 — DevOps & Quality ✅
 
-Released: **2026-Q1**
+Released: **2026-03-20**
 
 | Feature                                                  | Category      | Status | Issue   |
 | -------------------------------------------------------- | ------------- | ------ | ------- |
@@ -107,7 +107,7 @@ Released: **2026-Q1**
 
 ## v1.2 -- Community & Automation
 
-Released: **2026-Q2**
+Released: **2026-03-29**
 
 ### Completed (v1.2.0-alpha)
 
@@ -154,7 +154,7 @@ Released: **2026-Q2**
 
 ## v1.3 -- Analytics & Visualization
 
-Released: **2026-Q3**
+Released: **2026-04-01**
 
 ### Completed (v1.3.0-alpha)
 
@@ -221,7 +221,7 @@ Released: **2026-04-11**
 
 ## v1.8 -- HydroMonitor & Analytics Edition ✅
 
-Released: **2026-04-12**
+Released: **2026-04-14** (v1.8.1)
 
 | Feature                                                                | Category      | Status |
 | ---------------------------------------------------------------------- | ------------- | ------ |
@@ -244,7 +244,7 @@ Released: **2026-04-12**
 
 ## v2.0 — Platform 📋
 
-Target: **2027-Q3**
+Target: **2026-Q3**
 
 | Feature                                                       | Category      | Priority   | Issue    |
 | ------------------------------------------------------------- | ------------- | ---------- | -------- |
@@ -261,7 +261,7 @@ Target: **2027-Q3**
 
 ## v1.4 -- Discovery & Knowledge Scale
 
-Released: **2026-Q4**
+Released: **2026-04-06**
 
 | Feature                                                             | Category   | Priority | Issue |
 | ------------------------------------------------------------------- | ---------- | -------- | ----- |

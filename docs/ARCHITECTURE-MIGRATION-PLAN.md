@@ -4,7 +4,7 @@
 
 ## Context
 
-The monorepo has 117 non-test service files in `apps/web/services/`. This document
+The monorepo has 130 non-test service files in `apps/web/services/` (93 root + 37 local-ai). This document
 assesses which services could theoretically be moved to shared packages and
 establishes that the current architecture is correct for the project's needs.
 

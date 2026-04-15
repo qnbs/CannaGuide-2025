@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                       |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                             |
 | Workers      | WorkerBus (promise-based, 11 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 2253 unit tests, Playwright E2E + Component tests                                  |
+| Testing      | Vitest 2312 unit tests (199 files), Playwright E2E + Component tests                      |
 | Distribution | GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0)                        |
 
 ---
@@ -96,7 +96,7 @@ apps/web/                 Main PWA (@cannaguide/web)
 
   data/                   Static data: 776 strains, FAQ, lexicon (91 entries, 6 categories), guides, diseases (22 entries), learningPaths (5 paths)
   locales/                i18n translations: en/, de/, es/, fr/, nl/
-  hooks/                  25 custom React hooks
+  hooks/                  28 custom React hooks
   workers/                Web Workers: VPD sim, genealogy, scenarios, inference, image gen, hydro forecast, terpene, vision inference, calculation, voice
   services/workerBus.ts   Centralized promise-based WorkerBus (11 workers, priority queue, timeout)
   utils/priorityQueue.ts  Generic min-heap PriorityQueue<T> with WorkerPriority type
@@ -375,7 +375,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 pnpm run dev              # Vite dev server (localhost:5173)
 pnpm run build            # Production build (Vite 7 + PWA manifest injection)
-pnpm test                 # Vitest unit/integration (2253 tests)
+pnpm test                 # Vitest unit/integration (2312 tests)
 pnpm run test:e2e         # Playwright E2E
 pnpm run test:ct          # Playwright Component tests
 pnpm run lint:full        # ESLint entire project

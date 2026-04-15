@@ -68,12 +68,12 @@
 <!-- Project Metrics -->
 
 [![Strains](https://img.shields.io/badge/strains-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/services-117-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/services-130-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
-[![Custom Hooks](https://img.shields.io/badge/hooks-25-orange)](https://qnbs.github.io/CannaGuide-2025/)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-24-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
@@ -107,7 +107,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2312 tests · 117 services · 19 Redux slices + 9 Zustand stores · 26 hooks · 12 i18n namespaces · 9 themes · 22 CI workflows
+776 strains · 2312 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 24 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -120,7 +120,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 | **Persistence** | IndexedDB (dual-database)            | Offline-first, no backend                   |
 | **i18n**        | i18next                              | EN/DE/ES/FR/NL, 12 namespaces               |
 | **Security**    | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**     | Vitest + Playwright                  | 2307 unit/E2E/component tests               |
+| **Testing**     | Vitest + Playwright                  | 2312 unit/E2E/component tests               |
 
 > Deep-dive: [Architecture](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Accessibility](docs/ACCESSIBILITY.md)
 
@@ -135,7 +135,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite dev server on localhost:5173
 pnpm run build              # Production build (all workspaces)
-pnpm run test:run           # 2312 tests, single run
+pnpm run test:run           # 2312 tests (199 files), single run
 pnpm run typecheck          # tsc --noEmit (TS2719 filtered)
 pnpm run lint               # ESLint (flat config, 0 warnings)
 ```
@@ -152,8 +152,8 @@ pnpm workspaces + TurboRepo with ML dependencies isolated in `@cannaguide/ai-cor
 apps/web/                  Main PWA (@cannaguide/web)
   components/               React components (common/, icons/, navigation/, ui/, views/)
   stores/                   Redux (19 slices) + Zustand (9 stores), selectors, middleware
-  services/                 117 service modules (AI, simulation, DB, crypto, IoT)
-  hooks/                    25 custom hooks
+  services/                 130 service modules (AI, simulation, DB, crypto, IoT)
+  hooks/                    28 custom hooks
   data/                     Static data: 776 strains, FAQ, lexicon (91), guides, diseases (22)
   locales/                  i18n: en/, de/, es/, fr/, nl/ (12 namespaces each)
   workers/                  11 Web Workers (VPD, genealogy, scenarios, inference, image gen,
@@ -314,7 +314,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 | Type                  | Framework       | Scope                                           |
 | --------------------- | --------------- | ----------------------------------------------- |
-| **Unit/Integration**  | Vitest          | 2294 tests, colocated `*.test.ts(x)`            |
+| **Unit/Integration**  | Vitest          | 2312 tests, colocated `*.test.ts(x)`            |
 | **E2E**               | Playwright      | Chromium + Firefox (CI), `tests/e2e/*.e2e.ts`   |
 | **Component**         | Playwright CT   | `tests/ct/*.ct.tsx`                             |
 | **Mutation**          | Stryker         | Redux slices, 50% break threshold               |
@@ -336,23 +336,23 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md)
 
-### CI/CD Workflows (22)
+### CI/CD Workflows (24)
 
-| Workflow           | Trigger          | Purpose                                                    |
-| ------------------ | ---------------- | ---------------------------------------------------------- |
-| CI                 | push, PR         | Lint, typecheck, 2294 tests, build, security, E2E, IoT     |
-| CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                               |
-| Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                      |
-| Release Publish    | tag v\*          | GitHub build attestation + CycloneDX SBOM + GitHub Release |
-| Release Gate       | tag v\*          | Pre-release quality gate (typecheck, tests, build, audit)  |
-| Security Full      | push, PR, weekly | Comprehensive security scan suite                          |
-| Snyk               | push, PR         | Vulnerability scanning                                     |
-| ClusterFuzzLite    | PR               | Continuous fuzzing                                         |
-| Scorecard          | push, weekly     | OpenSSF Scorecard                                          |
-| Config Guard       | push, PR         | RCE pattern scanning in configs                            |
-| Mutation Testing   | push, PR         | Stryker Redux slice mutation testing                       |
-| Preview Validation | deploy           | Playwright + Lighthouse on deploy previews (paused)        |
-| + 10 more          | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup   |
+| Workflow           | Trigger          | Purpose                                                                     |
+| ------------------ | ---------------- | --------------------------------------------------------------------------- |
+| CI                 | push, PR         | Lint, typecheck, 2312 tests, build, security, E2E, IoT                      |
+| CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                                                |
+| Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                                       |
+| Release Publish    | tag v\*          | GitHub build attestation + CycloneDX SBOM + GitHub Release                  |
+| Release Gate       | tag v\*          | Pre-release quality gate (typecheck, tests, build, audit)                   |
+| Security Full      | push, PR, weekly | Comprehensive security scan suite                                           |
+| Snyk               | push, PR         | Vulnerability scanning                                                      |
+| ClusterFuzzLite    | PR               | Continuous fuzzing                                                          |
+| Scorecard          | push, weekly     | OpenSSF Scorecard                                                           |
+| Config Guard       | push, PR         | RCE pattern scanning in configs                                             |
+| Mutation Testing   | push, PR         | Stryker Redux slice mutation testing                                        |
+| Preview Validation | deploy           | Playwright + Lighthouse on deploy previews (paused)                         |
+| + 12 more          | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy |
 
 ---
 
@@ -381,6 +381,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | **v1.5** | Released | CRDT sync, AI cost tracking, preview validation, pnpm migration                        |
 | **v1.6** | Released | Forensic audit, i18n completeness, metrics/diagnosis/planner slices, build attestation |
 | **v1.7** | Released | Voice Pro (wake-word, Cloud TTS), 12 Preset Setups, Enhanced PDF, a11y                 |
+| **v1.8** | Released | HydroMonitor, Predictive Analytics, Glassmorphism, Worker Pool W-06                    |
 | **v2.0** | Planned  | AR/VR plant overlay, digital twin architecture, next-gen Sandbox/BreedingLab           |
 
 > Full roadmap: [ROADMAP.md](ROADMAP.md) · [Priority Roadmap](docs/PRIORITY_ROADMAP.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md) · [ADRs](docs/adr/) · [Session Handoff](docs/next-session-handoff.md) · [UX Audit](ui-ux-audit.md) · [Lint Burndown](docs/lint-burndown.md) · [Worker Bus](docs/worker-bus.md)
@@ -427,11 +428,11 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 <!-- Status & Qualitaet -->
 
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/Release-v1.7.2-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![Release](https://img.shields.io/badge/Release-v1.8.1-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-2290%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-2312%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/Coverage-33.7%25%20Zeilen-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository-Aktivitaet -->
@@ -486,12 +487,12 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 <!-- Projekt-Metriken -->
 
 [![Sorten](https://img.shields.io/badge/Sorten-776-green)](https://qnbs.github.io/CannaGuide-2025/)
-[![Services](https://img.shields.io/badge/Services-117-blue)](https://qnbs.github.io/CannaGuide-2025/)
+[![Services](https://img.shields.io/badge/Services-130-blue)](https://qnbs.github.io/CannaGuide-2025/)
 [![Redux Slices](https://img.shields.io/badge/Redux%20Slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/Themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-22-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
-[![Custom Hooks](https://img.shields.io/badge/Hooks-25-orange)](https://qnbs.github.io/CannaGuide-2025/)
+[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-24-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![Custom Hooks](https://img.shields.io/badge/Hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n-Namensraeume](https://img.shields.io/badge/i18n%20Namensraeume-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Doku:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
@@ -502,7 +503,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2294 Tests · 117 Services · 19 Redux Slices + 9 Zustand Stores · 26 Hooks · 12 i18n-Namensraeume · 9 Themes · 22 CI-Workflows
+776 Sorten · 2312 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 24 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
@@ -515,7 +516,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 | **Persistenz** | IndexedDB (Dual-Datenbank)           | Offline-first, kein Backend                   |
 | **i18n**       | i18next                              | EN/DE/ES/FR/NL, 12 Namensraeume               |
 | **Sicherheit** | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Praevention, verschluesselte API-Keys     |
-| **Testing**    | Vitest + Playwright                  | 2290 Unit-/E2E-/Komponenten-Tests             |
+| **Testing**    | Vitest + Playwright                  | 2312 Unit-/E2E-/Komponenten-Tests             |
 
 > Architektur: [ARCHITECTURE.md](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Barrierefreiheit](docs/ACCESSIBILITY.md)
 
@@ -528,7 +529,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite Dev-Server auf localhost:5173
 pnpm run build              # Produktions-Build
-pnpm run test:run           # 2294 Tests, Einzellauf
+pnpm run test:run           # 2312 Tests (199 Dateien), Einzellauf
 pnpm run typecheck          # tsc --noEmit
 ```
 

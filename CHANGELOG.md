@@ -6,6 +6,30 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **test:** 354 new tests across 30 test files -- coverage increased
+  from 33.7% to 35.4% lines (2312 -> 2666 tests, 199 -> 229 files)
+- **test:** New service tests: voiceTelemetryService, seedbankService,
+  csvExportService, trendsEcosystemService, indexedDbMonitorService,
+  taskSchedulerService, aiConsentService, equipmentProductService,
+  workerTelemetryService, tauriDialogService, workerFactories,
+  contextBridgeService, strainApiService, backupService, geminiService,
+  plantSimulationService
+- **test:** New local-ai tests: progressEmitter, localeHelpers,
+  strainImageFallback
+- **test:** New store tests: useUIStore, useFiltersStore,
+  useStrainsViewStore, sensorStore, workerMetricsSlice
+- **test:** New hook tests: useEventListener, useOutsideClick,
+  useUnitSystem, useDocumentEffects
+- **test:** New component tests: button.test.tsx
+- **test:** New lib tests: vpd/recommendations
+
+### Changed
+
+- **build:** Coverage thresholds raised -- lines 30->35%, functions
+  25->38%, branches 15->24%, statements 25->41%
+
 ### Fixed
 
 - **fix(ci):** Regenerate pnpm-lock.yaml -- apps/desktop importer

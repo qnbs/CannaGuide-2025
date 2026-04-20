@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest'
 import knowledgeReducer, {
     updateKnowledgeProgress,
     setKnowledgeProgress,
+    completeLearningStep,
+    resetLearningPath,
+    setLearningPathProgress,
 } from '@/stores/slices/knowledgeSlice'
 
 const initial = { knowledgeProgress: {}, learningPathProgress: {} }
@@ -49,5 +52,40 @@ describe('knowledgeSlice', () => {
         const newProgress = { section1: ['a', 'b'], section2: ['c'] }
         const state = knowledgeReducer(initial, setKnowledgeProgress(newProgress))
         expect(state.knowledgeProgress).toEqual(newProgress)
+    })
+
+    it('completeLearningStep adds step to path', () => {
+        const state = knowledgeReducer(
+            initial,
+            completeLearningStep({ pathId: 'path-1', stepId: 'step-1' }),
+        )
+        expect(state.learningPathProgress['path-1']).toContain('step-1')
+    })
+
+    it('completeLearningStep does not duplicate steps', () => {
+        let state = knowledgeReducer(
+            initial,
+            completeLearningStep({ pathId: 'path-1', stepId: 'step-1' }),
+        )
+        state = knowledgeReducer(
+            state,
+            completeLearningStep({ pathId: 'path-1', stepId: 'step-1' }),
+        )
+        expect(state.learningPathProgress['path-1']).toHaveLength(1)
+    })
+
+    it('resetLearningPath removes path progress', () => {
+        let state = knowledgeReducer(
+            initial,
+            completeLearningStep({ pathId: 'path-1', stepId: 'step-1' }),
+        )
+        state = knowledgeReducer(state, resetLearningPath('path-1'))
+        expect(state.learningPathProgress['path-1']).toBeUndefined()
+    })
+
+    it('setLearningPathProgress replaces full path progress', () => {
+        const progress = { 'path-1': ['step-a', 'step-b'], 'path-2': ['step-c'] }
+        const state = knowledgeReducer(initial, setLearningPathProgress(progress))
+        expect(state.learningPathProgress).toEqual(progress)
     })
 })

@@ -16,7 +16,6 @@ export const NutrientCalculator: React.FC = memo(() => {
     const [waterAmount, setWaterAmount] = useState(5) // in Liters
     const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null)
     const [selectedWeek, setSelectedWeek] = useState(1)
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
     const [components, setComponents] = useState<Component[]>([
         { id: `comp-${Date.now()}`, name: 'Grow', dose: 2 },
     ])

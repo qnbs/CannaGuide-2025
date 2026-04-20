@@ -214,8 +214,8 @@ export const settingsView = {
             'Immer im Eco-Modus laufen, unabhängig von Akku- oder Speicherzustand. Überschreibt automatische Erkennung.',
         batteryGatingToast:
             'Akku bei {{level}}% -- lokale KI pausiert, Weiterleitung an Cloud/Heuristiken.',
-        ecoAutoActivatedToast:
-            'Eco-Modus automatisch aktiviert wegen geringer Ressourcen (Speicher/Akku/Mobil).',
+        ecoAutoActivatedToast: 'Eco-Modus automatisch aktiviert wegen niedrigem Akku (<25%).',
+        ecoAutoDeactivatedToast: 'Akku erholt -- Eco-Modus deaktiviert, zurueck zu Hybrid-Modus.',
         oomPressureToast:
             'Speicherdruck ({{percent}}% Heap) -- {{level}}: Worker beendet um Absturz zu verhindern.',
         batteryStatusLabel: 'Akku',

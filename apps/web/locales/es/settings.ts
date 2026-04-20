@@ -215,8 +215,9 @@ export const settingsView = {
             'Ejecutar siempre en modo eco, independientemente del estado de bateria o memoria. Anula la deteccion automatica.',
         batteryGatingToast:
             'Bateria al {{level}}% -- IA local pausada, redirigiendo a nube/heuristicas.',
-        ecoAutoActivatedToast:
-            'Modo eco activado automaticamente por recursos bajos (memoria/bateria/movil).',
+        ecoAutoActivatedToast: 'Modo eco activado automaticamente por bateria baja (<25%).',
+        ecoAutoDeactivatedToast:
+            'Bateria recuperada -- modo eco desactivado, volviendo a modo hibrido.',
         oomPressureToast:
             'Presion de memoria ({{percent}}% heap) -- {{level}}: workers terminados para evitar fallo.',
         batteryStatusLabel: 'Bateria',

@@ -115,7 +115,9 @@ describe('contextBridgeService', () => {
 
     it('gathers active problems', () => {
         const plant = makePlant({
-            problems: [{ type: ProblemType.Overwatering, severity: 6, onsetDay: 1, status: 'active' }],
+            problems: [
+                { type: ProblemType.Overwatering, severity: 6, onsetDay: 1, status: 'active' },
+            ],
         } as Partial<Plant>)
 
         const snap = contextBridge.buildSnapshot({
@@ -124,7 +126,7 @@ describe('contextBridgeService', () => {
             settings: defaultSettings,
         })
         expect(snap.activeProblems).toHaveLength(1)
-        expect(snap.activeProblems[0]?.type).toBe('Overwatering')
+        expect(snap.activeProblems[0]?.type).toBe(ProblemType.Overwatering)
     })
 
     describe('buildAiSystemContext', () => {
@@ -157,7 +159,14 @@ describe('contextBridgeService', () => {
 
         it('includes active problems in context', () => {
             const plant = makePlant({
-                problems: [{ type: ProblemType.NutrientDeficiency, severity: 8, onsetDay: 5, status: 'active' }],
+                problems: [
+                    {
+                        type: ProblemType.NutrientDeficiency,
+                        severity: 8,
+                        onsetDay: 5,
+                        status: 'active',
+                    },
+                ],
             } as Partial<Plant>)
             const snap = contextBridge.buildSnapshot({
                 currentView: View.Plants,
@@ -166,7 +175,7 @@ describe('contextBridgeService', () => {
             })
             const ctx = contextBridge.buildAiSystemContext(snap)
             expect(ctx).toContain('Active Problems:')
-            expect(ctx).toContain('NitrogenDeficiency')
+            expect(ctx).toContain(ProblemType.NutrientDeficiency)
         })
     })
 
@@ -183,7 +192,14 @@ describe('contextBridgeService', () => {
 
         it('suggests Disease Atlas for plants with problems', () => {
             const plant = makePlant({
-                problems: [{ type: ProblemType.PestInfestation, severity: 9, onsetDay: 3, status: 'active' }],
+                problems: [
+                    {
+                        type: ProblemType.PestInfestation,
+                        severity: 9,
+                        onsetDay: 3,
+                        status: 'active',
+                    },
+                ],
             } as Partial<Plant>)
             const snap = contextBridge.buildSnapshot({
                 currentView: View.Plants,

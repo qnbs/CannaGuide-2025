@@ -49,7 +49,7 @@ jobs:
                   targets: ${{ matrix.target }}
 
             - name: Rust cache
-              uses: swatinem/rust-cache@23869a5bd66c73db3c0ac40331f3206eb23791dc # v2.9.1
+              uses: swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
               with:
                   workspaces: apps/desktop/src-tauri
 

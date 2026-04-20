@@ -170,6 +170,49 @@ pnpm exec tsc --noEmit
 
 ---
 
+## Desktop (Tauri v2)
+
+CannaGuide builds a Tauri v2 Desktop app alongside the PWA, sharing 99% of the codebase.
+
+### Capability-Based Security
+
+Desktop features require explicit capability permissions in `apps/desktop/src-tauri/capabilities/`. Each capability file grants specific permissions:
+
+| File                | Purpose                   |
+| ------------------- | ------------------------- |
+| `core.json`         | Window/event management   |
+| `desktop.json`      | Tray, shell, process      |
+| `fs.json`           | File system with scopes   |
+| `dialog.json`       | Native file dialogs       |
+| `notification.json` | Native notifications      |
+| `tray.json`         | System tray menu          |
+| `shortcut.json`     | Global keyboard shortcuts |
+| `updater.json`      | Auto-updates              |
+| `window-state.json` | Window persistence        |
+| `store.json`        | Key-value settings        |
+
+### Rules for Desktop Features
+
+- **Never** add wildcard permissions (`*:all-*`). Use explicit allows.
+- **Always** define FS scopes when accessing files. Restrict to `$APPDATA/cannaguide/**`.
+- **IPC commands** must be registered in `lib.rs` and exposed via `invoke_handler`.
+- **Platform detection** uses `platformService.ts` (`isTauri`, `isPwa`, `isBrowser`).
+- **Native APIs** are lazy-loaded to avoid bundling Tauri in web builds.
+
+### Adding a New Desktop Feature
+
+1. Identify required plugin (e.g., `tauri-plugin-clipboard-manager`).
+2. Add to `Cargo.toml` and `package.json`.
+3. Initialize plugin in `lib.rs` via `.plugin()`.
+4. Create capability file in `capabilities/` with minimal permissions.
+5. Add capability to `tauri.conf.json` `capabilities` array.
+6. Create TypeScript service wrapper with platform detection.
+7. Document in ADR-0012.
+
+See [ADR-0012](docs/adr/0012-desktop-tauri-architecture.md) for the full architecture decision.
+
+---
+
 ## Testing
 
 We use **Vitest** for unit/integration tests and **Playwright** for E2E tests.

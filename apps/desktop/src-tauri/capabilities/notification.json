@@ -1,0 +1,13 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "notification",
+    "description": "Native notification capabilities for grow alerts and AI status",
+    "windows": ["main"],
+    "platforms": ["linux", "macos", "windows"],
+    "permissions": [
+        "notification:default",
+        "notification:allow-notify",
+        "notification:allow-request-permission",
+        "notification:allow-is-permission-granted"
+    ]
+}

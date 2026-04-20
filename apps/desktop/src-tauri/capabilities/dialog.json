@@ -1,0 +1,15 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "dialog",
+    "description": "Native file dialog capabilities for import/export operations",
+    "windows": ["main"],
+    "platforms": ["linux", "macos", "windows"],
+    "permissions": [
+        "dialog:default",
+        "dialog:allow-open",
+        "dialog:allow-save",
+        "dialog:allow-message",
+        "dialog:allow-ask",
+        "dialog:allow-confirm"
+    ]
+}

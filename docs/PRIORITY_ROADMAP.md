@@ -61,6 +61,12 @@
 | W-05 | Lock-free ring buffer            | Medium | Done (SPSC ring buffer on SAB, 256 capacity, progressive enhancement)   |
 | W-06 | Dynamic worker pool              | High   | Done (ADR-0010 -- lazy spawning, idle timeout, SAB hot-path, telemetry) |
 | W-07 | SAB streaming expansion          | Medium | Planned v2.0 (voice waveform, MPMC queue, advanced lock-free)           |
+| D-01 | Desktop modular capabilities     | Medium | Done (Session 172 -- 9 capability files, FS scopes, ADR-0012)           |
+| D-02 | Desktop window-state plugin      | Low    | Done (Session 172 -- persistent window size/position)                   |
+| D-03 | Desktop store plugin             | Low    | Done (Session 172 -- theme/AI-model persistence)                        |
+| D-04 | Desktop auto-updater config      | Medium | Done (Session 172 -- signing key generated, CI-ready)                   |
+| D-05 | Desktop code signing             | High   | Planned (requires Apple/Windows developer accounts)                     |
+| D-06 | Desktop E2E testing              | High   | Planned v2.0 (Tauri test framework integration)                         |
 
 ## Already Resolved
 

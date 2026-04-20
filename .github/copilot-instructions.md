@@ -249,6 +249,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 7. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
 8. **Pre-commit hook runs:** `.husky/pre-commit` executes typecheck + lint-staged automatically
 9. **Pre-push hook runs:** `.husky/pre-push` executes `gate:push` (typecheck + tests + lint scopes + build) -- full CI mirror
+10. **Typecheck after test file changes:** When creating or modifying `*.test.ts(x)` files, **always run typecheck immediately** (`pnpm --filter @cannaguide/web typecheck`) before running the tests. Test files are TypeScript and can introduce type errors.
 
 ### AI Integration
 

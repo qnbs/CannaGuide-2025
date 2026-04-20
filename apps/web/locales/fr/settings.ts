@@ -216,7 +216,9 @@ export const settingsView = {
         batteryGatingToast:
             'Batterie a {{level}}% -- IA locale en pause, redirection vers cloud/heuristiques.',
         ecoAutoActivatedToast:
-            'Mode eco active automatiquement en raison de ressources faibles (memoire/batterie/mobile).',
+            'Mode eco active automatiquement en raison de batterie faible (<25%).',
+        ecoAutoDeactivatedToast:
+            'Batterie recuperee -- mode eco desactive, retour au mode hybride.',
         oomPressureToast:
             'Pression memoire ({{percent}}% heap) -- {{level}}: workers termines pour eviter un crash.',
         batteryStatusLabel: 'Batterie',

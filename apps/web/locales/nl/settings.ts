@@ -213,8 +213,9 @@ export const settingsView = {
             'Altijd in eco-modus draaien, ongeacht batterij- of geheugenstatus. Overschrijft automatische detectie.',
         batteryGatingToast:
             'Batterij op {{level}}% -- lokale AI gepauzeerd, doorverwijzing naar cloud/heuristieken.',
-        ecoAutoActivatedToast:
-            'Eco-modus automatisch geactiveerd vanwege lage bronnen (geheugen/batterij/mobiel).',
+        ecoAutoActivatedToast: 'Eco-modus automatisch geactiveerd vanwege lage batterij (<25%).',
+        ecoAutoDeactivatedToast:
+            'Batterij hersteld -- eco-modus gedeactiveerd, terugkeer naar hybride modus.',
         oomPressureToast:
             'Geheugendruk ({{percent}}% heap) -- {{level}}: workers beeindigd om crash te voorkomen.',
         batteryStatusLabel: 'Batterij',

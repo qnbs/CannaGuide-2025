@@ -1,21 +1,46 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
     isEcoMode,
     setEcoModeExplicit,
     registerModeAccessors,
     detectEcoCondition,
+    detectBatteryRecovered,
     applyAdaptiveMode,
     registerEcoCallbacks,
     isCriticalBattery,
+    _resetNotificationFlags,
 } from './ecoModeService'
 
 describe('aiEcoModeService', () => {
+    let originalGetBattery: unknown
+
     beforeEach(() => {
         setEcoModeExplicit(false)
+        _resetNotificationFlags()
         registerModeAccessors(
             () => 'hybrid',
             () => {},
         )
+        // Store original getBattery
+        const nav = navigator as unknown as {
+            getBattery?: () => Promise<{ level: number; charging: boolean }>
+        }
+        originalGetBattery = nav.getBattery
+    })
+
+    afterEach(() => {
+        // Restore original getBattery
+        const nav = navigator as unknown as {
+            getBattery?: () => Promise<{ level: number; charging: boolean }>
+        }
+        if (originalGetBattery !== undefined) {
+            nav.getBattery = originalGetBattery as () => Promise<{
+                level: number
+                charging: boolean
+            }>
+        } else {
+            delete nav.getBattery
+        }
     })
 
     it('defaults to eco mode disabled', () => {
@@ -34,16 +59,69 @@ describe('aiEcoModeService', () => {
     })
 
     describe('detectEcoCondition', () => {
-        it('returns false when navigator has sufficient memory', async () => {
-            Object.defineProperty(navigator, 'deviceMemory', { value: 8, configurable: true })
+        it('returns false when battery is sufficient', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.5, charging: false })
             const result = await detectEcoCondition()
             expect(result).toBe(false)
         })
 
-        it('returns true when device has low memory', async () => {
-            Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true })
+        it('returns true when battery is low (<25%) and not charging', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.2, charging: false })
             const result = await detectEcoCondition()
             expect(result).toBe(true)
+        })
+
+        it('returns false when battery is low but charging', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.2, charging: true })
+            const result = await detectEcoCondition()
+            expect(result).toBe(false)
+        })
+
+        it('returns false when Battery API is unavailable', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            delete nav.getBattery
+            const result = await detectEcoCondition()
+            expect(result).toBe(false)
+        })
+    })
+
+    describe('detectBatteryRecovered', () => {
+        it('returns true when battery is above 30%', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.35, charging: false })
+            const result = await detectBatteryRecovered()
+            expect(result).toBe(true)
+        })
+
+        it('returns true when charging regardless of level', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.15, charging: true })
+            const result = await detectBatteryRecovered()
+            expect(result).toBe(true)
+        })
+
+        it('returns false when battery is still low and not charging', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.2, charging: false })
+            const result = await detectBatteryRecovered()
+            expect(result).toBe(false)
         })
     })
 
@@ -56,8 +134,11 @@ describe('aiEcoModeService', () => {
             expect(isEcoMode()).toBe(false)
         })
 
-        it('switches to eco when hybrid and low resources detected', async () => {
-            Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true })
+        it('switches to eco when hybrid and low battery detected', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.2, charging: false })
             const setter = vi.fn()
             registerModeAccessors(() => 'hybrid', setter)
             await applyAdaptiveMode()
@@ -65,12 +146,37 @@ describe('aiEcoModeService', () => {
             expect(isEcoMode()).toBe(true)
         })
 
-        it('does not switch when hybrid with sufficient resources', async () => {
-            Object.defineProperty(navigator, 'deviceMemory', { value: 8, configurable: true })
+        it('does not switch when hybrid with sufficient battery', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.5, charging: false })
             const setter = vi.fn()
             registerModeAccessors(() => 'hybrid', setter)
             await applyAdaptiveMode()
             expect(setter).not.toHaveBeenCalled()
+        })
+
+        it('deactivates eco when battery recovers (auto-activated only)', async () => {
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            // First: trigger low battery eco activation
+            nav.getBattery = () => Promise.resolve({ level: 0.2, charging: false })
+            let currentMode = 'hybrid'
+            const setter = vi.fn((mode: string) => {
+                currentMode = mode
+            })
+            registerModeAccessors(() => currentMode, setter)
+            await applyAdaptiveMode()
+            expect(setter).toHaveBeenCalledWith('eco')
+            expect(isEcoMode()).toBe(true)
+
+            // Then: battery recovers (do NOT reset flags -- _ecoAutoActivated must stay true)
+            nav.getBattery = () => Promise.resolve({ level: 0.35, charging: false })
+            await applyAdaptiveMode()
+            expect(setter).toHaveBeenLastCalledWith('hybrid')
+            expect(isEcoMode()).toBe(false)
         })
     })
 
@@ -78,12 +184,11 @@ describe('aiEcoModeService', () => {
         it('fires onBatteryGating when critical battery detected', async () => {
             const onGating = vi.fn()
             registerEcoCallbacks({ onBatteryGating: onGating })
-             
+
             const nav = navigator as unknown as {
                 getBattery?: () => Promise<{ level: number; charging: boolean }>
             }
             nav.getBattery = () => Promise.resolve({ level: 0.1, charging: false })
-            Object.defineProperty(navigator, 'deviceMemory', { value: 8, configurable: true })
             registerModeAccessors(
                 () => 'cloud',
                 () => {},
@@ -95,13 +200,15 @@ describe('aiEcoModeService', () => {
             expect(onGating).toHaveBeenCalledWith(10)
             // Cleanup
             registerEcoCallbacks({})
-            delete nav.getBattery
         })
 
         it('fires onEcoAutoActivated when auto-switching to eco', async () => {
             const onEcoActivated = vi.fn()
             registerEcoCallbacks({ onEcoAutoActivated: onEcoActivated })
-            Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true })
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.2, charging: false })
             const setter = vi.fn()
             registerModeAccessors(() => 'hybrid', setter)
             await applyAdaptiveMode()
@@ -112,7 +219,10 @@ describe('aiEcoModeService', () => {
 
         it('does not fire callbacks when not registered', async () => {
             registerEcoCallbacks({})
-            Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true })
+            const nav = navigator as unknown as {
+                getBattery?: () => Promise<{ level: number; charging: boolean }>
+            }
+            nav.getBattery = () => Promise.resolve({ level: 0.2, charging: false })
             const setter = vi.fn()
             registerModeAccessors(() => 'hybrid', setter)
             // Should not throw

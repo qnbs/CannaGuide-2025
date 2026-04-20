@@ -6,7 +6,7 @@ import { I18nextProvider } from 'react-i18next'
 import { App } from '@/components/views/plants/App'
 import { createAppStore, createAppStoreSync, AppStore, RootState } from '@/stores/store'
 import type { Plant } from '@/types'
-import { i18nPromise, i18nInstance } from './i18n'
+import { i18nPromise, i18nInstance, loadLocale, SupportedLocale } from './i18n'
 import { getUISnapshot } from './stores/useUIStore'
 import { strainService } from './services/strainService'
 import { initializeSimulation } from './stores/slices/simulationSlice'
@@ -326,6 +326,18 @@ const mountHydratedApp = async () => {
             setPreferredModelOverride(persistedLlmModel)
         }
 
+        // Sync i18n language with persisted settings (before eco callbacks)
+        // This ensures notifications use the user's preferred language, not browser-detected
+        const persistedLang = (hydratedStore.getState() as RootState).settings.settings.general
+            ?.language as SupportedLocale | undefined
+        if (persistedLang && i18nInstance.language !== persistedLang) {
+            if (!i18nInstance.hasResourceBundle(persistedLang, 'translation')) {
+                const translations = await loadLocale(persistedLang)
+                i18nInstance.addResourceBundle(persistedLang, 'translation', translations)
+            }
+            await i18nInstance.changeLanguage(persistedLang)
+        }
+
         // Initialize MQTT IoT sensor bridge
         const { mqttClientService } = await import('@/services/mqttClientService')
         mqttClientService.init(hydratedStore)
@@ -363,6 +375,13 @@ const mountHydratedApp = async () => {
                 const t = getT()
                 getUISnapshot().addNotification({
                     message: t('settingsView.offlineAi.ecoAutoActivatedToast'),
+                    type: 'info',
+                })
+            },
+            onEcoAutoDeactivated: () => {
+                const t = getT()
+                getUISnapshot().addNotification({
+                    message: t('settingsView.offlineAi.ecoAutoDeactivatedToast'),
                     type: 'info',
                 })
             },

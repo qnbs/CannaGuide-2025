@@ -7,7 +7,7 @@
 
 **Letzte Aktualisierung:** 2026-04-15
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
-**Aktuell:** v1.8.1 | 2312 Tests (199 Dateien) | GitHub Attestation + CycloneDX SBOM | 24 CI Workflows gruen | 0 Security Alerts
+**Aktuell:** v1.8.1 | 2666 Tests (229 Dateien) | GitHub Attestation + CycloneDX SBOM | 24 CI Workflows gruen | 0 Security Alerts
 
 ---
 
@@ -36,9 +36,9 @@
 | Metrik            | Wert                                | Bewertung              |
 | ----------------- | ----------------------------------- | ---------------------- |
 | App-Version       | v1.8.1                              | ✅ Stabil              |
-| Tests             | 2312/2312 (199 Dateien)             | ✅ Gruen               |
+| Tests             | 2666/2666 (229 Dateien)             | ✅ Gruen               |
 | OpenSSF Scorecard | GitHub Attestation + CycloneDX SBOM | ✅ release-publish     |
-| Test-Coverage     | ~33.66 %                            | ✅ Ziel >30 % erreicht |
+| Test-Coverage     | ~35.4 %                             | ✅ Ziel >30 % erreicht |
 | Duplicate Code    | ~115 Major-Bloecke                  | ⚠ Technische Schuld    |
 | Security Alerts   | 0                                   | ✅                     |
 | CI Workflows      | 24 (alle gruen)                     | ✅                     |
@@ -64,9 +64,9 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-04-15 (Comprehensive Documentation Audit)
+Letzte Session:     2026-04-20 (Test Coverage Expansion)
 App-Version:        v1.8.1
-Tests:              2312/2312 (199 files)
+Tests:              2666/2666 (229 files)
 Naechste Prioritaet:  S6 Tasks, a11y control-has-associated-label
 Sprint-Fortschritt: S1 [1/3] | S2 [4/4] | S3 [5/5] | S4 [2/2] | S5 [8/8] | S6 [0/7]
 Gesamtfortschritt:  ████████████████████ 20/29 Tasks (~69%)

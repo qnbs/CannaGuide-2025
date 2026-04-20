@@ -2,7 +2,73 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 170) -- Comprehensive Documentation Audit
+## Latest Session (Session 171) -- Test Coverage Expansion
+
+**Status: Test coverage increased from 33.7% to 35.4% lines. 354 new
+tests added across 30 new test files. Coverage thresholds raised to
+match current metrics. All documentation updated. 2666 tests passing,
+0 TS errors, build OK.**
+
+### What Was Done (Session 171)
+
+1. **Test Coverage Expansion (+354 tests, +30 files)**
+    - Created 30 new test files covering services, hooks, stores, and
+      components
+    - Extended existing test files (simulationSlice +16 tests,
+      knowledgeSlice +4 tests, voiceTelemetryService extended)
+    - Total tests increased from 2312 to 2666 (229 files)
+    - Line coverage increased from 33.7% to 35.4%
+
+2. **New Test Files Created**
+    - services/: voiceTelemetryService, seedbankService, csvExportService,
+      trendsEcosystemService, indexedDbMonitorService, taskSchedulerService,
+      aiConsentService, equipmentProductService, workerTelemetryService,
+      tauriDialogService, workerFactories, contextBridgeService,
+      strainApiService, backupService, geminiService, plantSimulationService
+    - services/local-ai/: progressEmitter, localeHelpers, strainImageFallback
+    - stores/: useUIStore, useFiltersStore, useStrainsViewStore,
+      sensorStore, workerMetricsSlice
+    - hooks/: useEventListener, useOutsideClick, useUnitSystem,
+      useDocumentEffects
+    - utils/: browserApis
+    - components/ui/: button
+    - lib/vpd/: recommendations
+
+3. **Coverage Thresholds Updated**
+    - Lines: 30% -> 35% (current: 35.39%)
+    - Functions: 25% -> 38% (current: 39.06%)
+    - Branches: 15% -> 24% (current: 24.89%)
+    - Statements: 25% -> 41% (current: 41.74%)
+
+4. **Documentation Updated**
+    - README.md: test counts 2312->2666, coverage 33.7%->35.4%
+    - copilot-instructions.md: test baseline updated
+    - ARCHITECTURE.md: test counts updated
+    - audit-roadmap-2026-q2.md: metrics and session updated
+    - CHANGELOG.md: new test entry added
+
+### Verified Metrics
+
+- Version: 1.8.1
+- Tests: 2666 passing (229 files, 0 failures)
+- Coverage: 35.39% lines, 24.89% branches, 39.06% functions, 41.74% statements
+- CI Workflows: 24
+- Services: 130 (93 root + 37 local-ai)
+- Test Files: 229
+- Hooks: 28
+
+### Next Steps
+
+- **Continue coverage expansion**: Target 40-50% lines
+- **Focus areas**: Large untested components (DataManagementTab,
+  StrainLookupSection, BreedingLab), remaining services (aiService,
+  aiProviderService, mqttClientService)
+- **Hook coverage**: useCommandPalette (614 LOC), useStrainFilters (305 LOC)
+- **UI component tests**: form.tsx, select.tsx, dialog.tsx
+
+---
+
+## Previous Session (Session 170) -- Comprehensive Documentation Audit
 
 **Status: All documentation files audited and synchronized to actual
 codebase state. 15+ files updated, 30+ metric corrections applied.

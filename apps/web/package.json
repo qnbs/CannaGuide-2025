@@ -86,7 +86,7 @@
         "babel-plugin-react-compiler": "19.1.0-rc.3",
         "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-react": "^7.37.5",
-        "eslint-plugin-react-hooks": "^7.0.1",
+        "eslint-plugin-react-hooks": "^7.1.1",
         "fake-indexeddb": "^6.2.5",
         "fast-check": "^4.6.0",
         "jsdom": "^24.1.3",

@@ -219,9 +219,9 @@ Released: **2026-04-11**
 
 ---
 
-## v1.8 -- HydroMonitor & Analytics Edition ✅
+## v1.8 -- HydroMonitor & Analytics Edition (v1.8.2 latest)
 
-Released: **2026-04-14** (v1.8.1)
+Released: **2026-04-14** (v1.8.1), **2026-04-20** (v1.8.2)
 
 | Feature                                                                | Category      | Status |
 | ---------------------------------------------------------------------- | ------------- | ------ |

@@ -2,7 +2,56 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 172) -- Tauri v2 Desktop Perfection
+## Latest Session (Session 173) -- v1.8.2 Release
+
+**Status: v1.8.2 released with security hardening, 17 dependency
+updates, 360 new tests, Tauri modular capabilities, and CI monitoring
+workflow. All documentation metrics synchronized. 2672 tests passing,
+0 TS errors.**
+
+### What Was Done (Session 173)
+
+1. **v1.8.2 Release Preparation (P0)**
+    - Consolidated CHANGELOG with all changes since v1.8.1 (15 commits)
+    - Dependencies section with 17 package updates
+    - Security section with protobufjs false-positive fix
+    - Test coverage increased from 2312 to 2672 (+360 tests)
+
+2. **CI Monitoring Workflow (P0)**
+    - Added "CI Monitoring Before Push" section to copilot-instructions.md
+    - Mandatory workflow: check CI status before commit/push
+    - `gh run list` commands for status verification
+    - Automated polling script for CI completion
+
+3. **Eco-Mode Battery Refinement (P1)**
+    - Eco-mode now triggers ONLY on low battery (<25%), not mobile
+    - Added hysteresis: activate <25%, deactivate >30%
+    - Auto-deactivation callback for user notification
+    - i18n sync: load persisted language before eco callbacks
+
+4. **Documentation Metrics Sync (P0)**
+    - Updated test counts in: README.md (7 locations),
+      copilot-instructions.md, ARCHITECTURE.md, audit-roadmap-2026-q2.md
+    - Version bumped in package.json (root + apps/web)
+    - CHANGELOG structured with Security + Dependencies sections
+
+### Verified Metrics
+
+- Version: 1.8.2 (Desktop: 0.1.0)
+- Tests: 2672 passing (0 failures)
+- Security Scan: 0 vulnerabilities
+- Typecheck: Clean (TS2719 filtered)
+- Build: 34MB dist
+
+### Next Steps
+
+- **Desktop E2E testing**: Tauri test framework integration
+- **Code signing**: Apple/Windows developer accounts
+- **v1.9.0 planning**: Voice-First V-07 (wake word), Desktop alpha
+
+---
+
+## Previous Session (Session 172) -- Tauri v2 Desktop Perfection
 
 **Status: Tauri v2 Desktop capabilities restructured. 9 modular
 capability files with FS scopes. 2 new plugins (window-state, store).

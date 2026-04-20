@@ -4,7 +4,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
-## [Unreleased]
+## [1.8.2] - 2026-04-20
 
 ### Added
 
@@ -21,8 +21,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   with TAURI_SIGNING_PRIVATE_KEY + PASSWORD secrets
 - **docs:** ADR-0012 Desktop/Tauri Architecture -- platform detection,
   capability structure, IPC boundaries, plugin configuration
-- **test:** 354 new tests across 30 test files -- coverage increased
-  from 33.7% to 35.4% lines (2312 -> 2666 tests, 199 -> 229 files)
+- **test:** 360 new tests across 30 test files -- coverage increased
+  from 33.7% to 35.4% lines (2312 -> 2672 tests, 199 -> 229 files)
 - **test:** New service tests: voiceTelemetryService, seedbankService,
   csvExportService, trendsEcosystemService, indexedDbMonitorService,
   taskSchedulerService, aiConsentService, equipmentProductService,
@@ -37,18 +37,27 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   useUnitSystem, useDocumentEffects
 - **test:** New component tests: button.test.tsx
 - **test:** New lib tests: vpd/recommendations
+- **docs:** CI Monitoring Before Push workflow added to copilot-instructions.md
 
 ### Changed
 
 - **build:** Coverage thresholds adjusted -- lines 35%, functions
   38%, branches 24%, statements 35% (lowered statements from 41% to
   match actual coverage after service refactoring)
+- **refactor(ai):** Eco-mode battery-only trigger -- eco-mode now
+  activates ONLY on low battery (<25%), not on mobile devices;
+  added hysteresis (activate <25%, deactivate >30%) and auto-
+  deactivation callback for user notification
 
 ### Fixed
 
 - **fix(ci):** Regenerate pnpm-lock.yaml -- apps/desktop importer
   section was missing, causing ERR_PNPM_OUTDATED_LOCKFILE in CI,
   Vercel, and Codespace (9 @tauri-apps/\* dependencies unresolved)
+- **fix(ai):** Eco-mode i18n sync -- load persisted language before
+  eco callbacks to ensure correct locale for notifications
+- **fix(test):** contextBridgeService tests use ProblemType enum
+  values instead of hardcoded strings
 
 ### Added
 
@@ -86,42 +95,30 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   Unpinned-Action-Tags (#303-#306) in desktop-build.yml
 - **security(ci):** All 8 CI workflows now use SHA-pinned actions
   and least-privilege permission model
+- **security(deps):** protobufjs override hardened (>=8.0.1) --
+  CVE-2026-41242 false positive resolved via auditConfig.ignoreCves
+- **security(deps):** basic-ftp override 5.2.2 -> >=5.3.0
+  (GHSA-rp42-5vxx-qpwr DoS fix)
 
-### Previous
+### Dependencies
 
-- **feat(pwa):** Font self-hosting -- Inter, Lexend, IBM Plex Mono,
-  Atkinson Hyperlegible served as local WOFF2 files (8 files in
-  public/fonts/), eliminated Google Fonts external dependency
-- **feat(pwa):** Manifest extensions -- display_override with
-  window-controls-overlay, file_handlers (.cannaguide), share_target
-  for image sharing, edge_side_panel
-- **feat(pwa):** Storage persistence -- `navigator.storage.persist()`
-  at app bootstrap for guaranteed IndexedDB durability
-- **feat(pwa):** Adaptive image cache -- SW cache limits scale with
-  `navigator.deviceMemory` (75/150/300 entries)
-- **feat(pwa):** Speculation Rules API -- Chrome 121+ prefetch with
-  moderate eagerness for SPA navigation
-- **feat(desktop):** Tauri v2 workspace scaffolding -- apps/desktop/
-  with IPC commands (get_app_version, export_data, import_data),
-  7 Tauri plugins, capabilities-based security, tray icon
-- **feat(desktop):** Platform detection service -- isTauri/isPwa/
-  isBrowser detection with OS inference via **TAURI_INTERNALS**
-- **feat(ci):** Desktop build workflow -- matrix builds for Linux,
-  macOS (arm64+x86), Windows triggered on tag push
-
-### Changed
-
-- **perf(pwa):** SW update UX -- removed auto-SKIP_WAITING, user
-  must explicitly click Update banner (prevents data loss)
-- **perf(pwa):** Lighthouse targets tightened -- FCP 1000ms, LCP
-  2500ms, TBT 200ms, CLS 0.05, perf 99%, a11y 100%
-- **security(csp):** Removed fonts.googleapis.com and
-  fonts.gstatic.com from CSP across all 5 delivery paths
-
-### Fixed
-
-- **fix(ci):** Removed 9 dead tauri-build.yml references from
-  OpenSSF Scorecard config
+- **chore(deps):** @google/genai 1.49.0 -> 1.50.1
+- **chore(deps):** react-i18next 17.0.2 -> 17.0.4
+- **chore(deps):** msw 2.13.2 -> 2.13.4
+- **chore(deps):** autoprefixer 10.4.27 -> 10.5.0
+- **chore(deps):** postcss 8.5.9 -> 8.5.10
+- **chore(deps):** eslint-plugin-react-hooks 7.0.1 -> 7.1.1
+- **chore(deps):** @typescript-eslint/\* 8.58.1 -> 8.58.2
+- **chore(deps):** prettier 3.8.2 -> 3.8.3
+- **chore(deps):** jsdom 24.1.3 -> 29.0.2
+- **chore(deps):** @socketsecurity/cli 1.1.81 -> 1.1.84
+- **chore(deps):** @sentry/react 10.48.0 -> 10.49.0
+- **chore(deps):** dompurify (security group update)
+- **chore(deps):** actions/cache 4.2.3 -> 5.0.5
+- **chore(deps):** step-security/harden-runner 2.17.0 -> 2.18.0
+- **chore(deps):** cloudflare/wrangler-action 3.14.1 -> 3.15.0
+- **chore(deps):** github/codeql-action 4.35.1 -> 4.35.2
+- **chore(deps):** swatinem/rust-cache SHA-pinned update
 
 ## [1.8.1] - 2026-04-14
 

@@ -5,7 +5,7 @@
 CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for cannabis cultivation management. Built with React 19, TypeScript (strict), Redux Toolkit, and Google Gemini AI. The app is 100% offline-first with dual IndexedDB persistence.
 
 **Live:** https://qnbs.github.io/CannaGuide-2025/
-**Version:** 1.8.1
+**Version:** 1.8.2
 
 ---
 
@@ -22,7 +22,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
-- **Testing:** Vitest (2666 tests) + Playwright E2E + Playwright Component Tests
+- **Testing:** Vitest (2672 tests) + Playwright E2E + Playwright Component Tests
 - **Desktop:** Tauri v2 (apps/desktop/) -- 99% code sharing with PWA, CI/CD matrix builds
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
@@ -278,7 +278,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 2666 tests, 0 failures
+- Baseline: 2672 tests, 0 failures
 - **E2E critical-path coverage:** Plants (navigation, add-plant, empty state), Strains (search, tabs, list), AI/Knowledge (Mentor chat, settings, tab switching)
 - **Playwright E2E browser strategy:** Chromium for all tests. Firefox enabled in CI with extended timeouts (120s) and `continue-on-error`. Firefox skips IoT/WebGPU tests (`test.skip` with `browserName` check). WebKit is local-only (Safari API gaps).
 - **CI E2E timeout:** 30 minutes (step), 45 minutes (job)
@@ -299,6 +299,55 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
 - **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. The pre-commit (typecheck + lint-staged) and pre-push (typecheck + lint-scopes) hooks exist to prevent broken code from reaching `main`. If an emergency forces `--no-verify`, the developer **must** manually run `pnpm --filter @cannaguide/web typecheck && pnpm run lint:scopes` before pushing and document the reason in the commit body.
+
+### CI Monitoring Before Push (Mandatory)
+
+**CRITICAL:** Before committing and pushing new changes, ALWAYS verify that no CI runs from previous commits are still in progress or have failed.
+
+**Why this matters:** The full CI pipeline (gate.yml + E2E + CodeQL + Scorecard + Fuzzing) takes 30-45 minutes. Pushing new commits while a previous CI run is still in progress creates race conditions, wastes CI minutes, and makes debugging failures harder.
+
+**Pre-Push CI Check Workflow:**
+
+1. **Check CI status before commit:**
+
+    ```bash
+    gh run list --limit 5 --json status,conclusion,workflowName,headSha | jq '.'
+    ```
+
+2. **Wait for `in_progress` runs to complete:**
+    - If any workflow shows `status: "in_progress"`, wait until it completes
+    - Use `gh run watch <run-id>` for live monitoring
+    - Or poll with: `gh run list --limit 1 --workflow CI --json status,conclusion`
+
+3. **Verify all workflows passed:**
+    - `CI` (gate.yml): Must be `success`
+    - `CodeQL`: Must be `success`
+    - `OSSF Scorecard`: Must be `success`
+    - `Fuzzing`: Must be `success` or `skipped`
+    - `Deploy to GitHub Pages`: Must be `success` (if triggered)
+
+4. **If any workflow failed:**
+    - Investigate with: `gh run view <run-id> --log-failed`
+    - Fix the issue locally before pushing new commits
+    - Re-run failed jobs if flaky: `gh run rerun <run-id> --failed`
+
+5. **Only after all green:** Proceed with commit and push
+
+**Quick CI status one-liner:**
+
+```bash
+gh run list --limit 3 --json status,conclusion,workflowName | \
+  jq -r '.[] | "\(.workflowName): \(.status) (\(.conclusion // "pending"))"'
+```
+
+**Automated polling (wait for CI completion):**
+
+```bash
+while gh run list --limit 1 --workflow CI --json status -q '.[0].status' | grep -q in_progress; do
+  echo "CI still running... waiting 60s"
+  sleep 60
+done && echo "CI completed!"
+```
 
 ### Dev Container
 

@@ -11,6 +11,18 @@
     },
     "app": {
         "withGlobalTauri": false,
+        "capabilities": [
+            "core",
+            "desktop",
+            "fs",
+            "dialog",
+            "notification",
+            "tray",
+            "shortcut",
+            "updater",
+            "window-state",
+            "store"
+        ],
         "windows": [
             {
                 "title": "CannaGuide 2025",
@@ -65,7 +77,7 @@
         },
         "windows": {
             "certificateThumbprint": null,
-            "timestampUrl": ""
+            "timestampUrl": "http://timestamp.digicert.com"
         }
     },
     "plugins": {
@@ -73,7 +85,11 @@
             "endpoints": [
                 "https://github.com/qnbs/CannaGuide-2025/releases/latest/download/latest.json"
             ],
-            "pubkey": ""
-        }
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUyNkExNTVGRUZFNDJDQjgKUldTNExPVHZYeFZxVXBWeC9BVGZ6Zk1MMC8velBla2Q5Y3U2Y2FUZmJOL1lja0hTUjV3Zk5ncXYK"
+        },
+        "window-state": {
+            "all": true
+        },
+        "store": {}
     }
 }

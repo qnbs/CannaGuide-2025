@@ -1,0 +1,14 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "desktop",
+    "description": "Desktop-specific capabilities: tray, shell, process management",
+    "windows": ["main"],
+    "platforms": ["linux", "macos", "windows"],
+    "permissions": [
+        "shell:default",
+        "shell:allow-open",
+        "process:default",
+        "process:allow-exit",
+        "process:allow-relaunch"
+    ]
+}

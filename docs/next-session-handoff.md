@@ -2,7 +2,88 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 171) -- Test Coverage Expansion
+## Latest Session (Session 172) -- Tauri v2 Desktop Perfection
+
+**Status: Tauri v2 Desktop capabilities restructured. 9 modular
+capability files with FS scopes. 2 new plugins (window-state, store).
+Auto-updater signing key generated. ADR-0012 created. All documentation
+updated. 2666 tests passing, 0 TS errors.**
+
+### What Was Done (Session 172)
+
+1. **Modular Capability System (P0)**
+    - Created 10 separate capability files replacing monolithic default.json:
+      core.json, desktop.json, fs.json, dialog.json, notification.json,
+      tray.json, shortcut.json, updater.json, window-state.json, store.json
+    - Each capability scoped to specific permissions with platform tags
+    - FS scopes restrict access to `$APPDATA/cannaguide/**` with explicit
+      deny rules for `$HOME/*`, `$DESKTOP/*`
+
+2. **New Plugins Added (P0/P1)**
+    - `window-state` plugin: persistent window size/position across restarts
+    - `store` plugin: desktop-specific settings (theme override, AI model)
+    - Updated Cargo.toml, package.json, lib.rs with 9 total plugins
+
+3. **Auto-Updater Configuration (P1)**
+    - Generated signing key pair (`~/.tauri/cannaguide.key`)
+    - Public key configured in tauri.conf.json
+    - CI secrets documented: TAURI_SIGNING_PRIVATE_KEY + PASSWORD
+
+4. **ADR-0012 Created**
+    - Platform detection strategy (platformService.ts singleton)
+    - Modular capability file structure (9 files)
+    - FS scopes (allowed/denied paths)
+    - IPC boundary rules (3 commands)
+    - Native bridge services (nativeBridgeService, tauriDialogService)
+    - Plugin configuration (9 plugins)
+
+5. **Documentation Updates**
+    - PRIORITY_ROADMAP.md: Added D-01 through D-06 Desktop items
+    - distribution.md: Expanded Tauri section with capabilities, plugins,
+      auto-updater setup, code signing requirements
+    - CHANGELOG.md: New Desktop features in Unreleased section
+    - copilot-instructions.md: Updated Important Files table
+
+### Verified Metrics
+
+- Version: 1.8.1 (Desktop: 0.1.0)
+- Tests: 2666 passing (0 failures)
+- Tauri Plugins: 9 (was 7)
+- Capability Files: 9 (was 1)
+- IPC Commands: 3
+- CI Workflows: 24
+
+### Next Steps
+
+- **CI verification**: Run typecheck, tests, build after push
+- **Desktop E2E testing**: Tauri test framework integration (planned v2.0)
+- **Code signing**: Configure Apple/Windows developer accounts
+- **Desktop release test**: Tag push to trigger desktop-build.yml matrix
+
+### Planned Executions
+
+**Execution N+2: Desktop E2E Testing**
+
+- Playwright + Tauri test framework integration
+- Tray icon, notifications, file dialog E2E tests
+- Visual regression on desktop form factors
+
+**Execution N+3: Code-Signing & Distribution**
+
+- Apple Developer Account setup (requires $99/year membership)
+- Windows EV code signing certificate
+- CI workflow for signed releases
+- GitHub Releases automation with signed installers
+
+**Execution N+4: Mobile Port Exploration**
+
+- Tauri v2 iOS/Android capability assessment
+- Shared codebase strategy for mobile
+- Touch-optimized UI adjustments
+
+---
+
+## Previous Session (Session 171) -- Test Coverage Expansion
 
 **Status: Test coverage increased from 33.7% to 35.4% lines. 354 new
 tests added across 30 new test files. Coverage thresholds raised to

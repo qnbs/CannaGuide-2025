@@ -1,0 +1,17 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "store",
+    "description": "Persistent key-value store for desktop-specific settings (theme, AI model selection)",
+    "windows": ["main"],
+    "platforms": ["linux", "macos", "windows"],
+    "permissions": [
+        "store:default",
+        "store:allow-get",
+        "store:allow-set",
+        "store:allow-delete",
+        "store:allow-keys",
+        "store:allow-clear",
+        "store:allow-save",
+        "store:allow-load"
+    ]
+}

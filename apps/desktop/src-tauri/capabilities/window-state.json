@@ -1,0 +1,12 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "window-state",
+    "description": "Window state persistence (size, position, maximized state)",
+    "windows": ["main"],
+    "platforms": ["linux", "macos", "windows"],
+    "permissions": [
+        "window-state:default",
+        "window-state:allow-restore-state",
+        "window-state:allow-save-state"
+    ]
+}

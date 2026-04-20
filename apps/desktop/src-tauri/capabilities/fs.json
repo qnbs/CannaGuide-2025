@@ -1,0 +1,45 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "fs",
+    "description": "File system capabilities with scoped access for CannaGuide data",
+    "windows": ["main"],
+    "platforms": ["linux", "macos", "windows"],
+    "permissions": [
+        "fs:default",
+        {
+            "identifier": "fs:allow-read-text-file",
+            "allow": [
+                "$APPDATA/cannaguide/**",
+                "$APPDATA/cannaguide/exports/*",
+                "$APPDATA/cannaguide/grows/*.json",
+                "$APPDATA/cannaguide/grows/*.crdt",
+                "$APPDATA/cannaguide/models/*",
+                "$APPDATA/cannaguide/time-lapse/**",
+                "$DOCUMENT/**/*.json",
+                "$DOCUMENT/**/*.cannaguide"
+            ]
+        },
+        {
+            "identifier": "fs:allow-write-text-file",
+            "allow": [
+                "$APPDATA/cannaguide/**",
+                "$APPDATA/cannaguide/exports/*",
+                "$APPDATA/cannaguide/grows/*.json",
+                "$APPDATA/cannaguide/grows/*.crdt",
+                "$APPDATA/cannaguide/models/*",
+                "$APPDATA/cannaguide/time-lapse/**",
+                "$DOCUMENT/**/*.json",
+                "$DOCUMENT/**/*.cannaguide"
+            ],
+            "deny": ["$HOME/*", "$DESKTOP/*", "$EXE/*", "$RESOURCE/*"]
+        },
+        {
+            "identifier": "fs:allow-exists",
+            "allow": ["$APPDATA/cannaguide/**"]
+        },
+        {
+            "identifier": "fs:allow-mkdir",
+            "allow": ["$APPDATA/cannaguide/**"]
+        }
+    ]
+}

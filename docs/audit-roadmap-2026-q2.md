@@ -5,9 +5,9 @@
 > Dedizierte Roadmap zur Umsetzung aller Maßnahmen aus dem **Full-Scale Deep Audit, Critical Evaluation & Action-Plan** (Stand: 23. März 2026, Commit `473044d`).
 > Dieses Dokument ist der zentrale Übergabe- und Anknüpfungspunkt für alle zukünftigen Sessions.
 
-**Letzte Aktualisierung:** 2026-04-15
+**Letzte Aktualisierung:** 2026-04-20
 **Baseline:** v1.1.0 | 719 Tests (86 Dateien) | OpenSSF 8.5/10 | CI gruen | 0 Security Alerts
-**Aktuell:** v1.8.1 | 2666 Tests (229 Dateien) | GitHub Attestation + CycloneDX SBOM | 24 CI Workflows gruen | 0 Security Alerts
+**Aktuell:** v1.8.2 | 2672 Tests (229 Dateien) | GitHub Attestation + CycloneDX SBOM | 24 CI Workflows gruen | 0 Security Alerts
 
 ---
 
@@ -31,12 +31,12 @@
 
 ## Gesamtübersicht & Zielzustand
 
-### Ist-Zustand (2026-04-09)
+### Ist-Zustand (2026-04-20)
 
 | Metrik            | Wert                                | Bewertung              |
 | ----------------- | ----------------------------------- | ---------------------- |
-| App-Version       | v1.8.1                              | ✅ Stabil              |
-| Tests             | 2666/2666 (229 Dateien)             | ✅ Gruen               |
+| App-Version       | v1.8.2                              | ✅ Stabil              |
+| Tests             | 2672/2672 (229 Dateien)             | ✅ Gruen               |
 | OpenSSF Scorecard | GitHub Attestation + CycloneDX SBOM | ✅ release-publish     |
 | Test-Coverage     | ~35.4 %                             | ✅ Ziel >30 % erreicht |
 | Duplicate Code    | ~115 Major-Bloecke                  | ⚠ Technische Schuld    |
@@ -64,9 +64,9 @@
 > Aktualisiere diesen Block am Anfang jeder Session.
 
 ```
-Letzte Session:     2026-04-20 (Test Coverage Expansion)
-App-Version:        v1.8.1
-Tests:              2666/2666 (229 files)
+Letzte Session:     2026-04-20 (v1.8.2 Release)
+App-Version:        v1.8.2
+Tests:              2672/2672 (229 files)
 Naechste Prioritaet:  S6 Tasks, a11y control-has-associated-label
 Sprint-Fortschritt: S1 [1/3] | S2 [4/4] | S3 [5/5] | S4 [2/2] | S5 [8/8] | S6 [0/7]
 Gesamtfortschritt:  ████████████████████ 20/29 Tasks (~69%)

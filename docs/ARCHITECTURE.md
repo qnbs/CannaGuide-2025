@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                       |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                             |
 | Workers      | WorkerBus (promise-based, 11 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 2666 unit tests (229 files), Playwright E2E + Component tests                      |
+| Testing      | Vitest 2672 unit tests (229 files), Playwright E2E + Component tests                      |
 | Distribution | GitHub Pages, Vercel, Cloudflare Pages, Tauri v2 Desktop (Netlify paused until v2.0)      |
 
 ---
@@ -375,7 +375,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 pnpm run dev              # Vite dev server (localhost:5173)
 pnpm run build            # Production build (Vite 7 + PWA manifest injection)
-pnpm test                 # Vitest unit/integration (2666 tests)
+pnpm test                 # Vitest unit/integration (2672 tests)
 pnpm run test:e2e         # Playwright E2E
 pnpm run test:ct          # Playwright Component tests
 pnpm run lint:full        # ESLint entire project

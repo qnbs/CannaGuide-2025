@@ -27,7 +27,7 @@
     },
     "dependencies": {
         "@google/genai": "^1.51.0",
-        "zod": "^3.25.76"
+        "zod": "^4.4.2"
     },
     "optionalDependencies": {
         "@mlc-ai/web-llm": "*",

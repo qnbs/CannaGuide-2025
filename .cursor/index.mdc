@@ -1,0 +1,30 @@
+---
+description: Project Manifest and Global Architecture
+alwaysApply: true
+---
+
+# CannaGuide 2025 — Kontext
+
+**Zweck:** KI-gestützter Cannabis-Anbau-Guide (PWA): Plant-Tracker, Strain-Lexikon, VPD, Zucht-Simulation, Mentor; offline-first, i18n (u. a. DE/EN).
+
+**Monorepo:** pnpm-Workspaces + Turborepo. Pakete: `apps/web` (@cannaguide/web), `packages/ai-core`, `packages/ui`; optional Desktop über Tauri.
+
+**Frontend:** React 19, Vite 7, Tailwind CSS, Radix UI, Redux Toolkit + Zustand, i18next. Kein Next.js; Routing/UI als Feature-Views unter `apps/web/components/views/`.
+
+**Build / Qualität:** TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` in App), ESLint 9 flat config, Prettier, Husky/lint-staged.
+
+**Persistenz / Sync:** IndexedDB, localStorage, Service Worker (PWA); Yjs/Y-IndexedDB für CRDT (siehe ADRs). Kein Prisma/SQLite im Kern-Stack.
+
+**AI / APIs:** Google Gemini (`@google/genai`), Multi-Provider/BYOK über `ai-core` und `apps/web/services/`; lokale Inferenz (WebGPU/WebLLM/ONNX-Stub) in `local-ai/`. Optional: MQTT (IoT), Sentry.
+
+**Tests:** Vitest (Unit/Fuzz), Playwright (E2E + CT), MSW/fake-indexeddb wo nötig. Mutation: Stryker (Repo-Root).
+
+**Dokument-Kanon:** Architektur-Überblick in `docs/ARCHITECTURE.md`; ADRs unter `docs/adr/`.
+
+**Pfad-Alias (Web):** `@/*` → `apps/web/*`.
+
+**Regel-Modi:** Immer aktiv nur dieses Manifest; detaillierte Regeln über `globs` (auto-attached), `description` (agent-requested) oder manuell.
+
+**MCP-Readiness:** Projektweite MCP-Vorbereitung in `cursor_settings.json` (u. a. Graphify-Platzhalter), Wissensstream in `.notes/meeting_notes.md`.
+
+Agenten sollen domänenspezifische Regeln aus `.cursor/rules/*.mdc` nutzen; keine Secrets committen; kanonische Implementierung per Dateireferenz (`@`-Pfad) statt Duplikaten.

@@ -33,6 +33,9 @@ benchmark-metrics.json
 test-results/
 .turbo/
 
+# Local session notes / Consciousness Stream (optional privacy; not versioned)
+.notes/
+
 # ESPHome secrets (user-specific, never commit)
 firmware/**/secrets.yaml
 
@@ -41,3 +44,6 @@ firmware/**/secrets.yaml
 stryker-setup-*.js
 stryker.log
 reports/mutation/
+
+# Graphify AST cache (regrows every run — do not commit)
+graphify-out/cache/

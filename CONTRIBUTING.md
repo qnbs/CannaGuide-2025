@@ -14,6 +14,7 @@ Thank you for considering contributing to CannaGuide 2025! We welcome contributi
 - [Code Style](#code-style)
 - [Testing](#testing)
 - [Internationalization (i18n)](#internationalization-i18n)
+- [Cursor MDC Governance](#cursor-mdc-governance)
 - [Pull Request Process](#pull-request-process)
 - [Deprecation Strategy](#deprecation-strategy)
 - [Reporting Issues](#reporting-issues)
@@ -96,6 +97,18 @@ pnpm run pr:push -- "feat/my-feature"     # explicit branch name
 ```
 
 The `pr:push` script (`scripts/github/pr-push.mjs`) automates: branch creation → push → PR → auto-merge (squash) → CI wait → cleanup. PRs are merge-gated by CI checks (`quality` + `ci-status`) and signed commits.
+
+---
+
+## Cursor MDC Governance
+
+This repository uses a modular Cursor rule architecture under `.cursor/rules/*.mdc`.
+
+- Global manifest: `.cursor/index.mdc`
+- Detailed governance: `docs/cursor-mdc-governance.md`
+- Session memory stream: `.notes/meeting_notes.md` (local only, ignored by Git)
+
+When adding/updating rules, follow the naming ranges and frontmatter constraints documented in the governance file.
 
 ---
 

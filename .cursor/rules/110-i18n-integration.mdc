@@ -1,0 +1,21 @@
+---
+description: When editing locales or UI text enforce i18next namespace discipline key reuse and locale parity
+globs: apps/web/i18n.ts,apps/web/locales/**/*.ts,apps/web/components/**/*.tsx,apps/web/services/**/*.ts,apps/web/stores/**/*.ts
+alwaysApply: false
+---
+
+# Integration: i18n / Locale-Key-Disziplin
+
+- Nutzersichtbare Texte nicht hardcoden; in React über `t('...')`, außerhalb von React über den zentralen Zugriff (`getT`) aus `apps/web/i18n.ts`.
+- Neue Übersetzungsschlüssel in den bestehenden Locale-Strukturen ergänzen (`en`,`de`,`es`,`fr`,`nl`) und konsistent benennen; keine semantisch doppelten Keys.
+- Keys stabil halten: keine stillen Renames ohne Migrationsschritt, da sonst UI-Fallbacks und Tests brechen.
+- Bei Sprache-/Richtungslogik (`lang`/`dir`) nur den zentralen Mechanismus in `i18n.ts` erweitern, nicht pro Komponente duplizieren.
+- i18n-Qualitätschecks (`check:i18n`,`check:i18n-usage`,`lint:i18n`) als verpflichtende Validierung für neue Textflächen betrachten.
+
+<example>
+Neue Settings-Option: Key unter passenden Locale-Modulen ergänzen, UI via `t('settings.newOption.label')`, Tests auf Key-Existenz/Fallback aktualisieren.
+</example>
+
+<example type="invalid">
+Direktes `"Save"`/`"Speichern"` in JSX oder separater `i18next.createInstance()` in einem Feature-Service.
+</example>

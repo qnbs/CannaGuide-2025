@@ -1,0 +1,20 @@
+---
+description: On touching secrets or external IO enforce env-only creds safe errors and structured logging per stack
+globs: *.*
+alwaysApply: false
+---
+
+# Core: Secrets, Fehler, Logging
+
+- **Secrets:** API-Keys, Tokens, MQTT-Passwörter nur aus Umgebungsvariablen oder sicheren Nutzer-Einstellungen (nie Hardcode, nie in Git). `.env*` nur lokal; keine produktiven Werte in Beispiel-Dateien committen. Vor Commit: vorhandene Scanner (`security:secrets`) respektieren.
+- **Client-PWA:** Keine sensiblen Cloud-Keys im öffentlich gebündelten Code ohne klare Trennung/BYOK-Pattern; bestehende Provider-Abstraktion in `@/services/` und `packages/ai-core` nutzen.
+- **Fehlerbehandlung:** Keine leeren `catch`; Nutzer sichtbare Fehler über etablierte UI (Toast/Modal), technische Details nur geloggt oder an Sentry gemäß bestehender Integration — keine Geheimnisse in Logs.
+- **Logging:** Kein `console.log` für produktionskritische Diagnostik in neuem Code ohne Konvention; bestehende Muster (Telemetrie, WorkerBus-Metriken) bevorzugen.
+
+<example>
+Neuer Gemini-Call: Konfiguration aus vorhandenen Settings/BYOK-Fluss lesen; bei Fehler strukturierte Domänen-Fehlermeldung zurückgeben, Key nie loggen.
+</example>
+
+<example type="invalid">
+`const apiKey = "AIza..."` oder Keys in `vite.config` für Produktion einbetten.
+</example>

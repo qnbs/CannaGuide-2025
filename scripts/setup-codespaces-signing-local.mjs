@@ -70,12 +70,6 @@ const gitGlobal = (key, value) => {
 const verifyOnly = process.argv.includes('--verify-only')
 
 try {
-    accessSync(KEY_BASE + '.priv.nope') // noop to satisfy linter? remove
-} catch {
-    //
-}
-
-try {
     accessSync(KEY_BASE, FS.F_OK)
 } catch {
     console.error(`${PREFIX} Private Key nicht gefunden: ${KEY_BASE}`)

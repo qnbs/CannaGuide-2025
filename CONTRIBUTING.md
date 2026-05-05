@@ -110,7 +110,7 @@ This repository uses a modular Cursor rule architecture under `.cursor/rules/*.m
 
 When adding/updating rules, follow the naming ranges and frontmatter constraints documented in the governance file.
 
-- MCP (Graphify): `.cursor/mcp.json` invokes `scripts/graphify-mcp-stdio.sh` → `uv run --with graphifyy --with mcp python -m graphify.serve …`. Requires **`uv`** on your `PATH` and network once for deps; see `docs/cursor-mdc-governance.md` for a bare `uv` config without Bash.
+- MCP (Graphify): `.cursor/mcp.json` invokes `scripts/graphify-mcp-stdio.sh` → `uv run --with graphifyy --with mcp python -m graphify.serve …`. Requires **`uv`** on your `PATH` and network once for deps; **`pnpm run graphify:mcp:doctor`** validates the setup; see `docs/cursor-mdc-governance.md` for a bare `uv` config without Bash.
 - Team reference: `cursor_settings.json` (root) documents the same MCP block plus optional `projectContext` paths.
 
 **Maintainers:** prefer `pnpm run pr:push` for substantive merges so CI gates apply; reserve direct `git push origin main` for emergencies or documented exceptions.

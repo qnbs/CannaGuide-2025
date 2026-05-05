@@ -25,6 +25,6 @@ alwaysApply: true
 
 **Regel-Modi:** Immer aktiv nur dieses Manifest; detaillierte Regeln über `globs` (auto-attached), `description` (agent-requested) oder manuell.
 
-**MCP-Readiness:** Cursor lädt `/.cursor/mcp.json`; `cursor_settings.json` (Root) als Referenz samt `projectContext`. Wissensstream: `.notes/meeting_notes.md` (lokal).
+**MCP-Readiness:** Cursor lädt `.cursor/mcp.json`. Graphify-MCP: `bash scripts/graphify-mcp-stdio.sh` mit `cwd: ${workspaceFolder}` — **`uv`** muss installiert sein; Diagnose: `pnpm run graphify:mcp:doctor`. Team-Referenz: `cursor_settings.json` (`projectContext`). Wissensstream: `.notes/meeting_notes.md` (lokal).
 
 Agenten sollen domänenspezifische Regeln aus `.cursor/rules/*.mdc` nutzen; keine Secrets committen; kanonische Implementierung per Dateireferenz (`@`-Pfad) statt Duplikaten.

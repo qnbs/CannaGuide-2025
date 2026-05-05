@@ -16,12 +16,12 @@ Diese Richtlinie beschreibt die modulare Regel-Architektur in diesem Repository 
 
 ## Aktivierungsmodi
 
-| Modus | Frontmatter | Einsatz |
-| --- | --- | --- |
-| Always Apply | `alwaysApply: true` | Nur globale Axiome, sehr kurz halten |
-| Auto Attached | `globs: ...` + `alwaysApply: false` | Datei-/Framework-spezifische Regeln |
-| Agent Requested | `description: ...` ohne `globs` | Tiefe Spezialregeln bei Bedarf |
-| Manual | ohne `description` und ohne `globs` | Nur per explizitem `@rule` |
+| Modus           | Frontmatter                         | Einsatz                              |
+| --------------- | ----------------------------------- | ------------------------------------ |
+| Always Apply    | `alwaysApply: true`                 | Nur globale Axiome, sehr kurz halten |
+| Auto Attached   | `globs: ...` + `alwaysApply: false` | Datei-/Framework-spezifische Regeln  |
+| Agent Requested | `description: ...` ohne `globs`     | Tiefe Spezialregeln bei Bedarf       |
+| Manual          | ohne `description` und ohne `globs` | Nur per explizitem `@rule`           |
 
 ## Namensschema
 
@@ -50,14 +50,15 @@ Diese Richtlinie beschreibt die modulare Regel-Architektur in diesem Repository 
 
 ## MCP und Graphify
 
-- **Cursor IDE:** projektweit `/.cursor/mcp.json` (lädt MCP-Server wie Graphify, sofern `graphify-mcp` auf dem `PATH` liegen).
+- **Cursor IDE:** projektweit `/.cursor/mcp.json`. Graphify MCP ist **kein** Binär auf dem PATH namens `graphify-mcp`: Cursor startet **`bash scripts/graphify-mcp-stdio.sh`** mit **`cwd: ${workspaceFolder}`**. Das Script führt **`uv run --with graphifyy --with mcp python -m graphify.serve graphify-out/graph.json`** aus — **`uv`** muss installiert sein (z. B. über [uv installieren](https://docs.astral.sh/uv/getting-started/installation)); beim ersten Start lädt `uv` die Abhängigkeiten (einmalig Netzwerk).
+- **Ohne Bash (Windows o. Ä.):** in `mcp.json` `"command": "uv"`, `"args": ["run","--with","graphifyy","--with","mcp","python","-m","graphify.serve","graphify-out/graph.json"]`, `"cwd": "${workspaceFolder}"` (wie im Shell-Script).
 - **Referenz/Template:** `cursor_settings.json` im Repo-Root (zusätzliche Hinweise `projectContext` für Menschen/Agents; nicht jede Cursor-Version merged das automatisch).
 - Graph-Refresh: `graphify update .`
 - Arbeitskopie: `graphify-out/graph.json`, `graph.html`, `GRAPH_REPORT.md` versionieren; **`graphify-out/cache/` ist ignoriert** (siehe `.gitignore`).
 - Architekturfragen bevorzugt über:
-  - `graphify query "<frage>"`
-  - `graphify path "<A>" "<B>"`
-  - `graphify explain "<konzept>"`
+    - `graphify query "<frage>"`
+    - `graphify path "<A>" "<B>"`
+    - `graphify explain "<konzept>"`
 
 ## CI-nahe Qualitätsbefehle
 

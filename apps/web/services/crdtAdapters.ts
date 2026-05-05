@@ -12,7 +12,7 @@ const PlantCrdtSchema = z.object({
     id: z.string().min(1),
     growId: z.string().min(1).default(DEFAULT_GROW_ID),
     name: z.string(),
-    strain: z.record(z.unknown()),
+    strain: z.record(z.string(), z.unknown()),
     mediumType: z.string(),
     createdAt: z.number(),
     lastUpdated: z.number(),

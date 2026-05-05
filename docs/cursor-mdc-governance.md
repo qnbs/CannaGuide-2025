@@ -55,6 +55,7 @@ Diese Richtlinie beschreibt die modulare Regel-Architektur in diesem Repository 
 - **Referenz/Template:** `cursor_settings.json` im Repo-Root (zusätzliche Hinweise `projectContext` für Menschen/Agents; nicht jede Cursor-Version merged das automatisch).
 - Graph-Refresh: `graphify update .`
 - Arbeitskopie: `graphify-out/graph.json`, `graph.html`, `GRAPH_REPORT.md` versionieren; **`graphify-out/cache/` ist ignoriert** (siehe `.gitignore`).
+- **Self-check (CLI):** `pnpm run graphify:mcp:doctor` — prüft Launcher, `graph.json`, `uv`, Import von `graphify` + `mcp`.
 - Architekturfragen bevorzugt über:
     - `graphify query "<frage>"`
     - `graphify path "<A>" "<B>"`

@@ -51,6 +51,7 @@
         "format": "prettier --write .",
         "preview": "pnpm --filter @cannaguide/web preview",
         "check:commit-identity": "node ./scripts/check-commit-identity.mjs",
+        "graphify:mcp:doctor": "node ./scripts/graphify-mcp-doctor.mjs",
         "devcontainer:doctor": "node ./scripts/devcontainer/doctor.mjs",
         "prettier:check:changed": "node ./scripts/prettier-check-changed.mjs",
         "strains:merge": "node ./scripts/merge-strains.mjs",

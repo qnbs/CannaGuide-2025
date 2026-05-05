@@ -50,6 +50,8 @@ Diese Richtlinie beschreibt die modulare Regel-Architektur in diesem Repository 
 
 ## MCP und Graphify
 
+Vollständiger Leitfaden (Nachbau, MCP-Tools, Agenten-Playbook): [`docs/GRAPHIFY-COMPLETE-GUIDE.md`](./GRAPHIFY-COMPLETE-GUIDE.md).
+
 - **Cursor IDE:** projektweit `/.cursor/mcp.json`. Graphify MCP ist **kein** Binär auf dem PATH namens `graphify-mcp`: Cursor startet **`bash scripts/graphify-mcp-stdio.sh`** mit **`cwd: ${workspaceFolder}`**. Das Script führt **`uv run --with graphifyy --with mcp python -m graphify.serve graphify-out/graph.json`** aus — **`uv`** muss installiert sein (z. B. über [uv installieren](https://docs.astral.sh/uv/getting-started/installation)); beim ersten Start lädt `uv` die Abhängigkeiten (einmalig Netzwerk).
 - **Ohne Bash (Windows o. Ä.):** in `mcp.json` `"command": "uv"`, `"args": ["run","--with","graphifyy","--with","mcp","python","-m","graphify.serve","graphify-out/graph.json"]`, `"cwd": "${workspaceFolder}"` (wie im Shell-Script).
 - **Referenz/Template:** `cursor_settings.json` im Repo-Root (zusätzliche Hinweise `projectContext` für Menschen/Agents; nicht jede Cursor-Version merged das automatisch).

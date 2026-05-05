@@ -45,11 +45,15 @@ Diese Richtlinie beschreibt die modulare Regel-Architektur in diesem Repository 
 - `203-state-persistence.mdc`: IndexedDB/localStorage/Hydration.
 - `204-pwa-cache-and-sw.mdc`: Service Worker und Cache-Update-Strategie.
 - `110-i18n-integration.mdc`: i18n Key-Disziplin und Locale-Parität.
+- `811-ci-first-local-workflow.mdc`: Low-End lokal, schwere Tests primär in GitHub CI.
+- `870-mdc-engine-optimization.mdc`: Moduswahl (Always / Auto / Agent / Manual) und Token-Budget.
 
 ## MCP und Graphify
 
-- MCP-Preparation: `cursor_settings.json`.
+- **Cursor IDE:** projektweit `/.cursor/mcp.json` (lädt MCP-Server wie Graphify, sofern `graphify-mcp` auf dem `PATH` liegen).
+- **Referenz/Template:** `cursor_settings.json` im Repo-Root (zusätzliche Hinweise `projectContext` für Menschen/Agents; nicht jede Cursor-Version merged das automatisch).
 - Graph-Refresh: `graphify update .`
+- Arbeitskopie: `graphify-out/graph.json`, `graph.html`, `GRAPH_REPORT.md` versionieren; **`graphify-out/cache/` ist ignoriert** (siehe `.gitignore`).
 - Architekturfragen bevorzugt über:
   - `graphify query "<frage>"`
   - `graphify path "<A>" "<B>"`
@@ -63,3 +67,7 @@ Diese Richtlinie beschreibt die modulare Regel-Architektur in diesem Repository 
 - `pnpm run gate:push`
 
 Hinweis: `gate:push` ist der beste lokale Preflight für grüne CI, kann aber je nach Umgebung länger laufen.
+
+## Branch-Policy (Empfehlung)
+
+- Inhaltliche Änderungen idealerweise über **`pnpm run pr:push`** (PR + CI-Gate), nicht per direktem Push auf `main`, sofern keine Admin-Ausnahme nötig ist.

@@ -110,6 +110,11 @@ This repository uses a modular Cursor rule architecture under `.cursor/rules/*.m
 
 When adding/updating rules, follow the naming ranges and frontmatter constraints documented in the governance file.
 
+- MCP (Graphify stub): `.cursor/mcp.json` — requires `graphify-mcp` on your `PATH` or adjust the command to your installation.
+- Team reference: `cursor_settings.json` (root) documents the same MCP block plus optional `projectContext` paths.
+
+**Maintainers:** prefer `pnpm run pr:push` for substantive merges so CI gates apply; reserve direct `git push origin main` for emergencies or documented exceptions.
+
 ---
 
 ## Commit Convention

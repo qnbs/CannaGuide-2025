@@ -184,7 +184,7 @@ pnpm exec tsc --noEmit
 - All Dockerfile `FROM` directives **must** include an `@sha256:` digest.
 - New third-party actions require adding the owner to the repository's Actions allowlist (Settings > Actions > General).
 - Compromised tools are removed immediately and replaced with vetted alternatives (e.g., Trivy -> Grype).
-- See [`SECURITY.md`](SECURITY.md#supply-chain-security) for the full policy and rationale.
+- See [`SECURITY.md`](SECURITY.md#supply-chain-security) for the full policy and rationale (including **[transitive pnpm overrides](SECURITY.md#transitive-dependency-remediation-pnpm-overrides)** for Dependabot-driven fixes).
 
 ---
 

@@ -4,6 +4,14 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [Unreleased]
+
+### Security
+
+- Transitive **`ip-address`** upgraded via root **`pnpm.overrides`** to **>=10.1.1** ([GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) / CVE-2026-42338). Dependency path includes `@lhci/cli` → `proxy-agent` → `socks`. Documented in [`SECURITY.md`](SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
+
+---
+
 ## [1.8.2] - 2026-04-20
 
 ### Added

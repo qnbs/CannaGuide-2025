@@ -104,6 +104,16 @@ The SBOM covers:
 - The full monorepo dependency tree from `pnpm-lock.yaml`
 - NTIA minimum elements compliant
 
+### Transitive dependency remediation (pnpm overrides)
+
+When Dependabot flags a **transitive** npm package and maintainers of direct dependencies have not yet adopted a patched release, this repository forces a **minimum safe version** using root **`pnpm.overrides`** (see `package.json`). Each intentional override is recorded here for auditors and agents.
+
+| Package      | Minimum version | Advisory                                                                                               | Typical chain                                                                                               | Notes                                                                                                                                          |
+| ------------ | --------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ip-address` | 10.1.1          | [GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) (CVE-2026-42338, medium, XSS) | `socks` → `socks-proxy-agent` → `pac-proxy-agent` → `proxy-agent` → `@lhci/cli` / Puppeteer (Lighthouse CI) | Advisory affects HTML-emitting `Address6` helpers; resolution only affects **dev** tooling (e.g. Lighthouse). Lockfile resolves to **10.2.0**. |
+
+After merging an override, confirm in GitHub **Security → Dependabot** that the related alert moves to **resolved** (or dismiss with justification if a false positive).
+
 ```bash
 # Inspect SBOM component count and root component
 jq '.metadata.component.name, (.components | length)' cannaguide-sbom.cyclonedx.json

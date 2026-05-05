@@ -15,5 +15,5 @@ Kleiner Bugfix in einer Datei → `pnpm run lint:changed`, gezielt `vitest run s
 </example>
 
 <example type="invalid">
-Nach jedrem Commit lokal alle Shards Playwright auf schwacher Hardware ohne Not.
+Nach jedem Commit lokal alle Shards Playwright auf schwacher Hardware ohne Not.
 </example>

@@ -1,8 +1,8 @@
-# Graph Report - CannaGuide-2025 (2026-05-05)
+# Graph Report - CannaGuide-2025 (2026-05-06)
 
 ## Corpus Check
 
-- 941 files · ~1,250,813 words
+- 941 files · ~1,252,602 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

@@ -1,0 +1,25 @@
+---
+description: ALWAYS use when asked to CREATE A RULE or UPDATE A RULE or when taught a lesson to RETAIN AS NEW RULE
+globs:
+alwaysApply: false
+---
+
+# Meta-Regeln für .mdc-Regelwerk
+
+- Wenn der Nutzer eine Regel erstellen anweist oder du aus einer Korrektur lernst, **musst** du eine `.mdc`-Datei unter `.cursor/rules/` anlegen oder ändern.
+- **Nomenklatur:** dreistellige Kebab-Case-Präfixe — `001–099` Core/Sicherheit, `100–199` Integrationen/APIs, `200–299` Architektur/Patterns, `300–399` UI/Styling, `800–899` Workflows/Testing.
+- **Frontmatter-`description`:** ATO (Action, Trigger, Outcome), **max. 120 Zeichen**.
+- **`globs`:** niemals Leerzeichen nach Kommas; **keine** Anführungszeichen. Beispiel: `globs: *.ts,src/**/*.tsx`.
+- **Token-Footprint:** Regeln **≤ 200 Zeilen**. Statt Code duplizieren: auf kanonische Dateien verweisen (z. B. „Siehe `@lib/utils.ts`“ — hier `@/…` bzw. Workspace-Pfade).
+- **Veranschaulichung:** zwingend `<example>` und `<example type="invalid">` nutzen.
+- **Editor:** Regeldateien mit dem **Standard-Texteditor** schreiben, um MDC-Editor-Bugs zu vermeiden.
+- **Aktivierungsmodi korrekt nutzen:** `alwaysApply` nur für sehr kurze globale Axiome; `globs` für dateispezifische Auto-Attach-Regeln; `description` ohne `globs` für Agent-Requested; ohne `description` und ohne `globs` für manuelle Makro-Regeln.
+- **Token-Budget pro Modus:** Always-Apply extrem kompakt halten, Auto-Attached domänenspezifisch schneiden, Agent-Requested nur für tiefe Spezialkontexte verwenden.
+
+<example>
+Nutzer: „Merke: Neue AI-Calls nur über aiFacade.“ → Neue Datei `101-ai-facade-contract.mdc` mit passenden `globs` und kurzem Körper + Verweis auf `@/services/aiFacade.ts`.
+</example>
+
+<example type="invalid">
+Glob mit Leerzeichen und Quotes: `globs: "*.ts, **/*.tsx"` — verboten.
+</example>

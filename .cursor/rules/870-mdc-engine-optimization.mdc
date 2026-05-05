@@ -1,0 +1,23 @@
+---
+description: Use this rule to optimize MDC mode selection token budgets and context injection strategy
+alwaysApply: false
+---
+
+# Agent-Requested: MDC Engine Optimierung
+
+- Ziel: maximale Kontextrelevanz bei minimaler Tokenlast durch korrekte Wahl des Regelmodus.
+- Moduswahl:
+  - `alwaysApply`: nur harte globale Axiome, möglichst kurz.
+  - `globs` + `alwaysApply:false`: Framework-/Dateikontext automatisch injizieren.
+  - `description` ohne `globs`: Agent-Requested für tiefe, seltene Architekturregeln.
+  - ohne `description` und ohne `globs`: nur manuell per `@regel` laden.
+- Bei Konflikten gewinnt die konkretere Regel (engere `globs`) vor generischen Regeln.
+- Vor neuer Regel prüfen, ob bestehende Regel erweitert werden kann statt Redundanz zu erzeugen.
+
+<example>
+Yjs-Änderung in `apps/web/services/crdtService.ts` lädt `201-crdt-sync.mdc` automatisch; globale Regeln bleiben kurz.
+</example>
+
+<example type="invalid">
+Detaillierte 400-Zeilen-Architekturregel als `alwaysApply:true` markieren.
+</example>

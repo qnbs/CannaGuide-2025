@@ -1,0 +1,20 @@
+---
+description: On test files enforce deterministic mocks independence and forbid commenting tests to pass CI
+globs: apps/web/**/*.test.ts,apps/web/**/*.test.tsx,apps/web/**/*.spec.ts,apps/web/**/*.spec.tsx,apps/web/tests/**/*.e2e.ts,apps/web/tests/**/*.ct.tsx,apps/web/workers/**/*.test.ts,packages/**/*.test.ts
+alwaysApply: false
+---
+
+# Testing: Determinismus & Integrität
+
+- **Determinismus:** Keine Abhängigkeit von Echtzeit, Zufall ohne Seed oder externen Live-Netzwerk-Calls in Unit-Tests. Zeit (`vi.useFakeTimers`), `fetch`/AI/IndexedDB über Vitest-Hooks, MSW oder `fake-indexeddb` wie im Projekt üblich mocken.
+- **Unabhängigkeit:** Jeder Test bringt eigene Arrange-Daten; keine Reihenfolge-Abhängigkeit zwischen Dateien; globale Zustände nach Tests zurücksetzen.
+- **Verboten:** Fehlschlagende Tests auskommentieren oder löschen, „nur damit der Build grün wird“. Stattdessen fixen oder als `skip`/`todo` mit Ticket-Begründung — nicht stillschweigend entfernen.
+- **E2E/CT:** Playwright-Tests: stabile Selektoren, keine festen `sleep` ohne Not.
+
+<example>
+Gemini: `msw` oder bestehende Mocks (`tests/gemini-mock.test.ts`-Muster) nutzen; Assertions auf stabile UI- oder Service-Outputs.
+</example>
+
+<example type="invalid">
+`// test('broken', …)` auskommentieren und PR ohne Issue mergen.
+</example>

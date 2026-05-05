@@ -1,0 +1,20 @@
+---
+description: When editing AI cloud services enforce facade usage schemas and provider routing via ai-core
+globs: apps/web/services/**/*.ts,packages/ai-core/**/*.ts
+alwaysApply: false
+---
+
+# Integration: Gemini / Multi-Provider AI
+
+- Cloud-Inferenz über bestehende Fassaden (`aiFacade`, `geminiService`, `aiProviderService`, `aiService`) — keine parallelen „rohen“ Client-Singletons ohne Team-Konvention.
+- **Schemas:** Antworten mit Zod/`responseSchema`-Mustern aus dem Projekt validieren; Types aus `@cannaguide/ai-core` wiederverwenden.
+- **BYOK / Routing:** Provider-Umschaltung nur über etablierte Konfiguration (`packages/ai-core` Provider-Registry), keine zweite Wahrheitsquelle für Modell-IDs.
+- Lokaler Pfad (`apps/web/services/local-ai/`) nicht mit Cloud-Keys vermischen; Ökosystem-Grenzen aus `docs/api/ai-facade.md` und ADR-0011 beachten.
+
+<example>
+Neues Prompt-Feature: Erweiterung in `aiService`/`geminiService` oder dediziertem Handler unter `local-ai/inference/`, Export nur über Barrel in `services/aiFacade.ts`.
+</example>
+
+<example type="invalid">
+Direkt `@google/genai` in einer View-Komponente importieren und dort API-Key lesen.
+</example>

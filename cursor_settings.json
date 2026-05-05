@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "graphify": {
+      "command": "graphify-mcp",
+      "args": [
+        "--workspace",
+        "."
+      ],
+      "env": {
+        "GRAPHIFY_GRAPH_PATH": "graphify-out/graph.json",
+        "GRAPHIFY_REPORT_PATH": "graphify-out/GRAPH_REPORT.md"
+      }
+    }
+  },
+  "projectContext": {
+    "manifest": ".cursor/index.mdc",
+    "rulesDir": ".cursor/rules",
+    "consciousnessStream": ".notes/meeting_notes.md"
+  }
+}

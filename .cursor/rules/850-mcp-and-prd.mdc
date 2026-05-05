@@ -1,0 +1,35 @@
+---
+alwaysApply: false
+---
+
+# PRD, Bewusstseins-Stream, MCP
+
+## Product Requirements
+
+Vor **architektonischen** oder produktstrategischen Änderungen das Product Requirements Document konsultieren: im Repo nach **`instructions.md`** oder **`PRD.md`** (Root oder `docs/`) suchen; falls nicht vorhanden, `docs/PRIORITY_ROADMAP.md` / `docs/ARCHITECTURE.md` als bestes verfügbares Requirements-Äquivalent nutzen und Lücken im PR kommunizieren.
+
+## Consciousness Stream
+
+Kontextuelle Erinnerungen, Beschlüsse und Follow-ups **persistent** in **`.notes/meeting_notes.md`** festhalten (kurz, datiert, actionable) — „Consciousness Stream“ für spätere Sessions.
+
+## MCP (Platzhalter / Aktivierung)
+
+Für dieses Projekt sinnvolle Model-Context-Protocol-Server (bei Bedarf in Cursor aktivieren):
+
+| Bereich        | Beispiel-MCP / Nutzen                                      |
+| -------------- | ----------------------------------------------------------- |
+| Git / PR       | GitHub-MCP — Issues, PRs, Diff-Kontext                      |
+| Pakete         | npm/pnpm-Metadaten oder Registry-MCP — Dependency-Impact    |
+| Browser/E2E    | Playwright- oder Browser-MCP — reproduzierbare UI-Flows     |
+| Docs           | Docs-Crawler oder Repo-MCP — ADR-/API-Dok-Suche           |
+| Security       | Secret-Scanning / Advisory-MCP (falls verfügbar)           |
+| Knowledge-Graph| Graphify-MCP — Architekturpfade, Abhängigkeits-Queries     |
+
+### Graphify-Prozedur
+
+- Vor Architekturfragen `graphify-out/GRAPH_REPORT.md` lesen, falls vorhanden.
+- Falls nicht vorhanden oder veraltet: `graphify update .` ausführen.
+- Query-first arbeiten: `graphify query`, `graphify path`, `graphify explain`.
+- MCP-Eintrag zentral in `cursor_settings.json` pflegen.
+
+Konkrete Server-Namen an die Cursor-Installation anpassen; keine Secrets in MCP-Konfiguration ablegen.

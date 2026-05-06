@@ -37,6 +37,9 @@ Diese Richtlinie beschreibt die modulare Regel-Architektur in diesem Repository 
 - `globs` ohne Leerzeichen nach Kommas, ohne Quotes.
 - Jede Regel enthält `<example>` und `<example type="invalid">`.
 - Regel bleibt unter 200 Zeilen.
+- Jede Regel enthält `Last Reviewed: YYYY-MM-DD (Autor/Kontext)`.
+- Automatisierte Prüfung: `pnpm run mdc:validate`.
+- Kontext-E2E (CI-tauglich, ohne Cursor-CLI): `pnpm run mdc:e2e` — prüft Manifest/Index-Dateien und ruft `mdc:validate` ein.
 
 ## Projekt-spezifische Module (Auszug)
 
@@ -62,6 +65,28 @@ Vollständiger Leitfaden (Nachbau, MCP-Tools, Agenten-Playbook): [`docs/GRAPHIFY
     - `graphify query "<frage>"`
     - `graphify path "<A>" "<B>"`
     - `graphify explain "<konzept>"`
+
+## MDC Versioning und Migration
+
+Regelsets werden semantisch versioniert:
+
+- **Major:** Breaking Rule Changes (aktiviertes Verhalten, Moduswechsel, entfernte Pflichtabschnitte).
+- **Minor:** neue Regeln, neue Pflichtbeispiele, neue Guardrails ohne Bruch bestehender Flows.
+- **Patch:** Formulierungs- oder Dokument-Verbesserungen ohne Verhaltensaenderung.
+
+Migrationsablauf:
+
+1. Version-Bump und Aenderungsgrund in PR beschreiben.
+2. `pnpm run mdc:validate` und `pnpm run graphify:mcp:doctor` als Pflichtchecks.
+3. Betroffene Regeln mit `Last Reviewed` aktualisieren.
+4. Bei Major-Changes einen kurzen Migrationshinweis in `docs/next-session-handoff.md` ergaenzen.
+
+## MCP Tool Usage Policy
+
+- Vor Architekturantworten immer zuerst `graphify-out/GRAPH_REPORT.md` lesen.
+- Danach query-first arbeiten (`query`/`path`/`explain`) und inferred edges bei kritischen Entscheidungen querpruefen.
+- Windows-Fallback nutzen, wenn `bash` nicht verfuegbar ist (`scripts/graphify-mcp-stdio-windows.cmd`).
+- Kein Commit von Secrets oder lokalen Zugangsdaten in `.cursor/mcp.json`.
 
 ## CI-nahe Qualitätsbefehle
 

@@ -1,0 +1,31 @@
+---
+description: When MCP Graphify fails on Windows provide deterministic uv fallback launch and diagnostics
+alwaysApply: false
+---
+
+# MCP Windows Fallback
+
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+- Ziel: reproduzierbarer Windows-Startpfad fuer Graphify-MCP bei fehlendem `bash`.
+
+## Fallback-Prozedur
+
+- Primärpfad (Linux/macOS): `.cursor/mcp.json` mit `bash scripts/graphify-mcp-stdio.sh`.
+- Windows-Fallback: `command: "uv"` und Args `run --with graphifyy --with mcp python -m graphify.serve graphify-out/graph.json`.
+- Vor Start immer `pnpm run graphify:mcp:doctor` ausfuehren.
+- Bei Importfehlern zuerst `uv --version`, danach `uv run --with graphifyy --with mcp python -c "import mcp, graphify"`.
+- Keine Secrets in `mcp.json`; nur lokale Tool-Startparameter.
+
+## MCP Prompt-Template
+
+- "Nutze den Windows-Fallback fuer Graphify-MCP und verifiziere zuerst den Doctor-Output."
+- "Lies zuerst `graphify-out/GRAPH_REPORT.md`, dann starte `graphify query` fuer Architekturbeziehungen."
+
+<example>
+Auf Windows ohne Git-Bash wird `mcp.json` auf den `uv run ... graphify.serve` Start umgestellt und mit `pnpm run graphify:mcp:doctor` verifiziert.
+</example>
+
+<example type="invalid">
+MCP-Server auf Windows mit dem Linux-Shellscript erzwingen, obwohl `bash` fehlt, und den Fehler ohne Fallback ignorieren.
+</example>

@@ -99,6 +99,14 @@ docs/                    # Developer guides, roadmap
 .devcontainer/           # Codespaces DevContainer (Dockerfile-based, lite-mode)
 ```
 
+### Graphify and MCP Workflow
+
+- Read `graphify-out/GRAPH_REPORT.md` before broad architecture changes.
+- Prefer query-first analysis with `graphify query`, `graphify path`, and `graphify explain`.
+- Cursor MCP entry is `.cursor/mcp.json` and starts `scripts/graphify-mcp-stdio.sh`.
+- For Windows without bash, use `scripts/graphify-mcp-stdio-windows.cmd` as fallback launcher.
+- Validate environment locally with `pnpm run graphify:mcp:doctor`.
+
 ### ML Isolation Strategy
 
 Heavy ML dependencies (`@xenova/transformers`, `@mlc-ai/web-llm`, `onnxruntime-web`) are declared as `optionalDependencies` in `@cannaguide/ai-core`. The web app's `vite.config.ts` includes `optionalMlPlugin()` that stubs missing ML modules at build time, allowing the build to succeed even without ML binaries installed. DevContainer uses `pnpm install --frozen-lockfile` for deterministic lockfile-pinned installs (OSSF Scorecard compliant). ML models are loaded lazily at runtime in-browser.

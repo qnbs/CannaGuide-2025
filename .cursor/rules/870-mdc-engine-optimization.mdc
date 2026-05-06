@@ -5,6 +5,9 @@ alwaysApply: false
 
 # Agent-Requested: MDC Engine Optimierung
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - Ziel: maximale Kontextrelevanz bei minimaler Tokenlast durch korrekte Wahl des Regelmodus.
 - Moduswahl:
   - `alwaysApply`: nur harte globale Axiome, möglichst kurz.

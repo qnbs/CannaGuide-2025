@@ -2,6 +2,30 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
+## Latest Session (Session 174) -- Cursor MDC + Graphify MCP hardening
+
+**Status: MDC validation and Graphify MCP gates added to CI and `gate:push`.
+New rules `851-mcp-windows-fallback`, `880-graphify-query-best-practices`,
+`.cursor/rules/index.mdc`, `graphify-update.yml` workflow, Windows MCP launcher,
+extended `graphify:mcp:doctor`, `docs/graphify-mcp-strategic-blueprint.md`.
+`graphify-out/` regenerated. Prefer cloud CI for full E2E; local: `pnpm run
+mdc:e2e` + `pnpm run graphify:mcp:doctor`.**
+
+### What Was Done (Session 174)
+
+1. **MDC CI gates:** `pnpm run mdc:validate`, `pnpm run mdc:e2e` in `ci.yml` and `gate:push`.
+2. **Graphify MCP:** `graphify:mcp:doctor` understands `links` in `graph.json`, freshness vs git, inferred confidence floor; `scripts/graphify-mcp-stdio-windows.cmd`.
+3. **Automation:** `.github/workflows/graphify-update.yml` runs `uv run --with graphifyy python -m graphify update .` with concurrency.
+4. **Docs:** README CI table (25 workflows), `GRAPHIFY-COMPLETE-GUIDE` section 12.5, `ARCHITECTURE`, `cursor-mdc-governance`, `CONTRIBUTING` (Dev Container `uv`).
+5. **Strategic prep:** `docs/graphify-mcp-strategic-blueprint.md`, `pnpm run mdc:export-metadata`.
+
+### Next Steps
+
+- Watch GitHub Actions: `CI` + new `Graphify Update` run green on `main`.
+- Optional: wire `mdc:export-metadata` output into Graphify as custom nodes (future).
+
+---
+
 ## Latest Session (Session 173) -- v1.8.2 Release
 
 **Status: v1.8.2 released with security hardening, 17 dependency

@@ -6,6 +6,16 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Added
+
+- **ci:** MDC rule validation (`mdc:validate`), context smoke (`mdc:e2e`), and
+  Graphify MCP doctor in quality gates; `graphify-update` workflow to refresh
+  `graphify-out/` on `main`
+- **dx:** Cursor rules index `.cursor/rules/index.mdc`; rules `851-mcp-windows-fallback`,
+  `880-graphify-query-best-practices`; Windows MCP launcher
+  `scripts/graphify-mcp-stdio-windows.cmd`; strategic blueprint
+  `docs/graphify-mcp-strategic-blueprint.md`; `cursor_settings.json` preflight hints
+
 ### Security
 
 - Transitive **`ip-address`** upgraded via root **`pnpm.overrides`** to **>=10.1.1** ([GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) / CVE-2026-42338). Dependency path includes `@lhci/cli` → `proxy-agent` → `socks`. Documented in [`SECURITY.md`](SECURITY.md#transitive-dependency-remediation-pnpm-overrides).

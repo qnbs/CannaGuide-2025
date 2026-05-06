@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Architektur: WorkerBus & Concurrency
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - Worker-Kommunikation über `workerBus`/`workerPool` führen; keine ad-hoc `postMessage`-Insellösungen ohne Typvertrag.
 - Prioritäten und Backpressure respektieren (critical/high/normal/low); keine Änderungen, die Preemption- oder Timeout-Semantik brechen.
 - Requests bleiben korreliert über `messageId`; Promise-Auflösung, Fehlerpfad und Cleanup (Abort/Timer) müssen symmetrisch sein.

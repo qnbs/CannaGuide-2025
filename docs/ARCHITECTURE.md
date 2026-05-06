@@ -22,6 +22,25 @@
 
 ---
 
+## Graphify and MCP
+
+Repository intelligence is backed by Graphify artifacts in `graphify-out/`:
+
+- `GRAPH_REPORT.md` for architecture hubs and inferred-edge checks
+- `graph.json` as MCP query source
+- `graph.html` for visual graph exploration
+
+For architecture investigations, use a query-first flow:
+
+1. Read `graphify-out/GRAPH_REPORT.md`.
+2. Run `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"`.
+3. Validate inferred edges before high-impact refactors.
+
+Cursor integration uses `.cursor/mcp.json` with `scripts/graphify-mcp-stdio.sh`.
+Windows fallback launcher: `scripts/graphify-mcp-stdio-windows.cmd`.
+
+---
+
 ## Directory Structure
 
 The project is a **Turborepo monorepo** with pnpm workspaces. All web app source lives in `apps/web/`.

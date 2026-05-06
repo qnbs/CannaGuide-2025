@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Architektur: PWA Cache & Service Worker
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - PWA-Änderungen zentral über `vite-plugin-pwa` in `apps/web/vite.config.ts` steuern; keine parallelen, unkoordinierten SW-Registrierungen einführen.
 - Cache-Strategien nur mit klarer Upgrade-Story ändern (Versionierung, Invalidate-Regeln, Rollback-Verhalten), damit keine „stale shell“-Zustände entstehen.
 - Offline-Determinismus erhalten: gleiche Eingaben müssen im Offline-Modus reproduzierbar dieselbe App-Reaktion liefern.

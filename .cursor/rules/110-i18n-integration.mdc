@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Integration: i18n / Locale-Key-Disziplin
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - Nutzersichtbare Texte nicht hardcoden; in React über `t('...')`, außerhalb von React über den zentralen Zugriff (`getT`) aus `apps/web/i18n.ts`.
 - Neue Übersetzungsschlüssel in den bestehenden Locale-Strukturen ergänzen (`en`,`de`,`es`,`fr`,`nl`) und konsistent benennen; keine semantisch doppelten Keys.
 - Keys stabil halten: keine stillen Renames ohne Migrationsschritt, da sonst UI-Fallbacks und Tests brechen.

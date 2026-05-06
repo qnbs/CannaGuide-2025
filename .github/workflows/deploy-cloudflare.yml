@@ -61,15 +61,16 @@ jobs:
                   echo "::endgroup::"
                   echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
 
+            - name: Install Wrangler CLI
+              run: pnpm add -w --ignore-workspace-root-check wrangler@3.90.0
+
             - name: Deploy to Cloudflare Pages
               id: deploy
               uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  # Use npm for wrangler-action bootstrap to avoid pnpm workspace-root
-                  # guard (`ERR_PNPM_ADDING_TO_ROOT`) during transient wrangler install.
-                  packageManager: npm
+                  packageManager: pnpm
                   command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=main
 
             - name: Post-deploy health check
@@ -126,15 +127,16 @@ jobs:
                   echo "::endgroup::"
                   echo "[OK] Preview build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
 
+            - name: Install Wrangler CLI
+              run: pnpm add -w --ignore-workspace-root-check wrangler@3.90.0
+
             - name: Deploy preview to Cloudflare Pages
               id: preview-deploy
               uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  # Use npm for wrangler-action bootstrap to avoid pnpm workspace-root
-                  # guard (`ERR_PNPM_ADDING_TO_ROOT`) during transient wrangler install.
-                  packageManager: npm
+                  packageManager: pnpm
                   command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=${{ github.head_ref }}
 
             - name: Comment preview URL on PR

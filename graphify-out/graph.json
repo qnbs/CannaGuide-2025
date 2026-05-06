@@ -34440,8 +34440,8 @@
             "source_file": "scripts/export-mdc-metadata.mjs",
             "source_location": "L45",
             "weight": 1.0,
-            "_src": "export_mdc_metadata_main",
-            "_tgt": "lockfreeringbuffer_lockfreeringbuffer_push",
+            "_src": "lockfreeringbuffer_lockfreeringbuffer_push",
+            "_tgt": "export_mdc_metadata_main",
             "source": "lockfreeringbuffer_lockfreeringbuffer_push",
             "target": "export_mdc_metadata_main"
         },

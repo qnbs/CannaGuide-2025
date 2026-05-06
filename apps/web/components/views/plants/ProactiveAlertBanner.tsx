@@ -93,10 +93,10 @@ export const ProactiveAlertBanner: React.FC<ProactiveAlertBannerProps> = memo(({
                     <button
                         type="button"
                         onClick={() => dismissAlert(alert.id)}
-                        className="shrink-0 rounded-md p-1 text-slate-400 hover:bg-slate-700/60 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                        className="shrink-0 rounded-md inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-slate-400 hover:bg-slate-700/60 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                         aria-label={t('common.dismiss', 'Dismiss')}
                     >
-                        <PhosphorIcons.X className="h-4 w-4" />
+                        <PhosphorIcons.X className="h-4 w-4" aria-hidden="true" />
                     </button>
                 </div>
             ))}

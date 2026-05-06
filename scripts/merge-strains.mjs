@@ -6,12 +6,15 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, '..')
-const strainsDir = path.join(repoRoot, 'data', 'strains')
+const strainsDir = path.join(repoRoot, 'apps', 'web', 'data', 'strains')
 const reportDir = path.join(repoRoot, 'artifacts')
 const reportPath = path.join(reportDir, 'strain-merge-report.json')
 
 const isStrainFile = (fileName) => fileName.endsWith('.ts') && fileName !== 'index.ts'
-const idRegex = /"id"\s*:\s*"([^"]+)"/g
+// Match both JSON ("id": "value") and TS object literal (id: 'value' | "value") forms.
+const idRegex = /\bid\s*:\s*['"]([^'"]+)['"]/g
+
+const isDryRun = process.argv.includes('--dry-run')
 
 const extractIds = (content) => {
     const ids = []
@@ -48,7 +51,7 @@ const run = async () => {
 
     const report = {
         generatedAt: new Date().toISOString(),
-        source: 'data/strains/*.ts',
+        source: 'apps/web/data/strains/*.ts',
         filesScanned: files.length,
         totalEntries: allIds.length,
         uniqueEntries: mergedIds.length,
@@ -59,11 +62,15 @@ const run = async () => {
         byFile,
     }
 
-    await fs.mkdir(reportDir, { recursive: true })
-    await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
+    if (!isDryRun) {
+        await fs.mkdir(reportDir, { recursive: true })
+        await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
+    }
 
     if (duplicateIds.length > 0) {
-        const message = `[merge-strains] Found ${duplicateIds.length} duplicate strain id(s). See ${path.relative(repoRoot, reportPath)}.`
+        const message = `[merge-strains] Found ${duplicateIds.length} duplicate strain id(s).${
+            isDryRun ? '' : ` See ${path.relative(repoRoot, reportPath)}.`
+        }`
         if (process.env.STRICT_STRAIN_MERGE === '1') {
             console.error(message)
             process.exit(1)
@@ -74,7 +81,11 @@ const run = async () => {
     console.log(
         `[merge-strains] Merged ${allIds.length} entries into ${mergedIds.length} unique ids.`,
     )
-    console.log(`[merge-strains] Report written to ${path.relative(repoRoot, reportPath)}.`)
+    if (isDryRun) {
+        console.log('[merge-strains] Dry-run mode -- no report written.')
+    } else {
+        console.log(`[merge-strains] Report written to ${path.relative(repoRoot, reportPath)}.`)
+    }
 }
 
 run().catch((error) => {

@@ -152,10 +152,13 @@ const GrowManagerTab: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={() => setEditGrow(grow)}
-                                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-200"
+                                        className="rounded-lg inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                                         aria-label={t('settingsView.grows.editGrow')}
                                     >
-                                        <PhosphorIcons.PencilSimple className="h-4 w-4" />
+                                        <PhosphorIcons.PencilSimple
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
                                     </button>
                                 </div>
                             </div>

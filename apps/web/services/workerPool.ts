@@ -67,6 +67,13 @@ export type OnMemoryPressureHook = (level: 'warn' | 'critical', heapPercent: num
 /** Default idle timeout before a cold worker is terminated (ms). */
 const IDLE_TIMEOUT_MS = 45_000
 
+/**
+ * Aggressive idle timeout when eco mode (low battery <25%) is active.
+ * Reaps cold workers faster to reduce energy and memory pressure on
+ * constrained devices. Consistent with `ecoModeService` hysteresis.
+ */
+const IDLE_TIMEOUT_ECO_MS = 15_000
+
 /** Interval between memory pressure checks (ms). */
 const MEMORY_CHECK_INTERVAL_MS = 30_000
 
@@ -75,6 +82,34 @@ const HEAP_WARN_THRESHOLD = 0.85
 
 /** Heap usage threshold: terminate all non-hot workers. */
 const HEAP_CRITICAL_THRESHOLD = 0.9
+
+/**
+ * Probe eco-mode without statically importing the local-ai stack to avoid
+ * a circular dependency (`workerPool` is consumed by services beneath
+ * `local-ai/device/ecoModeService.ts`). The probe is best-effort: when
+ * the module is not yet loaded, the default idle timeout is used.
+ */
+let _ecoProbe: (() => boolean) | null = null
+
+/**
+ * Register an eco-mode probe (e.g. `() => isEcoMode()` from
+ * `apps/web/services/local-ai/device/ecoModeService.ts`).
+ * Called once during boot from `index.tsx`. Calling without a probe is a
+ * supported state -- the pool simply uses the default idle timeout.
+ */
+export const registerEcoProbe = (probe: () => boolean): void => {
+    _ecoProbe = probe
+}
+
+/** Resolve the active idle timeout based on eco-mode state. */
+const resolveIdleTimeout = (): number => {
+    try {
+        if (_ecoProbe?.()) return IDLE_TIMEOUT_ECO_MS
+    } catch {
+        // Probe failure is non-fatal; fall through to default.
+    }
+    return IDLE_TIMEOUT_MS
+}
 
 // ---------------------------------------------------------------------------
 // WorkerPool
@@ -196,7 +231,7 @@ export class WorkerPool {
             name,
             setTimeout(() => {
                 this.terminateWorker(name)
-            }, IDLE_TIMEOUT_MS),
+            }, resolveIdleTimeout()),
         )
     }
 

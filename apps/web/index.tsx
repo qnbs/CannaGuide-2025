@@ -353,10 +353,15 @@ const mountHydratedApp = async () => {
         initWorkerTelemetry(hydratedStore.dispatch)
 
         // W-06: Initialize WorkerPool with factory registry + attach to WorkerBus
-        const { workerPool } = await import('@/services/workerPool')
+        const { workerPool, registerEcoProbe } = await import('@/services/workerPool')
         const { registerAllWorkerFactories } = await import('@/services/workerFactories')
         registerAllWorkerFactories()
         workerBus.setWorkerPool(workerPool)
+
+        // Battery-aware idle-timeout: probe eco-mode lazily to avoid a circular
+        // import (`workerPool` is consumed by services beneath `local-ai/`).
+        const { isEcoMode } = await import('@/services/local-ai')
+        registerEcoProbe(() => isEcoMode())
 
         // Register battery-gating + OOM UI notification callbacks
         const { registerEcoCallbacks } = await import('@/services/local-ai')
@@ -427,6 +432,27 @@ const mountHydratedApp = async () => {
                 .catch(() => {
                     // Non-fatal -- app works without persistent grant
                 })
+        }
+
+        // 6b. Tauri before-quit: flush IndexedDB-backed Redux-Persist when the
+        //     desktop tray menu issues "Quit". Native side gives us ~250ms.
+        const { platform } = await import('@/services/platformService')
+        if (platform.isTauri) {
+            try {
+                const { listen } = await import('@tauri-apps/api/event')
+                await listen('tauri://before-quit', async () => {
+                    try {
+                        await indexedDBStorage.setItem(
+                            REDUX_STATE_KEY,
+                            JSON.stringify(hydratedStore.getState()),
+                        )
+                    } catch (err) {
+                        console.debug('[Tauri] before-quit flush failed:', err)
+                    }
+                })
+            } catch (err) {
+                console.debug('[Tauri] before-quit listener setup failed:', err)
+            }
         }
 
         // 7. Signal that the app is fully ready and hide the loading gate.

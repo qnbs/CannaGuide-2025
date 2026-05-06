@@ -57,6 +57,14 @@ const readStatus = (): LocalAiPreloadStatus => {
 
 const writeStatus = (status: LocalAiPreloadStatus): LocalAiPreloadStatus => {
     localStorage.setItem(LOCAL_AI_PRELOAD_STATUS_KEY, JSON.stringify(status))
+    // Notify same-tab listeners (the `storage` event only fires for OTHER
+    // windows, so we need a CustomEvent for in-tab observers such as
+    // `usePwaInstall`'s deferred Service-Worker activation).
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+            new CustomEvent('cg.localai.preloadStatusChange', { detail: status }),
+        )
+    }
     return status
 }
 

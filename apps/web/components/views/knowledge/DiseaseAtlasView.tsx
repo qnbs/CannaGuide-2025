@@ -63,10 +63,10 @@ const DiseaseDetailPanel: React.FC<DiseaseDetailPanelProps> = ({ entry, onClose 
                     <button
                         type="button"
                         onClick={onClose}
-                        className="p-1 rounded text-slate-400 hover:text-white"
+                        className="rounded inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-slate-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                         aria-label={t('knowledgeView.atlas.close')}
                     >
-                        <PhosphorIcons.X className="w-5 h-5" />
+                        <PhosphorIcons.X className="w-5 h-5" aria-hidden="true" />
                     </button>
                 </div>
                 <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">

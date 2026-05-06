@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Integration: Gemini / Multi-Provider AI
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - Cloud-Inferenz über bestehende Fassaden (`aiFacade`, `geminiService`, `aiProviderService`, `aiService`) — keine parallelen „rohen“ Client-Singletons ohne Team-Konvention.
 - **Schemas:** Antworten mit Zod/`responseSchema`-Mustern aus dem Projekt validieren; Types aus `@cannaguide/ai-core` wiederverwenden.
 - **BYOK / Routing:** Provider-Umschaltung nur über etablierte Konfiguration (`packages/ai-core` Provider-Registry), keine zweite Wahrheitsquelle für Modell-IDs.

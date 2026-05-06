@@ -8,7 +8,9 @@
     },
     "projectContext": {
         "manifest": ".cursor/index.mdc",
+        "rulesIndex": ".cursor/rules/index.mdc",
         "rulesDir": ".cursor/rules",
-        "consciousnessStream": ".notes/meeting_notes.md"
+        "consciousnessStream": ".notes/meeting_notes.md",
+        "preflightScripts": ["pnpm run mdc:e2e", "pnpm run graphify:mcp:doctor"]
     }
 }

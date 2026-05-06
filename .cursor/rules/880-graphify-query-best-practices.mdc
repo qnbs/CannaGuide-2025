@@ -1,0 +1,38 @@
+---
+description: Use graphify query path explain templates for architecture analysis before broad repository edits
+alwaysApply: false
+---
+
+# Graphify Query Best Practices
+
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+- Fokus: query-first Architekturarbeit mit klaren Prompt-Templates.
+
+## Entscheidungsmatrix
+
+- `graphify query "<Frage>"`: fuer konzeptuelle Zusammenhaenge und Community-Hubs.
+- `graphify path "<A>" "<B>"`: fuer konkrete Abhaengigkeitspfade zwischen Modulen/Symbolen.
+- `graphify explain "<Konzept>"`: fuer zusammenfassende Erklaerungen inkl. inferred edges.
+- Bei hoher Unsicherheit inferred edges gegen EXTRACTED-Belege und Quellcode querpruefen.
+
+## Prompt-Templates
+
+- "Welche Module verbinden `CrdtService` und `WorkerBusImpl`? Nutze `graphify path`."
+- "Erklaere die Architekturrolle von `<Symbol>` und nenne benachbarte Communities."
+- "Welche kritischen inferred edges betreffen `<Feature>` und welche sind bestaetigt?"
+- "Gib fuer den geplanten Refactor zuerst eine Query-basierte Impact-Liste aus."
+
+## Guardrails
+
+- Vor jeder Architekturantwort `graphify-out/GRAPH_REPORT.md` lesen.
+- Bei veraltetem Graph zuerst `graphify update .`.
+- Keine grossen Refactors starten, bevor Query-Ergebnisse als Datei-/Invariantenliste vorliegen.
+
+<example>
+Vor einem Sync-Refactor erst `graphify path "CrdtService" "WorkerBusImpl"` ausfuehren, dann betroffene Dateien mit Invariantenliste planen.
+</example>
+
+<example type="invalid">
+Architekturentscheidungen nur aus Dateinamen ableiten und Graphify-Abfragen komplett ueberspringen.
+</example>

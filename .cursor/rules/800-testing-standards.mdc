@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Testing: Determinismus & Integrität
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - **Determinismus:** Keine Abhängigkeit von Echtzeit, Zufall ohne Seed oder externen Live-Netzwerk-Calls in Unit-Tests. Zeit (`vi.useFakeTimers`), `fetch`/AI/IndexedDB über Vitest-Hooks, MSW oder `fake-indexeddb` wie im Projekt üblich mocken.
 - **Unabhängigkeit:** Jeder Test bringt eigene Arrange-Daten; keine Reihenfolge-Abhängigkeit zwischen Dateien; globale Zustände nach Tests zurücksetzen.
 - **Verboten:** Fehlschlagende Tests auskommentieren oder löschen, „nur damit der Build grün wird“. Stattdessen fixen oder als `skip`/`todo` mit Ticket-Begründung — nicht stillschweigend entfernen.

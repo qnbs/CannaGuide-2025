@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Architektur: State-Persistenz (IndexedDB/localStorage/SW)
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - Persistenzpfade zentral halten: Zustand/Redux-Hydration über bestehende Store- und Storage-Adapter (`stores/indexedDBStorage.ts`, etablierte Services), keine konkurrierenden Persistenz-Implementierungen.
 - **IndexedDB-first:** Für größere/strukturierte Zustände IndexedDB bevorzugen; `localStorage` nur für kleine, unkritische Flags und niemals für Secrets.
 - Hydration muss deterministisch und robust bleiben: klarer Boot-Order, reproduzierbarer Fallback bei DB-Fehlern, kein stilles Daten-Reset ohne sichtbaren Grund.

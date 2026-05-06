@@ -1,0 +1,46 @@
+name: Graphify Update
+
+on:
+    push:
+        branches: [main]
+    schedule:
+        - cron: '30 3 * * 1'
+    workflow_dispatch:
+
+concurrency:
+    group: graphify-update-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: write
+
+jobs:
+    refresh-graph:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  fetch-depth: 0
+
+            - name: Install uv
+              run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+            - name: Add uv to PATH
+              run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+            - name: Update graph
+              run: uv run --with graphifyy python -m graphify update .
+
+            - name: Commit updated graph artifacts
+              run: |
+                  if git diff --quiet -- graphify-out; then
+                    echo "[SKIP] No graphify changes"
+                    exit 0
+                  fi
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add graphify-out
+                  git commit -m "chore(graphify): refresh graph artifacts"
+                  git push

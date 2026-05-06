@@ -72,7 +72,7 @@
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-24-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-25-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -336,23 +336,36 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md)
 
-### CI/CD Workflows (24)
+### CI/CD Workflows (25)
 
-| Workflow           | Trigger          | Purpose                                                                     |
-| ------------------ | ---------------- | --------------------------------------------------------------------------- |
-| CI                 | push, PR         | Lint, typecheck, 2672 tests, build, security, E2E, IoT                      |
-| CodeQL             | push, PR, weekly | SAST (JavaScript/TypeScript)                                                |
-| Deploy             | push to main     | GitHub Pages + Lighthouse budget gate                                       |
-| Release Publish    | tag v\*          | GitHub build attestation + CycloneDX SBOM + GitHub Release                  |
-| Release Gate       | tag v\*          | Pre-release quality gate (typecheck, tests, build, audit)                   |
-| Security Full      | push, PR, weekly | Comprehensive security scan suite                                           |
-| Snyk               | push, PR         | Vulnerability scanning                                                      |
-| ClusterFuzzLite    | PR               | Continuous fuzzing                                                          |
-| Scorecard          | push, weekly     | OpenSSF Scorecard                                                           |
-| Config Guard       | push, PR         | RCE pattern scanning in configs                                             |
-| Mutation Testing   | push, PR         | Stryker Redux slice mutation testing                                        |
-| Preview Validation | deploy           | Playwright + Lighthouse on deploy previews (paused)                         |
-| + 12 more          | various          | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy |
+| Workflow           | Trigger                       | Purpose                                                                          |
+| ------------------ | ----------------------------- | -------------------------------------------------------------------------------- |
+| CI                 | push, PR                      | Lint, typecheck, 2672 tests, build, security, E2E, IoT                           |
+| CodeQL             | push, PR, weekly              | SAST (JavaScript/TypeScript)                                                     |
+| Deploy             | push to main                  | GitHub Pages + Lighthouse budget gate                                            |
+| Release Publish    | tag v\*                       | GitHub build attestation + CycloneDX SBOM + GitHub Release                       |
+| Release Gate       | tag v\*                       | Pre-release quality gate (typecheck, tests, build, audit)                        |
+| Security Full      | push, PR, weekly              | Comprehensive security scan suite                                                |
+| Snyk               | push, PR                      | Vulnerability scanning                                                           |
+| ClusterFuzzLite    | PR                            | Continuous fuzzing                                                               |
+| Scorecard          | push, weekly                  | OpenSSF Scorecard                                                                |
+| Config Guard       | push, PR                      | RCE pattern scanning in configs                                                  |
+| Mutation Testing   | push, PR                      | Stryker Redux slice mutation testing                                             |
+| Preview Validation | deploy                        | Playwright + Lighthouse on deploy previews (paused)                              |
+| Graphify Update    | push main, schedule, dispatch | Regenerates `graphify-out/` via `uv run … graphify update .`, commits if changed |
+| + 12 more          | various                       | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy      |
+
+### Cursor rules, MDC validation, and Graphify
+
+| Check                         | Command / location                                                                                                                     | Purpose                                                   |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Rule frontmatter and examples | `pnpm run mdc:validate`                                                                                                                | CI gate; enforces examples, line budget, globs syntax     |
+| Rules + governance smoke      | `pnpm run mdc:e2e`                                                                                                                     | CI gate; manifest/index + nested `mdc:validate`           |
+| MCP / graph readiness         | `pnpm run graphify:mcp:doctor`                                                                                                         | CI gate; `graph.json`, `uv`, launcher, Windows fallback   |
+| Graph artifacts               | `graphify-out/` (not `cache/`)                                                                                                         | Versioned graph for MCP; refresh with `graphify update .` |
+| Governance                    | [`docs/cursor-mdc-governance.md`](docs/cursor-mdc-governance.md), [`docs/GRAPHIFY-COMPLETE-GUIDE.md`](docs/GRAPHIFY-COMPLETE-GUIDE.md) | Full policy and setup                                     |
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) describes Dev Container `uv` install and team `cursor_settings.json`.
 
 ---
 
@@ -563,13 +576,13 @@ pnpm run typecheck          # tsc --noEmit
 
 ### CI/CD, Testing & Sicherheit
 
-| Bereich          | Details                                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------------------- |
-| **Tests**        | 2290 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)           |
-| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM |
-| **CI/CD**        | 22 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard                |
-| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                            |
-| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                  |
+| Bereich          | Details                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Tests**        | 2672 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                                  |
+| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM                        |
+| **CI/CD**        | 25 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; MDC-Validate + Graphify-Doctor in CI |
+| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                                   |
+| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                                         |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit-Backlog](docs/AUDIT_BACKLOG.md) · [Release-Prozess](docs/release-process.md)
 

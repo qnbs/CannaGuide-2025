@@ -325,10 +325,23 @@ Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unter
 ```json
 {
     "scripts": {
-        "graphify:mcp:doctor": "node ./scripts/graphify-mcp-doctor.mjs"
+        "graphify:mcp:doctor": "node ./scripts/graphify-mcp-doctor.mjs",
+        "mdc:validate": "node ./scripts/validate-mdc-rules.mjs",
+        "mdc:e2e": "node ./scripts/mdc-context-e2e.mjs",
+        "mdc:export-metadata": "node ./scripts/export-mdc-metadata.mjs"
     }
 }
 ```
+
+### 12.5 CI-Automatisierung (dieses Repo)
+
+| Komponente                              | Zweck                                                                                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.github/workflows/ci.yml`              | Fuehrt u. a. `pnpm run mdc:e2e` und `pnpm run graphify:mcp:doctor` vor Typecheck/Tests aus.                                                                |
+| `.github/workflows/graphify-update.yml` | Auf `main` (Push, woechentlich, manuell): `uv run --with graphifyy python -m graphify update .`, committet Aenderungen unter `graphify-out/` (ohne Cache). |
+| `scripts/graphify-mcp-doctor.mjs`       | Prueft u. a. JSON-Schema-Aehnlichkeit (`nodes` + `links`/`edges`), Inferred-Confidence-Schwelle, Graph-Freshness vs. letzter Git-Commit.                   |
+
+**Hinweis:** Schwere E2E- und Playwright-Laeufe sind bewusst **CI-first**; lokal reichen `mdc:e2e`, `graphify:mcp:doctor` und Zieltests.
 
 ---
 
@@ -358,7 +371,8 @@ Erwartung: nur Zeilen mit Präfix `ok   ` (keine `fail`-Zeilen).
 
 - `docs/cursor-mdc-governance.md` — MCP-Kurzblock im Kontext Cursor-Regeln
 - `CONTRIBUTING.md` — MCP-Hinweis für Mitwirkende
-- `.cursor/index.mdc`, `.cursor/rules/850-mcp-and-prd.mdc`, `.cursor/rules/860-architecture-query-mode.mdc`
+- `.cursor/index.mdc`, `.cursor/rules/index.mdc`, `.cursor/rules/850-mcp-and-prd.mdc`, `.cursor/rules/851-mcp-windows-fallback.mdc`, `.cursor/rules/860-architecture-query-mode.mdc`, `.cursor/rules/880-graphify-query-best-practices.mdc`
+- `docs/graphify-mcp-strategic-blueprint.md` — Vorbereitung Bridge/UI/Starter-Templates
 - Workspace-/Teamhinweis `CLAUDE.md` (graphify-out Politik)
 
 ---

@@ -6,6 +6,9 @@ alwaysApply: false
 
 # UI: React, Tailwind, Radix, A11y, i18n
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - **Paradigma:** Funktionale Komponenten; gemeinsame Primitive unter `components/ui/` und `@cannaguide/ui`; Feature-UI unter `components/views/**`. Keine klassischen Server Components — reines Vite/React-Client-PWA.
 - **Styling:** Tailwind + `tailwind-merge`/`cva` wo etabliert; Theme-Tokens aus `@cannaguide/ui` nicht umgehen.
 - **Props:** Explizite TypeScript-Interfaces/`type`-Alias; booleans mit klarem Namen (`isOpen`, `disabled`); `children` nur wo sinnvoll dokumentiert.

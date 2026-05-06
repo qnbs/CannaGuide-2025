@@ -5,6 +5,9 @@ alwaysApply: false
 
 # Agent-Requested: Architektur-Analysemodus
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 Diese Regel ist für große, modulübergreifende Fragestellungen gedacht (z. B. „Wie hängt Sync mit WorkerBus und Stores zusammen?“).
 
 - Vor breiten Refactors zuerst Beziehungsbild erzeugen (Docs + Graph-Queries), dann erst Code ändern.

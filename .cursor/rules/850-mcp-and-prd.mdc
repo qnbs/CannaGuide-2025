@@ -1,4 +1,5 @@
 ---
+description: On PRD or MCP Graphify work read governance meeting notes run doctor and query-first analysis
 alwaysApply: false
 ---
 
@@ -33,3 +34,16 @@ Für dieses Projekt sinnvolle Model-Context-Protocol-Server (bei Bedarf in Curso
 - MCP-Eintrag in `.cursor/mcp.json` pflegen (`cursor_settings.json` ist Team-Referenz); lokale Diagnose: `pnpm run graphify:mcp:doctor`.
 
 Konkrete Server-Namen an die Cursor-Installation anpassen; keine Secrets in MCP-Konfiguration ablegen.
+
+## Rule-Metadaten
+
+- Token-Footprint-Ziel: unter 200 Zeilen, konkrete MCP-Beispiele statt langer Prosa.
+- Last Reviewed: 2026-05-06 (Codex, MCP/Graphify-Governance-Update)
+
+<example>
+Bei einer Architekturfrage zuerst `graphify-out/GRAPH_REPORT.md` lesen, danach `graphify path "A" "B"` ausfuehren und erst dann Refactor-Schritte planen.
+</example>
+
+<example type="invalid">
+MCP-Regel ohne konkreten Ablauf definieren und anschliessend direkt mit breiten Codeaenderungen starten, ohne Report- oder Query-Preflight.
+</example>

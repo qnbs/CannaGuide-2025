@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Architektur: CRDT/Yjs Sync
 
+- Token-Footprint-Ziel: unter 200 Zeilen.
+- Last Reviewed: 2026-05-06 (Codex)
+
 - Für Synchronisation den bestehenden Yjs-Pfad nutzen (`crdtService`, `crdtSyncBridge`, `syncService`); kein paralleler Zweitpfad mit eigener Konfliktlogik.
 - Invarianten aus ADR-0004 beibehalten: `meta.fromCrdt` und `BRIDGE_ORIGIN` gegen Feedback-Loops, deterministische Merges, keine stillen Überschreibungen.
 - Yjs bleibt lazy/dynamic geladen, damit initiales Bundle klein bleibt; keine statischen Heavy-Imports in App-Entry.

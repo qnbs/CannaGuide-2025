@@ -11,6 +11,9 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const graphJson = join(root, "graphify-out", "graph.json");
 const launcher = join(root, "scripts", "graphify-mcp-stdio.sh");
+const windowsLauncher = join(root, "scripts", "graphify-mcp-stdio-windows.cmd");
+const MAX_GRAPH_AGE_HOURS = 168;
+const MIN_INFERRED_CONFIDENCE = 0.7;
 
 let failed = false;
 const ok = (msg) => console.log(`ok   ${msg}`);
@@ -39,8 +42,66 @@ if (!existsSync(graphJson)) {
     bad("graphify-out/graph.json missing — run: graphify update .");
 } else {
     try {
-        JSON.parse(readFileSync(graphJson, "utf8"));
-        ok("graphify-out/graph.json is valid JSON");
+        const parsed = JSON.parse(readFileSync(graphJson, "utf8"));
+        const hasNodes = Array.isArray(parsed.nodes);
+        const edgeList = Array.isArray(parsed.edges)
+            ? parsed.edges
+            : Array.isArray(parsed.links)
+              ? parsed.links
+              : null;
+        const hasEdges = Array.isArray(edgeList);
+        if (!hasNodes || !hasEdges) {
+            bad("graphify-out/graph.json schema invalid (expected nodes[] and edges[])");
+        } else {
+            ok("graphify-out/graph.json is valid JSON and schema-like");
+        }
+
+        const inferredScores = edgeList
+            .filter((edge) => edge?.confidence === "INFERRED")
+            .map((edge) => Number(edge.confidence_score))
+            .filter(Number.isFinite);
+        if (inferredScores.length > 0) {
+            const belowThreshold = inferredScores.filter(
+                (score) => score < MIN_INFERRED_CONFIDENCE,
+            ).length;
+            if (belowThreshold > 0) {
+                bad(
+                    `inferred confidence below threshold ${MIN_INFERRED_CONFIDENCE}: ${belowThreshold} edge(s)`,
+                );
+            } else {
+                ok(
+                    `inferred confidence threshold >= ${MIN_INFERRED_CONFIDENCE} satisfied (${inferredScores.length} edges)`,
+                );
+            }
+        } else {
+            ok("no inferred edges detected (confidence threshold check skipped)");
+        }
+
+        const graphStat = statSync(graphJson);
+        const nowMs = Date.now();
+        const ageHours = (nowMs - graphStat.mtimeMs) / (1000 * 60 * 60);
+        if (ageHours > MAX_GRAPH_AGE_HOURS) {
+            bad(
+                `graph.json is stale (${ageHours.toFixed(1)}h old > ${MAX_GRAPH_AGE_HOURS}h); run: graphify update .`,
+            );
+        } else {
+            ok(`graph.json freshness check passed (${ageHours.toFixed(1)}h old)`);
+        }
+
+        const lastCommit = spawnSync("git", ["log", "-1", "--format=%ct"], {
+            encoding: "utf8",
+            cwd: root,
+        });
+        if (lastCommit.status === 0) {
+            const commitEpochMs = Number(lastCommit.stdout.trim()) * 1000;
+            if (Number.isFinite(commitEpochMs) && graphStat.mtimeMs < commitEpochMs) {
+                bad("graph.json older than last git commit; run: graphify update .");
+            } else {
+                ok("graph.json is newer/equal than latest git commit timestamp");
+            }
+        } else {
+            bad("could not read latest git commit timestamp for graph age check");
+        }
     } catch (e) {
         bad(`graphify-out/graph.json: ${e.message}`);
     }
@@ -53,6 +114,12 @@ if (bash.status !== 0) {
     bad("bash not runnable — default MCP entry uses bash + scripts/graphify-mcp-stdio.sh");
 } else {
     ok("bash runs");
+}
+
+if (!existsSync(windowsLauncher)) {
+    bad("Windows fallback launcher missing: scripts/graphify-mcp-stdio-windows.cmd");
+} else {
+    ok("Windows fallback launcher exists");
 }
 
 const uvVer = spawnSync("uv", ["--version"], { encoding: "utf8" });

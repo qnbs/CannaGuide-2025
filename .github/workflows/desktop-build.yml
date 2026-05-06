@@ -89,6 +89,23 @@ jobs:
               uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # Updater signing -- secrets are optional in PR builds and must
+                  # be configured for tagged releases (Settings -> Secrets and
+                  # variables -> Actions). Without these the produced artefacts
+                  # are unsigned and `tauri-plugin-updater` will reject them.
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+                  # macOS code signing (D-05). Optional until an Apple Developer
+                  # ID is provisioned. Bundle stays unsigned without these.
+                  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+                  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+                  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+                  APPLE_ID: ${{ secrets.APPLE_ID }}
+                  APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+                  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+                  # Windows code signing (D-05). Optional until an EV certificate
+                  # thumbprint is configured.
+                  WINDOWS_CERTIFICATE_THUMBPRINT: ${{ secrets.WINDOWS_CERTIFICATE_THUMBPRINT }}
               with:
                   projectPath: apps/desktop
                   tauriScript: pnpm tauri

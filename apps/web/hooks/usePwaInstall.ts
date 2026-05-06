@@ -131,13 +131,52 @@ export const usePwaInstall = () => {
     }, [t])
 
     const handleUpdateClick = useCallback(() => {
-        if (_swRegistration?.waiting) {
-            _swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
-        } else {
-            // Fallback: force reload if no waiting worker is present
-            window.location.reload()
+        const applyUpdate = (): void => {
+            if (_swRegistration?.waiting) {
+                _swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
+            } else {
+                // Fallback: force reload if no waiting worker is present
+                window.location.reload()
+            }
         }
-    }, [])
+
+        // Race-guard (P1.6): if a heavy ML model is currently downloading,
+        // postpone the SW activation so we don't tear down the connection
+        // mid-stream. Status is read from `localAiPreloadService` via the
+        // `cg.localai.preloadStatusChange` CustomEvent fan-out.
+        let preloadStatus: { state?: string } | null = null
+        try {
+            const raw = localStorage.getItem('cg.localai.preload_status')
+            preloadStatus = raw ? (JSON.parse(raw) as { state?: string }) : null
+        } catch {
+            preloadStatus = null
+        }
+
+        if (preloadStatus?.state !== 'preloading') {
+            applyUpdate()
+            return
+        }
+
+        // Heavy preload in progress -- defer & inform the user.
+        getUISnapshot().addNotification({
+            message: t('common.swUpdateDeferredForMlDownload', {
+                defaultValue: 'Update will apply once the AI model finishes downloading.',
+            }),
+            type: 'info',
+        })
+        const onStatusChange = (e: Event): void => {
+            const detail =
+                e instanceof CustomEvent && e.detail && typeof e.detail === 'object'
+                    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- runtime-checked CustomEventDetail
+                      (e.detail as { state?: string })
+                    : null
+            if (detail && detail.state !== 'preloading') {
+                window.removeEventListener('cg.localai.preloadStatusChange', onStatusChange)
+                applyUpdate()
+            }
+        }
+        window.addEventListener('cg.localai.preloadStatusChange', onStatusChange)
+    }, [t])
 
     return {
         deferredPrompt: _deferredPrompt,

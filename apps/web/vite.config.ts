@@ -26,6 +26,7 @@ const OPTIONAL_TAURI_EXTERNALS = [
     '@tauri-apps/plugin-notification',
     '@tauri-apps/plugin-dialog',
     '@tauri-apps/api/core',
+    '@tauri-apps/api/event',
 ]
 
 // Resolve which optional modules are actually missing so we can stub them at build time.
@@ -274,10 +275,13 @@ export default defineConfig({
             ],
             exclude: ['tests/**', '**/*.d.ts'],
             thresholds: {
-                lines: 35,
-                functions: 38,
-                branches: 24,
-                statements: 35,
+                // P1.7: incremental lift toward the >= 40 % long-term goal.
+                // Bumps reflect the added coverage from `nativeCapabilitiesService`,
+                // `workerPool` (eco-aware idle), and `preloadOrchestrator` (tier).
+                lines: 36,
+                functions: 39,
+                branches: 25,
+                statements: 36,
             },
         },
     },

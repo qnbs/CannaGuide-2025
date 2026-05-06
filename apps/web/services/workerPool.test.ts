@@ -416,3 +416,41 @@ describe('WorkerPool', () => {
         expect(metrics.totalTerminated).toBe(2)
     })
 })
+
+// ---------------------------------------------------------------------------
+// Eco-mode idle-timeout (P1.2 / battery hysteresis)
+// ---------------------------------------------------------------------------
+
+import { registerEcoProbe } from './workerPool'
+
+describe('WorkerPool eco-aware idle timeout', () => {
+    afterEach(() => {
+        // Reset module-level probe so subsequent tests are unaffected.
+        registerEcoProbe(() => false)
+    })
+
+    it('uses eco timeout (15s) when probe returns true', () => {
+        const { factory, instances } = createMockFactory()
+        registerEcoProbe(() => true)
+        pool.registerFactory('test', { factory, hot: false })
+        pool.getOrCreate('test')
+        pool.release('test')
+
+        vi.advanceTimersByTime(16_000)
+        expect(instances[0]!.terminated).toBe(true)
+    })
+
+    it('uses default timeout (45s) when probe returns false', () => {
+        const { factory, instances } = createMockFactory()
+        registerEcoProbe(() => false)
+        pool.registerFactory('test', { factory, hot: false })
+        pool.getOrCreate('test')
+        pool.release('test')
+
+        vi.advanceTimersByTime(16_000)
+        expect(instances[0]!.terminated).toBe(false)
+
+        vi.advanceTimersByTime(30_000)
+        expect(instances[0]!.terminated).toBe(true)
+    })
+})

@@ -16,7 +16,28 @@ const MANIFEST_HASH =
         : 'dev'
 const CACHE_NAME = `cannaguide-${MANIFEST_HASH}-pwa-cache`
 const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`
+// Versioned (NOT manifest-hashed) so ML model bytes survive app deploys.
+// Bump the suffix when the model selection logic changes incompatibly.
+const ML_MODEL_CACHE_NAME = 'cannaguide-ml-models-v1'
 const API_HOSTNAMES = new Set(['generativelanguage.googleapis.com', 'googleapis.com'])
+
+// Allowlisted CDN hosts from which ML model artefacts are fetched.
+// Mirrors `connect-src` in `apps/desktop/src-tauri/tauri.conf.json` and
+// the production CSP in `apps/web/securityHeaders.ts`.
+const ML_MODEL_HOSTS = new Set([
+    'huggingface.co',
+    'cdn-lfs.huggingface.co',
+    'cdn-lfs.hf.co',
+    'huggingfaceusercontent.com',
+    'cdn.jsdelivr.net',
+])
+
+const ML_MODEL_EXTENSIONS = ['.onnx', '.safetensors', '.bin', '.wasm', '.json', '.pt']
+
+// Maximum cached ML model artefacts before LRU pruning kicks in. ONNX models
+// can be 30-150 MB each; cap entries -- not bytes -- and rely on the global
+// 200 MB quota gate above for hard pressure.
+const ML_MODEL_CACHE_MAX_ENTRIES = 16
 
 // P-04 Resolution: AI API responses are POST requests and are filtered out by the
 // GET-only guard below.  Application-level caching via localAiCacheService (IndexedDB,
@@ -142,7 +163,9 @@ self.addEventListener('activate', (event) => {
                     cacheNames
                         .filter(
                             (cacheName) =>
-                                cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME,
+                                cacheName !== CACHE_NAME &&
+                                cacheName !== IMAGE_CACHE_NAME &&
+                                cacheName !== ML_MODEL_CACHE_NAME,
                         )
                         .map((cacheName) => {
                             console.debug('[SW] Deleting old cache:', cacheName)
@@ -157,6 +180,46 @@ self.addEventListener('activate', (event) => {
             }),
     )
 })
+
+/**
+ * Cache-First handler for large ML model artefacts (ONNX, safetensors, ...).
+ *
+ * Strategy:
+ *   1. If a cached response exists, return it immediately (fully offline).
+ *   2. Otherwise fetch from the CDN, store a clone, and prune the cache to
+ *      `ML_MODEL_CACHE_MAX_ENTRIES` entries (FIFO -- the oldest key first).
+ *   3. On network failure, propagate so the caller (transformers.js / WebLLM)
+ *      can apply its own backoff or fallback layer.
+ *
+ * No `range`-request handling -- HuggingFace CDN responses are full-body and
+ * the runtime libraries currently fetch full files. Adding range support is a
+ * dedicated v2.0 task once we move to streaming model loading.
+ */
+async function handleMlModelRequest(request) {
+    const cache = await caches.open(ML_MODEL_CACHE_NAME)
+    const cached = await cache.match(request)
+    if (cached) {
+        return cached
+    }
+    try {
+        const networkResponse = await fetch(request)
+        if (networkResponse && networkResponse.ok) {
+            await cache.put(request, networkResponse.clone())
+            // FIFO LRU: when over the cap, drop the oldest keys first.
+            const keys = await cache.keys()
+            if (keys.length > ML_MODEL_CACHE_MAX_ENTRIES) {
+                const overflow = keys.length - ML_MODEL_CACHE_MAX_ENTRIES
+                for (let i = 0; i < overflow; i++) {
+                    await cache.delete(keys[i])
+                }
+            }
+        }
+        return networkResponse
+    } catch (error) {
+        console.debug('[SW] ML model fetch failed (no cache fallback):', error)
+        throw error
+    }
+}
 
 /**
  * Cache quota management: prune oldest cache entries when storage exceeds 200 MB.
@@ -183,8 +246,19 @@ async function pruneIfOverQuota() {
             await imageCache.delete(imageKeys[i])
         }
 
+        // Next-largest: ML model cache (ONNX/safetensors). Drop the oldest 50%.
+        let postPrune = await navigator.storage.estimate()
+        if ((postPrune.usage || 0) > QUOTA_LIMIT_BYTES) {
+            const mlCache = await caches.open(ML_MODEL_CACHE_NAME)
+            const mlKeys = await mlCache.keys()
+            const mlDeleteCount = Math.min(mlKeys.length, Math.ceil(mlKeys.length * 0.5))
+            for (let i = 0; i < mlDeleteCount; i++) {
+                await mlCache.delete(mlKeys[i])
+            }
+            postPrune = await navigator.storage.estimate()
+        }
+
         // If still over, prune main cache (non-app-shell entries)
-        const postPrune = await navigator.storage.estimate()
         if ((postPrune.usage || 0) > QUOTA_LIMIT_BYTES) {
             const mainCache = await caches.open(CACHE_NAME)
             const mainKeys = await mainCache.keys()
@@ -212,6 +286,17 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (API_HOSTNAMES.has(url.hostname)) {
+        return
+    }
+
+    // ML model CDN fetches: cache-first with capped LRU eviction.
+    // Runs BEFORE the same-origin guard so HuggingFace artefacts persist
+    // across reloads and survive the offline mode.
+    if (
+        ML_MODEL_HOSTS.has(url.hostname) &&
+        ML_MODEL_EXTENSIONS.some((ext) => url.pathname.toLowerCase().endsWith(ext))
+    ) {
+        event.respondWith(handleMlModelRequest(request))
         return
     }
 

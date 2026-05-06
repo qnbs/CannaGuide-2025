@@ -4,6 +4,12 @@ vi.mock('./webLlmService', () => ({
     loadWebLlmEngine: vi.fn(async () => ({})),
 }))
 
+vi.mock('@/utils/browserApis', () => ({
+    isMobileDevice: vi.fn(() => false),
+    getBatteryManager: vi.fn(async () => null),
+    checkStorageQuota: vi.fn(async () => ({ ok: true, availableMB: 1000 })),
+}))
+
 vi.mock('../nlp/embeddingService', () => ({
     preloadEmbeddingModel: vi.fn(async () => true),
 }))
@@ -109,5 +115,42 @@ describe('localAiPreloadOrchestrator', () => {
                 errorCount: 0,
             }),
         )
+    })
+
+    it("tier 'critical' forces eco-only path regardless of ecoOnly arg", async () => {
+        const manager = buildMockManager()
+        const steps: Array<[number, number, string]> = []
+
+        const report = await preloadOfflineAssets(
+            manager,
+            true, // includeWebLlm
+            (l, t, s) => steps.push([l, t, s]),
+            false, // ecoOnly
+            'critical',
+        )
+
+        expect(report.visionModelReady).toBe(false)
+        expect(report.webLlmReady).toBe(false)
+        expect(report.embeddingModelReady).toBe(false)
+        expect(steps[0]).toEqual([0, 1, 'text-model-eco'])
+    })
+
+    it("tier 'full' auto-degrades to standard on metered connection", async () => {
+        const manager = buildMockManager()
+        // Inject navigator.connection with saveData=true to force degrade.
+        ;(navigator as unknown as { connection?: object }).connection = {
+            effectiveType: '4g',
+            saveData: true,
+        }
+
+        try {
+            const report = await preloadOfflineAssets(manager, true, undefined, false, 'full')
+            // WebLLM must be skipped after degrade, but text+vision still load.
+            expect(report.textModelReady).toBe(true)
+            expect(report.visionModelReady).toBe(true)
+            expect(report.webLlmReady).toBe(false)
+        } finally {
+            delete (navigator as unknown as { connection?: object }).connection
+        }
     })
 })

@@ -26,7 +26,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Desktop:** Tauri v2 (apps/desktop/) -- 99% code sharing with PWA, CI/CD matrix builds
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
-- **Distribution:** GitHub Pages, Vercel, Cloudflare Pages (Netlify paused until v2.0), Tauri Desktop (Linux/macOS/Windows)
+- **Distribution:** GitHub Pages, Vercel (automated); Cloudflare Pages + Netlify CI paused — see `docs/distribution.md`; Tauri Desktop (Linux/macOS/Windows)
 
 ### Monorepo Layout
 
@@ -423,7 +423,7 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                                |
 | Netlify          | `netlify.toml`                          | **PAUSED** -- project disabled on dashboard (bandwidth limit, until v2.0)     |
 | Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                                 |
-| Cloudflare Pages | `_headers` + `_redirects` + Git         | Push to `main` (connect via Cloudflare Dashboard)                             |
+| Cloudflare Pages | `_headers` + `_redirects`               | **PAUSED** — `deploy-cloudflare.yml` stub only; dashboard/Git builds optional |
 | GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (parallel to gate) -- GitHub build attestation + CycloneDX SBOM |
 
 ---
@@ -648,8 +648,8 @@ After implementation is complete with all validations passing, update **all affe
 | `lighthouserc.json`                                                             | Lighthouse CI config + performance budget assertions                                                                                                                         |
 | `vercel.json`                                                                   | Vercel deployment config (SPA rewrite, security headers, asset caching)                                                                                                      |
 | `netlify.toml`                                                                  | Netlify deployment config -- **PAUSED** (build fails intentionally, re-enable for v2.0)                                                                                      |
-| `apps/web/public/_headers`                                                      | Cloudflare Pages HTTP headers (CSP, caching -- synced with securityHeaders.ts; Netlify paused)                                                                               |
-| `apps/web/public/_redirects`                                                    | Cloudflare Pages SPA routing (`/* /index.html 200`)                                                                                                                          |
+| `apps/web/public/_headers`                                                      | Static host headers (CSP, caching -- synced with securityHeaders.ts; used when deploying to edge/static hosts)                                                               |
+| `apps/web/public/_redirects`                                                    | SPA routing (`/* /index.html 200`) for Cloudflare-style hosts                                                                                                                |
 | `pnpm-workspace.yaml`                                                           | pnpm workspace definition (packages/_, apps/_)                                                                                                                               |
 | `.npmrc`                                                                        | pnpm config (shamefully-hoist, auto-install-peers, strict-peer-dependencies=false)                                                                                           |
 | `stryker.conf.json`                                                             | Stryker mutation testing config (perTest coverage, TS checker, 6 workers, incremental cache, 50% break)                                                                      |

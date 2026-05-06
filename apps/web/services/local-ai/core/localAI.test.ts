@@ -122,7 +122,12 @@ describe('localAiService', () => {
         vi.restoreAllMocks()
         vi.stubGlobal(
             'fetch',
-            vi.fn(async () => new Response(new Blob(['x'], { type: 'image/jpeg' }))),
+            vi.fn(
+                async () =>
+                    new Response(new Uint8Array([0x78]), {
+                        headers: { 'content-type': 'image/jpeg' },
+                    }),
+            ),
         )
     })
 

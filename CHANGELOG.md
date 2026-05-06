@@ -15,10 +15,56 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   `880-graphify-query-best-practices`; Windows MCP launcher
   `scripts/graphify-mcp-stdio-windows.cmd`; strategic blueprint
   `docs/graphify-mcp-strategic-blueprint.md`; `cursor_settings.json` preflight hints
+- **chore:** P1.1 audit snapshot `artifacts/audit-2026-05-06.md` documenting
+  `pnpm.overrides` resolution and SHA-pin coverage prior to v1.9.0 hardening
+
+### Changed
+
+- **ci:** Cloudflare Pages GitHub Actions deploy paused (workflow reduced to
+  optional `workflow_dispatch` stub); GitHub Pages and Vercel remain the
+  automated production paths — see `docs/distribution.md`
+- **docs(ci):** `.github/workflows/README.md` lists all 25 workflows (active,
+  scheduled, and paused/manual-only)
+- **chore(depcheck):** Ignore false-positives for `conventional-changelog-cli`,
+  `tsx`, `turbo`, `typedoc`, `typedoc-plugin-markdown` (all consumed via
+  root `scripts`)
+- **perf(workerPool):** Battery-aware idle-timeout (`registerEcoProbe`):
+  cold workers are reaped after 15 s instead of 45 s when eco-mode (battery
+  <25 %, not charging) is active
+- **perf(local-ai):** `preloadOfflineAssets` now accepts a `tier` argument
+  (`'critical' | 'standard' | 'full'`); `'full'` auto-degrades to
+  `'standard'` on metered/slow connections so opportunistic 1-2 GB WebLLM
+  downloads cannot run
+- **perf(sw):** Service Worker now caches HuggingFace ML model artefacts
+  (`.onnx`, `.safetensors`, `.bin`, `.wasm`) with a Cache-First strategy
+  and FIFO eviction at 16 entries; offline ML inference now survives full
+  reload and the global 200 MB quota gate prunes the ML cache before the
+  app shell
+- **a11y(touch-targets):** Icon-only buttons in `QRScannerModal`,
+  `ProactiveAlertBanner`, `GrowManagerTab`, `DiseaseAtlasView` now meet
+  the WCAG 2.5.5 44x44 minimum target size; SVG / icon children gained
+  `aria-hidden="true"`
+- **strains:** `merge-strains.mjs` accepts `--dry-run`;
+  `enrich-provenance.mjs` accepts `--report` and `--min-confidence=<n>`
+  (gate exits non-zero on shortfall); both scripts now read the canonical
+  catalog under `apps/web/data/strains/`
+- **strains:** `check-new-strain-duplicates.mjs` reinstated (de-duplicated
+  legacy `run` block) and gained Levenshtein-based fuzzy duplicate
+  detection (distance <= 2)
+- **desktop:** Tauri IPC bridge expanded to 6 commands (added
+  `get_native_capabilities`, `open_log_dir`, `clear_native_cache`); tray
+  "Quit" emits `tauri://before-quit` so the frontend flushes Redux-Persist
+  before exit
+- **i18n:** `QRScannerModal` placeholder now uses
+  `plantsView.qrScanner.manualPlaceholder` (resolves the last hardcoded
+  string flagged by `pnpm run lint:i18n`)
 
 ### Security
 
 - Transitive **`ip-address`** upgraded via root **`pnpm.overrides`** to **>=10.1.1** ([GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) / CVE-2026-42338). Dependency path includes `@lhci/cli` → `proxy-agent` → `socks`. Documented in [`SECURITY.md`](SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
+- **audit(P1.1):** Verified all `pnpm.overrides` resolve to safe versions
+  (`ip-address` 10.2.0, `protobufjs` 8.0.3, `basic-ftp` 5.3.0, `lodash`/`lodash-es` 4.18.1, `tmp` 0.2.5).
+  All 25 GitHub Actions workflows remain SHA-pinned (0 unpinned tags).
 
 ---
 

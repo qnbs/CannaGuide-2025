@@ -3,6 +3,43 @@ import { captureLocalAiError } from '@/services/sentryService'
 import type { LocalAiModelManager } from './modelManager'
 import { isMobileDevice, getBatteryManager, checkStorageQuota } from '@/utils/browserApis'
 
+/**
+ * Smart-Preload Tier classification.
+ *
+ * - `critical`  -- text only (eco profile / battery <20% non-charging).
+ * - `standard`  -- text + vision + lang-detect + image-similarity (default).
+ * - `full`      -- standard + embeddings + NLP triple + WebLLM
+ *                  (AC-power + WiFi + idle-time recommended).
+ */
+export type PreloadTier = 'critical' | 'standard' | 'full'
+
+/**
+ * Probe whether the device is currently in a network/power state where the
+ * `full` tier is appropriate (AC-power OR battery >=80%, AND not on a
+ * `slow-2g`/`2g`/`3g`/`metered` connection).
+ *
+ * Falls back to `false` whenever the relevant browser APIs are unavailable
+ * so we never opportunistically download large WebLLM weights.
+ */
+const isFullTierAppropriate = async (): Promise<boolean> => {
+    const battery = await getBatteryManager()
+    const batteryOk = !battery || battery.charging || battery.level >= 0.8
+
+    const conn =
+        typeof navigator !== 'undefined'
+            ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrow non-standard NetworkInformation API
+              (navigator as unknown as {
+                  connection?: { effectiveType?: string; saveData?: boolean }
+              }).connection
+            : undefined
+    const slowTypes = new Set(['slow-2g', '2g', '3g'])
+    const networkOk =
+        !conn ||
+        (!slowTypes.has(conn.effectiveType ?? '') && conn.saveData !== true)
+
+    return batteryOk && networkOk
+}
+
 export interface LocalAiPreloadReport {
     textModelReady: boolean
     visionModelReady: boolean
@@ -67,16 +104,39 @@ const calculatePreloadTotalSteps = (
 /**
  * Orchestrates preloading of all local AI model pipelines.
  * Progress is reported via an optional callback for loading-gate UIs.
+ *
+ * Tiering (see {@link PreloadTier}):
+ *   - `tier: 'critical'`  forces the eco-only branch regardless of `ecoOnly`.
+ *   - `tier: 'standard'`  loads text + vision + lang-detect + image-similarity.
+ *   - `tier: 'full'`      additionally loads embeddings + NLP triple + WebLLM,
+ *                          but only when {@link isFullTierAppropriate} agrees
+ *                          (AC-power / fast network). Otherwise auto-degrades
+ *                          to `standard`.
  */
 export async function preloadOfflineAssets(
     modelManager: LocalAiModelManager,
     includeWebLlm = false,
     onProgress?: ProgressCallback,
     ecoOnly = false,
+    tier: PreloadTier = 'standard',
 ): Promise<LocalAiPreloadReport> {
     // Battery gating: if battery < 20% and not charging, force eco mode
     const batteryEco = await shouldForceBatteryEco()
-    const effectiveEcoOnly = ecoOnly || batteryEco
+    const effectiveEcoOnly = ecoOnly || batteryEco || tier === 'critical'
+
+    // Auto-degrade `full` to `standard` if power/network are unsuitable. This
+    // protects users on metered connections from opportunistic 1-2 GB
+    // WebLLM downloads.
+    let resolvedIncludeWebLlm = includeWebLlm
+    if (tier === 'full') {
+        const ok = await isFullTierAppropriate()
+        if (!ok) {
+            tier = 'standard'
+            resolvedIncludeWebLlm = false
+        } else {
+            resolvedIncludeWebLlm = true
+        }
+    }
 
     // -- Eco mode: only load the small 0.5B text model --
     if (effectiveEcoOnly) {
@@ -104,7 +164,7 @@ export async function preloadOfflineAssets(
 
     const hasEmbeddings = true
     const hasNlp = true
-    const hasWebLlm = includeWebLlm && supportsWebGpu()
+    const hasWebLlm = resolvedIncludeWebLlm && supportsWebGpu()
     const totalSteps = calculatePreloadTotalSteps(hasEmbeddings, hasNlp, hasWebLlm)
     let loaded = 0
 

@@ -102,7 +102,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = memo(({ isOpen, onC
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                        className="rounded-lg inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
                         aria-label={t('common.close', { defaultValue: 'Close' })}
                     >
                         <svg
@@ -110,6 +110,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = memo(({ isOpen, onC
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
+                            aria-hidden="true"
                         >
                             <path
                                 strokeLinecap="round"
@@ -147,7 +148,12 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = memo(({ isOpen, onC
                                 type="text"
                                 value={manualId}
                                 onChange={(e) => setManualId(e.target.value)}
-                                placeholder="Plant ID"
+                                placeholder={t('plantsView.qrScanner.manualPlaceholder', {
+                                    defaultValue: 'Plant ID',
+                                })}
+                                aria-label={t('plantsView.qrScanner.manualPlaceholder', {
+                                    defaultValue: 'Plant ID',
+                                })}
                                 className="flex-1 rounded-lg bg-slate-700/60 border-0 px-3 py-2 text-sm text-white placeholder-slate-500 ring-1 ring-inset ring-slate-600 focus:ring-2 focus:ring-primary-500"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleManualSubmit()

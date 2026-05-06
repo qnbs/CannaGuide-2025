@@ -77,7 +77,8 @@
         },
         "windows": {
             "certificateThumbprint": null,
-            "timestampUrl": "http://timestamp.digicert.com"
+            "timestampUrl": "http://timestamp.digicert.com",
+            "digestAlgorithm": "sha256"
         }
     },
     "plugins": {

@@ -63,7 +63,7 @@
 
 [![GitHub Pages](https://img.shields.io/badge/Hosted-GitHub%20Pages-222222?logo=githubpages&logoColor=white)](https://qnbs.github.io/CannaGuide-2025/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
-[![Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020?logo=cloudflarepages&logoColor=white)](https://pages.cloudflare.com/)
+[![Cloudflare Pages (paused)](https://img.shields.io/badge/Cloudflare%20Pages-paused-lightgrey?logo=cloudflarepages&logoColor=white)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy-cloudflare.yml)
 
 <!-- Project Metrics -->
 
@@ -72,7 +72,7 @@
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-25-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-25-yellow)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/README.md)
 [![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 

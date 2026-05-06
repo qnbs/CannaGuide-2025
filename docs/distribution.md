@@ -1,6 +1,6 @@
 # Distribution Targets
 
-This project is web-first with four active web distribution targets plus a Tauri v2 desktop build.
+This project is web-first with multiple web distribution targets; **automated** production deploys use **GitHub Pages** and **Vercel**. Netlify and Cloudflare Pages CI deploys are **paused** (see below). Tauri v2 desktop is built separately.
 
 ## GitHub Pages (primary)
 
@@ -41,25 +41,18 @@ Vercel deployment is configured via `vercel.json` in the repository root. Connec
 
 **Advantages:** Native Turbo Remote Cache, instant preview deployments, Speed Insights, Edge Functions for future AI proxy.
 
-## Cloudflare Pages
+## Cloudflare Pages (PAUSED — CI deploy)
 
-Cloudflare Pages deployment uses `_headers` and `_redirects` files in `apps/web/public/` (copied to `dist/` during build).
+> **Status:** `.github/workflows/deploy-cloudflare.yml` no longer runs automated wrangler deploys (manual `workflow_dispatch` only — placeholder job). Use GitHub Pages + Vercel until Cloudflare is re-enabled.
 
-**Setup (5 minutes):**
+`_headers` and `_redirects` in `apps/web/public/` remain valid if you reconnect Cloudflare Git builds or restore the workflow from git history.
 
-1. Go to [pages.cloudflare.com](https://pages.cloudflare.com) -> "Connect to Git" -> select `qnbs/CannaGuide-2025`
-2. Framework Preset: **Vite**
-3. Root Directory: `.` (dot -- entire repo root, required for pnpm workspaces)
-4. Build Command: `corepack enable && pnpm install --frozen-lockfile && pnpm run build`
-5. Output Directory: `apps/web/dist`
-6. Deploy
+**Previous dashboard setup (reference):**
 
-**Key config:**
+1. [pages.cloudflare.com](https://pages.cloudflare.com) -> Connect repo `qnbs/CannaGuide-2025`
+2. Framework Preset: **Vite**, Root: `.`, Output: `apps/web/dist`, build via pnpm workspace
 
-- `_redirects`: SPA routing (`/* /index.html 200`)
-- `_headers`: Security headers + caching (synced with `securityHeaders.ts`)
-
-**Advantages:** 330+ global edge PoPs, unlimited bandwidth (free tier), fastest TTFB for static assets, Workers for future Edge Functions.
+**Advantages when active:** edge PoPs, Workers; headers stay aligned with `securityHeaders.ts` when builds run.
 
 ## Tauri v2 Desktop
 

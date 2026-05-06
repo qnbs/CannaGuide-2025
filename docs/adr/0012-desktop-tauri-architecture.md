@@ -78,19 +78,26 @@ The `fs.json` capability restricts file access to specific paths:
 
 ### 4. IPC Boundary Rules
 
-Three IPC commands handle Rust/JS boundary:
+Six IPC commands handle the Rust/JS boundary (v1.9.0 — P1.3 hardening):
 
-| Command                   | Direction  | Purpose                           |
-| ------------------------- | ---------- | --------------------------------- |
-| `get_app_version()`       | Rust -> JS | Returns version, platform, arch   |
-| `export_data(path, data)` | JS -> Rust | Write JSON to user-selected path  |
-| `import_data(path)`       | JS -> Rust | Read JSON from user-selected path |
+| Command                     | Direction  | Purpose                                                  |
+| --------------------------- | ---------- | -------------------------------------------------------- |
+| `get_app_version()`         | Rust -> JS | Returns version, platform, arch                          |
+| `export_data(path, data)`   | JS -> Rust | Write JSON to user-selected path                         |
+| `import_data(path)`         | JS -> Rust | Read JSON from user-selected path                        |
+| `get_native_capabilities()` | Rust -> JS | Returns capability snapshot (`fs`, `updater`, `tray`, …) |
+| `open_log_dir()`            | Rust -> JS | Returns the per-user log directory path                  |
+| `clear_native_cache()`      | Rust -> JS | Clears the per-user cache directory; returns bytes freed |
 
 All other operations use Tauri plugins (dialog, fs, notification, etc.) which have their own permission scopes.
 
+#### `tauri://before-quit` event
+
+When the tray menu issues "Quit", `lib.rs` first emits `tauri://before-quit` and waits ~250 ms before exiting. The web frontend listens via `@tauri-apps/api/event` and flushes the Redux-Persist snapshot to IndexedDB so no journal entries are lost during native shutdown.
+
 ### 5. Native Bridge Services
 
-Two TypeScript services handle platform-specific operations:
+Three TypeScript services handle platform-specific operations:
 
 **`nativeBridgeService.ts`:**
 
@@ -103,6 +110,13 @@ Two TypeScript services handle platform-specific operations:
 - Native file open/save dialogs
 - Invokes `export_data`/`import_data` IPC commands
 - Returns `{ path: null }` on web (graceful fallback)
+
+**`nativeCapabilitiesService.ts`:** (added in v1.9.0)
+
+- Read-only mirror of the Tauri capability set
+- Invokes `get_native_capabilities`, `open_log_dir`, `clear_native_cache`
+- Returns an all-`false` static stub on web so feature flags can be checked
+  uniformly across PWA + Desktop without inspecting `platform.isTauri`
 
 ### 6. Plugin Configuration
 

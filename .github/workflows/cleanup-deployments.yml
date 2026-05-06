@@ -19,14 +19,14 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         permissions:
-            deployments: write
+            contents: read
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
               with:
                   egress-policy: audit
 
-            - name: Delete old deployments
+            - name: Report old deployments (read-only)
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
               with:
                   script: |
@@ -48,7 +48,7 @@ jobs:
                         byEnv[env].push(d);
                       }
 
-                      let deleted = 0;
+                      let candidates = 0;
                       for (const [env, deps] of Object.entries(byEnv)) {
                         // Sort newest first
                         deps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -59,26 +59,15 @@ jobs:
                           continue;
                         }
 
-                        core.info(`[${env}] ${deps.length} total, keeping ${keep}, deleting ${toDelete.length}`);
+                        core.info(`[${env}] ${deps.length} total, keeping ${keep}, candidates ${toDelete.length}`);
 
                         for (const d of toDelete) {
                           try {
-                            // Mark deployment as inactive first
-                            await github.rest.repos.createDeploymentStatus({
-                              owner, repo,
-                              deployment_id: d.id,
-                              state: 'inactive',
-                            });
-                            // Then delete it
-                            await github.rest.repos.deleteDeployment({
-                              owner, repo,
-                              deployment_id: d.id,
-                            });
-                            deleted++;
+                            candidates++;
                           } catch (err) {
-                            core.warning(`Failed to delete deployment ${d.id} (${env}): ${err.message}`);
+                            core.warning(`Failed to inspect deployment ${d.id} (${env}): ${err.message}`);
                           }
                         }
                       }
 
-                      core.info(`[OK] Deleted ${deleted} old deployment(s)`);
+                      core.info(`[OK] Found ${candidates} old deployment candidate(s)`);

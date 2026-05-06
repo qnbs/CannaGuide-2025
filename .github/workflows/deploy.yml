@@ -230,7 +230,6 @@ jobs:
         permissions:
             actions: write
             contents: read
-            deployments: write
         steps:
             - name: Delete old skipped and failed runs
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -264,50 +263,3 @@ jobs:
                         }
                       }
                       core.info(`[OK] Deleted ${deleted} old skipped/failed/cancelled runs`);
-
-            - name: Prune old GitHub Pages deployments
-              uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-              with:
-                  script: |
-                      const owner = context.repo.owner;
-                      const repo = context.repo.repo;
-                      const environment = 'github-pages';
-                      const KEEP_COUNT = 3;
-
-                      // Fetch all deployments (newest first by default)
-                      const deployments = await github.paginate(
-                        github.rest.repos.listDeployments,
-                        { owner, repo, environment, per_page: 100 }
-                      );
-
-                      if (deployments.length <= KEEP_COUNT) {
-                        core.info(`[OK] Only ${deployments.length} deployments -- nothing to prune.`);
-                        return;
-                      }
-
-                      // Keep the N most recent, delete the rest
-                      const toDelete = deployments.slice(KEEP_COUNT);
-                      let pruned = 0;
-
-                      for (const dep of toDelete) {
-                        try {
-                          // Mark as inactive (required before deletion)
-                          await github.rest.repos.createDeploymentStatus({
-                            owner,
-                            repo,
-                            deployment_id: dep.id,
-                            state: 'inactive',
-                          });
-                          // Delete the deployment
-                          await github.rest.repos.deleteDeployment({
-                            owner,
-                            repo,
-                            deployment_id: dep.id,
-                          });
-                          pruned++;
-                        } catch (e) {
-                          // Some deployments cannot be deleted (active); skip them
-                          core.debug(`Could not delete deployment ${dep.id}: ${e.message}`);
-                        }
-                      }
-                      core.info(`[OK] Pruned ${pruned} of ${toDelete.length} old deployments (kept ${KEEP_COUNT}).`);

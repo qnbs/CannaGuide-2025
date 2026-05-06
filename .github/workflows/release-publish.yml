@@ -35,7 +35,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
-            contents: write
+            contents: read
         if: >-
             github.event_name == 'push' ||
             github.event_name == 'workflow_dispatch'
@@ -118,11 +118,16 @@ jobs:
               if: github.event_name == 'workflow_dispatch'
               env:
                   TAG: ${{ steps.tag.outputs.name }}
+                  RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
               shell: bash
               run: |
                   if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}"; then
                     echo "[OK] Tag ${TAG} already exists on remote"
                     exit 0
+                  fi
+                  if [[ -z "${RELEASE_PAT}" ]]; then
+                    echo "[FAIL] RELEASE_PAT is required to create/push tags from workflow_dispatch."
+                    exit 1
                   fi
 
                   echo "[INFO] Tag ${TAG} does not exist on remote -- creating annotated tag"
@@ -130,7 +135,7 @@ jobs:
                   git config user.name "github-actions[bot]"
                   git tag -a "${TAG}" -m "Release ${TAG}" HEAD
 
-                  if git push origin "refs/tags/${TAG}"; then
+                  if git push "https://x-access-token:${RELEASE_PAT}@github.com/${{ github.repository }}.git" "refs/tags/${TAG}"; then
                     echo "[OK] Tag ${TAG} created and pushed"
                   else
                     echo ""
@@ -206,7 +211,6 @@ jobs:
         needs: [build]
         if: ${{ !(github.event.inputs.dry-run == 'true') }}
         permissions:
-            contents: write
             id-token: write
             attestations: write
         steps:

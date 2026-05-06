@@ -9,7 +9,8 @@ LABEL org.opencontainers.image.source="https://github.com/qnbs/CannaGuide-2025"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-    VITE_ESP32_URL=http://localhost:3001
+    VITE_ESP32_URL=http://localhost:3001 \
+    UV_VERSION=0.8.10
 
 # System packages in one RUN layer + cache cleanup
 # gh CLI requires official GitHub apt repo (not in default Ubuntu repos)
@@ -18,9 +19,12 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
         > /etc/apt/sources.list.d/github-cli.list \
     && apt-get update \
-    && apt-get install -y --no-install-recommends ripgrep gh jq \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && ln -sf /root/.local/bin/uv /usr/local/bin/uv \
+    && apt-get install -y --no-install-recommends ripgrep gh jq ca-certificates \
+    && curl -LsSf "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz" \
+        -o /tmp/uv.tar.gz \
+    && tar -xzf /tmp/uv.tar.gz -C /tmp \
+    && install /tmp/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv \
+    && rm -rf /tmp/uv.tar.gz /tmp/uv-x86_64-unknown-linux-gnu \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

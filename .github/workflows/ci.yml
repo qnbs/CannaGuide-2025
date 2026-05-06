@@ -52,11 +52,14 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install uv
-              run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-            - name: Add uv to PATH
-              run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+            - name: Install pinned uv
+              env:
+                  UV_VERSION: '0.8.10'
+              run: |
+                  curl -LsSf "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz" \
+                    -o /tmp/uv.tar.gz
+                  tar -xzf /tmp/uv.tar.gz -C /tmp
+                  sudo install /tmp/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv
 
             - name: Restore Turbo cache
               uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5

@@ -30,7 +30,6 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
-            deployments: write
         timeout-minutes: 20
         steps:
             - name: Harden runner
@@ -93,7 +92,6 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
-            deployments: write
             pull-requests: write
         timeout-minutes: 20
         steps:

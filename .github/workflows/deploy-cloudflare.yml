@@ -67,7 +67,9 @@ jobs:
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: pnpm
+                  # Use npm for wrangler-action bootstrap to avoid pnpm workspace-root
+                  # guard (`ERR_PNPM_ADDING_TO_ROOT`) during transient wrangler install.
+                  packageManager: npm
                   command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=main
 
             - name: Post-deploy health check
@@ -130,7 +132,9 @@ jobs:
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: pnpm
+                  # Use npm for wrangler-action bootstrap to avoid pnpm workspace-root
+                  # guard (`ERR_PNPM_ADDING_TO_ROOT`) during transient wrangler install.
+                  packageManager: npm
                   command: pages deploy apps/web/dist --project-name=cannaguide-2025 --branch=${{ github.head_ref }}
 
             - name: Comment preview URL on PR

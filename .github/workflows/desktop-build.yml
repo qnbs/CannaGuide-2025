@@ -31,7 +31,7 @@ jobs:
         runs-on: ${{ matrix.platform }}
         timeout-minutes: 60
         permissions:
-            contents: write
+            contents: read
 
         steps:
             - name: Harden runner

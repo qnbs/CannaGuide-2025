@@ -32,6 +32,6 @@
     "optionalDependencies": {
         "@mlc-ai/web-llm": "*",
         "@xenova/transformers": "*",
-        "onnxruntime-web": "^1.25.1"
+        "onnxruntime-web": "^1.26.0"
     }
 }

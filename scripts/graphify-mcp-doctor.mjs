@@ -14,6 +14,7 @@ const launcher = join(root, "scripts", "graphify-mcp-stdio.sh");
 const windowsLauncher = join(root, "scripts", "graphify-mcp-stdio-windows.cmd");
 const MAX_GRAPH_AGE_HOURS = 168;
 const MIN_INFERRED_CONFIDENCE = 0.7;
+const isWindows = process.platform === "win32";
 
 let failed = false;
 const ok = (msg) => console.log(`ok   ${msg}`);
@@ -28,8 +29,10 @@ if (!existsSync(launcher)) {
     try {
         const mode = statSync(launcher).mode;
         const execBit = 0o111;
-        if ((mode & execBit) === 0) {
+        if (!isWindows && (mode & execBit) === 0) {
             bad("scripts/graphify-mcp-stdio.sh is not executable (chmod +x)");
+        } else if (isWindows) {
+            ok("launcher script exists (executable bit check skipped on Windows)");
         } else {
             ok("launcher script exists and is executable");
         }
@@ -124,35 +127,45 @@ if (!existsSync(windowsLauncher)) {
 
 const uvVer = spawnSync("uv", ["--version"], { encoding: "utf8" });
 if (uvVer.status !== 0) {
-    bad("uv not on PATH — https://docs.astral.sh/uv/getting-started/installation/");
+    if (isWindows) {
+        console.error(
+            "warn uv not on PATH — skipping Python import check on Windows local fallback",
+        );
+    } else {
+        bad("uv not on PATH — https://docs.astral.sh/uv/getting-started/installation/");
+    }
 } else {
     ok(uvVer.stdout.trim());
 }
 
-const imports = spawnSync(
-    "uv",
-    [
-        "run",
-        "--with",
-        "graphifyy",
-        "--with",
-        "mcp",
-        "python",
-        "-c",
-        "import mcp, graphify",
-    ],
-    {
-        encoding: "utf8",
-        cwd: root,
-        timeout: 180_000,
-    },
-);
-if (imports.status !== 0) {
-    bad(
-        `uv run (graphifyy + mcp) import failed: ${(imports.stderr || imports.stdout || "").trim() || `exit ${imports.status}`}`,
+if (uvVer.status === 0) {
+    const imports = spawnSync(
+        "uv",
+        [
+            "run",
+            "--with",
+            "graphifyy",
+            "--with",
+            "mcp",
+            "python",
+            "-c",
+            "import mcp, graphify",
+        ],
+        {
+            encoding: "utf8",
+            cwd: root,
+            timeout: 180_000,
+        },
     );
+    if (imports.status !== 0) {
+        bad(
+            `uv run (graphifyy + mcp) import failed: ${(imports.stderr || imports.stdout || "").trim() || `exit ${imports.status}`}`,
+        );
+    } else {
+        ok("uv can import graphify + PyPI package mcp");
+    }
 } else {
-    ok("uv can import graphify + PyPI package mcp");
+    console.error("skip uv import check because uv is unavailable");
 }
 
 console.log("");

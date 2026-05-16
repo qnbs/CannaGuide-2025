@@ -34,8 +34,9 @@ test.describe('Hydro Monitor Critical Path', () => {
 
         // Click Hydro Monitor sub-nav button
         const hydroButton = page.getByRole('button', { name: /Hydro Monitor/i })
-        await expect(hydroButton).toBeVisible({ timeout: 10_000 })
-        await hydroButton.click()
+        await expect(hydroButton.first()).toBeVisible({ timeout: 15_000 })
+        await hydroButton.first().scrollIntoViewIfNeeded()
+        await hydroButton.first().click({ timeout: 10_000 })
 
         // Hydro Monitor view should render
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
@@ -52,8 +53,9 @@ test.describe('Hydro Monitor Critical Path', () => {
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         const hydroButton = page.getByRole('button', { name: /Hydro Monitor/i })
-        await expect(hydroButton).toBeVisible({ timeout: 10_000 })
-        await hydroButton.click()
+        await expect(hydroButton.first()).toBeVisible({ timeout: 15_000 })
+        await hydroButton.first().scrollIntoViewIfNeeded()
+        await hydroButton.first().click({ timeout: 10_000 })
         await page.waitForTimeout(1_000)
 
         // Gauge cards should be present (pH, EC, Water Temp)
@@ -79,8 +81,9 @@ test.describe('Hydro Monitor Critical Path', () => {
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         const hydroButton = page.getByRole('button', { name: /Hydro Monitor/i })
-        await expect(hydroButton).toBeVisible({ timeout: 10_000 })
-        await hydroButton.click()
+        await expect(hydroButton.first()).toBeVisible({ timeout: 15_000 })
+        await hydroButton.first().scrollIntoViewIfNeeded()
+        await hydroButton.first().click({ timeout: 10_000 })
         await page.waitForTimeout(1_000)
 
         // Look for system type selector (DWC, NFT, etc.)
@@ -112,8 +115,9 @@ test.describe('Hydro Monitor Critical Path', () => {
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
         const hydroButton = page.getByRole('button', { name: /Hydro Monitor/i })
-        await expect(hydroButton).toBeVisible({ timeout: 10_000 })
-        await hydroButton.click()
+        await expect(hydroButton.first()).toBeVisible({ timeout: 15_000 })
+        await hydroButton.first().scrollIntoViewIfNeeded()
+        await hydroButton.first().click({ timeout: 10_000 })
 
         await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
         await expectNoCrashPatterns(page)

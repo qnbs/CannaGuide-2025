@@ -67,4 +67,16 @@ test.describe('Offline & PWA', () => {
             expect(manifest.name).toBeTruthy()
         }
     })
+
+    test('service worker creates a cannaguide cache entry after shell load', async ({ page }) => {
+        await bootFreshAppPastOnboarding(page)
+        await expectShellVisible(page)
+
+        const cannaguideCaches = await page.evaluate(async () => {
+            const keys = await caches.keys()
+            return keys.filter((k) => k.includes('cannaguide'))
+        })
+
+        expect(cannaguideCaches.length).toBeGreaterThan(0)
+    })
 })

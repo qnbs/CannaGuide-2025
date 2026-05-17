@@ -97,6 +97,8 @@ Shared setup: [`.github/actions/setup-node-ci`](actions/setup-node-ci/action.yml
 | Vitest worker timeouts on Windows   | CI uses Linux; retry with `--pool forks` if needed locally       |
 | PWA / Workbox size warnings         | Advisory in build log; separate from chunk budget script         |
 | Preview deploy workflows            | Paused (`deploy-cloudflare.yml`, `preview-validation.yml`)       |
+| Code scanning alerts (open)         | ~30 on `main` (2026-05-17); triage via Security tab, not blocking CI Status |
+| Cloudflare Workers dashboard check  | External integration; fails independently of GitHub Actions      |
 
 ## Recommended local pre-push (light)
 

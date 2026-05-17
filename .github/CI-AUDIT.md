@@ -1,6 +1,6 @@
 # CI Audit & Health Dashboard
 
-Last updated: 2026-05-16 (local validation pass; merge policy 2026-05-16)
+Last updated: 2026-05-17 (deps batch + stabilization merged to main)
 
 ## Merge policy (main)
 
@@ -25,6 +25,12 @@ This document records the CI/CD inventory, fixes applied during the stabilizatio
 | Unit tests (changed) | `vitest run` on touched specs                               | SKIP (worker timeout)                  | Run in CI / Linux agent                                     |
 | Full E2E             | `pnpm run test:e2e`                                         | Not run locally                        | Chromium blocking in aggregator; Firefox advisory           |
 
+## Dependency hygiene (2026-05-17)
+
+- Closed 11 stale Dependabot PRs (#194–#203, #193 already closed) in favor of batched update PR.
+- Batch includes: `react-i18next`, `i18next`, `tailwind-merge`, `msw`, `onnxruntime-web`, ESLint/typescript-eslint, CodeQL action v4.35.4, `actions/labeler` v6.1.0, `pnpm/action-setup` v6.0.6.
+- Graphify automation PRs (#192, #204, #206) closed; refresh via `pnpm run graphify:mcp:doctor` on demand.
+
 ## Fixes applied
 
 ### Build / toolchain
@@ -36,6 +42,13 @@ This document records the CI/CD inventory, fixes applied during the stabilizatio
 - **Bundle budget path**: `benchmark.yml`, `ci.yml`, and `release-gate.yml` now call `check-bundle-budget.mjs` on `apps/web/dist/assets` (Vite emits JS under `assets/`, not `dist/` root).
 - **`release-publish.yml`**: `release` job has `permissions: contents: write` for `gh release create/edit/upload`.
 - **`dependabot-auto-merge.yml`**: job-level `contents: write` + `pull-requests: write` for `gh pr merge --auto`.
+
+### Deploy E2E / Lighthouse (2026-05-17)
+
+- **`helpers.ts`**: deploy-aware `goto` (`load` vs `domcontentloaded`), `waitForAppShell`, `waitForCannaguideCaches`.
+- **`offline-pwa.deploy.e2e.ts`**: resilient shell + SW cache polling on live Pages (no bare `main` race).
+- **`playwright.deploy.config.ts`**: 90s test timeout, 60s navigation timeout.
+- **`deploy.yml`**: Pages readiness curl loop before deploy E2E; Lighthouse waits for `#root` + headless Chrome flags.
 
 ### E2E / UI stability
 

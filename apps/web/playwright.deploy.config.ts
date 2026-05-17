@@ -5,14 +5,15 @@ const deployBaseUrl = process.env.DEPLOY_BASE_URL || 'https://qnbs.github.io/Can
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: ['*.deploy.e2e.ts'],
-  timeout: 45_000,
+  timeout: 90_000,
   expect: {
-    timeout: 10_000,
+    timeout: 30_000,
   },
   retries: 1,
   reporter: [['list']],
   use: {
     baseURL: deployBaseUrl,
+    navigationTimeout: 60_000,
     trace: 'retain-on-failure',
   },
   projects: [

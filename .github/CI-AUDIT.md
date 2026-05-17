@@ -43,6 +43,13 @@ This document records the CI/CD inventory, fixes applied during the stabilizatio
 - **`release-publish.yml`**: `release` job has `permissions: contents: write` for `gh release create/edit/upload`.
 - **`dependabot-auto-merge.yml`**: job-level `contents: write` + `pull-requests: write` for `gh pr merge --auto`.
 
+### Deploy E2E / Lighthouse (2026-05-17)
+
+- **`helpers.ts`**: deploy-aware `goto` (`load` vs `domcontentloaded`), `waitForAppShell`, `waitForCannaguideCaches`.
+- **`offline-pwa.deploy.e2e.ts`**: resilient shell + SW cache polling on live Pages (no bare `main` race).
+- **`playwright.deploy.config.ts`**: 90s test timeout, 60s navigation timeout.
+- **`deploy.yml`**: Pages readiness curl loop before deploy E2E; Lighthouse waits for `#root` + headless Chrome flags.
+
 ### E2E / UI stability
 
 - Playwright helpers and selectors hardened (`tests/e2e/helpers.ts`, selector guard).

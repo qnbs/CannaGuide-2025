@@ -54,6 +54,20 @@ for (const viewport of MOBILE_VIEWPORTS) {
                         const vw = document.documentElement.clientWidth
                         const elements = document.querySelectorAll('*')
                         const overflowing: string[] = []
+                        const isInsideHorizontalScroller = (element: Element): boolean => {
+                            let current: Element | null = element.parentElement
+                            while (current) {
+                                const style = window.getComputedStyle(current)
+                                const canScrollX =
+                                    current.scrollWidth > current.clientWidth &&
+                                    /(auto|scroll)/.test(style.overflowX)
+                                if (canScrollX) {
+                                    return true
+                                }
+                                current = current.parentElement
+                            }
+                            return false
+                        }
                         for (const el of elements) {
                             const rect = el.getBoundingClientRect()
                             if (rect.right > vw + 1 || rect.left < -1) {
@@ -67,6 +81,9 @@ for (const viewport of MOBILE_VIEWPORTS) {
                                             (tag === 'a' && cls.includes('skip')),
                                     )
                                 ) {
+                                    continue
+                                }
+                                if (isInsideHorizontalScroller(el)) {
                                     continue
                                 }
                                 overflowing.push(id)

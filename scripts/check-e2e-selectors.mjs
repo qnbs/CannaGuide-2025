@@ -9,9 +9,10 @@
  */
 
 import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { join, relative } from 'node:path'
 
-const E2E_DIR = new URL('../apps/web/tests/e2e', import.meta.url).pathname
+const E2E_DIR = fileURLToPath(new URL('../apps/web/tests/e2e', import.meta.url))
 
 // Patterns that indicate fragile selectors
 const FRAGILE_PATTERNS = [
@@ -72,7 +73,7 @@ function main() {
     for (const file of files) {
         const findings = scanFile(file)
         if (findings.length > 0) {
-            const relativePath = file.replace(process.cwd() + '/', '')
+            const relativePath = relative(process.cwd(), file)
             for (const f of findings) {
                 console.log(`  [WARN] ${relativePath}:${f.line} -- ${f.label}`)
                 console.log(`         ${f.text}`)

@@ -211,6 +211,7 @@ jobs:
         needs: [build]
         if: ${{ !(github.event.inputs.dry-run == 'true') }}
         permissions:
+            contents: write
             id-token: write
             attestations: write
         steps:

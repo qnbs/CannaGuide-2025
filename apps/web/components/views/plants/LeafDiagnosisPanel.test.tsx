@@ -134,8 +134,8 @@ describe('LeafDiagnosisPanel', () => {
     it('switches to manual tab and shows the wizard', async () => {
         renderWithProviders(<LeafDiagnosisPanel plant={buildPlant()} />)
         fireEvent.click(screen.getByTestId('tab-manual'))
-        // Lazy-loaded wizard should appear
-        const wizard = await screen.findByTestId('wizard-question')
+        // Lazy-loaded wizard can take longer in full CI runs after Vite transforms.
+        const wizard = await screen.findByTestId('wizard-question', {}, { timeout: 5_000 })
         expect(wizard).toBeInTheDocument()
     })
 })

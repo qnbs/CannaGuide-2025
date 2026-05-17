@@ -2,6 +2,8 @@
 
 Inventory of the **25** workflow files in this directory. Production web deploys: **GitHub Pages** (`deploy.yml`) and **Vercel** (dashboard). See [`docs/distribution.md`](../../docs/distribution.md).
 
+CI health, applied fixes, and merge policy: [`.github/CI-AUDIT.md`](../CI-AUDIT.md). E2E is advisory in the `ci-status` aggregator (quality + security block).
+
 ## Core CI/CD
 
 | Workflow                                           | Purpose                                                                                              |

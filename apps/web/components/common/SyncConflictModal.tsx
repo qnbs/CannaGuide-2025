@@ -95,7 +95,7 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = memo(
                         if (!o) onClose()
                     }}
                 >
-                    <DialogContent className="max-w-lg">
+                    <DialogContent className="max-w-lg" data-testid="sync-conflict-modal">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-amber-400">
                                 <PhosphorIcons.Warning className="h-5 w-5" />

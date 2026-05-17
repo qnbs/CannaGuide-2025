@@ -225,8 +225,8 @@ const CloudSyncPanel: React.FC = () => {
                 </div>
             </Card>
 
-            {/* Cloud Sync Card */}
-            <Card>
+            {/* Cloud Sync Card — data-testid for E2E (Settings → Data → Cloud sync) */}
+            <Card data-testid="cloud-sync-panel">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2">
                         <PhosphorIcons.CloudArrowUp />

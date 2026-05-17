@@ -47,10 +47,14 @@ if (existsSync(govPath)) {
 const validate = spawnSync("pnpm", ["run", "mdc:validate"], {
     cwd: root,
     encoding: "utf8",
-    shell: false,
+    shell: process.platform === "win32",
 });
 if (validate.status !== 0) {
-    bad(`mdc:validate failed:\n${validate.stderr || validate.stdout}`);
+    const output = [validate.stdout, validate.stderr, validate.error?.message]
+        .filter(Boolean)
+        .join('\n')
+        .trim();
+    bad(`mdc:validate failed:\n${output || `exit ${validate.status}`}`);
 } else {
     ok("pnpm run mdc:validate (nested) passed");
 }

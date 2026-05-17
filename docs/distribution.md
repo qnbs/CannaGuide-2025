@@ -1,6 +1,17 @@
 # Distribution Targets
 
-This project is web-first with multiple web distribution targets; **automated** production deploys use **GitHub Pages** and **Vercel**. Netlify and Cloudflare Pages CI deploys are **paused** (see below). Tauri v2 desktop is built separately.
+This project is web-first with multiple web distribution targets; **automated** production deploys use **GitHub Pages** and **Vercel** (dashboard-connected). Netlify and Cloudflare Pages **GitHub Actions** deploys are **paused** (see [Paused CI workflows — reactivation](#paused-ci-workflows--reactivation)). Tauri v2 desktop is built separately.
+
+## Active vs paused (canonical)
+
+| Target               | Automated deploy                              | Preview / PR                                                                                                                                             | Primary workflow / config                                                                                                                                                     |
+| -------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitHub Pages**     | Yes (`main` after successful CI)              | N/A (production URL only)                                                                                                                                | [.github/workflows/deploy.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy.yml)                                                                |
+| **Vercel**           | Yes (when repo is linked in Vercel dashboard) | Yes — Vercel Deploy Previews per PR                                                                                                                      | [vercel.json](../vercel.json)                                                                                                                                                 |
+| **Netlify**          | Paused (dashboard / bandwidth)                | Paused — [.github/workflows/preview-validation.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/preview-validation.yml) disabled | [netlify.toml](../netlify.toml)                                                                                                                                               |
+| **Cloudflare Pages** | Paused — CI wrangler deploy off               | N/A                                                                                                                                                      | [.github/workflows/deploy-cloudflare.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy-cloudflare.yml) (placeholder / `workflow_dispatch` only) |
+
+**PR previews:** Use **Vercel** once the project is connected; do not rely on Netlify until that workflow is re-enabled. The old Netlify-based Playwright + Lighthouse gate in `preview-validation.yml` should only be restored when Netlify deploy previews work again (see checklist below).
 
 ## GitHub Pages (primary)
 
@@ -119,6 +130,26 @@ Updates are signed and distributed via GitHub Releases.
 - Requires EV code signing certificate (~$300-500/year)
 - `certificateThumbprint`: Certificate SHA-1 thumbprint
 - `timestampUrl`: `http://timestamp.digicert.com`
+
+## Paused CI workflows — reactivation
+
+Use this checklist when bringing **Netlify** or **Cloudflare Pages** automation back; keep GitHub Pages + Vercel as the documented primary pair until then.
+
+### Netlify + PR preview validation (`preview-validation.yml`)
+
+1. Re-enable the Netlify project (dashboard) and resolve bandwidth / billing limits.
+2. Restore `netlify.toml` build sections if they were commented for intentional failure.
+3. Reinstate workflow triggers from git history: previously `deployment_status` for deploy-preview success.
+4. Confirm Playwright + Lighthouse jobs receive a valid preview URL env var.
+5. Run the workflow manually once (`workflow_dispatch`) before relying on it as a required check.
+
+### Cloudflare Pages (`deploy-cloudflare.yml`)
+
+1. Restore `on.push` / `workflow_run` / `pull_request` triggers from git history (see workflow header comments).
+2. Configure Cloudflare Pages Git integration or wire **wrangler** with API token secrets as before.
+3. Keep `_headers` / `_redirects` under `apps/web/public/` aligned with [apps/web/securityHeaders.ts](../apps/web/securityHeaders.ts).
+
+---
 
 ## Removed Targets
 

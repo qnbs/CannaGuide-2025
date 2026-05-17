@@ -257,7 +257,7 @@ to `console.debug`).
 
 ## syncService
 
-Gist-based transport layer with E2EE (AES-256-GCM via `cryptoService`).
+Gist-based transport layer with optional E2EE (AES-256-GCM via `syncEncryptionService` when `encryptionKeyBase64` is set).
 
 ### Sync Result
 
@@ -351,6 +351,10 @@ Device A                    GitHub Gist                   Device B
 Each pull stores the remote state vector via
 `crdtService.setRemoteStateVector()`, enabling the next push to send
 only the delta since the last sync.
+
+### Future considerations (nested CRDT)
+
+Nested entities currently serialized as JSON strings inside `Y.Map` records (e.g. journal batches) merge at the **record** level; concurrent edits to the same nested blob can surface as user-resolved conflicts. Migrating those fields to `Y.Array` / nested `Y.Map` would improve automatic merge semantics but requires a **gist migration path** and compatibility testing — planned as a larger release item (see roadmap).
 
 ---
 

@@ -1,3 +1,9 @@
+/**
+ * Service worker — single source for runtime fetch caching (vite-plugin-pwa injectManifest).
+ * Do not duplicate routes via `workbox.runtimeCaching` in vite.config without verifying
+ * injectManifest merge behavior (risk of conflicting handlers).
+ * Deployment matrix: docs/distribution.md · PWA governance: .cursor/rules/204-pwa-cache-and-sw.mdc
+ */
 // Cache version is derived from the precache manifest hash to auto-bust on every deploy.
 // __WB_MANIFEST changes per build, so we derive a simple hash from its content.
 const workboxManifest = self.__WB_MANIFEST || []

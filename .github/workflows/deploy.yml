@@ -162,6 +162,24 @@ jobs:
               if: steps.playwright-cache.outputs.cache-hit != 'true'
               run: pnpm run test:e2e:install:ci
 
+            - name: Wait for GitHub Pages to serve content
+              run: |
+                  echo "::group::pages readiness"
+                  for attempt in $(seq 1 36); do
+                    status="$(curl -s -o /dev/null -w '%{http_code}' "${{ env.PAGES_URL }}")"
+                    if [ "$status" = "200" ]; then
+                      if curl -sf "${{ env.PAGES_URL }}assets/" -o /dev/null 2>/dev/null || \
+                         curl -sf "${{ env.PAGES_URL }}" | grep -q 'id="root"'; then
+                        echo "[OK] Pages responded with 200 and app shell markers (attempt ${attempt})"
+                        exit 0
+                      fi
+                    fi
+                    echo "[INFO] Waiting for Pages propagation (attempt ${attempt}/36, HTTP ${status})"
+                    sleep 10
+                  done
+                  echo "::error::Pages URL did not become ready: ${{ env.PAGES_URL }}"
+                  exit 1
+
             - name: Run E2E tests on deployed URL
               env:
                   DEPLOY_BASE_URL: ${{ env.PAGES_URL }}
@@ -195,11 +213,24 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
+            - name: Wait for GitHub Pages before Lighthouse
+              run: |
+                  for attempt in $(seq 1 24); do
+                    if curl -sf "${{ env.PAGES_URL }}" | grep -q 'id="root"'; then
+                      echo "[OK] App shell visible for Lighthouse (attempt ${attempt})"
+                      exit 0
+                    fi
+                    echo "[INFO] Lighthouse wait attempt ${attempt}/24"
+                    sleep 10
+                  done
+                  echo "::warning::Pages shell not confirmed before Lighthouse; run may NO_FCP"
+
             - name: Lighthouse CI (live URL)
               run: |
                   pnpm exec lhci autorun \
                     --collect.url=${{ env.PAGES_URL }} \
                     --collect.numberOfRuns=3 \
+                    --collect.settings.chromeFlags="--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new" \
                     --upload.target=temporary-public-storage \
                     --assert.assertions.first-contentful-paint="error;maxNumericValue=2000" \
                     --assert.assertions.largest-contentful-paint="error;maxNumericValue=4000" \

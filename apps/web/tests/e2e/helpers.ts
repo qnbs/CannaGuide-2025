@@ -1,5 +1,16 @@
 import { expect, Page } from '@playwright/test'
 
+const DEFAULT_DEPLOY_BASE_URL = 'https://qnbs.github.io/CannaGuide-2025/'
+
+/** True when tests target a live GitHub Pages / preview deployment. */
+export const isDeployedTarget = (baseURL?: string) =>
+    !!process.env.DEPLOY_BASE_URL ||
+    !!baseURL?.includes('github.io') ||
+    !!baseURL?.includes('pages.dev')
+
+export const resolveDeployBaseUrl = (baseURL?: string) =>
+    baseURL || process.env.DEPLOY_BASE_URL || DEFAULT_DEPLOY_BASE_URL
+
 /**
  * Seed legal gate state (age verification + GDPR consent) so the
  * onboarding wizard skips the legal step automatically.
@@ -18,31 +29,72 @@ export const seedLegalGateState = async (page: Page) => {
  * Boot the app with a fresh browser context (Playwright default).
  * Seeds legal gates so tests are not blocked by the age/consent step.
  */
-export const bootFreshAppWithLegalGates = async (page: Page) => {
+export const bootFreshAppWithLegalGates = async (page: Page, baseURL?: string) => {
     await seedLegalGateState(page)
-    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    const deployed = isDeployedTarget(baseURL)
+    const url = deployed ? resolveDeployBaseUrl(baseURL) : '/'
+    const waitUntil = deployed ? 'load' : 'domcontentloaded'
+    await page.goto(url, { waitUntil })
 }
 
 /**
  * Boot the app and dismiss the onboarding wizard so tests start at the shell.
- * Uses the same simple-navigation pattern as the passing screenshot tests.
+ * Deploy targets wait for `load` so SW registration and React hydration complete.
  */
-export const bootFreshAppPastOnboarding = async (page: Page) => {
+export const bootFreshAppPastOnboarding = async (page: Page, baseURL?: string) => {
     await seedLegalGateState(page)
-    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    const deployed = isDeployedTarget(baseURL)
+    const url = deployed ? resolveDeployBaseUrl(baseURL) : '/'
+    const waitUntil = deployed ? 'load' : 'domcontentloaded'
+    await page.goto(url, { waitUntil })
     await closeOnboardingIfVisible(page)
+}
+
+export const waitForAppShell = async (page: Page) => {
+    await page.waitForSelector('#root', { state: 'attached', timeout: 60_000 })
+    await page.waitForSelector('[data-view-id]', { state: 'attached', timeout: 60_000 })
+    await expect
+        .poll(async () => page.locator('[data-view-id]').count(), { timeout: 60_000 })
+        .toBeGreaterThan(0)
 }
 
 export const expectShellVisible = async (page: Page) => {
     await closeOnboardingIfVisible(page)
-    await expect(page.locator('main').first()).toBeVisible({ timeout: 30_000 })
+    await waitForAppShell(page)
+
+    const main = page.locator('main').first()
+    await expect
+        .poll(async () => main.isVisible().catch(() => false), { timeout: 60_000 })
+        .toBe(true)
+
     // Desktop sidebar nav is hidden on mobile viewports
     const vw = page.viewportSize()?.width ?? 1280
     if (vw >= 768) {
         await expect(page.locator('nav').first()).toBeVisible({ timeout: 30_000 })
     }
-    // Wait for at least one navigation button to be attached (app fully rendered)
-    await page.waitForSelector('[data-view-id]', { state: 'attached', timeout: 30_000 })
+}
+
+/** Wait for service worker + Workbox caches on deployed Pages (cold CDN tolerant). */
+export const waitForCannaguideCaches = async (page: Page, deadlineMs = 60_000) => {
+    await page.waitForFunction(() => 'serviceWorker' in navigator, undefined, { timeout: 10_000 })
+
+    const cacheNames = await page.evaluate(async (timeoutMs) => {
+        try {
+            await Promise.race([
+                navigator.serviceWorker.ready,
+                new Promise<void>((resolve) => {
+                    setTimeout(resolve, timeoutMs)
+                }),
+            ])
+        } catch {
+            // Fall through to cache snapshot
+        }
+
+        const keys = await caches.keys()
+        return keys.filter((key) => key.includes('cannaguide'))
+    }, deadlineMs)
+
+    return cacheNames
 }
 
 export const closeOnboardingIfVisible = async (page: Page) => {

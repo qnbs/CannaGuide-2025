@@ -5,6 +5,8 @@
  */
 import { test, Page } from '@playwright/test'
 
+test.skip(!!process.env.CI, 'Screenshot walkthrough is generated manually, not as a CI gate')
+
 const DESKTOP = { width: 1280, height: 800 }
 const MOBILE = { width: 375, height: 812 }
 

@@ -7,18 +7,23 @@ const RULES_DIR = join(process.cwd(), '.cursor', 'rules');
 const MAX_LINES = 200;
 const allowedFrontmatterKeys = new Set(['description', 'globs', 'alwaysApply']);
 
+function normalizeNewlines(raw) {
+    return raw.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
+}
+
 function parseFrontmatter(raw, filePath) {
-    if (!raw.startsWith('---\n')) {
+    const normalized = normalizeNewlines(raw);
+    if (!normalized.startsWith('---\n')) {
         throw new Error(`${filePath}: missing frontmatter start delimiter`);
     }
 
-    const end = raw.indexOf('\n---\n', 4);
+    const end = normalized.indexOf('\n---\n', 4);
     if (end === -1) {
         throw new Error(`${filePath}: missing frontmatter end delimiter`);
     }
 
-    const block = raw.slice(4, end).trimEnd();
-    const body = raw.slice(end + 5);
+    const block = normalized.slice(4, end).trimEnd();
+    const body = normalized.slice(end + 5);
     const map = new Map();
 
     for (const line of block.split('\n')) {

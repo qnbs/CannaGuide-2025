@@ -76,7 +76,7 @@
 [![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
-**Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025)
+**Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025) · **Cloud sync:** optional AES-256-GCM when an encryption key is set — see [SECURITY.md](SECURITY.md#cloud-sync-encryption-github-gist).
 
 AI-powered, offline-first Progressive Web App for cannabis cultivation management. Simulates the full lifecycle from seed selection through harvest using VPD-based environmental modeling, 776-strain library with genealogy tracking, multi-provider AI diagnostics, and comprehensive equipment planning -- all running 100% client-side with no backend.
 
@@ -335,6 +335,20 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | **Access Gates**       | Age verification (KCanG), PIN lock, DSGVO consent            |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit Backlog](docs/AUDIT_BACKLOG.md)
+
+### CI Health Dashboard
+
+Audit summary, applied fixes, local gate results, and remaining risks: **[`.github/CI-AUDIT.md`](.github/CI-AUDIT.md)** (updated 2026-05-16).
+
+| Gate (local)    | Status                                  |
+| --------------- | --------------------------------------- |
+| typecheck       | pass                                    |
+| lint:scopes     | pass                                    |
+| build + budget  | pass                                    |
+| mdc:e2e         | pass                                    |
+| graphify doctor | pass                                    |
+| CSP check       | pass                                    |
+| full E2E        | CI only (advisory on `main` aggregator) |
 
 ### CI/CD Workflows (25)
 

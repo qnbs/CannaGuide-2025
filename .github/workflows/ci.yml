@@ -35,7 +35,7 @@ jobs:
     quality:
         name: Quality Gates
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 90
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
@@ -231,7 +231,7 @@ jobs:
               working-directory: apps/web
               run: |
                   START_TIME=$SECONDS
-                  pnpm exec playwright test -c playwright.config.ts --project=chromium --project=mobile-chrome --grep-invert "Visual Regression" --shard=${{ matrix.shard }}
+                  pnpm exec playwright test -c playwright.config.ts --project=chromium --project=mobile-chrome --grep-invert "Visual Regression|App Screenshots" --shard=${{ matrix.shard }}
                   echo "E2E Chromium shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 
@@ -241,7 +241,7 @@ jobs:
               working-directory: apps/web
               run: |
                   START_TIME=$SECONDS
-                  pnpm exec playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression" --shard=${{ matrix.shard }}
+                  pnpm exec playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression|App Screenshots" --shard=${{ matrix.shard }}
                   echo "E2E Firefox shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 

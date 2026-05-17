@@ -8,6 +8,15 @@
 | 1.7.x   | :white_check_mark: |
 | < 1.7   | :x:                |
 
+## Cloud sync encryption (GitHub Gist)
+
+Optional **end-to-end encryption** for the CRDT sync blob stored in a private/unlisted GitHub Gist:
+
+- **With encryption key set** (Settings → Data → Cloud sync → E2EE): the gist file content is encrypted with **AES-256-GCM** via [`apps/web/services/syncEncryptionService.ts`](apps/web/services/syncEncryptionService.ts) before upload; pulls decrypt using the same user-managed key.
+- **Without a key:** the sync payload is still wrapped as structured CRDT JSON (`crdt-v1`), but the gist file is **not** E2EE — rely on GitHub account security and gist secrecy (unlisted + URL obscurity). Users handling sensitive grow data should generate or supply a key.
+
+Automated tests for encrypt/decrypt roundtrips and plaintext detection live in `apps/web/services/syncEncryptionService.test.ts`; transport behaviour is covered in `apps/web/services/syncService.test.ts` (push/pull with and without keys).
+
 ## Reporting a Vulnerability
 
 If you believe you have found a security vulnerability, **do not open a public issue**.

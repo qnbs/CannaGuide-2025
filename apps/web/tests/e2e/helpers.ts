@@ -8,6 +8,7 @@ import { expect, Page } from '@playwright/test'
 export const seedLegalGateState = async (page: Page) => {
     await page.addInitScript(() => {
         localStorage.setItem('cg.ageVerified.v1', '1')
+        localStorage.setItem('cg.geoLegal.dismissed.v1', '1')
         // Grant GDPR consent via cookie (matches consentService v2 format)
         document.cookie = 'cg.gdpr.consent.v2=1; Max-Age=31536000; Path=/; SameSite=Lax'
     })
@@ -19,7 +20,7 @@ export const seedLegalGateState = async (page: Page) => {
  */
 export const bootFreshAppWithLegalGates = async (page: Page) => {
     await seedLegalGateState(page)
-    await page.goto('/', { waitUntil: 'networkidle' })
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
 }
 
 /**
@@ -28,7 +29,7 @@ export const bootFreshAppWithLegalGates = async (page: Page) => {
  */
 export const bootFreshAppPastOnboarding = async (page: Page) => {
     await seedLegalGateState(page)
-    await page.goto('/', { waitUntil: 'networkidle' })
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     await closeOnboardingIfVisible(page)
 }
 

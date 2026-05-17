@@ -10,6 +10,24 @@ const PWA_UPDATE_DISMISSED_KEY = 'cg.pwa.update.dismissed_at'
 const INSTALL_HINT_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000
 const UPDATE_DISMISSAL_COOLDOWN_MS = 60 * 60 * 1000
 
+function isPreloadStatus(value: unknown): value is { state?: string } {
+    if (typeof value !== 'object' || value === null) return false
+    if (!('state' in value)) return true
+    const state = Reflect.get(value, 'state')
+    return state === undefined || typeof state === 'string'
+}
+
+function readPreloadStatusFromStorage(): { state?: string } | null {
+    try {
+        const raw = localStorage.getItem('cg.localai.preload_status')
+        if (!raw) return null
+        const parsed: unknown = JSON.parse(raw)
+        return isPreloadStatus(parsed) ? parsed : null
+    } catch {
+        return null
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Module-level singleton -- shared across ALL hook instances so that lazy-
 // loaded views (e.g. SettingsView) always see the current install state.
@@ -144,13 +162,7 @@ export const usePwaInstall = () => {
         // postpone the SW activation so we don't tear down the connection
         // mid-stream. Status is read from `localAiPreloadService` via the
         // `cg.localai.preloadStatusChange` CustomEvent fan-out.
-        let preloadStatus: { state?: string } | null = null
-        try {
-            const raw = localStorage.getItem('cg.localai.preload_status')
-            preloadStatus = raw ? (JSON.parse(raw) as { state?: string }) : null
-        } catch {
-            preloadStatus = null
-        }
+        const preloadStatus = readPreloadStatusFromStorage()
 
         if (preloadStatus?.state !== 'preloading') {
             applyUpdate()

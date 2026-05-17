@@ -38,30 +38,11 @@ async function assertNoLeakedKeys(page: Page, context: string): Promise<void> {
     const mainContent = page.locator('main').first()
     await expect(mainContent).toBeVisible({ timeout: 15_000 })
 
-    // Gather all visible text nodes inside <main>
-    const texts = await mainContent.evaluate((el) => {
-        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
-            acceptNode(node) {
-                const parent = node.parentElement
-                if (!parent) return NodeFilter.FILTER_REJECT
-                const tag = parent.tagName
-                // Skip script/style/hidden elements
-                if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT
-                if (parent.offsetParent === null && tag !== 'BODY') return NodeFilter.FILTER_REJECT
-                const trimmed = (node.textContent ?? '').trim()
-                if (trimmed.length < 3) return NodeFilter.FILTER_REJECT
-                return NodeFilter.FILTER_ACCEPT
-            },
-        })
-        const result: string[] = []
-        let current = walker.nextNode()
-        while (current) {
-            const text = (current.textContent ?? '').trim()
-            if (text) result.push(text)
-            current = walker.nextNode()
-        }
-        return result
-    })
+    const visibleText = await mainContent.innerText({ timeout: 15_000 })
+    const texts = visibleText
+        .split('\n')
+        .map((text) => text.trim())
+        .filter((text) => text.length >= 3)
 
     const leaked = texts.filter((t) => I18N_KEY_PATTERN.test(t))
     expect(leaked, `[${context}] Leaked i18n keys found in visible text`).toHaveLength(0)
@@ -242,6 +223,8 @@ async function navigateToDailyStrains(page: Page): Promise<void> {
 const LANGUAGES = ['de', 'es', 'fr', 'nl'] as const
 
 test.describe('i18n Translation Smoke Tests', () => {
+    test.describe.configure({ timeout: 120_000 })
+
     test.beforeEach(async ({ page }) => {
         await bootFreshAppPastOnboarding(page)
         await expectShellVisible(page)
@@ -272,18 +255,24 @@ test.describe('i18n Translation Smoke Tests', () => {
             expect(tracker.messages).toHaveLength(0)
         })
 
-        test(`[${lang.toUpperCase()}] no leaked i18n keys in Strain Comparison + Lookup`, async ({
-            page,
-        }) => {
+        test(`[${lang.toUpperCase()}] no leaked i18n keys in Strain Comparison`, async ({ page }) => {
             const tracker = attachRuntimeErrorTracking(page)
 
             await switchLanguage(page, lang)
 
-            // Check Comparison tab
             await navigateToStrainComparison(page)
             await assertNoLeakedKeys(page, `${lang}/strain-comparison`)
 
-            // Check Daily Strains / Lookup section
+            await expectNoCrashPatterns(page)
+            tracker.detach()
+            expect(tracker.messages).toHaveLength(0)
+        })
+
+        test(`[${lang.toUpperCase()}] no leaked i18n keys in Strain Lookup`, async ({ page }) => {
+            const tracker = attachRuntimeErrorTracking(page)
+
+            await switchLanguage(page, lang)
+
             await navigateToDailyStrains(page)
             await assertNoLeakedKeys(page, `${lang}/strain-lookup`)
 

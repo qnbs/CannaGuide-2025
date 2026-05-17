@@ -105,19 +105,11 @@ function extractFromSecurityHeaders() {
         process.exit(1)
     }
     const directiveStrings = []
-    // Match double-quoted strings (directives use double quotes in the TS array)
-    // or single-quoted strings that contain a CSP directive name
-    const stringPattern = /"([^"]+)"/g
+    // Match both quote styles; the directive array intentionally contains both.
+    const stringPattern = /(["'])(.*?)\1/g
     let m
     while ((m = stringPattern.exec(arrayMatch[1])) !== null) {
-        directiveStrings.push(m[1])
-    }
-    // Fallback: try single-quoted if no double-quoted found
-    if (directiveStrings.length === 0) {
-        const singlePattern = /'([^']+)'/g
-        while ((m = singlePattern.exec(arrayMatch[1])) !== null) {
-            directiveStrings.push(m[1])
-        }
+        directiveStrings.push(m[2])
     }
     if (directiveStrings.length === 0) {
         console.error('[FAIL] Could not parse any directives from CSP_DIRECTIVES')
@@ -152,11 +144,14 @@ for (const [name, directives] of Object.entries(parsed)) {
     if (name === 'securityHeaders.ts') continue
 
     for (const [directive, refValue] of reference) {
-        const actual = directives.get(directive)
-        if (!actual) {
+        if (!directives.has(directive)) {
             console.error(`[FAIL] ${name}: missing directive '${directive}'`)
             hasErrors = true
-        } else if (actual !== refValue) {
+            continue
+        }
+
+        const actual = directives.get(directive)
+        if (actual !== refValue) {
             console.error(
                 `[FAIL] ${name}: directive '${directive}' differs\n  expected: ${refValue}\n  actual:   ${actual}`,
             )

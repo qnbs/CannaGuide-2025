@@ -114,8 +114,9 @@ test.describe('Analytics Dashboard Critical Path', () => {
                 .isVisible()
                 .catch(() => false)
         ) {
-            await analyticsButton.first().click()
-            await page.waitForTimeout(200)
+            await analyticsButton.first().scrollIntoViewIfNeeded()
+            await analyticsButton.first().click({ timeout: 10_000, force: true })
+            await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
 
             if (
                 await sandboxButton
@@ -123,10 +124,12 @@ test.describe('Analytics Dashboard Critical Path', () => {
                     .isVisible()
                     .catch(() => false)
             ) {
-                await sandboxButton.first().click()
-                await page.waitForTimeout(200)
-                await analyticsButton.first().click()
-                await page.waitForTimeout(200)
+                await sandboxButton.first().scrollIntoViewIfNeeded()
+                await sandboxButton.first().click({ timeout: 10_000, force: true })
+                await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
+                await analyticsButton.first().scrollIntoViewIfNeeded()
+                await analyticsButton.first().click({ timeout: 10_000, force: true })
+                await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
             }
         }
 

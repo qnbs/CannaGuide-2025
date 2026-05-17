@@ -37,7 +37,7 @@ Vercel deployment is configured via `vercel.json` in the repository root. Connec
 4. Build Command: **leave empty** (taken from `vercel.json`)
 5. Output Directory: **leave empty** (taken from `vercel.json`)
 6. Install Command: **leave empty** (taken from `vercel.json`)
-7. Environment Variables: `BUILD_BASE_PATH=/`, `NODE_VERSION=20`
+7. Environment Variables: `BUILD_BASE_PATH=/`, `NODE_VERSION=24`
 8. Deploy
 
 **Important:** Do NOT set Framework Preset to "Vite". Vercel's Vite builder overrides `outputDirectory` and looks for `dist/` at the repo root instead of `apps/web/dist/`. Setting "Other" lets Vercel respect the explicit `vercel.json` config.

@@ -1,6 +1,6 @@
 # CI Audit & Health Dashboard
 
-Last updated: 2026-05-16 (local validation pass; merge policy 2026-05-16)
+Last updated: 2026-05-17 (deps batch + stabilization merged to main)
 
 ## Merge policy (main)
 
@@ -24,6 +24,12 @@ This document records the CI/CD inventory, fixes applied during the stabilizatio
 | E2E selectors        | `node scripts/check-e2e-selectors.mjs`                      | PASS                                   | 23 files, 0 fragile selectors                               |
 | Unit tests (changed) | `vitest run` on touched specs                               | SKIP (worker timeout)                  | Run in CI / Linux agent                                     |
 | Full E2E             | `pnpm run test:e2e`                                         | Not run locally                        | Chromium blocking in aggregator; Firefox advisory           |
+
+## Dependency hygiene (2026-05-17)
+
+- Closed 11 stale Dependabot PRs (#194–#203, #193 already closed) in favor of batched update PR.
+- Batch includes: `react-i18next`, `i18next`, `tailwind-merge`, `msw`, `onnxruntime-web`, ESLint/typescript-eslint, CodeQL action v4.35.4, `actions/labeler` v6.1.0, `pnpm/action-setup` v6.0.6.
+- Graphify automation PRs (#192, #204, #206) closed; refresh via `pnpm run graphify:mcp:doctor` on demand.
 
 ## Fixes applied
 

@@ -69,7 +69,7 @@ test.describe('Offline & PWA', () => {
         expect(typeof swRegistered).toBe('boolean')
     })
 
-    test('manifest.json is accessible', async ({ page, request, baseURL }) => {
+    test('manifest.json is accessible', async ({ request, baseURL }) => {
         const resolvedBaseUrl = resolveDeployBaseUrl(baseURL)
         const base = new URL(resolvedBaseUrl)
         const manifestUrl = new URL('manifest.json', base).toString()

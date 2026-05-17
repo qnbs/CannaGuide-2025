@@ -42,6 +42,10 @@ Please report it privately by following one of these paths:
 
 We will review reports as quickly as possible and coordinate remediation before public disclosure.
 
+## CI operations
+
+Merge policy, gate inventory, deploy E2E/Lighthouse notes, and remaining risks are documented in [`.github/CI-AUDIT.md`](.github/CI-AUDIT.md). Required check on `main`: **CI Status** (quality + security). Cloudflare Workers build status from the dashboard integration is informational only and does not block merges.
+
 ## Supply-Chain Security
 
 ### SHA-Pinning Mandate

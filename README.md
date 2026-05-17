@@ -32,7 +32,7 @@
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
 <!-- Code Quality & Security -->
 
@@ -338,7 +338,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ### CI Health Dashboard
 
-Audit summary, applied fixes, local gate results, and remaining risks: **[`.github/CI-AUDIT.md`](.github/CI-AUDIT.md)** (updated 2026-05-16).
+Audit summary, applied fixes, local gate results, and remaining risks: **[`.github/CI-AUDIT.md`](.github/CI-AUDIT.md)** (updated 2026-05-17).
 
 | Gate (local)    | Status                                  |
 | --------------- | --------------------------------------- |
@@ -480,7 +480,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
 <!-- Code-Qualitaet & Sicherheit -->
 

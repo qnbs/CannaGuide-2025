@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-05-16 (CI stabilization — see [`.github/CI-AUDIT.md`](../.github/CI-AUDIT.md))
+Last updated: 2026-05-17 (deps batch + deploy E2E — see [`.github/CI-AUDIT.md`](../.github/CI-AUDIT.md))
 
 ---
 

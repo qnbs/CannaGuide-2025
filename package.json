@@ -110,7 +110,7 @@
         "depcheck": "^1.4.7",
         "eslint": "^9.39.4",
         "eslint-config-prettier": "^9.1.2",
-        "eslint-plugin-anti-trojan-source": "^1.1.4",
+        "eslint-plugin-anti-trojan-source": "^1.1.6",
         "eslint-plugin-jsx-a11y": "^6.10.2",
         "globals": "^17.5.0",
         "husky": "^9.1.7",

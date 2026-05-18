@@ -51,7 +51,7 @@
         "react": "^19.2.5",
         "react-dom": "^19.2.5",
         "react-i18next": "^17.0.8",
-        "react-redux": "^9.2.0",
+        "react-redux": "^9.3.0",
         "recharts": "^3.8.1",
         "tailwind-merge": "^3.6.0",
         "three": "^0.184.0",

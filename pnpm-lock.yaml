@@ -41,8 +41,8 @@ importers:
         specifier: ^8.59.3
         version: 8.59.3(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       anti-trojan-source:
-        specifier: ^1.8.1
-        version: 1.8.1
+        specifier: ^1.11.2
+        version: 1.11.2
       conventional-changelog-cli:
         specifier: 5.0.0
         version: 5.0.0(conventional-commits-filter@5.0.0)
@@ -3073,8 +3073,8 @@ packages:
     resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
 
-  anti-trojan-source@1.8.1:
-    resolution: {integrity: sha512-m3czWxpwc3XuVEYAabsEOfUwtIzq4sztTRlUDZInyjRG3g49GwWotI5+kyngv8wkuzQIAVoa7dxpgOX20wjDZA==}
+  anti-trojan-source@1.11.2:
+    resolution: {integrity: sha512-Nw5YUkfbMV8zgUO/I1ymqfXahO58AQfqBSBjbhBY+3+38TXepbfhE0Lxc7E9GgWc1Bxa/NulJH4eDmKRot6ejw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -10489,7 +10489,7 @@ snapshots:
 
   ansi-styles@6.2.3: {}
 
-  anti-trojan-source@1.8.1:
+  anti-trojan-source@1.11.2:
     dependencies:
       globby: 12.2.0
       meow: 10.1.5
@@ -11817,7 +11817,7 @@ snapshots:
 
   eslint-plugin-anti-trojan-source@1.1.4:
     dependencies:
-      anti-trojan-source: 1.8.1
+      anti-trojan-source: 1.11.2
 
   eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)):
     dependencies:
@@ -13484,7 +13484,7 @@ snapshots:
   normalize-package-data@3.0.3:
     dependencies:
       hosted-git-info: 4.1.0
-      is-core-module: 2.16.1
+      is-core-module: 2.16.2
       semver: 7.8.0
       validate-npm-package-license: 3.0.4
 

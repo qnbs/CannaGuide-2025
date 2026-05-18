@@ -105,7 +105,7 @@
         "@socketsecurity/cli": "^1.1.91",
         "@typescript-eslint/eslint-plugin": "^8.59.3",
         "@typescript-eslint/parser": "^8.59.3",
-        "anti-trojan-source": "^1.8.1",
+        "anti-trojan-source": "^1.11.2",
         "conventional-changelog-cli": "5.0.0",
         "depcheck": "^1.4.7",
         "eslint": "^9.39.4",

@@ -44,7 +44,7 @@
         "html5-qrcode": "^2.3.8",
         "i18next": "^26.2.0",
         "jspdf": "^4.2.1",
-        "jspdf-autotable": "^5.0.7",
+        "jspdf-autotable": "^5.0.8",
         "jszip": "^3.10.1",
         "mqtt": "^5.15.0",
         "qrcode.react": "^4.2.0",

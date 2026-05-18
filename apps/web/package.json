@@ -89,7 +89,7 @@
         "eslint-plugin-react-hooks": "^7.1.1",
         "fake-indexeddb": "^6.2.5",
         "fast-check": "^4.8.0",
-        "jsdom": "^29.0.2",
+        "jsdom": "^29.1.1",
         "msw": "^2.14.6",
         "postcss": "^8.5.14",
         "rollup-plugin-visualizer": "^7.0.1",

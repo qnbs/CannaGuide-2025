@@ -58,7 +58,7 @@
         "y-indexeddb": "^9.0.12",
         "yjs": "^13.6.30",
         "zod": "^4.4.2",
-        "zustand": "^5.0.12"
+        "zustand": "^5.0.13"
     },
     "optionalDependencies": {
         "@picovoice/porcupine-web": "^3.0.3",

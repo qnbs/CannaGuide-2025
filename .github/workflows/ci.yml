@@ -105,6 +105,21 @@ jobs:
             - name: Test + Coverage
               run: pnpm run test:coverage
 
+            - name: Coverage summary (enforced thresholds)
+              if: always()
+              run: |
+                  SUMMARY=apps/web/coverage/coverage-summary.json
+                  if [ ! -f "$SUMMARY" ]; then
+                    echo "::error::Missing $SUMMARY — vitest json-summary reporter required"
+                    exit 1
+                  fi
+                  node -e "
+                  const fs = require('fs');
+                  const s = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')).total;
+                  const pct = (k) => (s[k]?.pct ?? 0).toFixed(1);
+                  console.log('Coverage total — lines:', pct('lines') + '%, statements:', pct('statements') + '%, functions:', pct('functions') + '%, branches:', pct('branches') + '%');
+                  " "$SUMMARY"
+
             - name: Upload coverage
               if: always()
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

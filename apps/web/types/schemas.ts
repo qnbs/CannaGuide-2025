@@ -55,8 +55,8 @@ export const AIResponseSchema = z.object({
     content: z.string().min(1).max(8000),
 });
 
-/** Plant image diagnosis */
-export const PlantDiagnosisResponseSchema = z.object({
+/** @alias Audit name: DiagnosisResponseSchema */
+export const DiagnosisResponseSchema = z.object({
     title: z.string().min(1).max(200),
     content: z.string().min(1).max(4000),
     confidence: z.number().min(0).max(1),
@@ -64,7 +64,10 @@ export const PlantDiagnosisResponseSchema = z.object({
     longTermSolution: z.string().min(1).max(2000),
     prevention: z.string().min(1).max(2000),
     diagnosis: z.string().min(1).max(2000),
-});
+})
+
+/** Plant image diagnosis */
+export const PlantDiagnosisResponseSchema = DiagnosisResponseSchema
 
 /** Grow tips (strain + plant) */
 export const StructuredGrowTipsSchema = z.object({
@@ -72,7 +75,10 @@ export const StructuredGrowTipsSchema = z.object({
     trainingTip: z.string().min(1).max(1000),
     environmentalTip: z.string().min(1).max(1000),
     proTip: z.string().min(1).max(1000),
-});
+})
+
+/** @alias Audit name: GrowRecommendationSchema */
+export const GrowRecommendationSchema = StructuredGrowTipsSchema
 
 /** Deep-dive guide */
 export const DeepDiveGuideSchema = z.object({
@@ -115,7 +121,10 @@ export const RecommendationSchema = z.object({
     nutrients: RecommendationItemSchema,
     extra: RecommendationItemSchema,
     proTip: z.string().min(1).max(1000),
-});
+})
+
+/** @alias Audit name: EquipmentSuggestionSchema */
+export const EquipmentSuggestionSchema = RecommendationSchema
 
 /** Garden status summary (AI narrative) */
 export const GardenStatusSummarySchema = z.object({

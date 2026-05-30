@@ -61,7 +61,7 @@
         "zustand": "^5.0.14"
     },
     "optionalDependencies": {
-        "@picovoice/porcupine-web": "^3.0.3",
+        "@picovoice/porcupine-web": "^4.0.0",
         "@picovoice/web-voice-processor": "^4.0.8"
     },
     "devDependencies": {

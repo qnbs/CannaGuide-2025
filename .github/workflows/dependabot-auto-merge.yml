@@ -30,8 +30,24 @@ jobs:
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Detect security-related Dependabot PR
+              id: security
+              env:
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+              run: |
+                  labels=$(gh pr view "$PR_URL" --json labels --jq '[.labels[].name] | join(" ")' || true)
+                  title='${{ github.event.pull_request.title }}'
+                  if echo "$labels $title" | grep -Eiq '(^|[[:space:]])security([[:space:]]|$)|security-updates|dependabot.*security'; then
+                    echo "skip=true" >> "$GITHUB_OUTPUT"
+                    echo "::notice::Skipping auto-merge — security-related dependency update requires manual review."
+                  else
+                    echo "skip=false" >> "$GITHUB_OUTPUT"
+                  fi
+
             - name: Auto-merge patch and minor updates
-              if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+              if: >-
+                  steps.metadata.outputs.update-type != 'version-update:semver-major' &&
+                  steps.security.outputs.skip != 'true'
               run: |
                   gh pr review "$PR_URL" --approve
                   gh pr merge "$PR_URL" --auto --squash

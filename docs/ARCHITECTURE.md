@@ -54,7 +54,8 @@ apps/web/                 Main PWA (@cannaguide/web)
   package.json            All frontend deps + @cannaguide/ai-core + @cannaguide/ui
   vite.config.ts          Vite build + optionalMlPlugin() for ML stub fallback
   tsconfig.json           strict, baseUrl ".", @/* path alias
-  index.tsx               App bootstrap, SW registration, safe recovery
+  index.tsx               Thin entry (styles + `bootstrap/index.ts`)
+  bootstrap/              App bootstrap modules (Sentry, recovery, SW, store hydration, post-hydration)
   constants.ts            App-wide constants
   types.ts                Core TypeScript types + AppSettings interface
   i18n.ts                 i18next initialization (5 languages)
@@ -150,7 +151,7 @@ docker/                   IoT mock servers (ESP32 sensor simulator)
 
 ## State Management Paradigm
 
-The app uses a **dual-store architecture** with clear separation of concerns:
+The app uses a **dual-store architecture** with clear separation of concerns. Do **not** introduce a third state library. Long-term consolidation may migrate slices to a single system; until then, follow the matrix below.
 
 **Redux Toolkit (19 slices, persisted in IndexedDB):**
 Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowledge, breeding, sandbox, genealogy, nutrientPlanner, grows, problemTracker, metrics, hydro, growPlanner, diagnosisHistory, workerMetrics (runtime-only). Plus RTK Query (`geminiApi`) for AI API caching with 9 endpoints.
@@ -158,7 +159,27 @@ Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowl
 **Zustand (9 stores, transient/never persisted):**
 `useUIStore` (views, modals, notifications, onboarding, voice control), `useTtsStore` (TTS queue, speaking state), `useVoiceStore` (voice session state, mode, transcriptHistory, confirmationPending, error), `useFiltersStore` (filter/sort UI), `useStrainsViewStore` (strains view), `useIotStore` (IoT devices -- localStorage persist for MQTT config), `sensorStore` (real-time sensor data), `useAlertsStore` (proactive smart coach alerts), `useCalculatorSessionStore` (shared room/light session across calculator suite).
 
-**Rule:** New persisted state goes in Redux slices. New UI-only/runtime state goes in Zustand stores. No Zustand persist middleware -- persistence is exclusively Redux + IndexedDB.
+**Rules:**
+
+- New **domain / persisted** state → Redux slice (+ migration if shape changes).
+- New **UI-only / ephemeral** state → Zustand store.
+- No Zustand `persist` middleware — persistence is Redux + IndexedDB only.
+- **No cross-imports:** Zustand stores must not import Redux selectors/actions; Redux must not read Zustand except via explicit bridge hooks at the UI layer (e.g. `getUISnapshot()` when persisting minimal UI fields into the Redux persist blob).
+
+### State ownership decision matrix
+
+| Question | If yes → | If no → |
+|----------|----------|---------|
+| Must survive reload / sync to cloud? | Redux | Zustand |
+| Represents plants, grows, simulation, settings, equipment data? | Redux | Zustand |
+| Modal open, tab, toast, voice HUD, filter chips? | Zustand | Redux |
+| Shared across views but only for current session? | Zustand | Redux |
+| Needed by Web Workers without React? | Redux or service layer | Zustand |
+| MQTT password / device UI config? | `useIotStore` (Zustand + encrypted side channel) | — |
+
+**Safe recovery:** Corrupted Redux persist triggers `bootstrap/recovery.ts` (`triggerSafeRecovery`) and clears `REDUX_STATE_KEY` in IndexedDB. Zustand stores reinitialize empty on reload; they are not cleared separately by design.
+
+**Known overlap audit (2026-05):** No Zustand store should duplicate entities already in `simulationSlice` / `growsSlice`. `useUIStore.lastActiveView` is intentionally mirrored into the Redux persist payload for boot continuity only.
 
 ## Multi-Grow Architecture
 

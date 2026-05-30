@@ -60,7 +60,7 @@ Vercel deployment is configured via `vercel.json` in the repository root. Connec
 
 ## Cloudflare Pages (secondary mirror)
 
-Automated wrangler deploys run from `.github/workflows/deploy-cloudflare.yml` when repository secrets are configured:
+Automated wrangler deploys run from `.github/workflows/deploy-cloudflare.yml` when repository secrets are configured. The repo pins **`wrangler`** as a root devDependency so CI can run `pnpm exec wrangler` in the pnpm monorepo (avoids failed auto-install at workspace root).
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`

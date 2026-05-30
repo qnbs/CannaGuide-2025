@@ -2,7 +2,28 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 175) -- Audit deploy housekeeping + CI fixes
+## Latest Session (Session 176) -- Full CI audit & housekeeping
+
+**Status: CI audit run on `main` after PR #250 merge. Added `pnpm run ci:audit`,
+wrangler devDependency + Cloudflare deploy fixes, Dependabot ignore for
+override-pinned packages, Snyk skip job, workflows/README + CI-AUDIT refresh.**
+
+### What Was Done (Session 176)
+
+1. **Cloudflare:** `wrangler` in monorepo; preview branch sanitization; verify step in workflow.
+2. **Tooling:** `scripts/ci-audit-local.mjs` + `pnpm run ci:audit`.
+3. **Dependabot:** ignore `tmp`, `qs`, `uuid` (pnpm overrides).
+4. **Docs:** CI-AUDIT Session 176, workflows README corrected.
+
+### Next Steps
+
+- Confirm `main` CI + GitHub Pages deploy after merge.
+- Cloudflare dashboard: disconnect Workers Builds Git integration.
+- Restore GitHub billing if scheduled workflows show account locked.
+
+---
+
+## Previous Session (Session 175) -- Audit deploy housekeeping + CI fixes
 
 **Status: PR #250 — typecheck/Vercel/Tauri fixes, GitHub Pages + Cloudflare
 Pages workflows, deployment pruning, react-dom 19.2.6 (2688 tests). Vercel

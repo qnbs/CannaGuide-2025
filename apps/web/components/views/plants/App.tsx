@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input'
 // Age gate removed (can be re-introduced later)
 import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalBanner'
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
+import { scheduleRoutePreloads } from '@/utils/routePreload'
 import { PwaInstallBanner } from '@/components/common/PwaInstallBanner'
 import { OfflineIndicator } from '@/components/common/OfflineIndicator'
 import { DevTelemetryPanel } from '@/components/common/DevTelemetryPanel'
@@ -175,6 +176,7 @@ export const App: React.FC = () => {
     const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
 
     const activeView = useUIStore((s) => s.activeView)
+    const lastActiveView = useUIStore((s) => s.lastActiveView)
     const isCommandPaletteOpen = useUIStore((s) => s.isCommandPaletteOpen)
     const settings = useAppSelector(selectSettings)
     const isAppReady = useUIStore((s) => s.isAppReady)
@@ -189,6 +191,13 @@ export const App: React.FC = () => {
     const isApplyingUpdateRef = useRef(false)
 
     useDocumentEffects(settings, activeView)
+
+    useEffect(() => {
+        if (!isAppReady) {
+            return
+        }
+        scheduleRoutePreloads([View.Plants, lastActiveView, activeView])
+    }, [isAppReady, lastActiveView, activeView])
 
     useEffect(() => {
         if (!settings.privacy.requirePinOnLaunch || !settings.privacy.pin) {

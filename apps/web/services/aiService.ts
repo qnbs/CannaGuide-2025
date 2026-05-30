@@ -5,11 +5,18 @@ import {
     getGeminiService,
     getLocalAiService,
     shouldRouteLocally,
-    runRouted,
     withLocalService,
     captureLocalAiError,
 } from '@/services/localRoutingService'
-import { AIResponseSchema, MentorMessageContentSchema } from '@/types/schemas'
+import { runRoutedValidated, validateAiResponse } from '@/services/aiResponseValidation'
+import {
+    AIResponseSchema,
+    MentorMessageContentSchema,
+    PlantDiagnosisResponseSchema,
+    RecommendationSchema,
+    StructuredGrowTipsSchema,
+    DeepDiveGuideSchema,
+} from '@/types/schemas'
 import {
     Language,
     Plant,
@@ -192,7 +199,9 @@ const parseAiStreamResult = (
 }
 export const aiService = {
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
-        return runRouted(
+        return runRoutedValidated(
+            RecommendationSchema,
+            'equipmentRecommendation',
             () => withLocalService((local) => local.getEquipmentRecommendation(prompt, lang)),
             async () => (await getGeminiService()).getEquipmentRecommendation(prompt, lang),
             () => withLocalService((local) => local.getEquipmentRecommendation(prompt, lang)),
@@ -203,6 +212,7 @@ export const aiService = {
         context: NutrientRecommendationInput,
         lang: Language,
     ): Promise<string> {
+        const { runRouted } = await import('@/services/localRoutingService')
         return runRouted(
             () => withLocalService((local) => local.getNutrientRecommendation(context, lang)),
             async () => (await getGeminiService()).getNutrientRecommendation(context, lang),
@@ -218,7 +228,9 @@ export const aiService = {
         lang: Language,
         growName?: string,
     ): Promise<PlantDiagnosisResponse> {
-        return runRouted(
+        return runRoutedValidated(
+            PlantDiagnosisResponseSchema,
+            'plantDiagnosis',
             () =>
                 withLocalService((local) =>
                     local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang),
@@ -240,7 +252,9 @@ export const aiService = {
     },
 
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
-        return runRouted(
+        return runRoutedValidated(
+            AIResponseSchema,
+            'plantAdvice',
             () => withLocalService((local) => local.getPlantAdvice(plant, lang)),
             async () => (await getGeminiService()).getPlantAdvice(plant, lang),
             () => localAiFallbackService.getPlantAdvice(plant, lang),
@@ -248,7 +262,9 @@ export const aiService = {
     },
 
     async getProactiveDiagnosis(plant: Plant, lang: Language): Promise<AIResponse> {
-        return runRouted(
+        return runRoutedValidated(
+            AIResponseSchema,
+            'proactiveDiagnosis',
             () => withLocalService((local) => local.getProactiveDiagnosis(plant, lang)),
             async () => (await getGeminiService()).getProactiveDiagnosis(plant, lang),
             () => localAiFallbackService.getPlantAdvice(plant, lang),
@@ -262,7 +278,9 @@ export const aiService = {
         growId?: string,
         growName?: string,
     ): Promise<Omit<MentorMessage, 'role'>> {
-        return runRouted(
+        return runRoutedValidated(
+            MentorMessageContentSchema,
+            'mentorResponse',
             async () => {
                 const ragContext = await resolveRagContext([plant], query, growId)
                 return withLocalService((local) =>
@@ -353,7 +371,9 @@ export const aiService = {
         context: { focus: string; stage: string; experienceLevel: string },
         lang: Language,
     ): Promise<StructuredGrowTips> {
-        return runRouted(
+        return runRoutedValidated(
+            StructuredGrowTipsSchema,
+            'strainTips',
             () => withLocalService((local) => local.getStrainTips(strain, context, lang)),
             async () => (await getGeminiService()).getStrainTips(strain, context, lang),
             () => localAiFallbackService.getStrainTips(strain, lang),
@@ -366,6 +386,7 @@ export const aiService = {
         criteria: { focus: string; composition: string; mood: string },
         lang: Language,
     ): Promise<string> {
+        const { runRouted } = await import('@/services/localRoutingService')
         return runRouted(
             () =>
                 withLocalService((local) =>
@@ -380,7 +401,9 @@ export const aiService = {
     },
 
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
-        return runRouted(
+        return runRoutedValidated(
+            DeepDiveGuideSchema,
+            'deepDive',
             () => withLocalService((local) => local.generateDeepDive(topic, plant, lang)),
             async () => (await getGeminiService()).generateDeepDive(topic, plant, lang),
             () => withLocalService((local) => local.generateDeepDive(topic, plant, lang)),
@@ -388,7 +411,9 @@ export const aiService = {
     },
 
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
-        return runRouted(
+        return runRoutedValidated(
+            AIResponseSchema,
+            'gardenStatusSummary',
             () => withLocalService((local) => local.getGardenStatusSummary(plants, lang)),
             async () => (await getGeminiService()).getGardenStatusSummary(plants, lang),
             () => localAiFallbackService.getGardenStatusSummary(plants, lang),
@@ -401,7 +426,9 @@ export const aiService = {
         lang: Language,
         growId?: string,
     ): Promise<AIResponse> {
-        return runRouted(
+        return runRoutedValidated(
+            AIResponseSchema,
+            'growLogRag',
             async () => {
                 const ragContext = await resolveRagContext(plants, query, growId)
                 return withLocalService((local) =>
@@ -568,7 +595,11 @@ export const aiService = {
         }
         try {
             const gemini = await getGeminiService()
-            return await gemini.getTrendAnalysis(prompt, title, lang)
+            return validateAiResponse(
+                AIResponseSchema,
+                await gemini.getTrendAnalysis(prompt, title, lang),
+                'geneticTrendAnalysis',
+            )
         } catch {
             return fallback
         }
@@ -618,7 +649,11 @@ export const aiService = {
         }
         try {
             const gemini = await getGeminiService()
-            return await gemini.getTrendAnalysis(prompt, title, lang)
+            return validateAiResponse(
+                AIResponseSchema,
+                await gemini.getTrendAnalysis(prompt, title, lang),
+                'growTechRecommendation',
+            )
         } catch {
             return fallback
         }

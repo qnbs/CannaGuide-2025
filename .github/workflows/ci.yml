@@ -1,5 +1,7 @@
 name: CI
 
+# workflow-version: 2026-05-30-audit (bump to re-run quality gates after deploy housekeeping)
+
 on:
     push:
         branches: [main]

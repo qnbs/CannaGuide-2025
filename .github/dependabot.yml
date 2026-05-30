@@ -8,6 +8,11 @@ updates:
       open-pull-requests-limit: 8
       labels:
           - dependencies
+      # Pinned via pnpm.overrides — Dependabot cannot bump these reliably in the monorepo.
+      ignore:
+          - dependency-name: tmp
+          - dependency-name: qs
+          - dependency-name: uuid
       commit-message:
           prefix: 'chore'
           prefix-development: 'chore'

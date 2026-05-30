@@ -2,7 +2,31 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 174) -- Cursor MDC + Graphify MCP hardening
+## Latest Session (Session 175) -- Audit deploy housekeeping + CI fixes
+
+**Status: PR #250 — typecheck/Vercel/Tauri fixes, GitHub Pages + Cloudflare
+Pages workflows, deployment pruning, react-dom 19.2.6 (2688 tests). Vercel
+deploy green on PR. Cloudflare Workers Builds check documented (dashboard
+Worker vs Actions Pages).**
+
+### What Was Done (Session 175)
+
+1. **CI / Typecheck:** Redux listeners fixed for strict `Action` typing.
+2. **Vercel:** Tauri No-Op stubs for partial installs on Vercel.
+3. **Deploy:** GitHub Pages fast-path after CI; Cloudflare wrangler workflow with secrets gate.
+4. **Housekeeping:** `cleanup-deployments.yml` prunes old GitHub deployments; `docs/distribution.md` updated.
+5. **Deps:** `react-dom@^19.2.6`, harden-runner v2.19.4.
+
+### Next Steps
+
+- Merge PR #250 after **CI Status** + **Quality Gates** green (re-push if doc-only commits skipped CI).
+- Cloudflare dashboard: disconnect Workers Git build or remove unused Worker (see distribution.md).
+- Set `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` for Pages deploy on `main`.
+- Optional: Dependabot #243 security batch in follow-up PR.
+
+---
+
+## Previous Session (Session 174) -- Cursor MDC + Graphify MCP hardening
 
 **Status: MDC validation and Graphify MCP gates added to CI and `gate:push`.
 New rules `851-mcp-windows-fallback`, `880-graphify-query-best-practices`,

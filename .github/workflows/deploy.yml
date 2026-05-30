@@ -43,7 +43,7 @@ jobs:
             id-token: write
         steps:
             - name: Harden runner
-              uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
               with:
                   egress-policy: audit
 
@@ -57,11 +57,23 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            # -- Quality gates ---------------------------------------------------
+            - name: Resolve deploy mode
+              id: deploy_mode
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_run" ]; then
+                    echo "trust_ci=true" >> "$GITHUB_OUTPUT"
+                    echo "::notice::CI already passed on main — skipping duplicate quality gates."
+                  else
+                    echo "trust_ci=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            # -- Quality gates (manual dispatch only; CI workflow_run is trusted) --
             - name: Security audit
+              if: steps.deploy_mode.outputs.trust_ci != 'true'
               run: pnpm audit --audit-level=critical --prod
 
             - name: Lint changed files
+              if: steps.deploy_mode.outputs.trust_ci != 'true'
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'workflow_dispatch' && format('origin/{0}~1', github.ref_name) || '' }}
               run: |
@@ -70,30 +82,45 @@ jobs:
                   echo "::endgroup::"
 
             - name: Lint strict scopes
+              if: steps.deploy_mode.outputs.trust_ci != 'true'
               run: |
                   echo "::group::lint:scopes"
                   pnpm run lint:scopes
                   echo "::endgroup::"
 
             - name: Type check
+              if: steps.deploy_mode.outputs.trust_ci != 'true'
               run: pnpm exec turbo run typecheck
 
             - name: Check i18n completeness
+              if: steps.deploy_mode.outputs.trust_ci != 'true'
               run: pnpm run check:i18n
 
             - name: Unit tests
+              if: steps.deploy_mode.outputs.trust_ci != 'true'
               run: |
                   echo "::group::vitest"
                   pnpm --filter @cannaguide/web run test:run --reporter=verbose
                   echo "::endgroup::"
 
+            - name: Restore Turbo cache
+              uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+              with:
+                  path: .turbo
+                  key: turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  restore-keys: |
+                      turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-
+
             # -- Build -----------------------------------------------------------
             - name: Build for GitHub Pages
+              env:
+                  BUILD_BASE_PATH: /CannaGuide-2025/
               run: |
-                  echo "::group::vite build"
+                  echo "::group::vite build (BUILD_BASE_PATH=/CannaGuide-2025/)"
                   pnpm run build:gh
                   echo "::endgroup::"
-                  echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
+                  echo "[OK] Build complete — dist size: $(du -sh apps/web/dist | cut -f1)"
 
             # -- Pages setup + upload --------------------------------------------
             - name: Configure Pages

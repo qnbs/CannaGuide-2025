@@ -30,7 +30,8 @@
                 "tailwind.config.cjs",
                 "postcss.config.cjs",
                 "index.html",
-                "index.tsx"
+                "index.tsx",
+                "bootstrap/**"
             ]
         },
         "dev": {
@@ -67,7 +68,8 @@
                 "tailwind.config.cjs",
                 "postcss.config.cjs",
                 "index.html",
-                "index.tsx"
+                "index.tsx",
+                "bootstrap/**"
             ]
         },
         "test": {

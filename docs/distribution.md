@@ -1,21 +1,27 @@
 # Distribution Targets
 
-This project is web-first with multiple web distribution targets; **automated** production deploys use **GitHub Pages** and **Vercel** (dashboard-connected). Netlify and Cloudflare Pages **GitHub Actions** deploys are **paused** (see [Paused CI workflows — reactivation](#paused-ci-workflows--reactivation)). Tauri v2 desktop is built separately.
+This project is web-first with multiple web distribution targets; **automated** production deploys use **GitHub Pages**, **Vercel** (dashboard-connected), and optionally **Cloudflare Pages** (when `CLOUDFLARE_*` secrets are set). Netlify **GitHub Actions** deploys are **paused** (see [Paused CI workflows — reactivation](#paused-ci-workflows--reactivation)). Tauri v2 desktop is built separately.
 
 ## Active vs paused (canonical)
 
-| Target               | Automated deploy                              | Preview / PR                                                                                                                                             | Primary workflow / config                                                                                                                                                     |
-| -------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GitHub Pages**     | Yes (`main` after successful CI)              | N/A (production URL only)                                                                                                                                | [.github/workflows/deploy.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy.yml)                                                                |
-| **Vercel**           | Yes (when repo is linked in Vercel dashboard) | Yes — Vercel Deploy Previews per PR                                                                                                                      | [vercel.json](../vercel.json)                                                                                                                                                 |
-| **Netlify**          | Paused (dashboard / bandwidth)                | Paused — [.github/workflows/preview-validation.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/preview-validation.yml) disabled | [netlify.toml](../netlify.toml)                                                                                                                                               |
-| **Cloudflare Pages** | Paused — CI wrangler deploy off               | N/A                                                                                                                                                      | [.github/workflows/deploy-cloudflare.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy-cloudflare.yml) (placeholder / `workflow_dispatch` only) |
+| Target               | Automated deploy                              | Preview / PR                                                                                                                                             | Primary workflow / config                                                                                                               |
+| -------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitHub Pages**     | Yes (`main` after successful CI)              | N/A (production URL only)                                                                                                                                | [.github/workflows/deploy.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy.yml)                          |
+| **Vercel**           | Yes (when repo is linked in Vercel dashboard) | Yes — Vercel Deploy Previews per PR                                                                                                                      | [vercel.json](../vercel.json)                                                                                                           |
+| **Netlify**          | Paused (dashboard / bandwidth)                | Paused — [.github/workflows/preview-validation.yml](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/preview-validation.yml) disabled | [netlify.toml](../netlify.toml)                                                                                                         |
+| **Cloudflare Pages** | Yes (after CI on `main`, if secrets set)      | Yes — PR preview via wrangler (`<branch>.cannaguide-2025.pages.dev`)                                                                                     | [.github/workflows/deploy-cloudflare.yml](../.github/workflows/deploy-cloudflare.yml) — skips gracefully without `CLOUDFLARE_*` secrets |
 
 **PR previews:** Use **Vercel** once the project is connected; do not rely on Netlify until that workflow is re-enabled. The old Netlify-based Playwright + Lighthouse gate in `preview-validation.yml` should only be restored when Netlify deploy previews work again (see checklist below).
 
 ## GitHub Pages (primary)
 
 Production builds are deployed automatically via `.github/workflows/deploy.yml` when CI passes on `main`.
+
+**Housekeeping:** On `workflow_run` (post-CI), the deploy workflow trusts CI and only runs `build:gh` + Pages upload — it does not re-run lint, typecheck, or unit tests. Use `workflow_dispatch` for a full pre-deploy gate locally in Actions.
+
+Stale GitHub **deployment** records are pruned weekly by [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (keeps the newest 3 per environment; use `workflow_dispatch` with `dry_run: true` to preview).
+
+**Build:** `BUILD_BASE_PATH=/CannaGuide-2025/` (subpath hosting).
 
 URL: <https://qnbs.github.io/CannaGuide-2025/>
 
@@ -52,11 +58,31 @@ Vercel deployment is configured via `vercel.json` in the repository root. Connec
 
 **Advantages:** Native Turbo Remote Cache, instant preview deployments, Speed Insights, Edge Functions for future AI proxy.
 
-## Cloudflare Pages (PAUSED — CI deploy)
+## Cloudflare Pages (secondary mirror)
 
-> **Status:** `.github/workflows/deploy-cloudflare.yml` no longer runs automated wrangler deploys (manual `workflow_dispatch` only — placeholder job). Use GitHub Pages + Vercel until Cloudflare is re-enabled.
+Automated wrangler deploys run from `.github/workflows/deploy-cloudflare.yml` when repository secrets are configured:
 
-`_headers` and `_redirects` in `apps/web/public/` remain valid if you reconnect Cloudflare Git builds or restore the workflow from git history.
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+**Triggers:** successful CI on `main` (production), pull requests to `main` (preview + PR comment), and `workflow_dispatch`.
+
+**Build:** `BUILD_BASE_PATH=/` (root-hosted SPA at `https://cannaguide-2025.pages.dev`).
+
+If secrets are missing, the workflow exits with a notice and does not fail the pipeline.
+
+### Cloudflare Workers Builds vs Pages (PR check)
+
+Some PRs show a failing check **Workers Builds: cannaguide-2025** from the Cloudflare dashboard Git integration. That is a **Workers** service build, not the GitHub Actions **Pages** deploy in `deploy-cloudflare.yml`.
+
+| Integration                                  | Purpose                                   | Repo automation                     |
+| -------------------------------------------- | ----------------------------------------- | ----------------------------------- |
+| **GitHub Actions** (`deploy-cloudflare.yml`) | Upload `apps/web/dist` via wrangler Pages | Preferred — uses CI Node 24 + pnpm  |
+| **Cloudflare Workers Builds** (dashboard)    | Legacy/auto Worker build from repo root   | Often fails without `wrangler.toml` |
+
+**Recommended:** In Cloudflare dashboard → Workers & Pages → `cannaguide-2025` → Settings → disconnect **GitHub build** for Workers, or delete the unused Worker and rely on Pages + this workflow. The failing check is informational unless marked required in branch protection.
+
+`_headers` and `_redirects` in `apps/web/public/` stay aligned with [apps/web/securityHeaders.ts](../apps/web/securityHeaders.ts).
 
 **Previous dashboard setup (reference):**
 
@@ -133,7 +159,7 @@ Updates are signed and distributed via GitHub Releases.
 
 ## Paused CI workflows — reactivation
 
-Use this checklist when bringing **Netlify** or **Cloudflare Pages** automation back; keep GitHub Pages + Vercel as the documented primary pair until then.
+Use this checklist when bringing **Netlify** automation back.
 
 ### Netlify + PR preview validation (`preview-validation.yml`)
 
@@ -143,11 +169,12 @@ Use this checklist when bringing **Netlify** or **Cloudflare Pages** automation 
 4. Confirm Playwright + Lighthouse jobs receive a valid preview URL env var.
 5. Run the workflow manually once (`workflow_dispatch`) before relying on it as a required check.
 
-### Cloudflare Pages (`deploy-cloudflare.yml`)
+### Cloudflare Pages secrets (first-time setup)
 
-1. Restore `on.push` / `workflow_run` / `pull_request` triggers from git history (see workflow header comments).
-2. Configure Cloudflare Pages Git integration or wire **wrangler** with API token secrets as before.
-3. Keep `_headers` / `_redirects` under `apps/web/public/` aligned with [apps/web/securityHeaders.ts](../apps/web/securityHeaders.ts).
+1. Create API token with **Cloudflare Pages — Edit** (and account read) scope.
+2. Add repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+3. Run **Deploy to Cloudflare Pages** via `workflow_dispatch` once; production deploys follow successful CI on `main`.
+4. Keep `_headers` / `_redirects` under `apps/web/public/` aligned with [apps/web/securityHeaders.ts](../apps/web/securityHeaders.ts).
 
 ---
 

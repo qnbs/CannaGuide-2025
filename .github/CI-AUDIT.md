@@ -1,6 +1,27 @@
 # CI Audit & Health Dashboard
 
-Last updated: 2026-05-17 (deps batch + stabilization merged to main)
+Last updated: 2026-05-30 (audit PR #250 — deploy housekeeping, typecheck, Vercel Tauri stubs)
+
+## 2026-05-30 — Audit consolidation (PR #250)
+
+| Area                | Change                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| Typecheck           | `crdtSyncBridge` / `listenerMiddleware` use `actionCreator` matchers (no untyped `action.payload`)    |
+| Vercel build        | Full Tauri external stubs when any optional package missing (`vite.config.ts`)                        |
+| react-dom           | Aligned to `^19.2.6` — 2688 Vitest tests pass locally                                                 |
+| GitHub Pages        | `deploy.yml` trusts CI on `workflow_run`; explicit `BUILD_BASE_PATH=/CannaGuide-2025/`                |
+| Cloudflare Pages    | `deploy-cloudflare.yml` restored with secrets gate + PR preview                                       |
+| Deploy cleanup      | `cleanup-deployments.yml` deletes stale deployments (keep 3/env, `dry_run` option)                    |
+| harden-runner       | v2.19.4 repo-wide                                                                                     |
+| Cloudflare PR check | **Workers Builds: cannaguide-2025** is dashboard Workers Git integration — see `docs/distribution.md` |
+
+**Local verification (2026-05-30):** `typecheck` PASS, `BUILD_BASE_PATH=/` web build PASS, full `test:run` 2688 passed.
+
+**CI note:** `ci.yml` ignores `**/*.md` and `docs/**` on push/PR — doc-only commits do not run CI. Include a non-doc path change when CI signal is required.
+
+---
+
+Last updated (previous): 2026-05-17 (deps batch + stabilization merged to main)
 
 ## Merge policy (main)
 
@@ -87,18 +108,18 @@ Shared setup: [`.github/actions/setup-node-ci`](actions/setup-node-ci/action.yml
 
 ## Remaining risks / not verified locally
 
-| Risk                                | Mitigation / next step                                           |
-| ----------------------------------- | ---------------------------------------------------------------- |
-| GitHub Secrets (`SNYK_TOKEN`, etc.) | Required for `snyk.yml`; document in repo settings, never commit |
-| `gh release` on tag push            | Verify on next `v*` tag after `contents: write` fix              |
-| Dependabot auto-merge               | Requires branch protection + auto-merge enabled in repo settings |
-| OpenSSF Scorecard / Semgrep / Grype | Run in dedicated workflows; use CI logs for regressions          |
-| Local Node 22 vs CI Node 24         | Prefer Node 24 locally (`engines.node >= 24`)                    |
-| Vitest worker timeouts on Windows   | CI uses Linux; retry with `--pool forks` if needed locally       |
-| PWA / Workbox size warnings         | Advisory in build log; separate from chunk budget script         |
-| Preview deploy workflows            | Paused (`deploy-cloudflare.yml`, `preview-validation.yml`)       |
+| Risk                                | Mitigation / next step                                                      |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| GitHub Secrets (`SNYK_TOKEN`, etc.) | Required for `snyk.yml`; document in repo settings, never commit            |
+| `gh release` on tag push            | Verify on next `v*` tag after `contents: write` fix                         |
+| Dependabot auto-merge               | Requires branch protection + auto-merge enabled in repo settings            |
+| OpenSSF Scorecard / Semgrep / Grype | Run in dedicated workflows; use CI logs for regressions                     |
+| Local Node 22 vs CI Node 24         | Prefer Node 24 locally (`engines.node >= 24`)                               |
+| Vitest worker timeouts on Windows   | CI uses Linux; retry with `--pool forks` if needed locally                  |
+| PWA / Workbox size warnings         | Advisory in build log; separate from chunk budget script                    |
+| Preview deploy workflows            | Paused (`deploy-cloudflare.yml`, `preview-validation.yml`)                  |
 | Code scanning alerts (open)         | ~30 on `main` (2026-05-17); triage via Security tab, not blocking CI Status |
-| Cloudflare Workers dashboard check  | External integration; fails independently of GitHub Actions      |
+| Cloudflare Workers dashboard check  | External integration; fails independently of GitHub Actions                 |
 
 ## Recommended local pre-push (light)
 

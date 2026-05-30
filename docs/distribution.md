@@ -19,6 +19,8 @@ Production builds are deployed automatically via `.github/workflows/deploy.yml` 
 
 **Housekeeping:** On `workflow_run` (post-CI), the deploy workflow trusts CI and only runs `build:gh` + Pages upload — it does not re-run lint, typecheck, or unit tests. Use `workflow_dispatch` for a full pre-deploy gate locally in Actions.
 
+Stale GitHub **deployment** records are pruned weekly by [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (keeps the newest 3 per environment; use `workflow_dispatch` with `dry_run: true` to preview).
+
 **Build:** `BUILD_BASE_PATH=/CannaGuide-2025/` (subpath hosting).
 
 URL: <https://qnbs.github.io/CannaGuide-2025/>
@@ -68,6 +70,17 @@ Automated wrangler deploys run from `.github/workflows/deploy-cloudflare.yml` wh
 **Build:** `BUILD_BASE_PATH=/` (root-hosted SPA at `https://cannaguide-2025.pages.dev`).
 
 If secrets are missing, the workflow exits with a notice and does not fail the pipeline.
+
+### Cloudflare Workers Builds vs Pages (PR check)
+
+Some PRs show a failing check **Workers Builds: cannaguide-2025** from the Cloudflare dashboard Git integration. That is a **Workers** service build, not the GitHub Actions **Pages** deploy in `deploy-cloudflare.yml`.
+
+| Integration                                  | Purpose                                   | Repo automation                     |
+| -------------------------------------------- | ----------------------------------------- | ----------------------------------- |
+| **GitHub Actions** (`deploy-cloudflare.yml`) | Upload `apps/web/dist` via wrangler Pages | Preferred — uses CI Node 24 + pnpm  |
+| **Cloudflare Workers Builds** (dashboard)    | Legacy/auto Worker build from repo root   | Often fails without `wrangler.toml` |
+
+**Recommended:** In Cloudflare dashboard → Workers & Pages → `cannaguide-2025` → Settings → disconnect **GitHub build** for Workers, or delete the unused Worker and rely on Pages + this workflow. The failing check is informational unless marked required in branch protection.
 
 `_headers` and `_redirects` in `apps/web/public/` stay aligned with [apps/web/securityHeaders.ts](../apps/web/securityHeaders.ts).
 

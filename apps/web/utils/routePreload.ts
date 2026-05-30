@@ -15,7 +15,10 @@ const VIEW_PRELOADERS: Partial<Record<View, PreloadFn>> = {
     [View.Settings]: () => import('@/components/views/settings/SettingsView'),
 }
 
-/** Preload the default home view and the last active main tab during idle time. */
+/**
+ * Preload the default home view and the last active main tab during idle time.
+ * Uses `requestIdleCallback` when available; falls back to `setTimeout`.
+ */
 export const scheduleRoutePreloads = (views: View[]): void => {
     const unique = [...new Set(views)]
     const run = () => {

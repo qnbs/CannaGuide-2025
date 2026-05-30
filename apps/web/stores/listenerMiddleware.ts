@@ -306,20 +306,27 @@ useFiltersStore.subscribe(
 // NOTE: getT() is called lazily inside each listener to ensure the current language
 // is used, not the language frozen at module-load time.
 
+const notifyStrainSaved = (type: 'add' | 'update', strain: Strain): void => {
+    const t = getT()
+    getUISnapshot().addNotification({
+        message: t(`strainsView.addStrainModal.validation.${type}Success`, {
+            name: strain.name,
+        }),
+        type: 'success',
+    })
+}
+
 startAppListening({
-    matcher: isAnyOf(addUserStrain, updateUserStrain),
+    actionCreator: addUserStrain,
     effect: (action) => {
-        const t = getT()
-        const type = action.type.includes('addUser') ? 'add' : 'update'
-        // The payload for userStrainsAdapter actions is the strain object itself.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- adapter payload narrowing
-        const strain = action.payload as Strain
-        getUISnapshot().addNotification({
-            message: t(`strainsView.addStrainModal.validation.${type}Success`, {
-                name: strain.name,
-            }),
-            type: 'success',
-        })
+        notifyStrainSaved('add', action.payload)
+    },
+})
+
+startAppListening({
+    actionCreator: updateUserStrain,
+    effect: (action) => {
+        notifyStrainSaved('update', action.payload)
     },
 })
 
@@ -358,20 +365,22 @@ startAppListening({
 })
 
 startAppListening({
-    matcher: isAnyOf(updateSetup, updateStrainTip),
+    actionCreator: updateSetup,
     effect: (action) => {
         const t = getT()
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- adapter payload narrowing
-        const p = action.payload as {
-            id?: string
-            changes?: { name?: string; title?: string }
-            name?: string
-            title?: string
-        }
-        const payload = p.changes ?? p
-        const name = payload.name ?? payload.title
         getUISnapshot().addNotification({
-            message: t('common.itemUpdated', { name }),
+            message: t('common.itemUpdated', { name: action.payload.name }),
+            type: 'success',
+        })
+    },
+})
+
+startAppListening({
+    actionCreator: updateStrainTip,
+    effect: (action) => {
+        const t = getT()
+        getUISnapshot().addNotification({
+            message: t('common.itemUpdated', { name: action.payload.title }),
             type: 'success',
         })
     },

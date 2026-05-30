@@ -1,6 +1,5 @@
 import * as Y from 'yjs'
 import type { AppStore, RootState } from '@/stores/store'
-import type { Plant } from '@/types'
 import { crdtService, CrdtError, CrdtErrorCode } from './crdtService'
 import {
     plantToYMap,
@@ -26,7 +25,6 @@ import {
 } from '@/stores/slices/nutrientPlannerSlice'
 import type { TypedStartListening } from '@reduxjs/toolkit'
 import type { AppDispatch } from '@/stores/store'
-import { isAnyOf } from '@reduxjs/toolkit'
 import * as Sentry from '@sentry/react'
 
 /**
@@ -301,13 +299,11 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     })
 
     startAppListening({
-        matcher: isAnyOf(upsertPlant),
+        actionCreator: upsertPlant,
         effect: (action) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
+            if (action.meta?.fromCrdt) return
             try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const plant = action.payload as Plant
+                const plant = action.payload
                 enqueueBridgeWrite(() => {
                     const plantsMap = crdtService.getPlantsMap()
                     const yMap = new Y.Map<unknown>()
@@ -321,13 +317,11 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     })
 
     startAppListening({
-        matcher: isAnyOf(removePlant),
+        actionCreator: removePlant,
         effect: (action) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
+            if (action.meta?.fromCrdt) return
             try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const plantId = action.payload as string
+                const plantId = action.payload
                 enqueueBridgeWrite(() => {
                     crdtService.getPlantsMap().delete(plantId)
                 })
@@ -381,23 +375,15 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     })
 
     startAppListening({
-        matcher: isAnyOf(upsertScheduleEntry),
+        actionCreator: upsertScheduleEntry,
         effect: (action) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
+            if (action.meta?.fromCrdt) return
             try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const entry = action.payload as { id: string }
+                const entry = action.payload
                 enqueueBridgeWrite(() => {
                     const scheduleMap = crdtService.getNutrientScheduleMap()
                     const yMap = new Y.Map<unknown>()
-                    writeRecordToYMap(
-                        yMap,
-                        nutrientEntryToYMap(
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                            action.payload as Parameters<typeof nutrientEntryToYMap>[0],
-                        ),
-                    )
+                    writeRecordToYMap(yMap, nutrientEntryToYMap(entry))
                     scheduleMap.set(entry.id, yMap as Y.Map<unknown>)
                 })
             } catch (error) {
@@ -407,14 +393,12 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     })
 
     startAppListening({
-        matcher: isAnyOf(removeScheduleEntry),
-        effect: (matchedAction) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            if ((matchedAction as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
+        actionCreator: removeScheduleEntry,
+        effect: (action) => {
+            if (action.meta?.fromCrdt) return
             try {
                 enqueueBridgeWrite(() => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    crdtService.getNutrientScheduleMap().delete(matchedAction.payload as string)
+                    crdtService.getNutrientScheduleMap().delete(action.payload)
                 })
             } catch (error) {
                 console.error('[CrdtBridge] Failed to sync removeScheduleEntry to CRDT:', error)
@@ -447,13 +431,11 @@ export function registerCrdtListeners(startAppListening: AppStartListening): voi
     })
 
     startAppListening({
-        matcher: isAnyOf(upsertReading),
+        actionCreator: upsertReading,
         effect: (action) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            if ((action as { meta?: { fromCrdt?: boolean } }).meta?.fromCrdt) return
+            if (action.meta?.fromCrdt) return
             try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const reading = action.payload as Parameters<typeof ecPhReadingToYMap>[0]
+                const reading = action.payload
                 enqueueBridgeWrite(() => {
                     const readingsMap = crdtService.getNutrientReadingsMap()
                     const yMap = new Y.Map<unknown>()

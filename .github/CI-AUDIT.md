@@ -1,144 +1,111 @@
 # CI Audit & Health Dashboard
 
-Last updated: 2026-05-30 (audit PR #250 — deploy housekeeping, typecheck, Vercel Tauri stubs)
+Last updated: 2026-05-30 (Session 176 — full CI audit & housekeeping)
 
-## 2026-05-30 — Audit consolidation (PR #250)
+## Quick commands
 
-| Area                | Change                                                                                                |
-| ------------------- | ----------------------------------------------------------------------------------------------------- |
-| Typecheck           | `crdtSyncBridge` / `listenerMiddleware` use `actionCreator` matchers (no untyped `action.payload`)    |
-| Vercel build        | Full Tauri external stubs when any optional package missing (`vite.config.ts`)                        |
-| react-dom           | Aligned to `^19.2.6` — 2688 Vitest tests pass locally                                                 |
-| GitHub Pages        | `deploy.yml` trusts CI on `workflow_run`; explicit `BUILD_BASE_PATH=/CannaGuide-2025/`                |
-| Cloudflare Pages    | `deploy-cloudflare.yml` restored with secrets gate + PR preview                                       |
-| Deploy cleanup      | `cleanup-deployments.yml` deletes stale deployments (keep 3/env, `dry_run` option)                    |
-| harden-runner       | v2.19.4 repo-wide                                                                                     |
-| Cloudflare PR check | **Workers Builds: cannaguide-2025** is dashboard Workers Git integration — see `docs/distribution.md` |
+| Task                         | Command                            |
+| ---------------------------- | ---------------------------------- |
+| Local CI audit (light gates) | `pnpm run ci:audit`                |
+| Pre-push gate                | `pnpm run gate:push`               |
+| Changed lint                 | `pnpm run lint:changed`            |
+| Full CI quality (heavy)      | GitHub Actions `ci.yml` on PR/push |
 
-**Local verification (2026-05-30):** `typecheck` PASS, `BUILD_BASE_PATH=/` web build PASS, full `test:run` 2688 passed.
+## 2026-05-30 — Session 176 (CI audit run)
 
-**CI note:** `ci.yml` ignores `**/*.md` and `docs/**` on push/PR — doc-only commits do not run CI. Include a non-doc path change when CI signal is required.
+### Findings & fixes
+
+| Issue                                    | Root cause                                                                | Fix                                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Cloudflare PR preview deploy fails       | `wrangler` not in monorepo; `pnpm add wrangler` blocked at workspace root | Added `wrangler` devDependency; `wranglerVersion` + `pnpm exec wrangler --version` in workflow |
+| Preview branch names with `/`            | `cursor/foo` passed raw to `--branch`                                     | Sanitize to DNS-safe slug (max 63 chars)                                                       |
+| Dependabot noise on tmp/qs/uuid          | Packages pinned in `pnpm.overrides`                                       | `dependabot.yml` ignore list                                                                   |
+| `workflows/README.md` stale              | Still said Cloudflare paused / cleanup read-only                          | Rewritten to match PR #250 state                                                               |
+| Snyk weekly workflow red without token   | Single job required `SNYK_TOKEN`                                          | Split `snyk-skipped` job (notice) vs `snyk` scan job                                           |
+| GitHub Pages deploy skipped              | Prior `main` CI failed (#248 typecheck) before #250 merge                 | Expected; re-runs after green CI on `main`                                                     |
+| Scheduled stale/Snyk “failures” (May 25) | **Account billing lock** — jobs never started                             | Org/repo billing; not fixable in code                                                          |
+| Workers Builds check                     | Cloudflare dashboard Worker Git integration                               | Documented in `docs/distribution.md` — disconnect in dashboard                                 |
+
+### Local audit snapshot (Session 176, Node 24)
+
+Run via `pnpm run ci:audit` after `pnpm install --frozen-lockfile`.
+
+| Gate                  | Status                    |
+| --------------------- | ------------------------- |
+| typecheck             | PASS                      |
+| lint:scopes           | PASS                      |
+| mdc:e2e               | PASS                      |
+| graphify:mcp:doctor   | PASS (graph age advisory) |
+| audit-backlog         | PASS                      |
+| csp-consistency       | PASS                      |
+| e2e-selectors         | PASS                      |
+| build + bundle-budget | PASS (when run)           |
+
+Full Vitest (2688 tests) and E2E remain in GitHub Actions `ci.yml`.
 
 ---
 
-Last updated (previous): 2026-05-17 (deps batch + stabilization merged to main)
+## 2026-05-30 — Audit consolidation (PR #250)
+
+| Area             | Change                                                          |
+| ---------------- | --------------------------------------------------------------- |
+| Typecheck        | `actionCreator` matchers in Redux listeners                     |
+| Vercel build     | Tauri stubs when optional packages missing                      |
+| react-dom        | `^19.2.6` — 2688 Vitest tests                                   |
+| GitHub Pages     | Trust CI on `workflow_run`; `BUILD_BASE_PATH=/CannaGuide-2025/` |
+| Cloudflare Pages | `deploy-cloudflare.yml` with secrets gate + PR preview          |
+| Deploy cleanup   | `cleanup-deployments.yml` deletes stale deployments             |
+| harden-runner    | v2.19.4 repo-wide                                               |
+
+**CI note:** `ci.yml` ignores `**/*.md` and `docs/**` — doc-only commits do not run CI.
+
+---
 
 ## Merge policy (main)
 
-- **Code owner review:** disabled on `main` (`require_code_owner_reviews=false`) for iterative solo-dev merges until re-enabled.
-- **Required gate:** GitHub check `CI Status` (quality + security jobs).
-- **Signatures:** disabled on `main` (iterative local/Cursor workflow); re-enable when SSH signing is configured on Windows.
+- **Required gate:** GitHub check **CI Status** (quality + security; E2E advisory).
+- **Code owner review:** disabled on `main` for iterative solo-dev workflow.
+- **Signatures:** disabled on `main` until SSH signing configured locally.
 
-This document records the CI/CD inventory, fixes applied during the stabilization audit, local verification results, and remaining risks that cannot be fully reproduced offline.
-
-## CI Health (local snapshot)
-
-| Gate                 | Command / location                                          | Local (2026-05-16)                     | CI notes                                                    |
-| -------------------- | ----------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------- |
-| Typecheck            | `pnpm run typecheck`                                        | PASS                                   | Node 24 on CI; local run used Node 22 (engine warning only) |
-| Lint scopes          | `pnpm run lint:scopes`                                      | PASS (after `usePwaInstall` guard fix) | Strict, max-warnings 0                                      |
-| MDC e2e              | `pnpm run mdc:e2e`                                          | PASS                                   | Nested `mdc:validate`                                       |
-| Graphify doctor      | `pnpm run graphify:mcp:doctor`                              | PASS                                   | `graph.json` ~135h old, still valid                         |
-| CSP consistency      | `node scripts/security/check-csp-consistency.mjs`           | PASS                                   | 5 delivery paths                                            |
-| Production build     | `pnpm run build`                                            | PASS                                   | ~15m on Windows; Vite 7 + PWA                               |
-| Bundle budget        | `node scripts/check-bundle-budget.mjs apps/web/dist/assets` | PASS                                   | gzip + brotli                                               |
-| E2E selectors        | `node scripts/check-e2e-selectors.mjs`                      | PASS                                   | 23 files, 0 fragile selectors                               |
-| Unit tests (changed) | `vitest run` on touched specs                               | SKIP (worker timeout)                  | Run in CI / Linux agent                                     |
-| Full E2E             | `pnpm run test:e2e`                                         | Not run locally                        | Chromium blocking in aggregator; Firefox advisory           |
-
-## Dependency hygiene (2026-05-17)
-
-- Closed 11 stale Dependabot PRs (#194–#203, #193 already closed) in favor of batched update PR.
-- Batch includes: `react-i18next`, `i18next`, `tailwind-merge`, `msw`, `onnxruntime-web`, ESLint/typescript-eslint, CodeQL action v4.35.4, `actions/labeler` v6.1.0, `pnpm/action-setup` v6.0.6.
-- Graphify automation PRs (#192, #204, #206) closed; refresh via `pnpm run graphify:mcp:doctor` on demand.
-
-## Fixes applied
-
-### Build / toolchain
-
-- **`apps/web/vite.config.ts`**: `createRequire(import.meta.url)` for optional ML/Tauri module resolution in ESM config (fixes `require.resolve` crash under Vitest/Vite 7).
-
-### Workflow correctness
-
-- **Bundle budget path**: `benchmark.yml`, `ci.yml`, and `release-gate.yml` now call `check-bundle-budget.mjs` on `apps/web/dist/assets` (Vite emits JS under `assets/`, not `dist/` root).
-- **`release-publish.yml`**: `release` job has `permissions: contents: write` for `gh release create/edit/upload`.
-- **`dependabot-auto-merge.yml`**: job-level `contents: write` + `pull-requests: write` for `gh pr merge --auto`.
-
-### Deploy E2E / Lighthouse (2026-05-17)
-
-- **`helpers.ts`**: deploy-aware `goto` (`load` vs `domcontentloaded`), `waitForAppShell`, `waitForCannaguideCaches`.
-- **`offline-pwa.deploy.e2e.ts`**: resilient shell + SW cache polling on live Pages (no bare `main` race).
-- **`playwright.deploy.config.ts`**: 90s test timeout, 60s navigation timeout.
-- **`deploy.yml`**: Pages readiness curl loop before deploy E2E; Lighthouse waits for `#root` + headless Chrome flags.
-
-### E2E / UI stability
-
-- Playwright helpers and selectors hardened (`tests/e2e/helpers.ts`, selector guard).
-- New **`cloud-sync-panel.e2e.ts`** for Cloud Sync settings flow.
-- **`SyncConflictModal`**: testids and conflict-resolution UX aligned with tests.
-- Screenshot baselines refreshed under `tests/e2e/__app-screenshots__/`.
-
-### Lint
-
-- **`usePwaInstall.ts`**: type guard for `localStorage` preload JSON (removes `@typescript-eslint/no-unsafe-type-assertion` under `lint:scopes`).
-
-## Architecture decisions (documented, not changed)
+## Architecture decisions (unchanged)
 
 ### E2E blocking policy (`ci.yml`)
 
-The `ci-status` aggregator **hard-fails** on `quality` and `security`, but treats **`e2e` as advisory**:
+`ci-status` **hard-fails** on `quality` and `security`; **E2E is advisory** (`[WARN]` only).
 
-- Chromium shards: blocking for signal; aggregator still exits 0 if only E2E fails (with `[WARN]`).
-- Firefox shards: `continue-on-error: true` (cross-browser signal only).
+### Lighthouse
 
-**Rationale:** reduce false-red mainline from infra/flake while keeping quality/security strict. To make E2E blocking again, change `ci-status` to `exit 1` when `needs.e2e.result != success`.
+- Deploy: `deploy.yml` + `lighthouserc.json`
+- Weekly: `benchmark.yml` (`continue-on-error`)
 
-### Lighthouse thresholds
+## Inventory (25 workflows)
 
-- **`lighthouserc.json`**: strict performance budgets for deploy previews.
-- **`benchmark.yml`**: Lighthouse step uses `continue-on-error` / warn path for weekly advisory runs.
+See [workflows/README.md](workflows/README.md). Shared setup: [setup-node-ci](actions/setup-node-ci/action.yml).
 
-Unification of scores across deploy vs benchmark is a follow-up (see plan risk list).
+## Remaining risks
 
-## Inventory reference (25 workflows)
+| Risk                                 | Mitigation                                                         |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| GitHub Actions billing lock          | Restore billing; stale/scheduled jobs show “account locked”        |
+| `SNYK_TOKEN` missing                 | `snyk-skipped` job succeeds with notice; add token for scans       |
+| Cloudflare Workers Builds (PR check) | Dashboard: disable Worker Git build                                |
+| Dependabot override packages         | Ignored in `dependabot.yml`; bump via manual PR + `pnpm.overrides` |
+| Doc-only commits skip CI             | Touch non-ignored path or `workflow_dispatch` CI                   |
+| Coverage target 50 %                 | Long-term; gates ~35 % in `vite.config.ts`                         |
+| Local Node 22 vs CI 24               | Use Node ≥24 (`engines`)                                           |
 
-Primary gates: `ci.yml`, `deploy.yml`, `codeql.yml`, `security-full.yml`, `snyk.yml`, `release-publish.yml`, `release-gate.yml`, `benchmark.yml`, `dependabot-auto-merge.yml`, `mutation-testing.yml`, `desktop-build.yml`, `fuzzing.yml`, plus preview/deploy helpers (Cloudflare/Netlify paused).
-
-Shared setup: [`.github/actions/setup-node-ci`](actions/setup-node-ci/action.yml) — Corepack, Node 24, `pnpm install --frozen-lockfile`. Some older workflows still inline the same steps.
-
-## Remaining risks / not verified locally
-
-| Risk                                | Mitigation / next step                                                      |
-| ----------------------------------- | --------------------------------------------------------------------------- |
-| GitHub Secrets (`SNYK_TOKEN`, etc.) | Required for `snyk.yml`; document in repo settings, never commit            |
-| `gh release` on tag push            | Verify on next `v*` tag after `contents: write` fix                         |
-| Dependabot auto-merge               | Requires branch protection + auto-merge enabled in repo settings            |
-| OpenSSF Scorecard / Semgrep / Grype | Run in dedicated workflows; use CI logs for regressions                     |
-| Local Node 22 vs CI Node 24         | Prefer Node 24 locally (`engines.node >= 24`)                               |
-| Vitest worker timeouts on Windows   | CI uses Linux; retry with `--pool forks` if needed locally                  |
-| PWA / Workbox size warnings         | Advisory in build log; separate from chunk budget script                    |
-| Preview deploy workflows            | Paused (`deploy-cloudflare.yml`, `preview-validation.yml`)                  |
-| Code scanning alerts (open)         | ~30 on `main` (2026-05-17); triage via Security tab, not blocking CI Status |
-| Cloudflare Workers dashboard check  | External integration; fails independently of GitHub Actions                 |
-
-## Recommended local pre-push (light)
+## Recommended pre-push
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm run lint:changed
-pnpm run typecheck
-pnpm --filter @cannaguide/web test:run   # or targeted vitest paths
-pnpm run build
-node scripts/check-bundle-budget.mjs apps/web/dist/assets
-pnpm run mdc:e2e
-pnpm run graphify:mcp:doctor
+pnpm run ci:audit          # or gate:push for tests + build
 ```
 
-Heavy suites (full E2E, mutation, Lighthouse CI): rely on GitHub Actions unless debugging a specific flake.
+Heavy: full E2E (`pnpm run test:e2e`), mutation, Lighthouse — use CI unless debugging flakes.
 
 ## Related docs
 
 - [Workflows README](workflows/README.md)
-- [SECURITY.md](../SECURITY.md)
 - [Distribution](../docs/distribution.md)
+- [SECURITY.md](../SECURITY.md)
 - [Audit backlog](../docs/AUDIT_BACKLOG.md)

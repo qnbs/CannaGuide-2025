@@ -18,11 +18,20 @@ permissions:
 
 env:
     NODE_VERSION: '24'
-    HAS_TOKEN: ${{ secrets.SNYK_TOKEN != '' }}
 
 jobs:
+    snyk-skipped:
+        name: Snyk skipped (no token)
+        if: ${{ secrets.SNYK_TOKEN == '' }}
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
+                  echo "::notice::SNYK_TOKEN not configured — weekly Snyk workflow skipped (advisory only)."
+                  echo "Install the Snyk GitHub App or add SNYK_TOKEN as a repository secret."
+
     snyk:
         name: Snyk Security Scan
+        if: ${{ secrets.SNYK_TOKEN != '' }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
@@ -50,7 +59,6 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Snyk Open Source scan
-              if: ${{ env.HAS_TOKEN == 'true' }}
               id: snyk-scan
               continue-on-error: true # Advisory-only -- transient Snyk 503s must not fail CI
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
@@ -60,7 +68,7 @@ jobs:
                   args: --severity-threshold=high --sarif-file-output=snyk-results.sarif --all-projects
 
             - name: Snyk Monitor (track vulnerabilities)
-              if: ${{ env.HAS_TOKEN == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.snyk-scan.outcome == 'success' }}
+              if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.snyk-scan.outcome == 'success' }}
               continue-on-error: true # Advisory-only -- transient Snyk 502s must not fail CI
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
@@ -70,14 +78,7 @@ jobs:
                   args: --all-projects
 
             - name: Upload Snyk SARIF
-              if: ${{ env.HAS_TOKEN == 'true' && always() && steps.snyk-scan.outcome == 'success' }}
+              if: ${{ always() && steps.snyk-scan.outcome == 'success' }}
               uses: github/codeql-action/upload-sarif@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
               with:
                   sarif_file: snyk-results.sarif
-
-            - name: Skip notice (no token)
-              if: ${{ env.HAS_TOKEN != 'true' }}
-              run: echo "[WARN] SNYK_TOKEN not configured -- skipping Snyk scan. Install the Snyk GitHub App or add the token as a repository secret."
-
-        env:
-            HAS_TOKEN: ${{ secrets.SNYK_TOKEN != '' }}

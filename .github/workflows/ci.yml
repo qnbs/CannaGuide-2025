@@ -38,7 +38,7 @@ jobs:
         timeout-minutes: 90
         steps:
             - name: Harden runner
-              uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
               with:
                   egress-policy: audit
 
@@ -106,7 +106,7 @@ jobs:
               run: pnpm run test:coverage
 
             - name: Coverage summary (enforced thresholds)
-              if: always()
+              if: success()
               run: |
                   SUMMARY=apps/web/coverage/coverage-summary.json
                   if [ ! -f "$SUMMARY" ]; then
@@ -167,7 +167,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Harden runner
-              uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
               with:
                   egress-policy: audit
 
@@ -211,7 +211,7 @@ jobs:
                 shard: ['1/2', '2/2']
         steps:
             - name: Harden runner
-              uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
               with:
                   egress-policy: audit
 

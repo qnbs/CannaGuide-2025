@@ -17,7 +17,7 @@
 | Persistence  | Dual IndexedDB, localStorage, Service Worker caches                                       |
 | i18n         | i18next -- EN, DE, ES, FR, NL (12 namespaces)                                             |
 | Workers      | WorkerBus (promise-based, 11 workers, heap-based priority queue, messageId, auto-timeout) |
-| Testing      | Vitest 2672 unit tests (229 files), Playwright E2E + Component tests                      |
+| Testing      | Vitest 2688 unit tests (234 files), Playwright E2E + Component tests                      |
 | Distribution | GitHub Pages, Vercel, Cloudflare Pages, Tauri v2 Desktop (Netlify paused until v2.0)      |
 
 ---
@@ -168,14 +168,14 @@ Simulation, settings, userStrains, favorites, notes, archives, savedItems, knowl
 
 ### State ownership decision matrix
 
-| Question | If yes → | If no → |
-|----------|----------|---------|
-| Must survive reload / sync to cloud? | Redux | Zustand |
-| Represents plants, grows, simulation, settings, equipment data? | Redux | Zustand |
-| Modal open, tab, toast, voice HUD, filter chips? | Zustand | Redux |
-| Shared across views but only for current session? | Zustand | Redux |
-| Needed by Web Workers without React? | Redux or service layer | Zustand |
-| MQTT password / device UI config? | `useIotStore` (Zustand + encrypted side channel) | — |
+| Question                                                        | If yes →                                         | If no → |
+| --------------------------------------------------------------- | ------------------------------------------------ | ------- |
+| Must survive reload / sync to cloud?                            | Redux                                            | Zustand |
+| Represents plants, grows, simulation, settings, equipment data? | Redux                                            | Zustand |
+| Modal open, tab, toast, voice HUD, filter chips?                | Zustand                                          | Redux   |
+| Shared across views but only for current session?               | Zustand                                          | Redux   |
+| Needed by Web Workers without React?                            | Redux or service layer                           | Zustand |
+| MQTT password / device UI config?                               | `useIotStore` (Zustand + encrypted side channel) | —       |
 
 **Safe recovery:** Corrupted Redux persist triggers `bootstrap/recovery.ts` (`triggerSafeRecovery`) and clears `REDUX_STATE_KEY` in IndexedDB. Zustand stores reinitialize empty on reload; they are not cleared separately by design.
 
@@ -415,7 +415,7 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 ```bash
 pnpm run dev              # Vite dev server (localhost:5173)
 pnpm run build            # Production build (Vite 7 + PWA manifest injection)
-pnpm test                 # Vitest unit/integration (2672 tests)
+pnpm test                 # Vitest unit/integration (2688 tests)
 pnpm run test:e2e         # Playwright E2E
 pnpm run test:ct          # Playwright Component tests
 pnpm run lint:full        # ESLint entire project

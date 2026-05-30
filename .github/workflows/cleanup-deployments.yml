@@ -10,6 +10,11 @@ on:
                 description: 'Number of recent deployments to keep per environment'
                 required: false
                 default: '3'
+            dry_run:
+                description: 'List candidates only (no deletes)'
+                required: false
+                type: boolean
+                default: false
 
 permissions: {}
 
@@ -17,30 +22,34 @@ jobs:
     cleanup:
         name: Prune old deployments
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
         permissions:
             contents: read
+            deployments: write
         steps:
             - name: Harden runner
-              uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
               with:
                   egress-policy: audit
 
-            - name: Report old deployments (read-only)
+            - name: Prune stale GitHub deployments
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
               with:
                   script: |
                       const keep = parseInt('${{ inputs.keep_count }}' || '3', 10);
+                      const dryRun = String('${{ inputs.dry_run }}').toLowerCase() === 'true';
                       const owner = context.repo.owner;
                       const repo = context.repo.repo;
 
-                      // Get all deployments (paginated)
+                      if (dryRun) {
+                        core.notice('dry_run=true — reporting candidates only');
+                      }
+
                       const deployments = await github.paginate(
                         github.rest.repos.listDeployments,
                         { owner, repo, per_page: 100 }
                       );
 
-                      // Group by environment
                       const byEnv = {};
                       for (const d of deployments) {
                         const env = d.environment || 'unknown';
@@ -48,26 +57,46 @@ jobs:
                         byEnv[env].push(d);
                       }
 
-                      let candidates = 0;
+                      let deleted = 0;
+                      let failed = 0;
+
                       for (const [env, deps] of Object.entries(byEnv)) {
-                        // Sort newest first
                         deps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                         const toDelete = deps.slice(keep);
 
                         if (toDelete.length === 0) {
-                          core.info(`[${env}] ${deps.length} deployments, nothing to prune`);
+                          core.info(`[${env}] ${deps.length} deployment(s), nothing to prune`);
                           continue;
                         }
 
-                        core.info(`[${env}] ${deps.length} total, keeping ${keep}, candidates ${toDelete.length}`);
+                        core.info(
+                          `[${env}] ${deps.length} total, keeping ${keep}, ${dryRun ? 'would delete' : 'deleting'} ${toDelete.length}`
+                        );
 
                         for (const d of toDelete) {
+                          if (dryRun) {
+                            core.info(`  candidate id=${d.id} ref=${d.ref} created=${d.created_at}`);
+                            deleted++;
+                            continue;
+                          }
                           try {
-                            candidates++;
+                            await github.rest.repos.deleteDeployment({
+                              owner,
+                              repo,
+                              deployment_id: d.id,
+                            });
+                            deleted++;
                           } catch (err) {
-                            core.warning(`Failed to inspect deployment ${d.id} (${env}): ${err.message}`);
+                            failed++;
+                            core.warning(
+                              `Failed to delete deployment ${d.id} (${env}): ${err.message}`
+                            );
                           }
                         }
                       }
 
-                      core.info(`[OK] Found ${candidates} old deployment candidate(s)`);
+                      const verb = dryRun ? 'candidate(s)' : 'deleted';
+                      core.info(`[OK] ${deleted} deployment ${verb}, ${failed} failure(s)`);
+                      if (failed > 0 && !dryRun) {
+                        core.setFailed(`${failed} deployment delete(s) failed`);
+                      }

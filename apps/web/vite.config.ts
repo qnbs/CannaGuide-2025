@@ -31,17 +31,61 @@ const OPTIONAL_TAURI_EXTERNALS = [
     '@tauri-apps/api/event',
 ]
 
+function getTauriStubSource(mod: string): string {
+    switch (mod) {
+        case '@tauri-apps/api/core':
+            return `export async function invoke() { return undefined; }
+export async function addPluginListener() { return () => {}; }
+export class Channel {}`
+        case '@tauri-apps/api/event':
+            return `export async function listen() { return () => {}; }
+export async function emit() {}`
+        case '@tauri-apps/plugin-notification':
+            return `export async function isPermissionGranted() { return false; }
+export async function requestPermission() { return 'denied'; }
+export async function sendNotification() {}
+export async function registerActionTypes() {}
+export async function registerListener() { return () => {}; }
+export async function cancel() {}`
+        case '@tauri-apps/plugin-dialog':
+            return `export async function save() { return null; }
+export async function open() { return null; }
+export async function message() {}
+export async function ask() { return false; }
+export async function confirm() { return false; }`
+        default:
+            return `throw new Error('[CannaGuide] Unknown Tauri stub: ${mod}');`
+    }
+}
+
 // Resolve which optional modules are actually missing so we can stub them at build time.
 function resolveMissingMlModules(): string[] {
-    const all = [...OPTIONAL_ML_EXTERNALS, ...OPTIONAL_TAURI_EXTERNALS]
     const missing: string[] = []
-    for (const mod of all) {
+    for (const mod of OPTIONAL_ML_EXTERNALS) {
         try {
             requireFromConfig.resolve(mod)
         } catch {
             missing.push(mod)
         }
     }
+
+    const tauriMissing = OPTIONAL_TAURI_EXTERNALS.filter((mod) => {
+        try {
+            requireFromConfig.resolve(mod)
+            return false
+        } catch {
+            return true
+        }
+    })
+    // Partial Tauri installs (e.g. Vercel) must stub the whole surface with no-op exports.
+    if (tauriMissing.length > 0) {
+        for (const mod of OPTIONAL_TAURI_EXTERNALS) {
+            if (!missing.includes(mod)) {
+                missing.push(mod)
+            }
+        }
+    }
+
     return missing
 }
 
@@ -60,6 +104,9 @@ function optionalMlPlugin(): PluginOption {
         load(id) {
             if (id.startsWith('\0stub:')) {
                 const mod = id.slice(6)
+                if (OPTIONAL_TAURI_EXTERNALS.includes(mod)) {
+                    return getTauriStubSource(mod)
+                }
                 return `throw new Error('[CannaGuide] Optional module "${mod}" is not installed.');`
             }
             return null

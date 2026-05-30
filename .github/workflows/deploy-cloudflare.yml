@@ -1,37 +1,203 @@
 name: Deploy to Cloudflare Pages
 
-# ---------------------------------------------------------------------------
-# DISABLED — Automated Cloudflare Pages deploy from GitHub Actions is paused.
-# Canonical targets: GitHub Pages (.github/workflows/deploy.yml) + Vercel
-# (dashboard). Netlify is also paused (see preview-validation.yml, netlify.toml).
-#
-# Re-enable: restore `on` triggers from git history — `workflow_run` after CI
-# on main, `pull_request`, and optional `workflow_dispatch` — plus deploy jobs.
-# ---------------------------------------------------------------------------
+# Secondary production mirror (root base path). Requires repository secrets:
+# CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
+# Primary: GitHub Pages (deploy.yml) + Vercel (vercel.json / dashboard).
 
 on:
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
+        branches: [main]
+    pull_request:
+        branches: [main]
+        types: [opened, synchronize, reopened]
     workflow_dispatch:
         inputs:
-            note:
-                description: 'Automated Cloudflare deploy is off; this run only confirms the workflow placeholder.'
+            deploy_target:
+                description: 'production (main) or preview (PR branch)'
                 required: false
-                type: string
+                default: 'auto'
+                type: choice
+                options:
+                    - auto
+                    - production
+                    - preview
 
 permissions:
     contents: read
 
 concurrency:
-    group: cloudflare-pages-${{ github.run_id }}
-    cancel-in-progress: false
+    group: cloudflare-pages-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+env:
+    NODE_VERSION: '24'
+    CF_PROJECT_NAME: cannaguide-2025
+    CF_PAGES_URL: https://cannaguide-2025.pages.dev
 
 jobs:
+    gate:
+        name: Cloudflare secrets gate
+        runs-on: ubuntu-latest
+        outputs:
+            configured: ${{ steps.secrets.outputs.configured }}
+        steps:
+            - name: Check Cloudflare secrets
+              id: secrets
+              run: |
+                  if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+                    echo "configured=true" >> "$GITHUB_OUTPUT"
+                    echo "::notice::Cloudflare secrets present — deploy jobs may run."
+                  else
+                    echo "configured=false" >> "$GITHUB_OUTPUT"
+                    echo "::notice title=Cloudflare Pages::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set — skipping wrangler deploy."
+                  fi
+
     deploy:
         name: Build & Deploy (Production)
+        needs: gate
+        if: >-
+            needs.gate.outputs.configured == 'true' &&
+            (github.event_name == 'workflow_dispatch' ||
+            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
         runs-on: ubuntu-latest
-        timeout-minutes: 5
+        timeout-minutes: 25
         steps:
-            - name: Cloudflare Pages deploy paused
+            - name: Harden runner
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Restore Turbo cache
+              uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+              with:
+                  path: .turbo
+                  key: turbo-cf-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  restore-keys: |
+                      turbo-cf-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-
+
+            - name: Build for Cloudflare Pages
+              env:
+                  BUILD_BASE_PATH: /
               run: |
-                  echo "::notice title=Cloudflare Pages::Automated Cloudflare Pages deployment from Actions is paused."
-                  echo "Active: GitHub Pages (deploy.yml), Vercel (project settings)."
-                  echo "Cloudflare dashboard Git integration may still build; this workflow does not push via wrangler."
+                  echo "::group::vite build (BUILD_BASE_PATH=/)"
+                  pnpm run build
+                  echo "::endgroup::"
+                  echo "[OK] Build complete — dist size: $(du -sh apps/web/dist | cut -f1)"
+
+            - name: Deploy to Cloudflare Pages
+              id: deploy
+              uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  packageManager: pnpm
+                  command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=main
+
+            - name: Post-deploy health check
+              run: |
+                  CF_URL="${{ steps.deploy.outputs.deployment-url || env.CF_PAGES_URL }}"
+                  echo "Health-checking ${CF_URL} ..."
+                  STATUS=$(curl -sSo /dev/null -w '%{http_code}' --max-time 20 "${CF_URL}")
+                  if [ "$STATUS" = "200" ]; then
+                    echo "[OK] Cloudflare Pages healthy (HTTP ${STATUS})"
+                  else
+                    echo "::error::Unexpected HTTP ${STATUS} from ${CF_URL}"
+                    exit 1
+                  fi
+
+    preview:
+        name: PR Preview Deploy
+        needs: gate
+        if: >-
+            needs.gate.outputs.configured == 'true' &&
+            github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: write
+        timeout-minutes: 25
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+              with:
+                  egress-policy: audit
+
+            - name: Checkout PR
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Build for preview
+              env:
+                  BUILD_BASE_PATH: /
+              run: |
+                  echo "::group::vite build (preview)"
+                  pnpm run build
+                  echo "::endgroup::"
+
+            - name: Deploy preview to Cloudflare Pages
+              id: preview-deploy
+              uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  packageManager: pnpm
+                  command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=${{ github.head_ref }}
+
+            - name: Comment preview URL on PR
+              uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+              with:
+                  script: |
+                      const deployUrl = '${{ steps.preview-deploy.outputs.deployment-url }}';
+                      const sha = context.sha.substring(0, 7);
+                      const marker = '<!-- cf-preview-comment -->';
+                      const body = [
+                        marker,
+                        '### Cloudflare Pages Preview',
+                        '',
+                        '| | |',
+                        '|---|---|',
+                        `| **Preview URL** | ${deployUrl} |`,
+                        `| **Commit** | \`${sha}\` |`,
+                        `| **Branch** | \`${{ github.head_ref }}\` |`,
+                        '',
+                        `_Deployed by [deploy-cloudflare.yml](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})_`,
+                      ].join('\n');
+
+                      const { data: comments } = await github.rest.issues.listComments({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        per_page: 50,
+                      });
+                      const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+                      if (existing) {
+                        await github.rest.issues.updateComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          comment_id: existing.id,
+                          body,
+                        });
+                      } else {
+                        await github.rest.issues.createComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: context.issue.number,
+                          body,
+                        });
+                      }

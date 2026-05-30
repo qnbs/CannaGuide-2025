@@ -41,57 +41,8 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
     const { useIotStore } = await import('@/stores/useIotStore')
     await useIotStore.getState().loadPersistedPassword()
 
-    const { initWorkerStateSync } = await import('@/services/workerStateSyncService')
-    const { initWorkerTelemetry } = await import('@/services/workerTelemetryService')
-    initWorkerStateSync()
-    initWorkerTelemetry(hydratedStore.dispatch)
-
-    const { workerPool, registerEcoProbe } = await import('@/services/workerPool')
-    const { registerAllWorkerFactories } = await import('@/services/workerFactories')
-    registerAllWorkerFactories()
-    const { workerBus } = await import('@/services/workerBus')
-    workerBus.setWorkerPool(workerPool)
-
-    const { isEcoMode } = await import('@/services/local-ai')
-    registerEcoProbe(() => isEcoMode())
-
-    const { registerEcoCallbacks } = await import('@/services/local-ai')
-    const { getT } = await import('@/i18n')
-    registerEcoCallbacks({
-        onBatteryGating: (level: number) => {
-            const t = getT()
-            getUISnapshot().addNotification({
-                message: t('settingsView.offlineAi.batteryGatingToast', {
-                    level: String(level),
-                }),
-                type: 'info',
-            })
-        },
-        onEcoAutoActivated: () => {
-            const t = getT()
-            getUISnapshot().addNotification({
-                message: t('settingsView.offlineAi.ecoAutoActivatedToast'),
-                type: 'info',
-            })
-        },
-        onEcoAutoDeactivated: () => {
-            const t = getT()
-            getUISnapshot().addNotification({
-                message: t('settingsView.offlineAi.ecoAutoDeactivatedToast'),
-                type: 'info',
-            })
-        },
-    })
-    workerPool.setOnMemoryPressureHook((level, heapPercent) => {
-        const t = getT()
-        getUISnapshot().addNotification({
-            message: t('settingsView.offlineAi.oomPressureToast', {
-                level,
-                percent: String(heapPercent),
-            }),
-            type: level === 'critical' ? 'error' : 'info',
-        })
-    })
+    const { initializeWorkerInfrastructure } = await import('./workers')
+    await initializeWorkerInfrastructure(hydratedStore)
 
     const { proactiveCoachService } = await import('@/services/proactiveCoachService')
     proactiveCoachService.init(hydratedStore)

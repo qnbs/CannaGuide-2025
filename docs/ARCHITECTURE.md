@@ -55,7 +55,7 @@ apps/web/                 Main PWA (@cannaguide/web)
   vite.config.ts          Vite build + optionalMlPlugin() for ML stub fallback
   tsconfig.json           strict, baseUrl ".", @/* path alias
   index.tsx               Thin entry (styles + `bootstrap/index.ts`)
-  bootstrap/              App bootstrap modules (Sentry, recovery, SW, store hydration, post-hydration)
+  bootstrap/              App bootstrap (index, sentry, recovery, serviceWorker, store, workers, render, …)
   constants.ts            App-wide constants
   types.ts                Core TypeScript types + AppSettings interface
   i18n.ts                 i18next initialization (5 languages)

@@ -1,7 +1,7 @@
-import { createAppStore, createAppStoreSync } from '@/stores/store'
 import { i18nPromise } from '@/i18n'
 import { registerRecoveryListeners, triggerSafeRecovery } from './recovery'
-import { renderAppWithStore, renderError } from './render'
+import { renderError } from './render'
+import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { runPostHydrationServices } from './postHydration'
@@ -12,11 +12,7 @@ export const mountHydratedApp = async (): Promise<void> => {
 
         await i18nPromise
 
-        const shellStore = createAppStoreSync()
-        renderAppWithStore(shellStore)
-
-        const hydratedStore = await createAppStore()
-        renderAppWithStore(hydratedStore)
+        const { hydratedStore } = await hydrateApplicationStores()
 
         try {
             await initializeCrdtLayer(hydratedStore)

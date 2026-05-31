@@ -121,7 +121,7 @@
         "tsx": "^4.22.3",
         "turbo": "^2.9.16",
         "typedoc": "0.28.19",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "wrangler": "^3.114.1"
     },
     "pnpm": {

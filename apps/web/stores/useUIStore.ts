@@ -24,6 +24,7 @@ export interface UIState {
     activeView: View
     lastActiveView: View
     onboardingStep: number
+    onboardingCompleted: boolean
     highlightedElement: string | null
     isCommandPaletteOpen: boolean
     isAddModalOpen: boolean
@@ -69,6 +70,7 @@ export interface UIState {
 export interface UIActions {
     setActiveView: (view: View) => void
     setOnboardingStep: (step: number) => void
+    setOnboardingCompleted: (completed: boolean) => void
     addNotification: (payload: { message: string; type: Notification['type'] }) => void
     removeNotification: (id: number) => void
     setAppReady: (ready: boolean) => void
@@ -123,6 +125,7 @@ export const initialUIState: UIState = {
     activeView: View.Plants,
     lastActiveView: View.Plants,
     onboardingStep: 0,
+    onboardingCompleted: false,
     highlightedElement: null,
     isCommandPaletteOpen: false,
     isAddModalOpen: false,
@@ -177,6 +180,7 @@ export const useUIStore = create<UIState & UIActions>()(
                 })),
 
             setOnboardingStep: (step) => set({ onboardingStep: step }),
+            setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
 
             addNotification: (payload) =>
                 set((state) => ({

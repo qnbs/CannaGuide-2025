@@ -297,9 +297,12 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
-        pool: 'threads',
+        // forks avoids thread-pool timeouts on Windows (Vitest 4.x)
+        pool: process.platform === 'win32' ? 'forks' : 'threads',
         fileParallelism: false,
         maxWorkers: 1,
+        hookTimeout: 60_000,
+        isolate: false,
         testTimeout: 30_000,
         teardownTimeout: 3000,
         setupFiles: path.join(__webRoot, 'vitest.setup.ts'),
@@ -330,11 +333,11 @@ export default defineConfig({
                 'services/local-ai/interfaces.ts',
             ],
             thresholds: {
-                // Audit 2026-05 baseline (target 50 % long-term; branches target 30 % when coverage allows).
-                lines: 35,
-                functions: 35,
-                branches: 24.9,
-                statements: 35,
+        // Audit 2026-05 Session 177 Stufe A — branches 28 until CI confirms 30 %
+        lines: 40,
+        functions: 40,
+        branches: 28,
+        statements: 40,
             },
         },
     },

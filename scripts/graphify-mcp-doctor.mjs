@@ -97,8 +97,23 @@ if (!existsSync(graphJson)) {
         });
         if (lastCommit.status === 0) {
             const commitEpochMs = Number(lastCommit.stdout.trim()) * 1000;
-            if (Number.isFinite(commitEpochMs) && graphStat.mtimeMs < commitEpochMs) {
-                bad("graph.json older than last git commit; run: graphify update .");
+            const dirty = spawnSync("git", ["status", "--porcelain"], {
+                encoding: "utf8",
+                cwd: root,
+            });
+            const hasLocalChanges =
+                dirty.status === 0 && dirty.stdout.trim().length > 0;
+            if (
+                Number.isFinite(commitEpochMs) &&
+                graphStat.mtimeMs < commitEpochMs
+            ) {
+                if (hasLocalChanges) {
+                    console.error(
+                        "warn graph.json older than last commit but working tree dirty — run: graphify update . before push",
+                    );
+                } else {
+                    bad("graph.json older than last git commit; run: graphify update .");
+                }
             } else {
                 ok("graph.json is newer/equal than latest git commit timestamp");
             }
@@ -112,9 +127,28 @@ if (!existsSync(graphJson)) {
 
 const bash = spawnSync("bash", ["--noprofile", "--norc", "-c", "exit 0"], {
     encoding: "utf8",
+    shell: isWindows,
 });
+
+let usesNodeLauncher = false;
+const mcpConfigPath = join(root, ".cursor", "mcp.json");
+if (existsSync(mcpConfigPath)) {
+    try {
+        const mcpCfg = JSON.parse(readFileSync(mcpConfigPath, "utf8"));
+        usesNodeLauncher = mcpCfg?.mcpServers?.graphify?.command === "node";
+    } catch {
+        /* ignore */
+    }
+}
+
 if (bash.status !== 0) {
-    bad("bash not runnable — default MCP entry uses bash + scripts/graphify-mcp-stdio.sh");
+    if (isWindows && usesNodeLauncher) {
+        console.error(
+            "warn bash not runnable — OK on Windows when .cursor/mcp.json uses node graphify-mcp-launcher.mjs",
+        );
+    } else {
+        bad("bash not runnable — legacy MCP entry uses bash + scripts/graphify-mcp-stdio.sh");
+    }
 } else {
     ok("bash runs");
 }
@@ -171,6 +205,12 @@ if (uvVer.status === 0) {
 console.log("");
 console.log(
     "Cursor: Settings → MCP → Server «graphify» aktivieren; nach Änderung neu laden oder IDE neu starten.",
+);
+console.log(
+    "Launcher: node scripts/graphify-mcp-launcher.mjs (cross-platform) or bash/cmd fallbacks in scripts/",
+);
+console.log(
+    "GitKraken MCP: node scripts/gitkraken-mcp-launcher.mjs — requires gk auth login",
 );
 console.log(
     ".cursor/mcp.json nutzt cwd «${workspaceFolder}» — Workspace-Root soll das Repo sein (nicht die Parent-Ordner).",

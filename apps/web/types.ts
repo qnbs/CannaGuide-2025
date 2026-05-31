@@ -315,6 +315,8 @@ export interface GrowsState {
 export interface AppSettings {
     version: number
     onboardingCompleted: boolean
+    /** ISO timestamp when onboarding wizard was completed (null = never). */
+    onboardingCompletedAt: string | null
     aiMode: AiMode
     general: {
         language: Language

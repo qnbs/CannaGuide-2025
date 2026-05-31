@@ -82,6 +82,8 @@ Some PRs show a failing check **Workers Builds: cannaguide-2025** from the Cloud
 
 **Recommended:** In Cloudflare dashboard → Workers & Pages → `cannaguide-2025` → Settings → disconnect **GitHub build** for Workers, or delete the unused Worker and rely on Pages + this workflow. The failing check is informational unless marked required in branch protection.
 
+**Action (P0-03):** Disconnect Worker Git integration in dashboard when ready — removes the spurious PR check. GitHub Actions Pages deploy (`deploy-cloudflare.yml`) remains the canonical path.
+
 `_headers` and `_redirects` in `apps/web/public/` stay aligned with [apps/web/securityHeaders.ts](../apps/web/securityHeaders.ts).
 
 **Previous dashboard setup (reference):**

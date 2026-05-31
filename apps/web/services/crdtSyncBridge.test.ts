@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import * as Sentry from '@sentry/react'
 import * as Y from 'yjs'
 import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import simulationReducer, {
@@ -824,6 +825,20 @@ describe('crdtSyncBridge', () => {
             _resetCrdtTelemetry()
             const state = _getCrdtTelemetryState()
             expect(state.divergenceCount).toBe(0)
+        })
+
+        it('adds Sentry breadcrumb when divergence crosses critical threshold', async () => {
+            const addBreadcrumb = vi.spyOn(Sentry, 'addBreadcrumb')
+            _resetCrdtTelemetry()
+            const { reportCrdtTelemetry } = await import('./crdtSyncBridge')
+            reportCrdtTelemetry({ divergenceCount: 5 })
+            expect(addBreadcrumb).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    category: 'crdt-sync',
+                    message: 'Critical CRDT divergence threshold reached',
+                }),
+            )
+            addBreadcrumb.mockRestore()
         })
     })
 })

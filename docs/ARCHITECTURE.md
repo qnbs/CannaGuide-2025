@@ -36,8 +36,9 @@ For architecture investigations, use a query-first flow:
 2. Run `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"`.
 3. Validate inferred edges before high-impact refactors.
 
-Cursor integration uses `.cursor/mcp.json` with `scripts/graphify-mcp-stdio.sh`.
-Windows fallback launcher: `scripts/graphify-mcp-stdio-windows.cmd`.
+Cursor integration uses `.cursor/mcp.json` with cross-platform launcher `scripts/graphify-mcp-launcher.mjs` (requires `uv` on PATH).
+Legacy fallbacks: `scripts/graphify-mcp-stdio.sh` (Linux/macOS), `scripts/graphify-mcp-stdio-windows.cmd`.
+GitKraken MCP: `{ "command": "gk", "args": ["mcp"] }` — run `gk auth login` first. Diagnose: `pnpm run mcp:doctor`.
 
 ---
 
@@ -407,6 +408,22 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 | Release Pipeline   | 2-job isolation: build+SBOM -> release (attestation + provenance)       |
 | Verification (L1)  | `gh attestation verify cannaguide-*.tar.gz --repo qnbs/CannaGuide-2025` |
 | Release Assets     | Tarball + SBOM + GitHub build attestation                               |
+
+---
+
+## ADR: CSP strict-dynamic for SSR / Edge (v2.0)
+
+**Status:** Proposed (Session 177)  
+**Context:** Static PWA uses `unsafe-inline` in CSP (S-03 Won't Fix for v1.x). v2.0 Digital Twin platform may add Cloudflare Workers or Vercel Edge SSR.
+
+**Decision (pending v2.0):**
+
+1. Serve HTML from edge with per-request nonce: `script-src 'nonce-{random}' 'strict-dynamic'`.
+2. Evaluate `vite-plugin-csp` or `@edge-csrf` during SSR migration.
+3. Add SRI hashes for all emitted chunks via `vite-plugin-sri` on production builds.
+4. Remove `unsafe-inline` only after nonce pipeline is verified in staging.
+
+**Consequences:** Requires build-time nonce injection and edge middleware; PWA offline shell may need hybrid static + edge routes.
 
 ---
 

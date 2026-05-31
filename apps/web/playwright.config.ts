@@ -35,8 +35,6 @@ export default defineConfig({
             use: { ...devices['Pixel 5'] },
             testMatch: ['mobile-*.e2e.ts', 'screenshots.e2e.ts', 'onboarding.e2e.ts'],
         },
-        // Firefox runs in CI with extended timeouts.
-        // WebKit is local-only (Safari API gaps: no WebGPU, mixed-content blocks).
         {
             name: 'firefox',
             use: {
@@ -46,19 +44,16 @@ export default defineConfig({
             },
             timeout: 120_000,
         },
-        ...(!process.env.CI
-            ? [
-                  {
-                      name: 'webkit' as const,
-                      use: {
-                          ...devices['Desktop Safari'],
-                          actionTimeout: 30_000,
-                          navigationTimeout: 90_000,
-                      },
-                      timeout: 120_000,
-                  },
-              ]
-            : []),
+        {
+            name: 'webkit',
+            use: {
+                ...devices['Desktop Safari'],
+                actionTimeout: 30_000,
+                navigationTimeout: 90_000,
+            },
+            timeout: 120_000,
+            grepInvert: /WebGPU|Bluetooth/,
+        },
     ],
     webServer: {
         command: 'pnpm run preview',

@@ -110,7 +110,7 @@ This repository uses a modular Cursor rule architecture under `.cursor/rules/*.m
 
 When adding/updating rules, follow the naming ranges and frontmatter constraints documented in the governance file.
 
-- MCP (Graphify): `.cursor/mcp.json` invokes `scripts/graphify-mcp-stdio.sh` → `uv run --with graphifyy --with mcp python -m graphify.serve …`. Requires **`uv`** on your `PATH` and network once for deps; **`pnpm run graphify:mcp:doctor`** validates the setup. Full spec + porting guide: `docs/GRAPHIFY-COMPLETE-GUIDE.md`; MCP notes also in `docs/cursor-mdc-governance.md`.
+- MCP (Graphify + GitKraken): `.cursor/mcp.json` — Graphify via `node scripts/graphify-mcp-launcher.mjs` (requires **`uv`**), GitKraken via `gk mcp` (requires **`gk auth login`**). Diagnose: **`pnpm run mcp:doctor`**. Legacy launchers: `scripts/graphify-mcp-stdio.sh`, `scripts/graphify-mcp-stdio-windows.cmd`.
 - Codespaces / Dev Container: `.devcontainer/Dockerfile` installs **`uv`** into the image (`/usr/local/bin/uv`) so Graphify-MCP works without extra setup.
 - Team reference: `cursor_settings.json` (root) documents the same MCP block plus optional `projectContext` paths.
 

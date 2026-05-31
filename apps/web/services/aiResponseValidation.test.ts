@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { z } from 'zod'
+import { Sentry } from '@/services/sentryService'
 import {
     AiResponseValidationError,
     validateAiResponse,
@@ -43,6 +44,10 @@ describe('validateAiResponse', () => {
 })
 
 describe('runRoutedValidated', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+    })
+
     it('uses fallback when primary response fails validation', async () => {
         const result = await runRoutedValidated(
             TestSchema,
@@ -52,5 +57,29 @@ describe('runRoutedValidated', () => {
             () => ({ title: 'Fallback', content: 'Safe' }),
         )
         expect(result.content).toBe('Safe')
+    })
+
+    it('captures Sentry once when both primary and fallback fail validation', async () => {
+        await expect(
+            runRoutedValidated(
+                TestSchema,
+                'mentor',
+                async () => ({ title: '', content: '' }),
+                async () => ({ title: '', content: '' }),
+                () => ({ title: '', content: '' }),
+            ),
+        ).rejects.toThrow(AiResponseValidationError)
+
+        expect(Sentry.captureException).toHaveBeenCalledTimes(1)
+        expect(Sentry.captureException).toHaveBeenCalledWith(
+            expect.any(AiResponseValidationError),
+            expect.objectContaining({
+                extra: expect.objectContaining({
+                    context: 'mentor',
+                    fallbackAlsoFailed: true,
+                }),
+                fingerprint: ['ai-validation-mentor'],
+            }),
+        )
     })
 })

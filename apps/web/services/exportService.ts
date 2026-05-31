@@ -9,7 +9,6 @@ import {
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { TFunction } from 'i18next'
-import html2canvas from 'html2canvas'
 
 type AutoTableOptions = {
     startY?: number
@@ -667,6 +666,7 @@ class ExportService {
                 y = 20
             }
 
+            const { default: html2canvas } = await import('html2canvas')
             const chartCanvas = await html2canvas(chartElement, {
                 backgroundColor: '#0f172a',
                 scale: 2,

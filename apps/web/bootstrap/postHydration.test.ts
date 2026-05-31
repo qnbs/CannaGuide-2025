@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import { Sentry } from '@/services/sentryService'
 import { runPostHydrationServices } from './postHydration'
+import type { AppStore } from '@/stores/store'
 import settingsReducer from '@/stores/slices/settingsSlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
 
@@ -68,13 +69,13 @@ vi.mock('@/services/platformService', () => ({
     platform: { isTauri: false },
 }))
 
-const createTestStore = () =>
+const createTestStore = (): AppStore =>
     configureStore({
         reducer: combineReducers({
             settings: settingsReducer,
             simulation: simulationReducer,
         }),
-    })
+    }) as unknown as AppStore
 
 describe('runPostHydrationServices', () => {
     beforeEach(() => {

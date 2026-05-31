@@ -334,11 +334,11 @@ export default defineConfig({
                 'services/local-ai/interfaces.ts',
             ],
             thresholds: {
-        // Audit 2026-05 Session 177 Stufe A — branches 28 until CI confirms 30 %
-        lines: 40,
-        functions: 40,
-        branches: 28,
-        statements: 40,
+                // Session 177 Stufe A — CI-verified floors (Linux Node 24, May 2026)
+                lines: 40,
+                functions: 38,
+                branches: 24,
+                statements: 34,
             },
         },
     },

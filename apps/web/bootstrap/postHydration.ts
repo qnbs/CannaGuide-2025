@@ -8,6 +8,7 @@ import { initializeSimulation } from '@/stores/slices/simulationSlice'
 import { ttsService } from '@/services/ttsService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
+import { Sentry } from '@/services/sentryService'
 
 export const runPostHydrationServices = async (hydratedStore: AppStore): Promise<void> => {
     await strainService.init()
@@ -35,25 +36,36 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
         await i18nInstance.changeLanguage(persistedLang)
     }
 
-    const { mqttClientService } = await import('@/services/mqttClientService')
-    mqttClientService.init(hydratedStore)
+    const [
+        { mqttClientService },
+        { useIotStore },
+        { proactiveCoachService },
+        { requestNotificationPermission },
+        { localAiPreloadService, startBackgroundPrecomputation },
+    ] = await Promise.all([
+        import('@/services/mqttClientService'),
+        import('@/stores/useIotStore'),
+        import('@/services/proactiveCoachService'),
+        import('@/services/nativeBridgeService'),
+        import('@/services/local-ai'),
+    ])
 
-    const { useIotStore } = await import('@/stores/useIotStore')
-    await useIotStore.getState().loadPersistedPassword()
+    void mqttClientService.init(hydratedStore)
+
+    try {
+        await useIotStore.getState().loadPersistedPassword()
+    } catch (err) {
+        Sentry.captureException(err, { extra: { context: 'postHydration:loadPersistedPassword' } })
+    }
 
     const { initializeWorkerInfrastructure } = await import('./workers')
     await initializeWorkerInfrastructure(hydratedStore)
 
-    const { proactiveCoachService } = await import('@/services/proactiveCoachService')
     proactiveCoachService.init(hydratedStore)
-
-    const { requestNotificationPermission } = await import('@/services/nativeBridgeService')
     void requestNotificationPermission()
 
-    const { localAiPreloadService } = await import('@/services/local-ai')
     localAiPreloadService.scheduleIdlePreload()
 
-    const { startBackgroundPrecomputation } = await import('@/services/local-ai')
     const plantEntities = (hydratedStore.getState() as RootState).simulation.plants.entities
     const allPlants = Object.values(plantEntities).filter((p): p is Plant => p !== undefined)
     startBackgroundPrecomputation(allPlants)

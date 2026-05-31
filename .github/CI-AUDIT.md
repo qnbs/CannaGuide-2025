@@ -1,6 +1,6 @@
 # CI Audit & Health Dashboard
 
-Last updated: 2026-05-30 (Session 176 — full CI audit & housekeeping)
+Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 
 ## Quick commands
 
@@ -10,6 +10,30 @@ Last updated: 2026-05-30 (Session 176 — full CI audit & housekeeping)
 | Pre-push gate                | `pnpm run gate:push`               |
 | Changed lint                 | `pnpm run lint:changed`            |
 | Full CI quality (heavy)      | GitHub Actions `ci.yml` on PR/push |
+
+## 2026-05-31 — Session 177 (Master Audit + Windows DX)
+
+### Changes
+
+| Area          | Change                                                            |
+| ------------- | ----------------------------------------------------------------- |
+| Bootstrap     | `postHydration.ts` parallel imports; unit tests                   |
+| AI validation | Single Sentry event on dual-path failure + fingerprint            |
+| Coverage      | Thresholds 40/40/30/40 (Stufe A)                                  |
+| CI E2E        | WebKit job advisory in `ci.yml`                                   |
+| Windows       | `windows:doctor`, `setup:windows`, MCP Node launchers, `.vscode/` |
+| Docs          | `SESSION-177-ROADMAP.md`, handoff Session 177, S-07               |
+
+### Local verification (Session 177)
+
+| Gate                   | Status                             |
+| ---------------------- | ---------------------------------- |
+| typecheck              | PASS (Node 22 local)               |
+| windows:doctor         | PASS (uv/gk warn only)             |
+| Vitest (changed files) | PASS on Windows with `pool: forks` |
+| Full test:coverage     | CI authoritative                   |
+
+---
 
 ## 2026-05-30 — Session 176 (CI audit run)
 
@@ -84,15 +108,18 @@ See [workflows/README.md](workflows/README.md). Shared setup: [setup-node-ci](ac
 
 ## Remaining risks
 
-| Risk                                 | Mitigation                                                         |
-| ------------------------------------ | ------------------------------------------------------------------ |
-| GitHub Actions billing lock          | Restore billing; stale/scheduled jobs show “account locked”        |
-| `SNYK_TOKEN` missing                 | `snyk-skipped` job succeeds with notice; add token for scans       |
-| Cloudflare Workers Builds (PR check) | Dashboard: disable Worker Git build                                |
-| Dependabot override packages         | Ignored in `dependabot.yml`; bump via manual PR + `pnpm.overrides` |
-| Doc-only commits skip CI             | Touch non-ignored path or `workflow_dispatch` CI                   |
-| Coverage target 50 %                 | Long-term; gates ~35 % in `vite.config.ts`                         |
-| Local Node 22 vs CI 24               | Use Node ≥24 (`engines`)                                           |
+| Risk                                 | Mitigation                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------------- |
+| GitHub Actions billing lock          | Restore billing; stale/scheduled jobs show “account locked”                      |
+| `SNYK_TOKEN` missing                 | `snyk-skipped` job succeeds with notice; add token for scans (cron Mo 02:00 UTC) |
+| Cloudflare Workers Builds (PR check) | Dashboard: disable Worker Git build (see `docs/distribution.md` P0-03)           |
+| CVE-2026-41242 (protobufjs)          | `auditConfig.ignoreCves` — false positive; see AUDIT_BACKLOG S-07                |
+| Dependabot override packages         | Ignored in `dependabot.yml`; bump via manual PR + `pnpm.overrides`               |
+| Doc-only commits skip CI             | Touch non-ignored path or `workflow_dispatch` CI                                 |
+| Coverage target 50 %                 | Stufe A gates 40/40/30/40 in `vite.config.ts` (Session 177)                      |
+| Local Node 22 vs CI 24               | Use Node ≥24 (`engines`)                                                         |
+| Mutation testing                     | Weekly `mutation-testing.yml`; advisory ≥50 % score target                       |
+| GitKraken MCP (`gk`)                 | Requires GitKraken CLI + `gk auth login`; see `pnpm run mcp:doctor`              |
 
 ## Recommended pre-push
 

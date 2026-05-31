@@ -13,6 +13,8 @@ const VIEW_PRELOADERS: Partial<Record<View, PreloadFn>> = {
     [View.Knowledge]: () =>
         import('@/components/views/KnowledgeView').then((m) => ({ default: m.KnowledgeView })),
     [View.Settings]: () => import('@/components/views/settings/SettingsView'),
+    [View.Help]: () =>
+        import('@/components/views/HelpView').then((m) => ({ default: m.HelpView })),
 }
 
 /**

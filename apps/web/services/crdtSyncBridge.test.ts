@@ -21,14 +21,16 @@ import { PlantStage, StrainType, JournalEntryType } from '@/types'
 import type { NutrientScheduleEntry } from '@/stores/slices/nutrientPlannerSlice'
 import type { AppStore } from '@/stores/store'
 
+const sentryMocks = vi.hoisted(() => ({
+    captureException: vi.fn(),
+    addBreadcrumb: vi.fn(),
+}))
+
 // ---------------------------------------------------------------------------
 // Mock crdtService with an in-memory Y.Doc (no IndexedDB)
 // ---------------------------------------------------------------------------
 
-vi.mock('@sentry/react', () => ({
-    captureException: vi.fn(),
-    addBreadcrumb: vi.fn(),
-}))
+vi.mock('@sentry/react', () => sentryMocks)
 
 const testDoc = new Y.Doc()
 
@@ -77,6 +79,7 @@ const {
     _getBatchQueueLength,
     _getCrdtTelemetryState,
     _resetCrdtTelemetry,
+    reportCrdtTelemetry,
 } = await import('./crdtSyncBridge')
 const { startAppListening } = await import('@/stores/listenerMiddleware')
 const { listenerMiddleware } = await import('@/stores/listenerMiddleware')
@@ -824,6 +827,22 @@ describe('crdtSyncBridge', () => {
             _resetCrdtTelemetry()
             const state = _getCrdtTelemetryState()
             expect(state.divergenceCount).toBe(0)
+        })
+
+        it('adds Sentry breadcrumb when divergence crosses critical threshold', () => {
+            sentryMocks.addBreadcrumb.mockClear()
+            _resetCrdtTelemetry()
+            reportCrdtTelemetry({ divergenceCount: 4 })
+            expect(_getCrdtTelemetryState().divergenceCount).toBe(4)
+            expect(sentryMocks.addBreadcrumb).not.toHaveBeenCalled()
+            reportCrdtTelemetry({ divergenceCount: 1 })
+            expect(_getCrdtTelemetryState().divergenceCount).toBe(5)
+            expect(sentryMocks.addBreadcrumb).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    category: 'crdt-sync',
+                    message: 'Critical CRDT divergence threshold reached',
+                }),
+            )
         })
     })
 })

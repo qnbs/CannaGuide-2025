@@ -12,7 +12,7 @@
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Tests](https://img.shields.io/badge/tests-2688%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-35.4%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-40%25%20target-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity -->
 
@@ -141,6 +141,16 @@ pnpm run lint               # ESLint (flat config, 0 warnings)
 ```
 
 > All commands: [docs/release-process.md](docs/release-process.md) · DevContainer: [.devcontainer/](.devcontainer/)
+
+**Windows (Cursor):**
+
+```powershell
+pnpm run setup:windows      # uv + deps + doctor
+pnpm run windows:doctor     # MCP, Node, gh, git preflight
+pnpm run mcp:doctor         # Graphify + GitKraken MCP
+```
+
+See [`docs/SESSION-177-ROADMAP.md`](docs/SESSION-177-ROADMAP.md) and [CONTRIBUTING.md](CONTRIBUTING.md#mcp-graphify--gitkraken).
 
 ---
 

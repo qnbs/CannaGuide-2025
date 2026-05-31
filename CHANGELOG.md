@@ -8,6 +8,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **audit(session-177):** Master Audit execution — parallel `postHydration` bootstrap,
+  Sentry dedup in `aiResponseValidation`, `View.Help` route preload,
+  `diagnosisFallback` threshold tests, CRDT divergence breadcrumbs
+- **dx(windows):** Cross-platform MCP launchers (`graphify-mcp-launcher.mjs`,
+  `gitkraken-mcp-launcher.mjs`), `pnpm run windows:doctor`, `pnpm run setup:windows`,
+  `pnpm run mcp:doctor`; `.vscode/settings.json` + `extensions.json`
+- **feat(onboarding):** `onboardingCompletedAt` in settings + Sentry breadcrumb on wizard finish
+- **ci:** WebKit E2E job in `ci.yml` (advisory, `continue-on-error`); Playwright WebKit project enabled in CI
+- **docs:** `docs/SESSION-177-ROADMAP.md`, AUDIT_BACKLOG **S-07** (CVE-2026-41242 ignore rationale)
 - **ci:** MDC rule validation (`mdc:validate`), context smoke (`mdc:e2e`), and
   Graphify MCP doctor in quality gates; `graphify-update` workflow to refresh
   `graphify-out/` on `main`
@@ -20,6 +29,14 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **perf(bootstrap):** `postHydration.ts` — parallel `Promise.all` for mqtt/iot/local-ai/coach imports
+- **test:** Coverage thresholds Stufe A — lines/functions/statements **40%**, branches **30%**
+- **test(vitest):** Windows uses `pool: forks` + `isolate: false` to avoid worker timeouts
+- **ci(snyk):** Weekly cron moved to **Mon 02:00 UTC**
+- **i18n:** `RTL_LOCALES` prepared for `ar`/`he`; Tailwind RTL migration note in config
+- **export:** `html2canvas` lazy-loaded in `exportService` (smaller initial bundle)
+- **rules:** `203-state-persistence` documents `useIotStore` localStorage exception;
+  `851-mcp-windows-fallback` documents Node launchers; `110-i18n` RTL section
 - **ci:** Cloudflare Pages GitHub Actions deploy paused (workflow reduced to
   optional `workflow_dispatch` stub); GitHub Pages and Vercel remain the
   automated production paths — see `docs/distribution.md`
@@ -61,6 +78,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **audit(session-177):** Dependabot security group merged via PR **#256** (replaces closed #243)
+- **docs:** S-07 documents `auditConfig.ignoreCves` for CVE-2026-41242 (protobufjs false positive)
 - Transitive **`ip-address`** upgraded via root **`pnpm.overrides`** to **>=10.1.1** ([GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) / CVE-2026-42338). Dependency path includes `@lhci/cli` → `proxy-agent` → `socks`. Documented in [`SECURITY.md`](SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
 - **audit(P1.1):** Verified all `pnpm.overrides` resolve to safe versions
   (`ip-address` 10.2.0, `protobufjs` 8.0.3, `basic-ftp` 5.3.0, `lodash`/`lodash-es` 4.18.1, `tmp` 0.2.5).

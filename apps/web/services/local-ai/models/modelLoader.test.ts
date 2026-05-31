@@ -34,6 +34,18 @@ vi.mock('@xenova/transformers', () => ({
     env: { backends: { onnx: { wasm: {} } }, allowLocalModels: true },
 }))
 
+vi.mock('@/utils/browserApis', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/utils/browserApis')>()
+    return {
+        ...actual,
+        checkStorageQuota: vi.fn(async () => ({
+            ok: true,
+            availableMB: 1000,
+            totalMB: 2000,
+        })),
+    }
+})
+
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
 
 describe('localAIModelLoader', () => {
@@ -339,6 +351,8 @@ describe('localAIModelLoader', () => {
         beforeEach(() => {
             vi.clearAllMocks()
             clearPipelineCache()
+            setForceWasm(false)
+            setVramInsufficientOverride(false)
         })
 
         it('acquires onnx-webgpu lock when backend is webgpu', async () => {

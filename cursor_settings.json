@@ -1,8 +1,13 @@
 {
     "mcpServers": {
         "graphify": {
-            "command": "bash",
-            "args": ["scripts/graphify-mcp-stdio.sh"],
+            "command": "node",
+            "args": ["scripts/graphify-mcp-launcher.mjs"],
+            "cwd": "${workspaceFolder}"
+        },
+        "gitkraken": {
+            "command": "node",
+            "args": ["scripts/gitkraken-mcp-launcher.mjs"],
             "cwd": "${workspaceFolder}"
         }
     },
@@ -11,6 +16,6 @@
         "rulesIndex": ".cursor/rules/index.mdc",
         "rulesDir": ".cursor/rules",
         "consciousnessStream": ".notes/meeting_notes.md",
-        "preflightScripts": ["pnpm run mdc:e2e", "pnpm run graphify:mcp:doctor"]
+        "preflightScripts": ["pnpm run windows:doctor", "pnpm run mdc:e2e", "pnpm run mcp:doctor"]
     }
 }

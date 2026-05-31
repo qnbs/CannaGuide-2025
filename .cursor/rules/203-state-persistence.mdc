@@ -15,6 +15,14 @@ alwaysApply: false
 - Multi-Tab-/Version-Wechsel berücksichtigen (`onclose`, `onversionchange`, Migrationen); keine Änderungen, die vorhandene Recovery-Pfade aushebeln.
 - Service-Worker/PWA-Änderungen nur kompatibel mit Offline-Flows; keine Cache- oder SW-Anpassung ohne Prüfung gegen vorhandene Offline-E2E-Szenarien.
 
+## Ausnahmen
+
+| Store | Persistence | Begründung |
+|-------|-------------|------------|
+| useIotStore | localStorage | MQTT-Verbindungsconfig (URL, Port, Topic) — kleine Payload, kein sensibles Datum, survives IndexedDB-Clear |
+
+Neue localStorage-Ausnahmen: Issue erstellen + Rule updaten.
+
 <example>
 Neuer persistierter Store-Abschnitt nutzt den vorhandenen IndexedDB-Adapter und definiert bei Lesefehler einen expliziten, testbaren Fallback.
 </example>

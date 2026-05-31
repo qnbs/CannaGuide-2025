@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-05-17 (deps batch + deploy E2E — see [`.github/CI-AUDIT.md`](../.github/CI-AUDIT.md))
+Last updated: 2026-05-31 (Session 177 — Master Audit execution)
 
 ---
 
@@ -175,6 +175,20 @@ Last updated: 2026-05-17 (deps batch + deploy E2E — see [`.github/CI-AUDIT.md`
 **Finding:** Auditor recommended pinning all CI action versions.
 
 **Resolution:** All GitHub Actions already use pinned SHA hashes (e.g., `actions/checkout@de0fac2e...`). OpenSSF Scorecard: 8.5/10. `npm ci` with lockfile enforcement in DevContainer.
+
+---
+
+### S-07 -- CVE-2026-41242 Audit Ignore (protobufjs false positive)
+
+| Field    | Value         |
+| -------- | ------------- |
+| Severity | Low           |
+| Effort   | None          |
+| Status   | **Won't Fix** |
+
+**Finding:** `pnpm audit --audit-level=high` reports CVE-2026-41242 on transitive `protobufjs` via dev tooling. Patched upstream path conflicts with monorepo `pnpm.overrides` pin.
+
+**Resolution:** Listed in `package.json` → `auditConfig.ignoreCves`. Documented in `.github/CI-AUDIT.md` Remaining Risks. Re-evaluate when override removed or upstream releases compatible fix. CHANGELOG Session 176 notes false-positive classification.
 
 ---
 

@@ -258,8 +258,18 @@ jobs:
               working-directory: apps/web
               run: |
                   START_TIME=$SECONDS
-                  pnpm exec playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression|App Screenshots" --shard=${{ matrix.shard }}
+                  pnpm exec playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression|App Screenshots|WebGPU|Bluetooth" --shard=${{ matrix.shard }}
                   echo "E2E Firefox shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
+              timeout-minutes: 30
+
+            - name: Run E2E tests (WebKit)
+              if: always() && steps.playwright-cache.outcome != 'failure'
+              continue-on-error: true
+              working-directory: apps/web
+              run: |
+                  START_TIME=$SECONDS
+                  pnpm exec playwright test -c playwright.config.ts --project=webkit --grep-invert "Visual Regression|App Screenshots|WebGPU|Bluetooth" --shard=${{ matrix.shard }} --retries=3
+                  echo "E2E WebKit shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 
             - name: Run visual regression (snapshot baseline)

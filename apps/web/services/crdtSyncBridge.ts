@@ -59,6 +59,7 @@ const crdtTelemetry: CrdtTelemetryState = {
  * push the snapshot to WorkerBus (async import to avoid circular deps).
  */
 export function reportCrdtTelemetry(update: Partial<CrdtTelemetryState>): void {
+    const prevDivergence = crdtTelemetry.divergenceCount
     if (update.divergenceCount !== undefined)
         crdtTelemetry.divergenceCount += update.divergenceCount
     if (update.syncPayloadBytes !== undefined)
@@ -66,6 +67,23 @@ export function reportCrdtTelemetry(update: Partial<CrdtTelemetryState>): void {
     if (update.conflictsResolved !== undefined)
         crdtTelemetry.conflictsResolved += update.conflictsResolved
     if (update.lastSyncMs !== undefined) crdtTelemetry.lastSyncMs = update.lastSyncMs
+
+    const CRITICAL_DIVERGENCE_THRESHOLD = 5
+    if (
+        crdtTelemetry.divergenceCount >= CRITICAL_DIVERGENCE_THRESHOLD &&
+        prevDivergence < CRITICAL_DIVERGENCE_THRESHOLD
+    ) {
+        Sentry.addBreadcrumb({
+            category: 'crdt-sync',
+            level: 'warning',
+            message: 'Critical CRDT divergence threshold reached',
+            data: {
+                divergenceCount: crdtTelemetry.divergenceCount,
+                threshold: CRITICAL_DIVERGENCE_THRESHOLD,
+                syncPayloadBytes: crdtTelemetry.syncPayloadBytes,
+            },
+        })
+    }
 
     // Fire-and-forget push to WorkerBus telemetry
     void import('./workerBus').then(({ workerBus }) => {

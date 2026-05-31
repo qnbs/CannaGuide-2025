@@ -838,6 +838,17 @@ describe('WorkerBus -- Priority Queue', () => {
         const state = workerBus.getQueueState()
         expect(state.queued).toHaveLength(64)
     })
+
+    it('rejects with QUEUE_FULL when queue exceeds DEFAULT_MAX_QUEUE_SIZE', async () => {
+        const { WorkerErrorCode } = await import('@/types/workerBus.types')
+        pendingPromises.push(workerBus.dispatch(WORKER, 'BLOCK2', {}, { priority: 'critical' }))
+        for (let i = 0; i < 64; i++) {
+            pendingPromises.push(workerBus.dispatch(WORKER, `QF_${i}`, {}, { priority: 'normal' }))
+        }
+        await expect(
+            workerBus.dispatch(WORKER, 'OVERFLOW', {}, { priority: 'normal' }),
+        ).rejects.toMatchObject({ code: WorkerErrorCode.QUEUE_FULL, name: 'WorkerBusError' })
+    })
 })
 
 // --- WorkerBusError typed errors (K-04) ---

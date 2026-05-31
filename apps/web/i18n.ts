@@ -7,8 +7,8 @@ export type SupportedLocale = 'en' | 'de' | 'es' | 'fr' | 'nl'
 
 const SUPPORTED_LOCALES: readonly SupportedLocale[] = ['en', 'de', 'es', 'fr', 'nl'] as const
 
-// RTL locales -- empty for now; add 'ar', 'he' etc. when translations land
-const RTL_LOCALES: ReadonlySet<string> = new Set<string>()
+// RTL locales — enable when ar/he translations land (v2.0)
+const RTL_LOCALES: ReadonlySet<string> = new Set<string>(['ar', 'he'])
 
 /** Returns the text direction for a given locale. */
 export const getTextDirection = (locale: string): 'ltr' | 'rtl' =>
@@ -51,7 +51,9 @@ export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance)
 
 // Detect initial language from browser settings. The store will sync it up later upon hydration.
 const detectedLang =
-    typeof navigator !== 'undefined' ? (navigator.language.split('-')[0] ?? 'en') : 'en'
+    typeof navigator !== 'undefined' && navigator.language
+        ? (navigator.language.split('-')[0] ?? 'en')
+        : 'en'
 const initialLang: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(detectedLang)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     ? (detectedLang as SupportedLocale)

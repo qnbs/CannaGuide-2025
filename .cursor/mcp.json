@@ -1,8 +1,13 @@
 {
     "mcpServers": {
         "graphify": {
-            "command": "bash",
-            "args": ["scripts/graphify-mcp-stdio.sh"],
+            "command": "node",
+            "args": ["scripts/graphify-mcp-launcher.mjs"],
+            "cwd": "${workspaceFolder}"
+        },
+        "gitkraken": {
+            "command": "node",
+            "args": ["scripts/gitkraken-mcp-launcher.mjs"],
             "cwd": "${workspaceFolder}"
         }
     }

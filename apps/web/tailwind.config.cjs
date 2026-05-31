@@ -16,4 +16,5 @@ module.exports = {
         '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
     ],
     plugins: [require('@tailwindcss/typography')],
+    // RTL: migrate directional utilities (ml/mr/pl/pr) to logical ms/me/ps/pe when adding ar/he locales.
 }

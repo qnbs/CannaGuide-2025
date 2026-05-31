@@ -47,10 +47,32 @@ export const runRoutedValidated = async <T>(
     fallbackCall: () => Promise<T> | T,
 ): Promise<T> => {
     const raw = await runRouted(localCall, cloudCall, fallbackCall)
-    try {
-        return validateAiResponse(schema, raw, context)
-    } catch {
-        const fallback = await Promise.resolve(fallbackCall())
-        return validateAiResponse(schema, fallback, `${context}:fallback`)
+    const primaryResult = schema.safeParse(raw)
+    if (primaryResult.success) {
+        return primaryResult.data
     }
+
+    const fallback = await Promise.resolve(fallbackCall())
+    const fallbackResult = schema.safeParse(fallback)
+    if (fallbackResult.success) {
+        return fallbackResult.data
+    }
+
+    const primaryErr = new AiResponseValidationError(
+        `AI response validation failed (${context})`,
+        context,
+    )
+    Sentry.captureException(primaryErr, {
+        extra: {
+            context,
+            fallbackAlsoFailed: true,
+            primaryZodError: primaryResult.error.format(),
+            fallbackZodError: fallbackResult.error.format(),
+        },
+        fingerprint: [`ai-validation-${context}`],
+    })
+    throw new AiResponseValidationError(
+        `AI validation failed on all paths (${context})`,
+        context,
+    )
 }

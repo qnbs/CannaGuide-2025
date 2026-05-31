@@ -15,6 +15,12 @@ alwaysApply: false
 - Bei Sprache-/Richtungslogik (`lang`/`dir`) nur den zentralen Mechanismus in `i18n.ts` erweitern, nicht pro Komponente duplizieren.
 - i18n-Qualitätschecks (`check:i18n`,`check:i18n-usage`,`lint:i18n`) als verpflichtende Validierung für neue Textflächen betrachten.
 
+## RTL (v2.0)
+
+- `RTL_LOCALES` in `apps/web/i18n.ts` (`ar`, `he`) steuert `dir` am `<html>`-Element via `getTextDirection()`.
+- Tailwind: Richtungsklassen auf logische Utilities migrieren (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-` statt `ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-`).
+- Drawer/Sidebar/Icons: `dir`-Prop respektieren; keine fest codierten horizontalen Offsets ohne RTL-Fallback.
+
 <example>
 Neue Settings-Option: Key unter passenden Locale-Modulen ergänzen, UI via `t('settings.newOption.label')`, Tests auf Key-Existenz/Fallback aktualisieren.
 </example>

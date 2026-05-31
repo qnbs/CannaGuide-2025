@@ -11,9 +11,10 @@ alwaysApply: false
 
 ## Fallback-Prozedur
 
-- Primärpfad (Linux/macOS): `.cursor/mcp.json` mit `bash scripts/graphify-mcp-stdio.sh`.
-- Windows-Fallback: `command: "uv"` und Args `run --with graphifyy --with mcp python -m graphify.serve graphify-out/graph.json`.
-- Vor Start immer `pnpm run graphify:mcp:doctor` ausfuehren.
+- **Primär (alle Plattformen):** `.cursor/mcp.json` mit `node scripts/graphify-mcp-launcher.mjs` und `node scripts/gitkraken-mcp-launcher.mjs`.
+- **Legacy Linux/macOS:** `bash scripts/graphify-mcp-stdio.sh`.
+- **Legacy Windows:** `cmd /c scripts/graphify-mcp-stdio-windows.cmd`.
+- Vor Start auf Windows: `pnpm run windows:doctor`, dann `pnpm run graphify:mcp:doctor`.
 - Bei Importfehlern zuerst `uv --version`, danach `uv run --with graphifyy --with mcp python -c "import mcp, graphify"`.
 - Keine Secrets in `mcp.json`; nur lokale Tool-Startparameter.
 

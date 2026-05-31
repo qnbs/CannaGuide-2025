@@ -6,7 +6,7 @@ name: Snyk Security
 # Requires SNYK_TOKEN secret from Snyk App integration.
 on:
     schedule:
-        - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
+        - cron: '0 2 * * 1' # Every Monday at 02:00 UTC
     workflow_dispatch:
 
 concurrency:

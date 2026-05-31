@@ -51,7 +51,9 @@ export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance)
 
 // Detect initial language from browser settings. The store will sync it up later upon hydration.
 const detectedLang =
-    typeof navigator !== 'undefined' ? (navigator.language.split('-')[0] ?? 'en') : 'en'
+    typeof navigator !== 'undefined' && navigator.language
+        ? (navigator.language.split('-')[0] ?? 'en')
+        : 'en'
 const initialLang: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(detectedLang)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     ? (detectedLang as SupportedLocale)

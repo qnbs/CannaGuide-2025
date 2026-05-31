@@ -302,7 +302,8 @@ export default defineConfig({
         fileParallelism: false,
         maxWorkers: 1,
         hookTimeout: 60_000,
-        isolate: false,
+        // Shared module graph only on Windows forks; Linux CI needs isolation for ONNX/i18n state
+        isolate: process.platform !== 'win32',
         testTimeout: 30_000,
         teardownTimeout: 3000,
         setupFiles: path.join(__webRoot, 'vitest.setup.ts'),

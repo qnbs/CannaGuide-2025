@@ -12,7 +12,7 @@
 | CI merge gate        | **Quality + Security only**; advisory job for critical-path, file-budget, localStorage                                    |
 | V-06 Offline Voice   | **v2.0 only** (Deferred in `AUDIT_BACKLOG.md`)                                                                            |
 | Phase 0              | **Merged** PR #290 → `main`                                                                                               |
-| Phase 1 branch       | `cursor/phase-1-gemini-prompt-utils-671a` (P1-01)                                                                         |
+| Phase 1              | **Merged** → `main` (`630511a3`, nach Phase 0 `ebbc1d8b`)                                                                  |
 
 ## Phase 0 — Merged (PR #290)
 
@@ -32,12 +32,10 @@
 
 | Task  | Status | Notes |
 | ----- | ------ | ----- |
-| P1-01 | 🔄     | `geminiService` ~702 LOC — modules: `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
-| P1-02 | 🔄     | `plantSimulationService` ~1575 LOC — `simulation/plantStageDetails`, `simulationProfiles`, `vpdSimulationService` |
-| P1-03 | ⏳     | `workerBus.ts` |
+| P1-01 | ✅     | `geminiService` ~702 LOC — `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
+| P1-02 | ✅ (Teil) | `plantSimulationService` ~1575 LOC — `simulation/*` extrahiert; Kernklasse folgt |
+| P1-03 | ⏳ **nächster** | `workerBus.ts` → Branch `cursor/phase-1-worker-bus-671a` |
 | P1-04 | ⏳     | `migrationLogic.ts` |
-
-**Merge gate:** Quality + Security (E2E advisory). Nach grünem CI: PR `cursor/phase-1-gemini-prompt-utils-671a` mergen → `main`, dann P1-03/`workerBus` auf neuem Branch `cursor/phase-1-worker-bus-671a`.
 
 ## Phases (backlog)
 

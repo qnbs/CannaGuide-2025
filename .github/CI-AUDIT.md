@@ -11,6 +11,21 @@ Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 | Changed lint                 | `pnpm run lint:changed`            |
 | Full CI quality (heavy)      | GitHub Actions `ci.yml` on PR/push |
 
+## 2026-06-01 — Phase 0 (Master Audit execution)
+
+| Change | Detail |
+| ------ | ------ |
+| E2E gate | `ci-status` **fails** if `e2e` job fails (Chromium/mobile-chrome) |
+| E2E retries | `--retries=2` on Chromium shard |
+| Critical path | `measure-critical-path.mjs` — advisory, artifact `artifacts/critical-path-latest.json` |
+| File budget | `check-file-budget.mjs` — grandfathered god-files, advisory in CI |
+| localStorage | `check-localstorage-usage.mjs` in quality job |
+| AI safety | `services/ai/safetyPipeline.ts` extracted from `geminiService` |
+| Docs CI | `ci-docs.yml` for markdown-only changes |
+| V-06 | Deferred to **v2.0** in `AUDIT_BACKLOG.md` |
+
+---
+
 ## 2026-05-31 — Session 177 (Master Audit + Windows DX)
 
 ### Changes

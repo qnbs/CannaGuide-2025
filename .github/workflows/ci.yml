@@ -136,6 +136,17 @@ jobs:
             - name: Bundle budget check
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 
+            - name: Critical path metrics (advisory)
+              run: node scripts/measure-critical-path.mjs apps/web/dist/assets
+
+            - name: File budget check (grandfathered god-files warn only)
+              run: node scripts/check-file-budget.mjs
+              env:
+                  FILE_BUDGET_ADVISORY: '1'
+
+            - name: LocalStorage allowlist
+              run: node scripts/security/check-localstorage-usage.mjs
+
             - name: Service dependency acyclic check
               run: node scripts/generate-service-map.mjs
 
@@ -248,7 +259,7 @@ jobs:
               working-directory: apps/web
               run: |
                   START_TIME=$SECONDS
-                  pnpm exec playwright test -c playwright.config.ts --project=chromium --project=mobile-chrome --grep-invert "Visual Regression|App Screenshots" --shard=${{ matrix.shard }}
+                  pnpm exec playwright test -c playwright.config.ts --project=chromium --project=mobile-chrome --grep-invert "Visual Regression|App Screenshots" --shard=${{ matrix.shard }} --retries=2
                   echo "E2E Chromium shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 
@@ -320,6 +331,7 @@ jobs:
                     echo "[FAIL] Security checks failed"; exit 1
                   fi
                   if [[ "${{ needs.e2e.result }}" != "success" ]]; then
-                    echo "[WARN] E2E tests failed (non-blocking -- flaky infra tests)"
+                    echo "[FAIL] E2E tests failed (Chromium/mobile-chrome required)"
+                    exit 1
                   fi
                   echo "[PASS] All CI checks passed"

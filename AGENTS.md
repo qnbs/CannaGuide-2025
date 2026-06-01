@@ -31,6 +31,8 @@ bash scripts/cursor-cloud-update.sh
 
 That script installs nvm/Node 24 when needed, prepends the correct Node to `PATH` (over `/exec-daemon/node` v22), and runs `pnpm install --frozen-lockfile`.
 
+**Cold VM first run:** If the script exits with `Node.js >= 24 required (got v22...)`, nvm may have just finished installing while `/exec-daemon/node` is still first on `PATH`—**run the script again**; the second invocation is idempotent and succeeds once Node 24 is on disk.
+
 ### Install (manual)
 
 ```bash

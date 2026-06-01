@@ -39,6 +39,21 @@ const steps = [
         name: 'bundle-budget',
         cmd: 'node scripts/check-bundle-budget.mjs apps/web/dist/assets',
     },
+    {
+        name: 'critical-path',
+        cmd: 'node scripts/measure-critical-path.mjs apps/web/dist/assets',
+        optional: true,
+    },
+    {
+        name: 'file-budget',
+        cmd: 'FILE_BUDGET_ADVISORY=1 node scripts/check-file-budget.mjs',
+        optional: true,
+    },
+    {
+        name: 'localstorage-allowlist',
+        cmd: 'node scripts/security/check-localstorage-usage.mjs',
+        optional: true,
+    },
     { name: 'i18n', cmd: 'pnpm run check:i18n' },
     {
         name: 'service-acyclic',

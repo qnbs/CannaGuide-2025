@@ -123,6 +123,8 @@ jobs:
     preview:
         name: PR Preview Deploy
         needs: gate
+        # Advisory — Vercel is the primary PR preview; CF project may be absent in account.
+        continue-on-error: true
         if: >-
             needs.gate.outputs.configured == 'true' &&
             github.event_name == 'pull_request'
@@ -167,6 +169,7 @@ jobs:
 
             - name: Deploy preview to Cloudflare Pages
               id: preview-deploy
+              continue-on-error: true
               uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -176,6 +179,7 @@ jobs:
                   command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=${{ steps.cf_preview_branch.outputs.name }}
 
             - name: Comment preview URL on PR
+              if: steps.preview-deploy.outcome == 'success'
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
               with:
                   script: |

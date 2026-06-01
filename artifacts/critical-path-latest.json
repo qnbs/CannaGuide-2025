@@ -1,0 +1,47 @@
+{
+  "measuredAt": "2026-06-01T19:09:05.106Z",
+  "distDir": "apps/web/dist/assets",
+  "chunkCount": 5,
+  "totals": {
+    "rawKB": 1246.06640625,
+    "gzipKB": 386.6220703125,
+    "brotliKB": 317.763671875
+  },
+  "budgets": {
+    "brotliKB": 1500,
+    "rawKB": 4096,
+    "strict": false
+  },
+  "chunks": [
+    {
+      "file": "index-DfEaI6rd.js",
+      "rawKB": 853.9,
+      "gzipKB": 268.6,
+      "brotliKB": 223.6
+    },
+    {
+      "file": "index-DO2BtFU_.js",
+      "rawKB": 366.3,
+      "gzipKB": 107.9,
+      "brotliKB": 85.3
+    },
+    {
+      "file": "index-BrLgw1R-.js",
+      "rawKB": 16.1,
+      "gzipKB": 6,
+      "brotliKB": 5.4
+    },
+    {
+      "file": "index-BF0Nqm07.js",
+      "rawKB": 7.6,
+      "gzipKB": 3.2,
+      "brotliKB": 2.8
+    },
+    {
+      "file": "index-CBDRF4jg.js",
+      "rawKB": 2.2,
+      "gzipKB": 0.8,
+      "brotliKB": 0.7
+    }
+  ]
+}

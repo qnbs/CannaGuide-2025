@@ -796,11 +796,11 @@ Last updated: 2026-05-31 (Session 177 — Master Audit execution)
 | -------- | -------------- |
 | Severity | Low            |
 | Effort   | High (5+ days) |
-| Status   | **Open**       |
+| Status   | **Deferred**   |
 
 **Finding:** TTS and STT are entirely dependent on browser-native APIs (`SpeechSynthesis`, `SpeechRecognition`). No offline fallback exists. On Chrome Android, `SpeechRecognition` requires internet connection (Google servers). `SpeechSynthesis` voice quality varies wildly by platform.
 
-**Action (P3/v1.5):** Integrate ONNX speech models via existing `inference.worker.ts` / `LocalAIInfrastructure`. Candidates: Kokoro (TTS, ONNX, high quality), Whisper-Tiny (STT, `@xenova/transformers`). Follow ML isolation pattern in `packages/ai-core`.
+**Action (v2.0 only — Master Audit 2026-06):** Integrate ONNX speech models via existing `inference.worker.ts` / `LocalAIInfrastructure`. Candidates: Kokoro (TTS, ONNX), Whisper-Tiny (STT, `@xenova/transformers`). Follow ML isolation pattern in `packages/ai-core`. **Not in scope for v1.9.x.**
 
 ---
 
@@ -859,7 +859,7 @@ Recommended implementation order based on impact and effort:
 - [x] V-03 -- Hotword wake-word detection (Done)
 - [x] V-04 -- Grow-log voice dictation (Done)
 - [x] V-05 -- Voice test coverage (Done)
-- [ ] V-06 -- Offline ONNX TTS/STT (deferred v1.5)
+- [x] V-06 -- Offline ONNX TTS/STT (Deferred v2.0 — Master Audit 2026-06)
 
 ### Sprint 1 (Immediate)
 

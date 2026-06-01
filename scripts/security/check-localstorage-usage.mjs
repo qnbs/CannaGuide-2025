@@ -83,7 +83,11 @@ function main() {
         while ((match = STORAGE_CALL.exec(content)) !== null) {
             const key = match[1]
             if (!isAllowed(key)) {
-                violations.push({ file, key, line: content.slice(0, match.index).split('\n').length })
+                violations.push({
+                    file,
+                    key,
+                    line: content.slice(0, match.index).split('\n').length,
+                })
             }
         }
     }
@@ -100,7 +104,9 @@ function main() {
     for (const v of violations) {
         console.log(`[FAIL] ${v.file}:${v.line} — key "${v.key}" not in allowlist`)
     }
-    console.log(`\n[FAIL] ${violations.length} violation(s). Add to allowlist in this script + 203-state-persistence.mdc`)
+    console.log(
+        `\n[FAIL] ${violations.length} violation(s). Add to allowlist in this script + 203-state-persistence.mdc`,
+    )
     process.exit(1)
 }
 

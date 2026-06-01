@@ -49,5 +49,5 @@ jobs:
             - name: CSP consistency check
               run: node scripts/security/check-csp-consistency.mjs
 
-            - name: Prettier check (markdown)
-              run: pnpm run security:prettier
+            - name: Prettier check (markdown and MDC only)
+              run: npx prettier --check "**/*.{md,mdc}" --ignore-unknown

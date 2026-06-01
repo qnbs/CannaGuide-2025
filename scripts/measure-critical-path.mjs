@@ -18,8 +18,7 @@ const BROTLI_BUDGET_KB = Number(process.env.CRITICAL_PATH_BROTLI_KB || '1500')
 const RAW_BUDGET_KB = Number(process.env.CRITICAL_PATH_RAW_KB || '4096')
 
 /** Chunks loaded on first paint (heuristic — index + shared vendor, not lazy AI/3D/locales). */
-const CRITICAL_PATTERN =
-    /^(index-|vendor-|redux-|react-|i18n-core|i18n\.|main-)/i
+const CRITICAL_PATTERN = /^(index-|vendor-|redux-|react-|i18n-core|i18n\.|main-)/i
 
 const EXCLUDE_PATTERN = /(ai-runtime|strains-data|three|locale-(de|es|fr|nl))/i
 

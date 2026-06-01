@@ -114,7 +114,9 @@ function main() {
     }
 
     console.log('')
-    console.log(`Grandfathered: ${GRANDFATHERED.size} | Warnings: ${warnings} | Failures: ${failures}`)
+    console.log(
+        `Grandfathered: ${GRANDFATHERED.size} | Warnings: ${warnings} | Failures: ${failures}`,
+    )
 
     if (failures > 0 && !ADVISORY) {
         console.error('[FAIL] File budget exceeded on changed files')

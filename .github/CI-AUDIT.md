@@ -13,18 +13,20 @@ Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 
 ## 2026-06-01 — Phase 0 (Master Audit execution)
 
-| Change | Detail |
-| ------ | ------ |
-| **Merge gate** | `ci-status` requires **Quality + Security** only |
-| E2E | **Advisory** — failure emits `::warning::`, does not block merge |
-| E2E retries | `--retries=2` on Chromium shard |
-| Advisory job | Separate `advisory` job: critical-path, file-budget, localStorage (`continue-on-error`) |
-| `cursor/**` push | Full CI runs on agent branches without opening a PR |
-| AI safety | `services/ai/safetyPipeline.ts` extracted from `geminiService` |
-| Docs CI | `ci-docs.yml` for markdown-only changes |
-| V-06 | Deferred to **v2.0** in `AUDIT_BACKLOG.md` |
+| Change           | Detail                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| **Merge gate**   | `ci-status` requires **Quality + Security** only                                        |
+| E2E              | **Advisory** — failure emits `::warning::`, does not block merge                        |
+| E2E retries      | `--retries=2` on Chromium shard                                                         |
+| Advisory job     | Separate `advisory` job: critical-path, file-budget, localStorage (`continue-on-error`) |
+| `cursor/**` push | Full CI runs on agent branches without opening a PR                                     |
+| AI safety        | `services/ai/safetyPipeline.ts` extracted from `geminiService`                          |
+| Docs CI          | `ci-docs.yml` for markdown-only changes                                                 |
+| V-06             | Deferred to **v2.0** in `AUDIT_BACKLOG.md`                                              |
 
 **Branch:** use only `cursor/master-audit-phase-0-671a` (not `cursor/master-audit-plan-*` plan-only runs).
+
+**Non-blocking PR checks (expected red/warn):** Cloudflare Pages preview (project name mismatch / optional), Workers Builds dashboard hook, `ci-docs` only when `*.md` paths change.
 
 ---
 

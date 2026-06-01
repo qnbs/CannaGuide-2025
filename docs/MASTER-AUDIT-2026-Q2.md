@@ -37,6 +37,8 @@
 | P1-03 | ⏳     | `workerBus.ts` |
 | P1-04 | ⏳     | `migrationLogic.ts` |
 
+**Merge gate:** Quality + Security (E2E advisory). Nach grünem CI: PR `cursor/phase-1-gemini-prompt-utils-671a` mergen → `main`, dann P1-03/`workerBus` auf neuem Branch `cursor/phase-1-worker-bus-671a`.
+
 ## Phases (backlog)
 
 - **Phase 1 (rest):** DDD `useCases/`, RTK entity adapters after god-file splits

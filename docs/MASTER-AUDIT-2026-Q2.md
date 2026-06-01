@@ -1,7 +1,7 @@
 # Master Audit 2026-Q2 — Execution Plan
 
 > Living document for the full-repository audit (v1.8.2 → v1.9.x / v2.0).
-> **Approved:** 2026-06-01 — Phase 0 implementation branch `cursor/master-audit-phase-0-671a`.
+> **Approved:** 2026-06-01 — Phase 0 merged via PR #290 (`ebbc1d8b`).
 
 ## Decisions (Owner)
 
@@ -11,9 +11,10 @@
 | E2E CI               | **Advisory** (warn in `ci-status`); Chromium `--retries=2`; Firefox/WebKit/visual regression advisory                     |
 | CI merge gate        | **Quality + Security only**; advisory job for critical-path, file-budget, localStorage                                    |
 | V-06 Offline Voice   | **v2.0 only** (Deferred in `AUDIT_BACKLOG.md`)                                                                            |
-| Phase 0 branch       | `cursor/master-audit-phase-0-671a`                                                                                        |
+| Phase 0              | **Merged** PR #290 → `main`                                                                                               |
+| Phase 1 branch       | `cursor/phase-1-gemini-prompt-utils-671a` (P1-01)                                                                         |
 
-## Phase 0 — Delivered in this PR
+## Phase 0 — Merged (PR #290)
 
 | Item                   | Artifact                                                                             |
 | ---------------------- | ------------------------------------------------------------------------------------ |
@@ -27,9 +28,20 @@
 | Docs-only CI           | `.github/workflows/ci-docs.yml`                                                      |
 | V-06 deferred          | `docs/AUDIT_BACKLOG.md`                                                              |
 
+## Phase 1 — In progress
+
+| Task  | Status | Notes |
+| ----- | ------ | ----- |
+| P1-01 | 🔄     | `geminiService` ~702 LOC — modules: `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
+| P1-02 | 🔄     | `plantSimulationService` ~1575 LOC — `simulation/plantStageDetails`, `simulationProfiles`, `vpdSimulationService` |
+| P1-03 | ⏳     | `workerBus.ts` |
+| P1-04 | ⏳     | `migrationLogic.ts` |
+
+**Merge gate:** Quality + Security (E2E advisory). Nach grünem CI: PR `cursor/phase-1-gemini-prompt-utils-671a` mergen → `main`, dann P1-03/`workerBus` auf neuem Branch `cursor/phase-1-worker-bus-671a`.
+
 ## Phases (backlog)
 
-- **Phase 1:** God-file splits (`geminiService`, `plantSimulationService`, `workerBus`, `migrationLogic`), DDD `useCases/`, RTK entity adapters
+- **Phase 1 (rest):** DDD `useCases/`, RTK entity adapters after god-file splits
 - **Phase 2:** Bundle/locale lazy-load, `AiOrchestrator`, PWA offline-queue UI, coverage Stufe B/C
 - **Phase 3 (v2.0):** Digital Twin, WebXR, V-06 ONNX voice, Tauri E2E
 

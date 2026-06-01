@@ -102,7 +102,7 @@
         ]
     },
     "devDependencies": {
-        "@commitlint/cli": "^20.5.3",
+        "@commitlint/cli": "^21.0.2",
         "@commitlint/config-conventional": "^21.0.2",
         "@eslint/js": "^9.39.4",
         "@lhci/cli": "^0.15.1",

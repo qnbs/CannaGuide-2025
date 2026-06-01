@@ -34,7 +34,13 @@ const getStrainImageStylePrompts = (
     cyberpunk: `A high-tech, cyberpunk-style hologram of the cannabis strain '${strainName}'. The plant should be rendered as a glowing, neon-blue and purple wireframe or semi-translucent light form, projected into a dark, futuristic scene. Incorporate glitch effects and scan lines for a high-tech feel.`,
 })
 
-const getStrainImageCriteriaPrompts = () => ({
+type CriteriaPromptMaps = {
+    focus: { buds: string; plant: string; abstract: string }
+    composition: { symmetrical: string; dynamic: string; minimalist: string }
+    mood: { mystical: string; energetic: string; calm: string }
+}
+
+const getStrainImageCriteriaPrompts = (): CriteriaPromptMaps => ({
     focus: {
         buds: 'The main focus is a close-up on the detailed structure of the flower buds.',
         plant: 'The composition features the entire plant, showcasing its overall shape and structure.',
@@ -65,15 +71,23 @@ export const buildStrainImagePrompt = (
     const criteriaPrompts = getStrainImageCriteriaPrompts()
     const strainSpecificPrompt = stylePrompts[style]
     const focusPrompt =
-        criteriaPrompts.focus[criteria.focus as keyof typeof criteriaPrompts.focus] ??
-        criteriaPrompts.focus.plant
+        criteria.focus === 'buds'
+            ? criteriaPrompts.focus.buds
+            : criteria.focus === 'abstract'
+              ? criteriaPrompts.focus.abstract
+              : criteriaPrompts.focus.plant
     const compositionPrompt =
-        criteriaPrompts.composition[
-            criteria.composition as keyof typeof criteriaPrompts.composition
-        ] ?? criteriaPrompts.composition.dynamic
+        criteria.composition === 'symmetrical'
+            ? criteriaPrompts.composition.symmetrical
+            : criteria.composition === 'minimalist'
+              ? criteriaPrompts.composition.minimalist
+              : criteriaPrompts.composition.dynamic
     const moodPrompt =
-        criteriaPrompts.mood[criteria.mood as keyof typeof criteriaPrompts.mood] ??
-        criteriaPrompts.mood.calm
+        criteria.mood === 'mystical'
+            ? criteriaPrompts.mood.mystical
+            : criteria.mood === 'energetic'
+              ? criteriaPrompts.mood.energetic
+              : criteriaPrompts.mood.calm
 
     const criteriaString = `
             Artistic Direction:

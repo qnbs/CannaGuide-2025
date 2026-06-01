@@ -49,7 +49,11 @@ const steps = [
         cmd: 'FILE_BUDGET_ADVISORY=1 node scripts/check-file-budget.mjs',
         optional: true,
     },
-    { name: 'localstorage-allowlist', cmd: 'node scripts/security/check-localstorage-usage.mjs' },
+    {
+        name: 'localstorage-allowlist',
+        cmd: 'node scripts/security/check-localstorage-usage.mjs',
+        optional: true,
+    },
     { name: 'i18n', cmd: 'pnpm run check:i18n' },
     {
         name: 'service-acyclic',

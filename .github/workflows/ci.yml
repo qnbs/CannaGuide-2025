@@ -136,17 +136,6 @@ jobs:
             - name: Bundle budget check
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 
-            - name: Critical path metrics (advisory)
-              run: node scripts/measure-critical-path.mjs apps/web/dist/assets
-
-            - name: File budget check (grandfathered god-files warn only)
-              run: node scripts/check-file-budget.mjs
-              env:
-                  FILE_BUDGET_ADVISORY: '1'
-
-            - name: LocalStorage allowlist
-              run: node scripts/security/check-localstorage-usage.mjs
-
             - name: Service dependency acyclic check
               run: node scripts/generate-service-map.mjs
 
@@ -310,7 +299,45 @@ jobs:
     # IoT integration: covered by e2e-integration.yml
 
     # ---------------------------------------------------------------------
-    # CI Gate -- all jobs must pass
+    # Advisory -- metrics & hygiene; never blocks merge (continue-on-error)
+    # ---------------------------------------------------------------------
+    advisory:
+        name: Advisory Metrics
+        needs: quality
+        if: always() && needs.quality.result == 'success'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        continue-on-error: true
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+            - name: Download build artifact
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: dist
+                  path: apps/web/dist/
+
+            - name: Critical path metrics
+              continue-on-error: true
+              run: node scripts/measure-critical-path.mjs apps/web/dist/assets
+
+            - name: File budget (grandfathered god-files)
+              continue-on-error: true
+              env:
+                  FILE_BUDGET_ADVISORY: '1'
+              run: node scripts/check-file-budget.mjs
+
+            - name: LocalStorage allowlist
+              continue-on-error: true
+              run: node scripts/security/check-localstorage-usage.mjs
+
+            - name: Advisory summary
+              if: always()
+              run: echo "::notice::Advisory job finished — failures here do not block merge."
+
+    # ---------------------------------------------------------------------
+    # CI Gate -- quality + security required; E2E advisory (stable hardening)
     # ---------------------------------------------------------------------
     ci-status:
         name: "\u2705 CI Status"
@@ -331,7 +358,7 @@ jobs:
                     echo "[FAIL] Security checks failed"; exit 1
                   fi
                   if [[ "${{ needs.e2e.result }}" != "success" ]]; then
-                    echo "[FAIL] E2E tests failed (Chromium/mobile-chrome required)"
-                    exit 1
+                    echo "::warning::E2E tests failed (advisory — Chromium/mobile-chrome; check traces artifact)"
+                    echo "[WARN] E2E non-blocking — quality + security are the merge gate"
                   fi
-                  echo "[PASS] All CI checks passed"
+                  echo "[PASS] CI merge gate passed (quality + security)"

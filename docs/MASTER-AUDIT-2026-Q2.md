@@ -8,7 +8,8 @@
 | Topic | Decision |
 | ----- | -------- |
 | Critical path / 3 MB | **Relaxed / advisory** — `measure-critical-path.mjs` reports metrics; no strict CI fail (budget brotli 1500 KB warn-only) |
-| E2E CI | **Chromium + mobile-chrome hard-fail**; Firefox/WebKit/visual regression advisory |
+| E2E CI | **Advisory** (warn in `ci-status`); Chromium `--retries=2`; Firefox/WebKit/visual regression advisory |
+| CI merge gate | **Quality + Security only**; advisory job for critical-path, file-budget, localStorage |
 | V-06 Offline Voice | **v2.0 only** (Deferred in `AUDIT_BACKLOG.md`) |
 | Phase 0 branch | `cursor/master-audit-phase-0-671a` |
 
@@ -20,7 +21,8 @@
 | Critical path metrics | `scripts/measure-critical-path.mjs` → `artifacts/critical-path-latest.json` |
 | File budget gate | `scripts/check-file-budget.mjs` (grandfathered god-files) |
 | localStorage allowlist | `scripts/security/check-localstorage-usage.mjs` |
-| CI E2E hard-fail | `.github/workflows/ci.yml` `ci-status` |
+| CI advisory job | `.github/workflows/ci.yml` — critical-path, file-budget, localStorage (non-blocking) |
+| CI merge gate | Quality + Security required; E2E advisory |
 | E2E stability | Chromium `--retries=2` |
 | Docs-only CI | `.github/workflows/ci-docs.yml` |
 | V-06 deferred | `docs/AUDIT_BACKLOG.md` |
@@ -37,7 +39,7 @@
 | --- | ------ | ---- |
 | Critical path brotli | < 1500 KB (advisory) | `pnpm run measure:critical-path` |
 | Main chunk gzip | < 300 KB (enforced) | `check-bundle-budget.mjs` |
-| E2E Chromium | Required pass | `ci.yml` |
+| E2E Chromium | Advisory (warn) | `ci.yml` |
 | God-files | 0 new >700 LOC | `check:file-budget` |
 | Coverage | Stufe B → C (later PRs) | `vitest` thresholds |
 

@@ -1,15 +1,45 @@
-import { GoogleGenAI, Type, Modality, HarmCategory, HarmBlockThreshold } from '@google/genai'
-import DOMPurify from 'dompurify'
-import { isTopicRelevant, sanitizeForPrompt } from '@/services/ai/safetyPipeline'
+import { Modality } from '@google/genai'
+import {
+    buildDiagnosePlantContext,
+    buildGardenPlantSummaries,
+    buildGrowLogRagPrompt,
+    buildLocalizedEducationalPrompt,
+    buildMentorPrompt,
+    buildNutrientPlannerPrompt,
+    buildPlantJournalContext,
+    buildStrainTipsLocalizedPrompt,
+    mapDynamicLoadingMessages,
+    type NutrientRecommendationInput,
+} from '@/services/ai/geminiContextBuilders'
 import {
     createCompactPlantSnapshot,
     createLocalizedPrompt,
-    formatPlantContextForPrompt,
     MAX_OUTPUT_TOKENS_JSON,
     MAX_OUTPUT_TOKENS_TEXT,
-    summarizeJournalForPrompt,
     truncatePromptForModel,
 } from '@/services/ai/geminiPromptUtils'
+import {
+    buildDeepDiveResponseSchema,
+    buildDiagnosePlantResponseSchema,
+    buildEquipmentRecommendationResponseSchema,
+    buildMentorResponseSchema,
+    buildStrainTipsResponseSchema,
+} from '@/services/ai/geminiResponseSchemas'
+import {
+    createGeminiClient,
+    generateGeminiTextStreamed,
+    generateWithGeminiFallback,
+    getEducationalUseOnlyInstruction,
+    parseGeminiJsonFromText,
+    parseGeminiJsonResponse,
+    reportGeminiUsage,
+    rethrowKnownGeminiError,
+} from '@/services/ai/geminiRuntime'
+import {
+    buildStrainImagePrompt,
+    extractGeneratedImageDataOrThrow,
+    resolveStrainImageStyle,
+} from '@/services/ai/geminiStrainImagePrompts'
 
 export { isTopicRelevant, sanitizeForPrompt } from '@/services/ai/safetyPipeline'
 import {
@@ -32,53 +62,12 @@ import {
 } from '@/types/schemas'
 import { z } from 'zod'
 import { getT } from '@/i18n'
-import { apiKeyService } from '@/services/apiKeyService'
-import { growLogRagService } from '@/services/growLogRagService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
-import { PROVIDER_CONFIGS } from '@cannaguide/ai-core'
-import { secureRandom } from '@/utils/random'
+import { localAiPreloadService } from '@/services/local-ai'
 
 export type { ImageStyle, ImageCriteria } from '@/types/aiProvider'
 import type { BaseAIProvider, ImageStyle, ImageCriteria } from '@/types/aiProvider'
-const availableStyles: Exclude<ImageStyle, 'random'>[] = [
-    'fantasy',
-    'botanical',
-    'psychedelic',
-    'macro',
-    'cyberpunk',
-]
-
-const AI_ERROR_KEYS = new Set([
-    'ai.error.missingApiKey',
-    'ai.error.generic',
-    'ai.error.equipment',
-    'ai.error.diagnostics',
-    'ai.error.tips',
-    'ai.error.deepDive',
-    'ai.error.unknown',
-    'ai.error.rateLimited',
-])
-
-const GEMINI_SAFETY_SETTINGS = [
-    {
-        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-]
-
-const getEducationalUseOnlyInstruction = (lang: Language): string => {
-    const instructions: Record<Language, string> = {
-        en: 'CONTEXT: This request is strictly for legal, educational horticulture use. Provide structured, factual, harm-minimizing guidance and do not infer illicit intent.',
-        de: 'KONTEXT: Diese Anfrage dient ausschliesslich legalen, edukativen Gartenbauzwecken. Gib strukturierte, sachliche und risikominimierende Informationen. Unterstelle keinen illegalen Zweck.',
-        es: 'CONTEXTO: Esta solicitud es estrictamente para uso horticola legal y educativo. Proporciona orientacion estructurada, factual y que minimice riesgos. No inferir intenciones ilicitas.',
-        fr: "CONTEXTE: Cette demande est strictement destinee a un usage horticole legal et educatif. Fournis des conseils structures, factuels et minimisant les risques. Ne presume pas d'intention illicite.",
-        nl: 'CONTEXT: Dit verzoek is strikt voor legaal, educatief tuinbouwgebruik. Geef gestructureerde, feitelijke en risicobeperkende informatie. Veronderstel geen illegale bedoeling.',
-    }
-    return instructions[lang] ?? instructions['en']
-}
-
-import { localAiPreloadService } from '@/services/local-ai'
 
 const getLocalAiService = async () => {
     const module = await import('@/services/local-ai')
@@ -87,49 +76,8 @@ const getLocalAiService = async () => {
 
 type LocalAiService = Awaited<ReturnType<typeof getLocalAiService>>
 
-type NutrientRecommendationInput = {
-    medium: string
-    stage: string
-    currentEc: number
-    currentPh: number
-    optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
-    readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
-    plant?:
-        | {
-              name: string
-              strain: { name: string }
-              stage: string
-              age: number
-              health: number
-              medium: { ph: number; ec: number }
-          }
-        | undefined
-}
-
 class GeminiService implements BaseAIProvider {
     readonly id = 'gemini' as const
-
-    private sanitizeValue<T>(value: T): T {
-        if (typeof value === 'string') {
-            // Strip all HTML tags from structured API data to prevent XSS
-            // without corrupting angle-bracket content in plain-text fields.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            return DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }) as T
-        }
-        if (Array.isArray(value)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            return value.map((item) => this.sanitizeValue(item)) as T
-        }
-        if (value && typeof value === 'object') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            const nextEntries = Object.entries(value as Record<string, unknown>).map(
-                ([key, val]) => [key, this.sanitizeValue(val)],
-            )
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            return Object.fromEntries(nextEntries) as T
-        }
-        return value
-    }
 
     private shouldUseLocalFallback(error: unknown): boolean {
         const offline = typeof navigator !== 'undefined' && navigator.onLine === false
@@ -176,201 +124,6 @@ class GeminiService implements BaseAIProvider {
         )
     }
 
-    private withGeminiSafety<T extends Record<string, unknown>>(
-        config?: T,
-    ): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } {
-        return {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            ...(config ?? ({} as T)),
-            safetySettings: GEMINI_SAFETY_SETTINGS,
-        }
-    }
-
-    private async generateWithFallback({
-        ai,
-        model,
-        contents,
-        config,
-        fallbackModel,
-    }: {
-        ai: GoogleGenAI
-        model: string
-        contents:
-            | string
-            | {
-                  parts: Array<{
-                      text?: string
-                      inlineData?: { data: string; mimeType: string }
-                  }>
-              }
-        config?: Record<string, unknown> | undefined
-        fallbackModel?: string | undefined
-    }) {
-        try {
-            return await ai.models.generateContent({
-                model,
-                contents,
-                config: this.withGeminiSafety(config),
-            })
-        } catch (primaryError) {
-            if (!fallbackModel || fallbackModel === model) {
-                throw primaryError
-            }
-
-            console.debug(
-                `[Gemini] Primary model ${model} failed, retrying with ${fallbackModel}.`,
-                primaryError,
-            )
-
-            return ai.models.generateContent({
-                model: fallbackModel,
-                contents,
-                config: this.withGeminiSafety(config),
-            })
-        }
-    }
-
-    /** Extract and report actual token usage from a Gemini response. */
-    private reportGeminiUsage(
-        endpoint: string,
-        response: {
-            usageMetadata?:
-                | {
-                      promptTokenCount?: number | undefined
-                      candidatesTokenCount?: number | undefined
-                      totalTokenCount?: number | undefined
-                  }
-                | undefined
-        },
-    ): void {
-        try {
-            const meta = response.usageMetadata
-            if (!meta) return
-            const promptTokens = meta.promptTokenCount ?? 0
-            const completionTokens = meta.candidatesTokenCount ?? 0
-            const totalTokens = meta.totalTokenCount ?? promptTokens + completionTokens
-            if (totalTokens <= 0) return
-            const pricing = PROVIDER_CONFIGS.gemini.pricing
-            aiRateLimiter.reportActualUsage(
-                endpoint,
-                { promptTokens, completionTokens, totalTokens },
-                pricing,
-            )
-        } catch {
-            // Best-effort -- never fail the AI call for telemetry
-        }
-    }
-
-    private async generateTextStreamed({
-        ai,
-        model,
-        contents,
-        config,
-    }: {
-        ai: GoogleGenAI
-        model: string
-        contents: string
-        config?: Record<string, unknown>
-    }): Promise<string> {
-        type ModelsWithStream = typeof ai.models & {
-            generateContentStream?: (options: Record<string, unknown>) => Promise<unknown>
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-        const streamFn = (ai.models as ModelsWithStream).generateContentStream
-
-        if (typeof streamFn !== 'function') {
-            const response = await this.generateWithFallback({ ai, model, contents, config })
-            return this.getResponseTextOrThrow(response, 'ai.error.generic')
-        }
-
-        type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<{ text?: string }> }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-        const streamResult = (await streamFn.call(ai.models, {
-            model,
-            contents,
-            config: this.withGeminiSafety(config),
-        })) as StreamResult
-
-        let fullText = ''
-        for await (const chunk of streamResult) {
-            if (typeof chunk?.text === 'string') {
-                fullText += chunk.text
-            }
-        }
-
-        if (!fullText.trim()) {
-            throw new Error('ai.error.generic')
-        }
-
-        return fullText
-    }
-
-    private rethrowKnownError(error: unknown, fallbackErrorKey: string): never {
-        if (error instanceof Error) {
-            if (AI_ERROR_KEYS.has(error.message)) throw error
-            // Rate limit errors carry retry info: "ai.error.rateLimited:30"
-            if (error.message.startsWith('ai.error.rateLimited')) throw error
-        }
-
-        throw new Error(fallbackErrorKey)
-    }
-
-    private getResponseTextOrThrow(
-        response: { text?: string | undefined },
-        errorKey: string,
-    ): string {
-        if (typeof response.text !== 'string' || response.text.trim().length === 0) {
-            throw new Error(errorKey)
-        }
-
-        return this.sanitizeValue(response.text)
-    }
-
-    private parseJsonResponse<T>(
-        response: { text?: string | undefined },
-        errorKey: string,
-        schema?: z.ZodSchema<T>,
-    ): T {
-        const text = this.getResponseTextOrThrow(response, errorKey)
-        return this.parseJsonFromText(text, errorKey, schema)
-    }
-
-    /** Parse & validate JSON from raw text (used by alternate providers). */
-    private parseJsonFromText<T>(text: string, errorKey: string, schema?: z.ZodSchema<T>): T {
-        let parsed: T
-        try {
-            // Strip markdown code fences that some providers wrap JSON in
-            const cleaned = text
-                .trim()
-                .replace(/^```(?:json)?\s*\n?/i, '')
-                .replace(/\n?```\s*$/i, '')
-                .trim()
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            parsed = JSON.parse(cleaned) as T
-        } catch {
-            throw new Error(errorKey)
-        }
-        const sanitized = this.sanitizeValue(parsed)
-        if (schema) {
-            const result = schema.safeParse(sanitized)
-            if (!result.success) {
-                console.debug('[AI] Response schema validation failed:', result.error.format())
-                throw new Error(errorKey)
-            }
-            return result.data
-        }
-        return sanitized
-    }
-
-    private async getAi(): Promise<GoogleGenAI> {
-        const apiKey = await apiKeyService.getApiKey()
-        if (!apiKey) {
-            throw new Error('ai.error.missingApiKey')
-        }
-
-        return new GoogleGenAI({ apiKey })
-    }
-
     private async generateText(
         prompt: string,
         lang: Language,
@@ -389,14 +142,14 @@ class GeminiService implements BaseAIProvider {
 
         try {
             aiRateLimiter.acquireSlot(endpoint)
-            const ai = await this.getAi()
+            const ai = await createGeminiClient()
             const localizedPrompt = createLocalizedPrompt(
                 `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
                 lang,
             )
             const guardedPrompt = truncatePromptForModel(localizedPrompt)
 
-            return await this.generateTextStreamed({
+            return await generateGeminiTextStreamed({
                 ai,
                 model: 'gemini-2.5-flash',
                 contents: guardedPrompt,
@@ -406,100 +159,7 @@ class GeminiService implements BaseAIProvider {
             })
         } catch (error) {
             console.debug('Gemini API Error:', error)
-            this.rethrowKnownError(error, 'ai.error.generic')
-        }
-    }
-
-    private buildEquipmentRecommendationResponseSchema(): Record<string, unknown> {
-        return {
-            type: Type.OBJECT,
-            properties: {
-                tent: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                    },
-                    required: ['name', 'price', 'rationale'],
-                },
-                light: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                        watts: { type: Type.NUMBER },
-                    },
-                    required: ['name', 'price', 'rationale', 'watts'],
-                },
-                ventilation: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                    },
-                    required: ['name', 'price', 'rationale'],
-                },
-                circulationFan: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                    },
-                    required: ['name', 'price', 'rationale'],
-                },
-                pots: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                    },
-                    required: ['name', 'price', 'rationale'],
-                },
-                soil: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                    },
-                    required: ['name', 'price', 'rationale'],
-                },
-                nutrients: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                    },
-                    required: ['name', 'price', 'rationale'],
-                },
-                extra: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        price: { type: Type.NUMBER },
-                        rationale: { type: Type.STRING },
-                    },
-                    required: ['name', 'price', 'rationale'],
-                },
-                proTip: { type: Type.STRING },
-            },
-            required: [
-                'tent',
-                'light',
-                'ventilation',
-                'circulationFan',
-                'pots',
-                'soil',
-                'nutrients',
-                'extra',
-                'proTip',
-            ],
+            return rethrowKnownGeminiError(error, 'ai.error.generic')
         }
     }
 
@@ -520,7 +180,7 @@ class GeminiService implements BaseAIProvider {
             MAX_OUTPUT_TOKENS_JSON,
         )
 
-        return this.parseJsonFromText<Recommendation>(
+        return parseGeminiJsonFromText<Recommendation>(
             text,
             'ai.error.equipment',
             RecommendationSchema,
@@ -533,14 +193,14 @@ class GeminiService implements BaseAIProvider {
     ): Promise<Recommendation> {
         const t = getT()
         aiRateLimiter.acquireSlot('getEquipmentRecommendation')
-        const ai = await this.getAi()
+        const ai = await createGeminiClient()
         const systemInstruction = t('ai.prompts.equipmentSystemInstruction')
         const localizedSystemInstruction = createLocalizedPrompt(
             `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
             lang,
         )
 
-        const response = await this.generateWithFallback({
+        const response = await generateWithGeminiFallback({
             ai,
             model: 'gemini-2.5-flash',
             contents: truncatePromptForModel(
@@ -550,38 +210,16 @@ class GeminiService implements BaseAIProvider {
                 systemInstruction: localizedSystemInstruction,
                 maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                 responseMimeType: 'application/json',
-                responseSchema: this.buildEquipmentRecommendationResponseSchema(),
+                responseSchema: buildEquipmentRecommendationResponseSchema(),
             },
         })
-        this.reportGeminiUsage('getEquipmentRecommendation', response)
+        reportGeminiUsage('getEquipmentRecommendation', response)
 
-        return this.parseJsonResponse<Recommendation>(
+        return parseGeminiJsonResponse<Recommendation>(
             response,
             'ai.error.equipment',
             RecommendationSchema,
         )
-    }
-
-    private buildMentorResponseSchema(): Record<string, unknown> {
-        return {
-            type: Type.OBJECT,
-            properties: {
-                title: { type: Type.STRING },
-                content: { type: Type.STRING },
-                uiHighlights: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            elementId: { type: Type.STRING },
-                            plantId: { type: Type.STRING },
-                        },
-                        required: ['elementId'],
-                    },
-                },
-            },
-            required: ['title', 'content'],
-        }
     }
 
     private async getMentorResponseFromAlternateProvider(
@@ -600,7 +238,7 @@ class GeminiService implements BaseAIProvider {
             MAX_OUTPUT_TOKENS_JSON,
         )
 
-        return this.parseJsonFromText<Omit<MentorMessage, 'role'>>(
+        return parseGeminiJsonFromText<Omit<MentorMessage, 'role'>>(
             text,
             'ai.error.generic',
             MentorMessageContentSchema as z.ZodSchema<Omit<MentorMessage, 'role'>>,
@@ -613,7 +251,7 @@ class GeminiService implements BaseAIProvider {
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
         aiRateLimiter.acquireSlot('getMentorResponse')
-        const ai = await this.getAi()
+        const ai = await createGeminiClient()
         const systemInstruction = t('ai.prompts.mentor.systemInstruction')
         const localizedSystemInstruction = createLocalizedPrompt(
             `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
@@ -623,7 +261,7 @@ class GeminiService implements BaseAIProvider {
             `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
             lang,
         )
-        const response = await this.generateWithFallback({
+        const response = await generateWithGeminiFallback({
             ai,
             model: 'gemini-2.5-flash',
             contents: truncatePromptForModel(localizedPrompt),
@@ -631,12 +269,12 @@ class GeminiService implements BaseAIProvider {
                 systemInstruction: localizedSystemInstruction,
                 maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                 responseMimeType: 'application/json',
-                responseSchema: this.buildMentorResponseSchema(),
+                responseSchema: buildMentorResponseSchema(),
             },
         })
-        this.reportGeminiUsage('getMentorResponse', response)
+        reportGeminiUsage('getMentorResponse', response)
 
-        return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(
+        return parseGeminiJsonResponse<Omit<MentorMessage, 'role'>>(
             response,
             'ai.error.generic',
             MentorMessageContentSchema as z.ZodSchema<Omit<MentorMessage, 'role'>>,
@@ -656,66 +294,7 @@ class GeminiService implements BaseAIProvider {
             if (isAlternateProviderError) {
                 console.debug('Alt-provider getEquipmentRecommendation Error:', error)
             }
-            this.rethrowKnownError(error, 'ai.error.equipment')
-        }
-    }
-
-    private buildDiagnosePlantProblemsSummary(plant: Plant, t: ReturnType<typeof getT>): string {
-        if (plant.problems.length === 0) {
-            return t('common.none')
-        }
-
-        return plant.problems
-            .map((problem) => {
-                const problemKey = problem.type
-                    .toLowerCase()
-                    .replaceAll(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
-                return t(`problemMessages.${problemKey}.message`)
-            })
-            .join(', ')
-    }
-
-    private buildDiagnosePlantContext(
-        plant: Plant,
-        userNotes: string,
-        t: ReturnType<typeof getT>,
-        growName?: string,
-    ): string {
-        const problems = this.buildDiagnosePlantProblemsSummary(plant, t)
-        const growLine = growName ? `\n- Grow: "${growName}"` : ''
-
-        return `
-PLANT CONTEXT:${growLine}
-- Strain: ${plant.strain.name} (${plant.strain.type})
-- Age: ${plant.age} days (Stage: ${t(`plantStages.${plant.stage}`)})
-- Active Issues: ${problems}
-- Medium Vitals: pH ${plant.medium.ph.toFixed(2)}, EC ${plant.medium.ec.toFixed(2)}
-- Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(1)}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
-- USER NOTES: "${sanitizeForPrompt(userNotes || 'None provided', 400)}"
-        `.trim()
-    }
-
-    private buildDiagnosePlantResponseSchema(): Record<string, unknown> {
-        return {
-            type: Type.OBJECT,
-            properties: {
-                title: { type: Type.STRING },
-                content: { type: Type.STRING },
-                confidence: { type: Type.NUMBER },
-                immediateActions: { type: Type.STRING },
-                longTermSolution: { type: Type.STRING },
-                prevention: { type: Type.STRING },
-                diagnosis: { type: Type.STRING },
-            },
-            required: [
-                'title',
-                'content',
-                'confidence',
-                'immediateActions',
-                'longTermSolution',
-                'prevention',
-                'diagnosis',
-            ],
+            return rethrowKnownGeminiError(error, 'ai.error.equipment')
         }
     }
 
@@ -725,40 +304,27 @@ PLANT CONTEXT:${growLine}
         localizedPrompt: string,
     ): Promise<PlantDiagnosisResponse> {
         aiRateLimiter.acquireSlot('diagnosePlant')
-        const ai = await this.getAi()
+        const ai = await createGeminiClient()
         const imagePart = { inlineData: { data: base64Image, mimeType } }
         const textPart = { text: localizedPrompt }
 
-        const response = await this.generateWithFallback({
+        const response = await generateWithGeminiFallback({
             ai,
             model: 'gemini-2.5-flash',
             contents: { parts: [imagePart, textPart] },
             config: {
                 maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                 responseMimeType: 'application/json',
-                responseSchema: this.buildDiagnosePlantResponseSchema(),
+                responseSchema: buildDiagnosePlantResponseSchema(),
             },
         })
-        this.reportGeminiUsage('diagnosePlant', response)
+        reportGeminiUsage('diagnosePlant', response)
 
-        return this.parseJsonResponse<PlantDiagnosisResponse>(
+        return parseGeminiJsonResponse<PlantDiagnosisResponse>(
             response,
             'ai.error.diagnostics',
             PlantDiagnosisResponseSchema,
         )
-    }
-
-    private buildStrainTipsResponseSchema(): Record<string, unknown> {
-        return {
-            type: Type.OBJECT,
-            properties: {
-                nutrientTip: { type: Type.STRING },
-                trainingTip: { type: Type.STRING },
-                environmentalTip: { type: Type.STRING },
-                proTip: { type: Type.STRING },
-            },
-            required: ['nutrientTip', 'trainingTip', 'environmentalTip', 'proTip'],
-        }
     }
 
     private async getStrainTipsFromAlternateProvider(
@@ -774,7 +340,7 @@ PLANT CONTEXT:${growLine}
             true,
             MAX_OUTPUT_TOKENS_JSON,
         )
-        return this.parseJsonFromText<StructuredGrowTips>(
+        return parseGeminiJsonFromText<StructuredGrowTips>(
             text,
             'ai.error.tips',
             StructuredGrowTipsSchema,
@@ -783,44 +349,24 @@ PLANT CONTEXT:${growLine}
 
     private async getStrainTipsFromGemini(localizedPrompt: string): Promise<StructuredGrowTips> {
         aiRateLimiter.acquireSlot('getStrainTips')
-        const ai = await this.getAi()
-        const response = await this.generateWithFallback({
+        const ai = await createGeminiClient()
+        const response = await generateWithGeminiFallback({
             ai,
             model: 'gemini-2.5-flash',
             contents: truncatePromptForModel(localizedPrompt),
             config: {
                 maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                 responseMimeType: 'application/json',
-                responseSchema: this.buildStrainTipsResponseSchema(),
+                responseSchema: buildStrainTipsResponseSchema(),
             },
         })
-        this.reportGeminiUsage('getStrainTips', response)
+        reportGeminiUsage('getStrainTips', response)
 
-        return this.parseJsonResponse<StructuredGrowTips>(
+        return parseGeminiJsonResponse<StructuredGrowTips>(
             response,
             'ai.error.tips',
             StructuredGrowTipsSchema,
         )
-    }
-
-    private buildDeepDiveResponseSchema(): Record<string, unknown> {
-        return {
-            type: Type.OBJECT,
-            properties: {
-                introduction: { type: Type.STRING },
-                stepByStep: { type: Type.ARRAY, items: { type: Type.STRING } },
-                prosAndCons: {
-                    type: Type.OBJECT,
-                    properties: {
-                        pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    },
-                    required: ['pros', 'cons'],
-                },
-                proTip: { type: Type.STRING },
-            },
-            required: ['introduction', 'stepByStep', 'prosAndCons', 'proTip'],
-        }
     }
 
     private async generateDeepDiveFromAlternateProvider(
@@ -836,13 +382,13 @@ PLANT CONTEXT:${growLine}
             true,
             MAX_OUTPUT_TOKENS_JSON,
         )
-        return this.parseJsonFromText<DeepDiveGuide>(text, 'ai.error.deepDive', DeepDiveGuideSchema)
+        return parseGeminiJsonFromText<DeepDiveGuide>(text, 'ai.error.deepDive', DeepDiveGuideSchema)
     }
 
     private async generateDeepDiveFromGemini(localizedPrompt: string): Promise<DeepDiveGuide> {
         aiRateLimiter.acquireSlot('generateDeepDive')
-        const ai = await this.getAi()
-        const response = await this.generateWithFallback({
+        const ai = await createGeminiClient()
+        const response = await generateWithGeminiFallback({
             ai,
             model: 'gemini-2.5-pro',
             fallbackModel: 'gemini-2.5-flash',
@@ -850,236 +396,16 @@ PLANT CONTEXT:${growLine}
             config: {
                 maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                 responseMimeType: 'application/json',
-                responseSchema: this.buildDeepDiveResponseSchema(),
+                responseSchema: buildDeepDiveResponseSchema(),
             },
         })
-        this.reportGeminiUsage('generateDeepDive', response)
+        reportGeminiUsage('generateDeepDive', response)
 
-        return this.parseJsonResponse<DeepDiveGuide>(
+        return parseGeminiJsonResponse<DeepDiveGuide>(
             response,
             'ai.error.deepDive',
             DeepDiveGuideSchema,
         )
-    }
-
-    private resolveImageStyle(style: ImageStyle): Exclude<ImageStyle, 'random'> {
-        if (style === 'random') {
-            return (
-                availableStyles[Math.floor(secureRandom() * availableStyles.length)] ?? 'botanical'
-            )
-        }
-
-        return style as Exclude<ImageStyle, 'random'>
-    }
-
-    private getStrainImageStylePrompts(
-        strainName: string,
-    ): Record<Exclude<ImageStyle, 'random'>, string> {
-        return {
-            fantasy: `A stunning, artistic, and imaginative fantasy illustration representing the cannabis strain '${strainName}'. The style should be vibrant and impressive, with ethereal, magical lighting.`,
-            botanical: `A detailed vintage botanical illustration of the cannabis strain '${strainName}'. The style should mimic a 19th-century scientific drawing with fine ink lines, delicate watercolor washes, and annotations on aged, parchment-like paper. Focus on realism and anatomical accuracy.`,
-            psychedelic: `A vibrant, psychedelic art piece inspired by the cannabis strain '${strainName}'. The style should be reminiscent of 1960s poster art, featuring swirling patterns, kaleidoscopic visuals, bold neon colors, and abstract, flowing shapes. Trippy and mesmerizing.`,
-            macro: `An ultra-realistic, professional macro photograph of a perfect cannabis bud from the strain '${strainName}'. Focus on the intricate details: glistening trichomes, vibrant pistils, and complex textures. Use dramatic studio lighting to create depth. The background should be clean and dark.`,
-            cyberpunk: `A high-tech, cyberpunk-style hologram of the cannabis strain '${strainName}'. The plant should be rendered as a glowing, neon-blue and purple wireframe or semi-translucent light form, projected into a dark, futuristic scene. Incorporate glitch effects and scan lines for a high-tech feel.`,
-        }
-    }
-
-    private getStrainImageCriteriaPrompts(): {
-        focus: Record<string, string>
-        composition: Record<string, string>
-        mood: Record<string, string>
-    } {
-        return {
-            focus: {
-                buds: 'The main focus is a close-up on the detailed structure of the flower buds.',
-                plant: 'The composition features the entire plant, showcasing its overall shape and structure.',
-                abstract:
-                    "The image is an abstract representation of the strain's essence, not a literal plant.",
-            },
-            composition: {
-                symmetrical: 'The composition is balanced and formally symmetrical.',
-                dynamic:
-                    'The composition is dynamic, using strong diagonal lines and a sense of movement.',
-                minimalist:
-                    'The composition is minimalist, with a single subject against a simple, clean background.',
-            },
-            mood: {
-                mystical: 'The overall mood is mystical, dark, and enigmatic.',
-                energetic: 'The overall mood is bright, energetic, and vibrant.',
-                calm: 'The overall mood is calm, serene, and peaceful.',
-            },
-        }
-    }
-
-    private buildStrainImagePrompt(
-        strain: Strain,
-        style: Exclude<ImageStyle, 'random'>,
-        criteria: ImageCriteria,
-    ): string {
-        const systemPrompt =
-            "You are an advanced image generation AI. Your task is to produce a single, high-fidelity, visually stunning, and contextually accurate image based on the user's detailed prompt. Adhere strictly to all instructions, especially regarding style, subject, and mood. Interpret prompts artistically but precisely."
-        const stylePrompts = this.getStrainImageStylePrompts(strain.name)
-        const criteriaPrompts = this.getStrainImageCriteriaPrompts()
-        const strainSpecificPrompt = stylePrompts[style]
-        const focusPrompt = criteriaPrompts.focus[criteria.focus] ?? criteriaPrompts.focus.plant
-        const compositionPrompt =
-            criteriaPrompts.composition[criteria.composition] ?? criteriaPrompts.composition.dynamic
-        const moodPrompt = criteriaPrompts.mood[criteria.mood] ?? criteriaPrompts.mood.calm
-
-        const criteriaString = `
-            Artistic Direction:
-            - Focus: ${focusPrompt}
-            - Composition: ${compositionPrompt}
-            - Mood: ${moodPrompt}
-            - Integrate the strain's name '${strain.name}' creatively and elegantly into the artwork itself, for example as subtle typography, glowing runes, or part of a natural pattern.
-        `
-
-        return `${systemPrompt}\n\n---\n\nCONTEXT: The image request is for legal, educational horticulture visualization only.\n\nEXECUTE THE FOLLOWING PROMPT:\n\n${strainSpecificPrompt}\n\n${criteriaString}`
-    }
-
-    private extractGeneratedImageDataOrThrow(response: {
-        candidates?: Array<{
-            content?: {
-                parts?: Array<{
-                    inlineData?: { data?: string }
-                }>
-            }
-        }>
-    }): string {
-        const imagePart = response.candidates?.[0]?.content?.parts?.find((part) => part.inlineData)
-        if (imagePart && imagePart.inlineData && typeof imagePart.inlineData.data === 'string') {
-            return imagePart.inlineData.data
-        }
-
-        throw new Error(getT()('common.noImageGenerated'))
-    }
-
-    private buildNutrientReadingsSummary(
-        readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>,
-    ): string {
-        if (readings.length === 0) {
-            return 'No recent readings.'
-        }
-
-        return readings
-            .map(
-                (reading) =>
-                    `EC=${reading.ec.toFixed(2)} pH=${reading.ph.toFixed(2)} (${reading.readingType})`,
-            )
-            .join('; ')
-    }
-
-    private buildNutrientPlantInfo(context: {
-        plant?:
-            | {
-                  name: string
-                  strain: { name: string }
-                  stage: string
-                  age: number
-                  health: number
-                  medium: { ph: number; ec: number }
-              }
-            | undefined
-    }): string {
-        if (!context.plant) {
-            return 'No specific plant selected.'
-        }
-
-        return `Plant: ${context.plant.name} (${context.plant.strain.name}), Stage: ${context.plant.stage}, Age: ${context.plant.age}d, Health: ${context.plant.health.toFixed(0)}%, Live pH: ${context.plant.medium.ph.toFixed(2)}, Live EC: ${context.plant.medium.ec.toFixed(2)}`
-    }
-
-    private buildNutrientPlannerPrompt(
-        context: NutrientRecommendationInput,
-        t: ReturnType<typeof getT>,
-    ): string {
-        const readingsSummary = this.buildNutrientReadingsSummary(context.readings)
-        const plantInfo = this.buildNutrientPlantInfo(context)
-
-        return `${t('ai.prompts.nutrientPlanner', {
-            medium: context.medium,
-            stage: context.stage,
-            currentEc: context.currentEc.toFixed(2),
-            currentPh: context.currentPh.toFixed(2),
-            ecMin: context.optimalRange.ecMin.toFixed(2),
-            ecMax: context.optimalRange.ecMax.toFixed(2),
-            phMin: context.optimalRange.phMin.toFixed(2),
-            phMax: context.optimalRange.phMax.toFixed(2),
-            readings: readingsSummary,
-            plant: plantInfo,
-        })}`
-    }
-
-    private buildPlantJournalContext(plant: Plant, t: ReturnType<typeof getT>): string {
-        const translate = (key: string, options?: Record<string, unknown> | undefined): string =>
-            t(key, options ?? {})
-        return `${formatPlantContextForPrompt(plant, translate)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
-    }
-
-    private buildLocalizedEducationalPrompt(prompt: string, lang: Language): string {
-        return createLocalizedPrompt(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`, lang)
-    }
-
-    private async buildMentorPrompt(
-        plant: Plant,
-        query: string,
-        t: ReturnType<typeof getT>,
-        growId?: string,
-        growName?: string,
-    ): Promise<{ prompt: string; ragContext: string }> {
-        const plantContext = this.buildPlantJournalContext(plant, t)
-        let ragContext: string
-        try {
-            if (growId) {
-                ragContext = await growLogRagService.retrieveSemanticContextForGrow(
-                    [plant],
-                    query,
-                    growId,
-                )
-            } else {
-                ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
-            }
-        } catch {
-            if (growId) {
-                ragContext = growLogRagService.retrieveRelevantContextForGrow(
-                    [plant],
-                    query,
-                    growId,
-                )
-            } else {
-                ragContext = growLogRagService.retrieveRelevantContext([plant], query)
-            }
-        }
-        const sanitizedQuery = sanitizeForPrompt(query, 600)
-
-        // S-01: Topic-scoped allow-list -- redirect off-topic queries
-        const topicGuard = isTopicRelevant(sanitizedQuery)
-            ? ''
-            : '\nIMPORTANT: The user query may be off-topic. Politely redirect them to cannabis cultivation topics.\n'
-
-        const growContext = growName ? `\n\nGROW CONTEXT\n- Grow: "${growName}"` : ''
-
-        const prompt = t('ai.prompts.mentor.main', {
-            context: `${plantContext}${growContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}${topicGuard}`,
-            query: sanitizedQuery,
-        })
-
-        return { prompt, ragContext }
-    }
-
-    private buildStrainTipsLocalizedPrompt(
-        strain: Strain,
-        context: { focus: string; stage: string; experienceLevel: string },
-        lang: Language,
-        t: ReturnType<typeof getT>,
-    ): string {
-        const prompt = t('ai.prompts.strainTips', {
-            strain: JSON.stringify(strain),
-            focus: context.focus,
-            stage: context.stage,
-            experienceLevel: context.experienceLevel,
-        })
-
-        return this.buildLocalizedEducationalPrompt(prompt, lang)
     }
 
     private async getPlantNarrativeWithFallback(
@@ -1095,7 +421,7 @@ PLANT CONTEXT:${growLine}
         ) => Promise<AIResponse>,
     ): Promise<AIResponse> {
         const t = getT()
-        const plantContext = this.buildPlantJournalContext(plant, t)
+        const plantContext = buildPlantJournalContext(plant, t)
         const prompt = t(promptBuilderKey, { plant: plantContext })
 
         return this.runWithLocalFallback<AIResponse>(
@@ -1122,50 +448,6 @@ PLANT CONTEXT:${growLine}
         }
     }
 
-    private buildGardenPlantSummaries(plants: Plant[], t: ReturnType<typeof getT>): string {
-        return plants
-            .map((plant) => {
-                const problemsSummary =
-                    plant.problems.length > 0
-                        ? plant.problems.map((problem) => problem.type).join(', ')
-                        : 'None'
-
-                return `- ${plant.name} (${t('plantsView.plantCard.day')} ${plant.age}, ${t(`plantStages.${plant.stage}`)}): Health ${plant.health.toFixed(0)}%, Stress ${plant.stressLevel.toFixed(0)}%. Problems: ${problemsSummary}`
-            })
-            .join('\n')
-    }
-
-    private async buildGrowLogRagPrompt(plants: Plant[], query: string): Promise<string> {
-        let ragContext: string
-        try {
-            ragContext = await growLogRagService.retrieveSemanticContext(plants, query)
-        } catch {
-            ragContext = growLogRagService.retrieveRelevantContext(plants, query)
-        }
-        const safeQuery = sanitizeForPrompt(query, 600)
-        // S-01: Topic-scoped allow-list
-        const topicGuard = isTopicRelevant(safeQuery)
-            ? ''
-            : '\nNote: The query may be off-topic for cannabis cultivation. Politely redirect.\n'
-        return `Answer the question using only the provided grow-log context.\n\nQuestion:\n${safeQuery}\n\nGrow-log context:\n${ragContext}${topicGuard}\n\nIf information is uncertain, explicitly say so.`
-    }
-
-    private mapDynamicLoadingMessages(messagesResult: unknown): string[] {
-        if (
-            typeof messagesResult === 'object' &&
-            messagesResult !== null &&
-            !Array.isArray(messagesResult)
-        ) {
-            return Object.values(messagesResult).map(String)
-        }
-
-        if (Array.isArray(messagesResult)) {
-            return messagesResult.map(String)
-        }
-
-        return [String(messagesResult)]
-    }
-
     async diagnosePlant(
         base64Image: string,
         mimeType: string,
@@ -1180,7 +462,7 @@ PLANT CONTEXT:${growLine}
         }
 
         const t = getT()
-        const contextString = this.buildDiagnosePlantContext(plant, userNotes, t, growName)
+        const contextString = buildDiagnosePlantContext(plant, userNotes, t, growName)
 
         const prompt = `
             Analyze the following image of a cannabis plant.
@@ -1191,7 +473,7 @@ PLANT CONTEXT:${growLine}
             { "title": "...", "content": "...", "confidence": 0.0, "immediateActions": "...", "longTermSolution": "...", "prevention": "...", "diagnosis": "..." }
         `
 
-        const localizedPrompt = this.buildLocalizedEducationalPrompt(prompt, lang)
+        const localizedPrompt = buildLocalizedEducationalPrompt(prompt, lang)
 
         try {
             return await this.diagnosePlantViaGemini(base64Image, mimeType, localizedPrompt)
@@ -1201,7 +483,7 @@ PLANT CONTEXT:${growLine}
                 const localAiService = await getLocalAiService()
                 return localAiService.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
             }
-            this.rethrowKnownError(error, 'ai.error.diagnostics')
+            return rethrowKnownGeminiError(error, 'ai.error.diagnostics')
         }
     }
 
@@ -1235,7 +517,7 @@ PLANT CONTEXT:${growLine}
         growName?: string,
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
-        const { prompt, ragContext } = await this.buildMentorPrompt(
+        const { prompt, ragContext } = await buildMentorPrompt(
             plant,
             query,
             t,
@@ -1255,7 +537,7 @@ PLANT CONTEXT:${growLine}
                 const localAiService = await getLocalAiService()
                 return localAiService.getMentorResponse(plant, query, lang, ragContext)
             }
-            this.rethrowKnownError(error, 'ai.error.generic')
+            return rethrowKnownGeminiError(error, 'ai.error.generic')
         }
     }
 
@@ -1265,7 +547,7 @@ PLANT CONTEXT:${growLine}
         lang: Language,
     ): Promise<StructuredGrowTips> {
         const t = getT()
-        const localizedPrompt = this.buildStrainTipsLocalizedPrompt(strain, context, lang, t)
+        const localizedPrompt = buildStrainTipsLocalizedPrompt(strain, context, lang, t)
         try {
             if (this.isAlternateProvider()) {
                 return await this.getStrainTipsFromAlternateProvider(localizedPrompt, lang)
@@ -1278,7 +560,7 @@ PLANT CONTEXT:${growLine}
                 const localAiService = await getLocalAiService()
                 return localAiService.getStrainTips(strain, context, lang)
             }
-            this.rethrowKnownError(e, 'ai.error.tips')
+            return rethrowKnownGeminiError(e, 'ai.error.tips')
         }
     }
 
@@ -1287,13 +569,13 @@ PLANT CONTEXT:${growLine}
         style: ImageStyle,
         criteria: ImageCriteria,
     ): Promise<string> {
-        const selectedStyle = this.resolveImageStyle(style)
-        const prompt = this.buildStrainImagePrompt(strain, selectedStyle, criteria)
+        const selectedStyle = resolveStrainImageStyle(style)
+        const prompt = buildStrainImagePrompt(strain, selectedStyle, criteria)
 
         try {
             aiRateLimiter.acquireSlot('generateStrainImage')
-            const ai = await this.getAi()
-            const response = await this.generateWithFallback({
+            const ai = await createGeminiClient()
+            const response = await generateWithGeminiFallback({
                 ai,
                 model: 'gemini-2.0-flash-preview-image-generation',
                 fallbackModel: 'gemini-2.0-flash-exp-image-generation',
@@ -1308,12 +590,12 @@ PLANT CONTEXT:${growLine}
                     responseModalities: [Modality.IMAGE],
                 },
             })
-            this.reportGeminiUsage('generateStrainImage', response)
+            reportGeminiUsage('generateStrainImage', response)
 
-            return this.extractGeneratedImageDataOrThrow(response)
+            return extractGeneratedImageDataOrThrow(response)
         } catch (error) {
             console.debug('Gemini generateStrainImage Error:', error)
-            this.rethrowKnownError(error, 'ai.error.generic')
+            return rethrowKnownGeminiError(error, 'ai.error.generic')
         }
     }
 
@@ -1340,13 +622,13 @@ PLANT CONTEXT:${growLine}
                 const localAiService = await getLocalAiService()
                 return localAiService.generateDeepDive(topic, plant, lang)
             }
-            this.rethrowKnownError(e, 'ai.error.deepDive')
+            return rethrowKnownGeminiError(e, 'ai.error.deepDive')
         }
     }
 
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
         const t = getT()
-        const plantSummaries = this.buildGardenPlantSummaries(plants, t)
+        const plantSummaries = buildGardenPlantSummaries(plants, t)
 
         const prompt = t('ai.prompts.gardenStatus', { summaries: plantSummaries })
 
@@ -1362,7 +644,7 @@ PLANT CONTEXT:${growLine}
     }
 
     async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
-        const prompt = await this.buildGrowLogRagPrompt(plants, query)
+        const prompt = await buildGrowLogRagPrompt(plants, query)
 
         return this.runWithLocalFallback<AIResponse>(
             async () => {
@@ -1390,7 +672,7 @@ PLANT CONTEXT:${growLine}
             ...data,
             returnObjects: true,
         })
-        return this.mapDynamicLoadingMessages(messagesResult)
+        return mapDynamicLoadingMessages(messagesResult)
     }
 
     async getNutrientRecommendation(
@@ -1398,7 +680,7 @@ PLANT CONTEXT:${growLine}
         lang: Language,
     ): Promise<string> {
         const t = getT()
-        const prompt = this.buildNutrientPlannerPrompt(context, t)
+        const prompt = buildNutrientPlannerPrompt(context, t)
 
         return this.generateText(prompt, lang, 'getNutrientRecommendation')
     }

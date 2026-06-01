@@ -32,8 +32,8 @@
 
 | Task  | Status | Notes |
 | ----- | ------ | ----- |
-| P1-01 | 🔄     | `geminiPromptUtils.ts` extracted from `geminiService` (~140 LOC); service ~1420 LOC (further splits: client, harm settings) |
-| P1-02 | ⏳     | `plantSimulationService.ts` |
+| P1-01 | 🔄     | `geminiService` ~702 LOC — modules: `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
+| P1-02 | 🔄     | `plantSimulationService` ~1575 LOC — `simulation/plantStageDetails`, `simulationProfiles`, `vpdSimulationService` |
 | P1-03 | ⏳     | `workerBus.ts` |
 | P1-04 | ⏳     | `migrationLogic.ts` |
 

@@ -655,6 +655,7 @@ export const settingsView = {
             clearConfirmButton: 'Wachtrij legen',
             clearSuccess: 'Offline-actiewachtrij geleegd.',
             clearError: 'Kon de offline-wachtrij niet legen.',
+            actionJournal: 'Journalnotitie',
         },
         crdtDocSize: 'CRDT-document',
         crdtFallback:

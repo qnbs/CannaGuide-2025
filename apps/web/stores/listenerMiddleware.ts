@@ -10,6 +10,7 @@ import { useFiltersStore, getFiltersSnapshot } from './useFiltersStore'
 import { urlService } from '@/services/urlService'
 import { ttsService } from '@/services/ttsService'
 import { buildVoiceCommands, matchVoiceCommand } from '@/services/voiceCommandRegistry'
+import { offlineActionQueueService } from '@/services/offlineActionQueueService'
 
 // Import actions to listen for
 import {
@@ -431,7 +432,7 @@ startAppListening({
 
 startAppListening({
     actionCreator: addJournalEntry,
-    effect: async (action) => {
+    effect: async (action, listenerApi) => {
         const t = getT()
         if (action.payload.entry.details && 'diagnosis' in action.payload.entry.details) {
             getUISnapshot().addNotification({
@@ -440,22 +441,25 @@ startAppListening({
             })
         }
 
-        // Background Sync demonstration
-        if (!navigator.onLine) {
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
             try {
-                const registration = await navigator.serviceWorker.ready
-                if ('sync' in registration) {
-                    await // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Background Sync API
-                    (registration.sync as { register: (tag: string) => Promise<void> }).register(
-                        'data-sync',
-                    )
+                const { plantId } = action.payload
+                const plant = (listenerApi.getState() as RootState).simulation.plants.entities[
+                    plantId
+                ]
+                const latestEntry = plant?.journal[plant.journal.length - 1]
+                if (latestEntry) {
+                    await offlineActionQueueService.queueJournalEntry(plantId, latestEntry)
+                }
+                const registered = await offlineActionQueueService.requestBackgroundSync()
+                if (registered) {
                     getUISnapshot().addNotification({
                         message: getT()('common.offlineQueued'),
                         type: 'info',
                     })
                 }
             } catch (err) {
-                console.debug('Background sync registration failed:', err)
+                console.debug('[offlineQueue] Journal queue / background sync failed:', err)
             }
         }
     },

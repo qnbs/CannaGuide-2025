@@ -656,6 +656,7 @@ export const settingsView = {
             clearConfirmButton: 'Warteschlange leeren',
             clearSuccess: 'Offline-Warteschlange geleert.',
             clearError: 'Offline-Warteschlange konnte nicht geleert werden.',
+            actionJournal: 'Journal-Eintrag',
         },
         crdtDocSize: 'CRDT-Dokument',
         crdtFallback: 'CRDT-Sync im Fallback-Modus (LWW). Offline-Zusammenfuehrung deaktiviert.',

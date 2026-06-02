@@ -109,6 +109,13 @@ vi.mock('@/services/urlService', () => ({
     urlService: { serializeFiltersToQueryString: vi.fn(() => '') },
 }))
 
+vi.mock('@/services/offlineActionQueueService', () => ({
+    offlineActionQueueService: {
+        queueJournalEntry: vi.fn(),
+        requestBackgroundSync: vi.fn(),
+    },
+}))
+
 vi.mock('@/services/ttsService', () => ({
     ttsService: { speak: vi.fn() },
 }))

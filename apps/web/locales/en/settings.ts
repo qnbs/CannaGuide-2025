@@ -638,6 +638,7 @@ export const settingsView = {
             clearConfirmButton: 'Clear queue',
             clearSuccess: 'Offline action queue cleared.',
             clearError: 'Could not clear the offline queue.',
+            actionJournal: 'Journal entry',
         },
         crdtDocSize: 'CRDT Document',
         crdtFallback: 'CRDT sync in fallback mode (LWW). Offline merge disabled.',

@@ -670,6 +670,7 @@ export const settingsView = {
             clearConfirmButton: 'Vider la file',
             clearSuccess: "File d'actions hors ligne videe.",
             clearError: "Impossible de vider la file hors ligne.",
+            actionJournal: 'Entree de journal',
         },
         crdtDocSize: 'Document CRDT',
         crdtFallback:

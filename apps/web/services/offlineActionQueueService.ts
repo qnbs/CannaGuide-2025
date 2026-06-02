@@ -5,7 +5,9 @@
  * returns (see `public/sw.js`). This is separate from `offlineSyncQueueService`
  * (GitHub Gist cloud sync).
  */
+import { OFFLINE_ACTION_TYPES } from '@/constants/offlineActions'
 import { dbService } from '@/services/dbService'
+import type { JournalEntry } from '@/types'
 
 export type OfflineActionRecord = {
     id?: number
@@ -16,11 +18,17 @@ export type OfflineActionRecord = {
 }
 
 const formatActionType = (action: OfflineActionRecord): string => {
+    if (action.type === OFFLINE_ACTION_TYPES.ADD_JOURNAL_ENTRY) {
+        return 'journalEntry'
+    }
     if (typeof action.type === 'string' && action.type.length > 0) {
         return action.type
     }
     return 'unknown'
 }
+
+export const buildJournalEntryIdempotencyKey = (plantId: string, entryId: string): string =>
+    `journal-entry-${plantId}-${entryId}`
 
 export const offlineActionQueueService = {
     list: (): Promise<OfflineActionRecord[]> => dbService.listOfflineActions(),
@@ -28,6 +36,16 @@ export const offlineActionQueueService = {
     count: (): Promise<number> => dbService.countOfflineActions(),
 
     clear: (): Promise<void> => dbService.clearOfflineActions(),
+
+    queueJournalEntry: async (plantId: string, entry: JournalEntry): Promise<void> => {
+        await dbService.addOfflineAction({
+            type: OFFLINE_ACTION_TYPES.ADD_JOURNAL_ENTRY,
+            plantId,
+            entry,
+            idempotencyKey: buildJournalEntryIdempotencyKey(plantId, entry.id),
+            queuedAt: Date.now(),
+        })
+    },
 
     /** Human-readable label for settings UI (action `type` field). */
     describeAction: (action: OfflineActionRecord): string => formatActionType(action),

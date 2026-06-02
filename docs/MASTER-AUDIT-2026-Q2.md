@@ -47,12 +47,13 @@
 
 ## Phase 2 — In progress (Master Audit Q2)
 
-| Task  | Status | Notes                                                                                          |
-| ----- | ------ | ---------------------------------------------------------------------------------------------- |
-| P2-01 | ✅     | `changeAppLanguage` / `ensureLocaleLoaded` in `i18n.ts`; Aufrufer vereinheitlicht              |
-| P2-02 | ✅     | `services/ai/aiOrchestrator.ts` — Facade über `localRoutingService`; Export via `aiFacade.ts`  |
-| P2-03 | ✅     | `offlineActionQueueService` + Settings `OfflineActionQueuePanel`; `dbService.list/count/clear` |
-| P2-04 | ⏳     | Coverage Stufe B (50/50/35/50) — nach vollem `test:coverage`-Lauf in Folge-PR                  |
+| Task  | Status  | Notes                                                                                          |
+| ----- | ------- | ---------------------------------------------------------------------------------------------- |
+| P2-01 | ✅      | `changeAppLanguage` / `ensureLocaleLoaded` in `i18n.ts`; Aufrufer vereinheitlicht              |
+| P2-02 | ✅      | `services/ai/aiOrchestrator.ts` — Facade über `localRoutingService`; Export via `aiFacade.ts`  |
+| P2-03 | ✅      | `offlineActionQueueService` + Settings `OfflineActionQueuePanel`; `dbService.list/count/clear` |
+| P2-04 | ✅ (B₁) | Vitest 42/39/25/35 % (CI phase-2); Roadmap-Ziel 50/50/35/50 → Coverage-Sprint                  |
+| P2-05 | ✅      | Journal offline: queue + `applyQueuedJournalEntry` + SW replay listener                        |
 
 ## Phases (backlog)
 

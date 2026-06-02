@@ -667,6 +667,7 @@ export const settingsView = {
             clearConfirmButton: 'Vaciar cola',
             clearSuccess: 'Cola de acciones offline vaciada.',
             clearError: 'No se pudo vaciar la cola offline.',
+            actionJournal: 'Entrada de diario',
         },
         crdtDocSize: 'Documento CRDT',
         crdtFallback: 'Sincronizacion CRDT en modo alternativo (LWW). Fusion offline desactivada.',

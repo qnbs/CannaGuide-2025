@@ -104,7 +104,11 @@ const OfflineActionQueuePanel: React.FC = () => {
                         const key =
                             action.idempotencyKey ??
                             (action.id !== undefined ? String(action.id) : `row-${index}`)
-                        const label = offlineActionQueueService.describeAction(action)
+                        const actionKey = offlineActionQueueService.describeAction(action)
+                        const label =
+                            actionKey === 'journalEntry'
+                                ? t('settingsView.data.offlineQueue.actionJournal')
+                                : actionKey
                         return (
                             <li
                                 key={key}

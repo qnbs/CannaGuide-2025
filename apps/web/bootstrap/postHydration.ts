@@ -96,6 +96,11 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
         }
     }
 
+    const { registerOfflineActionReplayListener } = await import(
+        '@/services/offlineActionReplayService'
+    )
+    registerOfflineActionReplayListener(hydratedStore)
+
     getUISnapshot().setAppReady(true)
     document.body.setAttribute('data-app-ready', 'true')
 }

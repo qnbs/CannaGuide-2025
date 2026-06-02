@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Modal } from './Modal'
 import { Button } from './Button'
 import { useTranslation } from 'react-i18next'
@@ -6,7 +6,7 @@ import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { Language } from '@/types'
 import { useAppDispatch } from '@/stores/store'
 import { setSetting } from '@/stores/slices/settingsSlice'
-import { useUIStore } from '@/stores/useUIStore'
+import { getUISnapshot, useUIStore } from '@/stores/useUIStore'
 import { FlagDE, FlagEN, FlagES, FlagFR, FlagNL } from '@/components/icons/Flags'
 import { changeAppLanguage } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
@@ -88,6 +88,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
     const [spaceSize, setSpaceSize] = useState<SpaceSize>('medium')
     const [budget, setBudget] = useState<Budget>('mid')
     const [ageDenied, setAgeDenied] = useState(false)
+    const languageChangeGenerationRef = useRef(0)
     const stepIndicators = useMemo(
         () => Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, idx) => idx + 1),
         [],
@@ -126,15 +127,41 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         [t],
     )
 
-    const handleLanguageSelect = async (lang: Language) => {
-        await changeAppLanguage(lang)
+    const applyOnboardingLanguage = async (
+        lang: Language,
+        options: { advanceAfterSelect?: boolean },
+    ): Promise<void> => {
+        const generation = ++languageChangeGenerationRef.current
+        try {
+            await changeAppLanguage(lang)
+        } catch (err) {
+            Sentry.captureException(err, {
+                extra: { context: 'onboarding:changeAppLanguage', lang },
+            })
+            if (generation !== languageChangeGenerationRef.current) {
+                return
+            }
+            getUISnapshot().addNotification({
+                type: 'error',
+                message: t('onboarding.languageLoadFailed'),
+            })
+            return
+        }
+        if (generation !== languageChangeGenerationRef.current) {
+            return
+        }
         dispatch(setSetting({ path: 'general.language', value: lang }))
-        setOnboardingStep(FEATURE_STEP_START)
+        if (options.advanceAfterSelect) {
+            setOnboardingStep(FEATURE_STEP_START)
+        }
     }
 
-    const handleLanguageSwitch = async (lang: Language) => {
-        await changeAppLanguage(lang)
-        dispatch(setSetting({ path: 'general.language', value: lang }))
+    const handleLanguageSelect = (lang: Language): void => {
+        void applyOnboardingLanguage(lang, { advanceAfterSelect: true })
+    }
+
+    const handleLanguageSwitch = (lang: Language): void => {
+        void applyOnboardingLanguage(lang, {})
     }
 
     const handleNext = () => setOnboardingStep(step + 1)

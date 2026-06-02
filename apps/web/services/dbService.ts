@@ -403,6 +403,9 @@ const collectIdsForToken = (
     }
 }
 
+const isPlainObjectRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+
 const intersectResultSets = (resultSets: Set<string>[]): Set<string> => {
     if (resultSets.length === 0) {
         return new Set()
@@ -723,9 +726,39 @@ export const dbService = {
         )
     },
 
-    /** Returns all queued PWA offline actions (newest last). */
-    async listOfflineActions(): Promise<Array<Record<string, unknown> & { id?: number }>> {
-        return performTx(OFFLINE_ACTIONS_STORE, 'readonly', (store) => store.getAll())
+    /** Returns all queued PWA offline actions with IndexedDB auto-increment keys. */
+    async listOfflineActions(): Promise<Array<Record<string, unknown> & { id: number }>> {
+        const conn = await openDB()
+        return new Promise((resolve, reject) => {
+            const transaction = conn.transaction(OFFLINE_ACTIONS_STORE, 'readonly')
+            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
+            const request = store.openCursor()
+            const results: Array<Record<string, unknown> & { id: number }> = []
+
+            request.onerror = () =>
+                reject(
+                    toIndexedDbError(
+                        request.error,
+                        '[dbService] Failed to read offline actions cursor.',
+                    ),
+                )
+            request.onsuccess = () => {
+                const cursor = request.result
+                if (cursor) {
+                    const rawId = cursor.key
+                    const id = typeof rawId === 'number' ? rawId : Number(rawId)
+                    if (Number.isFinite(id)) {
+                        results.push({
+                            ...(isPlainObjectRecord(cursor.value) ? cursor.value : {}),
+                            id,
+                        })
+                    }
+                    cursor.continue()
+                } else {
+                    resolve(results)
+                }
+            }
+        })
     },
 
     async countOfflineActions(): Promise<number> {

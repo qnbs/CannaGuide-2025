@@ -1,7 +1,7 @@
 import type { AppStore, RootState } from '@/stores/store'
 import type { Plant } from '@/types'
 import type { SupportedLocale } from '@/i18n'
-import { changeAppLanguage } from '@/i18n'
+import { changeAppLanguage, isSupportedLocale } from '@/i18n'
 import { getUISnapshot } from '@/stores/useUIStore'
 import { strainService } from '@/services/strainService'
 import { initializeSimulation } from '@/stores/slices/simulationSlice'
@@ -28,8 +28,14 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
 
     const persistedLang = (hydratedStore.getState() as RootState).settings.settings.general
         ?.language as SupportedLocale | undefined
-    if (persistedLang) {
-        await changeAppLanguage(persistedLang)
+    if (persistedLang && isSupportedLocale(persistedLang)) {
+        try {
+            await changeAppLanguage(persistedLang)
+        } catch (err) {
+            Sentry.captureException(err, {
+                extra: { context: 'postHydration:changeAppLanguage', lang: persistedLang },
+            })
+        }
     }
 
     const [

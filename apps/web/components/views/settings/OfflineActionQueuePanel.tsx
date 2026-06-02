@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/ui/button'
@@ -16,17 +16,25 @@ const OfflineActionQueuePanel: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [isClearOpen, setIsClearOpen] = useState(false)
     const [isSyncing, setIsSyncing] = useState(false)
+    const refreshGenerationRef = useRef(0)
 
     const refresh = useCallback(async () => {
+        const generation = ++refreshGenerationRef.current
         setIsLoading(true)
         try {
             const queued = await offlineActionQueueService.list()
-            setActions(queued)
+            if (generation === refreshGenerationRef.current) {
+                setActions(queued)
+            }
         } catch (err) {
             console.debug('[OfflineActionQueuePanel] load failed:', err)
-            setActions([])
+            if (generation === refreshGenerationRef.current) {
+                setActions([])
+            }
         } finally {
-            setIsLoading(false)
+            if (generation === refreshGenerationRef.current) {
+                setIsLoading(false)
+            }
         }
     }, [])
 

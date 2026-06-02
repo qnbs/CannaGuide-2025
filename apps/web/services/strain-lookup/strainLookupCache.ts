@@ -8,11 +8,12 @@ interface CacheEntry {
     ts: number
 }
 
-const isCacheEntry = (value: unknown): value is CacheEntry =>
-    !!value &&
-    typeof value === 'object' &&
-    typeof (value as CacheEntry).ts === 'number' &&
-    typeof (value as CacheEntry).result === 'object'
+const isCacheEntry = (value: unknown): value is CacheEntry => {
+    if (!value || typeof value !== 'object') return false
+    if (!('ts' in value) || !('result' in value)) return false
+    const { ts, result } = value
+    return typeof ts === 'number' && typeof result === 'object' && result !== null
+}
 
 export function getCached(name: string): LookupStrainResult | null {
     try {

@@ -12,7 +12,7 @@
 | CI merge gate        | **Quality + Security only**; advisory job for critical-path, file-budget, localStorage                                    |
 | V-06 Offline Voice   | **v2.0 only** (Deferred in `AUDIT_BACKLOG.md`)                                                                            |
 | Phase 0              | **Merged** PR #290 → `main`                                                                                               |
-| Phase 1 (god-files)  | **Merged** → `main` (`aef3ad62`: P1-01–P1-04; direkt merge, kein PR-API)                                                |
+| Phase 1 (god-files)  | **Merged** → `main` (P1-01–P1-06; direkt merge, kein PR-API)                                                          |
 | Cloud Agent Git      | Direkt `main` + Push; PR-API optional; Merge-Gate = Quality + Security                                                  |
 
 ## Phase 0 — Merged (PR #290)
@@ -34,11 +34,11 @@
 | Task  | Status | Notes |
 | ----- | ------ | ----- |
 | P1-01 | ✅     | `geminiService` ~702 LOC — `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
-| P1-02 | ✅ (Teil) | `plantSimulationService` ~1575 LOC — `simulation/*` extrahiert; Kernklasse folgt |
+| P1-02 | ✅ (Teil) | `plantSimulationService` ~1238 LOC — `simulation/*` (profiles, VPD, stages, math, post-harvest, diagnostics types) |
 | P1-03 | ✅     | `workerBus.ts` ~1193 LOC — `worker-bus/*` (constants, types, rate-limit, telemetry, channels) |
 | P1-04 | ✅     | `migrationLogic.ts` ~12 LOC facade — `migration/*` (shape guards, version migrations) |
 | P1-05 | ✅     | `strainLookupService.ts` ~80 LOC — `strain-lookup/*` (enrichment, cache, external APIs) |
-| P1-06 | ⏳     | `plantSimulationService` Kernklasse (~1573 LOC) |
+| P1-06 | ✅     | Simulation-Kern: `simulationMath`, `simulationDiagnosticsTypes`, `postHarvestSimulation`, `getSimulationProfileCurve` |
 
 ## Phases (backlog)
 

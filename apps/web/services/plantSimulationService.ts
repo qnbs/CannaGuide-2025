@@ -8,7 +8,6 @@ import {
     ProblemType,
     JournalEntryType,
     GeneticModifiers,
-    HarvestData,
 } from '@/types'
 import {
     STAGES_ORDER,
@@ -23,88 +22,29 @@ import { PLANT_STAGE_DETAILS } from '@/services/simulation/plantStageDetails'
 import {
     DEFAULT_GENETIC_MODIFIERS,
     ENVIRONMENTAL_DRIFT,
-    SIMULATION_PROFILE_CURVES,
+    getSimulationProfileCurve,
     SIM_MILLISECONDS_PER_DAY,
     type SimulationSettings,
 } from '@/services/simulation/simulationProfiles'
+import {
+    simClamp,
+    simFiniteOr,
+    simFiniteOrClamped,
+    simFiniteOrMin,
+} from '@/services/simulation/simulationMath'
+import type { SimulationDiagnostics } from '@/services/simulation/simulationDiagnosticsTypes'
+import {
+    advancePostHarvestState as runPostHarvestAdvance,
+    createInitialHarvestData,
+} from '@/services/simulation/postHarvestSimulation'
 
 export { PLANT_STAGE_DETAILS } from '@/services/simulation/plantStageDetails'
 export { vpdService } from '@/services/simulation/vpdSimulationService'
+export type { SimulationDiagnostics } from '@/services/simulation/simulationDiagnosticsTypes'
 
 const DRIFT = ENVIRONMENTAL_DRIFT
 
-export interface SimulationDiagnostics {
-    profile: {
-        name: SimulationSettings['simulationProfile']
-        environmentStress: number
-        nutrientStress: number
-        pestPressure: number
-        postHarvestPrecision: number
-    }
-    environment: {
-        temperature: number
-        humidity: number
-        correctedRh: number
-        vpd: number
-        targetMin: number
-        targetMax: number
-        leafOffset: number
-        altitudeM: number
-    }
-    growth: {
-        lightAbsorption: number
-        co2Factor: number
-        nutrientAvailability: number
-        nutrientConversionEfficiency: number
-        lightExtinctionCoefficient: number
-        stomataSensitivity: number
-    }
-    stress: {
-        environmentalInstability: number
-        nutrientSensitivityCurve: number
-        pestPressureCurve: number
-        accumulatedSubdayHours: number
-    }
-    dominantFactors: Array<{
-        id: 'vpd' | 'lightCapture' | 'nutrientThroughput' | 'pestPressure'
-        value: string
-        tone: 'good' | 'warn' | 'critical'
-        context: Record<string, string | number>
-    }>
-    postHarvest?:
-        | {
-              stage: PlantStage
-              jarHumidity: number
-              chlorophyllPercent: number
-              terpeneRetentionPercent: number
-              moldRiskPercent: number
-              finalQuality: number
-              burpDebtDays: number
-          }
-        | undefined
-}
-
 class PlantSimulationService {
-    private _clamp(value: number, min: number, max: number): number {
-        return Math.min(max, Math.max(min, value))
-    }
-
-    private _isFiniteNumber(value: unknown): value is number {
-        return typeof value === 'number' && Number.isFinite(value)
-    }
-
-    private _finiteOr(value: unknown, fallback: number): number {
-        return this._isFiniteNumber(value) ? value : fallback
-    }
-
-    private _finiteOrMin(value: unknown, fallback: number, min: number): number {
-        return Math.max(min, this._finiteOr(value, fallback))
-    }
-
-    private _finiteOrClamped(value: unknown, fallback: number, min: number, max: number): number {
-        return this._clamp(this._finiteOr(value, fallback), min, max)
-    }
-
     private _normalizeModifiers(modifiers?: Partial<GeneticModifiers> | null): GeneticModifiers {
         const merged = {
             ...DEFAULT_GENETIC_MODIFIERS,
@@ -116,41 +56,41 @@ class PlantSimulationService {
         }
 
         return {
-            pestResistance: this._clamp(
+            pestResistance: simClamp(
                 Number.isFinite(merged.pestResistance)
                     ? merged.pestResistance
                     : DEFAULT_GENETIC_MODIFIERS.pestResistance,
                 0.2,
                 3,
             ),
-            nutrientUptakeRate: this._clamp(
+            nutrientUptakeRate: simClamp(
                 Number.isFinite(merged.nutrientUptakeRate)
                     ? merged.nutrientUptakeRate
                     : DEFAULT_GENETIC_MODIFIERS.nutrientUptakeRate,
                 0.2,
                 3,
             ),
-            stressTolerance: this._clamp(
+            stressTolerance: simClamp(
                 Number.isFinite(merged.stressTolerance)
                     ? merged.stressTolerance
                     : DEFAULT_GENETIC_MODIFIERS.stressTolerance,
                 0.2,
                 3,
             ),
-            rue: this._clamp(
+            rue: simClamp(
                 Number.isFinite(merged.rue) ? merged.rue : DEFAULT_GENETIC_MODIFIERS.rue,
                 0.5,
                 3,
             ),
             vpdTolerance: {
-                min: this._clamp(
+                min: simClamp(
                     Number.isFinite(merged.vpdTolerance.min)
                         ? merged.vpdTolerance.min
                         : DEFAULT_GENETIC_MODIFIERS.vpdTolerance.min,
                     0.2,
                     2,
                 ),
-                max: this._clamp(
+                max: simClamp(
                     Number.isFinite(merged.vpdTolerance.max)
                         ? merged.vpdTolerance.max
                         : DEFAULT_GENETIC_MODIFIERS.vpdTolerance.max,
@@ -158,14 +98,14 @@ class PlantSimulationService {
                     2.5,
                 ),
             },
-            transpirationFactor: this._clamp(
+            transpirationFactor: simClamp(
                 Number.isFinite(merged.transpirationFactor)
                     ? merged.transpirationFactor
                     : DEFAULT_GENETIC_MODIFIERS.transpirationFactor,
                 0.2,
                 3,
             ),
-            stomataSensitivity: this._clamp(
+            stomataSensitivity: simClamp(
                 Number.isFinite(merged.stomataSensitivity)
                     ? merged.stomataSensitivity
                     : DEFAULT_GENETIC_MODIFIERS.stomataSensitivity,
@@ -176,11 +116,11 @@ class PlantSimulationService {
     }
 
     private _getSimulationAltitude(simulationSettings?: SimulationSettings | undefined): number {
-        return this._clamp(simulationSettings?.altitudeM ?? 0, 0, 5000)
+        return simClamp(simulationSettings?.altitudeM ?? 0, 0, 5000)
     }
 
     private _getProfileCurve(simulationSettings?: SimulationSettings | undefined) {
-        return SIMULATION_PROFILE_CURVES[simulationSettings?.simulationProfile ?? 'intermediate']
+        return getSimulationProfileCurve(simulationSettings)
     }
 
     private _getEnvironmentalInstabilityCurve(
@@ -190,7 +130,7 @@ class PlantSimulationService {
             return 0.18
         }
 
-        const normalizedStability = this._clamp(
+        const normalizedStability = simClamp(
             (simulationSettings.environmentalStability - 0.5) / 0.5,
             0,
             1,
@@ -203,7 +143,7 @@ class PlantSimulationService {
             return 1
         }
 
-        return 0.45 + Math.pow(this._clamp(simulationSettings.pestPressure, 0, 1), 1.6) * 3.2
+        return 0.45 + Math.pow(simClamp(simulationSettings.pestPressure, 0, 1), 1.6) * 3.2
     }
 
     private _getNutrientSensitivityCurve(
@@ -213,7 +153,7 @@ class PlantSimulationService {
             return 1
         }
 
-        const sensitivity = this._clamp(simulationSettings.nutrientSensitivity, 0.5, 2)
+        const sensitivity = simClamp(simulationSettings.nutrientSensitivity, 0.5, 2)
         if (sensitivity >= 1) {
             return 1 + Math.pow(sensitivity - 1, 1.35) * 2.4
         }
@@ -230,18 +170,18 @@ class PlantSimulationService {
         simulationSettings?: SimulationSettings | undefined,
     ): number {
         if (simulationSettings && Number.isFinite(simulationSettings.leafTemperatureOffset)) {
-            return this._clamp(simulationSettings.leafTemperatureOffset, -5, 5)
+            return simClamp(simulationSettings.leafTemperatureOffset, -5, 5)
         }
 
         const baseOffset = plant.equipment.light.type === 'HPS' ? 3.5 : 2.5
         const circulationAdjustment = plant.equipment.circulationFan.isOn ? -0.3 : 0.4
-        return this._clamp(baseOffset + circulationAdjustment, 2, 4)
+        return simClamp(baseOffset + circulationAdjustment, 2, 4)
     }
 
     private _getSimulationLightExtinctionCoefficient(
         simulationSettings?: SimulationSettings | undefined,
     ): number {
-        return this._clamp(
+        return simClamp(
             simulationSettings?.lightExtinctionCoefficient ?? SIM_LIGHT_EXTINCTION_COEFFICIENT_K,
             0.2,
             1.5,
@@ -251,7 +191,7 @@ class PlantSimulationService {
     private _getSimulationNutrientConversionEfficiency(
         simulationSettings?: SimulationSettings | undefined,
     ): number {
-        return this._clamp(
+        return simClamp(
             simulationSettings?.nutrientConversionEfficiency ?? SIM_BIOMASS_CONVERSION_EFFICIENCY,
             0.05,
             0.95,
@@ -263,7 +203,7 @@ class PlantSimulationService {
         simulationSettings?: SimulationSettings | undefined,
     ): number {
         const modifiers = this._getModifiers(plant)
-        return this._clamp(
+        return simClamp(
             (simulationSettings?.stomataSensitivity ?? 1) * modifiers.stomataSensitivity,
             0.2,
             3,
@@ -273,7 +213,7 @@ class PlantSimulationService {
     private _getEnvironmentalStressMultiplier(
         simulationSettings?: SimulationSettings | undefined,
     ): number {
-        return this._clamp(
+        return simClamp(
             (0.72 + this._getEnvironmentalInstabilityCurve(simulationSettings) * 0.95) *
                 this._getProfileCurve(simulationSettings).environmentStress,
             0.55,
@@ -284,7 +224,7 @@ class PlantSimulationService {
     private _getNutrientStressMultiplier(
         simulationSettings?: SimulationSettings | undefined,
     ): number {
-        return this._clamp(
+        return simClamp(
             this._getNutrientSensitivityCurve(simulationSettings) *
                 this._getProfileCurve(simulationSettings).nutrientStress,
             0.55,
@@ -295,7 +235,7 @@ class PlantSimulationService {
     private _getPestPressureMultiplier(
         simulationSettings?: SimulationSettings | undefined,
     ): number {
-        return this._clamp(
+        return simClamp(
             this._getPestPressureCurve(simulationSettings) *
                 this._getProfileCurve(simulationSettings).pestPressure,
             0.4,
@@ -305,33 +245,33 @@ class PlantSimulationService {
 
     private _normalizeEnvironment(plant: Plant): Plant['environment'] {
         return {
-            internalTemperature: this._finiteOr(plant.environment?.internalTemperature, 24),
-            internalHumidity: this._finiteOrClamped(
+            internalTemperature: simFiniteOr(plant.environment?.internalTemperature, 24),
+            internalHumidity: simFiniteOrClamped(
                 plant.environment?.internalHumidity,
                 65,
                 0,
                 100,
             ),
-            vpd: this._finiteOr(plant.environment?.vpd, 0),
-            co2Level: this._finiteOrClamped(plant.environment?.co2Level, 400, 200, 1500),
+            vpd: simFiniteOr(plant.environment?.vpd, 0),
+            co2Level: simFiniteOrClamped(plant.environment?.co2Level, 400, 200, 1500),
         }
     }
 
     private _normalizeMedium(plant: Plant, waterCapacity: number): Plant['medium'] {
         return {
-            ph: this._finiteOr(plant.medium?.ph, 6.5),
-            ec: this._finiteOrMin(plant.medium?.ec, 0.8, 0),
-            moisture: this._finiteOrClamped(plant.medium?.moisture, 100, 0, 100),
-            microbeHealth: this._finiteOrClamped(plant.medium?.microbeHealth, 80, 0, 100),
-            substrateWater: this._finiteOrMin(plant.medium?.substrateWater, waterCapacity, 0),
+            ph: simFiniteOr(plant.medium?.ph, 6.5),
+            ec: simFiniteOrMin(plant.medium?.ec, 0.8, 0),
+            moisture: simFiniteOrClamped(plant.medium?.moisture, 100, 0, 100),
+            microbeHealth: simFiniteOrClamped(plant.medium?.microbeHealth, 80, 0, 100),
+            substrateWater: simFiniteOrMin(plant.medium?.substrateWater, waterCapacity, 0),
             nutrientConcentration: {
-                nitrogen: this._finiteOrMin(plant.medium?.nutrientConcentration?.nitrogen, 100, 0),
-                phosphorus: this._finiteOrMin(
+                nitrogen: simFiniteOrMin(plant.medium?.nutrientConcentration?.nitrogen, 100, 0),
+                phosphorus: simFiniteOrMin(
                     plant.medium?.nutrientConcentration?.phosphorus,
                     100,
                     0,
                 ),
-                potassium: this._finiteOrMin(
+                potassium: simFiniteOrMin(
                     plant.medium?.nutrientConcentration?.potassium,
                     100,
                     0,
@@ -342,16 +282,16 @@ class PlantSimulationService {
 
     private _normalizeNutrientPool(plant: Plant): Plant['nutrientPool'] {
         return {
-            nitrogen: this._finiteOrMin(plant.nutrientPool?.nitrogen, 5, 0),
-            phosphorus: this._finiteOrMin(plant.nutrientPool?.phosphorus, 5, 0),
-            potassium: this._finiteOrMin(plant.nutrientPool?.potassium, 5, 0),
+            nitrogen: simFiniteOrMin(plant.nutrientPool?.nitrogen, 5, 0),
+            phosphorus: simFiniteOrMin(plant.nutrientPool?.phosphorus, 5, 0),
+            potassium: simFiniteOrMin(plant.nutrientPool?.potassium, 5, 0),
         }
     }
 
     private _normalizeRootSystem(plant: Plant): Plant['rootSystem'] {
         return {
-            health: this._finiteOrClamped(plant.rootSystem?.health, 100, 0, 100),
-            rootMass: this._finiteOrMin(plant.rootSystem?.rootMass, 0.01, 0.01),
+            health: simFiniteOrClamped(plant.rootSystem?.health, 100, 0, 100),
+            rootMass: simFiniteOrMin(plant.rootSystem?.rootMass, 0.01, 0.01),
         }
     }
 
@@ -366,7 +306,7 @@ class PlantSimulationService {
                         : 300,
                 ),
                 isOn: Boolean(plant.equipment?.light?.isOn ?? true),
-                lightHours: this._clamp(
+                lightHours: simClamp(
                     Number.isFinite(plant.equipment?.light?.lightHours)
                         ? plant.equipment.light.lightHours
                         : 18,
@@ -471,8 +411,8 @@ class PlantSimulationService {
             createdAt: Number.isFinite(plant.createdAt) ? plant.createdAt : Date.now(),
             lastUpdated: Number.isFinite(plant.lastUpdated) ? plant.lastUpdated : Date.now(),
             age: Number.isFinite(plant.age) ? plant.age : 0,
-            health: this._clamp(Number.isFinite(plant.health) ? plant.health : 100, 0, 100),
-            stressLevel: this._clamp(
+            health: simClamp(Number.isFinite(plant.health) ? plant.health : 100, 0, 100),
+            stressLevel: simClamp(
                 Number.isFinite(plant.stressLevel) ? plant.stressLevel : 0,
                 0,
                 100,
@@ -529,7 +469,7 @@ class PlantSimulationService {
     }
 
     private _getCorrectedRh(plant: Plant): number {
-        return this._clamp(
+        return simClamp(
             plant.environment.internalHumidity + this._getSubstrateRhCorrection(plant),
             25,
             95,
@@ -556,70 +496,17 @@ class PlantSimulationService {
             DRIFT.humidityMagnitude *
             driftAmplitude
 
-        p.environment.internalTemperature = this._clamp(
+        p.environment.internalTemperature = simClamp(
             p.environment.internalTemperature + tempDrift,
             DRIFT.tempBounds.min,
             DRIFT.tempBounds.max,
         )
-        p.environment.internalHumidity = this._clamp(
+        p.environment.internalHumidity = simClamp(
             p.environment.internalHumidity + humidityDrift,
             DRIFT.humidityBounds.min,
             DRIFT.humidityBounds.max,
         )
         return p
-    }
-
-    private _createInitialHarvestData(plant: Plant): HarvestData {
-        const wetWeight = Math.max(12, Number((plant.biomass.flowers * 5.5).toFixed(1)))
-        const targetDryRatio = this._clamp(0.2 + (plant.health / 100) * 0.05, 0.18, 0.28)
-        const dryWeight = Number((wetWeight * targetDryRatio).toFixed(1))
-        const thc = this._clamp(
-            plant.strain.thc * 0.78 + plant.health * 0.04 - plant.stressLevel * 0.02,
-            4,
-            plant.strain.thc * 1.05,
-        )
-        const cbn = this._clamp(thc * 0.015, 0.05, 0.8)
-        return {
-            wetWeight,
-            dryWeight,
-            currentDryDay: 0,
-            currentCureDay: 0,
-            lastBurpDay: 0,
-            jarHumidity: 68,
-            chlorophyllPercent: 100,
-            terpeneRetentionPercent: 100,
-            moldRiskPercent: this._clamp((plant.environment.internalHumidity - 50) * 1.2, 4, 25),
-            finalQuality: 72,
-            cannabinoidProfile: {
-                thc: Number(thc.toFixed(2)),
-                cbn: Number(cbn.toFixed(2)),
-            },
-            terpeneProfile: { ...plant.terpeneProfile },
-        }
-    }
-
-    private _computePostHarvestQuality(
-        harvestData: HarvestData,
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        const profilePrecision = this._getProfileCurve(simulationSettings).postHarvestPrecision
-        const humiditySweetSpot =
-            Math.max(0, 12 - Math.abs(harvestData.jarHumidity - 61) * 3.5) * 2.1
-        const chlorophyllScore = Math.max(0, 100 - harvestData.chlorophyllPercent)
-        const terpeneScore = harvestData.terpeneRetentionPercent
-        const moldPenalty = harvestData.moldRiskPercent * 1.2
-        const cannabinoidScore =
-            harvestData.cannabinoidProfile.thc * 1.4 + harvestData.cannabinoidProfile.cbn * 2.5
-        return this._clamp(
-            (humiditySweetSpot +
-                chlorophyllScore * 0.32 +
-                terpeneScore * 0.42 +
-                cannabinoidScore -
-                moldPenalty) *
-                profilePrecision,
-            0,
-            100,
-        )
     }
 
     ensurePostHarvestData(plant: Plant): Plant {
@@ -635,187 +522,9 @@ class PlantSimulationService {
             return p
         }
         if (!p.harvestData) {
-            p.harvestData = this._createInitialHarvestData(p)
+            p.harvestData = createInitialHarvestData(p)
         }
         return p
-    }
-
-    private _isPostHarvestActionAllowed(
-        stage: PlantStage,
-        action: 'dry' | 'burp' | 'cure',
-    ): boolean {
-        return (
-            (action === 'dry' && (stage === PlantStage.Harvest || stage === PlantStage.Drying)) ||
-            ((action === 'burp' || action === 'cure') && stage === PlantStage.Curing)
-        )
-    }
-
-    private _getVentilationFactor(plant: Plant): number {
-        return plant.equipment.exhaustFan.power === 'high'
-            ? 1.15
-            : plant.equipment.exhaustFan.power === 'low'
-              ? 0.9
-              : 1
-    }
-
-    private _applyDryPostHarvestStep(
-        p: Plant,
-        harvestData: HarvestData,
-        profilePrecision: number,
-        ventilationFactor: number,
-        simulationSettings: SimulationSettings | undefined,
-        newJournalEntries: JournalEntry[],
-    ): void {
-        const roomTemp = p.environment.internalTemperature
-        const roomHumidity = p.environment.internalHumidity
-
-        if (p.stage === PlantStage.Harvest) {
-            p.stage = PlantStage.Drying
-        }
-
-        harvestData.currentDryDay += 1
-        const humidityPenalty = Math.abs(roomHumidity - 58) / 12
-        const tempPenalty = Math.abs(roomTemp - 19.5) / 8
-        const controlledDryingScore = this._clamp(
-            1.15 - humidityPenalty - tempPenalty + (ventilationFactor - 1) * 0.35,
-            0.45,
-            1.18,
-        )
-        const waterLossProgress = this._clamp(
-            0.08 + (62 - roomHumidity) * 0.002 + (roomTemp - 18) * 0.003,
-            0.04,
-            0.15,
-        )
-        const remainingWater = Math.max(0, 1 - harvestData.currentDryDay * waterLossProgress)
-        const targetWeight = harvestData.wetWeight * (0.22 + remainingWater * 0.78)
-        harvestData.dryWeight = Number(
-            Math.max(harvestData.wetWeight * 0.2, targetWeight).toFixed(1),
-        )
-        harvestData.jarHumidity = this._clamp(
-            harvestData.jarHumidity - 2.2 * controlledDryingScore + (roomHumidity - 58) * 0.12,
-            58,
-            72,
-        )
-        harvestData.chlorophyllPercent = this._clamp(
-            harvestData.chlorophyllPercent - 8.5 * controlledDryingScore * profilePrecision,
-            12,
-            100,
-        )
-        harvestData.terpeneRetentionPercent = this._clamp(
-            harvestData.terpeneRetentionPercent -
-                Math.max(0.4, (tempPenalty * 2.4 + humidityPenalty * 1.6) / profilePrecision),
-            45,
-            100,
-        )
-        harvestData.moldRiskPercent = this._clamp(
-            harvestData.moldRiskPercent +
-                Math.max(0, roomHumidity - 62) * 0.9 +
-                Math.max(0, roomTemp - 21) * 0.6 -
-                ventilationFactor * 2.4,
-            0,
-            100,
-        )
-        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)
-
-        if (
-            harvestData.currentDryDay >= PLANT_STAGE_DETAILS[PlantStage.Drying].duration ||
-            (harvestData.jarHumidity <= 62 && harvestData.currentDryDay >= 6)
-        ) {
-            p.stage = PlantStage.Curing
-            harvestData.jarHumidity = this._clamp(harvestData.jarHumidity + 1.6, 60, 64)
-        }
-
-        newJournalEntries.push({
-            id: '',
-            createdAt: 0,
-            type: JournalEntryType.PostHarvest,
-            notes: `Drying day ${harvestData.currentDryDay}: room ${roomTemp.toFixed(1)}°C / ${roomHumidity.toFixed(0)}% RH`,
-        })
-    }
-
-    private _applyBurpPostHarvestStep(
-        harvestData: HarvestData,
-        profilePrecision: number,
-        simulationSettings: SimulationSettings | undefined,
-        newJournalEntries: JournalEntry[],
-    ): void {
-        harvestData.lastBurpDay = harvestData.currentCureDay
-        harvestData.jarHumidity = this._clamp(harvestData.jarHumidity - 2.6, 56, 68)
-        harvestData.moldRiskPercent = this._clamp(
-            harvestData.moldRiskPercent - 6.5 * profilePrecision,
-            0,
-            100,
-        )
-        harvestData.terpeneRetentionPercent = this._clamp(
-            harvestData.terpeneRetentionPercent - 0.35,
-            40,
-            100,
-        )
-        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)
-        newJournalEntries.push({
-            id: '',
-            createdAt: 0,
-            type: JournalEntryType.PostHarvest,
-            notes: `Burped jars on cure day ${harvestData.currentCureDay}`,
-        })
-    }
-
-    private _applyCurePostHarvestStep(
-        p: Plant,
-        harvestData: HarvestData,
-        profilePrecision: number,
-        ventilationFactor: number,
-        simulationSettings: SimulationSettings | undefined,
-        newJournalEntries: JournalEntry[],
-    ): void {
-        const roomHumidity = p.environment.internalHumidity
-
-        harvestData.currentCureDay += 1
-        const burpDebt = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1)
-        const humidityDrift = (roomHumidity - 60) * 0.08 + burpDebt * 0.45
-        harvestData.jarHumidity = this._clamp(
-            harvestData.jarHumidity + humidityDrift - ventilationFactor * 0.35,
-            56,
-            70,
-        )
-        harvestData.chlorophyllPercent = this._clamp(
-            harvestData.chlorophyllPercent - 3.6 * profilePrecision,
-            2,
-            100,
-        )
-        harvestData.terpeneRetentionPercent = this._clamp(
-            harvestData.terpeneRetentionPercent -
-                Math.max(0.2, Math.abs(harvestData.jarHumidity - 61) * 0.32 + burpDebt * 0.18),
-            35,
-            100,
-        )
-        harvestData.moldRiskPercent = this._clamp(
-            harvestData.moldRiskPercent +
-                Math.max(0, harvestData.jarHumidity - 64) * 1.8 +
-                burpDebt * 1.4 -
-                ventilationFactor * 1.2,
-            0,
-            100,
-        )
-        harvestData.cannabinoidProfile.cbn = Number(
-            this._clamp(
-                harvestData.cannabinoidProfile.cbn + harvestData.cannabinoidProfile.thc * 0.0022,
-                0,
-                6,
-            ).toFixed(2),
-        )
-        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)
-
-        if (harvestData.currentCureDay >= PLANT_STAGE_DETAILS[PlantStage.Curing].duration) {
-            p.stage = PlantStage.Finished
-        }
-
-        newJournalEntries.push({
-            id: '',
-            createdAt: 0,
-            type: JournalEntryType.PostHarvest,
-            notes: `Curing day ${harvestData.currentCureDay}: jar ${harvestData.jarHumidity.toFixed(1)}% RH`,
-        })
     }
 
     advancePostHarvestState(
@@ -823,53 +532,8 @@ class PlantSimulationService {
         action: 'dry' | 'burp' | 'cure',
         simulationSettings?: SimulationSettings | undefined,
     ): { updatedPlant: Plant; newJournalEntries: JournalEntry[] } {
-        let p = this.ensurePostHarvestData(plant)
-        const harvestData = p.harvestData
-        const newJournalEntries: JournalEntry[] = []
-        if (!harvestData) {
-            return { updatedPlant: p, newJournalEntries }
-        }
-
-        if (!this._isPostHarvestActionAllowed(p.stage, action)) {
-            return { updatedPlant: p, newJournalEntries }
-        }
-
-        const profilePrecision = this._getProfileCurve(simulationSettings).postHarvestPrecision
-        const ventilationFactor = this._getVentilationFactor(p)
-
-        if (action === 'dry') {
-            this._applyDryPostHarvestStep(
-                p,
-                harvestData,
-                profilePrecision,
-                ventilationFactor,
-                simulationSettings,
-                newJournalEntries,
-            )
-        }
-
-        if (action === 'burp') {
-            this._applyBurpPostHarvestStep(
-                harvestData,
-                profilePrecision,
-                simulationSettings,
-                newJournalEntries,
-            )
-        }
-
-        if (action === 'cure') {
-            this._applyCurePostHarvestStep(
-                p,
-                harvestData,
-                profilePrecision,
-                ventilationFactor,
-                simulationSettings,
-                newJournalEntries,
-            )
-        }
-
-        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings)
-        return { updatedPlant: p, newJournalEntries }
+        const p = this.ensurePostHarvestData(plant)
+        return runPostHarvestAdvance(p, action, simulationSettings)
     }
 
     getSimulationDiagnostics(
@@ -893,7 +557,7 @@ class PlantSimulationService {
         const nutrientAvailability =
             (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) *
             this._getSimulationNutrientConversionEfficiency(simulationSettings)
-        const co2Factor = this._clamp(p.environment.co2Level / 400, 0.5, 2)
+        const co2Factor = simClamp(p.environment.co2Level / 400, 0.5, 2)
         const profileCurve = this._getProfileCurve(simulationSettings)
         const dominantFactors: SimulationDiagnostics['dominantFactors'] = [
             {
@@ -1153,12 +817,12 @@ class PlantSimulationService {
             ? (co2RefreshRate[p.equipment.exhaustFan.power] ?? 0.7)
             : 0.1
         const stabilityFactor = simulationSettings
-            ? this._clamp(simulationSettings.environmentalStability, 0.4, 1.2)
+            ? simClamp(simulationSettings.environmentalStability, 0.4, 1.2)
             : 1
         const ambientCo2 = 400
         const co2Consumption = p.equipment.light.isOn ? p.biomass.leaves * 8 : 0
         const co2After = p.environment.co2Level - co2Consumption
-        p.environment.co2Level = this._clamp(
+        p.environment.co2Level = simClamp(
             co2After + (ambientCo2 - co2After) * fanRefreshRate * stabilityFactor,
             200,
             1500,
@@ -1179,7 +843,7 @@ class PlantSimulationService {
         const vpd = p.environment.vpd
         const vpdOptimum = (mods.vpdTolerance.min + mods.vpdTolerance.max) / 2
         const stomataSensitivity = this._getSimulationStomataSensitivity(p, simulationSettings)
-        const vpdStressFactor = this._clamp(
+        const vpdStressFactor = simClamp(
             1 - Math.abs(vpd - vpdOptimum) * stomataSensitivity,
             0.1,
             1,
@@ -1197,7 +861,7 @@ class PlantSimulationService {
         const phOptimal = (idealPh.min + idealPh.max) / 2
         const phHalfRange = Math.max(0.01, (idealPh.max - idealPh.min) / 2)
         const phDeviation = Math.max(0, Math.abs(p.medium.ph - phOptimal) - phHalfRange)
-        const phLockoutFactor = this._clamp(1.0 - (phDeviation / phHalfRange) * 0.8, 0.2, 1.0)
+        const phLockoutFactor = simClamp(1.0 - (phDeviation / phHalfRange) * 0.8, 0.2, 1.0)
 
         const uptakeFactor = mods.nutrientUptakeRate * (p.rootSystem.health / 100)
         const nutrientDemand = (p.biomass.total + p.rootSystem.rootMass) * 0.05
@@ -1232,7 +896,7 @@ class PlantSimulationService {
             1000000
         const lightAbsorbed = 1 - Math.exp(-lightExtinctionCoefficient * p.leafAreaIndex)
         // CO2 enrichment factor: 1.0 at ambient 400 ppm, scales proportionally, capped at 2.0×
-        const co2Factor = this._clamp(p.environment.co2Level / 400, 0.5, 2.0)
+        const co2Factor = simClamp(p.environment.co2Level / 400, 0.5, 2.0)
         const potentialBiomassGain =
             (dailyLightIntegral / 4) * lightAbsorbed * this._getModifiers(p).rue * co2Factor
 
@@ -1516,7 +1180,7 @@ class PlantSimulationService {
 
         if (p.stage !== originalStage) {
             if (p.stage === PlantStage.Harvest && !p.harvestData) {
-                p.harvestData = this._createInitialHarvestData(p)
+                p.harvestData = createInitialHarvestData(p)
             }
             journalEntries.push(this._createStageChangeEntry(originalStage, p.stage))
         }

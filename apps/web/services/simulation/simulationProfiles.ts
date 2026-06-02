@@ -48,6 +48,10 @@ export const SIMULATION_PROFILE_CURVES: Record<
     },
 }
 
+export function getSimulationProfileCurve(simulationSettings?: SimulationSettings) {
+    return SIMULATION_PROFILE_CURVES[simulationSettings?.simulationProfile ?? 'intermediate']
+}
+
 /** Drift wave parameters for daily environmental variation. */
 export const ENVIRONMENTAL_DRIFT = {
     tempMagnitude: 2.4,

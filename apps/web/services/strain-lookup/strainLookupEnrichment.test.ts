@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { StrainType } from '@/types'
+import type { Strain } from '@/types'
 import {
+    buildCannabinoidDataPoints,
     buildFlavonoidDataPoints,
+    buildTerpeneDataPoints,
     calculateEntourageScore,
     enrichTerpeneDataPoints,
     shannonDiversity,
@@ -47,5 +51,33 @@ describe('strainLookupEnrichment', () => {
         expect(enriched[0]?.role).toBe('dominant')
         expect(enriched[1]?.role).toBe('secondary')
         expect(enriched[0]?.entourageScore).toBeGreaterThan(0)
+    })
+
+    it('buildTerpeneDataPoints prefers terpeneProfile entries', () => {
+        const strain = {
+            id: 's1',
+            name: 'Test',
+            type: StrainType.Hybrid,
+            thc: 20,
+            cbd: 1,
+            terpeneProfile: { Myrcene: 40, Limonene: 30 },
+            dominantTerpenes: ['Pinene'],
+        } as Strain
+        const points = buildTerpeneDataPoints(strain)
+        expect(points[0]?.name).toBe('Myrcene')
+        expect(points.length).toBeGreaterThan(0)
+    })
+
+    it('buildCannabinoidDataPoints includes THC and CBD', () => {
+        const strain = {
+            id: 's1',
+            name: 'Test',
+            type: StrainType.Hybrid,
+            thc: 18,
+            cbd: 2,
+        } as Strain
+        const points = buildCannabinoidDataPoints(strain)
+        expect(points.map((p) => p.name)).toContain('THC')
+        expect(points.map((p) => p.name)).toContain('CBD')
     })
 })

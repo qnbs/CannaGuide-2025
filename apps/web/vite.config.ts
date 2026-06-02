@@ -334,7 +334,7 @@ export default defineConfig({
                 'services/local-ai/interfaces.ts',
             ],
             thresholds: {
-                // Stufe B₁ — CI-verified floors (2026-06-02 sprint: ~42.4/36/39.7/25.2 %)
+                // Stufe B₁ — CI-verified floors (2026-06-02 sprint: ~42.5/36/39.9/25.4 %)
                 // Roadmap target 50/50/35/50: dedicated follow-up coverage sprint.
                 lines: 42,
                 functions: 39,

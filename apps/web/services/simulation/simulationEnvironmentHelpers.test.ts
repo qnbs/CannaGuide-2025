@@ -3,11 +3,18 @@ import { PlantStage, StrainType } from '@/types'
 import type { Plant } from '@/types'
 import type { SimulationSettings } from '@/services/simulation/simulationProfiles'
 import {
+    applyDailyEnvironmentalDrift,
+    getCorrectedRh,
+    getEnvironmentalStressMultiplier,
+    getNutrientStressMultiplier,
+    getPestPressureMultiplier,
     getEnvironmentalInstabilityCurve,
     getNutrientSensitivityCurve,
     getPestPressureCurve,
     getPlantSignal,
     getSimulationAltitude,
+    getSimulationNutrientConversionEfficiency,
+    getSubstrateRhCorrection,
 } from '@/services/simulation/simulationEnvironmentHelpers'
 
 const basePlant = (id: string): Plant =>
@@ -98,5 +105,39 @@ describe('simulationEnvironmentHelpers', () => {
     it('getPlantSignal is deterministic per plant id', () => {
         expect(getPlantSignal(basePlant('abc'))).toBe(getPlantSignal(basePlant('abc')))
         expect(getPlantSignal(basePlant('abc'))).not.toBe(getPlantSignal(basePlant('xyz')))
+    })
+
+    it('getSubstrateRhCorrection adjusts by medium and pot type', () => {
+        const soil = basePlant('soil')
+        const coco = { ...basePlant('coco'), mediumType: 'Coco' as const }
+        expect(getSubstrateRhCorrection(coco)).toBeLessThan(getSubstrateRhCorrection(soil))
+    })
+
+    it('getCorrectedRh clamps humidity with substrate correction', () => {
+        const plant = basePlant('rh')
+        plant.environment.internalHumidity = 90
+        expect(getCorrectedRh(plant)).toBeLessThanOrEqual(95)
+        expect(getCorrectedRh(plant)).toBeGreaterThanOrEqual(25)
+    })
+
+    it('stress multipliers stay within configured bounds', () => {
+        expect(getEnvironmentalStressMultiplier()).toBeGreaterThanOrEqual(0.55)
+        expect(getNutrientStressMultiplier()).toBeLessThanOrEqual(2.4)
+        expect(getPestPressureMultiplier()).toBeLessThanOrEqual(5.5)
+    })
+
+    it('getSimulationNutrientConversionEfficiency clamps efficiency', () => {
+        expect(getSimulationNutrientConversionEfficiency({ nutrientConversionEfficiency: 2 } as SimulationSettings)).toBe(0.95)
+        expect(getSimulationNutrientConversionEfficiency({ nutrientConversionEfficiency: 0 } as SimulationSettings)).toBe(0.05)
+    })
+
+    it('applyDailyEnvironmentalDrift returns plant unchanged at low instability', () => {
+        const plant = basePlant('drift')
+        const beforeTemp = plant.environment.internalTemperature
+        const result = applyDailyEnvironmentalDrift(plant, {
+            environmentalStability: 1,
+            simulationProfile: 'beginner',
+        } as SimulationSettings)
+        expect(result.environment.internalTemperature).toBe(beforeTemp)
     })
 })

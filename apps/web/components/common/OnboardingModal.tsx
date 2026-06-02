@@ -88,7 +88,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
     const [spaceSize, setSpaceSize] = useState<SpaceSize>('medium')
     const [budget, setBudget] = useState<Budget>('mid')
     const [ageDenied, setAgeDenied] = useState(false)
-    const languageChangeGenerationRef = useRef(0)
+    const languageChangeChainRef = useRef(Promise.resolve())
     const stepIndicators = useMemo(
         () => Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, idx) => idx + 1),
         [],
@@ -127,41 +127,37 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         [t],
     )
 
-    const applyOnboardingLanguage = async (
+    const applyOnboardingLanguage = (
         lang: Language,
         options: { advanceAfterSelect?: boolean },
-    ): Promise<void> => {
-        const generation = ++languageChangeGenerationRef.current
-        try {
-            await changeAppLanguage(lang)
-        } catch (err) {
-            Sentry.captureException(err, {
-                extra: { context: 'onboarding:changeAppLanguage', lang },
-            })
-            if (generation !== languageChangeGenerationRef.current) {
+    ): void => {
+        const run = async (): Promise<void> => {
+            try {
+                await changeAppLanguage(lang)
+            } catch (err) {
+                Sentry.captureException(err, {
+                    extra: { context: 'onboarding:changeAppLanguage', lang },
+                })
+                getUISnapshot().addNotification({
+                    type: 'error',
+                    message: t('onboarding.languageLoadFailed'),
+                })
                 return
             }
-            getUISnapshot().addNotification({
-                type: 'error',
-                message: t('onboarding.languageLoadFailed'),
-            })
-            return
+            dispatch(setSetting({ path: 'general.language', value: lang }))
+            if (options.advanceAfterSelect) {
+                setOnboardingStep(FEATURE_STEP_START)
+            }
         }
-        if (generation !== languageChangeGenerationRef.current) {
-            return
-        }
-        dispatch(setSetting({ path: 'general.language', value: lang }))
-        if (options.advanceAfterSelect) {
-            setOnboardingStep(FEATURE_STEP_START)
-        }
+        languageChangeChainRef.current = languageChangeChainRef.current.then(run, run)
     }
 
     const handleLanguageSelect = (lang: Language): void => {
-        void applyOnboardingLanguage(lang, { advanceAfterSelect: true })
+        applyOnboardingLanguage(lang, { advanceAfterSelect: true })
     }
 
     const handleLanguageSwitch = (lang: Language): void => {
-        void applyOnboardingLanguage(lang, {})
+        applyOnboardingLanguage(lang, {})
     }
 
     const handleNext = () => setOnboardingStep(step + 1)

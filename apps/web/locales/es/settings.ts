@@ -647,6 +647,28 @@ export const settingsView = {
             loading: 'Cargando datos del almacen...',
             empty: 'Informacion del almacen no disponible.',
         },
+        offlineQueue: {
+            title: 'Cola de acciones sin conexion',
+            description:
+                'Las acciones guardadas sin conexion se reproducen localmente al volver en linea. Separado de la sincronizacion Gist en la nube.',
+            loading: 'Cargando cola...',
+            count: '{{count}} accion(es) en espera',
+            refresh: 'Actualizar',
+            retrySync: 'Reintentar sincronizacion',
+            syncing: 'Solicitando sincronizacion...',
+            syncRequested:
+                'Sincronizacion en segundo plano solicitada. Las acciones en cola se reproduciran pronto.',
+            syncUnavailable:
+                'La sincronizacion en segundo plano no esta disponible en este navegador. Las acciones se reproducen cuando la app vuelve a estar en linea.',
+            clear: 'Vaciar cola',
+            clearConfirmTitle: 'Vaciar cola sin conexion?',
+            clearConfirmText:
+                'Eliminar todas las acciones offline en cola? Los cambios no sincronizados que dependan de la cola pueden no reproducirse.',
+            clearConfirmButton: 'Vaciar cola',
+            clearSuccess: 'Cola de acciones offline vaciada.',
+            clearError: 'No se pudo vaciar la cola offline.',
+            actionJournal: 'Entrada de diario',
+        },
         crdtDocSize: 'Documento CRDT',
         crdtFallback: 'Sincronizacion CRDT en modo alternativo (LWW). Fusion offline desactivada.',
         crdtSizeWarning:

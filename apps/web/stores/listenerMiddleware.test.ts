@@ -72,6 +72,8 @@ vi.mock('@/stores/useFiltersStore', () => ({
 
 vi.mock('@/i18n', () => ({
     getT: () => (key: string) => key,
+    changeAppLanguage: vi.fn(),
+    isSupportedLocale: (lang: string) => ['en', 'de', 'es', 'fr', 'nl'].includes(lang),
     i18nInstance: {
         language: 'en',
         hasResourceBundle: () => true,
@@ -105,6 +107,13 @@ vi.mock('@/services/local-ai', async (importOriginal) => {
 
 vi.mock('@/services/urlService', () => ({
     urlService: { serializeFiltersToQueryString: vi.fn(() => '') },
+}))
+
+vi.mock('@/services/offlineActionQueueService', () => ({
+    offlineActionQueueService: {
+        queueJournalEntry: vi.fn(),
+        requestBackgroundSync: vi.fn(),
+    },
 }))
 
 vi.mock('@/services/ttsService', () => ({

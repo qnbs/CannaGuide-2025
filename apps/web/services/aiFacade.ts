@@ -17,6 +17,14 @@
 // -- Core AI routing (cloud + local) ------------------------------------
 export { aiService, setAiMode, getAiMode, isEcoMode } from './aiService'
 
+// -- Orchestration (routing surface — Phase 2 Master Audit) ---------------
+export * as aiOrchestrator from './ai/aiOrchestrator'
+export {
+    shouldRouteLocally,
+    runRouted,
+    withLocalFallback,
+} from './ai/aiOrchestrator'
+
 // -- Multi-provider management ------------------------------------------
 export { aiProviderService } from './aiProviderService'
 export type { AiProvider, AiProviderConfig } from './aiProviderService'

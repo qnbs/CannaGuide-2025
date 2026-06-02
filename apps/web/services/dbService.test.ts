@@ -294,4 +294,15 @@ describe('dbService', () => {
 
         expect(stored?.data).toBe(original.data)
     })
+
+    it('queues, lists, and clears offline actions', async () => {
+        const dbService = await loadDbService()
+        await dbService.addOfflineAction({ type: 'test/action', payload: { ok: true } })
+        expect(await dbService.countOfflineActions()).toBe(1)
+        const listed = await dbService.listOfflineActions()
+        expect(listed).toHaveLength(1)
+        expect(listed[0]?.type).toBe('test/action')
+        await dbService.clearOfflineActions()
+        expect(await dbService.countOfflineActions()).toBe(0)
+    })
 })

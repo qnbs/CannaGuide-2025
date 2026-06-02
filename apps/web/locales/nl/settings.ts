@@ -635,6 +635,28 @@ export const settingsView = {
             loading: 'Opslaggegevens laden...',
             empty: 'Opslaginformatie niet beschikbaar.',
         },
+        offlineQueue: {
+            title: 'Offline-actiewachtrij',
+            description:
+                'Offline opgeslagen acties worden lokaal afgespeeld zodra je weer online bent. Los van cloud Gist-sync.',
+            loading: 'Wachtrij laden...',
+            count: '{{count}} actie(s) wachtend',
+            refresh: 'Vernieuwen',
+            retrySync: 'Sync opnieuw aanvragen',
+            syncing: 'Sync wordt aangevraagd...',
+            syncRequested:
+                'Achtergrondsync aangevraagd. Acties in de wachtrij worden binnenkort afgespeeld.',
+            syncUnavailable:
+                'Achtergrondsync is niet beschikbaar in deze browser. Acties worden afgespeeld wanneer de app weer online is.',
+            clear: 'Wachtrij legen',
+            clearConfirmTitle: 'Offline-wachtrij legen?',
+            clearConfirmText:
+                'Alle offline-acties in de wachtrij verwijderen? Niet-gesynchroniseerde wijzigingen uit de wachtrij worden mogelijk niet afgespeeld.',
+            clearConfirmButton: 'Wachtrij legen',
+            clearSuccess: 'Offline-actiewachtrij geleegd.',
+            clearError: 'Kon de offline-wachtrij niet legen.',
+            actionJournal: 'Journalnotitie',
+        },
         crdtDocSize: 'CRDT-document',
         crdtFallback:
             'CRDT-synchronisatie in terugvalmodus (LWW). Offline samenvoegen uitgeschakeld.',

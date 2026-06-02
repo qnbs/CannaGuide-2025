@@ -30,14 +30,14 @@ Last updated: 2026-05-31
 
 ## Next sprint (Session 178+)
 
-| Priority | Task                                                             |
-| -------- | ---------------------------------------------------------------- |
-| P1       | Full `pnpm run test:coverage` on CI — verify Stufe A gates green |
-| P1       | `graphify update .` + commit refreshed `graphify-out/`           |
-| P2       | RTL Tailwind migration (`ml` → `ms`) — incremental               |
-| P2       | `exportService` html2canvas → `html-to-image` evaluation         |
-| P2       | Coverage Stufe B (50/50/35/50) after branch sprint               |
-| P3       | `strainImageFallback.ts` split (<700 LOC rule)                   |
+| Priority | Task                                                                            |
+| -------- | ------------------------------------------------------------------------------- |
+| P1       | Full `pnpm run test:coverage` on CI — verify Stufe A gates green                |
+| P1       | `graphify update .` + commit refreshed `graphify-out/`                          |
+| P2       | RTL Tailwind migration (`ml` → `ms`) — incremental                              |
+| P2       | `exportService` html2canvas → `html-to-image` evaluation                        |
+| P2       | Coverage Stufe B₁ (42/39/25/35) merged; Stufe B full (50/50/35/50) after sprint |
+| P3       | `strainImageFallback.ts` split (<700 LOC rule)                                  |
 
 ## Quality gates (every PR)
 

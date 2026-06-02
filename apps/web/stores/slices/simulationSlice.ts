@@ -220,6 +220,17 @@ const simulationSlice = createSlice({
                 plant.journal.push(newEntry)
             }
         },
+        /** Idempotent merge when the service worker replays a queued offline journal entry. */
+        applyQueuedJournalEntry: (
+            state,
+            action: PayloadAction<{ plantId: string; entry: JournalEntry }>,
+        ) => {
+            const { plantId, entry } = action.payload
+            const plant = state.plants.entities[plantId]
+            if (!plant) return
+            if (plant.journal.some((j) => j.id === entry.id)) return
+            plant.journal.push(entry)
+        },
         completeTask: (state, action: PayloadAction<{ plantId: string; taskId: string }>) => {
             const { plantId, taskId } = action.payload
             const plant = state.plants.entities[plantId]
@@ -801,6 +812,7 @@ export const {
     plantStateUpdated,
     setSelectedPlantId,
     addJournalEntry,
+    applyQueuedJournalEntry,
     completeTask,
     toggleLight,
     toggleFan,

@@ -71,6 +71,8 @@ Automated wrangler deploys run from `.github/workflows/deploy-cloudflare.yml` wh
 
 If secrets are missing, the workflow exits with a notice and does not fail the pipeline.
 
+**First deploy:** CI runs `wrangler pages project create cannaguide-2025` when the Pages project is missing (fixes API error `8000007` / “Project not found”). The API token needs **Account → Cloudflare Pages → Edit** (or equivalent Pages write scope).
+
 ### Cloudflare Workers Builds vs Pages (PR check)
 
 Some PRs show a failing check **Workers Builds: cannaguide-2025** from the Cloudflare dashboard Git integration. That is a **Workers** service build, not the GitHub Actions **Pages** deploy in `deploy-cloudflare.yml`.

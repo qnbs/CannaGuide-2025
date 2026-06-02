@@ -43,6 +43,7 @@ import { CommunitySharePanel } from './CommunitySharePanel'
 import { backupService } from '@/services/backupService'
 import { csvExportService } from '@/services/csvExportService'
 const CloudSyncPanel = lazy(() => import('./CloudSyncPanel'))
+const OfflineActionQueuePanel = lazy(() => import('./OfflineActionQueuePanel'))
 import {
     Select,
     SelectContent,
@@ -978,6 +979,10 @@ const DataManagementTab: React.FC = () => {
                     </div>
                 </FormSection>
             </Card>
+
+            <Suspense fallback={null}>
+                <OfflineActionQueuePanel />
+            </Suspense>
 
             <Suspense fallback={null}>
                 <CloudSyncPanel />

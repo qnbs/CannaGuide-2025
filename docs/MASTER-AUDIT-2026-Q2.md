@@ -34,8 +34,8 @@
 | ----- | ------ | ----- |
 | P1-01 | ✅     | `geminiService` ~702 LOC — `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
 | P1-02 | ✅ (Teil) | `plantSimulationService` ~1575 LOC — `simulation/*` extrahiert; Kernklasse folgt |
-| P1-03 | ⏳ **nächster** | `workerBus.ts` → Branch `cursor/phase-1-worker-bus-671a` |
-| P1-04 | ⏳     | `migrationLogic.ts` |
+| P1-03 | ✅     | `workerBus.ts` ~1193 LOC — `worker-bus/*` (constants, types, rate-limit, telemetry, channels) |
+| P1-04 | ⏳ **nächster** | `migrationLogic.ts` |
 
 ## Phases (backlog)
 

@@ -52,244 +52,52 @@ import type { WorkerPool, PoolMetrics } from './workerPool'
 
 export type { WorkerPriority } from '@/utils/priorityQueue'
 
-// ---------------------------------------------------------------------------
-// Internal types
-// ---------------------------------------------------------------------------
+export type {
+    DispatchOptions,
+    DispatchCompleteEvent,
+    WorkerBusMetrics,
+    WorkerTelemetrySnapshot,
+    WorkerBusTelemetryExport,
+    CrdtTelemetryMetrics,
+} from '@/services/worker-bus/workerBusTypes'
 
-interface PendingRequest<T = unknown> {
-    resolve: (value: T) => void
-    reject: (reason: unknown) => void
-    timer: ReturnType<typeof setTimeout>
-    startedAt: number
-    workerName: string
-    /** Message type stored for hook events and telemetry. */
-    type: string
-    /** Dispatch priority for queue-state reporting. */
-    priority: WorkerPriority
-    /** Removes the AbortSignal listener when the request settles. */
-    abortCleanup?: (() => void) | undefined
-    /** W-02: Original payload for re-queue on preemption. */
-    payload: unknown
-    /** W-02: Original timeout for re-queue on preemption. */
-    timeoutMs: number
-    /** W-02: Original signal for re-queue on preemption. */
-    signal?: AbortSignal | undefined
-    /** W-02: Original transferable for re-queue on preemption. */
-    transferable?: Transferable[] | undefined
-    /** W-02: How many times this job has been preempted and re-queued. */
-    preemptionCount: number
-}
+import type {
+    DispatchOptions,
+    DispatchCompleteEvent,
+    WorkerBusMetrics,
+    WorkerTelemetrySnapshot,
+    WorkerBusTelemetryExport,
+    CrdtTelemetryMetrics,
+    PendingRequest,
+    QueuedDispatch,
+    RateLimitConfig,
+} from '@/services/worker-bus/workerBusTypes'
 
-interface QueuedDispatch {
-    workerName: string
-    type: string
-    payload: unknown
-    timeoutMs: number
-    priority: WorkerPriority
-    signal?: AbortSignal | undefined
-    transferable?: Transferable[] | undefined
-    resolve: (value: unknown) => void
-    reject: (reason: unknown) => void
-    /** W-02: How many times this job has been preempted and re-queued. */
-    preemptionCount: number
-}
+import {
+    DEFAULT_TIMEOUT_MS,
+    DEFAULT_MAX_CONCURRENT,
+    DEFAULT_MAX_QUEUE_SIZE,
+    DEFAULT_RETRY_DELAY_MS,
+    MAX_PREEMPTION_RETRIES,
+    CANCEL_TYPE,
+    NON_RETRYABLE,
+} from '@/services/worker-bus/workerBusConstants'
 
-/** Options for dispatch with retry support. */
-export interface DispatchOptions {
-    /** Override default timeout for this request (ms). */
-    timeoutMs?: number
-    /** Number of retry attempts on transient failure (default: 0). */
-    retries?: number
-    /** Base delay for exponential backoff in ms (default: 500). */
-    retryDelayMs?: number
-    /**
-     * AbortSignal to cancel the in-flight request before or during execution.
-     * Rejects with WorkerErrorCode.CANCELLED when the signal fires.
-     */
-    signal?: AbortSignal | undefined
-    /**
-     * Transferable objects whose ownership is moved to the worker thread,
-     * avoiding a structured-clone memory copy (e.g. ArrayBuffer, ImageBitmap).
-     */
-    transferable?: Transferable[] | undefined
-    /**
-     * Dispatch priority. Higher-priority jobs are dequeued before lower ones
-     * when multiple jobs are waiting. Default: 'normal'.
-     */
-    priority?: WorkerPriority | undefined
-}
+import {
+    isRateLimitAllowed,
+    setWorkerRateLimit,
+    getWorkerRateLimit,
+    clearWorkerRateLimits,
+} from '@/services/worker-bus/workerBusRateLimit'
 
-/**
- * Event emitted after every WorkerBus dispatch settles (success or failure).
- * Subscribe via workerBus.onDispatchComplete() to wire results to Redux/Zustand
- * without manual "await then dispatch" patterns in calling code.
- */
-export interface DispatchCompleteEvent {
-    workerName: string
-    type: string
-    latencyMs: number
-    success: boolean
-    /** Dispatch priority that was assigned to this job. */
-    priority: WorkerPriority
-    /** Present on success -- the resolved data value. */
-    data?: unknown
-    /** Present on failure -- human-readable error description. */
-    error?: string | undefined
-}
+import {
+    getWorkerTelemetry,
+    buildWorkerBusMetrics,
+    buildWorkerTelemetrySnapshot,
+    clearWorkerTelemetry,
+} from '@/services/worker-bus/workerBusTelemetry'
 
-/** Telemetry snapshot for a single worker. */
-export interface WorkerBusMetrics {
-    totalDispatches: number
-    totalErrors: number
-    totalTimeouts: number
-    pendingCount: number
-    queuedCount: number
-    averageLatencyMs: number
-    /** W-02: Number of times a job for this worker was preempted. */
-    preemptionCount: number
-    /** W-02.1: Jobs that cooperatively aborted early after CANCEL signal. */
-    cooperativePreemptions: number
-    /** W-01.1: Effective concurrency limit for this worker. */
-    concurrencyLimit: number
-}
-
-/** W-03: Extended per-worker telemetry snapshot for external export. */
-export interface WorkerTelemetrySnapshot extends WorkerBusMetrics {
-    peakLatencyMs: number
-    errorRate: number
-    lastSuccessAt: number | undefined
-    lastErrorAt: number | undefined
-}
-
-/** W-03: Full telemetry export payload (JSON-serializable). */
-export interface WorkerBusTelemetryExport {
-    timestamp: number
-    workers: Record<string, WorkerTelemetrySnapshot>
-    /** CRDT sync metrics (populated by crdtSyncBridge when available). */
-    crdtMetrics?: CrdtTelemetryMetrics | undefined
-    /** W-06: Worker pool metrics (populated when pool is attached). */
-    poolMetrics?: PoolMetrics | undefined
-}
-
-/** CRDT-specific telemetry integrated into W-03 export. */
-export interface CrdtTelemetryMetrics {
-    /** Number of divergence events detected since last reset. */
-    divergenceCount: number
-    /** Total bytes of sync payloads sent (cumulative). */
-    syncPayloadBytes: number
-    /** Number of conflicts auto-resolved via CRDT merge. */
-    conflictsResolved: number
-    /** Timestamp (ms) of last successful sync operation. */
-    lastSyncMs: number
-}
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const DEFAULT_TIMEOUT_MS = 30_000
-const DEFAULT_MAX_CONCURRENT = 8
-const DEFAULT_MAX_QUEUE_SIZE = 64
-const DEFAULT_RETRY_DELAY_MS = 500
-/** W-02: Maximum times a single job can be preempted before final rejection. */
-const MAX_PREEMPTION_RETRIES = 3
-
-/** W-04: Internal message type used to transfer a MessageChannel port to a worker. */
-const PORT_TRANSFER_TYPE = '__PORT_TRANSFER__'
-
-/** W-02.1: Internal message type sent to workers to request cooperative abort. */
-const CANCEL_TYPE = '__CANCEL__'
-
-// Non-retryable error markers (avoid brittle string matching)
-const NON_RETRYABLE = ['No worker registered', 'disposed', 'unregistered', 'Queue full'] as const
-
-// ---------------------------------------------------------------------------
-// W-01: Per-worker sliding-window rate limiter
-// ---------------------------------------------------------------------------
-
-interface RateLimitConfig {
-    /** Maximum number of dispatches allowed within the window. */
-    maxRequests: number
-    /** Window duration in milliseconds. */
-    windowMs: number
-}
-
-/** Sliding-window timestamps per worker for rate-limit enforcement. */
-const rateLimitWindows = new Map<string, number[]>()
-const rateLimitConfigs = new Map<string, RateLimitConfig>()
-
-/**
- * Check whether a dispatch to the given worker is allowed under
- * the currently configured rate limit. Prunes stale timestamps.
- * Returns `true` when the request should proceed.
- */
-const isRateLimitAllowed = (workerName: string): boolean => {
-    const config = rateLimitConfigs.get(workerName)
-    if (!config) return true // no limit configured
-
-    const now = performance.now()
-    let window = rateLimitWindows.get(workerName)
-    if (!window) {
-        window = []
-        rateLimitWindows.set(workerName, window)
-    }
-
-    // Prune expired timestamps
-    const cutoff = now - config.windowMs
-    while (window.length > 0 && (window[0] ?? now) < cutoff) {
-        window.shift()
-    }
-
-    if (window.length >= config.maxRequests) {
-        return false
-    }
-    window.push(now)
-    return true
-}
-
-// ---------------------------------------------------------------------------
-// Telemetry tracking (per worker)
-// ---------------------------------------------------------------------------
-
-interface WorkerTelemetry {
-    totalDispatches: number
-    totalErrors: number
-    totalTimeouts: number
-    latencySum: number
-    latencyCount: number
-    /** W-03: Peak latency observed (ms). */
-    peakLatencyMs: number
-    /** W-03: Timestamp of last successful dispatch. */
-    lastSuccessAt: number
-    /** W-03: Timestamp of last error. */
-    lastErrorAt: number
-    /** W-02: Total preemption events for this worker. */
-    preemptionCount: number
-    /** W-02.1: Jobs that cooperatively aborted early after CANCEL signal. */
-    cooperativePreemptions: number
-}
-
-const telemetryMap = new Map<string, WorkerTelemetry>()
-
-const getTelemetry = (name: string): WorkerTelemetry => {
-    let t = telemetryMap.get(name)
-    if (!t) {
-        t = {
-            totalDispatches: 0,
-            totalErrors: 0,
-            totalTimeouts: 0,
-            latencySum: 0,
-            latencyCount: 0,
-            peakLatencyMs: 0,
-            lastSuccessAt: 0,
-            lastErrorAt: 0,
-            preemptionCount: 0,
-            cooperativePreemptions: 0,
-        }
-        telemetryMap.set(name, t)
-    }
-    return t
-}
+import { WorkerChannelRegistry } from '@/services/worker-bus/workerBusChannels'
 
 // ---------------------------------------------------------------------------
 // WorkerBus
@@ -302,8 +110,8 @@ class WorkerBusImpl {
     private readonly queues = new Map<string, PriorityQueue<QueuedDispatch>>()
     private readonly concurrencyLimits = new Map<string, number>()
     private readonly dispatchHooks: Array<(event: DispatchCompleteEvent) => void> = []
-    /** W-04: Active cross-worker MessageChannel instances keyed by sorted pair. */
-    private readonly channels = new Map<string, MessageChannel>()
+    /** W-04: Active cross-worker MessageChannel instances. */
+    private readonly channelRegistry = new WorkerChannelRegistry()
     /** CRDT telemetry metrics (fire-and-forget updates from crdtSyncBridge). */
     private crdtMetricsSnapshot: CrdtTelemetryMetrics | undefined
     private defaultTimeoutMs = DEFAULT_TIMEOUT_MS
@@ -388,22 +196,14 @@ class WorkerBusImpl {
      * Pass `undefined` to remove the limit.
      */
     setRateLimit(workerName: string, config: RateLimitConfig | undefined): void {
-        if (config === undefined) {
-            rateLimitConfigs.delete(workerName)
-            rateLimitWindows.delete(workerName)
-        } else {
-            rateLimitConfigs.set(workerName, {
-                maxRequests: Math.max(1, config.maxRequests),
-                windowMs: Math.max(100, config.windowMs),
-            })
-        }
+        setWorkerRateLimit(workerName, config)
     }
 
     /**
      * Get the current rate-limit configuration for a worker (undefined if none).
      */
     getRateLimit(workerName: string): RateLimitConfig | undefined {
-        return rateLimitConfigs.get(workerName)
+        return getWorkerRateLimit(workerName)
     }
 
     // -------------------------------------------------------------------
@@ -419,31 +219,13 @@ class WorkerBusImpl {
     exportTelemetry(): WorkerBusTelemetryExport {
         const workers: Record<string, WorkerTelemetrySnapshot> = {}
         for (const name of this.workers.keys()) {
-            const tel = getTelemetry(name)
             const queue = this.queues.get(name)
-            let pendingCount = 0
-            for (const entry of this.pending.values()) {
-                if (entry.workerName === name) pendingCount++
-            }
-            workers[name] = {
-                totalDispatches: tel.totalDispatches,
-                totalErrors: tel.totalErrors,
-                totalTimeouts: tel.totalTimeouts,
-                averageLatencyMs:
-                    tel.latencyCount > 0 ? Math.round(tel.latencySum / tel.latencyCount) : 0,
-                peakLatencyMs: Math.round(tel.peakLatencyMs),
-                errorRate:
-                    tel.totalDispatches > 0
-                        ? Math.round((tel.totalErrors / tel.totalDispatches) * 10000) / 10000
-                        : 0,
-                preemptionCount: tel.preemptionCount,
-                cooperativePreemptions: tel.cooperativePreemptions,
-                concurrencyLimit: this.concurrencyLimits.get(name) ?? DEFAULT_MAX_CONCURRENT,
-                pendingCount,
-                queuedCount: queue?.size ?? 0,
-                lastSuccessAt: tel.lastSuccessAt > 0 ? tel.lastSuccessAt : undefined,
-                lastErrorAt: tel.lastErrorAt > 0 ? tel.lastErrorAt : undefined,
-            }
+            workers[name] = buildWorkerTelemetrySnapshot(
+                name,
+                this.countPending(name),
+                queue?.size ?? 0,
+                this.concurrencyLimits.get(name) ?? DEFAULT_MAX_CONCURRENT,
+            )
         }
         return {
             timestamp: Date.now(),
@@ -527,7 +309,7 @@ class WorkerBusImpl {
         })
 
         worker.addEventListener('error', (event: ErrorEvent) => {
-            const tel = getTelemetry(name)
+            const tel = getWorkerTelemetry(name)
             // Reject ALL pending requests for this worker on unrecoverable error
             for (const [id, entry] of this.pending) {
                 if (entry.workerName === name) {
@@ -596,14 +378,7 @@ class WorkerBusImpl {
             this.queues.delete(name)
         }
 
-        // W-04: Close any cross-worker channels involving this worker
-        for (const [key, channel] of this.channels) {
-            if (key.startsWith(`${name}::`) || key.endsWith(`::${name}`)) {
-                channel.port1.close()
-                channel.port2.close()
-                this.channels.delete(key)
-            }
-        }
+        this.channelRegistry.closeChannelsForWorker(name)
     }
 
     /**
@@ -708,24 +483,13 @@ class WorkerBusImpl {
 
         const names = name ? [name] : [...this.workers.keys()]
         for (const n of names) {
-            const tel = getTelemetry(n)
             const queue = this.queues.get(n)
-            let pendingCount = 0
-            for (const entry of this.pending.values()) {
-                if (entry.workerName === n) pendingCount++
-            }
-            result[n] = {
-                totalDispatches: tel.totalDispatches,
-                totalErrors: tel.totalErrors,
-                totalTimeouts: tel.totalTimeouts,
-                pendingCount,
-                queuedCount: queue?.size ?? 0,
-                averageLatencyMs:
-                    tel.latencyCount > 0 ? Math.round(tel.latencySum / tel.latencyCount) : 0,
-                preemptionCount: tel.preemptionCount,
-                cooperativePreemptions: tel.cooperativePreemptions,
-                concurrencyLimit: this.concurrencyLimits.get(n) ?? DEFAULT_MAX_CONCURRENT,
-            }
+            result[n] = buildWorkerBusMetrics(
+                n,
+                this.countPending(n),
+                queue?.size ?? 0,
+                this.concurrencyLimits.get(n) ?? DEFAULT_MAX_CONCURRENT,
+            )
         }
         return result
     }
@@ -793,13 +557,6 @@ class WorkerBusImpl {
     // -------------------------------------------------------------------
 
     /**
-     * Derive a stable, order-independent key for a worker pair.
-     */
-    private channelKey(a: string, b: string): string {
-        return a < b ? `${a}::${b}` : `${b}::${a}`
-    }
-
-    /**
      * Create a direct MessageChannel between two registered workers.
      * Each worker receives a `MessagePort` via a `PORT_TRANSFER` message
      * with the peer's name attached so the worker can identify the sender.
@@ -808,16 +565,7 @@ class WorkerBusImpl {
      * or if both names are identical.
      */
     createChannel(workerA: string, workerB: string): void {
-        if (workerA === workerB) {
-            throw new WorkerBusError(
-                'Cannot create a channel between a worker and itself',
-                WorkerErrorCode.INVALID_PAYLOAD,
-                workerA,
-            )
-        }
-
         const wA = this.workers.get(workerA)
-        const wB = this.workers.get(workerB)
         if (!wA) {
             throw new WorkerBusError(
                 `No worker registered with name "${workerA}"`,
@@ -825,6 +573,7 @@ class WorkerBusImpl {
                 workerA,
             )
         }
+        const wB = this.workers.get(workerB)
         if (!wB) {
             throw new WorkerBusError(
                 `No worker registered with name "${workerB}"`,
@@ -832,28 +581,7 @@ class WorkerBusImpl {
                 workerB,
             )
         }
-
-        const key = this.channelKey(workerA, workerB)
-        if (this.channels.has(key)) {
-            throw new WorkerBusError(
-                `Channel already exists between "${workerA}" and "${workerB}"`,
-                WorkerErrorCode.INVALID_PAYLOAD,
-                workerA,
-            )
-        }
-
-        const channel = new MessageChannel()
-        this.channels.set(key, channel)
-
-        // Transfer port1 to workerA with workerB's name as peer identifier
-        wA.postMessage({ type: PORT_TRANSFER_TYPE, peer: workerB, messageId: `channel:${key}` }, [
-            channel.port1,
-        ])
-
-        // Transfer port2 to workerB with workerA's name as peer identifier
-        wB.postMessage({ type: PORT_TRANSFER_TYPE, peer: workerA, messageId: `channel:${key}` }, [
-            channel.port2,
-        ])
+        this.channelRegistry.createChannel(workerA, workerB, wA, wB)
     }
 
     /**
@@ -861,30 +589,21 @@ class WorkerBusImpl {
      * Does not throw if the channel does not exist.
      */
     closeChannel(workerA: string, workerB: string): void {
-        const key = this.channelKey(workerA, workerB)
-        const channel = this.channels.get(key)
-        if (!channel) return
-        channel.port1.close()
-        channel.port2.close()
-        this.channels.delete(key)
+        this.channelRegistry.closeChannel(workerA, workerB)
     }
 
     /**
      * List all active cross-worker channels as sorted `[workerA, workerB]` pairs.
      */
     getChannels(): Array<[string, string]> {
-        return [...this.channels.keys()].map((key) => {
-            const parts = key.split('::')
-
-            return [parts[0] ?? '', parts[1] ?? ''] as [string, string]
-        })
+        return this.channelRegistry.getChannels()
     }
 
     /**
      * Check whether a channel exists between two workers.
      */
     hasChannel(workerA: string, workerB: string): boolean {
-        return this.channels.has(this.channelKey(workerA, workerB))
+        return this.channelRegistry.hasChannel(workerA, workerB)
     }
 
     /**
@@ -893,18 +612,12 @@ class WorkerBusImpl {
      */
     dispose(): void {
         this.disposed = true
-        // W-04: Close all channels before unregistering workers
-        for (const [key, channel] of this.channels) {
-            channel.port1.close()
-            channel.port2.close()
-            this.channels.delete(key)
-        }
+        this.channelRegistry.dispose()
         for (const name of [...this.workers.keys()]) {
             this.unregister(name)
         }
-        telemetryMap.clear()
-        rateLimitWindows.clear()
-        rateLimitConfigs.clear()
+        clearWorkerTelemetry()
+        clearWorkerRateLimits()
         this.dispatchHooks.splice(0)
         // W-06: Cascade dispose to pool
         this.pool?.dispose()
@@ -981,7 +694,7 @@ class WorkerBusImpl {
         entry.abortCleanup?.()
 
         // Telemetry
-        const tel = getTelemetry(workerName)
+        const tel = getWorkerTelemetry(workerName)
         tel.preemptionCount++
 
         this.fireDispatchHooks({
@@ -1048,6 +761,14 @@ class WorkerBusImpl {
     // -----------------------------------------------------------------------
     // Private
     // -----------------------------------------------------------------------
+
+    private countPending(workerName: string): number {
+        let count = 0
+        for (const entry of this.pending.values()) {
+            if (entry.workerName === workerName) count++
+        }
+        return count
+    }
 
     private dispatchOnce<TResponse>(
         workerName: string,
@@ -1189,7 +910,7 @@ class WorkerBusImpl {
         preemptionCount = 0,
     ): Promise<TResponse> {
         const messageId = `${workerName}:${crypto.randomUUID()}`
-        const tel = getTelemetry(workerName)
+        const tel = getWorkerTelemetry(workerName)
         tel.totalDispatches++
         this.activeCount.set(workerName, (this.activeCount.get(workerName) ?? 0) + 1)
         const startedAt = performance.now()
@@ -1401,7 +1122,7 @@ class WorkerBusImpl {
         clearTimeout(entry.timer)
         entry.abortCleanup?.()
 
-        const tel = getTelemetry(entry.workerName)
+        const tel = getWorkerTelemetry(entry.workerName)
         const latencyMs = performance.now() - entry.startedAt
         tel.latencySum += latencyMs
         tel.latencyCount++

@@ -18,6 +18,8 @@ export const onboarding = {
     },
     languageTitle: 'Choisissez Votre Langue',
     languageSubtitle: 'Selectionnez votre langue preferee pour continuer.',
+    languageLoadFailed:
+        'Impossible de charger la langue selectionnee. Veuillez reessayer.',
     german: 'Allemand',
     english: 'Anglais',
     step1: {

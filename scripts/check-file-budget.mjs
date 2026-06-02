@@ -30,8 +30,6 @@ const GRANDFATHERED = new Set([
     'apps/web/services/geminiService.ts',
     'apps/web/services/plantSimulationService.ts',
     'apps/web/services/workerBus.ts',
-    'apps/web/services/migrationLogic.ts',
-    'apps/web/services/strainLookupService.ts',
 ])
 
 const SCAN_GLOBS = [

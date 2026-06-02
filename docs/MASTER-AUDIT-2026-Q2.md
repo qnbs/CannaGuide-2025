@@ -12,8 +12,8 @@
 | CI merge gate        | **Quality + Security only**; advisory job for critical-path, file-budget, localStorage                                    |
 | V-06 Offline Voice   | **v2.0 only** (Deferred in `AUDIT_BACKLOG.md`)                                                                            |
 | Phase 0              | **Merged** PR #290 → `main`                                                                                               |
-| Phase 1 (god-files)  | **Merged** → `main` (P1-01–P1-06; direkt merge, kein PR-API)                                                          |
-| Cloud Agent Git      | Direkt `main` + Push; PR-API optional; Merge-Gate = Quality + Security                                                  |
+| Phase 1 (god-files)  | **Merged** → `main` (P1-01–P1-06; direkt merge, kein PR-API)                                                              |
+| Cloud Agent Git      | Direkt `main` + Push; PR-API optional; Merge-Gate = Quality + Security                                                    |
 
 ## Phase 0 — Merged (PR #290)
 
@@ -31,18 +31,19 @@
 
 ## Phase 1 — Merged (god-file splits)
 
-| Task  | Status | Notes |
-| ----- | ------ | ----- |
-| P1-01 | ✅     | `geminiService` ~702 LOC — `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
-| P1-02 | ✅ (Teil) | `plantSimulationService` ~1238 LOC — `simulation/*` (profiles, VPD, stages, math, post-harvest, diagnostics types) |
-| P1-03 | ✅     | `workerBus.ts` ~1193 LOC — `worker-bus/*` (constants, types, rate-limit, telemetry, channels) |
-| P1-04 | ✅     | `migrationLogic.ts` ~12 LOC facade — `migration/*` (shape guards, version migrations) |
-| P1-05 | ✅     | `strainLookupService.ts` ~80 LOC — `strain-lookup/*` (enrichment, cache, external APIs) |
-| P1-06 | ✅     | Simulation-Kern: `simulationMath`, `simulationDiagnosticsTypes`, `postHarvestSimulation`, `getSimulationProfileCurve` |
+| Task  | Status     | Notes                                                                                                                                         |
+| ----- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-01 | ✅         | `geminiService` ~702 LOC — `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
+| P1-02 | ✅ (Teil)  | `plantSimulationService` ~780 LOC — `simulation/*` (normalize, env helpers, post-harvest, math)                                               |
+| P1-07 | ✅ (Start) | `useCases/simulation/advancePlantSimulationTimeUseCase` — DDD entry for time delta                                                            |
+| P1-03 | ✅         | `workerBus.ts` ~1193 LOC — `worker-bus/*` (constants, types, rate-limit, telemetry, channels)                                                 |
+| P1-04 | ✅         | `migrationLogic.ts` ~12 LOC facade — `migration/*` (shape guards, version migrations)                                                         |
+| P1-05 | ✅         | `strainLookupService.ts` ~80 LOC — `strain-lookup/*` (enrichment, cache, external APIs)                                                       |
+| P1-06 | ✅         | Simulation-Kern: `simulationMath`, `simulationDiagnosticsTypes`, `postHarvestSimulation`, `getSimulationProfileCurve`                         |
 
 ## Phases (backlog)
 
-- **Phase 1 (rest):** DDD `useCases/`, RTK entity adapters; simulation core split
+- **Phase 1 (rest):** More `useCases/`, RTK entity adapters for remaining slices; optional daily-loop split from `plantSimulationService`
 - **Phase 2:** Bundle/locale lazy-load, `AiOrchestrator`, PWA offline-queue UI, coverage Stufe B/C
 - **Phase 3 (v2.0):** Digital Twin, WebXR, V-06 ONNX voice, Tauri E2E
 

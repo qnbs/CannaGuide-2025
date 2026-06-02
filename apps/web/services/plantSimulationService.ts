@@ -7,510 +7,53 @@ import {
     Task,
     ProblemType,
     JournalEntryType,
-    GeneticModifiers,
 } from '@/types'
 import {
     STAGES_ORDER,
     SIM_PAR_PER_WATT_LED,
-    SIM_LIGHT_EXTINCTION_COEFFICIENT_K,
-    SIM_BIOMASS_CONVERSION_EFFICIENCY,
     DEFAULT_GROW_ID,
 } from '@/constants'
 import { calculateVPD as calculateScientificVPD } from '@/lib/vpd/calculator'
 import { secureRandom } from '@/utils/random'
 import { PLANT_STAGE_DETAILS } from '@/services/simulation/plantStageDetails'
 import {
-    DEFAULT_GENETIC_MODIFIERS,
-    ENVIRONMENTAL_DRIFT,
     getSimulationProfileCurve,
     SIM_MILLISECONDS_PER_DAY,
     type SimulationSettings,
 } from '@/services/simulation/simulationProfiles'
-import {
-    simClamp,
-    simFiniteOr,
-    simFiniteOrClamped,
-    simFiniteOrMin,
-} from '@/services/simulation/simulationMath'
+import { simClamp } from '@/services/simulation/simulationMath'
 import type { SimulationDiagnostics } from '@/services/simulation/simulationDiagnosticsTypes'
 import {
     advancePostHarvestState as runPostHarvestAdvance,
     createInitialHarvestData,
 } from '@/services/simulation/postHarvestSimulation'
+import {
+    normalizePlant,
+    getPlantGeneticModifiers,
+} from '@/services/simulation/plantNormalization'
+import {
+    applyDailyEnvironmentalDrift,
+    getCorrectedRh,
+    getEnvironmentalInstabilityCurve,
+    getEnvironmentalStressMultiplier,
+    getNutrientSensitivityCurve,
+    getNutrientStressMultiplier,
+    getPestPressureCurve,
+    getPestPressureMultiplier,
+    getSimulationAltitude,
+    getSimulationLeafTemperatureOffset,
+    getSimulationLightExtinctionCoefficient,
+    getSimulationNutrientConversionEfficiency,
+    getSimulationStomataSensitivity,
+} from '@/services/simulation/simulationEnvironmentHelpers'
 
 export { PLANT_STAGE_DETAILS } from '@/services/simulation/plantStageDetails'
 export { vpdService } from '@/services/simulation/vpdSimulationService'
 export type { SimulationDiagnostics } from '@/services/simulation/simulationDiagnosticsTypes'
 
-const DRIFT = ENVIRONMENTAL_DRIFT
-
 class PlantSimulationService {
-    private _normalizeModifiers(modifiers?: Partial<GeneticModifiers> | null): GeneticModifiers {
-        const merged = {
-            ...DEFAULT_GENETIC_MODIFIERS,
-            ...(modifiers ?? {}),
-            vpdTolerance: {
-                ...DEFAULT_GENETIC_MODIFIERS.vpdTolerance,
-                ...(modifiers?.vpdTolerance ?? {}),
-            },
-        }
-
-        return {
-            pestResistance: simClamp(
-                Number.isFinite(merged.pestResistance)
-                    ? merged.pestResistance
-                    : DEFAULT_GENETIC_MODIFIERS.pestResistance,
-                0.2,
-                3,
-            ),
-            nutrientUptakeRate: simClamp(
-                Number.isFinite(merged.nutrientUptakeRate)
-                    ? merged.nutrientUptakeRate
-                    : DEFAULT_GENETIC_MODIFIERS.nutrientUptakeRate,
-                0.2,
-                3,
-            ),
-            stressTolerance: simClamp(
-                Number.isFinite(merged.stressTolerance)
-                    ? merged.stressTolerance
-                    : DEFAULT_GENETIC_MODIFIERS.stressTolerance,
-                0.2,
-                3,
-            ),
-            rue: simClamp(
-                Number.isFinite(merged.rue) ? merged.rue : DEFAULT_GENETIC_MODIFIERS.rue,
-                0.5,
-                3,
-            ),
-            vpdTolerance: {
-                min: simClamp(
-                    Number.isFinite(merged.vpdTolerance.min)
-                        ? merged.vpdTolerance.min
-                        : DEFAULT_GENETIC_MODIFIERS.vpdTolerance.min,
-                    0.2,
-                    2,
-                ),
-                max: simClamp(
-                    Number.isFinite(merged.vpdTolerance.max)
-                        ? merged.vpdTolerance.max
-                        : DEFAULT_GENETIC_MODIFIERS.vpdTolerance.max,
-                    0.4,
-                    2.5,
-                ),
-            },
-            transpirationFactor: simClamp(
-                Number.isFinite(merged.transpirationFactor)
-                    ? merged.transpirationFactor
-                    : DEFAULT_GENETIC_MODIFIERS.transpirationFactor,
-                0.2,
-                3,
-            ),
-            stomataSensitivity: simClamp(
-                Number.isFinite(merged.stomataSensitivity)
-                    ? merged.stomataSensitivity
-                    : DEFAULT_GENETIC_MODIFIERS.stomataSensitivity,
-                0.2,
-                3,
-            ),
-        }
-    }
-
-    private _getSimulationAltitude(simulationSettings?: SimulationSettings | undefined): number {
-        return simClamp(simulationSettings?.altitudeM ?? 0, 0, 5000)
-    }
-
-    private _getProfileCurve(simulationSettings?: SimulationSettings | undefined) {
-        return getSimulationProfileCurve(simulationSettings)
-    }
-
-    private _getEnvironmentalInstabilityCurve(
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        if (!simulationSettings) {
-            return 0.18
-        }
-
-        const normalizedStability = simClamp(
-            (simulationSettings.environmentalStability - 0.5) / 0.5,
-            0,
-            1,
-        )
-        return Math.pow(1 - normalizedStability, 1.35)
-    }
-
-    private _getPestPressureCurve(simulationSettings?: SimulationSettings | undefined): number {
-        if (!simulationSettings) {
-            return 1
-        }
-
-        return 0.45 + Math.pow(simClamp(simulationSettings.pestPressure, 0, 1), 1.6) * 3.2
-    }
-
-    private _getNutrientSensitivityCurve(
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        if (!simulationSettings) {
-            return 1
-        }
-
-        const sensitivity = simClamp(simulationSettings.nutrientSensitivity, 0.5, 2)
-        if (sensitivity >= 1) {
-            return 1 + Math.pow(sensitivity - 1, 1.35) * 2.4
-        }
-
-        return 1 - Math.pow(1 - sensitivity, 1.1) * 0.45
-    }
-
-    private _getPlantSignal(plant: Plant): number {
-        return plant.id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) / 17
-    }
-
-    private _getSimulationLeafTemperatureOffset(
-        plant: Plant,
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        if (simulationSettings && Number.isFinite(simulationSettings.leafTemperatureOffset)) {
-            return simClamp(simulationSettings.leafTemperatureOffset, -5, 5)
-        }
-
-        const baseOffset = plant.equipment.light.type === 'HPS' ? 3.5 : 2.5
-        const circulationAdjustment = plant.equipment.circulationFan.isOn ? -0.3 : 0.4
-        return simClamp(baseOffset + circulationAdjustment, 2, 4)
-    }
-
-    private _getSimulationLightExtinctionCoefficient(
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        return simClamp(
-            simulationSettings?.lightExtinctionCoefficient ?? SIM_LIGHT_EXTINCTION_COEFFICIENT_K,
-            0.2,
-            1.5,
-        )
-    }
-
-    private _getSimulationNutrientConversionEfficiency(
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        return simClamp(
-            simulationSettings?.nutrientConversionEfficiency ?? SIM_BIOMASS_CONVERSION_EFFICIENCY,
-            0.05,
-            0.95,
-        )
-    }
-
-    private _getSimulationStomataSensitivity(
-        plant: Plant,
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        const modifiers = this._getModifiers(plant)
-        return simClamp(
-            (simulationSettings?.stomataSensitivity ?? 1) * modifiers.stomataSensitivity,
-            0.2,
-            3,
-        )
-    }
-
-    private _getEnvironmentalStressMultiplier(
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        return simClamp(
-            (0.72 + this._getEnvironmentalInstabilityCurve(simulationSettings) * 0.95) *
-                this._getProfileCurve(simulationSettings).environmentStress,
-            0.55,
-            1.85,
-        )
-    }
-
-    private _getNutrientStressMultiplier(
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        return simClamp(
-            this._getNutrientSensitivityCurve(simulationSettings) *
-                this._getProfileCurve(simulationSettings).nutrientStress,
-            0.55,
-            2.4,
-        )
-    }
-
-    private _getPestPressureMultiplier(
-        simulationSettings?: SimulationSettings | undefined,
-    ): number {
-        return simClamp(
-            this._getPestPressureCurve(simulationSettings) *
-                this._getProfileCurve(simulationSettings).pestPressure,
-            0.4,
-            5.5,
-        )
-    }
-
-    private _normalizeEnvironment(plant: Plant): Plant['environment'] {
-        return {
-            internalTemperature: simFiniteOr(plant.environment?.internalTemperature, 24),
-            internalHumidity: simFiniteOrClamped(
-                plant.environment?.internalHumidity,
-                65,
-                0,
-                100,
-            ),
-            vpd: simFiniteOr(plant.environment?.vpd, 0),
-            co2Level: simFiniteOrClamped(plant.environment?.co2Level, 400, 200, 1500),
-        }
-    }
-
-    private _normalizeMedium(plant: Plant, waterCapacity: number): Plant['medium'] {
-        return {
-            ph: simFiniteOr(plant.medium?.ph, 6.5),
-            ec: simFiniteOrMin(plant.medium?.ec, 0.8, 0),
-            moisture: simFiniteOrClamped(plant.medium?.moisture, 100, 0, 100),
-            microbeHealth: simFiniteOrClamped(plant.medium?.microbeHealth, 80, 0, 100),
-            substrateWater: simFiniteOrMin(plant.medium?.substrateWater, waterCapacity, 0),
-            nutrientConcentration: {
-                nitrogen: simFiniteOrMin(plant.medium?.nutrientConcentration?.nitrogen, 100, 0),
-                phosphorus: simFiniteOrMin(
-                    plant.medium?.nutrientConcentration?.phosphorus,
-                    100,
-                    0,
-                ),
-                potassium: simFiniteOrMin(
-                    plant.medium?.nutrientConcentration?.potassium,
-                    100,
-                    0,
-                ),
-            },
-        }
-    }
-
-    private _normalizeNutrientPool(plant: Plant): Plant['nutrientPool'] {
-        return {
-            nitrogen: simFiniteOrMin(plant.nutrientPool?.nitrogen, 5, 0),
-            phosphorus: simFiniteOrMin(plant.nutrientPool?.phosphorus, 5, 0),
-            potassium: simFiniteOrMin(plant.nutrientPool?.potassium, 5, 0),
-        }
-    }
-
-    private _normalizeRootSystem(plant: Plant): Plant['rootSystem'] {
-        return {
-            health: simFiniteOrClamped(plant.rootSystem?.health, 100, 0, 100),
-            rootMass: simFiniteOrMin(plant.rootSystem?.rootMass, 0.01, 0.01),
-        }
-    }
-
-    private _normalizeEquipment(plant: Plant): Plant['equipment'] {
-        return {
-            light: {
-                type: plant.equipment?.light?.type ?? 'LED',
-                wattage: Math.max(
-                    10,
-                    Number.isFinite(plant.equipment?.light?.wattage)
-                        ? plant.equipment.light.wattage
-                        : 300,
-                ),
-                isOn: Boolean(plant.equipment?.light?.isOn ?? true),
-                lightHours: simClamp(
-                    Number.isFinite(plant.equipment?.light?.lightHours)
-                        ? plant.equipment.light.lightHours
-                        : 18,
-                    0,
-                    24,
-                ),
-            },
-            exhaustFan: {
-                power: plant.equipment?.exhaustFan?.power ?? 'medium',
-                isOn: Boolean(plant.equipment?.exhaustFan?.isOn ?? true),
-            },
-            circulationFan: {
-                isOn: Boolean(plant.equipment?.circulationFan?.isOn ?? true),
-            },
-            potSize: Math.max(
-                1,
-                Number.isFinite(plant.equipment?.potSize) ? plant.equipment.potSize : 11,
-            ),
-            potType: plant.equipment?.potType ?? 'Fabric',
-        }
-    }
-
-    private _normalizeStructuralModel(plant: Plant): Plant['structuralModel'] {
-        return {
-            branches: Math.max(
-                1,
-                Number.isFinite(plant.structuralModel?.branches)
-                    ? plant.structuralModel.branches
-                    : 1,
-            ),
-            nodes: Math.max(
-                1,
-                Number.isFinite(plant.structuralModel?.nodes) ? plant.structuralModel.nodes : 1,
-            ),
-        }
-    }
-
-    private _normalizeCannabinoidProfile(plant: Plant): Plant['cannabinoidProfile'] {
-        return {
-            thc: Math.max(
-                0,
-                Number.isFinite(plant.cannabinoidProfile?.thc) ? plant.cannabinoidProfile.thc : 0,
-            ),
-            cbd: Math.max(
-                0,
-                Number.isFinite(plant.cannabinoidProfile?.cbd) ? plant.cannabinoidProfile.cbd : 0,
-            ),
-            cbn: Math.max(
-                0,
-                Number.isFinite(plant.cannabinoidProfile?.cbn) ? plant.cannabinoidProfile.cbn : 0,
-            ),
-        }
-    }
-
-    private _normalizeStressCounters(plant: Plant): Plant['stressCounters'] {
-        return {
-            vpd: Math.max(
-                0,
-                Number.isFinite(plant.stressCounters?.vpd) ? plant.stressCounters.vpd : 0,
-            ),
-            ph: Math.max(
-                0,
-                Number.isFinite(plant.stressCounters?.ph) ? plant.stressCounters.ph : 0,
-            ),
-            ec: Math.max(
-                0,
-                Number.isFinite(plant.stressCounters?.ec) ? plant.stressCounters.ec : 0,
-            ),
-            moisture: Math.max(
-                0,
-                Number.isFinite(plant.stressCounters?.moisture) ? plant.stressCounters.moisture : 0,
-            ),
-        }
-    }
-
-    private _normalizeSimulationClock(plant: Plant): Plant['simulationClock'] {
-        return {
-            accumulatedDayMs: Math.max(
-                0,
-                Number.isFinite(plant.simulationClock?.accumulatedDayMs)
-                    ? plant.simulationClock.accumulatedDayMs
-                    : 0,
-            ),
-        }
-    }
-
-    private _normalizePlant(plant: Plant): Plant {
-        const waterCapacity = Math.max(
-            1,
-            (plant.equipment?.potSize ?? 11) *
-                1000 *
-                ((plant.equipment?.potType ?? 'Fabric') === 'Fabric' ? 0.28 : 0.35),
-        )
-        const strainModifiers = this._normalizeModifiers(plant.strain?.geneticModifiers)
-        const phenotypeModifiers = this._normalizeModifiers(
-            plant.phenotypeModifiers ?? strainModifiers,
-        )
-
-        return {
-            ...plant,
-            mediumType: plant.mediumType ?? 'Soil',
-            createdAt: Number.isFinite(plant.createdAt) ? plant.createdAt : Date.now(),
-            lastUpdated: Number.isFinite(plant.lastUpdated) ? plant.lastUpdated : Date.now(),
-            age: Number.isFinite(plant.age) ? plant.age : 0,
-            health: simClamp(Number.isFinite(plant.health) ? plant.health : 100, 0, 100),
-            stressLevel: simClamp(
-                Number.isFinite(plant.stressLevel) ? plant.stressLevel : 0,
-                0,
-                100,
-            ),
-            height: Number.isFinite(plant.height) ? plant.height : 0,
-            biomass: {
-                total: Number.isFinite(plant.biomass?.total) ? plant.biomass.total : 0.01,
-                stem: Number.isFinite(plant.biomass?.stem) ? plant.biomass.stem : 0.01,
-                leaves: Number.isFinite(plant.biomass?.leaves) ? plant.biomass.leaves : 0,
-                flowers: Number.isFinite(plant.biomass?.flowers) ? plant.biomass.flowers : 0,
-            },
-            leafAreaIndex: Number.isFinite(plant.leafAreaIndex) ? plant.leafAreaIndex : 0.01,
-            environment: this._normalizeEnvironment(plant),
-            medium: this._normalizeMedium(plant, waterCapacity),
-            nutrientPool: this._normalizeNutrientPool(plant),
-            rootSystem: this._normalizeRootSystem(plant),
-            equipment: this._normalizeEquipment(plant),
-            problems: Array.isArray(plant.problems) ? plant.problems : [],
-            journal: Array.isArray(plant.journal) ? plant.journal : [],
-            tasks: Array.isArray(plant.tasks) ? plant.tasks : [],
-            harvestData: plant.harvestData ?? null,
-            structuralModel: this._normalizeStructuralModel(plant),
-            phenotypeModifiers,
-            strain: {
-                ...plant.strain,
-                geneticModifiers: strainModifiers,
-            },
-            history: Array.isArray(plant.history) ? plant.history : [],
-            cannabinoidProfile: this._normalizeCannabinoidProfile(plant),
-            terpeneProfile:
-                plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
-                    ? plant.terpeneProfile
-                    : {},
-            stressCounters: this._normalizeStressCounters(plant),
-            simulationClock: this._normalizeSimulationClock(plant),
-        }
-    }
-
-    /** Returns per-plant phenotype modifiers, falling back to strain defaults for legacy/uninitialized plants. */
-    private _getModifiers(plant: Plant): GeneticModifiers {
-        return this._normalizeModifiers(plant.phenotypeModifiers ?? plant.strain.geneticModifiers)
-    }
-
-    private _getSubstrateRhCorrection(plant: Plant): number {
-        const byMediumType: Record<Plant['mediumType'], number> = {
-            Soil: 0,
-            Coco: -2,
-            Hydro: 2,
-            Aeroponics: 2,
-        }
-
-        const potAdjustment = plant.equipment.potType === 'Fabric' ? -1 : 0
-        return byMediumType[plant.mediumType ?? 'Soil'] + potAdjustment
-    }
-
-    private _getCorrectedRh(plant: Plant): number {
-        return simClamp(
-            plant.environment.internalHumidity + this._getSubstrateRhCorrection(plant),
-            25,
-            95,
-        )
-    }
-
-    private _applyDailyEnvironmentalDrift(
-        plant: Plant,
-        simulationSettings?: SimulationSettings | undefined,
-    ): Plant {
-        const p = this.clonePlant(plant)
-        const instability = this._getEnvironmentalInstabilityCurve(simulationSettings)
-        if (instability <= 0.01) {
-            return p
-        }
-
-        const profileCurve = this._getProfileCurve(simulationSettings)
-        const signal = this._getPlantSignal(p)
-        const driftAmplitude = instability * profileCurve.environmentalDrift
-        const tempDrift =
-            Math.sin(signal + p.age * DRIFT.tempFrequency) * DRIFT.tempMagnitude * driftAmplitude
-        const humidityDrift =
-            Math.cos(signal * DRIFT.humidityPhaseShift + p.age * DRIFT.humidityFrequency) *
-            DRIFT.humidityMagnitude *
-            driftAmplitude
-
-        p.environment.internalTemperature = simClamp(
-            p.environment.internalTemperature + tempDrift,
-            DRIFT.tempBounds.min,
-            DRIFT.tempBounds.max,
-        )
-        p.environment.internalHumidity = simClamp(
-            p.environment.internalHumidity + humidityDrift,
-            DRIFT.humidityBounds.min,
-            DRIFT.humidityBounds.max,
-        )
-        return p
-    }
-
     ensurePostHarvestData(plant: Plant): Plant {
-        const p = this._normalizePlant(this.clonePlant(plant))
+        const p = normalizePlant(this.clonePlant(plant))
         if (
             ![
                 PlantStage.Harvest,
@@ -545,20 +88,20 @@ class PlantSimulationService {
             simulationSettings,
         )
         const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals
-        const correctedRh = this._getCorrectedRh(p)
-        const leafOffset = this._getSimulationLeafTemperatureOffset(p, simulationSettings)
-        const altitudeM = this._getSimulationAltitude(simulationSettings)
+        const correctedRh = getCorrectedRh(p)
+        const leafOffset = getSimulationLeafTemperatureOffset(p, simulationSettings)
+        const altitudeM = getSimulationAltitude(simulationSettings)
         const lightAbsorption =
             1 -
             Math.exp(
-                -this._getSimulationLightExtinctionCoefficient(simulationSettings) *
+                -getSimulationLightExtinctionCoefficient(simulationSettings) *
                     p.leafAreaIndex,
             )
         const nutrientAvailability =
             (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) *
-            this._getSimulationNutrientConversionEfficiency(simulationSettings)
+            getSimulationNutrientConversionEfficiency(simulationSettings)
         const co2Factor = simClamp(p.environment.co2Level / 400, 0.5, 2)
-        const profileCurve = this._getProfileCurve(simulationSettings)
+        const profileCurve = getSimulationProfileCurve(simulationSettings)
         const dominantFactors: SimulationDiagnostics['dominantFactors'] = [
             {
                 id: 'vpd',
@@ -577,7 +120,7 @@ class PlantSimulationService {
                 value: `${(lightAbsorption * 100).toFixed(0)}%`,
                 tone: lightAbsorption < 0.55 ? 'warn' : 'good',
                 context: {
-                    k: this._getSimulationLightExtinctionCoefficient(simulationSettings).toFixed(2),
+                    k: getSimulationLightExtinctionCoefficient(simulationSettings).toFixed(2),
                     lai: p.leafAreaIndex.toFixed(2),
                 },
             },
@@ -586,14 +129,14 @@ class PlantSimulationService {
                 value: nutrientAvailability.toFixed(2),
                 tone: nutrientAvailability < 5 ? 'warn' : 'good',
                 context: {
-                    sensitivity: this._getNutrientSensitivityCurve(simulationSettings).toFixed(2),
+                    sensitivity: getNutrientSensitivityCurve(simulationSettings).toFixed(2),
                 },
             },
             {
                 id: 'pestPressure',
-                value: `${this._getPestPressureMultiplier(simulationSettings).toFixed(2)}x`,
+                value: `${getPestPressureMultiplier(simulationSettings).toFixed(2)}x`,
                 tone:
-                    this._getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
+                    getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
                 context: {
                     profile: profileCurve.pestPressure.toFixed(2),
                 },
@@ -623,16 +166,16 @@ class PlantSimulationService {
                 co2Factor,
                 nutrientAvailability,
                 nutrientConversionEfficiency:
-                    this._getSimulationNutrientConversionEfficiency(simulationSettings),
+                    getSimulationNutrientConversionEfficiency(simulationSettings),
                 lightExtinctionCoefficient:
-                    this._getSimulationLightExtinctionCoefficient(simulationSettings),
-                stomataSensitivity: this._getSimulationStomataSensitivity(p, simulationSettings),
+                    getSimulationLightExtinctionCoefficient(simulationSettings),
+                stomataSensitivity: getSimulationStomataSensitivity(p, simulationSettings),
             },
             stress: {
                 environmentalInstability:
-                    this._getEnvironmentalInstabilityCurve(simulationSettings),
-                nutrientSensitivityCurve: this._getNutrientSensitivityCurve(simulationSettings),
-                pestPressureCurve: this._getPestPressureCurve(simulationSettings),
+                    getEnvironmentalInstabilityCurve(simulationSettings),
+                nutrientSensitivityCurve: getNutrientSensitivityCurve(simulationSettings),
+                pestPressureCurve: getPestPressureCurve(simulationSettings),
                 accumulatedSubdayHours: p.simulationClock.accumulatedDayMs / 3600000,
             },
             dominantFactors,
@@ -657,14 +200,14 @@ class PlantSimulationService {
         plant: Plant,
         simulationSettings?: SimulationSettings | undefined,
     ): Plant {
-        const p = this._normalizePlant(this.clonePlant(plant))
-        const correctedRh = this._getCorrectedRh(p)
-        const leafOffset = this._getSimulationLeafTemperatureOffset(p, simulationSettings)
+        const p = normalizePlant(this.clonePlant(plant))
+        const correctedRh = getCorrectedRh(p)
+        const leafOffset = getSimulationLeafTemperatureOffset(p, simulationSettings)
         p.environment.vpd = this._calculateVPD(
             p.environment.internalTemperature,
             correctedRh,
             leafOffset,
-            this._getSimulationAltitude(simulationSettings),
+            getSimulationAltitude(simulationSettings),
         )
         return p
     }
@@ -753,7 +296,7 @@ class PlantSimulationService {
         deltaTime: number,
         simulationSettings?: SimulationSettings | undefined,
     ): { updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] } {
-        let updatedPlant = this._normalizePlant(this.clonePlant(plant))
+        let updatedPlant = normalizePlant(this.clonePlant(plant))
         const newJournalEntries: JournalEntry[] = []
         const newTasks: Task[] = []
         const safeDeltaTime = Math.max(0, Number.isFinite(deltaTime) ? deltaTime : 0)
@@ -808,7 +351,7 @@ class PlantSimulationService {
         plant: Plant,
         simulationSettings?: SimulationSettings | undefined,
     ): Plant {
-        const p = this._applyDailyEnvironmentalDrift(this.clonePlant(plant), simulationSettings)
+        const p = applyDailyEnvironmentalDrift(this.clonePlant(plant), simulationSettings)
 
         // Exhaust fan replenishes CO2 toward ambient (400 ppm).
         // With poor or disabled ventilation, photosynthesis steadily depletes CO2.
@@ -839,10 +382,10 @@ class PlantSimulationService {
 
         p.environment = this.applyEnvironmentalCorrections(p, simulationSettings).environment
 
-        const mods = this._getModifiers(p)
+        const mods = getPlantGeneticModifiers(p)
         const vpd = p.environment.vpd
         const vpdOptimum = (mods.vpdTolerance.min + mods.vpdTolerance.max) / 2
-        const stomataSensitivity = this._getSimulationStomataSensitivity(p, simulationSettings)
+        const stomataSensitivity = getSimulationStomataSensitivity(p, simulationSettings)
         const vpdStressFactor = simClamp(
             1 - Math.abs(vpd - vpdOptimum) * stomataSensitivity,
             0.1,
@@ -885,9 +428,9 @@ class PlantSimulationService {
     ): Plant {
         const p = this.clonePlant(plant)
         const nutrientConversionEfficiency =
-            this._getSimulationNutrientConversionEfficiency(simulationSettings)
+            getSimulationNutrientConversionEfficiency(simulationSettings)
         const lightExtinctionCoefficient =
-            this._getSimulationLightExtinctionCoefficient(simulationSettings)
+            getSimulationLightExtinctionCoefficient(simulationSettings)
 
         const parEfficiency =
             p.equipment.light.type === 'LED' ? SIM_PAR_PER_WATT_LED : SIM_PAR_PER_WATT_LED * 0.8
@@ -898,7 +441,7 @@ class PlantSimulationService {
         // CO2 enrichment factor: 1.0 at ambient 400 ppm, scales proportionally, capped at 2.0×
         const co2Factor = simClamp(p.environment.co2Level / 400, 0.5, 2.0)
         const potentialBiomassGain =
-            (dailyLightIntegral / 4) * lightAbsorbed * this._getModifiers(p).rue * co2Factor
+            (dailyLightIntegral / 4) * lightAbsorbed * getPlantGeneticModifiers(p).rue * co2Factor
 
         const nutrientSupply =
             (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) *
@@ -981,8 +524,8 @@ class PlantSimulationService {
     ): Plant {
         const p = this.clonePlant(plant)
         const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals
-        const envMult = this._getEnvironmentalStressMultiplier(simulationSettings)
-        const nutMult = this._getNutrientStressMultiplier(simulationSettings)
+        const envMult = getEnvironmentalStressMultiplier(simulationSettings)
+        const nutMult = getNutrientStressMultiplier(simulationSettings)
 
         const stressChecks: ReadonlyArray<{
             key: keyof typeof p.stressCounters
@@ -1098,7 +641,7 @@ class PlantSimulationService {
 
         const vpdStressChance =
             ((p.stressCounters.vpd - 3) * 0.05 * pestPressureMultiplier) /
-            this._getModifiers(p).pestResistance
+            getPlantGeneticModifiers(p).pestResistance
         if (secureRandom() < vpdStressChance) {
             p.problems.push({
                 type: ProblemType.PestInfestation,
@@ -1120,7 +663,7 @@ class PlantSimulationService {
 
         const nutrientStressChance =
             ((p.stressCounters.ph + p.stressCounters.ec - 3) * 0.04 * nutrientStressMultiplier) /
-            this._getModifiers(p).stressTolerance
+            getPlantGeneticModifiers(p).stressTolerance
 
         if (secureRandom() < nutrientStressChance) {
             p.problems.push({
@@ -1173,8 +716,8 @@ class PlantSimulationService {
         const journalEntries: JournalEntry[] = []
         const newTasks: Task[] = []
         const originalStage = p.stage
-        const pestPressureMultiplier = this._getPestPressureMultiplier(simulationSettings)
-        const nutrientStressMultiplier = this._getNutrientStressMultiplier(simulationSettings)
+        const pestPressureMultiplier = getPestPressureMultiplier(simulationSettings)
+        const nutrientStressMultiplier = getNutrientStressMultiplier(simulationSettings)
 
         this._applyStageProgression(p)
 

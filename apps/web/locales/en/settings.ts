@@ -619,6 +619,26 @@ export const settingsView = {
             loading: 'Loading store data...',
             empty: 'Store information unavailable.',
         },
+        offlineQueue: {
+            title: 'Offline Action Queue',
+            description:
+                'Actions saved while offline are replayed locally when you are back online. This is separate from cloud Gist sync.',
+            loading: 'Loading queue...',
+            count: '{{count}} action(s) waiting',
+            refresh: 'Refresh',
+            retrySync: 'Retry sync',
+            syncing: 'Requesting sync...',
+            syncRequested: 'Background sync requested. Queued actions will replay shortly.',
+            syncUnavailable:
+                'Background sync is not available in this browser. Actions replay when the app regains focus online.',
+            clear: 'Clear queue',
+            clearConfirmTitle: 'Clear offline queue?',
+            clearConfirmText:
+                'Remove all queued offline actions? Unsynced changes that depend on the queue may not replay.',
+            clearConfirmButton: 'Clear queue',
+            clearSuccess: 'Offline action queue cleared.',
+            clearError: 'Could not clear the offline queue.',
+        },
         crdtDocSize: 'CRDT Document',
         crdtFallback: 'CRDT sync in fallback mode (LWW). Offline merge disabled.',
         crdtSizeWarning: 'CRDT document exceeds 1 MB. Consider running storage cleanup.',

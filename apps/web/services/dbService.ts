@@ -715,11 +715,29 @@ export const dbService = {
     async addOfflineAction(action: Record<string, unknown>): Promise<void> {
         const entry = {
             ...action,
+            queuedAt: typeof action.queuedAt === 'number' ? action.queuedAt : Date.now(),
             idempotencyKey: action.idempotencyKey ?? crypto.randomUUID(),
         }
         await performTx<IDBValidKey>(OFFLINE_ACTIONS_STORE, 'readwrite', (store) =>
             store.add(entry),
         )
+    },
+
+    /** Returns all queued PWA offline actions (newest last). */
+    async listOfflineActions(): Promise<Array<Record<string, unknown> & { id?: number }>> {
+        return performTx(OFFLINE_ACTIONS_STORE, 'readonly', (store) => store.getAll())
+    },
+
+    async countOfflineActions(): Promise<number> {
+        return performTx<number>(OFFLINE_ACTIONS_STORE, 'readonly', (store) => store.count())
+    },
+
+    async clearOfflineActions(): Promise<void> {
+        await performTx(OFFLINE_ACTIONS_STORE, 'readwrite', (store) => store.clear())
+    },
+
+    async deleteOfflineAction(id: number): Promise<void> {
+        await performTx(OFFLINE_ACTIONS_STORE, 'readwrite', (store) => store.delete(id))
     },
 
     async optimizeSimulationForPersistence(

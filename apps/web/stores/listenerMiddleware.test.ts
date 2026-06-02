@@ -72,6 +72,8 @@ vi.mock('@/stores/useFiltersStore', () => ({
 
 vi.mock('@/i18n', () => ({
     getT: () => (key: string) => key,
+    changeAppLanguage: vi.fn(),
+    isSupportedLocale: (lang: string) => ['en', 'de', 'es', 'fr', 'nl'].includes(lang),
     i18nInstance: {
         language: 'en',
         hasResourceBundle: () => true,

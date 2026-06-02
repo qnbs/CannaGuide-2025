@@ -636,6 +636,27 @@ export const settingsView = {
             loading: 'Daten werden geladen...',
             empty: 'Speicherinformationen nicht verfügbar.',
         },
+        offlineQueue: {
+            title: 'Offline-Aktionswarteschlange',
+            description:
+                'Offline gespeicherte Aktionen werden bei erneuter Verbindung lokal abgespielt. Getrennt von der Cloud-Gist-Synchronisation.',
+            loading: 'Warteschlange wird geladen...',
+            count: '{{count}} Aktion(en) ausstehend',
+            refresh: 'Aktualisieren',
+            retrySync: 'Sync erneut anfordern',
+            syncing: 'Sync wird angefordert...',
+            syncRequested:
+                'Hintergrund-Sync angefordert. Ausstehende Aktionen werden in Kuerze abgespielt.',
+            syncUnavailable:
+                'Hintergrund-Sync ist in diesem Browser nicht verfuegbar. Aktionen werden abgespielt, sobald die App online wieder aktiv ist.',
+            clear: 'Warteschlange leeren',
+            clearConfirmTitle: 'Offline-Warteschlange leeren?',
+            clearConfirmText:
+                'Alle ausstehenden Offline-Aktionen entfernen? Nicht synchronisierte Aenderungen aus der Warteschlange werden ggf. nicht abgespielt.',
+            clearConfirmButton: 'Warteschlange leeren',
+            clearSuccess: 'Offline-Warteschlange geleert.',
+            clearError: 'Offline-Warteschlange konnte nicht geleert werden.',
+        },
         crdtDocSize: 'CRDT-Dokument',
         crdtFallback: 'CRDT-Sync im Fallback-Modus (LWW). Offline-Zusammenfuehrung deaktiviert.',
         crdtSizeWarning: 'CRDT-Dokument ueberschreitet 1 MB. Speicherbereinigung empfohlen.',

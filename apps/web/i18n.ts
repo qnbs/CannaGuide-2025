@@ -5,7 +5,11 @@ type LocalePayload = Record<string, unknown>
 
 export type SupportedLocale = 'en' | 'de' | 'es' | 'fr' | 'nl'
 
-const SUPPORTED_LOCALES: readonly SupportedLocale[] = ['en', 'de', 'es', 'fr', 'nl'] as const
+export const SUPPORTED_LOCALES: readonly SupportedLocale[] = ['en', 'de', 'es', 'fr', 'nl'] as const
+
+/** Returns true when `lang` is a bundled app locale. */
+export const isSupportedLocale = (lang: string): lang is SupportedLocale =>
+    (SUPPORTED_LOCALES as readonly string[]).includes(lang)
 
 // RTL locales — enable when ar/he translations land (v2.0)
 const RTL_LOCALES: ReadonlySet<string> = new Set<string>(['ar', 'he'])
@@ -48,6 +52,26 @@ export const i18nInstance = i18next.createInstance()
  * @returns The translation function.
  */
 export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance)
+
+/**
+ * Loads a locale bundle into i18next when it is not already present.
+ */
+export const ensureLocaleLoaded = async (lang: SupportedLocale): Promise<void> => {
+    if (!i18nInstance.hasResourceBundle(lang, 'translation')) {
+        const translations = await loadLocale(lang)
+        i18nInstance.addResourceBundle(lang, 'translation', translations)
+    }
+}
+
+/**
+ * Single entry point for switching the active UI language (lazy-loaded bundles).
+ */
+export const changeAppLanguage = async (lang: SupportedLocale): Promise<void> => {
+    await ensureLocaleLoaded(lang)
+    if (i18nInstance.language !== lang) {
+        await i18nInstance.changeLanguage(lang)
+    }
+}
 
 // Detect initial language from browser settings. The store will sync it up later upon hydration.
 const detectedLang =

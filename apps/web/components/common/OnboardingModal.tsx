@@ -8,7 +8,7 @@ import { useAppDispatch } from '@/stores/store'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { useUIStore } from '@/stores/useUIStore'
 import { FlagDE, FlagEN, FlagES, FlagFR, FlagNL } from '@/components/icons/Flags'
-import { i18nInstance, loadLocale, SupportedLocale } from '@/i18n'
+import { changeAppLanguage } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 import { consentService } from '@/services/consentService'
 import * as Sentry from '@sentry/react'
@@ -78,7 +78,7 @@ function ChoiceCard({
 }
 
 export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onClose }) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const dispatch = useAppDispatch()
     const step = useUIStore((s) => s.onboardingStep)
     const setOnboardingStep = useUIStore((s) => s.setOnboardingStep)
@@ -127,21 +127,13 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
     )
 
     const handleLanguageSelect = async (lang: Language) => {
-        if (!i18nInstance.hasResourceBundle(lang, 'translation')) {
-            const translations = await loadLocale(lang as SupportedLocale)
-            i18nInstance.addResourceBundle(lang, 'translation', translations)
-        }
-        await i18nInstance.changeLanguage(lang)
+        await changeAppLanguage(lang)
         dispatch(setSetting({ path: 'general.language', value: lang }))
         setOnboardingStep(FEATURE_STEP_START)
     }
 
     const handleLanguageSwitch = async (lang: Language) => {
-        if (!i18nInstance.hasResourceBundle(lang, 'translation')) {
-            const translations = await loadLocale(lang as SupportedLocale)
-            i18nInstance.addResourceBundle(lang, 'translation', translations)
-        }
-        await i18nInstance.changeLanguage(lang)
+        await changeAppLanguage(lang)
         dispatch(setSetting({ path: 'general.language', value: lang }))
     }
 
@@ -238,7 +230,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                             type="button"
                             onClick={() => handleLanguageSwitch('de')}
                             className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                                i18nInstance.language === 'de'
+                                i18n.language === 'de'
                                     ? 'bg-primary-600/30 text-primary-300 border border-primary-500/40'
                                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
                             }`}
@@ -251,7 +243,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                             type="button"
                             onClick={() => handleLanguageSwitch('en')}
                             className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                                i18nInstance.language === 'en'
+                                i18n.language === 'en'
                                     ? 'bg-primary-600/30 text-primary-300 border border-primary-500/40'
                                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
                             }`}

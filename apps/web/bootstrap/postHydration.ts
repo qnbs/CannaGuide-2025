@@ -1,7 +1,7 @@
 import type { AppStore, RootState } from '@/stores/store'
 import type { Plant } from '@/types'
 import type { SupportedLocale } from '@/i18n'
-import { i18nInstance, loadLocale } from '@/i18n'
+import { changeAppLanguage } from '@/i18n'
 import { getUISnapshot } from '@/stores/useUIStore'
 import { strainService } from '@/services/strainService'
 import { initializeSimulation } from '@/stores/slices/simulationSlice'
@@ -28,12 +28,8 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
 
     const persistedLang = (hydratedStore.getState() as RootState).settings.settings.general
         ?.language as SupportedLocale | undefined
-    if (persistedLang && i18nInstance.language !== persistedLang) {
-        if (!i18nInstance.hasResourceBundle(persistedLang, 'translation')) {
-            const translations = await loadLocale(persistedLang)
-            i18nInstance.addResourceBundle(persistedLang, 'translation', translations)
-        }
-        await i18nInstance.changeLanguage(persistedLang)
+    if (persistedLang) {
+        await changeAppLanguage(persistedLang)
     }
 
     const [

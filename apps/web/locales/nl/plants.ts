@@ -924,6 +924,11 @@ export const plantsView = {
         },
         delete: 'Verwijderen',
     },
+    dailySimulation: {
+        stageChangeJournal: 'Stadium gewijzigd van {{from}} naar {{to}}',
+        waterTaskTitle: 'Plant water geven',
+        waterTaskDescription: '{{name}} heeft water nodig.',
+    },
     autoScheduler: {
         title: 'Auto-planning',
         description: 'Automatisch taken genereren op basis van rassenprofiel en groeifase.',

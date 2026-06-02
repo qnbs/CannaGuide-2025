@@ -6,10 +6,16 @@ import diagnosisHistoryReducer, {
     selectDiagnosisForPlant,
     selectLatestDiagnosis,
     selectDiagnosisTrend,
+    diagnosisRecordsAdapter,
 } from './diagnosisHistorySlice'
 import type { DiagnosisHistoryState, DiagnosisRecord } from '@/types'
 
-const initialState: DiagnosisHistoryState = { records: [] }
+const initialState: DiagnosisHistoryState = {
+    records: diagnosisRecordsAdapter.getInitialState(),
+}
+
+const selectRecordsFromState = (state: DiagnosisHistoryState): DiagnosisRecord[] =>
+    diagnosisRecordsAdapter.getSelectors().selectAll(state.records)
 
 let recCounter = 0
 const makeRecord = (overrides: Partial<DiagnosisRecord> = {}): DiagnosisRecord => ({
@@ -27,8 +33,8 @@ describe('diagnosisHistorySlice', () => {
     it('adds a record', () => {
         const record = makeRecord()
         const state = diagnosisHistoryReducer(initialState, addDiagnosisRecord(record))
-        expect(state.records).toHaveLength(1)
-        expect(state.records[0]?.label).toBe('healthy')
+        expect(selectRecordsFromState(state)).toHaveLength(1)
+        expect(selectRecordsFromState(state)[0]?.label).toBe('healthy')
     })
 
     it('applies FIFO pruning per plant at 100 cap', () => {
@@ -45,7 +51,7 @@ describe('diagnosisHistorySlice', () => {
                 ),
             )
         }
-        const p1Records = state.records.filter((r) => r.plantId === 'plant-1')
+        const p1Records = selectRecordsFromState(state).filter((r) => r.plantId === 'plant-1')
         expect(p1Records).toHaveLength(100)
         expect(p1Records[0]?.timestamp).toBe(5)
     })
@@ -61,7 +67,7 @@ describe('diagnosisHistorySlice', () => {
                 addDiagnosisRecord(makeRecord({ plantId: 'plant-1', timestamp: i })),
             )
         }
-        expect(state.records.filter((r) => r.plantId === 'plant-2')).toHaveLength(1)
+        expect(selectRecordsFromState(state).filter((r) => r.plantId === 'plant-2')).toHaveLength(1)
     })
 
     it('clears records for a specific plant', () => {
@@ -74,8 +80,8 @@ describe('diagnosisHistorySlice', () => {
             addDiagnosisRecord(makeRecord({ plantId: 'plant-2' })),
         )
         state = diagnosisHistoryReducer(state, clearDiagnosisForPlant('plant-1'))
-        expect(state.records).toHaveLength(1)
-        expect(state.records[0]?.plantId).toBe('plant-2')
+        expect(selectRecordsFromState(state)).toHaveLength(1)
+        expect(selectRecordsFromState(state)[0]?.plantId).toBe('plant-2')
     })
 
     it('clears all records', () => {
@@ -88,50 +94,55 @@ describe('diagnosisHistorySlice', () => {
             addDiagnosisRecord(makeRecord({ plantId: 'plant-2' })),
         )
         state = diagnosisHistoryReducer(state, clearAllDiagnosis())
-        expect(state.records).toHaveLength(0)
+        expect(selectRecordsFromState(state)).toHaveLength(0)
     })
 
     describe('selectors', () => {
+        const recordList = [
+            {
+                id: 'dr-a',
+                plantId: 'p1',
+                timestamp: 100,
+                label: 'healthy',
+                confidence: 0.9,
+                severity: 'none',
+                harvestScore: 0,
+            },
+            {
+                id: 'dr-b',
+                plantId: 'p1',
+                timestamp: 200,
+                label: 'nitrogen-deficiency',
+                confidence: 0.8,
+                severity: 'moderate',
+                harvestScore: 30,
+            },
+            {
+                id: 'dr-c',
+                plantId: 'p1',
+                timestamp: 300,
+                label: 'healthy',
+                confidence: 0.95,
+                severity: 'none',
+                harvestScore: 0,
+            },
+            {
+                id: 'dr-d',
+                plantId: 'p2',
+                timestamp: 150,
+                label: 'pest',
+                confidence: 0.7,
+                severity: 'severe',
+                harvestScore: 50,
+            },
+        ] as DiagnosisRecord[]
+
         const rootState = {
             diagnosisHistory: {
-                records: [
-                    {
-                        id: 'dr-a',
-                        plantId: 'p1',
-                        timestamp: 100,
-                        label: 'healthy',
-                        confidence: 0.9,
-                        severity: 'none',
-                        harvestScore: 0,
-                    },
-                    {
-                        id: 'dr-b',
-                        plantId: 'p1',
-                        timestamp: 200,
-                        label: 'nitrogen-deficiency',
-                        confidence: 0.8,
-                        severity: 'moderate',
-                        harvestScore: 30,
-                    },
-                    {
-                        id: 'dr-c',
-                        plantId: 'p1',
-                        timestamp: 300,
-                        label: 'healthy',
-                        confidence: 0.95,
-                        severity: 'none',
-                        harvestScore: 0,
-                    },
-                    {
-                        id: 'dr-d',
-                        plantId: 'p2',
-                        timestamp: 150,
-                        label: 'pest',
-                        confidence: 0.7,
-                        severity: 'severe',
-                        harvestScore: 50,
-                    },
-                ] as DiagnosisRecord[],
+                records: diagnosisRecordsAdapter.setAll(
+                    diagnosisRecordsAdapter.getInitialState(),
+                    recordList,
+                ),
             },
         } as never
 

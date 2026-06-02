@@ -43,7 +43,13 @@ export interface PlantIssue {
     imageIds?: string[] | undefined
 }
 
+/** Normalized entity collection (compatible with RTK EntityState). */
+export interface EntityCollection<T extends { id: string }> {
+    ids: string[]
+    entities: Record<string, T>
+}
+
 /** Redux state for problem tracker */
 export interface ProblemTrackerState {
-    issues: PlantIssue[]
+    issues: EntityCollection<PlantIssue>
 }

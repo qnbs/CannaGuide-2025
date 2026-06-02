@@ -941,6 +941,11 @@ export const plantsView = {
         },
         delete: 'Supprimer',
     },
+    dailySimulation: {
+        stageChangeJournal: 'Stade passe de {{from}} a {{to}}',
+        waterTaskTitle: 'Arroser la plante',
+        waterTaskDescription: '{{name}} a besoin d’eau.',
+    },
     autoScheduler: {
         title: 'Planification automatique',
         description:

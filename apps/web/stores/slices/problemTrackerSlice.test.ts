@@ -13,6 +13,7 @@ import reducer, {
     selectActiveIssuesForPlant,
     selectIssueById,
     selectIssueCountByStatus,
+    issuesAdapter,
 } from '@/stores/slices/problemTrackerSlice'
 import type { PlantIssue, IssueTreatment, ProblemTrackerState } from '@/types'
 import type { RootState } from '@/stores/store'
@@ -44,12 +45,17 @@ function makeTreatment(overrides: Partial<IssueTreatment> = {}): IssueTreatment 
     }
 }
 
-function stateWith(issues: PlantIssue[]): ProblemTrackerState {
-    return { issues }
+function stateWith(issueList: PlantIssue[]): ProblemTrackerState {
+    return {
+        issues: issuesAdapter.setAll(issuesAdapter.getInitialState(), issueList),
+    }
 }
 
-function rootWith(issues: PlantIssue[]): Pick<RootState, 'problemTracker'> {
-    return { problemTracker: { issues } } as Pick<RootState, 'problemTracker'>
+const selectIssuesFromState = (state: ProblemTrackerState): PlantIssue[] =>
+    issuesAdapter.getSelectors().selectAll(state.issues)
+
+function rootWith(issueList: PlantIssue[]): Pick<RootState, 'problemTracker'> {
+    return { problemTracker: stateWith(issueList) }
 }
 
 // ---------------------------------------------------------------------------
@@ -59,7 +65,7 @@ function rootWith(issues: PlantIssue[]): Pick<RootState, 'problemTracker'> {
 describe('problemTrackerSlice', () => {
     it('returns initial state', () => {
         const state = reducer(undefined, { type: 'unknown' })
-        expect(state).toEqual({ issues: [] })
+        expect(state).toEqual({ issues: { ids: [], entities: {} } })
     })
 
     // -- addIssue -----------------------------------------------------------
@@ -68,17 +74,17 @@ describe('problemTrackerSlice', () => {
         it('adds an issue', () => {
             const issue = makeIssue()
             const state = reducer(undefined, addIssue(issue))
-            expect(state.issues).toHaveLength(1)
-            expect(state.issues[0]).toEqual(issue)
+            expect(selectIssuesFromState(state)).toHaveLength(1)
+            expect(selectIssuesFromState(state)[0]).toEqual(issue)
         })
 
         it('enforces FIFO cap at 200', () => {
             const existing = Array.from({ length: 200 }, (_, i) => makeIssue({ id: `iss-${i}` }))
             const overflow = makeIssue({ id: 'iss-overflow' })
             const state = reducer(stateWith(existing), addIssue(overflow))
-            expect(state.issues).toHaveLength(200)
-            expect(state.issues[0]?.id).toBe('iss-1')
-            expect(state.issues[199]?.id).toBe('iss-overflow')
+            expect(selectIssuesFromState(state)).toHaveLength(200)
+            expect(selectIssuesFromState(state)[0]?.id).toBe('iss-1')
+            expect(selectIssuesFromState(state)[199]?.id).toBe('iss-overflow')
         })
     })
 
@@ -91,8 +97,8 @@ describe('problemTrackerSlice', () => {
                 stateWith([issue]),
                 updateIssue({ issueId: 'iss-1', changes: { severity: 'severe', title: 'Bad' } }),
             )
-            expect(state.issues[0]?.severity).toBe('severe')
-            expect(state.issues[0]?.title).toBe('Bad')
+            expect(selectIssuesFromState(state)[0]?.severity).toBe('severe')
+            expect(selectIssuesFromState(state)[0]?.title).toBe('Bad')
         })
 
         it('ignores update for non-existent issue', () => {
@@ -100,7 +106,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue()]),
                 updateIssue({ issueId: 'nope', changes: { title: 'X' } }),
             )
-            expect(state.issues[0]?.title).toBe('Spider mites')
+            expect(selectIssuesFromState(state)[0]?.title).toBe('Spider mites')
         })
     })
 
@@ -109,12 +115,12 @@ describe('problemTrackerSlice', () => {
     describe('removeIssue', () => {
         it('removes an issue by id', () => {
             const state = reducer(stateWith([makeIssue()]), removeIssue('iss-1'))
-            expect(state.issues).toHaveLength(0)
+            expect(selectIssuesFromState(state)).toHaveLength(0)
         })
 
         it('does nothing for unknown id', () => {
             const state = reducer(stateWith([makeIssue()]), removeIssue('nope'))
-            expect(state.issues).toHaveLength(1)
+            expect(selectIssuesFromState(state)).toHaveLength(1)
         })
     })
 
@@ -126,7 +132,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue()]),
                 setIssueStatus({ issueId: 'iss-1', status: 'treating' }),
             )
-            expect(state.issues[0]?.status).toBe('treating')
+            expect(selectIssuesFromState(state)[0]?.status).toBe('treating')
         })
 
         it('sets resolvedAt on resolved transition', () => {
@@ -134,8 +140,8 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue()]),
                 setIssueStatus({ issueId: 'iss-1', status: 'resolved' }),
             )
-            expect(state.issues[0]?.status).toBe('resolved')
-            expect(state.issues[0]?.resolvedAt).toBeGreaterThan(0)
+            expect(selectIssuesFromState(state)[0]?.status).toBe('resolved')
+            expect(selectIssuesFromState(state)[0]?.resolvedAt).toBeGreaterThan(0)
         })
 
         it('does not overwrite existing resolvedAt', () => {
@@ -144,7 +150,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([issue]),
                 setIssueStatus({ issueId: 'iss-1', status: 'resolved' }),
             )
-            expect(state.issues[0]?.resolvedAt).toBe(999)
+            expect(selectIssuesFromState(state)[0]?.resolvedAt).toBe(999)
         })
 
         it('ignores unknown issue id', () => {
@@ -152,7 +158,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue()]),
                 setIssueStatus({ issueId: 'nope', status: 'resolved' }),
             )
-            expect(state.issues[0]?.status).toBe('detected')
+            expect(selectIssuesFromState(state)[0]?.status).toBe('detected')
         })
     })
 
@@ -164,8 +170,8 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue()]),
                 addTreatment({ issueId: 'iss-1', treatment: makeTreatment() }),
             )
-            expect(state.issues[0]?.treatments).toHaveLength(1)
-            expect(state.issues[0]?.treatments[0]?.action).toBe('Applied neem oil')
+            expect(selectIssuesFromState(state)[0]?.treatments).toHaveLength(1)
+            expect(selectIssuesFromState(state)[0]?.treatments[0]?.action).toBe('Applied neem oil')
         })
 
         it('auto-transitions detected to treating', () => {
@@ -173,7 +179,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue({ status: 'detected' })]),
                 addTreatment({ issueId: 'iss-1', treatment: makeTreatment() }),
             )
-            expect(state.issues[0]?.status).toBe('treating')
+            expect(selectIssuesFromState(state)[0]?.status).toBe('treating')
         })
 
         it('does not auto-transition if already resolved', () => {
@@ -181,7 +187,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue({ status: 'resolved' })]),
                 addTreatment({ issueId: 'iss-1', treatment: makeTreatment() }),
             )
-            expect(state.issues[0]?.status).toBe('resolved')
+            expect(selectIssuesFromState(state)[0]?.status).toBe('resolved')
         })
 
         it('enforces FIFO cap at 50 treatments', () => {
@@ -191,8 +197,8 @@ describe('problemTrackerSlice', () => {
                 stateWith([issue]),
                 addTreatment({ issueId: 'iss-1', treatment: makeTreatment({ id: 't-overflow' }) }),
             )
-            expect(state.issues[0]?.treatments).toHaveLength(50)
-            expect(state.issues[0]?.treatments[49]?.id).toBe('t-overflow')
+            expect(selectIssuesFromState(state)[0]?.treatments).toHaveLength(50)
+            expect(selectIssuesFromState(state)[0]?.treatments[49]?.id).toBe('t-overflow')
         })
 
         it('ignores unknown issue id', () => {
@@ -200,7 +206,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([makeIssue()]),
                 addTreatment({ issueId: 'nope', treatment: makeTreatment() }),
             )
-            expect(state.issues[0]?.treatments).toHaveLength(0)
+            expect(selectIssuesFromState(state)[0]?.treatments).toHaveLength(0)
         })
     })
 
@@ -213,7 +219,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([issue]),
                 removeTreatment({ issueId: 'iss-1', treatmentId: 'treat-1' }),
             )
-            expect(state.issues[0]?.treatments).toHaveLength(0)
+            expect(selectIssuesFromState(state)[0]?.treatments).toHaveLength(0)
         })
 
         it('does nothing for unknown treatment id', () => {
@@ -222,7 +228,7 @@ describe('problemTrackerSlice', () => {
                 stateWith([issue]),
                 removeTreatment({ issueId: 'iss-1', treatmentId: 'nope' }),
             )
-            expect(state.issues[0]?.treatments).toHaveLength(1)
+            expect(selectIssuesFromState(state)[0]?.treatments).toHaveLength(1)
         })
     })
 
@@ -236,8 +242,8 @@ describe('problemTrackerSlice', () => {
                 makeIssue({ id: 'c', plantId: 'plant-1' }),
             ]
             const state = reducer(stateWith(issues), clearIssuesForPlant('plant-1'))
-            expect(state.issues).toHaveLength(1)
-            expect(state.issues[0]?.plantId).toBe('plant-2')
+            expect(selectIssuesFromState(state)).toHaveLength(1)
+            expect(selectIssuesFromState(state)[0]?.plantId).toBe('plant-2')
         })
     })
 
@@ -251,8 +257,8 @@ describe('problemTrackerSlice', () => {
                 makeIssue({ id: 'c', status: 'treating' }),
             ]
             const state = reducer(stateWith(issues), clearResolvedIssues())
-            expect(state.issues).toHaveLength(2)
-            expect(state.issues.map((i) => i.id)).toEqual(['a', 'c'])
+            expect(selectIssuesFromState(state)).toHaveLength(2)
+            expect(selectIssuesFromState(state).map((i) => i.id)).toEqual(['a', 'c'])
         })
     })
 })

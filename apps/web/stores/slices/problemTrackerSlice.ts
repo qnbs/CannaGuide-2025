@@ -5,7 +5,7 @@
 // diseases, environmental). FIFO capped at 200 issues.
 // ---------------------------------------------------------------------------
 
-import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createSelector, PayloadAction, createEntityAdapter } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 import type { PlantIssue, IssueTreatment, ProblemTrackerState, IssueStatus } from '@/types'
 
@@ -16,12 +16,25 @@ import type { PlantIssue, IssueTreatment, ProblemTrackerState, IssueStatus } fro
 const MAX_ISSUES = 200
 const MAX_TREATMENTS_PER_ISSUE = 50
 
+export const issuesAdapter = createEntityAdapter<PlantIssue>()
+
 // ---------------------------------------------------------------------------
 // Initial state
 // ---------------------------------------------------------------------------
 
 const initialState: ProblemTrackerState = {
-    issues: [],
+    issues: issuesAdapter.getInitialState(),
+}
+
+const selectIssuesEntityState = (state: RootState) => state.problemTracker.issues
+
+const issueSelectors = issuesAdapter.getSelectors(selectIssuesEntityState)
+
+function trimIssuesFifo(state: ProblemTrackerState): void {
+    const excess = state.issues.ids.length - MAX_ISSUES
+    if (excess > 0) {
+        issuesAdapter.removeMany(state.issues, state.issues.ids.slice(0, excess))
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -33,11 +46,8 @@ const problemTrackerSlice = createSlice({
     initialState,
     reducers: {
         addIssue(state, action: PayloadAction<PlantIssue>) {
-            state.issues.push(action.payload)
-            // FIFO cap
-            if (state.issues.length > MAX_ISSUES) {
-                state.issues = state.issues.slice(state.issues.length - MAX_ISSUES)
-            }
+            issuesAdapter.addOne(state.issues, action.payload)
+            trimIssuesFifo(state)
         },
 
         updateIssue(
@@ -47,58 +57,78 @@ const problemTrackerSlice = createSlice({
                 changes: Partial<Omit<PlantIssue, 'id' | 'plantId' | 'detectedAt'>>
             }>,
         ) {
-            const issue = state.issues.find((i) => i.id === action.payload.issueId)
-            if (issue) {
-                Object.assign(issue, action.payload.changes)
-            }
+            issuesAdapter.updateOne(state.issues, {
+                id: action.payload.issueId,
+                changes: action.payload.changes,
+            })
         },
 
         removeIssue(state, action: PayloadAction<string>) {
-            state.issues = state.issues.filter((i) => i.id !== action.payload)
+            issuesAdapter.removeOne(state.issues, action.payload)
         },
 
         setIssueStatus(state, action: PayloadAction<{ issueId: string; status: IssueStatus }>) {
-            const issue = state.issues.find((i) => i.id === action.payload.issueId)
-            if (issue) {
-                issue.status = action.payload.status
-                if (action.payload.status === 'resolved' && issue.resolvedAt == null) {
-                    issue.resolvedAt = Date.now()
-                }
+            const issue = state.issues.entities[action.payload.issueId]
+            if (!issue) {
+                return
             }
+            const changes: Partial<PlantIssue> = { status: action.payload.status }
+            if (action.payload.status === 'resolved' && issue.resolvedAt == null) {
+                changes.resolvedAt = Date.now()
+            }
+            issuesAdapter.updateOne(state.issues, {
+                id: action.payload.issueId,
+                changes,
+            })
         },
 
         addTreatment(state, action: PayloadAction<{ issueId: string; treatment: IssueTreatment }>) {
-            const issue = state.issues.find((i) => i.id === action.payload.issueId)
-            if (issue) {
-                issue.treatments.push(action.payload.treatment)
-                // Cap treatments per issue
-                if (issue.treatments.length > MAX_TREATMENTS_PER_ISSUE) {
-                    issue.treatments = issue.treatments.slice(
-                        issue.treatments.length - MAX_TREATMENTS_PER_ISSUE,
-                    )
-                }
-                // Auto-transition to treating status
-                if (issue.status === 'detected') {
-                    issue.status = 'treating'
-                }
+            const issue = state.issues.entities[action.payload.issueId]
+            if (!issue) {
+                return
             }
+            const treatments = [...issue.treatments, action.payload.treatment]
+            if (treatments.length > MAX_TREATMENTS_PER_ISSUE) {
+                treatments.splice(0, treatments.length - MAX_TREATMENTS_PER_ISSUE)
+            }
+            const changes: Partial<PlantIssue> = { treatments }
+            if (issue.status === 'detected') {
+                changes.status = 'treating'
+            }
+            issuesAdapter.updateOne(state.issues, {
+                id: action.payload.issueId,
+                changes,
+            })
         },
 
         removeTreatment(state, action: PayloadAction<{ issueId: string; treatmentId: string }>) {
-            const issue = state.issues.find((i) => i.id === action.payload.issueId)
-            if (issue) {
-                issue.treatments = issue.treatments.filter(
-                    (t) => t.id !== action.payload.treatmentId,
-                )
+            const issue = state.issues.entities[action.payload.issueId]
+            if (!issue) {
+                return
             }
+            issuesAdapter.updateOne(state.issues, {
+                id: action.payload.issueId,
+                changes: {
+                    treatments: issue.treatments.filter(
+                        (t) => t.id !== action.payload.treatmentId,
+                    ),
+                },
+            })
         },
 
         clearIssuesForPlant(state, action: PayloadAction<string>) {
-            state.issues = state.issues.filter((i) => i.plantId !== action.payload)
+            const plantId = action.payload
+            const idsToRemove = state.issues.ids.filter(
+                (id) => state.issues.entities[id]?.plantId === plantId,
+            )
+            issuesAdapter.removeMany(state.issues, idsToRemove)
         },
 
         clearResolvedIssues(state) {
-            state.issues = state.issues.filter((i) => i.status !== 'resolved')
+            const idsToRemove = state.issues.ids.filter(
+                (id) => state.issues.entities[id]?.status === 'resolved',
+            )
+            issuesAdapter.removeMany(state.issues, idsToRemove)
         },
     },
 })
@@ -118,28 +148,26 @@ export const {
 // Selectors
 // ---------------------------------------------------------------------------
 
-export const selectAllIssues = (state: RootState): PlantIssue[] => state.problemTracker.issues
+export const selectAllIssues = (state: RootState): PlantIssue[] => issueSelectors.selectAll(state)
 
 export const selectIssuesForPlant = (plantId: string): ((state: RootState) => PlantIssue[]) =>
-    createSelector(
-        (state: RootState) => state.problemTracker.issues,
-        (issues) => issues.filter((i) => i.plantId === plantId),
+    createSelector((state: RootState) => selectAllIssues(state), (issues) =>
+        issues.filter((i) => i.plantId === plantId),
     )
 
 export const selectActiveIssuesForPlant = (plantId: string): ((state: RootState) => PlantIssue[]) =>
-    createSelector(
-        (state: RootState) => state.problemTracker.issues,
-        (issues) => issues.filter((i) => i.plantId === plantId && i.status !== 'resolved'),
+    createSelector((state: RootState) => selectAllIssues(state), (issues) =>
+        issues.filter((i) => i.plantId === plantId && i.status !== 'resolved'),
     )
 
 export const selectIssueById = (issueId: string): ((state: RootState) => PlantIssue | undefined) =>
     createSelector(
-        (state: RootState) => state.problemTracker.issues,
-        (issues) => issues.find((i) => i.id === issueId),
+        (state: RootState) => state.problemTracker.issues.entities[issueId],
+        (issue) => issue,
     )
 
 export const selectIssueCountByStatus = createSelector(
-    (state: RootState) => state.problemTracker.issues,
+    (state: RootState) => selectAllIssues(state),
     (issues) => ({
         detected: issues.filter((i) => i.status === 'detected').length,
         treating: issues.filter((i) => i.status === 'treating').length,

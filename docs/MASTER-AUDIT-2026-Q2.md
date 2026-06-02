@@ -40,10 +40,14 @@
 | P1-04 | ✅         | `migrationLogic.ts` ~12 LOC facade — `migration/*` (shape guards, version migrations)                                                         |
 | P1-05 | ✅         | `strainLookupService.ts` ~80 LOC — `strain-lookup/*` (enrichment, cache, external APIs)                                                       |
 | P1-06 | ✅         | Simulation-Kern: `simulationMath`, `simulationDiagnosticsTypes`, `postHarvestSimulation`, `getSimulationProfileCurve`                         |
+| P1-08 | ✅         | `dailySimulationLoop.ts` — Tages-Schleife aus `plantSimulationService` (~371 LOC)                                                             |
+| P1-02 | ✅ (cont.) | `geminiProviderRouting.ts`, `geminiStructuredHandlers.ts` — `geminiService` ~353 LOC                                                          |
+| P1-09 | ✅         | RTK Entity Adapters: `problemTrackerSlice`, `diagnosisHistorySlice` + Persist-Migration                                                       |
+| S-07  | ✅         | `pnpm.overrides` inkl. `ws>=8.20.1`; `pnpm audit` clean (protobufjs CVE dokumentiert ignoriert)                                               |
 
 ## Phases (backlog)
 
-- **Phase 1 (rest):** More `useCases/`, RTK entity adapters for remaining slices; optional daily-loop split from `plantSimulationService`
+- **Phase 1 (rest):** Weitere `useCases/` nach Bedarf; `plantSimulationService` ggf. weiter unter 700 LOC halten
 - **Phase 2:** Bundle/locale lazy-load, `AiOrchestrator`, PWA offline-queue UI, coverage Stufe B/C
 - **Phase 3 (v2.0):** Digital Twin, WebXR, V-06 ONNX voice, Tauri E2E
 

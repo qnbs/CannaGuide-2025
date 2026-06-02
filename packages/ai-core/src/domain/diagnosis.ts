@@ -15,8 +15,10 @@ export interface DiagnosisRecord {
     imageId?: string | undefined
 }
 
+import type { EntityCollection } from './issue'
+
 export interface DiagnosisHistoryState {
-    records: DiagnosisRecord[]
+    records: EntityCollection<DiagnosisRecord>
 }
 
 /** Status of the cached plant disease ONNX model. */

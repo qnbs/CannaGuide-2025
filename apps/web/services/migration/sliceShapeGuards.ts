@@ -232,6 +232,39 @@ export const ensureGrowsShape = (state: PersistedState): void => {
     }
 }
 
+const migrateArrayToEntityCollection = <T extends { id: string }>(
+    value: unknown,
+): { ids: string[]; entities: Record<string, T> } => {
+    if (Array.isArray(value)) {
+        const items = value as T[]
+        return {
+            ids: items.map((item) => item.id),
+            entities: Object.fromEntries(items.map((item) => [item.id, item])),
+        }
+    }
+    return ensureEntityAdapterShape(value) as { ids: string[]; entities: Record<string, T> }
+}
+
+export const ensureProblemTrackerShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.problemTracker || typeof s.problemTracker !== 'object') {
+        s.problemTracker = { issues: { ids: [], entities: {} } }
+        return
+    }
+    const pt = s.problemTracker as Record<string, unknown>
+    pt.issues = migrateArrayToEntityCollection(pt.issues)
+}
+
+export const ensureDiagnosisHistoryShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.diagnosisHistory || typeof s.diagnosisHistory !== 'object') {
+        s.diagnosisHistory = { records: { ids: [], entities: {} } }
+        return
+    }
+    const dh = s.diagnosisHistory as Record<string, unknown>
+    dh.records = migrateArrayToEntityCollection(dh.records)
+}
+
 export const ensureStrainsViewShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (!s.strainsView || typeof s.strainsView !== 'object') {

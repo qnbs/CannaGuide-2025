@@ -22,6 +22,9 @@ import {
     getSimulationStomataSensitivity,
 } from '@/services/simulation/simulationEnvironmentHelpers'
 import { createInitialHarvestData } from '@/services/simulation/postHarvestSimulation'
+import { getT } from '@/i18n'
+
+const WATER_TASK_ID_PREFIX = 'task-water-'
 
 export type DailySimulationDeps = {
     clonePlant: (plant: Plant) => Plant
@@ -283,26 +286,36 @@ function applyStageProgression(p: Plant): void {
     }
 }
 
+function stageDisplayName(stage: PlantStage): string {
+    return getT()(`plantStages.${stage}`)
+}
+
 function createStageChangeEntry(from: PlantStage, to: PlantStage): JournalEntry {
+    const t = getT()
     return {
         id: '',
         createdAt: 0,
         type: JournalEntryType.System,
-        notes: `Stage changed from ${from} to ${to}`,
+        notes: t('plantsView.dailySimulation.stageChangeJournal', {
+            from: stageDisplayName(from),
+            to: stageDisplayName(to),
+        }),
         details: { from, to },
     }
 }
 
 function createWaterTaskIfNeeded(p: Plant): Task | null {
-    const hasWaterTask = p.tasks.some((task) => task.title === 'Task: Water Plant')
+    const t = getT()
+    const waterTaskId = `${WATER_TASK_ID_PREFIX}${p.id}`
+    const hasWaterTask = p.tasks.some((task) => task.id === waterTaskId)
     if (p.medium.moisture >= 30 || hasWaterTask) {
         return null
     }
 
     return {
-        id: `task-water-${p.id}`,
-        title: 'Task: Water Plant',
-        description: `${p.name} is thirsty!`,
+        id: waterTaskId,
+        title: t('plantsView.dailySimulation.waterTaskTitle'),
+        description: t('plantsView.dailySimulation.waterTaskDescription', { name: p.name }),
         isCompleted: false,
         createdAt: Date.now(),
         priority: 'high',

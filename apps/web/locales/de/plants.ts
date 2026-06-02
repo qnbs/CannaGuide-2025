@@ -986,6 +986,11 @@ export const plantsView = {
         },
         delete: 'Loeschen',
     },
+    dailySimulation: {
+        stageChangeJournal: 'Stadium gewechselt von {{from}} zu {{to}}',
+        waterTaskTitle: 'Pflanze giessen',
+        waterTaskDescription: '{{name}} braucht Wasser.',
+    },
     autoScheduler: {
         title: 'Auto-Planung',
         description:

@@ -962,6 +962,11 @@ export const plantsView = {
         },
         delete: 'Delete',
     },
+    dailySimulation: {
+        stageChangeJournal: 'Stage changed from {{from}} to {{to}}',
+        waterTaskTitle: 'Water plant',
+        waterTaskDescription: '{{name}} needs watering.',
+    },
     autoScheduler: {
         title: 'Auto-Schedule',
         description: 'Automatically generate tasks based on strain profile and grow phase.',

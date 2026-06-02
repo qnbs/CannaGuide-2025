@@ -12,7 +12,8 @@
 | CI merge gate        | **Quality + Security only**; advisory job for critical-path, file-budget, localStorage                                    |
 | V-06 Offline Voice   | **v2.0 only** (Deferred in `AUDIT_BACKLOG.md`)                                                                            |
 | Phase 0              | **Merged** PR #290 → `main`                                                                                               |
-| Phase 1              | **Merged** → `main` (`630511a3`, nach Phase 0 `ebbc1d8b`)                                                                  |
+| Phase 1 (god-files)  | **Merged** → `main` (`aef3ad62`: P1-01–P1-04; direkt merge, kein PR-API)                                                |
+| Cloud Agent Git      | Direkt `main` + Push; PR-API optional; Merge-Gate = Quality + Security                                                  |
 
 ## Phase 0 — Merged (PR #290)
 
@@ -28,7 +29,7 @@
 | Docs-only CI           | `.github/workflows/ci-docs.yml`                                                      |
 | V-06 deferred          | `docs/AUDIT_BACKLOG.md`                                                              |
 
-## Phase 1 — In progress
+## Phase 1 — Merged (god-file splits)
 
 | Task  | Status | Notes |
 | ----- | ------ | ----- |

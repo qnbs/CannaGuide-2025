@@ -73,3 +73,11 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 ### Secrets
 
 Cloud AI, GitHub Gist sync, Sentry, etc. are **BYOK** in app Settings or via local `.env` (not required for core offline flows).
+
+### Git workflow (Cloud Agent)
+
+- **Merge target:** `main` directly is fine when local gates pass (`lint:changed`, `lint:scopes`, `typecheck`, relevant `vitest`).
+- **Branches:** `cursor/<descriptive-name>-671a` off `main`; push triggers CI on `cursor/**` (see `.github/workflows/ci.yml`).
+- **Pull requests:** `gh pr create` / ManagePullRequest may fail with `Resource not accessible by integration` — no blocker; merge locally and `git push origin main` after Quality + Security are green.
+- **Merge gate (CI):** **Quality + Security** required; E2E and deploy workflows are advisory unless explicitly requested.
+- **Housekeeping:** After merge to `main`, watch [Actions](https://github.com/qnbs/CannaGuide-2025/actions) on `main` until **CI Status** passes; fix regressions on `main` or a follow-up `cursor/*` branch.

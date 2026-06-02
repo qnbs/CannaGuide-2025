@@ -34,10 +34,8 @@
 | ----- | ------ | ----- |
 | P1-01 | 🔄     | `geminiService` ~702 LOC — modules: `geminiPromptUtils`, `geminiRuntime`, `geminiResponseSchemas`, `geminiContextBuilders`, `geminiStrainImagePrompts` |
 | P1-02 | 🔄     | `plantSimulationService` ~1575 LOC — `simulation/plantStageDetails`, `simulationProfiles`, `vpdSimulationService` |
-| P1-03 | ⏳     | `workerBus.ts` |
-| P1-04 | ⏳     | `migrationLogic.ts` |
-
-**Merge gate:** Quality + Security (E2E advisory). Nach grünem CI: PR `cursor/phase-1-gemini-prompt-utils-671a` mergen → `main`, dann P1-03/`workerBus` auf neuem Branch `cursor/phase-1-worker-bus-671a`.
+| P1-03 | 🔄     | `workerBus.ts` — Branch `cursor/phase-1-worker-bus-671a` |
+| P1-04 | ✅     | `migrationLogic.ts` ~12 LOC facade — `migration/*` (shape guards, version migrations) |
 
 ## Phases (backlog)
 

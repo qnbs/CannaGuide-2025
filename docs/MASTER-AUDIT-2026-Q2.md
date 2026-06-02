@@ -37,10 +37,12 @@
 | P1-02 | ✅ (Teil) | `plantSimulationService` ~1575 LOC — `simulation/*` extrahiert; Kernklasse folgt |
 | P1-03 | ✅     | `workerBus.ts` ~1193 LOC — `worker-bus/*` (constants, types, rate-limit, telemetry, channels) |
 | P1-04 | ✅     | `migrationLogic.ts` ~12 LOC facade — `migration/*` (shape guards, version migrations) |
+| P1-05 | ✅     | `strainLookupService.ts` ~80 LOC — `strain-lookup/*` (enrichment, cache, external APIs) |
+| P1-06 | ⏳     | `plantSimulationService` Kernklasse (~1573 LOC) |
 
 ## Phases (backlog)
 
-- **Phase 1 (rest):** DDD `useCases/`, RTK entity adapters after god-file splits
+- **Phase 1 (rest):** DDD `useCases/`, RTK entity adapters; simulation core split
 - **Phase 2:** Bundle/locale lazy-load, `AiOrchestrator`, PWA offline-queue UI, coverage Stufe B/C
 - **Phase 3 (v2.0):** Digital Twin, WebXR, V-06 ONNX voice, Tauri E2E
 

@@ -734,9 +734,43 @@ export const dbService = {
             const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
             const request = store.openCursor()
             const results: Array<Record<string, unknown> & { id: number }> = []
+            let settled = false
+
+            const rejectOnce = (error: Error): void => {
+                if (settled) {
+                    return
+                }
+                settled = true
+                reject(error)
+            }
+
+            const resolveOnce = (): void => {
+                if (settled) {
+                    return
+                }
+                settled = true
+                resolve(results)
+            }
+
+            transaction.onerror = () => {
+                rejectOnce(
+                    toIndexedDbError(
+                        transaction.error,
+                        `[dbService] Transaction failed on store "${OFFLINE_ACTIONS_STORE}".`,
+                    ),
+                )
+            }
+            transaction.onabort = () => {
+                rejectOnce(
+                    toIndexedDbError(
+                        transaction.error,
+                        `[dbService] Transaction aborted on store "${OFFLINE_ACTIONS_STORE}".`,
+                    ),
+                )
+            }
 
             request.onerror = () =>
-                reject(
+                rejectOnce(
                     toIndexedDbError(
                         request.error,
                         '[dbService] Failed to read offline actions cursor.',
@@ -755,7 +789,7 @@ export const dbService = {
                     }
                     cursor.continue()
                 } else {
-                    resolve(results)
+                    resolveOnce()
                 }
             }
         })

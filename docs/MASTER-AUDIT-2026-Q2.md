@@ -45,15 +45,16 @@
 | P1-09 | ✅         | RTK Entity Adapters: `problemTrackerSlice`, `diagnosisHistorySlice` + Persist-Migration                                                       |
 | S-07  | ✅         | `pnpm.overrides` inkl. `ws>=8.20.1`; `pnpm audit` clean (protobufjs CVE dokumentiert ignoriert)                                               |
 
-## Phase 2 — In progress (Master Audit Q2)
+## Phase 2 — Complete (Master Audit Q2)
 
-| Task  | Status  | Notes                                                                                          |
-| ----- | ------- | ---------------------------------------------------------------------------------------------- |
-| P2-01 | ✅      | `changeAppLanguage` / `ensureLocaleLoaded` in `i18n.ts`; Aufrufer vereinheitlicht              |
-| P2-02 | ✅      | `services/ai/aiOrchestrator.ts` — Facade über `localRoutingService`; Export via `aiFacade.ts`  |
-| P2-03 | ✅      | `offlineActionQueueService` + Settings `OfflineActionQueuePanel`; `dbService.list/count/clear` |
-| P2-04 | ✅ (B₁) | Vitest 42/39/25/35 % (CI phase-2); Roadmap-Ziel 50/50/35/50 → Coverage-Sprint                  |
-| P2-05 | ✅      | Journal offline: queue + `applyQueuedJournalEntry` + SW replay listener                        |
+| Task  | Status  | Notes                                                                                            |
+| ----- | ------- | ------------------------------------------------------------------------------------------------ |
+| P2-01 | ✅      | `changeAppLanguage` / `ensureLocaleLoaded` in `i18n.ts`; Aufrufer vereinheitlicht                |
+| P2-02 | ✅      | `services/ai/aiOrchestrator.ts` — Facade über `localRoutingService`; Export via `aiFacade.ts`    |
+| P2-03 | ✅      | `offlineActionQueueService` + Settings `OfflineActionQueuePanel`; `dbService.list/count/clear`   |
+| P2-04 | ✅ (B₁) | CI floors 42/39/25/36 %; Stufe B full (50/50/35/50) — follow-up coverage sprint                  |
+| P2-05 | ✅      | Journal offline: queue + `applyQueuedJournalEntry` + SW replay listener                          |
+| P2-06 | ✅      | CodeAnt review fixes (onboarding i18n race/error, postHydration locale guard, queue UI, IDB ids) |
 
 ## Phases (backlog)
 

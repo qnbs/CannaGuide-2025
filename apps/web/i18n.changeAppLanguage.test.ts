@@ -10,5 +10,6 @@ describe('i18n locale helpers', () => {
         expect(isSupportedLocale('de')).toBe(true)
         expect(isSupportedLocale('en')).toBe(true)
         expect(isSupportedLocale('xx')).toBe(false)
+        expect(isSupportedLocale('it')).toBe(false)
     })
 })

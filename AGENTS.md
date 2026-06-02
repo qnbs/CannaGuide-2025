@@ -54,13 +54,13 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 
 ### Lint / test / build
 
-| Task | Command | Notes |
-|------|---------|--------|
-| Lint (changed files) | `pnpm run lint:changed` | No-op if nothing changed vs `origin/main` |
-| Lint (full) | `pnpm run lint:full` | Heavy; CI uses this |
-| Typecheck | `pnpm run typecheck` | Turbo; web uses `scripts/typecheck-filter.mjs` |
-| Unit tests | `pnpm run test:run` | Full suite is large (~3+ min); see React note below |
-| Build | `pnpm run build` | Excludes desktop by default |
+| Task                 | Command                 | Notes                                               |
+| -------------------- | ----------------------- | --------------------------------------------------- |
+| Lint (changed files) | `pnpm run lint:changed` | No-op if nothing changed vs `origin/main`           |
+| Lint (full)          | `pnpm run lint:full`    | Heavy; CI uses this                                 |
+| Typecheck            | `pnpm run typecheck`    | Turbo; web uses `scripts/typecheck-filter.mjs`      |
+| Unit tests           | `pnpm run test:run`     | Full suite is large (~3+ min); see React note below |
+| Build                | `pnpm run build`        | Excludes desktop by default                         |
 
 **React version mismatch:** `apps/web` pins `react@^19.2.6` and `react-dom@^19.2.5`. Vitest/component tests that load `react-dom/client` can fail with “Incompatible React versions”. Pure logic tests under `apps/web/utils/` run cleanly. Aligning `react-dom` to `19.2.6` fixes tests but changes `package.json`—only do that in a dedicated dependency PR.
 
@@ -73,6 +73,10 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 ### Secrets
 
 Cloud AI, GitHub Gist sync, Sentry, etc. are **BYOK** in app Settings or via local `.env` (not required for core offline flows).
+
+### PR / review comments (Cloud Agent)
+
+When a PR has open review threads (CodeAnt, human, or bot): **resolve them in the same iteration** — fix the code, push, and re-run the relevant gates before summarizing. Do not leave valid review items for a follow-up unless the user explicitly defers them.
 
 ### Git workflow (Cloud Agent)
 

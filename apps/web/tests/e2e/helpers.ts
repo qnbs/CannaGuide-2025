@@ -2,11 +2,23 @@ import { expect, Page } from '@playwright/test'
 
 const DEFAULT_DEPLOY_BASE_URL = 'https://qnbs.github.io/CannaGuide-2025/'
 
+const isGithubPagesHost = (hostname: string) =>
+    hostname === 'github.io' || hostname.endsWith('.github.io')
+
+const isCloudflarePagesHost = (hostname: string) =>
+    hostname.endsWith('.pages.dev')
+
 /** True when tests target a live GitHub Pages / preview deployment. */
-export const isDeployedTarget = (baseURL?: string) =>
-    !!process.env.DEPLOY_BASE_URL ||
-    !!baseURL?.includes('github.io') ||
-    !!baseURL?.includes('pages.dev')
+export const isDeployedTarget = (baseURL?: string) => {
+    if (process.env.DEPLOY_BASE_URL) return true
+    if (!baseURL) return false
+    try {
+        const { hostname } = new URL(baseURL)
+        return isGithubPagesHost(hostname) || isCloudflarePagesHost(hostname)
+    } catch {
+        return false
+    }
+}
 
 export const resolveDeployBaseUrl = (baseURL?: string) =>
     baseURL || process.env.DEPLOY_BASE_URL || DEFAULT_DEPLOY_BASE_URL

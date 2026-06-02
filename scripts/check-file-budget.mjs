@@ -9,13 +9,21 @@
  *   baseRef defaults to origin/main for CI, or checks all tracked files locally.
  */
 
-import { execSync } from 'node:child_process'
+import { execSync, spawnSync } from 'node:child_process'
 import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const MAX_LINES = Number(process.env.FILE_BUDGET_MAX_LINES || '700')
 const ADVISORY = process.env.FILE_BUDGET_ADVISORY === '1'
+const SAFE_REF_RE = /^[a-zA-Z0-9._/\-]+$/
+
 const baseRef = process.argv[2] || process.env.FILE_BUDGET_BASE || 'origin/main'
+
+function assertSafeGitRef(ref) {
+    if (!SAFE_REF_RE.test(ref)) {
+        throw new Error(`[file-budget] Invalid git ref: ${ref}`)
+    }
+}
 
 /** Known god-files — Phase 1 burn-down (warn only until split). */
 const GRANDFATHERED = new Set([
@@ -43,9 +51,14 @@ function lineCount(filePath) {
 
 function gitDiffFiles(ref) {
     try {
-        const out = execSync(`git diff --name-only ${ref}...HEAD`, {
+        assertSafeGitRef(ref)
+        const result = spawnSync('git', ['diff', '--name-only', `${ref}...HEAD`], {
             encoding: 'utf8',
         })
+        if (result.status !== 0) {
+            return []
+        }
+        const out = result.stdout ?? ''
         return out
             .split('\n')
             .map((s) => s.trim())

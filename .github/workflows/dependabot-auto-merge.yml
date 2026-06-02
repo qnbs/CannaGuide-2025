@@ -34,9 +34,10 @@ jobs:
               id: security
               env:
                   PR_URL: ${{ github.event.pull_request.html_url }}
+                  PR_TITLE: ${{ github.event.pull_request.title }}
               run: |
                   labels=$(gh pr view "$PR_URL" --json labels --jq '[.labels[].name] | join(" ")' || true)
-                  title='${{ github.event.pull_request.title }}'
+                  title="${PR_TITLE}"
                   if echo "$labels $title" | grep -Eiq '(^|[[:space:]])security([[:space:]]|$)|security-updates|dependabot.*security'; then
                     echo "skip=true" >> "$GITHUB_OUTPUT"
                     echo "::notice::Skipping auto-merge — security-related dependency update requires manual review."

@@ -24,7 +24,10 @@ ensure_node_24() {
     if [ ! -s "$NVM_DIR/nvm.sh" ]; then
         echo "[cursor-cloud-update] Installing nvm..."
         export PROFILE=/dev/null
-        curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+        NVM_INSTALL_SHA256="2d8359a64a3cb07c02389ad88ceecd43f2fa469c06104f92f98df5b6f315275f"
+        curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh -o /tmp/nvm-install.sh
+        echo "${NVM_INSTALL_SHA256}  /tmp/nvm-install.sh" | sha256sum -c -
+        bash /tmp/nvm-install.sh
     fi
     # shellcheck source=/dev/null
     . "$NVM_DIR/nvm.sh"

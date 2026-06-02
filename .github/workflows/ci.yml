@@ -8,6 +8,7 @@ on:
         paths-ignore:
             - '**/*.md'
             - 'docs/**'
+            - 'graphify-out/**'
             - '.github/ISSUE_TEMPLATE/**'
             - '.github/pull_request_template.md'
     pull_request:
@@ -15,6 +16,7 @@ on:
         paths-ignore:
             - '**/*.md'
             - 'docs/**'
+            - 'graphify-out/**'
             - '.github/ISSUE_TEMPLATE/**'
             - '.github/pull_request_template.md'
     workflow_dispatch:

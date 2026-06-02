@@ -1,14 +1,13 @@
 name: Graphify Update
 
+# Weekly/manual graph refresh only — no push-to-main PR spam (see docs/distribution.md).
 on:
-    push:
-        branches: [main]
     schedule:
         - cron: '30 3 * * 1'
     workflow_dispatch:
 
 concurrency:
-    group: graphify-update-${{ github.ref }}
+    group: graphify-update
     cancel-in-progress: true
 
 permissions:
@@ -20,12 +19,12 @@ jobs:
         timeout-minutes: 20
         permissions:
             contents: write
-            pull-requests: write
         steps:
             - name: Checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   fetch-depth: 0
+                  ref: main
 
             - name: Install pinned uv
               env:
@@ -39,7 +38,7 @@ jobs:
             - name: Update graph
               run: uv run --with graphifyy python -m graphify update .
 
-            - name: Create PR with updated graph artifacts
+            - name: Commit graph artifacts to main
               run: |
                   if git diff --quiet -- graphify-out; then
                     echo "[SKIP] No graphify changes"
@@ -47,15 +46,6 @@ jobs:
                   fi
                   git config user.name "github-actions[bot]"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  BRANCH="automation/graphify-refresh-${{ github.run_id }}"
-                  git checkout -b "$BRANCH"
                   git add graphify-out
-                  git commit -m "chore(graphify): refresh graph artifacts"
-                  git push --set-upstream origin "$BRANCH"
-                  gh pr create \
-                    --base main \
-                    --head "$BRANCH" \
-                    --title "chore(graphify): refresh graph artifacts" \
-                    --body "Automated Graphify artifact refresh from workflow run ${{ github.run_id }}."
-              env:
-                  GH_TOKEN: ${{ github.token }}
+                  git commit -m "chore(graphify): refresh graph artifacts [skip ci]"
+                  git push origin HEAD:main

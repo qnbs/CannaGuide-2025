@@ -157,9 +157,14 @@ jobs:
 
             - name: Resolve Cloudflare preview branch name
               id: cf_preview_branch
+              env:
+                  RAW_HEAD_REF: ${{ github.head_ref }}
               run: |
-                  RAW="${{ github.head_ref }}"
-                  SAFE=$(echo "$RAW" | sed 's/[^a-zA-Z0-9._-]/-/g' | sed 's/^-*//;s/-*$//' | cut -c1-63)
+                  RAW="${RAW_HEAD_REF}"
+                  if ! printf '%s' "$RAW" | grep -Eq '^[a-zA-Z0-9._/-]+$'; then
+                    RAW=""
+                  fi
+                  SAFE=$(printf '%s' "$RAW" | sed 's/[^a-zA-Z0-9._-]/-/g' | sed 's/^-*//;s/-*$//' | cut -c1-63)
                   if [ -z "$SAFE" ]; then SAFE="pr-${{ github.event.pull_request.number }}"; fi
                   echo "name=${SAFE}" >> "$GITHUB_OUTPUT"
                   echo "::notice::Cloudflare preview branch: ${SAFE} (from ${RAW})"

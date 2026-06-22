@@ -121,7 +121,7 @@
         "eslint-plugin-jsx-a11y": "^6.10.2",
         "globals": "^17.6.0",
         "husky": "^9.1.7",
-        "lint-staged": "^17.0.7",
+        "lint-staged": "^17.0.8",
         "prettier": "^3.8.4",
         "snyk": "^1.1305.0",
         "tsx": "^4.22.3",

@@ -2,10 +2,29 @@
 
 <!-- markdownlint-disable MD024 MD040 MD029 -->
 
-## Latest Session (Session 177) -- Master Audit + Windows DX
+## Latest Session — Phase 2 completion + CodeAnt + coverage (Session 178)
 
-**Status: Session 177 Master Audit ready for PR. Typecheck green locally.
-CI authoritative on Linux Node 24. Roadmap: [`SESSION-177-ROADMAP.md`](SESSION-177-ROADMAP.md).**
+**Status: Branch `cursor/codeant-phase2-fixes-671a` — CodeAnt fixes, migration/simulation tests, graphify refresh. PR pending merge. CI on Linux Node 24.**
+
+### What Was Done
+
+1. **CodeAnt (PR #300 follow-up):** Onboarding language error/race guards; `isSupportedLocale` in postHydration; offline queue refresh generation guard; `listOfflineActions` with IndexedDB keys.
+2. **Coverage sprint (B₁+):** Tests for `migration/*`, `simulationEnvironmentHelpers`, `plantNormalization`, `strainLookupEnrichment`, `featureFlags`. Measured ~42.4/25.2/39.7/36 % — Stufe B full (50/50/35/50) still open.
+3. **Graphify:** `graphify update .` — `graphify-out/` refreshed (see `GRAPH_REPORT.md`).
+4. **AGENTS.md:** Cloud agents resolve PR review threads in the same iteration.
+
+### Next Steps
+
+- [ ] Merge PR `cursor/codeant-phase2-fixes-671a` after CI green
+- [ ] Manual: `SNYK_TOKEN`, Cloudflare Workers Git disconnect (P0-03), Node 24 local
+- [ ] Coverage Stufe B full (50/50/35/50): `dailySimulationLoop`, stores, components
+- [ ] Optional: RTL Tailwind (`ml` → `ms`), `exportService` html-to-image eval
+
+---
+
+## Previous Session (Session 177) -- Master Audit + Windows DX
+
+**Status: Merged to `main` via PR #298/#300. Roadmap: [`SESSION-177-ROADMAP.md`](SESSION-177-ROADMAP.md).**
 
 ### What Was Done (Session 177)
 
@@ -14,12 +33,6 @@ CI authoritative on Linux Node 24. Roadmap: [`SESSION-177-ROADMAP.md`](SESSION-1
 3. **Windows DX:** MCP Node launchers, `.vscode/`, `windows:doctor`, `setup:windows`, Vitest forks pool.
 4. **Docs:** CHANGELOG, SESSION-177-ROADMAP, AUDIT_BACKLOG S-07, CI-AUDIT refresh.
 5. **P0:** Dependabot #256 merged; SNYK cron Mon 02:00 UTC.
-
-### Next Steps
-
-- [ ] PR merge after CI green (babysit WebKit/coverage gates)
-- [ ] Manual: `SNYK_TOKEN`, Cloudflare Workers Git disconnect, `setup:windows`, Node 24
-- [ ] `graphify update .` after merge
 
 ---
 

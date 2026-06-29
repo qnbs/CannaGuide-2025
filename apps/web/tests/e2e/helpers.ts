@@ -59,11 +59,23 @@ export const bootFreshAppPastOnboarding = async (page: Page, baseURL?: string) =
     const url = deployed ? resolveDeployBaseUrl(baseURL) : '/'
     const waitUntil = deployed ? 'load' : 'domcontentloaded'
     await page.goto(url, { waitUntil })
+    await waitForAppReady(page)
     await closeOnboardingIfVisible(page)
 }
 
-export const waitForAppShell = async (page: Page) => {
+/** Post-hydration gate: shell is blocked until bootstrap finishes (see postHydration.ts). */
+export const waitForAppReady = async (page: Page) => {
     await page.waitForSelector('#root', { state: 'attached', timeout: 60_000 })
+    await page.waitForFunction(
+        () => document.body.getAttribute('data-app-ready') === 'true',
+        undefined,
+        { timeout: 90_000 },
+    )
+}
+
+export const waitForAppShell = async (page: Page) => {
+    await waitForAppReady(page)
+    await closeOnboardingIfVisible(page)
     await page.waitForSelector('[data-view-id]', { state: 'attached', timeout: 60_000 })
     await expect
         .poll(async () => page.locator('[data-view-id]').count(), { timeout: 60_000 })
@@ -111,43 +123,54 @@ export const waitForCannaguideCaches = async (page: Page, deadlineMs = 60_000) =
 
 export const closeOnboardingIfVisible = async (page: Page) => {
     const onboardingDialog = page.getByRole('dialog')
-    let isVisible = await onboardingDialog.isVisible().catch(() => false)
+    const dialogVisible = await onboardingDialog
+        .waitFor({ state: 'visible', timeout: 15_000 })
+        .then(() => true)
+        .catch(() => false)
 
-    for (let attempt = 0; attempt < 20 && !isVisible; attempt += 1) {
-        await page.waitForTimeout(200)
-        isVisible = await onboardingDialog.isVisible().catch(() => false)
-    }
-
-    if (!isVisible) {
+    if (!dialogVisible) {
         return
     }
 
-    // Select language (step 0 -> 1) -- do NOT return, continue through wizard
+    const nextButtonPattern = /^(Next|Weiter|Siguiente|Suivant|Volgende)$/i
+    const finishButtonPattern = /perfect|let's grow|los geht's|fertig|finish|start grow|commençons/i
+
+    // Step 1: language — changeAppLanguage is async; wait for feature slides before advancing.
     const englishButton = onboardingDialog.getByRole('button', { name: /^English$/i })
     if (await englishButton.isVisible().catch(() => false)) {
         await englishButton.click()
-        await page.waitForTimeout(300)
-    } else {
-        const germanButton = onboardingDialog.getByRole('button', { name: /^Deutsch$/i })
-        if (await germanButton.isVisible().catch(() => false)) {
-            await germanButton.click()
-            await page.waitForTimeout(300)
-        }
+        await expect(onboardingDialog.getByRole('button', { name: nextButtonPattern })).toBeVisible({
+            timeout: 30_000,
+        })
     }
 
-    // Click through remaining wizard steps (up to 10)
-    for (let step = 0; step < 10; step += 1) {
+    for (let step = 0; step < 15; step += 1) {
         const stillVisible = await onboardingDialog.isVisible().catch(() => false)
         if (!stillVisible) {
             break
+        }
+
+        const finishButton = onboardingDialog.getByRole('button', { name: finishButtonPattern })
+        if (await finishButton.isVisible().catch(() => false)) {
+            await finishButton.click()
+            break
+        }
+
+        const nextButton = onboardingDialog.getByRole('button', { name: nextButtonPattern })
+        if (await nextButton.isVisible().catch(() => false)) {
+            await nextButton.click()
+            await page.waitForTimeout(250)
+            continue
         }
 
         const actionButton = onboardingDialog.locator('button').last()
         if (await actionButton.isVisible().catch(() => false)) {
             await actionButton.click()
         }
-        await page.waitForTimeout(300)
+        await page.waitForTimeout(250)
     }
+
+    await expect(onboardingDialog).toBeHidden({ timeout: 30_000 })
 }
 
 export const expectNoCrashPatterns = async (page: Page) => {

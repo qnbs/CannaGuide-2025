@@ -49,6 +49,8 @@ fi
 corepack enable
 corepack prepare pnpm@10.33.0 --activate 2>/dev/null || true
 
+node "${REPO_ROOT}/scripts/check-pnpm-lockfile.mjs"
+
 CI=1 HUSKY=0 pnpm install --frozen-lockfile
 
 echo "[cursor-cloud-update] OK — node $(node -v), pnpm $(pnpm -v)"

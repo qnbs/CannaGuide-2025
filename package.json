@@ -83,6 +83,7 @@
         "ci:audit": "node ./scripts/ci-audit-local.mjs",
         "measure:critical-path": "node ./scripts/measure-critical-path.mjs",
         "check:file-budget": "node ./scripts/check-file-budget.mjs",
+        "check:lockfile": "node ./scripts/check-pnpm-lockfile.mjs",
         "check:localstorage": "node ./scripts/security/check-localstorage-usage.mjs",
         "gate:push": "pnpm run check:commit-identity && pnpm run lint:changed && pnpm run mdc:e2e && pnpm run graphify:mcp:doctor && node ./scripts/typecheck-filter.mjs && pnpm --filter @cannaguide/web test:run && node ./scripts/lint-scopes.mjs && pnpm run build",
         "pr:push": "node ./scripts/github/pr-push.mjs",

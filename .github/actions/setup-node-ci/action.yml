@@ -22,6 +22,10 @@ runs:
               node-version: ${{ inputs.node-version }}
               cache: pnpm
 
+        - name: Validate pnpm lockfile
+          shell: bash
+          run: node ./scripts/check-pnpm-lockfile.mjs
+
         - name: Install dependencies
           shell: bash
           run: ${{ inputs.install-command }}

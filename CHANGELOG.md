@@ -82,9 +82,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **refactor(settings):** Extract AI settings tab — `AiModeCard`, `LocalAiOfflineCard`,
-  `LocalAiFeaturesCard`, `BatteryEcoStatusBadge`, lazy `AiSettingsTab`
-  (`SettingsView.tsx` 2570 → **1355** LOC)
+- **refactor(settings):** Complete SettingsView modularization — all tabs lazy-loaded
+  (`GeneralSettingsTab`, `PlantsSettingsTab`, `NotificationsSettingsTab`,
+  `DefaultsSettingsTab`, `PrivacySettingsTab` + prior AI/security extractions);
+  `SettingsView.tsx` **2570 → 348** LOC (under 700 budget)
 - **ci:** `strains:check-integrity` in quality job; validates `catalog-version.json`
 - **feat(strains):** `getCatalogVersion()` via `strainCatalogVersion.ts` + service re-export
 - **chore(deps):** `pnpm.overrides` — `undici>=7.28.0 <8.0.0` (jsdom-compatible 7.28.0;

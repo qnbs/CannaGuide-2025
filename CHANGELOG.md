@@ -10,6 +10,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 - **docs(housekeeping):** `docs/HOUSEKEEPING.md` release checklist; `docs/audits/AUDIT-CLOSURE-2026-06-29.md`;
   ADR-0015 UI state bridge; `docs/api/settings-modules.md`; `pnpm run docs:sync-metrics`
+- **ci(code-scanning):** Harden `codeql.yml` (monorepo build, external config), fix `snyk.yml`
+  (setup-node-ci, SARIF category, advisory continue-on-error); `docs/code-scanning-setup.md`
 - **docs:** Sync test counts (2688 → 2794), audit backlog cost-tracking checkbox, local-ai guide paths
 - **test(ai):** `aiPromptSanitization.test.ts` — integration tests for prompt safety on
   stream mentor, deep-dive, and strain AI lookup paths

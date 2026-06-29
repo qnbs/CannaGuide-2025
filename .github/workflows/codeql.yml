@@ -1,5 +1,10 @@
 name: CodeQL
 
+# Advanced CodeQL setup (canonical). If the Security tab shows
+# "Code scanning configuration error", disable CodeQL *default setup* in
+# repo Settings → Code security → Code scanning → CodeQL → Switch to advanced.
+# See docs/code-scanning-setup.md
+
 on:
     workflow_dispatch:
     push:
@@ -7,7 +12,6 @@ on:
     pull_request:
         branches: [main]
     schedule:
-        # Weekly Monday 06:00 UTC
         - cron: '0 6 * * 1'
 
 concurrency:
@@ -21,7 +25,7 @@ jobs:
     analyze:
         name: CodeQL Analysis
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 20
         permissions:
             actions: read
             contents: read
@@ -40,17 +44,15 @@ jobs:
               with:
                   languages: javascript-typescript
                   queries: security-and-quality
-                  config: |
-                      paths-ignore:
-                          - apps/web/dist/**
-                          - node_modules/**
-                          - coverage/**
-                          - test-results/**
+                  config-file: ./.github/codeql/codeql-config.yml
 
-            - name: Autobuild
-              uses: github/codeql-action/autobuild@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+
+            - name: Build for CodeQL analysis
+              run: pnpm run build
 
             - name: Perform CodeQL Analysis
               uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
               with:
-                  category: '/language:javascript-typescript'
+                  category: /language:javascript-typescript

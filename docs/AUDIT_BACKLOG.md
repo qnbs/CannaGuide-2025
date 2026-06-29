@@ -891,8 +891,8 @@ Recommended implementation order based on impact and effort:
 ### Backlog (Long-term)
 
 - [x] S-03 -- CSP nonce implementation (Won't Fix)
-- [ ] C-04 -- Deployment preview validation
-- [ ] F-02 -- Social sharing
+- [x] C-04 -- Deployment preview validation (Done, Session 84)
+- [x] F-02 -- Social sharing (Done, Session 113)
 - [x] F-06 -- Offline sync conflict resolution
 - [ ] I-02 -- RTL language preparation
 - [x] A-03 -- AI cost tracking (Done, Session 83 — `CostTrackingSection` in `AiSettingsTab.tsx`)

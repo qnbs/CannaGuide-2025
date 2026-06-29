@@ -46,6 +46,10 @@ We will review reports as quickly as possible and coordinate remediation before 
 
 Merge policy, gate inventory, deploy E2E/Lighthouse notes, and remaining risks are documented in [`.github/CI-AUDIT.md`](.github/CI-AUDIT.md). Required check on `main`: **CI Status** (quality + security). Cloudflare Workers build status from the dashboard integration is informational only and does not block merges.
 
+### Code scanning configuration
+
+If the Security tab shows **Code scanning configuration error** for CodeQL or Snyk Open Source, switch the repository from **CodeQL default setup** to **advanced** and use [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml). See [docs/code-scanning-setup.md](docs/code-scanning-setup.md).
+
 ## Supply-Chain Security
 
 ### SHA-Pinning Mandate

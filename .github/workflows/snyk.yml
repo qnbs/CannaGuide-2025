@@ -1,29 +1,27 @@
 name: Snyk Security
 
-# Advisory-only weekly scan. Non-blocking (continue-on-error) because
-# Snyk has intermittent 503 outages that must not break CI.
-# Primary security scanning is handled by CodeQL + Grype + Semgrep.
-# Requires SNYK_TOKEN secret from Snyk App integration.
+# Advisory weekly scan. Primary gates: CodeQL + Grype + Semgrep + pnpm audit.
+# PR checks use the Snyk GitHub App (security/snyk). This workflow uploads
+# Open Source SARIF when SNYK_TOKEN is set. See docs/code-scanning-setup.md
+
 on:
     schedule:
-        - cron: '0 2 * * 1' # Every Monday at 02:00 UTC
+        - cron: '0 2 * * 1'
     workflow_dispatch:
 
 concurrency:
-    group: snyk-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    group: snyk-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 permissions:
     contents: read
 
-env:
-    NODE_VERSION: '24'
-
 jobs:
     snyk:
         name: Snyk Security Scan
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 20
+        continue-on-error: true
         permissions:
             contents: read
             security-events: write
@@ -35,8 +33,7 @@ jobs:
                     echo "present=true" >> "$GITHUB_OUTPUT"
                   else
                     echo "present=false" >> "$GITHUB_OUTPUT"
-                    echo "::notice::SNYK_TOKEN not configured — Snyk workflow skipped (advisory only)."
-                    echo "Install the Snyk GitHub App or add SNYK_TOKEN as a repository secret."
+                    echo "::notice::SNYK_TOKEN not configured — weekly Snyk workflow skipped (advisory)."
                   fi
 
             - name: Harden runner
@@ -49,25 +46,14 @@ jobs:
               if: steps.snyk-token.outputs.present == 'true'
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-            - name: Enable Corepack
+            - name: Setup Node + install dependencies
               if: steps.snyk-token.outputs.present == 'true'
-              run: corepack enable
-
-            - name: Setup Node ${{ env.NODE_VERSION }}
-              if: steps.snyk-token.outputs.present == 'true'
-              uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: pnpm
-
-            - name: Install dependencies
-              if: steps.snyk-token.outputs.present == 'true'
-              run: pnpm install --frozen-lockfile
+              uses: ./.github/actions/setup-node-ci
 
             - name: Snyk Open Source scan
               id: snyk-scan
               if: steps.snyk-token.outputs.present == 'true'
-              continue-on-error: true # Advisory-only -- transient Snyk 503s must not fail CI
+              continue-on-error: true
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -76,7 +62,7 @@ jobs:
 
             - name: Snyk Monitor (track vulnerabilities)
               if: steps.snyk-token.outputs.present == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.snyk-scan.outcome == 'success'
-              continue-on-error: true # Advisory-only -- transient Snyk 502s must not fail CI
+              continue-on-error: true
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -85,7 +71,9 @@ jobs:
                   args: --all-projects
 
             - name: Upload Snyk SARIF
-              if: steps.snyk-token.outputs.present == 'true' && always() && steps.snyk-scan.outcome == 'success'
+              if: steps.snyk-token.outputs.present == 'true' && steps.snyk-scan.outcome == 'success' && hashFiles('snyk-results.sarif') != ''
+              continue-on-error: true
               uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
               with:
                   sarif_file: snyk-results.sarif
+                  category: snyk-open-source

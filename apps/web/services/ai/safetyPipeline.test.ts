@@ -34,8 +34,8 @@ describe('isTopicRelevant', () => {
         )
     })
 
-    it('rejects empty whitespace-only prompts', () => {
-        expect(isTopicRelevant('   ')).toBe(false)
+    it('allows short whitespace-only prompts (length guard)', () => {
+        expect(isTopicRelevant('   ')).toBe(true)
     })
 
     it('allows nutrient and pH cultivation keywords', () => {

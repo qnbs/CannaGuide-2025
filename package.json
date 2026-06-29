@@ -120,7 +120,7 @@
         "eslint-config-prettier": "^9.1.2",
         "eslint-plugin-anti-trojan-source": "^1.1.7",
         "eslint-plugin-jsx-a11y": "^6.10.2",
-        "globals": "^17.6.0",
+        "globals": "^17.7.0",
         "husky": "^9.1.7",
         "lint-staged": "^17.0.8",
         "prettier": "^3.9.1",

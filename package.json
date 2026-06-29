@@ -124,12 +124,12 @@
         "husky": "^9.1.7",
         "lint-staged": "^17.0.8",
         "prettier": "^3.8.4",
-        "snyk": "^1.1305.0",
+        "snyk": "^1.1305.2",
         "tsx": "^4.22.3",
         "turbo": "^2.9.18",
         "typedoc": "0.28.19",
         "typescript": "5.9.3",
-        "wrangler": "^3.114.1"
+        "wrangler": "^4.105.0"
     },
     "pnpm": {
         "overrides": {

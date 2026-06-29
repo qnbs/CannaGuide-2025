@@ -80,6 +80,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   `plantsView.qrScanner.manualPlaceholder` (resolves the last hardcoded
   string flagged by `pnpm run lint:i18n`)
 
+### Changed
+
+- **refactor(settings):** Extract `CostTrackingSection` and `GeminiSecurityCard` from
+  `SettingsView.tsx` (~477 LOC reduction; 2093 LOC remaining)
+- **chore(deps):** `pnpm.overrides` — `undici>=7.28.0 <8.0.0` (jsdom-compatible 7.28.0;
+  fixes GHSA-p88m-4jfj-68fv, GHSA-pr7r-676h-xcf6 without breaking jsdom)
+- **docs(adr):** ADR-0014 strain catalog versioning & enrichment cadence
+- **data(strains):** `catalog-version.json` manifest (776 entries, schema strain-v2)
+
 ### Security
 
 - **fix(ai):** Route stream mentor (`buildMentorStreamPrompt`), deep-dive (`generateDeepDive`),

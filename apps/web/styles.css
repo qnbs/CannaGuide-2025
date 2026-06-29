@@ -1,8 +1,6 @@
 @import '../../packages/ui/src/tokens.css';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config './tailwind.config.cjs';
 
 /* --- SELF-HOSTED FONTS --- */
 /* Inter variable (latin-ext) */
@@ -94,7 +92,7 @@ html {
     src: url('/fonts/atkinson-700.woff2') format('woff2');
 }
 
-/* Tailwind config is declared in tailwind.config.cjs. */
+/* Tailwind v4 loads configuration via @config in styles.css. */
 
 /* --- GLOBAL STYLES & CUSTOM COMPONENTS --- */
 body {

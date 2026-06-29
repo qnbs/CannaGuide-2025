@@ -1,14 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
-import { WORKER_NAMES } from './workerFactories'
 
-// We cannot easily test registerAllWorkerFactories since it calls `new Worker()`
-// which requires real worker files. Instead, test the exported constants.
+const { mockRegisterFactory } = vi.hoisted(() => ({
+    mockRegisterFactory: vi.fn(),
+}))
 
 vi.mock('./workerPool', () => ({
     workerPool: {
-        registerFactory: vi.fn(),
+        registerFactory: mockRegisterFactory,
     },
 }))
+
+import { WORKER_NAMES, registerAllWorkerFactories } from './workerFactories'
 
 describe('workerFactories', () => {
     describe('WORKER_NAMES', () => {
@@ -36,11 +38,10 @@ describe('workerFactories', () => {
     })
 
     describe('registerAllWorkerFactories', () => {
-        it('registers factories with the pool', async () => {
-            const { workerPool } = await import('./workerPool')
-            const { registerAllWorkerFactories } = await import('./workerFactories')
+        it('registers factories with the pool', () => {
+            mockRegisterFactory.mockClear()
             registerAllWorkerFactories()
-            expect(workerPool.registerFactory).toHaveBeenCalledTimes(10)
+            expect(mockRegisterFactory).toHaveBeenCalledTimes(10)
         })
     })
 })

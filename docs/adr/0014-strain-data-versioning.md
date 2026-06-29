@@ -100,9 +100,9 @@ External API lookups (`strain-lookup/externalStrainLookups.ts`) may propose enri
 ## Implementation checklist
 
 - [x] ADR accepted (this document)
-- [ ] `catalog-version.json` + `getCatalogVersion()` (follow-up PR)
-- [ ] CI integrity check against manifest count
-- [ ] CONTRIBUTING.md strain section
+- [x] `catalog-version.json` + `getCatalogVersion()` (`apps/web/data/strainCatalogVersion.ts`)
+- [x] CI integrity check against manifest count (`pnpm run strains:check-integrity`)
+- [x] CONTRIBUTING.md strain section
 - [ ] Scheduled enrichment workflow (advisory)
 
 ## References

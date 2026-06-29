@@ -16,6 +16,7 @@ Thank you for considering contributing to CannaGuide 2025! We welcome contributi
 - [Internationalization (i18n)](#internationalization-i18n)
 - [Cursor MDC Governance](#cursor-mdc-governance)
 - [Pull Request Process](#pull-request-process)
+- [Strain Encyclopedia Contributions](#strain-encyclopedia-contributions)
 - [Deprecation Strategy](#deprecation-strategy)
 - [Reporting Issues](#reporting-issues)
 
@@ -351,6 +352,32 @@ When proposing significant changes, please follow these guidelines:
 - **Security**: All user-facing HTML must use DOMPurify. All external links need `rel="noopener noreferrer"`.
 - **Error tracking**: Runtime errors are captured by Sentry. Use `Sentry.captureException()` for explicit error reporting.
 - **Testing**: Component tests use Playwright (`tests/ct/`), unit tests use Vitest, E2E tests use Playwright (`tests/e2e/`).
+
+---
+
+## Strain Encyclopedia Contributions
+
+The bundled catalog lives under `apps/web/data/strains/` (776+ entries, versioned via `catalog-version.json`). See [ADR-0014](docs/adr/0014-strain-data-versioning.md).
+
+### Adding or updating a strain
+
+1. Add or edit a `.ts` file under `apps/web/data/strains/` following existing schema (`id`, `name`, `type`, terpenes, provenance when known).
+2. **Never change** an existing strain `id` after release — IDs are immutable for genealogy and grow history.
+3. Run integrity checks:
+    ```bash
+    pnpm run strains:check-integrity
+    pnpm run strains:check-new-duplicates
+    ```
+4. Update `catalog-version.json` (`strainCount`, `generatedAt`) when the catalog size changes.
+5. Include breeder/source citation in `provenance` when available.
+
+### Automated enrichment (maintainers)
+
+```bash
+pnpm run strains:enrich-provenance -- --report --min-confidence=0.7
+```
+
+Community PRs with AI-generated strain data require explicit human review.
 
 ---
 

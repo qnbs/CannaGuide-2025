@@ -3,6 +3,10 @@ import { dbService } from './dbService'
 import { STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION } from '@/constants'
 import { mergeStrainCatalogForUpdate } from '@/services/migrationLogic'
 import { createStrainObject } from '@/services/strainFactory'
+import { getCatalogVersion } from '@/data/strainCatalogVersion'
+
+export { getCatalogVersion }
+export type { StrainCatalogVersion } from '@/data/strainCatalogVersion'
 
 type StrainModule = Record<string, unknown>
 

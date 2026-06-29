@@ -144,6 +144,9 @@ jobs:
             - name: Check i18n completeness
               run: pnpm run check:i18n
 
+            - name: Strain catalog integrity
+              run: pnpm run strains:check-integrity
+
             - name: Audit backlog check (blocks on open HIGH items)
               run: node scripts/check-audit-backlog.mjs
               continue-on-error: false

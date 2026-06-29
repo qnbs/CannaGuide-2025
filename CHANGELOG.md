@@ -82,8 +82,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **refactor(settings):** Extract `CostTrackingSection` and `GeminiSecurityCard` from
-  `SettingsView.tsx` (~477 LOC reduction; 2093 LOC remaining)
+- **refactor(settings):** Extract AI settings tab — `AiModeCard`, `LocalAiOfflineCard`,
+  `LocalAiFeaturesCard`, `BatteryEcoStatusBadge`, lazy `AiSettingsTab`
+  (`SettingsView.tsx` 2570 → **1355** LOC)
+- **ci:** `strains:check-integrity` in quality job; validates `catalog-version.json`
+- **feat(strains):** `getCatalogVersion()` via `strainCatalogVersion.ts` + service re-export
 - **chore(deps):** `pnpm.overrides` — `undici>=7.28.0 <8.0.0` (jsdom-compatible 7.28.0;
   fixes GHSA-p88m-4jfj-68fv, GHSA-pr7r-676h-xcf6 without breaking jsdom)
 - **docs(adr):** ADR-0014 strain catalog versioning & enrichment cadence

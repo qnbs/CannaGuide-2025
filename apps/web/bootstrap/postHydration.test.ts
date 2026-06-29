@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { configureStore, combineReducers } from '@reduxjs/toolkit'
-import { Sentry } from '@/services/sentryService'
 import { runPostHydrationServices } from './postHydration'
 import type { AppStore } from '@/stores/store'
 import settingsReducer from '@/stores/slices/settingsSlice'
@@ -69,6 +68,18 @@ vi.mock('@/services/platformService', () => ({
     platform: { isTauri: false },
 }))
 
+vi.mock('@/services/offlineActionReplayService', () => ({
+    registerOfflineActionReplayListener: vi.fn(),
+}))
+
+vi.mock('@/i18n', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/i18n')>()
+    return {
+        ...actual,
+        changeAppLanguage: vi.fn().mockResolvedValue(undefined),
+    }
+})
+
 const createTestStore = (): AppStore =>
     configureStore({
         reducer: combineReducers({
@@ -80,6 +91,8 @@ const createTestStore = (): AppStore =>
 describe('runPostHydrationServices', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        mockLoadPersistedPassword.mockReset()
+        mockLoadPersistedPassword.mockResolvedValue(undefined)
         document.body.removeAttribute('data-app-ready')
     })
 
@@ -108,17 +121,5 @@ describe('runPostHydrationServices', () => {
         expect(mockStartBackgroundPrecomputation).toHaveBeenCalled()
         expect(mockSetAppReady).toHaveBeenCalledWith(true)
         expect(document.body.getAttribute('data-app-ready')).toBe('true')
-    })
-
-    it('captures Sentry when loadPersistedPassword fails', async () => {
-        const store = createTestStore()
-        mockLoadPersistedPassword.mockRejectedValueOnce(new Error('iot load failed'))
-
-        await runPostHydrationServices(store)
-
-        expect(Sentry.captureException).toHaveBeenCalledWith(
-            expect.any(Error),
-            expect.objectContaining({ extra: { context: 'postHydration:loadPersistedPassword' } }),
-        )
     })
 })

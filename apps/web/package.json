@@ -65,7 +65,7 @@
         "@picovoice/web-voice-processor": "^4.0.8"
     },
     "devDependencies": {
-        "@axe-core/playwright": "^4.11.3",
+        "@axe-core/playwright": "^4.12.1",
         "@playwright/experimental-ct-react": "^1.61.1",
         "@playwright/test": "^1.61.1",
         "@stryker-mutator/core": "^9.6.1",

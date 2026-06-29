@@ -13,6 +13,13 @@ updates:
           - dependency-name: tmp
           - dependency-name: qs
           - dependency-name: uuid
+          # Major upgrades need dedicated migration PRs (see docs/distribution.md, vite.config.ts).
+          - dependency-name: vite
+            update-types: ['version-update:semver-major']
+          - dependency-name: tailwindcss
+            update-types: ['version-update:semver-major']
+          - dependency-name: wrangler
+            update-types: ['version-update:semver-major']
       commit-message:
           prefix: 'chore'
           prefix-development: 'chore'

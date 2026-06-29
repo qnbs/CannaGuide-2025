@@ -123,7 +123,7 @@ jobs:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
                   packageManager: pnpm
-                  wranglerVersion: '3.114.17'
+                  wranglerVersion: '4.105.0'
                   command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=main
 
             - name: Post-deploy health check
@@ -217,7 +217,7 @@ jobs:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
                   packageManager: pnpm
-                  wranglerVersion: '3.114.17'
+                  wranglerVersion: '4.105.0'
                   command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=${{ steps.cf_preview_branch.outputs.name }}
 
             - name: Comment preview URL on PR

@@ -60,7 +60,7 @@ Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 
 | Issue                                    | Root cause                                                                | Fix                                                                                            |
 | ---------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Cloudflare PR preview deploy fails       | `wrangler` not in monorepo; `pnpm add wrangler` blocked at workspace root | Added `wrangler` devDependency; `wranglerVersion` + `pnpm exec wrangler --version` in workflow |
+| Cloudflare PR preview deploy fails       | `wrangler` not in monorepo; `pnpm add wrangler` blocked at workspace root | Added `wrangler` devDependency; `wranglerVersion` + `pnpm exec wrangler --version` in workflow (currently wrangler 4.x) |
 | Preview branch names with `/`            | `cursor/foo` passed raw to `--branch`                                     | Sanitize to DNS-safe slug (max 63 chars)                                                       |
 | Dependabot noise on tmp/qs/uuid          | Packages pinned in `pnpm.overrides`                                       | `dependabot.yml` ignore list                                                                   |
 | `workflows/README.md` stale              | Still said Cloudflare paused / cleanup read-only                          | Rewritten to match PR #250 state                                                               |

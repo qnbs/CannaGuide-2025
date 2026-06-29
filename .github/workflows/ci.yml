@@ -1,6 +1,6 @@
 name: CI
 
-# workflow-version: 2026-06-29-e2e (chromium gate job; cross-browser advisory — fixes 45m cancel on main)
+# workflow-version: 2026-06-29-ci-gate (CI Status = quality+security only; E2E advisory)
 
 on:
     push:
@@ -257,22 +257,6 @@ jobs:
                   echo "E2E Chromium shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 
-            - name: Run visual regression (snapshot baseline)
-              if: always() && matrix.shard == '1/2' && steps.playwright-cache.outcome != 'failure'
-              continue-on-error: true
-              timeout-minutes: 20
-              working-directory: apps/web
-              run: pnpm exec playwright test -c playwright.config.ts --grep "Visual Regression" --update-snapshots --workers=1
-
-            - name: Upload visual regression snapshots
-              if: always() && matrix.shard == '1/2'
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              with:
-                  name: e2e-snapshots-${{ github.run_id }}
-                  path: apps/web/tests/e2e/__screenshots__/
-                  retention-days: 30
-                  if-no-files-found: ignore
-
             - name: Upload Playwright traces on failure
               if: failure()
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -389,14 +373,13 @@ jobs:
     ci-status:
         name: "\u2705 CI Status"
         if: always()
-        needs: [quality, security, e2e]
+        needs: [quality, security]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
               run: |
                   echo "Quality:  ${{ needs.quality.result }}"
                   echo "Security: ${{ needs.security.result }}"
-                  echo "E2E:      ${{ needs.e2e.result }}"
                   echo "---"
                   if [[ "${{ needs.quality.result }}" != "success" ]]; then
                     echo "[FAIL] Quality gates failed"; exit 1
@@ -404,8 +387,4 @@ jobs:
                   if [[ "${{ needs.security.result }}" != "success" ]]; then
                     echo "[FAIL] Security checks failed"; exit 1
                   fi
-                  if [[ "${{ needs.e2e.result }}" != "success" ]]; then
-                    echo "::warning::E2E tests failed (advisory — Chromium/mobile-chrome; check traces artifact)"
-                    echo "[WARN] E2E non-blocking — quality + security are the merge gate"
-                  fi
-                  echo "[PASS] CI merge gate passed (quality + security)"
+                  echo "[PASS] CI merge gate passed (quality + security; E2E advisory)"

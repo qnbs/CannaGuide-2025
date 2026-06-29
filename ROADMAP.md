@@ -265,8 +265,9 @@ Target: **2026-Q2/Q3** (post v1.8.2)
 | ------------------------------------------------------------------ | ------------- | -------- | ----------------- |
 | Full-scale audit report (`docs/audits/AUDIT-REPORT-2026-06-29.md`) | Quality       | High     | ✅ done           |
 | AI prompt sanitization on all code paths (S-08)                    | Security      | P0       | ✅ done           |
-| Coverage Stufe B → critical paths ≥80%                             | Testing       | P1       | 📋 planned        |
+| Coverage Stufe B → critical paths ≥80%                             | Testing       | P1       | 🔄 in progress    |
 | SettingsView god-file split (all tabs lazy-loaded)                 | Architecture  | P1       | ✅ done (348 LOC) |
+| DataManagementTab modular split (`dataManagement/`)                | Architecture  | P1       | ✅ done (110 LOC) |
 | Strain catalog CI + `getCatalogVersion()`                          | Data          | P1       | ✅ done           |
 | `undici>=7.28.0` override (jsdom transitive)                       | Security      | P1       | ✅ done           |
 | CRDT conflict resolution UI                                        | Sync          | P2       | 📋 planned        |

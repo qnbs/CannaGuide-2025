@@ -82,7 +82,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **refactor(settings):** Complete SettingsView modularization — all tabs lazy-loaded
+- **refactor(settings):** Extract `dataManagement/` module from `DataManagementTab`
+  (storage panels, export/GDPR/danger-zone panels, `useDataManagementActions` hook,
+  `DataManagementDialogs`); **1246 → 110** LOC
+- **test:** Expand critical-path coverage — `plantSimulationService` diagnostics/time-delta,
+  `aiFacade` orchestrator exports, `aiOrchestrator.setAiMode`, `formatBytes`
   (`GeneralSettingsTab`, `PlantsSettingsTab`, `NotificationsSettingsTab`,
   `DefaultsSettingsTab`, `PrivacySettingsTab` + prior AI/security extractions);
   `SettingsView.tsx` **2570 → 348** LOC (under 700 budget)

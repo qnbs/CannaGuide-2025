@@ -72,4 +72,12 @@ describe('AIService facade', () => {
         expect(facade.localAIInfrastructure).toBeDefined()
         expect(typeof facade.localAIInfrastructure.getSnapshot).toBe('function')
     })
+
+    it('re-exports aiOrchestrator routing surface', async () => {
+        const facade = await import('@/services/aiFacade')
+        expect(facade.aiOrchestrator).toBeDefined()
+        expect(typeof facade.aiOrchestrator.shouldRouteLocally).toBe('function')
+        expect(typeof facade.aiOrchestrator.runRouted).toBe('function')
+        expect(typeof facade.aiOrchestrator.withLocalFallback).toBe('function')
+    })
 })

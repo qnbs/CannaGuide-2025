@@ -323,17 +323,21 @@ export async function lookupCannabisApi(name: string): Promise<LookupStrainResul
 export async function lookupWithAI(name: string): Promise<LookupStrainResult | null> {
     try {
         const { aiService, getAiMode } = await import('@/services/aiFacade')
+        const { sanitizeForPrompt } = await import('@/services/ai/safetyPipeline')
         if (getAiMode() === 'eco') return null
+
+        const safeName = sanitizeForPrompt(name, 120)
+        if (!safeName.trim()) return null
 
         const lang = (document.documentElement.lang ?? 'en') as 'en' | 'de'
         const prompt =
             lang === 'de'
-                ? `Gib mir detaillierte Informationen zur Cannabis-Sorte "${name}" als JSON (kein Begleittext):
+                ? `Gib mir detaillierte Informationen zur Cannabis-Sorte "${safeName}" als JSON (kein Begleittext):
 {"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Kurze Einschaetzung (2-3 Saetze)."}`
-                : `Provide detailed information about cannabis strain "${name}" as JSON only (no surrounding text):
+                : `Provide detailed information about cannabis strain "${safeName}" as JSON only (no surrounding text):
 {"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Short assessment of why this strain is notable (2-3 sentences)."}`
 
-        const plantStub = { id: 'strain-lookup', name } as Parameters<
+        const plantStub = { id: 'strain-lookup', name: safeName } as Parameters<
             typeof aiService.getMentorResponse
         >[0]
         const response = await aiService.getMentorResponse(plantStub, prompt, lang)

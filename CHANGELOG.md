@@ -8,6 +8,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **audit(2026-06-29):** Full-scale audit report `docs/audits/AUDIT-REPORT-2026-06-29.md` —
+  P0 AI sanitization gaps, coverage roadmap, strain data strategy, v2.0 readiness
+- **test(ai):** `aiPromptSanitization.test.ts` — integration tests for prompt safety on
+  stream mentor, deep-dive, and strain AI lookup paths
 - **audit(session-177):** Master Audit execution — parallel `postHydration` bootstrap,
   Sentry dedup in `aiResponseValidation`, `View.Help` route preload,
   `diagnosisFallback` threshold tests, CRDT divergence breadcrumbs
@@ -78,6 +82,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **fix(ai):** Route stream mentor (`buildMentorStreamPrompt`), deep-dive (`generateDeepDive`),
+  strain AI lookup (`lookupWithAI`), and local AI `promptHandlers` through central
+  `sanitizeForPrompt()` pipeline (closes audit S-08 / AI-02)
 - **audit(session-177):** Dependabot security group merged via PR **#256** (replaces closed #243)
 - **docs:** S-07 documents `auditConfig.ignoreCves` for CVE-2026-41242 (protobufjs false positive)
 - Transitive **`ip-address`** upgraded via root **`pnpm.overrides`** to **>=10.1.1** ([GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) / CVE-2026-42338). Dependency path includes `@lhci/cli` → `proxy-agent` → `socks`. Documented in [`SECURITY.md`](SECURITY.md#transitive-dependency-remediation-pnpm-overrides).

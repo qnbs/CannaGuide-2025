@@ -163,3 +163,16 @@ GitHub Actions are restricted to a curated allowlist (`allowed_actions: selected
 - Explicitly approved third-party: `anchore/*`, `gitleaks/*`, `ossf/*`, `snyk/*`, `Swatinem/*`, `dtolnay/*`, `google/clusterfuzzlite/*`, `peter-evans/*`, `slsa-framework/*`
 
 Adding a new third-party action requires updating the allowlist via repository Settings > Actions > General.
+
+### AI Input Sanitization (2026-06-29)
+
+All user-controlled strings reaching LLM prompts must pass through
+[`apps/web/services/ai/safetyPipeline.ts`](apps/web/services/ai/safetyPipeline.ts)
+(`sanitizeForPrompt`). As of the 2026-06-29 audit, secondary paths were hardened:
+
+- Stream mentor (`aiService.buildMentorStreamPrompt`)
+- Deep-dive guides (`aiService` / `geminiService.generateDeepDive`)
+- Strain AI lookup (`externalStrainLookups.lookupWithAI`)
+- Local AI handlers (`local-ai/inference/promptHandlers`)
+
+See [`docs/audits/AUDIT-REPORT-2026-06-29.md`](docs/audits/AUDIT-REPORT-2026-06-29.md) finding **S-08**.

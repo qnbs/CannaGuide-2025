@@ -62,7 +62,7 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 | Unit tests           | `pnpm run test:run`     | Full suite is large (~3+ min); see React note below |
 | Build                | `pnpm run build`        | Excludes desktop by default                         |
 
-**React version mismatch:** `apps/web` pins `react@^19.2.6` and `react-dom@^19.2.5`. Vitest/component tests that load `react-dom/client` can fail with “Incompatible React versions”. Pure logic tests under `apps/web/utils/` run cleanly. Aligning `react-dom` to `19.2.6` fixes tests but changes `package.json`—only do that in a dedicated dependency PR.
+**React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
 
 ### Optional services
 

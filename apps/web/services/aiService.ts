@@ -9,6 +9,7 @@ import {
     captureLocalAiError,
 } from '@/services/localRoutingService'
 import { runRoutedValidated, validateAiResponse } from '@/services/aiResponseValidation'
+import { sanitizeForPrompt } from '@/services/ai/safetyPipeline'
 import {
     AIResponseSchema,
     MentorMessageContentSchema,
@@ -92,7 +93,7 @@ const buildMentorStreamPrompt = (
         growName ? `Grow: ${growName}` : '',
         `Plant: ${plant.name} | ${plant.strain.name} | stage=${plant.stage}`,
         ragContext ? `Context: ${ragContext}` : '',
-        `Question: ${query}`,
+        `Question: ${sanitizeForPrompt(query, 600)}`,
         'Return ONLY valid JSON with this exact shape:',
         '{"title":"...","content":"...","uiHighlights":[]}',
     ]
@@ -401,12 +402,13 @@ export const aiService = {
     },
 
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
+        const safeTopic = sanitizeForPrompt(topic, 400)
         return runRoutedValidated(
             DeepDiveGuideSchema,
             'deepDive',
-            () => withLocalService((local) => local.generateDeepDive(topic, plant, lang)),
-            async () => (await getGeminiService()).generateDeepDive(topic, plant, lang),
-            () => withLocalService((local) => local.generateDeepDive(topic, plant, lang)),
+            () => withLocalService((local) => local.generateDeepDive(safeTopic, plant, lang)),
+            async () => (await getGeminiService()).generateDeepDive(safeTopic, plant, lang),
+            () => withLocalService((local) => local.generateDeepDive(safeTopic, plant, lang)),
         )
     },
 

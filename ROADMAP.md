@@ -257,6 +257,20 @@ Target: **2026-Q3**
 | RTL language preparation (I-02)                               | i18n          | Low        | deferred |
 | Offline ONNX TTS/STT (V-06)                                   | Local AI      | Low        | deferred |
 
+### v1.9.x — Audit & Hardening (in progress)
+
+Target: **2026-Q2/Q3** (post v1.8.2)
+
+| Feature                                                       | Category      | Priority   | Status   |
+| ------------------------------------------------------------- | ------------- | ---------- | -------- |
+| Full-scale audit report (`docs/audits/AUDIT-REPORT-2026-06-29.md`) | Quality   | High       | ✅ done  |
+| AI prompt sanitization on all code paths (S-08)               | Security      | P0         | ✅ done  |
+| Coverage Stufe B → critical paths ≥80%                        | Testing       | P1         | 📋 planned |
+| SettingsView / strain view god-file splits                    | Architecture  | P1         | 📋 planned |
+| Strain data versioning ADR + enrichment cadence               | Data          | P1         | 📋 planned |
+| CRDT conflict resolution UI                                   | Sync          | P2         | 📋 planned |
+| WebXR module abstraction (`features/xr/`)                     | Visualization | P3         | 📋 v2.0  |
+
 ---
 
 ## v1.4 -- Discovery & Knowledge Scale

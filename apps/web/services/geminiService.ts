@@ -43,6 +43,7 @@ import {
     getStrainTipsFromAlternateProvider,
     getStrainTipsFromGemini,
 } from '@/services/ai/geminiStructuredHandlers'
+import { sanitizeForPrompt } from '@/services/ai/safetyPipeline'
 
 export { isTopicRelevant, sanitizeForPrompt } from '@/services/ai/safetyPipeline'
 import {
@@ -249,7 +250,7 @@ class GeminiService implements BaseAIProvider {
         const t = getT()
         const compactPlant = createCompactPlantSnapshot(plant)
         const prompt = t('ai.prompts.deepDive', {
-            topic,
+            topic: sanitizeForPrompt(topic, 400),
             plant: JSON.stringify(compactPlant),
         })
         const localizedPrompt = createLocalizedPrompt(

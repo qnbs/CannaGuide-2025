@@ -1,59 +1,36 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 // ---------------------------------------------------------------------------
-// Mocks
+// Mocks (hoisted so full-suite runs keep a stable sentry mock reference)
 // ---------------------------------------------------------------------------
 
+const { mockCaptureLocalAiError, mockGetCachedInference, mockSetCachedInference, mockCreateInferenceTimer, mockRecordCacheHit, mockRecordCacheMiss, mockDebouncedPersistSnapshot } =
+    vi.hoisted(() => ({
+        mockCaptureLocalAiError: vi.fn(),
+        mockGetCachedInference: vi.fn(),
+        mockSetCachedInference: vi.fn(),
+        mockCreateInferenceTimer: vi.fn(),
+        mockRecordCacheHit: vi.fn(),
+        mockRecordCacheMiss: vi.fn(),
+        mockDebouncedPersistSnapshot: vi.fn(),
+    }))
+
 vi.mock('@/services/sentryService', () => ({
-    captureLocalAiError: vi.fn(),
+    captureLocalAiError: mockCaptureLocalAiError,
 }))
 
-const mockGetCachedInference = vi.fn()
-const mockSetCachedInference = vi.fn()
-
-vi.mock('../cache/cacheService', () => ({
-    getCachedInference: (...args: unknown[]) => mockGetCachedInference(...args),
-    setCachedInference: (...args: unknown[]) => mockSetCachedInference(...args),
-    clearPersistentCache: vi.fn(),
-    getCacheSize: vi.fn(() => Promise.resolve(0)),
-    getCacheBreakdown: vi.fn(() => Promise.resolve({})),
-    applyCacheSettings: vi.fn(),
-    resetCacheDb: vi.fn(),
-}))
-
-const mockCreateInferenceTimer = vi.fn()
-const mockRecordCacheHit = vi.fn()
-const mockRecordCacheMiss = vi.fn()
-const mockDebouncedPersistSnapshot = vi.fn()
-
-vi.mock('../telemetry/telemetryService', () => ({
-    createInferenceTimer: () => mockCreateInferenceTimer(),
-    recordCacheHit: () => mockRecordCacheHit(),
-    recordCacheMiss: () => mockRecordCacheMiss(),
-    debouncedPersistSnapshot: () => mockDebouncedPersistSnapshot(),
-    recordInference: vi.fn(),
-    measureInference: vi.fn(),
-    getSnapshot: vi.fn(() => ({
-        totalInferences: 0,
-        totalTokensGenerated: 0,
-        averageLatencyMs: 0,
-        averageTokensPerSecond: 0,
-        cacheHitRate: 0,
-        modelBreakdown: {},
-        backendBreakdown: {},
-        successRate: 1,
-        peakTokensPerSecond: 0,
-        lastUpdated: 0,
-    })),
-    persistSnapshot: vi.fn(),
-    loadPersistedSnapshot: vi.fn(),
-    checkPerformanceDegradation: vi.fn(() => ({
-        degraded: false,
-        recentTokensPerSecond: 0,
-        recommendation: 'none',
-    })),
-    resetTelemetry: vi.fn(),
-}))
+vi.mock('../core/infrastructureService', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../core/infrastructureService')>()
+    return {
+        ...actual,
+        getCachedInference: (...args: unknown[]) => mockGetCachedInference(...args),
+        setCachedInference: (...args: unknown[]) => mockSetCachedInference(...args),
+        createInferenceTimer: () => mockCreateInferenceTimer(),
+        recordCacheHit: () => mockRecordCacheHit(),
+        recordCacheMiss: () => mockRecordCacheMiss(),
+        debouncedPersistSnapshot: () => mockDebouncedPersistSnapshot(),
+    }
+})
 
 vi.mock('../device/preloadService', () => ({
     localAiPreloadService: {
@@ -69,7 +46,6 @@ vi.mock('../device/preloadService', () => ({
 // ---------------------------------------------------------------------------
 
 import { streamTextGeneration, type StreamingDeps } from './streamingService'
-import { captureLocalAiError } from '@/services/sentryService'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -212,7 +188,7 @@ describe('localAiStreamingService', () => {
             const result = await streamTextGeneration('test prompt', onToken, deps)
 
             expect(result).toBe('fallback batch')
-            expect(captureLocalAiError).toHaveBeenCalledWith(
+            expect(mockCaptureLocalAiError).toHaveBeenCalledWith(
                 expect.any(Error),
                 expect.objectContaining({ stage: 'webllm-streaming' }),
             )

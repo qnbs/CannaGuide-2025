@@ -1,18 +1,15 @@
 name: CodeQL
 
-# Advanced CodeQL setup (canonical). If the Security tab shows
-# "Code scanning configuration error", disable CodeQL *default setup* in
-# repo Settings → Code security → Code scanning → CodeQL → Switch to advanced.
+# Manual advanced CodeQL (monorepo build). Automated scanning uses GitHub
+# CodeQL *default setup* (Analyze javascript-typescript/python/rust/actions).
+# Do NOT enable push/PR/schedule here while default setup is active — dual
+# CodeQL sources trigger "Code scanning configuration error". To switch to
+# advanced-only: repo Settings → Code security → CodeQL → Switch to advanced,
+# then restore push/pull_request/schedule triggers below.
 # See docs/code-scanning-setup.md
 
 on:
     workflow_dispatch:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
-    schedule:
-        - cron: '0 6 * * 1'
 
 concurrency:
     group: codeql-${{ github.ref }}

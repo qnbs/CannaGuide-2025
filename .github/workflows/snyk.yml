@@ -24,7 +24,6 @@ jobs:
         continue-on-error: true
         permissions:
             contents: read
-            security-events: write
         steps:
             - name: Detect SNYK_TOKEN
               id: snyk-token
@@ -58,10 +57,10 @@ jobs:
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
               with:
-                  args: --severity-threshold=high --sarif-file-output=snyk-results.sarif --all-projects
+                  args: --severity-threshold=high --all-projects
 
             - name: Snyk Monitor (track vulnerabilities)
-              if: steps.snyk-token.outputs.present == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.snyk-scan.outcome == 'success'
+              if: steps.snyk-token.outputs.present == 'true' && steps.snyk-scan.outcome == 'success'
               continue-on-error: true
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
@@ -70,10 +69,6 @@ jobs:
                   command: monitor
                   args: --all-projects
 
-            - name: Upload Snyk SARIF
-              if: steps.snyk-token.outputs.present == 'true' && steps.snyk-scan.outcome == 'success' && hashFiles('snyk-results.sarif') != ''
-              continue-on-error: true
-              uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
-              with:
-                  sarif_file: snyk-results.sarif
-                  category: snyk-open-source
+            # SARIF upload omitted: Snyk Open Source alerts come from the Snyk
+            # GitHub App (security/snyk PR check). Uploading SARIF here while
+            # default CodeQL setup is active can trigger code-scanning config errors.

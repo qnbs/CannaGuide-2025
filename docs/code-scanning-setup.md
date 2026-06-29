@@ -7,29 +7,37 @@ _"Code scanning configuration error — CodeQL and Snyk Open Source are reportin
 
 ## Root cause (most common)
 
-GitHub **CodeQL default setup** is enabled **and** this repo runs **advanced** workflows:
+This repository uses **CodeQL default setup** (GitHub-managed `Analyze (*)` jobs on pull requests).  
+A second **advanced** CodeQL workflow or duplicate Snyk SARIF upload causes configuration conflicts.
 
-| Source           | File / integration                                                              |
-| ---------------- | ------------------------------------------------------------------------------- |
-| CodeQL advanced  | [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml)               |
-| CodeQL default   | Repository **Settings → Code security → Code scanning**                         |
-| Snyk Open Source | Snyk GitHub App + [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) |
-
-Default + advanced CodeQL together produce configuration conflicts and duplicate `Analyze (*)` jobs on pull requests.
+| Source             | Integration                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| CodeQL (automated) | GitHub **default setup** — `Analyze (javascript-typescript)`, `python`, `rust`     |
+| CodeQL (manual)    | [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml) — dispatch only  |
+| Snyk Open Source   | **Snyk GitHub App** (`security/snyk` PR check)                                     |
+| Snyk (weekly)      | [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) — advisory, no SARIF |
 
 ---
 
-## Fix: use advanced CodeQL only (recommended)
+## Current policy (2026-06-29)
 
-Repository maintainers (admin):
+1. **Default setup** runs CodeQL on every PR/push (no SARIF upload from our workflow).
+2. **`codeql.yml`** is **workflow_dispatch only** — manual monorepo build scan when needed.
+3. **`snyk.yml`** runs weekly with `setup-node-ci`; alerts come from the Snyk App, not SARIF upload.
+
+This avoids the dual-CodeQL conflict that triggers the configuration-error banner.
+
+---
+
+## Optional: switch to advanced CodeQL only
+
+Repository maintainers (admin) who want monorepo `pnpm run build` on every PR:
 
 1. Open **Settings → Code security** (or **Security → Advanced Security**).
 2. Under **Code scanning**, find **CodeQL analysis**.
-3. If you see **Switch to advanced** — default setup is active.
-4. Click **Switch to advanced** (or **Disable CodeQL** on default, then rely on `codeql.yml`).
-5. Confirm the canonical workflow is [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml).
-
-After switching, re-run the latest **CodeQL** workflow on `main`. The Security tab configuration error should clear within one analysis cycle.
+3. Click **Switch to advanced** (disables default setup).
+4. Restore `push` / `pull_request` / `schedule` triggers in [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml).
+5. Re-run **CodeQL** on `main`.
 
 Reference: [GitHub Docs — default setup blocks SARIF upload](https://docs.github.com/en/code-security/code-scanning/troubleshooting-sarif/default-setup-enabled)
 
@@ -37,11 +45,11 @@ Reference: [GitHub Docs — default setup blocks SARIF upload](https://docs.gith
 
 ## Snyk Open Source
 
-| Check                    | Action                                                                |
-| ------------------------ | --------------------------------------------------------------------- |
-| PR check `security/snyk` | Snyk GitHub App — should pass when org billing is active              |
-| Weekly `snyk.yml`        | Requires `SNYK_TOKEN` secret; advisory (`continue-on-error`)          |
-| SARIF upload             | Uses `category: snyk-open-source` to avoid CodeQL category collisions |
+| Check                    | Action                                                       |
+| ------------------------ | ------------------------------------------------------------ |
+| PR check `security/snyk` | Snyk GitHub App — should pass when org billing is active     |
+| Weekly `snyk.yml`        | Requires `SNYK_TOKEN` secret; advisory (`continue-on-error`) |
+| SARIF upload             | **Disabled** — use Snyk App for Security tab alerts          |
 
 If weekly Snyk fails on **Install dependencies**, ensure `pnpm-lock.yaml` is valid (`node scripts/check-pnpm-lockfile.mjs`) and the workflow uses [`.github/actions/setup-node-ci`](../.github/actions/setup-node-ci/action.yml).
 

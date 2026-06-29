@@ -162,6 +162,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(ci):** Code scanning configuration error — `codeql.yml` dispatch-only (default setup
+  handles PR/push); weekly `snyk.yml` without SARIF upload (Snyk App for alerts)
+- **fix(test):** `streamingService.test.ts` hoisted sentry mock — stable under full vitest suite
 - **fix(ci):** Regenerate pnpm-lock.yaml -- apps/desktop importer
   section was missing, causing ERR_PNPM_OUTDATED_LOCKFILE in CI,
   Vercel, and Codespace (9 @tauri-apps/\* dependencies unresolved)

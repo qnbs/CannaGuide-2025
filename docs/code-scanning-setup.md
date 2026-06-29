@@ -31,13 +31,31 @@ This avoids the dual-CodeQL conflict that triggers the configuration-error banne
 
 ## Optional: switch to advanced CodeQL only
 
-Repository maintainers (admin) who want monorepo `pnpm run build` on every PR:
+**Most users do not need this.** The repo already avoids conflicts by using default setup + `codeql.yml` dispatch-only.
 
-1. Open **Settings → Code security** (or **Security → Advanced Security**).
-2. Under **Code scanning**, find **CodeQL analysis**.
-3. Click **Switch to advanced** (disables default setup).
-4. Restore `push` / `pull_request` / `schedule` triggers in [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml).
-5. Re-run **CodeQL** on `main`.
+### Why “CodeQL” may be missing in repository Settings
+
+CodeQL **is active** if PR checks show `Analyze (javascript-typescript)`, `Analyze (python)`, `Analyze (rust)`, or `Analyze (actions)`.  
+Those jobs come from GitHub **CodeQL default setup** — even when there is no **CodeQL analysis** row under **Settings → Code security** on the repository.
+
+Common reasons the per-repo toggle is absent:
+
+| Reason                                  | What to do                                                                                                                                                                                                                                                |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Organization security configuration** | CodeQL is managed at **org** level (GitHub _code security configurations_). Edit the applied configuration under **Organization → Settings → Code security → Configurations** — not per-repo Settings.                                                    |
+| **Enforced org policy**                 | If the org config sets CodeQL default setup to **Enabled** (enforced), repos cannot **Switch to advanced** locally. Use **Enabled with advanced setup allowed** in the org configuration, or change the org policy.                                       |
+| **Wrong navigation**                    | Repo path: **Settings → Advanced Security** (sidebar **Security**), scroll to **Code security** / **Code scanning**. Older UI: **Code security and analysis**. Viewing alerts: **Security** tab → **Code scanning** (not the same as enabling/disabling). |
+| **Insufficient permissions**            | Only repo/org **admins** see security configuration controls.                                                                                                                                                                                             |
+| **Public repository**                   | CodeQL default setup is free on public repos; controls may still be org-managed rather than repo-managed.                                                                                                                                                 |
+
+Reference: [GitHub — security configurations at scale](https://docs.github.com/en/code-security/securing-your-organization/enabling-security-features-in-your-organization/understanding-github-security-configurations)
+
+### If you have repo-level control (rare with org configs)
+
+1. **Settings → Advanced Security** → section **Code security** / **Code scanning**.
+2. In the **CodeQL analysis** row: **Switch to advanced** (only visible when default setup is repo-managed).
+3. Restore `push` / `pull_request` / `schedule` in [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml).
+4. Re-run **CodeQL** on `main`.
 
 Reference: [GitHub Docs — default setup blocks SARIF upload](https://docs.github.com/en/code-security/code-scanning/troubleshooting-sarif/default-setup-enabled)
 

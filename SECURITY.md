@@ -48,7 +48,7 @@ Merge policy, gate inventory, deploy E2E/Lighthouse notes, and remaining risks a
 
 ### Code scanning configuration
 
-If the Security tab shows **Code scanning configuration error** for CodeQL or Snyk Open Source, switch the repository from **CodeQL default setup** to **advanced** and use [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml). See [docs/code-scanning-setup.md](docs/code-scanning-setup.md).
+If the Security tab shows **Code scanning configuration error** for CodeQL or Snyk Open Source, the repo workflows are aligned with **CodeQL default setup** (see [docs/code-scanning-setup.md](docs/code-scanning-setup.md)). Per-repo **Switch to advanced** is often unavailable when the **organization** manages CodeQL via a security configuration — that is expected.
 
 ## Supply-Chain Security
 

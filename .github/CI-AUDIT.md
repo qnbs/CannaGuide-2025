@@ -58,16 +58,16 @@ Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 
 ### Findings & fixes
 
-| Issue                                    | Root cause                                                                | Fix                                                                                            |
-| ---------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Issue                                    | Root cause                                                                | Fix                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Cloudflare PR preview deploy fails       | `wrangler` not in monorepo; `pnpm add wrangler` blocked at workspace root | Added `wrangler` devDependency; `wranglerVersion` + `pnpm exec wrangler --version` in workflow (currently wrangler 4.x) |
-| Preview branch names with `/`            | `cursor/foo` passed raw to `--branch`                                     | Sanitize to DNS-safe slug (max 63 chars)                                                       |
-| Dependabot noise on tmp/qs/uuid          | Packages pinned in `pnpm.overrides`                                       | `dependabot.yml` ignore list                                                                   |
-| `workflows/README.md` stale              | Still said Cloudflare paused / cleanup read-only                          | Rewritten to match PR #250 state                                                               |
-| Snyk weekly workflow red without token   | Single job required `SNYK_TOKEN`                                          | Split `snyk-skipped` job (notice) vs `snyk` scan job                                           |
-| GitHub Pages deploy skipped              | Prior `main` CI failed (#248 typecheck) before #250 merge                 | Expected; re-runs after green CI on `main`                                                     |
-| Scheduled stale/Snyk “failures” (May 25) | **Account billing lock** — jobs never started                             | Org/repo billing; not fixable in code                                                          |
-| Workers Builds check                     | Cloudflare dashboard Worker Git integration                               | Documented in `docs/distribution.md` — disconnect in dashboard                                 |
+| Preview branch names with `/`            | `cursor/foo` passed raw to `--branch`                                     | Sanitize to DNS-safe slug (max 63 chars)                                                                                |
+| Dependabot noise on tmp/qs/uuid          | Packages pinned in `pnpm.overrides`                                       | `dependabot.yml` ignore list                                                                                            |
+| `workflows/README.md` stale              | Still said Cloudflare paused / cleanup read-only                          | Rewritten to match PR #250 state                                                                                        |
+| Snyk weekly workflow red without token   | Single job required `SNYK_TOKEN`                                          | Split `snyk-skipped` job (notice) vs `snyk` scan job                                                                    |
+| GitHub Pages deploy skipped              | Prior `main` CI failed (#248 typecheck) before #250 merge                 | Expected; re-runs after green CI on `main`                                                                              |
+| Scheduled stale/Snyk “failures” (May 25) | **Account billing lock** — jobs never started                             | Org/repo billing; not fixable in code                                                                                   |
+| Workers Builds check                     | Cloudflare dashboard Worker Git integration                               | Documented in `docs/distribution.md` — disconnect in dashboard                                                          |
 
 ### Local audit snapshot (Session 176, Node 24)
 

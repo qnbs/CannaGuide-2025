@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
@@ -182,11 +183,9 @@ export default defineConfig({
     plugins: [
         optionalMlPlugin(),
         devCspPlugin(),
-        react({
-            // React 19 Compiler – automatically memoises components and hooks
-            babel: {
-                plugins: ['babel-plugin-react-compiler'],
-            },
+        react(),
+        babel({
+            presets: [reactCompilerPreset()],
         }),
         VitePWA({
             strategies: 'injectManifest',

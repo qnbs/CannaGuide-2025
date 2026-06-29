@@ -46,6 +46,10 @@ We will review reports as quickly as possible and coordinate remediation before 
 
 Merge policy, gate inventory, deploy E2E/Lighthouse notes, and remaining risks are documented in [`.github/CI-AUDIT.md`](.github/CI-AUDIT.md). Required check on `main`: **CI Status** (quality + security). Cloudflare Workers build status from the dashboard integration is informational only and does not block merges.
 
+### Code scanning configuration
+
+If the Security tab shows **Code scanning configuration error** for CodeQL or Snyk Open Source, the repo workflows are aligned with **CodeQL default setup** (see [docs/code-scanning-setup.md](docs/code-scanning-setup.md)). Per-repo **Switch to advanced** is often unavailable when the **organization** manages CodeQL via a security configuration — that is expected.
+
 ## Supply-Chain Security
 
 ### SHA-Pinning Mandate
@@ -121,9 +125,10 @@ The SBOM covers:
 
 When Dependabot flags a **transitive** npm package and maintainers of direct dependencies have not yet adopted a patched release, this repository forces a **minimum safe version** using root **`pnpm.overrides`** (see `package.json`). Each intentional override is recorded here for auditors and agents.
 
-| Package      | Minimum version | Advisory                                                                                               | Typical chain                                                                                               | Notes                                                                                                                                          |
-| ------------ | --------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ip-address` | 10.1.1          | [GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) (CVE-2026-42338, medium, XSS) | `socks` → `socks-proxy-agent` → `pac-proxy-agent` → `proxy-agent` → `@lhci/cli` / Puppeteer (Lighthouse CI) | Advisory affects HTML-emitting `Address6` helpers; resolution only affects **dev** tooling (e.g. Lighthouse). Lockfile resolves to **10.2.0**. |
+| Package      | Minimum version | Advisory                                                                                                                                                      | Typical chain                                                                                               | Notes                                                                                                                                          |
+| ------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ip-address` | 10.1.1          | [GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) (CVE-2026-42338, medium, XSS)                                                        | `socks` → `socks-proxy-agent` → `pac-proxy-agent` → `proxy-agent` → `@lhci/cli` / Puppeteer (Lighthouse CI) | Advisory affects HTML-emitting `Address6` helpers; resolution only affects **dev** tooling (e.g. Lighthouse). Lockfile resolves to **10.2.0**. |
+| `undici`     | 7.28.0 (&lt;8)  | [GHSA-p88m-4jfj-68fv](https://github.com/advisories/GHSA-p88m-4jfj-68fv), [GHSA-pr7r-676h-xcf6](https://github.com/advisories/GHSA-pr7r-676h-xcf6) (moderate) | `jsdom` → `undici` (Vitest/jsdom test environment)                                                          | Capped at **&lt;8.0.0** — undici 8.x breaks jsdom 29 `require()` integration. Lockfile resolves to **7.28.0**.                                 |
 
 After merging an override, confirm in GitHub **Security → Dependabot** that the related alert moves to **resolved** (or dismiss with justification if a false positive).
 
@@ -163,3 +168,16 @@ GitHub Actions are restricted to a curated allowlist (`allowed_actions: selected
 - Explicitly approved third-party: `anchore/*`, `gitleaks/*`, `ossf/*`, `snyk/*`, `Swatinem/*`, `dtolnay/*`, `google/clusterfuzzlite/*`, `peter-evans/*`, `slsa-framework/*`
 
 Adding a new third-party action requires updating the allowlist via repository Settings > Actions > General.
+
+### AI Input Sanitization (2026-06-29)
+
+All user-controlled strings reaching LLM prompts must pass through
+[`apps/web/services/ai/safetyPipeline.ts`](apps/web/services/ai/safetyPipeline.ts)
+(`sanitizeForPrompt`). As of the 2026-06-29 audit, secondary paths were hardened:
+
+- Stream mentor (`aiService.buildMentorStreamPrompt`)
+- Deep-dive guides (`aiService` / `geminiService.generateDeepDive`)
+- Strain AI lookup (`externalStrainLookups.lookupWithAI`)
+- Local AI handlers (`local-ai/inference/promptHandlers`)
+
+See [`docs/audits/AUDIT-REPORT-2026-06-29.md`](docs/audits/AUDIT-REPORT-2026-06-29.md) finding **S-08**.

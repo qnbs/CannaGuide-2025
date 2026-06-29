@@ -54,15 +54,16 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 
 ### Lint / test / build
 
-| Task                 | Command                 | Notes                                               |
-| -------------------- | ----------------------- | --------------------------------------------------- |
-| Lint (changed files) | `pnpm run lint:changed` | No-op if nothing changed vs `origin/main`           |
-| Lint (full)          | `pnpm run lint:full`    | Heavy; CI uses this                                 |
-| Typecheck            | `pnpm run typecheck`    | Turbo; web uses `scripts/typecheck-filter.mjs`      |
-| Unit tests           | `pnpm run test:run`     | Full suite is large (~3+ min); see React note below |
-| Build                | `pnpm run build`        | Excludes desktop by default                         |
+| Task                 | Command                      | Notes                                               |
+| -------------------- | ---------------------------- | --------------------------------------------------- |
+| Lint (changed files) | `pnpm run lint:changed`      | No-op if nothing changed vs `origin/main`           |
+| Lint (full)          | `pnpm run lint:full`         | Heavy; CI uses this                                 |
+| Typecheck            | `pnpm run typecheck`         | Turbo; web uses `scripts/typecheck-filter.mjs`      |
+| Unit tests           | `pnpm run test:run`          | Full suite is large (~3+ min); see React note below |
+| Build                | `pnpm run build`             | Excludes desktop by default                         |
+| Doc metrics          | `pnpm run docs:sync-metrics` | Sync Vitest counts in README / ARCHITECTURE         |
 
-**React version mismatch:** `apps/web` pins `react@^19.2.6` and `react-dom@^19.2.5`. Vitest/component tests that load `react-dom/client` can fail with “Incompatible React versions”. Pure logic tests under `apps/web/utils/` run cleanly. Aligning `react-dom` to `19.2.6` fixes tests but changes `package.json`—only do that in a dedicated dependency PR.
+**React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
 
 ### Optional services
 

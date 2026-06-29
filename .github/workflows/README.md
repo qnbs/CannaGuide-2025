@@ -27,14 +27,14 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 
 ## Security & quality
 
-| Workflow                                   | Purpose                                        |
-| ------------------------------------------ | ---------------------------------------------- |
-| [`codeql.yml`](./codeql.yml)               | CodeQL analysis.                               |
-| [`security-scan.yml`](./security-scan.yml) | Composite security scans.                      |
-| [`security-full.yml`](./security-full.yml) | Extended / scheduled security suite.           |
-| [`snyk.yml`](./snyk.yml)                   | Weekly Snyk (advisory; requires `SNYK_TOKEN`). |
-| [`scorecard.yml`](./scorecard.yml)         | OpenSSF Scorecard.                             |
-| [`config-guard.yml`](./config-guard.yml)   | Devcontainer/VS Code guard on PRs.             |
+| Workflow                                   | Purpose                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------- |
+| [`codeql.yml`](./codeql.yml)               | CodeQL manual scan (dispatch; default setup handles PR/push).        |
+| [`security-scan.yml`](./security-scan.yml) | Composite security scans.                                            |
+| [`security-full.yml`](./security-full.yml) | Extended / scheduled security suite.                                 |
+| [`snyk.yml`](./snyk.yml)                   | Weekly Snyk advisory (`SNYK_TOKEN`; no SARIF — Snyk App for alerts). |
+| [`scorecard.yml`](./scorecard.yml)         | OpenSSF Scorecard.                                                   |
+| [`config-guard.yml`](./config-guard.yml)   | Devcontainer/VS Code guard on PRs.                                   |
 
 ## Testing & experiments
 

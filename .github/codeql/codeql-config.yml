@@ -1,0 +1,9 @@
+name: CannaGuide CodeQL config
+paths-ignore:
+    - apps/web/dist/**
+    - '**/node_modules/**'
+    - '**/coverage/**'
+    - '**/test-results/**'
+    - graphify-out/**
+    - '**/*.test.ts'
+    - '**/*.test.tsx'

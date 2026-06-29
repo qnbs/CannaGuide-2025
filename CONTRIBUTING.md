@@ -16,8 +16,10 @@ Thank you for considering contributing to CannaGuide 2025! We welcome contributi
 - [Internationalization (i18n)](#internationalization-i18n)
 - [Cursor MDC Governance](#cursor-mdc-governance)
 - [Pull Request Process](#pull-request-process)
+- [Strain Encyclopedia Contributions](#strain-encyclopedia-contributions)
 - [Deprecation Strategy](#deprecation-strategy)
 - [Reporting Issues](#reporting-issues)
+- [Release Housekeeping](#release-housekeeping)
 
 ---
 
@@ -354,6 +356,32 @@ When proposing significant changes, please follow these guidelines:
 
 ---
 
+## Strain Encyclopedia Contributions
+
+The bundled catalog lives under `apps/web/data/strains/` (776+ entries, versioned via `catalog-version.json`). See [ADR-0014](docs/adr/0014-strain-data-versioning.md).
+
+### Adding or updating a strain
+
+1. Add or edit a `.ts` file under `apps/web/data/strains/` following existing schema (`id`, `name`, `type`, terpenes, provenance when known).
+2. **Never change** an existing strain `id` after release — IDs are immutable for genealogy and grow history.
+3. Run integrity checks:
+    ```bash
+    pnpm run strains:check-integrity
+    pnpm run strains:check-new-duplicates
+    ```
+4. Update `catalog-version.json` (`strainCount`, `generatedAt`) when the catalog size changes.
+5. Include breeder/source citation in `provenance` when available.
+
+### Automated enrichment (maintainers)
+
+```bash
+pnpm run strains:enrich-provenance -- --report --min-confidence=0.7
+```
+
+Community PRs with AI-generated strain data require explicit human review.
+
+---
+
 ## Deprecation Strategy
 
 When removing or replacing a public API, component, or feature, follow this process to give dependent code a migration window:
@@ -406,6 +434,20 @@ When removing or replacing a public API, component, or feature, follow this proc
 4. GitHub Actions automatically:
     - Deploys to GitHub Pages, Vercel, and Cloudflare Pages (Netlify paused).
 5. Create a GitHub Release with the CHANGELOG excerpt.
+
+---
+
+## Release Housekeeping
+
+Before a release tag or large audit merge, follow [docs/HOUSEKEEPING.md](docs/HOUSEKEEPING.md):
+
+```bash
+pnpm run docs:sync-metrics   # README / ARCHITECTURE test counts
+pnpm run strains:check-integrity
+pnpm run typecheck && pnpm run lint:changed && pnpm run build
+```
+
+Audit closures: update `docs/audits/AUDIT-CLOSURE-*.md` and `ROADMAP.md` v1.9.x status.
 
 ---
 

@@ -19,6 +19,7 @@ import { dirname, join } from 'node:path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const jsonPath = join(__dirname, '..', 'apps', 'web', 'data', 'strains', 'strains.json')
+const manifestPath = join(__dirname, '..', 'apps', 'web', 'data', 'strains', 'catalog-version.json')
 
 const normalizeName = (name) =>
     name
@@ -71,7 +72,29 @@ const run = async () => {
         }
     }
 
-    // 4. Optional count assertion
+    // 4. Catalog manifest (ADR-0014)
+    try {
+        const manifestRaw = await readFile(manifestPath, 'utf8')
+        const manifest = JSON.parse(manifestRaw)
+        if (typeof manifest.strainCount !== 'number') {
+            console.error('[FAIL] catalog-version.json: missing or invalid strainCount')
+            errors++
+        } else if (manifest.strainCount !== strains.length) {
+            console.error(
+                `[FAIL] catalog-version.json strainCount (${manifest.strainCount}) !== strains.json length (${strains.length})`,
+            )
+            errors++
+        }
+        if (!manifest.schema) {
+            console.error('[FAIL] catalog-version.json: missing schema field')
+            errors++
+        }
+    } catch (err) {
+        console.error('[FAIL] Could not read catalog-version.json:', err.message)
+        errors++
+    }
+
+    // 5. Optional count assertion (legacy EXPECTED_COUNT env)
     const expectedCount = process.env.EXPECTED_COUNT
         ? parseInt(process.env.EXPECTED_COUNT, 10)
         : undefined

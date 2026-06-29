@@ -6,7 +6,7 @@
 // remains the single owner of model pipeline management.
 // ---------------------------------------------------------------------------
 
-import DOMPurify from 'dompurify'
+import { sanitizeForPrompt } from '@/services/ai/safetyPipeline'
 import type {
     AIResponse,
     DeepDiveGuide,
@@ -50,8 +50,8 @@ const languageConstraint = (lang: Language): string =>
 const localize = (lang: Language, instructions: Record<Language, string>): string =>
     instructions[lang] ?? instructions['en']
 
-const sanitizeText = (value: string): string =>
-    DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim()
+const sanitizeText = (value: string, maxLength = 500): string =>
+    sanitizeForPrompt(value, maxLength)
 
 const summarizePlant = (plant: Plant): string =>
     `${sanitizeText(plant.name)} | ${sanitizeText(plant.strain.name)} | stage=${plant.stage} | health=${plant.health.toFixed(0)} | stress=${plant.stressLevel.toFixed(0)} | vpd=${plant.environment.vpd.toFixed(2)} | ph=${plant.medium.ph.toFixed(2)} | ec=${plant.medium.ec.toFixed(2)}`

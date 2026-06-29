@@ -1,6 +1,6 @@
 name: CI
 
-# workflow-version: 2026-05-30-audit (bump to re-run quality gates after deploy housekeeping)
+# workflow-version: 2026-06-29-ci-gate (CI Status = quality+security only; E2E advisory)
 
 on:
     push:
@@ -144,6 +144,9 @@ jobs:
             - name: Check i18n completeness
               run: pnpm run check:i18n
 
+            - name: Strain catalog integrity
+              run: pnpm run strains:check-integrity
+
             - name: Audit backlog check (blocks on open HIGH items)
               run: node scripts/check-audit-backlog.mjs
               continue-on-error: false
@@ -208,7 +211,7 @@ jobs:
         name: E2E Tests (${{ matrix.shard }})
         needs: quality
         runs-on: ubuntu-latest
-        timeout-minutes: 45
+        timeout-minutes: 50
         strategy:
             fail-fast: false
             matrix:
@@ -254,42 +257,6 @@ jobs:
                   echo "E2E Chromium shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 30
 
-            - name: Run E2E tests (Firefox)
-              if: always() && steps.playwright-cache.outcome != 'failure'
-              continue-on-error: true
-              working-directory: apps/web
-              run: |
-                  START_TIME=$SECONDS
-                  pnpm exec playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression|App Screenshots|WebGPU|Bluetooth" --shard=${{ matrix.shard }}
-                  echo "E2E Firefox shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
-              timeout-minutes: 30
-
-            - name: Run E2E tests (WebKit)
-              if: always() && steps.playwright-cache.outcome != 'failure'
-              continue-on-error: true
-              working-directory: apps/web
-              run: |
-                  START_TIME=$SECONDS
-                  pnpm exec playwright test -c playwright.config.ts --project=webkit --grep-invert "Visual Regression|App Screenshots|WebGPU|Bluetooth" --shard=${{ matrix.shard }} --retries=3
-                  echo "E2E WebKit shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
-              timeout-minutes: 30
-
-            - name: Run visual regression (snapshot baseline)
-              if: always() && matrix.shard == '1/2' && steps.playwright-cache.outcome != 'failure'
-              continue-on-error: true
-              timeout-minutes: 20
-              working-directory: apps/web
-              run: pnpm exec playwright test -c playwright.config.ts --grep "Visual Regression" --update-snapshots --workers=1
-
-            - name: Upload visual regression snapshots
-              if: always() && matrix.shard == '1/2'
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              with:
-                  name: e2e-snapshots-${{ github.run_id }}
-                  path: apps/web/tests/e2e/__screenshots__/
-                  retention-days: 30
-                  if-no-files-found: ignore
-
             - name: Upload Playwright traces on failure
               if: failure()
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -297,6 +264,68 @@ jobs:
                   name: e2e-traces-shard${{ strategy.job-index }}-${{ github.run_id }}
                   path: apps/web/test-results/
                   retention-days: 7
+
+    e2e-cross-browser:
+        name: E2E Cross-Browser (${{ matrix.shard }})
+        needs: quality
+        if: always() && needs.quality.result == 'success'
+        continue-on-error: true
+        runs-on: ubuntu-latest
+        timeout-minutes: 90
+        strategy:
+            fail-fast: false
+            matrix:
+                shard: ['1/2', '2/2']
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Cache Playwright browsers
+              id: playwright-cache
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      playwright-browsers-${{ runner.os }}-
+
+            - name: Install Playwright browsers
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+              run: pnpm run test:e2e:install:ci
+
+            - name: Download build artifact
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: dist
+                  path: apps/web/dist/
+
+            - name: Run E2E tests (Firefox)
+              if: steps.playwright-cache.outcome != 'failure'
+              working-directory: apps/web
+              run: |
+                  START_TIME=$SECONDS
+                  pnpm exec playwright test -c playwright.config.ts --project=firefox --grep-invert "Visual Regression|App Screenshots|WebGPU|Bluetooth" --shard=${{ matrix.shard }}
+                  echo "E2E Firefox shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
+              timeout-minutes: 40
+
+            - name: Run E2E tests (WebKit)
+              if: always() && steps.playwright-cache.outcome != 'failure'
+              working-directory: apps/web
+              run: |
+                  START_TIME=$SECONDS
+                  pnpm exec playwright test -c playwright.config.ts --project=webkit --grep-invert "Visual Regression|App Screenshots|WebGPU|Bluetooth" --shard=${{ matrix.shard }} --retries=3
+                  echo "E2E WebKit shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
+              timeout-minutes: 40
 
     # IoT integration: covered by e2e-integration.yml
 
@@ -344,14 +373,13 @@ jobs:
     ci-status:
         name: "\u2705 CI Status"
         if: always()
-        needs: [quality, security, e2e]
+        needs: [quality, security]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
               run: |
                   echo "Quality:  ${{ needs.quality.result }}"
                   echo "Security: ${{ needs.security.result }}"
-                  echo "E2E:      ${{ needs.e2e.result }}"
                   echo "---"
                   if [[ "${{ needs.quality.result }}" != "success" ]]; then
                     echo "[FAIL] Quality gates failed"; exit 1
@@ -359,8 +387,4 @@ jobs:
                   if [[ "${{ needs.security.result }}" != "success" ]]; then
                     echo "[FAIL] Security checks failed"; exit 1
                   fi
-                  if [[ "${{ needs.e2e.result }}" != "success" ]]; then
-                    echo "::warning::E2E tests failed (advisory — Chromium/mobile-chrome; check traces artifact)"
-                    echo "[WARN] E2E non-blocking — quality + security are the merge gate"
-                  fi
-                  echo "[PASS] CI merge gate passed (quality + security)"
+                  echo "[PASS] CI merge gate passed (quality + security; E2E advisory)"

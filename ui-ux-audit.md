@@ -151,7 +151,7 @@ Why: Improves assistive output quality, touch interaction parity, and installabl
 ### AUDIT_BACKLOG Updates
 
 - U-05 (Onboarding Telemetry): marked Deferred (v2.0)
-- A-03 (AI Cost Tracking): added partial progress note (infrastructure done, UI pending)
+- A-03 (AI Cost Tracking): **Done** (Session 83) — `CostTrackingSection` in Settings AI tab
 - Fixed 5 stale priority queue checkboxes (V-03/V-04/V-05, T-03, A-02, S-03)
 - Updated summary table with Deferred column
 

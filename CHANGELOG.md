@@ -8,6 +8,14 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **docs(housekeeping):** `docs/HOUSEKEEPING.md` release checklist; `docs/audits/AUDIT-CLOSURE-2026-06-29.md`;
+  ADR-0015 UI state bridge; `docs/api/settings-modules.md`; `pnpm run docs:sync-metrics`
+- **test:** Coverage bump for CI thresholds — `useDataManagementActions`, panel smoke tests,
+  `safetyPipeline` branch cases
+  (setup-node-ci, SARIF category, advisory continue-on-error); `docs/code-scanning-setup.md`
+- **docs:** Sync test counts (2688 → 2794), audit backlog cost-tracking checkbox, local-ai guide paths
+- **test(ai):** `aiPromptSanitization.test.ts` — integration tests for prompt safety on
+  stream mentor, deep-dive, and strain AI lookup paths
 - **audit(session-177):** Master Audit execution — parallel `postHydration` bootstrap,
   Sentry dedup in `aiResponseValidation`, `View.Help` route preload,
   `diagnosisFallback` threshold tests, CRDT divergence breadcrumbs
@@ -76,8 +84,28 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   `plantsView.qrScanner.manualPlaceholder` (resolves the last hardcoded
   string flagged by `pnpm run lint:i18n`)
 
+### Changed
+
+- **refactor(settings):** Extract `dataManagement/` module from `DataManagementTab`
+  (storage panels, export/GDPR/danger-zone panels, `useDataManagementActions` hook,
+  `DataManagementDialogs`); **1246 → 110** LOC
+- **test:** Expand critical-path coverage — `plantSimulationService` diagnostics/time-delta,
+  `aiFacade` orchestrator exports, `aiOrchestrator.setAiMode`, `formatBytes`
+  (`GeneralSettingsTab`, `PlantsSettingsTab`, `NotificationsSettingsTab`,
+  `DefaultsSettingsTab`, `PrivacySettingsTab` + prior AI/security extractions);
+  `SettingsView.tsx` **2570 → 348** LOC (under 700 budget)
+- **ci:** `strains:check-integrity` in quality job; validates `catalog-version.json`
+- **feat(strains):** `getCatalogVersion()` via `strainCatalogVersion.ts` + service re-export
+- **chore(deps):** `pnpm.overrides` — `undici>=7.28.0 <8.0.0` (jsdom-compatible 7.28.0;
+  fixes GHSA-p88m-4jfj-68fv, GHSA-pr7r-676h-xcf6 without breaking jsdom)
+- **docs(adr):** ADR-0014 strain catalog versioning & enrichment cadence
+- **data(strains):** `catalog-version.json` manifest (776 entries, schema strain-v2)
+
 ### Security
 
+- **fix(ai):** Route stream mentor (`buildMentorStreamPrompt`), deep-dive (`generateDeepDive`),
+  strain AI lookup (`lookupWithAI`), and local AI `promptHandlers` through central
+  `sanitizeForPrompt()` pipeline (closes audit S-08 / AI-02)
 - **audit(session-177):** Dependabot security group merged via PR **#256** (replaces closed #243)
 - **docs:** S-07 documents `auditConfig.ignoreCves` for CVE-2026-41242 (protobufjs false positive)
 - Transitive **`ip-address`** upgraded via root **`pnpm.overrides`** to **>=10.1.1** ([GHSA-v2v4-37r5-5v8g](https://github.com/advisories/GHSA-v2v4-37r5-5v8g) / CVE-2026-42338). Dependency path includes `@lhci/cli` → `proxy-agent` → `socks`. Documented in [`SECURITY.md`](SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
@@ -134,6 +162,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(ci):** Code scanning configuration error — `codeql.yml` dispatch-only (default setup
+  handles PR/push); weekly `snyk.yml` without SARIF upload (Snyk App for alerts)
+- **fix(test):** `streamingService.test.ts` hoisted sentry mock — stable under full vitest suite
 - **fix(ci):** Regenerate pnpm-lock.yaml -- apps/desktop importer
   section was missing, causing ERR_PNPM_OUTDATED_LOCKFILE in CI,
   Vercel, and Codespace (9 @tauri-apps/\* dependencies unresolved)

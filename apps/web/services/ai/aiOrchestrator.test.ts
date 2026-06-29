@@ -24,4 +24,11 @@ describe('aiOrchestrator', () => {
         expect(orchestrator.shouldRouteLocally).toBeDefined()
         expect(orchestrator.runRouted).toBeDefined()
     })
+
+    it('delegates setAiMode to localRoutingService', async () => {
+        const { setAiMode } = await import('@/services/localRoutingService')
+        const orchestrator = await import('./aiOrchestrator')
+        orchestrator.setAiMode('eco')
+        expect(setAiMode).toHaveBeenCalledWith('eco')
+    })
 })

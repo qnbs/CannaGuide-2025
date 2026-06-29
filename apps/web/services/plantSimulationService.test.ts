@@ -121,4 +121,19 @@ describe('plantSimulationService', () => {
         const withData = plantSimulationService.ensurePostHarvestData(plant)
         expect(withData.harvestData).toBeDefined()
     })
+
+    it('advances plant state over a time delta', () => {
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Time Plant')
+        const { updatedPlant } = plantSimulationService.calculateStateForTimeDelta(
+            plant,
+            24 * 60 * 60 * 1000,
+        )
+        expect(updatedPlant.lastUpdated).toBeGreaterThan(plant.lastUpdated)
+    })
+
+    it('returns simulation diagnostics for a plant', () => {
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Diag Plant')
+        const diagnostics = plantSimulationService.getSimulationDiagnostics(plant)
+        expect(diagnostics.dominantFactors.length).toBeGreaterThan(0)
+    })
 })

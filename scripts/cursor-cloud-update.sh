@@ -35,8 +35,10 @@ ensure_node_24() {
     nvm install 24
     nvm use 24
 
-    # VM images expose /exec-daemon/node (v22) ahead of nvm on PATH.
-    export PATH="$(dirname "$(nvm which current)"):${PATH}"
+    # VM images expose /exec-daemon/node (v22) ahead of nvm on PATH, which makes
+    # `nvm which current` resolve to the v22 binary. Resolve the explicit v24
+    # install path instead so the prepend reliably wins.
+    export PATH="$(dirname "$(nvm which 24)"):${PATH}"
 }
 
 ensure_node_24

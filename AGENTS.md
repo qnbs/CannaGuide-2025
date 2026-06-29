@@ -15,7 +15,7 @@ In every shell session, before `pnpm` commands:
 ```bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-export PATH="$NVM_DIR/versions/node/v24.16.0/bin:$PATH"   # or: nvm use 24 && export PATH="$(dirname "$(which node)"):$PATH"
+nvm use 24 && export PATH="$(dirname "$(nvm which 24)"):$PATH"   # prepend installed Node 24 ahead of /exec-daemon/node v22
 node -v   # must show v24.x
 ```
 
@@ -31,7 +31,7 @@ bash scripts/cursor-cloud-update.sh
 
 That script installs nvm/Node 24 when needed, prepends the correct Node to `PATH` (over `/exec-daemon/node` v22), and runs `pnpm install --frozen-lockfile`.
 
-**Cold VM first run:** If the script exits with `Node.js >= 24 required (got v22...)`, nvm may have just finished installing while `/exec-daemon/node` is still first on `PATH`—**run the script again**; the second invocation is idempotent and succeeds once Node 24 is on disk.
+**Cold VM first run:** The script resolves the explicit Node 24 install path (`nvm which 24`) and prepends it ahead of `/exec-daemon/node` v22, so it succeeds in a single run even on a cold VM. It is idempotent, so re-running is always safe.
 
 ### Install (manual)
 

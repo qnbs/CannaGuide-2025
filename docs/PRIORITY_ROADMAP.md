@@ -113,3 +113,20 @@
 | T-04  | Multi-browser E2E coverage        | Firefox enabled in CI with extended timeouts (S76)            |
 | A-02  | Local AI model versioning         | WebLlmModel version/releaseDate + catalog v1.0.0 (S76)        |
 | R-03  | WebLLM preload UX                 | Global WebLlmPreloadBanner toast component (S76)              |
+
+## v1.9.x — Full-Scale Audit (2026-06-29)
+
+| ID     | Finding                                | Status                     |
+| ------ | -------------------------------------- | -------------------------- |
+| S-08   | AI prompt sanitization (all paths)     | Done                       |
+| A-01a  | SettingsView god-file split            | Done (348 LOC)             |
+| A-01b  | DataManagementTab modular split        | Done (110 LOC)             |
+| F-01   | Strain catalog versioning + CI         | Done (ADR-0014)            |
+| S-10   | `undici` override (jsdom)              | Done                       |
+| DOC-01 | Stale doc references + metrics sync    | Done (`docs:sync-metrics`) |
+| ADR-15 | UI state bridge documented             | Done                       |
+| T-01   | Critical-path coverage ≥80%            | In progress                |
+| A-01c  | BreedingLab / Genealogy / StrainDetail | Open (god-files)           |
+| P-01   | Local AI battery UX warnings           | Open                       |
+
+Closure: [audits/AUDIT-CLOSURE-2026-06-29.md](audits/AUDIT-CLOSURE-2026-06-29.md)

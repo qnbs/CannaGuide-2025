@@ -5,7 +5,7 @@
 >
 > Audit completed and released as **v1.3.0-beta** on 2026-04-02.
 
-Last updated: 2026-05-31 (Session 177 — Master Audit execution)
+Last updated: 2026-06-29 (Full-Scale Audit closure — PR #362)
 
 ---
 
@@ -895,4 +895,19 @@ Recommended implementation order based on impact and effort:
 - [ ] F-02 -- Social sharing
 - [x] F-06 -- Offline sync conflict resolution
 - [ ] I-02 -- RTL language preparation
-- [ ] A-03 -- AI cost tracking (infra done, UI pending)
+- [x] A-03 -- AI cost tracking (Done, Session 83 — `CostTrackingSection` in `AiSettingsTab.tsx`)
+
+---
+
+## 2026-06-29 Full-Scale Audit (PR #362)
+
+| ID     | Finding                                    | Status                            |
+| ------ | ------------------------------------------ | --------------------------------- |
+| S-08   | AI prompt sanitization on secondary paths  | **Done**                          |
+| A-01   | SettingsView + DataManagementTab god-files | **Done** (348 + 110 LOC)          |
+| F-01   | Strain catalog versioning                  | **Done** (ADR-0014, CI integrity) |
+| S-10   | `undici` transitive override               | **Done**                          |
+| DOC-01 | Doc drift + metrics sync                   | **Done**                          |
+| T-01   | Critical-path coverage ≥80%                | **In progress**                   |
+
+See [audits/AUDIT-CLOSURE-2026-06-29.md](audits/AUDIT-CLOSURE-2026-06-29.md).

@@ -8,8 +8,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
-- **audit(2026-06-29):** Full-scale audit report `docs/audits/AUDIT-REPORT-2026-06-29.md` —
-  P0 AI sanitization gaps, coverage roadmap, strain data strategy, v2.0 readiness
+- **docs(housekeeping):** `docs/HOUSEKEEPING.md` release checklist; `docs/audits/AUDIT-CLOSURE-2026-06-29.md`;
+  ADR-0015 UI state bridge; `docs/api/settings-modules.md`; `pnpm run docs:sync-metrics`
+- **docs:** Sync test counts (2688 → 2794), audit backlog cost-tracking checkbox, local-ai guide paths
 - **test(ai):** `aiPromptSanitization.test.ts` — integration tests for prompt safety on
   stream mentor, deep-dive, and strain AI lookup paths
 - **audit(session-177):** Master Audit execution — parallel `postHydration` bootstrap,

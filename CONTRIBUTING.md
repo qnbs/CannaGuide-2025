@@ -19,6 +19,7 @@ Thank you for considering contributing to CannaGuide 2025! We welcome contributi
 - [Strain Encyclopedia Contributions](#strain-encyclopedia-contributions)
 - [Deprecation Strategy](#deprecation-strategy)
 - [Reporting Issues](#reporting-issues)
+- [Release Housekeeping](#release-housekeeping)
 
 ---
 
@@ -433,6 +434,20 @@ When removing or replacing a public API, component, or feature, follow this proc
 4. GitHub Actions automatically:
     - Deploys to GitHub Pages, Vercel, and Cloudflare Pages (Netlify paused).
 5. Create a GitHub Release with the CHANGELOG excerpt.
+
+---
+
+## Release Housekeeping
+
+Before a release tag or large audit merge, follow [docs/HOUSEKEEPING.md](docs/HOUSEKEEPING.md):
+
+```bash
+pnpm run docs:sync-metrics   # README / ARCHITECTURE test counts
+pnpm run strains:check-integrity
+pnpm run typecheck && pnpm run lint:changed && pnpm run build
+```
+
+Audit closures: update `docs/audits/AUDIT-CLOSURE-*.md` and `ROADMAP.md` v1.9.x status.
 
 ---
 

@@ -63,6 +63,7 @@
         "strains:merge": "node ./scripts/merge-strains.mjs",
         "strains:check-new-duplicates": "node ./scripts/check-new-strain-duplicates.mjs",
         "strains:check-integrity": "node ./scripts/check-strain-integrity.mjs",
+        "docs:sync-metrics": "node ./scripts/sync-doc-metrics.mjs",
         "strains:extract": "node ./scripts/extract-strains-to-json.mjs",
         "strains:generate": "node ./scripts/generate-strain-files.mjs",
         "strains:sync": "node ./scripts/extract-strains-to-json.mjs && node ./scripts/generate-strain-files.mjs",

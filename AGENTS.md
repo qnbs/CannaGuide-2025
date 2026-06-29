@@ -54,13 +54,14 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 
 ### Lint / test / build
 
-| Task                 | Command                 | Notes                                               |
-| -------------------- | ----------------------- | --------------------------------------------------- |
-| Lint (changed files) | `pnpm run lint:changed` | No-op if nothing changed vs `origin/main`           |
-| Lint (full)          | `pnpm run lint:full`    | Heavy; CI uses this                                 |
-| Typecheck            | `pnpm run typecheck`    | Turbo; web uses `scripts/typecheck-filter.mjs`      |
-| Unit tests           | `pnpm run test:run`     | Full suite is large (~3+ min); see React note below |
-| Build                | `pnpm run build`        | Excludes desktop by default                         |
+| Task                 | Command                      | Notes                                               |
+| -------------------- | ---------------------------- | --------------------------------------------------- |
+| Lint (changed files) | `pnpm run lint:changed`      | No-op if nothing changed vs `origin/main`           |
+| Lint (full)          | `pnpm run lint:full`         | Heavy; CI uses this                                 |
+| Typecheck            | `pnpm run typecheck`         | Turbo; web uses `scripts/typecheck-filter.mjs`      |
+| Unit tests           | `pnpm run test:run`          | Full suite is large (~3+ min); see React note below |
+| Build                | `pnpm run build`             | Excludes desktop by default                         |
+| Doc metrics          | `pnpm run docs:sync-metrics` | Sync Vitest counts in README / ARCHITECTURE         |
 
 **React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
 

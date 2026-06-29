@@ -270,6 +270,8 @@ Target: **2026-Q2/Q3** (post v1.8.2)
 | DataManagementTab modular split (`dataManagement/`)                | Architecture  | P1       | ✅ done (110 LOC) |
 | Strain catalog CI + `getCatalogVersion()`                          | Data          | P1       | ✅ done           |
 | `undici>=7.28.0` override (jsdom transitive)                       | Security      | P1       | ✅ done           |
+| ADR-0015 UI state bridge + housekeeping docs                       | Docs          | P1       | ✅ done           |
+| `pnpm run docs:sync-metrics` for test-count drift                  | DevEx         | P1       | ✅ done           |
 | CRDT conflict resolution UI                                        | Sync          | P2       | 📋 planned        |
 | WebXR module abstraction (`features/xr/`)                          | Visualization | P3       | 📋 v2.0           |
 

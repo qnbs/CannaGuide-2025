@@ -166,7 +166,7 @@ All local AI failures are reported via `captureLocalAiError()` in `services/sent
 
 ## Settings UI Integration
 
-The `LocalAiOfflineCard` component in `SettingsView.tsx` exposes:
+The `LocalAiOfflineCard` component in `AiSettingsTab.tsx` (Settings → AI) exposes:
 
 - **Preload button**: Triggers `localAiPreloadService.preloadOfflineModels()` with `onProgress` callback for real-time progress bar.
 - **Force WASM toggle**: Calls `setForceWasm()` from `localAIModelLoader.ts` and persists setting via `setSetting({ path: 'localAi.forceWasm', value })`.

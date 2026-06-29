@@ -46,8 +46,8 @@ importers:
         specifier: ^8.62.0
         version: 8.62.0(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       anti-trojan-source:
-        specifier: ^1.11.4
-        version: 1.11.4
+        specifier: ^1.11.5
+        version: 1.11.5
       conventional-changelog-cli:
         specifier: 5.0.0
         version: 5.0.0(conventional-commits-filter@5.0.0)
@@ -3502,8 +3502,8 @@ packages:
     resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
 
-  anti-trojan-source@1.11.4:
-    resolution: {integrity: sha512-cyt49G22WWo3zGAwikkMKubiDvDza6IRlMu3jf6HBz33Vo7lCsJi1XUxMvFaPtxpadBp1HAvZPqRPsiHKAfp9w==}
+  anti-trojan-source@1.11.5:
+    resolution: {integrity: sha512-4acen6O8MzJ86UB1HwMVCx169uI4AdiaASTC6anhbhRlMsC+knIFddWfw50fdcU000hVXoYZ6ARnxZfbVztIsA==}
     engines: {node: '>=24.0.0', npm: '>=11.10.0'}
     hasBin: true
 
@@ -11361,7 +11361,7 @@ snapshots:
 
   ansi-styles@6.2.3: {}
 
-  anti-trojan-source@1.11.4:
+  anti-trojan-source@1.11.5:
     dependencies:
       globby: 12.2.0
       meow: 10.1.5
@@ -12688,7 +12688,7 @@ snapshots:
 
   eslint-plugin-anti-trojan-source@1.1.7:
     dependencies:
-      anti-trojan-source: 1.11.4
+      anti-trojan-source: 1.11.5
 
   eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.0(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)):
     dependencies:

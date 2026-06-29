@@ -33,4 +33,12 @@ describe('isTopicRelevant', () => {
             false,
         )
     })
+
+    it('rejects empty whitespace-only prompts', () => {
+        expect(isTopicRelevant('   ')).toBe(false)
+    })
+
+    it('allows nutrient and pH cultivation keywords', () => {
+        expect(isTopicRelevant('What EC and pH should I target during flowering?')).toBe(true)
+    })
 })

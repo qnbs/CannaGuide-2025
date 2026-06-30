@@ -13,37 +13,29 @@ import {
     resetGenealogy,
     isGenealogyStateCorrupt,
 } from '@/stores/slices/genealogySlice'
-import { type Strain, type GenealogyNode, StrainType } from '@/types'
-import { StrainTreeNode } from './StrainTreeNode'
+import { type Strain, type GenealogyNode } from '@/types'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Select } from '@/components/ui/form'
 import { geneticsService } from '@/services/geneticsService'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
-import { Modal } from '@/components/common/Modal'
-import { StrainCompactItem } from './StrainCompactItem'
-import { GENEALOGY_NODE_SIZE } from '@/constants'
 import { compareText } from './compareText'
 import {
     getNextLayoutOrientation,
-    getNodeGroupClass,
+    layoutPosition,
     toSelectedStrainId,
     type HighlightMode,
 } from './genealogyViewUtils'
 import { workerBus } from '@/services/workerBus'
-
-interface GenealogyLayoutNode {
-    data: GenealogyNode
-    depth: number
-    x: number
-    y: number
-}
-
-interface GenealogyLayoutLink {
-    sourceIndex: number
-    targetIndex: number
-}
+import {
+    GenealogyError,
+    type GenealogyLayoutLink,
+    type GenealogyLayoutNode,
+} from './genealogy/genealogyParts'
+import { AnalysisPanel } from './genealogy/AnalysisPanel'
+import { DescendantsModal } from './genealogy/DescendantsModal'
+import { GenealogyTree } from './genealogy/GenealogyTree'
 
 interface GenealogyViewProps {
     allStrains: Strain[]
@@ -51,261 +43,13 @@ interface GenealogyViewProps {
 }
 
 // ---------------------------------------------------------------------------
-// Error-Fallback – wird angezeigt, wenn ein lokaler Fehler aufgetreten ist.
-// ---------------------------------------------------------------------------
-const GenealogyError: React.FC<{ message: string; onReset: () => void }> = ({
-    message,
-    onReset,
-}) => {
-    const { t } = useTranslation()
-    return (
-        <Card className="text-center py-10">
-            <PhosphorIcons.WarningCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
-            <p className="text-red-300 font-semibold">{message}</p>
-            <p className="text-slate-400 text-sm mt-2">
-                {t('strainsView.genealogyView.pleaseReloadOrContact')}
-            </p>
-            <Button variant="danger" size="sm" className="mt-4" onClick={onReset}>
-                <PhosphorIcons.ArrowClockwise className="mr-1" /> {t('common.resetState')}
-            </Button>
-        </Card>
-    )
-}
-
-// ---------------------------------------------------------------------------
-// GenealogyLink – smooth cubic-bézier curves between node edges.
-// ---------------------------------------------------------------------------
-const HALF_W = GENEALOGY_NODE_SIZE.width / 2
-const HALF_H = GENEALOGY_NODE_SIZE.height / 2
-
-const GenealogyLink = React.memo<{
-    source: GenealogyLayoutNode
-    target: GenealogyLayoutNode
-    orientation: 'horizontal' | 'vertical'
-}>(({ source, target, orientation }) => {
-    let pathData = ''
-    try {
-        if (
-            source?.x == null ||
-            source?.y == null ||
-            target?.x == null ||
-            target?.y == null ||
-            !Number.isFinite(source.x) ||
-            !Number.isFinite(source.y) ||
-            !Number.isFinite(target.x) ||
-            !Number.isFinite(target.y)
-        ) {
-            return null
-        }
-        if (orientation === 'horizontal') {
-            const sx = source.y + HALF_W
-            const sy = source.x
-            const tx = target.y - HALF_W
-            const ty = target.x
-            const mx = (sx + tx) / 2
-            pathData = `M${sx},${sy} C${mx},${sy} ${mx},${ty} ${tx},${ty}`
-        } else {
-            const sx = source.x
-            const sy = source.y + HALF_H
-            const tx = target.x
-            const ty = target.y - HALF_H
-            const my = (sy + ty) / 2
-            pathData = `M${sx},${sy} C${sx},${my} ${tx},${my} ${tx},${ty}`
-        }
-    } catch {
-        return null
-    }
-    if (!pathData) return null
-    return <path className="genealogy-link" d={pathData} />
-})
-GenealogyLink.displayName = 'GenealogyLink'
-
-// ---------------------------------------------------------------------------
-// AnalysisPanel – genetische Beiträge, Lineage-Filter + Nachfahren-Button.
-// ---------------------------------------------------------------------------
-
-const AnalysisPanel = React.memo<{
-    tree: GenealogyNode | null
-    onShowDescendants: () => void
-    highlightMode: HighlightMode
-    onHighlightModeChange: (mode: HighlightMode) => void
-}>(({ tree, onShowDescendants, highlightMode, onHighlightModeChange }) => {
-    const { t } = useTranslation()
-
-    const [contributions, setContributions] = useState<{ name: string; contribution: number }[]>([])
-
-    useEffect(() => {
-        if (!tree) {
-            setContributions([])
-            return
-        }
-        const workerName = `genealogy-contributions-${crypto.randomUUID()}`
-        workerBus.register(
-            workerName,
-            new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), {
-                type: 'module',
-            }),
-        )
-
-        let cancelled = false
-        workerBus
-            .dispatch<{ contributions: { name: string; contribution: number }[] }>(
-                workerName,
-                'CONTRIBUTIONS',
-                { tree },
-            )
-            .then((data) => {
-                if (!cancelled) {
-                    setContributions(
-                        Array.isArray(data.contributions) ? data.contributions.slice(0, 5) : [],
-                    )
-                }
-            })
-            .catch((err) => {
-                if (!cancelled) {
-                    console.debug('[AnalysisPanel] worker error:', err)
-                    setContributions([])
-                }
-            })
-            .finally(() => workerBus.unregister(workerName))
-
-        return () => {
-            cancelled = true
-            workerBus.unregister(workerName)
-        }
-    }, [tree])
-
-    const toggleMode = (mode: HighlightMode) => {
-        onHighlightModeChange(highlightMode === mode ? 'none' : mode)
-    }
-
-    const highlightOptions: Array<{
-        mode: Exclude<HighlightMode, 'none'>
-        activeClass: string
-        Icon: React.ComponentType<{ className?: string }>
-        label: string
-    }> = [
-        {
-            mode: 'landraces',
-            activeClass: 'bg-green-900/50 text-green-300 ring-1 ring-green-500/40',
-            Icon: PhosphorIcons.Leafy,
-            label: t('strainsView.genealogyView.highlightLandraces'),
-        },
-        {
-            mode: 'sativa',
-            activeClass: 'bg-amber-900/50 text-amber-300 ring-1 ring-amber-500/40',
-            Icon: PhosphorIcons.Sun,
-            label: t('strainsView.genealogyView.traceSativa'),
-        },
-        {
-            mode: 'indica',
-            activeClass: 'bg-indigo-900/50 text-indigo-300 ring-1 ring-indigo-500/40',
-            Icon: PhosphorIcons.Star,
-            label: t('strainsView.genealogyView.traceIndica'),
-        },
-    ]
-
-    return (
-        <div className="space-y-4">
-            {/* Analysis Tools */}
-            <Card className="!p-3">
-                <h4 className="font-bold text-slate-200 mb-3 text-sm uppercase tracking-wider">
-                    {t('strainsView.genealogyView.analysisTools')}
-                </h4>
-                <div className="space-y-1.5">
-                    {highlightOptions.map(({ mode, activeClass, Icon, label }) => {
-                        const isActive = highlightMode === mode
-                        const buttonClass = isActive
-                            ? activeClass
-                            : 'text-slate-300 hover:bg-slate-700/50'
-
-                        return (
-                            <button
-                                key={mode}
-                                type="button"
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${buttonClass}`}
-                                onClick={() => toggleMode(mode)}
-                            >
-                                <Icon className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-                                {label}
-                            </button>
-                        )
-                    })}
-                    {highlightMode !== 'none' && (
-                        <button
-                            type="button"
-                            className="w-full text-left px-3 py-1.5 rounded-md text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                            onClick={() => onHighlightModeChange('none')}
-                        >
-                            <PhosphorIcons.X className="w-3 h-3 inline-block mr-1 -mt-0.5" />
-                            {t('strainsView.genealogyView.clearHighlight')}
-                        </button>
-                    )}
-                </div>
-            </Card>
-
-            {/* Genetic Influence */}
-            <Card className="!p-3">
-                <h4 className="font-bold text-slate-200 mb-2 text-sm uppercase tracking-wider">
-                    {t('strainsView.genealogyView.geneticInfluence')}
-                </h4>
-                {contributions.length > 0 ? (
-                    <ul className="space-y-1.5 text-sm">
-                        {contributions.map((c, idx) => (
-                            <li
-                                key={`contrib-${c?.name ?? idx}`}
-                                className="flex justify-between items-center gap-2"
-                            >
-                                <span className="text-slate-300 truncate" title={c?.name ?? ''}>
-                                    {c?.name ?? '—'}
-                                </span>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-primary-500 rounded-full"
-                                            style={{
-                                                width: `${Math.min(100, c?.contribution ?? 0)}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="font-mono text-primary-300 text-xs w-12 text-right tabular-nums">
-                                        {typeof c?.contribution === 'number'
-                                            ? c.contribution.toFixed(1)
-                                            : '0.0'}
-                                        %
-                                    </span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-slate-500 text-xs">
-                        {t('strainsView.genealogyView.noStrainSelected')}
-                    </p>
-                )}
-            </Card>
-
-            {/* Descendants */}
-            <Button variant="secondary" size="sm" className="w-full" onClick={onShowDescendants}>
-                <PhosphorIcons.ShareNetwork className="w-4 h-4 mr-1.5" />
-                {t('strainsView.genealogyView.showDescendants')}
-            </Button>
-        </div>
-    )
-})
-AnalysisPanel.displayName = 'GenealogyAnalysisPanel'
-
-// ---------------------------------------------------------------------------
-// GenealogyView – Hauptkomponente (extrem bulletproof)
+// GenealogyView – orchestrates state, d3 zoom + worker layout, and delegates
+// rendering to GenealogyTree / AnalysisPanel / DescendantsModal.
 //
-// Design-Prinzipien:
-//   1. KEIN synchroner d3-Aufruf im Render-Pfad.
-//      d3.hierarchy + d3.tree laufen in useEffect -> State (layoutNodes/layoutLinks).
-//   2. JEDER potenziell fehlerhafter Block ist in try/catch gewrappt.
-//      Bei Fehler -> setLocalError -> nur Error-Fallback-UI.
-//   3. Optional chaining (.?) an JEDER Stelle wo Daten aus State kommen.
-//   4. key-Prop auf JEDEM map() und conditional Render.
-//   5. Debug-Logging am Mount für Diagnose.
+// Design principles:
+//   1. NO synchronous d3 call in the render path (layout runs in a worker).
+//   2. Every fault-prone block is wrapped in try/catch -> Error fallback UI.
+//   3. Optional chaining on all state-derived data.
 // ---------------------------------------------------------------------------
 export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNodeClick }) => {
     const { t } = useTranslation()
@@ -313,7 +57,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     const genealogyState = useAppSelector(selectGenealogyState)
     const hasLoggedMountStateRef = useRef(false)
 
-    // ── Debug: State beim Mount loggen ────────────────────────────────
+    // ── Debug: log state on mount ────────────────────────────────────
     useEffect(() => {
         if (hasLoggedMountStateRef.current) {
             return
@@ -330,7 +74,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         hasLoggedMountStateRef.current = true
     }, [genealogyState])
 
-    // ── Defensive Destructuring ──────────────────────────────────────
+    // ── Defensive destructuring ──────────────────────────────────────
     const computedTrees = useMemo(
         () => genealogyState?.computedTrees ?? {},
         [genealogyState?.computedTrees],
@@ -340,7 +84,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     const zoomTransform = genealogyState?.zoomTransform ?? null
     const layoutOrientation = genealogyState?.layoutOrientation ?? 'horizontal'
 
-    // ── Lokaler State ────────────────────────────────────────────────
+    // ── Local state ──────────────────────────────────────────────────
     const [localError, setLocalError] = useState<string | null>(null)
     const [wasReset, setWasReset] = useState(false)
     const [dataReady, setDataReady] = useState(false)
@@ -350,7 +94,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     } | null>(null)
     const [highlightMode, setHighlightMode] = useState<HighlightMode>('none')
 
-    // d3-Layout-Ergebnisse: werden im Worker berechnet, NIE im Render
+    // d3 layout results: computed in a worker, NEVER in render
     const [layoutNodes, setLayoutNodes] = useState<GenealogyLayoutNode[]>([])
     const [layoutLinks, setLayoutLinks] = useState<GenealogyLayoutLink[]>([])
 
@@ -360,7 +104,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     const zoomTransformRef = useRef(zoomTransform)
     zoomTransformRef.current = zoomTransform
 
-    // ── Mount-Check: Datenbereitschaft ───────────────────────────────
+    // ── Mount check: data readiness ──────────────────────────────────
     useEffect(() => {
         try {
             if (Array.isArray(allStrains) && allStrains.length > 0) {
@@ -371,11 +115,10 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         }
     }, [allStrains])
 
-    // ── Mount-Check: korrupten persisted State zurücksetzen ──────────
+    // ── Mount check: reset corrupt persisted state ───────────────────
     // Only run on initial mount -- not on every state change, because
     // status='loading' is a valid runtime state but would be flagged
-    // as corrupt if checked mid-flight (e.g. after navigation from
-    // strain detail view).
+    // as corrupt if checked mid-flight.
     useEffect(() => {
         if (wasReset) {
             return
@@ -394,14 +137,14 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             try {
                 dispatch(resetGenealogy())
             } catch {
-                /* letzte Rettung fehlgeschlagen */
+                /* last resort failed */
             }
             setWasReset(true)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only check on mount
     }, [])
 
-    // ── Tree aus computedTrees ableiten (sicher) ─────────────────────
+    // ── Derive tree from computedTrees (safe) ────────────────────────
     const tree = useMemo(() => {
         try {
             if (!selectedStrainId) return null
@@ -413,7 +156,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         }
     }, [computedTrees, selectedStrainId])
 
-    // ── Tree laden wenn nicht gecacht ─────────────────────────────────
+    // ── Load tree when not cached ────────────────────────────────────
     useEffect(() => {
         if (!selectedStrainId || !dataReady) return
         try {
@@ -426,7 +169,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         }
     }, [selectedStrainId, allStrains, dataReady, computedTrees, dispatch, t])
 
-    // ── d3-Layout-Berechnung im Worker (NICHT im Render) ──────────
+    // ── d3 layout computation in worker (NOT in render) ──────────────
     useEffect(() => {
         if (!tree) {
             setLayoutNodes([])
@@ -469,7 +212,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         }
     }, [tree, layoutOrientation, t])
 
-    // ── Handler (alle in try/catch) ──────────────────────────────────
+    // ── Handlers (all in try/catch) ──────────────────────────────────
     const handleNodeClick = useCallback(
         (nodeData: GenealogyNode) => {
             try {
@@ -480,16 +223,6 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             }
         },
         [allStrains, onNodeClick],
-    )
-
-    const getLayoutPosition = useCallback(
-        (x: number | undefined, y: number | undefined): { x: number; y: number } => {
-            if (layoutOrientation === 'horizontal') {
-                return { x: y ?? 0, y: x ?? 0 }
-            }
-            return { x: x ?? 0, y: y ?? 0 }
-        },
-        [layoutOrientation],
     )
 
     const getInitialZoomOffset = useCallback(
@@ -509,7 +242,11 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 const target = layoutNodes?.find((n) => n?.data?.id === nodeData?.id)
                 if (!target) return
                 const { width, height } = svgRef.current.getBoundingClientRect()
-                const { x: nodeX, y: nodeY } = getLayoutPosition(target?.x, target?.y)
+                const { x: nodeX, y: nodeY } = layoutPosition(
+                    layoutOrientation,
+                    target?.x,
+                    target?.y,
+                )
                 if (!Number.isFinite(nodeX) || !Number.isFinite(nodeY)) return
                 const currentK = d3.zoomTransform(svgRef.current).k
                 const scale = Math.max(Number.isFinite(currentK) ? currentK : 1, 0.8)
@@ -524,7 +261,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 console.debug('[GenealogyView] handleNodeFocus error:', err)
             }
         },
-        [getLayoutPosition, layoutNodes],
+        [layoutOrientation, layoutNodes],
     )
 
     const handleToggle = useCallback(
@@ -596,7 +333,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             dispatch(resetGenealogy())
             setWasReset(true)
         } catch {
-            // Letzte Rettung – zumindest Error-State aufräumen
+            // Last resort – at least clear the error state
             setLocalError(null)
         }
     }, [dispatch])
@@ -610,7 +347,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         }
     }, [allStrains])
 
-    // ── Zoom-Setup (useEffect) ───────────────────────────────────────
+    // ── Zoom setup (useEffect) ───────────────────────────────────────
     useEffect(() => {
         const svgEl = svgRef.current
         if (!svgEl) return
@@ -630,7 +367,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             g.attr('transform', event?.transform?.toString?.() ?? '')
                         }
                     } catch {
-                        // Veraltete Selektion – ignorieren
+                        // Stale selection – ignore
                     }
                 })
                 .on('end', (event) => {
@@ -650,7 +387,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             }
                         }
                     } catch {
-                        // Dispatch-Fehler darf den Zoom nicht crashen
+                        // Dispatch error must not crash the zoom
                     }
                 })
 
@@ -688,7 +425,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             setLocalError(t('strainsView.genealogyView.errorInitZoom'))
         }
 
-        // ── ResizeObserver: re-center bei Container-Resize (nur ohne gespeicherten Zoom)
+        // ── ResizeObserver: re-center on container resize (only without saved zoom)
         let resizeObserver: ResizeObserver | undefined
         try {
             let resizeRafId = 0
@@ -707,13 +444,13 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             .duration(300)
                             .call(zoom.transform, d3.zoomIdentity.translate(ix, iy))
                     } catch {
-                        // ResizeObserver-Callback-Fehler ignorieren
+                        // ResizeObserver callback error – ignore
                     }
                 })
             })
             resizeObserver.observe(svgEl)
         } catch {
-            // ResizeObserver nicht verfügbar
+            // ResizeObserver unavailable
         }
 
         return () => {
@@ -725,7 +462,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             try {
                 if (svgEl) d3.select(svgEl).on('.zoom', null)
             } catch {
-                // Cleanup-Fehler abfangen
+                // Cleanup error – swallow
             }
             zoomRef.current = null
         }
@@ -745,119 +482,13 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         }
     }, [getInitialZoomOffset])
 
-    // ── Sichere Render-Helfer ────────────────────────────────────────
-    const MAX_RENDERED_NODES = 500
-    const isTruncated = layoutNodes.length > MAX_RENDERED_NODES
-    const visibleNodes = isTruncated ? layoutNodes.slice(0, MAX_RENDERED_NODES) : layoutNodes
-    const visibleNodeIds = isTruncated ? new Set(visibleNodes.map((n) => n?.data?.id)) : null
-    const nodeMatchesHighlight = useCallback(
-        (nodeData: GenealogyNode): boolean => {
-            if (highlightMode === 'none') return true
-            if (highlightMode === 'landraces') return !!nodeData.isLandrace
-            if (highlightMode === 'sativa') return nodeData.type === StrainType.Sativa
-            if (highlightMode === 'indica') return nodeData.type === StrainType.Indica
-            return true
-        },
-        [highlightMode],
-    )
-    const renderLinks = (): React.ReactNode => {
-        try {
-            if (!Array.isArray(layoutLinks) || layoutLinks.length === 0) return null
-            return layoutLinks
-                .filter((link) => {
-                    if (!visibleNodeIds) return true
-                    const source = layoutNodes[link.sourceIndex]
-                    const target = layoutNodes[link.targetIndex]
-                    return (
-                        !!source &&
-                        !!target &&
-                        visibleNodeIds.has(source?.data?.id) &&
-                        visibleNodeIds.has(target?.data?.id)
-                    )
-                })
-                .map((link, i) => {
-                    try {
-                        const source = layoutNodes[link.sourceIndex]
-                        const target = layoutNodes[link.targetIndex]
-                        if (!source || !target) return null
-                        const isDimmed =
-                            highlightMode !== 'none' &&
-                            (!nodeMatchesHighlight(source.data) ||
-                                !nodeMatchesHighlight(target.data))
-                        return (
-                            <g
-                                key={`link-${source?.data?.id ?? 'src'}-${target?.data?.id ?? 'tgt'}-${i}`}
-                                style={
-                                    isDimmed
-                                        ? { opacity: 0.12, transition: 'opacity 0.3s' }
-                                        : { transition: 'opacity 0.3s' }
-                                }
-                            >
-                                <GenealogyLink
-                                    source={source}
-                                    target={target}
-                                    orientation={layoutOrientation}
-                                />
-                            </g>
-                        )
-                    } catch {
-                        return null
-                    }
-                })
-        } catch (err) {
-            console.debug('[GenealogyView] renderLinks error:', err)
-            return null
-        }
-    }
-
-    const renderNodes = (): React.ReactNode => {
-        try {
-            if (!Array.isArray(visibleNodes) || visibleNodes.length === 0) return null
-            return visibleNodes.map((node, idx) => {
-                try {
-                    if (!node?.data) return null
-                    const { x, y } = getLayoutPosition(node?.x, node?.y)
-                    if (!Number.isFinite(x) || !Number.isFinite(y)) return null
-                    const matches = nodeMatchesHighlight(node.data)
-                    return (
-                        <g
-                            key={`node-${node?.data?.id ?? 'unknown'}-${node?.depth ?? 0}-${idx}`}
-                            transform={`translate(${x}, ${y})`}
-                            className={getNodeGroupClass(highlightMode, matches)}
-                            style={{ transition: 'transform 0.4s ease-in-out, opacity 0.3s ease' }}
-                        >
-                            <foreignObject
-                                x={-GENEALOGY_NODE_SIZE.width / 2}
-                                y={-GENEALOGY_NODE_SIZE.height / 2}
-                                width={GENEALOGY_NODE_SIZE.width}
-                                height={GENEALOGY_NODE_SIZE.height}
-                            >
-                                <StrainTreeNode
-                                    node={node}
-                                    onNodeClick={handleNodeClick}
-                                    onNodeFocus={handleNodeFocus}
-                                    onToggle={handleToggle}
-                                />
-                            </foreignObject>
-                        </g>
-                    )
-                } catch {
-                    return null
-                }
-            })
-        } catch (err) {
-            console.debug('[GenealogyView] renderNodes error:', err)
-            return null
-        }
-    }
-
     // ── RENDER ────────────────────────────────────────────────────────
-    // Priorität 1: Lokaler Fehler -> nur Error-Fallback zeigen
+    // Priority 1: local error -> show only the error fallback
     if (localError) {
         return <GenealogyError message={localError} onReset={handleResetError} />
     }
 
-    // Priorität 2: Daten noch nicht bereit
+    // Priority 2: data not ready yet
     if (!dataReady) {
         return (
             <Card key="data-loading" className="text-center py-10 text-slate-400">
@@ -869,7 +500,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
 
     return (
         <div className="space-y-4">
-            {/* ── Fallback-Banner: State wurde automatisch zurückgesetzt ── */}
+            {/* ── Fallback banner: state was auto-reset ── */}
             {wasReset && (
                 <Card key="reset-banner" className="!bg-amber-900/30 border border-amber-600/40">
                     <div className="flex items-center gap-3">
@@ -889,65 +520,17 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 </Card>
             )}
 
-            {/* ── Nachfahren-Modal ─────────────────────────────────── */}
+            {/* ── Descendants modal ── */}
             {descendants && selectedStrainId && (
-                <Modal
-                    key="descendants-modal"
-                    isOpen={!!descendants}
+                <DescendantsModal
+                    descendants={descendants}
+                    name={computedTrees?.[selectedStrainId]?.name ?? ''}
                     onClose={() => setDescendants(null)}
-                    title={`${t('strainsView.genealogyView.knownDescendants', {
-                        name: computedTrees?.[selectedStrainId]?.name ?? '',
-                    })}`}
-                    size="lg"
-                >
-                    <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                        {(descendants?.children?.length ?? 0) > 0 && (
-                            <div key="children-section">
-                                <h3 className="font-bold text-lg text-primary-300 mb-2">
-                                    {t('strainsView.genealogyView.children')}
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {descendants?.children
-                                        ?.filter((strain): strain is Strain => !!strain)
-                                        .map((strain) => (
-                                            <StrainCompactItem
-                                                key={`child-${strain.id}`}
-                                                strain={strain}
-                                                onClick={() => handleDescendantClick(strain)}
-                                            />
-                                        ))}
-                                </div>
-                            </div>
-                        )}
-                        {(descendants?.grandchildren?.length ?? 0) > 0 && (
-                            <div key="grandchildren-section">
-                                <h3 className="font-bold text-lg text-primary-300 mb-2 mt-4">
-                                    {t('strainsView.genealogyView.grandchildren')}
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {descendants?.grandchildren
-                                        ?.filter((strain): strain is Strain => !!strain)
-                                        .map((strain) => (
-                                            <StrainCompactItem
-                                                key={`grandchild-${strain.id}`}
-                                                strain={strain}
-                                                onClick={() => handleDescendantClick(strain)}
-                                            />
-                                        ))}
-                                </div>
-                            </div>
-                        )}
-                        {(descendants?.children?.length ?? 0) === 0 &&
-                            (descendants?.grandchildren?.length ?? 0) === 0 && (
-                                <p key="no-descendants" className="text-slate-400 text-center py-8">
-                                    {t('strainsView.genealogyView.noDescendantsFound')}
-                                </p>
-                            )}
-                    </div>
-                </Modal>
+                    onDescendantClick={handleDescendantClick}
+                />
             )}
 
-            {/* ── Steuerleiste ─────────────────────────────────────── */}
+            {/* ── Control bar ── */}
             <Card key="controls" className="relative z-10">
                 <h3 className="text-xl font-bold font-display text-primary-400">
                     {t('strainsView.genealogyView.title')}
@@ -990,14 +573,14 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 </div>
             </Card>
 
-            {/* ── Loading ──────────────────────────────────────────── */}
+            {/* ── Loading ── */}
             {status === 'loading' && (
                 <Card key="loading-state">
                     <SkeletonLoader count={3} />
                 </Card>
             )}
 
-            {/* ── Failed ───────────────────────────────────────────── */}
+            {/* ── Failed ── */}
             {status === 'failed' && (
                 <Card key="failed-state" className="text-center py-10 text-red-400">
                     <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -1011,7 +594,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 </Card>
             )}
 
-            {/* ── Kein Strain ausgewählt ───────────────────────────── */}
+            {/* ── No strain selected ── */}
             {status !== 'loading' && !selectedStrainId && (
                 <Card key="no-selection" className="text-center py-10 text-slate-500">
                     <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto text-slate-400 mb-4" />
@@ -1019,7 +602,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 </Card>
             )}
 
-            {/* ── Strain gewählt aber kein Baum ────────────────────── */}
+            {/* ── Strain selected but no tree ── */}
             {status === 'succeeded' && selectedStrainId && !tree && (
                 <Card key="tree-null" className="text-center py-10 text-slate-400">
                     <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -1027,35 +610,22 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 </Card>
             )}
 
-            {/* ── Baum rendern ─────────────────────────────────────── */}
+            {/* ── Render tree ── */}
             {status !== 'loading' && selectedStrainId && tree && (
                 <div
                     key={`tree-${selectedStrainId}`}
                     className="grid grid-cols-1 lg:grid-cols-4 gap-4"
                 >
-                    <div className="lg:col-span-3">
-                        <Card className="!p-0 h-[60vh] overflow-hidden bg-slate-900/50 relative">
-                            {isTruncated && (
-                                <div className="absolute top-2 left-2 z-10 bg-amber-900/80 text-amber-200 text-xs px-2 py-1 rounded">
-                                    {t('strainsView.genealogyView.treeTruncated', {
-                                        shown: MAX_RENDERED_NODES,
-                                        total: layoutNodes.length,
-                                    })}
-                                </div>
-                            )}
-                            <svg
-                                ref={svgRef}
-                                className="w-full h-full cursor-move"
-                                aria-label={t('common.accessibility.genealogyTree')}
-                            >
-                                <title>{t('common.accessibility.genealogyTree')}</title>
-                                <g className="genealogy-content">
-                                    {renderLinks()}
-                                    {renderNodes()}
-                                </g>
-                            </svg>
-                        </Card>
-                    </div>
+                    <GenealogyTree
+                        svgRef={svgRef}
+                        layoutNodes={layoutNodes}
+                        layoutLinks={layoutLinks}
+                        layoutOrientation={layoutOrientation}
+                        highlightMode={highlightMode}
+                        onNodeClick={handleNodeClick}
+                        onNodeFocus={handleNodeFocus}
+                        onToggle={handleToggle}
+                    />
                     <div className="lg:col-span-1 space-y-4">
                         <AnalysisPanel
                             tree={tree}

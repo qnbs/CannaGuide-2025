@@ -5,6 +5,7 @@ import { useAppSelector } from '@/stores/store'
 import { selectLanguage } from '@/stores/selectors'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
 import type { ImageGenerationProgress } from '@/services/imageGenerationService'
@@ -289,6 +290,8 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
                             />
                         </div>
                     )}
+
+                    <AiDisclaimer />
                 </>
             )}
         </Card>

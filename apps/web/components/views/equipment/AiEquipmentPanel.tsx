@@ -5,6 +5,7 @@ import { useAppSelector } from '@/stores/store'
 import { selectLanguage } from '@/stores/selectors'
 import { useCalculatorSessionStore } from '@/stores/useCalculatorSessionStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import type { Recommendation, RecommendationCategory } from '@/types'
 import {
     exportEquipmentPlanPdf,
@@ -204,6 +205,8 @@ export const AiEquipmentPanel: React.FC = memo(() => {
             {recommendation !== undefined && (
                 <RecommendationTable recommendation={recommendation} />
             )}
+
+            <AiDisclaimer />
         </div>
     )
 })

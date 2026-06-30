@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, memo, lazy, Suspense }
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { cn } from '@/lib/utils'
 import type { Plant, LeafDiagnosisResult, ModelStatus } from '@/types'
@@ -470,6 +471,8 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                             )}
                         </Card>
                     )}
+
+                    <AiDisclaimer />
                 </>
             )}
         </div>

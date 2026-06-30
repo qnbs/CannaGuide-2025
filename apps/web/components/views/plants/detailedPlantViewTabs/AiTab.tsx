@@ -19,6 +19,7 @@ import {
 } from '@/stores/slices/archivesSlice'
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { LeafDiagnosisPanel } from '@/components/views/plants/LeafDiagnosisPanel'
 
@@ -273,6 +274,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                             )}
                     </div>
                 </div>
+                <AiDisclaimer />
             </Card>
 
             <Card>

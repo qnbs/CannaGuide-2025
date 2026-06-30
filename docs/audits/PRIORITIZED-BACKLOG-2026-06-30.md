@@ -39,7 +39,11 @@ Damit ist der Befund „uneinheitliche/fehlende KI-Disclaimer" geschlossen; kün
 **Akzeptanz:** `pnpm --filter @cannaguide/web test:coverage` zeigt ≥ 80 % für die fünf Pfade; CI-Floors angehoben.
 
 ### P1-2 — God-Files refaktorisieren (≤ 700 LOC)
-**Verifizierte Top-Offender (LOC):**
+
+> **Status 30.06.2026 (dieser PR):** 5 große Views aufgesplittet und je manuell verifiziert:
+> `BreedingLab.tsx` 1198→94 · `GenealogyView.tsx` 1074→644 · `StrainDetailView.tsx` 1056→196 · `CalculatorHubView.tsx` 1511→124 · `StrainLookupSection.tsx` 1211→401 LOC (alle ≤700, Logik in Hooks/Sub-Module ausgelagert). **Verbleibend:** `workerBus.ts` (1193), `dbService.ts` (927), `pdfReportService.ts` (923), `GrowRoom3D.tsx` (848), `simulationSlice.ts` (834) — Service-/Slice-Splits, höheres Risiko, als eigene Follow-ups.
+
+**Verifizierte Top-Offender (LOC, ursprünglich):**
 `CalculatorHubView.tsx` (1511), `StrainLookupSection.tsx` (1211), `BreedingLab.tsx` (1198), `workerBus.ts` (1193), `GenealogyView.tsx` (1074), `StrainDetailView.tsx` (1056), `dbService.ts` (927), `pdfReportService.ts` (923), `GrowRoom3D.tsx` (848), `simulationSlice.ts` (834).
 
 > Hinweis: Das Audit nennt `knowledgeGraphService.ts` (777), übersieht aber größere Offender (`CalculatorHubView.tsx`, `StrainLookupSection.tsx`, `pdfReportService.ts`, `simulationSlice.ts`). Diese sind im Backlog ergänzt.
@@ -77,8 +81,8 @@ hooks/useBreedingLab.ts    (State, Aktionen, Selektoren)
 Konflikt-Modal/Notification bei Gist-Sync-Divergenz. Vorhandenes `SyncConflictModal.tsx` (+Test) prüfen und in `syncService`/`crdtSyncBridge` verdrahten. **Akzeptanz:** Erzwungener Konflikt zeigt UI mit „lokal behalten / remote übernehmen / zusammenführen".
 
 ### P2-2 — Rechtliche/Compliance-Härtung
-- **Erledigt (dieser PR):** einheitliche KI-Disclaimer.
-- **Offen:** Privacy-Policy-Modal erreichbar machen (heute toter Einstieg — `PrivacyPolicyModal` wird nie geöffnet, `setShowPrivacyPolicy(true)` ungenutzt); „Mehr erfahren"-Link im Onboarding-Legal-Step; In-App-Consent-Widerruf (`consentService.revokeConsent()`).
+- **Erledigt (dieser PR):** einheitliche KI-Disclaimer; Privacy-Policy-Modal aus `Settings → About` erreichbar gemacht (lokaler State in `AboutTab`, vorher toter Einstieg).
+- **Offen:** „Mehr erfahren"-Link im Onboarding-Legal-Step; In-App-Consent-Widerruf (`consentService.revokeConsent()`).
 - Per-Provider-AI-Consent (`aiConsentService`) tatsächlich vor Cloud-Calls erzwingen (Service + i18n vorhanden, UI-Enforcement fehlt).
 - Disclaimer-/Privacy-Texte: siehe Abschnitt unten.
 

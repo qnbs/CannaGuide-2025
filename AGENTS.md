@@ -75,6 +75,11 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 
 Cloud AI, GitHub Gist sync, Sentry, etc. are **BYOK** in app Settings or via local `.env` (not required for core offline flows).
 
+### Code guidelines
+
+- **AI disclaimers:** Every UI surface that renders AI-generated output (cloud or local: advice, diagnosis, vision/leaf scan, image generation, equipment/breeding recommendations, chat) MUST show the shared `AiDisclaimer` component (`apps/web/components/common/AiDisclaimer.tsx`). Use the `medical` prop for health/diagnosis-style surfaces. Do not inline a bespoke `t('ai.disclaimer')` string in new code — reuse the component so the notice stays consistent across all five locales.
+- **File-size budget:** Keep new/heavily-changed files within **200–700 LOC** (`pnpm run check:file-budget`). Split god-files into sub-components + hooks (views) or thematic modules (services) before merge.
+
 ### PR / review comments (Cloud Agent)
 
 When a PR has open review threads (CodeAnt, human, or bot): **resolve them in the same iteration** — fix the code, push, and re-run the relevant gates before summarizing. Do not leave valid review items for a follow-up unless the user explicitly defers them.

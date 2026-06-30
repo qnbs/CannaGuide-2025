@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
 import { SafeHtml } from '@/components/common/SafeHtml'
+import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
 
 const InfoSection: React.FC<{
     title: string
@@ -35,6 +36,7 @@ const ListItem: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> =
 
 const AboutAppContent = memo(() => {
     const { t } = useTranslation()
+    const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const whatsNewItems = t('settingsView.about.whatsNew.items', { returnObjects: true }) as Record<
         string,
@@ -225,8 +227,24 @@ const AboutAppContent = memo(() => {
                     <p className="text-sm text-slate-400 italic">
                         {t('settingsView.about.disclaimer.content')}
                     </p>
+                    <div className="not-prose mt-3">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setShowPrivacyPolicy(true)}
+                            className="inline-flex items-center"
+                        >
+                            <PhosphorIcons.ShieldCheck className="w-4 h-4 mr-1.5" />
+                            {t('legal.privacyPolicy.title')}
+                        </Button>
+                    </div>
                 </InfoSection>
             </Card>
+
+            <PrivacyPolicyModal
+                isOpen={showPrivacyPolicy}
+                onClose={() => setShowPrivacyPolicy(false)}
+            />
         </div>
     )
 })

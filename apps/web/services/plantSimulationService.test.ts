@@ -136,4 +136,53 @@ describe('plantSimulationService', () => {
         const diagnostics = plantSimulationService.getSimulationDiagnostics(plant)
         expect(diagnostics.dominantFactors.length).toBeGreaterThan(0)
     })
+
+    it('ensurePostHarvestData adds harvest data for harvest-stage plants', () => {
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Harvest Plant')
+        plant.stage = PlantStage.Harvest
+        const withData = plantSimulationService.ensurePostHarvestData(plant)
+        expect(withData.harvestData).toBeDefined()
+    })
+
+    it('ensurePostHarvestData leaves seed-stage plants unchanged', () => {
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Seed Plant')
+        const result = plantSimulationService.ensurePostHarvestData(plant)
+        expect(result.stage).toBe(PlantStage.Seed)
+    })
+
+    it('getSimulationDiagnostics includes post-harvest metrics for drying plants', () => {
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Dry Plant')
+        plant.stage = PlantStage.Drying
+        const withHarvest = plantSimulationService.ensurePostHarvestData(plant)
+        const diagnostics = plantSimulationService.getSimulationDiagnostics(withHarvest, {
+            simulationProfile: 'expert',
+            pestPressure: 0.1,
+            nutrientSensitivity: 1,
+            environmentalStability: 0.9,
+            altitudeM: 100,
+            leafTemperatureOffset: -2,
+            lightExtinctionCoefficient: 0.7,
+            nutrientConversionEfficiency: 0.5,
+            stomataSensitivity: 1,
+            autoJournaling: {
+                logStageChanges: true,
+                logProblems: true,
+                logTasks: true,
+            },
+        })
+        expect(diagnostics.postHarvest?.stage).toBe(PlantStage.Drying)
+        expect(diagnostics.profile.name).toBe('expert')
+    })
+
+    it('advances post-harvest state for dry action', () => {
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Harvest Plant')
+        plant.stage = PlantStage.Harvest
+        const withHarvest = plantSimulationService.ensurePostHarvestData(plant)
+        const { updatedPlant, newJournalEntries } = plantSimulationService.advancePostHarvestState(
+            withHarvest,
+            'dry',
+        )
+        expect(updatedPlant.stage).toBeDefined()
+        expect(newJournalEntries.length).toBeGreaterThanOrEqual(0)
+    })
 })

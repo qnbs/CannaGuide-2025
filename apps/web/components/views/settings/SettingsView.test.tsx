@@ -43,6 +43,18 @@ vi.mock('./VoiceSettingsTab', () => ({
     default: () => <div>VoiceSettingsTabMock</div>,
 }))
 
+vi.mock('./PlantsSettingsTab', () => ({
+    default: () => <div>PlantsSettingsTabMock</div>,
+}))
+
+vi.mock('./NotificationsSettingsTab', () => ({
+    default: () => <div>NotificationsSettingsTabMock</div>,
+}))
+
+vi.mock('./DefaultsSettingsTab', () => ({
+    default: () => <div>DefaultsSettingsTabMock</div>,
+}))
+
 vi.mock('./StrainsSettingsTab', () => ({
     default: () => <div>StrainsSettingsTabMock</div>,
 }))
@@ -83,13 +95,13 @@ describe('SettingsView navigation smoke', () => {
         { label: 'settingsView.categories.strains', expected: /StrainsSettingsTabMock/i },
         {
             label: 'settingsView.categories.plants',
-            expected: /settingsView.plants.realtimeEngine/i,
+            expected: /PlantsSettingsTabMock/i,
         },
         {
             label: 'settingsView.categories.notifications',
-            expected: /^settingsView.notifications.enableAll$/i,
+            expected: /NotificationsSettingsTabMock/i,
         },
-        { label: 'settingsView.categories.defaults', expected: /settingsView.defaults.growSetup/i },
+        { label: 'settingsView.categories.defaults', expected: /DefaultsSettingsTabMock/i },
         {
             label: 'settingsView.categories.privacy',
             expected: /^settingsView.privacy.requirePin$/i,

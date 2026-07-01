@@ -75,6 +75,8 @@ Grandfathered (warn only, see `scripts/check-file-budget.mjs`): `geminiService.t
 - [ ] Actions on `main` green (Quality + Security required)
 - [ ] Dependabot / `pnpm audit` reviewed (non-critical dev transitive accepted with rationale in `SECURITY.md`)
 - [ ] Gitleaks / Semgrep / CodeQL — no new findings on changed paths
+- [ ] GitHub Deployments ≤3 per environment ([`cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml))
+- [ ] Stale `cursor/*` / `dependabot/*` branches pruned ([`cleanup-branches.yml`](../.github/workflows/cleanup-branches.yml))
 
 ---
 

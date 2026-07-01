@@ -1,0 +1,119 @@
+name: Cleanup merged and closed PR branches
+description: >-
+    Delete remote branches that are fully merged into the default branch, plus
+    stale branches whose pull requests are closed or merged (cursor/*, dependabot/*).
+
+inputs:
+    base_branch:
+        description: Base branch to compare against (default main)
+        required: false
+        default: 'main'
+    dry_run:
+        description: List delete candidates only (no deletes)
+        required: false
+        default: 'false'
+    include_closed_pr_branches:
+        description: Also delete branches with closed/merged PRs (not only git-merged)
+        required: false
+        default: 'true'
+
+runs:
+    using: composite
+    steps:
+        - name: Cleanup stale remote branches
+          uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+          with:
+              script: |
+                  const baseBranch = '${{ inputs.base_branch }}' || 'main';
+                  const dryRun = String('${{ inputs.dry_run }}').toLowerCase() === 'true';
+                  const includeClosed = String('${{ inputs.include_closed_pr_branches }}').toLowerCase() !== 'false';
+                  const owner = context.repo.owner;
+                  const repo = context.repo.repo;
+
+                  const PROTECTED = new Set([baseBranch, 'gh-pages']);
+
+                  if (dryRun) {
+                    core.notice('dry_run=true — reporting candidates only');
+                  }
+
+                  const { data: refData } = await github.rest.git.getRef({
+                    owner,
+                    repo,
+                    ref: `heads/${baseBranch}`,
+                  });
+                  const baseSha = refData.object.sha;
+
+                  const branches = await github.paginate(
+                    github.rest.repos.listBranches,
+                    { owner, repo, per_page: 100 }
+                  );
+
+                  const candidates = new Set();
+
+                  for (const branch of branches) {
+                    const name = branch.name;
+                    if (PROTECTED.has(name)) continue;
+
+                    try {
+                      const { data: comparison } = await github.rest.repos.compareCommitsWithBasehead({
+                        owner,
+                        repo,
+                        basehead: `${baseSha}...${branch.commit.sha}`,
+                      });
+
+                      if (comparison.status === 'behind' || comparison.ahead_by === 0) {
+                        candidates.add(name);
+                      }
+                    } catch (err) {
+                      core.warning(`compare failed for ${name}: ${err.message}`);
+                    }
+                  }
+
+                  if (includeClosed) {
+                    const prs = await github.paginate(
+                      github.rest.pulls.list,
+                      { owner, repo, state: 'closed', per_page: 100 }
+                    );
+                    for (const pr of prs) {
+                      const head = pr.head?.ref;
+                      if (!head || PROTECTED.has(head)) continue;
+                      if (
+                        pr.merged_at ||
+                        head.startsWith('cursor/') ||
+                        head.startsWith('dependabot/')
+                      ) {
+                        candidates.add(head);
+                      }
+                    }
+                  }
+
+                  let deleted = 0;
+                  let failed = 0;
+                  const existing = new Set(branches.map((b) => b.name));
+
+                  for (const name of [...candidates].sort()) {
+                    if (!existing.has(name)) continue;
+                    if (dryRun) {
+                      core.info(`candidate: ${name}`);
+                      deleted++;
+                      continue;
+                    }
+                    try {
+                      await github.rest.git.deleteRef({
+                        owner,
+                        repo,
+                        ref: `heads/${name}`,
+                      });
+                      core.info(`[OK] deleted ${name}`);
+                      deleted++;
+                    } catch (err) {
+                      failed++;
+                      core.warning(`Failed to delete ${name}: ${err.message}`);
+                    }
+                  }
+
+                  const verb = dryRun ? 'candidate(s)' : 'deleted';
+                  core.info(`[OK] ${deleted} branch ${verb}, ${failed} failure(s)`);
+                  if (failed > 0 && !dryRun) {
+                    core.setFailed(`${failed} branch delete(s) failed`);
+                  }

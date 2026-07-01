@@ -24,6 +24,8 @@ Stale GitHub **deployment** records are pruned automatically:
 - **After every deploy:** `deploy.yml` and `deploy-cloudflare.yml` run [`.github/actions/prune-deployments`](../.github/actions/prune-deployments) (keeps the newest **3 per environment**).
 - **Nightly safety net:** [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (same logic; `workflow_dispatch` with `dry_run: true` to preview).
 
+**Branches:** Merged and closed-PR `cursor/*` / `dependabot/*` branches are pruned post-deploy and weekly via [`.github/workflows/cleanup-branches.yml`](../.github/workflows/cleanup-branches.yml).
+
 **Build:** `BUILD_BASE_PATH=/CannaGuide-2025/` (subpath hosting).
 
 URL: <https://qnbs.github.io/CannaGuide-2025/>

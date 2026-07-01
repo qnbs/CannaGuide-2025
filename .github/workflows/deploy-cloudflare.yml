@@ -276,7 +276,7 @@ jobs:
         runs-on: ubuntu-latest
         continue-on-error: true
         permissions:
-            contents: read
+            contents: write
             deployments: write
         steps:
             - name: Checkout
@@ -286,3 +286,6 @@ jobs:
               uses: ./.github/actions/prune-deployments
               with:
                   keep_count: '3'
+
+            - name: Prune merged and closed PR branches
+              uses: ./.github/actions/cleanup-branches

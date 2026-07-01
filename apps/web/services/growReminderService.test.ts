@@ -650,5 +650,99 @@ describe('GrowReminderService', () => {
             )
             expect(showNotification).not.toHaveBeenCalled()
         })
+
+        it('skips pH reminders when pH drift notifications are disabled', async () => {
+            const showNotification = vi.fn().mockResolvedValue(undefined)
+            vi.stubGlobal('Notification', vi.fn())
+            Object.defineProperty(globalThis.Notification, 'permission', {
+                configurable: true,
+                value: 'granted',
+            })
+            vi.stubGlobal('navigator', {
+                serviceWorker: {
+                    getRegistration: vi.fn().mockResolvedValue({
+                        scope: 'https://example.test/',
+                        showNotification,
+                    }),
+                },
+            })
+
+            const phOnly = [
+                {
+                    id: 'p1-ph',
+                    plantId: 'p1',
+                    plantName: 'Plant One',
+                    type: 'ph' as const,
+                    title: 'pH drift detected: Plant One',
+                    body: 'Out of range',
+                    severity: 'warning' as const,
+                    dueAt: Date.now(),
+                },
+            ]
+
+            await growReminderService.notifyDueReminders(
+                phOnly,
+                makeSettings({ phDriftWarning: false }),
+            )
+            expect(showNotification).not.toHaveBeenCalled()
+        })
+
+        it('treats equal quiet-hour start/end as always quiet', async () => {
+            const showNotification = vi.fn().mockResolvedValue(undefined)
+            vi.stubGlobal('Notification', vi.fn())
+            Object.defineProperty(globalThis.Notification, 'permission', {
+                configurable: true,
+                value: 'granted',
+            })
+            vi.stubGlobal('navigator', {
+                serviceWorker: {
+                    getRegistration: vi.fn().mockResolvedValue({
+                        scope: 'https://example.test/',
+                        showNotification,
+                    }),
+                },
+            })
+
+            await growReminderService.notifyDueReminders(
+                reminders,
+                makeSettings({
+                    quietHours: { enabled: true, start: '09:00', end: '09:00' },
+                }),
+            )
+            expect(showNotification).not.toHaveBeenCalled()
+        })
+
+        it('recovers from corrupt snooze storage and still notifies', async () => {
+            localStorage.setItem('cg.reminders.lastNotified', '{not-json')
+            const showNotification = vi.fn().mockResolvedValue(undefined)
+            vi.stubGlobal('Notification', vi.fn())
+            Object.defineProperty(globalThis.Notification, 'permission', {
+                configurable: true,
+                value: 'granted',
+            })
+            vi.stubGlobal('navigator', {
+                serviceWorker: {
+                    getRegistration: vi.fn().mockResolvedValue({
+                        scope: 'https://example.test/',
+                        showNotification,
+                    }),
+                },
+            })
+
+            await growReminderService.notifyDueReminders(reminders, makeSettings())
+            expect(showNotification).toHaveBeenCalled()
+        })
+    })
+
+    describe('service worker guards', () => {
+        it('syncRemindersToWorker no-ops without service worker support', async () => {
+            vi.stubGlobal('navigator', {})
+            await expect(growReminderService.syncRemindersToWorker([])).resolves.toBeUndefined()
+        })
+
+        it('triggerWorkerReminderCheck no-ops without service worker support', async () => {
+            vi.stubGlobal('navigator', {})
+            await expect(growReminderService.triggerWorkerReminderCheck()).resolves.toBeUndefined()
+        })
     })
 })

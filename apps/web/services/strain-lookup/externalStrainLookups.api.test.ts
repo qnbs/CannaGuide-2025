@@ -325,4 +325,53 @@ describe('externalStrainLookups API adapters', () => {
         expect(result?.terpenes[0]?.percentage).toBe(120)
         vi.doUnmock('@/services/aiFacade')
     })
+
+    it('lookupCannabisApi reads data array from second endpoint', async () => {
+        vi.mocked(fetch).mockResolvedValueOnce({
+            ok: false,
+            json: async () => ({}),
+        } as Response)
+        vi.mocked(fetch).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                data: [{ name: 'Blueberry', type: 'indica', flavors: ['berry'] }],
+            }),
+        } as Response)
+
+        const { lookupCannabisApi } = await import('./externalStrainLookups')
+        const result = await lookupCannabisApi('Blueberry')
+        expect(result?.name).toBe('Blueberry')
+        expect(result?.type).toBe('Indica')
+    })
+
+    it('lookupOtreeba maps hybrid race without indica/sativa keywords', async () => {
+        vi.mocked(fetch).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                items: [{ name: 'Hybrid X', thc: 15, race: 'hybrid' }],
+            }),
+        } as Response)
+
+        const { lookupOtreeba } = await import('./externalStrainLookups')
+        const result = await lookupOtreeba('Hybrid X')
+        expect(result?.type).toBe('Hybrid')
+    })
+
+    it('lookupWithAI returns null when mentor response has empty content', async () => {
+        vi.resetModules()
+        vi.doMock('@/services/aiFacade', () => ({
+            aiService: {
+                getMentorResponse: vi.fn().mockResolvedValue({
+                    title: 'AI',
+                    content: '',
+                    uiHighlights: [],
+                }),
+            },
+            getAiMode: vi.fn(() => 'hybrid'),
+        }))
+
+        const { lookupWithAI } = await import('./externalStrainLookups')
+        await expect(lookupWithAI('Ghost')).resolves.toBeNull()
+        vi.doUnmock('@/services/aiFacade')
+    })
 })

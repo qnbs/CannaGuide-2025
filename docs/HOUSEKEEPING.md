@@ -64,7 +64,9 @@ pnpm run check:file-budget
 
 Target: **≤700 LOC** per view/service file (grandfathered exceptions documented in `scripts/check-file-budget.mjs`).
 
-Current known exceedances (2026-06-29 audit): `BreedingLab.tsx`, `GenealogyView.tsx`, `StrainDetailView.tsx`, `dbService.ts`, `GrowRoom3D.tsx`, `knowledgeGraphService.ts`, `workerBus.ts`.
+Resolved in v1.9.0 cycle: `BreedingLab.tsx`, `GenealogyView.tsx`, `StrainDetailView.tsx`, `dbService.ts` (→ `services/db/*`), `GrowRoom3D.tsx`, `pdfReportService.ts`, `simulationSlice.ts`, `SettingsView.tsx`, and related view splits.
+
+Grandfathered (warn only, see `scripts/check-file-budget.mjs`): `workerBus.ts` (1193 LOC), `geminiService.ts`, `plantSimulationService.ts`.
 
 ---
 
@@ -88,4 +90,5 @@ Current known exceedances (2026-06-29 audit): `BreedingLab.tsx`, `GenealogyView.
 
 - [AUDIT-CLOSURE-2026-06-29.md](audits/AUDIT-CLOSURE-2026-06-29.md)
 - [AUDIT-REPORT-2026-06-29.md](audits/AUDIT-REPORT-2026-06-29.md)
+- [GITHUB-SETTINGS-GUIDE.md](GITHUB-SETTINGS-GUIDE.md) — Rulesets, RELEASE_PAT, Agent limits
 - [release-process.md](release-process.md)

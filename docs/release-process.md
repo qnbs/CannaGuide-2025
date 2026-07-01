@@ -95,6 +95,16 @@ gh attestation verify cannaguide-vX.Y.Z-dist.tar.gz \
   --predicate-type https://cyclonedx.org/bom
 ```
 
+## GitHub Settings (Rulesets, PAT, Agent limits)
+
+If tag push fails with `GH013: Cannot create ref due to creations being restricted`,
+see the full manual setup guide:
+
+**[`docs/GITHUB-SETTINGS-GUIDE.md`](./GITHUB-SETTINGS-GUIDE.md)**
+
+Covers Tag Protection ruleset `14231365`, `RELEASE_PAT` secret, `workflow_dispatch`
+release path, branch protection, Actions permissions, and Cursor Cloud Agent workarounds.
+
 ## Release Publish Workflow
 
 The `release-publish.yml` workflow triggers directly on tag push

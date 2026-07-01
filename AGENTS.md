@@ -93,3 +93,10 @@ When a PR has open review threads (CodeAnt, human, or bot): **resolve them in th
 - **Pull requests:** `gh pr create` / ManagePullRequest may fail with `Resource not accessible by integration` — no blocker; merge locally and `git push origin main` after Quality + Security are green.
 - **Merge gate (CI):** **Quality + Security** required; E2E and deploy workflows are advisory unless explicitly requested.
 - **Housekeeping:** After merge to `main`, watch [Actions](https://github.com/qnbs/CannaGuide-2025/actions) on `main` until **CI Status** passes; fix regressions on `main` or a follow-up `cursor/*` branch.
+
+### Releases & Git tags (Cloud Agent)
+
+- **Tag push blocked:** Repository ruleset **Tag Protection** (`refs/tags/v*`) rejects tag creation by the Cloud Agent token (`GH013`). The agent cannot push `vX.Y.Z` tags.
+- **Workaround (maintainer):** Set repository secret **`RELEASE_PAT`** (classic PAT, `repo` scope), then run **Release Publish** via `workflow_dispatch` with `tag: vX.Y.Z`. Or push the tag manually as repo owner if your account has ruleset bypass.
+- **Full guide:** [`docs/GITHUB-SETTINGS-GUIDE.md`](docs/GITHUB-SETTINGS-GUIDE.md) — rulesets, secrets, branch protection, PR limits.
+- **Process:** [`docs/release-process.md`](docs/release-process.md) — CHANGELOG, version bump, supply-chain verification.

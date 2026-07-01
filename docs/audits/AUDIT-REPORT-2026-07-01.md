@@ -53,17 +53,15 @@ v1.9.0 closes the **June 29 P0 security gaps**, completes **Settings god-file re
 | `simulationSlice.ts` | 834 | 361 (`simulation/*`) |
 | `dbService.ts` | 927 | 27 (barrel; `services/db/*`) |
 
-### Remaining over budget (P1)
+### Remaining over budget
 
-| File | LOC | Notes |
-| ---- | --- | ----- |
-| `services/workerBus.ts` | 1193 | Grandfathered |
-| `services/dbService.ts` | 927 | P1 — **split done** (facade 27 LOC; `services/db/*`) |
-| `services/pdfReportService.ts` | 923 | P1 — extract section renderers |
-| `components/views/plants/GrowRoom3D.tsx` | 848 | P1 — Three.js scene vs. controls |
-| `stores/slices/simulationSlice.ts` | 834 | P1 — extract reducers/thunks |
-| `services/local-ai/fallback/strainImageFallback.ts` | 812 | P2 |
-| `components/views/strains/StrainsView.tsx` | 800 | P2 |
+| File | LOC | Priority | Notes |
+| ---- | --- | -------- | ----- |
+| `services/workerBus.ts` | 1193 | P1 | Grandfathered; sole large service god-file |
+| `services/local-ai/fallback/strainImageFallback.ts` | 812 | P2 | |
+| `components/views/strains/StrainsView.tsx` | 800 | P2 | |
+
+`dbService`, `pdfReportService`, `GrowRoom3D`, `simulationSlice` — **split complete** (see table above).
 
 ---
 

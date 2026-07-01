@@ -40,14 +40,13 @@ const steps = [
         cmd: 'node scripts/check-bundle-budget.mjs apps/web/dist/assets',
     },
     {
-        name: 'critical-path',
-        cmd: 'node scripts/measure-critical-path.mjs apps/web/dist/assets',
+        name: 'critical-path-coverage',
+        cmd: 'pnpm run test:coverage && pnpm run check:critical-path-coverage',
         optional: true,
     },
     {
         name: 'file-budget',
-        cmd: 'FILE_BUDGET_ADVISORY=1 node scripts/check-file-budget.mjs',
-        optional: true,
+        cmd: 'node scripts/check-file-budget.mjs',
     },
     {
         name: 'localstorage-allowlist',

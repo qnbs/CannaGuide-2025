@@ -6,7 +6,8 @@ set -e
 # committing, so repeating them here is redundant.
 # Skip with: git push --no-verify (emergency only).
 
-echo "[pre-push] Running typecheck + lint scopes..."
+echo "[pre-push] Running typecheck + lint scopes + file budget..."
 pnpm exec turbo run typecheck
 node ./scripts/lint-scopes.mjs
+pnpm run check:file-budget
 echo "[pre-push] All gates passed."

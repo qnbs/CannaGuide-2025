@@ -109,6 +109,12 @@ jobs:
             - name: Test + Coverage
               run: pnpm run test:coverage
 
+            - name: Critical path coverage (≥80% lines/functions)
+              run: pnpm run check:critical-path-coverage
+
+            - name: File budget (changed files)
+              run: pnpm run check:file-budget
+
             - name: Coverage summary (enforced thresholds)
               if: success()
               run: |
@@ -188,8 +194,11 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: Security audit (critical)
+            - name: Security audit (critical, production)
               run: pnpm audit --audit-level=critical --prod
+
+            - name: Security audit (high, all deps)
+              run: pnpm audit --audit-level=high
 
             - name: Trojan-source scan
               run: pnpm run security:trojan-source
@@ -238,6 +247,9 @@ jobs:
                   key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
                       playwright-browsers-${{ runner.os }}-
+
+            - name: Install Playwright OS dependencies
+              run: pnpm run test:e2e:deps:ci
 
             - name: Install Playwright browsers
               if: steps.playwright-cache.outputs.cache-hit != 'true'
@@ -299,6 +311,9 @@ jobs:
                   restore-keys: |
                       playwright-browsers-${{ runner.os }}-
 
+            - name: Install Playwright OS dependencies
+              run: pnpm run test:e2e:deps:ci
+
             - name: Install Playwright browsers
               if: steps.playwright-cache.outputs.cache-hit != 'true'
               run: pnpm run test:e2e:install:ci
@@ -326,6 +341,14 @@ jobs:
                   pnpm exec playwright test -c playwright.config.ts --project=webkit --grep-invert "Visual Regression|App Screenshots|WebGPU|Bluetooth" --shard=${{ matrix.shard }} --retries=3
                   echo "E2E WebKit shard ${{ matrix.shard }} duration: $(( SECONDS - START_TIME ))s"
               timeout-minutes: 40
+
+            - name: Upload Playwright traces on failure
+              if: failure()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: e2e-cross-browser-traces-shard${{ strategy.job-index }}-${{ github.run_id }}
+                  path: apps/web/test-results/
+                  retention-days: 7
 
     # IoT integration: covered by e2e-integration.yml
 

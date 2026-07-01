@@ -21,6 +21,14 @@ const mockDiagnoseWithRules = vi.fn(() => ({
     topPriority: 'Reduce watering frequency',
 }))
 
+const mockWorkerDispatch = vi.hoisted(() => vi.fn())
+
+vi.mock('@/services/workerBus', () => ({
+    workerBus: {
+        dispatch: mockWorkerDispatch,
+    },
+}))
+
 vi.mock('../fallback/fallbackService', () => ({
     diagnosePlant: (...args: Parameters<typeof mockDiagnoseWithRules>) =>
         mockDiagnoseWithRules(...args),
@@ -212,8 +220,30 @@ describe('localAiDiagnosisService', () => {
             expect(mapIssueLabel('completely unknown issue', 'en')).toBeNull()
         })
 
+        it('returns null when i18n has no translation for the key', async () => {
+            const i18n = await import('@/i18n')
+            const originalGetT = i18n.getT
+            vi.spyOn(i18n, 'getT').mockReturnValue((() =>
+                'plantsView.diagnosis.ironDeficiency') as ReturnType<typeof originalGetT>)
+
+            expect(mapIssueLabel('iron deficiency', 'en')).toBeNull()
+
+            vi.spyOn(i18n, 'getT').mockImplementation(originalGetT)
+        })
+
         it('is case-insensitive', () => {
             expect(mapIssueLabel('Nitrogen Deficiency', 'en')).not.toBeNull()
+        })
+
+        it('covers all known zero-shot labels', () => {
+            for (const label of ZERO_SHOT_LABELS) {
+                const mapped = mapIssueLabel(label, 'en')
+                if (label === 'healthy plant') {
+                    expect(mapped).toContain('healthy')
+                } else {
+                    expect(mapped === null || mapped.length > 0).toBe(true)
+                }
+            }
         })
     })
 
@@ -271,9 +301,65 @@ describe('localAiDiagnosisService', () => {
 
             vi.unstubAllGlobals()
         })
-    })
 
-    // ── buildDiagnosisContent ────────────────────────────────────────
+        it('returns empty array when pipeline returns non-array', async () => {
+            const classifierFn = vi.fn().mockResolvedValue({ unexpected: true })
+            const mockPipelineLoader = vi.fn().mockResolvedValue(classifierFn)
+
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async () => ({
+                    blob: async () => new Blob(['img'], { type: 'image/jpeg' }),
+                })),
+            )
+
+            const result = await classifyPlantImage(
+                'aGVsbG8=',
+                'image/png',
+                mockPipelineLoader,
+                60_000,
+            )
+            expect(result).toEqual([])
+
+            vi.unstubAllGlobals()
+        })
+
+        it('passes through data URLs without re-wrapping', async () => {
+            const classifierFn = vi.fn().mockResolvedValue([])
+            const mockPipelineLoader = vi.fn().mockResolvedValue(classifierFn)
+            const dataUrl = 'data:image/jpeg;base64,aGVsbG8='
+
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async (url: string) => {
+                    expect(url).toBe(dataUrl)
+                    return { blob: async () => new Blob(['img'], { type: 'image/jpeg' }) }
+                }),
+            )
+
+            await classifyPlantImage(dataUrl, 'image/gif', mockPipelineLoader, 60_000)
+            expect(mockPipelineLoader).toHaveBeenCalled()
+
+            vi.unstubAllGlobals()
+        })
+
+        it('falls back to image/jpeg for unsupported mime types', async () => {
+            const classifierFn = vi.fn().mockResolvedValue([])
+            const mockPipelineLoader = vi.fn().mockResolvedValue(classifierFn)
+
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async (url: string) => {
+                    expect(url).toContain('data:image/jpeg;base64,')
+                    return { blob: async () => new Blob(['img'], { type: 'image/jpeg' }) }
+                }),
+            )
+
+            await classifyPlantImage('aGVsbG8=', 'image/tiff', mockPipelineLoader, 60_000)
+
+            vi.unstubAllGlobals()
+        })
+    })
 
     describe('buildDiagnosisContent', () => {
         it('merges vision labels with heuristic rules', () => {
@@ -309,6 +395,12 @@ describe('localAiDiagnosisService', () => {
             const result = buildDiagnosisContent(buildPlant(), 'en', labels)
             // healthy plant should be filtered, nitrogen deficiency should remain
             expect(result.content).not.toContain('generally healthy')
+        })
+
+        it('uses heuristic fallback when vision labels are empty', () => {
+            const result = buildDiagnosisContent(buildPlant(), 'en', [])
+            expect(result.content).toContain('Overwatering detected')
+            expect(result.confidence).toBeCloseTo(0.75, 2)
         })
 
         it('caps ranked issues at 4', () => {
@@ -396,6 +488,13 @@ describe('localAiDiagnosisService', () => {
         it('returns empty array for an unknown label', () => {
             expect(enrichWithKnowledge('completely_unknown_xyz')).toHaveLength(0)
         })
+
+        it('maps additional atlas labels', () => {
+            expect(enrichWithKnowledge('powdery_mildew')[0]?.diseaseId).toBe('powdery-mildew')
+            expect(enrichWithKnowledge('nutrient_lockout')[0]?.diseaseId).toBe('ph-lockout')
+            expect(enrichWithKnowledge('leaf_scorch')[0]?.diseaseId).toBe('heat-stress')
+            expect(enrichWithKnowledge('septoria_leaf_spot')[0]?.diseaseId).toBe('powdery-mildew')
+        })
     })
 
     describe('classifyLeafImage', () => {
@@ -412,6 +511,34 @@ describe('localAiDiagnosisService', () => {
             expect(result.modelUsed).toBe('zero-shot')
             expect(result.label).toBe('unavailable')
             expect(result.severity).toBe('none')
+        })
+
+        it('returns ONNX worker results when the model is cached', async () => {
+            const { isModelCached, ensureWorkerRegistered } = await import(
+                './plantDiseaseModelService'
+            )
+            vi.mocked(isModelCached).mockResolvedValueOnce(true)
+            mockWorkerDispatch.mockResolvedValueOnce({
+                label: 'spider_mites',
+                confidence: 0.82,
+                top5: [{ label: 'spider_mites', confidence: 0.82 }],
+                latencyMs: 42,
+            })
+
+            const imageData = {
+                data: new Uint8ClampedArray(4),
+                width: 1,
+                height: 1,
+                colorSpace: 'srgb',
+            } as unknown as ImageData
+
+            const result = await classifyLeafImage(imageData)
+            expect(ensureWorkerRegistered).toHaveBeenCalled()
+            expect(mockWorkerDispatch).toHaveBeenCalled()
+            expect(result.modelUsed).toBe('onnx-mobilenet')
+            expect(result.label).toBe('spider_mites')
+            expect(result.severity).toBe('severe')
+            expect(result.recommendations.length).toBeGreaterThan(0)
         })
     })
 })

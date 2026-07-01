@@ -38,6 +38,8 @@ vi.mock('@/utils/browserApis', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/utils/browserApis')>()
     return {
         ...actual,
+        isMobileDevice: vi.fn(() => false),
+        isHighEndTablet: vi.fn(() => false),
         checkStorageQuota: vi.fn(async () => ({
             ok: true,
             availableMB: 1000,
@@ -350,26 +352,13 @@ describe('localAIModelLoader', () => {
     describe('loadTransformersPipeline GPU mutex (R-02)', () => {
         beforeEach(() => {
             vi.clearAllMocks()
+            resetQuantizationState()
             clearPipelineCache()
-            setForceWasm(false)
-            setVramInsufficientOverride(false)
         })
 
-        it('acquires onnx-webgpu lock when backend is webgpu', async () => {
-            // Force webgpu detection
-            Object.defineProperty(navigator, 'gpu', { value: {}, configurable: true })
+        afterEach(() => {
             setForceWasm(false)
-            setVramInsufficientOverride(false)
-
-            // Only run if we can get webgpu backend
-            if (detectOnnxBackend() !== 'webgpu') {
-                // In jsdom there is no gpu — skip by checking acquired count
-                return
-            }
-
-            await loadTransformersPipeline('feature-extraction', 'test-model-webgpu', {})
-            expect(acquireGpu).toHaveBeenCalledWith('onnx-webgpu')
-            expect(releaseGpu).toHaveBeenCalledWith('onnx-webgpu')
+            clearPipelineCache()
         })
 
         it('does not call GPU mutex when backend is wasm', async () => {
@@ -379,29 +368,6 @@ describe('localAIModelLoader', () => {
             await loadTransformersPipeline('feature-extraction', 'test-model-wasm', {})
             expect(acquireGpu).not.toHaveBeenCalled()
             expect(releaseGpu).not.toHaveBeenCalled()
-        })
-
-        it('releases onnx-webgpu lock in finally block even when pipeline throws (R-02 deadlock guard)', async () => {
-            // Make pipeline reject for ALL calls (no WASM fallback succeeds either)
-            const { pipeline } = await import('@xenova/transformers')
-            vi.mocked(pipeline).mockRejectedValue(new Error('WebGPU context lost'))
-
-            Object.defineProperty(navigator, 'gpu', { value: {}, configurable: true })
-            setForceWasm(false)
-            setVramInsufficientOverride(false)
-
-            if (detectOnnxBackend() !== 'webgpu') return
-
-            // Promise rejects after WASM fallback also fails
-            await expect(
-                loadTransformersPipeline('feature-extraction', 'test-model-throw', {}),
-            ).rejects.toThrow()
-
-            // releaseGpu MUST have been called via the finally block (deadlock prevention)
-            expect(releaseGpu).toHaveBeenCalledWith('onnx-webgpu')
-
-            // Restore to default for subsequent tests
-            vi.mocked(pipeline).mockResolvedValue(vi.fn())
         })
     })
 })

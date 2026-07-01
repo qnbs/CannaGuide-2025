@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Mock all external dependencies before importing the module under test
-vi.mock('../core/infrastructureService', () => ({
-    getCachedInference: vi.fn(async () => null),
+const infraMocks = vi.hoisted(() => ({
+    getCachedInference: vi.fn<(key: string) => Promise<string | null>>(async () => null),
     setCachedInference: vi.fn(async () => undefined),
     createInferenceTimer: vi.fn(() => ({ stop: vi.fn() })),
     recordCacheHit: vi.fn(),
@@ -10,14 +9,21 @@ vi.mock('../core/infrastructureService', () => ({
     debouncedPersistSnapshot: vi.fn(),
 }))
 
-vi.mock('../inference/inferenceQueue', () => ({
+const queueMocks = vi.hoisted(() => ({
     enqueueInference: vi.fn(async () => [{ generated_text: 'worker result' }]),
     isWorkerAvailable: vi.fn(() => false),
 }))
 
-vi.mock('../models/webLlmService', () => ({
-    generateWithWebLlm: vi.fn(async () => null),
+const webLlmMocks = vi.hoisted(() => ({
+    generateWithWebLlm: vi.fn<() => Promise<string | null>>(async () => null),
 }))
+
+// Mock all external dependencies before importing the module under test
+vi.mock('../core/infrastructureService', () => infraMocks)
+
+vi.mock('../inference/inferenceQueue', () => queueMocks)
+
+vi.mock('../models/webLlmService', () => webLlmMocks)
 
 vi.mock('../models/modelLoader', () => ({
     detectOnnxBackend: vi.fn(() => 'wasm'),
@@ -41,9 +47,6 @@ import {
     withTimeout,
     type InferenceRouterDeps,
 } from './inferenceRouter'
-import { getCachedInference } from './infrastructureService'
-import { generateWithWebLlm } from '../models/webLlmService'
-import { isWorkerAvailable, enqueueInference } from '../inference/inferenceQueue'
 
 const mockDeps: InferenceRouterDeps = {
     loadTextPipeline: vi.fn(async () => vi.fn(async () => [{ generated_text: 'pipeline result' }])),
@@ -57,7 +60,14 @@ const mockDeps: InferenceRouterDeps = {
 describe('localAiInferenceRouter', () => {
     beforeEach(() => {
         clearInferenceCache()
-        vi.clearAllMocks()
+        infraMocks.getCachedInference.mockReset()
+        infraMocks.getCachedInference.mockResolvedValue(null)
+        webLlmMocks.generateWithWebLlm.mockReset()
+        webLlmMocks.generateWithWebLlm.mockResolvedValue(null)
+        queueMocks.isWorkerAvailable.mockReset()
+        queueMocks.isWorkerAvailable.mockReturnValue(false)
+        queueMocks.enqueueInference.mockReset()
+        queueMocks.enqueueInference.mockResolvedValue([{ generated_text: 'worker result' }])
     })
 
     afterEach(() => {
@@ -118,36 +128,39 @@ describe('localAiInferenceRouter', () => {
     })
 
     it('returns IndexedDB cached result', async () => {
-        vi.mocked(getCachedInference).mockResolvedValueOnce('from-idb')
-        const result = await routeInference('idb-prompt', mockDeps)
+        const prompt = `idb-prompt-${Date.now()}`
+        infraMocks.getCachedInference.mockImplementation(async (key: string) =>
+            key === prompt ? 'from-idb' : null,
+        )
+        const result = await routeInference(prompt, mockDeps)
         expect(result).toBe('from-idb')
         // Backfilled into in-memory cache
-        expect(getCached('idb-prompt')).toBe('from-idb')
+        expect(getCached(prompt)).toBe('from-idb')
     })
 
     it('routes to WebLLM first', async () => {
-        vi.mocked(generateWithWebLlm).mockResolvedValueOnce('webllm-result')
+        webLlmMocks.generateWithWebLlm.mockResolvedValueOnce('webllm-result')
         const result = await routeInference('webllm-prompt', mockDeps)
         expect(result).toBe('webllm-result')
     })
 
     it('falls back to Transformers.js when WebLLM fails', async () => {
-        vi.mocked(generateWithWebLlm).mockResolvedValue(null)
+        webLlmMocks.generateWithWebLlm.mockResolvedValue(null)
         const result = await routeInference('tf-prompt', mockDeps)
         expect(result).toBe('pipeline result')
     })
 
     it('uses worker when available', async () => {
-        vi.mocked(generateWithWebLlm).mockResolvedValue(null)
-        vi.mocked(isWorkerAvailable).mockReturnValue(true)
-        vi.mocked(enqueueInference).mockResolvedValue([{ generated_text: 'worker output' }])
+        webLlmMocks.generateWithWebLlm.mockResolvedValue(null)
+        queueMocks.isWorkerAvailable.mockReturnValue(true)
+        queueMocks.enqueueInference.mockResolvedValue([{ generated_text: 'worker output' }])
         const result = await routeInference('worker-prompt', mockDeps)
         expect(result).toBe('worker output')
     })
 
     it('returns null after all retries exhausted', async () => {
-        vi.mocked(generateWithWebLlm).mockResolvedValue(null)
-        vi.mocked(isWorkerAvailable).mockReturnValue(false)
+        webLlmMocks.generateWithWebLlm.mockResolvedValue(null)
+        queueMocks.isWorkerAvailable.mockReturnValue(false)
         const failDeps: InferenceRouterDeps = {
             ...mockDeps,
             loadTextPipeline: vi.fn(async () => vi.fn(async () => [{ generated_text: '' }])),

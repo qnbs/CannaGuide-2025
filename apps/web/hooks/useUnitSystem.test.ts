@@ -1,19 +1,22 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 
+const mockUseAppSelector = vi.fn()
+
 vi.mock('@/stores/store', () => ({
-    useAppSelector: vi.fn(),
+    useAppSelector: (...args: unknown[]) => mockUseAppSelector(...args),
 }))
 vi.mock('@/stores/selectors', () => ({
     selectLanguage: vi.fn(),
 }))
 
-import { useAppSelector } from '@/stores/store'
 import { useUnitSystem } from '@/hooks/useUnitSystem'
 
-const mockUseAppSelector = vi.mocked(useAppSelector)
-
 describe('useUnitSystem', () => {
+    beforeEach(() => {
+        mockUseAppSelector.mockReset()
+    })
+
     it('returns imperial for English', () => {
         mockUseAppSelector.mockReturnValue('en')
         const { result } = renderHook(() => useUnitSystem())

@@ -3,7 +3,7 @@
  * Enforces minimum test coverage on security- and safety-critical services.
  *
  * Reads vitest json-summary output (apps/web/coverage/coverage-summary.json).
- * Default floor: 80 % lines + functions per file (branches reported as advisory).
+ * Default floor: 80 % lines + functions + branches per file.
  *
  * Usage:
  *   pnpm run test:coverage && pnpm run check:critical-path-coverage
@@ -53,8 +53,6 @@ function main() {
     const summary = JSON.parse(readFileSync(SUMMARY_PATH, 'utf8'))
     let failures = 0
     let branchWarnings = 0
-
-    console.log('\nCRITICAL PATH COVERAGE')
     console.log('======================')
     console.log(`Min lines/functions: ${MIN_PCT}% | Advisory: ${ADVISORY}`)
     console.log('')
@@ -75,7 +73,7 @@ function main() {
         const lineOk = lines >= MIN_PCT
         const fnOk = functions >= MIN_PCT
         const branchOk = branches >= MIN_PCT
-        const ok = lineOk && fnOk
+        const ok = lineOk && fnOk && branchOk
 
         const status = ok ? '[OK]' : '[FAIL]'
         console.log(
@@ -86,10 +84,7 @@ function main() {
 
         if (!lineOk) failures++
         if (!fnOk) failures++
-        if (!branchOk) {
-            console.log(`       [WARN] branches below ${MIN_PCT}% (advisory until coverage sprint)`)
-            branchWarnings++
-        }
+        if (!branchOk) failures++
     }
 
     console.log('')

@@ -1,197 +1,48 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Strain, StrainViewTab } from '@/types'
-import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { strainService } from '@/services/strainService'
-import { useStrainFilters } from '@/hooks/useStrainFilters'
-import { urlService } from '@/services/urlService'
-import { useFiltersStore } from '@/stores/useFiltersStore'
-import {
-    selectUserStrains,
-    selectUserStrainIds,
-    selectFavoriteIds,
-    selectSettings,
-    selectSavedStrainTips,
-    selectSavedExports,
-    selectSavedExportsCount,
-} from '@/stores/selectors'
-import { useStrainsViewStore } from '@/stores/useStrainsViewStore'
-import { useUIStore, getUISnapshot } from '@/stores/useUIStore'
-import {
-    toggleFavorite,
-    addMultipleToFavorites,
-    removeMultipleFromFavorites,
-} from '@/stores/slices/favoritesSlice'
-import {
-    addUserStrainWithValidation,
-    updateUserStrainAndCloseModal,
-    deleteUserStrain,
-    deleteMultipleUserStrains,
-} from '@/stores/slices/userStrainsSlice'
-import { ConfirmModal } from '@/components/common/ConfirmModal'
-import { StrainDetailView } from './StrainDetailView'
-import { AddStrainModal } from './AddStrainModal'
-import {
-    updateStrainTip,
-    deleteStrainTip,
-    updateExport,
-    deleteExport,
-    exportAndSaveStrains,
-} from '@/stores/slices/savedItemsSlice'
+import React, { useMemo, useEffect, useRef } from 'react'
+import { StrainViewTab } from '@/types'
 import { setSelectedGenealogyStrain } from '@/stores/slices/genealogySlice'
-import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { FilterDrawer } from './FilterDrawer'
-import { INITIAL_ADVANCED_FILTERS } from '@/constants'
 import { StrainSubNav } from './StrainSubNav'
-
-import { DataExportModal } from '@/components/common/DataExportModal'
-import type { SimpleExportFormat } from '@/components/common/DataExportModal'
-import { ErrorBoundary } from '@/components/common/ErrorBoundary'
-import { Card } from '@/components/common/Card'
-import { Button } from '@/components/common/Button'
-import { compareText } from './compareText'
-
-// --- Lazy Loaded Views for Performance ---
-const StrainLibraryView = lazy(() =>
-    import('./StrainLibraryView').then((m) => ({ default: m.StrainLibraryView })),
-)
-const StrainTipsView = lazy(() => import('./StrainTipsView'))
-const GenealogyView = lazy(() =>
-    import('./GenealogyView').then((m) => ({ default: m.GenealogyView })),
-)
-const ExportsManagerView = lazy(() => import('./ExportsManagerView'))
-const BreedingLabView = lazy(() =>
-    import('./BreedingLab').then((m) => ({ default: m.BreedingLab })),
-)
-const SeedVaultView = lazy(() =>
-    import('./SeedVaultTab').then((m) => ({ default: m.SeedVaultTab })),
-)
-const GeneticTrendsView = lazy(() =>
-    import('./GeneticTrendsView').then((m) => ({ default: m.GeneticTrendsView })),
-)
-const DailyStrains = lazy(() => import('./DailyStrains').then((m) => ({ default: m.DailyStrains })))
-const StrainComparisonView = lazy(() =>
-    import('./StrainComparisonView').then((m) => ({ default: m.StrainComparisonView })),
-)
-
-const DEFAULT_AGRONOMIC = {
-    difficulty: 'Medium',
-    yield: 'Medium',
-    height: 'Medium',
-} as const
-
-const getSafeText = (value: unknown, fallback = ''): string =>
-    typeof value === 'string' ? value : fallback
-const getSafeStringArray = (value: unknown): string[] =>
-    Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
-const getSafeNumericValue = (value: unknown, fallback: number): number =>
-    typeof value === 'number' && Number.isFinite(value) ? value : fallback
-const getSafeStrainType = (value: unknown): string => (typeof value === 'string' ? value : 'Hybrid')
-
-const getRangeValue = (
-    range: [number, number] | undefined,
-    fallback: [number, number],
-): [number, number] => {
-    if (
-        Array.isArray(range) &&
-        range.length === 2 &&
-        typeof range[0] === 'number' &&
-        Number.isFinite(range[0]) &&
-        typeof range[1] === 'number' &&
-        Number.isFinite(range[1])
-    ) {
-        return range
-    }
-
-    return fallback
-}
-
-const getSafeAgronomic = (strain: Strain) => strain.agronomic ?? DEFAULT_AGRONOMIC
-
-const getExportSourceTranslationKey = (source: 'selected' | 'all', count: number): string => {
-    if (source === 'selected') {
-        if (count === 1) {
-            return 'strainsView.exportModal.sources.selected_one'
-        }
-        return 'strainsView.exportModal.sources.selected_other'
-    }
-
-    if (count === 1) {
-        return 'strainsView.exportModal.sources.all_one'
-    }
-    return 'strainsView.exportModal.sources.all_other'
-}
+import { StrainDetailView } from './StrainDetailView'
+import { StrainsViewContent } from './StrainsViewContent'
+import { StrainsViewModals } from './StrainsViewModals'
+import { useStrainsViewController } from '@/hooks/useStrainsViewController'
 
 export const StrainsView: React.FC = () => {
-    const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const [allStrains, setAllStrains] = useState<Strain[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [loadError, setLoadError] = useState<string | null>(null)
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-    const [_currentPage, setCurrentPage] = useState(1)
-    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-    const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
-    const [confirmRemoveFavorites, setConfirmRemoveFavorites] = useState(false)
+    const controller = useStrainsViewController()
+    const {
+        t,
+        dispatch,
+        strainsViewState,
+        strainsViewTab,
+        selectedStrainForDetail,
+        viewTitles,
+        savedTips,
+        savedExportsCount,
+        filteredStrainsLength,
+        searchTermForA11y,
+    } = controller
 
-    const settings = useAppSelector(selectSettings)
-    const strainsViewState = useStrainsViewStore()
-    const strainsViewTab = strainsViewState.strainsViewTab
-    const strainsViewMode = strainsViewState.strainsViewMode
-
-    // Scroll to top on tab change
+    const liveRegionRef = useRef<HTMLDivElement>(null)
+    const isInitialMount = useRef(true)
     useEffect(() => {
-        const mainEl = document.getElementById('main-content')
-        if (mainEl) {
-            mainEl.scrollTop = 0
+        if (isInitialMount.current) {
+            isInitialMount.current = false
+            return
         }
-    }, [strainsViewTab])
-
-    const selectedStrainIds = useMemo(
-        () => strainsViewState.selectedStrainIds,
-        [strainsViewState.selectedStrainIds],
-    )
-    const selectedStrainId = strainsViewState.selectedStrainId
-
-    // Scroll to top when navigating into/out of strain detail
-    useEffect(() => {
-        const mainEl = document.getElementById('main-content')
-        if (mainEl) {
-            mainEl.scrollTop = 0
-        }
-    }, [selectedStrainId])
-    const selectedStrainForDetail = useMemo(
-        () => allStrains.find((s) => s.id === selectedStrainId) || null,
-        [allStrains, selectedStrainId],
-    )
-    const rawUserStrains = useAppSelector(selectUserStrains)
-    const userStrains = useMemo(() => rawUserStrains ?? [], [rawUserStrains])
-    const rawUserStrainIds = useAppSelector(selectUserStrainIds)
-    const userStrainIds = useMemo(() => rawUserStrainIds ?? new Set<string>(), [rawUserStrainIds])
-    const rawFavoriteIds = useAppSelector(selectFavoriteIds)
-    const favoriteIds = useMemo(() => rawFavoriteIds ?? new Set<string>(), [rawFavoriteIds])
-    const rawSavedTips = useAppSelector(selectSavedStrainTips)
-    const savedTips = useMemo(() => rawSavedTips ?? [], [rawSavedTips])
-    const rawSavedExports = useAppSelector(selectSavedExports)
-    const savedExports = useMemo(() => rawSavedExports ?? [], [rawSavedExports])
-    const savedExportsCount = useAppSelector(selectSavedExportsCount) ?? 0
-    const isAddModalOpen = useUIStore((s) => s.isAddModalOpen)
-    const isExportModalOpen = useUIStore((s) => s.isExportModalOpen)
-    const strainToEdit = useUIStore((s) => s.strainToEdit)
-
-    const selectedIdsSet = useMemo(() => new Set<string>(selectedStrainIds), [selectedStrainIds])
-
-    // This effect runs only once when the component mounts to hydrate state from URL
-    useEffect(() => {
-        const queryString = window.location.search
-        if (queryString) {
-            const parsedState = urlService.parseQueryStringToFilterState(queryString)
-            if (Object.keys(parsedState).length > 0) {
-                useFiltersStore.getState().hydrateFilters(parsedState)
+        const timer = setTimeout(() => {
+            if (liveRegionRef.current) {
+                liveRegionRef.current.textContent = searchTermForA11y
+                    ? t('common.accessibility.searchResultsCount', {
+                          count: filteredStrainsLength,
+                      })
+                    : t('common.accessibility.filterResultsCount', {
+                          count: filteredStrainsLength,
+                      })
             }
-        }
-    }, [])
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [filteredStrainsLength, searchTermForA11y, t])
 
     const viewIcons = useMemo(
         () => ({
@@ -232,310 +83,6 @@ export const StrainsView: React.FC = () => {
         [],
     )
 
-    const viewTitles = useMemo(
-        () => ({
-            [StrainViewTab.All]: t('strainsView.tabs.allStrains'),
-            [StrainViewTab.MyStrains]: t('strainsView.tabs.myStrains'),
-            [StrainViewTab.Favorites]: t('strainsView.tabs.favorites'),
-            [StrainViewTab.DailyStrains]: t('strainsView.tabs.dailyStrains'),
-            [StrainViewTab.Comparison]: t('strainsView.tabs.comparison'),
-            [StrainViewTab.Genealogy]: t('strainsView.tabs.genealogy'),
-            [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab'),
-            [StrainViewTab.SeedVault]: t('strainsView.tabs.seedVault'),
-            [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
-            [StrainViewTab.Tips]: t('strainsView.tabs.tips', { count: savedTips.length }),
-            [StrainViewTab.Trends]: t('strainsView.tabs.trends'),
-        }),
-        [t, savedTips.length, savedExportsCount],
-    )
-
-    const loadStrains = useCallback(() => {
-        strainService
-            .getAllStrains()
-            .then((strains) => {
-                setAllStrains(strains)
-                setLoadError(null)
-                setIsLoading(false)
-            })
-            .catch((error: unknown) => {
-                console.debug('[StrainsView] Failed to load strains.', error)
-                setLoadError(t('strainsView.loadError'))
-                setIsLoading(false)
-            })
-    }, [t])
-
-    useEffect(() => {
-        loadStrains()
-    }, [loadStrains])
-
-    const { allAromas, allTerpenes } = useMemo(() => {
-        const aromaSet = new Set<string>()
-        const terpeneSet = new Set<string>()
-
-        allStrains
-            .filter((strain): strain is Strain => Boolean(strain))
-            .forEach((strain) => {
-                getSafeStringArray(strain.aromas).forEach((aroma) => aromaSet.add(aroma))
-                getSafeStringArray(strain.dominantTerpenes).forEach((terpene) =>
-                    terpeneSet.add(terpene),
-                )
-            })
-
-        return {
-            allAromas: Array.from(aromaSet).toSorted((a, b) =>
-                compareText(
-                    t(`common.aromas.${a}`, { defaultValue: a }),
-                    t(`common.aromas.${b}`, { defaultValue: b }),
-                ),
-            ),
-            allTerpenes: Array.from(terpeneSet).toSorted((a, b) =>
-                compareText(
-                    t(`common.terpenes.${a}`, { defaultValue: a }),
-                    t(`common.terpenes.${b}`, { defaultValue: b }),
-                ),
-            ),
-        }
-    }, [allStrains, t])
-
-    const strainsForCurrentTab = useMemo(() => {
-        const safeAllStrains = allStrains.filter((strain): strain is Strain => Boolean(strain))
-        const safeUserStrains = userStrains.filter((strain): strain is Strain => Boolean(strain))
-        switch (strainsViewTab) {
-            case StrainViewTab.MyStrains:
-                return safeUserStrains
-            case StrainViewTab.Favorites:
-                return safeAllStrains.filter((s) => favoriteIds.has(s.id))
-            case StrainViewTab.All:
-            default:
-                return safeAllStrains
-        }
-    }, [strainsViewTab, allStrains, userStrains, favoriteIds])
-
-    const {
-        filteredStrains,
-        isSearching,
-        searchTerm,
-        setSearchTerm,
-        typeFilter,
-        handleToggleTypeFilter,
-        showFavoritesOnly,
-        setShowFavoritesOnly,
-        advancedFilters,
-        setAdvancedFilters,
-        letterFilter,
-        handleSetLetterFilter,
-        resetAllFilters,
-        sort,
-        handleSort,
-        isAnyFilterActive,
-        activeFilterCount,
-    } = useStrainFilters(strainsForCurrentTab, settings.strainsView)
-
-    useEffect(() => {
-        setCurrentPage(1)
-    }, [filteredStrains, strainsViewTab])
-
-    // --- Screen-reader live-region for filter/search result announcements ---
-    const liveRegionRef = useRef<HTMLDivElement>(null)
-    const isInitialMount = useRef(true)
-    useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false
-            return
-        }
-        const timer = setTimeout(() => {
-            if (liveRegionRef.current) {
-                liveRegionRef.current.textContent = searchTerm
-                    ? t('common.accessibility.searchResultsCount', {
-                          count: filteredStrains.length,
-                      })
-                    : t('common.accessibility.filterResultsCount', {
-                          count: filteredStrains.length,
-                      })
-            }
-        }, 500)
-        return () => clearTimeout(timer)
-    }, [filteredStrains.length, searchTerm, t])
-
-    const [tempFilterState, setTempFilterState] = useState(advancedFilters)
-    useEffect(() => setTempFilterState(advancedFilters), [advancedFilters])
-
-    const countForDrawer = useMemo(() => {
-        let strains = [...strainsForCurrentTab]
-        const thcRange = getRangeValue(tempFilterState.thcRange, INITIAL_ADVANCED_FILTERS.thcRange)
-        const cbdRange = getRangeValue(tempFilterState.cbdRange, INITIAL_ADVANCED_FILTERS.cbdRange)
-        const floweringRange = getRangeValue(
-            tempFilterState.floweringRange,
-            INITIAL_ADVANCED_FILTERS.floweringRange,
-        )
-
-        if (searchTerm) {
-            const lowerCaseSearch = searchTerm.toLowerCase()
-            strains = strains.filter(
-                (s) =>
-                    getSafeText(s.name, 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
-                    getSafeStrainType(s.type).toLowerCase().includes(lowerCaseSearch) ||
-                    getSafeStringArray(s.aromas).some((a) =>
-                        a.toLowerCase().includes(lowerCaseSearch),
-                    ) ||
-                    getSafeStringArray(s.dominantTerpenes).some((t) =>
-                        t.toLowerCase().includes(lowerCaseSearch),
-                    ) ||
-                    getSafeText(s.genetics, '').toLowerCase().includes(lowerCaseSearch),
-            )
-        }
-        if (showFavoritesOnly) {
-            strains = strains.filter((s) => favoriteIds.has(s.id))
-        }
-        if (typeFilter.length > 0) {
-            strains = strains.filter((s) => typeFilter.includes(s.type))
-        }
-        if (letterFilter) {
-            if (letterFilter === '#') {
-                strains = strains.filter((s) => /^\d/.test(getSafeText(s.name, '')))
-            } else {
-                strains = strains.filter((s) =>
-                    getSafeText(s.name, '').toLowerCase().startsWith(letterFilter.toLowerCase()),
-                )
-            }
-        }
-
-        const difficulties = new Set(tempFilterState.selectedDifficulties)
-        const yields = new Set(tempFilterState.selectedYields)
-        const heights = new Set(tempFilterState.selectedHeights)
-        const aromas = new Set(tempFilterState.selectedAromas)
-        const terpenes = new Set(tempFilterState.selectedTerpenes)
-
-        strains = strains.filter(
-            (s) =>
-                getSafeNumericValue(s.thc, 0) >= thcRange[0] &&
-                getSafeNumericValue(s.thc, 0) <= thcRange[1] &&
-                getSafeNumericValue(s.cbd, 0) >= cbdRange[0] &&
-                getSafeNumericValue(s.cbd, 0) <= cbdRange[1] &&
-                getSafeNumericValue(s.floweringTime, 0) >= floweringRange[0] &&
-                getSafeNumericValue(s.floweringTime, 0) <= floweringRange[1] &&
-                (difficulties.size === 0 || difficulties.has(getSafeAgronomic(s).difficulty)) &&
-                (yields.size === 0 || yields.has(getSafeAgronomic(s).yield)) &&
-                (heights.size === 0 || heights.has(getSafeAgronomic(s).height)) &&
-                (aromas.size === 0 || getSafeStringArray(s.aromas).some((a) => aromas.has(a))) &&
-                (terpenes.size === 0 ||
-                    getSafeStringArray(s.dominantTerpenes).some((t) => terpenes.has(t))),
-        )
-
-        return strains.length
-    }, [
-        strainsForCurrentTab,
-        searchTerm,
-        showFavoritesOnly,
-        typeFilter,
-        letterFilter,
-        favoriteIds,
-        tempFilterState,
-    ])
-
-    const handleApplyFilters = () => {
-        setAdvancedFilters(tempFilterState)
-        setIsDrawerOpen(false)
-    }
-
-    const handleResetFilters = () => {
-        resetAllFilters()
-        setTempFilterState(INITIAL_ADVANCED_FILTERS)
-        setIsDrawerOpen(false)
-    }
-
-    const handleOpenDrawer = useCallback(() => {
-        setIsDrawerOpen(true)
-    }, [])
-
-    const handleClearSelection = useCallback(() => {
-        strainsViewState.clearStrainSelection()
-    }, [strainsViewState])
-
-    const handleAddSelectedToFavorites = useCallback(() => {
-        dispatch(addMultipleToFavorites(selectedStrainIds))
-    }, [dispatch, selectedStrainIds])
-
-    const handleRemoveSelectedFromFavorites = useCallback(() => {
-        setConfirmRemoveFavorites(true)
-    }, [])
-
-    const isUserStrain = useCallback((id: string) => userStrainIds.has(id), [userStrainIds])
-
-    const handleAddStrain = useCallback(
-        (strain: Strain) => dispatch(addUserStrainWithValidation(strain)),
-        [dispatch],
-    )
-    const handleUpdateStrain = useCallback(
-        (strain: Strain) => dispatch(updateUserStrainAndCloseModal(strain)),
-        [dispatch],
-    )
-
-    const handleDeleteUserStrain = useCallback((id: string) => {
-        setConfirmDeleteId(id)
-    }, [])
-
-    const handleBulkDelete = useCallback(() => {
-        if (strainsViewTab === StrainViewTab.MyStrains && selectedIdsSet.size > 0) {
-            setConfirmBulkDelete(true)
-        }
-    }, [strainsViewTab, selectedIdsSet.size])
-
-    const handleToggleFavorite = useCallback(
-        (id: string) => {
-            dispatch(toggleFavorite(id))
-        },
-        [dispatch],
-    )
-
-    const handleExport = useCallback(
-        (format: SimpleExportFormat) => {
-            const source = selectedIdsSet.size > 0 ? 'selected' : 'all'
-            let dataToExport: Strain[] = filteredStrains
-            if (source === 'selected') {
-                dataToExport = allStrains.filter((strain) => selectedIdsSet.has(strain.id))
-            }
-
-            if (dataToExport.length === 0) {
-                getUISnapshot().addNotification({
-                    message: t('common.noDataToExport'),
-                    type: 'error',
-                })
-                getUISnapshot().closeExportModal()
-                return
-            }
-
-            const sourceTranslationKey = getExportSourceTranslationKey(source, dataToExport.length)
-            const sourceDescription = t(sourceTranslationKey, { count: dataToExport.length })
-
-            const fileName = `CannaGuide_Strains_${new Date().toISOString().slice(0, 10)}`
-
-            dispatch(
-                exportAndSaveStrains({
-                    strains: dataToExport,
-                    format,
-                    fileName,
-                    sourceDescription,
-                }),
-            )
-        },
-        [dispatch, t, selectedIdsSet, allStrains, filteredStrains],
-    )
-
-    const handleSelect = useCallback(
-        (strain: Strain) => {
-            strainsViewState.setSelectedStrainId(strain.id)
-        },
-        [strainsViewState],
-    )
-
-    const handleToggleSelection = useCallback(
-        (id: string) => {
-            strainsViewState.toggleStrainSelection(id)
-        },
-        [strainsViewState],
-    )
-
     if (selectedStrainForDetail) {
         return (
             <div className="animate-fade-in">
@@ -545,8 +92,6 @@ export const StrainsView: React.FC = () => {
                     onNavigateToGenealogy={(strainId) => {
                         strainsViewState.setSelectedStrainId(null)
                         dispatch(setSelectedGenealogyStrain(strainId))
-                        // Defer tab switch to next microtask to ensure Redux state
-                        // is committed before GenealogyView mounts
                         queueMicrotask(() => {
                             strainsViewState.setStrainsViewTab(StrainViewTab.Genealogy)
                         })
@@ -554,149 +99,6 @@ export const StrainsView: React.FC = () => {
                 />
             </div>
         )
-    }
-
-    const renderContent = () => {
-        if (isLoading) return <SkeletonLoader variant="list" count={5} />
-
-        if (loadError) {
-            return (
-                <Card className="text-center py-10 text-slate-300">
-                    <PhosphorIcons.WarningCircle className="w-14 h-14 mx-auto text-red-400 mb-3" />
-                    <h3 className="font-semibold text-slate-100">{t('common.error')}</h3>
-                    <p className="text-sm mb-4 text-slate-400">{loadError}</p>
-                    <Button size="sm" variant="secondary" onClick={loadStrains}>
-                        {t('common.errorBoundary.reload')}
-                    </Button>
-                </Card>
-            )
-        }
-
-        switch (strainsViewTab) {
-            case StrainViewTab.All:
-            case StrainViewTab.MyStrains:
-            case StrainViewTab.Favorites: {
-                let bulkDeleteHandler: (() => void) | undefined
-                if (strainsViewTab === StrainViewTab.MyStrains) {
-                    bulkDeleteHandler = handleBulkDelete
-                }
-                return (
-                    <ErrorBoundary>
-                        <Suspense
-                            fallback={<SkeletonLoader variant={strainsViewMode} count={10} />}
-                        >
-                            <StrainLibraryView
-                                strains={filteredStrains}
-                                totalStrainCount={filteredStrains.length}
-                                viewMode={strainsViewMode}
-                                isSearching={isSearching}
-                                searchTerm={searchTerm}
-                                onSearchTermChange={setSearchTerm}
-                                sort={sort}
-                                handleSort={handleSort}
-                                letterFilter={letterFilter}
-                                handleSetLetterFilter={handleSetLetterFilter}
-                                typeFilter={typeFilter}
-                                onToggleTypeFilter={handleToggleTypeFilter}
-                                onOpenDrawer={handleOpenDrawer}
-                                activeFilterCount={activeFilterCount}
-                                selectedIds={selectedIdsSet}
-                                onToggleSelection={handleToggleSelection}
-                                onSelect={handleSelect}
-                                favoriteIds={favoriteIds}
-                                onToggleFavorite={handleToggleFavorite}
-                                isUserStrain={isUserStrain}
-                                onDeleteUserStrain={handleDeleteUserStrain}
-                                onClearSelection={handleClearSelection}
-                                onAddToFavorites={handleAddSelectedToFavorites}
-                                onRemoveFromFavorites={handleRemoveSelectedFromFavorites}
-                                onDelete={bulkDeleteHandler}
-                                strainsViewTab={strainsViewTab}
-                            />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            }
-            case StrainViewTab.Tips:
-                return (
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            <StrainTipsView
-                                savedTips={savedTips}
-                                deleteTip={(id) => dispatch(deleteStrainTip(id))}
-                                updateTip={(tip) => dispatch(updateStrainTip(tip))}
-                                allStrains={allStrains}
-                            />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            case StrainViewTab.Genealogy:
-                return (
-                    // Lokale ErrorBoundary isoliert Genealogy-Fehler vom Rest der App
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            {/* key erzwingt vollständiges Remount bei Strain-Wechsel –
-                                verhindert stale d3-State nach 50+ Wechseln */}
-                            <GenealogyView allStrains={allStrains} onNodeClick={handleSelect} />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            case StrainViewTab.DailyStrains:
-                return (
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            <DailyStrains />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            case StrainViewTab.Comparison:
-                return (
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            <StrainComparisonView allStrains={allStrains} />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            case StrainViewTab.BreedingLab:
-                return (
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            <BreedingLabView allStrains={allStrains} />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            case StrainViewTab.SeedVault:
-                return (
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            <SeedVaultView />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            case StrainViewTab.Exports:
-                return (
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            <ExportsManagerView
-                                savedExports={savedExports}
-                                allStrains={allStrains}
-                                onDelete={(id) => dispatch(deleteExport(id))}
-                                onUpdate={(exp) => dispatch(updateExport(exp))}
-                            />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            case StrainViewTab.Trends:
-                return (
-                    <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={3} />}>
-                            <GeneticTrendsView />
-                        </Suspense>
-                    </ErrorBoundary>
-                )
-            default:
-                return null
-        }
     }
 
     return (
@@ -721,80 +123,8 @@ export const StrainsView: React.FC = () => {
                 counts={{ tips: savedTips.length, exports: savedExportsCount }}
             />
 
-            {isAddModalOpen && (
-                <AddStrainModal
-                    isOpen={true}
-                    onClose={() => getUISnapshot().closeAddModal()}
-                    onAddStrain={handleAddStrain}
-                    onUpdateStrain={handleUpdateStrain}
-                    strainToEdit={strainToEdit}
-                />
-            )}
-            <ConfirmModal
-                isOpen={confirmDeleteId !== null}
-                onClose={() => setConfirmDeleteId(null)}
-                onConfirm={() => {
-                    if (confirmDeleteId) dispatch(deleteUserStrain(confirmDeleteId))
-                }}
-                title={t('common.delete')}
-                message={t('strainsView.addStrainModal.validation.deleteConfirm', {
-                    name: userStrains.find((s) => s.id === confirmDeleteId)?.name ?? '',
-                })}
-            />
-            <ConfirmModal
-                isOpen={confirmBulkDelete}
-                onClose={() => setConfirmBulkDelete(false)}
-                onConfirm={() => {
-                    dispatch(deleteMultipleUserStrains(Array.from(selectedIdsSet)))
-                    strainsViewState.clearStrainSelection()
-                }}
-                title={t('common.delete')}
-                message={t('strainsView.exportsManager.deleteConfirmPlural_other', {
-                    count: selectedIdsSet.size,
-                })}
-            />
-            <ConfirmModal
-                isOpen={confirmRemoveFavorites}
-                onClose={() => setConfirmRemoveFavorites(false)}
-                onConfirm={() => {
-                    dispatch(removeMultipleFromFavorites(selectedStrainIds))
-                    strainsViewState.clearStrainSelection()
-                }}
-                title={t('strainsView.bulkActions.removeFromFavorites')}
-                message={t('strainsView.bulkActions.removeFavoritesConfirm', {
-                    count: selectedIdsSet.size,
-                })}
-                isDestructive={false}
-            />
-            {isExportModalOpen && (
-                <DataExportModal
-                    isOpen={true}
-                    onClose={() => getUISnapshot().closeExportModal()}
-                    onExport={handleExport}
-                    title={t('strainsView.exportModal.title')}
-                    selectionCount={selectedIdsSet.size}
-                    totalCount={filteredStrains.length}
-                    translationBasePath="strainsView.exportModal"
-                />
-            )}
-            <FilterDrawer
-                isOpen={isDrawerOpen}
-                onClose={() => setIsDrawerOpen(false)}
-                onApply={handleApplyFilters}
-                onReset={handleResetFilters}
-                tempFilterState={tempFilterState}
-                setTempFilterState={(f) => setTempFilterState((s) => ({ ...s, ...f }))}
-                allAromas={allAromas}
-                allTerpenes={allTerpenes}
-                count={countForDrawer}
-                showFavorites={showFavoritesOnly}
-                onToggleFavorites={(val) => setShowFavoritesOnly(val)}
-                typeFilter={typeFilter}
-                onToggleTypeFilter={handleToggleTypeFilter}
-                isAnyFilterActive={isAnyFilterActive}
-            />
-
-            {renderContent()}
+            <StrainsViewModals {...controller} />
+            <StrainsViewContent {...controller} />
         </div>
     )
 }

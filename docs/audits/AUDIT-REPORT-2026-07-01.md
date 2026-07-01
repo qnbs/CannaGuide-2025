@@ -51,13 +51,14 @@ v1.9.0 closes the **June 29 P0 security gaps**, completes **Settings god-file re
 | `pdfReportService.ts` | 923 | 9 (barrel; `services/pdf/*`) |
 | `GrowRoom3D.tsx` | 848 | 571 (`growRoom3d/*`) |
 | `simulationSlice.ts` | 834 | 361 (`simulation/*`) |
+| `dbService.ts` | 927 | 27 (barrel; `services/db/*`) |
 
 ### Remaining over budget (P1)
 
 | File | LOC | Notes |
 | ---- | --- | ----- |
 | `services/workerBus.ts` | 1193 | Grandfathered |
-| `services/dbService.ts` | 927 | P1 — split by domain (plants, strains, settings) |
+| `services/dbService.ts` | 927 | P1 — **split done** (facade 27 LOC; `services/db/*`) |
 | `services/pdfReportService.ts` | 923 | P1 — extract section renderers |
 | `components/views/plants/GrowRoom3D.tsx` | 848 | P1 — Three.js scene vs. controls |
 | `stores/slices/simulationSlice.ts` | 834 | P1 — extract reducers/thunks |

@@ -65,7 +65,7 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 
 **React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
 
-**Known test-isolation flakiness:** If a full `test:run` reports sporadic failures outside `aiResponseValidation.test.ts` / `growLogRagService.test.ts`, prefer `vi.hoisted()` mocks plus `vi.resetModules()` + dynamic `import()` in affected suites (see those files). Residual full-suite noise may still occur in unrelated modules.
+**Vitest mock isolation:** Suites that mock shared modules (`@/services/sentryService`, `@/services/local-ai`, etc.) should use `vi.hoisted()` for stable mock references and `vi.resetModules()` + dynamic `import()` in `beforeEach` when the module under test binds mocks at import time. Reference implementations: `services/aiResponseValidation.test.ts`, `services/growLogRagService.test.ts`. Residual sporadic full-suite noise in unrelated modules may still occur — run affected files in isolation to confirm regressions.
 
 ### Optional services
 

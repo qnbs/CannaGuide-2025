@@ -52,8 +52,8 @@ importers:
         specifier: ^8.62.0
         version: 8.62.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       anti-trojan-source:
-        specifier: ^1.11.5
-        version: 1.11.5
+        specifier: ^1.11.6
+        version: 1.11.6
       conventional-changelog-cli:
         specifier: 5.0.0
         version: 5.0.0(conventional-commits-filter@5.0.0)
@@ -3559,8 +3559,8 @@ packages:
     resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
 
-  anti-trojan-source@1.11.5:
-    resolution: {integrity: sha512-4acen6O8MzJ86UB1HwMVCx169uI4AdiaASTC6anhbhRlMsC+knIFddWfw50fdcU000hVXoYZ6ARnxZfbVztIsA==}
+  anti-trojan-source@1.11.6:
+    resolution: {integrity: sha512-G6OCoyx+g+XuS0XctpvV77a49riMIq4LXExJctIxfV/SyK72Pn+Z6QEme2+Rs2biCqTYvHK+/b7rFZ78k1QJxA==}
     engines: {node: '>=24.0.0', npm: '>=11.10.0'}
     hasBin: true
 
@@ -6939,8 +6939,8 @@ packages:
     resolution: {integrity: sha512-8I8TjW5KMOKsZQTvoxjuSIa7foAwPWGOts+6o7sgjz41/qMD9VQHEDxi6PBvK2l0MXUmqZyNpUK+T2tQaaElvw==}
     engines: {node: '>=10'}
 
-  serialize-javascript@7.0.6:
-    resolution: {integrity: sha512-ATTK5Q4gFVg0YDp1my2vqygyvhcklD/UV5GIlYHooGTn/NogJqIzpetkD6E5kmuVULqz/S9inUL25XcAgDRJQg==}
+  serialize-javascript@7.0.7:
+    resolution: {integrity: sha512-YAy8Od6KV+uuwUuU50np8fGB/Aues6Y0nAhA9y/hId74PlKUcme4pXcBD46NWKr1Q4osN/iseZ17YqO1XfmI8g==}
     engines: {node: '>=20.0.0'}
 
   serve-static@1.16.3:
@@ -10343,7 +10343,7 @@ snapshots:
 
   '@rollup/plugin-terser@1.0.0(rollup@4.62.2)':
     dependencies:
-      serialize-javascript: 7.0.6
+      serialize-javascript: 7.0.7
       smob: 1.6.2
       terser: 5.48.0
     optionalDependencies:
@@ -11403,7 +11403,7 @@ snapshots:
 
   ansi-styles@6.2.3: {}
 
-  anti-trojan-source@1.11.5:
+  anti-trojan-source@1.11.6:
     dependencies:
       globby: 12.2.0
       meow: 10.1.5
@@ -12679,7 +12679,7 @@ snapshots:
 
   eslint-plugin-anti-trojan-source@1.1.7:
     dependencies:
-      anti-trojan-source: 1.11.5
+      anti-trojan-source: 1.11.6
 
   eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
@@ -15205,7 +15205,7 @@ snapshots:
     dependencies:
       type-fest: 0.13.1
 
-  serialize-javascript@7.0.6: {}
+  serialize-javascript@7.0.7: {}
 
   serve-static@1.16.3:
     dependencies:

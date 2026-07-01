@@ -8,6 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **refactor(web):** God-file burn-down — split 8 over-budget modules (strainImageFallback, exportService, HelpView, HydroMonitorView, EcPhPlannerCalculator, knowledgeGraphService, StrainsView) into focused submodules (all ≤700 LOC)
 - **ci:** `check-critical-path-coverage.mjs` — ≥80% lines/functions on `safetyPipeline`, `syncEncryptionService`, `plantSimulationService`, `diagnosisService`
 - **ci:** File-budget gate required in Quality Gates; `docs/DEVOPS-GATES.md` gate inventory
 - **ci:** Playwright `install-deps` always runs before browser cache restore (fixes WebKit `libwoff2dec` on cross-browser E2E)

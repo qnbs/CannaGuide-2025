@@ -4,6 +4,7 @@
  *
  * - Grandfathered files over budget: WARN only (tracked burn-down list).
  * - New/changed files over budget: FAIL (unless FILE_BUDGET_ADVISORY=1).
+ * - Test files (*.test.ts, *.spec.ts) are excluded from the scan.
  *
  * Usage: node scripts/check-file-budget.mjs [baseRef]
  *   baseRef defaults to origin/main for CI, or checks all tracked files locally.
@@ -25,11 +26,8 @@ function assertSafeGitRef(ref) {
     }
 }
 
-/** Known god-files — Phase 1 burn-down (warn only until split). */
-const GRANDFATHERED = new Set([
-    'apps/web/services/geminiService.ts',
-    'apps/web/services/plantSimulationService.ts',
-])
+/** Known god-files — Phase 1 burn-down (warn only until split). Empty when all splits complete. */
+const GRANDFATHERED = new Set([])
 
 const SCAN_GLOBS = [
     'apps/web/services',
@@ -60,6 +58,7 @@ function gitDiffFiles(ref) {
             .split('\n')
             .map((s) => s.trim())
             .filter((f) => /\.(ts|tsx|mjs)$/.test(f) && existsSync(f))
+            .filter((f) => !/\.(test|spec)\.(ts|tsx|mjs)$/.test(f))
     } catch {
         return []
     }

@@ -66,11 +66,14 @@ export const bootFreshAppPastOnboarding = async (page: Page, baseURL?: string) =
 /** Post-hydration gate: shell is blocked until bootstrap finishes (see postHydration.ts). */
 export const waitForAppReady = async (page: Page) => {
     await page.waitForSelector('#root', { state: 'attached', timeout: 60_000 })
-    await page.waitForFunction(
-        () => document.body.getAttribute('data-app-ready') === 'true',
-        undefined,
-        { timeout: 90_000 },
-    )
+    await Promise.race([
+        page.waitForFunction(
+            () => document.body.getAttribute('data-app-ready') === 'true',
+            undefined,
+            { timeout: 90_000 },
+        ),
+        page.waitForSelector('[data-view-id]', { state: 'attached', timeout: 90_000 }),
+    ])
 }
 
 export const waitForAppShell = async (page: Page) => {

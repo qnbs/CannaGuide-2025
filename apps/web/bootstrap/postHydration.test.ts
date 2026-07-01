@@ -114,6 +114,8 @@ describe('runPostHydrationServices', () => {
 
         expect(callOrder.indexOf('strain')).toBeLessThan(callOrder.indexOf('workers'))
         expect(callOrder.indexOf('tts')).toBeLessThan(callOrder.indexOf('workers'))
+        expect(mockSetAppReady).toHaveBeenCalledWith(true)
+        expect(document.body.getAttribute('data-app-ready')).toBe('true')
         expect(mockSetAiMode).toHaveBeenCalled()
         expect(mockMqttInit).toHaveBeenCalledWith(store)
         expect(mockProactiveInit).toHaveBeenCalledWith(store)

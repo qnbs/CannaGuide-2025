@@ -38,6 +38,10 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
         }
     }
 
+    // Shell is interactive once core store + i18n are ready; background services may still init.
+    getUISnapshot().setAppReady(true)
+    document.body.setAttribute('data-app-ready', 'true')
+
     const [
         { mqttClientService },
         { useIotStore },
@@ -106,7 +110,4 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
         '@/services/offlineActionReplayService'
     )
     registerOfflineActionReplayListener(hydratedStore)
-
-    getUISnapshot().setAppReady(true)
-    document.body.setAttribute('data-app-ready', 'true')
 }

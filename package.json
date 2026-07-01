@@ -36,7 +36,10 @@
         "test:coverage": "turbo run test:coverage",
         "test:e2e": "pnpm --filter @cannaguide/web test:e2e",
         "test:e2e:install": "pnpm --filter @cannaguide/web test:e2e:install",
+        "test:e2e:deps:ci": "pnpm --filter @cannaguide/web test:e2e:deps:ci",
+        "test:e2e:deps:chromium": "pnpm --filter @cannaguide/web test:e2e:deps:chromium",
         "test:e2e:install:ci": "pnpm --filter @cannaguide/web test:e2e:install:ci",
+        "test:e2e:install:chromium:ci": "pnpm --filter @cannaguide/web test:e2e:install:chromium:ci",
         "test:ct": "pnpm --filter @cannaguide/web test:ct",
         "test:mutate": "pnpm exec stryker run",
         "lint": "node ./scripts/lint-changed.mjs",
@@ -83,10 +86,11 @@
         "security:scorecard": "scorecard --local . --file-mode git --format json --output scorecard.json --show-details",
         "ci:audit": "node ./scripts/ci-audit-local.mjs",
         "measure:critical-path": "node ./scripts/measure-critical-path.mjs",
+        "check:critical-path-coverage": "node ./scripts/check-critical-path-coverage.mjs",
         "check:file-budget": "node ./scripts/check-file-budget.mjs",
         "check:lockfile": "node ./scripts/check-pnpm-lockfile.mjs",
         "check:localstorage": "node ./scripts/security/check-localstorage-usage.mjs",
-        "gate:push": "pnpm run check:commit-identity && pnpm run lint:changed && pnpm run mdc:e2e && pnpm run graphify:mcp:doctor && node ./scripts/typecheck-filter.mjs && pnpm --filter @cannaguide/web test:run && node ./scripts/lint-scopes.mjs && pnpm run build",
+        "gate:push": "pnpm run check:commit-identity && pnpm run lint:changed && pnpm run mdc:e2e && pnpm run graphify:mcp:doctor && node ./scripts/typecheck-filter.mjs && pnpm --filter @cannaguide/web test:run && node ./scripts/lint-scopes.mjs && pnpm run check:file-budget && pnpm run build",
         "pr:push": "node ./scripts/github/pr-push.mjs",
         "security:scan": "pnpm run security:prettier && pnpm run security:trojan-source && pnpm run security:eslint && pnpm run security:pre-commit && pnpm run security:secrets && pnpm run security:semgrep && pnpm run security:socket && pnpm run security:snyk && pnpm run security:grype && pnpm run security:scorecard",
         "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0",
@@ -149,7 +153,11 @@
             "esbuild": ">=0.25.0",
             "ws": ">=8.20.1",
             "workbox-build": "7.4.1",
-            "workbox-window": "7.4.1"
+            "workbox-window": "7.4.1",
+            "linkify-it": ">=5.0.1",
+            "markdown-it": ">=14.2.0",
+            "js-yaml@3": ">=3.15.0",
+            "js-yaml@4": ">=4.2.0"
         },
         "auditConfig": {
             "ignoreCves": [

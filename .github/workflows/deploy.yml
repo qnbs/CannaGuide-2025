@@ -185,9 +185,12 @@ jobs:
                   restore-keys: |
                       playwright-chromium-${{ runner.os }}-
 
+            - name: Install Playwright OS dependencies
+              run: pnpm run test:e2e:deps:chromium
+
             - name: Install Playwright browser
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: pnpm run test:e2e:install:ci
+              run: pnpm run test:e2e:install:chromium:ci
 
             - name: Wait for GitHub Pages to serve content
               run: |

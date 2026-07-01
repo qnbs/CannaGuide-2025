@@ -26,10 +26,13 @@ pnpm run typecheck
 pnpm run lint:changed
 pnpm run lint:scopes
 pnpm run build
-pnpm --filter @cannaguide/web test:run    # full suite (~3 min)
-pnpm run strains:check-integrity
+pnpm run test:coverage
+pnpm run check:critical-path-coverage
+pnpm run check:file-budget
 pnpm audit --audit-level=critical --prod
 ```
+
+See [`docs/DEVOPS-GATES.md`](./DEVOPS-GATES.md) for the full gate inventory.
 
 ---
 

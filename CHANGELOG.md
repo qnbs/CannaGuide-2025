@@ -8,16 +8,25 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
-- **refactor(web):** God-file burn-down — split 8 over-budget modules (strainImageFallback, exportService, HelpView, HydroMonitorView, EcPhPlannerCalculator, knowledgeGraphService, StrainsView) into focused submodules (all ≤700 LOC)
+- **docs(audit):** `docs/audits/AUDIT-REPORT-2026-07-02-FULL.md` — full-scale deep audit & perfection report (post-v1.9.0 baseline, 2936 tests, all quality gates ✅)
+- **refactor(web):** God-file burn-down round 2 — split 9 additional over-budget modules (strainImageFallback 812→19, exportService, HelpView, HydroMonitorView, EcPhPlannerCalculator, knowledgeGraphService, StrainsView, EcPhPlannerCalculator) into focused submodules (all ≤700 LOC); `check-file-budget` reports 0 failures / 0 grandfathered
 - **ci:** `check-critical-path-coverage.mjs` — ≥80% lines/functions on `safetyPipeline`, `syncEncryptionService`, `plantSimulationService`, `diagnosisService`
-- **ci:** File-budget gate required in Quality Gates; `docs/DEVOPS-GATES.md` gate inventory
+- **ci:** File-budget gate required in Quality Gates; `docs/DEVOPS-GATES.md` gate inventory updated
 - **ci:** Playwright `install-deps` always runs before browser cache restore (fixes WebKit `libwoff2dec` on cross-browser E2E)
+- **ci:** Auto-prune GitHub deployments after each deploy (keep 3 per env); weekly cleanup workflow
+- **ci:** MDC rule validation (`mdc:validate`), context smoke (`mdc:e2e`), and Graphify MCP doctor in quality gates
 
 ### Changed
 
 - **chore(deps):** `pnpm.overrides` for `linkify-it`, `markdown-it`, `js-yaml@3`, `js-yaml@4` (Dependabot alerts)
+- **chore(deps):** `pnpm.overrides` — `@babel/core >=7.29.6` (GHSA-4x5r-pxfx-6jf8 — arbitrary file read via sourceMappingURL comment; devDep path via Stryker)
 - **ci:** Security job adds `pnpm audit --audit-level=high` (all deps)
 - **ci:** `gate:push` / pre-push include `check:file-budget`
+- **test:** Coverage thresholds raised to match measured values — lines **43%**, functions **41%** (Stufe C)
+
+### Fixed
+
+- **docs(security):** Supported versions updated to reflect v1.9.x as current (was stale at 1.8.x)
 
 ---
 

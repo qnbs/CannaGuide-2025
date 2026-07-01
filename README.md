@@ -7,11 +7,11 @@
 <!-- Status & Quality -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/release-v1.8.2-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![Release](https://img.shields.io/badge/release-v1.9.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-2794%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-2812%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-40%25%20target-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity -->
@@ -107,7 +107,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2794 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 24 CI workflows
+776 strains · 2812 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 24 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -120,7 +120,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 | **Persistence** | IndexedDB (dual-database)            | Offline-first, no backend                   |
 | **i18n**        | i18next                              | EN/DE/ES/FR/NL, 12 namespaces               |
 | **Security**    | DOMPurify 3, Web Crypto AES-256-GCM  | XSS prevention, encrypted API keys          |
-| **Testing**     | Vitest + Playwright                  | 2794 unit/E2E/component tests               |
+| **Testing**     | Vitest + Playwright                  | 2812 unit/E2E/component tests               |
 
 > Deep-dive: [Architecture](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Accessibility](docs/ACCESSIBILITY.md)
 
@@ -135,7 +135,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite dev server on localhost:5173
 pnpm run build              # Production build (all workspaces)
-pnpm run test:run           # 2794 tests (263 files), single run
+pnpm run test:run           # 2812 tests (267 files), single run
 pnpm run typecheck          # tsc --noEmit (TS2719 filtered)
 pnpm run lint               # ESLint (flat config, 0 warnings)
 ```
@@ -320,11 +320,11 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 ## CI/CD, Testing & Security
 
-### Testing (2794 tests, 0 failures)
+### Testing (2812 tests, 0 failures)
 
 | Type                  | Framework       | Scope                                           |
 | --------------------- | --------------- | ----------------------------------------------- |
-| **Unit/Integration**  | Vitest          | 2794 tests, colocated `*.test.ts(x)`            |
+| **Unit/Integration**  | Vitest          | 2812 tests, colocated `*.test.ts(x)`            |
 | **E2E**               | Playwright      | Chromium + Firefox (CI), `tests/e2e/*.e2e.ts`   |
 | **Component**         | Playwright CT   | `tests/ct/*.ct.tsx`                             |
 | **Mutation**          | Stryker         | Redux slices, 50% break threshold               |
@@ -364,7 +364,7 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 
 | Workflow           | Trigger                       | Purpose                                                                          |
 | ------------------ | ----------------------------- | -------------------------------------------------------------------------------- |
-| CI                 | push, PR                      | Lint, typecheck, 2794 tests, build, security, E2E, IoT                           |
+| CI                 | push, PR                      | Lint, typecheck, 2812 tests, build, security, E2E, IoT                           |
 | CodeQL             | push, PR, weekly              | SAST (JavaScript/TypeScript)                                                     |
 | Deploy             | push to main                  | GitHub Pages + Lighthouse budget gate                                            |
 | Release Publish    | tag v\*                       | GitHub build attestation + CycloneDX SBOM + GitHub Release                       |
@@ -465,11 +465,11 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 <!-- Status & Qualitaet -->
 
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/Release-v1.8.2-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![Release](https://img.shields.io/badge/Release-v1.9.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/Tests-2794%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-2812%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/Coverage-35.4%25%20Zeilen-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository-Aktivitaet -->
@@ -540,7 +540,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2794 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 24 CI-Workflows
+776 Sorten · 2812 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 24 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
@@ -553,7 +553,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 | **Persistenz** | IndexedDB (Dual-Datenbank)           | Offline-first, kein Backend                   |
 | **i18n**       | i18next                              | EN/DE/ES/FR/NL, 12 Namensraeume               |
 | **Sicherheit** | DOMPurify 3, Web Crypto AES-256-GCM  | XSS-Praevention, verschluesselte API-Keys     |
-| **Testing**    | Vitest + Playwright                  | 2794 Unit-/E2E-/Komponenten-Tests             |
+| **Testing**    | Vitest + Playwright                  | 2812 Unit-/E2E-/Komponenten-Tests             |
 
 > Architektur: [ARCHITECTURE.md](docs/ARCHITECTURE.md) · [Dependency Graph](docs/DEPENDENCY-GRAPH.md) · [Barrierefreiheit](docs/ACCESSIBILITY.md)
 
@@ -566,7 +566,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm run dev                # Vite Dev-Server auf localhost:5173
 pnpm run build              # Produktions-Build
-pnpm run test:run           # 2794 Tests (263 Dateien), Einzellauf
+pnpm run test:run           # 2812 Tests (267 Dateien), Einzellauf
 pnpm run typecheck          # tsc --noEmit
 ```
 
@@ -602,7 +602,7 @@ pnpm run typecheck          # tsc --noEmit
 
 | Bereich          | Details                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Tests**        | 2794 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                                  |
+| **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                                  |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM                        |
 | **CI/CD**        | 25 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; MDC-Validate + Graphify-Doctor in CI |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                                   |

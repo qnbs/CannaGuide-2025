@@ -1,7 +1,7 @@
 # CannaGuide 2025 — Priorisierter Backlog (Stand: 30.06.2026)
 
 **Basis:** [`AUDIT-REPORT-2026-06-29.md`](./AUDIT-REPORT-2026-06-29.md) + unabhängige Verifikation der God-File-/Critical-Path-/Compliance-Befunde am 30.06.2026.
-**Status-App:** v1.8.2 (`main`). Keine offenen P0-Security-Findings.
+**Status-App:** v1.9.0 (`main`). Keine offenen P0-Security-Findings.
 **Zweck:** Umsetzungsfertiger Backlog (Issue-Vorlagen) für Stufe-1/Stufe-2-Maßnahmen mit konkreten Refactoring-Vorschlägen, Test-Plan für Critical Paths und Disclaimer-/Privacy-Texten.
 
 > Verifizierte Fakten (30.06.2026): Die genannten God-Files existieren und überschreiten das 700-LOC-Budget (`scripts/check-file-budget.mjs`, `MAX_LINES = 700`). `plantSimulationService.ts` ist mit **371 LOC** bereits unter Budget (Audit-Eintrag veraltet). Coverage-Schwellen in `apps/web/vite.config.ts`: lines 42 % / functions 39 % / branches 25 % / statements 35 %.

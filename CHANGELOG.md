@@ -6,8 +6,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+---
+
+## [1.9.0] - 2026-07-01
+
 ### Added
 
+- **feat(web):** Shared `AiDisclaimer` component (`components/common/AiDisclaimer.tsx`) with unit tests; unified AI legal notice across equipment, leaf diagnosis, strain image generation, and proactive diagnosis surfaces
+- **docs(audit):** `docs/audits/PRIORITIZED-BACKLOG-2026-06-30.md` — refactoring patterns, critical-path test plan, disclaimer/privacy copy (EN/DE)
+- **docs(audit):** `docs/audits/AUDIT-REPORT-2026-07-01.md` — v1.9 re-audit baseline and remaining backlog
 - **docs(housekeeping):** `docs/HOUSEKEEPING.md` release checklist; `docs/audits/AUDIT-CLOSURE-2026-06-29.md`;
   ADR-0015 UI state bridge; `docs/api/settings-modules.md`; `pnpm run docs:sync-metrics`
 - **test:** Coverage bump for CI thresholds — `useDataManagementActions`, panel smoke tests,
@@ -100,6 +107,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   fixes GHSA-p88m-4jfj-68fv, GHSA-pr7r-676h-xcf6 without breaking jsdom)
 - **docs(adr):** ADR-0014 strain catalog versioning & enrichment cadence
 - **data(strains):** `catalog-version.json` manifest (776 entries, schema strain-v2)
+- **refactor(web):** God-file splits — `BreedingLab` (1198→94), `GenealogyView` (1074→644), `StrainDetailView` (1056→196), `CalculatorHubView` (1511→124), `StrainLookupSection` (1211→401) into hooks, tabs, and focused sub-modules (all ≤700 LOC)
+- **feat(web):** Privacy Policy reachable from Settings → About (`PrivacyPolicyModal`)
+- **docs(agents):** Require `AiDisclaimer` on all AI surfaces; file-size budget note; known Vitest isolation flakiness for `aiResponseValidation` / `growLogRagService`
+- **chore(toolchain):** Tailwind CSS v4, Vite 8, React Compiler 1.0, Workbox 7.4.1 (post-migration validation on `main`)
+- **fix(cloud):** Reliable Node 24 resolution in `cursor-cloud-update.sh` via `nvm which 24` (#360)
 
 ### Security
 

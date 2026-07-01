@@ -84,7 +84,7 @@ Run via `pnpm run ci:audit` after `pnpm install --frozen-lockfile`.
 | e2e-selectors         | PASS                      |
 | build + bundle-budget | PASS (when run)           |
 
-Full Vitest (2794 tests) and E2E remain in GitHub Actions `ci.yml`.
+Full Vitest (2812 tests) and E2E remain in GitHub Actions `ci.yml`.
 
 ---
 
@@ -94,7 +94,7 @@ Full Vitest (2794 tests) and E2E remain in GitHub Actions `ci.yml`.
 | ---------------- | --------------------------------------------------------------- |
 | Typecheck        | `actionCreator` matchers in Redux listeners                     |
 | Vercel build     | Tauri stubs when optional packages missing                      |
-| react-dom        | `^19.2.7` — 2794 Vitest tests                                   |
+| react-dom        | `^19.2.7` — 2812 Vitest tests
 | GitHub Pages     | Trust CI on `workflow_run`; `BUILD_BASE_PATH=/CannaGuide-2025/` |
 | Cloudflare Pages | `deploy-cloudflare.yml` with secrets gate + PR preview          |
 | Deploy cleanup   | `cleanup-deployments.yml` deletes stale deployments             |

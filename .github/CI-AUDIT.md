@@ -97,7 +97,7 @@ Full Vitest (2812 tests) and E2E remain in GitHub Actions `ci.yml`.
 | react-dom        | `^19.2.7` — 2812 Vitest tests
 | GitHub Pages     | Trust CI on `workflow_run`; `BUILD_BASE_PATH=/CannaGuide-2025/` |
 | Cloudflare Pages | `deploy-cloudflare.yml` with secrets gate + PR preview          |
-| Deploy cleanup   | `cleanup-deployments.yml` deletes stale deployments             |
+| Deploy cleanup   | Post-deploy prune in `deploy.yml` + `deploy-cloudflare.yml`; nightly `cleanup-deployments.yml` (keep 3/env) |
 | harden-runner    | v2.19.4 repo-wide                                               |
 
 **CI note:** `ci.yml` ignores `**/*.md` and `docs/**` — doc-only commits do not run CI.

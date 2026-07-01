@@ -264,3 +264,25 @@ jobs:
                           body,
                         });
                       }
+
+    # -------------------------------------------------------------------------
+    # PRUNE -- GitHub Deployments API (all environments, keep 3 newest each)
+    # Runs even when deploy/preview jobs are skipped (no Cloudflare secrets).
+    # -------------------------------------------------------------------------
+    prune-deployments:
+        name: Prune stale GitHub deployments
+        needs: [deploy, preview]
+        if: always() && !cancelled()
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        permissions:
+            contents: read
+            deployments: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Prune stale GitHub deployments (keep 3 per environment)
+              uses: ./.github/actions/prune-deployments
+              with:
+                  keep_count: '3'

@@ -19,7 +19,10 @@ Production builds are deployed automatically via `.github/workflows/deploy.yml` 
 
 **Housekeeping:** On `workflow_run` (post-CI), the deploy workflow trusts CI and only runs `build:gh` + Pages upload — it does not re-run lint, typecheck, or unit tests. Use `workflow_dispatch` for a full pre-deploy gate locally in Actions.
 
-Stale GitHub **deployment** records are pruned weekly by [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (keeps the newest 3 per environment; use `workflow_dispatch` with `dry_run: true` to preview).
+Stale GitHub **deployment** records are pruned automatically:
+
+- **After every deploy:** `deploy.yml` and `deploy-cloudflare.yml` run [`.github/actions/prune-deployments`](../.github/actions/prune-deployments) (keeps the newest **3 per environment**).
+- **Nightly safety net:** [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (same logic; `workflow_dispatch` with `dry_run: true` to preview).
 
 **Build:** `BUILD_BASE_PATH=/CannaGuide-2025/` (subpath hosting).
 

@@ -20,7 +20,7 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 | Workflow                                                   | Purpose                                                           |
 | ---------------------------------------------------------- | ----------------------------------------------------------------- |
 | [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).    |
-| [`cleanup-deployments.yml`](./cleanup-deployments.yml)     | Weekly prune of stale GitHub Deployments (keep 3/env; `dry_run`). |
+| [`cleanup-deployments.yml`](./cleanup-deployments.yml)     | Nightly + manual prune of GitHub Deployments (keep 3/env); also runs post-deploy via composite action. |
 | [`graphify-update.yml`](./graphify-update.yml)             | Refresh `graphify-out/` on `main` when code/docs change.          |
 | [`stale.yml`](./stale.yml)                                 | Mark stale issues/PRs (scheduled).                                |
 | [`labeler.yml`](./labeler.yml)                             | PR labels from `.github/labeler.yml`.                             |

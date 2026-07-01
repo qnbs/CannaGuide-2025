@@ -57,6 +57,8 @@ jobs:
     deploy:
         name: Build & Deploy (Production)
         needs: gate
+        # Advisory mirror — GitHub Pages + Vercel are primary; do not block main on CF API quirks.
+        continue-on-error: true
         if: >-
             needs.gate.outputs.configured == 'true' &&
             (github.event_name == 'workflow_dispatch' ||
@@ -109,7 +111,7 @@ jobs:
                   echo "$OUT"
                   if [ "$CODE" -eq 0 ]; then
                     echo "::notice::Created Pages project ${{ env.CF_PROJECT_NAME }}"
-                  elif echo "$OUT" | grep -qiE 'already exists|80000133'; then
+                  elif echo "$OUT" | grep -qiE 'already exists|80000133|8000002'; then
                     echo "::notice::Pages project ${{ env.CF_PROJECT_NAME }} already exists"
                   else
                     echo "::warning::Could not create Pages project (exit ${CODE}). Deploy will retry; create manually in the Cloudflare dashboard if this persists."
@@ -118,6 +120,7 @@ jobs:
 
             - name: Deploy to Cloudflare Pages
               id: deploy
+              continue-on-error: true
               uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -202,7 +205,7 @@ jobs:
                   echo "$OUT"
                   if [ "$CODE" -eq 0 ]; then
                     echo "::notice::Created Pages project ${{ env.CF_PROJECT_NAME }}"
-                  elif echo "$OUT" | grep -qiE 'already exists|80000133'; then
+                  elif echo "$OUT" | grep -qiE 'already exists|80000133|8000002'; then
                     echo "::notice::Pages project ${{ env.CF_PROJECT_NAME }} already exists"
                   else
                     echo "::warning::Could not ensure Pages project (exit ${CODE})"

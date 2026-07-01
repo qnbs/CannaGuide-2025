@@ -29,7 +29,6 @@ function assertSafeGitRef(ref) {
 const GRANDFATHERED = new Set([
     'apps/web/services/geminiService.ts',
     'apps/web/services/plantSimulationService.ts',
-    'apps/web/services/workerBus.ts',
 ])
 
 const SCAN_GLOBS = [

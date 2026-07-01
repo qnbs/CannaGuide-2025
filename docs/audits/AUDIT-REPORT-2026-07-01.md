@@ -112,7 +112,7 @@ No structural change in v1.9. **Recommendation (P2):** ADR for slice/store bound
 
 ## 7. Prioritized Remaining Backlog (v1.9.1+)
 
-1. **P1** — Split `workerBus.ts`, `dbService.ts`, `pdfReportService.ts`, `GrowRoom3D.tsx`, `simulationSlice.ts`
+1. **P1** — Split `workerBus.ts` (in progress v1.9.1), ~~`dbService.ts`~~, ~~`pdfReportService.ts`~~, ~~`GrowRoom3D.tsx`~~, ~~`simulationSlice.ts`~~
 2. **P1** — Critical-path coverage ≥80 %
 3. **P2** — Vitest mock isolation fix (replace doc-only workaround)
 4. **P2** — CRDT conflict-resolution UI
@@ -133,6 +133,6 @@ See [`PRIORITIZED-BACKLOG-2026-06-30.md`](./PRIORITIZED-BACKLOG-2026-06-30.md) f
 | Compliance (disclaimers + privacy) | ✅ |
 | File budget (changed scope) | ✅ |
 | Typecheck / lint | ✅ |
-| Tag `v1.9.0` | Pending push + CI green |
+| Tag `v1.9.0` | ✅ Published 2026-07-01 — [Release](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.9.0), [Workflow #28514595691](https://github.com/qnbs/CannaGuide-2025/actions/runs/28514595691) |
 
-**Verdict:** **Release-ready** for v1.9.0 with documented P1/P2 follow-ups for v1.9.1.
+**Verdict:** **v1.9.0 shipped.** P1/P2 follow-ups for v1.9.1 documented below.

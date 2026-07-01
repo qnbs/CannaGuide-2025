@@ -173,6 +173,7 @@ workflow (PR #122 accidentally downgraded the version from 1.6.0 to 1.5.0).
 
 | Version | Date       | Theme                                     |
 | ------- | ---------- | ----------------------------------------- |
+| v1.9.0  | 2026-07-01 | God-file splits, dbService refactor, AI disclaimers, Privacy Policy |
 | v1.7.0  | 2026-04-11 | Voice & Accessibility Edition             |
 | v1.6.3  | 2026-04-10 | Build Attestation + CycloneDX + Lint Ph5  |
 | v1.6.2  | 2026-04-10 | Release pipeline fix + SLSA L1 provenance |

@@ -66,7 +66,7 @@ Target: **≤700 LOC** per view/service file (grandfathered exceptions documente
 
 Resolved in v1.9.0 cycle: `BreedingLab.tsx`, `GenealogyView.tsx`, `StrainDetailView.tsx`, `dbService.ts` (→ `services/db/*`), `GrowRoom3D.tsx`, `pdfReportService.ts`, `simulationSlice.ts`, `SettingsView.tsx`, and related view splits.
 
-Grandfathered (warn only, see `scripts/check-file-budget.mjs`): `workerBus.ts` (1193 LOC), `geminiService.ts`, `plantSimulationService.ts`.
+Grandfathered (warn only, see `scripts/check-file-budget.mjs`): `geminiService.ts`, `plantSimulationService.ts`. `workerBus.ts` split complete (430 LOC facade + `services/worker-bus/*`).
 
 ---
 

@@ -194,8 +194,11 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: Security audit (critical)
+            - name: Security audit (critical, production)
               run: pnpm audit --audit-level=critical --prod
+
+            - name: Security audit (high, all deps)
+              run: pnpm audit --audit-level=high
 
             - name: Trojan-source scan
               run: pnpm run security:trojan-source

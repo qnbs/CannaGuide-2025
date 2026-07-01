@@ -139,6 +139,7 @@
     "pnpm": {
         "overrides": {
             "@rollup/plugin-terser": "1.0.0",
+            "@babel/core": ">=7.29.6",
             "@babel/plugin-transform-modules-systemjs": ">=7.29.4",
             "tmp": ">=0.2.6",
             "lodash-es": "4.18.1",

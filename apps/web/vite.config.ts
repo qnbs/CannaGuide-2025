@@ -333,10 +333,11 @@ export default defineConfig({
                 'services/local-ai/interfaces.ts',
             ],
             thresholds: {
-                // Stufe B — CI-verified floors (phase-2 run 2026-06-02: 42.1/35.7/39.5/25.0 %)
-                // Roadmap target 50/50/35/50: separate coverage sprint.
-                lines: 42,
-                functions: 39,
+                // Stufe C — raised post-audit 2026-07-02 (measured: 43.0/41.0/25.0/35.7 %)
+                // Critical-path files (safetyPipeline, syncEncryption, simulation, diagnosis) at ≥80%
+                // Roadmap target 50/50/35/50: next coverage sprint.
+                lines: 43,
+                functions: 41,
                 branches: 25,
                 statements: 35,
             },

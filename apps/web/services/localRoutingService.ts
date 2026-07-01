@@ -17,6 +17,7 @@ import {
 } from '@/services/local-ai'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { captureLocalAiError } from '@/services/sentryService'
+import { aiConsentService } from '@/services/aiConsentService'
 import type { AiMode } from '@/types'
 
 const DYNAMIC_IMPORT_TIMEOUT_MS = 15_000
@@ -99,12 +100,31 @@ export const shouldRouteLocally = (): boolean => {
  * gets a response.
  *
  * In **local** or **localOnlyMode** the cloud call is never attempted.
+ *
+ * Before the first cloud call to a provider the user is prompted for
+ * per-provider data-transmission consent (GDPR Art. 6/7). Denial routes
+ * to the local fallback without making any network request.
  */
 export async function withLocalFallback<T>(
     cloudFn: () => Promise<T>,
     localFallback: () => T | Promise<T>,
 ): Promise<T> {
     if (_aiMode === 'local' || _aiMode === 'eco' || isLocalOnlyMode()) return localFallback()
+
+    // --- Per-provider consent gate (GDPR Art. 6/7) ---
+    const { aiProviderService } = await import('@/services/aiProviderService')
+    const activeProvider = aiProviderService.getActiveProviderId()
+    if (!aiConsentService.hasProviderConsent(activeProvider)) {
+        const { useUIStore } = await import('@/stores/useUIStore')
+        const granted = await useUIStore.getState().requestProviderConsent(activeProvider)
+        if (!granted) {
+            console.debug('[AI] Provider consent denied, falling back to local AI.')
+            return localFallback()
+        }
+        aiConsentService.grantProviderConsent(activeProvider)
+    }
+    // -------------------------------------------------
+
     try {
         return await cloudFn()
     } catch (error) {

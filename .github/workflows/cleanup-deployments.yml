@@ -23,6 +23,7 @@ jobs:
         name: Prune old deployments
         runs-on: ubuntu-latest
         timeout-minutes: 45
+        continue-on-error: true
         permissions:
             contents: read
             deployments: write

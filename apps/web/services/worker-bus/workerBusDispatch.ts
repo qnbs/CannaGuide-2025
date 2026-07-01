@@ -167,6 +167,7 @@ export function sendToWorker<TResponse>(
         }
 
         const pendingEntry: PendingRequest = {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Promise<T> stored as unknown resolver
             resolve: resolve as (v: unknown) => void,
             reject,
             timer,
@@ -301,6 +302,7 @@ export function dispatchOnce<TResponse>(
                     priority,
                     signal,
                     transferable,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- queued Promise<T> resolver
                     resolve: resolve as (v: unknown) => void,
                     reject,
                     preemptionCount: 0,

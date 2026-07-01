@@ -65,7 +65,7 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 
 **React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
 
-**Known test-isolation flakiness:** A full `test:run` may report ~2 failures in `services/aiResponseValidation.test.ts` and `services/growLogRagService.test.ts` due to cross-file mock pollution in the large suite. They pass when run in isolation (`pnpm --filter @cannaguide/web exec vitest run <file>`), so treat full-suite failures limited to these as pre-existing isolation noise, not regressions.
+**Known test-isolation flakiness:** If a full `test:run` reports sporadic failures outside `aiResponseValidation.test.ts` / `growLogRagService.test.ts`, prefer `vi.hoisted()` mocks plus `vi.resetModules()` + dynamic `import()` in affected suites (see those files). Residual full-suite noise may still occur in unrelated modules.
 
 ### Optional services
 

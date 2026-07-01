@@ -43,11 +43,14 @@ v1.9.0 closes the **June 29 P0 security gaps**, completes **Settings god-file re
 | ---- | ------ | ----- |
 | `SettingsView.tsx` | 2570 | 348 (#362) |
 | `DataManagementTab` | 1246 | 110 (#362) |
-| `BreedingLab.tsx` | 1198 | 94 |
-| `GenealogyView.tsx` | 1074 | 644 |
-| `StrainDetailView.tsx` | 1056 | 196 |
-| `CalculatorHubView.tsx` | 1511 | 124 |
-| `StrainLookupSection.tsx` | 1211 | 401 |
+| `BreedingLab.tsx` | 1198 | 94 (#364) |
+| `GenealogyView.tsx` | 1074 | 644 (#364) |
+| `StrainDetailView.tsx` | 1056 | 196 (#364) |
+| `CalculatorHubView.tsx` | 1511 | 124 (#364) |
+| `StrainLookupSection.tsx` | 1211 | 401 (#364) |
+| `pdfReportService.ts` | 923 | 9 (barrel; `services/pdf/*`) |
+| `GrowRoom3D.tsx` | 848 | 571 (`growRoom3d/*`) |
+| `simulationSlice.ts` | 834 | 361 (`simulation/*`) |
 
 ### Remaining over budget (P1)
 

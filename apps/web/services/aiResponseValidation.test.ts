@@ -1,18 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { z } from 'zod'
-import { Sentry } from '@/services/sentryService'
-import {
-    AiResponseValidationError,
-    validateAiResponse,
-    runRoutedValidated,
-} from './aiResponseValidation'
 
-vi.mock('@/services/sentryService', () => ({
-    Sentry: { captureException: vi.fn() },
-}))
-
-vi.mock('@/services/localRoutingService', () => ({
-    runRouted: vi.fn(
+const { mockCaptureException, mockRunRouted } = vi.hoisted(() => ({
+    mockCaptureException: vi.fn(),
+    mockRunRouted: vi.fn(
         async <T>(
             local: () => Promise<T>,
             _cloud: () => Promise<T>,
@@ -21,14 +12,29 @@ vi.mock('@/services/localRoutingService', () => ({
     ),
 }))
 
+vi.mock('@/services/sentryService', () => ({
+    Sentry: { captureException: mockCaptureException },
+}))
+
+vi.mock('@/services/localRoutingService', () => ({
+    runRouted: mockRunRouted,
+}))
+
 const TestSchema = z.object({
     title: z.string().min(1),
     content: z.string().min(1),
 })
 
 describe('validateAiResponse', () => {
-    beforeEach(() => {
+    let validateAiResponse: typeof import('./aiResponseValidation').validateAiResponse
+    let AiResponseValidationError: typeof import('./aiResponseValidation').AiResponseValidationError
+
+    beforeEach(async () => {
         vi.clearAllMocks()
+        vi.resetModules()
+        const mod = await import('./aiResponseValidation')
+        validateAiResponse = mod.validateAiResponse
+        AiResponseValidationError = mod.AiResponseValidationError
     })
 
     it('returns parsed data when schema matches', () => {
@@ -40,12 +46,20 @@ describe('validateAiResponse', () => {
         expect(() => validateAiResponse(TestSchema, { title: '' }, 'test')).toThrow(
             AiResponseValidationError,
         )
+        expect(mockCaptureException).toHaveBeenCalledTimes(1)
     })
 })
 
 describe('runRoutedValidated', () => {
-    beforeEach(() => {
+    let runRoutedValidated: typeof import('./aiResponseValidation').runRoutedValidated
+    let AiResponseValidationError: typeof import('./aiResponseValidation').AiResponseValidationError
+
+    beforeEach(async () => {
         vi.clearAllMocks()
+        vi.resetModules()
+        const mod = await import('./aiResponseValidation')
+        runRoutedValidated = mod.runRoutedValidated
+        AiResponseValidationError = mod.AiResponseValidationError
     })
 
     it('uses fallback when primary response fails validation', async () => {
@@ -70,8 +84,8 @@ describe('runRoutedValidated', () => {
             ),
         ).rejects.toThrow(AiResponseValidationError)
 
-        expect(Sentry.captureException).toHaveBeenCalledTimes(1)
-        expect(Sentry.captureException).toHaveBeenCalledWith(
+        expect(mockCaptureException).toHaveBeenCalledTimes(1)
+        expect(mockCaptureException).toHaveBeenCalledWith(
             expect.any(AiResponseValidationError),
             expect.objectContaining({
                 extra: expect.objectContaining({

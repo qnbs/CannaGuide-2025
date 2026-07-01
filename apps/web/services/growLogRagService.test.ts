@@ -1,15 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { JournalEntryType } from '@/types'
+import type { Plant, JournalEntry } from '@/types'
 
-// Mock the embedding service before importing the module
-vi.mock('@/services/local-ai', () => ({
+const localAiMocks = vi.hoisted(() => ({
     isEmbeddingModelReady: vi.fn(() => false),
     embedText: vi.fn(),
     embedBatch: vi.fn(),
     cosineSimilarity: vi.fn(),
-    getCachedEmbedding: vi.fn(() => Promise.resolve(null)),
+    getCachedEmbedding: vi.fn(() => Promise.resolve(null as Float32Array | null)),
     getOrComputeEmbedding: vi.fn(() => Promise.resolve(new Float32Array(384))),
     isSemanticRankingAvailable: vi.fn(() => false),
 }))
+
+vi.mock('@/services/local-ai', () => localAiMocks)
 
 vi.mock('dompurify', () => ({
     default: {
@@ -29,14 +32,14 @@ vi.mock('dompurify', () => ({
     },
 }))
 
-import { growLogRagService } from './growLogRagService'
-import { JournalEntryType } from '@/types'
-import type { Plant, JournalEntry } from '@/types'
-import { isEmbeddingModelReady, embedText, embedBatch, cosineSimilarity } from '@/services/local-ai'
-import {
-    getCachedEmbedding as getCachedEmbeddingPersistent,
+const {
+    isEmbeddingModelReady,
+    embedText,
+    embedBatch,
+    cosineSimilarity,
+    getCachedEmbedding: getCachedEmbeddingPersistent,
     isSemanticRankingAvailable,
-} from '@/services/local-ai'
+} = localAiMocks
 
 function makePlant(id: string, name: string, journal: Partial<JournalEntry>[]): Plant {
     return {
@@ -53,8 +56,15 @@ function makePlant(id: string, name: string, journal: Partial<JournalEntry>[]): 
 }
 
 describe('growLogRagService', () => {
-    beforeEach(() => {
+    let growLogRagService: typeof import('./growLogRagService').growLogRagService
+
+    beforeEach(async () => {
         vi.clearAllMocks()
+        localAiMocks.isEmbeddingModelReady.mockReturnValue(false)
+        localAiMocks.isSemanticRankingAvailable.mockReturnValue(false)
+        localAiMocks.getCachedEmbedding.mockResolvedValue(null)
+        vi.resetModules()
+        ;({ growLogRagService } = await import('./growLogRagService'))
     })
 
     it('returns empty message when no plants', () => {
@@ -137,10 +147,10 @@ describe('growLogRagService', () => {
 
     describe('isSemanticRankingAvailable', () => {
         it('delegates to ragEmbeddingCacheService', () => {
-            vi.mocked(isSemanticRankingAvailable).mockReturnValue(true)
+            isSemanticRankingAvailable.mockReturnValue(true)
             expect(growLogRagService.isSemanticRankingAvailable()).toBe(true)
 
-            vi.mocked(isSemanticRankingAvailable).mockReturnValue(false)
+            isSemanticRankingAvailable.mockReturnValue(false)
             expect(growLogRagService.isSemanticRankingAvailable()).toBe(false)
         })
     })
@@ -154,11 +164,11 @@ describe('growLogRagService', () => {
 
         it('ranks semantically similar entry higher than token-only match', async () => {
             // Enable semantic path
-            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
+            isEmbeddingModelReady.mockReturnValue(true)
 
             // Query embedding
             const queryVec = makeVec([1, 0, 0])
-            vi.mocked(embedText).mockResolvedValue(queryVec)
+            embedText.mockResolvedValue(queryVec)
 
             // Two entries: one with high semantic match, one with exact token match
             const p = makePlant('p1', 'TestPlant', [
@@ -177,13 +187,13 @@ describe('growLogRagService', () => {
             // Semantic entry gets high cosine, token-only gets low
             const semanticVec = makeVec([0.99, 0.01, 0])
             const tokenVec = makeVec([0.1, 0.1, 0.8])
-            vi.mocked(embedBatch).mockResolvedValue([semanticVec, tokenVec])
-            vi.mocked(cosineSimilarity).mockImplementation((a: Float32Array, b: Float32Array) => {
+            embedBatch.mockResolvedValue([semanticVec, tokenVec])
+            cosineSimilarity.mockImplementation((a: Float32Array, b: Float32Array) => {
                 // Simplified: first element dominance
                 const dotProduct = (a[0] ?? 0) * (b[0] ?? 0)
                 return Math.min(1, Math.max(-1, dotProduct))
             })
-            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+            getCachedEmbeddingPersistent.mockResolvedValue(null)
 
             const result = await growLogRagService.retrieveSemanticContext([p], 'yellowing leaves')
             const lines = result.split('\n').filter(Boolean)
@@ -195,7 +205,7 @@ describe('growLogRagService', () => {
         })
 
         it('falls back to keyword ranking when embeddings unavailable', async () => {
-            vi.mocked(isEmbeddingModelReady).mockReturnValue(false)
+            isEmbeddingModelReady.mockReturnValue(false)
 
             const p = makePlant('p1', 'TestPlant', [
                 {
@@ -210,13 +220,13 @@ describe('growLogRagService', () => {
         })
 
         it('respects topK in hybrid mode', async () => {
-            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
-            vi.mocked(embedText).mockResolvedValue(makeVec([1, 0, 0]))
-            vi.mocked(embedBatch).mockResolvedValue(
+            isEmbeddingModelReady.mockReturnValue(true)
+            embedText.mockResolvedValue(makeVec([1, 0, 0]))
+            embedBatch.mockResolvedValue(
                 Array.from({ length: 10 }, () => makeVec([0.5, 0.5, 0])),
             )
-            vi.mocked(cosineSimilarity).mockReturnValue(0.7)
-            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+            cosineSimilarity.mockReturnValue(0.7)
+            getCachedEmbeddingPersistent.mockResolvedValue(null)
 
             const entries = Array.from({ length: 10 }, (_, i) => ({
                 type: JournalEntryType.Observation as const,
@@ -232,9 +242,9 @@ describe('growLogRagService', () => {
         })
 
         it('falls back to keyword when embedding throws', async () => {
-            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
-            vi.mocked(embedText).mockRejectedValue(new Error('Model failed'))
-            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+            isEmbeddingModelReady.mockReturnValue(true)
+            embedText.mockRejectedValue(new Error('Model failed'))
+            getCachedEmbeddingPersistent.mockResolvedValue(null)
 
             const p = makePlant('p1', 'TestPlant', [
                 {
@@ -249,11 +259,11 @@ describe('growLogRagService', () => {
         })
 
         it('uses persistent cache when embeddings are pre-computed', async () => {
-            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
+            isEmbeddingModelReady.mockReturnValue(true)
             const cachedVec = makeVec([0.9, 0.1, 0])
-            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(cachedVec)
-            vi.mocked(embedText).mockResolvedValue(makeVec([1, 0, 0]))
-            vi.mocked(cosineSimilarity).mockReturnValue(0.95)
+            getCachedEmbeddingPersistent.mockResolvedValue(cachedVec)
+            embedText.mockResolvedValue(makeVec([1, 0, 0]))
+            cosineSimilarity.mockReturnValue(0.95)
 
             const p = makePlant('p1', 'TestPlant', [
                 {
@@ -270,13 +280,13 @@ describe('growLogRagService', () => {
         })
 
         it('computes hybrid score combining semantic, token and recency', async () => {
-            vi.mocked(isEmbeddingModelReady).mockReturnValue(true)
-            vi.mocked(embedText).mockResolvedValue(makeVec([1, 0, 0]))
-            vi.mocked(getCachedEmbeddingPersistent).mockResolvedValue(null)
+            isEmbeddingModelReady.mockReturnValue(true)
+            embedText.mockResolvedValue(makeVec([1, 0, 0]))
+            getCachedEmbeddingPersistent.mockResolvedValue(null)
 
             // One entry with known semantic score
-            vi.mocked(embedBatch).mockResolvedValue([makeVec([0.8, 0.2, 0])])
-            vi.mocked(cosineSimilarity).mockReturnValue(0.8)
+            embedBatch.mockResolvedValue([makeVec([0.8, 0.2, 0])])
+            cosineSimilarity.mockReturnValue(0.8)
 
             const p = makePlant('p1', 'TestPlant', [
                 {

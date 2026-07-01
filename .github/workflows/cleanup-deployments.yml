@@ -22,7 +22,7 @@ jobs:
     cleanup:
         name: Prune old deployments
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 45
         permissions:
             contents: read
             deployments: write

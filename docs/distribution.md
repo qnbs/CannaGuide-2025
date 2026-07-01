@@ -21,8 +21,9 @@ Production builds are deployed automatically via `.github/workflows/deploy.yml` 
 
 Stale GitHub **deployment** records are pruned automatically:
 
-- **After every deploy:** `deploy.yml` and `deploy-cloudflare.yml` run [`.github/actions/prune-deployments`](../.github/actions/prune-deployments) (keeps the newest **3 per environment**).
-- **Nightly safety net:** [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (same logic; `workflow_dispatch` with `dry_run: true` to preview).
+- **After every deploy:** `deploy.yml` and `deploy-cloudflare.yml` run [`.github/actions/prune-deployments`](../.github/actions/prune-deployments) (keeps the newest **3 per environment**; deactivates active deployments before delete).
+- **Nightly safety net:** [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (45 min timeout; re-run `workflow_dispatch` if backlog is large).
+- **Local / maintainer:** `node scripts/github/prune-deployments.mjs --keep=3` (requires `gh auth` with `repo` scope).
 
 **Branches:** Merged and closed-PR `cursor/*` / `dependabot/*` branches are pruned post-deploy and weekly via [`.github/workflows/cleanup-branches.yml`](../.github/workflows/cleanup-branches.yml).
 

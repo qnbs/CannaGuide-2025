@@ -59,6 +59,9 @@ function gitDiffFiles(ref) {
             .map((s) => s.trim())
             .filter((f) => /\.(ts|tsx|mjs)$/.test(f) && existsSync(f))
             .filter((f) => !/\.(test|spec)\.(ts|tsx|mjs)$/.test(f))
+            // Locale data files and strain data are excluded — they are
+            // translation/content files, not architecture-bounded modules.
+            .filter((f) => !/\/(locales|data\/strains)\//.test(f))
     } catch {
         return []
     }

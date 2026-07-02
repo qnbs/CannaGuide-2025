@@ -13,6 +13,7 @@ import {
 import { getReduxSnapshot } from '@/services/uiStateBridge'
 import { getT } from '@/i18n'
 import type { DivergenceInfo } from '@/services/crdtService'
+import type { AiProvider } from '@cannaguide/ai-core'
 
 export type SyncStatus = 'idle' | 'syncing' | 'conflict' | 'error' | 'synced'
 
@@ -61,6 +62,11 @@ export interface UIState {
         pendingRetries: number
         remotePayload: string | null
     }
+    /** Non-null when the AI routing layer is awaiting per-provider consent from the user. */
+    providerConsentRequest: {
+        provider: AiProvider
+        resolve: (granted: boolean) => void
+    } | null
 }
 
 // ---------------------------------------------------------------------------
@@ -106,6 +112,13 @@ export interface UIActions {
     clearSyncConflict: () => void
     setSyncLastSyncAt: (ts: number) => void
     setSyncPendingRetries: (count: number) => void
+    /**
+     * Requests per-provider AI consent from the user.
+     * Returns a promise that resolves to `true` (granted) or `false` (denied).
+     * Only one request can be pending at a time; concurrent calls queue to the same promise.
+     */
+    requestProviderConsent: (provider: AiProvider) => Promise<boolean>
+    resolveProviderConsent: (granted: boolean) => void
 }
 
 // ---------------------------------------------------------------------------
@@ -162,6 +175,7 @@ export const initialUIState: UIState = {
         pendingRetries: 0,
         remotePayload: null,
     },
+    providerConsentRequest: null,
 }
 
 // ---------------------------------------------------------------------------
@@ -346,6 +360,19 @@ export const useUIStore = create<UIState & UIActions>()(
                 set((state) => ({
                     syncState: { ...state.syncState, pendingRetries: count },
                 })),
+
+            requestProviderConsent: (provider) =>
+                new Promise<boolean>((resolve) => {
+                    set({ providerConsentRequest: { provider, resolve } })
+                }),
+
+            resolveProviderConsent: (granted) => {
+                const { providerConsentRequest } = useUIStore.getState()
+                if (providerConsentRequest) {
+                    providerConsentRequest.resolve(granted)
+                    set({ providerConsentRequest: null })
+                }
+            },
         })),
         { name: 'ui', enabled: import.meta.env.DEV },
     ),

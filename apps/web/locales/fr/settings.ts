@@ -76,6 +76,7 @@ export const settingsView = {
         providerConsentPrompt:
             "Vous etes sur le point d'envoyer des donnees de plante (y compris des photos) a {{provider}}. Acceptez-vous ?",
         providerConsentRemember: 'Retenir mon choix pour ce fournisseur',
+        providerConsentDeny: "Utiliser l'IA locale a la place",
         providerDpaLink: "Voir l'accord de traitement des donnees",
     },
     costTracking: {

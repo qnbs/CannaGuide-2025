@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input'
 // Age gate removed (can be re-introduced later)
 import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalBanner'
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
+import { ProviderConsentModal } from '@/components/common/ProviderConsentModal'
 import { scheduleRoutePreloads } from '@/utils/routePreload'
 import { PwaInstallBanner } from '@/components/common/PwaInstallBanner'
 import { OfflineIndicator } from '@/components/common/OfflineIndicator'
@@ -446,6 +447,7 @@ export const App: React.FC = () => {
                 isOpen={showPrivacyPolicy}
                 onClose={() => setShowPrivacyPolicy(false)}
             />
+            <ProviderConsentModal />
         </div>
     )
 }

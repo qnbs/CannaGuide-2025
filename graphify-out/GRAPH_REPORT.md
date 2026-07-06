@@ -1,16 +1,16 @@
-# Graph Report - CannaGuide-2025  (2026-06-29)
+# Graph Report - CannaGuide-2025  (2026-07-06)
 
 ## Corpus Check
-- 1147 files · ~1,355,655 words
+- 1318 files · ~1,387,944 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 11460 nodes · 16429 edges · 3419 communities (1142 shown, 2277 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 47 edges (avg confidence: 0.8)
+- 12209 nodes · 18788 edges · 3476 communities (1186 shown, 2290 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 208 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b70aa045`
+- Built from commit: `32803f91`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -638,6 +638,7 @@
 - [[_COMMUNITY_Community 662|Community 662]]
 - [[_COMMUNITY_Community 663|Community 663]]
 - [[_COMMUNITY_Community 666|Community 666]]
+- [[_COMMUNITY_Community 667|Community 667]]
 - [[_COMMUNITY_Community 668|Community 668]]
 - [[_COMMUNITY_Community 669|Community 669]]
 - [[_COMMUNITY_Community 670|Community 670]]
@@ -1849,6 +1850,7 @@
 - [[_COMMUNITY_Community 2410|Community 2410]]
 - [[_COMMUNITY_Community 2411|Community 2411]]
 - [[_COMMUNITY_Community 2412|Community 2412]]
+- [[_COMMUNITY_Community 2413|Community 2413]]
 - [[_COMMUNITY_Community 2414|Community 2414]]
 - [[_COMMUNITY_Community 2415|Community 2415]]
 - [[_COMMUNITY_Community 2419|Community 2419]]
@@ -2760,6 +2762,7 @@
 - [[_COMMUNITY_Community 3344|Community 3344]]
 - [[_COMMUNITY_Community 3345|Community 3345]]
 - [[_COMMUNITY_Community 3347|Community 3347]]
+- [[_COMMUNITY_Community 3352|Community 3352]]
 - [[_COMMUNITY_Community 3357|Community 3357]]
 - [[_COMMUNITY_Community 3358|Community 3358]]
 - [[_COMMUNITY_Community 3359|Community 3359]]
@@ -2820,98 +2823,157 @@
 - [[_COMMUNITY_Community 3415|Community 3415]]
 - [[_COMMUNITY_Community 3416|Community 3416]]
 - [[_COMMUNITY_Community 3417|Community 3417]]
+- [[_COMMUNITY_ICacheService|ICacheService]]
+- [[_COMMUNITY_IEcoModeService|IEcoModeService]]
+- [[_COMMUNITY_IHealthService|IHealthService]]
+- [[_COMMUNITY_IWebLlmService|IWebLlmService]]
+- [[_COMMUNITY_ADR-0007 WorkerBus Priority Preemption|ADR-0007: WorkerBus Priority Preemption]]
+- [[_COMMUNITY_Audit Closure — Full-Scale Audit 2026-06-29|Audit Closure — Full-Scale Audit 2026-06-29]]
+- [[_COMMUNITY_3. Detailed Findings by Dimension|3. Detailed Findings by Dimension]]
+- [[_COMMUNITY_check-pnpm-lockfile.mjs|check-pnpm-lockfile.mjs]]
+- [[_COMMUNITY_mdc-context-e2e.mjs|mdc-context-e2e.mjs]]
+- [[_COMMUNITY_LexikonView.tsx|LexikonView.tsx]]
+- [[_COMMUNITY_IGpuResourceManager|IGpuResourceManager]]
+- [[_COMMUNITY_offlineSyncQueueService.test.ts|offlineSyncQueueService.test.ts]]
+- [[_COMMUNITY_2. Security & Privacy|2. Security & Privacy]]
+- [[_COMMUNITY_3.1 Code Quality, Maintainability & Architecture|3.1 Code Quality, Maintainability & Architecture]]
+- [[_COMMUNITY_3.3 Performance, Bundle & PWA|3.3 Performance, Bundle & PWA]]
+- [[_COMMUNITY_indexedDbPruneService.test.ts|indexedDbPruneService.test.ts]]
+- [[_COMMUNITY_IEmbeddingService|IEmbeddingService]]
+- [[_COMMUNITY_IInferenceRouter|IInferenceRouter]]
+- [[_COMMUNITY_IModelLoader|IModelLoader]]
+- [[_COMMUNITY_IModelManager|IModelManager]]
+- [[_COMMUNITY_IWhisperService|IWhisperService]]
+- [[_COMMUNITY_1.9.0 - 2026-07-01|[1.9.0] - 2026-07-01]]
+- [[_COMMUNITY_10. CICD, Deployment & Tooling|10. CI/CD, Deployment & Tooling]]
+- [[_COMMUNITY_1. Architecture & Code Quality|1. Architecture & Code Quality]]
+- [[_COMMUNITY_6. AI & Machine Learning Integration|6. AI & Machine Learning Integration]]
+- [[_COMMUNITY_Prioritized Action Plan|Prioritized Action Plan]]
+- [[_COMMUNITY_3.4 Testing, Quality Gates & CICD|3.4 Testing, Quality Gates & CI/CD]]
+- [[_COMMUNITY_3.7 Domain Features|3.7 Domain Features]]
+- [[_COMMUNITY_9. Appendices|9. Appendices]]
+- [[_COMMUNITY_build|build]]
+- [[_COMMUNITY_growLogRagService.test.ts|growLogRagService.test.ts]]
+- [[_COMMUNITY_IImageSimilarityService|IImageSimilarityService]]
+- [[_COMMUNITY_INlpService|INlpService]]
+- [[_COMMUNITY_0.1.0 — 2026-03-01|[0.1.0] — 2026-03-01]]
+- [[_COMMUNITY_3. Performance & Resource Optimization|3. Performance & Resource Optimization]]
+- [[_COMMUNITY_4. State Management & Data Layer|4. State Management & Data Layer]]
+- [[_COMMUNITY_5. Testing & Quality Assurance|5. Testing & Quality Assurance]]
+- [[_COMMUNITY_7. UIUX, Accessibility & Theming|7. UI/UX, Accessibility & Theming]]
+- [[_COMMUNITY_8. Features, Data & Domain Logic|8. Features, Data & Domain Logic]]
+- [[_COMMUNITY_9. Documentation, DevEx & Maintainability|9. Documentation, DevEx & Maintainability]]
+- [[_COMMUNITY_CannaGuide 2025 — Full-Scale Audit Report|CannaGuide 2025 — Full-Scale Audit Report]]
+- [[_COMMUNITY_2. Reconnaissance & Baseline|2. Reconnaissance & Baseline]]
+- [[_COMMUNITY_3.6 PWA & Offline-First Architecture|3.6 PWA & Offline-First Architecture]]
+- [[_COMMUNITY_Previous Session (Session 138) -- Full Documentation Audit|Previous Session (Session 138) -- Full Documentation Audit]]
+- [[_COMMUNITY_Previous Session (Session 137) -- CodeQL Security Fix|Previous Session (Session 137) -- CodeQL Security Fix]]
+- [[_COMMUNITY_Previous Session (Session 91) -- Permanent CI Hardening Pass|Previous Session (Session 91) -- Permanent CI Hardening Pass]]
+- [[_COMMUNITY_Previous Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix|Previous Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix]]
+- [[_COMMUNITY_turbo.json|turbo.json]]
+- [[_COMMUNITY_aiResponseValidation.test.ts|aiResponseValidation.test.ts]]
+- [[_COMMUNITY_ILanguageDetectionService|ILanguageDetectionService]]
+- [[_COMMUNITY_userStrainsSlice.test.ts|userStrainsSlice.test.ts]]
+- [[_COMMUNITY_gitkraken-mcp-launcher.mjs|gitkraken-mcp-launcher.mjs]]
+- [[_COMMUNITY_commit-msg|commit-msg]]
+- [[_COMMUNITY_pre-commit|pre-commit]]
+- [[_COMMUNITY_pre-push|pre-push]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Next Session Handoff` - 162 edges
-2. `PhosphorIcons` - 153 edges
-3. `useAppSelector` - 149 edges
-4. `useAppDispatch` - 91 edges
-5. `Card` - 75 edges
-6. `getT()` - 75 edges
-7. `Button` - 70 edges
-8. `Language` - 69 edges
-9. `captureLocalAiError()` - 67 edges
-10. `scripts` - 66 edges
+1. `PhosphorIcons` - 195 edges
+2. `Next Session Handoff` - 163 edges
+3. `useAppSelector` - 163 edges
+4. `Card` - 105 edges
+5. `useAppDispatch` - 105 edges
+6. `Language` - 91 edges
+7. `Button` - 77 edges
+8. `getT()` - 76 edges
+9. `captureLocalAiError()` - 73 edges
+10. `scripts` - 72 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `runWithLocalFallback()` --calls--> `Task`  [INFERRED]
-  apps/web/services/ai/geminiProviderRouting.ts → packages/ai-core/src/domain/plant.ts
-- `versionedKey()` --calls--> `getRegistryModelVersion()`  [INFERRED]
-  apps/web/services/local-ai/cache/cacheService.ts → packages/ai-core/src/modelRegistry.ts
-- `diagnoseWebLlm()` --calls--> `check`  [INFERRED]
-  apps/web/services/local-ai/models/webLlmDiagnosticsService.ts → scripts/gitkraken-mcp-launcher.mjs
-- `getModelVersion()` --calls--> `getRegistryModelVersion()`  [INFERRED]
-  apps/web/services/local-ai/models/webLlmModelCatalog.ts → packages/ai-core/src/modelRegistry.ts
-- `autoSelectModel()` --calls--> `getRecommendedModel()`  [INFERRED]
-  apps/web/services/local-ai/models/webLlmModelCatalog.ts → packages/ai-core/src/modelRegistry.ts
+- `LogActionModal()` --indirect_call--> `PhotoCategory`  [INFERRED]
+  apps/web/components/views/plants/LogActionModal.tsx → packages/ai-core/src/domain/enums.ts
+- `sendToWorker()` --indirect_call--> `request()`  [INFERRED]
+  apps/web/services/worker-bus/workerBusDispatch.ts → scripts/github/harden-repo-settings.mjs
+- `LeafDiagnosisPanelComponent()` --indirect_call--> `pct()`  [INFERRED]
+  apps/web/components/views/plants/LeafDiagnosisPanel.tsx → scripts/check-critical-path-coverage.mjs
+- `mapPluginStage()` --references--> `PlantStage`  [EXTRACTED]
+  apps/web/stores/slices/nutrientPlannerSlice.ts → packages/ai-core/src/domain/enums.ts
+- `DataManagementTab()` --calls--> `useDataManagementActions()`  [EXTRACTED]
+  apps/web/components/views/settings/DataManagementTab.tsx → apps/web/components/views/settings/dataManagement/useDataManagementActions.ts
 
 ## Import Cycles
-- 3-file cycle: `apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/migrationTypes.ts`
-- 3-file cycle: `apps/web/services/uiStateBridge.ts -> apps/web/stores/store.ts -> apps/web/stores/useUIStore.ts -> apps/web/services/uiStateBridge.ts`
 - 3-file cycle: `apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/core/infrastructureService.ts`
-- 3-file cycle: `apps/web/services/imageGenerationService.ts -> apps/web/services/local-ai/index.ts -> apps/web/services/local-ai/inference/promptHandlers.ts -> apps/web/services/imageGenerationService.ts`
-- 3-file cycle: `apps/web/services/imageGenerationService.ts -> apps/web/services/local-ai/index.ts -> apps/web/services/local-ai/models/preloadOrchestrator.ts -> apps/web/services/imageGenerationService.ts`
 - 3-file cycle: `apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/device/healthService.ts -> apps/web/services/local-ai/core/infrastructureService.ts`
-- 4-file cycle: `apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/snapshotDiff.ts -> apps/web/services/migration/migrationTypes.ts`
-- 4-file cycle: `apps/web/services/migration/migrateStateOrchestrator.ts -> apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/migrateStateOrchestrator.ts`
-- 4-file cycle: `apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/versionMigrations.ts -> apps/web/services/migration/migrationTypes.ts`
-- 4-file cycle: `apps/web/services/migration/versionMigrations.ts -> apps/web/stores/slices/settingsSlice.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/versionMigrations.ts`
-- 4-file cycle: `apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/inference/streamingService.ts -> apps/web/services/local-ai/core/infrastructureService.ts`
+- 3-file cycle: `apps/web/services/uiStateBridge.ts -> apps/web/stores/store.ts -> apps/web/stores/useUIStore.ts -> apps/web/services/uiStateBridge.ts`
+- 3-file cycle: `apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/migrationTypes.ts`
+- 3-file cycle: `apps/web/stores/slices/simulation/simulationThunks.ts -> apps/web/stores/store.ts -> apps/web/stores/slices/simulationSlice.ts -> apps/web/stores/slices/simulation/simulationThunks.ts`
 - 4-file cycle: `apps/web/services/local-ai/core/LocalAIInfrastructure.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/core/LocalAIInfrastructure.ts`
 - 4-file cycle: `apps/web/services/local-ai/core/LocalAIInfrastructure.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/device/healthService.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/core/LocalAIInfrastructure.ts`
 - 4-file cycle: `apps/web/services/local-ai/core/inferenceRouter.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/core/inferenceRouter.ts`
-- 4-file cycle: `apps/web/services/imageGenerationService.ts -> apps/web/services/local-ai/index.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/inference/promptHandlers.ts -> apps/web/services/imageGenerationService.ts`
-- 4-file cycle: `apps/web/services/imageGenerationService.ts -> apps/web/services/local-ai/index.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/models/preloadOrchestrator.ts -> apps/web/services/imageGenerationService.ts`
+- 4-file cycle: `apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/inference/streamingService.ts -> apps/web/services/local-ai/core/infrastructureService.ts`
 - 4-file cycle: `apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/models/webLlmService.ts -> apps/web/services/local-ai/core/infrastructureService.ts`
-- 5-file cycle: `apps/web/services/migration/migrateStateOrchestrator.ts -> apps/web/services/migration/snapshotDiff.ts -> apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/migrateStateOrchestrator.ts`
-- 5-file cycle: `apps/web/services/migration/genealogyShapeGuard.ts -> apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/migrateStateOrchestrator.ts -> apps/web/services/migration/genealogyShapeGuard.ts`
-- 5-file cycle: `apps/web/services/migration/migrateStateOrchestrator.ts -> apps/web/services/migration/simulationShapeGuard.ts -> apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/migrateStateOrchestrator.ts`
+- 4-file cycle: `apps/web/services/migration/versionMigrations.ts -> apps/web/stores/slices/settingsSlice.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/versionMigrations.ts`
+- 4-file cycle: `apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/snapshotDiff.ts -> apps/web/services/migration/migrationTypes.ts`
+- 4-file cycle: `apps/web/services/migration/migrateStateOrchestrator.ts -> apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/migrateStateOrchestrator.ts`
+- 4-file cycle: `apps/web/services/migration/migrationTypes.ts -> apps/web/stores/store.ts -> apps/web/services/migrationLogic.ts -> apps/web/services/migration/versionMigrations.ts -> apps/web/services/migration/migrationTypes.ts`
+- 5-file cycle: `apps/web/services/local-ai/core/LocalAIInfrastructure.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/core/inferenceRouter.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/core/LocalAIInfrastructure.ts`
+- 5-file cycle: `apps/web/services/local-ai/core/LocalAIInfrastructure.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/inference/streamingService.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/core/LocalAIInfrastructure.ts`
+- 5-file cycle: `apps/web/services/local-ai/core/LocalAIInfrastructure.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/models/webLlmService.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/core/LocalAIInfrastructure.ts`
+- 5-file cycle: `apps/web/services/local-ai/core/inferenceRouter.ts -> apps/web/services/local-ai/models/webLlmService.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/core/inferenceRouter.ts`
+- 5-file cycle: `apps/web/services/local-ai/core/inferenceRouter.ts -> apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/models/modelManager.ts -> apps/web/services/local-ai/core/inferenceRouter.ts`
+- 5-file cycle: `apps/web/services/local-ai/core/infrastructureService.ts -> apps/web/services/local-ai/device/preloadService.ts -> apps/web/services/local-ai/core/localAI.ts -> apps/web/services/local-ai/models/modelManager.ts -> apps/web/services/local-ai/models/webLlmService.ts -> apps/web/services/local-ai/core/infrastructureService.ts`
 
-## Communities (3419 total, 2277 thin omitted)
+## Communities (3476 total, 2290 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.30
-Nodes (12): lookupCannabisApi(), lookupCannlytics(), lookupOtreeba(), getFuzzySuggestions(), CacheEntry, getCached(), isCacheEntry(), setCached() (+4 more)
+Cohesion: 0.04
+Nodes (46): Button, ButtonProps, ErrorBoundaryProps, ErrorBoundaryState, LoadMoreButtonProps, UpdateBannerProps, VoiceControl(), WSpeechRecognition (+38 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.08
-Nodes (10): clearWorkerRateLimits(), clearWorkerTelemetry(), CrdtTelemetryMetrics, DispatchOptions, PendingRequest, WorkerBusImpl, WorkerPayload, WorkerResponse (+2 more)
+Nodes (8): clearWorkerRateLimits(), getWorkerRateLimit(), isRateLimitAllowed(), rateLimitConfigs, rateLimitWindows, setWorkerRateLimit(), RateLimitConfig, WorkerBusImpl
 
 ### Community 2 - "Community 2"
-Cohesion: 0.09
-Nodes (11): OnMemoryPressureHook, OnSpawnHook, registerEcoProbe(), resolveIdleTimeout(), MockWorker, WorkerFactory, AtomicsChannel, canUseSharedArrayBuffer() (+3 more)
+Cohesion: 0.05
+Nodes (44): 10. Checkliste nach jeder Änderung, 11. Fehlerdiagnose, 1. Schnellstart: v1.9.0 jetzt veröffentlichen, 2. Tag Protection Ruleset (Hauptursache), 3. RELEASE_PAT einrichten (empfohlen), 4. Release Publish Workflow, 5. Branch Protection (`main`), 6. GitHub Actions — Berechtigungen & Secrets (+36 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.24
-Nodes (9): AiDiagnosticsModalProps, getLocalAiService(), isAlternateProvider(), LocalAiService, runWithLocalFallback(), shouldUseLocalFallback(), rethrowKnownGeminiError(), GeminiService (+1 more)
+Cohesion: 0.15
+Nodes (17): loadDb(), calculatorHistoryStore, imageStore, metadataStore, offlineActionsStore, simulationPersistence, chooseJournalRetentionLimit(), compactArchivedEntry() (+9 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.13
-Nodes (4): isValidBrokerUrl(), isValidSubtopic(), MqttSensorService, SensorReading
+Cohesion: 0.16
+Nodes (3): isValidBrokerUrl(), MqttSensorService, SensorReading
 
 ### Community 5 - "Community 5"
-Cohesion: 0.10
-Nodes (28): CategoryBadgeProps, categoryStyles, DiscoveryCard, DiscoveryCardProps, StrainLookupSection, buildStrainLookupPrompt(), buildUserProfile(), createSeededRng() (+20 more)
+Cohesion: 0.13
+Nodes (23): buildStrainLookupPrompt(), createSeededRng(), DailyStrainsFeed, dailyStrainsService, DiscoveredStrain, dismissStrainId(), FeedStatus, generateDailyPicks() (+15 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.05
 Nodes (27): strains, strains, strains, strains, strains, strains, strains, strains (+19 more)
 
+### Community 7 - "Community 7"
+Cohesion: 0.18
+Nodes (18): jspdf, generateTxt(), triggerDownload(), exportPlantReportPdf(), addPageFooters(), exportSetupsAsPdf(), exportSetupsAsTxt(), PDF_MARGINS (+10 more)
+
 ### Community 8 - "Community 8"
-Cohesion: 0.23
-Nodes (16): buildVoiceCommands(), ASSISTANT_PREFIXES, ensureVoiceWorkerRegistered(), executeCommand(), getBestVoice(), getLanguage(), getSettings(), handleAssistantQuery() (+8 more)
+Cohesion: 0.09
+Nodes (30): getT(), mapDynamicLoadingMessages(), DEFAULT_OPTIONS, GrowBibleExporter, GrowBibleOptions, slugify(), mockSettings, collectStats() (+22 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.16
-Nodes (8): PlantSimulationService, DailySimulationDeps, SimulationDiagnostics, ENVIRONMENTAL_DRIFT, SIMULATION_PROFILE_CURVES, SimulationSettings, AdvancePlantSimulationTimeInput, AdvancePlantSimulationTimeResult
+Cohesion: 0.21
+Nodes (5): PlantSimulationService, SimulationDiagnostics, SimulationSettings, AdvancePlantSimulationTimeInput, AdvancePlantSimulationTimeResult
 
 ### Community 10 - "Community 10"
-Cohesion: 0.18
-Nodes (3): CrdtService, reportCrdtError(), uint8ArrayToBase64()
+Cohesion: 0.15
+Nodes (4): CrdtService, reportCrdtError(), uint8ArrayToBase64(), Sentry
 
 ### Community 12 - "Community 12"
-Cohesion: 0.24
-Nodes (12): analyzeCo2(), analyzeEc(), analyzeLightHours(), analyzeMoisture(), analyzePh(), analyzeRootHealth(), analyzeTemperature(), analyzeVpd() (+4 more)
+Cohesion: 0.09
+Nodes (41): analyzeCo2(), analyzeEc(), analyzeLightHours(), analyzeMoisture(), analyzePh(), analyzeRootHealth(), analyzeTemperature(), analyzeVpd() (+33 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.27
@@ -2923,59 +2985,59 @@ Nodes (28): strains, strains, strains, strains, strains, strains, strains, strai
 
 ### Community 17 - "Community 17"
 Cohesion: 0.11
-Nodes (31): BudgetCalculator, BudgetCategory, CATEGORIES, DEFAULTS, CalculatorHistoryPanel, Props, calculatorList, CalculatorType (+23 more)
+Nodes (30): BudgetCalculator, BudgetCategory, CATEGORIES, DEFAULTS, CalculatorHistoryPanel, Props, calculatorList, CalculatorType (+22 more)
 
 ### Community 18 - "Community 18"
-Cohesion: 0.08
-Nodes (19): composeBatchMessage(), getDaysToHarvest(), getEnabledBatchReminders(), getRelevantReminders(), GrowReminder, GrowReminderBatch, GrowReminderService, GrowReminderType (+11 more)
+Cohesion: 0.26
+Nodes (11): composeBatchMessage(), getEnabledBatchReminders(), getRelevantReminders(), GrowReminderBatch, GrowReminderType, isBatchCoolingDown(), isReminderEnabled(), isWithinQuietHours() (+3 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.06
 Nodes (38): GenealogyNode, GeneticContribution, PollenRecord, Seed, SeedInventoryEntry, DifficultyLevel, FloweringType, HeightLevel (+30 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.14
-Nodes (21): addSectionHeader(), buildDiagnosisRows(), buildFilename(), buildOfflineSummary(), computeMetricStats(), DiagnosisSummaryRow, ensureSpace(), formatDate() (+13 more)
+Cohesion: 0.17
+Nodes (22): generateEnhancedGrowReport(), generateGrowReport(), renderDiagnosisCanvas(), renderMetricsCanvas(), SEVERITY_VALUES, addSectionHeader(), ensureSpace(), buildDiagnosisRows() (+14 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.31
-Nodes (3): buildChunkEmbeddingKey(), GrowLogRagService, tokenize()
+Cohesion: 0.10
+Nodes (33): buildChunkEmbeddingKey(), calculateRecencyScore(), formatContextLine(), GrowLogRagService, LogChunk, normalizeTokenScore(), scoreChunk(), tokenize() (+25 more)
 
 ### Community 22 - "Community 22"
 Cohesion: 0.14
 Nodes (22): IMPERIAL_LANGUAGES, mockUseAppSelector, useUnitSystem(), celsiusToFahrenheit(), cfmToM3h(), cmToInches(), cubicFtToCubicM(), cubicMToCubicFt() (+14 more)
 
 ### Community 23 - "Community 23"
-Cohesion: 0.08
-Nodes (17): loadDb(), ArchivedJournalMap, CalculatorHistoryEntry, ensureObjectStore(), ensureOfflineActionsStore(), ensureStrainIndexes(), MetadataItem, performTx() (+9 more)
+Cohesion: 0.38
+Nodes (4): loadDbService(), makePlant(), makeSimulationState(), makeStrain()
 
 ### Community 24 - "Community 24"
-Cohesion: 0.11
-Nodes (9): AggregatedStats, buildBucketKey(), buildRawEntry(), calculateVpd(), groupEntriesByBucket(), StatsAccumulator, TimeSeriesEntry, TimeSeriesQueryOptions (+1 more)
+Cohesion: 0.12
+Nodes (12): AggregatedStats, buildAggregatedEntry(), buildBucketKey(), buildRawEntry(), calculateVpd(), groupEntriesByBucket(), parseBucketKey(), StatsAccumulator (+4 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.22
 Nodes (15): buildPhotoTimelineMetadata(), clampTimestamp(), EXIF_CANDIDATE_TAGS, extractExifTimestampFromJpeg(), findExifIfdOffset(), formatExifDateString(), isJpegFile(), isJpegView() (+7 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.13
+Cohesion: 0.14
 Nodes (18): API_HOSTNAMES, APP_SHELL_URLS, deleteQueuedAction(), getQueuedActions(), getStoredReminders(), IMAGE_EXTENSIONS, ML_MODEL_EXTENSIONS, ML_MODEL_HOSTS (+10 more)
 
 ### Community 27 - "Community 27"
 Cohesion: 0.03
-Nodes (66): scripts, build, build:desktop, build:gh, changelog, changelog:latest, check:commit-identity, check:file-budget (+58 more)
+Nodes (72): scripts, build, build:desktop, build:gh, changelog, changelog:latest, check:commit-identity, check:critical-path-coverage (+64 more)
 
 ### Community 28 - "Community 28"
-Cohesion: 0.09
-Nodes (15): PredictiveInsightsPanel, PredictiveInsightsPanelProps, RISK_STYLES, PredictiveAnalyticsResult, RISK_ORDER, mockAnalyze, usePredictiveAnalytics(), BotrytisRiskAssessment (+7 more)
+Cohesion: 0.07
+Nodes (21): PredictiveInsightsPanel, PredictiveInsightsPanelProps, RISK_STYLES, AnalyticsDashboardView, CHART_MARGIN, ScoreGauge, STAGE_COLORS, useAnalytics() (+13 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.23
-Nodes (14): clamp01(), DIFFICULTY_SCORES, EFFECT_TERPENE_AFFINITY, getScoreBadgeClass(), rankStrains(), scoreBonus(), scoreCannabinoid(), scoreDataQuality() (+6 more)
+Cohesion: 0.20
+Nodes (16): StrainGridItemProps, clamp01(), DIFFICULTY_SCORES, EFFECT_TERPENE_AFFINITY, getScoreBadgeClass(), rankStrains(), RecommendationContext, scoreBonus() (+8 more)
 
 ### Community 30 - "Community 30"
-Cohesion: 0.15
-Nodes (3): ErrHandler, MockWorker, MsgHandler
+Cohesion: 0.18
+Nodes (5): autoRespond(), autoRespondError(), ErrHandler, MockWorker, MsgHandler
 
 ### Community 31 - "Community 31"
 Cohesion: 0.11
@@ -2986,16 +3048,16 @@ Cohesion: 0.33
 Nodes (10): clearCache(), deleteModel(), getCacheSize(), getModelInfo(), getRootDir(), isOpfsAvailable(), listModels(), opfsStorage (+2 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.15
-Nodes (8): HelpSubNav(), HelpSubNavProps, TAB_IDS, CATEGORY_COLORS, CategoryFilter, faqData, lexiconData, visualGuidesData
+Cohesion: 0.12
+Nodes (17): FAQSection, HelpSubNav(), HelpSubNavProps, TAB_IDS, LexiconCard, CATEGORY_COLORS, LexiconCategory, LexiconSection (+9 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.16
 Nodes (14): addEffectScore(), applyCannabinoidContribution(), buildSummary(), deriveSynergies(), deriveTerpeneScores(), EffectScores, EntourageInput, EntourageResult (+6 more)
 
 ### Community 35 - "Community 35"
-Cohesion: 0.11
-Nodes (16): EcPhReadingCrdtSchema, ecPhReadingToYMap(), JournalEntryCrdtSchema, journalEntryToYMap(), nutrientEntryToYMap(), NutrientScheduleEntryCrdtSchema, PlantCrdtSchema, plantToYMap() (+8 more)
+Cohesion: 0.08
+Nodes (30): EcPhReadingCrdtSchema, ecPhReadingToYMap(), JournalEntryCrdtSchema, journalEntryToYMap(), nutrientEntryToYMap(), NutrientScheduleEntryCrdtSchema, PlantCrdtSchema, plantToYMap() (+22 more)
 
 ### Community 36 - "Community 36"
 Cohesion: 0.36
@@ -3003,7 +3065,7 @@ Nodes (5): configureSshSigning(), gitSet(), gitUnset(), restoreSshKeyFromSecret(
 
 ### Community 37 - "Community 37"
 Cohesion: 0.18
-Nodes (10): computeAutoAdjustment(), EcPhReading, getOptimalRange(), initialState, NutrientAlert, nutrientPlannerSlice, NutrientPlannerState, OPTIMAL_RANGES (+2 more)
+Nodes (12): EcPhHistoryTab, EcPhHistoryTabProps, EcPhMonitorTabProps, computeAutoAdjustment(), EcPhReading, getOptimalRange(), initialState, nutrientPlannerSlice (+4 more)
 
 ### Community 39 - "Community 39"
 Cohesion: 0.24
@@ -3014,91 +3076,99 @@ Cohesion: 0.22
 Nodes (11): ALLOWED, ensurePubFromPrivate(), fingerprintFromPubContent(), fingerprintFromPubPath(), fpDisplay, gitEmail(), gitGlobal(), KEY_BASE (+3 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.16
-Nodes (35): createLocalizedPrompt(), truncatePromptForModel(), generateGeminiPlainText(), generateTextWithProviderRouting(), generateViaAlternateProvider(), getActiveProvider(), buildDeepDiveResponseSchema(), buildDiagnosePlantResponseSchema() (+27 more)
+Cohesion: 0.11
+Nodes (47): buildGardenPlantSummaries(), buildLocalizedEducationalPrompt(), buildStrainTipsLocalizedPrompt(), createLocalizedPrompt(), truncatePromptForModel(), generateGeminiPlainText(), generateTextWithProviderRouting(), generateViaAlternateProvider() (+39 more)
 
 ### Community 42 - "Community 42"
 Cohesion: 0.14
 Nodes (13): ComputeWaveformPayload, ComputeWaveformResult, detectLanguage(), FILLER_WORDS, levenshtein(), parseCommand(), ParseCommandPayload, ParseCommandResult (+5 more)
 
 ### Community 43 - "Community 43"
-Cohesion: 0.10
-Nodes (19): GaugeCard, GaugeProps, SYSTEM_TYPES, TIME_RANGE_MS, TIME_RANGES, TimeRange, VALID_SYSTEM_TYPES, checkAlerts() (+11 more)
+Cohesion: 0.09
+Nodes (26): HydroChartPanel, HydroChartPanelProps, isHydroSystemType(), SYSTEM_TYPES, TIME_RANGE_MS, TIME_RANGES, TimeRange, VALID_SYSTEM_TYPES (+18 more)
 
 ### Community 44 - "Community 44"
-Cohesion: 0.14
-Nodes (22): HumidityDeficitCalculator, STAGES, calculateCo2(), calculateHumidityDeficit(), calculateLightHanging(), calculateTimerSchedule(), Co2InputSchema, Co2Result (+14 more)
+Cohesion: 0.16
+Nodes (26): STAGES, calculateCo2(), calculateHumidityDeficit(), calculateLightHanging(), calculateTimerSchedule(), Co2Input, Co2InputSchema, Co2Result (+18 more)
 
 ### Community 46 - "Community 46"
-Cohesion: 0.19
-Nodes (10): getForceWasm(), buildProbeErrorResult(), CheckResult, checkSecureContext(), diagnoseWebLlm(), getDiagnosticI18nKey(), probeGpuAdapter(), resolveSecureContext() (+2 more)
+Cohesion: 0.26
+Nodes (11): buildProbeErrorResult(), checkForceWasm(), CheckResult, checkSecureContext(), checkWebGpuApi(), diagnoseWebLlm(), getDiagnosticI18nKey(), probeGpuAdapter() (+3 more)
+
+### Community 47 - "Community 47"
+Cohesion: 0.12
+Nodes (20): cache, clearImageGenCache(), getCachedGeneratedImage(), getImageGenCacheCount(), ImageCacheEntry, setCachedGeneratedImage(), buildImagePrompt(), COMPOSITION_PROMPTS (+12 more)
 
 ### Community 48 - "Community 48"
-Cohesion: 0.50
+Cohesion: 0.54
 Nodes (7): getChangedFiles(), hasRef(), LINT_EXTENSIONS, main(), resolveBaseRef(), runGit(), tryRunGit()
 
 ### Community 49 - "Community 49"
-Cohesion: 0.50
+Cohesion: 0.54
 Nodes (7): getChangedFiles(), hasRef(), main(), PRETTIER_EXTENSIONS, resolveBaseRef(), runGit(), tryRunGit()
 
 ### Community 50 - "Community 50"
-Cohesion: 0.11
-Nodes (23): applyAmendmentAction, applyPestControlAction, applyTrainingAction, applyWateringAction, areNotificationsMuted(), findStageChangeEntry(), initialState, isWithinQuietHours() (+15 more)
+Cohesion: 0.15
+Nodes (16): SLICE_SCHEMA_VERSIONS, deepMergeSettings(), applyVersionMigrations(), migrateV1ToV2(), migrateV3ToV4(), migrateV4ToV5(), migrateV5ToV6(), VERSION_MIGRATIONS (+8 more)
 
 ### Community 51 - "Community 51"
 Cohesion: 0.05
-Nodes (40): Adding a New Desktop Feature, Adding translations, Architecture Decisions, Branch Strategy, Capability-Based Security, Code of Conduct, Code Style, Commit Convention (+32 more)
+Nodes (44): Adding a New Desktop Feature, Adding or updating a strain, Adding translations, Architecture Decisions, Automated enrichment (maintainers), Branch Strategy, Capability-Based Security, Code of Conduct (+36 more)
+
+### Community 54 - "Community 54"
+Cohesion: 0.13
+Nodes (6): PlantSlot, PlantSlotProps, PlantVisualizer, PlantVisualizerProps, VitalBar, VitalBarProps
 
 ### Community 55 - "Community 55"
-Cohesion: 0.12
-Nodes (8): BootstrapConsentGateProps, ConsentBanner(), ConsentBannerProps, PrivacyPolicyModal(), PrivacyPolicyModalProps, SECTIONS, consentService, loadService()
+Cohesion: 0.05
+Nodes (33): BootstrapConsentGateProps, ConsentBanner(), ConsentBannerProps, Modal(), Budget, ExperienceLevel, GrowGoal, isLegalGateCompleted() (+25 more)
 
 ### Community 56 - "Community 56"
-Cohesion: 0.26
-Nodes (7): VPDGauge, VPDGaugeProps, altitudeCorrectionFactor(), barometricPressure(), calculateDewPoint(), calculateSVP(), calculateVPD()
+Cohesion: 0.15
+Nodes (15): Component, NutrientCalculator, findBestTemplate(), GROW_SCHEDULE_TEMPLATES, GrowScheduleTemplate, ScheduleStep, findBrandSchedule(), NUTRIENT_BRAND_SCHEDULES (+7 more)
 
 ### Community 57 - "Community 57"
 Cohesion: 0.22
-Nodes (6): OnToken, StreamFn, RafCallback, rafQueue, useStreamingResponse(), UseStreamingResponseReturn
+Nodes (5): OnToken, StreamFn, RafCallback, rafQueue, UseStreamingResponseReturn
 
 ### Community 58 - "Community 58"
 Cohesion: 0.25
 Nodes (3): DESKTOP, MOBILE, VIEWPORTS
 
 ### Community 59 - "Community 59"
-Cohesion: 0.08
-Nodes (27): PoolStatusProps, makeStore(), renderTab(), channelKey(), WorkerChannelRegistry, NON_RETRYABLE, getWorkerRateLimit(), isRateLimitAllowed() (+19 more)
+Cohesion: 0.12
+Nodes (35): NON_RETRYABLE, countPendingForWorker(), decrementActive(), dispatchOnce(), dispatchWithRetry(), drainQueue(), notifyPoolIdle(), sendToWorker() (+27 more)
 
 ### Community 60 - "Community 60"
 Cohesion: 0.10
 Nodes (19): CATEGORIES, IssueCard, IssueCardProps, ProblemTrackerTab, ProblemTrackerTabProps, SEVERITIES, SEVERITY_COLORS, STATUS_COLORS (+11 more)
 
 ### Community 61 - "Community 61"
-Cohesion: 0.17
-Nodes (8): diagnosisHistorySlice, diagnosisRecordsAdapter, initialState, recordSelectors, selectDiagnosisForPlant(), selectDiagnosisTrend(), selectLatestDiagnosis(), initialState
+Cohesion: 0.20
+Nodes (9): diagnosisHistorySlice, diagnosisRecordsAdapter, initialState, recordSelectors, selectDiagnosisForPlant(), selectDiagnosisRecords(), selectDiagnosisTrend(), selectLatestDiagnosis() (+1 more)
 
 ### Community 62 - "Community 62"
-Cohesion: 0.05
-Nodes (37): dependencies, browser-image-compression, @cannaguide/ai-core, @cannaguide/ui, class-variance-authority, clsx, cmdk, d3 (+29 more)
+Cohesion: 0.06
+Nodes (35): ExportsManagerView(), dependencies, browser-image-compression, @cannaguide/ai-core, @cannaguide/ui, class-variance-authority, clsx, cmdk (+27 more)
 
 ### Community 63 - "Community 63"
-Cohesion: 0.09
-Nodes (20): SeedVaultPollenLog, SeedVaultStats, StatCard, StatCardProps, TYPE_BAR_COLORS, TypeBar, TypeBarProps, breedingSlice (+12 more)
+Cohesion: 0.15
+Nodes (12): breedingSlice, BreedingState, initialState, SeedInventoryStats, selectLowStockEntries, selectOutOfStockEntries, selectPollenRecords(), selectSeedInventory() (+4 more)
 
 ### Community 64 - "Community 64"
-Cohesion: 0.19
-Nodes (9): HybridIcon(), IndicaIcon(), SativaIcon(), StrainTreeNode, StrainTreeNodeProps, TreeNodeLike, typeInfo, crossStrains() (+1 more)
+Cohesion: 0.16
+Nodes (18): isGerman(), sanitizeText(), ALLOWED_IMAGE_MIME_TYPES, buildDiagnosisContent(), classifyLeafImage(), classifyPlantImage(), classifySeverity(), enrichWithKnowledge() (+10 more)
 
 ### Community 65 - "Community 65"
-Cohesion: 0.08
-Nodes (30): GrowSetupModalProps, RangeSlider(), RangeSliderProps, SegmentedControl(), SegmentedControlProps, Switch, SwitchProps, FormSection() (+22 more)
+Cohesion: 0.05
+Nodes (73): Card, CardClickHandler, CardProps, GrowSetupModalProps, RangeSlider(), RangeSliderProps, SegmentedControl(), SegmentedControlProps (+65 more)
 
 ### Community 66 - "Community 66"
-Cohesion: 0.03
-Nodes (61): Card, CardClickHandler, CardProps, ConfirmDialog(), DetailedStrainSelectItem(), InlineStrainSelector(), InlineStrainSelectorProps, SearchBar (+53 more)
+Cohesion: 0.04
+Nodes (77): GrowSetupModal(), InlineStrainSelector(), Tab, Tabs(), TabsProps, EquipmentView(), CATEGORIES, categoryIcons (+69 more)
 
 ### Community 67 - "Community 67"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (12): ComparisonRow, ComparisonRowProps, normalizeCBD(), normalizeFloweringTime(), normalizeTHC(), RADAR_COLORS, RadarDataPoint, StrainComparisonView (+4 more)
 
 ### Community 68 - "Community 68"
@@ -3106,39 +3176,39 @@ Cohesion: 0.14
 Nodes (23): commandPalette, ai, common, nav, plantStages, problemMessages, equipmentView, faq (+15 more)
 
 ### Community 69 - "Community 69"
-Cohesion: 0.33
-Nodes (3): PhotoEntry, PhotoTimelineTab, PhotoTimelineTabProps
+Cohesion: 0.40
+Nodes (5): extractPhotoEntries(), isPhotoDetails(), PhotoEntry, PhotoTimelineTab, PhotoTimelineTabProps
 
 ### Community 70 - "Community 70"
-Cohesion: 0.21
-Nodes (6): PlantDiagnostic, formatPlantLine(), LocalAiFallbackService, NutrientRecommendationContext, safe(), NutrientContext
+Cohesion: 0.09
+Nodes (9): AiDiagnosticsModalProps, PlantDiagnostic, formatPlantLine(), LocalAiFallbackService, safe(), IDiagnosisService, IFallbackService, BaseAIProvider (+1 more)
 
 ### Community 71 - "Community 71"
-Cohesion: 0.07
-Nodes (49): cache, clearImageGenCache(), getCachedGeneratedImage(), getImageGenCacheCount(), ImageCacheEntry, setCachedGeneratedImage(), buildImagePrompt(), checkImageGenCapability() (+41 more)
+Cohesion: 0.08
+Nodes (48): BatteryEcoStatusBadge, StrainImageGenerator(), BatteryStatus, useBatteryStatus(), checkImageGenCapability(), applyAdaptiveMode(), detectBatteryRecovered(), detectCriticalBattery() (+40 more)
 
 ### Community 72 - "Community 72"
 Cohesion: 0.05
-Nodes (39): 1) Strain Scale Program (2026-2028), 2) Infinite Discovery Program, 3) Knowledge, Guides, and Extraction Education, 4) Scholarly Lexicon & Encyclopedia Program, 5) AR/VR Overlay + Digital Twin Program, 6) What-if Sandbox & BreedingLab Evolution, 🗺 CannaGuide 2025 — Roadmap, Completed (v1.2.0-alpha) (+31 more)
+Nodes (40): 1) Strain Scale Program (2026-2028), 2) Infinite Discovery Program, 3) Knowledge, Guides, and Extraction Education, 4) Scholarly Lexicon & Encyclopedia Program, 5) AR/VR Overlay + Digital Twin Program, 6) What-if Sandbox & BreedingLab Evolution, 🗺 CannaGuide 2025 — Roadmap, Completed (v1.2.0-alpha) (+32 more)
 
 ### Community 74 - "Community 74"
-Cohesion: 0.17
-Nodes (13): description, identifier, permissions, platforms, $schema, windows, clearNativeCache(), getNativeCapabilities() (+5 more)
+Cohesion: 0.33
+Nodes (7): clearNativeCache(), getNativeCapabilities(), NativeCapabilities, openLogDir(), PWA_CAPABILITIES, RawCapabilities, _resetNativeCapabilitiesCache()
 
 ### Community 75 - "Community 75"
-Cohesion: 0.17
-Nodes (13): dispatchToRedux(), getReduxSnapshot(), initUIStateBridge(), initUIStateBridgeFull(), subscribeToRedux(), _subscriptions, PartialRootState, levenshtein() (+5 more)
+Cohesion: 0.29
+Nodes (18): migrateState(), stripTransientState(), validateSliceVersions(), ensureArchivesShape(), ensureBreedingShape(), ensureDiagnosisHistoryShape(), ensureEntityAdapterShape(), ensureFavoritesShape() (+10 more)
 
 ### Community 76 - "Community 76"
-Cohesion: 0.12
-Nodes (17): countStore(), DB_DEFINITIONS, DbHealthStatus, DbStoreStats, formatBytes(), getDbStats(), getQuotaInfo(), monitorStorageHealth() (+9 more)
+Cohesion: 0.22
+Nodes (9): DbStoreBreakdown, countStore(), DB_DEFINITIONS, DbHealthStatus, DbStoreStats, formatBytes(), getDbStats(), monitorStorageHealth() (+1 more)
 
 ### Community 77 - "Community 77"
 Cohesion: 0.03
-Nodes (68): AI Stack (3-Layer + Image Gen), Architecture Snapshot, File Index (Changed in This Sprint), Grype Session Summary, Immediate Next Tasks, Key Service Dependency Graph, Latest Session (Session 177) -- Master Audit + Windows DX, Latest Session (Session 47) -- R-01 Streaming Generalization: useStreamingResponse Hook (+60 more)
+Nodes (70): AI Stack (3-Layer + Image Gen), Architecture Snapshot, File Index (Changed in This Sprint), Grype Session Summary, Immediate Next Tasks, Key Service Dependency Graph, Latest Session — Phase 2 completion + CodeAnt + coverage (Session 178), Latest Session (Session 47) -- R-01 Streaming Generalization: useStreamingResponse Hook (+62 more)
 
 ### Community 79 - "Community 79"
-Cohesion: 0.22
+Cohesion: 0.25
 Nodes (4): distDir, lighthouseDir, lighthouseReport, metrics
 
 ### Community 80 - "Community 80"
@@ -3146,56 +3216,56 @@ Cohesion: 0.18
 Nodes (13): addResult(), checkCommandVersion(), checks, failed, gpgFormat, gpgSign, hasAuthorOverride, hasCommitterOverride (+5 more)
 
 ### Community 82 - "Community 82"
-Cohesion: 0.17
-Nodes (7): initialState, runComparisonScenario, sandboxSlice, initial, MockWorker, rootReducer, testStrain
+Cohesion: 0.16
+Nodes (4): KnowledgeGraph, GraphEdge, GraphNode, GraphNodeType
 
 ### Community 83 - "Community 83"
 Cohesion: 0.05
 Nodes (38): Acknowledgments, AI System, CannaGuide 2025, CannaGuide 2025 (Deutsch), CI/CD, Testing & Security, CI/CD, Testing & Sicherheit, CI/CD Workflows (25), CI Health Dashboard (+30 more)
 
 ### Community 84 - "Community 84"
-Cohesion: 0.29
-Nodes (4): ListenerFn, mockInstances, MockRecInstance, WindowWithSpeech
+Cohesion: 0.11
+Nodes (13): getSpeechRecognitionAPI(), ListenerFn, mockInstances, MockRecInstance, WindowWithSpeech, useDictation(), UseDictationReturn, WDictationRecognition (+5 more)
 
 ### Community 85 - "Community 85"
-Cohesion: 0.25
-Nodes (7): clamp(), ForecastPayload, ForecastResult, InferenceSession, InitPayload, OrtModule, weightedMovingAverage()
+Cohesion: 0.16
+Nodes (12): PoolStatusProps, makeStore(), renderTab(), WorkerBusTelemetryExport, PoolMetrics, checkErrorRate(), flushMetrics(), initWorkerTelemetry() (+4 more)
 
 ### Community 86 - "Community 86"
-Cohesion: 0.12
-Nodes (26): createLocalAiService(), isGerman(), LocalAiService, sanitizeText(), getLocalAiService(), buildMentorPrompt(), formatJsonPrompt(), GenerateText (+18 more)
+Cohesion: 0.17
+Nodes (22): createLocalAiService(), LocalAiService, buildMentorPrompt(), formatJsonPrompt(), GenerateText, handleDeepDive(), handleEquipmentRecommendation(), handleGardenStatusSummary() (+14 more)
 
 ### Community 88 - "Community 88"
-Cohesion: 0.36
-Nodes (11): localizeStr(), appendEcRecommendationLine(), appendLatestReadingLine(), appendPhRecommendationLine(), appendPlantStatusLine(), buildNutrientRecommendation(), formatTrendChange(), mediumAdvice() (+3 more)
+Cohesion: 0.26
+Nodes (13): ensureObjectStore(), ensureOfflineActionsStore(), ensureStrainIndexes(), openDB(), performTx(), replaceStoreAtomically(), runMigrations(), toIndexedDbError() (+5 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.05
-Nodes (39): DataExportModal(), DataExportModalProps, SimpleExportFormat, EditSetupModal(), BUDGET_RANGES, CATEGORY_FILTERS, PresetSetupsView, PresetSetupsViewComponent() (+31 more)
+Cohesion: 0.04
+Nodes (64): ConfirmModal, ConfirmModalProps, DataExportModal(), DataExportModalProps, SimpleExportFormat, EditSetupModal(), SavedSetupsView, SavedSetupsViewComponent() (+56 more)
 
 ### Community 90 - "Community 90"
-Cohesion: 0.05
-Nodes (50): ConfirmDialogProps, GrowBibleExportButton, GrowBibleExportButtonProps, SyncConflictModal, SyncConflictModalProps, baseInfo, Button, ButtonProps (+42 more)
+Cohesion: 0.03
+Nodes (75): AiDisclaimer, AiDisclaimerComponent(), AiDisclaimerProps, ConfirmDialog(), ConfirmDialogProps, DialogWrapper(), DialogWrapperProps, DialogWrapperSize (+67 more)
 
 ### Community 91 - "Community 91"
-Cohesion: 0.28
-Nodes (5): initialState, metricsSlice, selectLatestMetrics(), selectMetricsForPlant(), initialState
+Cohesion: 0.11
+Nodes (19): `aiFacade.ts` / Orchestrierung, CannaGuide 2025 — Priorisierter Backlog (Stand: 30.06.2026), Critical-Path-Test-Plan (P1-1), `diagnosisService.ts`, Disclaimer-/Privacy-Textvorschläge (P2-2), P1-1 — Coverage-Sprint auf Critical Paths, P1-2 — God-Files refaktorisieren (≤ 700 LOC), P1-3 — Local-AI Mobile/Battery UX & Safeguards (+11 more)
 
 ### Community 92 - "Community 92"
-Cohesion: 0.25
-Nodes (6): StrainGridItem, StrainGridItemProps, strainFixture, typeClasses, typeIcons, RecommendationContext
+Cohesion: 0.17
+Nodes (6): TTSService, getInitialTtsState(), initialState, TtsActions, TtsState, SpeechQueueItem
 
 ### Community 96 - "Community 96"
-Cohesion: 0.03
-Nodes (60): AgeGateModalProps, ErrorBoundary, ErrorBoundaryProps, ErrorBoundaryState, GeoLegalBanner(), GeoLegalBannerProps, useGeoLegalBanner(), OfflineIndicator() (+52 more)
+Cohesion: 0.04
+Nodes (57): AgeGateModalProps, GeoLegalBanner(), GeoLegalBannerProps, useGeoLegalBanner(), OfflineIndicator(), PwaInstallBanner(), PwaInstallBannerProps, ReloadPrompt() (+49 more)
 
 ### Community 97 - "Community 97"
 Cohesion: 0.04
-Nodes (44): DialogWrapper(), DialogWrapperProps, DialogWrapperSize, sizeClasses, Drawer(), DrawerProps, ModalProps, CHART_MARGIN (+36 more)
+Nodes (37): EnvironmentControlPanel(), EnvironmentControlPanelProps, MetricConfig, MetricControl, MetricControlProps, useMetricConfigs(), VPD_ZONE_DEFAULTS, VPD_ZONES (+29 more)
 
 ### Community 98 - "Community 98"
 Cohesion: 0.18
-Nodes (14): Breach, cooldownMap, detectBreaches(), generateAlertId(), handleStateChange(), isCooldownActive(), proactiveCoachService, requestAiAdvice() (+6 more)
+Nodes (15): Breach, cooldownMap, detectBreaches(), generateAlertId(), handleStateChange(), isCooldownActive(), proactiveCoachService, requestAiAdvice() (+7 more)
 
 ### Community 99 - "Community 99"
 Cohesion: 0.11
@@ -3210,20 +3280,24 @@ Cohesion: 0.18
 Nodes (8): importVoiceControl(), ListenerFn, mockInstances, mockProcessVoiceCommand, MockRecInstance, mockSetVoiceListening, mockSetVoiceStatusMessage, WindowWithSpeech
 
 ### Community 104 - "Community 104"
-Cohesion: 0.10
-Nodes (11): ACTION_OPTIONS, ACTION_SET, ComparisonView, SandboxView(), CHART_TABS, ChartTab, ComparisonChart, PlantSummaryCard (+3 more)
+Cohesion: 0.06
+Nodes (28): AiLoadingIndicator, AiLoadingIndicatorProps, resolveErrorMessage(), SetupConfigurator(), ACTION_OPTIONS, ACTION_SET, ComparisonView, CustomExperimentBuilder() (+20 more)
+
+### Community 105 - "Community 105"
+Cohesion: 0.30
+Nodes (11): healthToLeafGreen(), stageToHeight(), vpdToColor(), getWebGLSupportError(), GrowRoom3D, GrowRoom3DComponent(), GrowRoom3DProps, createAtmosphereParticles() (+3 more)
 
 ### Community 107 - "Community 107"
-Cohesion: 0.20
-Nodes (5): BackupExportResult, BackupImportResult, BackupMetadata, backupService, MockJSZip
+Cohesion: 0.14
+Nodes (10): ApiKeyMetadata, apiKeyService, BackupExportResult, BackupImportResult, BackupMetadata, backupService, indexedDBStorage, openDB() (+2 more)
 
 ### Community 109 - "Community 109"
-Cohesion: 0.14
-Nodes (10): buildProcessWarnings(), getBurpDebtTone(), getJarHumidityTone(), getMoldRiskTone(), getTerpeneRetentionTone(), PostHarvestTab, PostHarvestTabProps, ProcessWarning (+2 more)
+Cohesion: 0.13
+Nodes (14): 1. Catalog version manifest, 2. Stable strain IDs, 3. Enrichment cadence, 4. Community contribution workflow, 5. User strains vs bundled catalog, ADR-0014: Strain Catalog Versioning & Enrichment Cadence, Consequences, Context (+6 more)
 
 ### Community 110 - "Community 110"
-Cohesion: 0.07
-Nodes (16): AttributeDisplay, AttributeDisplayProps, InfoSection, InfoSectionProps, Tab, Tabs(), TabsProps, MentorArchiveTab (+8 more)
+Cohesion: 0.17
+Nodes (12): exportAnalyticsCsv(), GrowReminderPanelComponent(), files, text, title, url, share_target, action (+4 more)
 
 ### Community 112 - "Community 112"
 Cohesion: 0.06
@@ -3234,12 +3308,12 @@ Cohesion: 0.50
 Nodes (4): currentReading, generateReading(), isDayPhase(), server
 
 ### Community 114 - "Community 114"
-Cohesion: 0.16
-Nodes (9): SttOptions, SttResult, SttSegment, transcribeAudio(), PiperVoice, synthesizeSpeech(), TtsOptions, FeatureDisabledError (+1 more)
+Cohesion: 0.13
+Nodes (12): SttOptions, SttResult, SttSegment, transcribeAudio(), ADR-0013, PiperVoice, synthesizeSpeech(), ADR-0013 (+4 more)
 
 ### Community 118 - "Community 118"
-Cohesion: 0.10
-Nodes (19): PoolStatus, SabBadge, SabBufferUtil, SabBufferUtilProps, SabLiveData, VPD_STATUS_COLORS, VPD_STATUS_TEXT_COLORS, WorkerTable (+11 more)
+Cohesion: 0.09
+Nodes (22): PoolStatus, SabBadge, SabBufferUtil, SabBufferUtilProps, SabLiveData, VPD_STATUS_COLORS, VPD_STATUS_TEXT_COLORS, WorkerTable (+14 more)
 
 ### Community 119 - "Community 119"
 Cohesion: 0.06
@@ -3250,8 +3324,8 @@ Cohesion: 0.40
 Nodes (5): daysMs(), simulate(), testSetup, testStrain, tunedSimulationSettings
 
 ### Community 123 - "Community 123"
-Cohesion: 0.07
-Nodes (27): devDependencies, anti-trojan-source, @commitlint/cli, @commitlint/config-conventional, conventional-changelog-cli, depcheck, eslint, eslint-config-prettier (+19 more)
+Cohesion: 0.08
+Nodes (24): devDependencies, anti-trojan-source, @commitlint/cli, @commitlint/config-conventional, conventional-changelog-cli, depcheck, eslint, eslint-config-prettier (+16 more)
 
 ### Community 124 - "Community 124"
 Cohesion: 0.14
@@ -3262,12 +3336,12 @@ Cohesion: 0.08
 Nodes (34): AmendmentType, JournalEntryType, LightType, PhotoCategory, PotType, ProblemType, TaskPriority, TrainingType (+26 more)
 
 ### Community 126 - "Community 126"
-Cohesion: 0.04
-Nodes (65): AiLoadingIndicator, AiLoadingIndicatorProps, Button, ButtonProps, CameraModal(), CameraModalProps, ConfirmModalProps, EditableResponse (+57 more)
+Cohesion: 0.07
+Nodes (34): estimateEta(), formatTime(), ModelLoadingProgress, SafeHtml, SafeHtmlProps, SearchBar, SearchBarProps, Speakable() (+26 more)
 
 ### Community 128 - "Community 128"
-Cohesion: 0.08
-Nodes (16): Allele, BreedingArPreview, BreedingLab(), BreedingLabProps, Generation, GENERATIONS, Genotype, getSafeNumericValue() (+8 more)
+Cohesion: 0.15
+Nodes (22): BreedingArPreview, BreedingArTab(), BreedingGeneticsTab(), BreedingSeedsTab(), Generation, GENERATIONS, getSafeNumericValue(), getSafeStringArray() (+14 more)
 
 ### Community 129 - "Community 129"
 Cohesion: 0.13
@@ -3275,79 +3349,79 @@ Nodes (21): commandPalette, ai, common, nav, plantStages, problemMessages, equip
 
 ### Community 130 - "Community 130"
 Cohesion: 0.06
-Nodes (24): CloudTtsService, DEFAULT_VOICE_IDS, isRateLimited(), recordRequest(), requestTimestamps, mockCreateBufferSource, mockCreateGain, mockDecodeAudioData (+16 more)
+Nodes (18): CloudTtsService, DEFAULT_VOICE_IDS, isRateLimited(), recordRequest(), requestTimestamps, mockCreateBufferSource, mockCreateGain, mockDecodeAudioData (+10 more)
 
 ### Community 131 - "Community 131"
 Cohesion: 0.13
 Nodes (21): commandPalette, ai, common, nav, plantStages, problemMessages, equipmentView, faq (+13 more)
 
 ### Community 132 - "Community 132"
-Cohesion: 0.06
-Nodes (34): dependsOn, env, inputs, outputs, cache, dependsOn, persistent, cache (+26 more)
+Cohesion: 0.05
+Nodes (37): dependsOn, env, inputs, outputs, cache, dependsOn, persistent, cache (+29 more)
 
 ### Community 133 - "Community 133"
 Cohesion: 0.13
 Nodes (21): commandPalette, ai, common, nav, plantStages, problemMessages, equipmentView, faq (+13 more)
 
 ### Community 134 - "Community 134"
-Cohesion: 0.04
-Nodes (44): ReadAloudButton(), ReadAloudButtonProps, mockReadContent, CATEGORIES, categoryIcons, GrowTechView, DEFAULT_SETTINGS, DEFAULT_SETUP (+36 more)
+Cohesion: 0.05
+Nodes (60): CommunitySharePanelComponent(), OfflineActionQueuePanel(), CategoryBadgeProps, categoryStyles, DailyStrains(), DiscoveryCard, DiscoveryCardProps, StrainLookupSection (+52 more)
 
 ### Community 136 - "Community 136"
 Cohesion: 0.06
-Nodes (34): devDependencies, autoprefixer, @axe-core/playwright, babel-plugin-react-compiler, eslint-plugin-import, eslint-plugin-react, eslint-plugin-react-hooks, fake-indexeddb (+26 more)
+Nodes (35): devDependencies, @axe-core/playwright, babel-plugin-react-compiler, eslint-plugin-import, eslint-plugin-react, eslint-plugin-react-hooks, fake-indexeddb, fast-check (+27 more)
 
 ### Community 137 - "Community 137"
-Cohesion: 0.18
-Nodes (10): BankData, BankSection, ConclusionsCategory, GeneticTrendCriterion, GeneticTrends2026Data, NON_BANK_KEYS, Section, SeedbankProfile (+2 more)
+Cohesion: 0.21
+Nodes (11): BankData, BankSection, ConclusionsCategory, GeneticTrendCriterion, GeneticTrends2026Data, NON_BANK_KEYS, Section, SeedbankProfile (+3 more)
 
 ### Community 138 - "Community 138"
 Cohesion: 0.12
-Nodes (10): StrainGrid, StrainGridComponent(), StrainGridProps, StrainList, StrainListComponent(), StrainListProps, MockResizeObserver, useVirtualizer() (+2 more)
+Nodes (16): StrainGrid, StrainGridComponent(), StrainGridProps, StrainList, StrainListComponent(), StrainListProps, StrainListItem, strainFixture (+8 more)
 
 ### Community 139 - "Community 139"
-Cohesion: 0.11
-Nodes (19): AiEquipmentPanel, CATEGORY_ORDER, RecommendationTable, RecommendationTableProps, SliderField, WhatIfSandbox, AutoTableOptions, EquipmentPlanExportData (+11 more)
+Cohesion: 0.19
+Nodes (10): AutoTableOptions, EquipmentPlanExportData, exportEquipmentPlanPdf(), JsPDFWithAutoTable, RECOMMENDATION_CATEGORIES, MockJsPDF, mockRecommendation, mockRoomDimensions (+2 more)
 
 ### Community 140 - "Community 140"
-Cohesion: 0.14
-Nodes (16): VoiceHUD(), mockAddNotification, mockBuildVoiceCommands, mockGetVoices, mockMatchVoiceCommand, mockSetActiveView, mockSetVoiceStatusMessage, mockSpeak (+8 more)
+Cohesion: 0.15
+Nodes (15): mockAddNotification, mockBuildVoiceCommands, mockGetVoices, mockMatchVoiceCommand, mockSetActiveView, mockSetVoiceStatusMessage, mockSpeak, getInitialVoiceState() (+7 more)
 
 ### Community 141 - "Community 141"
-Cohesion: 0.17
-Nodes (15): base64ToUint8Array(), BenchmarkResult, CrdtErrorCode, CrdtSyncResult, StorageUsage, reportCrdtTelemetry(), isEncryptedSyncPayload(), CrdtGistPayload (+7 more)
+Cohesion: 0.19
+Nodes (18): base64ToUint8Array(), CrdtSyncResult, reportCrdtTelemetry(), base64ToBytes(), bytesToBase64(), decryptSyncPayload(), encryptSyncPayload(), generateSyncEncryptionKey() (+10 more)
 
 ### Community 142 - "Community 142"
 Cohesion: 0.06
-Nodes (51): WebLlmPreloadBanner, useWebLlmLoadProgress(), emit(), getWebLlmLoadingSnapshot(), Listener, listeners, reportWebLlmError(), reportWebLlmProgress() (+43 more)
+Nodes (55): WebLlmPreloadBanner, useWebLlmLoadProgress(), emit(), getWebLlmLoadingSnapshot(), Listener, listeners, reportWebLlmError(), reportWebLlmProgress() (+47 more)
 
 ### Community 143 - "Community 143"
-Cohesion: 0.05
-Nodes (79): BatteryStatus, useBatteryStatus(), LogChunk, normalizeTokenScore(), scoreChunk(), makeGrowPlant(), makePlant(), applyAdaptiveMode() (+71 more)
+Cohesion: 0.07
+Nodes (40): EditResponseModalComponent(), dompurify, enqueueInference(), ensureWorker(), getActiveCount(), getQueueSize(), InferencePriority, InferenceTask (+32 more)
 
 ### Community 144 - "Community 144"
 Cohesion: 0.67
 Nodes (3): CONFIG_PATH, loadConfig(), main()
 
 ### Community 146 - "Community 146"
-Cohesion: 0.06
-Nodes (35): GENEALOGY_NODE_SEPARATION, GENEALOGY_NODE_SIZE, HydroForecastMessages, SerializedVoiceCommand, SimulationMessages, VisionInferenceMessages, VoiceWorkerMessages, workerErr() (+27 more)
+Cohesion: 0.05
+Nodes (47): GENEALOGY_NODE_SEPARATION, SimulationWorkerInput, HydroForecastMessages, SerializedVoiceCommand, SimulationMessages, VisionInferenceMessages, VoiceWorkerMessages, workerErr() (+39 more)
 
 ### Community 147 - "Community 147"
 Cohesion: 0.09
 Nodes (22): checkers, concurrency, coverageAnalysis, htmlReporter, fileName, ignorePatterns, incremental, incrementalFile (+14 more)
 
 ### Community 150 - "Community 150"
-Cohesion: 0.33
-Nodes (4): useForm(), UseFormProps, ValidationErrors, ValidationFunction
+Cohesion: 0.16
+Nodes (12): AddStrainModal(), AddStrainModalProps, defaultStrainValues, getSafeStrainType(), isValidRange(), parseCommaSeparatedTokens(), strainToFormValues(), baseStrain (+4 more)
 
 ### Community 151 - "Community 151"
-Cohesion: 0.19
-Nodes (18): base64ToBytes(), bytesToBase64(), decrypt(), deleteEncryptionKey(), encrypt(), EncryptedPayload, getOrCreateEncryptionKey(), getPersistedEncryptionKey() (+10 more)
+Cohesion: 0.21
+Nodes (16): base64ToBytes(), bytesToBase64(), decrypt(), deleteEncryptionKey(), encrypt(), EncryptedPayload, getOrCreateEncryptionKey(), getPersistedEncryptionKey() (+8 more)
 
 ### Community 152 - "Community 152"
-Cohesion: 0.09
-Nodes (16): AnalyticsDashboardView, CHART_MARGIN, ScoreGauge, STAGE_COLORS, useAnalytics(), AnalyticsRecommendation, analyticsService, DailyCount (+8 more)
+Cohesion: 0.11
+Nodes (13): AnalyticsEngine, AnalyticsRecommendation, analyticsService, DailyCount, estimateMilestoneForPlant(), GrowDurationStatEntry, HealthTrendEntry, isFinishedStage() (+5 more)
 
 ### Community 153 - "Community 153"
 Cohesion: 0.23
@@ -3366,48 +3440,48 @@ Cohesion: 0.10
 Nodes (20): 44x44 Touch Targets (Destructive Icon Buttons), Accessibility and PWA Polish, AUDIT_BACKLOG Updates, Audit Findings (Prioritized), Critical Flow Fixes, Focus Return (Nested Overlays), Global Overlay System, i18n Fix (LlmModelSelector) (+12 more)
 
 ### Community 157 - "Community 157"
-Cohesion: 0.18
-Nodes (9): CATEGORY_ICON, CategoryFilter, DiseaseDetailPanel(), DiseaseDetailPanelProps, SEVERITY_BADGE, STAGE_LABEL, URGENCY_BORDER, UrgencyFilter (+1 more)
+Cohesion: 0.15
+Nodes (10): CATEGORY_ICON, CategoryFilter, DiseaseDetailPanel(), DiseaseDetailPanelProps, SEVERITY_BADGE, STAGE_LABEL, URGENCY_BORDER, UrgencyFilter (+2 more)
 
 ### Community 158 - "Community 158"
-Cohesion: 0.10
-Nodes (15): buildHeaders(), cache, CacheEntry, CansativaMenuItem, CansativaPartner, CansativaProduct, fetchByPostalCode(), fetchEndpoint() (+7 more)
+Cohesion: 0.12
+Nodes (21): buildHeaders(), cache, CacheEntry, CansativaMenuItem, CansativaPartner, CansativaProduct, fetchByPostalCode(), fetchEndpoint() (+13 more)
+
+### Community 159 - "Community 159"
+Cohesion: 0.25
+Nodes (8): appendArButton(), BreedingArPreview, BreedingArPreviewComponent(), BreedingArPreviewProps, createPlant(), disposeSceneResources(), Event, useOutsideClick()
 
 ### Community 160 - "Community 160"
-Cohesion: 0.19
+Cohesion: 0.22
 Nodes (16): checks, defaultChecks, dryRun, ensureEnvironment(), failures, getUserId(), headers, logStep() (+8 more)
 
 ### Community 161 - "Community 161"
-Cohesion: 0.20
-Nodes (5): rootReducer, testSetup, testStrain, ThrowingWorker, updatePlantToNow
-
-### Community 162 - "Community 162"
-Cohesion: 0.20
-Nodes (6): OfflineSyncQueueService, loadService(), pushToGistMock, setSyncLastSyncAtMock, setSyncPendingRetriesMock, setSyncStatusMock
+Cohesion: 0.22
+Nodes (4): rootReducer, testSetup, testStrain, ThrowingWorker
 
 ### Community 165 - "Community 165"
-Cohesion: 0.08
-Nodes (26): validatePayload(), ConnectionStateCallback, DEFAULT_CONFIG, IoTEvent, IoTEventCallback, MqttConnectionState, MqttSensorConfig, SensorUpdateCallback (+18 more)
+Cohesion: 0.09
+Nodes (24): ConnectionStateCallback, DEFAULT_CONFIG, IoTEvent, IoTEventCallback, isValidSubtopic(), MqttConnectionState, MqttSensorConfig, SensorUpdateCallback (+16 more)
 
 ### Community 166 - "Community 166"
-Cohesion: 0.20
-Nodes (9): DialogFilter, GPU, GPUAdapter, GPUDevice, GPUSupportedLimits, MLCEngine, Navigator, Pipeline (+1 more)
+Cohesion: 0.09
+Nodes (15): DialogFilter, GPU, GPUAdapter, GPUDevice, GPUSupportedLimits, @mlc-ai/web-llm, MLCEngine, Navigator (+7 more)
 
 ### Community 167 - "Community 167"
-Cohesion: 0.09
-Nodes (23): GrowStatsDashboardComponent(), useAsync(), UseAsyncResult, useStorageEstimate(), useYieldPrediction(), buildFeatureVector(), calculateFeatureStats(), clamp() (+15 more)
+Cohesion: 0.21
+Nodes (16): buildFeatureVector(), calculateFeatureStats(), clamp(), collectTrainingSamples(), estimateHeuristicYield(), getStrainTypeOneHot(), loadTensorflow(), mediumTypes (+8 more)
 
 ### Community 168 - "Community 168"
-Cohesion: 0.08
-Nodes (25): strainAliases, cleanedCanonicalName(), collapseNodes(), GeneticsService, parseParentNames(), splitCrossGenetics(), stripParentheticalSuffix(), uniqueById() (+17 more)
+Cohesion: 0.06
+Nodes (44): AnalysisPanel, DescendantsModal(), DescendantsModalProps, GenealogyError(), GenealogyLayoutLink, GenealogyLayoutNode, GenealogyLink, GenealogyTree() (+36 more)
 
 ### Community 169 - "Community 169"
-Cohesion: 0.06
-Nodes (28): CannabinoidRatioPanel(), getVpdStatus(), KNOWN_TERPENES, LightSpectrumPanel(), NutrientResult, RagExplainBoxProps, SimulationPanelProps, TabId (+20 more)
+Cohesion: 0.28
+Nodes (9): useAsync(), UseAsyncResult, formatBytes(), getObjectSize(), useStorageEstimate(), useYieldPrediction(), selectArchives(), selectSavedItems() (+1 more)
 
 ### Community 171 - "Community 171"
-Cohesion: 0.17
-Nodes (11): GROW_ACTIONS, GrowPlannerView, GrowPlannerViewProps, growPlannerSlice, initialState, selectAllPlannerTasks(), selectOverdueTasks(), selectPlannerTasksForPlant() (+3 more)
+Cohesion: 0.29
+Nodes (7): growPlannerSlice, initialState, selectOverdueTasks(), selectPlannerTasksForPlant(), selectTodayTasks(), selectUpcomingTasks(), initialState
 
 ### Community 172 - "Community 172"
 Cohesion: 0.15
@@ -3418,48 +3492,48 @@ Cohesion: 0.08
 Nodes (25): ADR: CSP strict-dynamic for SSR / Edge (v2.0), AI Pipeline, AI Service Architecture, Build and Deployment, Bundle Budget Enforcement, CannaGuide 2025 -- Architecture Overview, CRDT Sync Layer (Yjs), Data Flow (+17 more)
 
 ### Community 175 - "Community 175"
-Cohesion: 0.04
-Nodes (72): GrowSetupModal(), SaveSetupModal(), SaveSetupModalContainer(), GrowLogRagPanel, GrowLogRagPanelComponent(), MentorView(), AiDiagnosticsModal(), AiDiagnosticsModalContainer() (+64 more)
+Cohesion: 0.09
+Nodes (18): navIcons, navItemIds, SettingsSubNav(), SettingsSubNavProps, AboutTab, AiSettingsTab, DataManagementTab, DefaultsSettingsTab (+10 more)
 
 ### Community 178 - "Community 178"
-Cohesion: 0.06
-Nodes (32): background_color, categories, description, display, display_override, edge_side_panel, preferred_width, file_handlers (+24 more)
+Cohesion: 0.08
+Nodes (23): background_color, categories, description, display, display_override, edge_side_panel, preferred_width, file_handlers (+15 more)
 
 ### Community 179 - "Community 179"
-Cohesion: 0.10
-Nodes (11): CrdtError, AppStartListening, batchQueue, crdtTelemetry, CrdtTelemetryState, destroyCrdtSyncBridge(), ObserverCleanup, observerCleanups (+3 more)
+Cohesion: 0.29
+Nodes (5): BenchmarkResult, CrdtError, CrdtErrorCode, IMPORTANT: This module must be dynamically imported to keep Yjs out of the, StorageUsage
 
 ### Community 180 - "Community 180"
-Cohesion: 0.14
-Nodes (25): buildDiagnosePlantContext(), buildDiagnosePlantProblemsSummary(), buildGardenPlantSummaries(), buildGrowLogRagPrompt(), buildLocalizedEducationalPrompt(), buildMentorPrompt(), buildNutrientPlannerPrompt(), buildNutrientPlantInfo() (+17 more)
+Cohesion: 0.13
+Nodes (21): buildDiagnosePlantContext(), buildDiagnosePlantProblemsSummary(), buildGrowLogRagPrompt(), buildMentorPrompt(), buildNutrientPlannerPrompt(), buildNutrientPlantInfo(), buildNutrientReadingsSummary(), buildPlantJournalContext() (+13 more)
 
 ### Community 182 - "Community 182"
-Cohesion: 0.06
-Nodes (32): DetectedLanguage, DeviceClass, FallbackLayer, GpuConsumer, GpuPriority, ICacheService, IDiagnosisService, IEcoModeService (+24 more)
+Cohesion: 0.11
+Nodes (16): DetectedLanguage, DeviceClass, FallbackLayer, GpuConsumer, GpuPriority, IGpuLockState, IHealthReport, IInferenceRecord (+8 more)
 
 ### Community 184 - "Community 184"
-Cohesion: 0.12
-Nodes (28): EcTdsPanel(), TerpeneEntouragePanel(), calculateEcTds(), calculateTerpeneEntourage(), CannabinoidRatioInput, CannabinoidRatioInputSchema, CannabinoidRatioResult, EcTdsInput (+20 more)
+Cohesion: 0.06
+Nodes (53): CannabinoidRatioPanel(), EcTdsPanel(), LightSpectrumPanel(), NutrientRatioPanel(), NutrientResult, PhQuickGuidePanel(), ensureCalcWorker(), RagExplainBox() (+45 more)
 
 ### Community 185 - "Community 185"
-Cohesion: 0.12
-Nodes (17): Actions Allowlist, Audit Verification Status (2026-04-10), CI operations, Cloud sync encryption (GitHub Gist), CycloneDX SBOM, Disclosure Timeline, Docker Image Pinning, GitHub Build Attestation (+9 more)
+Cohesion: 0.11
+Nodes (19): Actions Allowlist, AI Input Sanitization (2026-06-29), Audit Verification Status (2026-04-10), CI operations, Cloud sync encryption (GitHub Gist), Code scanning configuration, CycloneDX SBOM, Disclosure Timeline (+11 more)
 
 ### Community 186 - "Community 186"
-Cohesion: 0.14
-Nodes (13): SeedEntryCard, SeedEntryCardProps, SeedGridCard, SeedGridCardProps, TYPE_COLORS, SeedVaultTab, SEED_TYPES, SeedSortDir (+5 more)
+Cohesion: 0.13
+Nodes (14): SeedEntryCard, SeedEntryCardProps, SeedGridCard, SeedGridCardProps, TYPE_COLORS, SeedVaultPollenLog, SeedVaultTab, SEED_TYPES (+6 more)
 
 ### Community 187 - "Community 187"
 Cohesion: 0.10
 Nodes (20): Adding or Replacing Models, Breeding Tips Schema, Bundle Strategy, Central AI Routing (`aiService.ts`), Fallback Contract, GPU Resource Management, Inference Caching & Retry, Local AI Developer Guide (+12 more)
 
 ### Community 189 - "Community 189"
-Cohesion: 0.03
-Nodes (71): GrowPlantCount, GrowSwitcher, GrowSwitcherProps, AlertBadge, EcPhPlannerCalculator, OptimalRangeBar, StageLabel, DashboardSummary (+63 more)
+Cohesion: 0.04
+Nodes (59): ReadAloudButton(), ReadAloudButtonProps, mockReadContent, EcPhMonitorTab, EcPhScheduleTab, AlertBadge, EcPhAlertsPanel, EcPhMediumToolbar (+51 more)
 
 ### Community 190 - "Community 190"
 Cohesion: 0.04
-Nodes (69): NODE_TYPE_ICON_MAP, RelatedKnowledgePanel, RelatedKnowledgePanelProps, ToastContainer(), toastIcons, ToastProps, EquipmentSubNav(), EquipmentSubNavProps (+61 more)
+Nodes (47): DetailedStrainSelectItem(), InlineStrainSelectorProps, SkeletonLoader(), SkeletonLoaderProps, HybridIcon(), IndicaIcon(), SativaIcon(), EquipmentSubNav() (+39 more)
 
 ### Community 192 - "Community 192"
 Cohesion: 0.22
@@ -3473,6 +3547,10 @@ Nodes (32): Bridge Batching, Conflict Resolution UI, Constants, CRDT Sync API Re
 Cohesion: 0.09
 Nodes (29): ExperienceLevel, GeneticTrendCategory, GrowPriority, PlantCount, PluginCategory, TimeSeriesResolution, PlantHistoryEntry, ArchivedMentorResponse (+21 more)
 
+### Community 197 - "Community 197"
+Cohesion: 0.15
+Nodes (13): 1. Executive Summary, 4. Risk Matrix, 5. Prioritized Actionable Backlog (Post-Audit), 6.1 v1.9.x Patch (Immediate — Done in This Audit), 6.2 Medium-Term (v1.9.x → v2.0 Preparation), 6.3 Long-Term (v2.0 — 2026 Q3+), 6.4 Continuous Excellence Recommendations, 6. Strategic Perfection Plan (+5 more)
+
 ### Community 204 - "Community 204"
 Cohesion: 0.10
 Nodes (26): cannabinoidProfileSchema, dataProvenanceSchema, difficultySchema, EnhancedTerpenePoint, enhancedTerpeneSchema, entourageInsightSchema, externalStrainDataSchema, FlavonoidInteractionPoint (+18 more)
@@ -3482,36 +3560,36 @@ Cohesion: 0.40
 Nodes (10): buildDuplicateCountMap(), buildNormalizedNameMap(), execFile, getFileContentAtRef(), getFilesAtRef(), levenshtein(), normalizeName(), parseIds() (+2 more)
 
 ### Community 209 - "Community 209"
-Cohesion: 0.07
-Nodes (25): ADR-0007: WorkerBus Priority Preemption, Consequences, Context, Decision, Negative, Neutral, Positive, ADR-0009: SharedArrayBuffer Progressive Enhancement (+17 more)
+Cohesion: 0.18
+Nodes (11): ADR-0010: Worker Pool with Dynamic Spawning (W-06), Consequences, Context, Decision, Negative, Neutral, Positive, References (+3 more)
 
 ### Community 210 - "Community 210"
-Cohesion: 0.11
-Nodes (6): AutoTableOptions, ExportService, JsPDFWithAutoTable, MockJsPDF, mockT, getExportService()
+Cohesion: 0.15
+Nodes (3): ExportService, MockJsPDF, mockT
 
 ### Community 213 - "Community 213"
 Cohesion: 0.02
-Nodes (104): buildPageNumbers(), Pagination(), PaginationProps, Archive, ArchiveBox, ArrowClockwise, ArrowDown, ArrowLeft (+96 more)
+Nodes (107): Archive, ArchiveBox, ArrowClockwise, ArrowDown, ArrowLeft, ArrowRight, ArrowSquareOut, ArrowUp (+99 more)
 
 ### Community 217 - "Community 217"
 Cohesion: 0.33
 Nodes (3): ChartPoint, SparklineChartProps, sevenDayVpd
 
 ### Community 218 - "Community 218"
-Cohesion: 0.15
-Nodes (3): isPowerOf2(), LockFreeRingBuffer, nextPowerOf2()
+Cohesion: 0.05
+Nodes (18): AtomicsChannel, ADR-0009, canUseSharedArrayBuffer(), CrossOriginIsolationStatus, getCrossOriginIsolationStatus(), isCrossOriginIsolated(), ADR-0009, isPowerOf2() (+10 more)
 
 ### Community 219 - "Community 219"
 Cohesion: 0.11
 Nodes (18): 2026-05-30 — Audit consolidation (PR #250), 2026-05-30 — Session 176 (CI audit run), 2026-05-31 — Session 177 (Master Audit + Windows DX), 2026-06-01 — Phase 0 (Master Audit execution), Architecture decisions (unchanged), Changes, CI Audit & Health Dashboard, E2E blocking policy (`ci.yml`) (+10 more)
 
 ### Community 221 - "Community 221"
-Cohesion: 0.09
-Nodes (18): attachRuntimeErrorTracking(), bootFreshAppPastOnboarding(), bootFreshAppWithLegalGates(), closeOnboardingIfVisible(), expectNoCrashPatterns(), expectShellVisible(), isCloudflarePagesHost(), isDeployedTarget() (+10 more)
+Cohesion: 0.08
+Nodes (20): attachRuntimeErrorTracking(), bootFreshAppPastOnboarding(), bootFreshAppWithLegalGates(), closeOnboardingIfVisible(), expectNoCrashPatterns(), expectShellVisible(), isCloudflarePagesHost(), isDeployedTarget() (+12 more)
 
 ### Community 224 - "Community 224"
-Cohesion: 0.16
-Nodes (12): useActiveSensorSource(), useCurrentReading(), useSensorConnectionState(), useSensorData(), useSensorHistory(), IoTToastEvent, SensorConnectionState, SensorReading (+4 more)
+Cohesion: 0.11
+Nodes (23): ConnectionBadge, GaugeCard, GaugeCardProps, IotDashboardView, Sparkline, SparklineProps, statusConfig, TelemetryPanel (+15 more)
 
 ### Community 225 - "Community 225"
 Cohesion: 0.20
@@ -3522,80 +3600,80 @@ Cohesion: 0.08
 Nodes (24): compilerOptions, allowImportingTsExtensions, baseUrl, exactOptionalPropertyTypes, isolatedModules, jsx, lib, module (+16 more)
 
 ### Community 228 - "Community 228"
-Cohesion: 0.09
-Nodes (23): BAR_COLORS, CannabinoidBar, CannabinoidBarProps, CannabinoidPie, CannabinoidPieProps, CONFIDENCE_META, ConfidenceBadge, ConfidenceBadgeProps (+15 more)
+Cohesion: 0.24
+Nodes (11): defaultStrainsViewSettings, difficultyOrder, fallbackAgronomic, getSafeAgronomic(), getSafeNumericValue(), getSafeStrainType(), getSafeStringArray(), getSafeText() (+3 more)
 
 ### Community 230 - "Community 230"
-Cohesion: 0.12
-Nodes (17): [0.1.0] — 2026-03-01, [1.4.0-alpha](https://github.com/qnbs/CannaGuide-2025/compare/cannaguide-2025-v1.3.0-alpha...cannaguide-2025-v1.4.0-alpha) (2026-04-04), [1.6.3] - 2026-04-10, [1.7.1] -- 2026-04-11, Added, Added, Added, Bug Fixes (+9 more)
+Cohesion: 0.14
+Nodes (13): [1.4.0-alpha](https://github.com/qnbs/CannaGuide-2025/compare/cannaguide-2025-v1.3.0-alpha...cannaguide-2025-v1.4.0-alpha) (2026-04-04), [1.6.3] - 2026-04-10, [1.7.1] -- 2026-04-11, Added, Added, Bug Fixes, Changed, Changed (+5 more)
 
 ### Community 231 - "Community 231"
 Cohesion: 0.09
 Nodes (23): default, dependencies, @google/genai, zod, exports, ./ml, files, main (+15 more)
 
 ### Community 232 - "Community 232"
-Cohesion: 0.23
-Nodes (17): CannabisApiStrain, lookupWithAI(), FLAVONOID_PROFILES, KnownFlavonoid, TYPE_FLAVONOIDS, lookupLocalCatalog(), buildCannabinoidDataPoints(), buildFlavonoidDataPoints() (+9 more)
+Cohesion: 0.08
+Nodes (52): BAR_COLORS, CannabinoidBar, CannabinoidBarProps, CannabinoidPie, CannabinoidPieProps, CONFIDENCE_META, ConfidenceBadge, ConfidenceBadgeProps (+44 more)
 
 ### Community 234 - "Community 234"
 Cohesion: 0.11
 Nodes (29): acquireSlot(), AuditLogEntry, checkRateLimit(), CostTrackerState, currentMonthKey(), DayCost, getAuditLog(), getBudgetUsagePercent() (+21 more)
 
 ### Community 235 - "Community 235"
-Cohesion: 0.19
+Cohesion: 0.18
 Nodes (22): isLocalOnlyMode(), setLocalOnlyMode(), cache, CacheEntry, CannlyticsStrainResponse, clearStrainApiCache(), CORS_PROXIES, ExternalStrainData (+14 more)
 
 ### Community 236 - "Community 236"
-Cohesion: 0.29
-Nodes (9): clearAllCookies(), clearServiceWorkers(), deleteDatabase(), eraseAllData(), eraseSingleDatabase(), exportAllUserData(), getKnownDatabaseNames(), INDEXED_DB_NAMES (+1 more)
+Cohesion: 0.25
+Nodes (14): mockDispatch, useDataManagementActions(), clearAllCookies(), clearServiceWorkers(), deleteDatabase(), eraseAllData(), eraseSingleDatabase(), exportAllUserData() (+6 more)
 
 ### Community 237 - "Community 237"
-Cohesion: 0.31
-Nodes (5): DEFAULT_AGRONOMIC, loadAllStrainsData(), normalizeStrainCatalog(), StrainModule, StrainService
+Cohesion: 0.22
+Nodes (8): getCatalogVersion(), StrainCatalogVersion, ADR-0014, DEFAULT_AGRONOMIC, loadAllStrainsData(), normalizeStrainCatalog(), StrainModule, StrainService
 
 ### Community 241 - "Community 241"
-Cohesion: 0.23
+Cohesion: 0.27
 Nodes (11): collectTsxFiles(), COMPONENTS_DIR, __dirname, EXCLUDED_FILES, IGNORE_CONTENT_PATTERNS, isIgnoredContent(), main(), scanFile() (+3 more)
 
 ### Community 243 - "Community 243"
-Cohesion: 0.03
-Nodes (65): ConfirmModal, SkeletonLoader(), SkeletonLoaderProps, AlphabeticalFilter, AlphabeticalFilterProps, FilterDrawer(), FilterDrawerProps, StrainLibraryView (+57 more)
+Cohesion: 0.09
+Nodes (28): FilterDrawerProps, StrainLibraryViewProps, StrainListHeader, StrainListHeaderProps, StrainToolbarProps, INITIAL_ADVANCED_FILTERS, defaultFilters, filtersArbitrary (+20 more)
 
 ### Community 244 - "Community 244"
-Cohesion: 0.20
-Nodes (11): CommandPalette(), CommandPaletteProps, useCommandPalette(), getRecentCommands(), GROUP_ORDER, groupAndSortCommands(), RecentEntry, recordCommandUsage() (+3 more)
+Cohesion: 0.27
+Nodes (11): CommandPalette(), CommandPaletteProps, escapeRegExp(), getRecentCommands(), GROUP_ORDER, groupAndSortCommands(), RecentEntry, recordCommandUsage() (+3 more)
 
 ### Community 245 - "Community 245"
-Cohesion: 0.15
-Nodes (12): initializeWorkerInfrastructure(), DispatchCompleteEvent, workerBus, registerAllWorkerFactories(), handlers, initWorkerStateSync(), makeKey(), registerWorkerResultHandler() (+4 more)
+Cohesion: 0.14
+Nodes (11): workerBus, handlers, initWorkerStateSync(), makeKey(), registerWorkerResultHandler(), resetWorkerStateSync(), WorkerResultHandler, initial (+3 more)
 
 ### Community 246 - "Community 246"
-Cohesion: 0.12
-Nodes (23): AnthropicResponse, buildProviderMessages(), callAnthropic(), callOpenAiCompatible(), clearProviderApiKey(), generateTextWithProvider(), getActiveProviderConfig(), getActiveProviderId() (+15 more)
+Cohesion: 0.13
+Nodes (23): AnthropicResponse, buildProviderMessages(), callAnthropic(), callOpenAiCompatible(), clearAllProviderApiKeys(), clearProviderApiKey(), generateTextWithProvider(), getActiveProviderConfig() (+15 more)
 
 ### Community 248 - "Community 248"
 Cohesion: 0.05
 Nodes (44): AbortController Support, Advanced Lock-Free Patterns, API Reference, Architecture, Backpressure, Current Limitations, Default Priority Assignments, Factory Registry (+36 more)
 
+### Community 249 - "Community 249"
+Cohesion: 0.06
+Nodes (14): OnMemoryPressureHook, OnSpawnHook, registerEcoProbe(), resolveIdleTimeout(), MockWorker, MockWorker, ADR-0009, WorkerFactory (+6 more)
+
 ### Community 250 - "Community 250"
-Cohesion: 0.20
-Nodes (9): __dirname, EXPORT_NAMES, __filename, generateIndex(), getBucket(), jsonPath, repoRoot, run() (+1 more)
+Cohesion: 0.23
+Nodes (11): __dirname, EXPORT_NAMES, __filename, formatObject(), formatStrain(), generateIndex(), getBucket(), jsonPath (+3 more)
 
 ### Community 251 - "Community 251"
 Cohesion: 0.13
 Nodes (14): description, engines, node, homepage, keywords, lint-staged, *.{html,css,toml,sh,rs}, *.{js,jsx,ts,tsx,mjs,cjs} (+6 more)
-
-### Community 253 - "Community 253"
-Cohesion: 0.19
-Nodes (7): HydroMonitorView, LeafDiagnosisPanel, renderView(), RootState, renderWithProviders(), RenderWithProvidersOptions, rootReducer
 
 ### Community 254 - "Community 254"
 Cohesion: 0.12
 Nodes (16): Active vs paused (canonical), Auto-Updater Setup, Cloudflare Pages (secondary mirror), Cloudflare Pages secrets (first-time setup), Cloudflare Workers Builds vs Pages (PR check), Code Signing (Future), Distribution Targets, GitHub Pages (primary) (+8 more)
 
 ### Community 255 - "Community 255"
-Cohesion: 0.18
-Nodes (11): ensureLocaleLoaded(), isSupportedLocale(), loadLocale(), LocalePayload, RTL_LOCALES, SUPPORTED_LOCALES, collectStats(), formatDate() (+3 more)
+Cohesion: 0.17
+Nodes (12): 1. Repository & Process Health, 2. God-Files & File Budget, 3. Post-Migration Stack (Tailwind v4 · Vite 8 · React Compiler), 4. Compliance & AI Security, 5. Testing, 6. State Management (Hybrid Redux + Zustand), 7. Prioritized Remaining Backlog (v1.9.1+), 8. Release Readiness — v1.9.0 (+4 more)
 
 ### Community 256 - "Community 256"
 Cohesion: 0.09
@@ -3607,19 +3685,19 @@ Nodes (16): Architecture Notes, Architecture Status, Audit Findings (Session 10)
 
 ### Community 258 - "Community 258"
 Cohesion: 0.14
-Nodes (14): OFFLINE_ACTION_TYPES, OfflineActionType, SW_MESSAGE_REPLAY_OFFLINE_ACTION, offlineActionQueueService, OfflineActionRecord, isJournalEntry(), isOfflineActionRecord(), isRecord() (+6 more)
+Nodes (15): OFFLINE_ACTION_TYPES, OfflineActionType, SW_MESSAGE_REPLAY_OFFLINE_ACTION, offlineActionQueueService, OfflineActionRecord, isJournalEntry(), isOfflineActionRecord(), isRecord() (+7 more)
 
 ### Community 260 - "Community 260"
-Cohesion: 0.07
-Nodes (42): getWebLlmTimeoutMs(), classifyTier(), destroySharedDevice(), getCachedCapabilities(), getGpuTier(), getSharedDevice(), invalidateWebGpuCache(), isWebGpuUsable() (+34 more)
+Cohesion: 0.12
+Nodes (23): probeBattery(), calculatePreloadTotalSteps(), getStageTimeoutMs(), isFullTierAppropriate(), LocalAiPreloadReport, preloadOfflineAssets(), PreloadTier, ProgressCallback (+15 more)
 
 ### Community 262 - "Community 262"
-Cohesion: 0.11
-Nodes (19): ignoreCves, @babel/plugin-transform-modules-systemjs, basic-ftp, esbuild, fast-uri, ip-address, lodash, lodash-es (+11 more)
+Cohesion: 0.08
+Nodes (26): ignoreCves, @babel/core, @babel/plugin-transform-modules-systemjs, basic-ftp, esbuild, fast-uri, ip-address, js-yaml@3 (+18 more)
 
 ### Community 263 - "Community 263"
 Cohesion: 0.17
-Nodes (11): Inspect SBOM, No Automation, Pre-Release Checklist, Release History, Release Process, Release Publish Workflow, Release Steps, Supply-Chain Verification (+3 more)
+Nodes (12): GitHub Settings (Rulesets, PAT, Agent limits), Inspect SBOM, No Automation, Pre-Release Checklist, Release History, Release Process, Release Publish Workflow, Release Steps (+4 more)
 
 ### Community 264 - "Community 264"
 Cohesion: 0.14
@@ -3627,27 +3705,27 @@ Nodes (9): gh, git, gk, major, mcp, mcpJson, pnpm, root (+1 more)
 
 ### Community 266 - "Community 266"
 Cohesion: 0.12
-Nodes (26): AVAILABLE_STYLES, buildAromasBlock(), buildDynamicAccentBand(), buildFanLeaves(), buildFocusElement(), buildLeafPath(), buildMoodOverlay(), buildStrainDataBars() (+18 more)
+Nodes (31): ImageGenerationRequest, buildStrainImage(), criteria, buildStylePalette(), DIFFICULTY_VAL, HEIGHT_VAL, StylePalette, TERPENE_COLORS (+23 more)
 
 ### Community 267 - "Community 267"
 Cohesion: 0.25
 Nodes (10): __dirname, extractObjectBodies(), __filename, normalizeStrain(), outputPath, parseObjectLiteral(), repoRoot, resolveEnumValue() (+2 more)
 
 ### Community 268 - "Community 268"
-Cohesion: 0.20
-Nodes (19): waitForRetryBackoff(), applyStageProgression(), checkDailySimulationEvents(), createStageChangeEntry(), createWaterTaskIfNeeded(), hasActiveProblem(), runDailyEcosystem(), runDailyGrowth() (+11 more)
+Cohesion: 0.25
+Nodes (19): STAGES_ORDER, applyStageProgression(), checkDailySimulationEvents(), createStageChangeEntry(), createWaterTaskIfNeeded(), DailySimulationDeps, hasActiveProblem(), runDailyEcosystem() (+11 more)
 
 ### Community 270 - "Community 270"
-Cohesion: 0.08
-Nodes (25): findBestTemplate(), GROW_SCHEDULE_TEMPLATES, GrowScheduleTemplate, ScheduleStep, findBrandSchedule(), NUTRIENT_BRAND_SCHEDULES, CannaGuidePlugin, GrowProfilePlugin (+17 more)
+Cohesion: 0.13
+Nodes (16): EcPhScheduleTabProps, CannaGuidePlugin, GrowProfilePlugin, GrowProfileStage, HardwareCapability, HardwareCommand, HardwarePlugin, InstalledPlugin (+8 more)
 
 ### Community 272 - "Community 272"
-Cohesion: 0.06
-Nodes (46): BaseCacheEntry, CacheConfig, CacheOps, createIndexedDbLruCache(), makeCache(), TestEntry, StreamingDeps, mockCreateInferenceTimer (+38 more)
+Cohesion: 0.07
+Nodes (44): BaseCacheEntry, CacheConfig, CacheOps, createIndexedDbLruCache(), makeCache(), TestEntry, classifyTier(), destroySharedDevice() (+36 more)
 
 ### Community 273 - "Community 273"
-Cohesion: 0.24
-Nodes (16): normalizeGeneticModifiers(), normalizeCannabinoidProfile(), normalizeEnvironment(), normalizeEquipment(), normalizeMedium(), normalizeNutrientPool(), normalizePlant(), normalizeRootSystem() (+8 more)
+Cohesion: 0.27
+Nodes (14): normalizeCannabinoidProfile(), normalizeEnvironment(), normalizeEquipment(), normalizeMedium(), normalizeNutrientPool(), normalizePlant(), normalizeRootSystem(), normalizeSimulationClock() (+6 more)
 
 ### Community 274 - "Community 274"
 Cohesion: 0.22
@@ -3674,28 +3752,28 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, composite, declaration, declarationMap, emitDeclarationOnly, exactOptionalPropertyTypes, isolatedModules, module (+11 more)
 
 ### Community 281 - "Community 281"
-Cohesion: 0.18
-Nodes (15): initializeCrdtLayer(), mountHydratedApp(), setupPersistedStateSync(), runPostHydrationServices(), registerRecoveryListeners(), triggerSafeRecovery(), changeAppLanguage(), SupportedLocale (+7 more)
+Cohesion: 0.12
+Nodes (26): initializeCrdtLayer(), mountHydratedApp(), setupPersistedStateSync(), runPostHydrationServices(), registerRecoveryListeners(), triggerSafeRecovery(), getAppRoot(), renderAppWithStore() (+18 more)
 
 ### Community 282 - "Community 282"
 Cohesion: 0.11
 Nodes (18): compilerOptions, composite, declaration, declarationMap, emitDeclarationOnly, isolatedModules, jsx, module (+10 more)
 
 ### Community 283 - "Community 283"
-Cohesion: 0.15
-Nodes (9): CSP_DIRECTIVES, PERMISSIONS_POLICY, CHUNK_GROUPS, OPTIONAL_ML_EXTERNALS, OPTIONAL_TAURI_EXTERNALS, optionalMlPlugin(), requireFromConfig, resolveMissingMlModules() (+1 more)
+Cohesion: 0.13
+Nodes (11): CSP_DIRECTIVES, PERMISSIONS_POLICY, ADR-0009, CHUNK_GROUPS, OPTIONAL_ML_EXTERNALS, OPTIONAL_TAURI_EXTERNALS, optionalMlPlugin(), NOTE: React, Redux, Radix UI, and other core framework libraries are (+3 more)
 
 ### Community 285 - "Community 285"
-Cohesion: 0.53
-Nodes (7): base64ToBytes(), bytesToBase64(), decryptSyncPayload(), encryptSyncPayload(), generateSyncEncryptionKey(), importKey(), toBuffer()
+Cohesion: 0.35
+Nodes (9): Allele, buildPunnettSquare(), Genotype, genotypeLabel(), phenotypeLabel(), PunnettResult, summarisePunnett(), Trait (+1 more)
 
 ### Community 286 - "Community 286"
-Cohesion: 0.11
-Nodes (18): scripts, analyze:sme, build, build:analyze, build:gh, dev, lint, preview (+10 more)
+Cohesion: 0.10
+Nodes (21): scripts, analyze:sme, build, build:analyze, build:gh, dev, lint, preview (+13 more)
 
 ### Community 288 - "Community 288"
-Cohesion: 0.18
-Nodes (16): airflowToLevel(), mediumToVPDMedium(), stageToGrowthStage(), VPDSimulationService, AirflowLevel, PlantState, VPDInput, AIRFLOW_MULTIPLIER (+8 more)
+Cohesion: 0.09
+Nodes (34): VPDChart, VPDChartProps, VPDZoneMapProps, getVPDStatusAdvice(), VPD_TARGET_BANDS, airflowToLevel(), mediumToVPDMedium(), stageToGrowthStage() (+26 more)
 
 ### Community 289 - "Community 289"
 Cohesion: 0.14
@@ -3710,16 +3788,16 @@ Cohesion: 0.27
 Nodes (9): collectKeys(), __dirname, extractTKeys(), findSourceFiles(), jsonMode, LOCALES_DIR, main(), SRC_DIR (+1 more)
 
 ### Community 293 - "Community 293"
-Cohesion: 0.24
-Nodes (4): disposeSharedBufferPool(), getSharedBufferPool(), PooledBuffer, SharedBufferPool
+Cohesion: 0.29
+Nodes (8): GrowReminder, buildVEvent(), escapeICalText(), foldLine(), formatICalDate(), generateICalString(), severityToAlarmMinutes, RFC-5545
 
 ### Community 299 - "Community 299"
 Cohesion: 0.14
 Nodes (13): 1) MDC -> Graph Bridge (Vorbereitung), 2) Dev-Mode Rules Explorer (Vorbereitung), 3) Template-Repos (Vorbereitung), Delivery Guardrails, Graphify/MCP Strategic Blueprint, Mindestinhalt, Minimaler Datenvertrag, MVP-Backlog (+5 more)
 
 ### Community 300 - "Community 300"
-Cohesion: 0.20
-Nodes (9): __dirname, extractIds(), __filename, isDryRun, repoRoot, reportDir, reportPath, run() (+1 more)
+Cohesion: 0.22
+Nodes (10): __dirname, extractIds(), __filename, isDryRun, isStrainFile(), repoRoot, reportDir, reportPath (+2 more)
 
 ### Community 303 - "Community 303"
 Cohesion: 0.15
@@ -3750,7 +3828,7 @@ Cohesion: 0.12
 Nodes (17): default, exports, ./tailwind-preset, ./tokens.css, files, main, name, private (+9 more)
 
 ### Community 314 - "Community 314"
-Cohesion: 0.48
+Cohesion: 0.52
 Nodes (6): brotliSync(), EXEMPT_CHUNKS, getJsFiles(), isExempt(), isMainChunk(), main()
 
 ### Community 319 - "Community 319"
@@ -3758,7 +3836,7 @@ Cohesion: 0.17
 Nodes (11): Browser compatibility, Force WASM toggle has no effect, Local AI Troubleshooting, Local diagnosis looks too generic, Models keep re-downloading, Offline model preload fails, Sentry shows local AI errors, Slow inference performance (+3 more)
 
 ### Community 321 - "Community 321"
-Cohesion: 0.33
+Cohesion: 0.36
 Nodes (8): allTrackedInScanDirs(), assertSafeGitRef(), gitDiffFiles(), GRANDFATHERED, lineCount(), main(), MAX_LINES, SCAN_GLOBS
 
 ### Community 328 - "Community 328"
@@ -3766,8 +3844,8 @@ Cohesion: 0.12
 Nodes (16): AI Facade, AI Providers API Reference, aiProviderService, Cost Tracking, Integration Points, Key Management, Key Patterns, Key Rotation (+8 more)
 
 ### Community 331 - "Community 331"
-Cohesion: 0.33
-Nodes (6): detectTrend(), forecastNextHour(), generateAlerts(), initForecastModel(), movingAverageFallback(), readingsToInput()
+Cohesion: 0.27
+Nodes (9): HydroForecastPanel, HydroForecastPanelProps, detectTrend(), ensureWorkerRegistered(), forecastNextHour(), generateAlerts(), initForecastModel(), movingAverageFallback() (+1 more)
 
 ### Community 332 - "Community 332"
 Cohesion: 0.18
@@ -3775,23 +3853,23 @@ Nodes (10): Accessibility Statement -- CannaGuide 2025, Commitment, Current Stat
 
 ### Community 333 - "Community 333"
 Cohesion: 0.08
-Nodes (27): MetricCard, MetricsOverviewTab, MetricsOverviewTabProps, TIME_RANGES, TimeRange, VPDChart, VPDChartProps, RH_RANGE (+19 more)
+Nodes (23): MetricCard, MetricsOverviewTab, MetricsOverviewTabProps, TIME_RANGES, TimeRange, VPDGauge, VPDGaugeProps, RH_RANGE (+15 more)
 
 ### Community 334 - "Community 334"
 Cohesion: 0.12
 Nodes (16): Architecture, Background Precomputation, Cache Operations, Configuration, `growLogRagService`, Integration Points, Internal Pipeline, Introspection (+8 more)
 
 ### Community 335 - "Community 335"
-Cohesion: 0.21
-Nodes (11): buildStrainImagePrompt(), CriteriaPromptMaps, extractGeneratedImageDataOrThrow(), getStrainImageCriteriaPrompts(), getStrainImageStylePrompts(), resolveStrainImageStyle(), STRAIN_IMAGE_STYLES, BaseAIProvider (+3 more)
+Cohesion: 0.31
+Nodes (8): buildStrainImagePrompt(), CriteriaPromptMaps, extractGeneratedImageDataOrThrow(), getStrainImageCriteriaPrompts(), getStrainImageStylePrompts(), resolveStrainImageStyle(), STRAIN_IMAGE_STYLES, ImageCriteria
 
 ### Community 336 - "Community 336"
 Cohesion: 0.15
 Nodes (5): PorcupineDetectionCallback, PorcupineState, PorcupineWakeWordService, PorcupineWorker, WakeWordCallback
 
 ### Community 338 - "Community 338"
-Cohesion: 0.13
-Nodes (13): applySyncPayloadMock, applyUpdateMock, decryptSyncPayloadMock, detectDivergenceMock, encodeSyncPayloadMock, encryptSyncPayloadMock, FetchOptions, getDocMock (+5 more)
+Cohesion: 0.12
+Nodes (14): applySyncPayloadMock, applyUpdateMock, decryptSyncPayloadMock, detectDivergenceMock, encodeSyncPayloadMock, encryptSyncPayloadMock, FetchOptions, getDocMock (+6 more)
 
 ### Community 339 - "Community 339"
 Cohesion: 0.13
@@ -3814,16 +3892,16 @@ Cohesion: 0.20
 Nodes (10): Execution 42: IndexedDB Monitor Settings UI, Execution 43: I18n CI completeness gate, Latest Session (2026-04-05, Session 41) -- A11y Focus Trap + Knowledge View Tests + ESLint no-cycle, Next Steps, Next Steps, Planned Executions, Planned Executions, Verified Metrics (Session 39) (+2 more)
 
 ### Community 349 - "Community 349"
-Cohesion: 0.16
-Nodes (8): LEVEL_BADGE, LevelFilter, PathCardProps, STEP_TYPE_ICON, mockDispatch, mockSelector, learningPaths, selectLearningPathProgress
+Cohesion: 0.11
+Nodes (12): LEVEL_BADGE, LevelFilter, PathCardProps, STEP_TYPE_ICON, mockDispatch, mockSelector, learningPaths, selectLearningPathProgress (+4 more)
 
 ### Community 353 - "Community 353"
 Cohesion: 0.25
-Nodes (7): Decisions (Owner), KPI targets (relaxed critical path), Master Audit 2026-Q2 — Execution Plan, Phase 0 — Merged (PR #290), Phase 1 — Merged (god-file splits), Phase 2 — In progress (Master Audit Q2), Phases (backlog)
+Nodes (7): Decisions (Owner), KPI targets (relaxed critical path), Master Audit 2026-Q2 — Execution Plan, Phase 0 — Merged (PR #290), Phase 1 — Merged (god-file splits), Phase 2 — Complete (Master Audit Q2), Phases (backlog)
 
 ### Community 356 - "Community 356"
-Cohesion: 0.05
-Nodes (62): SLICE_SCHEMA_VERSIONS, VersionedSliceName, createGenealogyMigrationState(), ensureGenealogyShape(), sanitizeGenealogyComputedTrees(), sanitizeGenealogyMetadata(), sanitizeGenealogyNodeMigration(), sanitizeGenealogyZoomTransform() (+54 more)
+Cohesion: 0.18
+Nodes (20): VersionedSliceName, ensureLegacyCannabinoidProfile(), ensureLegacyEnvironment(), ensureLegacyHarvestData(), ensureLegacyHistory(), ensureLegacyMedium(), ensureLegacyNutrientPool(), ensureLegacyPhenotypeModifiers() (+12 more)
 
 ### Community 357 - "Community 357"
 Cohesion: 0.47
@@ -3833,25 +3911,21 @@ Nodes (5): BROTLI_BUDGET_KB, brotliSync(), getJsFiles(), main(), RAW_BUDGET_KB
 Cohesion: 0.43
 Nodes (6): allowedFrontmatterKeys, main(), normalizeNewlines(), parseFrontmatter(), RULES_DIR, validateFrontmatter()
 
-### Community 359 - "Community 359"
-Cohesion: 0.21
-Nodes (3): HeapNode, PRIORITY_VALUES, PriorityQueue
-
 ### Community 360 - "Community 360"
 Cohesion: 0.14
 Nodes (14): 1. `aiService` -- Routed Cloud/Local AI Methods, 2. `aiProviderService` -- Multi-Provider BYOK Management, 3. `localAIInfrastructure` -- Cache + Telemetry + Preload, 4. Mode Helpers, AI Facade API Reference, Error Handling, Exports, Health and Telemetry (+6 more)
 
 ### Community 361 - "Community 361"
-Cohesion: 0.15
-Nodes (11): mockInitWorkers, mockLoadPersistedPassword, mockMqttInit, mockProactiveInit, mockRequestNotification, mockScheduleIdlePreload, mockSetAiMode, mockSetAppReady (+3 more)
+Cohesion: 0.29
+Nodes (10): indexCalculators(), indexDiseases(), indexLearningPaths(), indexLexicon(), indexNutrients(), indexStages(), indexStaticData(), tagToStageMap (+2 more)
 
 ### Community 362 - "Community 362"
-Cohesion: 0.17
-Nodes (12): ConnectionBadge, GaugeCard, GaugeCardProps, IotDashboardView, IotDashboardViewComponent(), Sparkline, SparklineProps, statusConfig (+4 more)
+Cohesion: 0.29
+Nodes (6): ChemotypeCalculator, ChemotypeInput, ChemotypeResult, ChemotypeService, dominantKey(), baseInput
 
 ### Community 366 - "Community 366"
-Cohesion: 0.22
-Nodes (7): diseaseAtlas, calculateRecency(), EdgeRelation, GraphEdge, GraphNode, nodeTypeToViewMapping, tagToStageMap
+Cohesion: 0.16
+Nodes (15): NODE_TYPE_ICON_MAP, RelatedKnowledgePanel, RelatedKnowledgePanelProps, KnowledgeSubNav(), KnowledgeSubNavProps, KnowledgeGraphResult, useKnowledgeGraph(), ContextSnapshot (+7 more)
 
 ### Community 368 - "Community 368"
 Cohesion: 0.15
@@ -3862,12 +3936,12 @@ Cohesion: 0.40
 Nodes (5): 9.1 Topic-Schema (Ziel-Standard), 9.2 JSON-Payload-Referenz (Zod-kompatibel), 9.3 VPD-Pro ESPHome YAML (vpd-pro.yaml), 9.4 Secrets-Vorlage (secrets.yaml.example), 9. ESPHome MQTT Templates
 
 ### Community 371 - "Community 371"
-Cohesion: 0.17
-Nodes (10): Cursor Cloud specific instructions, Git workflow (Cloud Agent), Install (manual), Lint / test / build, Node.js version (required), Optional services, Product, Run the web app (dev) (+2 more)
+Cohesion: 0.15
+Nodes (13): Code guidelines, Cursor Cloud specific instructions, Git workflow (Cloud Agent), Install (manual), Lint / test / build, Node.js version (required), Optional services, PR / review comments (Cloud Agent) (+5 more)
 
 ### Community 372 - "Community 372"
-Cohesion: 0.22
-Nodes (12): DiseaseCategory, DiseaseUrgency, PlantStage, DiseaseEntry, FAQItem, KnowledgeArticle, LearningPath, LearningStep (+4 more)
+Cohesion: 0.20
+Nodes (13): mapPluginStage(), DiseaseCategory, DiseaseUrgency, PlantStage, DiseaseEntry, FAQItem, KnowledgeArticle, LearningPath (+5 more)
 
 ### Community 373 - "Community 373"
 Cohesion: 0.22
@@ -3875,7 +3949,7 @@ Nodes (9): Changes Applied This Session, Changes Applied This Session, Detaillie
 
 ### Community 375 - "Community 375"
 Cohesion: 0.27
-Nodes (10): getAppRoot(), renderAppWithStore(), renderError(), hydrateApplicationStores(), HydratedStores, i18nInstance, initFilterUrlSync(), createAppStore() (+2 more)
+Nodes (5): nodeToLink(), buildAiContext(), getRelatedLinks(), traverse(), GraphStore
 
 ### Community 376 - "Community 376"
 Cohesion: 0.50
@@ -3890,8 +3964,8 @@ Cohesion: 0.17
 Nodes (11): CHART_PADDING, ChartView, eventIcons, eventTypes, eventTypeSet, HistoryChart, HistoryChartProps, Metric (+3 more)
 
 ### Community 379 - "Community 379"
-Cohesion: 0.35
-Nodes (10): advancePostHarvestState(), applyBurpPostHarvestStep(), applyCurePostHarvestStep(), applyDryPostHarvestStep(), computePostHarvestQuality(), createInitialHarvestData(), getVentilationFactor(), isPostHarvestActionAllowed() (+2 more)
+Cohesion: 0.20
+Nodes (14): testSetup, testStrain, PLANT_STAGE_DETAILS, PlantStageDetail, advancePostHarvestState(), applyBurpPostHarvestStep(), applyCurePostHarvestStep(), applyDryPostHarvestStep() (+6 more)
 
 ### Community 380 - "Community 380"
 Cohesion: 0.17
@@ -3907,18 +3981,18 @@ Nodes (12): 3-Layer Fallback Architecture, Cache API, `cacheAndTrack(prompt, val
 
 ### Community 383 - "Community 383"
 Cohesion: 0.07
-Nodes (36): strainsA, strainsB, strainsC, strainsD, strainsE, strainsF, strainsG, strainsH (+28 more)
+Nodes (39): strainFixture, strainsA, strainsB, strainsC, strainsD, strainsE, strainsF, strainsG (+31 more)
 
 ### Community 384 - "Community 384"
 Cohesion: 0.21
 Nodes (11): BotrytisRiskAssessment, DiagnosisHistoryState, DiagnosisRecord, DiseaseRecommendation, EnvironmentAlert, LeafDiagnosisResult, ModelStatus, PredictiveInsight (+3 more)
 
 ### Community 385 - "Community 385"
-Cohesion: 0.24
+Cohesion: 0.27
 Nodes (11): collectKeys(), countKeys(), __dirname, findExtraKeys(), findMissingKeys(), jsonMode, LANGS, LOCALES_DIR (+3 more)
 
 ### Community 391 - "Community 391"
-Cohesion: 0.33
+Cohesion: 0.29
 Nodes (6): 1. pnpm.overrides — resolved versions in `pnpm-lock.yaml`, 2. Spot-check of common transitive vulnerability classes, 3. CI workflow SHA pinning, 4. Sub-scans expected to run in CI before v1.9.0 tag, 5. Outcome, Security Audit Snapshot — 2026-05-06 (P1.1 / v1.9.0 Hardening)
 
 ### Community 393 - "Community 393"
@@ -3958,8 +4032,8 @@ Cohesion: 0.40
 Nodes (5): main(), outArg, parseFrontmatter(), root, rulesDir
 
 ### Community 403 - "Community 403"
-Cohesion: 0.18
-Nodes (8): PlantLifecycleTimeline, stageColors, TimelineProps, STAGES_ORDER, testSetup, testStrain, PLANT_STAGE_DETAILS, PlantStageDetail
+Cohesion: 0.50
+Nodes (3): PlantLifecycleTimeline, stageColors, TimelineProps
 
 ### Community 405 - "Community 405"
 Cohesion: 0.25
@@ -3974,12 +4048,12 @@ Cohesion: 0.20
 Nodes (10): app, capabilities, security, trayIcon, windows, withGlobalTauri, csp, dangerousDisableAssetCspModification (+2 more)
 
 ### Community 409 - "Community 409"
-Cohesion: 0.24
-Nodes (6): BluetoothDevice, BluetoothRemoteGATTCharacteristic, BluetoothRemoteGATTServer, BluetoothRemoteGATTService, Navigator, WebBluetoothSensorService
+Cohesion: 0.18
+Nodes (8): BluetoothDevice, BluetoothRemoteGATTCharacteristic, BluetoothRemoteGATTServer, BluetoothRemoteGATTService, connect(), Navigator, requestDevice(), WebBluetoothSensorService
 
 ### Community 410 - "Community 410"
-Cohesion: 0.27
-Nodes (6): getWorkerChannel(), getWorkerRingBuffer(), initSabHandler(), growthFactorByStage, STATUS_TO_SIGNAL, VPD_SIGNAL
+Cohesion: 0.29
+Nodes (9): args, deactivateAndDelete(), dryRun, ghApi(), ghPaginate(), keep, keepArg, main() (+1 more)
 
 ### Community 411 - "Community 411"
 Cohesion: 0.20
@@ -3998,8 +4072,8 @@ Cohesion: 0.36
 Nodes (4): useBadgeApi(), AlertsState, SmartAlert, useAlertsStore
 
 ### Community 416 - "Community 416"
-Cohesion: 0.28
-Nodes (7): baseSettings, mockAdd, mockRemove, useDocumentEffects(), SimulationWorkerInput, AppSettings, ScenarioPayload
+Cohesion: 0.40
+Nodes (4): baseSettings, mockAdd, mockRemove, useDocumentEffects()
 
 ### Community 417 - "Community 417"
 Cohesion: 0.22
@@ -4014,8 +4088,8 @@ Cohesion: 0.22
 Nodes (8): Actual Behavior, Additional Context, Console Errors, Describe the Bug, Environment, Expected Behavior, Screenshots, Steps to Reproduce
 
 ### Community 421 - "Community 421"
-Cohesion: 0.50
-Nodes (4): E2E_DIR, FRAGILE_PATTERNS, main(), scanFile()
+Cohesion: 0.22
+Nodes (7): ZipBackupPanel(), MockJSZip, E2E_DIR, FRAGILE_PATTERNS, main(), scanFile(), readLatestLighthouseReport()
 
 ### Community 423 - "Community 423"
 Cohesion: 0.28
@@ -4026,8 +4100,8 @@ Cohesion: 0.18
 Nodes (11): [1.0.0] — 2026-07-07, ♿ Accessibility, 🤖 AI Layer Hardening, 🏛 Architecture, 🔧 Code Quality, 🌿 Core Features, 🏗 DevOps & Distribution, 🌐 Internationalization (+3 more)
 
 ### Community 425 - "Community 425"
-Cohesion: 0.33
-Nodes (6): Audit Backlog -- CannaGuide 2025, SC-01 -- SLSA Verifier CI Integration, SC-02 -- Onboarding Data Consumption, SC-03 -- Release Pipeline Dry-Run Verification, Summary, Supply Chain (SC)
+Cohesion: 0.50
+Nodes (4): SC-01 -- SLSA Verifier CI Integration, SC-02 -- Onboarding Data Consumption, SC-03 -- Release Pipeline Dry-Run Verification, Supply Chain (SC)
 
 ### Community 426 - "Community 426"
 Cohesion: 0.29
@@ -4054,8 +4128,8 @@ Cohesion: 0.29
 Nodes (7): 5.1 Protokoll und Stabilitaet, 5.2 Browser-Limitierungen, 5.3 Security, 5.4 Performance, 5.5 Hardware und Docs, 5.6 Organisatorisch, 5. Kritische Schwaechen und Risiken
 
 ### Community 432 - "Community 432"
-Cohesion: 0.14
-Nodes (15): collator, compareText(), AnalysisPanel, GenealogyLayoutLink, GenealogyLayoutNode, GenealogyLink, GenealogyView, GenealogyViewProps (+7 more)
+Cohesion: 0.22
+Nodes (7): args, countTestFiles(), dryRun, ROOT, runVitestCount(), targets, WEB
 
 ### Community 433 - "Community 433"
 Cohesion: 0.29
@@ -4070,16 +4144,16 @@ Cohesion: 0.29
 Nodes (7): Execution N+1: Local AI Stack Partial Decoupling, Execution N+2: Stryker Full Baseline, Next Steps, Planned Executions, Session 147 -- Quality Polish + Test Hardening, Verified Metrics, What Was Done (Session 147)
 
 ### Community 436 - "Community 436"
-Cohesion: 0.33
-Nodes (6): Already Resolved, Audit-Driven Priority Roadmap, Immediate (Sprint 1), Long-term (Backlog), Medium-term (Sprint 3), Short-term (Sprint 2)
+Cohesion: 0.29
+Nodes (7): Already Resolved, Audit-Driven Priority Roadmap, Immediate (Sprint 1), Long-term (Backlog), Medium-term (Sprint 3), Short-term (Sprint 2), v1.9.x — Full-Scale Audit (2026-06-29)
 
 ### Community 437 - "Community 437"
 Cohesion: 0.25
 Nodes (3): DevTelemetryPanelInner, EMPTY_STATE, TelemetryState
 
 ### Community 438 - "Community 438"
-Cohesion: 0.29
-Nodes (5): StrainListItem, StrainListItemProps, strainFixture, typeClasses, typeIcons
+Cohesion: 0.39
+Nodes (8): computeDrawerFilterCount(), DEFAULT_AGRONOMIC, getRangeValue(), getSafeAgronomic(), getSafeNumericValue(), getSafeStrainType(), getSafeStringArray(), getSafeText()
 
 ### Community 439 - "Community 439"
 Cohesion: 0.25
@@ -4310,12 +4384,12 @@ Cohesion: 0.40
 Nodes (5): Next Steps -- Session III (CRDT Integration + E2E), Planned Executions, Previous Session (Session 87) -- CRDT Sync Protocol + Conflict UI (F-06 Session II/3), Verified Metrics (Session 87), What Was Done (Session 87)
 
 ### Community 523 - "Community 523"
-Cohesion: 0.25
-Nodes (8): CI path filters, Core CI/CD, External checks (not in this repo), GitHub Actions workflows, Maintenance & automation, Paused / manual-only, Security & quality, Testing & experiments
+Cohesion: 0.10
+Nodes (9): Superseded Open PRs (2026-07-01), CI path filters, Core CI/CD, External checks (not in this repo), GitHub Actions workflows, Maintenance & automation, Paused / manual-only, Security & quality (+1 more)
 
 ### Community 524 - "Community 524"
-Cohesion: 0.25
-Nodes (3): ContextBridge, formatTimeAgo(), defaultSettings
+Cohesion: 0.15
+Nodes (12): ContextBridge, CrossModuleSuggestion, extractKeywords(), formatTimeAgo(), gatherActiveProblems(), gatherRecentJournal(), JournalSummary, PlantContext (+4 more)
 
 ### Community 525 - "Community 525"
 Cohesion: 0.29
@@ -4342,8 +4416,8 @@ Cohesion: 0.29
 Nodes (6): description, identifier, permissions, platforms, $schema, windows
 
 ### Community 543 - "Community 543"
-Cohesion: 0.50
-Nodes (4): i18n (I), I-01 -- Translation Completeness Validation, I-02 -- RTL Language Preparation, I-03 -- Component-Level i18n Completeness
+Cohesion: 0.29
+Nodes (7): 2026-06-29 Full-Scale Audit (PR #362), Audit Backlog -- CannaGuide 2025, i18n (I), I-01 -- Translation Completeness Validation, I-02 -- RTL Language Preparation, I-03 -- Component-Level i18n Completeness, Summary
 
 ### Community 545 - "Community 545"
 Cohesion: 0.50
@@ -4398,8 +4472,8 @@ Cohesion: 0.33
 Nodes (6): CI babysitting checklist, Completed (this PR), Manual (owner), Next sprint (Session 178+), Quality gates (every PR), Session 177 Roadmap — Master Audit Execution
 
 ### Community 562 - "Community 562"
-Cohesion: 0.33
-Nodes (3): isValidBrokerUrl(), MqttClientService, AppStore
+Cohesion: 0.15
+Nodes (12): IotDashboardViewComponent(), IotSettingsTab(), isValidBrokerUrl(), MqttClientService, validatePayload(), IotActions, IotConnectionStatus, IotSettings (+4 more)
 
 ### Community 563 - "Community 563"
 Cohesion: 0.29
@@ -4410,8 +4484,8 @@ Cohesion: 0.33
 Nodes (6): [1.1.0] — 2026-03-20, 🤖 AI & IoT Features, 🏗 DevOps & Infrastructure, 🔒 Security Hardening (3-Day Sprint), 🔍 Security Scanner Results, 🧪 Testing Expansion
 
 ### Community 567 - "Community 567"
-Cohesion: 0.50
-Nodes (4): Latest Session (Session 81) -- CI Typecheck Fix + Vitest Hang Fix, Next Steps, Verified Metrics (Session 81), What Was Done (Session 81)
+Cohesion: 0.39
+Nodes (8): getQuotaInfo(), StorageQuota, countStore(), deleteOldest(), openDb(), pruneOldestEntries(), pruneOnQuotaThreshold(), PruneResult
 
 ### Community 568 - "Community 568"
 Cohesion: 0.50
@@ -4490,8 +4564,8 @@ Cohesion: 0.50
 Nodes (4): Next Steps, Previous Session (Session 170) -- Comprehensive Documentation Audit, Verified Metrics, What Was Done (Session 170)
 
 ### Community 589 - "Community 589"
-Cohesion: 0.50
-Nodes (4): Next Steps, Previous Session (Session 119) -- Lexikon + Design Consistency Fix, Verified Metrics, What Was Done (Session 119)
+Cohesion: 0.39
+Nodes (7): createGenealogyMigrationState(), ensureGenealogyShape(), sanitizeGenealogyComputedTrees(), sanitizeGenealogyMetadata(), sanitizeGenealogyNodeMigration(), sanitizeGenealogyZoomTransform(), VALID_STRAIN_TYPES
 
 ### Community 590 - "Community 590"
 Cohesion: 0.50
@@ -4514,8 +4588,8 @@ Cohesion: 0.33
 Nodes (6): [1.8.0] - 2025-04-12, Added, Added (continued), Changed, Changed (continued), Fixed
 
 ### Community 595 - "Community 595"
-Cohesion: 0.50
-Nodes (4): Next Steps, Previous Session (Session 104) -- W-04 Cross-Worker Channels + Generic Typed Dispatch, Verified Metrics (Session 104), What Was Done (Session 104)
+Cohesion: 0.22
+Nodes (8): ADR-0015: UI State Bridge (Redux ↔ Zustand), Consequences, Context, Decision, Negative, Neutral, Positive, References
 
 ### Community 596 - "Community 596"
 Cohesion: 0.50
@@ -4574,12 +4648,12 @@ Cohesion: 0.29
 Nodes (7): plugins, store, updater, window-state, endpoints, pubkey, all
 
 ### Community 614 - "Community 614"
-Cohesion: 0.70
-Nodes (3): LANGUAGE_NAMES, languageConstraint(), localizeInstruction()
+Cohesion: 0.22
+Nodes (9): Code Scanning Setup, Current policy (2026-06-29), If you have repo-level control (rare with org configs), Local verification, Optional: switch to advanced CodeQL only, Related, Root cause (most common), Snyk Open Source (+1 more)
 
 ### Community 615 - "Community 615"
-Cohesion: 0.40
-Nodes (5): dependsOn, env, inputs, outputs, build:gh
+Cohesion: 0.22
+Nodes (9): Advisory (non-blocking), Critical path coverage, DevOps Quality Gates, File budget, Local CI mirror, Merge gate (required), Pre-commit / pre-push, Related docs (+1 more)
 
 ### Community 617 - "Community 617"
 Cohesion: 0.33
@@ -4622,36 +4696,40 @@ Cohesion: 0.29
 Nodes (5): SEED_SOURCES, SEED_TYPES, SeedEntryForm, SeedEntryFormProps, allStrainsData
 
 ### Community 630 - "Community 630"
-Cohesion: 0.13
-Nodes (29): ALL_TERPENE_NAMES, CANNABINOID_DATABASE, CannabinoidReference, EFFECT_TERPENES, TERPENE_DATABASE, TERPENE_EFFECTS, TerpeneReference, analyzeEntourage() (+21 more)
+Cohesion: 0.08
+Nodes (46): AttributeDisplay, AttributeDisplayProps, InfoSection, InfoSectionProps, AgronomicsTab(), OverviewTab(), ProfileTab(), DifficultyMeter() (+38 more)
 
 ### Community 631 - "Community 631"
-Cohesion: 0.33
-Nodes (7): ALLOWED_MIME_TYPES, base64ToMimeType(), dataUrlToFile(), fileToDataUrl(), ImageValidationError, resizeImage(), validateImageFile()
+Cohesion: 0.10
+Nodes (29): CameraModal(), CameraModalProps, Textarea, TextareaProps, AiDiagnosticsModal(), DiagnosisResult(), DiagnosisResultProps, GrowConfirmationModal() (+21 more)
 
 ### Community 632 - "Community 632"
 Cohesion: 0.50
 Nodes (4): Next Steps, Previous Session (Session 70) -- UI/UX Accessibility + CSP Finalisierung, Verified Metrics, What Was Done (Session 70)
 
 ### Community 634 - "Community 634"
-Cohesion: 0.50
-Nodes (4): Next Steps, Previous Session (Session 69) -- Security Hardening + Audit Closure + README Badges, Verified Metrics, What Was Done (Session 69)
+Cohesion: 0.22
+Nodes (9): 1. Metrics sync, 2. Quality gates, 3. Documentation drift, 4. Architecture & ADRs, 5. God-file budget, 6. CI / security housekeeping, 7. Post-merge, Related (+1 more)
 
 ### Community 635 - "Community 635"
-Cohesion: 0.31
-Nodes (5): startApp(), initBootstrapSentry(), registerServiceWorker(), i18nPromise, initSentry()
+Cohesion: 0.43
+Nodes (4): startApp(), initBootstrapSentry(), registerServiceWorker(), initSentry()
 
 ### Community 637 - "Community 637"
 Cohesion: 0.50
 Nodes (4): Next Steps, Previous Session (Session 67) -- Hydro Sensor-Forecasting (Lightweight ONNX), Verified Metrics, What Was Done (Session 67)
 
 ### Community 638 - "Community 638"
-Cohesion: 0.48
-Nodes (5): ALL_FLAVONOID_NAMES, CANNABIS_EXCLUSIVE_FLAVONOIDS, EFFECT_FLAVONOIDS, FLAVONOID_DATABASE, FlavonoidReference
+Cohesion: 0.36
+Nodes (6): FlavonoidEntry, ALL_FLAVONOID_NAMES, CANNABIS_EXCLUSIVE_FLAVONOIDS, EFFECT_FLAVONOIDS, FLAVONOID_DATABASE, FlavonoidReference
+
+### Community 639 - "Community 639"
+Cohesion: 0.11
+Nodes (11): Architecture, API Reference, Convention, Documents, Related Docs, Import rules, Overview, Related (+3 more)
 
 ### Community 640 - "Community 640"
 Cohesion: 0.22
-Nodes (10): aiProviderService, aiService, buildPrompt(), isRateLimited(), KnowledgeRagResult, KnowledgeRagService, LANGUAGE_NAMES, languageInstruction() (+2 more)
+Nodes (10): aiOrchestrator, aiService, buildPrompt(), isRateLimited(), KnowledgeRagResult, KnowledgeRagService, LANGUAGE_NAMES, languageInstruction() (+2 more)
 
 ### Community 641 - "Community 641"
 Cohesion: 0.50
@@ -4674,8 +4752,8 @@ Cohesion: 0.50
 Nodes (4): Next Steps, Session 60 -- WorkerBus Priority Queue + VPD High-Priority Lane, Verified Metrics, What Was Done (Session 60)
 
 ### Community 649 - "Community 649"
-Cohesion: 0.10
-Nodes (28): AiResponseValidationError, runRoutedValidated(), TestSchema, validateAiResponse(), buildAdviceStreamPrompt(), buildDiagnosisStreamPrompt(), buildMentorStreamPrompt(), NutrientRecommendationInput (+20 more)
+Cohesion: 0.08
+Nodes (35): AiResponseValidationError, runRoutedValidated(), validateAiResponse(), buildAdviceStreamPrompt(), buildDiagnosisStreamPrompt(), buildMentorStreamPrompt(), NutrientRecommendationInput, parseAiStreamResult() (+27 more)
 
 ### Community 651 - "Community 651"
 Cohesion: 0.50
@@ -4690,8 +4768,8 @@ Cohesion: 0.50
 Nodes (4): Next Steps, Session 159 -- Fix Analytics Dashboard E2E CI Failure, Verified Metrics, What Was Done (Session 160)
 
 ### Community 656 - "Community 656"
-Cohesion: 0.43
-Nodes (5): getVendorColor(), resolveProductLinks(), VENDOR_CATALOG, VENDOR_COLORS, VendorCatalogEntry
+Cohesion: 0.39
+Nodes (6): SetupResultDisplayComponent(), getVendorColor(), resolveProductLinks(), VENDOR_CATALOG, VENDOR_COLORS, VendorCatalogEntry
 
 ### Community 657 - "Community 657"
 Cohesion: 0.50
@@ -4706,8 +4784,8 @@ Cohesion: 0.50
 Nodes (4): Next Steps (Morning Priorities), Previous Session (2026-03-30, Session 11) -- i18n Sync, QA Deep-Audit & End-of-Day Sweep, Repo State (End of Day), What Was Done (Session 11)
 
 ### Community 661 - "Community 661"
-Cohesion: 0.31
-Nodes (8): availabilityCache, CacheEntry, generateMockAvailability(), getAvailabilityForStrain(), getSeedbankById(), getSeedbanks(), SEEDBANKS, simpleHash()
+Cohesion: 0.18
+Nodes (11): AvailabilityRowProps, AvailabilityTab(), AvailabilityTabProps, availabilityCache, CacheEntry, generateMockAvailability(), getAvailabilityForStrain(), getSeedbankById() (+3 more)
 
 ### Community 662 - "Community 662"
 Cohesion: 0.50
@@ -4715,7 +4793,7 @@ Nodes (4): Next Steps (Priority Order), Previous Session (2026-04-05, Session 27
 
 ### Community 663 - "Community 663"
 Cohesion: 0.12
-Nodes (13): CsvColumn, csvExportService, CsvExportType, ISSUE_COLUMNS, IssueRow, PLANT_COLUMNS, PlantRow, READING_COLUMNS (+5 more)
+Nodes (16): buildCsv(), CsvColumn, csvExportService, CsvExportType, escapeField(), ISSUE_COLUMNS, IssueRow, PLANT_COLUMNS (+8 more)
 
 ### Community 666 - "Community 666"
 Cohesion: 0.15
@@ -4751,7 +4829,7 @@ Nodes (4): Planned Executions, Previous Session (2026-04-07, Session 35) -- Full
 
 ### Community 678 - "Community 678"
 Cohesion: 0.10
-Nodes (23): buildProvenance(), CORS_PROXIES, fetchWithCorsProxy(), getAvailableProviders(), getProvidersByQuality(), getProvidersForCapability(), getProviderStatus(), mapCansativaType() (+15 more)
+Nodes (29): buildPageNumbers(), Pagination(), PaginationProps, buildProvenance(), checkRateLimit(), computeRelevance(), CORS_PROXIES, fetchProviderData() (+21 more)
 
 ### Community 679 - "Community 679"
 Cohesion: 0.50
@@ -4762,8 +4840,8 @@ Cohesion: 0.50
 Nodes (4): Planned Executions, Previous Session (2026-04-07, Session 33) -- i18n ES/FR/NL Calculator Keys, Stryker Mutation Coverage, Playwright CT + VR (Execution 6), Verified Metrics (Session 33), What Was Done (Session 33)
 
 ### Community 681 - "Community 681"
-Cohesion: 0.09
-Nodes (19): getT(), ChemotypeInput, ChemotypeResult, ChemotypeService, dominantKey(), baseInput, CommunityShareService, extractGistId() (+11 more)
+Cohesion: 0.22
+Nodes (7): CommunityShareService, extractGistId(), GistPayloadSchema, StrainImportSchema, getTMock, isLocalOnlyModeMock, loadService()
 
 ### Community 682 - "Community 682"
 Cohesion: 0.29
@@ -4775,35 +4853,35 @@ Nodes (4): Previous Session (Session 124) -- CI Typecheck Fixes + Hook Hardening
 
 ### Community 684 - "Community 684"
 Cohesion: 0.07
-Nodes (35): clearInferenceCache(), MOCK_TRANSLATIONS, pipelineMock, SvcInternal, ModelRecommendation, acquireLoadSlot(), clearPipelineCache(), executePipelineLoad() (+27 more)
+Nodes (47): LocalAiOfflineCard(), clearInferenceCache(), getTransformersTimeoutMs(), getWebLlmTimeoutMs(), MOCK_TRANSLATIONS, pipelineMock, SvcInternal, acquireLoadSlot() (+39 more)
 
 ### Community 685 - "Community 685"
 Cohesion: 0.11
-Nodes (31): getModelVersion(), getModelsForGpuTier(), getRecommendedModel(), getRegistryModelById(), getRegistryModelVersion(), GpuTierName, MODEL_REGISTRY, ModelRegistryEntry (+23 more)
+Nodes (31): getModelsForGpuTier(), getRecommendedModel(), getRegistryModelById(), getRegistryModelVersion(), GpuTierName, MODEL_REGISTRY, ModelRegistryEntry, ModelSizeTier (+23 more)
 
 ### Community 686 - "Community 686"
 Cohesion: 0.29
 Nodes (6): Additional Context, Current Translation, Language(s) Affected, Namespace, Suggested Translation, Type of Translation Issue
 
 ### Community 687 - "Community 687"
-Cohesion: 0.07
-Nodes (63): applyCacheSettings(), cache, CacheEntry, clearPersistentCache(), getCacheBreakdown(), getCachedInference(), getCacheSize(), resetCacheDb() (+55 more)
+Cohesion: 0.08
+Nodes (55): applyCacheSettings(), cache, CacheEntry, clearPersistentCache(), getCacheBreakdown(), getCachedInference(), getCacheSize(), resetCacheDb() (+47 more)
 
 ### Community 688 - "Community 688"
 Cohesion: 0.29
 Nodes (6): Commit Identity Guardrails, Example dry run, GitHub Repo Hardening Automation, Optional env vars, Quick start, Required PAT scopes/permissions
 
 ### Community 689 - "Community 689"
-Cohesion: 0.50
-Nodes (4): __dirname, jsonPath, normalizeName(), run()
+Cohesion: 0.33
+Nodes (6): __dirname, jsonPath, manifestPath, ADR-0014, normalizeName(), run()
 
 ### Community 691 - "Community 691"
-Cohesion: 0.33
-Nodes (4): initialState, knowledgeSlice, KnowledgeState, initial
+Cohesion: 0.25
+Nodes (7): SeedVaultStats, StatCard, StatCardProps, TYPE_BAR_COLORS, TypeBar, TypeBarProps, selectSeedInventoryStats
 
 ### Community 692 - "Community 692"
-Cohesion: 0.16
-Nodes (14): AutoCard, AutoCardProps, LlmModelSelector, LlmModelSelectorProps, LoadingProgress, ModelCard, ModelCardProps, GpuTier (+6 more)
+Cohesion: 0.15
+Nodes (13): AutoCard, AutoCardProps, LlmModelSelector, LlmModelSelectorProps, LoadingProgress, ModelCard, ModelCardProps, GpuTier (+5 more)
 
 ### Community 695 - "Community 695"
 Cohesion: 0.20
@@ -4814,16 +4892,16 @@ Cohesion: 0.33
 Nodes (5): 0.1.0 (2025-12-01), 0.2.0 (2026-03-20), Added, @cannaguide/ai-core — Changelog, Changed
 
 ### Community 700 - "Community 700"
-Cohesion: 0.24
-Nodes (13): buildEquipmentRecommendation(), EquipmentPromptFlags, getExtraName(), getNutrientName(), getSoilName(), getTentConfig(), getVentilationName(), getVentilationRationale() (+5 more)
+Cohesion: 0.43
+Nodes (6): calculateRecency(), clearDynamicNodes(), injectPlants(), injectStrainTerpenes(), EdgeRelation, GraphMutators
 
 ### Community 702 - "Community 702"
 Cohesion: 0.33
 Nodes (5): 0.1.0 (2025-12-01), 0.2.0 (2026-03-20), Added, @cannaguide/ui — Changelog, Changed
 
 ### Community 706 - "Community 706"
-Cohesion: 0.40
-Nodes (4): ALLOWED_PATTERNS, isAllowed(), main(), SCAN_DIRS
+Cohesion: 0.60
+Nodes (5): ALLOWED_PATTERNS, isAllowed(), main(), SCAN_DIRS, walk()
 
 ### Community 707 - "Community 707"
 Cohesion: 0.50
@@ -4894,8 +4972,8 @@ Cohesion: 0.50
 Nodes (4): [1.8.1] - 2026-04-14, Added, Changed, Removed
 
 ### Community 732 - "Community 732"
-Cohesion: 0.50
-Nodes (4): API Reference, Convention, Documents, Related Docs
+Cohesion: 0.43
+Nodes (4): SnapshotDiff, createSnapshotDiff(), isPlainObject(), mergeStrainCatalogForUpdate()
 
 ### Community 733 - "Community 733"
 Cohesion: 0.50
@@ -4922,8 +5000,8 @@ Cohesion: 0.50
 Nodes (4): D-01 -- API Documentation, D-02 -- Deprecation Strategy, D-03 -- Architecture Decision Records, Maintainability (D)
 
 ### Community 743 - "Community 743"
-Cohesion: 0.67
-Nodes (3): test:coverage, dependsOn, outputs
+Cohesion: 0.39
+Nodes (4): normalizeGeneticModifiers(), DEFAULT_GENETIC_MODIFIERS, ENVIRONMENTAL_DRIFT, SIMULATION_PROFILE_CURVES
 
 ### Community 744 - "Community 744"
 Cohesion: 0.50
@@ -4981,25 +5059,185 @@ Nodes (4): Next Steps (Priority Order), Previous Session (2026-04-02, Session 19
 Cohesion: 0.50
 Nodes (4): Next Steps (Session 59), Session 58 -- RAG Semantic Hybrid Re-Ranking with MiniLM-L6, Verified Metrics (Session 58), What Was Done (Session 58)
 
+### Community 3023 - "Community 3023"
+Cohesion: 0.25
+Nodes (7): ADR-0009: SharedArrayBuffer Progressive Enhancement, Code architecture:, Consequences, Context, Decision, Header deployment:, Risks
+
+### Community 3027 - "Community 3027"
+Cohesion: 0.25
+Nodes (8): 3.2.1 AI Prompt Safety Pipeline — Excellent ✅, 3.2.2 Fixed: SECURITY.md Supported Versions, 3.2.3 Fixed: @babel/core Vulnerability (GHSA-4x5r-pxfx-6jf8), 3.2.4 Cryptography & Sync Encryption, 3.2.5 Supply Chain & Actions, 3.2.6 DOMPurify Coverage, 3.2.7 CSP & Headers, 3.2 Security & Privacy
+
+### Community 3182 - "Community 3182"
+Cohesion: 0.29
+Nodes (6): description, identifier, permissions, platforms, $schema, windows
+
+### Community 3199 - "Community 3199"
+Cohesion: 0.38
+Nodes (6): LeafDiagnosisPanelComponent(), CRITICAL_FILES, findEntry(), main(), MIN_PCT, pct()
+
+### Community 3279 - "Community 3279"
+Cohesion: 0.38
+Nodes (4): APP_METADATA, PORCUPINE_BUILTIN_KEYWORDS, SPEAK_NATURAL_PAUSE_MS, storageService
+
+### Community 3423 - "ADR-0007: WorkerBus Priority Preemption"
+Cohesion: 0.29
+Nodes (7): ADR-0007: WorkerBus Priority Preemption, Consequences, Context, Decision, Negative, Neutral, Positive
+
+### Community 3424 - "Audit Closure — Full-Scale Audit 2026-06-29"
+Cohesion: 0.29
+Nodes (7): Audit Closure — Full-Scale Audit 2026-06-29, Housekeeping artifacts, P1 (next sprint), P2 / P3, Remaining tracked debt, Resolved in this audit cycle, Verification snapshot (2026-06-29)
+
+### Community 3425 - "3. Detailed Findings by Dimension"
+Cohesion: 0.29
+Nodes (7): 3.5.1 WCAG 2.2 Compliance Progress, 3.5.2 i18n — 5 Locales, 13 Namespaces, 3.5 Accessibility & i18n, 3.8 Recent Changes Evaluation (June 29 – July 2, 2026), 3. Detailed Findings by Dimension, Risk Areas, Strengths
+
+### Community 3426 - "check-pnpm-lockfile.mjs"
+Cohesion: 0.38
+Nodes (6): duplicates, fail(), findDuplicateKeys(), LOCKFILE_PATH, LOCKFILE_SECTIONS, readLockfile()
+
+### Community 3427 - "mdc-context-e2e.mjs"
+Cohesion: 0.29
+Nodes (4): govPath, required, root, validate
+
+### Community 3428 - "LexikonView.tsx"
+Cohesion: 0.40
+Nodes (4): CATEGORY_COLORS, CategoryFilter, getCategoryI18nKey(), LexikonViewComponent()
+
+### Community 3430 - "offlineSyncQueueService.test.ts"
+Cohesion: 0.33
+Nodes (5): loadService(), pushToGistMock, setSyncLastSyncAtMock, setSyncPendingRetriesMock, setSyncStatusMock
+
+### Community 3431 - "2. Security & Privacy"
+Cohesion: 0.33
+Nodes (6): 2. Security & Privacy, S-08 — AI prompt sanitization gaps on secondary paths (P0) ✅ Fixed, S-09 — CSP `unsafe-inline` for static PWA (P2 — Won't Fix), S-10 — Transitive dependency vulnerabilities (P2), S-11 — E2EE optional for cloud sync (P2 — By Design), S-12 — Prior audit items (✅ All closed)
+
+### Community 3432 - "3.1 Code Quality, Maintainability & Architecture"
+Cohesion: 0.33
+Nodes (6): 3.1.1 God-File Burn-Down Status — COMPLETE ✅, 3.1.2 TypeScript Strictness, 3.1.3 State Management Architecture, 3.1.4 Service Dependency Acyclicity, 3.1.5 Error Handling, 3.1 Code Quality, Maintainability & Architecture
+
+### Community 3433 - "3.3 Performance, Bundle & PWA"
+Cohesion: 0.33
+Nodes (6): 3.3.1 Build Performance, 3.3.2 Bundle Budget — All Green ✅, 3.3.3 Worker Architecture (11 Workers + WorkerBus), 3.3.4 ML Model Caching (Cache-First + FIFO 16 entries), 3.3.5 Service Worker Update UX, 3.3 Performance, Bundle & PWA
+
+### Community 3440 - "[1.9.0] - 2026-07-01"
+Cohesion: 0.40
+Nodes (5): [1.9.0] - 2026-07-01, Added, Changed, Changed, Security
+
+### Community 3441 - "10. CI/CD, Deployment & Tooling"
+Cohesion: 0.40
+Nodes (5): 10. CI/CD, Deployment & Tooling, CI-01 — Merge gate (✅ Appropriate), CI-02 — Docs-only changes skip CI (P2), CI-03 — SHA-pinned Actions (✅ Enforced), CI-04 — 25 workflows documented
+
+### Community 3442 - "1. Architecture & Code Quality"
+Cohesion: 0.40
+Nodes (5): 1. Architecture & Code Quality, A-01 — God-files exceed 700 LOC budget (P1), A-02 — Redux ↔ Zustand bridge complexity (P2), A-03 — Domain layer / use cases partially adopted (P2), A-04 — Monorepo boundaries enforced (✅ Done)
+
+### Community 3443 - "6. AI & Machine Learning Integration"
+Cohesion: 0.40
+Nodes (5): 6. AI & Machine Learning Integration, AI-01 — AI Cost Tracking UI (✅ Complete — doc drift), AI-02 — Local AI sanitizer weaker than cloud (P0) ✅ Fixed, AI-03 — Provider abstraction (✅ Solid), AI-04 — Fallback UX communication (P2)
+
+### Community 3444 - "Prioritized Action Plan"
+Cohesion: 0.40
+Nodes (5): Immediate (P0) — This session, Medium-term (P2) — v1.9.x, Prioritized Action Plan, Short-term (P1) — Audit cycle 2026-06-29, Strategic (P3) — v2.0
+
+### Community 3445 - "3.4 Testing, Quality Gates & CI/CD"
+Cohesion: 0.40
+Nodes (5): 3.4.1 Test Suite — 2936 Tests, 274 Files ✅, 3.4.2 Coverage Metrics, 3.4.3 Quality Gates Inventory, 3.4.4 CI/CD Robustness, 3.4 Testing, Quality Gates & CI/CD
+
+### Community 3446 - "3.7 Domain Features"
+Cohesion: 0.40
+Nodes (5): 3.7.1 Strain Library (776 Entries), 3.7.2 Local AI Stack, 3.7.3 Plant Simulation, 3.7.4 Voice Commands (37 Commands), 3.7 Domain Features
+
+### Community 3447 - "9. Appendices"
+Cohesion: 0.40
+Nodes (5): 9. Appendices, Appendix A: Command Execution Log, Appendix B: Key File Inventory (Non-Data, Non-Locale, Largest Files), Appendix C: Coverage Measurement Details, Appendix D: Vulnerability Remediation Timeline
+
+### Community 3448 - "build"
+Cohesion: 0.40
+Nodes (5): dependsOn, env, inputs, outputs, build
+
+### Community 3449 - "growLogRagService.test.ts"
+Cohesion: 0.67
+Nodes (3): localAiMocks, makeGrowPlant(), makePlant()
+
+### Community 3452 - "[0.1.0] — 2026-03-01"
+Cohesion: 0.50
+Nodes (4): [0.1.0] — 2026-03-01, Added, Changed, Fixed
+
+### Community 3453 - "3. Performance & Resource Optimization"
+Cohesion: 0.50
+Nodes (4): 3. Performance & Resource Optimization, P-01 — Local AI battery/memory impact on mobile (P1), P-02 — Critical path bundle (P2 — Advisory), P-03 — WorkerBus backpressure (P2 — Improved)
+
+### Community 3454 - "4. State Management & Data Layer"
+Cohesion: 0.50
+Nodes (4): 4. State Management & Data Layer, D-01 — 19 Redux slices + 9 Zustand stores (P2), D-02 — CRDT conflict resolution UI (P2), D-03 — IndexedDB recovery (✅ Robust)
+
+### Community 3455 - "5. Testing & Quality Assurance"
+Cohesion: 0.50
+Nodes (4): 5. Testing & Quality Assurance, T-01 — Coverage below 80% on critical paths (P1), T-02 — Test suite scale (✅ Strong), T-03 — React alignment (✅ Fixed)
+
+### Community 3456 - "7. UI/UX, Accessibility & Theming"
+Cohesion: 0.50
+Nodes (4): 7. UI/UX, Accessibility & Theming, U-01 — ui-ux-audit.md items (✅ All done), U-02 — WCAG 2.2 AAA aspirational gaps (P2), U-03 — SettingsView god-file impacts maintainability (P1) ✅ Fixed
+
+### Community 3457 - "8. Features, Data & Domain Logic"
+Cohesion: 0.50
+Nodes (4): 8. Features, Data & Domain Logic, F-01 — Static strain library update strategy (P1), F-02 — VPD simulation accuracy (P2), F-03 — v2.0 WebXR readiness (P3)
+
+### Community 3458 - "9. Documentation, DevEx & Maintainability"
+Cohesion: 0.50
+Nodes (4): 9. Documentation, DevEx & Maintainability, DOC-01 — Stale references (P1) ✅ Partially fixed, DOC-02 — ADR coverage (✅ Good), DOC-03 — AGENTS.md / Cursor rules (✅ Strong)
+
+### Community 3459 - "CannaGuide 2025 — Full-Scale Audit Report"
+Cohesion: 0.50
+Nodes (4): CannaGuide 2025 — Full-Scale Audit Report, Executive Summary, References, Verification Commands
+
+### Community 3460 - "2. Reconnaissance & Baseline"
+Cohesion: 0.50
+Nodes (4): 2.1 Git History — June 17 to July 2, 2026, 2.2 Version & Technology Stack, 2.3 Repository Structure Highlights, 2. Reconnaissance & Baseline
+
+### Community 3461 - "3.6 PWA & Offline-First Architecture"
+Cohesion: 0.50
+Nodes (4): 3.6.1 Offline Capability Coverage, 3.6.2 CRDT Sync, 3.6.3 Dual IndexedDB Architecture, 3.6 PWA & Offline-First Architecture
+
+### Community 3462 - "Previous Session (Session 138) -- Full Documentation Audit"
+Cohesion: 0.50
+Nodes (4): Next Steps, Previous Session (Session 138) -- Full Documentation Audit, Verified Metrics, What Was Done (Session 138)
+
+### Community 3463 - "Previous Session (Session 137) -- CodeQL Security Fix"
+Cohesion: 0.50
+Nodes (4): Next Steps, Previous Session (Session 137) -- CodeQL Security Fix, Verified Metrics, What Was Done (Session 137)
+
+### Community 3464 - "Previous Session (Session 91) -- Permanent CI Hardening Pass"
+Cohesion: 0.50
+Nodes (4): Next Steps, Previous Session (Session 91) -- Permanent CI Hardening Pass, Verified Metrics (Session 91), What Was Done (Session 91)
+
+### Community 3465 - "Previous Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix"
+Cohesion: 0.50
+Nodes (4): Next Steps, Previous Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix, Verified Metrics, What Was Done (Session 68)
+
+### Community 3466 - "turbo.json"
+Cohesion: 0.50
+Nodes (3): turbo, globalDependencies, $schema
+
 ## Knowledge Gaps
-- **5854 isolated node(s):** `build.sh script`, `setup.sh script`, `start.sh script`, `name`, `version` (+5849 more)
+- **6014 isolated node(s):** `build.sh script`, `setup.sh script`, `start.sh script`, `name`, `version` (+6009 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **2277 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2290 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `runWithLocalFallback()` connect `Community 3` to `Community 41`, `Community 180`, `Community 125`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `Task` connect `Community 125` to `Community 3`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `Language` connect `Community 3` to `Community 640`, `Community 130`, `Community 134`, `Community 8`, `Community 649`, `Community 266`, `Community 12`, `Community 272`, `Community 41`, `Community 180`, `Community 182`, `Community 700`, `Community 189`, `Community 70`, `Community 335`, `Community 86`, `Community 88`, `Community 96`, `Community 614`, `Community 126`, `Community 383`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `PhosphorIcons` connect `Community 65` to `Community 0`, `Community 128`, `Community 646`, `Community 134`, `Community 137`, `Community 638`, `Community 142`, `Community 17`, `Community 661`, `Community 150`, `Community 153`, `Community 28`, `Community 157`, `Community 33`, `Community 678`, `Community 168`, `Community 43`, `Community 44`, `Community 175`, `Community 691`, `Community 54`, `Community 55`, `Community 56`, `Community 184`, `Community 186`, `Community 60`, `Community 189`, `Community 190`, `Community 66`, `Community 67`, `Community 71`, `Community 331`, `Community 333`, `Community 213`, `Community 89`, `Community 90`, `Community 349`, `Community 96`, `Community 224`, `Community 97`, `LexikonView.tsx`, `Community 104`, `Community 617`, `Community 232`, `Community 366`, `Community 243`, `Community 244`, `Community 628`, `Community 630`, `Community 631`, `Community 378`, `Community 126`?**
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
+- **Why does `Next Session Handoff` connect `Community 77` to `Community 512`, `Community 513`, `Community 514`, `Community 515`, `Community 516`, `Community 517`, `Community 518`, `Community 520`, `Community 523`, `Community 545`, `Community 547`, `Community 548`, `Community 551`, `Community 553`, `Community 555`, `Community 556`, `Community 568`, `Community 569`, `Community 570`, `Community 571`, `Community 572`, `Community 573`, `Community 574`, `Community 575`, `Community 576`, `Community 577`, `Community 580`, `Community 581`, `Community 582`, `Community 583`, `Community 585`, `Community 586`, `Community 587`, `Community 588`, `Community 590`, `Community 591`, `Community 592`, `Community 593`, `Community 596`, `Community 597`, `Community 598`, `Community 599`, `Community 600`, `Community 602`, `Community 604`, `Community 606`, `Community 609`, `Community 611`, `Community 619`, `Community 621`, `Community 622`, `Community 624`, `Community 632`, `Community 637`, `Community 641`, `Community 644`, `Community 645`, `Community 647`, `Community 651`, `Community 653`, `Community 654`, `Community 657`, `Community 658`, `Community 660`, `Community 662`, `Community 676`, `Community 677`, `Community 679`, `Community 680`, `Community 683`, `Community 718`, `Community 721`, `Community 723`, `Community 724`, `Community 733`, `Community 739`, `Community 740`, `Community 744`, `Community 745`, `Community 746`, `Community 747`, `Community 748`, `Community 749`, `Community 750`, `Community 751`, `Community 752`, `Community 753`, `Community 754`, `Community 755`, `Community 756`, `Community 757`, `Community 257`, `Community 347`, `Community 348`, `Community 373`, `Community 376`, `Community 377`, `Previous Session (Session 138) -- Full Documentation Audit`, `Previous Session (Session 137) -- CodeQL Security Fix`, `Previous Session (Session 91) -- Permanent CI Hardening Pass`, `Previous Session (Session 68) -- Nutrient Deficiency Decision Tree + Deploy Fix`, `Community 399`, `Community 400`, `Community 433`, `Community 434`, `Community 435`, `Community 461`, `Community 462`, `Community 463`, `Community 464`, `Community 465`, `Community 466`, `Community 481`, `Community 482`, `Community 483`, `Community 484`, `Community 487`, `Community 488`, `Community 490`, `Community 491`, `Community 492`, `Community 494`, `Community 495`, `Community 496`, `Community 497`, `Community 498`, `Community 499`, `Community 500`, `Community 501`, `Community 502`, `Community 503`, `Community 504`, `Community 505`, `Community 511`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Why does `Language` connect `Community 70` to `Community 640`, `Community 64`, `Community 130`, `Community 134`, `Community 8`, `Community 41`, `Community 649`, `Community 266`, `Community 12`, `Community 104`, `Community 180`, `Community 55`, `Community 86`, `Community 631`, `Community 182`, `Community 92`, `Community 189`, `Community 383`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **What connects `build.sh script`, `setup.sh script`, `start.sh script` to the rest of the system?**
-  _5854 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _6019 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 0` be split into smaller, more focused modules?**
+  _Cohesion score 0.042644757433489826 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.0753045404208195 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0846774193548387 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.08669354838709678 - nodes in this community are weakly interconnected._
-- **Should `Community 4` be split into smaller, more focused modules?**
-  _Cohesion score 0.13043478260869565 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._

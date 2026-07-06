@@ -57,7 +57,7 @@
         "react-redux": "^9.3.0",
         "recharts": "^3.9.1",
         "tailwind-merge": "^3.6.0",
-        "three": "^0.185.0",
+        "three": "^0.185.1",
         "y-indexeddb": "^9.0.12",
         "yjs": "^13.6.30",
         "zod": "^4.4.2",

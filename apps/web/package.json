@@ -86,7 +86,7 @@
         "@types/react-dom": "^19.2.3",
         "@types/three": "^0.185.0",
         "@vitejs/plugin-react": "^6.0.3",
-        "@vitest/coverage-v8": "^4.1.9",
+        "@vitest/coverage-v8": "^4.1.10",
         "babel-plugin-react-compiler": "19.1.0-rc.3",
         "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-react": "^7.37.5",
@@ -94,13 +94,13 @@
         "fake-indexeddb": "^6.2.5",
         "fast-check": "^4.8.0",
         "jsdom": "^29.1.1",
-        "msw": "^2.14.6",
+        "msw": "^2.15.0",
         "postcss": "^8.5.16",
         "rollup-plugin-visualizer": "^7.0.1",
         "source-map-explorer": "^2.5.3",
         "tailwindcss": "^4.3.2",
         "vite": "^8.1.3",
         "vite-plugin-pwa": "^1.3.0",
-        "vitest": "^4.1.9"
+        "vitest": "^4.1.10"
     }
 }

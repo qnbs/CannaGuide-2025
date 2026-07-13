@@ -3474,5 +3474,21 @@
   "3472": "pre-commit",
   "3473": "pre-push",
   "3474": "externalStrainLookups.api.test.ts",
-  "3475": "externalStrainLookups.safety.test.ts"
+  "3475": "externalStrainLookups.safety.test.ts",
+  "3476": "@stryker-mutator/core",
+  "3477": "@stryker-mutator/typescript-checker",
+  "3478": "tailwindcss",
+  "3479": "@tailwindcss/postcss",
+  "3480": "@tailwindcss/typography",
+  "3481": "@testing-library/jest-dom",
+  "3482": "@testing-library/react",
+  "3483": "@testing-library/user-event",
+  "3484": "@types/d3",
+  "3485": "@types/d3-hierarchy",
+  "3486": "@types/react",
+  "3487": "@types/react-dom",
+  "3488": "vite-plugin-pwa",
+  "3489": "@vitejs/plugin-react",
+  "3490": "vitest",
+  "3491": "@vitest/coverage-v8"
 }

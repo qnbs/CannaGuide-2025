@@ -28,7 +28,26 @@ jobs:
               id: metadata
               uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
               with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  # alert-lookup defaults to false, and ghsa-id stays empty without it —
+                  # the advisory guard below would then wave every non-major PR through.
+                  # The default GITHUB_TOKEN has no scope for Dependabot alerts, so this
+                  # needs a PAT or App token with "Dependabot alerts: read".
+                  alert-lookup: true
+                  github-token: ${{ secrets.DEPENDABOT_ALERTS_TOKEN || secrets.GITHUB_TOKEN }}
+
+            # Fail safe: an empty ghsa-id is indistinguishable from a lookup that never
+            # ran, so without the token we must not auto-merge anything at all.
+            - name: Verify advisory lookup is available
+              id: guard
+              env:
+                  HAS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN != '' }}
+              run: |
+                  if [ "$HAS_TOKEN" = "true" ]; then
+                    echo "lookup=ok" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "lookup=unavailable" >> "$GITHUB_OUTPUT"
+                    echo "::warning::Auto-merge disabled — DEPENDABOT_ALERTS_TOKEN is unset, so advisory PRs cannot be told apart from routine ones. Add a token with 'Dependabot alerts: read'."
+                  fi
 
             # A security PR is one Dependabot raised from a GitHub advisory, which
             # fetch-metadata reports via ghsa-id. Matching on the PR title instead
@@ -42,6 +61,7 @@ jobs:
 
             - name: Auto-merge patch and minor updates
               if: >-
+                  steps.guard.outputs.lookup == 'ok' &&
                   steps.metadata.outputs.update-type != 'version-update:semver-major' &&
                   steps.metadata.outputs.ghsa-id == ''
               run: |

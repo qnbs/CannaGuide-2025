@@ -134,7 +134,7 @@
         "turbo": "^2.10.3",
         "typedoc": "0.28.20",
         "typescript": "5.9.3",
-        "wrangler": "^4.107.0"
+        "wrangler": "^4.110.0"
     },
     "pnpm": {
         "overrides": {

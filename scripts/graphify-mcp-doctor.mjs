@@ -13,7 +13,11 @@ const graphJson = join(root, "graphify-out", "graph.json");
 const launcher = join(root, "scripts", "graphify-mcp-stdio.sh");
 const windowsLauncher = join(root, "scripts", "graphify-mcp-stdio-windows.cmd");
 const MAX_GRAPH_AGE_HOURS = 168;
-const MIN_INFERRED_CONFIDENCE = 0.7;
+// Graphify scores INFERRED edges on a two-value scale: 0.5 for indirect_call
+// (every React callback produces one) and 0.8 for everything else. A 0.7 floor
+// therefore rejects the tool's own normal output. 0.5 is its true floor, so the
+// check still catches missing or corrupt scores without failing on valid graphs.
+const MIN_INFERRED_CONFIDENCE = 0.5;
 const isWindows = process.platform === "win32";
 
 let failed = false;

@@ -14,7 +14,7 @@ The loop is not "read the comments and reply". It ends only when a **fresh** rev
 | **DeepSource** | JS/TS, Docker, Go, Rust, CSS analyzers; grades the PR | check run + issue-comment |
 | **Socket Security** | dependency supply-chain alerts | check run + PR alerts comment |
 | **GitGuardian** | secret scanning | check run |
-| **CodeQL** (`Analyze (actions|javascript-typescript|python|rust)`) | static analysis, incl. **workflow files** | check runs |
+| **CodeQL** (`Analyze (actions\|javascript-typescript\|python\|rust)`) | static analysis, incl. **workflow files** | check runs |
 | **Vercel / Cloudflare** | preview deploys | check runs |
 
 `gh pr checks <N>` does **not** show inline review threads. You must query them (step 2).
@@ -31,19 +31,24 @@ The loop is not "read the comments and reply". It ends only when a **fresh** rev
 
 ## 2. Fetch every open thread (including outside-diff-range)
 
+**Paginate.** A single page is not the work-list: a busy PR exceeds 100 threads, and an unpaginated query reports "0 unresolved" while hiding real findings. `--paginate` requires `$endCursor` in the query and `pageInfo` on the connection.
+
 ```bash
-gh api graphql -f query='
-query($owner:String!,$repo:String!,$num:Int!){
+gh api graphql --paginate -f query='
+query($owner:String!,$repo:String!,$num:Int!,$endCursor:String){
  repository(owner:$owner,name:$repo){ pullRequest(number:$num){
-  reviewThreads(first:100){ nodes{
-    id isResolved isOutdated path line
-    comments(first:10){ nodes{ id author{login} body } } } }
-  comments(first:50){ nodes{ author{login} body } }
+  reviewThreads(first:100, after:$endCursor){
+    pageInfo{ hasNextPage endCursor }
+    nodes{
+      id isResolved isOutdated path line
+      comments(first:10){ nodes{ id author{login} body } } } }
  }}}' -F owner=qnbs -F repo=CannaGuide-2025 -F num=<N> \
  --jq '.data.repository.pullRequest.reviewThreads.nodes[]
    | select(.isResolved | not)
    | "THREAD=\(.id)\n\(.path):\(.line)\n\(.comments.nodes[0].author.login): \(.comments.nodes[0].body)\n---"'
 ```
+
+Issue-comments (the bots' summary posts) paginate separately — query `comments(first:100, after:$endCursor)` the same way when you need them.
 
 `isResolved == false` is the only work-list that counts. `isOutdated` threads still count — the anchor moved, the finding may not have.
 

@@ -63,10 +63,21 @@ if (!existsSync(graphJson)) {
             ok("graphify-out/graph.json is valid JSON and schema-like");
         }
 
-        const inferredScores = edgeList
+        const allInferredScores = edgeList
             .filter((edge) => edge?.confidence === "INFERRED")
-            .map((edge) => Number(edge.confidence_score))
-            .filter(Number.isFinite);
+            .map((edge) => Number(edge.confidence_score));
+        // A missing or NaN score is a corrupt graph, not an absent one — dropping
+        // those silently would let an all-corrupt graph fall through to the
+        // "no inferred edges" branch and pass.
+        const nonFinite = allInferredScores.filter(
+            (score) => !Number.isFinite(score),
+        ).length;
+        const inferredScores = allInferredScores.filter(Number.isFinite);
+        if (nonFinite > 0) {
+            bad(
+                `inferred edges with missing or non-numeric confidence_score: ${nonFinite} edge(s)`,
+            );
+        }
         if (inferredScores.length > 0) {
             const belowThreshold = inferredScores.filter(
                 (score) => score < MIN_INFERRED_CONFIDENCE,
@@ -80,7 +91,7 @@ if (!existsSync(graphJson)) {
                     `inferred confidence threshold >= ${MIN_INFERRED_CONFIDENCE} satisfied (${inferredScores.length} edges)`,
                 );
             }
-        } else {
+        } else if (nonFinite === 0) {
             ok("no inferred edges detected (confidence threshold check skipped)");
         }
 

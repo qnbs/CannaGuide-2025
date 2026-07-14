@@ -76,13 +76,22 @@ Was 22.04 **wirklich** bringt:
 + "packageManager": "pnpm@11.13.0"
 ```
 
-**Risiko / zu beobachten:**
+**Es war kein Einzeiler.** Die obige Annahme war falsch, und zwar auf die gefährliche Art: pnpm 11 hört auf, pnpm-Konfiguration an **zwei** Stellen zu lesen — beide Male **ohne Fehler**, nur mit einer leicht überlesbaren Warnung.
 
-- Der Lockfile-Format-Version kann sich ändern → `pnpm install` erzeugt einen großen `pnpm-lock.yaml`-Diff. Das ist erwartet, aber es muss **ein eigener Commit** sein, sonst ist der PR nicht reviewbar.
-- `scripts/check-pnpm-lockfile.mjs` (Duplicate-Key-Detektor) läuft in der Setup-Action **vor** dem Install — gegen den neuen Lockfile verifizieren.
-- `.npmrc` enthält `shamefully-hoist=true`, `strict-peer-dependencies=false`, `auto-install-peers=true`. Alle drei sind in pnpm 11 weiterhin gültig. **Achtung:** `strict-peer-dependencies=false` ist genau der Grund, warum ein Peer-Konflikt (§3) hier _nicht_ hart failen, sondern still durchrutschen würde — deshalb sind die Peer-Ranges unten manuell geprüft und nicht dem Installer überlassen.
+| Was | Vorher | Unter pnpm 11 | Folge, wenn unmigriert |
+| --- | --- | --- | --- |
+| `pnpm.overrides` (22 Pins) | `package.json` | **ignoriert** | Die Pins für `tmp`, `qs`, `uuid`, `js-yaml` … verschwinden. Genau diese Pakete stehen in `dependabot.yml` auf der Ignore-Liste **mit der Begründung**, sie seien „via pnpm.overrides gepinnt". Ergebnis: weder Dependabot noch Override — eine stille Supply-Chain-Regression. |
+| `pnpm.auditConfig`, `pnpm.onlyBuiltDependencies` | `package.json` | **ignoriert** | `onlyBuiltDependencies` existiert nicht mehr; ersetzt durch `allowBuilds` in `pnpm-workspace.yaml`. |
+| `shamefully-hoist`, `strict-peer-dependencies`, `auto-install-peers` | `.npmrc` | **ignoriert** (`pnpm config get shamefully-hoist` → `undefined`) | Hoisting entfällt → jedes Modul, das `apps/web` importiert **ohne es zu deklarieren**, lässt sich nicht mehr auflösen. |
 
-**Verifikation:** `pnpm install --frozen-lockfile` muss in CI grün sein; `pnpm run typecheck` + `quality`-Job unverändert.
+**Zwei latente Defekte, die dabei ans Licht kamen** (beide an der Wurzel gefixt, nicht umschifft):
+
+1. **`allowBuilds` war Datenmüll.** Es enthielt `b, d, e, i, l, s, u` — die sortierten Buchstaben von **„esbuild"**, ein String, den irgendwann etwas zeichenweise gespreizt hat. Es hat also nie ein Build-Skript freigegeben; `esbuild`, `sharp` und `msw` liefen ohne ihre Postinstall-Skripte.
+2. **Vier Phantom-Dependencies in `apps/web`.** `onnxruntime-web` (gehört `packages/ai-core`), `@tauri-apps/api` (gehört `apps/desktop`) und `@sentry/browser` (nur transitiv über `@sentry/react`) werden importiert, waren aber **nie deklariert**. Sie wurden ausschließlich durch `shamefully-hoist` gefunden. Jetzt explizit deklariert.
+
+**Verifikation (ausgeführt):** `pnpm install` sauber · `check:lockfile` OK · `tsc --noEmit` **0 Fehler** · alle 22 Overrides im regenerierten Lockfile vorhanden.
+
+**Lehre für die kommenden Bumps:** `strictPeerDependencies: false` bleibt gesetzt — ein Peer-Konflikt (§3) failt hier also **nicht** hart, sondern rutscht still durch. Deshalb sind die Peer-Ranges unten manuell geprüft und nicht dem Installer überlassen.
 
 ---
 

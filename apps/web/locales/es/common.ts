@@ -96,12 +96,12 @@ export const common = {
     },
     accessibility: {
         ...enCommon.accessibility,
-        gardenScoreGauge: 'Puntuacion del jardin: {{score}} de {{max}}',
+        gardenScoreGauge: 'Puntuaci\u00F3n del jard\u00EDn: {{score}} de {{max}}',
         scoreOutOf: '/{{max}}',
         chart: {
             ...enCommon.accessibility.chart,
             hour: 'Hora',
-            day: 'Dia',
+            day: 'D\u00EDa',
             date: 'Fecha',
             week: 'Semana',
             plant: 'Planta',
@@ -118,7 +118,7 @@ export const common = {
             health: 'Salud (%)',
             yield: 'Cosecha (g)',
             count: 'Cantidad',
-            share: 'Proporcion (%)',
+            share: 'Proporci\u00F3n (%)',
             value: 'Valor',
         },
         close: 'Cerrar',

@@ -216,9 +216,11 @@ describe('csvExportService', () => {
             escaped.startsWith('"') ? escaped.slice(1, -1).replace(/""/g, '"') : escaped
 
         it.each(['=1+1', '+1', '-1+1', '@SUM(A1)', '\tcmd', '\rcmd'])(
-            'neutralizes the formula lead in %j',
+            'prefixes the formula lead in %j and preserves the payload',
             (payload) => {
-                expect(cellContent(escapeCsvField(payload)).startsWith("'")).toBe(true)
+                // Assert the whole cell, not just the prefix: a truncating or
+                // rewriting implementation would pass a startsWith check.
+                expect(cellContent(escapeCsvField(payload))).toBe(`'${payload}`)
             },
         )
 

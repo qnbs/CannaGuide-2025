@@ -11,14 +11,13 @@ on:
             - 'graphify-out/**'
             - '.github/ISSUE_TEMPLATE/**'
             - '.github/pull_request_template.md'
+    # No paths-ignore here on purpose. "CI Status" is a required check, and
+    # GitHub evaluates paths filters against only the first 300 changed files --
+    # a large pull request could hide a code change beyond that window, skip this
+    # workflow entirely, and still satisfy the required check. The `changes` job
+    # below makes that decision from the complete diff instead.
     pull_request:
         branches: [main]
-        paths-ignore:
-            - '**/*.md'
-            - 'docs/**'
-            - 'graphify-out/**'
-            - '.github/ISSUE_TEMPLATE/**'
-            - '.github/pull_request_template.md'
     workflow_dispatch:
 
 concurrency:
@@ -39,8 +38,69 @@ jobs:
     # suite. Previously E2E waited on all 21 steps of a single `quality` job
     # (~8.5 min) to obtain an artifact the build produces in ~3.
     # ---------------------------------------------------------------------
+    # Decides docs-only vs code from the *full* changed-file list. GitHub's own
+    # paths filters stop at 300 files; git does not.
+    changes:
+        name: Detect code changes
+        runs-on: ubuntu-latest
+        outputs:
+            code: ${{ steps.detect.outputs.code }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  fetch-depth: 0
+
+            - name: Detect code changes
+              id: detect
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  if [ -z "$BASE_SHA" ]; then
+                    echo "Not a pull request -- treating as a code change."
+                    echo "code=true" >> "$GITHUB_OUTPUT"
+                    exit 0
+                  fi
+
+                  CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+                  echo "Changed files:"
+                  printf '%s\n' "$CHANGED"
+                  echo "---"
+
+                  DOCS_ONLY='(\.md$|^docs/|^graphify-out/|^\.github/ISSUE_TEMPLATE/|^\.github/pull_request_template\.md$)'
+
+                  # Deliberately not `grep -q`: it exits on the first match, the writer
+                  # takes SIGPIPE, and under pipefail the pipeline reports 141. The `else`
+                  # branch would then read that as "docs only" and skip the pipeline on a
+                  # diff that does contain code -- the exact bypass this job exists to
+                  # prevent. Read the matches instead, and decide on their content.
+                  set +e
+                  NON_DOCS=$(printf '%s\n' "$CHANGED" | grep -vE "$DOCS_ONLY")
+                  GREP_STATUS=$?
+                  set -e
+
+                  # grep: 0 = at least one non-docs path, 1 = none. Anything else means
+                  # grep itself failed, and a failed detector must never resolve to
+                  # "docs only".
+                  if [ "$GREP_STATUS" -gt 1 ]; then
+                    echo "[FAIL] Change detection failed (grep exit $GREP_STATUS)."
+                    exit 1
+                  fi
+
+                  if [ -n "$NON_DOCS" ]; then
+                    echo "code=true" >> "$GITHUB_OUTPUT"
+                    echo "Code changed -- running the full pipeline. Non-docs paths:"
+                    printf '  %s\n' "$NON_DOCS"
+                  else
+                    echo "code=false" >> "$GITHUB_OUTPUT"
+                    echo "Docs-only change -- the code pipeline has nothing to verify."
+                  fi
+
     build:
         name: Build
+        needs: changes
+        if: needs.changes.outputs.code == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 30
         steps:
@@ -83,6 +143,8 @@ jobs:
     # ---------------------------------------------------------------------
     test:
         name: Unit Tests + Coverage
+        needs: changes
+        if: needs.changes.outputs.code == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 60
         steps:
@@ -142,6 +204,8 @@ jobs:
     # ---------------------------------------------------------------------
     verify:
         name: Lint, Types + Gates
+        needs: changes
+        if: needs.changes.outputs.code == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 45
         steps:
@@ -237,6 +301,8 @@ jobs:
     # ---------------------------------------------------------------------
     security:
         name: Security
+        needs: changes
+        if: needs.changes.outputs.code == 'true'
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
@@ -465,11 +531,21 @@ jobs:
         if: always()
         # build + test + verify together are exactly what the old `quality` job
         # covered \u2014 splitting it must not narrow the merge gate.
-        needs: [build, test, verify, security]
+        needs: [changes, build, test, verify, security]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
               run: |
+                  if [[ "${{ needs.changes.result }}" != "success" ]]; then
+                    echo "[FAIL] Could not determine whether code changed -- refusing to pass."
+                    exit 1
+                  fi
+
+                  if [[ "${{ needs.changes.outputs.code }}" != "true" ]]; then
+                    echo "[OK] Docs-only change -- no code pipeline to run."
+                    exit 0
+                  fi
+
                   echo "Build:    ${{ needs.build.result }}"
                   echo "Test:     ${{ needs.test.result }}"
                   echo "Verify:   ${{ needs.verify.result }}"

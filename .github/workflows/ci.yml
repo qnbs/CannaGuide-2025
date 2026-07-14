@@ -65,13 +65,33 @@ jobs:
 
                   CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
                   echo "Changed files:"
-                  echo "$CHANGED"
+                  printf '%s\n' "$CHANGED"
                   echo "---"
 
                   DOCS_ONLY='(\.md$|^docs/|^graphify-out/|^\.github/ISSUE_TEMPLATE/|^\.github/pull_request_template\.md$)'
-                  if echo "$CHANGED" | grep -qvE "$DOCS_ONLY"; then
+
+                  # Deliberately not `grep -q`: it exits on the first match, the writer
+                  # takes SIGPIPE, and under pipefail the pipeline reports 141. The `else`
+                  # branch would then read that as "docs only" and skip the pipeline on a
+                  # diff that does contain code -- the exact bypass this job exists to
+                  # prevent. Read the matches instead, and decide on their content.
+                  set +e
+                  NON_DOCS=$(printf '%s\n' "$CHANGED" | grep -vE "$DOCS_ONLY")
+                  GREP_STATUS=$?
+                  set -e
+
+                  # grep: 0 = at least one non-docs path, 1 = none. Anything else means
+                  # grep itself failed, and a failed detector must never resolve to
+                  # "docs only".
+                  if [ "$GREP_STATUS" -gt 1 ]; then
+                    echo "[FAIL] Change detection failed (grep exit $GREP_STATUS)."
+                    exit 1
+                  fi
+
+                  if [ -n "$NON_DOCS" ]; then
                     echo "code=true" >> "$GITHUB_OUTPUT"
-                    echo "Code changed -- running the full pipeline."
+                    echo "Code changed -- running the full pipeline. Non-docs paths:"
+                    printf '  %s\n' "$NON_DOCS"
                   else
                     echo "code=false" >> "$GITHUB_OUTPUT"
                     echo "Docs-only change -- the code pipeline has nothing to verify."

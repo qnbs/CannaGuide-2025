@@ -2,20 +2,20 @@
 
 Standing procedure for every pull request in this repository. It applies to **all** reviewers — CodeRabbit, DeepSource, Socket Security, GitGuardian, CodeQL, and humans — and it runs **proactively**: nobody has to ask for it.
 
-The loop is not "read the comments and reply". It ends only when a **fresh** review produces **zero new comments** *and* **zero unresolved threads**.
+The loop is not "read the comments and reply". It ends only when a **fresh** review produces **zero new comments** _and_ **zero unresolved threads**.
 
 ---
 
 ## 0. Reviewers active on this repo
 
-| Reviewer | Surface | Where findings appear |
-|---|---|---|
-| **CodeRabbit** | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment |
-| **DeepSource** | JS/TS, Docker, Go, Rust, CSS analyzers; grades the PR | check run + issue-comment |
-| **Socket Security** | dependency supply-chain alerts | check run + PR alerts comment |
-| **GitGuardian** | secret scanning | check run |
-| **CodeQL** (`Analyze (actions\|javascript-typescript\|python\|rust)`) | static analysis, incl. **workflow files** | check runs |
-| **Vercel / Cloudflare** | preview deploys | check runs |
+| Reviewer                                                              | Surface                                                                                                       | Where findings appear                             |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **CodeRabbit**                                                        | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment |
+| **DeepSource**                                                        | JS/TS, Docker, Go, Rust, CSS analyzers; grades the PR                                                         | check run + issue-comment                         |
+| **Socket Security**                                                   | dependency supply-chain alerts                                                                                | check run + PR alerts comment                     |
+| **GitGuardian**                                                       | secret scanning                                                                                               | check run                                         |
+| **CodeQL** (`Analyze (actions\|javascript-typescript\|python\|rust)`) | static analysis, incl. **workflow files**                                                                     | check runs                                        |
+| **Vercel / Cloudflare**                                               | preview deploys                                                                                               | check runs                                        |
 
 `gh pr checks <N>` does **not** show inline review threads. You must query them (step 2).
 
@@ -60,7 +60,7 @@ Review-bot anchors go stale, and bots are wrong often enough that "the bot said 
 
 1. **Still valid → fix at the root.** Not the symptom the bot pointed at — the cause. Ship everything that belongs to the fix: code **+ test + i18n (all 5 locales) + docs + CHANGELOG**.
 2. **Already fixed** by a later commit → reply with the commit SHA, resolve.
-3. **False positive** → reply with the *evidence* (the code path, the config, the reason the bot's assumption doesn't hold). Never "won't fix" with no argument.
+3. **False positive** → reply with the _evidence_ (the code path, the config, the reason the bot's assumption doesn't hold). Never "won't fix" with no argument.
 
 **Outside-diff-range comments are in scope.** CodeRabbit routinely flags a real defect in code your PR merely sits next to. If it is real, fix it — or, when it is genuinely a separate concern, open a tracked issue and link it in the reply. Never silently ignore it.
 

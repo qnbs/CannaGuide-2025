@@ -288,6 +288,8 @@ export const common = {
         update: 'Aktualisieren',
     },
     accessibility: {
+        gardenScoreGauge: 'Garten-Score: {{score}} von {{max}}',
+        scoreOutOf: '/{{max}}',
         close: 'Schließen',
         creditCard: 'Kreditkarte',
         bankTransfer: 'Banküberweisung',

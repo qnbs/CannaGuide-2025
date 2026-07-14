@@ -96,6 +96,8 @@ export const common = {
     },
     accessibility: {
         ...enCommon.accessibility,
+        gardenScoreGauge: 'Puntuacion del jardin: {{score}} de {{max}}',
+        scoreOutOf: '/{{max}}',
         chart: {
             ...enCommon.accessibility.chart,
             hour: 'Hora',

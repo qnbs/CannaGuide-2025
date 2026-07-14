@@ -285,6 +285,8 @@ export const common = {
         update: 'Update',
     },
     accessibility: {
+        gardenScoreGauge: 'Garden score: {{score}} out of {{max}}',
+        scoreOutOf: '/{{max}}',
         close: 'Close',
         creditCard: 'Credit Card',
         bankTransfer: 'Bank Transfer',

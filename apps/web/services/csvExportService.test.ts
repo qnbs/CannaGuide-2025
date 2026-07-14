@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { csvExportService } from './csvExportService'
+import { csvExportService, escapeCsvField } from './csvExportService'
 
 const UTF8_BOM = '\uFEFF'
 
@@ -13,7 +13,14 @@ describe('csvExportService', () => {
 
         it('exports plant rows', () => {
             const plants = [
-                { id: 'p1', name: 'OG Kush #1', strain: 'OG Kush', stage: 'FLOWERING', startDate: 1700000000000, growId: 'g1' },
+                {
+                    id: 'p1',
+                    name: 'OG Kush #1',
+                    strain: 'OG Kush',
+                    stage: 'FLOWERING',
+                    startDate: 1700000000000,
+                    growId: 'g1',
+                },
                 { id: 'p2', name: 'Haze', strain: 'Silver Haze', stage: 'VEGETATIVE' },
             ]
             const csv = csvExportService.exportPlants(plants)
@@ -53,10 +60,18 @@ describe('csvExportService', () => {
         })
 
         it('exports reading data', () => {
-            const readings = [{
-                id: 'r1', plantId: 'p1', timestamp: 1700000000000,
-                ec: 1.2, ph: 6.5, waterTempC: 22, readingType: 'manual', notes: 'ok',
-            }]
+            const readings = [
+                {
+                    id: 'r1',
+                    plantId: 'p1',
+                    timestamp: 1700000000000,
+                    ec: 1.2,
+                    ph: 6.5,
+                    waterTempC: 22,
+                    readingType: 'manual',
+                    notes: 'ok',
+                },
+            ]
             const csv = csvExportService.exportReadings(readings)
             expect(csv).toContain('r1')
             expect(csv).toContain('1.2')
@@ -64,10 +79,18 @@ describe('csvExportService', () => {
         })
 
         it('handles null plantId and waterTempC', () => {
-            const readings = [{
-                id: 'r1', plantId: null, timestamp: 1700000000000,
-                ec: 1.0, ph: 6.0, waterTempC: null, readingType: 'auto', notes: '',
-            }]
+            const readings = [
+                {
+                    id: 'r1',
+                    plantId: null,
+                    timestamp: 1700000000000,
+                    ec: 1.0,
+                    ph: 6.0,
+                    waterTempC: null,
+                    readingType: 'auto',
+                    notes: '',
+                },
+            ]
             const csv = csvExportService.exportReadings(readings)
             expect(csv).toContain('r1')
         })
@@ -75,10 +98,16 @@ describe('csvExportService', () => {
 
     describe('exportTasks', () => {
         it('exports task rows', () => {
-            const tasks = [{
-                id: 't1', plantId: 'p1', type: 'water',
-                scheduledAt: 1700000000000, recurring: true, notes: 'daily',
-            }]
+            const tasks = [
+                {
+                    id: 't1',
+                    plantId: 'p1',
+                    type: 'water',
+                    scheduledAt: 1700000000000,
+                    recurring: true,
+                    notes: 'daily',
+                },
+            ]
             const csv = csvExportService.exportTasks(tasks)
             expect(csv).toContain('t1')
             expect(csv).toContain('water')
@@ -86,10 +115,16 @@ describe('csvExportService', () => {
         })
 
         it('handles optional completedAt', () => {
-            const tasks = [{
-                id: 't1', plantId: 'p1', type: 'feed',
-                scheduledAt: 1700000000000, completedAt: 1700001000000, recurring: false,
-            }]
+            const tasks = [
+                {
+                    id: 't1',
+                    plantId: 'p1',
+                    type: 'feed',
+                    scheduledAt: 1700000000000,
+                    completedAt: 1700001000000,
+                    recurring: false,
+                },
+            ]
             const csv = csvExportService.exportTasks(tasks)
             const lines = csv.split('\r\n')
             expect(lines.length).toBeGreaterThan(1)
@@ -98,10 +133,16 @@ describe('csvExportService', () => {
 
     describe('exportSeeds', () => {
         it('exports seed inventory', () => {
-            const seeds = [{
-                id: 's1', strainName: 'Northern Lights', quantity: 10,
-                seedType: 'feminized', breeder: 'Sensi Seeds', acquiredAt: 1700000000000,
-            }]
+            const seeds = [
+                {
+                    id: 's1',
+                    strainName: 'Northern Lights',
+                    quantity: 10,
+                    seedType: 'feminized',
+                    breeder: 'Sensi Seeds',
+                    acquiredAt: 1700000000000,
+                },
+            ]
             const csv = csvExportService.exportSeeds(seeds)
             expect(csv).toContain('Northern Lights')
             expect(csv).toContain('10')
@@ -112,11 +153,18 @@ describe('csvExportService', () => {
 
     describe('exportIssues', () => {
         it('exports issue rows', () => {
-            const issues = [{
-                id: 'i1', plantId: 'p1', category: 'pest',
-                status: 'active', severity: 'high', title: 'Spider mites',
-                detectedAt: 1700000000000, description: 'Found on leaves',
-            }]
+            const issues = [
+                {
+                    id: 'i1',
+                    plantId: 'p1',
+                    category: 'pest',
+                    status: 'active',
+                    severity: 'high',
+                    title: 'Spider mites',
+                    detectedAt: 1700000000000,
+                    description: 'Found on leaves',
+                },
+            ]
             const csv = csvExportService.exportIssues(issues)
             expect(csv).toContain('Spider mites')
             expect(csv).toContain('pest')
@@ -124,11 +172,18 @@ describe('csvExportService', () => {
         })
 
         it('handles undefined resolvedAt', () => {
-            const issues = [{
-                id: 'i1', plantId: 'p1', category: 'deficiency',
-                status: 'resolved', severity: 'low', title: 'N deficiency',
-                detectedAt: 1700000000000, resolvedAt: 1700005000000,
-            }]
+            const issues = [
+                {
+                    id: 'i1',
+                    plantId: 'p1',
+                    category: 'deficiency',
+                    status: 'resolved',
+                    severity: 'low',
+                    title: 'N deficiency',
+                    detectedAt: 1700000000000,
+                    resolvedAt: 1700005000000,
+                },
+            ]
             const csv = csvExportService.exportIssues(issues)
             expect(csv).toContain('resolved')
         })
@@ -149,6 +204,42 @@ describe('csvExportService', () => {
             const plants = [{ id: 'p1', name: 'Line1\nLine2', strain: 'S', stage: 'SEED' }]
             const csv = csvExportService.exportPlants(plants)
             expect(csv).toContain('"Line1\nLine2"')
+        })
+    })
+
+    describe('escapeCsvField -- formula injection (CWE-1236)', () => {
+        // Plant and strain names are user-supplied and land in exported cells. A cell
+        // opening with =, +, -, @ or a control char is evaluated as a formula by Excel
+        // and Sheets when the file is opened.
+        /** Unwrap RFC 4180 quoting so the assertion sees the cell's actual content. */
+        const cellContent = (escaped: string): string =>
+            escaped.startsWith('"') ? escaped.slice(1, -1).replace(/""/g, '"') : escaped
+
+        it.each(['=1+1', '+1', '-1+1', '@SUM(A1)', '\tcmd', '\rcmd'])(
+            'neutralizes the formula lead in %j',
+            (payload) => {
+                expect(cellContent(escapeCsvField(payload)).startsWith("'")).toBe(true)
+            },
+        )
+
+        it('neutralizes a formula-leading plant name in a real export', () => {
+            const plants = [
+                { id: 'p1', name: '=HYPERLINK("http://evil","click")', strain: 'S', stage: 'SEED' },
+            ]
+            const csv = csvExportService.exportPlants(plants)
+            expect(csv).toContain('"\'=HYPERLINK(""http://evil"",""click"")"')
+            expect(csv).not.toContain(',=HYPERLINK')
+        })
+
+        it('leaves negative numbers alone -- they are values, not formulas', () => {
+            expect(escapeCsvField(-5)).toBe('-5')
+            expect(escapeCsvField(-0.5)).toBe('-0.5')
+        })
+
+        it('leaves ordinary text alone', () => {
+            expect(escapeCsvField('OG Kush')).toBe('OG Kush')
+            expect(escapeCsvField(42)).toBe('42')
+            expect(escapeCsvField(null)).toBe('')
         })
     })
 })

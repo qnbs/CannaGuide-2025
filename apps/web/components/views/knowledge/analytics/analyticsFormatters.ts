@@ -4,6 +4,7 @@
 // under the 700-line file budget.
 // ---------------------------------------------------------------------------
 
+import { escapeCsvField } from '@/services/csvExportService'
 import type { GrowAnalytics } from '@/services/analyticsService'
 import type { PredictiveInsight } from '@/services/predictiveAnalyticsService'
 import type { HydroReading } from '@/types'
@@ -56,43 +57,70 @@ export function ratingBadge(rating: string): string {
     }
 }
 
+/**
+ * Build one CSV row. Every cell goes through the shared RFC 4180 escaper, which also
+ * neutralizes formula-leading text -- strain and plant names are user-supplied and end
+ * up in these cells, and a name like `=HYPERLINK(...)` would otherwise be executed by
+ * the spreadsheet that opens the file (CWE-1236).
+ */
+const csvRow = (section: string, key: string, value: unknown): string =>
+    [section, key, value].map(escapeCsvField).join(',')
+
 export function exportAnalyticsCsv(
     analytics: GrowAnalytics,
     predictiveInsights?: ReadonlyMap<string, PredictiveInsight>,
     hydroReadings?: readonly HydroReading[],
 ): void {
     const rows: string[] = []
-    rows.push('Section,Key,Value')
-    rows.push(`Overview,Garden Score,${analytics.gardenScore}`)
-    rows.push(`Overview,Avg Health,${analytics.avgHealth}`)
-    rows.push(`Overview,Env Stability,${analytics.environmentStability}`)
+    rows.push(['Section', 'Key', 'Value'].map(escapeCsvField).join(','))
+    rows.push(csvRow('Overview', 'Garden Score', analytics.gardenScore))
+    rows.push(csvRow('Overview', 'Avg Health', analytics.avgHealth))
+    rows.push(csvRow('Overview', 'Env Stability', analytics.environmentStability))
 
     for (const [stage, count] of Object.entries(analytics.stageDistribution)) {
-        rows.push(`Stage Distribution,${stage},${count}`)
+        rows.push(csvRow('Stage Distribution', stage, count))
     }
 
     for (const sp of analytics.strainPerformance) {
         rows.push(
-            `Strain Performance,${sp.strainName},Health=${sp.avgHealth} Plants=${sp.plantCount} AvgAge=${sp.avgAge}`,
+            csvRow(
+                'Strain Performance',
+                sp.strainName,
+                `Health=${sp.avgHealth} Plants=${sp.plantCount} AvgAge=${sp.avgAge}`,
+            ),
         )
     }
 
     for (const risk of analytics.riskFactors) {
-        rows.push(`Risk,${risk.type},${risk.severity}`)
+        rows.push(csvRow('Risk', risk.type, risk.severity))
     }
 
     if (predictiveInsights) {
         for (const [plantId, insight] of predictiveInsights) {
             rows.push(
-                `Predictive,${plantId} Botrytis Risk,${insight.botrytisRisk.riskLevel} (${insight.botrytisRisk.riskScore})`,
+                csvRow(
+                    'Predictive',
+                    `${plantId} Botrytis Risk`,
+                    `${insight.botrytisRisk.riskLevel} (${insight.botrytisRisk.riskScore})`,
+                ),
             )
-            rows.push(`Predictive,${plantId} Env Alerts,${insight.environmentAlerts.length}`)
-            rows.push(`Predictive,${plantId} Yield Impact,${insight.yieldImpact.impactPercent}%`)
+            rows.push(
+                csvRow('Predictive', `${plantId} Env Alerts`, insight.environmentAlerts.length),
+            )
+            rows.push(
+                csvRow(
+                    'Predictive',
+                    `${plantId} Yield Impact`,
+                    `${insight.yieldImpact.impactPercent}%`,
+                ),
+            )
         }
     }
 
     for (const nc of analytics.nutrientConsistency) {
-        rows.push(`Nutrient,${nc.plantName},pH=${nc.avgPh} EC=${nc.avgEc} Rating=${nc.rating}`)
+        rows.push(
+            csvRow('Nutrient', nc.plantName, `pH=${nc.avgPh} EC=${nc.avgEc} Rating=${nc.rating}`),
+        )
     }
 
     if (hydroReadings && hydroReadings.length > 0) {
@@ -101,19 +129,19 @@ export function exportAnalyticsCsv(
         const tempVals = hydroReadings.map((r) => r.waterTemp)
         const avg = (arr: number[]): string =>
             (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)
-        rows.push(`Hydro,Readings Count,${hydroReadings.length}`)
-        rows.push(`Hydro,pH Min,${Math.min(...phVals).toFixed(2)}`)
-        rows.push(`Hydro,pH Max,${Math.max(...phVals).toFixed(2)}`)
-        rows.push(`Hydro,pH Avg,${avg(phVals)}`)
-        rows.push(`Hydro,EC Min,${Math.min(...ecVals).toFixed(2)}`)
-        rows.push(`Hydro,EC Max,${Math.max(...ecVals).toFixed(2)}`)
-        rows.push(`Hydro,EC Avg,${avg(ecVals)}`)
-        rows.push(`Hydro,Temp Min,${Math.min(...tempVals).toFixed(1)}`)
-        rows.push(`Hydro,Temp Max,${Math.max(...tempVals).toFixed(1)}`)
-        rows.push(`Hydro,Temp Avg,${avg(tempVals)}`)
+        rows.push(csvRow('Hydro', 'Readings Count', hydroReadings.length))
+        rows.push(csvRow('Hydro', 'pH Min', Math.min(...phVals).toFixed(2)))
+        rows.push(csvRow('Hydro', 'pH Max', Math.max(...phVals).toFixed(2)))
+        rows.push(csvRow('Hydro', 'pH Avg', avg(phVals)))
+        rows.push(csvRow('Hydro', 'EC Min', Math.min(...ecVals).toFixed(2)))
+        rows.push(csvRow('Hydro', 'EC Max', Math.max(...ecVals).toFixed(2)))
+        rows.push(csvRow('Hydro', 'EC Avg', avg(ecVals)))
+        rows.push(csvRow('Hydro', 'Temp Min', Math.min(...tempVals).toFixed(1)))
+        rows.push(csvRow('Hydro', 'Temp Max', Math.max(...tempVals).toFixed(1)))
+        rows.push(csvRow('Hydro', 'Temp Avg', avg(tempVals)))
     }
 
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const blob = new Blob([rows.join('\r\n')], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url

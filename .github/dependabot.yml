@@ -55,7 +55,9 @@ updates:
               update-types:
                   - minor
                   - patch
-          security:
+          # Named supply-chain, not security: a group named "security" collides with
+          # the advisory semantics the auto-merge workflow keys on.
+          supply-chain:
               patterns:
                   - 'dompurify'
                   - '@sentry/*'

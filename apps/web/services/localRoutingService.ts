@@ -125,11 +125,32 @@ const ensureProviderConsent = async (): Promise<boolean> => {
     return true
 }
 
+/** No cloud call is attempted at all in these modes. */
+const isCloudDisabled = (): boolean => _aiMode === 'local' || _aiMode === 'eco' || isLocalOnlyMode()
+
+/**
+ * Surfaces a rate-limit rejection to the user, and returns the message either
+ * way so the caller can log it.
+ */
+const notifyIfRateLimited = async (error: unknown): Promise<string> => {
+    const msg = error instanceof Error ? error.message : String(error)
+    if (!msg.startsWith('ai.error.rateLimited')) return msg
+
+    const seconds = msg.split(':')[1] ?? '60'
+    const { useUIStore } = await import('@/stores/useUIStore')
+    const { getT } = await import('@/i18n')
+    useUIStore.getState().addNotification({
+        message: getT()('common.ai.rateLimited', { seconds }),
+        type: 'error',
+    })
+    return msg
+}
+
 export const withLocalFallback = async <T>(
     cloudFn: () => Promise<T>,
     localFallback: () => T | Promise<T>,
 ): Promise<T> => {
-    if (_aiMode === 'local' || _aiMode === 'eco' || isLocalOnlyMode()) return localFallback()
+    if (isCloudDisabled()) return localFallback()
 
     try {
         // The consent gate sits inside the try deliberately. A failing dynamic
@@ -143,16 +164,7 @@ export const withLocalFallback = async <T>(
 
         return await cloudFn()
     } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error)
-        if (msg.startsWith('ai.error.rateLimited')) {
-            const seconds = msg.split(':')[1] ?? '60'
-            const { useUIStore } = await import('@/stores/useUIStore')
-            const { getT } = await import('@/i18n')
-            useUIStore.getState().addNotification({
-                message: getT()('common.ai.rateLimited', { seconds }),
-                type: 'error',
-            })
-        }
+        const msg = await notifyIfRateLimited(error)
         console.debug('[AI] Cloud call failed, falling back to local AI:', msg)
         return localFallback()
     }

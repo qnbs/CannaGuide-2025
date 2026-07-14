@@ -47,3 +47,9 @@ reports/mutation/
 
 # Graphify AST cache (regrows every run — do not commit)
 graphify-out/cache/
+
+# Claude Code worktrees. These are full checkouts of this repo living inside the
+# repo, so an unqualified `git add -A` in the main checkout stages one as an
+# embedded git repository ("you've added another git repository inside your
+# current repository") and commits a bare gitlink.
+.claude/worktrees/

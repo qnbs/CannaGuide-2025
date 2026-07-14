@@ -1,6 +1,6 @@
 name: CI
 
-# workflow-version: 2026-06-29-ci-gate (CI Status = quality+security only; E2E advisory)
+# workflow-version: 2026-07-14-parallel (CI Status = build+test+verify+security; E2E advisory)
 
 on:
     push:
@@ -34,28 +34,129 @@ env:
 
 jobs:
     # ---------------------------------------------------------------------
-    # Quality Gates -- pnpm run for root tasks, turbo for workspace packages
+    # Build -- deliberately the smallest job on the critical path.
+    # E2E only needs dist/, so it hangs off THIS job, not off lint and the unit
+    # suite. Previously E2E waited on all 21 steps of a single `quality` job
+    # (~8.5 min) to obtain an artifact the build produces in ~3.
     # ---------------------------------------------------------------------
-    quality:
-        name: Quality Gates
+    build:
+        name: Build
         runs-on: ubuntu-latest
-        timeout-minutes: 90
+        timeout-minutes: 30
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
               with:
                   egress-policy: audit
-
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
-
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
+            - name: Restore Turbo cache
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: .turbo
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  restore-keys: |
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-
+                  save-always: true
+            - name: Build
+              run: pnpm run build
 
+            - name: Bundle budget check
+              run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
+
+            - name: Upload build artifact
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: dist
+                  path: apps/web/dist/
+                  retention-days: 1
+
+    # ---------------------------------------------------------------------
+    # Unit tests + coverage -- runs in parallel with build and verify
+    # ---------------------------------------------------------------------
+    test:
+        name: Unit Tests + Coverage
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  fetch-depth: 0
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+            - name: Restore Turbo cache
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: .turbo
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  restore-keys: |
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-
+                  save-always: true
+            - name: Test + Coverage
+              run: pnpm run test:coverage
+
+            - name: Critical path coverage (>=80% lines/functions)
+              run: pnpm run check:critical-path-coverage
+
+            - name: Coverage summary (enforced thresholds)
+              if: success()
+              run: |
+                  SUMMARY=apps/web/coverage/coverage-summary.json
+                  if [ ! -f "$SUMMARY" ]; then
+                    echo "::error::Missing $SUMMARY -- vitest json-summary reporter required"
+                    exit 1
+                  fi
+                  node -e "
+                  const fs = require('fs');
+                  const s = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')).total;
+                  const pct = (k) => (s[k]?.pct ?? 0).toFixed(1);
+                  console.log('Coverage total -- lines:', pct('lines') + '%, statements:', pct('statements') + '%, functions:', pct('functions') + '%, branches:', pct('branches') + '%');
+                  " "$SUMMARY"
+
+            - name: Upload coverage
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: coverage-report
+                  path: apps/web/coverage/
+                  retention-days: 14
+
+    # ---------------------------------------------------------------------
+    # Verify -- lint, types and every source-only gate. Fails fast: a type or
+    # lint error now surfaces in ~4 min instead of behind the unit suite.
+    # ---------------------------------------------------------------------
+    verify:
+        name: Lint, Types + Gates
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  fetch-depth: 0
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
             - name: Install pinned uv
               env:
                   UV_VERSION: '0.8.10'
@@ -74,7 +175,6 @@ jobs:
                       turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
                       turbo-${{ runner.os }}-
                   save-always: true
-
             - name: Lint changed files
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
@@ -106,43 +206,8 @@ jobs:
                   fi
                   echo "[OK] Zero any in app source"
 
-            - name: Test + Coverage
-              run: pnpm run test:coverage
-
-            - name: Critical path coverage (≥80% lines/functions)
-              run: pnpm run check:critical-path-coverage
-
             - name: File budget (changed files)
               run: pnpm run check:file-budget
-
-            - name: Coverage summary (enforced thresholds)
-              if: success()
-              run: |
-                  SUMMARY=apps/web/coverage/coverage-summary.json
-                  if [ ! -f "$SUMMARY" ]; then
-                    echo "::error::Missing $SUMMARY — vitest json-summary reporter required"
-                    exit 1
-                  fi
-                  node -e "
-                  const fs = require('fs');
-                  const s = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')).total;
-                  const pct = (k) => (s[k]?.pct ?? 0).toFixed(1);
-                  console.log('Coverage total — lines:', pct('lines') + '%, statements:', pct('statements') + '%, functions:', pct('functions') + '%, branches:', pct('branches') + '%');
-                  " "$SUMMARY"
-
-            - name: Upload coverage
-              if: always()
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              with:
-                  name: coverage-report
-                  path: apps/web/coverage/
-                  retention-days: 14
-
-            - name: Build
-              run: pnpm run build
-
-            - name: Bundle budget check
-              run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 
             - name: Service dependency acyclic check
               run: node scripts/generate-service-map.mjs
@@ -163,13 +228,6 @@ jobs:
 
             - name: CSP consistency check
               run: node scripts/security/check-csp-consistency.mjs
-
-            - name: Upload build artifact
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              with:
-                  name: dist
-                  path: apps/web/dist/
-                  retention-days: 1
 
     # ---------------------------------------------------------------------
     # Security -- hard-fail, no continue-on-error
@@ -214,11 +272,11 @@ jobs:
                   gitleaks detect --source . --no-banner --redact --config .gitleaks.toml -v
 
     # ---------------------------------------------------------------------
-    # E2E -- Playwright with sharding (reuses build artifact from quality)
+    # E2E -- Playwright with sharding (reuses dist from the build job)
     # ---------------------------------------------------------------------
     e2e:
         name: E2E Tests (${{ matrix.shard }})
-        needs: quality
+        needs: build
         runs-on: ubuntu-latest
         timeout-minutes: 50
         strategy:
@@ -279,8 +337,8 @@ jobs:
 
     e2e-cross-browser:
         name: E2E Cross-Browser (${{ matrix.shard }})
-        needs: quality
-        if: always() && needs.quality.result == 'success'
+        needs: build
+        if: always() && needs.build.result == 'success'
         continue-on-error: true
         runs-on: ubuntu-latest
         timeout-minutes: 90
@@ -351,8 +409,8 @@ jobs:
     # ---------------------------------------------------------------------
     advisory:
         name: Advisory Metrics
-        needs: quality
-        if: always() && needs.quality.result == 'success'
+        needs: build
+        if: always() && needs.build.result == 'success'
         runs-on: ubuntu-latest
         timeout-minutes: 10
         continue-on-error: true
@@ -385,23 +443,35 @@ jobs:
               run: echo "::notice::Advisory job finished — failures here do not block merge."
 
     # ---------------------------------------------------------------------
-    # CI Gate -- quality + security required; E2E advisory (stable hardening)
+    # CI Gate -- build + test + verify + security required; E2E advisory
     # ---------------------------------------------------------------------
     ci-status:
         name: "\u2705 CI Status"
         if: always()
-        needs: [quality, security]
+        # build + test + verify together are exactly what the old `quality` job
+        # covered \u2014 splitting it must not narrow the merge gate.
+        needs: [build, test, verify, security]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
               run: |
-                  echo "Quality:  ${{ needs.quality.result }}"
+                  echo "Build:    ${{ needs.build.result }}"
+                  echo "Test:     ${{ needs.test.result }}"
+                  echo "Verify:   ${{ needs.verify.result }}"
                   echo "Security: ${{ needs.security.result }}"
                   echo "---"
-                  if [[ "${{ needs.quality.result }}" != "success" ]]; then
-                    echo "[FAIL] Quality gates failed"; exit 1
+                  FAILED=0
+                  if [[ "${{ needs.build.result }}" != "success" ]]; then
+                    echo "[FAIL] Build / bundle budget failed"; FAILED=1
+                  fi
+                  if [[ "${{ needs.test.result }}" != "success" ]]; then
+                    echo "[FAIL] Unit tests / coverage gates failed"; FAILED=1
+                  fi
+                  if [[ "${{ needs.verify.result }}" != "success" ]]; then
+                    echo "[FAIL] Lint / types / source gates failed"; FAILED=1
                   fi
                   if [[ "${{ needs.security.result }}" != "success" ]]; then
-                    echo "[FAIL] Security checks failed"; exit 1
+                    echo "[FAIL] Security checks failed"; FAILED=1
                   fi
-                  echo "[PASS] CI merge gate passed (quality + security; E2E advisory)"
+                  if [[ "$FAILED" -ne 0 ]]; then exit 1; fi
+                  echo "[PASS] CI merge gate passed (build + test + verify + security; E2E advisory)"

@@ -715,6 +715,8 @@ export const plantsView = {
         contextLost: 'Se perdio el contexto WebGL -- la vista 3D se recuperara automaticamente.',
         loading: 'Cargando escena 3D...',
         canvasAriaLabel: 'Visualizacion 3D de la sala de cultivo con {{count}} plantas activas',
+        keyboardHint:
+            'Usa las flechas para girar la camara, mas y menos para acercar, e Inicio para restablecer la vista.',
         legendAriaLabel: 'Leyenda de estado VPD',
     },
     environment: {

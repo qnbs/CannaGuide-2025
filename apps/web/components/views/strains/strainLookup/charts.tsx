@@ -11,12 +11,12 @@ import {
     XAxis,
     YAxis,
     Tooltip,
-    ResponsiveContainer,
     PieChart,
     Pie,
     Cell,
     Legend,
 } from 'recharts'
+import { AccessibleChart } from '@/components/common/AccessibleChart'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { cn } from '@/lib/utils'
 import type {
@@ -111,8 +111,16 @@ export const CannabinoidPie: React.FC<CannabinoidPieProps> = memo(({ thc, cbd })
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
                 {t('strainLookup.cannabinoidBalance', 'Cannabinoid Balance')}
             </p>
-            <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
+            <AccessibleChart
+                label={t('common.accessibility.strainCannabinoidBalanceChart')}
+                data={data}
+                categoryKey="name"
+                categoryLabel={t('common.accessibility.chart.value')}
+                series={[{ dataKey: 'value', label: t('common.accessibility.chart.share') }]}
+                height={160}
+                className="w-full"
+            >
+                <PieChart accessibilityLayer>
                     <Pie
                         data={data}
                         cx="50%"
@@ -150,7 +158,7 @@ export const CannabinoidPie: React.FC<CannabinoidPieProps> = memo(({ thc, cbd })
                         }}
                     />
                 </PieChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })
@@ -179,8 +187,16 @@ export const TerpeneRadar: React.FC<TerpeneRadarProps> = memo(({ terpenes }) => 
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
                 {t('strainLookup.terpeneProfile', 'Terpene Profile')}
             </p>
-            <ResponsiveContainer width="100%" height={180}>
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+            <AccessibleChart
+                label={t('common.accessibility.strainTerpeneChart')}
+                data={data}
+                categoryKey="subject"
+                categoryLabel={t('common.accessibility.chart.terpene')}
+                series={[{ dataKey: 'value', label: t('common.accessibility.chart.share') }]}
+                height={180}
+                className="w-full"
+            >
+                <RadarChart accessibilityLayer cx="50%" cy="50%" outerRadius="70%" data={data}>
                     <PolarGrid stroke="rgba(255,255,255,0.1)" />
                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
                     <PolarRadiusAxis
@@ -208,7 +224,7 @@ export const TerpeneRadar: React.FC<TerpeneRadarProps> = memo(({ terpenes }) => 
                         }}
                     />
                 </RadarChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })
@@ -231,8 +247,17 @@ export const CannabinoidBar: React.FC<CannabinoidBarProps> = memo(({ cannabinoid
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
                 {t('strainLookup.cannabinoids', 'Cannabinoids')}
             </p>
-            <ResponsiveContainer width="100%" height={Math.max(80, cannabinoids.length * 28)}>
+            <AccessibleChart
+                label={t('common.accessibility.strainCannabinoidChart')}
+                data={cannabinoids}
+                categoryKey="name"
+                categoryLabel={t('common.accessibility.chart.value')}
+                series={[{ dataKey: 'percentage', label: t('common.accessibility.chart.share') }]}
+                height={Math.max(80, cannabinoids.length * 28)}
+                className="w-full"
+            >
                 <BarChart
+                    accessibilityLayer
                     data={cannabinoids}
                     layout="vertical"
                     margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
@@ -275,7 +300,7 @@ export const CannabinoidBar: React.FC<CannabinoidBarProps> = memo(({ cannabinoid
                         ))}
                     </Bar>
                 </BarChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })
@@ -378,8 +403,17 @@ export const FlavonoidBar: React.FC<FlavonoidBarProps> = memo(({ flavonoids }) =
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
                 {t('strainLookup.flavonoids', 'Flavonoids')}
             </p>
-            <ResponsiveContainer width="100%" height={Math.max(80, data.length * 28)}>
+            <AccessibleChart
+                label={t('common.accessibility.strainFlavonoidChart')}
+                data={data}
+                categoryKey="fullName"
+                categoryLabel={t('common.accessibility.chart.value')}
+                series={[{ dataKey: 'score', label: t('common.accessibility.chart.value') }]}
+                height={Math.max(80, data.length * 28)}
+                className="w-full"
+            >
                 <BarChart
+                    accessibilityLayer
                     data={data}
                     layout="vertical"
                     margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
@@ -419,7 +453,7 @@ export const FlavonoidBar: React.FC<FlavonoidBarProps> = memo(({ flavonoids }) =
                         ))}
                     </Bar>
                 </BarChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })

@@ -1,16 +1,8 @@
 import React, { useMemo, memo, useState } from 'react'
 import { SavedExperiment, Plant, PlantHistoryEntry } from '@/types'
 import { useTranslation } from 'react-i18next'
-import {
-    ResponsiveContainer,
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-} from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { AccessibleChart } from '@/components/common/AccessibleChart'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { scenarioService } from '@/services/scenarioService'
@@ -99,8 +91,31 @@ const ComparisonChart: React.FC<{
                 {t(`knowledgeView.sandbox.chartTabs.${activeTab}`, activeTab)} vs.{' '}
                 {t('plantsView.plantCard.day')}
             </h4>
-            <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+            <AccessibleChart
+                label={t('common.accessibility.comparisonChart')}
+                data={chartData}
+                categoryKey="day"
+                categoryLabel={t('common.accessibility.chart.day')}
+                series={
+                    isNutrient
+                        ? [
+                              { dataKey: 'phA', label: `pH ${labelA}` },
+                              { dataKey: 'phB', label: `pH ${labelB}` },
+                              { dataKey: 'ecA', label: `EC ${labelA}` },
+                              { dataKey: 'ecB', label: `EC ${labelB}` },
+                          ]
+                        : [
+                              { dataKey: 'plantA', label: labelA },
+                              { dataKey: 'plantB', label: labelB },
+                          ]
+                }
+                height={220}
+            >
+                <LineChart
+                    accessibilityLayer
+                    data={chartData}
+                    margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+                >
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                     <XAxis
                         dataKey="day"
@@ -190,7 +205,7 @@ const ComparisonChart: React.FC<{
                         </>
                     )}
                 </LineChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })

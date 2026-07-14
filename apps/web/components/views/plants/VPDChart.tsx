@@ -1,14 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    ReferenceArea,
-    CartesianGrid,
-} from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceArea, CartesianGrid } from 'recharts'
+import { AccessibleChart, CHART_MARGIN } from '@/components/common/AccessibleChart'
 import { Plant } from '@/types'
 import { vpdService } from '@/services/plantSimulationService'
 import { getVPDStatusAdvice, VPD_TARGET_BANDS } from '@/lib/vpd/recommendations'
@@ -75,61 +67,56 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
     try {
         return (
             <div className="space-y-3">
-                <div
-                    className="h-64 w-full rounded-lg bg-slate-900/60 p-2"
-                    role="img"
-                    aria-label={t('common.accessibility.vpdChart')}
+                <AccessibleChart<SimulationPoint>
+                    label={t('common.accessibility.vpdChart')}
+                    data={data}
+                    categoryKey="hour"
+                    categoryLabel={t('common.accessibility.chart.hour')}
+                    series={[
+                        { dataKey: 'vpd', label: t('common.accessibility.chart.vpd') },
+                        { dataKey: 'targetVPD', label: t('common.accessibility.chart.targetVpd') },
+                    ]}
+                    height={256}
+                    plotClassName="w-full rounded-lg bg-slate-900/60 p-2"
                 >
-                    <ResponsiveContainer
-                        width="100%"
-                        height="100%"
-                        minWidth={0}
-                        minHeight={0}
-                        debounce={50}
-                    >
-                        <LineChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 6 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" />
-                            <ReferenceArea
-                                y1={band.min}
-                                y2={band.max}
-                                fill="rgba(34,197,94,0.14)"
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="vpd"
-                                stroke="#22c55e"
-                                strokeWidth={2}
-                                dot={false}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="targetVPD"
-                                stroke="#facc15"
-                                strokeWidth={1.5}
-                                strokeDasharray="4 4"
-                                dot={false}
-                            />
-                            <XAxis dataKey="hour" tick={{ fontSize: 12 }} tickMargin={6} />
-                            <YAxis tick={{ fontSize: 12 }} domain={[0, 2.2]} tickMargin={6} />
-                            <Tooltip
-                                formatter={
-                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                                    ((value: number | undefined, name: string | undefined) => {
-                                        if (value == null) return ['-', name ?? '']
-                                        if (name === 'vpd' || name === 'targetVPD')
-                                            return [`${value.toFixed(2)} kPa`, name]
-                                        return [String(value), name ?? '']
-                                    }) as never
-                                }
-                                contentStyle={{
-                                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                    border: '1px solid rgba(148, 163, 184, 0.4)',
-                                    borderRadius: 8,
-                                }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
+                    <LineChart accessibilityLayer data={data} margin={CHART_MARGIN}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" />
+                        <ReferenceArea y1={band.min} y2={band.max} fill="rgba(34,197,94,0.14)" />
+                        <Line
+                            type="monotone"
+                            dataKey="vpd"
+                            stroke="#22c55e"
+                            strokeWidth={2}
+                            dot={false}
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="targetVPD"
+                            stroke="#facc15"
+                            strokeWidth={1.5}
+                            strokeDasharray="4 4"
+                            dot={false}
+                        />
+                        <XAxis dataKey="hour" tick={{ fontSize: 12 }} tickMargin={6} />
+                        <YAxis tick={{ fontSize: 12 }} domain={[0, 2.2]} tickMargin={6} />
+                        <Tooltip
+                            formatter={
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+                                ((value: number | undefined, name: string | undefined) => {
+                                    if (value == null) return ['-', name ?? '']
+                                    if (name === 'vpd' || name === 'targetVPD')
+                                        return [`${value.toFixed(2)} kPa`, name]
+                                    return [String(value), name ?? '']
+                                }) as never
+                            }
+                            contentStyle={{
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                border: '1px solid rgba(148, 163, 184, 0.4)',
+                                borderRadius: 8,
+                            }}
+                        />
+                    </LineChart>
+                </AccessibleChart>
 
                 {latest && (
                     <div className="rounded-lg bg-slate-800/60 p-3 text-sm text-slate-200">

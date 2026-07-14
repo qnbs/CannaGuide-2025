@@ -10,7 +10,6 @@
 import React, { memo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-    ResponsiveContainer,
     AreaChart,
     Area,
     XAxis,
@@ -24,6 +23,7 @@ import {
     BarChart,
     Bar,
 } from 'recharts'
+import { AccessibleChart } from '@/components/common/AccessibleChart'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useActivePlants } from '@/hooks/useSimulationBridge'
 import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics'
@@ -299,8 +299,17 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
                         {t('analytics.stageDistribution', 'Stage Distribution')}
                     </h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsStrainTypeChart')}
+                        data={pieData}
+                        categoryKey="name"
+                        categoryLabel={t('common.accessibility.chart.value')}
+                        series={[
+                            { dataKey: 'value', label: t('common.accessibility.chart.count') },
+                        ]}
+                        height={200}
+                    >
+                        <PieChart accessibilityLayer>
                             <Pie
                                 data={pieData}
                                 cx="50%"
@@ -331,7 +340,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 wrapperStyle={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}
                             />
                         </PieChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                 </div>
             )}
 
@@ -341,8 +350,21 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
                         {t('analytics.journalTrend', 'Journal Activity (14d)')}
                     </h3>
-                    <ResponsiveContainer width="100%" height={180}>
-                        <AreaChart data={analytics.journalActivityTrend} margin={CHART_MARGIN}>
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsJournalChart')}
+                        data={analytics.journalActivityTrend}
+                        categoryKey="date"
+                        categoryLabel={t('common.accessibility.chart.date')}
+                        series={[
+                            { dataKey: 'count', label: t('common.accessibility.chart.count') },
+                        ]}
+                        height={180}
+                    >
+                        <AreaChart
+                            accessibilityLayer
+                            data={analytics.journalActivityTrend}
+                            margin={CHART_MARGIN}
+                        >
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                             <XAxis
                                 dataKey="date"
@@ -369,7 +391,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 strokeWidth={2}
                             />
                         </AreaChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                 </div>
             )}
 
@@ -394,8 +416,21 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             </select>
                         )}
                     </div>
-                    <ResponsiveContainer width="100%" height={180}>
-                        <AreaChart data={currentHealthTrend.trend} margin={CHART_MARGIN}>
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsHealthChart')}
+                        data={currentHealthTrend.trend}
+                        categoryKey="date"
+                        categoryLabel={t('common.accessibility.chart.date')}
+                        series={[
+                            { dataKey: 'count', label: t('common.accessibility.chart.health') },
+                        ]}
+                        height={180}
+                    >
+                        <AreaChart
+                            accessibilityLayer
+                            data={currentHealthTrend.trend}
+                            margin={CHART_MARGIN}
+                        >
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                             <XAxis
                                 dataKey="date"
@@ -422,7 +457,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 strokeWidth={2}
                             />
                         </AreaChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                 </div>
             )}
 
@@ -544,11 +579,20 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
                         {t('analytics.strainPerformance', 'Strain Performance')}
                     </h3>
-                    <ResponsiveContainer
-                        width="100%"
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsStrainPerformanceChart')}
+                        data={analytics.strainPerformance}
+                        categoryKey="strainName"
+                        categoryLabel={t('common.accessibility.chart.strain')}
+                        series={[
+                            { dataKey: 'avgHealth', label: t('common.accessibility.chart.health') },
+                        ]}
                         height={Math.max(120, analytics.strainPerformance.length * 40)}
+                        // The table right below already lists these numbers.
+                        omitDataTable
                     >
                         <BarChart
+                            accessibilityLayer
                             data={analytics.strainPerformance}
                             layout="vertical"
                             margin={{ ...CHART_MARGIN, left: 60 }}
@@ -579,7 +623,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 radius={[0, 4, 4, 0]}
                             />
                         </BarChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                     <div className="mt-2 overflow-x-auto px-2 sm:px-0">
                         <table className="w-full text-left text-xs sm:text-sm text-white/80">
                             <thead className="border-b border-white/10 text-xs text-white/50">

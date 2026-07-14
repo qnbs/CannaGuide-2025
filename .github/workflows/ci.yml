@@ -335,10 +335,22 @@ jobs:
                   path: apps/web/test-results/
                   retention-days: 7
 
+    # Firefox only (WebKit is excluded -- see the note further down). This job is
+    # advisory: continue-on-error means it can never block a merge, so on a pull
+    # request it spends two runners on a signal nobody is allowed to gate on.
+    # Cross-browser breakage is almost always introduced by a browser or Playwright
+    # update rather than by one PR's diff, so main and workflow_dispatch catch it
+    # just as well, one build later.
+    #
+    # A PR that does touch browser-sensitive code opts back in with the
+    # `e2e-cross-browser` label.
     e2e-cross-browser:
         name: E2E Cross-Browser (${{ matrix.shard }})
         needs: build
-        if: always() && needs.build.result == 'success'
+        if: >-
+            always() && needs.build.result == 'success' &&
+            (github.event_name != 'pull_request' ||
+            contains(github.event.pull_request.labels.*.name, 'e2e-cross-browser'))
         continue-on-error: true
         runs-on: ubuntu-latest
         timeout-minutes: 90

@@ -31,18 +31,23 @@ function loadConfig() {
 }
 
 /**
- * Match a path against a scope glob of the shape `dir/**\/*.ext`.
- * Deliberately tiny: the config only ever uses that one shape, and pulling in a glob
- * library for it would be the heavier option.
+ * Compile a scope glob into an anchored RegExp.
+ *
+ *   `**\/` matches any number of directories, `*` matches within one segment.
+ *
+ * Done with a real pattern rather than slicing the string apart: a hand-rolled
+ * `startsWith`/`endsWith` check silently mismatches globs with more than one `*`
+ * (`*.spec.*`), and a lint gate that quietly selects the wrong files is worse than
+ * no gate at all.
  */
-function matchesScope(file, scope) {
-    const marker = '**/'
-    const index = scope.indexOf(marker)
-    if (index === -1) return file === scope
+function scopeToRegExp(scope) {
+    const escaped = scope.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    const pattern = escaped.replaceAll('**/', '(?:.*/)?').replaceAll('*', '[^/]*')
+    return new RegExp(`^${pattern}$`)
+}
 
-    const prefix = scope.slice(0, index)
-    const suffix = scope.slice(index + marker.length).replace('*', '')
-    return file.startsWith(prefix) && file.endsWith(suffix)
+function matchesScope(file, scopePatterns) {
+    return scopePatterns.some((pattern) => pattern.test(file))
 }
 
 function changedFiles() {
@@ -80,9 +85,8 @@ function main() {
     if (onlyChanged) {
         const changed = changedFiles()
         if (changed !== null) {
-            targets = changed.filter((file) =>
-                strictScopes.some((scope) => matchesScope(file, scope)),
-            )
+            const scopePatterns = strictScopes.map(scopeToRegExp)
+            targets = changed.filter((file) => matchesScope(file, scopePatterns))
 
             if (targets.length === 0) {
                 console.log(`${TAG} No changed file falls in a strict scope. Skipping.`)

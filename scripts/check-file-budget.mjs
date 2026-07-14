@@ -86,9 +86,23 @@ function allTrackedInScanDirs() {
     return [...new Set(files)]
 }
 
+/**
+ * The budget targets god-files in application source, which is what SCAN_GLOBS
+ * lists. The changed-file path has to honour the same scope as the full scan --
+ * otherwise touching any long file outside it (a locale dictionary is ~1000
+ * lines by nature, and no amount of splitting changes that) fails the gate for
+ * a file the budget was never meant to police.
+ */
+const inScanDirs = (file) =>
+    SCAN_GLOBS.some((dir) => file === dir || file.startsWith(`${dir}/`))
+
 function main() {
-    const changed = gitDiffFiles(baseRef)
-    const scope = changed.length > 0 ? changed : allTrackedInScanDirs()
+    // Distinguish "this diff touched nothing" (fall back to a full scan) from
+    // "this diff touched nothing the budget applies to" (scope is legitimately
+    // empty -- do not silently escalate to a full scan).
+    const changedAll = gitDiffFiles(baseRef)
+    const changed = changedAll.filter(inScanDirs)
+    const scope = changedAll.length > 0 ? changed : allTrackedInScanDirs()
 
     let failures = 0
     let warnings = 0

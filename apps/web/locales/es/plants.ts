@@ -614,7 +614,7 @@ export const plantsView = {
     growStats: {
         title: 'Panel de Estadisticas de Cultivo',
         yieldForecast: 'Pronostico de rendimiento',
-        mlForecast: 'Confianza del pronostico',
+        mlForecast: 'Pronostico',
         confidence: 'confianza',
         heuristicFallback:
             'Pronostico heuristico hasta que haya suficientes datos historicos disponibles.',
@@ -622,6 +622,8 @@ export const plantsView = {
         modelIdle: 'La confianza aumenta a medida que registras mas cosechas.',
         trainingSamples: '{{count}} muestras historicas',
         heuristicBaseline: 'Linea base {{value}} g',
+        explanationNoHistory: 'Aun no hay datos historicos de cosecha. Se usa una proyeccion heuristica.',
+        explanationHeuristic: 'Proyeccion heuristica. La confianza refleja {{count}} muestras historicas.',
         costTracker: 'Rastreador de costos / dia',
         trackedTotal: 'Total rastreado',
         timeline: 'Linea de Tiempo',

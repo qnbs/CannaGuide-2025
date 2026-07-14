@@ -63,22 +63,22 @@ const isInternal = (specifier) =>
 
 /** `@scope/name/deep/path` -> `@scope/name`; `name/deep/path` -> `name`. */
 function packageNameOf(specifier) {
-    const withoutQuery = specifier.split('?')[0]
-    const segments = withoutQuery.split('/')
-    return withoutQuery.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0]
+    const segments = specifier.split('/')
+    return specifier.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0]
 }
 
 /**
  * Import specifiers, via regex rather than a parser: the repo's other check
  * scripts stay dependency-free, and the shapes below cover every form in use.
+ *
+ * The leading `[^\w$'"\`]` guard also rejects a match that begins inside a string
+ * or template literal, so a fixture like `const example = "import('pkg')"` is not
+ * mistaken for a dependency.
  */
-const IMPORT_PATTERNS = [
-    /(?:^|[^\w$])import\s+(?:type\s+)?[\w*{},\s]*\s*from\s*['"]([^'"]+)['"]/g,
-    /(?:^|[^\w$])import\s*['"]([^'"]+)['"]/g,
-    /(?:^|[^\w$])export\s+(?:type\s+)?[\w*{},\s]*\s*from\s*['"]([^'"]+)['"]/g,
-    /(?:^|[^\w$])import\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
-    /(?:^|[^\w$])require\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
-]
+const STATIC_IMPORT = /(?:^|[^\w$'"`])(?:import|export)\s+(type\s+)?[\w*{},\s]*?from\s*['"]([^'"]+)['"]/g
+const SIDE_EFFECT_IMPORT = /(?:^|[^\w$'"`])import\s*['"]([^'"]+)['"]/g
+const DYNAMIC_IMPORT = /(?:^|[^\w$'"`])import\s*\(\s*['"]([^'"]+)['"]\s*\)/g
+const REQUIRE_CALL = /(?:^|[^\w$'"`])require\s*\(\s*['"]([^'"]+)['"]\s*\)/g
 
 /**
  * Comments are not runtime imports: a commented-out import, or a JSDoc
@@ -87,19 +87,43 @@ const IMPORT_PATTERNS = [
 const stripComments = (source) =>
     source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*(\/\/|\*).*$/gm, '')
 
+/**
+ * Returns the packages a file imports, split by whether the import survives
+ * compilation. A `import type { X } from 'pkg'` is erased, so it may legitimately
+ * point at a devDependency even from runtime code; a value import may not.
+ */
 function importedPackages(source) {
     const code = stripComments(source)
-    const found = new Set()
-    for (const pattern of IMPORT_PATTERNS) {
+    const runtime = new Set()
+    const typeOnly = new Set()
+
+    const record = (target, rawSpecifier) => {
+        // `pkg?worker`, `pkg?url` -- Vite query suffixes are not part of the name.
+        const specifier = rawSpecifier.split('?')[0]
+        if (!specifier || isInternal(specifier) || !BARE_SPECIFIER.test(specifier)) return
+        target.add(packageNameOf(specifier))
+    }
+
+    for (const [pattern, group] of [
+        [SIDE_EFFECT_IMPORT, 1],
+        [DYNAMIC_IMPORT, 1],
+        [REQUIRE_CALL, 1],
+    ]) {
         pattern.lastIndex = 0
         let match
-        while ((match = pattern.exec(code)) !== null) {
-            const specifier = match[1]
-            if (isInternal(specifier) || !BARE_SPECIFIER.test(specifier)) continue
-            found.add(packageNameOf(specifier))
-        }
+        while ((match = pattern.exec(code)) !== null) record(runtime, match[group])
     }
-    return found
+
+    STATIC_IMPORT.lastIndex = 0
+    let match
+    while ((match = STATIC_IMPORT.exec(code)) !== null) {
+        record(match[1] ? typeOnly : runtime, match[2])
+    }
+
+    // A package imported for values anywhere in the file is a runtime dependency,
+    // whatever else it is also imported for.
+    for (const pkg of runtime) typeOnly.delete(pkg)
+    return { runtime, typeOnly }
 }
 
 function sourceFilesIn(dir) {
@@ -113,7 +137,28 @@ function sourceFilesIn(dir) {
     return files
 }
 
-const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
+/**
+ * A directory without a package.json is simply not a workspace. A package.json
+ * that exists but cannot be parsed is a different thing entirely: swallowing it
+ * would disable this check for that workspace without saying so.
+ */
+function readManifest(dir) {
+    const path = join(dir, 'package.json')
+    let raw
+    try {
+        raw = readFileSync(path, 'utf8')
+    } catch (error) {
+        if (error.code === 'ENOENT') return null
+        console.error(`${TAG} cannot read ${relative(ROOT, path)}: ${error.message}`)
+        process.exit(1)
+    }
+    try {
+        return JSON.parse(raw)
+    } catch (error) {
+        console.error(`${TAG} ${relative(ROOT, path)} is not valid JSON: ${error.message}`)
+        process.exit(1)
+    }
+}
 
 function workspacePackages() {
     const packages = []
@@ -126,11 +171,8 @@ function workspacePackages() {
         }
         for (const entry of entries) {
             const dir = join(ROOT, group, entry)
-            try {
-                packages.push({ dir, manifest: readJson(join(dir, 'package.json')) })
-            } catch {
-                // no package.json -- not a workspace
-            }
+            const manifest = readManifest(dir)
+            if (manifest) packages.push({ dir, manifest })
         }
     }
     return packages
@@ -140,7 +182,6 @@ const declaredIn = (manifest, ...fields) =>
     new Set(fields.flatMap((field) => Object.keys(manifest[field] ?? {})))
 
 const workspaces = workspacePackages()
-const workspaceNames = new Set(workspaces.map(({ manifest }) => manifest.name))
 
 const phantom = [] // imported, declared nowhere
 const misplaced = [] // runtime code reaching into a devDependency
@@ -156,8 +197,18 @@ for (const { dir, manifest } of workspaces) {
 
     for (const file of sourceFilesIn(dir)) {
         const isDevFile = DEV_FILE.test(relative(ROOT, file))
+        const { runtime, typeOnly } = importedPackages(readFileSync(file, 'utf8'))
 
-        for (const pkg of importedPackages(readFileSync(file, 'utf8'))) {
+        // A type-only import is erased at compile time, so it may point at a
+        // devDependency even from runtime code. It must still be declared.
+        const declaredAnywhere = (pkg) => runtimeDeps.has(pkg) || devDeps.has(pkg)
+
+        for (const pkg of typeOnly) {
+            if (pkg === manifest.name || declaredAnywhere(pkg)) continue
+            phantom.push({ file, pkg, owner: manifest.name })
+        }
+
+        for (const pkg of runtime) {
             if (pkg === manifest.name) continue // self-reference via own exports
             if (runtimeDeps.has(pkg)) continue
             if (devDeps.has(pkg)) {

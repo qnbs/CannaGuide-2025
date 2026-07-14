@@ -616,7 +616,7 @@ export const plantsView = {
     growStats: {
         title: 'Tableau de Bord des Statistiques de Culture',
         yieldForecast: 'Prevision de rendement',
-        mlForecast: 'Confiance de la prevision',
+        mlForecast: 'Prevision',
         confidence: 'confiance',
         heuristicFallback:
             "Prevision heuristique jusqu'a ce que suffisamment de donnees historiques soient disponibles.",
@@ -624,6 +624,8 @@ export const plantsView = {
         modelIdle: 'La confiance augmente a mesure que vous enregistrez des recoltes.',
         trainingSamples: '{{count}} echantillons historiques',
         heuristicBaseline: 'Ligne de base {{value}} g',
+        explanationNoHistory: "Aucune donnee de recolte historique pour l'instant. Projection heuristique utilisee.",
+        explanationHeuristic: 'Projection heuristique. La confiance reflete {{count}} echantillons historiques.',
         costTracker: 'Suivi des couts / jour',
         trackedTotal: 'Total suivi',
         timeline: 'Chronologie',

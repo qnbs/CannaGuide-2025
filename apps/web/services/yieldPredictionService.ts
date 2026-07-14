@@ -1,3 +1,4 @@
+import { getT } from '@/i18n'
 import { Plant, PlantStage, YieldPredictionResult } from '@/types'
 
 const TARGET_SCALE = 1000
@@ -128,23 +129,26 @@ const collectTrainingSamples = (plants: Plant[]): Array<{ features: number[]; ta
 /**
  * Yield is projected heuristically from each plant's own stage, age and vitals.
  *
- * A TensorFlow.js regression used to run here once enough harvests had been
+ * A TensorFlow.js regression used to run here once enough history had been
  * recorded, but @tensorflow/tfjs was never actually a dependency of this app --
  * the dynamic import resolved against nothing, so the model path threw for every
- * user who reached it (>= 10 harvests) while the tests, which run with none,
- * never touched it. The path is gone rather than resurrected: it would have cost
- * a multi-megabyte download to train a 3-layer net on a handful of samples.
+ * user who reached it while the tests, which run with no history, never touched
+ * it. The path is gone rather than resurrected: it would have cost a
+ * multi-megabyte download to train a 3-layer net on a handful of samples.
  *
- * Recorded harvests still raise confidence -- they just no longer feed a model.
+ * History still raises confidence -- it just no longer feeds a model.
  */
 export const predictYield = (
     historicalPlants: Plant[],
     activePlants: Plant[],
 ): Promise<YieldPredictionResult> => {
+    const t = getT()
     const heuristicYield = activePlants.reduce(
         (sum, plant) => sum + estimateHeuristicYield(plant),
         0,
     )
+    // One sample per history snapshot of each harvested plant -- not one per
+    // harvest. The UI labels it "historical samples" for the same reason.
     const sampleCount = collectTrainingSamples(historicalPlants).length
 
     return Promise.resolve({
@@ -154,8 +158,8 @@ export const predictYield = (
         sampleCount,
         explanation:
             sampleCount === 0
-                ? 'No historical harvest data available yet. Using heuristic projection.'
-                : `Heuristic projection. Confidence reflects ${sampleCount} recorded harvests.`,
+                ? t('plantsView.growStats.explanationNoHistory')
+                : t('plantsView.growStats.explanationHeuristic', { count: sampleCount }),
     })
 }
 

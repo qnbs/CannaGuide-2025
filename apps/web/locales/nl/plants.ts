@@ -600,7 +600,7 @@ export const plantsView = {
     growStats: {
         title: 'Kweekstatistieken Dashboard',
         yieldForecast: 'Opbrengstvoorspelling',
-        mlForecast: 'Betrouwbaarheid voorspelling',
+        mlForecast: 'Voorspelling',
         confidence: 'betrouwbaarheid',
         heuristicFallback:
             'Heuristische voorspelling totdat er voldoende historische gegevens beschikbaar zijn.',
@@ -608,6 +608,8 @@ export const plantsView = {
         modelIdle: 'De betrouwbaarheid neemt toe naarmate je meer oogsten vastlegt.',
         trainingSamples: '{{count}} historische monsters',
         heuristicBaseline: 'Basislijn {{value}} g',
+        explanationNoHistory: 'Nog geen historische oogstgegevens. Er wordt een heuristische schatting gebruikt.',
+        explanationHeuristic: 'Heuristische schatting. De betrouwbaarheid weerspiegelt {{count}} historische monsters.',
         costTracker: 'Kostentracker / dag',
         trackedTotal: 'Totaal bijgehouden',
         timeline: 'Tijdlijn',

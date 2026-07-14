@@ -146,7 +146,9 @@ const GrowStatsDashboardComponent: React.FC = () => {
                         {prediction ? (
                             <>
                                 {t('plantsView.growStats.mlForecast')}{' '}
-                                {prediction.confidence.toFixed(0)}%{' '}
+                                {/* confidence is a 0..1 fraction; toFixed(0) alone rendered
+                                    a flat "0%" for every prediction the app ever made. */}
+                                {(prediction.confidence * 100).toFixed(0)}%{' '}
                                 {t('plantsView.growStats.confidence')}
                             </>
                         ) : (

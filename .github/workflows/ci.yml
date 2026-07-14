@@ -106,6 +106,9 @@ jobs:
                   fi
                   echo "[OK] Zero any in app source"
 
+            - name: Declared-dependency enforcement
+              run: pnpm run check:phantom-deps
+
             - name: Test + Coverage
               run: pnpm run test:coverage
 

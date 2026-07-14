@@ -186,7 +186,7 @@ export const initialUIState: UIState = {
 
 export const useUIStore = create<UIState & UIActions>()(
     devtools(
-        subscribeWithSelector((set) => ({
+        subscribeWithSelector((set, get) => ({
             ...initialUIState,
 
             setActiveView: (view) =>
@@ -363,8 +363,12 @@ export const useUIStore = create<UIState & UIActions>()(
                     syncState: { ...state.syncState, pendingRetries: count },
                 })),
 
-            requestProviderConsent: (provider) => {
-                const pending = useUIStore.getState().providerConsentRequest
+            // Reads state through `get`, not `useUIStore.getState()`: referring to the
+            // store from inside its own creator and *returning* that value makes the
+            // store type circular, which collapses every `useUIStore((s) => ...)`
+            // selector in the app to `any`.
+            requestProviderConsent: (provider): Promise<boolean> => {
+                const pending = get().providerConsentRequest
                 if (pending) {
                     // Two AI calls can reach the gate before either is answered.
                     // Overwriting the open request would drop the first caller's
@@ -373,9 +377,7 @@ export const useUIStore = create<UIState & UIActions>()(
                     if (pending.provider === provider) return pending.promise
                     // A different provider cannot happen today -- one provider is
                     // active at a time -- but queue rather than clobber if it ever can.
-                    return pending.promise.then(() =>
-                        useUIStore.getState().requestProviderConsent(provider),
-                    )
+                    return pending.promise.then(() => get().requestProviderConsent(provider))
                 }
 
                 let resolve!: (granted: boolean) => void
@@ -387,7 +389,7 @@ export const useUIStore = create<UIState & UIActions>()(
             },
 
             resolveProviderConsent: (granted) => {
-                const { providerConsentRequest } = useUIStore.getState()
+                const { providerConsentRequest } = get()
                 if (providerConsentRequest) {
                     providerConsentRequest.resolve(granted)
                     set({ providerConsentRequest: null })

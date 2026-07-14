@@ -28,27 +28,42 @@ jobs:
               id: metadata
               uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
               with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  # alert-lookup defaults to false, and ghsa-id stays empty without it —
+                  # the advisory guard below would then wave every non-major PR through.
+                  # The default GITHUB_TOKEN has no scope for Dependabot alerts, so this
+                  # needs a PAT or App token with "Dependabot alerts: read".
+                  alert-lookup: true
+                  github-token: ${{ secrets.DEPENDABOT_ALERTS_TOKEN || secrets.GITHUB_TOKEN }}
 
-            - name: Detect security-related Dependabot PR
-              id: security
+            # Fail safe: an empty ghsa-id is indistinguishable from a lookup that never
+            # ran, so without the token we must not auto-merge anything at all.
+            - name: Verify advisory lookup is available
+              id: guard
               env:
-                  PR_URL: ${{ github.event.pull_request.html_url }}
-                  PR_TITLE: ${{ github.event.pull_request.title }}
+                  HAS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN != '' }}
               run: |
-                  labels=$(gh pr view "$PR_URL" --json labels --jq '[.labels[].name] | join(" ")' || true)
-                  title="${PR_TITLE}"
-                  if echo "$labels $title" | grep -Eiq '(^|[[:space:]])security([[:space:]]|$)|security-updates|dependabot.*security'; then
-                    echo "skip=true" >> "$GITHUB_OUTPUT"
-                    echo "::notice::Skipping auto-merge — security-related dependency update requires manual review."
+                  if [ "$HAS_TOKEN" = "true" ]; then
+                    echo "lookup=ok" >> "$GITHUB_OUTPUT"
                   else
-                    echo "skip=false" >> "$GITHUB_OUTPUT"
+                    echo "lookup=unavailable" >> "$GITHUB_OUTPUT"
+                    echo "::warning::Auto-merge disabled — DEPENDABOT_ALERTS_TOKEN is unset, so advisory PRs cannot be told apart from routine ones. Add a token with 'Dependabot alerts: read'."
                   fi
+
+            # A security PR is one Dependabot raised from a GitHub advisory, which
+            # fetch-metadata reports via ghsa-id. Matching on the PR title instead
+            # would skip the routine group named "security" while auto-merging real
+            # advisory PRs, whose titles never contain the word.
+            - name: Announce manual review for advisory PR
+              if: steps.metadata.outputs.ghsa-id != ''
+              env:
+                  GHSA_ID: ${{ steps.metadata.outputs.ghsa-id }}
+              run: echo "::notice::Skipping auto-merge — $GHSA_ID advisory requires manual review."
 
             - name: Auto-merge patch and minor updates
               if: >-
+                  steps.guard.outputs.lookup == 'ok' &&
                   steps.metadata.outputs.update-type != 'version-update:semver-major' &&
-                  steps.security.outputs.skip != 'true'
+                  steps.metadata.outputs.ghsa-id == ''
               run: |
                   gh pr review "$PR_URL" --approve
                   gh pr merge "$PR_URL" --auto --squash

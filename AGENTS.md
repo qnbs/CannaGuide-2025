@@ -103,10 +103,10 @@ wall time, is what kept crashing sessions. `apps/web` now sets `incremental`. An
 
 #### tsgo: measured and rejected
 
-`@typescript/native-preview` is **1.5x faster than tsc but uses more memory** (1.72 GB vs
-1.56 GB) and reports a `TS2430` tsc does not. RAM is the constraint here, so it makes things
-worse, and a gate that goes red on an unfixable error gets switched off. Do not adopt it.
-See [`docs/toolchain-update.md`](docs/toolchain-update.md).
+`@typescript/native-preview` measured **171 s / 1.72 GB** — slower _and_ heavier than the
+incremental `tsc` above (91 s / 0.85 GB), so it loses on both axes. It also reports a `TS2430`
+that `tsc` does not, and a gate that goes red on an unfixable error gets switched off. Do not
+adopt it. See [`docs/toolchain-update.md`](docs/toolchain-update.md).
 
 **React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
 

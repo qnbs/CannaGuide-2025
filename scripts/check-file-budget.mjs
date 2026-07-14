@@ -44,7 +44,8 @@ function lineCount(filePath) {
     return content.split('\n').length
 }
 
-function gitDiffFiles(ref) {
+/** Every path in the diff, unfiltered -- the answer to "did this branch change anything?". */
+function gitDiffRaw(ref) {
     try {
         assertSafeGitRef(ref)
         const result = spawnSync('git', ['diff', '--name-only', `${ref}...HEAD`], {
@@ -53,15 +54,20 @@ function gitDiffFiles(ref) {
         if (result.status !== 0) {
             return []
         }
-        const out = result.stdout ?? ''
-        return out
+        return (result.stdout ?? '')
             .split('\n')
             .map((s) => s.trim())
-            .filter((f) => /\.(ts|tsx|mjs)$/.test(f) && existsSync(f))
-            .filter((f) => !/\.(test|spec)\.(ts|tsx|mjs)$/.test(f))
+            .filter(Boolean)
     } catch {
         return []
     }
+}
+
+/** The subset of the diff the budget can even apply to: source files, no tests. */
+function gitDiffFiles(ref) {
+    return gitDiffRaw(ref)
+        .filter((f) => /\.(ts|tsx|mjs)$/.test(f) && existsSync(f))
+        .filter((f) => !/\.(test|spec)\.(ts|tsx|mjs)$/.test(f))
 }
 
 function allTrackedInScanDirs() {
@@ -93,16 +99,16 @@ function allTrackedInScanDirs() {
  * lines by nature, and no amount of splitting changes that) fails the gate for
  * a file the budget was never meant to police.
  */
-const inScanDirs = (file) =>
-    SCAN_GLOBS.some((dir) => file === dir || file.startsWith(`${dir}/`))
+const inScanDirs = (file) => SCAN_GLOBS.some((dir) => file === dir || file.startsWith(`${dir}/`))
 
 function main() {
-    // Distinguish "this diff touched nothing" (fall back to a full scan) from
-    // "this diff touched nothing the budget applies to" (scope is legitimately
-    // empty -- do not silently escalate to a full scan).
-    const changedAll = gitDiffFiles(baseRef)
-    const changed = changedAll.filter(inScanDirs)
-    const scope = changedAll.length > 0 ? changed : allTrackedInScanDirs()
+    // "Did this branch change anything at all?" has to be answered from the raw
+    // diff. Asking gitDiffFiles() would answer "no" for a branch that only touched
+    // package.json, a workflow, docs or tests -- and that empty result would then
+    // escalate to a full scan, which is the opposite of out-of-scope.
+    const touchedAnything = gitDiffRaw(baseRef).length > 0
+    const changed = gitDiffFiles(baseRef).filter(inScanDirs)
+    const scope = touchedAnything ? changed : allTrackedInScanDirs()
 
     let failures = 0
     let warnings = 0

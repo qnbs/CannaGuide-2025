@@ -670,8 +670,10 @@ export const plantsView = {
         modelIdle: 'Die Konfidenz steigt, sobald mehr Ernten erfasst sind.',
         trainingSamples: '{{count}} historische Samples',
         heuristicBaseline: 'Basis {{value}} g',
-        explanationNoHistory: 'Noch keine Erntedaten vorhanden. Es wird eine heuristische Schaetzung verwendet.',
-        explanationHeuristic: 'Heuristische Schaetzung. Die Konfidenz beruht auf {{count}} historischen Samples.',
+        explanationNoHistory:
+            'Noch keine Erntedaten vorhanden. Es wird eine heuristische Sch\u00e4tzung verwendet.',
+        explanationHeuristic:
+            'Heuristische Sch\u00e4tzung. Die Konfidenz beruht auf {{count}} historischen Samples.',
         costTracker: 'Kostentracker / Tag',
         trackedTotal: 'Erfasst gesamt',
         timeline: 'Zeitplan',

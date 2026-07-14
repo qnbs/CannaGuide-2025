@@ -10,8 +10,9 @@
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
 import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
+import { loadTransformers } from '@cannaguide/ai-core/ml'
 
-type TransformersModule = typeof import('@xenova/transformers')
+type TransformersModule = Awaited<ReturnType<typeof loadTransformers>>
 type Pipeline = (input: unknown, options?: Record<string, unknown>) => Promise<unknown> | undefined
 
 let transformersPromise: Promise<TransformersModule> | null = null
@@ -28,7 +29,7 @@ export interface InferencePayload {
 const getTransformers = (): Promise<TransformersModule> => {
     if (!transformersPromise) {
         transformersPromise = (async () => {
-            const mod = await import('@xenova/transformers')
+            const mod = await loadTransformers()
             if (mod.env?.backends?.onnx?.wasm) {
                 mod.env.backends.onnx.wasm.proxy = false // no nested proxy inside worker
             }

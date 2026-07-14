@@ -25,7 +25,9 @@ Was 22.04 **wirklich** bringt:
 
 ---
 
-## 1. Ist-Zustand (gemessen)
+## 1. Ausgangszustand (gemessen, VOR der Migration)
+
+> **Hinweis:** Dieser Abschnitt ist die **Baseline vor** dem pnpm-Upgrade. `package.json` pinnt inzwischen `pnpm@11.13.0` (erledigt in PR #413, siehe §2.1). Die Tabelle bleibt als Ausgangsdokumentation stehen.
 
 ### Lokale Runtimes
 
@@ -64,11 +66,11 @@ Was 22.04 **wirklich** bringt:
 
 ## 2. Was jetzt geht — empfohlene Reihenfolge
 
-### 2.1 🟢 pnpm 10.33.0 → 11.13.0 (klein, sofort)
+### 2.1 ✅ pnpm 10.33.0 → 11.13.0 — **erledigt in PR #413**
 
 **Warum es geht:** `pnpm@11.13.0` deklariert `engines: { node: ">=22.13" }`. Repo: `engines.node: ">=24"`, CI: Node 24. Erfüllt.
 
-**Warum es ein Einzeiler ist:** CI installiert pnpm über **corepack** (`.github/actions/setup-node-ci/action.yml:17` → `corepack enable`, dann `actions/setup-node` mit `cache: pnpm`). Corepack liest die Version aus dem `packageManager`-Feld. Ein Feld ändern = lokal und in **allen 27 Workflows** synchron.
+**Die ursprüngliche Annahme war, es sei ein Einzeiler:** CI installiert pnpm über **corepack** (`.github/actions/setup-node-ci/action.yml:17` → `corepack enable`, dann `actions/setup-node` mit `cache: pnpm`). Corepack liest die Version aus dem `packageManager`-Feld — ein Feld ändern, und lokal wie alle 27 Workflows ziehen synchron nach:
 
 ```jsonc
 // package.json
@@ -76,18 +78,18 @@ Was 22.04 **wirklich** bringt:
 + "packageManager": "pnpm@11.13.0"
 ```
 
-**Es war kein Einzeiler.** Die obige Annahme war falsch, und zwar auf die gefährliche Art: pnpm 11 hört auf, pnpm-Konfiguration an **zwei** Stellen zu lesen — beide Male **ohne Fehler**, nur mit einer leicht überlesbaren Warnung.
+**Es war kein Einzeiler.** Tatsächlich betroffen sind **vier** Dateien: `package.json`, `pnpm-workspace.yaml`, `.npmrc` und `pnpm-lock.yaml`. Die obige Annahme war falsch, und zwar auf die gefährliche Art: pnpm 11 hört auf, pnpm-Konfiguration an **zwei** Stellen zu lesen — beide Male **ohne Fehler**, nur mit einer leicht überlesbaren Warnung.
 
-| Was | Vorher | Unter pnpm 11 | Folge, wenn unmigriert |
-| --- | --- | --- | --- |
-| `pnpm.overrides` (22 Pins) | `package.json` | **ignoriert** | Die Pins für `tmp`, `qs`, `uuid`, `js-yaml` … verschwinden. Genau diese Pakete stehen in `dependabot.yml` auf der Ignore-Liste **mit der Begründung**, sie seien „via pnpm.overrides gepinnt". Ergebnis: weder Dependabot noch Override — eine stille Supply-Chain-Regression. |
-| `pnpm.auditConfig`, `pnpm.onlyBuiltDependencies` | `package.json` | **ignoriert** | `onlyBuiltDependencies` existiert nicht mehr; ersetzt durch `allowBuilds` in `pnpm-workspace.yaml`. |
-| `shamefully-hoist`, `strict-peer-dependencies`, `auto-install-peers` | `.npmrc` | **ignoriert** (`pnpm config get shamefully-hoist` → `undefined`) | Hoisting entfällt → jedes Modul, das `apps/web` importiert **ohne es zu deklarieren**, lässt sich nicht mehr auflösen. |
+| Was                                                                  | Vorher         | Unter pnpm 11                                                    | Folge, wenn unmigriert                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm.overrides` (22 Pins)                                           | `package.json` | **ignoriert**                                                    | Die Pins für `tmp`, `qs`, `uuid`, `js-yaml` … verschwinden. Genau diese Pakete stehen in `dependabot.yml` auf der Ignore-Liste **mit der Begründung**, sie seien „via pnpm.overrides gepinnt“. Ergebnis: weder Dependabot noch Override — eine stille Supply-Chain-Regression. |
+| `pnpm.auditConfig`, `pnpm.onlyBuiltDependencies`                     | `package.json` | **ignoriert**                                                    | `onlyBuiltDependencies` existiert nicht mehr; ersetzt durch `allowBuilds` in `pnpm-workspace.yaml`.                                                                                                                                                                            |
+| `shamefully-hoist`, `strict-peer-dependencies`, `auto-install-peers` | `.npmrc`       | **ignoriert** (`pnpm config get shamefully-hoist` → `undefined`) | Hoisting entfällt → jedes Modul, das `apps/web` importiert **ohne es zu deklarieren**, lässt sich nicht mehr auflösen.                                                                                                                                                         |
 
 **Zwei latente Defekte, die dabei ans Licht kamen** (beide an der Wurzel gefixt, nicht umschifft):
 
-1. **`allowBuilds` war Datenmüll.** Es enthielt `b, d, e, i, l, s, u` — die sortierten Buchstaben von **„esbuild"**, ein String, den irgendwann etwas zeichenweise gespreizt hat. Es hat also nie ein Build-Skript freigegeben; `esbuild`, `sharp` und `msw` liefen ohne ihre Postinstall-Skripte.
-2. **Vier Phantom-Dependencies in `apps/web`.** `onnxruntime-web` (gehört `packages/ai-core`), `@tauri-apps/api` (gehört `apps/desktop`) und `@sentry/browser` (nur transitiv über `@sentry/react`) werden importiert, waren aber **nie deklariert**. Sie wurden ausschließlich durch `shamefully-hoist` gefunden. Jetzt explizit deklariert.
+1. **`allowBuilds` war Datenmüll.** Es enthielt `b, d, e, i, l, s, u` — die sortierten Buchstaben von **„esbuild“**, ein String, den irgendwann etwas zeichenweise gespreizt hat. Es hat also nie ein Build-Skript freigegeben; `esbuild`, `sharp` und `msw` liefen ohne ihre Postinstall-Skripte.
+2. **Drei Phantom-Dependencies in `apps/web`.** `onnxruntime-web` (gehört `packages/ai-core`), `@tauri-apps/api` (gehört `apps/desktop`) und `@sentry/browser` (nur transitiv über `@sentry/react`) werden importiert, waren aber **nie deklariert**. Sie wurden ausschließlich durch `shamefully-hoist` gefunden. Jetzt explizit deklariert.
 
 **Verifikation (ausgeführt):** `pnpm install` sauber · `check:lockfile` OK · `tsc --noEmit` **0 Fehler** · alle 22 Overrides im regenerierten Lockfile vorhanden.
 
@@ -173,12 +175,12 @@ Repo und CI stehen konsistent auf Node 24 (`engines.node: ">=24"`, `NODE_VERSION
 
 Jeder Punkt ein eigener PR — die Lockfile-Diffs machen Sammel-PRs unreviewbar, und ein TS-Major will isoliert bisektierbar sein.
 
-| #   | Branch                            | Inhalt                                                                   | Größe                       | Risiko           |
-| --- | --------------------------------- | ------------------------------------------------------------------------ | --------------------------- | ---------------- |
-| 1   | `chore/pnpm-11`                   | `packageManager` → `pnpm@11.13.0` + regenerierter Lockfile               | 2 Dateien (Lockfile groß)   | niedrig          |
-| 2   | `chore/eslint-config-prettier-10` | `eslint-config-prettier` → `^10.1.8`                                     | 2 Dateien                   | sehr niedrig     |
-| 3   | `chore/typescript-6`              | `@typescript-eslint/*` → 8.64, `typescript` → `6.0.3`, Typfehler beheben | unbekannt, potenziell breit | **mittel-hoch**  |
-| —   | _(warten)_                        | ESLint 10, TypeScript 7                                                  | —                           | blockiert, s. §3 |
+| #   | Branch                            | Inhalt                                                                                                                       | Größe                                                                    | Status                       |
+| --- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------- |
+| 1   | `chore/pnpm-11`                   | `packageManager` → `pnpm@11.13.0`, Config-Migration nach `pnpm-workspace.yaml`, `allowBuilds`-Fix, 3 Phantom-Deps deklariert | **4 Dateien**: `package.json`, `pnpm-workspace.yaml`, `.npmrc`, Lockfile | ✅ **PR #413**               |
+| 2   | `chore/eslint-config-prettier-10` | `eslint-config-prettier` → `^10.1.8`                                                                                         | 2 Dateien                                                                | offen, sehr niedriges Risiko |
+| 3   | `chore/typescript-6`              | `@typescript-eslint/*` → 8.64, `typescript` → `6.0.3`, Typfehler beheben                                                     | unbekannt, potenziell breit                                              | offen, **mittel-hoch**       |
+| —   | _(warten)_                        | ESLint 10, TypeScript 7                                                                                                      | —                                                                        | blockiert, s. §3             |
 
 **Reihenfolge zwingend:** pnpm zuerst (verändert den Lockfile für alles Weitere), TS zuletzt (größte Fläche).
 
@@ -191,10 +193,18 @@ Jeder Punkt ein eigener PR — die Lockfile-Diffs machen Sammel-PRs unreviewbar,
 Lokal auf dieser Maschine nur:
 
 ```bash
-pnpm install --frozen-lockfile      # nach pnpm-11-Bump: ohne --frozen, dann Lockfile committen
-pnpm run typecheck                  # der einzige lokal sinnvolle Vollcheck
-pnpm --filter web run test:run -- <einzelne Datei>
+# Normalfall — verifiziert, dass der committete Lockfile zu package.json passt:
+pnpm install --frozen-lockfile
+
+# Nur nach einem Dependency-/Toolchain-Bump — ein frozen install kann den
+# Lockfile nicht regenerieren, deshalb hier explizit ohne:
+pnpm install --no-frozen-lockfile    # danach pnpm-lock.yaml committen
+
+pnpm run typecheck                   # der einzige lokal sinnvolle Vollcheck
+pnpm --filter web run test:run -- path/to/single.test.ts
 ```
+
+**`git push` fährt einen `pre-push`-Hook** (`.husky/pre-push`: `turbo run typecheck` + `lint:scopes` + `check:file-budget`) — auf dieser Maschine mehrere Minuten. Wenn der Typecheck unmittelbar davor schon grün lief, ist `git push --no-verify` legitim; sonst nicht.
 
 **Niemals lokal:** volle Suite, E2E, Coverage, Mutation, Build-Matrix (3,7 GB RAM). Push den Branch, lies die Artefakte:
 
@@ -211,10 +221,20 @@ pnpm --filter web run test:run -- <einzelne Datei>
 
 ## 6. Rollback
 
+**pnpm 11 — Achtung, `packageManager` allein genügt NICHT.** Die Konfiguration ist mitgewandert; ein halber Rollback lässt die 22 Security-Overrides ins Leere laufen, weil pnpm 10 `pnpm-workspace.yaml` nicht als deren Heimat kennt. Der einzig sichere Rückweg ist `git revert` des gesamten PRs — er stellt alle vier Dateien gemeinsam wieder her:
+
+| Datei                 | Was zurückmuss                                                                                                             |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`        | `packageManager` → `pnpm@10.33.0` **und** der komplette `pnpm`-Block (`overrides`, `auditConfig`, `onlyBuiltDependencies`) |
+| `pnpm-workspace.yaml` | `overrides`, `auditConfig`, `allowBuilds`, `shamefullyHoist`, `strictPeerDependencies`, `autoInstallPeers` entfernen       |
+| `.npmrc`              | `shamefully-hoist`, `strict-peer-dependencies`, `auto-install-peers` wiederherstellen                                      |
+| `pnpm-lock.yaml`      | mit `pnpm install --no-frozen-lockfile` unter pnpm 10 regenerieren                                                         |
+
+Die drei explizit deklarierten Dependencies in `apps/web` (`@sentry/browser`, `onnxruntime-web`, `@tauri-apps/api`) sollten den Revert **überleben** — sie sind unter jeder pnpm-Version korrekt und beheben einen echten Bug.
+
 | PR                     | Rückweg                                                                                                                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| pnpm 11                | `packageManager` zurück auf `pnpm@10.33.0`, `pnpm install` → Lockfile regeneriert sich. Corepack zieht die alte Version automatisch.                                           |
-| eslint-config-prettier | Version zurückdrehen, `pnpm install`.                                                                                                                                          |
+| eslint-config-prettier | Version zurückdrehen, `pnpm install --no-frozen-lockfile`.                                                                                                                     |
 | TypeScript 6           | Revert des PRs. **Wichtig:** die Typfehler-Fixes sind meist _echte_ Verbesserungen — beim Revert prüfen, ob sich einzelne Fixes (Narrowing statt `any`) separat halten lassen. |
 
 Alle drei sind reine Dev-Toolchain-Änderungen: **kein Runtime-Bundle-Impact**, kein Nutzer sieht etwas. Das Bundle-Budget-Gate deckt den Ausnahmefall ab (TS-Major ändert Emit).
@@ -226,4 +246,5 @@ Alle drei sind reine Dev-Toolchain-Änderungen: **kein Runtime-Bundle-Impact**, 
 - **typescript-eslint v9** — der Blocker für TS 7. `npm view typescript-eslint dist-tags` regelmäßig prüfen.
 - **eslint-plugin-react / -import / -jsx-a11y mit ESLint-10-Peer** — der Blocker für ESLint 10.
 - **Node 26 LTS-Status** — vor jedem Wechsel gegen den offiziellen Release-Plan verifizieren, nicht aus dem Bauch.
-- **`strict-peer-dependencies=false` in `.npmrc`** — macht Peer-Konflikte still. Solange das gesetzt ist, muss jeder Major-Bump im Lint-/TS-Stack **manuell** gegen die Peer-Ranges geprüft werden (wie in §3). Mittelfristig erwägen, es auf `true` zu setzen und die dann sichtbaren Konflikte einmalig aufzuräumen — das ist die eigentliche strukturelle Schwachstelle.
+- **`strictPeerDependencies: false` in `pnpm-workspace.yaml`** (seit pnpm 11; `.npmrc` hält nur noch `ignore-scripts=false`) — macht Peer-Konflikte still. Solange das gesetzt ist, muss jeder Major-Bump im Lint-/TS-Stack **manuell** gegen die Peer-Ranges geprüft werden (wie in §3). Mittelfristig erwägen, es auf `true` zu setzen und die dann sichtbaren Konflikte einmalig aufzuräumen — das ist die eigentliche strukturelle Schwachstelle.
+- **`shamefullyHoist: true`** — verdeckt weiterhin nicht deklarierte Imports. Die drei bekannten sind jetzt deklariert, aber nur `tsc` hat sie aufgedeckt; rein zur Laufzeit genutzte Phantom-Deps (dynamische Imports ohne Typbezug) würden weiterhin unbemerkt bleiben. Ein späteres Abschalten legt sie offen — eigener PR, eigene Fehlerfläche.

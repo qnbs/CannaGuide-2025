@@ -12,10 +12,18 @@ if (-not (Test-Command 'node')) {
     Write-Warning 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows.'
 }
 
-if (-not (Test-Command 'pnpm')) {
-    Write-Host 'Enabling Corepack for pnpm...'
+# Presence alone is not enough: an older globally installed pnpm would satisfy
+# Test-Command, skip corepack, and then run the install with the wrong version.
+$requiredPnpm = '11.13.0'
+$currentPnpm = if (Test-Command 'pnpm') { (pnpm --version 2>$null) } else { $null }
+if ($currentPnpm -ne $requiredPnpm) {
+    if ($currentPnpm) {
+        Write-Host "pnpm $currentPnpm found, but $requiredPnpm is required. Activating via Corepack..."
+    } else {
+        Write-Host 'Enabling Corepack for pnpm...'
+    }
     corepack enable
-    corepack prepare pnpm@11.13.0 --activate
+    corepack prepare "pnpm@$requiredPnpm" --activate
 }
 
 if (-not (Test-Command 'uv')) {

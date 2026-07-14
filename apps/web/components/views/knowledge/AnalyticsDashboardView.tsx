@@ -144,7 +144,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                         label={t('common.accessibility.analyticsStrainTypeChart')}
                         data={pieData}
                         categoryKey="name"
-                        categoryLabel={t('common.accessibility.chart.value')}
+                        categoryLabel={t('common.accessibility.chart.stage')}
                         series={[
                             { dataKey: 'value', label: t('common.accessibility.chart.count') },
                         ]}

@@ -54,6 +54,11 @@ test('a11y: no serious/critical axe violations in the strains view', async ({
     await page.locator('[data-view-id="strains"]:visible').first().click()
     await expect(page.locator('main')).toBeVisible()
 
+    // The view is lazy-loaded, so `main` goes visible while the Suspense fallback is
+    // still mounted -- scanning here would audit the placeholder, not the view. The
+    // sort control only exists once the real toolbar has rendered.
+    await page.waitForSelector('#strain-sort-select', { state: 'attached', timeout: 30_000 })
+
     const results = await new AxeBuilder({ page }).include('main').analyze()
 
     const seriousOrCritical = results.violations.filter((violation) =>

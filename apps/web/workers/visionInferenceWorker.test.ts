@@ -94,18 +94,24 @@ describe('visionInferenceWorker utilities', () => {
             // ImageNet-normalised white pixel: (1 - mean) / std.
             // R: (1-0.485)/0.229 ~ 2.25   G: (1-0.456)/0.224 ~ 2.43   B: (1-0.406)/0.225 ~ 2.64
             // All should be within [-3, 3] for any pixel value [0, 255].
-            // Reduce first, assert once: one expect() per element is ~301k
-            // matcher invocations here and alone costs ~37s, which pushes the
-            // test past the default 30s timeout on a loaded machine.
-            let min = Infinity
-            let max = -Infinity
+            // Scan for the first offending element and assert once: an expect()
+            // per element is ~301k matcher invocations and alone costs ~37s,
+            // which pushes the test past the default 30s timeout.
+            // NaN must fail here, so test for validity rather than comparing
+            // against a running min/max -- NaN loses every comparison and would
+            // otherwise leave the bounds untouched and slip through.
+            let badIndex = -1
             for (let i = 0; i < tensor.length; i++) {
-                const v = tensor[i] ?? 0
-                if (v < min) min = v
-                if (v > max) max = v
+                const v = tensor[i]
+                if (v === undefined || !Number.isFinite(v) || v < -3 || v > 3) {
+                    badIndex = i
+                    break
+                }
             }
-            expect(min).toBeGreaterThanOrEqual(-3)
-            expect(max).toBeLessThanOrEqual(3)
+            expect(
+                badIndex,
+                `tensor[${badIndex}] = ${badIndex === -1 ? '' : tensor[badIndex]} is not a finite value within [-3, 3]`,
+            ).toBe(-1)
         })
     })
 

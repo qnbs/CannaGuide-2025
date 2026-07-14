@@ -22,8 +22,18 @@ if ($currentPnpm -ne $requiredPnpm) {
     } else {
         Write-Host 'Enabling Corepack for pnpm...'
     }
+    # Node 25 dropped the bundled Corepack, so it has to come from npm there.
+    if (-not (Test-Command 'corepack')) {
+        Write-Host 'Corepack not bundled with this Node; installing from npm...'
+        npm install -g corepack@latest
+    }
     corepack enable
     corepack prepare "pnpm@$requiredPnpm" --activate
+
+    $activePnpm = (pnpm --version 2>$null)
+    if ($activePnpm -ne $requiredPnpm) {
+        throw "pnpm $requiredPnpm required, but '$activePnpm' is active after Corepack activation."
+    }
 }
 
 if (-not (Test-Command 'uv')) {

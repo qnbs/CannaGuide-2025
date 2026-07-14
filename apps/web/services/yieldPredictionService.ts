@@ -142,7 +142,7 @@ export const predictYield = (
     historicalPlants: Plant[],
     activePlants: Plant[],
 ): Promise<YieldPredictionResult> => {
-    const t = getT()
+    const translate = getT()
     const heuristicYield = activePlants.reduce(
         (sum, plant) => sum + estimateHeuristicYield(plant),
         0,
@@ -158,8 +158,8 @@ export const predictYield = (
         sampleCount,
         explanation:
             sampleCount === 0
-                ? t('plantsView.growStats.explanationNoHistory')
-                : t('plantsView.growStats.explanationHeuristic', { count: sampleCount }),
+                ? translate('plantsView.growStats.explanationNoHistory')
+                : translate('plantsView.growStats.explanationHeuristic', { count: sampleCount }),
     })
 }
 

@@ -1,13 +1,31 @@
 #!/bin/sh
 set -e
 
-# Lightweight pre-push gate: typecheck + lint scopes only.
-# Full test suite + build run as part of the dev workflow before
-# committing, so repeating them here is redundant.
+# The one real gate before code leaves the machine: typecheck, lint scopes,
+# file budget. Staged so each step is affordable on the dual-core / ~4 GB
+# machine this repo is developed on, and so nothing is silently skipped.
+#
+# Typecheck runs through scripts/scoped-verify.mjs, not `turbo run typecheck`.
+# Unfiltered, turbo checks all five tasks (ai-core build + typecheck, ui build +
+# typecheck, web typecheck): 6-9 minutes cold and a real OOM risk -- the very
+# thing CLAUDE.md forbids ("never run a bare turbo run"). A hook nobody can
+# afford to run is a hook everyone bypasses with --no-verify, and then broken
+# commits sail through. Scoped to the workspaces the branch actually touched and
+# capped at --concurrency=1, the same check takes well under a minute.
+#
+# Coverage is not lost: CI still runs the full matrix across every workspace.
+# This gate exists to catch what CI would reject, before the push, not to
+# duplicate CI.
+#
 # Skip with: git push --no-verify (emergency only).
 
-echo "[pre-push] Running typecheck + lint scopes + file budget..."
-pnpm exec turbo run typecheck
+echo "[pre-push] 1/3 typecheck (scoped to touched workspaces)..."
+node ./scripts/scoped-verify.mjs typecheck
+
+echo "[pre-push] 2/3 lint scopes..."
 node ./scripts/lint-scopes.mjs
+
+echo "[pre-push] 3/3 file budget..."
 pnpm run check:file-budget
+
 echo "[pre-push] All gates passed."

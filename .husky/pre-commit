@@ -1,9 +1,18 @@
 #!/bin/sh
 set -e
 
-node ./scripts/check-commit-identity.mjs
+# Fast gate only -- this runs on every commit.
+#
+# `pnpm exec turbo run typecheck` used to live here. Unfiltered, turbo runs all
+# five tasks (ai-core build + typecheck, ui build + typecheck, web typecheck):
+# 6-9 minutes cold on the dual-core / ~4 GB machine this repo is developed on,
+# and a genuine OOM risk. It is also precisely the "never run a bare turbo run"
+# rule in CLAUDE.md -- the hook was violating the repo's own rule, which is why
+# it kept getting bypassed with --no-verify, which in turn let broken commits
+# through. It ran again in pre-push anyway, so the copy here bought only the wait.
+#
+# Typechecking now happens once, scoped to the touched workspaces, in pre-push.
 
-# Run typecheck via turbo to match CI (root tsc checks nothing)
-pnpm exec turbo run typecheck
+node ./scripts/check-commit-identity.mjs
 
 pnpm exec lint-staged

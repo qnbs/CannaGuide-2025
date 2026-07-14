@@ -248,3 +248,35 @@ Alle drei sind reine Dev-Toolchain-Änderungen: **kein Runtime-Bundle-Impact**, 
 - **Node 26 LTS-Status** — vor jedem Wechsel gegen den offiziellen Release-Plan verifizieren, nicht aus dem Bauch.
 - **`strictPeerDependencies: false` in `pnpm-workspace.yaml`** (seit pnpm 11; `.npmrc` hält nur noch `ignore-scripts=false`) — macht Peer-Konflikte still. Solange das gesetzt ist, muss jeder Major-Bump im Lint-/TS-Stack **manuell** gegen die Peer-Ranges geprüft werden (wie in §3). Mittelfristig erwägen, es auf `true` zu setzen und die dann sichtbaren Konflikte einmalig aufzuräumen — das ist die eigentliche strukturelle Schwachstelle.
 - **`shamefullyHoist: true`** — verdeckt weiterhin nicht deklarierte Imports. Die drei bekannten sind jetzt deklariert, aber nur `tsc` hat sie aufgedeckt; rein zur Laufzeit genutzte Phantom-Deps (dynamische Imports ohne Typbezug) würden weiterhin unbemerkt bleiben. Ein späteres Abschalten legt sie offen — eigener PR, eigene Fehlerfläche.
+
+---
+
+## 8. tsgo / TypeScript-native (`@typescript/native-preview`) — gemessen und verworfen
+
+**Gemessen am 2026-07-14** auf der Zielmaschine (Dual-Core, ~4 GB RAM), jeweils gegen
+`apps/web`:
+
+| Werkzeug                                            | Wandzeit  | max RSS           |
+| --------------------------------------------------- | --------- | ----------------- |
+| `tsc --noEmit`                                      | 263 s     | 1,56 GB           |
+| `tsgo --noEmit` (warmer npx-Cache)                  | 171 s     | **1,72 GB**       |
+| `pnpm --filter @cannaguide/web typecheck` (gescopt) | **~40 s** | deutlich darunter |
+
+**Ergebnis: nicht übernehmen.** Drei Gründe:
+
+1. **Es löst den falschen Engpass.** Unsere Grenze ist der Arbeitsspeicher, nicht die CPU —
+   und tsgo braucht **mehr** RAM als `tsc`. Auf einer 4-GB-Maschine verschärft das genau das
+   Problem, das wir lösen wollen.
+2. **Der Gewinn ist 1,5×, nicht die beworbenen 5–10×** — auf dieser Codebase zu wenig, um das
+   Risiko zu rechtfertigen.
+3. **Es weicht von `tsc` ab.** tsgo meldet `TS2430` in `services/webBluetoothSensorService.ts`
+   ("Interface 'Navigator' incorrectly extends 'NavigatorGPU'"), das `tsc` **nicht** meldet.
+   Ein Gate, das auf etwas rot wird, das niemand beheben kann, wird abgeschaltet — und genau
+   so ist dieses Repo zu Hooks gekommen, die per `--no-verify` umgangen wurden.
+
+Der bestehende **gescopte, inkrementelle** Typecheck (`scripts/typecheck-filter.mjs` über
+`scripts/scoped-verify.mjs`) schlägt beide um Längen und ist das, was der `pre-push`-Hook
+benutzt.
+
+**Neu bewerten,** wenn tsgo stabil ist _und_ sein Speicherprofil unter das von `tsc` fällt.
+Nicht vorher.

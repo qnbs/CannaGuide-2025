@@ -15,7 +15,6 @@ import { CSP, DEV_CSP, PERMISSIONS_POLICY, COEP, HSTS, REFERRER_POLICY } from '.
 // ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
 // When missing, dynamic imports at runtime will fail gracefully — the app guards these.
 const OPTIONAL_ML_EXTERNALS = [
-    '@tensorflow/tfjs',
     '@xenova/transformers',
     '@mlc-ai/web-llm',
     'onnxruntime-web',

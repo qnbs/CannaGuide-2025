@@ -73,12 +73,12 @@ const makePlant = (overrides: Partial<Plant> = {}): Plant => ({
 })
 
 describe('yieldPredictionService', () => {
-    it('falls back to heuristics without enough harvest history', async () => {
+    it('projects heuristically without harvest history', async () => {
         const result = await yieldPredictionService.predictYield([], [makePlant()])
 
-        expect(result.usedTensorflowModel).toBe(false)
         expect(result.sampleCount).toBe(0)
         expect(result.predictedDryWeight).toBeGreaterThan(0)
+        expect(result.predictedDryWeight).toBe(result.heuristicDryWeight)
         expect(result.confidence).toBeLessThan(0.5)
     })
 

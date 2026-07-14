@@ -1,4 +1,5 @@
 import { captureLocalAiError } from '@/services/sentryService'
+import { loadTransformers } from '@cannaguide/ai-core/ml'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
 
 /**
@@ -105,7 +106,7 @@ async function ensurePipeline(): Promise<WhisperPipeline> {
     loadingPromise = (async (): Promise<WhisperPipeline | null> => {
         await acquireGpu(GPU_RESOURCE_KEY)
         try {
-            const { pipeline: createPipeline } = await import('@xenova/transformers')
+            const { pipeline: createPipeline } = await loadTransformers()
             const p = await createPipeline('automatic-speech-recognition', WHISPER_MODEL_ID, {
                 quantized: true,
             })

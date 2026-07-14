@@ -1,5 +1,7 @@
-type TransformersModule = typeof import('@xenova/transformers')
+import { loadTransformers } from '@cannaguide/ai-core/ml'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
+
+type TransformersModule = Awaited<ReturnType<typeof loadTransformers>>
 import { getModelById } from './webLlmModelCatalog'
 import { isMobileDevice, isHighEndTablet, checkStorageQuota } from '@/utils/browserApis'
 
@@ -171,7 +173,7 @@ export const getLoadedPipelineKeys = (): string[] => [...pipelineCache.keys()]
 export const getTransformersModule = async (): Promise<TransformersModule> => {
     if (!transformersModulePromise) {
         transformersModulePromise = (async () => {
-            const mod = await import('@xenova/transformers')
+            const mod = await loadTransformers()
             // Configure ONNX backend for optimal device utilization
             const backend = detectOnnxBackend()
             if (mod.env?.backends?.onnx?.wasm) {

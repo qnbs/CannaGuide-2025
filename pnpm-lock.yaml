@@ -367,6 +367,12 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.11.1
         version: 2.11.1
+      '@tauri-apps/plugin-dialog':
+        specifier: ^2.7.1
+        version: 2.7.1
+      '@tauri-apps/plugin-notification':
+        specifier: ^2.2.0
+        version: 2.3.3
 
   packages/ai-core:
     dependencies:

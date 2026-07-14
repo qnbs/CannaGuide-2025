@@ -28,33 +28,6 @@ declare module '@mlc-ai/web-llm' {
     ): Promise<MLCEngine>
 }
 
-declare module '@tensorflow/tfjs' {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export function loadLayersModel(path: string): Promise<any>
-    export function tensor(data: unknown, shape?: number[]): Record<string, unknown>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export function tensor2d(data: any, shape?: number[]): any
-    export function tidy<T>(fn: () => T): T
-    export function dispose(tensors: unknown): void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export function sequential(...args: any[]): any
-    export const layers: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dense(config: any): any
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: ((...args: any[]) => any) | undefined
-    }
-    export const train: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        adam(learningRate?: number): any
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: ((...args: any[]) => any) | undefined
-    }
-    export const env: Record<string, unknown>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export type Tensor = any
-}
-
 // WebGPU types (not available in all TS lib targets)
 interface GPU {
     requestAdapter(options?: Record<string, unknown>): Promise<GPUAdapter | null>
@@ -90,9 +63,7 @@ declare module '@tauri-apps/plugin-notification' {
         body?: string | undefined
     }): Promise<void>
     export function isPermissionGranted(): Promise<boolean>
-    export function requestPermission(): Promise<
-        'granted' | 'denied' | 'default'
-    >
+    export function requestPermission(): Promise<'granted' | 'denied' | 'default'>
 }
 
 declare module '@tauri-apps/plugin-dialog' {
@@ -112,8 +83,5 @@ declare module '@tauri-apps/plugin-dialog' {
 }
 
 declare module '@tauri-apps/api/core' {
-    export function invoke<T = void>(
-        cmd: string,
-        args?: Record<string, unknown>,
-    ): Promise<T>
+    export function invoke<T = void>(cmd: string, args?: Record<string, unknown>): Promise<T>
 }

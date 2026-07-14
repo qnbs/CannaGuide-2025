@@ -18,6 +18,7 @@
 import { spawnSync } from 'node:child_process'
 
 const TAG = '[verify]'
+const isWindows = process.platform === 'win32'
 
 /** Path prefix -> workspace package name. */
 const WORKSPACE_BY_PREFIX = [
@@ -26,6 +27,23 @@ const WORKSPACE_BY_PREFIX = [
     ['packages/ai-core/', '@cannaguide/ai-core'],
     ['packages/ui/', '@cannaguide/ui'],
 ]
+
+const ALL_WORKSPACES = WORKSPACE_BY_PREFIX.map(([, workspace]) => workspace)
+
+/**
+ * Repo-root inputs that feed every workspace. A change to any of them cannot be
+ * scoped to a subset -- the dependency graph, the toolchain or the task pipeline
+ * moved under all of them at once -- so it widens the scope to everything.
+ */
+const SHARED_ROOT_INPUTS = new Set([
+    'package.json',
+    'pnpm-lock.yaml',
+    'pnpm-workspace.yaml',
+    'tsconfig.json',
+    'tsconfig.base.json',
+    'turbo.json',
+    '.npmrc',
+])
 
 /**
  * Changing a library means its consumers have to be re-checked against it, so
@@ -54,6 +72,11 @@ function changedFiles() {
 }
 
 function affectedWorkspaces(files) {
+    if (files.some((file) => SHARED_ROOT_INPUTS.has(file))) {
+        console.log(`${TAG} shared root input changed -- verifying every workspace`)
+        return new Set(ALL_WORKSPACES)
+    }
+
     const affected = new Set()
     for (const file of files) {
         for (const [prefix, workspace] of WORKSPACE_BY_PREFIX) {
@@ -72,7 +95,7 @@ if (!KNOWN_TASKS.has(task)) {
 const affected = affectedWorkspaces(changedFiles())
 
 if (affected.size === 0) {
-    console.log(`${TAG} no workspace touched — skip verify`)
+    console.log(`${TAG} no workspace touched -- skip verify`)
     process.exit(0)
 }
 
@@ -90,7 +113,11 @@ const args = [
     '--concurrency=1',
     ...filters.map((f) => `--filter=${f}`),
 ]
-console.log(`${TAG} → pnpm ${args.join(' ')}`)
+console.log(`${TAG} -> pnpm ${args.join(' ')}`)
 
-const run = spawnSync('pnpm', args, { stdio: 'inherit' })
+// `pnpm` is a .cmd shim on Windows, which spawnSync cannot execute without a
+// shell (EINVAL since Node's CVE-2024-27980 fix). Same treatment as the other
+// launcher scripts in this directory. Every argument here is built from the
+// literals above, never from the diff, so the shell has nothing to inject into.
+const run = spawnSync('pnpm', args, { stdio: 'inherit', shell: isWindows })
 process.exit(run.status ?? 1)

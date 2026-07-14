@@ -178,17 +178,21 @@ Last updated: 2026-06-29 (Full-Scale Audit closure — PR #362)
 
 ---
 
-### S-07 -- CVE-2026-41242 Audit Ignore (protobufjs false positive)
+### S-07 -- CVE-2026-41242 Audit Ignore (protobufjs) -- RESOLVED 2026-07-14
 
-| Field    | Value         |
-| -------- | ------------- |
-| Severity | Low           |
-| Effort   | None          |
-| Status   | **Won't Fix** |
+| Field    | Value                          |
+| -------- | ------------------------------ |
+| Severity | Critical (upstream advisory)   |
+| Effort   | None                           |
+| Status   | **Resolved -- ignore removed** |
 
-**Finding:** `pnpm audit --audit-level=high` reports CVE-2026-41242 on transitive `protobufjs` via dev tooling. Patched upstream path conflicts with monorepo `pnpm.overrides` pin.
+**Finding:** `pnpm audit` reported CVE-2026-41242 on transitive `protobufjs`. It was suppressed via `package.json` → `auditConfig.ignoreCves` and classified here as a low-severity false positive.
 
-**Resolution:** Listed in `package.json` → `auditConfig.ignoreCves`. Documented in `.github/CI-AUDIT.md` Remaining Risks. Re-evaluate when override removed or upstream releases compatible fix. CHANGELOG Session 176 notes false-positive classification.
+**Correction:** the advisory is **GHSA-xq3m-2v4x-88gg, "Arbitrary code execution in protobufjs", severity _critical_** — not low. Suppressing it was a standing risk: a genuine future protobufjs advisory matching the same CVE would have been swallowed silently.
+
+**Resolution (2026-07-14, PR #413):** the suppression is **obsolete and has been removed**. The `protobufjs: '>=8.2.0'` override already resolves the dependency to **8.7.0**, a patched version. Verified: `pnpm audit --audit-level=critical --prod` and `pnpm audit --audit-level=high` both report _"No known vulnerabilities found"_ with no `auditConfig` present at all.
+
+Note for future suppressions: pnpm 11 no longer honours `auditConfig.ignoreCves` — the key is `auditConfig.ignoreGhsas` and it takes GHSA IDs, not CVE IDs. A suppression carried over unchanged would have stopped working without any error.
 
 ---
 

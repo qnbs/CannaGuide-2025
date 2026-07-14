@@ -1,9 +1,7 @@
+import { getT } from '@/i18n'
 import { Plant, PlantStage, YieldPredictionResult } from '@/types'
 
-type TfModule = typeof import('@tensorflow/tfjs')
-
 const TARGET_SCALE = 1000
-const MIN_TRAINING_SAMPLES = 10
 
 const stageOrder: PlantStage[] = [
     PlantStage.Seed,
@@ -128,132 +126,41 @@ const collectTrainingSamples = (plants: Plant[]): Array<{ features: number[]; ta
     })
 }
 
-const calculateFeatureStats = (samples: Array<{ features: number[]; target: number }>) => {
-    const featureCount = samples[0]?.features.length ?? 0
-    const means = Array.from({ length: featureCount }, () => 0)
-    const variances = Array.from({ length: featureCount }, () => 0)
-
-    samples.forEach((sample) => {
-        sample.features.forEach((value, index) => {
-            means[index] = (means[index] ?? 0) + value
-        })
-    })
-
-    means.forEach((value, index) => {
-        means[index] = (value ?? 0) / samples.length
-    })
-
-    samples.forEach((sample) => {
-        sample.features.forEach((value, index) => {
-            variances[index] = (variances[index] ?? 0) + (value - (means[index] ?? 0)) ** 2
-        })
-    })
-
-    const stdDevs = variances.map((value) =>
-        Math.max(Math.sqrt((value ?? 0) / samples.length), 0.05),
-    )
-
-    return { means, stdDevs }
-}
-
-const normalizeVector = (features: number[], means: number[], stdDevs: number[]) =>
-    features.map((value, index) => (value - (means[index] ?? 0)) / (stdDevs[index] ?? 1))
-
-const loadTensorflow = async (): Promise<TfModule> => import('@tensorflow/tfjs')
-
-export const predictYield = async (
+/**
+ * Yield is projected heuristically from each plant's own stage, age and vitals.
+ *
+ * A TensorFlow.js regression used to run here once enough history had been
+ * recorded, but @tensorflow/tfjs was never actually a dependency of this app --
+ * the dynamic import resolved against nothing, so the model path threw for every
+ * user who reached it while the tests, which run with no history, never touched
+ * it. The path is gone rather than resurrected: it would have cost a
+ * multi-megabyte download to train a 3-layer net on a handful of samples.
+ *
+ * History still raises confidence -- it just no longer feeds a model.
+ */
+export const predictYield = (
     historicalPlants: Plant[],
     activePlants: Plant[],
 ): Promise<YieldPredictionResult> => {
+    const translate = getT()
     const heuristicYield = activePlants.reduce(
         (sum, plant) => sum + estimateHeuristicYield(plant),
         0,
     )
-    const trainingSamples = collectTrainingSamples(historicalPlants)
+    // One sample per history snapshot of each harvested plant -- not one per
+    // harvest. The UI labels it "historical samples" for the same reason.
+    const sampleCount = collectTrainingSamples(historicalPlants).length
 
-    if (trainingSamples.length < MIN_TRAINING_SAMPLES || activePlants.length === 0) {
-        return {
-            predictedDryWeight: heuristicYield,
-            heuristicDryWeight: heuristicYield,
-            confidence:
-                trainingSamples.length === 0
-                    ? 0.2
-                    : clamp(0.25 + trainingSamples.length / 60, 0.25, 0.55),
-            sampleCount: trainingSamples.length,
-            usedTensorflowModel: false,
-            explanation:
-                trainingSamples.length === 0
-                    ? 'No historical harvest data available yet. Using heuristic projection.'
-                    : 'Not enough historical samples for a stable TensorFlow.js model. Using heuristic projection.',
-        }
-    }
-
-    const tf = await loadTensorflow()
-    const { means, stdDevs } = calculateFeatureStats(trainingSamples)
-    const normalizedTraining = trainingSamples.map((sample) =>
-        normalizeVector(sample.features, means, stdDevs),
-    )
-    const model = tf.sequential()
-
-    model.add(
-        tf.layers.dense({
-            inputShape: [normalizedTraining[0]!.length],
-            units: 16,
-            activation: 'relu',
-        }),
-    )
-    model.add(tf.layers.dense({ units: 8, activation: 'relu' }))
-    model.add(tf.layers.dense({ units: 1 }))
-
-    model.compile({ optimizer: tf.train.adam(0.01), loss: 'meanSquaredError' })
-
-    const inputTensor = tf.tensor2d(normalizedTraining)
-    const targetTensor = tf.tensor2d(trainingSamples.map((sample) => [sample.target]))
-
-    const history = await model.fit(inputTensor, targetTensor, {
-        epochs: 24,
-        batchSize: Math.min(8, trainingSamples.length),
-        shuffle: true,
-        verbose: 0,
-    })
-
-    const lossHistory = history.history.loss
-    const latestLossValue = Array.isArray(lossHistory) ? lossHistory.at(-1) : lossHistory
-    const latestLoss = Number(latestLossValue ?? 0)
-
-    const activePredictions = activePlants.map((plant) => {
-        const features = normalizeVector(buildFeatureVector(plant), means, stdDevs)
-        const prediction = tf.tidy(() => {
-            const result = model.predict(
-                tf.tensor2d([features]),
-            ) as import('@tensorflow/tfjs').Tensor
-            return (result.dataSync()[0] ?? 0) * TARGET_SCALE
-        })
-
-        return Math.max(0, prediction)
-    })
-
-    inputTensor.dispose()
-    targetTensor.dispose()
-    model.dispose()
-
-    const predictedDryWeight = activePredictions.reduce((sum, value) => sum + value, 0)
-    const normalizedLoss = clamp((latestLoss * TARGET_SCALE * TARGET_SCALE) / 2500, 0, 1)
-    const sampleConfidence = clamp(trainingSamples.length / 30, 0, 1)
-    const confidence = clamp(
-        0.35 + sampleConfidence * 0.45 + (1 - normalizedLoss) * 0.2,
-        0.35,
-        0.95,
-    )
-
-    return {
-        predictedDryWeight,
+    return Promise.resolve({
+        predictedDryWeight: heuristicYield,
         heuristicDryWeight: heuristicYield,
-        confidence,
-        sampleCount: trainingSamples.length,
-        usedTensorflowModel: true,
-        explanation: `TensorFlow.js model trained on ${trainingSamples.length} historical samples.`,
-    }
+        confidence: sampleCount === 0 ? 0.2 : clamp(0.25 + sampleCount / 60, 0.25, 0.55),
+        sampleCount,
+        explanation:
+            sampleCount === 0
+                ? translate('plantsView.growStats.explanationNoHistory')
+                : translate('plantsView.growStats.explanationHeuristic', { count: sampleCount }),
+    })
 }
 
 export const yieldPredictionService = {

@@ -13,7 +13,11 @@ const graphJson = join(root, "graphify-out", "graph.json");
 const launcher = join(root, "scripts", "graphify-mcp-stdio.sh");
 const windowsLauncher = join(root, "scripts", "graphify-mcp-stdio-windows.cmd");
 const MAX_GRAPH_AGE_HOURS = 168;
-const MIN_INFERRED_CONFIDENCE = 0.7;
+// Graphify scores INFERRED edges on a two-value scale: 0.5 for indirect_call
+// (every React callback produces one) and 0.8 for everything else. A 0.7 floor
+// therefore rejects the tool's own normal output. 0.5 is its true floor, so the
+// check still catches missing or corrupt scores without failing on valid graphs.
+const MIN_INFERRED_CONFIDENCE = 0.5;
 const isWindows = process.platform === "win32";
 
 let failed = false;
@@ -59,10 +63,24 @@ if (!existsSync(graphJson)) {
             ok("graphify-out/graph.json is valid JSON and schema-like");
         }
 
-        const inferredScores = edgeList
+        // Validate the raw field: Number() coerces true and [1] to 1, so a malformed
+        // edge would otherwise clear the floor. A missing or corrupt score is a
+        // corrupt graph, not an absent one — dropping those silently would let an
+        // all-corrupt graph fall through to the "no inferred edges" branch and pass.
+        const rawInferredScores = edgeList
             .filter((edge) => edge?.confidence === "INFERRED")
-            .map((edge) => Number(edge.confidence_score))
-            .filter(Number.isFinite);
+            .map((edge) => edge.confidence_score);
+        const isValidScore = (score) =>
+            typeof score === "number" && Number.isFinite(score);
+        const corrupt = rawInferredScores.filter(
+            (score) => !isValidScore(score),
+        ).length;
+        const inferredScores = rawInferredScores.filter(isValidScore);
+        if (corrupt > 0) {
+            bad(
+                `inferred edges with missing or non-numeric confidence_score: ${corrupt} edge(s)`,
+            );
+        }
         if (inferredScores.length > 0) {
             const belowThreshold = inferredScores.filter(
                 (score) => score < MIN_INFERRED_CONFIDENCE,
@@ -76,7 +94,7 @@ if (!existsSync(graphJson)) {
                     `inferred confidence threshold >= ${MIN_INFERRED_CONFIDENCE} satisfied (${inferredScores.length} edges)`,
                 );
             }
-        } else {
+        } else if (corrupt === 0) {
             ok("no inferred edges detected (confidence threshold check skipped)");
         }
 

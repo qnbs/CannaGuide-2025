@@ -18,6 +18,7 @@
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
 import { initAbortHandler } from '@/utils/workerAbort'
+import { loadOnnxRuntime } from '@cannaguide/ai-core/ml'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,7 +45,7 @@ export interface VisionClassifyResult {
     latencyMs: number
 }
 
-type OrtModule = typeof import('onnxruntime-web')
+type OrtModule = Awaited<ReturnType<typeof loadOnnxRuntime>>
 type InferenceSession = Awaited<ReturnType<OrtModule['InferenceSession']['create']>>
 
 // ---------------------------------------------------------------------------
@@ -311,7 +312,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
             return
         }
         try {
-            const ort = await import('onnxruntime-web')
+            const ort = await loadOnnxRuntime()
             // Point WASM runtime to jsDelivr CDN -- avoids bundling ~5 MB WASM
             ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.0/dist/'
             session = await ort.InferenceSession.create(p.modelBuffer, {
@@ -342,7 +343,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
             return
         }
         try {
-            const ort = await import('onnxruntime-web')
+            const ort = await loadOnnxRuntime()
             const t0 = performance.now()
 
             const inputTensor = preprocessImage(p.imageData)

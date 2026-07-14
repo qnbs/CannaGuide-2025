@@ -1,11 +1,82 @@
 packages:
     - 'packages/*'
     - 'apps/*'
+
+# Moved here from .npmrc: pnpm 11 no longer reads pnpm-specific settings from
+# .npmrc (`pnpm config get shamefully-hoist` returns undefined), it reads them
+# here. Losing shamefullyHoist silently broke module resolution for every
+# dependency apps/web imports without declaring.
+shamefullyHoist: true
+strictPeerDependencies: false
+autoInstallPeers: true
+
+# pnpm 11 enables a supply-chain quarantine by default: a package published less
+# than minimumReleaseAge ago is refused, which is the window in which a hijacked
+# maintainer account is typically caught and the bad version unpublished. It is
+# enforced against the lockfile, so it fires even on `--frozen-lockfile` in CI.
+# Stated explicitly rather than left to the default, because it is load-bearing.
+minimumReleaseAge: 1440 # minutes (24 h)
+
+# The quarantine has one operational edge: Dependabot merges a bump the moment it
+# is published, so every PR that rebases onto it inherits a red CI until the 24 h
+# elapse — regardless of what the PR changes.
+#
+# These packages are exempted. Each is first-party, published from its own repo's
+# CI, and carries a verified npm provenance attestation (checked 2026-07-14):
+#   turbo, @turbo/*       -> github.com/vercel/turborepo
+#   @typescript-eslint/*  -> github.com/typescript-eslint/typescript-eslint
+#   postcss               -> github.com/postcss/postcss
+# Provenance rules out the attack the quarantine exists for (a version pushed
+# with a stolen npm token from outside the project's CI).
+#
+# CAVEAT: this list matches on NAME, not on provenance. A future version of these
+# packages skips the quarantine even if it ships without an attestation. Keep the
+# list short, and only add packages whose provenance you have actually verified:
+#   npm view <pkg>@<version> --json | jq '.dist.attestations'
+minimumReleaseAgeExclude:
+    - turbo
+    - '@turbo/*'
+    - '@typescript-eslint/*'
+    - postcss
+
+# pnpm 11 replaces onlyBuiltDependencies with this map. The previous entries here
+# (b, d, e, i, l, s, u) were the sorted letters of "esbuild" — a string that got
+# spread character-by-character, so nothing was ever actually approved. Keeping the
+# original policy from package.json's onlyBuiltDependencies: only these four run
+# postinstall scripts; everything else is denied explicitly.
 allowBuilds:
-    b: true
-    d: true
-    e: true
-    i: true
-    l: true
-    s: true
-    u: true
+    esbuild: true
+    sharp: true
+    msw: true
+    protobufjs: true
+    '@google/genai': false
+    core-js: false
+    snyk: false
+    workerd: false
+
+# Moved here from package.json's "pnpm" field: pnpm 11 no longer reads that field
+# and ignores it *silently*. These overrides pin transitive deps that
+# .github/dependabot.yml deliberately ignores because they are pinned here —
+# losing them would be a silent security regression.
+overrides:
+    '@rollup/plugin-terser': 1.0.0
+    '@babel/core': '>=7.29.6'
+    '@babel/plugin-transform-modules-systemjs': '>=7.29.4'
+    tmp: '>=0.2.6'
+    lodash-es: 4.18.1
+    lodash: '>=4.18.0'
+    basic-ftp: '>=5.3.1'
+    fast-uri: '>=3.1.2'
+    protobufjs: '>=8.2.0'
+    ip-address: '>=10.1.1'
+    undici: '>=7.28.0 <8.0.0'
+    qs: '>=6.15.2'
+    uuid: '>=11.1.1'
+    esbuild: '>=0.25.0'
+    ws: '>=8.20.1'
+    workbox-build: 7.4.1
+    workbox-window: 7.4.1
+    linkify-it: '>=5.0.1'
+    markdown-it: '>=14.2.0'
+    js-yaml@3: '>=3.15.0'
+    js-yaml@4: '>=4.2.0'

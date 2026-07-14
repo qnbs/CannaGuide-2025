@@ -6,7 +6,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppSelector } from '@/stores/store'
 import { selectActivePlants, selectAllPlants, selectOpenTasksSummary } from '@/stores/selectors'
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService'
-import { PlantStage } from '@/types'
+import { PlantStage, type YieldPredictionResult } from '@/types'
 import { useYieldPrediction } from '@/hooks/useYieldPrediction'
 
 const ENERGY_PRICE_EUR_PER_KWH = 0.31
@@ -24,6 +24,55 @@ const totalDaysToHarvest = growthOrder.reduce((sum, stage) => {
     const duration = PLANT_STAGE_DETAILS[stage].duration
     return Number.isFinite(duration) ? sum + duration : sum
 }, 0)
+
+interface YieldForecastCardProps {
+    prediction: YieldPredictionResult | null
+    heuristicForecast: number
+    isLoading: boolean
+}
+
+/**
+ * Split out of the dashboard because every branch in the forecast copy -- have a
+ * prediction or not, still loading or not -- otherwise lands in the parent's
+ * complexity budget.
+ */
+const YieldForecastCard: React.FC<YieldForecastCardProps> = ({
+    prediction,
+    heuristicForecast,
+    isLoading,
+}) => {
+    const { t } = useTranslation()
+
+    return (
+        <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
+            <p className="text-xs uppercase tracking-wide text-slate-400">
+                {t('plantsView.growStats.yieldForecast')}
+            </p>
+            <p className="text-2xl font-bold text-slate-100 mt-1">
+                {(prediction?.predictedDryWeight ?? heuristicForecast).toFixed(1)} g
+            </p>
+            <p className="text-xs text-slate-400 mt-2">
+                {prediction ? (
+                    <>
+                        {t('plantsView.growStats.mlForecast')}{' '}
+                        {/* confidence is a 0..1 fraction. toFixed(0) on it rounded to a
+                            single digit, so every prediction rendered as "0%" or "1%"
+                            rather than as a percentage. Scale first. */}
+                        {(prediction.confidence * 100).toFixed(0)}%{' '}
+                        {t('plantsView.growStats.confidence')}
+                    </>
+                ) : (
+                    t('plantsView.growStats.heuristicFallback')
+                )}
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+                {isLoading
+                    ? t('plantsView.growStats.modelTraining')
+                    : (prediction?.explanation ?? t('plantsView.growStats.modelIdle'))}
+            </p>
+        </div>
+    )
+}
 
 const GrowStatsDashboardComponent: React.FC = () => {
     const { t } = useTranslation()
@@ -132,33 +181,11 @@ const GrowStatsDashboardComponent: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">
-                        {t('plantsView.growStats.yieldForecast')}
-                    </p>
-                    <p className="text-2xl font-bold text-slate-100 mt-1">
-                        {prediction
-                            ? prediction.predictedDryWeight.toFixed(1)
-                            : yieldForecast.toFixed(1)}{' '}
-                        g
-                    </p>
-                    <p className="text-xs text-slate-400 mt-2">
-                        {prediction ? (
-                            <>
-                                {t('plantsView.growStats.mlForecast')}{' '}
-                                {prediction.confidence.toFixed(0)}%{' '}
-                                {t('plantsView.growStats.confidence')}
-                            </>
-                        ) : (
-                            t('plantsView.growStats.heuristicFallback')
-                        )}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                        {isYieldModelLoading
-                            ? t('plantsView.growStats.modelTraining')
-                            : (prediction?.explanation ?? t('plantsView.growStats.modelIdle'))}
-                    </p>
-                </div>
+                <YieldForecastCard
+                    prediction={prediction ?? null}
+                    heuristicForecast={yieldForecast}
+                    isLoading={isYieldModelLoading}
+                />
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
                     <p className="text-xs uppercase tracking-wide text-slate-400">
                         {t('plantsView.growStats.costTracker')}
@@ -190,11 +217,6 @@ const GrowStatsDashboardComponent: React.FC = () => {
                                 value: prediction.heuristicDryWeight.toFixed(1),
                             })}
                         </span>
-                        {prediction.usedTensorflowModel ? (
-                            <span>{t('plantsView.growStats.modelReady')}</span>
-                        ) : (
-                            <span>{t('plantsView.growStats.modelFallback')}</span>
-                        )}
                     </div>
                 </div>
             )}

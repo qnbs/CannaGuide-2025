@@ -35,8 +35,19 @@ jobs:
                   tar -xzf /tmp/uv.tar.gz -C /tmp
                   sudo install /tmp/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv
 
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: '24'
+
             - name: Update graph
               run: uv run --with graphifyy python -m graphify update .
+
+            # The artifact lands on main with [skip ci], so nothing downstream would
+            # catch a bad graph — but ci.yml's quality job runs this same doctor on
+            # every PR. Validate here, or a broken refresh turns every PR red.
+            - name: Validate refreshed graph
+              run: pnpm run graphify:mcp:doctor
 
             - name: Commit graph artifacts to main
               run: |

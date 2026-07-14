@@ -654,8 +654,8 @@ export const settingsView = {
         offlineQueue: {
             title: "File d'attente hors ligne",
             description:
-                "Les actions enregistrees hors ligne sont rejouees localement une fois en ligne. Distinct de la synchronisation Gist cloud.",
-            loading: "Chargement de la file...",
+                'Les actions enregistrees hors ligne sont rejouees localement une fois en ligne. Distinct de la synchronisation Gist cloud.',
+            loading: 'Chargement de la file...',
             count: '{{count}} action(s) en attente',
             refresh: 'Actualiser',
             retrySync: 'Relancer la synchronisation',
@@ -665,12 +665,12 @@ export const settingsView = {
             syncUnavailable:
                 "La synchronisation en arriere-plan n'est pas disponible dans ce navigateur. Les actions sont rejouees lorsque l'app est de nouveau en ligne.",
             clear: 'Vider la file',
-            clearConfirmTitle: "Vider la file hors ligne ?",
+            clearConfirmTitle: 'Vider la file hors ligne ?',
             clearConfirmText:
-                "Supprimer toutes les actions hors ligne en attente ? Les modifications non synchronisees liees a la file peuvent ne pas etre rejouees.",
+                'Supprimer toutes les actions hors ligne en attente ? Les modifications non synchronisees liees a la file peuvent ne pas etre rejouees.',
             clearConfirmButton: 'Vider la file',
             clearSuccess: "File d'actions hors ligne videe.",
-            clearError: "Impossible de vider la file hors ligne.",
+            clearError: 'Impossible de vider la file hors ligne.',
             actionJournal: 'Entree de journal',
         },
         crdtDocSize: 'Document CRDT',
@@ -935,7 +935,7 @@ export const settingsView = {
             transformersJs:
                 'NLP et embeddings sur appareil via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Inference LLM locale via WebLLM (MLC AI).',
-            onnx: 'Runtime ML par ONNX Runtime Web et TensorFlow.js.',
+            onnx: 'Runtime ML par ONNX Runtime Web.',
             radixUi: 'Primitives UI accessibles par Radix UI.',
             recharts: 'Visualisations de graphiques par Recharts et D3.js.',
             tailwind: 'Style utilitaire par Tailwind CSS.',

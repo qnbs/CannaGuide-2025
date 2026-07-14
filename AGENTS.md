@@ -125,10 +125,15 @@ both commit and push. Bypassing is what let a formatting failure and a file-budg
 reach CI unnoticed.
 
 - `pre-commit`: commit-identity check + `lint-staged` (seconds).
-- `pre-push`: **scoped** typecheck + `lint-scopes` + file budget (well under a minute).
+- `pre-push`: **scoped** typecheck + `lint-scopes --changed` + file budget.
 
-`pre-push` deliberately does **not** call `turbo run typecheck`; it goes through
-`scripts/scoped-verify.mjs`. A hook nobody can afford to run is a hook everybody bypasses.
+Both slow steps used to ignore the diff. `pre-push` deliberately does **not** call
+`turbo run typecheck` (6-9 min unfiltered) — it goes through `scripts/scoped-verify.mjs`.
+And `lint-scopes` used to lint every file under the strict scopes on every push: **measured
+at 7 min 34 s for a branch that touched only docs**. With `--changed` it lints only the files
+the branch touched and skips in 0.2 s when none fall in a strict scope. CI keeps the full
+strict-scope lint, so coverage is unchanged. A hook nobody can afford to run is a hook
+everybody bypasses.
 
 ### PR / review comments (Cloud Agent)
 

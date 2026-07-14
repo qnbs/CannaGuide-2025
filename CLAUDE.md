@@ -56,7 +56,13 @@ The hooks are now cheap enough to run, so `--no-verify` is **banned** -- for com
 push. It was the bypass that let a formatting failure and a file-budget failure reach CI.
 
 - `pre-commit`: commit-identity check + `lint-staged` (seconds).
-- `pre-push`: scoped typecheck + lint-scopes + file budget (well under a minute).
+- `pre-push`: scoped typecheck + `lint-scopes --changed` + file budget.
+
+Both slow steps used to ignore the diff: typecheck ran a bare `turbo run` (6-9 min), and
+`lint-scopes` linted every file under the strict scopes -- **measured at 7 min 34 s for a
+branch that touched only docs**. Both are now scoped to what the branch actually changed;
+a push that touches nothing in a strict scope skips that step in 0.2 s. CI still runs the
+full matrix and the full strict-scope lint, so nothing is lost.
 
 If you ever must bypass in an emergency, run the equivalent checks by hand **before** pushing
 and say so in the commit body:

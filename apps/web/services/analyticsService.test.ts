@@ -265,38 +265,39 @@ describe('journalActivityTrend', () => {
 // ---------------------------------------------------------------------------
 
 describe('getNutrientConsistency', () => {
-    it('returns an entry per plant that has nutrient readings', () => {
+    it('derives the rating from the plant medium, not from journal entries', () => {
+        // getNutrientConsistency reads plant.medium.ph / .ec. Journal entries are
+        // not consulted, so a fixture that only sets those would assert against
+        // basePlant.medium rather than the values under test.
         const plantWithReadings = {
             ...basePlant,
             stage: PlantStage.Vegetative,
-            journal: [
-                {
-                    id: 'n1',
-                    plantId: basePlant.id,
-                    type: JournalEntryType.Watering,
-                    notes: '',
-                    createdAt: Date.now() - 86400000,
-                    ph: 6.2,
-                    ec: 1.1,
-                },
-                {
-                    id: 'n2',
-                    plantId: basePlant.id,
-                    type: JournalEntryType.Watering,
-                    notes: '',
-                    createdAt: Date.now() - 172800000,
-                    ph: 6.5,
-                    ec: 1.3,
-                },
-            ],
+            medium: { ...basePlant.medium, ph: 6.3, ec: 1.3 },
         }
+
         const { nutrientConsistency } = analyticsService.compute([plantWithReadings])
-        expect(nutrientConsistency.length).toBeGreaterThanOrEqual(1)
         const entry = nutrientConsistency.find((e) => e.plantId === basePlant.id)
+
         expect(entry).toBeDefined()
-        expect(entry!.avgPh).toBeGreaterThan(0)
-        expect(entry!.avgEc).toBeGreaterThan(0)
-        expect(['stable', 'moderate', 'unstable']).toContain(entry!.rating)
+        expect(entry!.avgPh).toBe(6.3)
+        expect(entry!.avgEc).toBe(1.3)
+        // Vegetative: ideal pH 6.2, ideal EC 1.2 -- both deviations are 0.1.
+        expect(entry!.phVariance).toBe(0.1)
+        expect(entry!.ecVariance).toBe(0.1)
+        expect(entry!.rating).toBe('stable')
+    })
+
+    it('rates a plant unstable when the medium drifts far from the ideal', () => {
+        const driftedPlant = {
+            ...basePlant,
+            stage: PlantStage.Vegetative,
+            medium: { ...basePlant.medium, ph: 7.0, ec: 2.5 },
+        }
+
+        const { nutrientConsistency } = analyticsService.compute([driftedPlant])
+        const entry = nutrientConsistency.find((e) => e.plantId === basePlant.id)
+
+        expect(entry!.rating).toBe('unstable')
     })
 })
 

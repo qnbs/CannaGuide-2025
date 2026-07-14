@@ -34,12 +34,12 @@ const ProviderConsentModalComponent: React.FC = () => {
         <Modal
             isOpen={isOpen}
             onClose={handleDeny}
-            title={t('ai.providerConsent', { ns: 'settings' })}
+            title={t('security.providerConsent', { ns: 'settings' })}
             size="md"
             footer={
                 <div className="flex justify-end gap-2 pt-2">
                     <Button variant="ghost" size="sm" onClick={handleDeny}>
-                        {t('ai.providerConsentDeny', { ns: 'settings' })}
+                        {t('security.providerConsentDeny', { ns: 'settings' })}
                     </Button>
                     <Button variant="primary" size="sm" onClick={handleGrant}>
                         {t('common.confirm', { ns: 'common' })}
@@ -49,7 +49,7 @@ const ProviderConsentModalComponent: React.FC = () => {
         >
             <div className="space-y-3 text-sm text-slate-300">
                 <p>
-                    {t('ai.providerConsentPrompt', {
+                    {t('security.providerConsentPrompt', {
                         ns: 'settings',
                         provider: displayName,
                     })}
@@ -61,7 +61,7 @@ const ProviderConsentModalComponent: React.FC = () => {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-emerald-400 underline hover:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 rounded"
                     >
-                        {t('ai.providerDpaLink', { ns: 'settings' })}
+                        {t('security.providerDpaLink', { ns: 'settings' })}
                     </a>
                 )}
             </div>

@@ -1,9 +1,9 @@
 /**
  * Unit tests for voiceCommandRegistry utilities.
  *
- * Tests cover the pure utility functions (levenshtein, matchVoiceCommand)
- * which form the core matching engine for all 37 voice commands.
- * The buildVoiceCommands factory is tested via a minimal mock fixture.
+ * Covers the pure utility functions this file imports -- levenshtein and
+ * matchVoiceCommand -- which form the matching engine behind every voice command.
+ * The buildVoiceCommands factory itself is not exercised here.
  */
 import { describe, it, expect, vi } from 'vitest'
 import { levenshtein, matchVoiceCommand } from '@/services/voiceCommandRegistry'
@@ -13,26 +13,36 @@ import type { VoiceCommandDef } from '@/services/voiceCommandRegistry'
 // Fixture: minimal command set for matching tests
 // ---------------------------------------------------------------------------
 
-function makeCmd(
-    id: string,
-    aliases: string[],
-    keywords: string,
-): VoiceCommandDef {
-    return {
-        id,
-        group: 'test',
-        label: id,
-        aliases,
-        keywords,
-        action: vi.fn(),
-    }
-}
+const makeCmd = (id: string, aliases: string[], keywords: string): VoiceCommandDef => ({
+    id,
+    group: 'test',
+    label: id,
+    aliases,
+    keywords,
+    action: vi.fn(),
+})
 
-const navPlantsCmd = makeCmd('nav.plants', ['go to plants', 'zeige pflanzen'], 'navigate plants view')
-const navStrainsCmd = makeCmd('nav.strains', ['go to strains', 'zeige sorten'], 'navigate strains library')
+const navPlantsCmd = makeCmd(
+    'nav.plants',
+    ['go to plants', 'zeige pflanzen'],
+    'navigate plants view',
+)
+const navStrainsCmd = makeCmd(
+    'nav.strains',
+    ['go to strains', 'zeige sorten'],
+    'navigate strains library',
+)
 const waterAllCmd = makeCmd('water.all', ['water all', 'alle giessen'], 'water all plants watering')
-const searchCmd = makeCmd('strain.search', ['search for', 'suche nach'], 'search strain find lookup')
-const ecoCmd = makeCmd('eco.toggle', ['enable eco mode', 'eco modus'], 'eco mode battery save toggle')
+const searchCmd = makeCmd(
+    'strain.search',
+    ['search for', 'suche nach'],
+    'search strain find lookup',
+)
+const ecoCmd = makeCmd(
+    'eco.toggle',
+    ['enable eco mode', 'eco modus'],
+    'eco mode battery save toggle',
+)
 
 const TEST_COMMANDS: VoiceCommandDef[] = [
     navPlantsCmd,

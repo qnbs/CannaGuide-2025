@@ -105,27 +105,42 @@ export const shouldRouteLocally = (): boolean => {
  * per-provider data-transmission consent (GDPR Art. 6/7). Denial routes
  * to the local fallback without making any network request.
  */
-export async function withLocalFallback<T>(
-    cloudFn: () => Promise<T>,
-    localFallback: () => T | Promise<T>,
-): Promise<T> {
-    if (_aiMode === 'local' || _aiMode === 'eco' || isLocalOnlyMode()) return localFallback()
-
-    // --- Per-provider consent gate (GDPR Art. 6/7) ---
+/**
+ * Per-provider data-transmission consent (GDPR Art. 6/7).
+ *
+ * Resolves false when the user declines, so the caller routes to the local
+ * fallback without ever touching the network. Consent is persisted per provider,
+ * so the prompt appears once.
+ */
+const ensureProviderConsent = async (): Promise<boolean> => {
     const { aiProviderService } = await import('@/services/aiProviderService')
     const activeProvider = aiProviderService.getActiveProviderId()
-    if (!aiConsentService.hasProviderConsent(activeProvider)) {
-        const { useUIStore } = await import('@/stores/useUIStore')
-        const granted = await useUIStore.getState().requestProviderConsent(activeProvider)
-        if (!granted) {
+    if (aiConsentService.hasProviderConsent(activeProvider)) return true
+
+    const { useUIStore } = await import('@/stores/useUIStore')
+    const granted = await useUIStore.getState().requestProviderConsent(activeProvider)
+    if (!granted) return false
+
+    aiConsentService.grantProviderConsent(activeProvider)
+    return true
+}
+
+export const withLocalFallback = async <T>(
+    cloudFn: () => Promise<T>,
+    localFallback: () => T | Promise<T>,
+): Promise<T> => {
+    if (_aiMode === 'local' || _aiMode === 'eco' || isLocalOnlyMode()) return localFallback()
+
+    try {
+        // The consent gate sits inside the try deliberately. A failing dynamic
+        // import, a throwing provider lookup or a rejected prompt must land in the
+        // local fallback like any other failure -- otherwise the guarantee this
+        // function documents ("the user always gets a response") does not hold.
+        if (!(await ensureProviderConsent())) {
             console.debug('[AI] Provider consent denied, falling back to local AI.')
             return localFallback()
         }
-        aiConsentService.grantProviderConsent(activeProvider)
-    }
-    // -------------------------------------------------
 
-    try {
         return await cloudFn()
     } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)

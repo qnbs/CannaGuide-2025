@@ -39,7 +39,7 @@ vi.mock('@/services/aiProviderService', () => ({
 vi.mock('@/stores/useUIStore', () => ({
     useUIStore: {
         getState: () => ({
-            requestProviderConsent: vi.fn(async () => true),
+            requestProviderConsent: vi.fn(() => Promise.resolve(true)),
             addNotification: vi.fn(),
         }),
     },

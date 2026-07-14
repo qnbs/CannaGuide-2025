@@ -13,7 +13,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 
 const mockHasProviderConsent = vi.hoisted(() => vi.fn(() => false))
 const mockGrantProviderConsent = vi.hoisted(() => vi.fn())
-const mockRequestProviderConsent = vi.hoisted(() => vi.fn(async () => false))
+const mockRequestProviderConsent = vi.hoisted(() => vi.fn(() => Promise.resolve(false)))
 const mockGetActiveProviderId = vi.hoisted(() =>
     vi.fn((): import('@cannaguide/ai-core').AiProvider => 'gemini'),
 )
@@ -62,7 +62,7 @@ vi.mock('@/services/sentryService', () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function importWithLocalFallback() {
+const importWithLocalFallback = async () => {
     const mod = await import('@/services/localRoutingService')
     return mod.withLocalFallback
 }
@@ -74,8 +74,8 @@ async function importWithLocalFallback() {
 describe('withLocalFallback — per-provider consent gate', () => {
     const cloudResult = 'cloud-response'
     const localResult = 'local-response'
-    const cloudFn = vi.fn(async () => cloudResult)
-    const localFn = vi.fn(async () => localResult)
+    const cloudFn = vi.fn(() => Promise.resolve(cloudResult))
+    const localFn = vi.fn(() => Promise.resolve(localResult))
 
     beforeEach(() => {
         vi.resetModules()
@@ -89,6 +89,32 @@ describe('withLocalFallback — per-provider consent gate', () => {
 
     afterEach(() => {
         vi.restoreAllMocks()
+    })
+
+    it('falls back to local AI when the consent gate itself throws', async () => {
+        // The gate does I/O: it dynamically imports two modules and awaits a
+        // prompt. If any of that rejects, the documented guarantee -- the user
+        // always gets a response -- must still hold.
+        mockHasProviderConsent.mockReturnValue(false)
+        mockRequestProviderConsent.mockRejectedValue(new Error('store unavailable'))
+
+        const withLocalFallback = await importWithLocalFallback()
+        await expect(withLocalFallback(cloudFn, localFn)).resolves.toBe(localResult)
+
+        expect(cloudFn).not.toHaveBeenCalled()
+        expect(localFn).toHaveBeenCalledOnce()
+    })
+
+    it('falls back to local AI when the provider lookup throws', async () => {
+        mockGetActiveProviderId.mockImplementation(() => {
+            throw new Error('provider registry unavailable')
+        })
+
+        const withLocalFallback = await importWithLocalFallback()
+        await expect(withLocalFallback(cloudFn, localFn)).resolves.toBe(localResult)
+
+        expect(cloudFn).not.toHaveBeenCalled()
+        expect(localFn).toHaveBeenCalledOnce()
     })
 
     it('falls back to local AI when user denies consent', async () => {

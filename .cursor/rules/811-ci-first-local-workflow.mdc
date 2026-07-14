@@ -4,39 +4,40 @@ globs: *.*
 alwaysApply: false
 ---
 
-# Workflow: CI-first, leicht lokal
+# Workflow: CI-first, light locally
 
-- Token-Footprint-Ziel: unter 200 Zeilen.
+- Token footprint target: under 200 lines.
 - Last Reviewed: 2026-07-14
 
-- **Lokal bevorzugt:** `pnpm verify` / `verify:test` / `verify:lint` (gescopt via
-  `scripts/scoped-verify.mjs`) und gezielte `vitest run <pfade>`.
-- **Niemals** ein blankes `turbo run <task>` und nie `pnpm typecheck|test|lint` ohne
-  `--filter`. Gemessen auf der Zielmaschine (Dual-Core, ~4 GB): `tsc` auf `apps/web` allein
-  **263 s / 1,5 GB RSS**, ein volles `turbo run typecheck` **6-9 min** mit echtem OOM-Risiko;
-  gescopt **~40 s**.
-- **Kein `--` vor einem Vitest-Spec:** `test:run -- Foo` wird zu `vitest run -- Foo`, der
-  Filter verfällt und die **gesamte** Suite läuft (>6 min, 635 MB RSS). Richtig:
-  `pnpm --filter @cannaguide/web test:run Foo`. Gescopt ist ein Lauf nur, wenn die
-  Zusammenfassung `Test Files 1 passed (1)` zeigt.
-- **Schwere Suite:** GitHub Actions (CI): `pnpm run test:e2e`, volle Coverage, Lint-Full,
-  Stryker, Lighthouse. Nicht lokal.
-- **`pre-push` / Hooks: ausführen, nicht umgehen.** Die Hooks sind gestaffelt und bezahlbar
-  (`pre-commit` = lint-staged, Sekunden; `pre-push` = gescopter Typecheck + lint-scopes +
-  file-budget, unter einer Minute). `--no-verify` ist **verboten** -- es war der Bypass, durch
-  den ein Format- und ein File-Budget-Fehler bis in CI durchgerutscht sind. Muss im Notfall
-  doch umgangen werden: die Checks vorher von Hand fahren und den Grund im Commit-Body nennen.
+- **Prefer locally:** `pnpm verify` / `verify:test` / `verify:lint` (scoped via
+  `scripts/scoped-verify.mjs`) and targeted `vitest run <paths>`.
+- **Never** run a bare `turbo run <task>`, and never run `pnpm typecheck|test|lint` without
+  `--filter`. Measured on the target machine (dual-core, ~4 GB): `tsc` on `apps/web` alone
+  takes **263 s / 1.5 GB RSS**; a full `turbo run typecheck` takes **6-9 min** with a real
+  OOM risk; the scoped path takes **~40 s**.
+- **No `--` before a vitest spec:** `test:run -- Foo` becomes `vitest run -- Foo`, the filter
+  is swallowed and the **entire** suite runs (>6 min, 635 MB RSS). Correct:
+  `pnpm --filter @cannaguide/web test:run Foo`. A run is only scoped if the summary reads
+  `Test Files 1 passed (1)`.
+- **Heavy suites belong in CI:** `pnpm run test:e2e`, full coverage, lint-full, Stryker,
+  Lighthouse. Not locally.
+- **Hooks: run them, do not bypass them.** They are staged and affordable -- `pre-commit` is
+  commit identity + lint-staged (seconds); `pre-push` is a scoped typecheck +
+  `lint-scopes --changed` + file budget (a full push measured at 16 s). `--no-verify` is
+  **banned**: it is the bypass that let a formatting failure and a file-budget failure reach
+  CI. If an emergency truly forces it, run the equivalent checks by hand first and state the
+  reason in the commit body.
 
 <example>
-Kleiner Bugfix in einer Datei → `pnpm verify`, gezielt `vitest run services/foo.test.ts`,
-Commit und Push **mit** Hooks; E2E dem CI überlassen.
+Small bugfix in one file -> `pnpm verify`, targeted `vitest run services/foo.test.ts`, then
+commit and push **with** the hooks; leave E2E to CI.
 </example>
 
 <example type="invalid">
-`git push --no-verify`, weil der Hook "zu lange dauert" -- der Hook läuft gescopt unter einer
-Minute; wer ihn überspringt, schickt ungeprüften Code in CI.
+`git push --no-verify` because the hook "takes too long" -- the hook runs scoped in seconds;
+skipping it ships unchecked code to CI.
 </example>
 
 <example type="invalid">
-Nach jedem Commit lokal alle Shards Playwright auf schwacher Hardware ohne Not.
+Running all Playwright shards locally after every commit on weak hardware without cause.
 </example>

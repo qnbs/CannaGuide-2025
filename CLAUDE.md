@@ -64,22 +64,28 @@ branch that touched only docs**. Both are now scoped to what the branch actually
 a push that touches nothing in a strict scope skips that step in 0.2 s. CI still runs the
 full matrix and the full strict-scope lint, so nothing is lost.
 
-If you ever must bypass in an emergency, run the equivalent checks by hand **before** pushing
-and say so in the commit body:
+If you ever must bypass in an emergency, run **exactly what the hook runs** -- the scoped
+commands, not the expensive ones this repo exists to avoid -- and say so in the commit body:
 
 ```bash
-pnpm --filter @cannaguide/web typecheck
-node ./scripts/lint-scopes.mjs
+node ./scripts/scoped-verify.mjs typecheck     # every touched workspace, not just web
+node ./scripts/lint-scopes.mjs --changed
 pnpm run check:file-budget
-npx prettier --check $(git status --porcelain | awk '{print $2}')
+npx prettier --check $(git status --porcelain | awk '{print $2}') --ignore-unknown
 pnpm run check:i18n
 ```
 
 ## Pull requests
 
 - **Keep every PR under ~100 changed files.** CodeRabbit and similar bots silently skip
-  inline review on larger PRs, so the review loop never starts. Check with
-  `git diff --name-only main...HEAD | wc -l` before pushing; split if over.
+  inline review on larger PRs, so the review loop never starts. Count against the
+  merge-base with the **remote** branch -- a local `main` can be stale or divergent, which
+  is the same trap the verify scripts already avoid:
+
+    ```bash
+    git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
+    ```
+
 - **Work the review loop until it is quiescent:** fetch unresolved threads, fix or refute
   each with evidence, reply citing the commit, resolve, push, re-trigger the bot. Repeat
   until a fresh review yields **0 new comments and 0 unresolved threads**. A fix routinely

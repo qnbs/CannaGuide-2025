@@ -148,8 +148,12 @@ are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disabl
 so the rule passes honestly.
 
 **Keep every PR under ~100 changed files.** Review bots silently skip inline comments on
-larger PRs, so the loop never starts. Check `git diff --name-only main...HEAD | wc -l` before
-pushing and split if needed.
+larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch
+— a local `main` may be stale or divergent, the same trap the verify scripts already avoid:
+
+```bash
+git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
+```
 
 ### Git workflow (Cloud Agent)
 

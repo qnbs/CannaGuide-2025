@@ -251,32 +251,31 @@ Alle drei sind reine Dev-Toolchain-Änderungen: **kein Runtime-Bundle-Impact**, 
 
 ---
 
-## 8. tsgo / TypeScript-native (`@typescript/native-preview`) — gemessen und verworfen
+## 8. tsgo / TypeScript-native (`@typescript/native-preview`) -- measured and rejected
 
-**Gemessen am 2026-07-14** auf der Zielmaschine (Dual-Core, ~4 GB RAM), jeweils gegen
+**Measured 2026-07-14** on the target machine (dual-core, ~4 GB RAM), each run against
 `apps/web`:
 
-| Werkzeug                                            | Wandzeit  | max RSS           |
-| --------------------------------------------------- | --------- | ----------------- |
-| `tsc --noEmit`                                      | 263 s     | 1,56 GB           |
-| `tsgo --noEmit` (warmer npx-Cache)                  | 171 s     | **1,72 GB**       |
-| `pnpm --filter @cannaguide/web typecheck` (gescopt) | **~40 s** | deutlich darunter |
+| Tool                                               | Wall time | Max RSS     |
+| -------------------------------------------------- | --------- | ----------- |
+| `tsc --noEmit`                                     | 263 s     | 1.56 GB     |
+| `tsgo --noEmit` (warm npx cache)                   | 171 s     | **1.72 GB** |
+| `pnpm --filter @cannaguide/web typecheck` (scoped) | **~40 s** | far lower   |
 
-**Ergebnis: nicht übernehmen.** Drei Gründe:
+**Verdict: do not adopt.** Three reasons:
 
-1. **Es löst den falschen Engpass.** Unsere Grenze ist der Arbeitsspeicher, nicht die CPU —
-   und tsgo braucht **mehr** RAM als `tsc`. Auf einer 4-GB-Maschine verschärft das genau das
-   Problem, das wir lösen wollen.
-2. **Der Gewinn ist 1,5×, nicht die beworbenen 5–10×** — auf dieser Codebase zu wenig, um das
-   Risiko zu rechtfertigen.
-3. **Es weicht von `tsc` ab.** tsgo meldet `TS2430` in `services/webBluetoothSensorService.ts`
-   ("Interface 'Navigator' incorrectly extends 'NavigatorGPU'"), das `tsc` **nicht** meldet.
-   Ein Gate, das auf etwas rot wird, das niemand beheben kann, wird abgeschaltet — und genau
-   so ist dieses Repo zu Hooks gekommen, die per `--no-verify` umgangen wurden.
+1. **It does not fix the actual constraint.** The bottleneck here is memory, not CPU -- and
+   tsgo uses **more** RAM than `tsc`. On a 4 GB machine that makes the very problem worse
+   that we are trying to solve.
+2. **The speedup is 1.5x, not the advertised 5-10x** on this codebase -- nowhere near enough
+   to justify the risk.
+3. **It diverges from `tsc`.** tsgo reports `TS2430` in `services/webBluetoothSensorService.ts`
+   ("Interface 'Navigator' incorrectly extends 'NavigatorGPU'") that `tsc` does **not**. A gate
+   that goes red on something nobody can fix gets switched off -- which is exactly how this
+   repo ended up with git hooks that everyone bypassed via `--no-verify`.
 
-Der bestehende **gescopte, inkrementelle** Typecheck (`scripts/typecheck-filter.mjs` über
-`scripts/scoped-verify.mjs`) schlägt beide um Längen und ist das, was der `pre-push`-Hook
-benutzt.
+The existing **scoped, incremental** typecheck (`scripts/typecheck-filter.mjs` via
+`scripts/scoped-verify.mjs`) beats both by a wide margin and is what the `pre-push` hook uses.
 
-**Neu bewerten,** wenn tsgo stabil ist _und_ sein Speicherprofil unter das von `tsc` fällt.
-Nicht vorher.
+**Re-evaluate** only when tsgo is stable _and_ its memory profile drops below `tsc`'s. Not
+before.

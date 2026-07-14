@@ -328,11 +328,13 @@ a real OOM risk; the scoped path = **~40 s**.
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
 - **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. The hooks are staged so each step is affordable -- `pre-commit` is commit identity + lint-staged (seconds), `pre-push` is a **scoped** typecheck + lint-scopes + file budget (under a minute) -- so there is no longer a "the hook takes too long" excuse. There used to be, and the bypass it invited is what let a formatting failure and a file-budget failure reach CI. If an emergency truly forces `--no-verify`, run the equivalent checks by hand **before** pushing and document the reason in the commit body:
 
+    Run **exactly what the hook runs** -- the scoped commands, not the expensive ones this repo exists to avoid:
+
     ```bash
-    pnpm --filter @cannaguide/web typecheck
-    node ./scripts/lint-scopes.mjs
+    node ./scripts/scoped-verify.mjs typecheck     # every touched workspace, not just web
+    node ./scripts/lint-scopes.mjs --changed
     pnpm run check:file-budget
-    npx prettier --check $(git status --porcelain | awk '{print $2}')
+    npx prettier --check $(git status --porcelain | awk '{print $2}') --ignore-unknown
     pnpm run check:i18n
     ```
 

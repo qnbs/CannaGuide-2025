@@ -51,7 +51,3 @@ overrides:
     markdown-it: '>=14.2.0'
     js-yaml@3: '>=3.15.0'
     js-yaml@4: '>=4.2.0'
-
-auditConfig:
-    ignoreCves:
-        - CVE-2026-41242

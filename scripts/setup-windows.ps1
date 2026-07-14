@@ -15,7 +15,7 @@ if (-not (Test-Command 'node')) {
 if (-not (Test-Command 'pnpm')) {
     Write-Host 'Enabling Corepack for pnpm...'
     corepack enable
-    corepack prepare pnpm@10.33.0 --activate
+    corepack prepare pnpm@11.13.0 --activate
 }
 
 if (-not (Test-Command 'uv')) {

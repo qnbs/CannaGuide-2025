@@ -65,7 +65,7 @@ EOF
 fi
 
 corepack enable
-corepack prepare pnpm@10.33.0 --activate 2>/dev/null || true
+corepack prepare pnpm@11.13.0 --activate 2>/dev/null || true
 
 node "${REPO_ROOT}/scripts/check-pnpm-lockfile.mjs"
 

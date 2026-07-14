@@ -43,7 +43,7 @@ if (major >= 24) {
 
 const pnpm = run('pnpm', ['--version'])
 if (pnpm.status === 0) ok(`pnpm ${pnpm.stdout.trim()}`)
-else bad('pnpm not found — corepack enable && corepack prepare pnpm@10.33.0 --activate')
+else bad('pnpm not found — corepack enable && corepack prepare pnpm@11.13.0 --activate')
 
 const git = run('git', ['--version'])
 if (git.status === 0) ok(git.stdout.trim())

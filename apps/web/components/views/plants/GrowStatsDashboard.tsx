@@ -190,11 +190,6 @@ const GrowStatsDashboardComponent: React.FC = () => {
                                 value: prediction.heuristicDryWeight.toFixed(1),
                             })}
                         </span>
-                        {prediction.usedTensorflowModel ? (
-                            <span>{t('plantsView.growStats.modelReady')}</span>
-                        ) : (
-                            <span>{t('plantsView.growStats.modelFallback')}</span>
-                        )}
                     </div>
                 </div>
             )}

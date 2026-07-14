@@ -616,17 +616,14 @@ export const plantsView = {
     growStats: {
         title: 'Tableau de Bord des Statistiques de Culture',
         yieldForecast: 'Prevision de rendement',
-        mlForecast: 'Confiance ML',
+        mlForecast: 'Confiance de la prevision',
         confidence: 'confiance',
         heuristicFallback:
             "Prevision heuristique jusqu'a ce que suffisamment de donnees historiques soient disponibles.",
-        modelTraining: 'Entrainement du modele local TensorFlow.js...',
-        modelIdle:
-            "Le modele est pret a l'emploi lorsqu'un historique de recoltes suffisant existe.",
+        modelTraining: 'Calcul de la prevision...',
+        modelIdle: 'La confiance augmente a mesure que vous enregistrez des recoltes.',
         trainingSamples: '{{count}} echantillons historiques',
         heuristicBaseline: 'Ligne de base {{value}} g',
-        modelReady: 'Modele local actif',
-        modelFallback: 'Repli heuristique actif',
         costTracker: 'Suivi des couts / jour',
         trackedTotal: 'Total suivi',
         timeline: 'Chronologie',

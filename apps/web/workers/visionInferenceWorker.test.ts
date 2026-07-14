@@ -13,6 +13,22 @@ import {
 } from '@/workers/visionInferenceWorker'
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * ImageNet-normalised white pixel: (1 - mean) / std.
+ *   R: (1-0.485)/0.229 ~ 2.25   G: (1-0.456)/0.224 ~ 2.43   B: (1-0.406)/0.225 ~ 2.64
+ * Every channel of any pixel in [0, 255] therefore lands inside [-3, 3].
+ *
+ * Tested for validity rather than against a running min/max: NaN loses every
+ * comparison, so a min/max reduction would leave the bounds untouched and let an
+ * all-NaN tensor pass.
+ */
+const isNormalisedPixel = (value: number | undefined): boolean =>
+    value !== undefined && Number.isFinite(value) && value >= -3 && value <= 3
+
+// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
@@ -91,14 +107,20 @@ describe('visionInferenceWorker utilities', () => {
             expect(tensor).toBeInstanceOf(Float32Array)
             expect(tensor.length).toBe(3 * SIZE * SIZE)
 
-            // ImageNet-normalised white pixel: (1 - mean) / std.
-            // R: (1-0.485)/0.229 ~ 2.25   G: (1-0.456)/0.224 ~ 2.43   B: (1-0.406)/0.225 ~ 2.64
-            // All should be within [-3, 3] for any pixel value [0, 255].
+            // Scan for the first offending element and assert once: an expect()
+            // per element is ~301k matcher invocations and alone costs ~37s,
+            // which pushes the test past the default 30s timeout.
+            let badIndex = -1
             for (let i = 0; i < tensor.length; i++) {
-                const v = tensor[i] ?? 0
-                expect(v).toBeGreaterThanOrEqual(-3)
-                expect(v).toBeLessThanOrEqual(3)
+                if (!isNormalisedPixel(tensor[i])) {
+                    badIndex = i
+                    break
+                }
             }
+            expect(
+                badIndex,
+                `tensor holds a non-finite or out-of-range value at index ${badIndex}`,
+            ).toBe(-1)
         })
     })
 

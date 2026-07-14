@@ -12,10 +12,28 @@ if (-not (Test-Command 'node')) {
     Write-Warning 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows.'
 }
 
-if (-not (Test-Command 'pnpm')) {
-    Write-Host 'Enabling Corepack for pnpm...'
+# Presence alone is not enough: an older globally installed pnpm would satisfy
+# Test-Command, skip corepack, and then run the install with the wrong version.
+$requiredPnpm = '11.13.0'
+$currentPnpm = if (Test-Command 'pnpm') { (pnpm --version 2>$null) } else { $null }
+if ($currentPnpm -ne $requiredPnpm) {
+    if ($currentPnpm) {
+        Write-Host "pnpm $currentPnpm found, but $requiredPnpm is required. Activating via Corepack..."
+    } else {
+        Write-Host 'Enabling Corepack for pnpm...'
+    }
+    # Node 25 dropped the bundled Corepack, so it has to come from npm there.
+    if (-not (Test-Command 'corepack')) {
+        Write-Host 'Corepack not bundled with this Node; installing from npm...'
+        npm install -g corepack@latest
+    }
     corepack enable
-    corepack prepare pnpm@10.33.0 --activate
+    corepack prepare "pnpm@$requiredPnpm" --activate
+
+    $activePnpm = (pnpm --version 2>$null)
+    if ($activePnpm -ne $requiredPnpm) {
+        throw "pnpm $requiredPnpm required, but '$activePnpm' is active after Corepack activation."
+    }
 }
 
 if (-not (Test-Command 'uv')) {

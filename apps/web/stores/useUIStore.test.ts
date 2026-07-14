@@ -241,4 +241,30 @@ describe('useUIStore', () => {
             expect(useUIStore.getState().activeView).toBe(View.Plants)
         })
     })
+    describe('requestProviderConsent', () => {
+        it('joins the open prompt instead of replacing it when two calls race', async () => {
+            const store = useUIStore.getState()
+
+            // Two AI calls reach the consent gate before the user has answered.
+            const first = store.requestProviderConsent('gemini')
+            const second = useUIStore.getState().requestProviderConsent('gemini')
+
+            // The user answers once.
+            useUIStore.getState().resolveProviderConsent(true)
+
+            // Both callers must settle. Before the dedupe, the second request
+            // overwrote the first one's resolver and `first` hung forever.
+            await expect(Promise.all([first, second])).resolves.toEqual([true, true])
+            expect(useUIStore.getState().providerConsentRequest).toBeNull()
+        })
+
+        it('propagates a denial to every waiting caller', async () => {
+            const first = useUIStore.getState().requestProviderConsent('gemini')
+            const second = useUIStore.getState().requestProviderConsent('gemini')
+
+            useUIStore.getState().resolveProviderConsent(false)
+
+            await expect(Promise.all([first, second])).resolves.toEqual([false, false])
+        })
+    })
 })

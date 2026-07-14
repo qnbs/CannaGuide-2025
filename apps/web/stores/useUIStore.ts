@@ -66,6 +66,8 @@ export interface UIState {
     providerConsentRequest: {
         provider: AiProvider
         resolve: (granted: boolean) => void
+        /** Handed back to any further caller that arrives while the prompt is open. */
+        promise: Promise<boolean>
     } | null
 }
 
@@ -361,10 +363,28 @@ export const useUIStore = create<UIState & UIActions>()(
                     syncState: { ...state.syncState, pendingRetries: count },
                 })),
 
-            requestProviderConsent: (provider) =>
-                new Promise<boolean>((resolve) => {
-                    set({ providerConsentRequest: { provider, resolve } })
-                }),
+            requestProviderConsent: (provider) => {
+                const pending = useUIStore.getState().providerConsentRequest
+                if (pending) {
+                    // Two AI calls can reach the gate before either is answered.
+                    // Overwriting the open request would drop the first caller's
+                    // resolver, leaving its promise pending forever and its AI call
+                    // stuck loading. Join the open prompt instead of replacing it.
+                    if (pending.provider === provider) return pending.promise
+                    // A different provider cannot happen today -- one provider is
+                    // active at a time -- but queue rather than clobber if it ever can.
+                    return pending.promise.then(() =>
+                        useUIStore.getState().requestProviderConsent(provider),
+                    )
+                }
+
+                let resolve!: (granted: boolean) => void
+                const promise = new Promise<boolean>((res) => {
+                    resolve = res
+                })
+                set({ providerConsentRequest: { provider, resolve, promise } })
+                return promise
+            },
 
             resolveProviderConsent: (granted) => {
                 const { providerConsentRequest } = useUIStore.getState()

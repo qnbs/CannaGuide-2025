@@ -66,6 +66,48 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 | Doc metrics          | `pnpm run docs:sync-metrics` | Sync Vitest counts in README / ARCHITECTURE              |
 | Gate inventory       | `docs/DEVOPS-GATES.md`       | CI merge gate vs advisory jobs                           |
 
+### Local verification on low-end hardware (BINDING)
+
+The maintainer's machine is dual-core with ~4 GB RAM, and **memory is the binding constraint,
+not CPU**. Measured against `apps/web` (TS 6.0.3; method in
+[`docs/toolchain-update.md`](docs/toolchain-update.md)):
+
+| run                                              | wall time | max RSS     |
+| ------------------------------------------------ | --------- | ----------- |
+| `tsc --noEmit`, no `incremental` (the old state) | 321-341 s | **1.54 GB** |
+| `tsc --noEmit`, `incremental`, warm              | **91 s**  | **0.85 GB** |
+
+With ~1.5 GB free in normal use, a 1.5 GB peak was an OOM waiting to happen — that, not the
+wall time, is what kept crashing sessions. `apps/web` now sets `incremental`. An unfiltered
+`turbo run typecheck` builds five tasks on top of this and takes **6-9 minutes**.
+
+- **Never** run a bare `turbo run <task>`, and never run `pnpm typecheck` / `test` / `lint`
+  without `--filter`. Use `pnpm verify` / `verify:test` / `verify:lint`
+  (`scripts/scoped-verify.mjs`), which derive the affected workspaces from the git diff and
+  run with `--concurrency=1`.
+- **Do not run E2E, Playwright, Stryker or Lighthouse locally.** That is CI's job.
+- **One heavy task at a time.** Check `free -m` first; below ~500 MB available, stop rather
+  than run into the OOM.
+
+#### Three traps that look like the safe command
+
+1. **`--` before a vitest spec swallows the filter.** `test:run -- Foo` becomes
+   `vitest run -- Foo`, which runs the **entire suite** (>6 min, 635 MB RSS). Omit the `--`:
+   `pnpm --filter @cannaguide/web test:run Foo`. A run is only scoped if the summary reads
+   `Test Files 1 passed (1)`.
+2. **A bare `pnpm install` re-resolves carets and trips `minimumReleaseAge`,** failing CI in
+   the install step on any package published under 24 h ago. Install only when
+   `pnpm-lock.yaml` actually changed, with `--frozen-lockfile`.
+3. **`prettier` over `git diff --name-only` misses untracked files,** so a brand-new file
+   skips the formatter and fails the docs gate. Format from `git status --porcelain`.
+
+#### tsgo: measured and rejected
+
+`@typescript/native-preview` measured **171 s / 1.72 GB** — slower _and_ heavier than the
+incremental `tsc` above (91 s / 0.85 GB), so it loses on both axes. It also reports a `TS2430`
+that `tsc` does not, and a gate that goes red on an unfixable error gets switched off. Do not
+adopt it. See [`docs/toolchain-update.md`](docs/toolchain-update.md).
+
 **React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
 
 **Vitest mock isolation:** Suites that mock shared modules (`@/services/sentryService`, `@/services/local-ai`, etc.) should use `vi.hoisted()` for stable mock references and `vi.resetModules()` + dynamic `import()` in `beforeEach` when the module under test binds mocks at import time. Reference implementations: `services/aiResponseValidation.test.ts`, `services/growLogRagService.test.ts`. Residual sporadic full-suite noise in unrelated modules may still occur — run affected files in isolation to confirm regressions.
@@ -85,9 +127,42 @@ Cloud AI, GitHub Gist sync, Sentry, etc. are **BYOK** in app Settings or via loc
 - **AI disclaimers:** Every UI surface that renders AI-generated output (cloud or local: advice, diagnosis, vision/leaf scan, image generation, equipment/breeding recommendations, chat) MUST show the shared `AiDisclaimer` component (`apps/web/components/common/AiDisclaimer.tsx`). Use the `medical` prop for health/diagnosis-style surfaces. Do not inline a bespoke `t('ai.disclaimer')` string in new code — reuse the component so the notice stays consistent across all five locales.
 - **File-size budget:** Keep new/heavily-changed files within **200–700 LOC** (`pnpm run check:file-budget`). Split god-files into sub-components + hooks (views) or thematic modules (services) before merge.
 
+### Git hooks: run them, never bypass
+
+The hooks are staged so each step is affordable, and `--no-verify` is therefore **banned** for
+both commit and push. Bypassing is what let a formatting failure and a file-budget failure
+reach CI unnoticed.
+
+- `pre-commit`: commit-identity check + `lint-staged` (seconds).
+- `pre-push`: **scoped** typecheck + `lint-scopes --changed` + file budget.
+
+Both slow steps used to ignore the diff. `pre-push` deliberately does **not** call
+`turbo run typecheck` (6-9 min unfiltered) — it goes through `scripts/scoped-verify.mjs`.
+And `lint-scopes` used to lint every file under the strict scopes on every push: **measured
+at 7 min 34 s for a branch that touched only docs**. With `--changed` it lints only the files
+the branch touched and skips in 0.2 s when none fall in a strict scope. CI keeps the full
+strict-scope lint, so coverage is unchanged. A hook nobody can afford to run is a hook
+everybody bypasses.
+
 ### PR / review comments (Cloud Agent)
 
-When a PR has open review threads (CodeAnt, human, or bot): **resolve them in the same iteration** — fix the code, push, and re-run the relevant gates before summarizing. Do not leave valid review items for a follow-up unless the user explicitly defers them.
+When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): **resolve them in the
+same iteration** — fix the code, push, and re-run the relevant gates before summarizing. Do
+not leave valid review items for a follow-up unless the user explicitly defers them.
+
+**Loop until quiescent.** One pass is not enough: a fix routinely raises the next wave. After
+each push, re-trigger the bot, fetch unresolved threads again, and repeat until a fresh review
+yields **0 new comments and 0 unresolved threads**. Nitpicks and "outside diff range" comments
+are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor
+so the rule passes honestly.
+
+**Keep every PR under ~100 changed files.** Review bots silently skip inline comments on
+larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch
+— a local `main` may be stale or divergent, the same trap the verify scripts already avoid:
+
+```bash
+git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
+```
 
 ### Git workflow (Cloud Agent)
 

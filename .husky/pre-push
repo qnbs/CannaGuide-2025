@@ -1,13 +1,38 @@
 #!/bin/sh
 set -e
 
-# Lightweight pre-push gate: typecheck + lint scopes only.
-# Full test suite + build run as part of the dev workflow before
-# committing, so repeating them here is redundant.
+# The one real gate before code leaves the machine: typecheck, lint scopes,
+# file budget. Every step is scoped to what the branch actually touched, because
+# a gate that costs minutes is a gate people bypass with --no-verify -- and then
+# nothing is checked at all.
+#
+# Both slow steps used to ignore the diff entirely:
+#
+#   - typecheck ran `turbo run typecheck` unfiltered: all five tasks (ai-core
+#     build + typecheck, ui build + typecheck, web typecheck), 6-9 minutes cold
+#     and a real OOM risk on the dual-core / ~4 GB machine this repo is developed
+#     on. It is also what CLAUDE.md forbids ("never run a bare turbo run"). It now
+#     goes through scripts/scoped-verify.mjs, and apps/web finally sets
+#     `incremental`, which drops a warm typecheck from 1.54 GB to 0.85 GB peak --
+#     the memory, not the wall clock, is what was killing sessions.
+#
+#   - lint-scopes linted every file under the strict scopes (hooks, components/
+#     common, services, stores) on every push -- measured at ~7 minutes for a
+#     branch that touched only docs. It now takes --changed.
+#
+# Coverage is not lost: CI still runs the full matrix across every workspace and
+# the full strict-scope lint. This gate exists to catch what CI would reject,
+# before the push, not to duplicate CI.
+#
 # Skip with: git push --no-verify (emergency only).
 
-echo "[pre-push] Running typecheck + lint scopes + file budget..."
-pnpm exec turbo run typecheck
-node ./scripts/lint-scopes.mjs
+echo "[pre-push] 1/3 typecheck (scoped to touched workspaces)..."
+node ./scripts/scoped-verify.mjs typecheck
+
+echo "[pre-push] 2/3 lint scopes (changed files only)..."
+node ./scripts/lint-scopes.mjs --changed
+
+echo "[pre-push] 3/3 file budget..."
 pnpm run check:file-budget
+
 echo "[pre-push] All gates passed."

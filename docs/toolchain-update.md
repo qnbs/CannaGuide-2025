@@ -248,3 +248,61 @@ Alle drei sind reine Dev-Toolchain-Änderungen: **kein Runtime-Bundle-Impact**, 
 - **Node 26 LTS-Status** — vor jedem Wechsel gegen den offiziellen Release-Plan verifizieren, nicht aus dem Bauch.
 - **`strictPeerDependencies: false` in `pnpm-workspace.yaml`** (seit pnpm 11; `.npmrc` hält nur noch `ignore-scripts=false`) — macht Peer-Konflikte still. Solange das gesetzt ist, muss jeder Major-Bump im Lint-/TS-Stack **manuell** gegen die Peer-Ranges geprüft werden (wie in §3). Mittelfristig erwägen, es auf `true` zu setzen und die dann sichtbaren Konflikte einmalig aufzuräumen — das ist die eigentliche strukturelle Schwachstelle.
 - **`shamefullyHoist: true`** — verdeckt weiterhin nicht deklarierte Imports. Die drei bekannten sind jetzt deklariert, aber nur `tsc` hat sie aufgedeckt; rein zur Laufzeit genutzte Phantom-Deps (dynamische Imports ohne Typbezug) würden weiterhin unbemerkt bleiben. Ein späteres Abschalten legt sie offen — eigener PR, eigene Fehlerfläche.
+
+---
+
+## 8. Typecheck cost on the target machine -- measured
+
+### Method
+
+All figures below were measured on the maintainer's machine (dual-core, 3.8 GB RAM, Linux
+5.15) with `/usr/bin/time -f "%e s | max RSS %M KB"`, against `apps/web`. Single run per
+row, system otherwise idle apart from two idle VS Code `tsserver` processes (the normal
+working state). Tool versions: **TypeScript 6.0.3**, **Node 24.11.1**,
+**tsgo 7.0.0-dev.20260707.2**.
+
+Wall time on this box varies with memory pressure -- an identical `tsc` run measured 263 s
+with 1.0 GB free and 509 s with 0.9 GB free, because it swaps. Peak RSS is the stable and
+more meaningful number here: the machine has ~1.5 GB free in normal use, so a 1.5 GB peak is
+an OOM waiting to happen.
+
+### Results
+
+| Run                                                | Wall time | Max RSS     |
+| -------------------------------------------------- | --------- | ----------- |
+| `tsc --noEmit` (no `incremental`, the old default) | 321-341 s | **1.54 GB** |
+| `tsgo --noEmit` (warm npx cache)                   | 171 s     | **1.72 GB** |
+| `tsc --noEmit` **with `incremental`**, cold        | 341 s     | 1.54 GB     |
+| `tsc --noEmit` **with `incremental`**, warm        | **91 s**  | **0.85 GB** |
+
+### What this changed
+
+`apps/web/tsconfig.json` had **no `incremental`**, so every typecheck recomputed the whole
+program from scratch -- while `packages/ui` and `packages/ai-core` have had a build cache all
+along. Turning it on (`incremental: true` + `tsBuildInfoFile` under `node_modules/.cache/`,
+which is already git-ignored) cuts a warm run to **27% of the time and 45% of the peak
+memory**.
+
+The memory drop is the point. At a 1.5 GB peak with ~1.5 GB free, every typecheck was an OOM
+candidate; at 0.85 GB it is not. That is what made the `pre-push` hook usable again, and it
+is why the hook can afford to run a real typecheck instead of being bypassed.
+
+### tsgo: rejected
+
+`@typescript/native-preview` is **1.5x faster than plain `tsc` but uses more memory**
+(1.72 GB vs 1.54 GB) -- and memory, not CPU, is the constraint here, so it makes the actual
+problem worse. It is also **slower and heavier than incremental `tsc`** (171 s / 1.72 GB vs
+91 s / 0.85 GB), so it loses on both axes against the fix we shipped. On top of that it
+reports a `TS2430` in `services/webBluetoothSensorService.ts` that `tsc` does not: a gate
+that goes red on something nobody can fix is a gate that gets switched off -- exactly how this
+repo ended up with git hooks everyone bypassed via `--no-verify`.
+
+**Re-evaluate** only when tsgo is stable _and_ its peak RSS drops below incremental `tsc`.
+
+### Note on the scripts
+
+- `scripts/scoped-verify.mjs` does the **diff scoping**: it derives the affected workspaces
+  from the merge-base diff and runs `turbo run <task>` filtered to them, at
+  `--concurrency=1`. This is what `pre-push` calls.
+- `scripts/typecheck-filter.mjs` is only the `apps/web` wrapper around `tsc --noEmit` (it
+  filters the known upstream RTK `TS2719`). It does no scoping of its own.

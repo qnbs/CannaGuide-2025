@@ -249,15 +249,38 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 ### CI Gate Checklist (verify before every commit)
 
 1. **Typecheck clean:** `node ./scripts/typecheck-filter.mjs` -- 0 errors (TS2719 filtered)
-2. **Tests pass:** `pnpm --filter @cannaguide/web test:run` -- 0 failures
+2. **Tests pass:** `pnpm --filter @cannaguide/web test:run <spec>` -- 0 failures
 3. **Build succeeds:** `pnpm run build`
 4. **Lint zero warnings:** `eslint --max-warnings 0` on staged files (enforced by lint-staged)
 5. **Lint scopes pass:** `node ./scripts/lint-scopes.mjs` -- strict scopes enforced (hooks, components/common, services)
-6. **i18n complete:** new user-facing strings present in all 5 languages (EN/DE/ES/FR/NL)
-7. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
-8. **Pre-commit hook runs:** `.husky/pre-commit` executes typecheck + lint-staged automatically
-9. **Pre-push hook runs:** `.husky/pre-push` executes `gate:push` (typecheck + tests + lint scopes + build) -- full CI mirror
-10. **Typecheck after test file changes:** When creating or modifying `*.test.ts(x)` files, **always run typecheck immediately** (`pnpm --filter @cannaguide/web typecheck`) before running the tests. Test files are TypeScript and can introduce type errors.
+6. **File budget passes:** `pnpm run check:file-budget` -- 700-line hard cap on changed files
+7. **Formatting covers new files:** `npx prettier --check $(git status --porcelain | awk '{print $2}')` -- **not** `git diff --name-only`, which omits untracked files and lets a brand-new file fail the docs gate in CI
+8. **i18n complete:** new user-facing strings present in all 5 languages (EN/DE/ES/FR/NL); `pnpm run check:i18n`
+9. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
+10. **Hooks run:** `.husky/pre-commit` = commit identity + lint-staged (seconds); `.husky/pre-push` = **scoped** typecheck (`scripts/scoped-verify.mjs`) + lint-scopes + file budget (under a minute). Neither calls a bare `turbo run`.
+11. **Typecheck after test file changes:** When creating or modifying `*.test.ts(x)` files, **always run typecheck immediately** (`pnpm --filter @cannaguide/web typecheck`) before running the tests. Test files are TypeScript and can introduce type errors.
+
+### Low-end hardware: the commands that look safe but are not
+
+The maintainer's machine is dual-core with ~4 GB RAM, and **memory is the binding constraint,
+not CPU**. Measured against `apps/web` (TS 6.0.3; method in `docs/toolchain-update.md`):
+`tsc --noEmit` without `incremental` = **321-341 s / 1.54 GB RSS**; with `incremental`, warm =
+**91 s / 0.85 GB**. With ~1.5 GB free in normal use, the 1.5 GB peak was an OOM waiting to
+happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = **6-9 min**.
+
+- **Never** a bare `turbo run <task>`; never `pnpm typecheck|test|lint` without `--filter`.
+  Use `pnpm verify` / `verify:test` / `verify:lint`.
+- **No `--` before a vitest spec.** `test:run -- Foo` becomes `vitest run -- Foo`, the filter is
+  swallowed, and the **whole suite** runs (>6 min, 635 MB RSS). Use `test:run Foo`. A run is only
+  scoped if the summary says `Test Files 1 passed (1)`.
+- **No bare `pnpm install`.** It re-resolves carets and trips `minimumReleaseAge`, failing CI in
+  the install step on packages published under 24 h ago. Install only when `pnpm-lock.yaml`
+  changed, with `--frozen-lockfile`.
+- **No local E2E / Playwright / Stryker / Lighthouse.** That is CI's job.
+- **One heavy task at a time**; check `free -m` first and stop below ~500 MB available.
+- **Do not adopt `tsgo`** (`@typescript/native-preview`): measured **171 s / 1.72 GB** -- slower
+  **and** heavier than the incremental `tsc` we actually run (91 s / 0.85 GB), so it loses on both
+  axes. It also reports a `TS2430` that `tsc` does not.
 
 ### AI Integration
 
@@ -306,7 +329,17 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `pnpm run pr:push` (branch -> PR -> auto-merge).
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
-- **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. The pre-commit (typecheck + lint-staged) and pre-push (typecheck + lint-scopes) hooks exist to prevent broken code from reaching `main`. If an emergency forces `--no-verify`, the developer **must** manually run `pnpm --filter @cannaguide/web typecheck && pnpm run lint:scopes` before pushing and document the reason in the commit body.
+- **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. The hooks are staged so each step is affordable -- `pre-commit` is commit identity + lint-staged (seconds), `pre-push` is a **scoped** typecheck + lint-scopes + file budget (under a minute) -- so there is no longer a "the hook takes too long" excuse. There used to be, and the bypass it invited is what let a formatting failure and a file-budget failure reach CI. If an emergency truly forces `--no-verify`, run the equivalent checks by hand **before** pushing and document the reason in the commit body:
+
+    Run **exactly what the hook runs** -- the scoped commands, not the expensive ones this repo exists to avoid:
+
+    ```bash
+    node ./scripts/scoped-verify.mjs typecheck     # every touched workspace, not just web
+    node ./scripts/lint-scopes.mjs --changed
+    pnpm run check:file-budget
+    npx prettier --check $(git status --porcelain | awk '{print $2}') --ignore-unknown
+    pnpm run check:i18n
+    ```
 
 ### CI Monitoring Before Push (Mandatory)
 

@@ -1,23 +1,43 @@
 ---
-description: On local dev prefer fast checks and defer heavy E2E performance tests to cloud CI
+description: On local dev prefer fast scoped checks, run the git hooks, and defer heavy E2E/performance suites to cloud CI
 globs: *.*
 alwaysApply: false
 ---
 
-# Workflow: CI-first, leicht lokal
+# Workflow: CI-first, light locally
 
-- Token-Footprint-Ziel: unter 200 Zeilen.
-- Last Reviewed: 2026-05-06 (Codex)
+- Token footprint target: under 200 lines.
+- Last Reviewed: 2026-07-14
 
-- **Lokal bevorzugt:** gezielte Änderungen (`pnpm run lint:changed`), `pnpm run typecheck`, gezielte `vitest run <pfade>`, keine vollständigen E2E- oder Mutation-Läufe auf Low-End-Rechnern ohne Auftrag.
-- **Windows:** `pnpm run windows:doctor` vor MCP/CI-Arbeit; Vitest nutzt `pool: forks` in `vite.config.ts` (Thread-Pool-Timeouts vermeiden).
-- **Schwere Suite:** GitHub Actions (CI): `pnpm run test:e2e`, volle Coverage, Lint-Full wo nötig.
-- **`pre-push`/Hooks:** Wenn lokale Builds zu lange blockieren, dokumentierte Ausnahme: `git push --no-verify`, danach **CI grün verifizieren** (Badge/Runs), nicht blind mergen.
+- **Prefer locally:** `pnpm verify` / `verify:test` / `verify:lint` (scoped via
+  `scripts/scoped-verify.mjs`) and targeted `vitest run <paths>`.
+- **Never** run a bare `turbo run <task>`, and never run `pnpm typecheck|test|lint` without
+  `--filter`. On the target machine (dual-core, ~4 GB) **memory is the constraint, not CPU**:
+  `tsc` on `apps/web` peaks at **1.54 GB** without `incremental` and **0.85 GB** with it
+  (91 s warm). A full `turbo run typecheck` builds five tasks on top of that: **6-9 min**.
+- **No `--` before a vitest spec:** `test:run -- Foo` becomes `vitest run -- Foo`, the filter
+  is swallowed and the **entire** suite runs (>6 min, 635 MB RSS). Correct:
+  `pnpm --filter @cannaguide/web test:run Foo`. A run is only scoped if the summary reads
+  `Test Files 1 passed (1)`.
+- **Heavy suites belong in CI:** `pnpm run test:e2e`, full coverage, lint-full, Stryker,
+  Lighthouse. Not locally.
+- **Hooks: run them, do not bypass them.** They are staged and affordable -- `pre-commit` is
+  commit identity + lint-staged (seconds); `pre-push` is a scoped typecheck +
+  `lint-scopes --changed` + file budget (a full push measured at 16 s). `--no-verify` is
+  **banned**: it is the bypass that let a formatting failure and a file-budget failure reach
+  CI. If an emergency truly forces it, run the equivalent checks by hand first and state the
+  reason in the commit body.
 
 <example>
-Kleiner Bugfix in einer Datei → `pnpm run lint:changed`, gezielt `vitest run services/foo.test.ts`, Push; E2E dem CI überlassen.
+Small bugfix in one file -> `pnpm verify`, targeted `vitest run services/foo.test.ts`, then
+commit and push **with** the hooks; leave E2E to CI.
 </example>
 
 <example type="invalid">
-Nach jedem Commit lokal alle Shards Playwright auf schwacher Hardware ohne Not.
+`git push --no-verify` because the hook "takes too long" -- the hook runs scoped in seconds;
+skipping it ships unchecked code to CI.
+</example>
+
+<example type="invalid">
+Running all Playwright shards locally after every commit on weak hardware without cause.
 </example>

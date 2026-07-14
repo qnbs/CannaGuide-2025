@@ -76,6 +76,7 @@ export const settingsView = {
         providerConsentPrompt:
             'Estas a punto de enviar datos de plantas (incluyendo fotos) a {{provider}}. Das tu consentimiento?',
         providerConsentRemember: 'Recordar mi eleccion para este proveedor',
+        providerConsentDeny: 'Usar IA local en su lugar',
         providerDpaLink: 'Ver el Acuerdo de Procesamiento de Datos',
     },
     costTracking: {

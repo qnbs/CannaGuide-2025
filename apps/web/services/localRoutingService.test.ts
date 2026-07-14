@@ -22,6 +22,29 @@ vi.mock('@/services/geminiService', () => ({
     geminiService: { test: vi.fn() },
 }))
 
+// Consent gate mocks — pre-grant consent so existing routing tests are unaffected
+vi.mock('@/services/aiConsentService', () => ({
+    aiConsentService: {
+        hasProviderConsent: vi.fn(() => true),
+        grantProviderConsent: vi.fn(),
+    },
+}))
+
+vi.mock('@/services/aiProviderService', () => ({
+    aiProviderService: {
+        getActiveProviderId: vi.fn(() => 'gemini'),
+    },
+}))
+
+vi.mock('@/stores/useUIStore', () => ({
+    useUIStore: {
+        getState: () => ({
+            requestProviderConsent: vi.fn(() => Promise.resolve(true)),
+            addNotification: vi.fn(),
+        }),
+    },
+}))
+
 describe('localRoutingService', () => {
     beforeEach(() => {
         vi.resetModules()

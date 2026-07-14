@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { useUIStore, initialUIState } from './useUIStore'
 import { View, EquipmentViewTab, KnowledgeViewTab } from '@/types'
 
@@ -239,6 +239,51 @@ describe('useUIStore', () => {
             expect(useUIStore.getState().onboardingStep).toBe(5)
             // Other state unchanged
             expect(useUIStore.getState().activeView).toBe(View.Plants)
+        })
+    })
+    describe('requestProviderConsent', () => {
+        it('joins the open prompt instead of replacing it when two calls race', async () => {
+            const store = useUIStore.getState()
+
+            // Two AI calls reach the consent gate before the user has answered.
+            const first = store.requestProviderConsent('gemini')
+            const second = useUIStore.getState().requestProviderConsent('gemini')
+
+            // The user answers once.
+            useUIStore.getState().resolveProviderConsent(true)
+
+            // Both callers must settle. Before the dedupe, the second request
+            // overwrote the first one's resolver and `first` hung forever.
+            await expect(Promise.all([first, second])).resolves.toEqual([true, true])
+            expect(useUIStore.getState().providerConsentRequest).toBeNull()
+        })
+
+        it('queues a request for a different provider behind the open prompt', async () => {
+            const first = useUIStore.getState().requestProviderConsent('gemini')
+            // A second provider cannot be active at the same time today, but the
+            // store must not clobber the open prompt if that ever changes.
+            const second = useUIStore.getState().requestProviderConsent('openai')
+
+            useUIStore.getState().resolveProviderConsent(true)
+            await expect(first).resolves.toBe(true)
+
+            // The queued request opens its own prompt once the first is answered.
+            await vi.waitFor(() => {
+                expect(useUIStore.getState().providerConsentRequest?.provider).toBe('openai')
+            })
+            useUIStore.getState().resolveProviderConsent(false)
+
+            await expect(second).resolves.toBe(false)
+            expect(useUIStore.getState().providerConsentRequest).toBeNull()
+        })
+
+        it('propagates a denial to every waiting caller', async () => {
+            const first = useUIStore.getState().requestProviderConsent('gemini')
+            const second = useUIStore.getState().requestProviderConsent('gemini')
+
+            useUIStore.getState().resolveProviderConsent(false)
+
+            await expect(Promise.all([first, second])).resolves.toEqual([false, false])
         })
     })
 })

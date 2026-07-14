@@ -13,6 +13,7 @@ import {
 import { getReduxSnapshot } from '@/services/uiStateBridge'
 import { getT } from '@/i18n'
 import type { DivergenceInfo } from '@/services/crdtService'
+import type { AiProvider } from '@cannaguide/ai-core'
 
 export type SyncStatus = 'idle' | 'syncing' | 'conflict' | 'error' | 'synced'
 
@@ -61,6 +62,13 @@ export interface UIState {
         pendingRetries: number
         remotePayload: string | null
     }
+    /** Non-null when the AI routing layer is awaiting per-provider consent from the user. */
+    providerConsentRequest: {
+        provider: AiProvider
+        resolve: (granted: boolean) => void
+        /** Handed back to any further caller that arrives while the prompt is open. */
+        promise: Promise<boolean>
+    } | null
 }
 
 // ---------------------------------------------------------------------------
@@ -106,6 +114,13 @@ export interface UIActions {
     clearSyncConflict: () => void
     setSyncLastSyncAt: (ts: number) => void
     setSyncPendingRetries: (count: number) => void
+    /**
+     * Requests per-provider AI consent from the user.
+     * Returns a promise that resolves to `true` (granted) or `false` (denied).
+     * Only one request can be pending at a time; concurrent calls queue to the same promise.
+     */
+    requestProviderConsent: (provider: AiProvider) => Promise<boolean>
+    resolveProviderConsent: (granted: boolean) => void
 }
 
 // ---------------------------------------------------------------------------
@@ -162,6 +177,7 @@ export const initialUIState: UIState = {
         pendingRetries: 0,
         remotePayload: null,
     },
+    providerConsentRequest: null,
 }
 
 // ---------------------------------------------------------------------------
@@ -170,7 +186,7 @@ export const initialUIState: UIState = {
 
 export const useUIStore = create<UIState & UIActions>()(
     devtools(
-        subscribeWithSelector((set) => ({
+        subscribeWithSelector((set, get) => ({
             ...initialUIState,
 
             setActiveView: (view) =>
@@ -346,6 +362,39 @@ export const useUIStore = create<UIState & UIActions>()(
                 set((state) => ({
                     syncState: { ...state.syncState, pendingRetries: count },
                 })),
+
+            // Reads state through `get`, not `useUIStore.getState()`: referring to the
+            // store from inside its own creator and *returning* that value makes the
+            // store type circular, which collapses every `useUIStore((s) => ...)`
+            // selector in the app to `any`.
+            requestProviderConsent: (provider): Promise<boolean> => {
+                const pending = get().providerConsentRequest
+                if (pending) {
+                    // Two AI calls can reach the gate before either is answered.
+                    // Overwriting the open request would drop the first caller's
+                    // resolver, leaving its promise pending forever and its AI call
+                    // stuck loading. Join the open prompt instead of replacing it.
+                    if (pending.provider === provider) return pending.promise
+                    // A different provider cannot happen today -- one provider is
+                    // active at a time -- but queue rather than clobber if it ever can.
+                    return pending.promise.then(() => get().requestProviderConsent(provider))
+                }
+
+                let resolve!: (granted: boolean) => void
+                const promise = new Promise<boolean>((res) => {
+                    resolve = res
+                })
+                set({ providerConsentRequest: { provider, resolve, promise } })
+                return promise
+            },
+
+            resolveProviderConsent: (granted) => {
+                const { providerConsentRequest } = get()
+                if (providerConsentRequest) {
+                    providerConsentRequest.resolve(granted)
+                    set({ providerConsentRequest: null })
+                }
+            },
         })),
         { name: 'ui', enabled: import.meta.env.DEV },
     ),

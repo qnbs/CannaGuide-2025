@@ -12,7 +12,9 @@ set -e
 #     build + typecheck, ui build + typecheck, web typecheck), 6-9 minutes cold
 #     and a real OOM risk on the dual-core / ~4 GB machine this repo is developed
 #     on. It is also what CLAUDE.md forbids ("never run a bare turbo run"). It now
-#     goes through scripts/scoped-verify.mjs.
+#     goes through scripts/scoped-verify.mjs, and apps/web finally sets
+#     `incremental`, which drops a warm typecheck from 1.54 GB to 0.85 GB peak --
+#     the memory, not the wall clock, is what was killing sessions.
 #
 #   - lint-scopes linted every file under the strict scopes (hooks, components/
 #     common, services, stores) on every push -- measured at ~7 minutes for a

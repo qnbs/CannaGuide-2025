@@ -12,9 +12,9 @@ alwaysApply: false
 - **Prefer locally:** `pnpm verify` / `verify:test` / `verify:lint` (scoped via
   `scripts/scoped-verify.mjs`) and targeted `vitest run <paths>`.
 - **Never** run a bare `turbo run <task>`, and never run `pnpm typecheck|test|lint` without
-  `--filter`. Measured on the target machine (dual-core, ~4 GB): `tsc` on `apps/web` alone
-  takes **263 s / 1.5 GB RSS**; a full `turbo run typecheck` takes **6-9 min** with a real
-  OOM risk; the scoped path takes **~40 s**.
+  `--filter`. On the target machine (dual-core, ~4 GB) **memory is the constraint, not CPU**:
+  `tsc` on `apps/web` peaks at **1.54 GB** without `incremental` and **0.85 GB** with it
+  (91 s warm). A full `turbo run typecheck` builds five tasks on top of that: **6-9 min**.
 - **No `--` before a vitest spec:** `test:run -- Foo` becomes `vitest run -- Foo`, the filter
   is swallowed and the **entire** suite runs (>6 min, 635 MB RSS). Correct:
   `pnpm --filter @cannaguide/web test:run Foo`. A run is only scoped if the summary reads

@@ -3,9 +3,8 @@
 ## Verify commands (BINDING, low-end hardware: dual-core / ~4 GB)
 
 **Never** run a bare `turbo run <task>`, and **never** run `pnpm typecheck` / `test` /
-`lint` without `--filter`. Measured on this machine: `tsc` over `apps/web` alone takes
-**263 s and 1.5 GB RSS**; a full `turbo run typecheck` builds five tasks and takes **6-9
-minutes** with a real OOM risk. The scoped path takes **~40 s**. Verify through:
+`lint` without `--filter`. A full `turbo run typecheck` builds five tasks and takes **6-9
+minutes** with a real OOM risk. Verify through:
 
 ```bash
 pnpm verify        # scoped typecheck (default)
@@ -16,6 +15,19 @@ pnpm verify:lint   # scoped lint
 These derive the affected workspaces from the git diff against the merge-base and run with
 `--concurrency=1`. Calling `turbo run` directly, or an unfiltered pnpm task, is a rule
 violation and must be caught **before** it is executed.
+
+**What a typecheck actually costs here** (measured, `apps/web`, TS 6.0.3 -- see
+`docs/toolchain-update.md` for the method):
+
+| run                                 | wall time | max RSS     |
+| ----------------------------------- | --------- | ----------- |
+| `tsc --noEmit`, no `incremental`    | 321-341 s | **1.54 GB** |
+| `tsc --noEmit`, `incremental`, warm | **91 s**  | **0.85 GB** |
+
+`apps/web` now sets `incremental` (it never did; `packages/ui` and `ai-core` always had a
+cache). The memory drop is the point: at a 1.5 GB peak with ~1.5 GB free, every typecheck was
+an OOM candidate. Do **not** claim "~40 s" -- that figure was in this file, was never
+reproducible, and is what made a slow hook look affordable on paper.
 
 Work each PR on a **named local branch** (`git switch -c ...`), never in a detached HEAD --
 otherwise every switch invalidates the turbo hash and the cache never hits.

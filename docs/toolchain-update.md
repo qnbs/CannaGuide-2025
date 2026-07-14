@@ -251,31 +251,58 @@ Alle drei sind reine Dev-Toolchain-Änderungen: **kein Runtime-Bundle-Impact**, 
 
 ---
 
-## 8. tsgo / TypeScript-native (`@typescript/native-preview`) -- measured and rejected
+## 8. Typecheck cost on the target machine -- measured
 
-**Measured 2026-07-14** on the target machine (dual-core, ~4 GB RAM), each run against
-`apps/web`:
+### Method
 
-| Tool                                               | Wall time | Max RSS     |
+All figures below were measured on the maintainer's machine (dual-core, 3.8 GB RAM, Linux
+5.15) with `/usr/bin/time -f "%e s | max RSS %M KB"`, against `apps/web`. Single run per
+row, system otherwise idle apart from two idle VS Code `tsserver` processes (the normal
+working state). Tool versions: **TypeScript 6.0.3**, **Node 24.11.1**,
+**tsgo 7.0.0-dev.20260707.2**.
+
+Wall time on this box varies with memory pressure -- an identical `tsc` run measured 263 s
+with 1.0 GB free and 509 s with 0.9 GB free, because it swaps. Peak RSS is the stable and
+more meaningful number here: the machine has ~1.5 GB free in normal use, so a 1.5 GB peak is
+an OOM waiting to happen.
+
+### Results
+
+| Run                                                | Wall time | Max RSS     |
 | -------------------------------------------------- | --------- | ----------- |
-| `tsc --noEmit`                                     | 263 s     | 1.56 GB     |
+| `tsc --noEmit` (no `incremental`, the old default) | 321-341 s | **1.54 GB** |
 | `tsgo --noEmit` (warm npx cache)                   | 171 s     | **1.72 GB** |
-| `pnpm --filter @cannaguide/web typecheck` (scoped) | **~40 s** | far lower   |
+| `tsc --noEmit` **with `incremental`**, cold        | 341 s     | 1.54 GB     |
+| `tsc --noEmit` **with `incremental`**, warm        | **91 s**  | **0.85 GB** |
 
-**Verdict: do not adopt.** Three reasons:
+### What this changed
 
-1. **It does not fix the actual constraint.** The bottleneck here is memory, not CPU -- and
-   tsgo uses **more** RAM than `tsc`. On a 4 GB machine that makes the very problem worse
-   that we are trying to solve.
-2. **The speedup is 1.5x, not the advertised 5-10x** on this codebase -- nowhere near enough
-   to justify the risk.
-3. **It diverges from `tsc`.** tsgo reports `TS2430` in `services/webBluetoothSensorService.ts`
-   ("Interface 'Navigator' incorrectly extends 'NavigatorGPU'") that `tsc` does **not**. A gate
-   that goes red on something nobody can fix gets switched off -- which is exactly how this
-   repo ended up with git hooks that everyone bypassed via `--no-verify`.
+`apps/web/tsconfig.json` had **no `incremental`**, so every typecheck recomputed the whole
+program from scratch -- while `packages/ui` and `packages/ai-core` have had a build cache all
+along. Turning it on (`incremental: true` + `tsBuildInfoFile` under `node_modules/.cache/`,
+which is already git-ignored) cuts a warm run to **27% of the time and 45% of the peak
+memory**.
 
-The existing **scoped, incremental** typecheck (`scripts/typecheck-filter.mjs` via
-`scripts/scoped-verify.mjs`) beats both by a wide margin and is what the `pre-push` hook uses.
+The memory drop is the point. At a 1.5 GB peak with ~1.5 GB free, every typecheck was an OOM
+candidate; at 0.85 GB it is not. That is what made the `pre-push` hook usable again, and it
+is why the hook can afford to run a real typecheck instead of being bypassed.
 
-**Re-evaluate** only when tsgo is stable _and_ its memory profile drops below `tsc`'s. Not
-before.
+### tsgo: rejected
+
+`@typescript/native-preview` is **1.5x faster than plain `tsc` but uses more memory**
+(1.72 GB vs 1.54 GB) -- and memory, not CPU, is the constraint here, so it makes the actual
+problem worse. It is also **slower and heavier than incremental `tsc`** (171 s / 1.72 GB vs
+91 s / 0.85 GB), so it loses on both axes against the fix we shipped. On top of that it
+reports a `TS2430` in `services/webBluetoothSensorService.ts` that `tsc` does not: a gate
+that goes red on something nobody can fix is a gate that gets switched off -- exactly how this
+repo ended up with git hooks everyone bypassed via `--no-verify`.
+
+**Re-evaluate** only when tsgo is stable _and_ its peak RSS drops below incremental `tsc`.
+
+### Note on the scripts
+
+- `scripts/scoped-verify.mjs` does the **diff scoping**: it derives the affected workspaces
+  from the merge-base diff and runs `turbo run <task>` filtered to them, at
+  `--concurrency=1`. This is what `pre-push` calls.
+- `scripts/typecheck-filter.mjs` is only the `apps/web` wrapper around `tsc --noEmit` (it
+  filters the known upstream RTK `TS2719`). It does no scoping of its own.

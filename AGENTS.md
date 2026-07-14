@@ -68,9 +68,18 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 
 ### Local verification on low-end hardware (BINDING)
 
-The maintainer's machine is dual-core with ~4 GB RAM. Measured there, against `apps/web`:
-`tsc --noEmit` takes **263 s / 1.5 GB RSS**, and an unfiltered `turbo run typecheck` builds
-five tasks and takes **6-9 minutes** with a real OOM risk. The scoped path takes **~40 s**.
+The maintainer's machine is dual-core with ~4 GB RAM, and **memory is the binding constraint,
+not CPU**. Measured against `apps/web` (TS 6.0.3; method in
+[`docs/toolchain-update.md`](docs/toolchain-update.md)):
+
+| run                                              | wall time | max RSS     |
+| ------------------------------------------------ | --------- | ----------- |
+| `tsc --noEmit`, no `incremental` (the old state) | 321-341 s | **1.54 GB** |
+| `tsc --noEmit`, `incremental`, warm              | **91 s**  | **0.85 GB** |
+
+With ~1.5 GB free in normal use, a 1.5 GB peak was an OOM waiting to happen — that, not the
+wall time, is what kept crashing sessions. `apps/web` now sets `incremental`. An unfiltered
+`turbo run typecheck` builds five tasks on top of this and takes **6-9 minutes**.
 
 - **Never** run a bare `turbo run <task>`, and never run `pnpm typecheck` / `test` / `lint`
   without `--filter`. Use `pnpm verify` / `verify:test` / `verify:lint`

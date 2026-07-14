@@ -262,9 +262,11 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 
 ### Low-end hardware: the commands that look safe but are not
 
-The maintainer's machine is dual-core with ~4 GB RAM. Measured against `apps/web`:
-`tsc --noEmit` = **263 s / 1.5 GB RSS**; an unfiltered `turbo run typecheck` = **6-9 min** with
-a real OOM risk; the scoped path = **~40 s**.
+The maintainer's machine is dual-core with ~4 GB RAM, and **memory is the binding constraint,
+not CPU**. Measured against `apps/web` (TS 6.0.3; method in `docs/toolchain-update.md`):
+`tsc --noEmit` without `incremental` = **321-341 s / 1.54 GB RSS**; with `incremental`, warm =
+**91 s / 0.85 GB**. With ~1.5 GB free in normal use, the 1.5 GB peak was an OOM waiting to
+happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = **6-9 min**.
 
 - **Never** a bare `turbo run <task>`; never `pnpm typecheck|test|lint` without `--filter`.
   Use `pnpm verify` / `verify:test` / `verify:lint`.

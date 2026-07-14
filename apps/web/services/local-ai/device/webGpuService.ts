@@ -101,7 +101,6 @@ let deviceDestroyRegistered = false
 
 const probeFeatures = (adapter: GPUAdapter): WebGpuFeatures => {
     const limits = adapter.limits as GPUSupportedLimits
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const featureSet = adapter.features as ReadonlySet<string>
 
     return {

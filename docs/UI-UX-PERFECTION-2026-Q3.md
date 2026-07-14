@@ -24,7 +24,7 @@ No chart exposed its data in any form a screen reader could read.
 New shared wrapper: `apps/web/components/common/AccessibleChart.tsx`. Three mechanisms, and
 they only work together:
 
-1. **`<figcaption>` names the figure** -- deliberately *not* `role="img"` on the container.
+1. **`<figcaption>` names the figure** -- deliberately _not_ `role="img"` on the container.
    `role="img"` marks all descendants as presentational, which would silently defeat
    `accessibilityLayer`. The two measures are mutually exclusive; the old `role="img"`
    wrappers were the weaker half of the pair.
@@ -33,21 +33,21 @@ they only work together:
    that cannot interpret a plot at all. Generalized from the visible table that already sat
    beside the strain-performance chart in `AnalyticsDashboardView.tsx`.
 
-Charts that already render the same numbers in a *visible* table pass `omitDataTable` rather
+Charts that already render the same numbers in a _visible_ table pass `omitDataTable` rather
 than duplicating them (`StrainComparisonView`, strain performance in `AnalyticsDashboardView`).
 
 ### Migrated
 
-| File | Charts |
-| ---- | ------ |
-| `components/views/plants/VPDChart.tsx` | LineChart |
-| `components/views/plants/ComparisonView.tsx` | LineChart |
-| `components/views/plants/analytics/EnvironmentDashboard.tsx` | 3x ComposedChart |
-| `components/views/plants/detailedPlantViewTabs/MetricsOverviewTab.tsx` | LineChart |
-| `components/views/equipment/hydro/HydroChartPanel.tsx` | LineChart |
-| `components/views/strains/StrainComparisonView.tsx` | RadarChart |
-| `components/views/strains/strainLookup/charts.tsx` | PieChart, RadarChart, 2x BarChart |
-| `components/views/knowledge/AnalyticsDashboardView.tsx` | PieChart, 2x AreaChart, BarChart |
+| File                                                                   | Charts                            |
+| ---------------------------------------------------------------------- | --------------------------------- |
+| `components/views/plants/VPDChart.tsx`                                 | LineChart                         |
+| `components/views/plants/ComparisonView.tsx`                           | LineChart                         |
+| `components/views/plants/analytics/EnvironmentDashboard.tsx`           | 3x ComposedChart                  |
+| `components/views/plants/detailedPlantViewTabs/MetricsOverviewTab.tsx` | LineChart                         |
+| `components/views/equipment/hydro/HydroChartPanel.tsx`                 | LineChart                         |
+| `components/views/strains/StrainComparisonView.tsx`                    | RadarChart                        |
+| `components/views/strains/strainLookup/charts.tsx`                     | PieChart, RadarChart, 2x BarChart |
+| `components/views/knowledge/AnalyticsDashboardView.tsx`                | PieChart, 2x AreaChart, BarChart  |
 
 ### Note on `CHART_MARGIN`
 
@@ -96,7 +96,10 @@ In `apps/web/components/views/plants/GrowRoom3D.tsx`:
   accessibility contract (figure naming, conditional `aria-describedby`, one table column per
   series, one row per data point, formatter application).
 - e2e a11y (`accessibility.deploy.e2e.ts`) previously ran axe against the landing view only,
-  giving charts zero coverage; it now visits a chart view. Runs in CI, not locally.
+  leaving every other view unscanned; it now also scans the strains view. Note this does not
+  guarantee a chart is on screen -- the deploy target has no seeded user data, so most charts
+  do not render there. The `AccessibleChart` contract is covered by the unit test above, not
+  by axe. Runs in CI, not locally.
 
 ### A trap worth recording
 

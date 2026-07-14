@@ -911,7 +911,7 @@ export const settingsView = {
             transformersJs:
                 'On-device NLP en embeddings via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Lokale LLM-inferentie via WebLLM (MLC AI).',
-            onnx: 'ML-runtime door ONNX Runtime Web en TensorFlow.js.',
+            onnx: 'ML-runtime door ONNX Runtime Web.',
             radixUi: 'Toegankelijke UI-primitieven door Radix UI.',
             recharts: 'Grafiekvisualisaties door Recharts en D3.js.',
             tailwind: 'Utility-first stijlen door Tailwind CSS.',

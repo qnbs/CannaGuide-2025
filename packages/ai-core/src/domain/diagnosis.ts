@@ -54,7 +54,6 @@ export interface YieldPredictionResult {
     heuristicDryWeight: number
     confidence: number
     sampleCount: number
-    usedTensorflowModel: boolean
     explanation: string
 }
 

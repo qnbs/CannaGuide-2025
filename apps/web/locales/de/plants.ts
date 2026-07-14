@@ -663,15 +663,17 @@ export const plantsView = {
     growStats: {
         title: 'Anbau-Statistik',
         yieldForecast: 'Ertragsprognose',
-        mlForecast: 'ML-Konfidenz',
+        mlForecast: 'Prognose',
         confidence: 'Konfidenz',
         heuristicFallback: 'Heuristische Prognose, bis genug historische Daten vorliegen.',
-        modelTraining: 'Lokales TensorFlow.js-Modell wird trainiert...',
-        modelIdle: 'Das Modell ist bereit, sobald genug Erntehistorie vorhanden ist.',
+        modelTraining: 'Prognose wird berechnet...',
+        modelIdle: 'Die Konfidenz steigt, sobald mehr Ernten erfasst sind.',
         trainingSamples: '{{count}} historische Samples',
         heuristicBaseline: 'Basis {{value}} g',
-        modelReady: 'Lokales Modell aktiv',
-        modelFallback: 'Heuristik aktiv',
+        explanationNoHistory:
+            'Noch keine Erntedaten vorhanden. Es wird eine heuristische Sch\u00e4tzung verwendet.',
+        explanationHeuristic:
+            'Heuristische Sch\u00e4tzung. Die Konfidenz beruht auf {{count}} historischen Samples.',
         costTracker: 'Kostentracker / Tag',
         trackedTotal: 'Erfasst gesamt',
         timeline: 'Zeitplan',

@@ -209,6 +209,9 @@ jobs:
             - name: File budget (changed files)
               run: pnpm run check:file-budget
 
+            - name: Declared-dependency enforcement
+              run: pnpm run check:phantom-deps
+
             - name: Service dependency acyclic check
               run: node scripts/generate-service-map.mjs
 

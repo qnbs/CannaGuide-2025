@@ -6,6 +6,7 @@
  */
 
 import { captureLocalAiError } from '@/services/sentryService'
+import { loadWebLlm } from '@cannaguide/ai-core/ml'
 import { getResolvedProfile } from './modelLoader'
 import { createInferenceTimer } from '../core/infrastructureService'
 import {
@@ -14,7 +15,11 @@ import {
     acquireGpu,
     releaseGpu,
 } from '../device/gpuResourceManager'
-import { reportWebLlmProgress, reportWebLlmReady, reportWebLlmError } from '../cache/progressEmitter'
+import {
+    reportWebLlmProgress,
+    reportWebLlmReady,
+    reportWebLlmError,
+} from '../cache/progressEmitter'
 import { checkStorageQuota, isMobileDevice, getConnectionInfo } from '@/utils/browserApis'
 
 // ---------------------------------------------------------------------------
@@ -160,7 +165,7 @@ export const loadWebLlmEngine = (): Promise<LocalWebLlmEngine | null> => {
                     return null
                 }
                 try {
-                    const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
+                    const { CreateMLCEngine } = await loadWebLlm()
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const engine = (await CreateMLCEngine(webLlmId, {
                         initProgressCallback: (report: {

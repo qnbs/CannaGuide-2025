@@ -64,8 +64,24 @@ fi
 EOF
 fi
 
+REQUIRED_PNPM=11.13.0
+
+# Node 25 no longer ships Corepack; pull it from npm when it is missing.
+if ! command -v corepack >/dev/null 2>&1; then
+    echo "[cursor-cloud-update] Corepack not bundled with this Node; installing from npm."
+    npm install -g corepack@latest
+fi
+
 corepack enable
-corepack prepare pnpm@11.13.0 --activate 2>/dev/null || true
+corepack prepare "pnpm@${REQUIRED_PNPM}" --activate
+
+# Activation must actually take effect: a stale global pnpm here would install
+# against the wrong resolver and silently diverge from the lockfile.
+active_pnpm="$(pnpm --version)"
+if [ "${active_pnpm}" != "${REQUIRED_PNPM}" ]; then
+    echo "[cursor-cloud-update] pnpm ${REQUIRED_PNPM} required, but ${active_pnpm} is active." >&2
+    exit 1
+fi
 
 node "${REPO_ROOT}/scripts/check-pnpm-lockfile.mjs"
 

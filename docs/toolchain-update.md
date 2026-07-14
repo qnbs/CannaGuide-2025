@@ -109,7 +109,7 @@ Peer: `eslint: ">=7.0.0"` — kompatibel mit dem aktuellen ESLint 9. Kein Grund 
 
 **Beleg für die Grenze:**
 
-```
+```text
 typescript-eslint@8.64.0  peerDependencies.typescript = ">=4.8.4 <6.1.0"
 @stryker-mutator/typescript-checker  peerDependencies.typescript = ">=3.6"
 ```
@@ -137,7 +137,7 @@ Patch. Macht Dependabot von selbst (Gruppe `build-tools`) — **sobald der Auto-
 
 ### 🔴 TypeScript 7.0.2 — gesperrt durch typescript-eslint
 
-```
+```text
 typescript-eslint@8.64.0        typescript: ">=4.8.4 <6.1.0"
 @typescript-eslint/parser@8.64  typescript: ">=4.8.4 <6.1.0"
 ```

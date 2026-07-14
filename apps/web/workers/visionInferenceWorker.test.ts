@@ -94,11 +94,18 @@ describe('visionInferenceWorker utilities', () => {
             // ImageNet-normalised white pixel: (1 - mean) / std.
             // R: (1-0.485)/0.229 ~ 2.25   G: (1-0.456)/0.224 ~ 2.43   B: (1-0.406)/0.225 ~ 2.64
             // All should be within [-3, 3] for any pixel value [0, 255].
+            // Reduce first, assert once: one expect() per element is ~301k
+            // matcher invocations here and alone costs ~37s, which pushes the
+            // test past the default 30s timeout on a loaded machine.
+            let min = Infinity
+            let max = -Infinity
             for (let i = 0; i < tensor.length; i++) {
                 const v = tensor[i] ?? 0
-                expect(v).toBeGreaterThanOrEqual(-3)
-                expect(v).toBeLessThanOrEqual(3)
+                if (v < min) min = v
+                if (v > max) max = v
             }
+            expect(min).toBeGreaterThanOrEqual(-3)
+            expect(max).toBeLessThanOrEqual(3)
         })
     })
 

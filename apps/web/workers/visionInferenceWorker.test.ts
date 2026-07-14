@@ -102,8 +102,13 @@ describe('visionInferenceWorker utilities', () => {
             // otherwise leave the bounds untouched and slip through.
             let badIndex = -1
             for (let i = 0; i < tensor.length; i++) {
-                const v = tensor[i]
-                if (v === undefined || !Number.isFinite(v) || v < -3 || v > 3) {
+                const value = tensor[i]
+                if (
+                    value === undefined ||
+                    !Number.isFinite(value) ||
+                    value < -3 ||
+                    value > 3
+                ) {
                     badIndex = i
                     break
                 }

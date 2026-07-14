@@ -278,8 +278,9 @@ happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = *
   changed, with `--frozen-lockfile`.
 - **No local E2E / Playwright / Stryker / Lighthouse.** That is CI's job.
 - **One heavy task at a time**; check `free -m` first and stop below ~500 MB available.
-- **Do not adopt `tsgo`** (`@typescript/native-preview`): measured 1.5x faster than tsc but with
-  **more** memory (1.72 GB vs 1.56 GB) and a `TS2430` tsc does not report. RAM is the constraint.
+- **Do not adopt `tsgo`** (`@typescript/native-preview`): measured **171 s / 1.72 GB** -- slower
+  **and** heavier than the incremental `tsc` we actually run (91 s / 0.85 GB), so it loses on both
+  axes. It also reports a `TS2430` that `tsc` does not.
 
 ### AI Integration
 

@@ -56,11 +56,11 @@ These look like the safe command. They are not. Each one has cost a session.
 
 ## Do not reach for tsgo
 
-Measured 2026-07-14 on `apps/web`: `tsgo` (`@typescript/native-preview`) is **1.5x faster
-than tsc but uses more memory** (1.72 GB vs 1.56 GB), and it reports a `TS2430` that tsc does
-not. RAM is our constraint, not CPU, so it makes the problem worse, and a gate that goes red
-on something nobody can fix is a gate that gets switched off. The scoped incremental
-typecheck (~40 s) beats both. See `docs/toolchain-update.md`.
+Measured 2026-07-14 on `apps/web`: `tsgo` (`@typescript/native-preview`) runs in **171 s at a
+1.72 GB peak** -- **slower and heavier** than the incremental `tsc` we actually run (91 s /
+0.85 GB), so it loses on both axes. It also reports a `TS2430` that tsc does not, and a gate
+that goes red on something nobody can fix is a gate that gets switched off. See
+`docs/toolchain-update.md` for the method.
 
 ## Git hooks: run them, do not bypass them
 

@@ -33,3 +33,37 @@ test('a11y: no serious/critical axe violations in shell landmarks', async ({
 
     expect(seriousOrCriticalViolations).toEqual([])
 })
+
+// The shell scan above never leaves the landing view, so every other view -- including the
+// ones that render charts -- went unscanned. Strains is the one view reachable from a cold
+// deploy with no seeded user data.
+test('a11y: no serious/critical axe violations in the strains view', async ({
+    page,
+    baseURL,
+    browserName,
+}) => {
+    if (browserName === 'webkit') test.slow()
+
+    await seedLegalGateState(page)
+    await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', {
+        waitUntil: 'networkidle',
+    })
+    await closeOnboardingIfVisible(page)
+    await waitForVisibleNavigation(page)
+
+    await page.locator('[data-view-id="strains"]:visible').first().click()
+    await expect(page.locator('main')).toBeVisible()
+
+    // The view is lazy-loaded, so `main` goes visible while the Suspense fallback is
+    // still mounted -- scanning here would audit the placeholder, not the view. The
+    // sort control only exists once the real toolbar has rendered.
+    await page.waitForSelector('#strain-sort-select', { state: 'attached', timeout: 30_000 })
+
+    const results = await new AxeBuilder({ page }).include('main').analyze()
+
+    const seriousOrCritical = results.violations.filter((violation) =>
+        ['serious', 'critical'].includes(violation.impact || ''),
+    )
+
+    expect(seriousOrCritical).toEqual([])
+})

@@ -33,8 +33,15 @@ interface GrowRoom3DProps {
     className?: string
 }
 
+/** Keyboard camera steps -- one keypress should be noticeable but not jarring. */
+const ORBIT_STEP = 0.12
+const DOLLY_STEP = 0.5
+const MIN_POLAR_ANGLE = 0.1
+const INITIAL_CAMERA_POSITION = new THREE.Vector3(3.5, 2.8, 4.0)
+
 const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
     const { t } = useTranslation()
+    const keyboardHintId = React.useId()
     const containerRef = useRef<HTMLDivElement | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
@@ -101,6 +108,60 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         }
     }, [isFullscreen])
 
+    // Keyboard camera control. OrbitControls is pointer-only, which left the scene
+    // unreachable without a mouse -- arrows orbit, +/- dolly, Home restores the
+    // initial framing.
+    const handleCanvasKeyDown = useCallback((e: React.KeyboardEvent<HTMLCanvasElement>): void => {
+        const controls = controlsRef.current
+        const camera = cameraRef.current
+        if (!controls || !camera) return
+
+        const offset = new THREE.Vector3().subVectors(camera.position, controls.target)
+        const spherical = new THREE.Spherical().setFromVector3(offset)
+        let handled = true
+
+        switch (e.key) {
+            case 'ArrowLeft':
+                spherical.theta -= ORBIT_STEP
+                break
+            case 'ArrowRight':
+                spherical.theta += ORBIT_STEP
+                break
+            case 'ArrowUp':
+                spherical.phi = Math.max(MIN_POLAR_ANGLE, spherical.phi - ORBIT_STEP)
+                break
+            case 'ArrowDown':
+                spherical.phi = Math.min(controls.maxPolarAngle, spherical.phi + ORBIT_STEP)
+                break
+            case '+':
+            case '=':
+                spherical.radius = Math.max(controls.minDistance, spherical.radius - DOLLY_STEP)
+                break
+            case '-':
+            case '_':
+                spherical.radius = Math.min(controls.maxDistance, spherical.radius + DOLLY_STEP)
+                break
+            case 'Home':
+                spherical.setFromVector3(
+                    INITIAL_CAMERA_POSITION.clone().sub(controls.target) as THREE.Vector3,
+                )
+                break
+            default:
+                handled = false
+        }
+
+        if (!handled) return
+
+        e.preventDefault()
+        // Same signal the pointer path sets, so keyboard use also stops auto-orbit.
+        userInteractedRef.current = true
+
+        offset.setFromSpherical(spherical)
+        camera.position.copy(controls.target).add(offset)
+        camera.lookAt(controls.target)
+        controls.update()
+    }, [])
+
     // Escape key exits fullscreen
     useEffect(() => {
         if (!isFullscreen) return
@@ -143,7 +204,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         const containerWidth = container.clientWidth || 640
         const containerHeight = Math.round(containerWidth / ASPECT_RATIO)
         const camera = new THREE.PerspectiveCamera(45, containerWidth / containerHeight, 0.1, 50)
-        camera.position.set(3.5, 2.8, 4.0)
+        camera.position.copy(INITIAL_CAMERA_POSITION)
         camera.lookAt(0, 0.5, 0)
         cameraRef.current = camera
 
@@ -463,14 +524,23 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                         </div>
                     </div>
                 ) : (
-                    <canvas
-                        ref={canvasRef}
-                        className="w-full h-auto block"
-                        style={{ imageRendering: 'auto', aspectRatio: '16 / 10' }}
-                        aria-label={t('plantsView.growRoom3d.canvasAriaLabel', {
-                            count: activePlants.length,
-                        })}
-                    />
+                    <>
+                        <canvas
+                            ref={canvasRef}
+                            className="w-full h-auto block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                            style={{ imageRendering: 'auto', aspectRatio: '16 / 10' }}
+                            tabIndex={0}
+                            role="img"
+                            aria-label={t('plantsView.growRoom3d.canvasAriaLabel', {
+                                count: activePlants.length,
+                            })}
+                            aria-describedby={keyboardHintId}
+                            onKeyDown={handleCanvasKeyDown}
+                        />
+                        <p id={keyboardHintId} className="sr-only">
+                            {t('plantsView.growRoom3d.keyboardHint')}
+                        </p>
+                    </>
                 )}
 
                 {/* VPD Overlay */}

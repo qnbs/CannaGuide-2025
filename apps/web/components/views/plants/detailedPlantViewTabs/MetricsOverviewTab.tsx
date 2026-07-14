@@ -1,15 +1,7 @@
 import React, { useState, useMemo, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    Legend,
-} from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { AccessibleChart } from '@/components/common/AccessibleChart'
 import type { Plant } from '@/types'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { selectMetricsForPlant, addMetricsReading } from '@/stores/slices/metricsSlice'
@@ -236,60 +228,66 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
 
                     {/* Chart */}
                     {chartData.length > 0 ? (
-                        <div
-                            className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-inset ring-slate-700/50"
-                            role="img"
-                            aria-label={t('common.accessibility.metricsChart')}
+                        <AccessibleChart
+                            label={t('common.accessibility.metricsChart')}
+                            data={chartData}
+                            categoryKey="time"
+                            categoryLabel={t('common.accessibility.chart.date')}
+                            series={[
+                                { dataKey: 'ph', label: t('common.accessibility.chart.ph') },
+                                { dataKey: 'ec', label: t('common.accessibility.chart.ec') },
+                                {
+                                    dataKey: 'height',
+                                    label: t('common.accessibility.chart.height'),
+                                },
+                            ]}
+                            height={250}
+                            plotClassName="rounded-xl bg-slate-800/60 p-4 ring-1 ring-inset ring-slate-700/50"
                         >
-                            <ResponsiveContainer width="100%" height={250}>
-                                <LineChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                    <XAxis
-                                        dataKey="time"
-                                        tick={{ fontSize: 10, fill: '#94a3b8' }}
-                                    />
-                                    <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1e293b',
-                                            border: '1px solid #334155',
-                                            borderRadius: '8px',
-                                        }}
-                                    />
-                                    <Legend />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="ph"
-                                        stroke="#3b82f6"
-                                        dot={false}
-                                        strokeWidth={2}
-                                        name={t('plantsView.metrics.phLabel', {
-                                            defaultValue: 'pH',
-                                        })}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="ec"
-                                        stroke="#a855f7"
-                                        dot={false}
-                                        strokeWidth={2}
-                                        name={t('plantsView.metrics.ecLabel', {
-                                            defaultValue: 'EC',
-                                        })}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="height"
-                                        stroke="#10b981"
-                                        dot={false}
-                                        strokeWidth={2}
-                                        name={t('plantsView.metrics.height', {
-                                            defaultValue: 'Height',
-                                        })}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </div>
+                            <LineChart accessibilityLayer data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#1e293b',
+                                        border: '1px solid #334155',
+                                        borderRadius: '8px',
+                                    }}
+                                />
+                                <Legend />
+                                <Line
+                                    type="monotone"
+                                    dataKey="ph"
+                                    stroke="#3b82f6"
+                                    dot={false}
+                                    strokeWidth={2}
+                                    name={t('plantsView.metrics.phLabel', {
+                                        defaultValue: 'pH',
+                                    })}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="ec"
+                                    stroke="#a855f7"
+                                    dot={false}
+                                    strokeWidth={2}
+                                    name={t('plantsView.metrics.ecLabel', {
+                                        defaultValue: 'EC',
+                                    })}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="height"
+                                    stroke="#10b981"
+                                    dot={false}
+                                    strokeWidth={2}
+                                    name={t('plantsView.metrics.height', {
+                                        defaultValue: 'Height',
+                                    })}
+                                />
+                            </LineChart>
+                        </AccessibleChart>
                     ) : (
                         <div className="rounded-xl bg-slate-800/40 p-8 text-center">
                             <PhosphorIcons.ChartLineUp

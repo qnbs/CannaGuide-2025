@@ -23,15 +23,34 @@ interface CsvColumn<T> {
 const UTF8_BOM = '\uFEFF'
 const NEWLINE = '\r\n'
 
-/** Escape a CSV field per RFC 4180 */
-const escapeField = (value: unknown): string => {
+/**
+ * A text cell opening with one of these is evaluated as a formula by Excel and
+ * Google Sheets when the file is opened -- CSV injection (CWE-1236). User-supplied
+ * names (strains, plants) end up in exports, so they are neutralized with a leading
+ * apostrophe, which spreadsheets strip on display.
+ */
+const FORMULA_LEAD = /^[=+\-@\t\r]/
+
+/**
+ * Escape a CSV field per RFC 4180, and neutralize formula-leading text.
+ *
+ * Numbers and booleans are never formula-guarded -- `-5` must stay `-5`, not `'-5`.
+ */
+export const escapeCsvField = (value: unknown): string => {
     if (value === null || value === undefined) return ''
-    const str = String(value)
+
+    let str = String(value)
+    if (typeof value === 'string' && FORMULA_LEAD.test(str)) {
+        str = `'${str}`
+    }
+
     if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
         return `"${str.replace(/"/g, '""')}"`
     }
     return str
 }
+
+const escapeField = escapeCsvField
 
 /** Build a CSV string from rows and column definitions */
 function buildCsv<T>(columns: Array<CsvColumn<T>>, rows: T[]): string {

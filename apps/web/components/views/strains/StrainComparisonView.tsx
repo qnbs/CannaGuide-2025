@@ -6,10 +6,10 @@ import {
     PolarGrid,
     PolarAngleAxis,
     PolarRadiusAxis,
-    ResponsiveContainer,
     Legend,
     Tooltip,
 } from 'recharts'
+import { AccessibleChart } from '@/components/common/AccessibleChart'
 import { Strain, YieldLevel } from '@/types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectFavoriteIds } from '@/stores/selectors'
@@ -207,45 +207,52 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
             {selectedStrains.length > 0 && (
                 <>
                     {/* Radar chart */}
-                    <div
-                        className="bg-slate-800/50 rounded-xl p-4"
-                        role="img"
-                        aria-label={t('common.accessibility.strainRadarChart')}
+                    <AccessibleChart
+                        label={t('common.accessibility.strainRadarChart')}
+                        data={radarData}
+                        categoryKey="metric"
+                        categoryLabel={t('common.accessibility.chart.value')}
+                        series={selectedStrains.map((strain) => ({
+                            dataKey: strain.name,
+                            label: strain.name,
+                        }))}
+                        height={280}
+                        plotClassName="bg-slate-800/50 rounded-xl p-4"
+                        // The comparison table right below already lists these numbers.
+                        omitDataTable
                     >
-                        <ResponsiveContainer width="100%" minHeight={280}>
-                            <RadarChart data={radarData} outerRadius="60%">
-                                <PolarGrid stroke="#334155" />
-                                <PolarAngleAxis
-                                    dataKey="metric"
-                                    tick={{ fill: '#94a3b8', fontSize: 12 }}
+                        <RadarChart accessibilityLayer data={radarData} outerRadius="60%">
+                            <PolarGrid stroke="#334155" />
+                            <PolarAngleAxis
+                                dataKey="metric"
+                                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            />
+                            <PolarRadiusAxis
+                                angle={30}
+                                domain={[0, 100]}
+                                tick={{ fill: '#64748b', fontSize: 10 }}
+                            />
+                            {selectedStrains.map((strain, i) => (
+                                <Radar
+                                    key={strain.id}
+                                    name={strain.name}
+                                    dataKey={strain.name}
+                                    stroke={RADAR_COLORS[i]}
+                                    fill={RADAR_COLORS[i]}
+                                    fillOpacity={0.15}
                                 />
-                                <PolarRadiusAxis
-                                    angle={30}
-                                    domain={[0, 100]}
-                                    tick={{ fill: '#64748b', fontSize: 10 }}
-                                />
-                                {selectedStrains.map((strain, i) => (
-                                    <Radar
-                                        key={strain.id}
-                                        name={strain.name}
-                                        dataKey={strain.name}
-                                        stroke={RADAR_COLORS[i]}
-                                        fill={RADAR_COLORS[i]}
-                                        fillOpacity={0.15}
-                                    />
-                                ))}
-                                <Legend wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: '#1e293b',
-                                        border: '1px solid #334155',
-                                        borderRadius: '8px',
-                                        color: '#e2e8f0',
-                                    }}
-                                />
-                            </RadarChart>
-                        </ResponsiveContainer>
-                    </div>
+                            ))}
+                            <Legend wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: '#1e293b',
+                                    border: '1px solid #334155',
+                                    borderRadius: '8px',
+                                    color: '#e2e8f0',
+                                }}
+                            />
+                        </RadarChart>
+                    </AccessibleChart>
 
                     {/* Comparison table */}
                     <div className="overflow-x-auto rounded-xl border border-slate-700">

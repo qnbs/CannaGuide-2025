@@ -646,8 +646,10 @@ export const plantsView = {
         modelIdle: 'Confidence improves as you record more harvests.',
         trainingSamples: '{{count}} historical samples',
         heuristicBaseline: 'Baseline {{value}} g',
-        explanationNoHistory: 'No historical harvest data available yet. Using heuristic projection.',
-        explanationHeuristic: 'Heuristic projection. Confidence reflects {{count}} historical samples.',
+        explanationNoHistory:
+            'No historical harvest data available yet. Using heuristic projection.',
+        explanationHeuristic:
+            'Heuristic projection. Confidence reflects {{count}} historical samples.',
         costTracker: 'Cost tracker / day',
         trackedTotal: 'Tracked total',
         timeline: 'Timeline',
@@ -737,6 +739,8 @@ export const plantsView = {
         contextLost: 'WebGL context was lost — the 3D view will recover automatically.',
         loading: 'Loading 3D scene…',
         canvasAriaLabel: '3D visualization of the grow room with {{count}} active plants',
+        keyboardHint:
+            'Use the arrow keys to orbit the camera, plus and minus to zoom, and Home to reset the view.',
         legendAriaLabel: 'VPD status legend',
     },
     environment: {

@@ -10,7 +10,6 @@
 import React, { memo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-    ResponsiveContainer,
     AreaChart,
     Area,
     XAxis,
@@ -24,6 +23,7 @@ import {
     BarChart,
     Bar,
 } from 'recharts'
+import { AccessibleChart } from '@/components/common/AccessibleChart'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useActivePlants } from '@/hooks/useSimulationBridge'
 import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics'
@@ -31,174 +31,15 @@ import { PredictiveInsightsPanel } from '@/components/common/PredictiveInsightsP
 import { cn } from '@/lib/utils'
 import { useAppSelector } from '@/stores/store'
 import { selectHydroReadings } from '@/stores/slices/hydroSlice'
-import type { GrowAnalytics } from '@/services/analyticsService'
-import type { PredictiveInsight } from '@/services/predictiveAnalyticsService'
-import type { HydroReading } from '@/types'
-
-// -- Constants & Helpers ---------------------------------------------------
-
-const STAGE_COLORS = [
-    '#22c55e',
-    '#3b82f6',
-    '#a855f7',
-    '#f59e0b',
-    '#ef4444',
-    '#06b6d4',
-    '#ec4899',
-] as const
-
-const CHART_MARGIN = { top: 8, right: 12, left: 0, bottom: 0 } as const
-
-function scoreColor(score: number): string {
-    if (score >= 80) return 'text-green-400'
-    if (score >= 60) return 'text-yellow-400'
-    if (score >= 40) return 'text-orange-400'
-    return 'text-red-400'
-}
-
-function scoreBgColor(score: number): string {
-    if (score >= 80) return 'stroke-green-400'
-    if (score >= 60) return 'stroke-yellow-400'
-    if (score >= 40) return 'stroke-orange-400'
-    return 'stroke-red-400'
-}
-
-function severityBadge(severity: string): string {
-    switch (severity) {
-        case 'high':
-            return 'bg-red-500/20 text-red-300 border-red-500/30'
-        case 'medium':
-            return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-        default:
-            return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-    }
-}
-
-function ratingBadge(rating: string): string {
-    switch (rating) {
-        case 'stable':
-            return 'bg-green-500/20 text-green-300'
-        case 'moderate':
-            return 'bg-yellow-500/20 text-yellow-300'
-        default:
-            return 'bg-red-500/20 text-red-300'
-    }
-}
-
-// -- CSV Export helper -----------------------------------------------------
-
-function exportAnalyticsCsv(
-    analytics: GrowAnalytics,
-    predictiveInsights?: ReadonlyMap<string, PredictiveInsight>,
-    hydroReadings?: readonly HydroReading[],
-): void {
-    const rows: string[] = []
-    rows.push('Section,Key,Value')
-    rows.push(`Overview,Garden Score,${analytics.gardenScore}`)
-    rows.push(`Overview,Avg Health,${analytics.avgHealth}`)
-    rows.push(`Overview,Env Stability,${analytics.environmentStability}`)
-
-    for (const [stage, count] of Object.entries(analytics.stageDistribution)) {
-        rows.push(`Stage Distribution,${stage},${count}`)
-    }
-
-    for (const sp of analytics.strainPerformance) {
-        rows.push(
-            `Strain Performance,${sp.strainName},Health=${sp.avgHealth} Plants=${sp.plantCount} AvgAge=${sp.avgAge}`,
-        )
-    }
-
-    for (const risk of analytics.riskFactors) {
-        rows.push(`Risk,${risk.type},${risk.severity}`)
-    }
-
-    if (predictiveInsights) {
-        for (const [plantId, insight] of predictiveInsights) {
-            rows.push(
-                `Predictive,${plantId} Botrytis Risk,${insight.botrytisRisk.riskLevel} (${insight.botrytisRisk.riskScore})`,
-            )
-            rows.push(`Predictive,${plantId} Env Alerts,${insight.environmentAlerts.length}`)
-            rows.push(`Predictive,${plantId} Yield Impact,${insight.yieldImpact.impactPercent}%`)
-        }
-    }
-
-    for (const nc of analytics.nutrientConsistency) {
-        rows.push(`Nutrient,${nc.plantName},pH=${nc.avgPh} EC=${nc.avgEc} Rating=${nc.rating}`)
-    }
-
-    if (hydroReadings && hydroReadings.length > 0) {
-        const phVals = hydroReadings.map((r) => r.ph)
-        const ecVals = hydroReadings.map((r) => r.ec)
-        const tempVals = hydroReadings.map((r) => r.waterTemp)
-        const avg = (arr: number[]): string =>
-            (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)
-        rows.push(`Hydro,Readings Count,${hydroReadings.length}`)
-        rows.push(`Hydro,pH Min,${Math.min(...phVals).toFixed(2)}`)
-        rows.push(`Hydro,pH Max,${Math.max(...phVals).toFixed(2)}`)
-        rows.push(`Hydro,pH Avg,${avg(phVals)}`)
-        rows.push(`Hydro,EC Min,${Math.min(...ecVals).toFixed(2)}`)
-        rows.push(`Hydro,EC Max,${Math.max(...ecVals).toFixed(2)}`)
-        rows.push(`Hydro,EC Avg,${avg(ecVals)}`)
-        rows.push(`Hydro,Temp Min,${Math.min(...tempVals).toFixed(1)}`)
-        rows.push(`Hydro,Temp Max,${Math.max(...tempVals).toFixed(1)}`)
-        rows.push(`Hydro,Temp Avg,${avg(tempVals)}`)
-    }
-
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `cannaguide-analytics-${new Date().toISOString().slice(0, 10)}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-}
-
-// -- Score Gauge SVG -------------------------------------------------------
-
-const ScoreGauge: React.FC<{ score: number }> = memo(({ score }) => {
-    const radius = 54
-    const circumference = 2 * Math.PI * radius
-    const offset = circumference - (score / 100) * circumference
-
-    return (
-        <svg width="130" height="130" viewBox="0 0 130 130" className="mx-auto">
-            <circle
-                cx="65"
-                cy="65"
-                r={radius}
-                fill="none"
-                stroke="rgba(255,255,255,0.1)"
-                strokeWidth="10"
-            />
-            <circle
-                cx="65"
-                cy="65"
-                r={radius}
-                fill="none"
-                className={scoreBgColor(score)}
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-                transform="rotate(-90 65 65)"
-                style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-            />
-            <text
-                x="65"
-                y="60"
-                textAnchor="middle"
-                className="fill-white text-2xl font-bold"
-                fontSize="28"
-            >
-                {score}
-            </text>
-            <text x="65" y="80" textAnchor="middle" className="fill-white/40" fontSize="12">
-                /100
-            </text>
-        </svg>
-    )
-})
-ScoreGauge.displayName = 'ScoreGauge'
+import { ScoreGauge } from './analytics/ScoreGauge'
+import {
+    CHART_MARGIN,
+    STAGE_COLORS,
+    exportAnalyticsCsv,
+    ratingBadge,
+    scoreColor,
+    severityBadge,
+} from './analytics/analyticsFormatters'
 
 // -- Component -------------------------------------------------------------
 
@@ -299,8 +140,17 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
                         {t('analytics.stageDistribution', 'Stage Distribution')}
                     </h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsStrainTypeChart')}
+                        data={pieData}
+                        categoryKey="name"
+                        categoryLabel={t('common.accessibility.chart.stage')}
+                        series={[
+                            { dataKey: 'value', label: t('common.accessibility.chart.count') },
+                        ]}
+                        height={200}
+                    >
+                        <PieChart accessibilityLayer>
                             <Pie
                                 data={pieData}
                                 cx="50%"
@@ -331,7 +181,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 wrapperStyle={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}
                             />
                         </PieChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                 </div>
             )}
 
@@ -341,8 +191,21 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
                         {t('analytics.journalTrend', 'Journal Activity (14d)')}
                     </h3>
-                    <ResponsiveContainer width="100%" height={180}>
-                        <AreaChart data={analytics.journalActivityTrend} margin={CHART_MARGIN}>
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsJournalChart')}
+                        data={analytics.journalActivityTrend}
+                        categoryKey="date"
+                        categoryLabel={t('common.accessibility.chart.date')}
+                        series={[
+                            { dataKey: 'count', label: t('common.accessibility.chart.count') },
+                        ]}
+                        height={180}
+                    >
+                        <AreaChart
+                            accessibilityLayer
+                            data={analytics.journalActivityTrend}
+                            margin={CHART_MARGIN}
+                        >
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                             <XAxis
                                 dataKey="date"
@@ -369,7 +232,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 strokeWidth={2}
                             />
                         </AreaChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                 </div>
             )}
 
@@ -394,8 +257,21 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             </select>
                         )}
                     </div>
-                    <ResponsiveContainer width="100%" height={180}>
-                        <AreaChart data={currentHealthTrend.trend} margin={CHART_MARGIN}>
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsHealthChart')}
+                        data={currentHealthTrend.trend}
+                        categoryKey="date"
+                        categoryLabel={t('common.accessibility.chart.date')}
+                        series={[
+                            { dataKey: 'count', label: t('common.accessibility.chart.health') },
+                        ]}
+                        height={180}
+                    >
+                        <AreaChart
+                            accessibilityLayer
+                            data={currentHealthTrend.trend}
+                            margin={CHART_MARGIN}
+                        >
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                             <XAxis
                                 dataKey="date"
@@ -422,7 +298,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 strokeWidth={2}
                             />
                         </AreaChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                 </div>
             )}
 
@@ -544,11 +420,20 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                     <h3 className="mb-3 text-sm font-semibold text-white/90">
                         {t('analytics.strainPerformance', 'Strain Performance')}
                     </h3>
-                    <ResponsiveContainer
-                        width="100%"
+                    <AccessibleChart
+                        label={t('common.accessibility.analyticsStrainPerformanceChart')}
+                        data={analytics.strainPerformance}
+                        categoryKey="strainName"
+                        categoryLabel={t('common.accessibility.chart.strain')}
+                        series={[
+                            { dataKey: 'avgHealth', label: t('common.accessibility.chart.health') },
+                        ]}
                         height={Math.max(120, analytics.strainPerformance.length * 40)}
+                        // The table right below already lists these numbers.
+                        omitDataTable
                     >
                         <BarChart
+                            accessibilityLayer
                             data={analytics.strainPerformance}
                             layout="vertical"
                             margin={{ ...CHART_MARGIN, left: 60 }}
@@ -579,7 +464,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 radius={[0, 4, 4, 0]}
                             />
                         </BarChart>
-                    </ResponsiveContainer>
+                    </AccessibleChart>
                     <div className="mt-2 overflow-x-auto px-2 sm:px-0">
                         <table className="w-full text-left text-xs sm:text-sm text-white/80">
                             <thead className="border-b border-white/10 text-xs text-white/50">

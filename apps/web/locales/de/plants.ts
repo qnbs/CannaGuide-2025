@@ -763,6 +763,8 @@ export const plantsView = {
         contextLost: 'WebGL-Kontext verloren – die 3D-Ansicht wird automatisch wiederhergestellt.',
         loading: '3D-Szene wird geladen…',
         canvasAriaLabel: '3D-Visualisierung des Grow-Rooms mit {{count}} aktiven Pflanzen',
+        keyboardHint:
+            'Mit den Pfeiltasten die Kamera drehen, mit Plus und Minus zoomen, mit Pos1 die Ansicht zuruecksetzen.',
         legendAriaLabel: 'VPD-Status-Legende',
     },
     environment: {

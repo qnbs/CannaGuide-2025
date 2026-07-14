@@ -487,18 +487,27 @@ Porcupine wake-word detection (on-device, privacy-preserving). 37 registered com
 
 | ID   | Title                                        | Category    | Severity | Effort | Status       | Acceptance Criteria                                           |
 | ---- | -------------------------------------------- | ----------- | -------- | ------ | ------------ | ------------------------------------------------------------- |
-| A-01 | Per-provider AI consent UI enforcement       | Security/UX | P1       | S      | Open         | Cloud AI calls blocked until consent granted per-provider     |
-| A-02 | Coverage Stufe D sprint (target 50/50/35/50) | Testing     | P1       | L      | Open         | Vitest thresholds raised to 50/50/35/50 with CI green         |
+| A-01 | Per-provider AI consent UI enforcement       | Security/UX | P1       | S      | **Done**     | Cloud AI calls blocked until consent granted per-provider     |
+| A-02 | Coverage Stufe D sprint (target 50/50/35/50) | Testing     | P1       | L      | In progress  | Vitest thresholds raised to 50/50/35/50 with CI green         |
 | A-03 | Visual regression testing in CI (advisory)   | Testing     | P2       | M      | Open         | Percy/Chromatic or Playwright screenshot comparison on deploy |
-| A-04 | Recharts chart a11y improvements             | A11y        | P2       | S      | Open         | ARIA labels on all chart data series                          |
-| A-05 | 3D Room keyboard navigation                  | A11y        | P2       | M      | Open         | Full keyboard control of equipment placement                  |
+| A-04 | Recharts chart a11y improvements             | A11y        | P2       | S      | **Done**     | ARIA labels on all chart data series                          |
+| A-05 | 3D Room keyboard navigation                  | A11y        | P2       | S      | **Done**     | Canvas focusable + camera fully keyboard-controllable         |
 | A-06 | IoT real-device E2E testing                  | Testing     | P2       | L      | Open         | ESP32 hardware test documented                                |
-| A-07 | `analyticsService` test coverage             | Testing     | P2       | M      | Open         | ≥60% coverage on analytics service                            |
-| A-08 | `voiceCommandRegistry` test coverage         | Testing     | P2       | M      | Open         | ≥60% coverage on 37 command handlers                          |
-| A-09 | CRDT conflict UI manual validation           | UX          | P2       | S      | Open         | Forced conflict scenario tested + documented                  |
+| A-07 | `analyticsService` test coverage             | Testing     | P2       | M      | **Done**     | ≥60% coverage on analytics service                            |
+| A-08 | `voiceCommandRegistry` test coverage         | Testing     | P2       | M      | **Done**     | ≥60% coverage on 37 command handlers                          |
+| A-09 | CRDT conflict UI manual validation           | UX          | P2       | S      | **Done**     | Forced conflict scenario tested + documented                  |
 | A-10 | Strain library toward 2000+ entries          | Domain      | P3       | XL     | Roadmap      | Automated ingestion pipeline + provenance                     |
 | A-11 | WebGPU inference path                        | Perf        | P3       | L      | Roadmap v2.0 | Local inference via WebGPU on supported browsers              |
 | A-12 | AR/WebXR Digital Twin                        | Domain      | P3       | XL     | Roadmap v2.0 | WebXR plant overlay prototype                                 |
+| A-13 | Equipment placement in the 3D room           | Feature     | P3       | XL     | Roadmap      | Split out of A-05 -- see correction note below                |
+
+> **Correction to A-05 (2026-07-14).** As written, A-05 demanded "full keyboard control of
+> _equipment placement_". No such feature exists: `GrowRoom3D.tsx` is a read-only three.js
+> visualization that dispatches nothing, and the equipment model in `types/schemas.ts` is an
+> AI recommendation list with no x/y/z coordinates. The genuine accessibility defect was that
+> the `<canvas>` had no `tabIndex` and was therefore unreachable by keyboard at all; that is
+> what A-05 now covers and what has been fixed. Building placement itself is a feature, not an
+> a11y fix, and is tracked separately as **A-13**.
 
 ### Implementation Blueprint: A-01 (Per-Provider AI Consent)
 

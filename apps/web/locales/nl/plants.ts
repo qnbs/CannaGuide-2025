@@ -608,8 +608,10 @@ export const plantsView = {
         modelIdle: 'De betrouwbaarheid neemt toe naarmate je meer oogsten vastlegt.',
         trainingSamples: '{{count}} historische monsters',
         heuristicBaseline: 'Basislijn {{value}} g',
-        explanationNoHistory: 'Nog geen historische oogstgegevens. Er wordt een heuristische schatting gebruikt.',
-        explanationHeuristic: 'Heuristische schatting. De betrouwbaarheid weerspiegelt {{count}} historische monsters.',
+        explanationNoHistory:
+            'Nog geen historische oogstgegevens. Er wordt een heuristische schatting gebruikt.',
+        explanationHeuristic:
+            'Heuristische schatting. De betrouwbaarheid weerspiegelt {{count}} historische monsters.',
         costTracker: 'Kostentracker / dag',
         trackedTotal: 'Totaal bijgehouden',
         timeline: 'Tijdlijn',
@@ -699,6 +701,8 @@ export const plantsView = {
         contextLost: 'WebGL-context verloren -- 3D-weergave herstelt automatisch.',
         loading: '3D-scene laden...',
         canvasAriaLabel: '3D-visualisatie van de kweekruimte met {{count}} actieve planten',
+        keyboardHint:
+            'Gebruik de pijltoetsen om de camera te draaien, plus en min om te zoomen, en Home om de weergave te herstellen.',
         legendAriaLabel: 'VPD-statuslegenda',
     },
     environment: {

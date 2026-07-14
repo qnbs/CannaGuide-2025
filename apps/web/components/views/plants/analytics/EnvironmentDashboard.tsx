@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/stores/store'
 import { selectEnvironmentLogs, EnvironmentLogEntry } from '@/stores/selectors'
 import {
-    ResponsiveContainer,
     ComposedChart,
     Line,
     Bar,
@@ -14,6 +13,7 @@ import {
     Legend,
     ReferenceArea,
 } from 'recharts'
+import { AccessibleChart } from '@/components/common/AccessibleChart'
 import type { ReactNode } from 'react'
 
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -51,20 +51,30 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
     if (filtered.length === 0) return null
 
     return (
-        <div
-            className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm"
-            role="img"
-            aria-label={t('plantsView.analytics.tempHumidity', {
-                defaultValue: 'Temperature and Humidity over time',
-            })}
-        >
+        <div className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm">
             <h3 className="text-sm font-semibold text-slate-200 mb-3">
                 {t('plantsView.analytics.tempHumidityTitle', {
                     defaultValue: 'Temperature & Humidity',
                 })}
             </h3>
-            <ResponsiveContainer width="100%" height={240}>
-                <ComposedChart data={filtered} margin={CHART_MARGIN}>
+            <AccessibleChart
+                label={t('common.accessibility.environmentTemperatureChart')}
+                data={filtered}
+                categoryKey="timestamp"
+                categoryLabel={t('common.accessibility.chart.date')}
+                series={[
+                    {
+                        dataKey: 'temp',
+                        label: t('common.accessibility.chart.temperature'),
+                    },
+                    {
+                        dataKey: 'humidity',
+                        label: t('common.accessibility.chart.humidity'),
+                    },
+                ]}
+                height={240}
+            >
+                <ComposedChart accessibilityLayer data={filtered} margin={CHART_MARGIN}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     <XAxis
                         dataKey="timestamp"
@@ -126,7 +136,7 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
                         name={t('plantsView.analytics.humidity', { defaultValue: 'Humidity (%)' })}
                     />
                 </ComposedChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })
@@ -150,20 +160,21 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
     const maxVpd = Math.max(2.5, ...filtered.map((d) => d.vpd ?? 0))
 
     return (
-        <div
-            className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm"
-            role="img"
-            aria-label={t('plantsView.analytics.vpdOverTime', {
-                defaultValue: 'Vapor Pressure Deficit over time',
-            })}
-        >
+        <div className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm">
             <h3 className="text-sm font-semibold text-slate-200 mb-3">
                 {t('plantsView.analytics.vpdTitle', {
                     defaultValue: 'VPD (Vapor Pressure Deficit)',
                 })}
             </h3>
-            <ResponsiveContainer width="100%" height={240}>
-                <ComposedChart data={filtered} margin={CHART_MARGIN}>
+            <AccessibleChart
+                label={t('common.accessibility.environmentVpdChart')}
+                data={filtered}
+                categoryKey="timestamp"
+                categoryLabel={t('common.accessibility.chart.date')}
+                series={[{ dataKey: 'vpd', label: t('common.accessibility.chart.vpd') }]}
+                height={240}
+            >
+                <ComposedChart accessibilityLayer data={filtered} margin={CHART_MARGIN}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     {/* VPD zone backgrounds */}
                     <ReferenceArea
@@ -238,7 +249,7 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
                         name="VPD (kPa)"
                     />
                 </ComposedChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })
@@ -254,20 +265,25 @@ const NutrientWateringChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({
     if (filtered.length === 0) return null
 
     return (
-        <div
-            className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm"
-            role="img"
-            aria-label={t('plantsView.analytics.nutrientWatering', {
-                defaultValue: 'pH, EC and watering over time',
-            })}
-        >
+        <div className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08] backdrop-blur-sm">
             <h3 className="text-sm font-semibold text-slate-200 mb-3">
                 {t('plantsView.analytics.nutrientTitle', {
                     defaultValue: 'Nutrients & Watering',
                 })}
             </h3>
-            <ResponsiveContainer width="100%" height={240}>
-                <ComposedChart data={filtered} margin={CHART_MARGIN}>
+            <AccessibleChart
+                label={t('common.accessibility.environmentNutrientChart')}
+                data={filtered}
+                categoryKey="timestamp"
+                categoryLabel={t('common.accessibility.chart.date')}
+                series={[
+                    { dataKey: 'ph', label: t('common.accessibility.chart.ph') },
+                    { dataKey: 'ec', label: t('common.accessibility.chart.ec') },
+                    { dataKey: 'waterVolumeMl', label: t('common.accessibility.chart.water') },
+                ]}
+                height={240}
+            >
+                <ComposedChart accessibilityLayer data={filtered} margin={CHART_MARGIN}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     <XAxis
                         dataKey="timestamp"
@@ -335,7 +351,7 @@ const NutrientWateringChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({
                         radius={[2, 2, 0, 0]}
                     />
                 </ComposedChart>
-            </ResponsiveContainer>
+            </AccessibleChart>
         </div>
     )
 })

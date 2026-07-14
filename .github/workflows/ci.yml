@@ -34,9 +34,6 @@ env:
 
 jobs:
     # ---------------------------------------------------------------------
-    # Quality Gates -- pnpm run for root tasks, turbo for workspace packages
-    # ---------------------------------------------------------------------
-    # ---------------------------------------------------------------------
     # Build -- deliberately the smallest job on the critical path.
     # E2E only needs dist/, so it hangs off THIS job, not off lint and the unit
     # suite. Previously E2E waited on all 21 steps of a single `quality` job

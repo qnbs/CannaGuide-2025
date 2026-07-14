@@ -1,0 +1,34 @@
+# ---------------------------------------------------------------------------
+# "✅ CI Status" is a required status check on main. ci.yml, which produces it,
+# is skipped for docs-only changes via paths-ignore -- and a required check that
+# never reports blocks the pull request forever.
+#
+# This workflow carries the *inverse* filter and emits the same check name, so a
+# docs-only pull request reports the check as passed rather than waiting on a
+# pipeline that will never start. The two filters are mutually exclusive: exactly
+# one of the workflows runs for any given pull request.
+#
+# Keep the paths list below in sync with ci.yml's paths-ignore.
+# ---------------------------------------------------------------------------
+name: CI (docs-only)
+
+on:
+    pull_request:
+        branches: [main]
+        paths:
+            - '**/*.md'
+            - 'docs/**'
+            - 'graphify-out/**'
+            - '.github/ISSUE_TEMPLATE/**'
+            - '.github/pull_request_template.md'
+
+permissions:
+    contents: read
+
+jobs:
+    ci-status:
+        name: "✅ CI Status"
+        runs-on: ubuntu-latest
+        steps:
+            - name: No code changed
+              run: echo "Docs-only change -- the code pipeline has nothing to verify."

@@ -16,7 +16,7 @@ The banner appears when **two** CodeQL sources run at once — GitHub **default 
 | CodeQL (advanced)    | [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml) — matrix (`javascript-typescript`, `actions`, `python`, `rust`), on push/PR/schedule |
 | CodeQL default setup | **Disabled** (Settings → Code security → CodeQL), so it cannot conflict with the advanced workflow                                                     |
 | Snyk Open Source     | **Snyk GitHub App** (`security/snyk` PR check)                                                                                                         |
-| Snyk (weekly)        | [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) — advisory, no SARIF                                                                     |
+| Snyk (weekly)        | [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) — advisory scan + monitor when `SNYK_TOKEN` is set; **no SARIF upload**                  |
 
 ---
 

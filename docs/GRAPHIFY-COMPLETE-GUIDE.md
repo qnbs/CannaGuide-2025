@@ -2,6 +2,11 @@
 
 **Zielgruppe:** Menschen und **KI-Agenten**, die dieses Repository verstehen, Graphify betreiben oder **dieselbe Integrationsform in anderen Apps/Repositories** nachbauen wollen.
 
+> **Hinweis (Migration):** CannaGuide nutzt inzwischen Claude Code CLI statt Cursor. Die MCP-Server
+> (`graphify`, `gitkraken`) sind jetzt in **`.mcp.json`** im Repo-Root konfiguriert (nicht mehr in
+> `.cursor/mcp.json`). Abschnitte unten, die `.cursor/` oder `mdc:*`-Skripte erwähnen, beschreiben
+> das zurückgebaute Cursor-Setup und sind nur noch historisch.
+
 **Lesereihenfolge für Agenten (empfohlen):**
 
 1. Abschnitt [Konzept](#1-konzept-und-grenzen) und [Artefakte](#3-artefakte-spezifikation).
@@ -325,10 +330,7 @@ Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unter
 ```json
 {
     "scripts": {
-        "graphify:mcp:doctor": "node ./scripts/graphify-mcp-doctor.mjs",
-        "mdc:validate": "node ./scripts/validate-mdc-rules.mjs",
-        "mdc:e2e": "node ./scripts/mdc-context-e2e.mjs",
-        "mdc:export-metadata": "node ./scripts/export-mdc-metadata.mjs"
+        "graphify:mcp:doctor": "node ./scripts/graphify-mcp-doctor.mjs"
     }
 }
 ```

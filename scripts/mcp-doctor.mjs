@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const mcpJson = join(root, '.cursor', 'mcp.json')
+const mcpJson = join(root, '.mcp.json')
 const isWindows = process.platform === 'win32'
 
 let failed = false
@@ -23,9 +23,9 @@ const bad = (msg) => {
 console.log('=== MCP Preflight (Graphify + GitKraken) ===\n')
 
 if (!existsSync(mcpJson)) {
-    bad('.cursor/mcp.json missing')
+    bad('.mcp.json missing')
 } else {
-    ok('.cursor/mcp.json exists')
+    ok('.mcp.json exists')
     try {
         const parsed = JSON.parse(readFileSync(mcpJson, 'utf8'))
         const servers = parsed.mcpServers ?? {}

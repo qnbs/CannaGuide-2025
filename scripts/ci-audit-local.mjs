@@ -21,7 +21,6 @@ function hasCommand(cmd) {
 const steps = [
     { name: 'typecheck', cmd: 'pnpm run typecheck' },
     { name: 'lint:scopes', cmd: 'pnpm run lint:scopes' },
-    { name: 'mdc:e2e', cmd: 'pnpm run mdc:e2e' },
     ...(hasCommand('uv')
         ? [{ name: 'graphify:mcp:doctor', cmd: 'pnpm run graphify:mcp:doctor' }]
         : [

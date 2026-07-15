@@ -14,7 +14,6 @@ GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Secu
 | ------------------------------------------------- | ---------- | ----------------------------------------------------------- |
 | Lint (changed)                                    | `quality`  | `pnpm run lint:changed`                                     |
 | Lint (strict scopes)                              | `quality`  | `pnpm run lint:scopes`                                      |
-| MDC rules                                         | `quality`  | `pnpm run mdc:e2e`                                          |
 | Graphify MCP doctor                               | `quality`  | `pnpm run graphify:mcp:doctor`                              |
 | Typecheck                                         | `quality`  | `pnpm run typecheck`                                        |
 | Zero `any` in app source                          | `quality`  | inline grep in `ci.yml`                                     |

@@ -247,9 +247,6 @@ jobs:
             - name: Lint strict scopes
               run: pnpm run lint:scopes
 
-            - name: MDC validate and context e2e
-              run: pnpm run mdc:e2e
-
             - name: Graphify MCP doctor
               run: pnpm run graphify:mcp:doctor
 

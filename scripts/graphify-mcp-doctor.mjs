@@ -149,7 +149,7 @@ const bash = spawnSync("bash", ["--noprofile", "--norc", "-c", "exit 0"], {
 });
 
 let usesNodeLauncher = false;
-const mcpConfigPath = join(root, ".cursor", "mcp.json");
+const mcpConfigPath = join(root, ".mcp.json");
 if (existsSync(mcpConfigPath)) {
     try {
         const mcpCfg = JSON.parse(readFileSync(mcpConfigPath, "utf8"));
@@ -162,7 +162,7 @@ if (existsSync(mcpConfigPath)) {
 if (bash.status !== 0) {
     if (isWindows && usesNodeLauncher) {
         console.error(
-            "warn bash not runnable — OK on Windows when .cursor/mcp.json uses node graphify-mcp-launcher.mjs",
+            "warn bash not runnable — OK on Windows when .mcp.json uses node graphify-mcp-launcher.mjs",
         );
     } else {
         bad("bash not runnable — legacy MCP entry uses bash + scripts/graphify-mcp-stdio.sh");
@@ -222,16 +222,13 @@ if (uvVer.status === 0) {
 
 console.log("");
 console.log(
-    "Cursor: Settings → MCP → Server «graphify» aktivieren; nach Änderung neu laden oder IDE neu starten.",
+    "Claude Code reads .mcp.json at the repo root — the «graphify» server appears in /mcp; approve it there.",
 );
 console.log(
     "Launcher: node scripts/graphify-mcp-launcher.mjs (cross-platform) or bash/cmd fallbacks in scripts/",
 );
 console.log(
     "GitKraken MCP: node scripts/gitkraken-mcp-launcher.mjs — requires gk auth login",
-);
-console.log(
-    ".cursor/mcp.json nutzt cwd «${workspaceFolder}» — Workspace-Root soll das Repo sein (nicht die Parent-Ordner).",
 );
 
 process.exit(failed ? 1 : 0);

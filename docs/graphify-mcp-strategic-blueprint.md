@@ -1,5 +1,9 @@
 # Graphify/MCP Strategic Blueprint
 
+> **Hinweis (überholt):** Der Baustein „MDC → Graph Bridge" bezieht sich auf `.cursor/rules/*.mdc`,
+> die mit der Umstellung auf Claude Code CLI entfernt wurden. Dieser Abschnitt ist damit hinfällig;
+> die MCP-Server sind jetzt in `.mcp.json` konfiguriert.
+
 ## Scope
 
 Dieses Dokument bereitet drei strategische Erweiterungen vor:

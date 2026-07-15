@@ -44,9 +44,6 @@ jobs:
               with:
                   node-version: '24'
 
-            - name: MDC validate and context e2e
-              run: pnpm run mdc:e2e
-
             - name: Audit backlog check
               run: node scripts/check-audit-backlog.mjs
 

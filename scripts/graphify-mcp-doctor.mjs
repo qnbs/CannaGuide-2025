@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Diagnose für Cursor Graphify-MCP: Pfade, uv, bash, graph.json, Python-Imports.
- * Nutzung: `pnpm run graphify:mcp:doctor` (Repo-Root).
+ * Diagnostics for the Graphify MCP server: paths, uv, bash, graph.json, Python imports.
+ * Usage: `pnpm run graphify:mcp:doctor` (from the repo root).
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
@@ -162,10 +162,10 @@ if (existsSync(mcpConfigPath)) {
 if (bash.status !== 0) {
     if (isWindows && usesNodeLauncher) {
         console.error(
-            "warn bash not runnable — OK on Windows when .mcp.json uses node graphify-mcp-launcher.mjs",
+            "warn bash not runnable -- OK on Windows when .mcp.json uses node graphify-mcp-launcher.mjs",
         );
     } else {
-        bad("bash not runnable — legacy MCP entry uses bash + scripts/graphify-mcp-stdio.sh");
+        bad("bash not runnable -- legacy MCP entry uses bash + scripts/graphify-mcp-stdio.sh");
     }
 } else {
     ok("bash runs");
@@ -222,13 +222,13 @@ if (uvVer.status === 0) {
 
 console.log("");
 console.log(
-    "Claude Code reads .mcp.json at the repo root — the «graphify» server appears in /mcp; approve it there.",
+    "Claude Code reads .mcp.json at the repo root -- the 'graphify' server appears in /mcp; approve it there.",
 );
 console.log(
     "Launcher: node scripts/graphify-mcp-launcher.mjs (cross-platform) or bash/cmd fallbacks in scripts/",
 );
 console.log(
-    "GitKraken MCP: node scripts/gitkraken-mcp-launcher.mjs — requires gk auth login",
+    "GitKraken MCP: node scripts/gitkraken-mcp-launcher.mjs -- requires gk auth login",
 );
 
 process.exit(failed ? 1 : 0);

@@ -30,7 +30,7 @@ corepack enable
 pnpm install --frozen-lockfile
 ```
 
-Only run a bare `pnpm install` when `pnpm-lock.yaml` actually changed — it re-resolves carets and can trip the `minimumReleaseAge` quarantine in CI. See [README.md](README.md) for the canonical command list.
+Reinstall only when `pnpm-lock.yaml` actually changed, and always with `--frozen-lockfile` — a bare `pnpm install` re-resolves carets and can trip the `minimumReleaseAge` quarantine in CI. See [README.md](README.md) for the canonical command list.
 
 ### Run the web app (dev)
 

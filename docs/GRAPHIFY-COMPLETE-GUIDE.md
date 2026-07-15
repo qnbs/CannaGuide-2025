@@ -339,11 +339,11 @@ Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unter
 
 | Komponente                              | Zweck                                                                                                                                                      |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/ci.yml`              | Installiert `uv` (fuer Doctor), dann `pnpm run mdc:e2e` und `pnpm run graphify:mcp:doctor` vor Typecheck/Tests.                                            |
+| `.github/workflows/ci.yml`              | Installiert `uv` (fuer Doctor), dann `pnpm run graphify:mcp:doctor` vor Typecheck/Tests.                                                                   |
 | `.github/workflows/graphify-update.yml` | Auf `main` (Push, woechentlich, manuell): `uv run --with graphifyy python -m graphify update .`, committet Aenderungen unter `graphify-out/` (ohne Cache). |
 | `scripts/graphify-mcp-doctor.mjs`       | Prueft u. a. JSON-Schema-Aehnlichkeit (`nodes` + `links`/`edges`), Inferred-Confidence-Schwelle, Graph-Freshness vs. letzter Git-Commit.                   |
 
-**Hinweis:** Schwere E2E- und Playwright-Laeufe sind bewusst **CI-first**; lokal reichen `mdc:e2e`, `graphify:mcp:doctor` und Zieltests.
+**Hinweis:** Schwere E2E- und Playwright-Laeufe sind bewusst **CI-first**; lokal reichen `graphify:mcp:doctor` und Zieltests.
 
 ---
 

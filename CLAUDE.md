@@ -242,7 +242,7 @@ Typecheck / test / lint are governed by the **binding** verify section at the to
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Dev server (web only)    | `cd apps/web && pnpm run dev` -- root `pnpm run dev` runs Turbo across all packages incl. desktop and fails without Rust. Vite `base` is `/CannaGuide-2025/`, port 5173 |
 | Production build         | `pnpm run build` (excludes desktop)                                                                                                                                     |
-| One test file (scoped)   | `pnpm --filter @cannaguide/web test:run <NamePart>` -- no `--`; a scoped run reports `Test Files 1 passed (1)` (trap #1)                                                |
+| One test file (scoped)   | `pnpm --filter @cannaguide/web test:run SPEC_NAME` -- no `--`; a scoped run reports `Test Files 1 passed (1)` (trap #1)                                                 |
 | i18n integrity           | `pnpm run check:i18n` / `check:i18n-usage` / `lint:i18n`                                                                                                                |
 | File-size budget         | `pnpm run check:file-budget` (new/changed files target 200-700 LOC)                                                                                                     |
 | Strain data pipeline     | `pnpm run strains:sync` (extract JSON + regenerate files)                                                                                                               |

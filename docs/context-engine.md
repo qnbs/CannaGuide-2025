@@ -52,19 +52,19 @@ it directly with `node` instead.
    directory is stale or absent, run `node ./scripts/codegraph.mjs` first (it is git-ignored).
 3. **Targeted reads** — then open the specific files the two maps pointed you to.
 
-## Piping errors back for a fix — scoped only
+## Feeding a failing run back to Claude Code — scoped and reviewed
 
-You can pipe a failing run's output straight back into Claude Code, **but keep it scoped** — an
-unfiltered suite is a >6-minute, OOM-prone run (see the "three traps" in `CLAUDE.md`):
+When a scoped run fails, hand the **relevant** errors to Claude Code — with two safeguards:
 
-```bash
-pnpm verify 2>&1 | claude                                  # scoped typecheck of changed workspaces
-pnpm --filter @cannaguide/web test:run <NamePart> 2>&1 | claude   # ONE spec — note: no `--` before the name
-```
-
-Never pipe a bare `turbo run`, an unfiltered `pnpm typecheck` / `test` / `lint`, or `pnpm run
-build`. The `--` trap: `test:run -- <spec>` drops the filter and runs the whole suite; a scoped
-run reports `Test Files 1 passed (1)`.
+- **Scope it.** An unfiltered suite is a >6-minute, OOM-prone run (see the "three traps" in
+  `CLAUDE.md`). Use `pnpm verify` (changed workspaces), or a single spec —
+  `pnpm --filter @cannaguide/web test:run SPEC_NAME` — with **no `--`** before the name (the `--`
+  trap drops the filter and runs the whole suite; a scoped run reports `Test Files 1 passed (1)`).
+  Never a bare `turbo run`, or an unfiltered `pnpm typecheck` / `test` / `lint` / `build`.
+- **Don't blind-pipe raw output into a tool-enabled agent.** `... 2>&1 | claude` feeds untrusted
+  compiler/test text straight into an agent that can run tools and reach credentials
+  (prompt-injection, CWE-1427). Skim the failure and paste the **specific** errors instead, or run
+  Claude Code with a fixed, trusted prompt and tools/credentials disabled.
 
 ## Related
 

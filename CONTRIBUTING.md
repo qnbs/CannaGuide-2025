@@ -14,7 +14,7 @@ Thank you for considering contributing to CannaGuide 2025! We welcome contributi
 - [Code Style](#code-style)
 - [Testing](#testing)
 - [Internationalization (i18n)](#internationalization-i18n)
-- [Cursor MDC Governance](#cursor-mdc-governance)
+- [Graphify knowledge graph & MCP](#graphify-knowledge-graph--mcp)
 - [Pull Request Process](#pull-request-process)
 - [Strain Encyclopedia Contributions](#strain-encyclopedia-contributions)
 - [Deprecation Strategy](#deprecation-strategy)
@@ -102,19 +102,13 @@ The `pr:push` script (`scripts/github/pr-push.mjs`) automates: branch creation â
 
 ---
 
-## Cursor MDC Governance
+## Graphify knowledge graph & MCP
 
-This repository uses a modular Cursor rule architecture under `.cursor/rules/*.mdc`.
+The repository ships a Graphify knowledge graph under `graphify-out/` and configures the Graphify + GitKraken MCP servers in `.mcp.json` (Claude Code reads it at the repo root; approve via `/mcp`).
 
-- Global manifest: `.cursor/index.mdc`
-- Detailed governance: `docs/cursor-mdc-governance.md`
-- Session memory stream: `.notes/meeting_notes.md` (local only, ignored by Git)
-
-When adding/updating rules, follow the naming ranges and frontmatter constraints documented in the governance file.
-
-- MCP (Graphify + GitKraken): `.cursor/mcp.json` â€” Graphify via `node scripts/graphify-mcp-launcher.mjs` (requires **`uv`**), GitKraken via `gk mcp` (requires **`gk auth login`**). Diagnose: **`pnpm run mcp:doctor`**. Legacy launchers: `scripts/graphify-mcp-stdio.sh`, `scripts/graphify-mcp-stdio-windows.cmd`.
+- MCP servers (`.mcp.json`): Graphify via `node scripts/graphify-mcp-launcher.mjs` (requires **`uv`**), GitKraken via `node scripts/gitkraken-mcp-launcher.mjs` (requires **`gk auth login`**). Diagnose: **`pnpm run mcp:doctor`** / **`pnpm run graphify:mcp:doctor`**.
 - Codespaces / Dev Container: `.devcontainer/Dockerfile` installs **`uv`** into the image (`/usr/local/bin/uv`) so Graphify-MCP works without extra setup.
-- Team reference: `cursor_settings.json` (root) documents the same MCP block plus optional `projectContext` paths.
+- Refresh the graph with `graphify update .` (AST-only, no API cost).
 
 **Maintainers:** prefer `pnpm run pr:push` for substantive merges so CI gates apply; reserve direct `git push origin main` for emergencies or documented exceptions.
 

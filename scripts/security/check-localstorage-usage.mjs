@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Ensures localStorage/sessionStorage usage stays within the allowlist
- * (see .cursor/rules/203-state-persistence.mdc).
+ * (IndexedDB-first persistence; localStorage only for small non-secret flags).
  *
  * Exits 1 on unknown storage keys in production source.
  */

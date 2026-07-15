@@ -1,3 +1,21 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+CannaGuide 2025 is an offline-first React 19 + Vite PWA in a pnpm/Turbo monorepo. There is
+**no backend** -- all state, AI inference, and persistence run client-side in the browser. The
+only runnable app is `@cannaguide/web` (`apps/web/`); `@cannaguide/desktop` is a Tauri shell
+that needs the Rust toolchain and is excluded from the default build. For the full feature map
+see `README.md` (note: some of its metric badges lag the codebase -- prefer counting from the
+tree), for the Node-24 environment setup and an extended command table see `AGENTS.md`, and for
+deep architecture see `docs/ARCHITECTURE.md`.
+**[Architecture at a glance](#architecture-at-a-glance)** at the end of this file orients a
+fresh session across the parts that span multiple files.
+
+The rules below are **binding**. They exist because this repo is developed on a dual-core /
+~4 GB machine where memory -- not wall time -- is what OOM-kills the editor. Read them before
+running any build, test, typecheck, or lint.
+
 # CannaGuide -- working rules
 
 ## Verify commands (BINDING, low-end hardware: dual-core / ~4 GB)
@@ -110,3 +128,82 @@ pnpm run check:i18n
 Everything that lands in this repo or on GitHub is **English**: commit messages, PR titles
 and bodies, review replies, code comments, script output, docs. Conversation with the
 maintainer may be in German; that does not carry over into the repo.
+
+# Architecture at a glance
+
+Big-picture structure that spans multiple files -- the parts you cannot infer from a single
+directory listing. Feature-level detail is in `README.md`; this is the map a fresh session
+needs to place a change correctly.
+
+## Monorepo layout
+
+- `apps/web/` -- the PWA (`@cannaguide/web`). Feature code lives at the workspace root, **not**
+  under `src/`: `components/` (`common/ icons/ navigation/ ui/ views/`), `stores/`,
+  `services/`, `hooks/`, `workers/`, `data/`, `locales/`, `utils/`, `useCases/`.
+- `packages/ai-core/` -- shared AI types and provider configs. Heavy ML deps are
+  `optionalDependencies` here so the web app installs without the ML stack.
+- `packages/ui/` -- design tokens (9 themes) + the Tailwind preset.
+- `apps/desktop/` -- Tauri v2 wrapper (needs Rust; not in the default build).
+- `scripts/` -- the Node/`.mjs` tooling the gates and hooks call (`scoped-verify.mjs`,
+  `lint-scopes.mjs`, `typecheck-filter.mjs`, `check-file-budget.mjs`, the strain pipeline).
+
+## State: two stores joined by one bridge
+
+- **Redux Toolkit** (`stores/store.ts`, `stores/slices/*`) owns the 19 **persisted** domain
+  slices (simulation, grows, strains, breeding, genealogy, metrics, diagnosis, hydro, ...),
+  saved to IndexedDB via `stores/indexedDBStorage.ts` (debounced, force-saved on
+  `visibilitychange`).
+- **Zustand** (`stores/use*Store.ts`, `sensorStore.ts`) owns the 9 **transient** UI stores
+  (UI, voice, TTS, filters, IoT, alerts, calculator session) -- never persisted.
+- `services/uiStateBridge.ts` is the sanctioned seam between them (`getReduxSnapshot`,
+  `subscribeToRedux`, `dispatchToRedux`). Cross the two systems through it, not directly.
+  IndexedDB-first: `localStorage` is only for small non-secret flags.
+
+## AI: one facade, cloud and local behind it
+
+- **Cloud (BYOK, 4 providers).** Every call funnels `services/aiFacade.ts` ->
+  `services/aiService.ts` -> `services/aiProviderService.ts` (Gemini / OpenAI / Claude /
+  Grok), rate-limited, with Zod-validated structured output. Orchestration and prompt safety
+  live in `services/ai/` (`aiOrchestrator.ts`, `safetyPipeline.ts`).
+- **Local (offline).** `services/local-ai/` runs a 3-layer fallback (WebLLM ->
+  Transformers.js -> heuristics), with inference cached in IndexedDB.
+- Any UI that renders AI output must use `components/common/AiDisclaimer.tsx` (`medical` prop
+  for health/diagnosis surfaces) -- do not inline a bespoke disclaimer string.
+
+## Workers: everything heavy goes through the WorkerBus
+
+`apps/web/workers/` holds 10 Web Workers (VPD simulation, genealogy, scenario, inference,
+vision, terpene, hydro forecast, image gen, calculation, voice), plus the root
+`simulation.worker.ts`. They are **not** invoked directly -- `services/worker-bus/` is a
+promise-based dispatcher with a priority queue, backpressure, retry, `AbortController`, and
+Transferable zero-copy. See `docs/worker-bus.md`.
+
+## Persistence: dual IndexedDB, offline-first
+
+- `CannaGuideStateDB` -- Redux state (via the storage adapter above).
+- `CannaGuideDB` -- domain data: strains, images, full-text search index (`services/db/*`).
+- Prefer IndexedDB; `localStorage` is only for small non-secret flags (the one sanctioned
+  exception is `useIotStore`'s MQTT connection config). Optional CRDT cloud sync (Yjs +
+  encrypted GitHub Gists) runs through `services/crdtSyncBridge.ts`.
+
+## i18n: five locales, no hardcoded strings
+
+`i18n.ts` + `locales/{en,de,es,fr,nl}/`, one file per namespace (~13 per locale). User-visible
+text goes through `t('...')` in React or `getT()` outside it -- never a literal. `check:i18n` /
+`check:i18n-usage` / `lint:i18n` gate locale parity and are part of "done" for any new text
+surface.
+
+## Everyday commands not covered above
+
+Typecheck / test / lint are governed by the **binding** verify section at the top of this file
+-- use `pnpm verify*`, never the bare or `turbo run` forms. The rest:
+
+| Task                     | Command                                                                                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev server (web only)    | `cd apps/web && pnpm run dev` -- root `pnpm run dev` runs Turbo across all packages incl. desktop and fails without Rust. Vite `base` is `/CannaGuide-2025/`, port 5173 |
+| Production build         | `pnpm run build` (excludes desktop)                                                                                                                                     |
+| One test file (scoped)   | `pnpm --filter @cannaguide/web test:run <NamePart>` -- no `--`; a scoped run reports `Test Files 1 passed (1)` (trap #1)                                                |
+| i18n integrity           | `pnpm run check:i18n` / `check:i18n-usage` / `lint:i18n`                                                                                                                |
+| File-size budget         | `pnpm run check:file-budget` (new/changed files target 200-700 LOC)                                                                                                     |
+| Strain data pipeline     | `pnpm run strains:sync` (extract JSON + regenerate files)                                                                                                               |
+| Full local pre-push gate | `pnpm run gate:push` (heavy; CI runs the full matrix regardless)                                                                                                        |

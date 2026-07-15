@@ -75,20 +75,20 @@ if (gk.status === 0) {
 if (existsSync(join(root, 'node_modules'))) ok('node_modules present')
 else warn('node_modules missing — run: pnpm install')
 
-const mcpJson = join(root, '.cursor', 'mcp.json')
+const mcpJson = join(root, '.mcp.json')
 if (existsSync(mcpJson)) {
     try {
         const cfg = JSON.parse(readFileSync(mcpJson, 'utf8'))
         const graphify = cfg.mcpServers?.graphify
-        if (graphify?.command === 'node') ok('.cursor/mcp.json uses cross-platform graphify launcher')
+        if (graphify?.command === 'node') ok('.mcp.json uses cross-platform graphify launcher')
         else if (graphify?.command === 'bash')
-            warn('.cursor/mcp.json uses bash — prefer node scripts/graphify-mcp-launcher.mjs on Windows')
+            warn('.mcp.json uses bash — prefer node scripts/graphify-mcp-launcher.mjs on Windows')
         if (cfg.mcpServers?.gitkraken) ok('gitkraken MCP entry configured')
     } catch (e) {
-        bad(`.cursor/mcp.json invalid: ${e.message}`)
+        bad(`.mcp.json invalid: ${e.message}`)
     }
 } else {
-    bad('.cursor/mcp.json missing')
+    bad('.mcp.json missing')
 }
 
 if (existsSync(join(root, '.vscode', 'settings.json'))) ok('.vscode/settings.json present')

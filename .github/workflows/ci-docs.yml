@@ -44,9 +44,6 @@ jobs:
               with:
                   node-version: '24'
 
-            - name: MDC validate and context e2e
-              run: pnpm run mdc:e2e
-
             - name: Audit backlog check
               run: node scripts/check-audit-backlog.mjs
 
@@ -62,7 +59,8 @@ jobs:
               run: |
                   set -euo pipefail
                   BASE="${LINT_BASE_REF}"
-                  mapfile -t FILES < <(git diff --name-only "${BASE}"...HEAD -- '*.md' '*.mdc' || true)
+                  # --diff-filter=d excludes deleted files (prettier --check errors on missing paths)
+                  mapfile -t FILES < <(git diff --name-only --diff-filter=d "${BASE}"...HEAD -- '*.md' '*.mdc' || true)
                   if [ "${#FILES[@]}" -eq 0 ]; then
                     echo "[OK] No markdown/MDC files changed vs ${BASE}"
                     exit 0

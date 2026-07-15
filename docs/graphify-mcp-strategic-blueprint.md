@@ -1,5 +1,11 @@
 # Graphify/MCP Strategic Blueprint
 
+> **Note (archived / historical):** This blueprint planned MDC-based extensions around
+> `.cursor/rules/*.mdc` (MDC-to-graph bridge, rules explorer, MDC starter templates). With the move
+> to Claude Code CLI, `.cursor/` and all `mdc:*` scripts (including `export-mdc-metadata`,
+> `mdc:validate`) were removed; **the whole document is therefore obsolete** and is kept only as
+> historical context. The MCP servers are now configured in `.mcp.json`.
+
 ## Scope
 
 Dieses Dokument bereitet drei strategische Erweiterungen vor:

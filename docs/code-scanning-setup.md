@@ -31,34 +31,36 @@ The banner appears when **two** CodeQL sources run at once — GitHub **default 
 
 ## Reverting to default setup (if ever needed)
 
-Re-enable **Settings → Code security → CodeQL → default setup**, then remove the push/PR/schedule
-triggers from `codeql.yml` (leave `workflow_dispatch`) so the two sources do not conflict.
+Default setup and an advanced workflow are **mutually exclusive**. While default setup is enabled it
+takes over analysis and **rejects the SARIF upload from any advanced run — including a manual
+`workflow_dispatch`** (_"CodeQL analyses from advanced configurations cannot be processed when the
+default setup is enabled"_). So reverting is **not** "re-enable default setup and leave dispatch on":
 
-### Why “CodeQL” may be missing in repository Settings
+1. **Disable the advanced workflow first** — delete [`codeql.yml`](../.github/workflows/codeql.yml),
+   or comment out **all** of its triggers (`push`, `pull_request`, `schedule`, **and**
+   `workflow_dispatch`). Manual dispatch is _not_ a supported fallback while default setup is on — it
+   would only produce failing SARIF-upload runs.
+2. **Then** re-enable **Settings → Code security → CodeQL → default setup**.
 
-CodeQL **is active** if PR checks show `Analyze (javascript-typescript)`, `Analyze (python)`, `Analyze (rust)`, or `Analyze (actions)`.  
-Those jobs come from GitHub **CodeQL default setup** — even when there is no **CodeQL analysis** row under **Settings → Code security** on the repository.
+Do the two steps in that order so there is never a window where both sources run at once.
 
-Common reasons the per-repo toggle is absent:
+### Finding the CodeQL controls in Settings
 
-| Reason                                  | What to do                                                                                                                                                                                                                                                |
+The advanced workflow needs no per-repo toggle — it is just a workflow file, and its
+`Analyze (<language>)` checks come from [`codeql.yml`](../.github/workflows/codeql.yml), **not** from
+default setup. The **Settings → Code security → Code scanning** controls only matter if you want to
+switch _back_ to default setup, and they may be **org-managed** rather than per-repo:
+
+| Situation                               | Where to look                                                                                                                                                                                                                                             |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Organization security configuration** | CodeQL is managed at **org** level (GitHub _code security configurations_). Edit the applied configuration under **Organization → Settings → Code security → Configurations** — not per-repo Settings.                                                    |
+| **Organization security configuration** | Default setup is managed at **org** level (GitHub _code security configurations_). Edit the applied configuration under **Organization → Settings → Code security → Configurations** — not per-repo Settings.                                             |
 | **Enforced org policy**                 | If the org config sets CodeQL default setup to **Enabled** (enforced), repos cannot **Switch to advanced** locally. Use **Enabled with advanced setup allowed** in the org configuration, or change the org policy.                                       |
 | **Wrong navigation**                    | Repo path: **Settings → Advanced Security** (sidebar **Security**), scroll to **Code security** / **Code scanning**. Older UI: **Code security and analysis**. Viewing alerts: **Security** tab → **Code scanning** (not the same as enabling/disabling). |
 | **Insufficient permissions**            | Only repo/org **admins** see security configuration controls.                                                                                                                                                                                             |
-| **Public repository**                   | CodeQL default setup is free on public repos; controls may still be org-managed rather than repo-managed.                                                                                                                                                 |
+| **Public repository**                   | Default setup is free on public repos; controls may still be org-managed rather than repo-managed.                                                                                                                                                        |
 
-Reference: [GitHub — security configurations at scale](https://docs.github.com/en/code-security/securing-your-organization/enabling-security-features-in-your-organization/understanding-github-security-configurations)
-
-### If you have repo-level control (rare with org configs)
-
-1. **Settings → Advanced Security** → section **Code security** / **Code scanning**.
-2. In the **CodeQL analysis** row: **Switch to advanced** (only visible when default setup is repo-managed).
-3. Restore `push` / `pull_request` / `schedule` in [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml).
-4. Re-run **CodeQL** on `main`.
-
-Reference: [GitHub Docs — default setup blocks SARIF upload](https://docs.github.com/en/code-security/code-scanning/troubleshooting-sarif/default-setup-enabled)
+References: [GitHub — security configurations at scale](https://docs.github.com/en/code-security/securing-your-organization/enabling-security-features-in-your-organization/understanding-github-security-configurations)
+· [GitHub Docs — default setup blocks SARIF upload](https://docs.github.com/en/code-security/code-scanning/troubleshooting-sarif/default-setup-enabled)
 
 ---
 

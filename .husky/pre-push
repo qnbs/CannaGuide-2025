@@ -32,7 +32,10 @@ node ./scripts/scoped-verify.mjs typecheck
 echo "[pre-push] 2/3 lint scopes (changed files only)..."
 node ./scripts/lint-scopes.mjs --changed
 
-echo "[pre-push] 3/3 file budget..."
+echo "[pre-push] 3/4 file budget..."
 pnpm run check:file-budget
+
+echo "[pre-push] 4/4 doc-metric truth (README badges vs source)..."
+node ./scripts/check-doc-metrics.mjs
 
 echo "[pre-push] All gates passed."

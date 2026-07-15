@@ -26,6 +26,7 @@ GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Secu
 | Service dependency acyclic                        | `quality`  | `node scripts/generate-service-map.mjs`                     |
 | i18n completeness                                 | `quality`  | `pnpm run check:i18n`                                       |
 | Strain catalog integrity                          | `quality`  | `pnpm run strains:check-integrity`                          |
+| Documentation metrics (badges ↔ source)           | `quality`  | `pnpm run check:doc-metrics`                                |
 | Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                      |
 | E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                      |
 | CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`           |

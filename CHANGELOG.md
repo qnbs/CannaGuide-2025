@@ -21,6 +21,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **ci(security):** CodeQL advanced workflow is now the single code-scanning source (GitHub "Default Setup" disabled) — restored `push`/`pull_request`/`schedule` triggers and a language matrix (`javascript-typescript`, `actions`, `python`, `rust`) with `build-mode: none`, matching the languages Default Setup covered so nothing is lost; job name `Analyze (<language>)` preserves the required-check names. `docs/code-scanning-setup.md` updated to reflect advanced-only policy.
 - **chore(deps):** `pnpm.overrides` for `linkify-it`, `markdown-it`, `js-yaml@3`, `js-yaml@4` (Dependabot alerts)
 - **chore(deps):** `pnpm.overrides` — `@babel/core >=7.29.6` (GHSA-4x5r-pxfx-6jf8 — arbitrary file read via sourceMappingURL comment; devDep path via Stryker)
 - **ci:** Security job adds `pnpm audit --audit-level=high` (all deps)

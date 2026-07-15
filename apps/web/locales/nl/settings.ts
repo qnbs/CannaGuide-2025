@@ -73,7 +73,6 @@ export const settingsView = {
         providerConsent: 'Toestemming gegevensoverdracht',
         providerConsentPrompt:
             'U staat op het punt plantengegevens (inclusief fotos) te sturen naar {{provider}}. Stemt u in?',
-        providerConsentRemember: 'Mijn keuze onthouden voor deze provider',
         providerConsentDeny: 'Gebruik in plaats daarvan lokale AI',
         providerDpaLink: 'Gegevensverwerkingsovereenkomst bekijken',
     },

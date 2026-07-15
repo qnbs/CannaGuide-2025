@@ -1,14 +1,19 @@
 name: CodeQL
 
-# Manual advanced CodeQL (monorepo build). Automated scanning uses GitHub
-# CodeQL *default setup* (Analyze javascript-typescript/python/rust/actions).
-# Do NOT enable push/PR/schedule here while default setup is active — dual
-# CodeQL sources trigger "Code scanning configuration error". To switch to
-# advanced-only: repo Settings → Code security → CodeQL → Switch to advanced,
-# then restore push/pull_request/schedule triggers below.
+# Advanced CodeQL scanning. GitHub "Default Setup" is DISABLED (repo Settings ->
+# Code security -> CodeQL), so this workflow is the single code-scanning source --
+# no dual-source "Code scanning configuration error". It covers the same languages
+# Default Setup did (javascript-typescript, actions, python, rust) via build-mode:
+# none, and keeps the repo's custom config (paths-ignore + security-and-quality).
 # See docs/code-scanning-setup.md
 
 on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    schedule:
+        - cron: '19 5 * * 1'
     workflow_dispatch:
 
 concurrency:
@@ -20,13 +25,17 @@ permissions:
 
 jobs:
     analyze:
-        name: CodeQL Analysis
+        name: Analyze (${{ matrix.language }})
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 30
         permissions:
             actions: read
             contents: read
             security-events: write
+        strategy:
+            fail-fast: false
+            matrix:
+                language: [javascript-typescript, actions, python, rust]
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -39,17 +48,12 @@ jobs:
             - name: Initialize CodeQL
               uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
               with:
-                  languages: javascript-typescript
+                  languages: ${{ matrix.language }}
+                  build-mode: none
                   queries: security-and-quality
                   config-file: ./.github/codeql/codeql-config.yml
-
-            - name: Setup Node + install dependencies
-              uses: ./.github/actions/setup-node-ci
-
-            - name: Build for CodeQL analysis
-              run: pnpm run build
 
             - name: Perform CodeQL Analysis
               uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
               with:
-                  category: /language:javascript-typescript
+                  category: /language:${{ matrix.language }}

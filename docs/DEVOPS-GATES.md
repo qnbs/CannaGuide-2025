@@ -26,6 +26,7 @@ GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Secu
 | i18n completeness                                 | `quality`  | `pnpm run check:i18n`                                       |
 | Strain catalog integrity                          | `quality`  | `pnpm run strains:check-integrity`                          |
 | Documentation metrics (badges ↔ source)           | `quality`  | `pnpm run check:doc-metrics`                                |
+| **jsx-a11y warning ratchet (may only drop)**      | `quality`  | `pnpm run check:a11y-ratchet`                               |
 | Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                      |
 | E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                      |
 | CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`           |
@@ -49,6 +50,21 @@ Minimum: **80% lines** and **80% functions** per file. Branch coverage is report
 - Max **700 LOC** per file in `services/`, `stores/`, `components/`, `hooks/`, `workers/`, `utils/`, `packages/ai-core/src`
 - **Changed files** over budget → **fail**
 - Grandfathered god-files → warn only (see `scripts/check-file-budget.mjs`)
+
+### jsx-a11y warning ratchet
+
+The `jsx-a11y` recommended rules run as **warnings** (`eslint.config.js`, `LINT_A11Y=1`), so they
+never block lint-staged. `scripts/check-a11y-ratchet.mjs` keeps them from silently accumulating: it
+counts the warnings over `apps/web` + `packages/ui` `.tsx`/`.jsx` (tests/stories excluded) with an
+own **AST-only** ESLint instance — no type-checking, so it is fast and low-memory enough to run on
+every PR.
+
+- The count is compared to the committed baseline in [`.a11y-baseline.json`](../.a11y-baseline.json).
+- Count **rises above** the baseline → **fail** (fix the new violation; do **not** raise the baseline).
+- Count **drops** → run `pnpm run check:a11y-ratchet -- --update` (or `node scripts/check-a11y-ratchet.mjs --update`)
+  **in the same PR** to lower the baseline. The ratchet only moves down.
+- The baseline is a warning **count**, not a rule flip — rules stay `warn`. Promoting individual
+  rules to `error` once their count reaches zero is a deliberate, separate follow-up.
 
 ---
 

@@ -23,6 +23,7 @@ benchmark-metrics.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/tasks.json
 .idea
 .DS_Store
 *.suo
@@ -47,6 +48,9 @@ reports/mutation/
 
 # Graphify AST cache (regrows every run — do not commit)
 graphify-out/cache/
+
+# Codegraph micro context layer (regenerated locally by scripts/codegraph.mjs — do not commit)
+.ai-context/
 
 # Claude Code worktrees. These are full checkouts of this repo living inside the
 # repo, so an unqualified `git add -A` in the main checkout stages one as an

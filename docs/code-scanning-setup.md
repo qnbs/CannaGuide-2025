@@ -7,31 +7,32 @@ _"Code scanning configuration error — CodeQL and Snyk Open Source are reportin
 
 ## Root cause (most common)
 
-This repository uses **CodeQL default setup** (GitHub-managed `Analyze (*)` jobs on pull requests).  
-A second **advanced** CodeQL workflow or duplicate Snyk SARIF upload causes configuration conflicts.
+The banner appears when **two** CodeQL sources run at once — GitHub **default setup** (managed
+`Analyze (*)` jobs) **and** an advanced `codeql.yml` with push/PR triggers. This repo now runs
+**advanced only** (default setup disabled), so there is a single source.
 
-| Source             | Integration                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------- |
-| CodeQL (automated) | GitHub **default setup** — `Analyze (javascript-typescript)`, `python`, `rust`     |
-| CodeQL (manual)    | [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml) — dispatch only  |
-| Snyk Open Source   | **Snyk GitHub App** (`security/snyk` PR check)                                     |
-| Snyk (weekly)      | [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) — advisory, no SARIF |
-
----
-
-## Current policy (2026-06-29)
-
-1. **Default setup** runs CodeQL on every PR/push (no SARIF upload from our workflow).
-2. **`codeql.yml`** is **workflow_dispatch only** — manual monorepo build scan when needed.
-3. **`snyk.yml`** runs weekly with `setup-node-ci`; alerts come from the Snyk App, not SARIF upload.
-
-This avoids the dual-CodeQL conflict that triggers the configuration-error banner.
+| Source               | Integration                                                                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CodeQL (advanced)    | [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml) — matrix (`javascript-typescript`, `actions`, `python`, `rust`), on push/PR/schedule |
+| CodeQL default setup | **Disabled** (Settings → Code security → CodeQL), so it cannot conflict with the advanced workflow                                                     |
+| Snyk Open Source     | **Snyk GitHub App** (`security/snyk` PR check)                                                                                                         |
+| Snyk (weekly)        | [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) — advisory, no SARIF                                                                     |
 
 ---
 
-## Optional: switch to advanced CodeQL only
+## Current policy (2026-07-15)
 
-**Most users do not need this.** The repo already avoids conflicts by using default setup + `codeql.yml` dispatch-only.
+1. **`codeql.yml`** is the single CodeQL source — a language matrix (`javascript-typescript`,
+   `actions`, `python`, `rust`, `build-mode: none`) on push to `main`, PRs, a weekly schedule, and
+   manual dispatch. Default setup is **disabled**, so there is no dual-source conflict.
+2. **`snyk.yml`** runs weekly with `setup-node-ci`; alerts come from the Snyk App, not a SARIF upload.
+
+---
+
+## Reverting to default setup (if ever needed)
+
+Re-enable **Settings → Code security → CodeQL → default setup**, then remove the push/PR/schedule
+triggers from `codeql.yml` (leave `workflow_dispatch`) so the two sources do not conflict.
 
 ### Why “CodeQL” may be missing in repository Settings
 

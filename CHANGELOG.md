@@ -8,6 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **ci(a11y):** jsx-a11y warning **ratchet** (`check-a11y-ratchet.mjs`) — counts `jsx-a11y` warnings over `apps/web` + `packages/ui` with an own AST-only ESLint instance and fails the `quality` gate when the count rises above the committed `.a11y-baseline.json` (seeded at 83). Lowering warnings lets a PR drop the baseline; rules stay `warn` (no flip-to-error). Documented in `docs/DEVOPS-GATES.md`
 - **ci:** weekly advisory `verify-quarantine-excludes.mjs` — re-checks that every `minimumReleaseAgeExclude` package still ships an npm provenance attestation (the exclude list matches on name, not provenance)
 - **ci(build):** emit `dist/version.json` (`{version, commit, builtAt}`) and inject `<meta name="app-version">` into the app shell, so the deployed build is identifiable without devtools
 - **ci:** `check-doc-metrics.mjs` documentation-truth gate — fails when a README badge (release version, TypeScript, Vite, coverage, CI-workflow count) contradicts source (`package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `.github/workflows/`); wired into the `quality` merge gate, pre-push, and `docs/DEVOPS-GATES.md`
@@ -17,7 +18,6 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **ci:** File-budget gate required in Quality Gates; `docs/DEVOPS-GATES.md` gate inventory updated
 - **ci:** Playwright `install-deps` always runs before browser cache restore (fixes WebKit `libwoff2dec` on cross-browser E2E)
 - **ci:** Auto-prune GitHub deployments after each deploy (keep 3 per env); weekly cleanup workflow
-- **ci:** MDC rule validation (`mdc:validate`), context smoke (`mdc:e2e`), and Graphify MCP doctor in quality gates
 
 ### Changed
 

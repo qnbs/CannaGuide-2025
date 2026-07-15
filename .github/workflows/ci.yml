@@ -253,6 +253,9 @@ jobs:
             - name: Doc-metric truth check
               run: node scripts/check-doc-metrics.mjs
 
+            - name: jsx-a11y warning ratchet
+              run: pnpm run check:a11y-ratchet
+
             - name: Type check (workspaces)
               run: pnpm exec turbo run typecheck
 

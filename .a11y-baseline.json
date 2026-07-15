@@ -1,0 +1,10 @@
+{
+    "_comment": "jsx-a11y warning ratchet. Regenerate in CI (or via `node scripts/check-a11y-ratchet.mjs --update`). See docs/DEVOPS-GATES.md.",
+    "maxWarnings": 83,
+    "byRule": {
+        "jsx-a11y/control-has-associated-label": 76,
+        "jsx-a11y/no-autofocus": 5,
+        "jsx-a11y/no-interactive-element-to-noninteractive-role": 1,
+        "jsx-a11y/role-supports-aria-props": 1
+    }
+}

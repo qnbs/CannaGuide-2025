@@ -144,6 +144,21 @@ Big-picture structure that spans multiple files -- the parts you cannot infer fr
 directory listing. Feature-level detail is in `README.md`; this is the map a fresh session
 needs to place a change correctly.
 
+## Context loading order
+
+Two maps orient a session before you open individual files (full detail:
+`docs/context-engine.md`):
+
+1. **Macro** -- read `graphify-out/GRAPH_REPORT.md` (committed) for god nodes and community
+   structure before any broad "how does X relate to Y" question; prefer `graphify query` /
+   `graphify path` / `graphify explain` over grep for cross-module traversal.
+2. **Micro** -- for a concrete change, consult `.ai-context/codegraph/` (`module-index.md` by
+   area with fan-in/fan-out, `import-graph.json`, `redux-slice-map.md`). It is **git-ignored**;
+   regenerate with `node ./scripts/codegraph.mjs` if stale (AST-only, OOM-safe -- no `tsc`/`turbo`
+   build; it is deliberately _not_ a root `package.json` script, so a push never widens the scoped
+   typecheck). `graphify update . && node ./scripts/codegraph.mjs` refreshes both layers.
+3. **Targeted reads** -- then open the specific files the maps pointed to.
+
 ## Monorepo layout
 
 - `apps/web/` -- the PWA (`@cannaguide/web`). Feature code lives at the workspace root, **not**
@@ -227,7 +242,7 @@ Typecheck / test / lint are governed by the **binding** verify section at the to
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Dev server (web only)    | `cd apps/web && pnpm run dev` -- root `pnpm run dev` runs Turbo across all packages incl. desktop and fails without Rust. Vite `base` is `/CannaGuide-2025/`, port 5173 |
 | Production build         | `pnpm run build` (excludes desktop)                                                                                                                                     |
-| One test file (scoped)   | `pnpm --filter @cannaguide/web test:run <NamePart>` -- no `--`; a scoped run reports `Test Files 1 passed (1)` (trap #1)                                                |
+| One test file (scoped)   | `pnpm --filter @cannaguide/web test:run SPEC_NAME` -- no `--`; a scoped run reports `Test Files 1 passed (1)` (trap #1)                                                 |
 | i18n integrity           | `pnpm run check:i18n` / `check:i18n-usage` / `lint:i18n`                                                                                                                |
 | File-size budget         | `pnpm run check:file-budget` (new/changed files target 200-700 LOC)                                                                                                     |
 | Strain data pipeline     | `pnpm run strains:sync` (extract JSON + regenerate files)                                                                                                               |

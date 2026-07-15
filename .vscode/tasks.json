@@ -1,0 +1,62 @@
+{
+    // -----------------------------------------------------------------------
+    // Shared VS Code tasks for CannaGuide 2025.
+    //
+    // SAFETY (binding, see CLAUDE.md): this repo is developed on a dual-core /
+    // ~4 GB machine where memory -- not wall time -- OOM-kills the editor. Every
+    // task below is SCOPED. Do NOT add tasks that run a bare `turbo run`, an
+    // unfiltered `pnpm typecheck` / `test` / `lint`, or `pnpm run build`; those
+    // are the exact commands the verify rules forbid. Heavy suites run in CI.
+    // -----------------------------------------------------------------------
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Context: refresh (codegraph)",
+            "detail": "Regenerate the git-ignored .ai-context/ micro layer (AST-only, fast).",
+            "type": "shell",
+            "command": "node ./scripts/codegraph.mjs",
+            "problemMatcher": [],
+            "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+        },
+        {
+            "label": "Context: refresh both layers",
+            "detail": "graphify update . (macro, committed) + codegraph (micro, local).",
+            "type": "shell",
+            "command": "graphify update . && node ./scripts/codegraph.mjs",
+            "problemMatcher": [],
+            "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+        },
+        {
+            "label": "Context: open GRAPH_REPORT",
+            "detail": "Open the Graphify macro report (god nodes + communities).",
+            "type": "shell",
+            "command": "code graphify-out/GRAPH_REPORT.md",
+            "problemMatcher": [],
+            "presentation": { "reveal": "silent", "panel": "shared" }
+        },
+        {
+            "label": "Verify: typecheck (scoped)",
+            "detail": "pnpm verify -- scoped typecheck of the changed workspaces only.",
+            "type": "shell",
+            "command": "pnpm verify",
+            "problemMatcher": ["$tsc"],
+            "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+        },
+        {
+            "label": "Verify: test (changed, scoped)",
+            "detail": "pnpm verify:test -- scoped test:run of the changed workspaces only.",
+            "type": "shell",
+            "command": "pnpm verify:test",
+            "problemMatcher": [],
+            "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+        },
+        {
+            "label": "Verify: lint (scoped)",
+            "detail": "pnpm verify:lint -- scoped lint of the changed workspaces only.",
+            "type": "shell",
+            "command": "pnpm verify:lint",
+            "problemMatcher": ["$eslint-stylish"],
+            "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+        }
+    ]
+}

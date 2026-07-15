@@ -8,6 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **chore(dx):** Codegraph micro context layer — `scripts/codegraph.mjs` writes a repo-wide, AST-only import graph + module index + redux-slice map into the git-ignored `.ai-context/codegraph/` (paired with the committed Graphify macro layer). Run with `node ./scripts/codegraph.mjs` (kept out of root `package.json` scripts so a push never widens the scoped-verify typecheck to every workspace); exposed as safe scoped `.vscode/tasks.json` tasks and documented in `docs/context-engine.md`, with a `CLAUDE.md` "Context loading order" pointer. Not a CI gate — AST-only (no type-checking), OOM-safe on the low-end box
 - **ci(a11y):** jsx-a11y warning **ratchet** (`check-a11y-ratchet.mjs`) — counts `jsx-a11y` warnings over `apps/web` + `packages/ui` with an own AST-only ESLint instance and fails the `quality` gate when the count rises above the committed `.a11y-baseline.json` (seeded at 83). Lowering warnings lets a PR drop the baseline; rules stay `warn` (no flip-to-error). Documented in `docs/DEVOPS-GATES.md`
 - **ci:** weekly advisory `verify-quarantine-excludes.mjs` — re-checks that every `minimumReleaseAgeExclude` package still ships an npm provenance attestation (the exclude list matches on name, not provenance)
 - **ci(build):** emit `dist/version.json` (`{version, commit, builtAt}`) and inject `<meta name="app-version">` into the app shell, so the deployed build is identifiable without devtools

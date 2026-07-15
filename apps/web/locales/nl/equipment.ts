@@ -473,7 +473,6 @@ export const equipmentView = {
             ec: 'EC',
             waterTemp: 'Watertemp.',
             readings: 'Metingen',
-            readingsBuffer: '{{count}} metingen / {{max}} buffer',
         },
         alerts: {
             title: 'Waarschuwingen',

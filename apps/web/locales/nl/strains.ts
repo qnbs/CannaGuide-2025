@@ -176,6 +176,10 @@ export const strainsView = {
     },
     addStrainModal: {
         title: 'Aangepaste soort toevoegen',
+        yieldIndoorPlaceholder: 'bijv. 450 g/m2',
+        yieldOutdoorPlaceholder: 'bijv. 500 g/plant',
+        heightIndoorPlaceholder: 'bijv. 80-120 cm',
+        heightOutdoorPlaceholder: 'bijv. 150-200 cm',
         editTitle: 'Aangepaste soort bewerken',
         description:
             'Leg het genetische profiel, groeigedrag en sensorische kenmerken van een aangepaste soort vast in een werkruimte.',

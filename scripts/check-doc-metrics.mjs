@@ -58,22 +58,30 @@ if (relBadge !== rootPkg.version) {
     fail(`release badge: README "v${relBadge}" != package.json "${rootPkg.version}"`)
 }
 
+// A missing/renamed badge is exactly the drift this gate exists to catch, so each check
+// asserts the badge is PRESENT (>=1 match) before comparing values -- a matchAll that
+// yields nothing must fail, not silently pass.
+const assertPresent = (matches, label) => {
+    if (matches.length === 0) fail(`${label} not found in README (deleted, renamed, or format drifted)`)
+    return matches
+}
+
 // 2. TypeScript badge (appears twice: EN + DE)
-for (const m of readme.matchAll(/TypeScript-(\d+)\.x-/g)) {
+for (const m of assertPresent([...readme.matchAll(/TypeScript-(\d+)\.x-/g)], 'TypeScript badge')) {
     if (m[1] !== tsMajor) {
         fail(`TypeScript badge: README "${m[1]}.x" != devDep major "${tsMajor}" (typescript ${rootPkg.devDependencies?.typescript})`)
     }
 }
 
 // 3. Vite badge (EN + DE)
-for (const m of readme.matchAll(/Vite-(\d+)-/g)) {
+for (const m of assertPresent([...readme.matchAll(/Vite-(\d+)-/g)], 'Vite badge')) {
     if (m[1] !== viteMajor) {
         fail(`Vite badge: README "${m[1]}" != apps/web vite major "${viteMajor}" (${webPkg.devDependencies?.vite})`)
     }
 }
 
 // 4. Coverage badges (EN "coverage-NN%..lines", DE "Coverage-NN%..Zeilen")
-for (const m of readme.matchAll(/[Cc]overage-(\d+)%25%20(?:lines|Zeilen)/g)) {
+for (const m of assertPresent([...readme.matchAll(/[Cc]overage-(\d+)%25%20(?:lines|Zeilen)/g)], 'coverage badge')) {
     if (m[1] !== coverageLines) {
         fail(`coverage badge: README "${m[1]}%" != vite.config.ts lines threshold "${coverageLines}%"`)
     }
@@ -81,10 +89,10 @@ for (const m of readme.matchAll(/[Cc]overage-(\d+)%25%20(?:lines|Zeilen)/g)) {
 
 // 5. CI-workflow count (EN + DE badges, and EN/DE inline "NN CI workflows"/"NN CI-Workflows")
 const wf = String(workflowCount)
-for (const m of readme.matchAll(/CI%20[Ww]orkflows-(\d+)-/g)) {
+for (const m of assertPresent([...readme.matchAll(/CI%20[Ww]orkflows-(\d+)-/g)], 'CI-workflow badge')) {
     if (m[1] !== wf) fail(`CI-workflow badge: README "${m[1]}" != actual .yml count "${wf}"`)
 }
-for (const m of readme.matchAll(/(\d+)\s+CI[- ][Ww]orkflows/g)) {
+for (const m of assertPresent([...readme.matchAll(/(\d+)\s+CI[- ][Ww]orkflows/g)], 'CI-workflow inline count')) {
     if (m[1] !== wf) fail(`CI-workflow inline: README "${m[1]}" != actual .yml count "${wf}"`)
 }
 

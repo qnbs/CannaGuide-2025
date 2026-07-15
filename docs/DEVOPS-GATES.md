@@ -71,7 +71,7 @@ Minimum: **80% lines** and **80% functions** per file. Branch coverage is report
 | ------------------------------ | -------------------------------------------------------------------------------------------------- |
 | `pre-commit`                   | `lint-staged` (eslint + prettier on staged files)                                                  |
 | `commit-msg`                   | commitlint conventional commits                                                                    |
-| `pre-push`                     | typecheck + lint:scopes + file-budget                                                              |
+| `pre-push`                     | typecheck + lint:scopes + file-budget + doc-metrics                                                |
 | **`gate:push`** (manual, full) | `pnpm run gate:push` — identity, lint, mdc, graphify, typecheck, tests, scopes, file-budget, build |
 
 Skip hooks (emergency only): `git push --no-verify`

@@ -56,10 +56,10 @@ switch _back_ to default setup, and they may be **org-managed** rather than per-
 | **Organization security configuration** | Default setup is managed at **org** level (GitHub _code security configurations_). Edit the applied configuration under **Organization → Settings → Code security → Configurations** — not per-repo Settings.                                             |
 | **Enforced org policy**                 | If the org config sets CodeQL default setup to **Enabled** (enforced), repos cannot **Switch to advanced** locally. Use **Enabled with advanced setup allowed** in the org configuration, or change the org policy.                                       |
 | **Wrong navigation**                    | Repo path: **Settings → Advanced Security** (sidebar **Security**), scroll to **Code security** / **Code scanning**. Older UI: **Code security and analysis**. Viewing alerts: **Security** tab → **Code scanning** (not the same as enabling/disabling). |
-| **Insufficient permissions**            | Only repo/org **admins** see security configuration controls.                                                                                                                                                                                             |
+| **Insufficient permissions**            | Repository/organization **owners**, users with the repo **admin** role, and **security managers** see these controls; ordinary write access does not.                                                                                                     |
 | **Public repository**                   | Default setup is free on public repos; controls may still be org-managed rather than repo-managed.                                                                                                                                                        |
 
-References: [GitHub — security configurations at scale](https://docs.github.com/en/code-security/securing-your-organization/enabling-security-features-in-your-organization/understanding-github-security-configurations)
+References: [GitHub — organization security at scale](https://docs.github.com/en/code-security/concepts/security-at-scale/organization-security)
 · [GitHub Docs — default setup blocks SARIF upload](https://docs.github.com/en/code-security/code-scanning/troubleshooting-sarif/default-setup-enabled)
 
 ---

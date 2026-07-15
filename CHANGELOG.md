@@ -8,6 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **ci(build):** emit `dist/version.json` (`{version, commit, builtAt}`) and inject `<meta name="app-version">` into the app shell, so the deployed build is identifiable without devtools
 - **docs(audit):** `docs/audits/AUDIT-REPORT-2026-07-02-FULL.md` — full-scale deep audit & perfection report (post-v1.9.0 baseline, 2936 tests, all quality gates ✅)
 - **refactor(web):** God-file burn-down round 2 — split 9 additional over-budget modules (strainImageFallback 812→19, exportService, HelpView, HydroMonitorView, EcPhPlannerCalculator, knowledgeGraphService, StrainsView, EcPhPlannerCalculator) into focused submodules (all ≤700 LOC); `check-file-budget` reports 0 failures / 0 grandfathered
 - **ci:** `check-critical-path-coverage.mjs` — ≥80% lines/functions on `safetyPipeline`, `syncEncryptionService`, `plantSimulationService`, `diagnosisService`

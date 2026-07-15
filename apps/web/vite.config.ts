@@ -6,6 +6,8 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
+import { writeFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 import type { PluginOption } from 'vite'
 
 const __webRoot = path.dirname(fileURLToPath(import.meta.url))
@@ -135,6 +137,37 @@ function devCspPlugin(): PluginOption {
     }
 }
 
+// Emits a build-version marker so the live build is identifiable without devtools:
+// dist/version.json (queried by preview-validation) + a <meta name="app-version">.
+function buildVersionPlugin(): PluginOption {
+    const version = process.env.npm_package_version ?? '0.0.0'
+    return {
+        name: 'build-version-marker',
+        transformIndexHtml(html) {
+            return html.replace(
+                '</head>',
+                `    <meta name="app-version" content="${version}" />\n    </head>`,
+            )
+        },
+        writeBundle(options) {
+            // commit resolved at build time only (no git call on every config load / test run)
+            let commit = process.env.GITHUB_SHA ?? ''
+            if (!commit) {
+                try {
+                    commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+                } catch {
+                    commit = 'unknown'
+                }
+            }
+            const outDir = options.dir ?? 'dist'
+            writeFileSync(
+                path.join(outDir, 'version.json'),
+                JSON.stringify({ version, commit, builtAt: new Date().toISOString() }, null, 2),
+            )
+        },
+    }
+}
+
 // ── Manual Chunk Groups – declarative vendor split registry ─────────────
 // NOTE: React, Redux, Radix UI, and other core framework libraries are
 // intentionally NOT listed here.  Rollup's automatic splitting handles
@@ -182,6 +215,7 @@ export default defineConfig({
     plugins: [
         optionalMlPlugin(),
         devCspPlugin(),
+        buildVersionPlugin(),
         react(),
         babel({
             presets: [reactCompilerPreset()],

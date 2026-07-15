@@ -143,6 +143,7 @@ function buildVersionPlugin(): PluginOption {
     const version = process.env.npm_package_version ?? '0.0.0'
     return {
         name: 'build-version-marker',
+        apply: 'build',
         transformIndexHtml(html) {
             return html.replace(
                 '</head>',

@@ -34,9 +34,12 @@ const SKIP_DIRS = new Set([
     'coverage',
     '.turbo',
     'test-results',
+    'tests', // apps/web/tests -- e2e/component-test infra, fixtures, mocks (not production modules)
+    '__tests__',
+    '__mocks__',
 ])
 const SOURCE_RE = /\.(ts|tsx)$/
-const IGNORE_FILE_RE = /\.(test|spec|stories|d)\.(ts|tsx)$/
+const IGNORE_FILE_RE = /\.(test|spec|e2e|ct|stories|d)\.(ts|tsx)$/
 const RESOLVE_EXT = ['.ts', '.tsx', '/index.ts', '/index.tsx']
 
 const args = new Set(process.argv.slice(2))
@@ -73,7 +76,11 @@ function resolveSpecifier(spec, fromAbsFile) {
     }
     for (const ext of ['', ...RESOLVE_EXT]) {
         const candidate = baseAbs + ext
-        if (existsSync(candidate) && statSync(candidate).isFile()) return toKey(candidate)
+        // Only .ts/.tsx count as internal nodes: a bare specifier like `./styles.css`
+        // or `./data.json` resolves to a real file but is not a module in this graph.
+        if (SOURCE_RE.test(candidate) && existsSync(candidate) && statSync(candidate).isFile()) {
+            return toKey(candidate)
+        }
     }
     return null
 }

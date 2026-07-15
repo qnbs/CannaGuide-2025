@@ -243,22 +243,7 @@ Released: **2026-04-14** (v1.8.1), **2026-04-20** (v1.8.2)
 
 ---
 
-## v2.0 — Platform 📋
-
-Target: **2026-Q3**
-
-| Feature                                                       | Category      | Priority   | Issue    |
-| ------------------------------------------------------------- | ------------- | ---------- | -------- |
-| Real-time multi-device sync (CRDTs)                           | Sync          | ~~High~~   | done     |
-| Plugin/extension system                                       | Architecture  | ~~Medium~~ | done     |
-| Grow community forums & profiles                              | Community     | Medium     | --       |
-| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium     | --       |
-| AR plant overlay (WebXR)                                      | Visualization | Low        | --       |
-| Onboarding completion telemetry (U-05)                        | Observability | Low        | deferred |
-| RTL language preparation (I-02)                               | i18n          | Low        | deferred |
-| Offline ONNX TTS/STT (V-06)                                   | Local AI      | Low        | deferred |
-
-### v1.9.x — Audit & Hardening (v1.9.0 released 2026-07-01)
+## v1.9.x — Audit & Hardening (v1.9.0 released 2026-07-01)
 
 v1.9.0 released **2026-07-01**; further v1.9.x hardening ongoing.
 
@@ -276,6 +261,23 @@ v1.9.0 released **2026-07-01**; further v1.9.x hardening ongoing.
 | `pnpm run docs:sync-metrics` for test-count drift                  | DevEx         | P1       | ✅ done                                   |
 | CRDT conflict resolution UI                                        | Sync          | P2       | 📋 planned                                |
 | WebXR module abstraction (`features/xr/`)                          | Visualization | P3       | 📋 v2.0                                   |
+
+---
+
+## v2.0 — Platform 📋
+
+Target: **2026-Q3**
+
+| Feature                                                       | Category      | Priority   | Issue    |
+| ------------------------------------------------------------- | ------------- | ---------- | -------- |
+| Real-time multi-device sync (CRDTs)                           | Sync          | ~~High~~   | done     |
+| Plugin/extension system                                       | Architecture  | ~~Medium~~ | done     |
+| Grow community forums & profiles                              | Community     | Medium     | --       |
+| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium     | --       |
+| AR plant overlay (WebXR)                                      | Visualization | Low        | --       |
+| Onboarding completion telemetry (U-05)                        | Observability | Low        | deferred |
+| RTL language preparation (I-02)                               | i18n          | Low        | deferred |
+| Offline ONNX TTS/STT (V-06)                                   | Local AI      | Low        | deferred |
 
 ---
 

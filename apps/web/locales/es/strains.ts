@@ -176,6 +176,10 @@ export const strainsView = {
     },
     addStrainModal: {
         title: 'Agregar Variedad Personalizada',
+        yieldIndoorPlaceholder: 'p. ej., 450 g/m2',
+        yieldOutdoorPlaceholder: 'p. ej., 500 g/planta',
+        heightIndoorPlaceholder: 'p. ej., 80-120 cm',
+        heightOutdoorPlaceholder: 'p. ej., 150-200 cm',
         editTitle: 'Editar Variedad Personalizada',
         description:
             'Captura el perfil genetico, comportamiento de crecimiento y notas sensoriales de una variedad personalizada en un espacio de trabajo consistente.',

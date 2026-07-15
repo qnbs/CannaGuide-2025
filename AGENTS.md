@@ -1,6 +1,6 @@
 # AGENTS.md
 
-## Cursor Cloud specific instructions
+## Cloud agent instructions (Codespaces / CI)
 
 ### Product
 
@@ -21,25 +21,16 @@ node -v   # must show v24.x
 
 `~/.bashrc` in this environment is preconfigured with the above.
 
-### VM update script (Cursor Cloud startup)
+### Install / bootstrap
 
-The environment **update_script** must be a **single command** (each line runs in a separate shell, so `export` / `nvm use` do not persist across lines):
-
-```bash
-bash scripts/cursor-cloud-update.sh
-```
-
-That script installs nvm/Node 24 when needed, prepends the correct Node to `PATH` (over `/exec-daemon/node` v22), and runs `pnpm install --frozen-lockfile`.
-
-**Cold VM first run:** If the script exits with `Node.js >= 24 required (got v22...)`, nvm may have just finished installing while `/exec-daemon/node` is still first on `PATH`—**run the script again**; the second invocation is idempotent and succeeds once Node 24 is on disk.
-
-### Install (manual)
+Ensure Node 24 is on `PATH` (see above), then install with the frozen lockfile:
 
 ```bash
-bash scripts/cursor-cloud-update.sh
+corepack enable
+pnpm install --frozen-lockfile
 ```
 
-Or see [README.md](README.md) for the canonical command list.
+Reinstall only when `pnpm-lock.yaml` actually changed, and always with `--frozen-lockfile` — a bare `pnpm install` re-resolves carets and can trip the `minimumReleaseAge` quarantine in CI. See [README.md](README.md) for the canonical command list.
 
 ### Run the web app (dev)
 

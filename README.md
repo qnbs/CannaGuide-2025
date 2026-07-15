@@ -12,7 +12,7 @@
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Tests](https://img.shields.io/badge/tests-2812%20passed-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-40%25%20target-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-43%25%20lines-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository Activity -->
 
@@ -27,9 +27,9 @@
 
 <!-- Tech Stack -->
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
@@ -72,7 +72,7 @@
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-25-yellow)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/README.md)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-27-yellow)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/README.md)
 [![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -107,12 +107,12 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2812 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 24 CI workflows
+776 strains · 2812 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 27 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
 | **Runtime**     | React 19 + TypeScript (strict)       | Zero `any`, `exactOptionalPropertyTypes`    |
-| **Build**       | Vite 7 + vite-plugin-pwa             | InjectManifest SW, fast HMR                 |
+| **Build**       | Vite 8 + vite-plugin-pwa             | InjectManifest SW, fast HMR                 |
 | **State**       | Redux Toolkit 2 + Zustand 5          | 19 persisted slices + 9 transient stores    |
 | **AI (Cloud)**  | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction             |
 | **AI (Local)**  | Transformers.js, WebLLM, TF.js, ONNX | 22 services, 8 ML models, 3-layer fallback  |
@@ -142,7 +142,7 @@ pnpm run lint               # ESLint (flat config, 0 warnings)
 
 > All commands: [docs/release-process.md](docs/release-process.md) · DevContainer: [.devcontainer/](.devcontainer/)
 
-**Windows (Cursor):**
+**Windows:**
 
 ```powershell
 pnpm run setup:windows      # uv + deps + doctor
@@ -150,7 +150,7 @@ pnpm run windows:doctor     # MCP, Node, gh, git preflight
 pnpm run mcp:doctor         # Graphify + GitKraken MCP
 ```
 
-See [`docs/SESSION-177-ROADMAP.md`](docs/SESSION-177-ROADMAP.md) and [CONTRIBUTING.md](CONTRIBUTING.md#mcp-graphify--gitkraken).
+See [`docs/SESSION-177-ROADMAP.md`](docs/SESSION-177-ROADMAP.md) and [CONTRIBUTING.md](CONTRIBUTING.md#graphify-knowledge-graph--mcp).
 
 ---
 
@@ -355,12 +355,11 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | typecheck       | pass                                    |
 | lint:scopes     | pass                                    |
 | build + budget  | pass                                    |
-| mdc:e2e         | pass                                    |
 | graphify doctor | pass                                    |
 | CSP check       | pass                                    |
 | full E2E        | CI only (advisory on `main` aggregator) |
 
-### CI/CD Workflows (25)
+### CI/CD Workflows (27)
 
 | Workflow           | Trigger                       | Purpose                                                                          |
 | ------------------ | ----------------------------- | -------------------------------------------------------------------------------- |
@@ -377,19 +376,17 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | Mutation Testing   | push, PR                      | Stryker Redux slice mutation testing                                             |
 | Preview Validation | deploy                        | Playwright + Lighthouse on deploy previews (paused)                              |
 | Graphify Update    | push main, schedule, dispatch | Regenerates `graphify-out/` via `uv run … graphify update .`, commits if changed |
-| + 12 more          | various                       | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy      |
+| + 14 more          | various                       | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy      |
 
-### Cursor rules, MDC validation, and Graphify
+### Graphify knowledge graph & MCP
 
-| Check                         | Command / location                                                                                                                     | Purpose                                                   |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Rule frontmatter and examples | `pnpm run mdc:validate`                                                                                                                | CI gate; enforces examples, line budget, globs syntax     |
-| Rules + governance smoke      | `pnpm run mdc:e2e`                                                                                                                     | CI gate; manifest/index + nested `mdc:validate`           |
-| MCP / graph readiness         | `pnpm run graphify:mcp:doctor`                                                                                                         | CI gate; `graph.json`, `uv`, launcher, Windows fallback   |
-| Graph artifacts               | `graphify-out/` (not `cache/`)                                                                                                         | Versioned graph for MCP; refresh with `graphify update .` |
-| Governance                    | [`docs/cursor-mdc-governance.md`](docs/cursor-mdc-governance.md), [`docs/GRAPHIFY-COMPLETE-GUIDE.md`](docs/GRAPHIFY-COMPLETE-GUIDE.md) | Full policy and setup                                     |
+| Check                 | Command / location                                                   | Purpose                                                   |
+| --------------------- | -------------------------------------------------------------------- | --------------------------------------------------------- |
+| MCP / graph readiness | `pnpm run graphify:mcp:doctor`                                       | CI gate; `graph.json`, `uv`, launcher, Windows fallback   |
+| Graph artifacts       | `graphify-out/` (not `cache/`)                                       | Versioned graph for MCP; refresh with `graphify update .` |
+| Setup / policy        | [`docs/GRAPHIFY-COMPLETE-GUIDE.md`](docs/GRAPHIFY-COMPLETE-GUIDE.md) | Dev Container `uv` install, launchers, `.mcp.json`        |
 
-[`CONTRIBUTING.md`](CONTRIBUTING.md) describes Dev Container `uv` install and team `cursor_settings.json`.
+The Graphify + GitKraken MCP servers are configured in `.mcp.json` (Claude Code reads it at the repo root; approve them via `/mcp`).
 
 ---
 
@@ -470,7 +467,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Tests](https://img.shields.io/badge/Tests-2812%20bestanden-brightgreen)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/Coverage-35.4%25%20Zeilen-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/Coverage-43%25%20Zeilen-yellow)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 
 <!-- Repository-Aktivitaet -->
 
@@ -485,9 +482,9 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 
 <!-- Tech-Stack -->
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
@@ -528,7 +525,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![Redux Slices](https://img.shields.io/badge/Redux%20Slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/Themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-24-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-27-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/Hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n-Namensraeume](https://img.shields.io/badge/i18n%20Namensraeume-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -540,12 +537,12 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2812 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 24 CI-Workflows
+776 Sorten · 2812 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 27 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
 | **Runtime**    | React 19 + TypeScript (strict)       | Null `any`, `exactOptionalPropertyTypes`      |
-| **Build**      | Vite 7 + vite-plugin-pwa             | InjectManifest SW, schnelles HMR              |
+| **Build**      | Vite 8 + vite-plugin-pwa             | InjectManifest SW, schnelles HMR              |
 | **State**      | Redux Toolkit 2 + Zustand 5          | 19 persistierte Slices + 9 transiente Stores  |
 | **KI (Cloud)** | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
 | **KI (Lokal)** | Transformers.js, WebLLM, TF.js, ONNX | 22 Services, 8 ML-Modelle, 3-Schicht-Fallback |
@@ -600,13 +597,13 @@ pnpm run typecheck          # tsc --noEmit
 
 ### CI/CD, Testing & Sicherheit
 
-| Bereich          | Details                                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                                  |
-| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM                        |
-| **CI/CD**        | 25 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; MDC-Validate + Graphify-Doctor in CI |
-| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                                   |
-| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                                         |
+| Bereich          | Details                                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                   |
+| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM         |
+| **CI/CD**        | 27 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; Graphify-Doctor in CI |
+| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                    |
+| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                          |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit-Backlog](docs/AUDIT_BACKLOG.md) · [Release-Prozess](docs/release-process.md)
 

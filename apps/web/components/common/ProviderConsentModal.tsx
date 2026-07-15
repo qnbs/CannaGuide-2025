@@ -14,7 +14,7 @@ import { aiConsentService } from '@/services/aiConsentService'
  * `useUIStore.providerConsentRequest` is non-null.
  */
 const ProviderConsentModalComponent: React.FC = () => {
-    const { t } = useTranslation(['settings', 'common'])
+    const { t } = useTranslation()
     const { request, resolveConsent } = useUIStore(
         useShallow((s) => ({
             request: s.providerConsentRequest,
@@ -34,23 +34,22 @@ const ProviderConsentModalComponent: React.FC = () => {
         <Modal
             isOpen={isOpen}
             onClose={handleDeny}
-            title={t('security.providerConsent', { ns: 'settings' })}
+            title={t('settingsView.security.providerConsent')}
             size="md"
             footer={
                 <div className="flex justify-end gap-2 pt-2">
                     <Button variant="ghost" size="sm" onClick={handleDeny}>
-                        {t('security.providerConsentDeny', { ns: 'settings' })}
+                        {t('settingsView.security.providerConsentDeny')}
                     </Button>
                     <Button variant="primary" size="sm" onClick={handleGrant}>
-                        {t('common.confirm', { ns: 'common' })}
+                        {t('common.confirm')}
                     </Button>
                 </div>
             }
         >
             <div className="space-y-3 text-sm text-slate-300">
                 <p>
-                    {t('security.providerConsentPrompt', {
-                        ns: 'settings',
+                    {t('settingsView.security.providerConsentPrompt', {
                         provider: displayName,
                     })}
                 </p>
@@ -61,7 +60,7 @@ const ProviderConsentModalComponent: React.FC = () => {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-emerald-400 underline hover:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 rounded"
                     >
-                        {t('security.providerDpaLink', { ns: 'settings' })}
+                        {t('settingsView.security.providerDpaLink')}
                     </a>
                 )}
             </div>

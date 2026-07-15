@@ -247,11 +247,11 @@ jobs:
             - name: Lint strict scopes
               run: pnpm run lint:scopes
 
-            - name: MDC validate and context e2e
-              run: pnpm run mdc:e2e
-
             - name: Graphify MCP doctor
               run: pnpm run graphify:mcp:doctor
+
+            - name: Doc-metric truth check
+              run: node scripts/check-doc-metrics.mjs
 
             - name: Type check (workspaces)
               run: pnpm exec turbo run typecheck

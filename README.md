@@ -112,7 +112,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
 | **Runtime**     | React 19 + TypeScript (strict)       | Zero `any`, `exactOptionalPropertyTypes`    |
-| **Build**       | Vite 7 + vite-plugin-pwa             | InjectManifest SW, fast HMR                 |
+| **Build**       | Vite 8 + vite-plugin-pwa             | InjectManifest SW, fast HMR                 |
 | **State**       | Redux Toolkit 2 + Zustand 5          | 19 persisted slices + 9 transient stores    |
 | **AI (Cloud)**  | Gemini, OpenAI, Claude, Grok         | Multi-provider BYOK abstraction             |
 | **AI (Local)**  | Transformers.js, WebLLM, TF.js, ONNX | 22 services, 8 ML models, 3-layer fallback  |
@@ -545,7 +545,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
 | **Runtime**    | React 19 + TypeScript (strict)       | Null `any`, `exactOptionalPropertyTypes`      |
-| **Build**      | Vite 7 + vite-plugin-pwa             | InjectManifest SW, schnelles HMR              |
+| **Build**      | Vite 8 + vite-plugin-pwa             | InjectManifest SW, schnelles HMR              |
 | **State**      | Redux Toolkit 2 + Zustand 5          | 19 persistierte Slices + 9 transiente Stores  |
 | **KI (Cloud)** | Gemini, OpenAI, Claude, Grok         | Multi-Provider BYOK-Abstraktion               |
 | **KI (Lokal)** | Transformers.js, WebLLM, TF.js, ONNX | 22 Services, 8 ML-Modelle, 3-Schicht-Fallback |
@@ -604,7 +604,7 @@ pnpm run typecheck          # tsc --noEmit
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                                  |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM                        |
-| **CI/CD**        | 25 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; MDC-Validate + Graphify-Doctor in CI |
+| **CI/CD**        | 27 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; MDC-Validate + Graphify-Doctor in CI |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                                   |
 | **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                                         |
 

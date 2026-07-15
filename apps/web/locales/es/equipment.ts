@@ -477,7 +477,6 @@ export const equipmentView = {
             ec: 'EC',
             waterTemp: 'Temp. Agua',
             readings: 'Lecturas',
-            readingsBuffer: '{{count}} lecturas / {{max}} buffer',
         },
         alerts: {
             title: 'Alertas',

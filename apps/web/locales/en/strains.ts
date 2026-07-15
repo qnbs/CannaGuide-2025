@@ -176,6 +176,10 @@ export const strainsView = {
     },
     addStrainModal: {
         title: 'Add Custom Strain',
+        yieldIndoorPlaceholder: 'e.g., 450 g/m²',
+        yieldOutdoorPlaceholder: 'e.g., 500 g/plant',
+        heightIndoorPlaceholder: 'e.g., 80-120 cm',
+        heightOutdoorPlaceholder: 'e.g., 150-200 cm',
         editTitle: 'Edit Custom Strain',
         description:
             'Capture the genetic profile, growth behavior and sensory notes of a custom strain in one consistent workspace.',

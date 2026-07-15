@@ -481,7 +481,6 @@ export const equipmentView = {
             ec: 'EC',
             waterTemp: 'Temp. Eau',
             readings: 'Mesures',
-            readingsBuffer: '{{count}} mesures / {{max}} tampon',
         },
         alerts: {
             title: 'Alertes',

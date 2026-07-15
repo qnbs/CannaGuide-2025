@@ -74,7 +74,6 @@ export const settingsView = {
         providerConsent: 'Datenübermittlungs-Einwilligung',
         providerConsentPrompt:
             'Sie sind dabei, Pflanzendaten (einschließlich Fotos) an {{provider}} zu senden. Stimmen Sie zu?',
-        providerConsentRemember: 'Meine Wahl für diesen Anbieter merken',
         providerConsentDeny: 'Stattdessen lokale KI verwenden',
         providerDpaLink: 'Auftragsverarbeitungsvertrag anzeigen',
     },

@@ -71,7 +71,6 @@ export const settingsView = {
         providerConsent: 'Data Transmission Consent',
         providerConsentPrompt:
             'You are about to send plant data (including photos) to {{provider}}. Do you consent?',
-        providerConsentRemember: 'Remember my choice for this provider',
         providerConsentDeny: 'Use local AI instead',
         providerDpaLink: 'View Data Processing Agreement',
     },

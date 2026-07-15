@@ -696,7 +696,6 @@ export const strainsView = {
         poor: 'Mangelhaft',
     },
     providers: {
-        otreeba: 'Otreeba',
         cannlytics: 'Cannlytics',
         strainapi: 'The Strain API',
         cannseek: 'CannSeek',

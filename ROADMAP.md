@@ -17,6 +17,7 @@
 | **v1.6** | 2026-04-10 | ✅ Released | Engineering audit, i18n completeness, documentation sync                           |
 | **v1.7** | 2026-04-11 | ✅ Released | Voice & Accessibility -- Voice Pro, Preset Setups, Enhanced PDF, a11y              |
 | **v1.8** | 2026-04-14 | ✅ Released | HydroMonitor, Predictive Analytics, Glassmorphism, Worker Pool W-06                |
+| **v1.9** | 2026-07-01 | ✅ Released | Audit & Hardening -- documentation truth, gate hardening, i18n & a11y              |
 | **v2.0** | 2026-Q3    | 📋 Planned  | Digital Twin Platform -- AR/VR overlays + advanced sandbox                         |
 
 ---
@@ -219,7 +220,7 @@ Released: **2026-04-11**
 
 ---
 
-## v1.8 -- HydroMonitor & Analytics Edition (v1.8.2 latest)
+## v1.8 -- HydroMonitor & Analytics Edition
 
 Released: **2026-04-14** (v1.8.1), **2026-04-20** (v1.8.2)
 
@@ -242,24 +243,9 @@ Released: **2026-04-14** (v1.8.1), **2026-04-20** (v1.8.2)
 
 ---
 
-## v2.0 — Platform 📋
+## v1.9.x — Audit & Hardening (v1.9.0 released 2026-07-01)
 
-Target: **2026-Q3**
-
-| Feature                                                       | Category      | Priority   | Issue    |
-| ------------------------------------------------------------- | ------------- | ---------- | -------- |
-| Real-time multi-device sync (CRDTs)                           | Sync          | ~~High~~   | done     |
-| Plugin/extension system                                       | Architecture  | ~~Medium~~ | done     |
-| Grow community forums & profiles                              | Community     | Medium     | --       |
-| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium     | --       |
-| AR plant overlay (WebXR)                                      | Visualization | Low        | --       |
-| Onboarding completion telemetry (U-05)                        | Observability | Low        | deferred |
-| RTL language preparation (I-02)                               | i18n          | Low        | deferred |
-| Offline ONNX TTS/STT (V-06)                                   | Local AI      | Low        | deferred |
-
-### v1.9.x — Audit & Hardening (in progress)
-
-Target: **2026-Q2/Q3** (post v1.8.2)
+v1.9.0 released **2026-07-01**; further v1.9.x hardening ongoing.
 
 | Feature                                                            | Category      | Priority | Status                                    |
 | ------------------------------------------------------------------ | ------------- | -------- | ----------------------------------------- |
@@ -275,6 +261,23 @@ Target: **2026-Q2/Q3** (post v1.8.2)
 | `pnpm run docs:sync-metrics` for test-count drift                  | DevEx         | P1       | ✅ done                                   |
 | CRDT conflict resolution UI                                        | Sync          | P2       | 📋 planned                                |
 | WebXR module abstraction (`features/xr/`)                          | Visualization | P3       | 📋 v2.0                                   |
+
+---
+
+## v2.0 — Platform 📋
+
+Target: **2026-Q3**
+
+| Feature                                                       | Category      | Priority   | Issue    |
+| ------------------------------------------------------------- | ------------- | ---------- | -------- |
+| Real-time multi-device sync (CRDTs)                           | Sync          | ~~High~~   | done     |
+| Plugin/extension system                                       | Architecture  | ~~Medium~~ | done     |
+| Grow community forums & profiles                              | Community     | Medium     | --       |
+| Voice assistant deep integration (ONNX TTS/STT offline, V-06) | UX            | Medium     | --       |
+| AR plant overlay (WebXR)                                      | Visualization | Low        | --       |
+| Onboarding completion telemetry (U-05)                        | Observability | Low        | deferred |
+| RTL language preparation (I-02)                               | i18n          | Low        | deferred |
+| Offline ONNX TTS/STT (V-06)                                   | Local AI      | Low        | deferred |
 
 ---
 

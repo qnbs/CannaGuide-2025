@@ -54,8 +54,10 @@ Current i18n gates and why they stay green:
 
 Proposed hardening (design in the dedicated pass):
 
-1. **Wire `check:i18n-usage` into the `verify` gate** (cheapest high-value win — catches
-   used-but-EN-missing keys and the `{ ns:'…' }` mismatch class).
+1. **Wire `check:i18n-usage` into the `verify` gate** (cheapest high-value win — it flags keys
+   used in code but missing from EN). It does **not** parse `{ ns: '…' }` options or validate
+   namespace registration, so it catches the consent-modal class only when the unqualified key is
+   also absent from EN; full namespace-mismatch coverage needs the dedicated check in item 3.
 2. Promote es/fr/nl to blocking in completeness **after** the §1 backfill lands (else instant red).
 3. Add a **key-name-integrity** check (non-EN key _names_ diverging from EN) and an **orphan-key**
    check (key present in one locale, absent from EN) so the class of bug fixed in the contained PR

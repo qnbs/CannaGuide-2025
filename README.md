@@ -601,7 +601,7 @@ pnpm run typecheck          # tsc --noEmit
 | ---------------- | --------------------------------------------------------------------------------------------------------------- |
 | **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                   |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM         |
-| **CI/CD**        | 27 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; Graphify-Doctor in CI |
+| **CI/CD**        | 28 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; Graphify-Doctor in CI |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                    |
 | **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                          |
 

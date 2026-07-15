@@ -2,10 +2,10 @@
 
 **Zielgruppe:** Menschen und **KI-Agenten**, die dieses Repository verstehen, Graphify betreiben oder **dieselbe Integrationsform in anderen Apps/Repositories** nachbauen wollen.
 
-> **Hinweis (Migration):** CannaGuide nutzt inzwischen Claude Code CLI statt Cursor. Die MCP-Server
-> (`graphify`, `gitkraken`) sind jetzt in **`.mcp.json`** im Repo-Root konfiguriert (nicht mehr in
-> `.cursor/mcp.json`). Abschnitte unten, die `.cursor/` oder `mdc:*`-Skripte erwähnen, beschreiben
-> das zurückgebaute Cursor-Setup und sind nur noch historisch.
+> **Note (migration):** CannaGuide now uses Claude Code CLI instead of Cursor. The MCP servers
+> (`graphify`, `gitkraken`) are now configured in **`.mcp.json`** at the repo root (no longer in
+> `.cursor/mcp.json`). Sections below that mention `.cursor/` or `mdc:*` scripts describe the retired
+> Cursor setup and are historical only.
 
 **Lesereihenfolge für Agenten (empfohlen):**
 
@@ -339,11 +339,11 @@ Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unter
 
 | Komponente                              | Zweck                                                                                                                                                      |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/ci.yml`              | Installiert `uv` (fuer Doctor), dann `pnpm run graphify:mcp:doctor` vor Typecheck/Tests.                                                                   |
+| `.github/workflows/ci.yml`              | Installs `uv` (for the doctor), then runs `pnpm run graphify:mcp:doctor` before typecheck/tests.                                                           |
 | `.github/workflows/graphify-update.yml` | Auf `main` (Push, woechentlich, manuell): `uv run --with graphifyy python -m graphify update .`, committet Aenderungen unter `graphify-out/` (ohne Cache). |
 | `scripts/graphify-mcp-doctor.mjs`       | Prueft u. a. JSON-Schema-Aehnlichkeit (`nodes` + `links`/`edges`), Inferred-Confidence-Schwelle, Graph-Freshness vs. letzter Git-Commit.                   |
 
-**Hinweis:** Schwere E2E- und Playwright-Laeufe sind bewusst **CI-first**; lokal reichen `graphify:mcp:doctor` und Zieltests.
+**Note:** Heavy E2E and Playwright runs are intentionally **CI-first**; locally `graphify:mcp:doctor` and targeted tests suffice.
 
 ---
 

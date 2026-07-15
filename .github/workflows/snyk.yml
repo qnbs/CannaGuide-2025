@@ -1,8 +1,10 @@
 name: Snyk Security
 
 # Advisory weekly scan. Primary gates: CodeQL + Grype + Semgrep + pnpm audit.
-# PR checks use the Snyk GitHub App (security/snyk). This workflow uploads
-# Open Source SARIF when SNYK_TOKEN is set. See docs/code-scanning-setup.md
+# PR checks use the Snyk GitHub App (security/snyk). When SNYK_TOKEN is set this
+# workflow runs a Snyk Open Source scan + monitor; it does NOT upload SARIF
+# (alerts surface via the Snyk App -- see the note at the end of the job and
+# docs/code-scanning-setup.md).
 
 on:
     schedule:

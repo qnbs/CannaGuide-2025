@@ -86,7 +86,8 @@ The hooks are now cheap enough to run, so `--no-verify` is **banned** -- for com
 push. It was the bypass that let a formatting failure and a file-budget failure reach CI.
 
 - `pre-commit`: commit-identity check + `lint-staged` (seconds).
-- `pre-push`: scoped typecheck + `lint-scopes --changed` + file budget.
+- `pre-push`: scoped typecheck + `lint-scopes --changed` + file budget + `check:doc-metrics`
+  (README badges vs source).
 
 Both slow steps used to ignore the diff: typecheck ran a bare `turbo run` (6-9 min), and
 `lint-scopes` linted every file under the strict scopes -- **measured at 7 min 34 s for a
@@ -101,6 +102,7 @@ commands, not the expensive ones this repo exists to avoid -- and say so in the 
 node ./scripts/scoped-verify.mjs typecheck     # every touched workspace, not just web
 node ./scripts/lint-scopes.mjs --changed
 pnpm run check:file-budget
+node ./scripts/check-doc-metrics.mjs
 npx prettier --check $(git status --porcelain | awk '{print $2}') --ignore-unknown
 pnpm run check:i18n
 ```
@@ -122,6 +124,13 @@ pnpm run check:i18n
   raises the next wave -- treat nitpicks and "outside diff range" comments as in scope.
 - **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
   rule passes honestly; the suppression ratchet gates CI.
+- **`main` is guarded by a GitHub _ruleset_ (not classic branch protection),** so
+  `gh api .../branches/main/protection` 404s -- read it via `gh api .../rules/branches/main`.
+  It requires **signed commits**, **squash-only** merges, **thread resolution**, and the
+  `✅ CI Status` check. A PR with **any unsigned commit** is `mergeStateStatus: BLOCKED` even
+  when green (this stranded a third-party PR whose original commits were unsigned; my own
+  SSH-signed commits merged fine). Fix by re-committing signed, or the owner admin-merges
+  (`gh pr merge <n> --squash --admin`) -- GitHub signs the squash result either way.
 
 ## Language
 
@@ -191,7 +200,23 @@ Transferable zero-copy. See `docs/worker-bus.md`.
 `i18n.ts` + `locales/{en,de,es,fr,nl}/`, one file per namespace (~13 per locale). User-visible
 text goes through `t('...')` in React or `getT()` outside it -- never a literal. `check:i18n` /
 `check:i18n-usage` / `lint:i18n` gate locale parity and are part of "done" for any new text
-surface.
+surface. (`fallbackLng: 'en'` means a missing key renders English, not a raw key -- so a
+gap can pass a smoke test while es/fr/nl silently fall back; trust the gates, not the screen.)
+
+## Drift gates: docs-truth and a11y ratchet
+
+Two gates fail on _inconsistency_, not on broken code, so they surprise you if you don't expect
+them (`docs/DEVOPS-GATES.md` is the full inventory):
+
+- **`check:doc-metrics`** (in the `quality` CI gate _and_ pre-push): every README metric badge
+  -- release version, TypeScript, Vite, coverage, and the **CI-workflow count** -- must match
+  source (`package.json`, `apps/web/vite.config.ts`, the `.github/workflows/*.yml` count). So
+  **adding a workflow means bumping the count in ~6 README spots** (EN + DE badges, header,
+  both stat lines, the table) or CI goes red on a change that looks unrelated.
+- **`check:a11y-ratchet`** (CI `quality` only -- runs its own AST-only ESLint, so it is light):
+  jsx-a11y warnings may not exceed `.a11y-baseline.json` (currently 83). Fixing warnings lets
+  you _lower_ it with `node scripts/check-a11y-ratchet.mjs --update` in the same PR; never raise
+  it. Rules stay `warn` -- this is a count ceiling, not a flip-to-error.
 
 ## Everyday commands not covered above
 

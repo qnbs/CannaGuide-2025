@@ -27,6 +27,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 ### Fixed
 
 - **docs(security):** Supported versions updated to reflect v1.9.x as current (was stale at 1.8.x)
+- **docs:** README/ROADMAP metric truth-up — TypeScript badge 5.x→6.x, Vite 7→8, coverage badge →43% lines (matches `vite.config.ts` thresholds), CI-workflow count 24/25→27, and a v1.9.0 ROADMAP row (was still labelled "v1.8.2 latest" / v1.9.x "in progress"). Sources verified from `package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `.github/workflows/`. Test-count badge deferred to the upcoming doc-metric gate (single-sourced from CI).
 
 ---
 

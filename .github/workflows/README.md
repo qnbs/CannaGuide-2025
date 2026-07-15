@@ -17,25 +17,33 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 
 ## Maintenance & automation
 
-| Workflow                                                   | Purpose                                                           |
-| ---------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).    |
+| Workflow                                                   | Purpose                                                                                                |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).                                         |
 | [`cleanup-deployments.yml`](./cleanup-deployments.yml)     | Nightly + manual prune of GitHub Deployments (keep 3/env); also runs post-deploy via composite action. |
-| [`cleanup-branches.yml`](./cleanup-branches.yml)         | Weekly + manual prune of merged / closed-PR branches (`cursor/*`, `dependabot/*`).                    |
-| [`graphify-update.yml`](./graphify-update.yml)             | Refresh `graphify-out/` on `main` when code/docs change.          |
-| [`stale.yml`](./stale.yml)                                 | Mark stale issues/PRs (scheduled).                                |
-| [`labeler.yml`](./labeler.yml)                             | PR labels from `.github/labeler.yml`.                             |
+| [`cleanup-branches.yml`](./cleanup-branches.yml)           | Weekly + manual prune of merged / closed-PR branches (`cursor/*`, `dependabot/*`).                     |
+| [`graphify-update.yml`](./graphify-update.yml)             | Refresh `graphify-out/` on `main` when code/docs change.                                               |
+| [`stale.yml`](./stale.yml)                                 | Mark stale issues/PRs (scheduled).                                                                     |
+| [`labeler.yml`](./labeler.yml)                             | PR labels from `.github/labeler.yml`.                                                                  |
 
 ## Security & quality
 
-| Workflow                                   | Purpose                                                              |
-| ------------------------------------------ | -------------------------------------------------------------------- |
-| [`codeql.yml`](./codeql.yml)               | CodeQL manual scan (dispatch; default setup handles PR/push).        |
-| [`security-scan.yml`](./security-scan.yml) | Composite security scans.                                            |
-| [`security-full.yml`](./security-full.yml) | Extended / scheduled security suite.                                 |
-| [`snyk.yml`](./snyk.yml)                   | Weekly Snyk advisory (`SNYK_TOKEN`; no SARIF — Snyk App for alerts). |
-| [`scorecard.yml`](./scorecard.yml)         | OpenSSF Scorecard.                                                   |
-| [`config-guard.yml`](./config-guard.yml)   | Devcontainer/VS Code guard on PRs.                                   |
+| Workflow                                                   | Purpose                                                                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [`codeql.yml`](./codeql.yml)                               | CodeQL **advanced** scan — single source (default setup disabled); matrix js-ts/actions/python/rust on push/PR/schedule. |
+| [`security-scan.yml`](./security-scan.yml)                 | Composite security scans.                                                                                                |
+| [`security-full.yml`](./security-full.yml)                 | Extended / scheduled security suite.                                                                                     |
+| [`snyk.yml`](./snyk.yml)                                   | Weekly Snyk advisory (`SNYK_TOKEN`; scan + monitor, no SARIF — Snyk App for alerts).                                     |
+| [`quarantine-provenance.yml`](./quarantine-provenance.yml) | Weekly advisory: re-verify `minimumReleaseAgeExclude` packages still ship npm provenance attestations.                   |
+| [`scorecard.yml`](./scorecard.yml)                         | OpenSSF Scorecard.                                                                                                       |
+| [`config-guard.yml`](./config-guard.yml)                   | Devcontainer/VS Code guard on PRs.                                                                                       |
+
+## AI assistance
+
+| Workflow                                             | Purpose                                                                             |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [`claude.yml`](./claude.yml)                         | On-demand Claude Code agent triggered by `@claude` in issue / PR / review comments. |
+| [`claude-code-review.yml`](./claude-code-review.yml) | Automated Claude review on pull requests (fork-guarded).                            |
 
 ## Testing & experiments
 

@@ -53,6 +53,9 @@ jobs:
             - name: CSP consistency check
               run: node scripts/security/check-csp-consistency.mjs
 
+            - name: Doc-metric truth check (README badges vs source)
+              run: node scripts/check-doc-metrics.mjs
+
             - name: Prettier check (changed markdown/MDC only)
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'origin/main' }}

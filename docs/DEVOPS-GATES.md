@@ -26,6 +26,7 @@ GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Secu
 | Service dependency acyclic                        | `quality`  | `node scripts/generate-service-map.mjs`                     |
 | i18n completeness                                 | `quality`  | `pnpm run check:i18n`                                       |
 | Strain catalog integrity                          | `quality`  | `pnpm run strains:check-integrity`                          |
+| Documentation metrics (badges ↔ source)           | `quality`  | `pnpm run check:doc-metrics`                                |
 | Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                      |
 | E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                      |
 | CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`           |
@@ -70,7 +71,7 @@ Minimum: **80% lines** and **80% functions** per file. Branch coverage is report
 | ------------------------------ | -------------------------------------------------------------------------------------------------- |
 | `pre-commit`                   | `lint-staged` (eslint + prettier on staged files)                                                  |
 | `commit-msg`                   | commitlint conventional commits                                                                    |
-| `pre-push`                     | typecheck + lint:scopes + file-budget                                                              |
+| `pre-push`                     | typecheck + lint:scopes + file-budget + doc-metrics                                                |
 | **`gate:push`** (manual, full) | `pnpm run gate:push` — identity, lint, mdc, graphify, typecheck, tests, scopes, file-budget, build |
 
 Skip hooks (emergency only): `git push --no-verify`

@@ -9,6 +9,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 ### Added
 
 - **ci(build):** emit `dist/version.json` (`{version, commit, builtAt}`) and inject `<meta name="app-version">` into the app shell, so the deployed build is identifiable without devtools
+- **ci:** `check-doc-metrics.mjs` documentation-truth gate — fails when a README badge (release version, TypeScript, Vite, coverage, CI-workflow count) contradicts source (`package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `.github/workflows/`); wired into the `quality` merge gate, pre-push, and `docs/DEVOPS-GATES.md`
 - **docs(audit):** `docs/audits/AUDIT-REPORT-2026-07-02-FULL.md` — full-scale deep audit & perfection report (post-v1.9.0 baseline, 2936 tests, all quality gates ✅)
 - **refactor(web):** God-file burn-down round 2 — split 9 additional over-budget modules (strainImageFallback 812→19, exportService, HelpView, HydroMonitorView, EcPhPlannerCalculator, knowledgeGraphService, StrainsView, EcPhPlannerCalculator) into focused submodules (all ≤700 LOC); `check-file-budget` reports 0 failures / 0 grandfathered
 - **ci:** `check-critical-path-coverage.mjs` — ≥80% lines/functions on `safetyPipeline`, `syncEncryptionService`, `plantSimulationService`, `diagnosisService`
@@ -28,6 +29,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 ### Fixed
 
 - **docs(security):** Supported versions updated to reflect v1.9.x as current (was stale at 1.8.x)
+- **docs:** README/ROADMAP metric truth-up — TypeScript badge 5.x→6.x, Vite 7→8, coverage badge →43% lines (matches `vite.config.ts` thresholds), CI-workflow count 24/25→27, and a v1.9.0 ROADMAP row (was still labelled "v1.8.2 latest" / v1.9.x "in progress"). Sources verified from `package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `.github/workflows/`. Test-count badge deferred to the upcoming doc-metric gate (single-sourced from CI).
 
 ---
 

@@ -92,6 +92,7 @@
         "measure:critical-path": "node ./scripts/measure-critical-path.mjs",
         "check:critical-path-coverage": "node ./scripts/check-critical-path-coverage.mjs",
         "check:file-budget": "node ./scripts/check-file-budget.mjs",
+        "check:doc-metrics": "node ./scripts/check-doc-metrics.mjs",
         "check:lockfile": "node ./scripts/check-pnpm-lockfile.mjs",
         "check:phantom-deps": "node ./scripts/check-phantom-deps.mjs",
         "check:localstorage": "node ./scripts/security/check-localstorage-usage.mjs",

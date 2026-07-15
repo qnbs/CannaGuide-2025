@@ -8,6 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
+- **ci:** weekly advisory `verify-quarantine-excludes.mjs` — re-checks that every `minimumReleaseAgeExclude` package still ships an npm provenance attestation (the exclude list matches on name, not provenance)
 - **ci:** `check-doc-metrics.mjs` documentation-truth gate — fails when a README badge (release version, TypeScript, Vite, coverage, CI-workflow count) contradicts source (`package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `.github/workflows/`); wired into the `quality` merge gate, pre-push, and `docs/DEVOPS-GATES.md`
 - **docs(audit):** `docs/audits/AUDIT-REPORT-2026-07-02-FULL.md` — full-scale deep audit & perfection report (post-v1.9.0 baseline, 2936 tests, all quality gates ✅)
 - **refactor(web):** God-file burn-down round 2 — split 9 additional over-budget modules (strainImageFallback 812→19, exportService, HelpView, HydroMonitorView, EcPhPlannerCalculator, knowledgeGraphService, StrainsView, EcPhPlannerCalculator) into focused submodules (all ≤700 LOC); `check-file-budget` reports 0 failures / 0 grandfathered

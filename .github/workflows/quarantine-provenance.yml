@@ -1,0 +1,34 @@
+name: Quarantine Exclude Provenance
+
+# Weekly, advisory: re-verify that every package excluded from the minimumReleaseAge
+# quarantine (pnpm-workspace.yaml `minimumReleaseAgeExclude`) still ships a provenance
+# attestation. The exclude list matches on NAME, not provenance, so a future release of
+# an excluded package could skip the 24h quarantine even without an attestation. This is
+# a standalone scheduled job -- not part of the merge gate -- so a red run is an alert,
+# not a blocker.
+
+on:
+    schedule:
+        - cron: '23 6 * * 1' # Monday, offset from scorecard / cleanup jobs
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    verify-excludes:
+        name: Verify quarantine-exclude provenance
+        runs-on: ubuntu-latest
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: '24'
+            - name: Verify provenance attestations
+              run: node scripts/verify-quarantine-excludes.mjs

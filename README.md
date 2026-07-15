@@ -72,7 +72,7 @@
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-27-yellow)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/README.md)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-28-yellow)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/README.md)
 [![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -107,7 +107,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Project Overview
 
-776 strains · 2812 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 27 CI workflows
+776 strains · 2812 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 28 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -360,7 +360,7 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | CSP check       | pass                                    |
 | full E2E        | CI only (advisory on `main` aggregator) |
 
-### CI/CD Workflows (27)
+### CI/CD Workflows (28)
 
 | Workflow           | Trigger                       | Purpose                                                                          |
 | ------------------ | ----------------------------- | -------------------------------------------------------------------------------- |
@@ -377,7 +377,7 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | Mutation Testing   | push, PR                      | Stryker Redux slice mutation testing                                             |
 | Preview Validation | deploy                        | Playwright + Lighthouse on deploy previews (paused)                              |
 | Graphify Update    | push main, schedule, dispatch | Regenerates `graphify-out/` via `uv run … graphify update .`, commits if changed |
-| + 14 more          | various                       | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy      |
+| + 15 more          | various                       | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy      |
 
 ### Cursor rules, MDC validation, and Graphify
 
@@ -528,7 +528,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![Redux Slices](https://img.shields.io/badge/Redux%20Slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/Themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-27-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-28-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/Hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n-Namensraeume](https://img.shields.io/badge/i18n%20Namensraeume-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -540,7 +540,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2812 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 27 CI-Workflows
+776 Sorten · 2812 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 28 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |

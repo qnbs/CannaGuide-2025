@@ -142,7 +142,7 @@ pnpm run lint               # ESLint (flat config, 0 warnings)
 
 > All commands: [docs/release-process.md](docs/release-process.md) · DevContainer: [.devcontainer/](.devcontainer/)
 
-**Windows (Cursor):**
+**Windows:**
 
 ```powershell
 pnpm run setup:windows      # uv + deps + doctor
@@ -150,7 +150,7 @@ pnpm run windows:doctor     # MCP, Node, gh, git preflight
 pnpm run mcp:doctor         # Graphify + GitKraken MCP
 ```
 
-See [`docs/SESSION-177-ROADMAP.md`](docs/SESSION-177-ROADMAP.md) and [CONTRIBUTING.md](CONTRIBUTING.md#mcp-graphify--gitkraken).
+See [`docs/SESSION-177-ROADMAP.md`](docs/SESSION-177-ROADMAP.md) and [CONTRIBUTING.md](CONTRIBUTING.md#graphify-knowledge-graph--mcp).
 
 ---
 
@@ -355,7 +355,6 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | typecheck       | pass                                    |
 | lint:scopes     | pass                                    |
 | build + budget  | pass                                    |
-| mdc:e2e         | pass                                    |
 | graphify doctor | pass                                    |
 | CSP check       | pass                                    |
 | full E2E        | CI only (advisory on `main` aggregator) |
@@ -379,17 +378,15 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | Graphify Update    | push main, schedule, dispatch | Regenerates `graphify-out/` via `uv run … graphify update .`, commits if changed |
 | + 15 more          | various                       | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy      |
 
-### Cursor rules, MDC validation, and Graphify
+### Graphify knowledge graph & MCP
 
-| Check                         | Command / location                                                                                                                     | Purpose                                                   |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Rule frontmatter and examples | `pnpm run mdc:validate`                                                                                                                | CI gate; enforces examples, line budget, globs syntax     |
-| Rules + governance smoke      | `pnpm run mdc:e2e`                                                                                                                     | CI gate; manifest/index + nested `mdc:validate`           |
-| MCP / graph readiness         | `pnpm run graphify:mcp:doctor`                                                                                                         | CI gate; `graph.json`, `uv`, launcher, Windows fallback   |
-| Graph artifacts               | `graphify-out/` (not `cache/`)                                                                                                         | Versioned graph for MCP; refresh with `graphify update .` |
-| Governance                    | [`docs/cursor-mdc-governance.md`](docs/cursor-mdc-governance.md), [`docs/GRAPHIFY-COMPLETE-GUIDE.md`](docs/GRAPHIFY-COMPLETE-GUIDE.md) | Full policy and setup                                     |
+| Check                 | Command / location                                                   | Purpose                                                   |
+| --------------------- | -------------------------------------------------------------------- | --------------------------------------------------------- |
+| MCP / graph readiness | `pnpm run graphify:mcp:doctor`                                       | CI gate; `graph.json`, `uv`, launcher, Windows fallback   |
+| Graph artifacts       | `graphify-out/` (not `cache/`)                                       | Versioned graph for MCP; refresh with `graphify update .` |
+| Setup / policy        | [`docs/GRAPHIFY-COMPLETE-GUIDE.md`](docs/GRAPHIFY-COMPLETE-GUIDE.md) | Dev Container `uv` install, launchers, `.mcp.json`        |
 
-[`CONTRIBUTING.md`](CONTRIBUTING.md) describes Dev Container `uv` install and team `cursor_settings.json`.
+The Graphify + GitKraken MCP servers are configured in `.mcp.json` (Claude Code reads it at the repo root; approve them via `/mcp`).
 
 ---
 
@@ -600,13 +597,13 @@ pnpm run typecheck          # tsc --noEmit
 
 ### CI/CD, Testing & Sicherheit
 
-| Bereich          | Details                                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                                  |
-| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM                        |
-| **CI/CD**        | 27 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; MDC-Validate + Graphify-Doctor in CI |
-| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                                   |
-| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                                         |
+| Bereich          | Details                                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                   |
+| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM         |
+| **CI/CD**        | 27 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; Graphify-Doctor in CI |
+| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                    |
+| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                          |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit-Backlog](docs/AUDIT_BACKLOG.md) · [Release-Prozess](docs/release-process.md)
 

@@ -64,6 +64,8 @@ const PAIRS = [
     ['neutral-300', 'bg-component', AA_TEXT, 'secondary text on card'],
     ['neutral-400', 'bg-component', AA_TEXT, 'muted text on card'],
     ['neutral-500', 'bg-component', AA_TEXT, 'subtle text on card'],
+    ['text-muted', 'bg-component', AA_TEXT, 'muted text on card'],
+    ['text-muted', 'bg-primary', AA_TEXT, 'muted text on page'],
     ['text-on-accent', 'primary-600', AA_TEXT, 'primary button label'],
     ['primary-300', 'bg-primary', AA_TEXT, 'link/interactive text'],
     ['primary-400', 'bg-primary', AA_LARGE, 'focus ring / interactive border'],
@@ -98,7 +100,9 @@ function parseThemes(css) {
     for (const block of blocks) {
         const braceIdx = block.indexOf('{')
         if (braceIdx === -1) continue
-        const selector = block.slice(0, braceIdx)
+        // Strip CSS comments from the selector first, so prose like
+        // "theme-independent" in a comment can't be read as a `.theme-*` selector.
+        const selector = block.slice(0, braceIdx).replace(/\/\*[\s\S]*?\*\//g, '')
         const body = block.slice(braceIdx + 1)
 
         const colors = {}
@@ -109,9 +113,12 @@ function parseThemes(css) {
         }
         if (Object.keys(colors).length === 0) continue // e.g. the typography :root block
 
-        // The midnight block also carries the bare `:root` selector -- treat it as base.
-        const themeMatch = selector.match(/theme-([A-Za-z0-9]+)/)
-        if (/(^|,)\s*:root\s*(,|$)/.test(selector) || (themeMatch && themeMatch[1] === 'midnight')) {
+        // Any `:root`-scoped block that isn't a *non-midnight* theme is BASE:
+        // the midnight combined selector, plus theme-independent `:root` blocks
+        // (e.g. the chart palette). This matches the CSS cascade -- tokens a
+        // theme doesn't redefine fall through to these.
+        const themeMatch = selector.match(/\.theme-([A-Za-z0-9]+)/)
+        if (/:root/.test(selector) && (!themeMatch || themeMatch[1] === 'midnight')) {
             Object.assign(base, colors)
         }
         if (themeMatch) {

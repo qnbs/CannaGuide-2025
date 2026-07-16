@@ -15,6 +15,30 @@
     --line-height-3xs: 0.875rem; /* 14px */
 }
 
+/* ---------------------------------------------------------------------------
+ * CATEGORICAL CHART PALETTE (theme-independent)
+ * ---------------------------------------------------------------------------
+ * A CVD-safe categorical set validated via the data-viz method against the
+ * darkest theme chart surface (worst adjacent CVD separation 8.4, normal-vision
+ * 19.3, OKLab x100; green dips to 2.97:1 on the single lightest theme -> relief
+ * via legend/labels, which every chart ships). Assigned in FIXED slot order; a
+ * 9th series folds to "Other" or a facet, never a cycled hue. Mirrored for
+ * Recharts props in apps/web/utils/chartPalette.ts (single source, keep in sync).
+ * ------------------------------------------------------------------------- */
+:root {
+    --color-chart-1: 57 135 229; /* blue    #3987e5 */
+    --color-chart-2: 0 131 0; /* green   #008300 */
+    --color-chart-3: 213 81 129; /* magenta #d55181 */
+    --color-chart-4: 201 133 0; /* yellow  #c98500 */
+    --color-chart-5: 25 158 112; /* aqua    #199e70 */
+    --color-chart-6: 217 89 38; /* orange  #d95926 */
+    --color-chart-7: 144 133 233; /* violet  #9085e9 */
+    --color-chart-8: 230 103 103; /* red     #e66767 */
+    --color-chart-grid: 71 85 105; /* hairline grid (use at low alpha) */
+    --color-chart-axis: 100 116 139; /* axis / baseline line */
+    --color-chart-label: 148 163 184; /* tick + axis labels */
+}
+
 /* --- THEMES --- */
 /* Midnight (Default) - Reworked Cyber-Organic Theme */
 :root,
@@ -68,6 +92,7 @@
     --color-neutral-900: 15 23 42;
     --color-neutral-950: 2 6 23;
     --color-text-on-accent: 255 255 255;
+    --color-text-muted: 148 163 184; /* muted body text; AA-verified on every theme bg-component (check-contrast) */
     --color-success: 74 222 128;
     --color-warning: 251 176 60;
     --color-danger: 248 113 113;

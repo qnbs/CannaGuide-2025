@@ -47,6 +47,19 @@ module.exports = {
                         `rgb(var(--color-neutral-${s}))`,
                     ]),
                 ),
+                // Muted body-text role -- always clears WCAG-AA on every theme's
+                // bg-component (unlike slate-500). Utility: `text-muted`.
+                muted: 'rgb(var(--color-text-muted))',
+                // Categorical chart palette (see tokens.css). Utilities:
+                // text/fill/stroke-chart-1..8, plus -chart-grid/-axis/-label.
+                chart: {
+                    ...Object.fromEntries(
+                        [1, 2, 3, 4, 5, 6, 7, 8].map((n) => [n, `rgb(var(--color-chart-${n}))`]),
+                    ),
+                    grid: 'rgb(var(--color-chart-grid))',
+                    axis: 'rgb(var(--color-chart-axis))',
+                    label: 'rgb(var(--color-chart-label))',
+                },
             },
             fontSize: {
                 // Micro tier below Tailwind's `text-xs` (12px); tokens in tokens.css.

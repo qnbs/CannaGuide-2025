@@ -39,6 +39,40 @@
     --color-chart-label: 148 163 184; /* tick + axis labels */
 }
 
+/* ---------------------------------------------------------------------------
+ * DOMAIN COLOR FAMILIES (theme-independent)
+ * ---------------------------------------------------------------------------
+ * Colors that carry fixed domain meaning -- NOT the arbitrary categorical
+ * palette above. Hues are conventional (THC green, CBD blue; VPD zones run
+ * cool -> warm across the grow phases; temperature orange, humidity blue) and
+ * are chosen so metrics that share a chart stay distinct. Pinned, not
+ * genericised. Mirrored for Recharts props in apps/web/utils/chartPalette.ts
+ * (single source, keep in sync).
+ * ------------------------------------------------------------------------- */
+:root {
+    /* Cannabinoids */
+    --color-cannabinoid-thc: 16 185 129; /* #10b981 emerald */
+    --color-cannabinoid-cbd: 59 130 246; /* #3b82f6 blue */
+    --color-cannabinoid-cbg: 168 85 247; /* #a855f7 purple */
+    --color-cannabinoid-thcv: 249 115 22; /* #f97316 orange */
+    --color-cannabinoid-cbc: 234 179 8; /* #eab308 yellow */
+    --color-cannabinoid-cbn: 99 102 241; /* #6366f1 indigo */
+    /* VPD zones -- grow-phase VPD bands, cool (propagation) -> warm (danger) */
+    --color-vpd-zone-propagation: 59 130 246; /* #3b82f6 blue */
+    --color-vpd-zone-seedling: 6 182 212; /* #06b6d4 cyan */
+    --color-vpd-zone-vegetative: 34 197 94; /* #22c55e green */
+    --color-vpd-zone-early-flower: 234 179 8; /* #eab308 yellow */
+    --color-vpd-zone-late-flower: 249 115 22; /* #f97316 orange */
+    --color-vpd-zone-danger: 239 68 68; /* #ef4444 red */
+    /* Sensor / grow metrics -- conventional hues, distinct within any one chart */
+    --color-metric-temperature: 249 115 22; /* #f97316 orange (air + water temp) */
+    --color-metric-humidity: 59 130 246; /* #3b82f6 blue */
+    --color-metric-ph: 34 197 94; /* #22c55e green */
+    --color-metric-ec: 168 85 247; /* #a855f7 purple */
+    --color-metric-height: 6 182 212; /* #06b6d4 cyan */
+    --color-metric-health: 16 185 129; /* #10b981 emerald */
+}
+
 /* --- THEMES --- */
 /* Midnight (Default) - Reworked Cyber-Organic Theme */
 :root,

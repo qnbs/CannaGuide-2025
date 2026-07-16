@@ -40,6 +40,7 @@ import {
     scoreColor,
     severityBadge,
 } from './analytics/analyticsFormatters'
+import { CHART_CHROME, METRIC_COLORS, chartSeriesColor } from '@/utils/chartPalette'
 
 // -- Component -------------------------------------------------------------
 
@@ -165,14 +166,15 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                     <Cell
                                         key={`cell-${index}`}
                                         fill={
-                                            STAGE_COLORS[index % STAGE_COLORS.length] ?? '#888888'
+                                            STAGE_COLORS[index % STAGE_COLORS.length] ??
+                                            CHART_CHROME.label
                                         }
                                     />
                                 ))}
                             </Pie>
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: '#1e293b',
+                                    backgroundColor: 'rgb(var(--color-bg-component))',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     borderRadius: '8px',
                                 }}
@@ -218,7 +220,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: '#1e293b',
+                                    backgroundColor: 'rgb(var(--color-bg-component))',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     borderRadius: '8px',
                                 }}
@@ -227,8 +229,9 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 type="monotone"
                                 dataKey="count"
                                 name={t('analytics.journalEntries', 'Entries')}
-                                stroke="#3b82f6"
-                                fill="rgba(59,130,246,0.15)"
+                                stroke={chartSeriesColor(0)}
+                                fill={chartSeriesColor(0)}
+                                fillOpacity={0.15}
                                 strokeWidth={2}
                             />
                         </AreaChart>
@@ -284,7 +287,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: '#1e293b',
+                                    backgroundColor: 'rgb(var(--color-bg-component))',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     borderRadius: '8px',
                                 }}
@@ -293,8 +296,9 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 type="monotone"
                                 dataKey="count"
                                 name={t('analytics.chartHealth', 'Health')}
-                                stroke="#22c55e"
-                                fill="rgba(34,197,94,0.15)"
+                                stroke={METRIC_COLORS.health}
+                                fill={METRIC_COLORS.health}
+                                fillOpacity={0.15}
                                 strokeWidth={2}
                             />
                         </AreaChart>
@@ -452,7 +456,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: '#1e293b',
+                                    backgroundColor: 'rgb(var(--color-bg-component))',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     borderRadius: '8px',
                                 }}
@@ -460,7 +464,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             <Bar
                                 dataKey="avgHealth"
                                 name={t('analytics.health', 'Health')}
-                                fill="#22c55e"
+                                fill={METRIC_COLORS.health}
                                 radius={[0, 4, 4, 0]}
                             />
                         </BarChart>

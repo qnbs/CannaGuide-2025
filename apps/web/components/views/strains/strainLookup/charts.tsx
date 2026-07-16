@@ -25,21 +25,21 @@ import type {
     FlavonoidDataPoint,
     TerpeneDataPoint,
 } from '@/services/strainLookupService'
+import { CANNABINOID_COLORS, CHART_CHROME } from '@/utils/chartPalette'
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const PIE_COLORS = ['#10b981', '#3b82f6', '#475569'] // THC emerald, CBD blue, other slate
 const BAR_COLORS: Record<string, string> = {
-    THC: '#10b981',
-    CBD: '#3b82f6',
-    CBG: '#a855f7',
-    THCV: '#f97316',
-    CBC: '#eab308',
-    CBN: '#6366f1',
+    THC: CANNABINOID_COLORS.thc,
+    CBD: CANNABINOID_COLORS.cbd,
+    CBG: CANNABINOID_COLORS.cbg,
+    THCV: CANNABINOID_COLORS.thcv,
+    CBC: CANNABINOID_COLORS.cbc,
+    CBN: CANNABINOID_COLORS.cbn,
 }
-const RADAR_COLOR = '#10b981'
+const RADAR_COLOR = CANNABINOID_COLORS.thc
 
 // ---------------------------------------------------------------------------
 // Confidence badge
@@ -130,11 +130,16 @@ export const CannabinoidPie: React.FC<CannabinoidPieProps> = memo(({ thc, cbd })
                         paddingAngle={2}
                         dataKey="value"
                     >
-                        {data.map((_entry, index) => (
+                        {data.map((entry, index) => (
                             <Cell
                                 key={index}
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                                fill={PIE_COLORS[index % PIE_COLORS.length] as string}
+                                fill={
+                                    entry.name === 'THC'
+                                        ? CANNABINOID_COLORS.thc
+                                        : entry.name === 'CBD'
+                                          ? CANNABINOID_COLORS.cbd
+                                          : CHART_CHROME.grid
+                                }
                             />
                         ))}
                     </Pie>
@@ -151,7 +156,7 @@ export const CannabinoidPie: React.FC<CannabinoidPieProps> = memo(({ thc, cbd })
                             return [`${v.toFixed(1)}%`, '']
                         }}
                         contentStyle={{
-                            background: '#1e293b',
+                            background: 'rgb(var(--color-bg-component))',
                             border: '1px solid rgba(255,255,255,0.1)',
                             borderRadius: 8,
                             fontSize: 12,
@@ -198,11 +203,11 @@ export const TerpeneRadar: React.FC<TerpeneRadarProps> = memo(({ terpenes }) => 
             >
                 <RadarChart accessibilityLayer cx="50%" cy="50%" outerRadius="70%" data={data}>
                     <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: CHART_CHROME.label, fontSize: 10 }} />
                     <PolarRadiusAxis
                         angle={90}
                         domain={[0, 40]}
-                        tick={{ fill: '#64748b', fontSize: 9 }}
+                        tick={{ fill: CHART_CHROME.label, fontSize: 9 }}
                     />
                     <Radar
                         name={t('strainLookup.terpenes', 'Terpenes')}
@@ -217,7 +222,7 @@ export const TerpeneRadar: React.FC<TerpeneRadarProps> = memo(({ terpenes }) => 
                             return [`${v.toFixed(1)}%`, '']
                         }}
                         contentStyle={{
-                            background: '#1e293b',
+                            background: 'rgb(var(--color-bg-component))',
                             border: '1px solid rgba(255,255,255,0.1)',
                             borderRadius: 8,
                             fontSize: 12,
@@ -265,13 +270,13 @@ export const CannabinoidBar: React.FC<CannabinoidBarProps> = memo(({ cannabinoid
                     <XAxis
                         type="number"
                         domain={[0, 'auto']}
-                        tick={{ fill: '#64748b', fontSize: 10 }}
+                        tick={{ fill: CHART_CHROME.label, fontSize: 10 }}
                         tickFormatter={(v: number) => `${v}%`}
                     />
                     <YAxis
                         type="category"
                         dataKey="name"
-                        tick={{ fill: '#94a3b8', fontSize: 11 }}
+                        tick={{ fill: CHART_CHROME.label, fontSize: 11 }}
                         width={44}
                     />
                     <Tooltip
@@ -280,7 +285,7 @@ export const CannabinoidBar: React.FC<CannabinoidBarProps> = memo(({ cannabinoid
                             return [`${v.toFixed(1)}%`, '']
                         }}
                         contentStyle={{
-                            background: '#1e293b',
+                            background: 'rgb(var(--color-bg-component))',
                             border: '1px solid rgba(255,255,255,0.1)',
                             borderRadius: 8,
                             fontSize: 12,
@@ -421,13 +426,13 @@ export const FlavonoidBar: React.FC<FlavonoidBarProps> = memo(({ flavonoids }) =
                     <XAxis
                         type="number"
                         domain={[0, 10]}
-                        tick={{ fill: '#64748b', fontSize: 10 }}
+                        tick={{ fill: CHART_CHROME.label, fontSize: 10 }}
                         tickFormatter={(v: number) => v.toFixed(0)}
                     />
                     <YAxis
                         type="category"
                         dataKey="name"
-                        tick={{ fill: '#94a3b8', fontSize: 11 }}
+                        tick={{ fill: CHART_CHROME.label, fontSize: 11 }}
                         width={52}
                     />
                     <Tooltip
@@ -441,7 +446,7 @@ export const FlavonoidBar: React.FC<FlavonoidBarProps> = memo(({ flavonoids }) =
                             return [`${v.toFixed(1)} / 10`, fname]
                         }}
                         contentStyle={{
-                            background: '#1e293b',
+                            background: 'rgb(var(--color-bg-component))',
                             border: '1px solid rgba(255,255,255,0.1)',
                             borderRadius: 8,
                             fontSize: 12,

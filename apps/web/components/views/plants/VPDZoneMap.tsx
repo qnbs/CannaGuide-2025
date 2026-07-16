@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { calculateVPD } from '@/lib/vpd/calculator'
 import { VPD_TARGET_BANDS } from '@/lib/vpd/recommendations'
 import type { GrowthStage } from '@/types/simulation.types'
+import { VPD_ZONE_COLORS } from '@/utils/chartPalette'
 
 interface VPDZoneMapProps {
     currentTemp: number
@@ -28,7 +29,7 @@ const ZONE_CONFIGS: Record<ZoneKey, ZoneConfig> = {
         label: 'Propagation',
         min: 0.0,
         max: 0.4,
-        color: '#3b82f6',
+        color: VPD_ZONE_COLORS.propagation,
         bgClass: 'bg-blue-500/20',
         textClass: 'text-blue-400',
     },
@@ -36,7 +37,7 @@ const ZONE_CONFIGS: Record<ZoneKey, ZoneConfig> = {
         label: 'Seedling',
         min: 0.4,
         max: 0.8,
-        color: '#06b6d4',
+        color: VPD_ZONE_COLORS.seedling,
         bgClass: 'bg-cyan-500/20',
         textClass: 'text-cyan-400',
     },
@@ -44,7 +45,7 @@ const ZONE_CONFIGS: Record<ZoneKey, ZoneConfig> = {
         label: 'Vegetative',
         min: 0.8,
         max: 1.2,
-        color: '#22c55e',
+        color: VPD_ZONE_COLORS.vegetative,
         bgClass: 'bg-green-500/20',
         textClass: 'text-green-400',
     },
@@ -52,7 +53,7 @@ const ZONE_CONFIGS: Record<ZoneKey, ZoneConfig> = {
         label: 'Early Flower',
         min: 1.0,
         max: 1.4,
-        color: '#eab308',
+        color: VPD_ZONE_COLORS.earlyFlower,
         bgClass: 'bg-yellow-500/20',
         textClass: 'text-yellow-400',
     },
@@ -60,7 +61,7 @@ const ZONE_CONFIGS: Record<ZoneKey, ZoneConfig> = {
         label: 'Late Flower',
         min: 1.2,
         max: 1.6,
-        color: '#f97316',
+        color: VPD_ZONE_COLORS.lateFlower,
         bgClass: 'bg-orange-500/20',
         textClass: 'text-orange-400',
     },
@@ -68,7 +69,7 @@ const ZONE_CONFIGS: Record<ZoneKey, ZoneConfig> = {
         label: 'Danger',
         min: 1.6,
         max: 2.5,
-        color: '#ef4444',
+        color: VPD_ZONE_COLORS.danger,
         bgClass: 'bg-red-500/20',
         textClass: 'text-red-400',
     },

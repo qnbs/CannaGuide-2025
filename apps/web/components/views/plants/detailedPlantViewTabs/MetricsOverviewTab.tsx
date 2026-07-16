@@ -12,6 +12,7 @@ import { secureRandom } from '@/utils/random'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import type { GrowthStage } from '@/types/simulation.types'
 import { PlantStage } from '@/types'
+import { METRIC_COLORS, CHART_CHROME } from '@/utils/chartPalette'
 
 interface MetricsOverviewTabProps {
     plant: Plant
@@ -197,7 +198,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                     : '--'
                             }
                             unit=""
-                            color="text-blue-400"
+                            color="text-green-400"
                         />
                         <MetricCard
                             label={t('plantsView.metrics.ecLabel', { defaultValue: 'EC' })}
@@ -222,7 +223,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                     : '--'
                             }
                             unit="cm"
-                            color="text-emerald-400"
+                            color="text-cyan-400"
                         />
                     </div>
 
@@ -245,13 +246,20 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                             plotClassName="rounded-xl bg-slate-800/60 p-4 ring-1 ring-inset ring-slate-700/50"
                         >
                             <LineChart accessibilityLayer data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={CHART_CHROME.grid} />
+                                <XAxis
+                                    dataKey="time"
+                                    tick={{ fontSize: 10, fill: CHART_CHROME.label }}
+                                    stroke={CHART_CHROME.axis}
+                                />
+                                <YAxis
+                                    tick={{ fontSize: 10, fill: CHART_CHROME.label }}
+                                    stroke={CHART_CHROME.axis}
+                                />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: '#1e293b',
-                                        border: '1px solid #334155',
+                                        backgroundColor: 'rgb(var(--color-bg-component))',
+                                        border: '1px solid rgba(var(--color-border), 0.1)',
                                         borderRadius: '8px',
                                     }}
                                 />
@@ -259,7 +267,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                 <Line
                                     type="monotone"
                                     dataKey="ph"
-                                    stroke="#3b82f6"
+                                    stroke={METRIC_COLORS.ph}
                                     dot={false}
                                     strokeWidth={2}
                                     name={t('plantsView.metrics.phLabel', {
@@ -269,7 +277,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                 <Line
                                     type="monotone"
                                     dataKey="ec"
-                                    stroke="#a855f7"
+                                    stroke={METRIC_COLORS.ec}
                                     dot={false}
                                     strokeWidth={2}
                                     name={t('plantsView.metrics.ecLabel', {
@@ -279,7 +287,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                 <Line
                                     type="monotone"
                                     dataKey="height"
-                                    stroke="#10b981"
+                                    stroke={METRIC_COLORS.height}
                                     dot={false}
                                     strokeWidth={2}
                                     name={t('plantsView.metrics.height', {

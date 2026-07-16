@@ -72,3 +72,20 @@ export const METRIC_COLORS = {
     height: '#06b6d4',
     health: '#10b981',
 } as const
+
+/** Flavonoid colors (conventional). Mirror `--color-flavonoid-*`. Keyed by display name. */
+export const FLAVONOID_COLORS: Record<string, string> = {
+    'Cannflavin A': '#f59e0b',
+    'Cannflavin B': '#f97316',
+    Quercetin: '#84cc16',
+    Apigenin: '#22d3ee',
+    Luteolin: '#a78bfa',
+    Kaempferol: '#fb7185',
+}
+
+/** Fixed status colors for SVG chart marks (rings/gauges). Mirror `--color-chart-status-*`. */
+export const CHART_STATUS = {
+    good: '#10b981',
+    warning: '#f59e0b',
+    danger: '#ef4444',
+} as const

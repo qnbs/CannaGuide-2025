@@ -25,7 +25,7 @@ import type {
     FlavonoidDataPoint,
     TerpeneDataPoint,
 } from '@/services/strainLookupService'
-import { CANNABINOID_COLORS, CHART_CHROME } from '@/utils/chartPalette'
+import { CANNABINOID_COLORS, CHART_CHROME, CHART_STATUS, FLAVONOID_COLORS } from '@/utils/chartPalette'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -295,12 +295,7 @@ export const CannabinoidBar: React.FC<CannabinoidBarProps> = memo(({ cannabinoid
                         {cannabinoids.map((c, i) => (
                             <Cell
                                 key={i}
-                                fill={
-                                    BAR_COLORS[c.name] !== undefined
-                                        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                                          (BAR_COLORS[c.name] as string)
-                                        : '#6366f1'
-                                }
+                                fill={BAR_COLORS[c.name] ?? CHART_CHROME.label}
                             />
                         ))}
                     </Bar>
@@ -323,7 +318,12 @@ interface EntourageScoreProps {
 export const EntourageScore: React.FC<EntourageScoreProps> = memo(({ score, diversity }) => {
     const { t } = useTranslation()
     const clampedScore = Math.max(0, Math.min(100, score))
-    const ringColor = clampedScore >= 70 ? '#10b981' : clampedScore >= 45 ? '#f59e0b' : '#ef4444'
+    const ringColor =
+        clampedScore >= 70
+            ? CHART_STATUS.good
+            : clampedScore >= 45
+              ? CHART_STATUS.warning
+              : CHART_STATUS.danger
     const dashArray = 2 * Math.PI * 22 // circumference of r=22
     const dashOffset = dashArray * (1 - clampedScore / 100)
     const label =
@@ -382,15 +382,6 @@ EntourageScore.displayName = 'EntourageScore'
 
 interface FlavonoidBarProps {
     flavonoids: FlavonoidDataPoint[]
-}
-
-const FLAVONOID_COLORS: Record<string, string> = {
-    'Cannflavin A': '#f59e0b',
-    'Cannflavin B': '#f97316',
-    Quercetin: '#84cc16',
-    Apigenin: '#22d3ee',
-    Luteolin: '#a78bfa',
-    Kaempferol: '#fb7185',
 }
 
 export const FlavonoidBar: React.FC<FlavonoidBarProps> = memo(({ flavonoids }) => {
@@ -454,7 +445,7 @@ export const FlavonoidBar: React.FC<FlavonoidBarProps> = memo(({ flavonoids }) =
                     />
                     <Bar dataKey="score" radius={[0, 4, 4, 0]}>
                         {data.map((d, i) => (
-                            <Cell key={i} fill={FLAVONOID_COLORS[d.fullName] ?? '#6366f1'} />
+                            <Cell key={i} fill={FLAVONOID_COLORS[d.fullName] ?? CHART_CHROME.label} />
                         ))}
                     </Bar>
                 </BarChart>

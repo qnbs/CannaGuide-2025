@@ -31,7 +31,6 @@ import { CANNABINOID_COLORS, CHART_CHROME } from '@/utils/chartPalette'
 // Constants
 // ---------------------------------------------------------------------------
 
-const PIE_COLORS = [CANNABINOID_COLORS.thc, CANNABINOID_COLORS.cbd, CHART_CHROME.grid] // THC, CBD, other
 const BAR_COLORS: Record<string, string> = {
     THC: CANNABINOID_COLORS.thc,
     CBD: CANNABINOID_COLORS.cbd,
@@ -131,11 +130,16 @@ export const CannabinoidPie: React.FC<CannabinoidPieProps> = memo(({ thc, cbd })
                         paddingAngle={2}
                         dataKey="value"
                     >
-                        {data.map((_entry, index) => (
+                        {data.map((entry, index) => (
                             <Cell
                                 key={index}
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                                fill={PIE_COLORS[index % PIE_COLORS.length] as string}
+                                fill={
+                                    entry.name === 'THC'
+                                        ? CANNABINOID_COLORS.thc
+                                        : entry.name === 'CBD'
+                                          ? CANNABINOID_COLORS.cbd
+                                          : CHART_CHROME.grid
+                                }
                             />
                         ))}
                     </Pie>

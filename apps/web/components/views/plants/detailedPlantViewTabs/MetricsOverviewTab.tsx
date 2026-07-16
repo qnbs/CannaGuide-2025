@@ -198,7 +198,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                     : '--'
                             }
                             unit=""
-                            color="text-blue-400"
+                            color="text-green-400"
                         />
                         <MetricCard
                             label={t('plantsView.metrics.ecLabel', { defaultValue: 'EC' })}
@@ -223,7 +223,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                     : '--'
                             }
                             unit="cm"
-                            color="text-emerald-400"
+                            color="text-cyan-400"
                         />
                     </div>
 
@@ -247,8 +247,15 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                         >
                             <LineChart accessibilityLayer data={chartData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_CHROME.grid} />
-                                <XAxis dataKey="time" tick={{ fontSize: 10, fill: CHART_CHROME.label }} />
-                                <YAxis tick={{ fontSize: 10, fill: CHART_CHROME.label }} />
+                                <XAxis
+                                    dataKey="time"
+                                    tick={{ fontSize: 10, fill: CHART_CHROME.label }}
+                                    stroke={CHART_CHROME.axis}
+                                />
+                                <YAxis
+                                    tick={{ fontSize: 10, fill: CHART_CHROME.label }}
+                                    stroke={CHART_CHROME.axis}
+                                />
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: 'rgb(var(--color-bg-component))',

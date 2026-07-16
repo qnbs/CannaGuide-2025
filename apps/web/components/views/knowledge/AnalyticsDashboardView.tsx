@@ -230,7 +230,8 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 dataKey="count"
                                 name={t('analytics.journalEntries', 'Entries')}
                                 stroke={chartSeriesColor(0)}
-                                fill="rgba(var(--color-chart-1), 0.15)"
+                                fill={chartSeriesColor(0)}
+                                fillOpacity={0.15}
                                 strokeWidth={2}
                             />
                         </AreaChart>
@@ -296,7 +297,8 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                                 dataKey="count"
                                 name={t('analytics.chartHealth', 'Health')}
                                 stroke={METRIC_COLORS.health}
-                                fill="rgba(var(--color-metric-health), 0.15)"
+                                fill={METRIC_COLORS.health}
+                                fillOpacity={0.15}
                                 strokeWidth={2}
                             />
                         </AreaChart>

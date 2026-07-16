@@ -36,6 +36,12 @@ jobs:
                   claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
                   plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
                   plugins: 'code-review@claude-code-plugins'
-                  prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+                  # --comment posts findings as inline PR review comments. Without it,
+                  # /code-review runs but buffers nothing ("No buffered inline comments")
+                  # and its report is hidden from the Action log ("full output hidden for
+                  # security") -- so the review is invisible and can't be actioned. With
+                  # --comment the findings land as review threads, addressed in the same
+                  # correction loop as CodeRabbit.
+                  prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
                   # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
                   # or https://code.claude.com/docs/en/cli-reference for available options

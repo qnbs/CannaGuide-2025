@@ -131,7 +131,6 @@ export async function preloadOfflineAssets(
     if (tier === 'full') {
         const ok = await isFullTierAppropriate()
         if (!ok) {
-            tier = 'standard'
             resolvedIncludeWebLlm = false
         } else {
             resolvedIncludeWebLlm = true

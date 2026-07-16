@@ -12,7 +12,6 @@
 
 import { execSync, spawnSync } from 'node:child_process'
 import { readFileSync, existsSync } from 'node:fs'
-import { resolve } from 'node:path'
 
 const MAX_LINES = Number(process.env.FILE_BUDGET_MAX_LINES || '700')
 const ADVISORY = process.env.FILE_BUDGET_ADVISORY === '1'

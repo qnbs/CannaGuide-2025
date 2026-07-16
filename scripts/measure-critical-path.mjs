@@ -9,7 +9,7 @@
  */
 
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
+import { join } from 'node:path'
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib'
 
 const DIST_DIR = process.argv[2] || 'apps/web/dist/assets'

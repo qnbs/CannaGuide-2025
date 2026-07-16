@@ -229,7 +229,7 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                             <PolarRadiusAxis
                                 angle={30}
                                 domain={[0, 100]}
-                                tick={{ fill: CHART_CHROME.axis, fontSize: 10 }}
+                                tick={{ fill: CHART_CHROME.label, fontSize: 10 }}
                             />
                             {selectedStrains.map((strain, i) => (
                                 <Radar
@@ -242,7 +242,9 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                 />
                             ))}
                             {/* Legend + tooltip are HTML, so var() resolves -- use theme-aware tokens */}
-                            <Legend wrapperStyle={{ fontSize: '12px', color: CHART_CHROME.label }} />
+                            <Legend
+                                wrapperStyle={{ fontSize: '12px', color: 'rgb(var(--color-chart-label))' }}
+                            />
                             <Tooltip
                                 contentStyle={{
                                     backgroundColor: 'rgb(var(--color-bg-component))',

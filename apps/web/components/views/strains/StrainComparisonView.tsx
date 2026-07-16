@@ -15,14 +15,13 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectFavoriteIds } from '@/stores/selectors'
 import { toggleFavorite } from '@/stores/slices/favoritesSlice'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { chartSeriesColor, CHART_CHROME } from '@/utils/chartPalette'
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const MAX_STRAINS = 3
-
-const RADAR_COLORS = ['#4ade80', '#60a5fa', '#f472b6'] as const
 
 // Normalize yield level to a numeric 0-100 score
 const yieldLevelToScore = (level: YieldLevel): number => {
@@ -222,33 +221,34 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                         omitDataTable
                     >
                         <RadarChart accessibilityLayer data={radarData} outerRadius="60%">
-                            <PolarGrid stroke="#334155" />
+                            <PolarGrid stroke={CHART_CHROME.grid} />
                             <PolarAngleAxis
                                 dataKey="metric"
-                                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                tick={{ fill: CHART_CHROME.label, fontSize: 12 }}
                             />
                             <PolarRadiusAxis
                                 angle={30}
                                 domain={[0, 100]}
-                                tick={{ fill: '#64748b', fontSize: 10 }}
+                                tick={{ fill: CHART_CHROME.axis, fontSize: 10 }}
                             />
                             {selectedStrains.map((strain, i) => (
                                 <Radar
                                     key={strain.id}
                                     name={strain.name}
                                     dataKey={strain.name}
-                                    stroke={RADAR_COLORS[i]}
-                                    fill={RADAR_COLORS[i]}
+                                    stroke={chartSeriesColor(i)}
+                                    fill={chartSeriesColor(i)}
                                     fillOpacity={0.15}
                                 />
                             ))}
-                            <Legend wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
+                            {/* Legend + tooltip are HTML, so var() resolves -- use theme-aware tokens */}
+                            <Legend wrapperStyle={{ fontSize: '12px', color: CHART_CHROME.label }} />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: '#1e293b',
-                                    border: '1px solid #334155',
+                                    backgroundColor: 'rgb(var(--color-bg-component))',
+                                    border: '1px solid rgba(var(--color-border), 0.1)',
                                     borderRadius: '8px',
-                                    color: '#e2e8f0',
+                                    color: 'rgb(var(--color-neutral-200))',
                                 }}
                             />
                         </RadarChart>
@@ -267,7 +267,7 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                             <div className="flex flex-col items-center gap-1">
                                                 <span
                                                     className="font-bold"
-                                                    style={{ color: RADAR_COLORS[i] }}
+                                                    style={{ color: chartSeriesColor(i) }}
                                                 >
                                                     {strain.name}
                                                 </span>

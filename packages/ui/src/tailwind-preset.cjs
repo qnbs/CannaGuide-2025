@@ -48,6 +48,11 @@ module.exports = {
                     ]),
                 ),
             },
+            fontSize: {
+                // Micro tier below Tailwind's `text-xs` (12px); tokens in tokens.css.
+                '2xs': ['var(--font-size-2xs)', { lineHeight: 'var(--line-height-2xs)' }],
+                '3xs': ['var(--font-size-3xs)', { lineHeight: 'var(--line-height-3xs)' }],
+            },
             keyframes: {
                 'slide-in-up': {
                     '0%': { transform: 'translateY(100%)', opacity: '0' },

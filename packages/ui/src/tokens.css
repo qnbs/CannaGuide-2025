@@ -1,3 +1,20 @@
+/* ---------------------------------------------------------------------------
+ * TYPOGRAPHY SCALE (theme-independent)
+ * ---------------------------------------------------------------------------
+ * Micro tier below Tailwind's `text-xs` (12px). Added so data-dense labels stop
+ * bypassing the token system with ad-hoc `text-[10px]` / `text-[11px]` /
+ * `text-[0.68rem]` arbitrary values. Consumed by `fontSize` in
+ * tailwind-preset.cjs as the `text-2xs` / `text-3xs` utilities. Ad-hoc sizes of
+ * 9px and below snap up to 10px (`3xs`) for legibility. Standard sizes
+ * (xs..9xl) keep Tailwind's defaults — only the missing micro tier lives here.
+ * ------------------------------------------------------------------------- */
+:root {
+    --font-size-2xs: 0.6875rem; /* 11px */
+    --line-height-2xs: 1rem; /* 16px */
+    --font-size-3xs: 0.625rem; /* 10px */
+    --line-height-3xs: 0.875rem; /* 14px */
+}
+
 /* --- THEMES --- */
 /* Midnight (Default) - Reworked Cyber-Organic Theme */
 :root,

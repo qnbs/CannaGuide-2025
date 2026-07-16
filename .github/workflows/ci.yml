@@ -256,6 +256,10 @@ jobs:
             - name: jsx-a11y warning ratchet
               run: pnpm run check:a11y-ratchet
 
+            - name: Theme contrast audit (WCAG-AA, advisory)
+              run: node scripts/check-contrast.mjs
+              continue-on-error: true
+
             - name: Type check (workspaces)
               run: pnpm exec turbo run typecheck
 

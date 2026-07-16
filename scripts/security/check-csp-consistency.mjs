@@ -169,6 +169,28 @@ for (const [name, directives] of Object.entries(parsed)) {
 }
 
 // ---------------------------------------------------------------------------
+// frame-ancestors Parity Check (header-only directive)
+// ---------------------------------------------------------------------------
+// frame-ancestors is ignored in a <meta> CSP (browsers even log a warning), so
+// it deliberately lives only in the header-delivery paths -- not in
+// securityHeaders.ts / index.html. It is the clickjacking defense, so rather
+// than silently tolerating it as a PLATFORM_EXTRA, enforce that it is present
+// and identical ('none') across every header path.
+const FRAME_ANCESTORS_EXPECTED = "'none'"
+for (const name of ['netlify.toml', 'vercel.json', 'public/_headers']) {
+    const value = parsed[name].get('frame-ancestors')
+    if (value === undefined) {
+        console.error(`[FAIL] ${name}: missing 'frame-ancestors' directive (clickjacking defense)`)
+        hasErrors = true
+    } else if (value !== FRAME_ANCESTORS_EXPECTED) {
+        console.error(
+            `[FAIL] ${name}: frame-ancestors is '${value}', expected ${FRAME_ANCESTORS_EXPECTED}`,
+        )
+        hasErrors = true
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Referrer-Policy Consistency Check
 // ---------------------------------------------------------------------------
 
@@ -229,5 +251,6 @@ if (hasErrors) {
     process.exit(1)
 } else {
     console.log('[OK] All 5 CSP delivery paths are consistent with securityHeaders.ts.')
+    console.log("[OK] frame-ancestors 'none' enforced across all header paths.")
     console.log('[OK] Referrer-Policy consistent across all deployment targets.')
 }

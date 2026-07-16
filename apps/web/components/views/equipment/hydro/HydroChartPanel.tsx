@@ -5,6 +5,7 @@ import { AccessibleChart } from '@/components/common/AccessibleChart'
 import type { HydroReading } from '@/types'
 import { cn } from '@/lib/utils'
 import { TIME_RANGES, TIME_RANGE_MS, type TimeRange } from './hydroConstants'
+import { METRIC_COLORS, CHART_CHROME } from '@/utils/chartPalette'
 
 export interface HydroChartPanelProps {
     readings: HydroReading[]
@@ -77,42 +78,42 @@ export const HydroChartPanel: React.FC<HydroChartPanelProps> = memo(({ readings 
                 height={220}
             >
                 <LineChart accessibilityLayer data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART_CHROME.grid} />
                     <XAxis
                         dataKey="time"
-                        tick={{ fontSize: 10, fill: '#94a3b8' }}
-                        stroke="#475569"
+                        tick={{ fontSize: 10, fill: CHART_CHROME.label }}
+                        stroke={CHART_CHROME.axis}
                     />
                     <YAxis
                         yAxisId="ph"
                         orientation="left"
                         domain={[4, 8]}
-                        tick={{ fontSize: 10, fill: '#94a3b8' }}
-                        stroke="#475569"
+                        tick={{ fontSize: 10, fill: CHART_CHROME.label }}
+                        stroke={CHART_CHROME.axis}
                         label={{
                             value: t('equipmentView.hydroMonitoring.chart.axisLabelPh'),
                             angle: -90,
                             position: 'insideLeft',
-                            style: { fontSize: 10, fill: '#94a3b8' },
+                            style: { fontSize: 10, fill: CHART_CHROME.label },
                         }}
                     />
                     <YAxis
                         yAxisId="ec"
                         orientation="right"
                         domain={[0, 4]}
-                        tick={{ fontSize: 10, fill: '#94a3b8' }}
-                        stroke="#475569"
+                        tick={{ fontSize: 10, fill: CHART_CHROME.label }}
+                        stroke={CHART_CHROME.axis}
                         label={{
                             value: t('equipmentView.hydroMonitoring.chart.axisLabelEc'),
                             angle: 90,
                             position: 'insideRight',
-                            style: { fontSize: 10, fill: '#94a3b8' },
+                            style: { fontSize: 10, fill: CHART_CHROME.label },
                         }}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: 'rgba(15, 23, 42, 0.85)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            backgroundColor: 'rgba(var(--color-bg-component), 0.85)',
+                            border: '1px solid rgba(var(--color-border), 0.1)',
                             borderRadius: '12px',
                             backdropFilter: 'blur(8px)',
                             fontSize: 12,
@@ -122,7 +123,7 @@ export const HydroChartPanel: React.FC<HydroChartPanelProps> = memo(({ readings 
                         yAxisId="ph"
                         type="monotone"
                         dataKey="ph"
-                        stroke="#22c55e"
+                        stroke={METRIC_COLORS.ph}
                         strokeWidth={2}
                         dot={false}
                         name={t('equipmentView.hydroMonitoring.chart.legendPh')}
@@ -131,7 +132,7 @@ export const HydroChartPanel: React.FC<HydroChartPanelProps> = memo(({ readings 
                         yAxisId="ec"
                         type="monotone"
                         dataKey="ec"
-                        stroke="#3b82f6"
+                        stroke={METRIC_COLORS.ec}
                         strokeWidth={2}
                         dot={false}
                         name={t('equipmentView.hydroMonitoring.chart.legendEc')}
@@ -141,7 +142,7 @@ export const HydroChartPanel: React.FC<HydroChartPanelProps> = memo(({ readings 
                         yAxisId="temp"
                         type="monotone"
                         dataKey="waterTemp"
-                        stroke="#f59e0b"
+                        stroke={METRIC_COLORS.temperature}
                         strokeWidth={2}
                         dot={false}
                         name={t('equipmentView.hydroMonitoring.chart.legendTemp')}

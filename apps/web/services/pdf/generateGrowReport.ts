@@ -207,7 +207,6 @@ export async function generateGrowReport(
         doc.setFont('helvetica', 'normal')
         doc.setTextColor(120)
         doc.text(`${hydroReadings.length} readings recorded`, LM, y)
-        y = doc.lastAutoTable.finalY + 10
     }
 
     const totalPages = doc.internal.getNumberOfPages()

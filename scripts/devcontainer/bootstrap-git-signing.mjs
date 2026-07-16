@@ -26,10 +26,6 @@ const gitSet = (key, value) => {
     }
 }
 
-const gitUnset = (key) => {
-    run('git', ['config', '--local', '--unset', key])
-}
-
 /**
  * Neutralise Codespaces' default GIT_COMMITTER_NAME=GitHub / GIT_COMMITTER_EMAIL=noreply@github.com
  * environment variables which override git config user.name/user.email at commit time and cause

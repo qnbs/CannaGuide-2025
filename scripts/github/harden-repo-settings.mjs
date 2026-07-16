@@ -223,7 +223,7 @@ async function setEnvironments() {
 async function setBranchProtection() {
     logStep(`Configure branch protection for ${mainBranch}`)
 
-    const protectionResp = await request(
+    await request(
         'GET',
         `/repos/${owner}/${repo}/branches/${encodeURIComponent(mainBranch)}/protection`,
         null,

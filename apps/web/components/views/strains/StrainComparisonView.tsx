@@ -269,7 +269,7 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                             <div className="flex flex-col items-center gap-1">
                                                 <span
                                                     className="font-bold"
-                                                    style={{ color: chartSeriesColor(i) }}
+                                                    style={{ color: `rgb(var(--color-chart-${i + 1}))` }}
                                                 >
                                                     {strain.name}
                                                 </span>

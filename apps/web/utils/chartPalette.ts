@@ -35,3 +35,40 @@ export const CHART_CHROME = {
 export function chartSeriesColor(index: number): string {
     return CHART_SERIES[index] ?? CHART_CHROME.label
 }
+
+// ---------------------------------------------------------------------------
+// Domain color families -- fixed-meaning colors, NOT the categorical palette.
+// Mirror --color-cannabinoid-* / --color-vpd-zone-* / --color-metric-* in
+// packages/ui/src/tokens.css (kept in sync by chartPalette.test.ts). Recharts
+// props read hex from here; HTML sites can use rgb(var(--color-...)) instead.
+// ---------------------------------------------------------------------------
+
+/** Cannabinoid colors (conventional hues). Mirror `--color-cannabinoid-*`. */
+export const CANNABINOID_COLORS = {
+    thc: '#10b981',
+    cbd: '#3b82f6',
+    cbg: '#a855f7',
+    thcv: '#f97316',
+    cbc: '#eab308',
+    cbn: '#6366f1',
+} as const
+
+/** VPD grow-phase zone colors, cool -> warm. Mirror `--color-vpd-zone-*`. */
+export const VPD_ZONE_COLORS = {
+    propagation: '#3b82f6',
+    seedling: '#06b6d4',
+    vegetative: '#22c55e',
+    earlyFlower: '#eab308',
+    lateFlower: '#f97316',
+    danger: '#ef4444',
+} as const
+
+/** Sensor / grow metric colors, distinct within any one chart. Mirror `--color-metric-*`. */
+export const METRIC_COLORS = {
+    temperature: '#f97316',
+    humidity: '#3b82f6',
+    ph: '#22c55e',
+    ec: '#a855f7',
+    height: '#06b6d4',
+    health: '#10b981',
+} as const

@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { CHART_SERIES, CHART_CHROME } from './chartPalette'
+import {
+    CHART_SERIES,
+    CHART_CHROME,
+    CANNABINOID_COLORS,
+    VPD_ZONE_COLORS,
+    METRIC_COLORS,
+} from './chartPalette'
 
 // The chart palette is duplicated by necessity: CSS custom properties in
 // packages/ui/src/tokens.css (for CSS-styled chart chrome) and the hex constants
@@ -34,5 +40,18 @@ describe('chart palette parity: chartPalette.ts <-> tokens.css', () => {
         expect(tokenHex('chart-grid')).toBe(CHART_CHROME.grid.toLowerCase())
         expect(tokenHex('chart-axis')).toBe(CHART_CHROME.axis.toLowerCase())
         expect(tokenHex('chart-label')).toBe(CHART_CHROME.label.toLowerCase())
+    })
+
+    // camelCase TS keys (earlyFlower) map to kebab CSS tokens (early-flower).
+    const kebab = (s: string) => s.replace(/([A-Z])/g, '-$1').toLowerCase()
+
+    it.each([
+        ['cannabinoid', CANNABINOID_COLORS],
+        ['vpd-zone', VPD_ZONE_COLORS],
+        ['metric', METRIC_COLORS],
+    ] as const)('%s domain family matches its tokens.css tokens', (family, colors) => {
+        for (const [key, hex] of Object.entries(colors)) {
+            expect(tokenHex(`${family}-${kebab(key)}`)).toBe(hex.toLowerCase())
+        }
     })
 })

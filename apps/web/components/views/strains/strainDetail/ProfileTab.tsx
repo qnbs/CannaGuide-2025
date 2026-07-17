@@ -177,7 +177,7 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                             <PhosphorIcons.Info className="w-3 h-3" />
                             {t('strainsView.flavonoids.estimated')}
                         </span>
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-muted">
                             {t('strainsView.flavonoids.estimatedHint')}
                         </span>
                     </div>
@@ -221,7 +221,7 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                                                     {val.toFixed(3)}%
                                                 </div>
                                                 {ref && (
-                                                    <div className="text-xs text-slate-500 mt-1">
+                                                    <div className="text-xs text-muted mt-1">
                                                         {ref.formula} -- {ref.molecularWeight} g/mol
                                                     </div>
                                                 )}
@@ -229,7 +229,7 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                                         )
                                     })}
                                 </div>
-                                <div className="mt-2 text-xs text-slate-500 italic">
+                                <div className="mt-2 text-xs text-muted italic">
                                     {t('strainsView.flavonoids.cannflavinNote')}
                                 </div>
                             </div>
@@ -375,7 +375,7 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                             ))}
                         </div>
                     ) : (
-                        <p className="text-sm text-slate-500 italic">
+                        <p className="text-sm text-muted italic">
                             {t('strainsView.strainDetail.noSynergies')}
                         </p>
                     )}

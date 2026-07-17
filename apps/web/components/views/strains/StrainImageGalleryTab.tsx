@@ -61,7 +61,7 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
         return (
             <>
                 <StrainImageGenerator strain={strain} onImageGenerated={handleImageGenerated} />
-                <Card className="text-center py-10 text-slate-500">
+                <Card className="text-center py-10 text-muted">
                     <PhosphorIcons.Camera className="w-12 h-12 mx-auto text-slate-400 mb-4" />
                     <h3 className="font-semibold">
                         {t('strainsView.strainDetail.images.noImagesTitle')}

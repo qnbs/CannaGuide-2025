@@ -238,7 +238,7 @@ export const StrainLookupSection: React.FC = memo(() => {
                             {t('strainLookup.sectionLabel', 'Strain Intelligence Lookup')}
                         </span>
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                         {t(
                             'strainLookup.sectionHint',
                             'Local catalog + Cannlytics lab data + Open Cannabis APIs + AI -- multi-layer lookup',
@@ -277,7 +277,7 @@ export const StrainLookupSection: React.FC = memo(() => {
                             {query && (
                                 <button
                                     onClick={handleClear}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-slate-300 transition-colors"
                                     aria-label={t('strainLookup.clear', 'Clear')}
                                 >
                                     <PhosphorIcons.X className="w-4 h-4" />
@@ -364,7 +364,7 @@ export const StrainLookupSection: React.FC = memo(() => {
                                     </span>
                                 ))}
                             </div>
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-muted">
                                 {t('strainLookup.searching', 'Searching all sources...')}
                             </span>
                         </div>

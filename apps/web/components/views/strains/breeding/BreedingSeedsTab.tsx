@@ -50,7 +50,7 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
                         {t('knowledgeView.breeding.collectedSeeds')} ({collectedSeeds.length})
                     </h4>
                     {collectedSeeds.length === 0 ? (
-                        <div className="text-center py-8 text-slate-500">
+                        <div className="text-center py-8 text-muted">
                             <PhosphorIcons.TestTube className="w-16 h-16 mx-auto text-slate-400 mb-4" />
                             <p className="text-sm font-semibold text-slate-300">
                                 {t('knowledgeView.breeding.noSeeds')}
@@ -83,7 +83,7 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
                             onClear={clearSeedParentA}
                             allStrains={allStrains}
                         />
-                        <PhosphorIcons.Plus className="w-8 h-8 text-slate-500 mx-auto" />
+                        <PhosphorIcons.Plus className="w-8 h-8 text-muted mx-auto" />
                         <ParentSlot
                             title={t('knowledgeView.breeding.parentB')}
                             seed={seedB}

@@ -39,7 +39,7 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({
 
     if (savedExports.length === 0) {
         return (
-            <Card className="text-center py-10 text-slate-500">
+            <Card className="text-center py-10 text-muted">
                 <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
                 <h3 className="font-semibold text-slate-300">
                     {t('strainsView.exportsManager.noExports.title')}

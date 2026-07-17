@@ -145,7 +145,7 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
 
             {/* Match-to-My-Grow info when no plant selected */}
             {!activePlant && (
-                <p className="text-xs text-slate-500 text-center">
+                <p className="text-xs text-muted text-center">
                     {t('strainsView.geneticTrends.noPlantSelected')}
                 </p>
             )}

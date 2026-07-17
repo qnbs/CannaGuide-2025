@@ -74,7 +74,7 @@ export const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                                     <span className="flex items-center gap-2">
                                         <span>{val.toFixed(2)}%</span>
                                         {ref && (
-                                            <span className="text-xs text-slate-500">
+                                            <span className="text-xs text-muted">
                                                 {ref.psychoactive
                                                     ? '(psychoactive)'
                                                     : '(non-psychoactive)'}
@@ -86,7 +86,7 @@ export const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                         )
                     })}
                     {minorCannabinoids.length > 0 && (
-                        <p className="text-xs text-slate-500 mt-2 italic">
+                        <p className="text-xs text-muted mt-2 italic">
                             {t('strainsView.strainDetail.cannabinoidNote')}
                         </p>
                     )}

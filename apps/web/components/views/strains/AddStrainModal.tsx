@@ -81,7 +81,7 @@ const TokenPreview: React.FC<{ title: string; values: string[] }> = ({ title, va
                     </span>
                 ))
             ) : (
-                <span className="text-xs text-slate-500">-</span>
+                <span className="text-xs text-muted">-</span>
             )}
         </div>
     </div>

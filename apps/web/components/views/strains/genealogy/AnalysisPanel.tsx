@@ -120,7 +120,7 @@ export const AnalysisPanel = React.memo<{
                     {highlightMode !== 'none' && (
                         <button
                             type="button"
-                            className="w-full text-left px-3 py-1.5 rounded-md text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                            className="w-full text-left px-3 py-1.5 rounded-md text-xs text-muted hover:text-slate-300 transition-colors"
                             onClick={() => onHighlightModeChange('none')}
                         >
                             <PhosphorIcons.X className="w-3 h-3 inline-block mr-1 -mt-0.5" />
@@ -165,7 +165,7 @@ export const AnalysisPanel = React.memo<{
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-slate-500 text-xs">
+                    <p className="text-muted text-xs">
                         {t('strainsView.genealogyView.noStrainSelected')}
                     </p>
                 )}

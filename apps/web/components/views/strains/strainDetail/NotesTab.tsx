@@ -115,7 +115,7 @@ export const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                     className="w-full bg-transparent resize-none min-h-[250px] p-3 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 rounded-b-md font-mono text-sm"
                     placeholder={t('strainsView.strainDetail.notesPlaceholder')}
                 />
-                <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-700 text-xs text-slate-500">
+                <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-700 text-xs text-muted">
                     <span>
                         {t('strainsView.strainDetail.notes.charCount', {
                             count: noteContent.length,

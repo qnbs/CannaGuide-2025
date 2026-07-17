@@ -367,7 +367,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                         />
                     )
                 )}
-                <p className="text-xs text-slate-500 italic mt-3">{t('ai.disclaimer')}</p>
+                <p className="text-xs text-muted italic mt-3">{t('ai.disclaimer')}</p>
             </div>
         </Card>
     )

@@ -57,7 +57,7 @@ export const FlavonoidEntry: React.FC<{
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-amber-300 font-mono">{val.toFixed(3)}%</span>
                     <PhosphorIcons.ChevronDown
-                        className={`w-3.5 h-3.5 text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
+                        className={`w-3.5 h-3.5 text-muted transition-transform ${expanded ? 'rotate-180' : ''}`}
                     />
                 </div>
             </div>
@@ -74,7 +74,7 @@ export const FlavonoidEntry: React.FC<{
             {ref_ && ref_.effects.length > 0 && !expanded && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                     {ref_.effects.map((effect) => (
-                        <span key={effect} className="text-xs text-slate-500">
+                        <span key={effect} className="text-xs text-muted">
                             {t(`strainsView.flavonoids.effects.${effect.replace(/[\s-]/g, '')}`, {
                                 defaultValue: effect,
                             })}
@@ -87,7 +87,7 @@ export const FlavonoidEntry: React.FC<{
             {expanded && ref_ && (
                 <div className="mt-3 space-y-3 text-xs">
                     {/* Molecular Info */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-500">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted">
                         <span>
                             {t('strainsView.flavonoids.detail.formula')}:{' '}
                             <span className="text-slate-300 font-mono">{ref_.formula}</span>

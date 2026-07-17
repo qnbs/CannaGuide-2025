@@ -175,7 +175,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ strain }) => {
 
     return (
         <div className="space-y-3">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted">
                 {t('strainsView.availability.disclaimer', {
                     defaultValue:
                         'Prices are indicative. Check the seedbank website for current pricing.',

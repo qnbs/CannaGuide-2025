@@ -40,6 +40,8 @@ jobs:
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: reports/mutation/.stryker-incremental.json
+                  # WS-0/D4: keep this hashFiles list in sync with stryker.conf.json `mutate` --
+                  # a renamed or added mutate target that is missed here makes the incremental cache silently miss.
                   key: stryker-incremental-${{ hashFiles('stryker.conf.json', 'apps/web/stores/slices/**/*.ts', 'apps/web/services/equipmentCalculatorService.ts', 'apps/web/services/knowledgeCalculatorService.ts', 'apps/web/services/knowledgeRagService.ts', 'apps/web/utils/lockFreeRingBuffer.ts', 'apps/web/utils/atomicsChannel.ts', 'apps/web/services/workerPool.ts', 'apps/web/stores/useIotStore.ts') }}
                   restore-keys: |
                       stryker-incremental-

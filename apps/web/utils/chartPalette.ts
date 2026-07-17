@@ -71,6 +71,8 @@ export const METRIC_COLORS = {
     ec: '#a855f7',
     height: '#06b6d4',
     health: '#10b981',
+    vpd: '#a855f7',
+    water: '#06b6d4',
 } as const
 
 /** Flavonoid colors (conventional). Mirror `--color-flavonoid-*`. Keyed by display name. */
@@ -88,4 +90,11 @@ export const CHART_STATUS = {
     good: '#10b981',
     warning: '#f59e0b',
     danger: '#ef4444',
+} as const
+
+/** VPD band colors (low/optimal/high zone labels). Mirror `--color-vpd-band-*`. */
+export const VPD_BAND_COLORS = {
+    low: '#60a5fa',
+    optimal: '#22c55e',
+    high: '#ef4444',
 } as const

@@ -10,6 +10,7 @@ import {
     METRIC_COLORS,
     FLAVONOID_COLORS,
     CHART_STATUS,
+    VPD_BAND_COLORS,
 } from './chartPalette'
 
 // The chart palette is duplicated by necessity: CSS custom properties in
@@ -59,6 +60,7 @@ describe('chart palette parity: chartPalette.ts <-> tokens.css', () => {
         ['metric', METRIC_COLORS],
         ['flavonoid', FLAVONOID_COLORS],
         ['chart-status', CHART_STATUS],
+        ['vpd-band', VPD_BAND_COLORS],
     ] as const)('%s domain family matches its tokens.css tokens', (family, colors) => {
         for (const [key, hex] of Object.entries(colors)) {
             expect(tokenHex(`${family}-${slug(key)}`)).toBe(hex.toLowerCase())

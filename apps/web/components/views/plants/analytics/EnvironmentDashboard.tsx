@@ -14,6 +14,7 @@ import {
     ReferenceArea,
 } from 'recharts'
 import { AccessibleChart } from '@/components/common/AccessibleChart'
+import { METRIC_COLORS, CHART_CHROME, VPD_BAND_COLORS } from '@/utils/chartPalette'
 import type { ReactNode } from 'react'
 
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -75,40 +76,40 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
                 height={240}
             >
                 <ComposedChart accessibilityLayer data={filtered} margin={CHART_MARGIN}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART_CHROME.grid} />
                     <XAxis
                         dataKey="timestamp"
                         tickFormatter={formatTime}
-                        stroke="#64748b"
+                        stroke={CHART_CHROME.axis}
                         fontSize={11}
                     />
                     <YAxis
                         yAxisId="temp"
                         orientation="left"
-                        stroke="#f97316"
+                        stroke={METRIC_COLORS.temperature}
                         fontSize={11}
                         label={{
                             value: '\u00B0C',
                             position: 'insideTopLeft',
-                            style: { fill: '#f97316', fontSize: 11 },
+                            style: { fill: METRIC_COLORS.temperature, fontSize: 11 },
                         }}
                     />
                     <YAxis
                         yAxisId="hum"
                         orientation="right"
-                        stroke="#3b82f6"
+                        stroke={METRIC_COLORS.humidity}
                         fontSize={11}
                         domain={[0, 100]}
                         label={{
                             value: '%',
                             position: 'insideTopRight',
-                            style: { fill: '#3b82f6', fontSize: 11 },
+                            style: { fill: METRIC_COLORS.humidity, fontSize: 11 },
                         }}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#1e293b',
-                            border: '1px solid #334155',
+                            backgroundColor: 'rgb(var(--color-bg-component))',
+                            border: '1px solid rgba(var(--color-border), 0.1)',
                             borderRadius: 8,
                             fontSize: 12,
                         }}
@@ -119,7 +120,7 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
                         yAxisId="temp"
                         type="monotone"
                         dataKey="temp"
-                        stroke="#f97316"
+                        stroke={METRIC_COLORS.temperature}
                         strokeWidth={2}
                         dot={false}
                         name={t('plantsView.analytics.temperature', {
@@ -130,7 +131,7 @@ const TemperatureHumidityChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo
                         yAxisId="hum"
                         type="monotone"
                         dataKey="humidity"
-                        stroke="#3b82f6"
+                        stroke={METRIC_COLORS.humidity}
                         strokeWidth={2}
                         dot={false}
                         name={t('plantsView.analytics.humidity', { defaultValue: 'Humidity (%)' })}
@@ -175,7 +176,7 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
                 height={240}
             >
                 <ComposedChart accessibilityLayer data={filtered} margin={CHART_MARGIN}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART_CHROME.grid} />
                     {/* VPD zone backgrounds */}
                     <ReferenceArea
                         y1={VPD_ZONE_RANGES.low.min}
@@ -185,7 +186,7 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
                         label={{
                             value: vpdZoneLabels.low,
                             position: 'insideTopLeft',
-                            style: { fill: '#60a5fa', fontSize: 10, opacity: 0.7 },
+                            style: { fill: VPD_BAND_COLORS.low, fontSize: 10, opacity: 0.7 },
                         }}
                     />
                     <ReferenceArea
@@ -196,7 +197,7 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
                         label={{
                             value: vpdZoneLabels.optimal,
                             position: 'insideTopLeft',
-                            style: { fill: '#22c55e', fontSize: 10, opacity: 0.7 },
+                            style: { fill: VPD_BAND_COLORS.optimal, fontSize: 10, opacity: 0.7 },
                         }}
                     />
                     <ReferenceArea
@@ -207,29 +208,29 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
                         label={{
                             value: vpdZoneLabels.high,
                             position: 'insideTopLeft',
-                            style: { fill: '#ef4444', fontSize: 10, opacity: 0.7 },
+                            style: { fill: VPD_BAND_COLORS.high, fontSize: 10, opacity: 0.7 },
                         }}
                     />
                     <XAxis
                         dataKey="timestamp"
                         tickFormatter={formatTime}
-                        stroke="#64748b"
+                        stroke={CHART_CHROME.axis}
                         fontSize={11}
                     />
                     <YAxis
-                        stroke="#a855f7"
+                        stroke={METRIC_COLORS.vpd}
                         fontSize={11}
                         domain={[0, maxVpd]}
                         label={{
                             value: 'kPa',
                             position: 'insideTopLeft',
-                            style: { fill: '#a855f7', fontSize: 11 },
+                            style: { fill: METRIC_COLORS.vpd, fontSize: 11 },
                         }}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#1e293b',
-                            border: '1px solid #334155',
+                            backgroundColor: 'rgb(var(--color-bg-component))',
+                            border: '1px solid rgba(var(--color-border), 0.1)',
                             borderRadius: 8,
                             fontSize: 12,
                         }}
@@ -243,7 +244,7 @@ const VpdChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({ data }) => {
                     <Line
                         type="monotone"
                         dataKey="vpd"
-                        stroke="#a855f7"
+                        stroke={METRIC_COLORS.vpd}
                         strokeWidth={2}
                         dot={false}
                         name="VPD (kPa)"
@@ -284,40 +285,40 @@ const NutrientWateringChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({
                 height={240}
             >
                 <ComposedChart accessibilityLayer data={filtered} margin={CHART_MARGIN}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART_CHROME.grid} />
                     <XAxis
                         dataKey="timestamp"
                         tickFormatter={formatTime}
-                        stroke="#64748b"
+                        stroke={CHART_CHROME.axis}
                         fontSize={11}
                     />
                     <YAxis
                         yAxisId="ph"
                         orientation="left"
-                        stroke="#22c55e"
+                        stroke={METRIC_COLORS.ph}
                         fontSize={11}
                         domain={[4, 8]}
                         label={{
                             value: 'pH / EC',
                             position: 'insideTopLeft',
-                            style: { fill: '#22c55e', fontSize: 11 },
+                            style: { fill: METRIC_COLORS.ph, fontSize: 11 },
                         }}
                     />
                     <YAxis
                         yAxisId="water"
                         orientation="right"
-                        stroke="#06b6d4"
+                        stroke={METRIC_COLORS.water}
                         fontSize={11}
                         label={{
                             value: 'ml',
                             position: 'insideTopRight',
-                            style: { fill: '#06b6d4', fontSize: 11 },
+                            style: { fill: METRIC_COLORS.water, fontSize: 11 },
                         }}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#1e293b',
-                            border: '1px solid #334155',
+                            backgroundColor: 'rgb(var(--color-bg-component))',
+                            border: '1px solid rgba(var(--color-border), 0.1)',
                             borderRadius: 8,
                             fontSize: 12,
                         }}
@@ -328,7 +329,7 @@ const NutrientWateringChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({
                         yAxisId="ph"
                         type="monotone"
                         dataKey="ph"
-                        stroke="#22c55e"
+                        stroke={METRIC_COLORS.ph}
                         strokeWidth={2}
                         dot={false}
                         name="pH"
@@ -337,7 +338,7 @@ const NutrientWateringChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({
                         yAxisId="ph"
                         type="monotone"
                         dataKey="ec"
-                        stroke="#eab308"
+                        stroke={METRIC_COLORS.ec}
                         strokeWidth={2}
                         dot={false}
                         name="EC (mS/cm)"
@@ -345,7 +346,7 @@ const NutrientWateringChart: React.FC<{ data: EnvironmentLogEntry[] }> = memo(({
                     <Bar
                         yAxisId="water"
                         dataKey="waterVolumeMl"
-                        fill="#06b6d4"
+                        fill={METRIC_COLORS.water}
                         opacity={0.6}
                         name={t('plantsView.analytics.waterVolume', { defaultValue: 'Water (ml)' })}
                         radius={[2, 2, 0, 0]}

@@ -8,6 +8,9 @@ import {
     CANNABINOID_COLORS,
     VPD_ZONE_COLORS,
     METRIC_COLORS,
+    FLAVONOID_COLORS,
+    CHART_STATUS,
+    VPD_BAND_COLORS,
 } from './chartPalette'
 
 // The chart palette is duplicated by necessity: CSS custom properties in
@@ -42,16 +45,25 @@ describe('chart palette parity: chartPalette.ts <-> tokens.css', () => {
         expect(tokenHex('chart-label')).toBe(CHART_CHROME.label.toLowerCase())
     })
 
-    // camelCase TS keys (earlyFlower) map to kebab CSS tokens (early-flower).
-    const kebab = (s: string) => s.replace(/([A-Z])/g, '-$1').toLowerCase()
+    // TS key -> CSS token slug: camelCase (earlyFlower -> early-flower) and
+    // display names with spaces (Cannflavin A -> cannflavin-a).
+    const slug = (s: string) =>
+        s
+            .replace(/([a-z])([A-Z])/g, '$1-$2')
+            .replace(/[^a-zA-Z0-9]+/g, '-')
+            .toLowerCase()
+            .replace(/^-|-$/g, '')
 
     it.each([
         ['cannabinoid', CANNABINOID_COLORS],
         ['vpd-zone', VPD_ZONE_COLORS],
         ['metric', METRIC_COLORS],
+        ['flavonoid', FLAVONOID_COLORS],
+        ['chart-status', CHART_STATUS],
+        ['vpd-band', VPD_BAND_COLORS],
     ] as const)('%s domain family matches its tokens.css tokens', (family, colors) => {
         for (const [key, hex] of Object.entries(colors)) {
-            expect(tokenHex(`${family}-${kebab(key)}`)).toBe(hex.toLowerCase())
+            expect(tokenHex(`${family}-${slug(key)}`)).toBe(hex.toLowerCase())
         }
     })
 })

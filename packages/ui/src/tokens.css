@@ -71,6 +71,23 @@
     --color-metric-ec: 168 85 247; /* #a855f7 purple */
     --color-metric-height: 6 182 212; /* #06b6d4 cyan */
     --color-metric-health: 16 185 129; /* #10b981 emerald */
+    --color-metric-vpd: 168 85 247; /* #a855f7 purple */
+    --color-metric-water: 6 182 212; /* #06b6d4 cyan */
+    /* Flavonoids */
+    --color-flavonoid-cannflavin-a: 245 158 11; /* #f59e0b amber */
+    --color-flavonoid-cannflavin-b: 249 115 22; /* #f97316 orange */
+    --color-flavonoid-quercetin: 132 204 22; /* #84cc16 lime */
+    --color-flavonoid-apigenin: 34 211 238; /* #22d3ee cyan */
+    --color-flavonoid-luteolin: 167 139 250; /* #a78bfa violet */
+    --color-flavonoid-kaempferol: 251 113 133; /* #fb7185 rose */
+    /* Chart status (fixed hex for SVG rings/marks; per-theme status vars don't resolve in SVG) */
+    --color-chart-status-good: 16 185 129; /* #10b981 */
+    --color-chart-status-warning: 245 158 11; /* #f59e0b */
+    --color-chart-status-danger: 239 68 68; /* #ef4444 */
+    /* VPD bands (EnvironmentDashboard low/optimal/high zone labels) */
+    --color-vpd-band-low: 96 165 250; /* #60a5fa blue */
+    --color-vpd-band-optimal: 34 197 94; /* #22c55e green */
+    --color-vpd-band-high: 239 68 68; /* #ef4444 red */
 }
 
 /* --- THEMES --- */

@@ -313,7 +313,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                     ).map((d) => (
                         <div
                             key={d}
-                            className="py-2 text-center text-xs font-medium text-slate-500"
+                            className="py-2 text-center text-xs font-medium text-muted"
                         >
                             {d}
                         </div>
@@ -369,7 +369,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                         </button>
                                     ))}
                                     {dayTasks.length > 3 && (
-                                        <span className="text-3xs text-slate-500">
+                                        <span className="text-3xs text-muted">
                                             +{dayTasks.length - 3}
                                         </span>
                                     )}

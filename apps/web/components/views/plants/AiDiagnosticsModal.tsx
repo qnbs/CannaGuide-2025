@@ -340,7 +340,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                                <div className="flex items-center justify-between gap-2 text-xs text-muted">
                                     <span className="flex items-center gap-1">
                                         <PhosphorIcons.CheckCircle className="w-4 h-4 text-primary-500 shrink-0" />
                                         {t('legal.imageConsent.accepted')}
@@ -461,7 +461,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     image={image}
                                 />
                             )}
-                            <p className="text-xs text-slate-500 italic mt-4 text-center">
+                            <p className="text-xs text-muted italic mt-4 text-center">
                                 {t('ai.disclaimer')}
                             </p>
                             <p className="text-xs text-red-400/80 italic mt-1 text-center">

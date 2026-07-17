@@ -145,7 +145,7 @@ const NutrientDeficiencyWizardComponent: React.FC = () => {
     return (
         <div className="space-y-4" data-testid="wizard-question">
             {/* Progress */}
-            <div className="flex items-center justify-between text-xs text-slate-500">
+            <div className="flex items-center justify-between text-xs text-muted">
                 <span>{t('plantsView.nutrientWizard.step', { current: step, max: maxDepth })}</span>
                 <div className="flex-1 mx-3 h-1 bg-slate-800 rounded-full overflow-hidden">
                     <div

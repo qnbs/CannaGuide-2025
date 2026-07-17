@@ -62,7 +62,7 @@ export const PhotoTimelineTab: React.FC<PhotoTimelineTabProps> = memo(
         if (photos.length === 0) {
             return (
                 <div className="rounded-xl bg-slate-800/40 p-8 text-center">
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-muted">
                         {t('plantsView.photoTimeline.noPhotos', {
                             defaultValue:
                                 'No photos yet. Add photos via the Photo action in the toolbar.',
@@ -115,7 +115,7 @@ export const PhotoTimelineTab: React.FC<PhotoTimelineTabProps> = memo(
                             return (
                                 <div key={photo.id} className="text-center space-y-2">
                                     <div className="aspect-square rounded-lg bg-slate-700 flex items-center justify-center">
-                                        <span className="text-xs text-slate-500">
+                                        <span className="text-xs text-muted">
                                             {photo.imageId ??
                                                 t('plantsView.photoTimeline.noPreview', {
                                                     defaultValue: 'No preview',
@@ -170,7 +170,7 @@ export const PhotoTimelineTab: React.FC<PhotoTimelineTabProps> = memo(
 
                                 {/* Photo placeholder */}
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg bg-slate-700/60 ring-1 ring-inset ring-slate-600 flex items-center justify-center">
-                                    <span className="text-3xs text-slate-500 text-center px-1">
+                                    <span className="text-3xs text-muted text-center px-1">
                                         {photo.category}
                                     </span>
                                 </div>

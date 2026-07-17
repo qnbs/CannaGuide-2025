@@ -147,7 +147,7 @@ const MetricControl: React.FC<MetricControlProps> = React.memo(({ config, value,
                         step={config.step}
                         className="w-20 rounded-xl border border-white/[0.1] bg-white/[0.06] px-2 py-1 text-right text-sm text-slate-100 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 transition-colors"
                     />
-                    <span className="text-xs text-slate-500 w-12">{config.unit}</span>
+                    <span className="text-xs text-muted w-12">{config.unit}</span>
                 </div>
             </div>
             <input
@@ -369,7 +369,7 @@ export const EnvironmentControlPanel: React.FC<EnvironmentControlPanelProps> = (
 
             {/* Environment Presets */}
             <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-slate-500 self-center mr-1">
+                <span className="text-xs text-muted self-center mr-1">
                     {t('plantsView.environment.presets', { defaultValue: 'Presets:' })}
                 </span>
                 {PRESETS.map((preset) => (
@@ -402,7 +402,7 @@ export const EnvironmentControlPanel: React.FC<EnvironmentControlPanelProps> = (
 
             {/* Source indicator + Log button */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-slate-500">
+                <div className="flex items-center gap-2 text-xs text-muted">
                     <PhosphorIcons.PencilSimple className="w-4 h-4" />
                     <span>
                         {t('plantsView.environment.sourceManual', {

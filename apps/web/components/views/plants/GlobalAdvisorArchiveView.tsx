@@ -198,8 +198,8 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                         })}
                     </>
                 ) : (
-                    <div className="text-center py-10 text-slate-500">
-                        <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-500 mb-2" />
+                    <div className="text-center py-10 text-muted">
+                        <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-muted mb-2" />
                         <h3 className="font-semibold text-slate-300">
                             {t('knowledgeView.archive.empty')}
                         </h3>

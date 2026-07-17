@@ -175,7 +175,7 @@ export const VPDZoneMap: React.FC<VPDZoneMapProps> = memo(
                             {t(`plantsView.vpd.status.${status}`, { defaultValue: status })}
                         </span>
                         {currentStage != null && (
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-muted mt-1">
                                 {t('plantsView.vpd.targetRange', { defaultValue: 'Target' })}:{' '}
                                 {VPD_TARGET_BANDS[currentStage].min}--
                                 {VPD_TARGET_BANDS[currentStage].max} kPa
@@ -223,7 +223,7 @@ export const VPDZoneMap: React.FC<VPDZoneMapProps> = memo(
                     </p>
                     <div className="relative min-w-[320px]">
                         {/* Y-axis label */}
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 -rotate-90 text-3xs text-slate-500 whitespace-nowrap">
+                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 -rotate-90 text-3xs text-muted whitespace-nowrap">
                             {t('plantsView.vpd.humidity', { defaultValue: 'RH %' })}
                         </div>
                         <div className="ml-6">
@@ -248,23 +248,23 @@ export const VPDZoneMap: React.FC<VPDZoneMapProps> = memo(
                             </div>
                             {/* X-axis labels */}
                             <div className="flex justify-between mt-1">
-                                <span className="text-3xs text-slate-500">
+                                <span className="text-3xs text-muted">
                                     {TEMP_RANGE.min}C
                                 </span>
-                                <span className="text-3xs text-slate-500">
+                                <span className="text-3xs text-muted">
                                     {t('plantsView.vpd.temperature', {
                                         defaultValue: 'Temperature',
                                     })}
                                 </span>
-                                <span className="text-3xs text-slate-500">
+                                <span className="text-3xs text-muted">
                                     {TEMP_RANGE.max}C
                                 </span>
                             </div>
                         </div>
                         {/* Y-axis tick labels */}
                         <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between ml-1">
-                            <span className="text-3xs text-slate-500">{RH_RANGE.max}%</span>
-                            <span className="text-3xs text-slate-500">{RH_RANGE.min}%</span>
+                            <span className="text-3xs text-muted">{RH_RANGE.max}%</span>
+                            <span className="text-3xs text-muted">{RH_RANGE.min}%</span>
                         </div>
                     </div>
                 </div>

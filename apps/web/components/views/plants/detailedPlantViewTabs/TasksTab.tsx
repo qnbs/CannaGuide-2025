@@ -100,7 +100,7 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                                     <div className="flex-grow min-w-0">
                                         <p className="font-semibold text-slate-100">{taskTitle}</p>
                                         <p className="text-sm text-slate-300">{taskDescription}</p>
-                                        <p className="text-xs text-slate-500 mt-1">
+                                        <p className="text-xs text-muted mt-1">
                                             {age}{' '}
                                             {t('plantsView.tasks.ago', { defaultValue: 'ago' })}
                                         </p>
@@ -126,7 +126,7 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                         <PhosphorIcons.CheckCircle className="w-5 h-5" />
                         {t('plantsView.detailedView.completedTasks', { defaultValue: 'Completed' })}
                     </h3>
-                    <span className="text-xs text-slate-500">{completedTasks.length}</span>
+                    <span className="text-xs text-muted">{completedTasks.length}</span>
                 </div>
                 <ul className="space-y-3">
                     {completedTasks.length > 0 ? (
@@ -142,7 +142,7 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                                         <p className="font-semibold line-through text-slate-400">
                                             {taskTitle}
                                         </p>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-muted">
                                             {t('plantsView.detailedView.tasksCompleted', {
                                                 date: new Date(
                                                     task.completedAt ?? Date.now(),
@@ -154,7 +154,7 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                             )
                         })
                     ) : (
-                        <p className="text-center text-slate-500 py-4">
+                        <p className="text-center text-muted py-4">
                             {t('plantsView.detailedView.tasksNoEntries')}
                         </p>
                     )}

@@ -115,12 +115,12 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                                 <PhosphorIcons.GameController className="w-5 h-5 mr-2" />
                                 {t(relevantScenario.titleKey)}
                             </Button>
-                            <p className="text-xs text-slate-500 mt-2">
+                            <p className="text-xs text-muted mt-2">
                                 {t(relevantScenario.descriptionKey)}
                             </p>
                         </div>
                     )}
-                    <p className="text-xs text-slate-500 italic mt-4 text-center">
+                    <p className="text-xs text-muted italic mt-4 text-center">
                         {t('ai.disclaimer')}
                     </p>
                 </div>

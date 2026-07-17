@@ -206,7 +206,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
 
         if (!hasEnoughData) {
             return (
-                <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                <div className="flex items-center justify-center h-full text-muted text-sm">
                     {t('plantsView.detailedView.historyNoData')}
                 </div>
             )

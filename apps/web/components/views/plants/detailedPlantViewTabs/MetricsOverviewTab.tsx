@@ -302,7 +302,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                 className="w-10 h-10 mx-auto text-slate-600 mb-2"
                                 aria-hidden="true"
                             />
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted">
                                 {t('plantsView.metrics.noData', {
                                     defaultValue:
                                         'No metrics data yet. Add readings using Quick Log.',
@@ -414,7 +414,7 @@ const MetricCard: React.FC<{
         <p className="text-xs text-slate-400">{label}</p>
         <p className={`text-xl font-bold ${color}`}>
             {value}
-            {unit !== '' && <span className="text-xs font-normal text-slate-500 ml-1">{unit}</span>}
+            {unit !== '' && <span className="text-xs font-normal text-muted ml-1">{unit}</span>}
         </p>
     </div>
 ))

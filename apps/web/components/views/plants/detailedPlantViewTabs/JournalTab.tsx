@@ -328,11 +328,11 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                     {[...groupedEntries.entries()].map(([dateKey, entries]) => (
                         <div key={dateKey}>
                             <div className="flex items-center gap-3 mb-3">
-                                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
                                     {formatDateGroup(dateKey, t)}
                                 </h4>
                                 <div className="flex-grow h-px bg-slate-700/60" />
-                                <span className="text-xs text-slate-500">{entries.length}</span>
+                                <span className="text-xs text-muted">{entries.length}</span>
                             </div>
                             <ul className="space-y-3">
                                 {entries.map((entry) => {
@@ -364,7 +364,7 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                                                         {detailsText}
                                                     </p>
                                                 )}
-                                                <p className="text-xs text-slate-500 mt-1">
+                                                <p className="text-xs text-muted mt-1">
                                                     {new Date(entry.createdAt).toLocaleTimeString(
                                                         undefined,
                                                         {

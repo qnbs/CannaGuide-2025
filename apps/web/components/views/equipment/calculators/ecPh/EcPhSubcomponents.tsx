@@ -70,7 +70,7 @@ export const OptimalRangeBar: React.FC<{
                     style={{ left: `${valuePct}%` }}
                 />
             </div>
-            <div className="flex justify-between text-3xs text-slate-500">
+            <div className="flex justify-between text-3xs text-muted">
                 <span>{absoluteMin.toFixed(1)}</span>
                 <span className="text-green-500/70">
                     {min.toFixed(1)} – {max.toFixed(1)}
@@ -144,7 +144,7 @@ export const EcPhAlertsPanel: React.FC<{
                     <span className="text-sm text-slate-300 flex-grow">{alert.message}</span>
                     <button
                         onClick={() => onDismissAlert(alert.id)}
-                        className="text-slate-500 hover:text-slate-300"
+                        className="text-muted hover:text-slate-300"
                     >
                         <PhosphorIcons.X className="w-4 h-4" />
                     </button>
@@ -153,7 +153,7 @@ export const EcPhAlertsPanel: React.FC<{
             {alerts.length > 1 && (
                 <button
                     onClick={onClearAlerts}
-                    className="text-xs text-slate-500 hover:text-slate-300"
+                    className="text-xs text-muted hover:text-slate-300"
                 >
                     {t('equipmentView.calculators.ecPhPlanner.clearAlerts')}
                 </button>

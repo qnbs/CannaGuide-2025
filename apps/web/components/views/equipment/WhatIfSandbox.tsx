@@ -36,11 +36,11 @@ export const WhatIfSandbox: React.FC = memo(() => {
                     <span className="text-base font-semibold text-primary-300">
                         {t('equipmentView.calculators.sandbox.title')}
                     </span>
-                    <span className="hidden text-xs text-slate-500 group-open:hidden sm:inline">
+                    <span className="hidden text-xs text-muted group-open:hidden sm:inline">
                         {t('equipmentView.calculators.sandbox.collapseHint')}
                     </span>
                 </div>
-                <span className="ml-auto mr-2 text-xs text-slate-500">
+                <span className="ml-auto mr-2 text-xs text-muted">
                     {volumeM3.toFixed(2)} {t('equipmentView.calculators.sandbox.unitM3')} &mdash;{' '}
                     {sharedLightWattage} {t('equipmentView.calculators.sandbox.unitWatt')}
                 </span>
@@ -57,7 +57,7 @@ export const WhatIfSandbox: React.FC = memo(() => {
             </summary>
 
             <div className="mt-4 space-y-4">
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                     {t('equipmentView.calculators.sandbox.description')}
                 </p>
 
@@ -101,7 +101,7 @@ export const WhatIfSandbox: React.FC = memo(() => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                         {t('equipmentView.calculators.sandbox.propagateNote')}
                     </p>
                     <button

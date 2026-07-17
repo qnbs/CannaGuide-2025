@@ -75,7 +75,7 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
                     <span className="text-lg font-bold text-amber-300">
                         {shop.rating.toFixed(1)}
                     </span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-muted">
                         {t('equipmentView.growShops.ratingSuffix')}
                     </span>
                 </div>
@@ -186,7 +186,7 @@ const ShopCard: React.FC<{ shop: Shop; onSelect: () => void }> = memo(({ shop, o
                             </span>
                         ))}
                         {shop.strengths.length > 2 && (
-                            <span className="text-3xs text-slate-500 px-1.5 py-0.5">
+                            <span className="text-3xs text-muted px-1.5 py-0.5">
                                 +{shop.strengths.length - 2}
                             </span>
                         )}
@@ -204,7 +204,7 @@ const ShopCard: React.FC<{ shop: Shop; onSelect: () => void }> = memo(({ shop, o
                         {shop.paymentMethods.slice(0, 3).map((pm: string) => {
                             const Icon = PaymentIcons[pm as keyof typeof PaymentIcons]
                             return Icon ? (
-                                <Icon key={pm} className="w-4 h-4 text-slate-500" />
+                                <Icon key={pm} className="w-4 h-4 text-muted" />
                             ) : null
                         })}
                     </div>
@@ -313,7 +313,7 @@ export const GrowShopsView: React.FC = () => {
             {/* Search & sort controls */}
             <div className="flex gap-2 mb-3">
                 <div className="flex-grow relative">
-                    <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                     <input
                         type="text"
                         placeholder={t('equipmentView.growShops.searchPlaceholder', {
@@ -327,7 +327,7 @@ export const GrowShopsView: React.FC = () => {
                         <button
                             type="button"
                             onClick={() => setSearchQuery('')}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-slate-300"
                             aria-label={t('common.clearSearch')}
                         >
                             <PhosphorIcons.X className="w-4 h-4" />
@@ -348,7 +348,7 @@ export const GrowShopsView: React.FC = () => {
             </div>
 
             {/* Results count */}
-            <p className="text-xs text-slate-500 mb-2">
+            <p className="text-xs text-muted mb-2">
                 {filteredAndSortedShops.length}{' '}
                 {t('equipmentView.growShops.shopsFound', { defaultValue: 'shops' })}
             </p>

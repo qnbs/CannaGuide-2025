@@ -108,7 +108,7 @@ export const HydroReadingForm: React.FC = memo(() => {
                     <button
                         type="button"
                         onClick={handleClearAll}
-                        className="text-xs text-slate-500 hover:text-red-400 px-2 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200"
+                        className="text-xs text-muted hover:text-red-400 px-2 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200"
                     >
                         {t('equipmentView.hydroMonitoring.input.clearAll')}
                     </button>

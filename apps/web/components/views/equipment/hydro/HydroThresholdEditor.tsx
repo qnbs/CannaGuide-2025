@@ -39,7 +39,7 @@ export const HydroThresholdEditor: React.FC = memo(() => {
             >
                 <PhosphorIcons.GearSix className="w-4 h-4" aria-hidden="true" />
                 {t('equipmentView.hydroMonitoring.thresholds.title')}
-                <span className="ml-auto text-xs text-slate-500">
+                <span className="ml-auto text-xs text-muted">
                     {showThresholdEditor ? '-' : '+'}
                 </span>
             </button>

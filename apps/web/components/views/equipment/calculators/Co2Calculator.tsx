@@ -132,7 +132,7 @@ export const Co2Calculator: React.FC = memo(() => {
                             {t(`equipmentView.calculators.co2.status.${result.status}`)}
                         </p>
                     </ResultDisplay>
-                    <p className="text-xs text-slate-500 text-center">
+                    <p className="text-xs text-muted text-center">
                         {t('equipmentView.calculators.co2.safetyNote')}
                     </p>
                 </div>

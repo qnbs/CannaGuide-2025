@@ -121,7 +121,7 @@ export const ManualSection: React.FC = memo(() => {
                         <div>
                             <span className="text-lg">{title}</span>
                             {subSections.length > 0 && (
-                                <span className="ml-2 text-xs tabular-nums text-slate-500 font-normal">
+                                <span className="ml-2 text-xs tabular-nums text-muted font-normal">
                                     {t('helpView.subSectionCount', { count: subSections.length })}
                                 </span>
                             )}

@@ -171,25 +171,25 @@ const SeedbankProfileComponent: React.FC<{
                         <ul className="list-none p-0 m-0 space-y-1.5">
                             {bank.service.phone && (
                                 <li className="flex items-center gap-2">
-                                    <PhosphorIcons.Microphone className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                                    <PhosphorIcons.Microphone className="w-3.5 h-3.5 text-muted flex-shrink-0" />
                                     {bank.service.phone}
                                 </li>
                             )}
                             {bank.service.digital && (
                                 <li className="flex items-center gap-2">
-                                    <PhosphorIcons.Globe className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                                    <PhosphorIcons.Globe className="w-3.5 h-3.5 text-muted flex-shrink-0" />
                                     {bank.service.digital}
                                 </li>
                             )}
                             {bank.service.address && (
                                 <li className="flex items-center gap-2">
-                                    <PhosphorIcons.Storefront className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                                    <PhosphorIcons.Storefront className="w-3.5 h-3.5 text-muted flex-shrink-0" />
                                     {bank.service.address}
                                 </li>
                             )}
                             {bank.service.email && (
                                 <li className="flex items-center gap-2">
-                                    <PhosphorIcons.PaperPlaneTilt className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                                    <PhosphorIcons.PaperPlaneTilt className="w-3.5 h-3.5 text-muted flex-shrink-0" />
                                     {bank.service.email}
                                 </li>
                             )}
@@ -293,7 +293,7 @@ const SeedbanksView: React.FC = () => {
         <div className="space-y-3 pb-[calc(7rem+env(safe-area-inset-bottom))] scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-0 sm:scroll-pb-0">
             {/* Search bar */}
             <div className="relative">
-                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                 <input
                     type="text"
                     placeholder={t('equipmentView.seedbanks.searchPlaceholder', {
@@ -307,7 +307,7 @@ const SeedbanksView: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => setSearchQuery('')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-slate-300"
                         aria-label={t('common.clearSearch')}
                     >
                         <PhosphorIcons.X className="w-4 h-4" />
@@ -316,7 +316,7 @@ const SeedbanksView: React.FC = () => {
             </div>
 
             {/* Results count */}
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted">
                 {filteredBankKeys.length} / {allBankKeys.length}{' '}
                 {t('equipmentView.seedbanks.banksLabel', { defaultValue: 'seed banks' })}
             </p>

@@ -19,14 +19,14 @@ export const EcPhHistoryTab: React.FC<EcPhHistoryTabProps> = memo(
         return (
             <div className="space-y-2">
                 {recentReadings.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6">
+                    <p className="text-sm text-muted text-center py-6">
                         {t('equipmentView.calculators.ecPhPlanner.noReadings')}
                     </p>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-slate-700/50">
+                                <tr className="text-left text-xs uppercase tracking-wider text-muted border-b border-slate-700/50">
                                     <th className="py-2 px-2">
                                         {t('equipmentView.calculators.ecPhPlanner.time')}
                                     </th>

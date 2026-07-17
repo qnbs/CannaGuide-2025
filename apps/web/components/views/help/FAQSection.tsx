@@ -107,7 +107,7 @@ export const FAQSection: React.FC = memo(() => {
 
             {/* Result count badge */}
             {isFiltered && (
-                <p className="text-xs text-slate-500 mb-3">
+                <p className="text-xs text-muted mb-3">
                     {t('helpView.faq.resultCountFiltered', {
                         count: filteredFaq.length,
                         total: augmentedFaqData.length,
@@ -120,11 +120,11 @@ export const FAQSection: React.FC = memo(() => {
                     groupedFaq.map((group) => (
                         <section key={group.id} className="space-y-3">
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-500">{group.icon}</span>
+                                <span className="text-muted">{group.icon}</span>
                                 <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
                                     {group.title}
                                 </h4>
-                                <span className="text-xs tabular-nums text-slate-500 bg-slate-800 rounded-full px-2 py-0.5">
+                                <span className="text-xs tabular-nums text-muted bg-slate-800 rounded-full px-2 py-0.5">
                                     {group.items.length}
                                 </span>
                                 <div className="h-px flex-1 bg-slate-700/60" />
@@ -154,7 +154,7 @@ export const FAQSection: React.FC = memo(() => {
                         </section>
                     ))
                 ) : (
-                    <div className="text-center py-10 text-slate-500 space-y-2">
+                    <div className="text-center py-10 text-muted space-y-2">
                         <PhosphorIcons.MagnifyingGlass className="w-10 h-10 mx-auto text-slate-600" />
                         <p>{t('helpView.faq.noResults', { term: searchTerm })}</p>
                     </div>

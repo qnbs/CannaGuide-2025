@@ -130,7 +130,7 @@ const IotSettingsTab: React.FC = () => {
                             placeholder="wss://broker.example.com:8884"
                             disabled={!isEnabled}
                         />
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted">
                             {t('settingsView.iot.brokerUrlHint', {
                                 defaultValue: 'WebSocket URL (ws:// or wss://) of your MQTT broker',
                             })}
@@ -195,7 +195,7 @@ const IotSettingsTab: React.FC = () => {
                             placeholder="cannaguide/sensors"
                             disabled={!isEnabled}
                         />
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted">
                             {t('settingsView.iot.topicPrefixHint', {
                                 defaultValue:
                                     'The app subscribes to {prefix}/+/temperature, {prefix}/+/humidity, etc.',

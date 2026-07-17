@@ -34,7 +34,7 @@ export const CostTrackingSection: React.FC = () => {
                     <p className="text-lg font-bold text-slate-200">
                         {todayCost.totalTokens.toLocaleString()}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                         {t('settingsView.costTracking.tokensToday')}
                     </p>
                 </div>
@@ -42,14 +42,14 @@ export const CostTrackingSection: React.FC = () => {
                     <p className="text-lg font-bold text-slate-200">
                         ${todayCost.estimatedCostUsd.toFixed(4)}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                         {t('settingsView.costTracking.costToday')}
                     </p>
                 </div>
             </div>
             {history.length > 0 && (
                 <div>
-                    <p className="text-xs text-slate-500 mb-1">
+                    <p className="text-xs text-muted mb-1">
                         {t('settingsView.costTracking.last7Days')}
                     </p>
                     <div className="flex items-end gap-1 h-8">
@@ -67,7 +67,7 @@ export const CostTrackingSection: React.FC = () => {
                 </div>
             )}
             <div className="space-y-2">
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                     {t('settingsView.costTracking.monthlyBudget')}:{' '}
                     {budget.limit > 0
                         ? `${budget.spent.toLocaleString()} / ${budget.limit.toLocaleString()} tokens`

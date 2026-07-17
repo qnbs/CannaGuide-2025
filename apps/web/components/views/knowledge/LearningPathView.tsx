@@ -156,7 +156,7 @@ const PathCard: React.FC<PathCardProps> = ({ path, completedSteps, onStepComplet
                         <button
                             type="button"
                             onClick={onReset}
-                            className="mt-2 text-3xs text-slate-500 hover:text-slate-300 transition-colors underline"
+                            className="mt-2 text-3xs text-muted hover:text-slate-300 transition-colors underline"
                         >
                             {t('knowledgeView.lernpfad.resetPath')}
                         </button>

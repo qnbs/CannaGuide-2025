@@ -235,7 +235,7 @@ const GuideViewComponent: React.FC = () => {
                                     >
                                         <div className="w-5 h-5">{icon}</div>
                                         <span>{groupData.name}</span>
-                                        <span className="ml-auto text-xs text-slate-500">
+                                        <span className="ml-auto text-xs text-muted">
                                             {groupData.articles.length}
                                         </span>
                                     </button>

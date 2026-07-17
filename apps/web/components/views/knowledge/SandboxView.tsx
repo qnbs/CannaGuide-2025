@@ -62,7 +62,7 @@ const SavedExperimentCard: React.FC<{
                     <p className="text-xs text-slate-400">
                         {t('knowledgeView.sandbox.basedOn', { name: experiment.basePlantName })}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                         {t('knowledgeView.sandbox.run', {
                             date: new Date(experiment.createdAt).toLocaleDateString(),
                         })}
@@ -409,7 +409,7 @@ const SandboxView: React.FC = () => {
                     ))}
                 </div>
             ) : (
-                <p className="text-sm text-slate-500">{t('knowledgeView.sandbox.noExperiments')}</p>
+                <p className="text-sm text-muted">{t('knowledgeView.sandbox.noExperiments')}</p>
             )}
         </div>
     )

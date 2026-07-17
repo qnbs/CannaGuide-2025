@@ -337,7 +337,7 @@ export const GeminiSecurityCard: React.FC = () => {
                         <p className="text-sm text-emerald-300">{statusMessage}</p>
                     )}
                     <div className="border-t border-slate-700/50 pt-3 mt-3">
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted">
                             {t('settingsView.security.usageToday', {
                                 requests: todayUsage.requestCount,
                                 tokens: todayUsage.totalTokens.toLocaleString(),
@@ -349,7 +349,7 @@ export const GeminiSecurityCard: React.FC = () => {
                                 {t('settingsView.security.auditLog')}
                             </p>
                             {recentAuditEntries.length > 0 ? (
-                                <ul className="space-y-1 text-xs text-slate-500">
+                                <ul className="space-y-1 text-xs text-muted">
                                     {recentAuditEntries.map((entry) => (
                                         <li key={`${entry.timestamp}-${entry.endpoint}`}>
                                             {new Date(entry.timestamp).toLocaleTimeString()} ·{' '}
@@ -358,7 +358,7 @@ export const GeminiSecurityCard: React.FC = () => {
                                     ))}
                                 </ul>
                             ) : (
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-muted">
                                     {t('settingsView.security.auditLogEmpty')}
                                 </p>
                             )}

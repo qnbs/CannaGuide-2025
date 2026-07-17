@@ -112,7 +112,7 @@ const CalculatorHubViewComponent: React.FC = () => {
                 {activeTab === 'cannabinoidRatio' && <CannabinoidRatioPanel />}
             </div>
 
-            <p className="text-xs text-slate-500 text-center">
+            <p className="text-xs text-muted text-center">
                 {t('knowledgeView.rechner.equipmentLink')}
             </p>
         </div>

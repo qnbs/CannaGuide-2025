@@ -95,24 +95,24 @@ export const CannabinoidRatioPanel: React.FC = () => {
                         </span>
                         <strong className={harmonyColor}>
                             {result.harmonyScore}
-                            <span className="text-xs font-normal text-slate-500">/100</span>
+                            <span className="text-xs font-normal text-muted">/100</span>
                         </strong>
                     </div>
                     <div className="grid grid-cols-3 gap-1 text-center text-xs border-t border-white/10 pt-2">
                         <div>
-                            <div className="text-slate-500">
+                            <div className="text-muted">
                                 {t('knowledgeView.rechner.terpeneEntourage.thcLabel')}
                             </div>
                             <div className="text-white font-bold">{result.thcPct}%</div>
                         </div>
                         <div>
-                            <div className="text-slate-500">
+                            <div className="text-muted">
                                 {t('knowledgeView.rechner.terpeneEntourage.cbdLabel')}
                             </div>
                             <div className="text-white font-bold">{result.cbdPct}%</div>
                         </div>
                         <div>
-                            <div className="text-slate-500">
+                            <div className="text-muted">
                                 {t('knowledgeView.rechner.terpeneEntourage.cbgLabel')}
                             </div>
                             <div className="text-white font-bold">{result.cbgPct}%</div>

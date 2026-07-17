@@ -45,7 +45,7 @@ export const AiLoadingIndicator: React.FC<AiLoadingIndicatorProps> = memo(
                     {loadingMessage}
                 </p>
                 {showTimer && (
-                    <span className="text-xs text-slate-500 tabular-nums">
+                    <span className="text-xs text-muted tabular-nums">
                         {formatElapsed(elapsed)}
                     </span>
                 )}

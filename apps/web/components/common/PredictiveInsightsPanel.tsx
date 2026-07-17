@@ -92,7 +92,7 @@ export const PredictiveInsightsPanel: React.FC<PredictiveInsightsPanelProps> = m
                             className="w-4 h-4 text-slate-600"
                             aria-hidden="true"
                         />
-                        <span className="text-sm text-slate-500">
+                        <span className="text-sm text-muted">
                             {t(`${i18nPrefix}.noData`, 'Not enough sensor data for predictions')}
                         </span>
                     </div>

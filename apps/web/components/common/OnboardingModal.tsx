@@ -285,7 +285,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                         <p className="text-sm text-slate-400 mt-1">
                             {t('onboarding.legalStep.subtitle')}
                         </p>
-                        <p className="text-xs text-slate-500 mt-1 italic">
+                        <p className="text-xs text-muted mt-1 italic">
                             {t('onboarding.legalStep.bilingualHint')}
                         </p>
                     </div>
@@ -350,7 +350,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
                         <button
                             type="button"
                             onClick={() => setAgeDenied(true)}
-                            className="text-sm text-slate-500 hover:text-slate-300 transition-colors py-2"
+                            className="text-sm text-muted hover:text-slate-300 transition-colors py-2"
                         >
                             {t('onboarding.legalStep.deny')}
                         </button>

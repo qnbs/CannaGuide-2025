@@ -21,7 +21,7 @@ const AiDisclaimerComponent: React.FC<AiDisclaimerProps> = ({ medical = false, c
 
     return (
         <div className={cn('mt-4 text-center', className)} role="note" data-testid="ai-disclaimer">
-            <p className="text-xs text-slate-500 italic">{t('ai.disclaimer')}</p>
+            <p className="text-xs text-muted italic">{t('ai.disclaimer')}</p>
             {medical && (
                 <p className="text-xs text-red-400/80 italic mt-1">
                     {t('legal.medicalDisclaimer')}

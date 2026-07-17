@@ -151,7 +151,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     let resultBadge: React.ReactNode = null
     if (shouldShowMatchCount) {
         resultBadge = (
-            <span className="rounded-md bg-white/5 px-2 py-0.5 text-3xs font-medium tabular-nums text-slate-500">
+            <span className="rounded-md bg-white/5 px-2 py-0.5 text-3xs font-medium tabular-nums text-muted">
                 {matchCount}/{commandCount}
             </span>
         )
@@ -195,7 +195,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
             {/* ── Search ──────────────────────────────────────────── */}
             <div className="relative border-b border-white/10 px-4 py-3">
-                <PhosphorIcons.MagnifyingGlass className="pointer-events-none absolute left-7 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <PhosphorIcons.MagnifyingGlass className="pointer-events-none absolute left-7 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                 <Cmdk.Input
                     ref={inputRef}
                     value={query}
@@ -216,7 +216,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     <p className="text-sm font-medium text-slate-400">
                         {t('commandPalette.noResults')}
                     </p>
-                    <p className="text-xs text-slate-500">{t('commandPalette.noResultsHint')}</p>
+                    <p className="text-xs text-muted">{t('commandPalette.noResultsHint')}</p>
                 </Cmdk.Empty>
 
                 {/* Recently Used (only when no search query) */}
@@ -258,7 +258,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     <Cmdk.Group
                         key={group.id}
                         heading={localiseGroupName(group.title)}
-                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:text-3xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-slate-500"
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:text-3xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-muted"
                     >
                         {group.commands.map((command) => {
                             const CommandIcon = command.icon
@@ -283,7 +283,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                 />
                                             </p>
                                             {command.subtitle && (
-                                                <p className="truncate text-2xs text-slate-500">
+                                                <p className="truncate text-2xs text-muted">
                                                     {command.subtitle}
                                                 </p>
                                             )}
@@ -299,7 +299,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
             {/* ── Footer ──────────────────────────────────────────── */}
             <div className="flex items-center justify-between border-t border-white/10 px-4 py-2">
-                <div className="flex items-center gap-4 text-3xs text-slate-500">
+                <div className="flex items-center gap-4 text-3xs text-muted">
                     <span className="flex items-center gap-1">
                         <KbdBadge keys={['Up', 'Down']} />
                         {t('commandPalette.footer.navigate')}

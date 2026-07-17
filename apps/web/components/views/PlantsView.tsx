@@ -75,7 +75,7 @@ const HiddenArchivedSlot: React.FC<HiddenArchivedSlotProps> = memo(({ plantId })
 
     return (
         <Card className="flex h-full flex-col items-center justify-center border border-slate-700/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] text-center">
-            <PhosphorIcons.ArchiveBox className="mb-3 h-10 w-10 text-slate-500" />
+            <PhosphorIcons.ArchiveBox className="mb-3 h-10 w-10 text-muted" />
             <h3 className="font-semibold text-slate-200">
                 {t('settingsView.plants.archivedHiddenTitle')}
             </h3>
@@ -249,7 +249,7 @@ export const PlantsView: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-3 sm:max-w-sm sm:grid-cols-3 lg:min-w-[20rem]">
                                 <div className="stat-tile flex flex-col justify-between p-4">
-                                    <span className="text-2xs uppercase tracking-[0.2em] text-slate-500">
+                                    <span className="text-2xs uppercase tracking-[0.2em] text-muted">
                                         {t('plantsView.hero.slots')}
                                     </span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">
@@ -257,7 +257,7 @@ export const PlantsView: React.FC = () => {
                                     </span>
                                 </div>
                                 <div className="stat-tile flex flex-col justify-between p-4">
-                                    <span className="text-2xs uppercase tracking-[0.2em] text-slate-500">
+                                    <span className="text-2xs uppercase tracking-[0.2em] text-muted">
                                         {t('plantsView.hero.tasks')}
                                     </span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">
@@ -265,7 +265,7 @@ export const PlantsView: React.FC = () => {
                                     </span>
                                 </div>
                                 <div className="stat-tile col-span-2 flex flex-col justify-between p-4 sm:col-span-1">
-                                    <span className="text-2xs uppercase tracking-[0.2em] text-slate-500">
+                                    <span className="text-2xs uppercase tracking-[0.2em] text-muted">
                                         {t('plantsView.hero.alerts')}
                                     </span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">

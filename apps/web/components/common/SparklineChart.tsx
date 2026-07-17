@@ -102,7 +102,7 @@ const SparklineChart: React.FC<SparklineChartProps> = ({
     if (points.length === 0) {
         return (
             <div
-                className={`flex items-center justify-center text-xs text-slate-500 ${className}`}
+                className={`flex items-center justify-center text-xs text-muted ${className}`}
                 style={{ height }}
             >
                 --

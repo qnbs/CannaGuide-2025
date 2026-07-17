@@ -369,7 +369,7 @@ export const EntourageScore: React.FC<EntourageScoreProps> = memo(({ score, dive
                 {label}
             </span>
             {diversity !== undefined && diversity > 0 && (
-                <span className="text-[10px] text-slate-500">H={diversity.toFixed(2)}</span>
+                <span className="text-3xs text-slate-500">H={diversity.toFixed(2)}</span>
             )}
         </div>
     )
@@ -486,7 +486,7 @@ export const TerpeneDetailList: React.FC<TerpeneDetailListProps> = memo(({ terpe
                             {tp.role && (
                                 <span
                                     className={cn(
-                                        'text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
+                                        'text-3xs font-semibold px-1.5 py-0.5 rounded-full',
                                         tp.role === 'dominant'
                                             ? 'text-emerald-400 bg-emerald-400/10'
                                             : 'text-slate-400 bg-slate-400/10',
@@ -496,7 +496,7 @@ export const TerpeneDetailList: React.FC<TerpeneDetailListProps> = memo(({ terpe
                                 </span>
                             )}
                             {tp.entourageScore !== undefined && (
-                                <span className="text-[10px] text-amber-400 font-semibold">
+                                <span className="text-3xs text-amber-400 font-semibold">
                                     EES {tp.entourageScore}/10
                                 </span>
                             )}
@@ -510,7 +510,7 @@ export const TerpeneDetailList: React.FC<TerpeneDetailListProps> = memo(({ terpe
                             {tp.primaryEffects.map((eff) => (
                                 <span
                                     key={eff}
-                                    className="text-[10px] px-1.5 py-0.5 rounded bg-primary-500/10 text-primary-400 border border-primary-500/15"
+                                    className="text-3xs px-1.5 py-0.5 rounded bg-primary-500/10 text-primary-400 border border-primary-500/15"
                                 >
                                     {eff}
                                 </span>
@@ -522,7 +522,7 @@ export const TerpeneDetailList: React.FC<TerpeneDetailListProps> = memo(({ terpe
                             {tp.cannabinoidInteractions.slice(0, 2).map((ix, i) => (
                                 <div
                                     key={i}
-                                    className="flex items-start gap-1.5 text-[10px] text-slate-400"
+                                    className="flex items-start gap-1.5 text-3xs text-slate-400"
                                 >
                                     <span
                                         className={cn(

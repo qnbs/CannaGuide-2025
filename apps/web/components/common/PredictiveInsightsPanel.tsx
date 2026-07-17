@@ -117,7 +117,7 @@ export const PredictiveInsightsPanel: React.FC<PredictiveInsightsPanelProps> = m
                             <span className="text-white/50 font-normal">-- {plantName}</span>
                         )}
                     </h3>
-                    <span className="text-[10px] text-white/40">
+                    <span className="text-3xs text-white/40">
                         {insight.analyzedSamples} {t(`${i18nPrefix}.samples`, 'samples')}
                     </span>
                 </div>
@@ -146,7 +146,7 @@ export const PredictiveInsightsPanel: React.FC<PredictiveInsightsPanelProps> = m
                         </span>
                     </div>
                     {botrytis.factors.length > 0 && (
-                        <ul className="text-[11px] text-white/50 space-y-0.5 mb-2">
+                        <ul className="text-2xs text-white/50 space-y-0.5 mb-2">
                             {botrytis.factors.map((f) => (
                                 <li key={f} className="flex items-start gap-1">
                                     <span className="shrink-0 mt-0.5">--</span>
@@ -179,7 +179,7 @@ export const PredictiveInsightsPanel: React.FC<PredictiveInsightsPanelProps> = m
                                     <span className="text-xs text-white/70">{alert.message}</span>
                                     <span
                                         className={cn(
-                                            'text-[10px] font-bold uppercase ml-2 shrink-0',
+                                            'text-3xs font-bold uppercase ml-2 shrink-0',
                                             aStyle.text,
                                         )}
                                     >
@@ -210,7 +210,7 @@ export const PredictiveInsightsPanel: React.FC<PredictiveInsightsPanelProps> = m
                             {insight.yieldImpact.impactPercent}%
                         </span>
                     </div>
-                    <p className="text-[11px] text-white/50">{insight.yieldImpact.description}</p>
+                    <p className="text-2xs text-white/50">{insight.yieldImpact.description}</p>
                 </div>
             </div>
         )

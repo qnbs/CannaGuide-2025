@@ -147,7 +147,7 @@ const GaugeCard: React.FC<GaugeCardProps> = memo(
                 <div className="flex items-center justify-between">
                     <span className="text-xs uppercase tracking-wider text-slate-500">{label}</span>
                     {optimalMin !== undefined && optimalMax !== undefined && (
-                        <span className="text-[10px] text-slate-600">
+                        <span className="text-3xs text-slate-600">
                             {optimalMin}-{optimalMax} {unit}
                         </span>
                     )}
@@ -188,13 +188,13 @@ const TelemetryPanel: React.FC<{ telemetry: MqttTelemetryMetrics }> = memo(({ te
                     <div className="text-lg font-bold text-slate-100">
                         {telemetry.messagesReceived}
                     </div>
-                    <div className="text-[10px] uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-slate-500">
                         {t('settingsView.iot.messages', { defaultValue: 'Messages' })}
                     </div>
                 </div>
                 <div>
                     <div className="text-lg font-bold text-emerald-400">{uptimePercent}%</div>
-                    <div className="text-[10px] uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-slate-500">
                         {t('settingsView.iot.validRate', { defaultValue: 'Valid Rate' })}
                     </div>
                 </div>
@@ -202,7 +202,7 @@ const TelemetryPanel: React.FC<{ telemetry: MqttTelemetryMetrics }> = memo(({ te
                     <div className="text-lg font-bold text-cyan-400">
                         {telemetry.avgLatencyMs.toFixed(0)}
                     </div>
-                    <div className="text-[10px] uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-slate-500">
                         {t('settingsView.iot.latencyMs', { defaultValue: 'Latency (ms)' })}
                     </div>
                 </div>
@@ -210,7 +210,7 @@ const TelemetryPanel: React.FC<{ telemetry: MqttTelemetryMetrics }> = memo(({ te
                     <div className="text-lg font-bold text-red-400">
                         {telemetry.validationErrors}
                     </div>
-                    <div className="text-[10px] uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-slate-500">
                         {t('settingsView.iot.errors', { defaultValue: 'Errors' })}
                     </div>
                 </div>

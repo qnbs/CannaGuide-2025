@@ -141,18 +141,18 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
                         </div>
 
                         {/* Row 2: Type label + Landrace badge + THC percentage */}
-                        <div className="flex items-center gap-1.5 text-[11px] leading-tight text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-2xs leading-tight text-slate-400 mt-0.5">
                             <span>{safeType}</span>
                             {data.isLandrace && (
                                 <span
-                                    className="inline-flex items-center rounded px-1 py-px bg-green-900/40 text-green-400 text-[10px] font-semibold leading-none"
+                                    className="inline-flex items-center rounded px-1 py-px bg-green-900/40 text-green-400 text-3xs font-semibold leading-none"
                                     title={t('strainsView.landraceStrain')}
                                 >
                                     Landrace
                                 </span>
                             )}
                             {!isPlaceholder && (
-                                <span className="ml-auto font-mono text-[11px] text-primary-300 tabular-nums">
+                                <span className="ml-auto font-mono text-2xs text-primary-300 tabular-nums">
                                     {safeThc.toFixed(1)}%
                                 </span>
                             )}

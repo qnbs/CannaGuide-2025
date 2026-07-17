@@ -127,7 +127,7 @@ const GeneralSettingsTab: React.FC = () => {
                                                         />
                                                     ))}
                                                 </div>
-                                                <span className="text-[10px] font-medium text-slate-300 leading-tight text-center">
+                                                <span className="text-3xs font-medium text-slate-300 leading-tight text-center">
                                                     {t(`settingsView.general.themes.${key}`)}
                                                 </span>
                                                 {isActive && (

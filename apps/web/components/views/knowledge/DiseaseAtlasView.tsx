@@ -290,7 +290,7 @@ const DiseaseAtlasViewComponent: React.FC = () => {
                                     </h3>
                                 </div>
                                 <span
-                                    className={`shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full ${SEVERITY_BADGE[entry.severity]}`}
+                                    className={`shrink-0 px-2 py-0.5 text-3xs font-bold rounded-full ${SEVERITY_BADGE[entry.severity]}`}
                                 >
                                     {t(`knowledgeView.atlas.severity.${entry.severity}`)}
                                 </span>
@@ -299,7 +299,7 @@ const DiseaseAtlasViewComponent: React.FC = () => {
                                 {entry.affectedStages.map((stage) => (
                                     <span
                                         key={stage}
-                                        className="px-1.5 py-0.5 text-[10px] rounded bg-slate-700 text-slate-300"
+                                        className="px-1.5 py-0.5 text-3xs rounded bg-slate-700 text-slate-300"
                                     >
                                         {STAGE_LABEL[stage] ?? stage}
                                     </span>

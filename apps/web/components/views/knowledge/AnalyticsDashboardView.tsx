@@ -376,7 +376,7 @@ export const AnalyticsDashboardView: React.FC = memo(() => {
                             {worstRisk !== null && worstRisk !== 'low' && (
                                 <span
                                     className={cn(
-                                        'ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase',
+                                        'ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-3xs font-bold uppercase',
                                         worstRisk === 'critical'
                                             ? 'bg-red-500/20 text-red-300'
                                             : worstRisk === 'high'

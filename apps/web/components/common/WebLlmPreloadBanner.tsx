@@ -55,7 +55,7 @@ export const WebLlmPreloadBanner = memo(function WebLlmPreloadBanner() {
                             aria-label={t('common.webLlmLoading.ariaLabel')}
                         />
                     </div>
-                    <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                    <p className="mt-0.5 truncate text-3xs text-slate-400">
                         {loadState.report.text} ({percent}%)
                     </p>
                 </div>

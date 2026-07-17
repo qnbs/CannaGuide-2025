@@ -118,7 +118,7 @@ export const CannabinoidRatioPanel: React.FC = () => {
                             <div className="text-white font-bold">{result.cbgPct}%</div>
                         </div>
                     </div>
-                    <p className="text-[10px] text-slate-400 border-t border-white/10 pt-2">
+                    <p className="text-3xs text-slate-400 border-t border-white/10 pt-2">
                         {result.entourageNote}
                     </p>
                 </div>

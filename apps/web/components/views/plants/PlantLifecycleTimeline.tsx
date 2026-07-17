@@ -76,7 +76,7 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(
                                 >
                                     {/* Show duration label on wider segments */}
                                     {width > 12 && (
-                                        <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white/80 drop-shadow">
+                                        <span className="absolute inset-0 flex items-center justify-center text-3xs font-bold text-white/80 drop-shadow">
                                             {stageInfo.duration}d
                                         </span>
                                     )}

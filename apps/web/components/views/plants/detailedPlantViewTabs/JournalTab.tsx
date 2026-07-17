@@ -288,8 +288,8 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
 
     const getFilterCountClassName = (isSelected: boolean): string => {
         return isSelected
-            ? 'text-[10px] rounded-full px-1.5 py-0.5 bg-white/20 text-white'
-            : 'text-[10px] rounded-full px-1.5 py-0.5 bg-slate-700 text-slate-400'
+            ? 'text-3xs rounded-full px-1.5 py-0.5 bg-white/20 text-white'
+            : 'text-3xs rounded-full px-1.5 py-0.5 bg-slate-700 text-slate-400'
     }
 
     return (

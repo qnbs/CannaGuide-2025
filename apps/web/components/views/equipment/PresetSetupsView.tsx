@@ -169,12 +169,12 @@ const PresetSetupsViewComponent: React.FC = () => {
                     {/* Tags row */}
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                         {isPresetRecommended(preset, defaultSpaceSize, defaultBudget) && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-primary-600/60 text-primary-200 ring-1 ring-primary-400/40">
+                            <span className="text-3xs px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-primary-600/60 text-primary-200 ring-1 ring-primary-400/40">
                                 {t('equipmentView.presetSetups.recommended')}
                             </span>
                         )}
                         <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide ${
+                            className={`text-3xs px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide ${
                                 preset.difficulty === 'beginner'
                                     ? 'bg-green-900/50 text-green-300'
                                     : preset.difficulty === 'intermediate'
@@ -184,7 +184,7 @@ const PresetSetupsViewComponent: React.FC = () => {
                         >
                             {t(`equipmentView.presetSetups.difficulty.${preset.difficulty}`)}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">
+                        <span className="text-3xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">
                             {preset.sourceDetails.growSpace
                                 ? `${preset.sourceDetails.growSpace.width}x${preset.sourceDetails.growSpace.depth}cm`
                                 : ''}
@@ -192,7 +192,7 @@ const PresetSetupsViewComponent: React.FC = () => {
                         {preset.tags.slice(0, 3).map((tag) => (
                             <span
                                 key={tag}
-                                className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400"
+                                className="text-3xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400"
                             >
                                 {tag}
                             </span>

@@ -34,7 +34,7 @@ const GrowStatsRow: React.FC<{ growId: string }> = memo(({ growId }) => {
     const summary = useAppSelector(selectGrowSummary(growId))
     const { t } = useTranslation()
     return (
-        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-2xs text-slate-500">
             <span>
                 {t('settingsView.grows.statsPlants', { count: summary.plantCount })}
             </span>
@@ -145,7 +145,7 @@ const GrowManagerTab: React.FC = () => {
                                         </Button>
                                     )}
                                     {isActive && (
-                                        <span className="rounded-full bg-primary-500/20 px-2 py-0.5 text-[10px] font-semibold text-primary-300">
+                                        <span className="rounded-full bg-primary-500/20 px-2 py-0.5 text-3xs font-semibold text-primary-300">
                                             {t('settingsView.grows.active')}
                                         </span>
                                     )}

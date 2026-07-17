@@ -56,7 +56,7 @@ const Stepper: React.FC<{ currentStep: number; steps: string[] }> = ({ currentSt
                             {stepNumber}
                         </div>
                         <span
-                            className={`text-[11px] sm:text-xs mt-1 transition-colors ${stepLabelClass}`}
+                            className={`text-2xs sm:text-xs mt-1 transition-colors ${stepLabelClass}`}
                         >
                             {step}
                         </span>
@@ -166,7 +166,7 @@ const SetupResultDisplayComponent: React.FC<{
                                                 href={link.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-opacity hover:opacity-80 ${getVendorColor(link.vendor)}`}
+                                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-medium transition-opacity hover:opacity-80 ${getVendorColor(link.vendor)}`}
                                             >
                                                 <PhosphorIcons.ArrowSquareOut className="w-3 h-3" />
                                                 {link.vendor}

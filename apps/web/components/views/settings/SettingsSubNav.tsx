@@ -106,7 +106,7 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
                             }`}
                     >
                         <div className="w-5 h-5 sm:w-6 sm:h-6 shrink-0">{navIcons[id]}</div>
-                        <span className="text-[10px] sm:text-xs font-semibold text-center leading-tight line-clamp-2 w-full break-words">
+                        <span className="text-3xs sm:text-xs font-semibold text-center leading-tight line-clamp-2 w-full break-words">
                             {t(`settingsView.categories.${id}`)}
                         </span>
                     </button>

@@ -46,7 +46,7 @@ export const EcTdsPanel: React.FC = () => {
                     }}
                     className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                 />
-                <span className="text-[10px] text-slate-500 text-center">mS/cm</span>
+                <span className="text-3xs text-slate-500 text-center">mS/cm</span>
             </label>
 
             {result && (
@@ -57,19 +57,19 @@ export const EcTdsPanel: React.FC = () => {
                 >
                     <div className="grid grid-cols-3 gap-2 text-center text-sm">
                         <div>
-                            <div className="text-[10px] text-slate-500 mb-0.5">
+                            <div className="text-3xs text-slate-500 mb-0.5">
                                 {t('knowledgeView.rechner.ecTds.tds500')}
                             </div>
                             <div className="font-bold text-white">{result.tds500} ppm</div>
                         </div>
                         <div>
-                            <div className="text-[10px] text-slate-500 mb-0.5">
+                            <div className="text-3xs text-slate-500 mb-0.5">
                                 {t('knowledgeView.rechner.ecTds.tds640')}
                             </div>
                             <div className="font-bold text-white">{result.tds640} ppm</div>
                         </div>
                         <div>
-                            <div className="text-[10px] text-slate-500 mb-0.5">
+                            <div className="text-3xs text-slate-500 mb-0.5">
                                 {t('knowledgeView.rechner.ecTds.tds700')}
                             </div>
                             <div className="font-bold text-white">{result.tds700} ppm</div>
@@ -91,7 +91,7 @@ export const EcTdsPanel: React.FC = () => {
                     placeholder="e.g. 6.5, 6.6, 6.8, 7.0"
                     className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 py-1.5 px-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                 />
-                <span className="text-[10px] text-slate-500">
+                <span className="text-3xs text-slate-500">
                     comma-separated readings over multiple days
                 </span>
             </label>

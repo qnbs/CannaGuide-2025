@@ -358,7 +358,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                                     ? handleComplete(task.id)
                                                     : undefined
                                             }
-                                            className={`block w-full truncate rounded px-1 py-0.5 text-[10px] ring-1 ring-inset transition-opacity ${getActionStyle(task.type)} ${
+                                            className={`block w-full truncate rounded px-1 py-0.5 text-3xs ring-1 ring-inset transition-opacity ${getActionStyle(task.type)} ${
                                                 task.completedAt != null
                                                     ? 'opacity-40 line-through'
                                                     : ''
@@ -369,7 +369,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                         </button>
                                     ))}
                                     {dayTasks.length > 3 && (
-                                        <span className="text-[10px] text-slate-500">
+                                        <span className="text-3xs text-slate-500">
                                             +{dayTasks.length - 3}
                                         </span>
                                     )}
@@ -385,7 +385,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                 {GROW_ACTIONS.map((a) => (
                     <span
                         key={a.type}
-                        className={`rounded-full px-2 py-0.5 text-[10px] ring-1 ring-inset ${a.color}`}
+                        className={`rounded-full px-2 py-0.5 text-3xs ring-1 ring-inset ${a.color}`}
                     >
                         {t(`plantsView.planner.taskTypes.${a.type}`, { defaultValue: a.type })}
                     </span>

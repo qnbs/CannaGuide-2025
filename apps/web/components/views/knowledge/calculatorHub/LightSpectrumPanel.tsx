@@ -51,7 +51,7 @@ export const LightSpectrumPanel: React.FC = () => {
                         }}
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     />
-                    <span className="text-[10px] text-slate-500 text-center">umol/m2/s</span>
+                    <span className="text-3xs text-slate-500 text-center">umol/m2/s</span>
                 </label>
                 <label className="flex flex-col gap-1">
                     <span className="text-xs text-slate-400">
@@ -68,7 +68,7 @@ export const LightSpectrumPanel: React.FC = () => {
                         }}
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     />
-                    <span className="text-[10px] text-slate-500 text-center">h/day</span>
+                    <span className="text-3xs text-slate-500 text-center">h/day</span>
                 </label>
                 <label className="flex flex-col gap-1">
                     <span className="text-xs text-slate-400">
@@ -85,7 +85,7 @@ export const LightSpectrumPanel: React.FC = () => {
                         }}
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     />
-                    <span className="text-[10px] text-slate-500 text-center">% (600-700 nm)</span>
+                    <span className="text-3xs text-slate-500 text-center">% (600-700 nm)</span>
                 </label>
                 <label className="flex flex-col gap-1">
                     <span className="text-xs text-slate-400">
@@ -102,7 +102,7 @@ export const LightSpectrumPanel: React.FC = () => {
                         }}
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     />
-                    <span className="text-[10px] text-slate-500 text-center">% (400-500 nm)</span>
+                    <span className="text-3xs text-slate-500 text-center">% (400-500 nm)</span>
                 </label>
             </div>
 

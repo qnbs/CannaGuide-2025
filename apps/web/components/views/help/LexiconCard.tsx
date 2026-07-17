@@ -70,7 +70,7 @@ export const LexiconCard: React.FC<{ entry: LexiconEntry }> = memo(({ entry }) =
                 <h3 className="text-base font-bold text-primary-300 leading-snug">{term}</h3>
             </div>
             <span
-                className={`inline-flex items-center gap-1 self-start text-[10px] uppercase font-semibold tracking-wider rounded-full px-2 py-0.5 ring-1 ring-inset mb-2.5 ${style?.pill ?? ''}`}
+                className={`inline-flex items-center gap-1 self-start text-3xs uppercase font-semibold tracking-wider rounded-full px-2 py-0.5 ring-1 ring-inset mb-2.5 ${style?.pill ?? ''}`}
             >
                 {style?.icon}
                 {entry.category}

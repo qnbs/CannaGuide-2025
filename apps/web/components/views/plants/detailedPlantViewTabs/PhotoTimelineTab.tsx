@@ -170,7 +170,7 @@ export const PhotoTimelineTab: React.FC<PhotoTimelineTabProps> = memo(
 
                                 {/* Photo placeholder */}
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg bg-slate-700/60 ring-1 ring-inset ring-slate-600 flex items-center justify-center">
-                                    <span className="text-[10px] text-slate-500 text-center px-1">
+                                    <span className="text-3xs text-slate-500 text-center px-1">
                                         {photo.category}
                                     </span>
                                 </div>

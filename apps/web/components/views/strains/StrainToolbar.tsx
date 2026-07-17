@@ -140,7 +140,7 @@ const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
                 >
                     <PhosphorIcons.FunnelSimple className="w-5 h-5" />
                     {activeFilterCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-white text-[10px] font-bold ring-2 ring-slate-800">
+                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-white text-3xs font-bold ring-2 ring-slate-800">
                             {activeFilterCount}
                         </span>
                     )}

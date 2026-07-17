@@ -427,11 +427,11 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                         aria-controls={`tabpanel-${tab.id}`}
                     >
                         <div className="w-6 h-6">{tab.icon}</div>
-                        <span className="text-[0.65rem] sm:text-xs font-semibold text-center leading-tight">
+                        <span className="text-3xs sm:text-xs font-semibold text-center leading-tight">
                             {tab.label}
                         </span>
                         {'badge' in tab && tab.badge != null && (
-                            <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-bold text-white ring-2 ring-slate-900">
+                            <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-500 px-1 text-3xs font-bold text-white ring-2 ring-slate-900">
                                 {tab.badge > 99 ? '99+' : tab.badge}
                             </span>
                         )}

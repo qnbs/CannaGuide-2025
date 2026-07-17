@@ -71,7 +71,7 @@ const PhotoItem: React.FC<{
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 p-3 flex flex-col justify-end rounded-lg">
                 <p className="text-white text-sm font-semibold truncate">{entry.notes}</p>
                 {details?.photoCategory && (
-                    <span className="inline-flex items-center self-start mt-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-primary-500/30 text-primary-200">
+                    <span className="inline-flex items-center self-start mt-1 px-2 py-0.5 text-3xs font-bold uppercase tracking-wider rounded-full bg-primary-500/30 text-primary-200">
                         {details.photoCategory}
                     </span>
                 )}
@@ -80,7 +80,7 @@ const PhotoItem: React.FC<{
                         {details.timelineLabel}
                     </p>
                 )}
-                <p className="text-white/60 text-[11px] mt-0.5">
+                <p className="text-white/60 text-2xs mt-0.5">
                     {new Date(entry.createdAt).toLocaleDateString()}
                 </p>
             </div>

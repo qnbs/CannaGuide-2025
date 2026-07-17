@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
                             {headerIcon}
                         </div>
                         <div className="min-w-0">
-                            <p className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                            <p className="truncate text-2xs font-semibold uppercase tracking-[0.24em] text-slate-500">
                                 CannaGuide
                             </p>
                             <h1 className="truncate text-xl font-bold font-display text-slate-50">

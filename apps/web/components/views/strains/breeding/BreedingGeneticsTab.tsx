@@ -219,7 +219,7 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                                     key={item.label}
                                     className="bg-slate-800/60 rounded-lg p-2 ring-1 ring-white/10"
                                 >
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                                    <p className="text-3xs text-slate-500 uppercase tracking-wider">
                                         {item.label}
                                     </p>
                                     <p

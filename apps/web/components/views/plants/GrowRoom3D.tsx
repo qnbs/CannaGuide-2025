@@ -417,7 +417,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                 </h3>
                 <div className="flex items-center gap-2">
                     {isIotLive && (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-900/30 border border-emerald-500/20 text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-900/30 border border-emerald-500/20 text-3xs text-emerald-400 font-semibold uppercase tracking-wider">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -468,7 +468,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                             </svg>
                         )}
                     </button>
-                    <span className="text-[0.65rem] text-slate-500 uppercase tracking-widest">
+                    <span className="text-3xs text-slate-500 uppercase tracking-widest">
                         {t('plantsView.growRoom3d.live')}
                     </span>
                 </div>
@@ -552,7 +552,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                             aria-live="polite"
                         >
                             <div className="flex items-center gap-1.5 sm:gap-2">
-                                <span className="text-[0.55rem] sm:text-[0.6rem] uppercase tracking-wider text-slate-500">
+                                <span className="text-3xs sm:text-3xs uppercase tracking-wider text-slate-500">
                                     VPD
                                 </span>
                                 <span
@@ -563,13 +563,13 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                                 >
                                     {vpdValue.toFixed(2)}
                                 </span>
-                                <span className="text-[0.55rem] sm:text-[0.6rem] text-slate-500">
+                                <span className="text-3xs sm:text-3xs text-slate-500">
                                     kPa
                                 </span>
                             </div>
                             <span
                                 className={cn(
-                                    'text-[0.65rem] sm:text-xs font-semibold',
+                                    'text-3xs sm:text-xs font-semibold',
                                     vpdStatus.color,
                                 )}
                             >
@@ -578,26 +578,26 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                         </div>
                         <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 flex gap-2 sm:gap-4 text-xs">
                             <div className="text-center">
-                                <span className="text-slate-500 block text-[0.5rem] sm:text-[0.55rem] uppercase">
+                                <span className="text-slate-500 block text-3xs sm:text-3xs uppercase">
                                     {t('plantsView.growRoom3d.temp')}
                                 </span>
-                                <span className="text-slate-200 font-semibold text-[0.7rem] sm:text-xs">
+                                <span className="text-slate-200 font-semibold text-2xs sm:text-xs">
                                     {avgTemp.toFixed(1)}°C
                                 </span>
                             </div>
                             <div className="text-center">
-                                <span className="text-slate-500 block text-[0.5rem] sm:text-[0.55rem] uppercase">
+                                <span className="text-slate-500 block text-3xs sm:text-3xs uppercase">
                                     {t('plantsView.growRoom3d.humidity')}
                                 </span>
-                                <span className="text-slate-200 font-semibold text-[0.7rem] sm:text-xs">
+                                <span className="text-slate-200 font-semibold text-2xs sm:text-xs">
                                     {avgHumidity.toFixed(0)}%
                                 </span>
                             </div>
                             <div className="text-center">
-                                <span className="text-slate-500 block text-[0.5rem] sm:text-[0.55rem] uppercase">
+                                <span className="text-slate-500 block text-3xs sm:text-3xs uppercase">
                                     {t('plantsView.growRoom3d.plants')}
                                 </span>
-                                <span className="text-slate-200 font-semibold text-[0.7rem] sm:text-xs">
+                                <span className="text-slate-200 font-semibold text-2xs sm:text-xs">
                                     {activePlants.length}/3
                                 </span>
                             </div>
@@ -608,7 +608,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
 
             {/* Legend */}
             <ul
-                className="mt-2 flex flex-wrap gap-3 text-[0.65rem] text-slate-500"
+                className="mt-2 flex flex-wrap gap-3 text-3xs text-slate-500"
                 aria-label={t('plantsView.growRoom3d.legendAriaLabel')}
             >
                 <li className="flex items-center gap-1">

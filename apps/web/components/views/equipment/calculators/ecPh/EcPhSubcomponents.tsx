@@ -70,7 +70,7 @@ export const OptimalRangeBar: React.FC<{
                     style={{ left: `${valuePct}%` }}
                 />
             </div>
-            <div className="flex justify-between text-[0.6rem] text-slate-500">
+            <div className="flex justify-between text-3xs text-slate-500">
                 <span>{absoluteMin.toFixed(1)}</span>
                 <span className="text-green-500/70">
                     {min.toFixed(1)} – {max.toFixed(1)}

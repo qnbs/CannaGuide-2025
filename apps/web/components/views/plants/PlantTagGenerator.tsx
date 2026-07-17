@@ -36,7 +36,7 @@ const PlantTagCard: React.FC<PlantTagCardProps> = memo(({ plant }) => {
             <div className="text-center">
                 <p className="text-sm font-bold truncate max-w-[140px]">{plant.name}</p>
                 <p className="text-xs text-slate-600 truncate max-w-[140px]">{plant.strain.name}</p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-3xs text-slate-400">
                     {t(`plantStages.${plant.stage}`)} -- {t('plantsView.plantCard.day')} {plant.age}
                 </p>
             </div>

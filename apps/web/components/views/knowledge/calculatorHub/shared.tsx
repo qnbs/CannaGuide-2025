@@ -69,14 +69,14 @@ export const RagExplainBox: React.FC<RagExplainBoxProps> = ({
 
             {explanation && (
                 <div className="rounded-lg bg-primary-900/30 border border-primary-700/40 p-3 space-y-2">
-                    <p className="text-[11px] font-semibold text-primary-300">
+                    <p className="text-2xs font-semibold text-primary-300">
                         {t(`${i18nPrefix}.aiExplanationTitle`)}
                     </p>
                     <p className="text-xs text-slate-200 leading-relaxed">{explanation}</p>
                     {pathId && (
                         <a
                             href={`#knowledge?tab=lernpfad`}
-                            className="inline-flex items-center gap-1 text-[10px] text-primary-400 hover:text-primary-200 transition-colors"
+                            className="inline-flex items-center gap-1 text-3xs text-primary-400 hover:text-primary-200 transition-colors"
                         >
                             <span className="w-3 h-3">
                                 <PhosphorIcons.GraduationCap />
@@ -155,7 +155,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
 
             {points && (
                 <div className="rounded-lg bg-slate-800/60 border border-white/10 p-2">
-                    <p className="text-[10px] text-slate-400 mb-1">
+                    <p className="text-3xs text-slate-400 mb-1">
                         {t(`${i18nPrefix}.simulationTitle`)}
                     </p>
                     <SparklineChart

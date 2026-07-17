@@ -77,13 +77,13 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
             {(activeProblems.length > 0 || openTasks.length > 0) && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                     {activeProblems.length > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold text-red-300 ring-1 ring-inset ring-red-400/30">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-3xs font-bold text-red-300 ring-1 ring-inset ring-red-400/30">
                             <PhosphorIcons.WarningCircle className="w-3 h-3" />
                             {activeProblems.length}
                         </span>
                     )}
                     {openTasks.length > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary-500/15 px-2 py-0.5 text-[10px] font-bold text-primary-300 ring-1 ring-inset ring-primary-400/30">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary-500/15 px-2 py-0.5 text-3xs font-bold text-primary-300 ring-1 ring-inset ring-primary-400/30">
                             <PhosphorIcons.ListChecks className="w-3 h-3" />
                             {openTasks.length}
                         </span>

@@ -99,7 +99,7 @@ export const BottomNav: React.FC = () => {
                         aria-current={activeView === view ? 'page' : undefined}
                     >
                         <div className="mb-0.5 h-6 w-6">{navIcons[view]}</div>
-                        <span className="text-[11px] font-semibold tracking-tight leading-tight">
+                        <span className="text-2xs font-semibold tracking-tight leading-tight">
                             {navLabels[view]}
                         </span>
                     </button>

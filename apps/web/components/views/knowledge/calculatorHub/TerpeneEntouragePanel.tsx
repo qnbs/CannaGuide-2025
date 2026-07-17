@@ -179,7 +179,7 @@ export const TerpeneEntouragePanel: React.FC = () => {
                         </span>
                     </div>
                     {result.synergyPairs.length > 0 && (
-                        <div className="text-[10px] text-slate-500 space-y-0.5 border-t border-white/10 pt-2">
+                        <div className="text-3xs text-slate-500 space-y-0.5 border-t border-white/10 pt-2">
                             <p className="text-slate-400 font-semibold text-xs">
                                 {t('knowledgeView.rechner.terpeneEntourage.synergyMatrix')}
                             </p>

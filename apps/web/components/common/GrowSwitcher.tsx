@@ -20,7 +20,7 @@ interface GrowSwitcherProps {
 const GrowPlantCount: React.FC<{ growId: string }> = memo(({ growId }) => {
     const plants = useAppSelector(selectPlantsForGrow(growId))
     return (
-        <span className="ml-auto rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-slate-400">
+        <span className="ml-auto rounded-full bg-white/10 px-1.5 py-0.5 text-3xs font-semibold tabular-nums text-slate-400">
             {plants.length}
         </span>
     )

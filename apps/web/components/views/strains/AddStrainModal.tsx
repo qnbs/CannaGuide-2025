@@ -67,7 +67,7 @@ const parseCommaSeparatedTokens = (value: string): string[] =>
 
 const TokenPreview: React.FC<{ title: string; values: string[] }> = ({ title, values }) => (
     <div className="rounded-2xl border border-white/10 bg-slate-900/45 p-3">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <p className="text-2xs font-semibold uppercase tracking-[0.2em] text-slate-400">
             {title}
         </p>
         <div className="mt-2 flex min-h-8 flex-wrap gap-2">
@@ -242,7 +242,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                     <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.18),rgba(15,23,42,0.92))] !p-0">
                         <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.9fr)] lg:items-start">
                             <div>
-                                <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-primary-200">
+                                <div className="surface-badge mb-3 text-2xs font-semibold uppercase tracking-[0.24em] text-primary-200">
                                     <PhosphorIcons.Flask className="h-3.5 w-3.5" />
                                     {isEditMode
                                         ? t('strainsView.addStrainModal.editTitle')
@@ -254,7 +254,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                             </div>
                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-3">
-                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                    <p className="text-2xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                                         {t('strainsView.addStrainModal.quickPreview')}
                                     </p>
                                     <p className="mt-2 truncate text-lg font-bold font-display text-slate-50">

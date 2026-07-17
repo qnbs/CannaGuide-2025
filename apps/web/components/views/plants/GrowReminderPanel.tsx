@@ -173,7 +173,7 @@ const GrowReminderPanelComponent: React.FC = () => {
                                             </p>
                                             <p className="text-xs text-slate-400">{batch.body}</p>
                                         </div>
-                                        <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">
+                                        <span className="text-3xs uppercase tracking-[0.2em] text-slate-400">
                                             {batch.severity}
                                         </span>
                                     </div>
@@ -191,7 +191,7 @@ const GrowReminderPanelComponent: React.FC = () => {
                                             <p className="text-xs text-slate-300">
                                                 {t('plantsView.growReminderPanel.batchQrLabel')}
                                             </p>
-                                            <p className="text-[11px] text-slate-500 break-all mt-1">
+                                            <p className="text-2xs text-slate-500 break-all mt-1">
                                                 {triggerUrl}
                                             </p>
                                             <div className="mt-3 flex flex-wrap gap-2">

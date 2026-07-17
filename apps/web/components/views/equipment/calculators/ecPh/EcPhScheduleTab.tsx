@@ -71,7 +71,7 @@ export const EcPhScheduleTab: React.FC<EcPhScheduleTabProps> = memo(
                                 <h4 className="text-sm font-semibold text-slate-200">
                                     <StageLabel stage={entry.stage} />
                                 </h4>
-                                <span className="text-[0.65rem] text-slate-500 uppercase tracking-wider">
+                                <span className="text-3xs text-slate-500 uppercase tracking-wider">
                                     {t('equipmentView.calculators.ecPhPlanner.optimal')}: EC{' '}
                                     {range.ecMin}-{range.ecMax} | pH {range.phMin}-{range.phMax}
                                 </span>

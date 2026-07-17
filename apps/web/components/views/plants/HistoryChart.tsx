@@ -346,7 +346,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(
                                         height="12"
                                         className="text-slate-300"
                                     >
-                                        <div className="w-full h-full text-[10px] flex items-center justify-center">
+                                        <div className="w-full h-full text-3xs flex items-center justify-center">
                                             {eventIcons[entry.type]}
                                         </div>
                                     </foreignObject>

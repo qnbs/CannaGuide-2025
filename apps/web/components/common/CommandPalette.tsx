@@ -45,7 +45,7 @@ const KbdBadge: React.FC<{ keys: string[] }> = ({ keys }) => (
         {keys.map((key) => (
             <kbd
                 key={key}
-                className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-white/10 bg-white/5 px-1.5 font-mono text-[10px] font-medium text-slate-400"
+                className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-white/10 bg-white/5 px-1.5 font-mono text-3xs font-medium text-slate-400"
             >
                 {key}
             </kbd>
@@ -151,7 +151,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     let resultBadge: React.ReactNode = null
     if (shouldShowMatchCount) {
         resultBadge = (
-            <span className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] font-medium tabular-nums text-slate-500">
+            <span className="rounded-md bg-white/5 px-2 py-0.5 text-3xs font-medium tabular-nums text-slate-500">
                 {matchCount}/{commandCount}
             </span>
         )
@@ -223,7 +223,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 {!deferredQuery.trim() && recentCommands.length > 0 && (
                     <Cmdk.Group
                         heading={t('commandPalette.recentlyUsed')}
-                        className="[&_[cmdk-group-heading]]:flex [&_[cmdk-group-heading]]:items-center [&_[cmdk-group-heading]]:gap-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-primary-400/70"
+                        className="[&_[cmdk-group-heading]]:flex [&_[cmdk-group-heading]]:items-center [&_[cmdk-group-heading]]:gap-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-3xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-primary-400/70"
                     >
                         {recentCommands.map((command) => {
                             const CommandIcon = command.icon
@@ -258,7 +258,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     <Cmdk.Group
                         key={group.id}
                         heading={localiseGroupName(group.title)}
-                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-slate-500"
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:text-3xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-slate-500"
                     >
                         {group.commands.map((command) => {
                             const CommandIcon = command.icon
@@ -283,7 +283,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                 />
                                             </p>
                                             {command.subtitle && (
-                                                <p className="truncate text-[11px] text-slate-500">
+                                                <p className="truncate text-2xs text-slate-500">
                                                     {command.subtitle}
                                                 </p>
                                             )}
@@ -299,7 +299,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
             {/* ── Footer ──────────────────────────────────────────── */}
             <div className="flex items-center justify-between border-t border-white/10 px-4 py-2">
-                <div className="flex items-center gap-4 text-[10px] text-slate-500">
+                <div className="flex items-center gap-4 text-3xs text-slate-500">
                     <span className="flex items-center gap-1">
                         <KbdBadge keys={['Up', 'Down']} />
                         {t('commandPalette.footer.navigate')}
@@ -313,7 +313,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         {t('commandPalette.footer.close')}
                     </span>
                 </div>
-                <span className="text-[10px] tabular-nums text-slate-600">
+                <span className="text-3xs tabular-nums text-slate-600">
                     {commandCount} {t('commandPalette.footer.navigate').toLowerCase()}
                 </span>
             </div>

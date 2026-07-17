@@ -60,7 +60,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
         >
             <div className="space-y-4 pb-3">
                 <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.12),rgba(15,23,42,0.9))]">
-                    <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
+                    <div className="surface-badge mb-3 text-2xs font-semibold uppercase tracking-[0.22em] text-primary-200">
                         <PhosphorIcons.ArchiveBox className="h-3.5 w-3.5" />
                         {t(`${translationBasePath}.source`)}
                     </div>

@@ -402,7 +402,7 @@ export const EnvironmentDashboard: React.FC<EnvironmentDashboardProps> = memo(({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {latestLog.temp != null && (
                         <div className="rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/5 p-3 ring-1 ring-inset ring-orange-400/20">
-                            <div className="text-[10px] uppercase tracking-wider text-orange-400/70 mb-1">
+                            <div className="text-3xs uppercase tracking-wider text-orange-400/70 mb-1">
                                 {t('plantsView.analytics.temperature', { defaultValue: 'Temp' })}
                             </div>
                             <div className="text-lg font-bold tabular-nums text-orange-300">
@@ -412,7 +412,7 @@ export const EnvironmentDashboard: React.FC<EnvironmentDashboardProps> = memo(({
                     )}
                     {latestLog.humidity != null && (
                         <div className="rounded-xl bg-gradient-to-br from-sky-500/10 to-sky-600/5 p-3 ring-1 ring-inset ring-sky-400/20">
-                            <div className="text-[10px] uppercase tracking-wider text-sky-400/70 mb-1">
+                            <div className="text-3xs uppercase tracking-wider text-sky-400/70 mb-1">
                                 {t('plantsView.analytics.humidity', { defaultValue: 'Humidity' })}
                             </div>
                             <div className="text-lg font-bold tabular-nums text-sky-300">
@@ -422,7 +422,7 @@ export const EnvironmentDashboard: React.FC<EnvironmentDashboardProps> = memo(({
                     )}
                     {latestLog.vpd != null && (
                         <div className="rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 p-3 ring-1 ring-inset ring-purple-400/20">
-                            <div className="text-[10px] uppercase tracking-wider text-purple-400/70 mb-1">
+                            <div className="text-3xs uppercase tracking-wider text-purple-400/70 mb-1">
                                 VPD
                             </div>
                             <div className="text-lg font-bold tabular-nums text-purple-300">
@@ -432,7 +432,7 @@ export const EnvironmentDashboard: React.FC<EnvironmentDashboardProps> = memo(({
                     )}
                     {latestLog.ph != null && (
                         <div className="rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/5 p-3 ring-1 ring-inset ring-green-400/20">
-                            <div className="text-[10px] uppercase tracking-wider text-green-400/70 mb-1">
+                            <div className="text-3xs uppercase tracking-wider text-green-400/70 mb-1">
                                 pH
                             </div>
                             <div className="text-lg font-bold tabular-nums text-green-300">

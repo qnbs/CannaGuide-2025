@@ -83,7 +83,7 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
                     aria-current={activeTab === item.id ? 'page' : undefined}
                 >
                     <div className="w-5 h-5 sm:w-6 sm:h-6 shrink-0">{item.icon}</div>
-                    <span className="text-[9px] sm:text-xs font-semibold text-center leading-tight line-clamp-2 w-full break-words">
+                    <span className="text-3xs sm:text-xs font-semibold text-center leading-tight line-clamp-2 w-full break-words">
                         {item.label}
                     </span>
                 </button>

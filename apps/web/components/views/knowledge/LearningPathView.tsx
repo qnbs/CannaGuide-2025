@@ -58,12 +58,12 @@ const PathCard: React.FC<PathCardProps> = ({ path, completedSteps, onStepComplet
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                             <h3 className="font-bold text-slate-100 text-sm">{t(path.titleKey)}</h3>
                             <span
-                                className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${LEVEL_BADGE[path.targetLevel]}`}
+                                className={`px-2 py-0.5 text-3xs font-bold rounded-full ${LEVEL_BADGE[path.targetLevel]}`}
                             >
                                 {t(`knowledgeView.lernpfad.level.${path.targetLevel}`)}
                             </span>
                             {isComplete && (
-                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-green-700 text-green-100">
+                                <span className="px-2 py-0.5 text-3xs font-bold rounded-full bg-green-700 text-green-100">
                                     {t('knowledgeView.lernpfad.completed')}
                                 </span>
                             )}
@@ -87,7 +87,7 @@ const PathCard: React.FC<PathCardProps> = ({ path, completedSteps, onStepComplet
                                     })}
                                 />
                             </div>
-                            <span className="text-[10px] text-slate-400 whitespace-nowrap">
+                            <span className="text-3xs text-slate-400 whitespace-nowrap">
                                 {done}/{total} &bull; ~{path.estimatedMinutes} min
                             </span>
                         </div>
@@ -133,7 +133,7 @@ const PathCard: React.FC<PathCardProps> = ({ path, completedSteps, onStepComplet
                                             {t(step.titleKey)}
                                         </span>
                                     </div>
-                                    <p className="text-[11px] text-slate-400">
+                                    <p className="text-2xs text-slate-400">
                                         {t(step.descriptionKey)}
                                     </p>
                                 </div>
@@ -143,7 +143,7 @@ const PathCard: React.FC<PathCardProps> = ({ path, completedSteps, onStepComplet
                                         onClick={() => {
                                             onStepComplete(step.id)
                                         }}
-                                        className="shrink-0 px-2 py-1 text-[10px] rounded bg-primary-700 text-primary-200 hover:bg-primary-600 transition-colors font-semibold"
+                                        className="shrink-0 px-2 py-1 text-3xs rounded bg-primary-700 text-primary-200 hover:bg-primary-600 transition-colors font-semibold"
                                         aria-label={t('knowledgeView.lernpfad.markDone')}
                                     >
                                         {t('knowledgeView.lernpfad.markDone')}
@@ -156,7 +156,7 @@ const PathCard: React.FC<PathCardProps> = ({ path, completedSteps, onStepComplet
                         <button
                             type="button"
                             onClick={onReset}
-                            className="mt-2 text-[10px] text-slate-500 hover:text-slate-300 transition-colors underline"
+                            className="mt-2 text-3xs text-slate-500 hover:text-slate-300 transition-colors underline"
                         >
                             {t('knowledgeView.lernpfad.resetPath')}
                         </button>

@@ -55,7 +55,7 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
                         {shop.location}
                     </div>
                     <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full ring-1 ring-inset ${tier.color}`}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-3xs font-bold uppercase tracking-wider rounded-full ring-1 ring-inset ${tier.color}`}
                     >
                         {tier.label}
                     </span>
@@ -120,7 +120,7 @@ const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: 
                                             className="flex items-center gap-1.5 rounded-md bg-slate-700/50 px-2 py-1"
                                         >
                                             <Icon className="w-5 h-5 text-slate-300" />
-                                            <span className="text-[10px] text-slate-400 capitalize">
+                                            <span className="text-3xs text-slate-400 capitalize">
                                                 {pm.replaceAll('_', ' ')}
                                             </span>
                                         </div>
@@ -165,7 +165,7 @@ const ShopCard: React.FC<{ shop: Shop; onSelect: () => void }> = memo(({ shop, o
                     <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-bold text-slate-100 truncate">{shop.name}</h4>
                         <span
-                            className={`inline-flex items-center flex-shrink-0 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full ring-1 ring-inset ${tier.color}`}
+                            className={`inline-flex items-center flex-shrink-0 px-1.5 py-0.5 text-3xs font-bold uppercase tracking-wider rounded-full ring-1 ring-inset ${tier.color}`}
                         >
                             {tier.label}
                         </span>
@@ -179,14 +179,14 @@ const ShopCard: React.FC<{ shop: Shop; onSelect: () => void }> = memo(({ shop, o
                         {shop.strengths.slice(0, 2).map((s: string) => (
                             <span
                                 key={`preview-${s}`}
-                                className="inline-flex items-center gap-1 text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded-full"
+                                className="inline-flex items-center gap-1 text-3xs text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded-full"
                             >
                                 <PhosphorIcons.CheckCircle className="w-3 h-3 text-emerald-500/60" />
                                 <span className="truncate max-w-[120px]">{s}</span>
                             </span>
                         ))}
                         {shop.strengths.length > 2 && (
-                            <span className="text-[10px] text-slate-500 px-1.5 py-0.5">
+                            <span className="text-3xs text-slate-500 px-1.5 py-0.5">
                                 +{shop.strengths.length - 2}
                             </span>
                         )}

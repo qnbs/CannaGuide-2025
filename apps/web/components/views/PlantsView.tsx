@@ -229,7 +229,7 @@ export const PlantsView: React.FC = () => {
                     <div className="section-hero animate-fade-in">
                         <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                             <div className="min-w-0">
-                                <div className="surface-badge mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-primary-200">
+                                <div className="surface-badge mb-4 text-2xs font-semibold uppercase tracking-[0.24em] text-primary-200">
                                     <PhosphorIcons.Sparkle className="h-3.5 w-3.5" />
                                     {t('plantsView.hero.badge')}
                                 </div>
@@ -249,7 +249,7 @@ export const PlantsView: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-3 sm:max-w-sm sm:grid-cols-3 lg:min-w-[20rem]">
                                 <div className="stat-tile flex flex-col justify-between p-4">
-                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">
+                                    <span className="text-2xs uppercase tracking-[0.2em] text-slate-500">
                                         {t('plantsView.hero.slots')}
                                     </span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">
@@ -257,7 +257,7 @@ export const PlantsView: React.FC = () => {
                                     </span>
                                 </div>
                                 <div className="stat-tile flex flex-col justify-between p-4">
-                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">
+                                    <span className="text-2xs uppercase tracking-[0.2em] text-slate-500">
                                         {t('plantsView.hero.tasks')}
                                     </span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">
@@ -265,7 +265,7 @@ export const PlantsView: React.FC = () => {
                                     </span>
                                 </div>
                                 <div className="stat-tile col-span-2 flex flex-col justify-between p-4 sm:col-span-1">
-                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">
+                                    <span className="text-2xs uppercase tracking-[0.2em] text-slate-500">
                                         {t('plantsView.hero.alerts')}
                                     </span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">

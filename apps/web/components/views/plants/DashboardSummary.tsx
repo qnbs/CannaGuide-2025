@@ -40,7 +40,7 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = 
             {icon}
         </div>
         <p className="mt-3 text-xl font-bold font-display text-slate-50 sm:text-2xl">{value}</p>
-        <p className="mt-1 break-words text-[10px] text-slate-400 sm:text-xs">{label}</p>
+        <p className="mt-1 break-words text-3xs text-slate-400 sm:text-xs">{label}</p>
     </div>
 )
 
@@ -190,7 +190,7 @@ const DashboardSummaryComponent: React.FC = () => {
         <Card className="overflow-hidden">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
+                    <div className="surface-badge mb-3 text-2xs font-semibold uppercase tracking-[0.22em] text-primary-200">
                         <PhosphorIcons.Heart className="h-3.5 w-3.5" />
                         {t('plantsView.gardenVitals.liveEnvironment')}
                     </div>
@@ -203,7 +203,7 @@ const DashboardSummaryComponent: React.FC = () => {
                         <PhosphorIcons.ChartLineUp className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="text-[0.68rem] uppercase tracking-[0.22em] text-slate-500">
+                        <p className="text-2xs uppercase tracking-[0.22em] text-slate-500">
                             {t('plantsView.gardenVitals.vpdSummary')}
                         </p>
                         <p className="text-lg font-bold font-display text-slate-50">

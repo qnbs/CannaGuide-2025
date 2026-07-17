@@ -86,13 +86,13 @@ const SeedbankProfileComponent: React.FC<{
                 </h4>
                 <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                     {strainCount > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 bg-emerald-500/10 rounded-full ring-1 ring-inset ring-emerald-400/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-3xs font-semibold text-emerald-300 bg-emerald-500/10 rounded-full ring-1 ring-inset ring-emerald-400/20">
                             <PhosphorIcons.Leafy className="w-3 h-3" />
                             {strainCount}
                         </span>
                     )}
                     {bank.assessment?.content && (
-                        <span className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-semibold text-amber-300 bg-amber-500/10 rounded-full ring-1 ring-inset ring-amber-400/20">
+                        <span className="hidden sm:inline-flex items-center px-2 py-0.5 text-3xs font-semibold text-amber-300 bg-amber-500/10 rounded-full ring-1 ring-inset ring-amber-400/20">
                             <PhosphorIcons.Star weight="fill" className="w-3 h-3 mr-1" />
                             Rated
                         </span>

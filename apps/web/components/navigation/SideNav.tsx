@@ -84,7 +84,7 @@ export const SideNav: React.FC = () => {
                             title={navLabels[view]}
                         >
                             <div className="mb-1 h-6 w-6">{navIcons[view]}</div>
-                            <span className="text-[10px] font-semibold tracking-[0.02em]">
+                            <span className="text-3xs font-semibold tracking-[0.02em]">
                                 {navLabels[view]}
                             </span>
                         </button>

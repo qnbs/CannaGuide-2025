@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { secureRandom } from '@/utils/random'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { scenarioService } from '@/services/scenarioService'
 import { Button } from '@/components/common/Button'
@@ -120,9 +121,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                             </p>
                         </div>
                     )}
-                    <p className="text-xs text-muted italic mt-4 text-center">
-                        {t('ai.disclaimer')}
-                    </p>
+                    <AiDisclaimer />
                 </div>
             )}
         </Modal>

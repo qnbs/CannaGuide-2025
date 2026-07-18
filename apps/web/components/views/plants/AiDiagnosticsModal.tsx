@@ -3,6 +3,7 @@ import { Plant, PlantDiagnosisResponse, JournalEntryType, PhotoCategory, Languag
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { CameraModal } from '@/components/common/CameraModal'
 import { Modal } from '@/components/common/Modal'
@@ -461,12 +462,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     image={image}
                                 />
                             )}
-                            <p className="text-xs text-muted italic mt-4 text-center">
-                                {t('ai.disclaimer')}
-                            </p>
-                            <p className="text-xs text-red-400/80 italic mt-1 text-center">
-                                {t('legal.medicalDisclaimer')}
-                            </p>
+                            <AiDisclaimer medical />
                         </div>
                     )}
                 </div>
